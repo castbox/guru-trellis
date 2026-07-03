@@ -2,93 +2,74 @@
 
 Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 
-本仓库是可复用 `guru-team` Trellis workflow 的 canonical 来源，用于让团队成员在业务仓库中开箱即用地安装统一的 Trellis 工作流、companion scripts 和多平台入口 overlay。
+本仓库是可复用 `guru-team` Trellis workflow 的 canonical 来源，用于让团队成员在业务仓库中安装统一的 Trellis 工作流、companion scripts 和平台入口 overlay。
+
+## 推荐用法
+
+不要手工照着命令一步步执行。把下面的 prompt 粘贴给 Codex 或 Cursor，让 AI 在目标业务仓库里完成安装、验证、提交和 push。
+
+### 安装 Trellis
+
+把这段 prompt 发给目标业务仓库里的 AI 会话：
+
+```text
+在当前 Repo 中安装最新版本的 Trellis。
+
+要求：
+- 先实时确认 npm 上 @mindfoldhq/trellis 的 latest 版本，不要凭记忆判断版本。
+- 安装/升级全局 Trellis CLI 到 latest。
+- 只启用 Codex 和 Cursor 支持，不要安装 Claude、OpenCode、Gemini、Copilot 或其它平台入口。
+- Trellis 用户名使用 <your-name>。
+- 使用 Guru Team workflow：workflow id 是 guru-team，workflow source 是 gh:castbox/guru-trellis/trellis。
+- 参考 https://github.com/castbox/guru-trellis/tree/main/trellis 中的方式安装 Guru Team preset，把 companion assets 和 Codex/Cursor overlay 应用到当前 Repo。
+- 安装后确认当前 Repo 中不存在 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等非目标平台目录。
+- 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env。
+- 检查 git diff，确认没有敏感信息、.env、token、私钥或本机-only 身份文件被提交。
+- 提交并 push。
+
+完成后告诉我：
+- 安装到的 Trellis 版本；
+- 使用的用户名；
+- 是否只保留了 Codex/Cursor；
+- 验证命令结果；
+- commit hash 和 push 结果。
+```
+
+如果用户名固定为 `wumengye`，把 `<your-name>` 替换成 `wumengye`。
+
+### 升级 Trellis
+
+把这段 prompt 发给已经安装 Trellis 的目标业务仓库里的 AI 会话：
+
+```text
+在当前 Repo 中升级 Trellis 和 Guru Team Trellis workflow/preset。
+
+要求：
+- 先实时确认 npm 上 @mindfoldhq/trellis 的 latest 版本，并检查当前 trellis --version、which -a trellis、npm list -g @mindfoldhq/trellis --depth=0。
+- 如果本机 Trellis CLI 不是 latest，安装/升级到 @mindfoldhq/trellis@latest。
+- 只保留当前 Repo 的 Codex 和 Cursor 支持，不要新增 Claude、OpenCode、Gemini、Copilot 或其它平台入口。
+- 当前 Repo 已有 .trellis/ 时，先用 Guru Team marketplace 生成 workflow 预览，再对比现有 .trellis/workflow.md 和预览内容；确认风险后切换到 workflow id guru-team，workflow source/marketplace 是 gh:castbox/guru-trellis/trellis。
+- 拉取或临时获取 https://github.com/castbox/guru-trellis 的最新内容，然后重新应用 trellis/presets/guru-team/scripts/bash/apply.sh 到当前 Repo。
+- 如果 preset 生成 .new 或 .bak，逐个检查原因；不要静默覆盖未知本地改动。
+- 升级后确认当前 Repo 中不存在 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等非目标平台目录。
+- 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env。
+- 检查 git diff，确认没有敏感信息、.env、token、私钥或本机-only 身份文件被提交。
+- 提交并 push。
+
+完成后告诉我：
+- 升级前后的 Trellis 版本；
+- workflow/preset 是否已重新应用；
+- 是否只保留了 Codex/Cursor；
+- 是否产生 .new 或 .bak 以及处理结果；
+- 验证命令结果；
+- commit hash 和 push 结果。
+```
 
 ## 仓库内容
 
 - `trellis/index.json`：Trellis marketplace 入口，提供 `guru-team` workflow。
 - `trellis/workflows/guru-team/`：workflow 主合同、配置模板、schema 和 companion scripts。
 - `trellis/presets/guru-team/`：把 companion scripts 和平台入口 overlay 安装到目标业务仓库的 preset installer。
-
-## 新项目安装
-
-在目标业务仓库中初始化 Trellis，并直接选择 Guru Team workflow：
-
-```bash
-trellis init -u <name> --codex --cursor \
-  --workflow guru-team \
-  --workflow-source gh:castbox/guru-trellis/trellis
-```
-
-然后安装 Guru Team companion assets：
-
-```bash
-git clone https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
-/path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
-  --repo /path/to/project
-```
-
-## 已有 Trellis 项目切换
-
-先生成预览，不直接覆盖 active workflow：
-
-```bash
-trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis \
-  --template guru-team \
-  --create-new
-```
-
-人工确认 `.trellis/workflow.md.new` 后，再切换 workflow，并执行 `apply.sh` 把 Guru Team
-companion scripts 与平台入口 overlay 同步到目标业务仓库：
-
-```bash
-trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis \
-  --template guru-team
-git clone https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
-/path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
-  --repo /path/to/project
-```
-
-## 升级方式
-
-Trellis 官方 CLI、项目内 Trellis 模板、Guru Team workflow/preset 是三层不同来源，推荐分开升级：
-
-```bash
-trellis upgrade
-trellis update --dry-run
-trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis \
-  --template guru-team \
-  --create-new
-```
-
-确认 `.trellis/workflow.md.new` 后再切换 workflow。随后更新本仓库本地副本，并在目标业务仓库上再次执行 `apply.sh`：
-
-```bash
-git -C /path/to/guru-trellis pull --ff-only
-/path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
-  --repo /path/to/project
-```
-
-这里的“再次执行 `apply.sh`”就是重新应用 preset。它只同步 Guru Team 自有资产，包括：
-
-- `.trellis/guru-team/` 下的配置模板、schema 和 companion scripts；
-- `.agents/skills/`、`.codex/`、`.claude/commands/`、`.cursor/commands/` 下的 Guru Team 入口 overlay。
-
-它不会修改 Trellis npm 全局包、`node_modules`、上游 Trellis 源码或 `.trellis/scripts/task.py`。
-
-preset installer 是幂等的：
-
-- 内容相同的文件会跳过。
-- 缺失文件会安装。
-- Guru-managed companion assets 会升级 active 文件，并把旧版保存为 `.bak`。
-- 本地 `.trellis/guru-team/config.yml` 只在缺失时创建，不会覆盖已有配置。
-- 已识别的上游 Trellis 生成入口会替换为 Guru Team overlay。
-- 未识别的本地改动会保留，并生成 `.new` 文件供人工对比。
-
-执行结果中的 `updated_managed` 表示本次已启用新版 Guru-managed 文件，`managed_backups` 表示对应旧版备份。
 
 ## 用户主流程
 
