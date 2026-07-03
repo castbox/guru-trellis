@@ -1,17 +1,17 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 2,
-    "url": "https://github.com/castbox/guru-trellis/issues/2",
-    "title": "Align guru-team workflow with Trellis auto-bootstrap start model",
+    "number": 1,
+    "url": "https://github.com/castbox/guru-trellis/issues/1",
+    "title": "Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation",
     "created_by_workflow": false
   },
-  "slug": "align-guru-team-workflow-trellis",
-  "task_slug": "2-align-guru-team-workflow-trellis",
-  "task_title": "#2 Align guru-team workflow with Trellis auto-bootstrap start model",
-  "branch_name": "codex/2-align-guru-team-workflow-trellis",
+  "slug": "enhance-guru-team-workflow-middle",
+  "task_slug": "1-enhance-guru-team-workflow-middle",
+  "task_title": "#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation",
+  "branch_name": "codex/1-enhance-guru-team-workflow-middle",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/2-align-guru-team-workflow-trellis",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -22,9 +22,9 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#2 Align guru-team workflow with Trellis auto-bootstrap start model",
+    "#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation",
     "--slug",
-    "2-align-guru-team-workflow-trellis",
+    "1-enhance-guru-team-workflow-middle",
     "--assignee",
     "name=wumengye\ninitialized_at=2026-07-03T17:44:00.461566"
   ],
@@ -35,17 +35,17 @@
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 2,
-      "url": "https://github.com/castbox/guru-trellis/issues/2",
-      "title": "Align guru-team workflow with Trellis auto-bootstrap start model",
+      "number": 1,
+      "url": "https://github.com/castbox/guru-trellis/issues/1",
+      "title": "Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 2,
-        "url": "https://github.com/castbox/guru-trellis/issues/2",
-        "title": "Align guru-team workflow with Trellis auto-bootstrap start model",
+        "number": 1,
+        "url": "https://github.com/castbox/guru-trellis/issues/1",
+        "title": "Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -60,8 +60,9 @@
     "dirty": true,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                               16e6e10 [main]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/2-align-guru-team-workflow-trellis  16e6e10 [codex/2-align-guru-team-workflow-trellis]"
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                4784f38 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle  4784f38 [codex/1-enhance-guru-team-workflow-middle]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/2-align-guru-team-workflow-trellis   692cd9f [codex/2-align-guru-team-workflow-trellis]"
     ],
     "selected_base_branch": "main",
     "workspace_was_created_or_reused": true

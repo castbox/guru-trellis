@@ -45,6 +45,17 @@ handoff_path: ".trellis/guru-team/handoff.json"
 # Language used for Trellis task planning artifacts and human-readable review fields.
 artifact_language: zh-CN
 
+# Middle-platform framework knowledge lookup.
+# Allowed values:
+#   off           - do not check or warn.
+#   optional_warn - default; query guru-knowledge-center MCP when available,
+#                   warn and continue when unavailable.
+#   required      - opt-in; block design/implementation if required retrieval
+#                   cannot be performed or persisted.
+# Missing middle_platform_knowledge.mode is interpreted as optional_warn.
+middle_platform_knowledge:
+  mode: optional_warn
+
 # Branch Review Gate runs after task work is committed and before finish-work.
 review_gate:
   artifact_path: review-gate.json

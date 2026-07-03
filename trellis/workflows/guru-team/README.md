@@ -4,7 +4,8 @@
 
 这个 workflow 的 marketplace id 固定为通用的 `guru-team`。它承载 GitHub issue
 intake、Git base branch/worktree preflight、中文 planning artifact、Issue Scope
-Ledger、Branch Review Gate，以及 finish-work 成功后的自动 publish PR 规则。
+Ledger、Middle-platform Knowledge Gate、Repo Docs SSOT reconciliation、Branch
+Review Gate，以及 finish-work 成功后的自动 publish PR 规则。
 
 ## Marketplace 安装
 
@@ -44,6 +45,25 @@ installer 会写入 `.trellis/guru-team/`，并可安装 `.agents/skills`、
 installer 幂等：同内容跳过，缺失文件写入，Guru-managed companion assets 会升级 active
 文件并把旧版保存为 `.bak`，已有 `.trellis/guru-team/config.yml` 不覆盖，识别为上游
 Trellis 生成入口时替换为 Guru Team overlay；未知本地改动写 `.new`，不静默覆盖。
+
+`config-template.yml` 显式包含 `middle_platform_knowledge.mode: optional_warn`。
+已有目标仓库的 `.trellis/guru-team/config.yml` 不会为了补这个 key 被覆盖；如果 key
+缺失，workflow 仍按 backward-compatible 默认 `optional_warn` 执行。`required` 只作
+opt-in，`off` 只作 opt-out。
+
+## Knowledge Gate 与 Docs SSOT
+
+当任务可能涉及 Guru Team 中台 SDK / framework 时，AI 应按 `.trellis/workflow.md`
+检查当前平台是否可用 `guru-knowledge-center` MCP。可用时使用
+`project_domain=middle-platform` 和当前 task context 检索，并把 citation 写入
+`design.md`、`implement.md` 或 `{TASK_DIR}/research/middle-platform-knowledge.md`。
+MCP 不可用时，默认 `optional_warn` 只告警并继续；配置为 `required` 时才阻塞。
+
+Trellis task artifact 不是长期 repo docs 的替代品。Planning 阶段要识别 `docs/`
+下 requirements、designs、testplans、deploy / operations、versioned design docs
+等 durable docs SSOT；finish 前要记录哪些 docs 已更新、哪些 task artifact 内容已
+合并回 durable docs、哪些只保留为 task history。无完整 docs 系统的 repo 也要明确
+记录“创建 docs / 补 partial docs / 暂不设 durable docs SSOT”的结果。
 
 `prepare-task.sh --json` 默认只执行 intake 和 preflight planning，不创建新的
 worktree。只有在用户已经 review 计划中的 base branch 和 workspace path 后，才使用

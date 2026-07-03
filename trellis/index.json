@@ -5,9 +5,9 @@
       "id": "guru-team",
       "type": "workflow",
       "name": "Guru Team Trellis Workflow",
-      "description": "Guru team workflow for Trellis: issue intake, git base/worktree preflight, Chinese planning artifacts, Branch Review Gate, and automatic non-draft PR publish after finish-work.",
+      "description": "Guru team workflow for Trellis: issue intake, git base/worktree preflight, Chinese planning artifacts, middle-platform knowledge lookup, docs SSOT reconciliation, Branch Review Gate, and automatic non-draft PR publish after finish-work.",
       "path": "workflows/guru-team/workflow.md",
-      "tags": ["guru-team", "github", "worktree", "planning", "review-gate", "publish-pr"]
+      "tags": ["guru-team", "github", "worktree", "planning", "middle-platform", "docs-ssot", "review-gate", "publish-pr"]
     }
   ]
 }

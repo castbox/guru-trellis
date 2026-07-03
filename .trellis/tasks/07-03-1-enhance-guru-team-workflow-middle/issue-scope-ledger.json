@@ -1,0 +1,30 @@
+{
+  "primary_issue": {
+    "number": 1,
+    "url": "https://github.com/castbox/guru-trellis/issues/1",
+    "title": "Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation",
+    "reason": "intake/handoff 主 issue，本任务承诺完整解决。",
+    "acceptance_evidence": [
+      "trellis/workflows/guru-team/workflow.md 已加入 Middle-platform Knowledge Gate、Repo Docs SSOT reconciliation、Phase 1/2/3 和 Branch Review Gate 规则。",
+      "trellis/workflows/guru-team/config-template.yml 已加入 middle_platform_knowledge.mode: optional_warn，README 说明缺失 key 的 backward-compatible 默认。",
+      "README、workflow README、preset README、platform overlays 与 trellis/index.json 已同步新增 guardrails。",
+      "验证通过：json.tool、bash -n、py_compile、git diff --check、task.py validate、临时 preset installer preserve/.new 检查。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 1,
+      "url": "https://github.com/castbox/guru-trellis/issues/1",
+      "title": "Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation",
+      "reason": "本任务的唯一关闭范围；覆盖中台知识门禁、docs SSOT reconciliation、配置模板、README 与 platform overlay 同步。",
+      "acceptance_evidence": [
+        "trellis/workflows/guru-team/workflow.md 已加入 Middle-platform Knowledge Gate、Repo Docs SSOT reconciliation、Phase 1/2/3 和 Branch Review Gate 规则。",
+        "trellis/workflows/guru-team/config-template.yml 已加入 middle_platform_knowledge.mode: optional_warn，README 说明缺失 key 的 backward-compatible 默认。",
+        "README、workflow README、preset README、platform overlays 与 trellis/index.json 已同步新增 guardrails。",
+        "验证通过：json.tool、bash -n、py_compile、git diff --check、task.py validate、临时 preset installer preserve/.new 检查。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}
