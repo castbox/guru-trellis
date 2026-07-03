@@ -6,6 +6,8 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 
 ## 推荐用法
 
+先确认目标 repo 只使用一个研发 harness。Trellis 不要和 Superpowers、Spec Kit、OpenSpec、GSD 等其它 SDD / agent harness 框架在同一个 repo 中混用；多套 harness 同时存在会让 workflow、task artifact、spec、hooks 和平台入口互相抢控制权，后续 AI 会话也更容易读错上下文。如果目标 repo 已经采用其它 harness，先迁移或清理，再安装 Trellis。
+
 不要手工照着命令一步步执行。把下面的 prompt 粘贴给 Codex、Cursor 或你正在使用的 AI 开发工具，让 AI 在目标业务仓库里完成安装、验证、提交和 push。
 
 ### 安装 Trellis
@@ -17,6 +19,7 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 
 要求：
 - 先实时确认 npm 上 @mindfoldhq/trellis 的 latest 版本，不要凭记忆判断版本。
+- 安装前检查当前 Repo 是否已经使用 Superpowers、Spec Kit、OpenSpec、GSD 或其它 SDD / agent harness；如果存在，不要继续安装 Trellis，先报告冲突并让我确认迁移或清理方案。
 - 安装/升级全局 Trellis CLI 到 latest。
 - 默认只启用 Codex 和 Cursor 支持；如果你使用其它 AI 开发工具，请先把本条改成你需要的平台入口，例如 Claude、OpenCode、Gemini、Copilot 等。
 - Trellis 用户名使用 <your-name>，请在执行前把这个占位符替换成你的用户名。
@@ -44,6 +47,7 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 
 要求：
 - 先实时确认 npm 上 @mindfoldhq/trellis 的 latest 版本，并检查当前 trellis --version、which -a trellis、npm list -g @mindfoldhq/trellis --depth=0。
+- 升级前检查当前 Repo 是否同时存在 Superpowers、Spec Kit、OpenSpec、GSD 或其它 SDD / agent harness；如果存在，不要继续升级 Trellis，先报告冲突并让我确认迁移或清理方案。
 - 如果本机 Trellis CLI 不是 latest，安装/升级到 @mindfoldhq/trellis@latest。
 - 默认只保留当前 Repo 的 Codex 和 Cursor 支持；如果你使用其它 AI 开发工具，请先把本条改成你需要的平台入口，例如 Claude、OpenCode、Gemini、Copilot 等。
 - 当前 Repo 已有 .trellis/ 时，先用 Guru Team marketplace 生成 workflow 预览，再对比现有 .trellis/workflow.md 和预览内容；确认风险后切换到 workflow id guru-team，workflow source/marketplace 是 gh:castbox/guru-trellis/trellis。
