@@ -305,7 +305,7 @@ def slugify(text: str, fallback: str) -> str:
 
 def make_issue_title(requirement: str, short_name: str | None = None) -> str:
     text = clean_requirement(requirement)
-    first = re.split(r"[。\n.!?]", text, 1)[0].strip()
+    first = re.split(r"[。\n.!?]", text, maxsplit=1)[0].strip()
     if first:
         return first[:90]
     if short_name:
@@ -868,18 +868,28 @@ def configured_handoff_path(root: Path, config: dict[str, Any]) -> Path:
     return rel if rel.is_absolute() else root / rel
 
 
-def write_handoff(root: Path, config: dict[str, Any], payload: dict[str, Any], workspace_path: Path, mirror_to_workspace: bool) -> Path:
+def workspace_handoff_path(config: dict[str, Any], workspace_path: Path) -> Path:
     rel = Path(str(config.get("handoff_path") or DEFAULTS["handoff_path"]))
-    path = configured_handoff_path(root, config)
+    return rel if rel.is_absolute() else workspace_path / rel
+
+
+def write_handoff(
+    root: Path,
+    config: dict[str, Any],
+    payload: dict[str, Any],
+    workspace_path: Path,
+    mirror_to_source: bool = False,
+) -> Path:
+    path = workspace_handoff_path(config, workspace_path)
     payload["handoff_path"] = str(path)
     content = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
 
-    if mirror_to_workspace and payload.get("workspace_mode") == "worktree" and workspace_path != root:
-        workspace_handoff = rel if rel.is_absolute() else workspace_path / rel
-        workspace_handoff.parent.mkdir(parents=True, exist_ok=True)
-        workspace_handoff.write_text(content, encoding="utf-8")
+    if mirror_to_source and workspace_path != root:
+        source_handoff = configured_handoff_path(root, config)
+        source_handoff.parent.mkdir(parents=True, exist_ok=True)
+        source_handoff.write_text(content, encoding="utf-8")
     return path
 
 
@@ -1598,7 +1608,7 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
         "source_issue": source_issue,
         "proposed_issue": proposed_issue,
         "requires_confirmation": confirmation_required,
-        "handoff_path": str(configured_handoff_path(root, config)),
+        "handoff_path": str(workspace_handoff_path(config, workspace_path)),
         "handoff_written": False,
         "slug": issue_slug,
         "task_slug": task_slug,
@@ -1672,9 +1682,9 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
         task_dir = resolve_task_dir(workspace_path, payload["task_dir"], payload)
         ensure_issue_scope_ledger(task_dir, payload)
 
-    if source_issue is not None:
+    if source_issue is not None and should_create_worktree:
         payload["handoff_written"] = True
-        handoff = write_handoff(root, config, payload, workspace_path, workspace_ready)
+        handoff = write_handoff(root, config, payload, workspace_path)
         payload["handoff_path"] = str(handoff)
     return payload
 

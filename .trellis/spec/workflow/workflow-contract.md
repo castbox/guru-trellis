@@ -29,14 +29,15 @@ resolve the source issue, base branch, branch name, workspace path, and handoff
 before `.trellis/tasks/` artifacts are written.
 
 `prepare-task.sh --json` is the default planner path. It may read GitHub issues,
-search duplicates, and compute source/proposed issue data. When no
-`source_issue` is confirmed, it must be stdout-only and must not write
-`.trellis/guru-team/handoff.json`, create a GitHub issue, worktree, branch, or
-Trellis task. A written handoff is allowed only after an explicit source issue
-exists. GitHub issue creation requires an explicit confirmed executor flag such
-as `--create-issue-confirmed` plus reviewed title/body input.
+search duplicates, and compute source/proposed issue data. Planner output,
+including output with a confirmed `source_issue`, must be stdout-only and must
+not write `.trellis/guru-team/handoff.json`, create a GitHub issue, worktree,
+branch, or Trellis task. GitHub issue creation requires an explicit confirmed
+executor flag such as `--create-issue-confirmed` plus reviewed title/body input.
 `--create-worktree` and `--create-task` are executor flags for after AI handoff
-review and user approval.
+review and user approval; only these workspace executor paths may write the
+handoff artifact, and they write it inside the chosen workspace instead of
+dirtying the source checkout during new-session intake.
 
 ## User-Facing Entrypoints
 

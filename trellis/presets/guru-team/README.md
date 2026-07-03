@@ -120,12 +120,14 @@ Passing gates require a Chinese summary, concrete evidence, and either
 
 `prepare-task.sh --json` is an intake/preflight planner by default. It may read
 an explicit issue and search duplicates, but it does not create a GitHub issue,
-worktree, branch, Trellis task, or `.trellis/guru-team/handoff.json` before a
-source issue is confirmed. Freeform requests without a source issue return
-`proposed_issue`, `requires_confirmation`, and `handoff_written: false` in stdout
-JSON; the AI must show the proposed title/body and duplicate evidence, then
-rerun with `--create-issue-confirmed --issue-title ... --issue-body-file ...`
-only after approval.
+worktree, branch, Trellis task, or `.trellis/guru-team/handoff.json`. Freeform
+requests without a source issue return `proposed_issue`, `requires_confirmation`,
+and `handoff_written: false` in stdout JSON; the AI must show the proposed
+title/body and duplicate evidence, then rerun with `--create-issue-confirmed
+--issue-title ... --issue-body-file ...` only after approval. A confirmed source
+issue still remains stdout-only until the user approves `--create-worktree` or
+`--create-task`; those executor paths write the handoff inside the chosen
+workspace, not as a new-session side effect in the source checkout.
 
 The installed workflow tells AI sessions to run a Middle-platform Knowledge Gate
 when a task may touch Guru Team SDKs or frameworks. If `guru-knowledge-center`

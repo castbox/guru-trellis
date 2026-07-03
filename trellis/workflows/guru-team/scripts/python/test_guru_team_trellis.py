@@ -47,13 +47,14 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
         (self.root / ".trellis").mkdir()
+        self.worktree_root = self.root / "worktrees"
 
         self.patches = [
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={
                 **gtt.DEFAULTS,
                 "github_repo": "owner/repo",
-                "handoff_path": str(self.root / "handoff.json"),
+                "handoff_path": "handoff.json",
             }),
             mock.patch.object(gtt, "require_tool"),
             mock.patch.object(gtt, "require_gh_auth"),
@@ -62,7 +63,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "current_branch", return_value="main"),
             mock.patch.object(gtt, "git_dirty", return_value=False),
             mock.patch.object(gtt, "worktree_lines", return_value=[]),
-            mock.patch.object(gtt, "configured_worktree_root", return_value=self.root.parent / "worktrees"),
+            mock.patch.object(gtt, "configured_worktree_root", return_value=self.worktree_root),
         ]
         for patcher in self.patches:
             patcher.start()
@@ -148,8 +149,32 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertEqual(payload["source_issue"]["number"], 42)
         self.assertTrue(payload["source_issue"]["created_by_workflow"])
         self.assertIsNone(payload["requires_confirmation"])
+        self.assertFalse(payload["handoff_written"])
+        self.assertFalse((self.root / "handoff.json").exists())
+
+    def test_create_worktree_writes_handoff_only_in_workspace(self) -> None:
+        existing_issue = {
+            "number": 42,
+            "url": "https://github.com/owner/repo/issues/42",
+            "title": "Existing issue",
+        }
+        workspace = self.worktree_root / "42-existing"
+        workspace.mkdir(parents=True)
+        (workspace / ".git").mkdir()
+
+        with (
+            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
+            mock.patch.object(gtt, "run_stdout") as run_stdout,
+        ):
+            payload = gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
+
+        run_stdout.assert_not_called()
+        self.assertEqual(payload["source_issue"]["number"], 42)
         self.assertTrue(payload["handoff_written"])
-        self.assertTrue((self.root / "handoff.json").exists())
+        self.assertEqual(payload["workspace_path"], str(workspace))
+        self.assertTrue((workspace / "handoff.json").exists())
+        self.assertFalse((self.root / "handoff.json").exists())
+        self.assertEqual(payload["handoff_path"], str(workspace / "handoff.json"))
 
     def test_confirmed_issue_creation_requires_reviewed_title(self) -> None:
         body_path = self.root / "reviewed-issue.md"

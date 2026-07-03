@@ -77,11 +77,11 @@
     },
     "handoff_path": {
       "type": "string",
-      "description": "Configured handoff path. Default proposal-only prepare output reports this path but does not write it until a source issue is confirmed."
+      "description": "Resolved handoff path for the planned or chosen workspace. Default prepare output reports this path but does not write it until an explicit workspace executor runs."
     },
     "handoff_written": {
       "type": "boolean",
-      "description": "True only when prepare wrote the handoff artifact after a confirmed source issue existed."
+      "description": "True only when prepare wrote the handoff artifact after --create-worktree or --create-task was explicitly requested."
     },
     "slug": {
       "type": "string"

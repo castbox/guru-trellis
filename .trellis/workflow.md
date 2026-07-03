@@ -28,11 +28,11 @@ Before creating a Trellis task or writing task artifacts, run the Guru Team inta
 .trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request, issue number, or issue URL>"
 ```
 
-The default prepare command is side-effect-free intake/preflight planning for GitHub and filesystem writes: it may read an explicit issue and open duplicate candidates, then outputs source/proposed issue, base branch, branch name, workspace path, and `create_task_command`. When no `source_issue` is confirmed, this planner output is JSON only and does not write `.trellis/guru-team/handoff.json`, create a GitHub issue, worktree, branch, or Trellis task.
+The default prepare command is side-effect-free intake/preflight planning for GitHub and filesystem writes: it may read an explicit issue and open duplicate candidates, then outputs source/proposed issue, base branch, branch name, workspace path, and `create_task_command`. Planner output is JSON only and does not write `.trellis/guru-team/handoff.json`, create a GitHub issue, worktree, branch, or Trellis task.
 
 If no source issue was supplied, prepare writes `proposed_issue` and `requires_confirmation`. The AI must show the duplicate-search result, proposed issue title/body, base branch, branch name, and workspace path to the user. Only after confirmation may it rerun prepare with `--create-issue-confirmed --issue-title "<reviewed title>" --issue-body-file <reviewed-body-file>`.
 
-After a confirmed source issue exists and the handoff has been reviewed, use `--create-worktree` or `--create-task` only with explicit user approval. `--create-task` is an executor path and must not be used as a shortcut around planning review.
+After a confirmed source issue exists and the handoff plan has been reviewed, use `--create-worktree` or `--create-task` only with explicit user approval. Those executor paths create or reuse the chosen workspace and then write `.trellis/guru-team/handoff.json` inside that workspace. They must not be used as a shortcut around planning review.
 
 The companion scripts live under `.trellis/guru-team/` and are installed by the Guru Team Trellis preset. If they are missing, tell the user to run:
 
@@ -61,7 +61,7 @@ The companion scripts live under `.trellis/guru-team/` and are installed by the 
 
 ### Handoff
 
-After a confirmed `source_issue` exists, the preflight script writes `.trellis/guru-team/handoff.json` in the source checkout and, when a worktree is created or reused, the target worktree. Proposal-only output sets `handoff_written: false` and remains stdout-only. A written handoff contains:
+Planner output, including output with a confirmed `source_issue`, sets `handoff_written: false` and remains stdout-only. After explicit approval for `--create-worktree` or `--create-task`, the executor writes `.trellis/guru-team/handoff.json` inside the chosen workspace. It must not dirty the source checkout merely because a new AI session or intake preflight ran. A written handoff contains:
 
 - confirmed source issue number, URL, title, and creation flag; `source_issue` is intake provenance, not the final close scope
 - handoff path and `handoff_written` state
@@ -312,7 +312,7 @@ Only after this is clear, create the Trellis task in the chosen workspace.
 
 [workflow-state:planning]
 Load `trellis-brainstorm`; stay in planning.
-Confirm Guru Team intake handoff exists for durable tasks: `.trellis/guru-team/handoff.json`.
+Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Lightweight: `prd.md` can be enough. Complex: finish `prd.md`, `design.md`, and `implement.md`; ask for review before `task.py start`.
 Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research manifests before start.
@@ -320,7 +320,7 @@ Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research mani
 
 [workflow-state:planning-inline]
 Load `trellis-brainstorm`; stay in planning.
-Confirm Guru Team intake handoff exists for durable tasks: `.trellis/guru-team/handoff.json`.
+Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Lightweight: `prd.md` can be enough. Complex: finish `prd.md`, `design.md`, and `implement.md`; ask for review before `task.py start`.
 Inline mode: skip jsonl curation; Phase 2 reads artifacts/specs via `trellis-before-dev`.
@@ -328,7 +328,10 @@ Inline mode: skip jsonl curation; Phase 2 reads artifacts/specs via `trellis-bef
 
 #### 1.0 Create task `[required · once]`
 
-Run the `create_task_command` from `.trellis/guru-team/handoff.json` in `workspace_path`.
+If Phase 0 only produced planner output, rerun `prepare-task.sh` after user approval:
+
+- Use `--create-worktree` to create or reuse the chosen workspace and write `.trellis/guru-team/handoff.json`; then run the `create_task_command` from that workspace handoff in `workspace_path`.
+- Use `--create-task` only when the user approved task creation as part of the executor step; it creates or reuses the chosen workspace, creates the Trellis task, and writes the workspace handoff.
 
 ```bash
 python3 ./.trellis/scripts/task.py create "<task title>" --slug <issue-or-unique-slug>

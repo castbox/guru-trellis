@@ -59,12 +59,14 @@ Always gate GitHub operations with `gh auth status` through `require_gh_auth()`.
 Do not assume the GitHub CLI is configured just because `gh` exists.
 
 Default `prepare` must be side-effect-free for GitHub and filesystem writes
-until a source issue is confirmed. It may call `gh issue view/list` for explicit
-issues and duplicate search, but proposal-only output must stay on stdout and
-must not write `.trellis/guru-team/handoff.json`. It must not call
-`gh issue create`, `git worktree add`, or `task.py create` unless the
-corresponding explicit confirmed/executor flag is present and the workflow has
-already required AI/human handoff review.
+until the corresponding explicit confirmed/executor flag is present. It may call
+`gh issue view/list` for explicit issues and duplicate search, but planner
+output must stay on stdout and must not write `.trellis/guru-team/handoff.json`.
+It must not call `gh issue create`, `git worktree add`, or `task.py create`
+unless the corresponding explicit confirmed/executor flag is present and the
+workflow has already required AI/human handoff review. Confirming or creating a
+source issue alone still must not write handoff; handoff is written only by
+`--create-worktree` or `--create-task` in the chosen workspace.
 
 Before publish, reject uncommitted non-metadata changes. Metadata-only paths are
 defined by `METADATA_ONLY_PREFIXES` and `METADATA_ONLY_FILES`; update these
