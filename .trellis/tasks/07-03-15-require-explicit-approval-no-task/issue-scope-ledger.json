@@ -1,0 +1,31 @@
+{
+  "primary_issue": {
+    "number": 15,
+    "url": "https://github.com/castbox/guru-trellis/issues/15",
+    "title": "Require explicit approval for no_task current-checkout direct edits",
+    "reason": "intake/handoff 主 issue，本 task 明确解决 no_task current-checkout direct edit 显式批准规则。",
+    "acceptance_evidence": [
+      "prd.md 记录 issue 15 live scope、官方 Trellis 文档核对和验收标准。",
+      "design.md 记录 canonical workflow、overlay、spec、docs 的修改边界。",
+      "implement.md 记录验证命令和开箱即用/upgrade-update 门禁。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 15,
+      "url": "https://github.com/castbox/guru-trellis/issues/15",
+      "title": "Require explicit approval for no_task current-checkout direct edits",
+      "reason": "本 task 完整覆盖 issue 15 的 workflow、trellis-start overlay、spec/review checklist 与 README 一致性要求；publish 前需补齐实现和验证证据。",
+      "acceptance_evidence": [
+        "trellis/workflows/guru-team/workflow.md 与 .trellis/workflow.md 明确 no_task 文件修改默认走 Phase 0 intake/preflight，current-checkout direct-edit override 必须有用户显式批准。",
+        "workflow.md 明确 direct-edit override 必须说明跳过 GitHub issue、Trellis task、worktree、branch，且不包含 commit/push/PR/issue closure 批准。",
+        "trellis-start canonical overlays 与 .agents/.codex dogfood installed copies 同步 direct-edit override 规则；check-dogfood-overlay-drift.sh 已通过。",
+        ".trellis/spec/workflow/workflow-contract.md 与 quality-guidelines.md 增加 Phase 0 evidence / explicit override evidence 的 review checklist。",
+        "README.md、trellis/workflows/guru-team/README.md、trellis/presets/guru-team/README.md 已补充 direct-edit override 说明，避免描述为 AI 自行选择的默认捷径。",
+        "验证通过：json tool、bash -n、py_compile、task validate、git diff --check、get_context phase parsing、preset apply、dogfood overlay drift、verify-throwaway-install。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

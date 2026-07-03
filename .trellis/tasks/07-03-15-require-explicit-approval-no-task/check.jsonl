@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "最终验证命令、dogfood drift check、Branch Review Gate 范围依据"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查 canonical workflow 与 dogfood workflow 是否同步并符合 phase 边界"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "overlay/preset apply 后需检查 .new/.bak 与安装副本一致性"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 canonical overlay 与 dogfood installed overlay drift"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查 README 文案是否与 workflow direct-edit override 规则一致"}

@@ -18,7 +18,7 @@ python3 ./.trellis/scripts/get_context.py
 python3 ./.trellis/scripts/get_context.py --mode phase
 ```
 
-2. If there is no active task and the user's natural-language request is issue-backed, task-like, or requires file changes, follow `.trellis/workflow.md` Phase 0:
+2. If there is no active task and the user's natural-language request is issue-backed, task-like, or requires file changes, do not silently edit the current checkout. Follow `.trellis/workflow.md` Phase 0:
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
@@ -29,10 +29,17 @@ python3 ./.trellis/scripts/get_context.py --mode phase
 
 4. Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect. `--create-worktree` and `--create-task` are executor flags for after handoff review, not default intake commands.
 
-5. Keep planning artifacts in Chinese: `prd.md`, `design.md`, `implement.md`, and human-readable review fields.
+5. A current-checkout direct-edit override is allowed only after explicit user
+   approval. The approval must state that the user wants to skip creating or
+   reusing a GitHub issue, Trellis task, worktree, and branch for this turn.
+   Before editing, summarize the skipped artifacts, current checkout, current
+   branch, dirty state, expected side effects, changed-file scope, and that
+   commit/push/PR still require separate approval.
 
-6. During planning, follow `.trellis/workflow.md` for Middle-platform Knowledge Gate and Repo Docs SSOT discovery. MCP availability is checked from current AI tools/capabilities, not shell scripts.
+6. Keep planning artifacts in Chinese: `prd.md`, `design.md`, `implement.md`, and human-readable review fields.
 
-7. Treat `.trellis/guru-team/handoff.json` as intake provenance only. Final close/ref/followup scope belongs in the task-level `issue-scope-ledger.json`.
+7. During planning, follow `.trellis/workflow.md` for Middle-platform Knowledge Gate and Repo Docs SSOT discovery. MCP availability is checked from current AI tools/capabilities, not shell scripts.
+
+8. Treat `.trellis/guru-team/handoff.json` as intake provenance only. Final close/ref/followup scope belongs in the task-level `issue-scope-ledger.json`.
 
 Full contract lives in `.trellis/workflow.md`.

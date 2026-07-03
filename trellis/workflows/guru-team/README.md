@@ -89,6 +89,12 @@ GitHub issue 创建必须在 AI/human review proposed title/body 之后显式执
 workspace，并把 `.trellis/guru-team/handoff.json` 写在该 workspace 内；仅启动新会话或
 执行默认 preflight 不应污染 source checkout。
 
+`no_task` 下的 current-checkout direct edit 是显式 override，而不是 AI 可自行选择的
+默认捷径。只有当用户明确批准本轮跳过创建或复用 GitHub issue、Trellis task、worktree
+和 branch 时，AI 才能在当前 checkout 改文件；改动前仍要说明 skipped artifacts、
+current checkout / branch / dirty state、side effects 和 changed-file scope。该批准
+不包含 commit、push、PR creation 或 issue closure。
+
 Branch Review Gate 与 publish helper 是内部子命令：
 
 ```bash

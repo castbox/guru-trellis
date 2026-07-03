@@ -129,6 +129,13 @@ issue still remains stdout-only until the user approves `--create-worktree` or
 `--create-task`; those executor paths write the handoff inside the chosen
 workspace, not as a new-session side effect in the source checkout.
 
+Current-checkout direct edits while `no_task` is active are allowed only as an
+explicit user override. The user approval must say this turn should skip
+creating or reusing a GitHub issue, Trellis task, worktree, and branch. Before
+editing, the AI must summarize skipped artifacts, current checkout, current
+branch, dirty state, side effects, changed-file scope, and the separate
+commit/push/PR approval boundary.
+
 The installed workflow tells AI sessions to run a Middle-platform Knowledge Gate
 when a task may touch Guru Team SDKs or frameworks. If `guru-knowledge-center`
 MCP is available, the AI queries `project_domain=middle-platform` and persists
