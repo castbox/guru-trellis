@@ -1,0 +1,55 @@
+# Guru Team Trellis Preset
+
+The preset installs companion assets and Guru Team entry overlays for the
+`guru-team` Trellis workflow into an existing Trellis project.
+
+It does not run `trellis init` and does not modify Trellis upstream files.
+It is idempotent: identical files are skipped, missing files are installed,
+known upstream Trellis-generated entry files are replaced with Guru Team
+overlays, and unknown local modifications are preserved by writing `.new`
+copies.
+
+## Apply
+
+```bash
+/path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
+  --repo /path/to/project
+```
+
+## Installed Files
+
+- `.trellis/guru-team/config.yml`
+- `.trellis/guru-team/schemas/intake-handoff.schema.json`
+- `.trellis/guru-team/scripts/bash/check-env.sh`
+- `.trellis/guru-team/scripts/bash/prepare-task.sh`
+- `.trellis/guru-team/scripts/bash/review-branch.sh`
+- `.trellis/guru-team/scripts/bash/check-review-gate.sh`
+- `.trellis/guru-team/scripts/bash/publish-pr.sh`
+- `.trellis/guru-team/scripts/bash/finish-work.sh`
+- `.trellis/guru-team/scripts/python/guru_team_trellis.py`
+- `.agents/skills/trellis-start/SKILL.md`
+- `.agents/skills/trellis-continue/SKILL.md`
+- `.agents/skills/trellis-finish-work/SKILL.md`
+- `.codex/prompts/trellis-start.md`
+- `.codex/prompts/trellis-continue.md`
+- `.codex/prompts/trellis-finish-work.md`
+- `.codex/skills/trellis-start/SKILL.md`
+- `.codex/skills/trellis-continue/SKILL.md`
+- `.codex/skills/trellis-finish-work/SKILL.md`
+- `.claude/commands/trellis/continue.md`
+- `.claude/commands/trellis/finish-work.md`
+- `.cursor/commands/trellis-continue.md`
+- `.cursor/commands/trellis-finish-work.md`
+
+The active `.trellis/workflow.md` is installed or switched through the official
+Trellis workflow marketplace:
+
+```bash
+trellis workflow \
+  --marketplace gh:castbox/guru-trellis/trellis \
+  --template guru-team
+```
+
+The workflow keeps user-facing entry points limited to start / continue /
+finish-work. Review and publish helpers are internal companion script
+subcommands used by those entries.
