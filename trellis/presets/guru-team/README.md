@@ -10,6 +10,11 @@ existing `.trellis/guru-team/config.yml` is preserved, known upstream
 Trellis-generated entry files are replaced with Guru Team overlays, and unknown
 local modifications are preserved by writing `.new` copies.
 
+The current config template includes `middle_platform_knowledge.mode:
+optional_warn`. Existing target repo configs are not overwritten just to add
+this key; if it is absent, the workflow interprets it as `optional_warn`.
+`required` is opt-in only, and `off` is opt-out only.
+
 ## Apply
 
 ```bash
@@ -60,3 +65,17 @@ hooks, suspected bootstrap failures, or manual context reloads.
 
 Review and publish helpers are internal companion script subcommands used by
 the workflow; they are not daily user-facing entries.
+
+## Workflow Guardrails
+
+The installed workflow tells AI sessions to run a Middle-platform Knowledge Gate
+when a task may touch Guru Team SDKs or frameworks. If `guru-knowledge-center`
+MCP is available, the AI queries `project_domain=middle-platform` and persists
+citations in task artifacts. If the MCP is unavailable, the default
+`optional_warn` mode warns and continues.
+
+The workflow also requires Repo Docs SSOT reconciliation. Task artifacts should
+record task-scoped deltas and links, while durable `docs/` requirements,
+designs, test plans, deploy / operations guides, or versioned docs remain the
+long-term source when they exist. Finish and Branch Review Gate evidence must
+record the reconciliation outcome.

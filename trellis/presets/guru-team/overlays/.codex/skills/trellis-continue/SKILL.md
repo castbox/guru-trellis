@@ -16,9 +16,9 @@ python3 ./.trellis/scripts/get_context.py --mode phase
 
 Route by current task status and `.trellis/workflow.md`.
 
-- `planning`: keep `prd.md`, `design.md`, and `implement.md` in Chinese where required; ask for review before `task.py start`.
-- `in_progress`: implement, check, update specs, then commit in Phase 3.4.
-- after commit and before `finish-work`: run Branch Review Gate over the full diff from the intake base branch to HEAD:
+- `planning`: keep `prd.md`, `design.md`, and `implement.md` in Chinese where required; run Docs SSOT discovery and the Middle-platform Knowledge Gate when relevant; ask for review before `task.py start`.
+- `in_progress`: confirm knowledge-gate and docs responsibilities from artifacts, implement, check, reconcile specs/docs, then commit in Phase 3.4.
+- after commit and before `finish-work`: run Branch Review Gate over the full diff from the intake base branch to HEAD, including Docs SSOT reconciliation evidence:
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \

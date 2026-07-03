@@ -112,5 +112,6 @@ script，不是需要用户日常手动记忆的新主流程。
 
 - 不修改 Trellis npm 全局包、`node_modules` 或上游 Trellis 源码。
 - 不把业务仓库的私有规则写入通用 workflow。
+- 中台知识检索和 durable docs SSOT 对齐规则维护在通用 workflow 中，具体业务仓库只保留 task 证据和必要的 docs 更新。
 - 长期规则维护在本仓库的 marketplace workflow、preset、companion scripts 和 overlay 中。
 - 目标业务仓库中的 generated copy 只是安装结果，不作为长期维护源。

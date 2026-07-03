@@ -15,4 +15,4 @@ Run the internal Guru Team finish helper:
 .trellis/guru-team/scripts/bash/finish-work.sh --json
 ```
 
-The helper verifies the current HEAD has a passed Branch Review Gate, rejects uncommitted non-metadata changes, archives the active task, records the session journal, commits any remaining Trellis metadata-only changes, then calls `publish-pr` to push and create a non-draft PR with a Chinese title and body.
+The helper verifies the current HEAD has a passed Branch Review Gate, rejects uncommitted non-metadata changes, archives the active task, records the session journal, commits any remaining Trellis metadata-only changes, then calls `publish-pr` to push and create a non-draft PR with a Chinese title and body. The gate must already cover Docs SSOT reconciliation and any required Middle-platform Knowledge Gate evidence.
