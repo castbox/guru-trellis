@@ -1,0 +1,1838 @@
+#!/usr/bin/env python3
+"""Guru Team Trellis workflow companion scripts.
+
+The script intentionally uses only the Python standard library plus external
+`git` and `gh` commands. It is installed into target repositories under
+`.trellis/guru-team/` and never modifies Trellis upstream files.
+"""
+
+from __future__ import annotations
+
+import argparse
+import copy
+import json
+import os
+import re
+import shlex
+import shutil
+import subprocess
+import sys
+import tempfile
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+
+DEFAULTS: dict[str, Any] = {
+    "github_repo": "",
+    "source_issue_required": False,
+    "auto_create_issue": True,
+    "duplicate_search_required": True,
+    "duplicate_candidate_limit": 5,
+    "duplicate_high_similarity_action": "confirm",
+    "branch_prefix": "codex/",
+    "base_branch_candidates": ["dev", "develop", "main", "master"],
+    "workspace_mode": "worktree",
+    "worktree_root": "",
+    "handoff_path": ".trellis/guru-team/handoff.json",
+    "artifact_language": "zh-CN",
+    "review_gate": {
+        "artifact_path": "review-gate.json",
+        "block_priorities": ["P0", "P1", "P2"],
+        "require_head_match": True,
+        "require_deployment_impact_evidence": True,
+    },
+    "publish": {
+        "draft": False,
+        "close_keyword": "Closes",
+        "pr_language": "zh-CN",
+        "remote": "origin",
+    },
+    "created_issue_labels": [],
+    "closeout_markers": ["最终收口口径", "Final Closeout"],
+}
+
+VALID_PRIORITIES = {"P0", "P1", "P2", "P3"}
+METADATA_ONLY_PREFIXES = (".trellis/tasks/", ".trellis/workspace/", ".trellis/.runtime/")
+METADATA_ONLY_FILES = {".trellis/guru-team/handoff.json"}
+DEPLOYMENT_ASSET_CATEGORIES: dict[str, list[str]] = {
+    "ci_cd": [
+        ".github/workflows/",
+        ".github/actions/",
+        ".gitlab-ci",
+        "Jenkinsfile",
+        "buildkite/",
+        ".circleci/",
+    ],
+    "container": [
+        "Dockerfile",
+        "dockerfile",
+        "docker-compose",
+        "compose.",
+        "container",
+        "entrypoint",
+        "startup",
+    ],
+    "kubernetes": [
+        "k8s/",
+        "kubernetes/",
+        "deploy/",
+        "deployment/",
+        "kustomization.yaml",
+        "kustomization.yml",
+        "helm/",
+        "values.yaml",
+        "values.yml",
+    ],
+    "database": [
+        "migration",
+        "migrations/",
+        "schema/",
+        "seed",
+        "seeds/",
+        "backfill",
+        "db/",
+        "database/",
+    ],
+    "makefile": [
+        "Makefile",
+    ],
+}
+DEPLOYMENT_IMPACT_KEYWORDS = [
+    "api",
+    "service",
+    "server",
+    "worker",
+    "background",
+    "daemon",
+    "cron",
+    "job",
+    "queue",
+    "consumer",
+    "cli",
+    "cmd/",
+    "command",
+    "deploy",
+    "deployment",
+    "runtime",
+    "entrypoint",
+    "docker",
+    "k8s",
+    "kubernetes",
+    "compose",
+    "migration",
+    "schema",
+]
+
+
+class WorkflowError(RuntimeError):
+    def __init__(self, message: str, exit_code: int = 1, payload: dict[str, Any] | None = None) -> None:
+        super().__init__(message)
+        self.exit_code = exit_code
+        self.payload = payload or {}
+
+
+def run(cmd: list[str], cwd: Path | None = None, check: bool = True) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(cmd, cwd=str(cwd) if cwd else None, text=True, capture_output=True, check=check)
+
+
+def run_stdout(cmd: list[str], cwd: Path | None = None) -> str:
+    try:
+        return run(cmd, cwd=cwd).stdout.strip()
+    except subprocess.CalledProcessError as exc:
+        stderr = exc.stderr.strip()
+        raise WorkflowError(f"Command failed: {shlex.join(cmd)}\n{stderr}") from exc
+
+
+def require_tool(name: str) -> None:
+    if shutil.which(name) is None:
+        raise WorkflowError(f"Required tool not found on PATH: {name}")
+
+
+def require_gh_auth(root: Path) -> None:
+    require_tool("gh")
+    proc = run(["gh", "auth", "status"], cwd=root, check=False)
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "GitHub CLI is not authenticated. Run `gh auth login` before GitHub issue intake."
+        )
+
+
+def parse_scalar(value: str) -> Any:
+    value = value.strip()
+    if value in {"", '""', "''"}:
+        return ""
+    if value.lower() in {"true", "false"}:
+        return value.lower() == "true"
+    if value == "[]":
+        return []
+    if value.startswith("[") and value.endswith("]"):
+        inner = value[1:-1].strip()
+        if not inner:
+            return []
+        return [parse_scalar(part.strip()) for part in inner.split(",")]
+    if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+        return value[1:-1]
+    if re.fullmatch(r"-?\d+", value):
+        return int(value)
+    return value
+
+
+def load_config(root: Path) -> dict[str, Any]:
+    config = copy.deepcopy(DEFAULTS)
+    path = root / ".trellis/guru-team/config.yml"
+    if not path.exists():
+        return config
+
+    current_key: str | None = None
+    current_nested_key: str | None = None
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.split("#", 1)[0].rstrip()
+        if not line.strip():
+            continue
+        indent = len(line) - len(line.lstrip(" "))
+        text = line.strip()
+        if text.startswith("- "):
+            value = parse_scalar(text[2:])
+            if indent >= 4 and current_key and current_nested_key and isinstance(config.get(current_key), dict):
+                nested = config[current_key].setdefault(current_nested_key, [])
+                if isinstance(nested, list):
+                    nested.append(value)
+            elif current_key:
+                existing = config.setdefault(current_key, [])
+                if isinstance(existing, list):
+                    existing.append(value)
+            continue
+        if ":" not in text:
+            continue
+        key, value = text.split(":", 1)
+        key = key.strip()
+        value = value.strip()
+        if not key:
+            continue
+        if indent == 0:
+            current_key = key
+            current_nested_key = None
+            if value == "":
+                default_value = config.get(key)
+                config[key] = copy.deepcopy(default_value) if isinstance(default_value, dict) else []
+            else:
+                config[key] = parse_scalar(value)
+        elif current_key and isinstance(config.get(current_key), dict):
+            current_nested_key = key
+            if value == "":
+                config[current_key][key] = []
+            else:
+                config[current_key][key] = parse_scalar(value)
+        else:
+            config[key] = parse_scalar(value)
+    return config
+
+
+def repo_root(start: Path) -> Path:
+    current = start.resolve()
+    for candidate in [current, *current.parents]:
+        if (candidate / ".trellis").is_dir():
+            return candidate
+    top = run_stdout(["git", "rev-parse", "--show-toplevel"], cwd=current)
+    return Path(top).resolve()
+
+
+def infer_github_repo(root: Path) -> str:
+    try:
+        url = run_stdout(["git", "remote", "get-url", "origin"], cwd=root)
+    except WorkflowError:
+        return ""
+    match = re.search(r"github\.com[:/]([^/]+)/(.+?)(?:\.git)?$", url)
+    if not match:
+        return ""
+    return f"{match.group(1)}/{match.group(2)}"
+
+
+def gh_json(args: list[str], cwd: Path) -> Any:
+    require_gh_auth(cwd)
+    proc = run(["gh", *args], cwd=cwd, check=False)
+    if proc.returncode != 0:
+        raise WorkflowError(f"gh command failed: gh {shlex.join(args)}\n{proc.stderr.strip()}")
+    text = proc.stdout.strip()
+    return json.loads(text) if text else None
+
+
+def parse_issue_ref(text: str, default_repo: str) -> tuple[str, int] | None:
+    url_match = re.search(r"https://github\.com/([^/\s]+)/([^/\s]+)/issues/(\d+)", text)
+    if url_match:
+        return f"{url_match.group(1)}/{url_match.group(2)}", int(url_match.group(3))
+    hash_match = re.search(r"(?<![\w/])#(\d+)\b", text)
+    if hash_match and default_repo:
+        return default_repo, int(hash_match.group(1))
+    word_match = re.search(r"\bissue\s+#?(\d+)\b", text, re.IGNORECASE)
+    if word_match and default_repo:
+        return default_repo, int(word_match.group(1))
+    return None
+
+
+def clean_requirement(text: str) -> str:
+    text = re.sub(r"https://github\.com/[^\s]+/issues/\d+", "", text)
+    text = re.sub(r"(?<![\w/])#\d+\b", "", text)
+    text = re.sub(r"\bissue\s+#?\d+\b", "", text, flags=re.IGNORECASE)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def tokenize(text: str) -> set[str]:
+    lower = text.lower()
+    tokens = set(re.findall(r"[a-z0-9][a-z0-9_-]{1,}", lower))
+    cjk = "".join(re.findall(r"[\u4e00-\u9fff]", text))
+    tokens.update(cjk[i : i + 2] for i in range(max(0, len(cjk) - 1)))
+    return {token for token in tokens if len(token) >= 2}
+
+
+def has_minimum_clarity(text: str) -> bool:
+    compact = clean_requirement(text)
+    if len(compact) >= 30:
+        return True
+    return len(tokenize(compact)) >= 4
+
+
+def slugify(text: str, fallback: str) -> str:
+    words = re.findall(r"[A-Za-z0-9]+", text.lower())
+    stop = {"the", "and", "for", "with", "from", "this", "that", "into", "add", "new", "issue"}
+    selected = [word for word in words if word not in stop][:5]
+    slug = "-".join(selected) if selected else fallback
+    slug = re.sub(r"[^a-z0-9-]+", "-", slug).strip("-")
+    return slug or fallback
+
+
+def make_issue_title(requirement: str, short_name: str | None = None) -> str:
+    text = clean_requirement(requirement)
+    first = re.split(r"[。\n.!?]", text, 1)[0].strip()
+    if first:
+        return first[:90]
+    if short_name:
+        return short_name.replace("-", " ").title()
+    return "Trellis intake"
+
+
+def issue_body(requirement: str, duplicates: list[dict[str, Any]]) -> str:
+    duplicate_lines = "\n".join(
+        f"- #{candidate['number']} {candidate['title']} ({candidate['similarity']}): {candidate['url']}"
+        for candidate in duplicates
+    )
+    if not duplicate_lines:
+        duplicate_lines = "- 自动创建前未发现阻塞级重复 issue。"
+    return f"""## Background
+
+This issue was created by the Guru Team Trellis intake workflow because the user request did not provide an existing source issue.
+
+## Current State
+
+The request has not yet been converted into Trellis planning artifacts.
+
+## Problem or Gap
+
+{clean_requirement(requirement)}
+
+## Requirement Change
+
+The Trellis task `prd.md` should turn this intake into testable requirements and acceptance criteria.
+
+## Design or Implementation Handoff
+
+Use this issue as the discussion and intake record. Trellis task artifacts become the execution source of truth after planning.
+
+## Out of Scope
+
+Clarify during Trellis planning if the request is broader than the next task.
+
+## Open Questions
+
+Clarify during Trellis planning.
+
+## Duplicate Issue Search
+
+{duplicate_lines}
+
+## Trellis Handoff
+
+The workflow will record the Trellis task path, branch, base branch, and workspace path in the task artifacts or follow-up comments when the task is created.
+"""
+
+
+def issue_view(repo: str, number: int, root: Path) -> dict[str, Any]:
+    return gh_json(
+        [
+            "issue",
+            "view",
+            str(number),
+            "--repo",
+            repo,
+            "--json",
+            "number,title,url,body,comments,state",
+        ],
+        cwd=root,
+    )
+
+
+def score_duplicate(requirement: str, issue: dict[str, Any]) -> tuple[float, str]:
+    req_tokens = tokenize(requirement)
+    issue_text = f"{issue.get('title', '')}\n{issue.get('body', '')}"
+    issue_tokens = tokenize(issue_text)
+    if not req_tokens or not issue_tokens:
+        return 0.0, "No comparable keywords"
+    overlap = req_tokens & issue_tokens
+    score = len(overlap) / max(1, len(req_tokens))
+    title = issue.get("title", "").lower()
+    reason = "keyword overlap: " + ", ".join(sorted(overlap)[:8]) if overlap else "weak keyword overlap"
+    phrase = clean_requirement(requirement).lower()[:30]
+    if phrase and phrase in title:
+        score = max(score, 0.75)
+        reason = "title contains the requirement phrase"
+    return score, reason
+
+
+def duplicate_search(repo: str, requirement: str, root: Path, limit: int) -> list[dict[str, Any]]:
+    issues = gh_json(
+        [
+            "issue",
+            "list",
+            "--repo",
+            repo,
+            "--state",
+            "open",
+            "--limit",
+            "50",
+            "--json",
+            "number,title,body,url,labels,updatedAt",
+        ],
+        cwd=root,
+    ) or []
+    candidates: list[dict[str, Any]] = []
+    for issue in issues:
+        score, reason = score_duplicate(requirement, issue)
+        if score >= 0.18:
+            similarity = "high" if score >= 0.45 else "medium" if score >= 0.25 else "low"
+            candidates.append(
+                {
+                    "number": issue["number"],
+                    "title": issue.get("title", ""),
+                    "url": issue.get("url", ""),
+                    "score": round(score, 3),
+                    "similarity": similarity,
+                    "reason": reason,
+                }
+            )
+    candidates.sort(key=lambda item: item["score"], reverse=True)
+    return candidates[:limit]
+
+
+def create_issue(repo: str, requirement: str, duplicates: list[dict[str, Any]], root: Path, labels: list[str], short_name: str | None) -> dict[str, Any]:
+    title = make_issue_title(requirement, short_name)
+    body = issue_body(requirement, duplicates)
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False) as tmp:
+        tmp.write(body)
+        tmp_path = tmp.name
+    try:
+        cmd = ["issue", "create", "--repo", repo, "--title", title, "--body-file", tmp_path]
+        for label in labels:
+            if label:
+                cmd.extend(["--label", str(label)])
+        require_gh_auth(root)
+        proc = run(["gh", *cmd], cwd=root, check=False)
+        if proc.returncode != 0:
+            raise WorkflowError(f"gh issue create failed:\n{proc.stderr.strip()}")
+        url = proc.stdout.strip()
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
+    match = re.search(r"/issues/(\d+)", url)
+    if not match:
+        raise WorkflowError(f"Could not parse created issue number from URL: {url}")
+    return issue_view(repo, int(match.group(1)), root)
+
+
+def git_branch_exists(root: Path, ref: str) -> bool:
+    return run(["git", "rev-parse", "--verify", "--quiet", ref], cwd=root, check=False).returncode == 0
+
+
+def local_branch_exists(root: Path, branch: str) -> bool:
+    return git_branch_exists(root, f"refs/heads/{branch}")
+
+
+def resolve_base_branch(root: Path, config: dict[str, Any], explicit: str | None = None) -> tuple[str, list[str]]:
+    candidates = [explicit] if explicit else list(config.get("base_branch_candidates") or DEFAULTS["base_branch_candidates"])
+    discovered: list[str] = []
+    for candidate in candidates:
+        if not candidate:
+            continue
+        candidate = str(candidate)
+        refs = [candidate, f"origin/{candidate}"] if not candidate.startswith("origin/") else [candidate]
+        for ref in refs:
+            if git_branch_exists(root, ref):
+                discovered.append(ref)
+    if discovered:
+        return discovered[0], discovered
+    current = current_branch(root)
+    return current, [current]
+
+
+def current_branch(root: Path) -> str:
+    proc = run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=root, check=False)
+    value = proc.stdout.strip()
+    if proc.returncode == 0 and value and value != "HEAD":
+        return value
+    proc = run(["git", "symbolic-ref", "--short", "HEAD"], cwd=root, check=False)
+    value = proc.stdout.strip()
+    return value or "HEAD"
+
+
+def current_head(root: Path) -> str:
+    return run_stdout(["git", "rev-parse", "HEAD"], cwd=root)
+
+
+def git_dirty(root: Path) -> bool:
+    return bool(run(["git", "status", "--porcelain"], cwd=root, check=False).stdout.strip())
+
+
+def git_status_paths(root: Path) -> list[str]:
+    lines = run(["git", "status", "--porcelain"], cwd=root, check=False).stdout.splitlines()
+    paths: list[str] = []
+    for line in lines:
+        if not line.strip():
+            continue
+        path = line[3:].strip()
+        if " -> " in path:
+            path = path.split(" -> ", 1)[1]
+        if path:
+            paths.append(path)
+    return paths
+
+
+def has_non_metadata_dirty_paths(root: Path) -> tuple[bool, list[str]]:
+    paths = git_status_paths(root)
+    non_metadata = [
+        path
+        for path in paths
+        if not path.startswith(METADATA_ONLY_PREFIXES) and path not in METADATA_ONLY_FILES
+    ]
+    return bool(non_metadata), non_metadata
+
+
+def stage_metadata_paths(root: Path) -> list[str]:
+    metadata_paths = [
+        path
+        for path in git_status_paths(root)
+        if path.startswith(METADATA_ONLY_PREFIXES) or path in METADATA_ONLY_FILES
+    ]
+    if metadata_paths:
+        run_stdout(["git", "add", "--", *metadata_paths], cwd=root)
+    return metadata_paths
+
+
+def commit_if_metadata_dirty(root: Path, message: str) -> dict[str, Any]:
+    dirty, dirty_paths = has_non_metadata_dirty_paths(root)
+    if dirty:
+        raise WorkflowError(
+            "finish-work produced uncommitted non-metadata changes. Return to continue/review before publish.",
+            exit_code=2,
+            payload={"dirty_paths": dirty_paths},
+        )
+    metadata_paths = stage_metadata_paths(root)
+    if not metadata_paths:
+        return {"committed": False, "paths": []}
+    if run(["git", "diff", "--cached", "--quiet"], cwd=root, check=False).returncode == 0:
+        return {"committed": False, "paths": metadata_paths}
+    run_stdout(["git", "commit", "-m", message], cwd=root)
+    return {"committed": True, "paths": metadata_paths, "commit": current_head(root)}
+
+
+def recent_work_commits(root: Path, reviewed_head: str, max_count: int = 5) -> list[str]:
+    proc = run(["git", "log", "--format=%H", f"{reviewed_head}^..{reviewed_head}"], cwd=root, check=False)
+    if proc.returncode == 0:
+        commits = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+        if commits:
+            return commits[:max_count]
+    return [reviewed_head] if reviewed_head else []
+
+
+def normalize_ref(ref: str) -> str:
+    return ref.removeprefix("refs/heads/")
+
+
+def diff_base_ref(root: Path, base_branch: str) -> str:
+    candidates: list[str] = []
+    base = normalize_ref(base_branch)
+    if base.startswith("origin/"):
+        candidates.append(base)
+        candidates.append(base.split("/", 1)[1])
+    else:
+        candidates.append(f"origin/{base}")
+        candidates.append(base)
+    for candidate in candidates:
+        if git_branch_exists(root, candidate):
+            return candidate
+    return candidates[0]
+
+
+def diff_range(root: Path, base_branch: str) -> str:
+    return f"{diff_base_ref(root, base_branch)}...HEAD"
+
+
+def changed_files(root: Path, diff_spec: str) -> list[str]:
+    proc = run(["git", "diff", "--name-only", diff_spec], cwd=root, check=False)
+    if proc.returncode != 0:
+        raise WorkflowError(f"Could not compute diff for {diff_spec}:\n{proc.stderr.strip()}")
+    return [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+
+
+def file_matches_marker(path: str, marker: str) -> bool:
+    lowered = path.lower()
+    marker_lower = marker.lower()
+    name = Path(path).name
+    if marker.endswith("/"):
+        return lowered.startswith(marker_lower) or f"/{marker_lower}" in lowered
+    if marker_lower in {"makefile", "dockerfile", "jenkinsfile"}:
+        return name.lower() == marker_lower or name.lower().startswith(f"{marker_lower}.")
+    return marker_lower in lowered
+
+
+def classify_changed_files(files: list[str]) -> dict[str, list[str]]:
+    categories: dict[str, list[str]] = {key: [] for key in DEPLOYMENT_ASSET_CATEGORIES}
+    categories.update(
+        {
+            "docs": [],
+            "tests": [],
+            "trellis_artifacts": [],
+            "config": [],
+            "scripts": [],
+            "schemas": [],
+            "code": [],
+            "other": [],
+        }
+    )
+    for path in files:
+        matched = False
+        lowered = path.lower()
+        for category, markers in DEPLOYMENT_ASSET_CATEGORIES.items():
+            if any(file_matches_marker(path, marker) for marker in markers):
+                categories[category].append(path)
+                matched = True
+        if path.startswith(".trellis/") or "/.trellis/" in path or path.startswith("trellis/"):
+            categories["trellis_artifacts"].append(path)
+            matched = True
+        if lowered.endswith((".md", ".mdx", ".rst", ".txt")) or lowered.startswith("docs/"):
+            categories["docs"].append(path)
+            matched = True
+        if any(part in lowered for part in ["/test", "/tests/", "_test.", ".spec.", ".test."]):
+            categories["tests"].append(path)
+            matched = True
+        if lowered.endswith((".json", ".yaml", ".yml", ".toml", ".ini", ".conf", ".cfg", ".properties")):
+            categories["config"].append(path)
+            matched = True
+        if lowered.endswith((".sh", ".bash", ".zsh", ".py", ".rb", ".pl")) and (
+            "/script" in lowered or lowered.startswith("scripts/") or "/bin/" in lowered
+        ):
+            categories["scripts"].append(path)
+            matched = True
+        if "schema" in lowered or lowered.endswith(".schema.json"):
+            categories["schemas"].append(path)
+            matched = True
+        if lowered.endswith(
+            (
+                ".go",
+                ".py",
+                ".ts",
+                ".tsx",
+                ".js",
+                ".jsx",
+                ".java",
+                ".kt",
+                ".rs",
+                ".rb",
+                ".php",
+                ".cs",
+                ".cpp",
+                ".c",
+                ".h",
+                ".sql",
+            )
+        ):
+            categories["code"].append(path)
+            matched = True
+        if not matched:
+            categories["other"].append(path)
+    return {key: sorted(set(value)) for key, value in categories.items() if value}
+
+
+def detect_deployment_impact(files: list[str]) -> dict[str, Any]:
+    changed_categories = classify_changed_files(files)
+    deployment_categories = {
+        key: changed_categories[key]
+        for key in DEPLOYMENT_ASSET_CATEGORIES
+        if key in changed_categories
+    }
+    changed_deployment_assets = sorted(
+        {path for paths in deployment_categories.values() for path in paths}
+    )
+    probable_runtime_changes = sorted(
+        {
+            path
+            for path in files
+            if any(keyword in path.lower() for keyword in DEPLOYMENT_IMPACT_KEYWORDS)
+            and path not in changed_deployment_assets
+        }
+    )
+    needs_deployment_review = bool(changed_deployment_assets or probable_runtime_changes)
+    return {
+        "changed_file_categories": changed_categories,
+        "deployment_asset_categories": deployment_categories,
+        "changed_deployment_assets": changed_deployment_assets,
+        "probable_runtime_changes_without_deployment_asset_change": probable_runtime_changes,
+        "needs_deployment_impact_review": needs_deployment_review,
+        "review_instruction": (
+            "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，"
+            "review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；"
+            "如果不需要，必须给出不需要的理由。"
+        ),
+    }
+
+
+def evidence_mentions_category(evidence: list[str], category: str) -> bool:
+    text = "\n".join(evidence).lower()
+    aliases = {
+        "ci_cd": ["ci", "cd", "github actions", ".github/workflows", "workflow", "发布自动化"],
+        "container": ["docker", "compose", "container", "容器", "entrypoint", "startup"],
+        "kubernetes": ["k8s", "kubernetes", "kustomize", "helm", "yaml", "部署"],
+        "database": ["migration", "schema", "seed", "backfill", "数据库", "迁移"],
+        "makefile": ["makefile", "make "],
+        "runtime_impact": [
+            "部署",
+            "runtime",
+            "运行",
+            "api",
+            "cli",
+            "worker",
+            "服务",
+            "后台",
+            "ci",
+            "cd",
+            "docker",
+            "compose",
+            "k8s",
+            "kubernetes",
+            "kustomize",
+            "migration",
+            "makefile",
+        ],
+    }
+    return any(alias in text for alias in aliases.get(category, [category]))
+
+
+def deployment_evidence_errors(impact: dict[str, Any], evidence: list[str], findings: list[dict[str, Any]]) -> list[str]:
+    if blocking_findings(findings, {"review_gate": {"block_priorities": ["P0", "P1", "P2"]}}):
+        return []
+    errors: list[str] = []
+    if not evidence_mentions_category(evidence, "runtime_impact"):
+        errors.append("Gate evidence 未说明本次变更的部署影响，或未说明 Docker/Compose/CI/CD/K8s/migration/Makefile 是否需要同步调整。")
+    if not impact.get("needs_deployment_impact_review"):
+        return errors
+    deployment_categories = impact.get("deployment_asset_categories")
+    if isinstance(deployment_categories, dict):
+        for category, paths in deployment_categories.items():
+            if paths and not evidence_mentions_category(evidence, category):
+                errors.append(f"Gate evidence 未点名已变更的部署资产类别 {category}。")
+    runtime_changes = impact.get("probable_runtime_changes_without_deployment_asset_change")
+    if isinstance(runtime_changes, list) and runtime_changes and not evidence_mentions_category(evidence, "runtime_impact"):
+        errors.append("本次 diff 可能改变 API/CLI/worker/runtime 形态，但 evidence 未说明部署资产是否需要同步调整。")
+    return errors
+
+
+def is_ancestor(root: Path, ancestor: str, descendant: str = "HEAD") -> bool:
+    return run(["git", "merge-base", "--is-ancestor", ancestor, descendant], cwd=root, check=False).returncode == 0
+
+
+def worktree_lines(root: Path) -> list[str]:
+    proc = run(["git", "worktree", "list"], cwd=root, check=False)
+    return [line for line in proc.stdout.splitlines() if line.strip()]
+
+
+def default_worktree_root(root: Path) -> Path:
+    return root.parent / f"{root.name}-worktrees"
+
+
+def configured_worktree_root(root: Path, config: dict[str, Any]) -> Path:
+    configured = str(config.get("worktree_root") or "").strip()
+    if not configured:
+        return default_worktree_root(root)
+    path = Path(configured)
+    return path if path.is_absolute() else (root / path).resolve()
+
+
+def prepare_workspace(
+    root: Path,
+    config: dict[str, Any],
+    branch_name: str,
+    workspace_slug: str,
+    base_ref: str,
+    force_worktree: bool,
+    create_worktree: bool,
+) -> tuple[str, Path, bool]:
+    require_tool("git")
+    mode = str(config.get("workspace_mode") or "worktree")
+    if force_worktree:
+        mode = "worktree"
+    if mode not in {"worktree", "current"}:
+        raise WorkflowError(f"Unsupported workspace_mode: {mode}")
+
+    if mode == "current":
+        return mode, root, True
+
+    worktree_root = configured_worktree_root(root, config)
+    workspace_path = worktree_root / workspace_slug
+    if workspace_path.exists():
+        if not (workspace_path / ".git").exists():
+            raise WorkflowError(f"Workspace path exists but is not a git worktree: {workspace_path}")
+        return mode, workspace_path, True
+
+    if not create_worktree:
+        return mode, workspace_path, False
+
+    workspace_path.parent.mkdir(parents=True, exist_ok=True)
+    if local_branch_exists(root, branch_name):
+        run_stdout(["git", "worktree", "add", str(workspace_path), branch_name], cwd=root)
+    else:
+        run_stdout(["git", "worktree", "add", "-b", branch_name, str(workspace_path), base_ref], cwd=root)
+    return mode, workspace_path, True
+
+
+def write_handoff(root: Path, config: dict[str, Any], payload: dict[str, Any], workspace_path: Path, mirror_to_workspace: bool) -> Path:
+    rel = Path(str(config.get("handoff_path") or DEFAULTS["handoff_path"]))
+    path = rel if rel.is_absolute() else root / rel
+    payload["handoff_path"] = str(path)
+    content = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+    if mirror_to_workspace and payload.get("workspace_mode") == "worktree" and workspace_path != root:
+        workspace_handoff = rel if rel.is_absolute() else workspace_path / rel
+        workspace_handoff.parent.mkdir(parents=True, exist_ok=True)
+        workspace_handoff.write_text(content, encoding="utf-8")
+    return path
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def read_json(path: Path) -> dict[str, Any]:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise WorkflowError(f"Required JSON file not found: {path}") from exc
+    except json.JSONDecodeError as exc:
+        raise WorkflowError(f"Invalid JSON file: {path}\n{exc}") from exc
+
+
+def write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def load_handoff(root: Path, config: dict[str, Any]) -> dict[str, Any]:
+    rel = Path(str(config.get("handoff_path") or DEFAULTS["handoff_path"]))
+    path = rel if rel.is_absolute() else root / rel
+    if not path.exists():
+        return {}
+    payload = read_json(path)
+    payload.setdefault("handoff_path", str(path))
+    return payload
+
+
+def tasks_root(root: Path) -> Path:
+    return root / ".trellis/tasks"
+
+
+def resolve_existing_task_dir(root: Path, value: str) -> Path | None:
+    raw = Path(value)
+    candidates: list[Path] = []
+    if raw.is_absolute():
+        candidates.append(raw)
+    else:
+        candidates.extend([root / raw, tasks_root(root) / value])
+    for candidate in candidates:
+        if candidate.is_dir() and (candidate / "task.json").is_file():
+            return candidate.resolve()
+
+    base_name = raw.name.rstrip("/")
+    task_root = tasks_root(root)
+    active = task_root / base_name
+    if active.is_dir() and (active / "task.json").is_file():
+        return active.resolve()
+    archive_root = task_root / "archive"
+    if archive_root.is_dir():
+        for month in sorted(archive_root.iterdir(), reverse=True):
+            archived = month / base_name
+            if archived.is_dir() and (archived / "task.json").is_file():
+                return archived.resolve()
+    return None
+
+
+def current_task_dir(root: Path) -> Path | None:
+    task_script = root / ".trellis/scripts/task.py"
+    if not task_script.exists():
+        return None
+    proc = run(["python3", "./.trellis/scripts/task.py", "current"], cwd=root, check=False)
+    value = proc.stdout.strip()
+    if proc.returncode == 0 and value:
+        return resolve_existing_task_dir(root, value)
+    return None
+
+
+def resolve_task_dir(root: Path, task_arg: str | None, handoff: dict[str, Any] | None = None) -> Path:
+    if task_arg:
+        resolved = resolve_existing_task_dir(root, task_arg)
+        if resolved:
+            return resolved
+        raise WorkflowError(f"Could not resolve task directory: {task_arg}")
+
+    if handoff:
+        handoff_task = str(handoff.get("task_dir") or "").strip()
+        if handoff_task:
+            resolved = resolve_existing_task_dir(root, handoff_task)
+            if resolved:
+                return resolved
+
+    current = current_task_dir(root)
+    if current:
+        return current
+    raise WorkflowError("Could not resolve current Trellis task. Pass --task <task-dir>.")
+
+
+def task_json(task_dir: Path) -> dict[str, Any]:
+    return read_json(task_dir / "task.json")
+
+
+def issue_entry(number: Any, url: str = "", title: str = "", reason: str = "", evidence: list[str] | None = None) -> dict[str, Any]:
+    try:
+        parsed_number = int(number)
+    except (TypeError, ValueError):
+        parsed_number = number
+    return {
+        "number": parsed_number,
+        "url": url,
+        "title": title,
+        "reason": reason,
+        "acceptance_evidence": evidence or [],
+    }
+
+
+def default_issue_scope_ledger(handoff: dict[str, Any]) -> dict[str, Any]:
+    source = handoff.get("source_issue") if isinstance(handoff.get("source_issue"), dict) else {}
+    primary = issue_entry(
+        source.get("number"),
+        str(source.get("url") or ""),
+        str(source.get("title") or ""),
+        "intake/handoff 主 issue，默认进入 close 候选；publish 前必须补齐验收证据。",
+    )
+    return {
+        "schema_version": "1.0",
+        "primary_issue": primary,
+        "close_issues": [primary] if primary.get("number") is not None else [],
+        "related_issues": [],
+        "followup_issues": [],
+        "rules": [
+            "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+            "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+            "followup_issues 表示新范围或后续任务，不能自动关闭。",
+            "新增 issue 进入 close_issues 前必须更新 prd/design/implement 并取得用户明确确认。",
+        ],
+    }
+
+
+def issue_scope_ledger_path(task_dir: Path) -> Path:
+    return task_dir / "issue-scope-ledger.json"
+
+
+def ensure_issue_scope_ledger(task_dir: Path, handoff: dict[str, Any]) -> Path:
+    path = issue_scope_ledger_path(task_dir)
+    if not path.exists():
+        ledger = handoff.get("issue_scope_ledger")
+        if not isinstance(ledger, dict):
+            ledger = default_issue_scope_ledger(handoff)
+        write_json(path, ledger)
+    return path
+
+
+def load_issue_scope_ledger(task_dir: Path, handoff: dict[str, Any]) -> dict[str, Any]:
+    path = issue_scope_ledger_path(task_dir)
+    if path.exists():
+        return read_json(path)
+    ledger = handoff.get("issue_scope_ledger")
+    if isinstance(ledger, dict):
+        return ledger
+    return default_issue_scope_ledger(handoff)
+
+
+def issue_numbers(items: Any) -> list[int]:
+    numbers: list[int] = []
+    if not isinstance(items, list):
+        return numbers
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        try:
+            numbers.append(int(item.get("number")))
+        except (TypeError, ValueError):
+            continue
+    return numbers
+
+
+def issue_has_evidence(issue: dict[str, Any]) -> bool:
+    for key in ("acceptance_evidence", "verification", "evidence"):
+        value = issue.get(key)
+        if isinstance(value, list) and any(str(item).strip() for item in value):
+            return True
+        if isinstance(value, str) and value.strip():
+            return True
+    return False
+
+
+def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    close_issues = ledger.get("close_issues")
+    if not isinstance(close_issues, list):
+        errors.append("issue-scope-ledger.json 缺少 close_issues 数组。")
+        close_issues = []
+    related_numbers = set(issue_numbers(ledger.get("related_issues")))
+    followup_numbers = set(issue_numbers(ledger.get("followup_issues")))
+    gate_reviewed = set(issue_numbers(gate.get("issue_scope", {}).get("close_issues_reviewed")))
+    for issue in close_issues:
+        if not isinstance(issue, dict):
+            errors.append("close_issues 中存在非对象条目。")
+            continue
+        try:
+            number = int(issue.get("number"))
+        except (TypeError, ValueError):
+            errors.append("close_issues 中存在缺少 number 的条目。")
+            continue
+        if number in related_numbers or number in followup_numbers:
+            errors.append(f"issue #{number} 同时出现在 close_issues 与 related/followup 中。")
+        if not issue_has_evidence(issue):
+            errors.append(f"close_issues 中 issue #{number} 缺少验收或验证证据。")
+        if number not in gate_reviewed:
+            errors.append(f"Branch Review Gate 未记录对 close issue #{number} 的覆盖结论。")
+    return errors
+
+
+def review_gate_config(config: dict[str, Any]) -> dict[str, Any]:
+    value = config.get("review_gate")
+    return value if isinstance(value, dict) else dict(DEFAULTS["review_gate"])
+
+
+def publish_config(config: dict[str, Any]) -> dict[str, Any]:
+    value = config.get("publish")
+    return value if isinstance(value, dict) else dict(DEFAULTS["publish"])
+
+
+def configured_review_gate_path(task_dir: Path, config: dict[str, Any]) -> Path:
+    gate_config = review_gate_config(config)
+    configured = Path(str(gate_config.get("artifact_path") or "review-gate.json"))
+    return configured if configured.is_absolute() else task_dir / configured
+
+
+def parse_finding_arg(value: str) -> dict[str, Any]:
+    parts = [part.strip() for part in value.split("|")]
+    if len(parts) < 2:
+        raise WorkflowError("Invalid --finding format. Use PRIORITY|message[|path].")
+    priority = parts[0].upper()
+    if priority not in VALID_PRIORITIES:
+        raise WorkflowError(f"Invalid finding priority: {priority}")
+    return {
+        "priority": priority,
+        "message": parts[1],
+        "path": parts[2] if len(parts) >= 3 else "",
+    }
+
+
+def load_findings(args: argparse.Namespace) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    if getattr(args, "findings_file", None):
+        raw = json.loads(Path(args.findings_file).read_text(encoding="utf-8"))
+        if isinstance(raw, dict):
+            raw = raw.get("findings", [])
+        if not isinstance(raw, list):
+            raise WorkflowError("--findings-file must contain a JSON list or an object with findings[].")
+        for item in raw:
+            if not isinstance(item, dict):
+                raise WorkflowError("Each finding must be an object.")
+            priority = str(item.get("priority") or "").upper()
+            if priority not in VALID_PRIORITIES:
+                raise WorkflowError(f"Invalid finding priority: {priority}")
+            normalized = dict(item)
+            normalized["priority"] = priority
+            findings.append(normalized)
+    for value in getattr(args, "finding", []) or []:
+        findings.append(parse_finding_arg(value))
+    return findings
+
+
+def blocking_findings(findings: list[dict[str, Any]], config: dict[str, Any]) -> list[dict[str, Any]]:
+    block = {str(item).upper() for item in review_gate_config(config).get("block_priorities", ["P0", "P1", "P2"])}
+    return [finding for finding in findings if str(finding.get("priority") or "").upper() in block]
+
+
+def build_review_gate_payload(
+    root: Path,
+    task_dir: Path,
+    config: dict[str, Any],
+    handoff: dict[str, Any],
+    base_branch: str,
+    findings: list[dict[str, Any]],
+    command: list[str],
+    summary: str,
+    evidence: list[str],
+    reviewer: str,
+) -> dict[str, Any]:
+    diff_spec = diff_range(root, base_branch)
+    files = changed_files(root, diff_spec)
+    deployment_impact = detect_deployment_impact(files)
+    blockers = blocking_findings(findings, config)
+    ledger = load_issue_scope_ledger(task_dir, handoff)
+    close_issues = ledger.get("close_issues") if isinstance(ledger.get("close_issues"), list) else []
+    return {
+        "schema_version": "1.0",
+        "generated_at": now_iso(),
+        "task_dir": repo_relative(root, task_dir),
+        "base_branch": base_branch,
+        "base_ref": diff_base_ref(root, base_branch),
+        "head_branch": current_branch(root),
+        "head": current_head(root),
+        "diff_range": diff_spec,
+        "changed_files": files,
+        "review_scope": [
+            "文档",
+            "代码",
+            "测试",
+            "Trellis artifacts",
+            "配置",
+            "脚本",
+            "schema",
+            "CI/CD workflow 与发布自动化",
+            "Dockerfile / Docker Compose / 容器启动脚本",
+            "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
+            "数据库 schema / migration / seed / backfill 脚本",
+            "各目录下本次变更涉及的 Makefile",
+            "preset installer",
+        ],
+        "command": command,
+        "conclusion": {
+            "passed": not blockers,
+            "summary": summary or ("Branch Review Gate 通过。" if not blockers else "Branch Review Gate 未通过。"),
+            "block_priorities": review_gate_config(config).get("block_priorities", ["P0", "P1", "P2"]),
+            "blocking_findings_count": len(blockers),
+        },
+        "findings": findings,
+        "issue_scope": {
+            "ledger_path": repo_relative(root, issue_scope_ledger_path(task_dir)),
+            "close_issues_reviewed": close_issues,
+            "related_issues": ledger.get("related_issues", []),
+            "followup_issues": ledger.get("followup_issues", []),
+        },
+        "verification_evidence": {
+            "base_head": f"{diff_base_ref(root, base_branch)}...{current_head(root)}",
+            "changed_file_count": len(files),
+            "reviewer": reviewer,
+            "evidence": evidence,
+            "notes": "review-branch 记录 diff 范围、结论和审查证据；具体审查判断由 AI/human review 输入 summary/evidence/findings。",
+        },
+        "deployment_impact": deployment_impact,
+    }
+
+
+def repo_relative(root: Path, path: Path) -> str:
+    try:
+        return path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def load_review_gate(task_dir: Path, config: dict[str, Any]) -> tuple[Path, dict[str, Any]]:
+    path = configured_review_gate_path(task_dir, config)
+    if not path.exists():
+        raise WorkflowError(f"Branch Review Gate artifact not found: {path}")
+    return path, read_json(path)
+
+
+def metadata_only_since(root: Path, reviewed_head: str) -> tuple[bool, list[str]]:
+    proc = run(["git", "diff", "--name-only", f"{reviewed_head}...HEAD"], cwd=root, check=False)
+    if proc.returncode != 0:
+        return False, []
+    files = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    return all(path.startswith(METADATA_ONLY_PREFIXES) or path in METADATA_ONLY_FILES for path in files), files
+
+
+def validate_review_gate(
+    root: Path,
+    task_dir: Path,
+    config: dict[str, Any],
+    allow_metadata_after_gate: bool,
+) -> tuple[Path, dict[str, Any], list[str]]:
+    path, gate = load_review_gate(task_dir, config)
+    errors: list[str] = []
+    conclusion = gate.get("conclusion") if isinstance(gate.get("conclusion"), dict) else {}
+    if conclusion.get("passed") is not True:
+        errors.append("Branch Review Gate 结论不是 passed=true。")
+    if not str(conclusion.get("summary") or "").strip():
+        errors.append("Branch Review Gate 缺少中文 summary。")
+    verification = gate.get("verification_evidence") if isinstance(gate.get("verification_evidence"), dict) else {}
+    evidence = verification.get("evidence")
+    if not (isinstance(evidence, list) and any(str(item).strip() for item in evidence)):
+        errors.append("Branch Review Gate 缺少具体 review evidence。")
+    reviewed_head = str(gate.get("head") or "")
+    head = current_head(root)
+    gate_config = review_gate_config(config)
+    require_head_match = bool(gate_config.get("require_head_match", True))
+    if require_head_match and reviewed_head != head:
+        accepted_metadata_tail = False
+        if allow_metadata_after_gate and reviewed_head and is_ancestor(root, reviewed_head, "HEAD"):
+            metadata_only, tail_files = metadata_only_since(root, reviewed_head)
+            accepted_metadata_tail = metadata_only
+            if not metadata_only:
+                errors.append(
+                    "Branch Review Gate 通过后出现非 Trellis metadata 变更: "
+                    + ", ".join(tail_files[:20])
+                )
+        if not accepted_metadata_tail:
+            errors.append(f"Branch Review Gate 记录的 HEAD {reviewed_head or '(missing)'} 与当前 HEAD {head} 不一致。")
+    return path, gate, errors
+
+
+def base_branch_from_sources(args: argparse.Namespace, task: dict[str, Any], handoff: dict[str, Any]) -> str:
+    for value in [
+        getattr(args, "base_branch", None),
+        handoff.get("base_branch"),
+        task.get("base_branch"),
+    ]:
+        if value:
+            return str(value)
+    raise WorkflowError("Could not resolve base_branch from args, handoff, or task.json.")
+
+
+def pr_issue_line(keyword: str, issue: dict[str, Any], mode: str) -> str:
+    number = issue.get("number")
+    title = str(issue.get("title") or "").strip()
+    suffix = f" - {title}" if title else ""
+    if mode == "close":
+        return f"- {keyword} #{number}{suffix}"
+    if mode == "followup":
+        return f"- Follow-up #{number}{suffix}"
+    return f"- Refs #{number}{suffix}"
+
+
+def build_pr_body(ledger: dict[str, Any], gate: dict[str, Any], validations: list[str], config: dict[str, Any]) -> str:
+    publish = publish_config(config)
+    keyword = str(publish.get("close_keyword") or "Closes")
+    close_issues = ledger.get("close_issues") if isinstance(ledger.get("close_issues"), list) else []
+    related_issues = ledger.get("related_issues") if isinstance(ledger.get("related_issues"), list) else []
+    followup_issues = ledger.get("followup_issues") if isinstance(ledger.get("followup_issues"), list) else []
+
+    close_lines = "\n".join(pr_issue_line(keyword, issue, "close") for issue in close_issues) or "- 无"
+    related_lines = "\n".join(pr_issue_line(keyword, issue, "related") for issue in related_issues) or "- 无"
+    followup_lines = "\n".join(pr_issue_line(keyword, issue, "followup") for issue in followup_issues) or "- 无"
+    validation_lines = "\n".join(f"- {item}" for item in validations) or "- 详见 Trellis task artifact 与 Review Gate 记录。"
+    gate_summary = gate.get("conclusion", {}).get("summary", "Branch Review Gate 通过。")
+    gate_head = gate.get("head", "")
+    gate_range = gate.get("diff_range", "")
+
+    return f"""## 变更摘要
+
+- 本 PR 承接当前 Trellis task 的已提交实现与文档更新。
+
+## 验证结果
+
+{validation_lines}
+
+## Review Gate
+
+- 结论：{gate_summary}
+- Reviewed HEAD：`{gate_head}`
+- Diff 范围：`{gate_range}`
+
+## Issue 关闭范围
+
+{close_lines}
+
+### 仅引用或相关
+
+{related_lines}
+
+### 后续范围
+
+{followup_lines}
+
+## 安全说明
+
+- 未在 PR 正文中包含 token、secret、签名 URL、`.env` 内容或数据库 URL。
+"""
+
+
+def pr_title_from_task(task: dict[str, Any], args: argparse.Namespace) -> str:
+    if getattr(args, "title", None):
+        return str(args.title)
+    title = str(task.get("title") or task.get("name") or "Trellis task").strip()
+    return f"完成：{title}"
+
+
+def check_env_payload(root: Path) -> dict[str, Any]:
+    root = repo_root(root)
+    config = load_config(root)
+    repo = str(config.get("github_repo") or "").strip() or infer_github_repo(root)
+    current = current_branch(root)
+    base, candidates = resolve_base_branch(root, config)
+    return {
+        "status": "ok",
+        "repo_root": str(root),
+        "github_repo": repo,
+        "trellis_installed": (root / ".trellis").is_dir(),
+        "gh_installed": shutil.which("gh") is not None,
+        "gh_authenticated": run(["gh", "auth", "status"], cwd=root, check=False).returncode == 0 if shutil.which("gh") else False,
+        "current_branch": current,
+        "base_branch": base,
+        "base_branch_candidates": candidates,
+        "dirty": git_dirty(root),
+        "worktree_root": str(configured_worktree_root(root, config)),
+        "existing_worktrees": worktree_lines(root),
+    }
+
+
+def infer_assignee(root: Path, explicit: str | None) -> str | None:
+    if explicit:
+        return explicit
+    developer = root / ".trellis/.developer"
+    if developer.exists():
+        value = developer.read_text(encoding="utf-8").strip()
+        return value or None
+    return None
+
+
+def create_task(root: Path, payload: dict[str, Any], args: argparse.Namespace) -> str:
+    task_script = root / ".trellis/scripts/task.py"
+    if not task_script.exists():
+        raise WorkflowError(f"Trellis task script not found: {task_script}")
+    workspace = Path(payload["workspace_path"])
+    cmd = ["python3", "./.trellis/scripts/task.py", "create", payload["task_title"], "--slug", payload["task_slug"]]
+    assignee = infer_assignee(root, args.assignee)
+    if assignee:
+        cmd.extend(["--assignee", assignee])
+    if args.priority:
+        cmd.extend(["--priority", args.priority])
+    if args.description:
+        cmd.extend(["--description", args.description])
+    proc = run(cmd, cwd=workspace, check=False)
+    if proc.returncode != 0:
+        raise WorkflowError(f"task.py create failed:\n{proc.stderr.strip()}")
+    return proc.stdout.strip()
+
+
+def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    repo = str(config.get("github_repo") or "").strip() or infer_github_repo(root)
+    if not repo:
+        raise WorkflowError("Could not resolve GitHub repo. Configure github_repo in .trellis/guru-team/config.yml.")
+
+    require_tool("git")
+    require_gh_auth(root)
+
+    requirement = " ".join(args.requirement).strip()
+    if not requirement:
+        raise WorkflowError("No requirement description provided.")
+
+    provided = parse_issue_ref(requirement, repo)
+    duplicates: list[dict[str, Any]] = []
+    duplicate_search_performed = False
+    created_by_workflow = False
+
+    if args.reuse_issue:
+        issue = issue_view(repo, int(args.reuse_issue), root)
+    elif provided:
+        issue_repo, number = provided
+        repo = issue_repo
+        issue = issue_view(repo, number, root)
+    else:
+        if config.get("source_issue_required"):
+            raise WorkflowError("No source issue provided and source_issue_required is true.")
+        if not has_minimum_clarity(requirement):
+            raise WorkflowError("Requirement is not clear enough for issue intake. Add target, capability, expected outcome, and boundary/open question.")
+        if config.get("duplicate_search_required", True):
+            duplicate_search_performed = True
+            duplicates = duplicate_search(repo, requirement, root, int(config.get("duplicate_candidate_limit") or 5))
+            high = [item for item in duplicates if item.get("similarity") == "high"]
+            if high and not args.force_new:
+                raise WorkflowError(
+                    "Likely duplicate open issue found. Re-run with --reuse-issue <number> or --force-new after user confirmation.",
+                    exit_code=2,
+                    payload={"duplicates": high, "repo": repo},
+                )
+        if not config.get("auto_create_issue", True):
+            raise WorkflowError("No source issue provided and auto_create_issue is false.")
+        issue = create_issue(repo, requirement, duplicates, root, list(config.get("created_issue_labels") or []), args.short_name)
+        created_by_workflow = True
+
+    issue_number = int(issue["number"])
+    issue_slug = slugify(args.short_name or issue.get("title", "") or requirement, f"issue-{issue_number}")
+    unique_prefix = f"{issue_number}-{issue_slug}"
+    task_slug = args.task_slug or unique_prefix
+    workspace_slug = args.workspace_slug or unique_prefix
+    branch_name = args.branch or f"{config.get('branch_prefix') or ''}{unique_prefix}"
+    task_title = args.title or f"#{issue_number} {issue.get('title', make_issue_title(requirement, args.short_name))}"
+    base_ref, base_candidates = resolve_base_branch(root, config, args.base_branch)
+    should_create_worktree = args.create_worktree or args.create_task
+    workspace_mode, workspace_path, workspace_ready = prepare_workspace(
+        root,
+        config,
+        branch_name,
+        workspace_slug,
+        base_ref,
+        args.worktree,
+        should_create_worktree,
+    )
+    current = current_branch(root)
+
+    create_cmd = ["python3", "./.trellis/scripts/task.py", "create", task_title, "--slug", task_slug]
+    assignee = infer_assignee(root, args.assignee)
+    if assignee:
+        create_cmd.extend(["--assignee", assignee])
+    if args.priority:
+        create_cmd.extend(["--priority", args.priority])
+    if args.description:
+        create_cmd.extend(["--description", args.description])
+
+    payload: dict[str, Any] = {
+        "schema_version": "1.1",
+        "source_issue": {
+            "number": issue_number,
+            "url": issue["url"],
+            "title": issue.get("title", ""),
+            "created_by_workflow": created_by_workflow,
+        },
+        "slug": issue_slug,
+        "task_slug": task_slug,
+        "task_title": task_title,
+        "branch_name": branch_name,
+        "workspace_mode": workspace_mode,
+        "workspace_path": str(workspace_path),
+        "workspace_ready": workspace_ready,
+        "base_branch": base_ref,
+        "base_branch_candidates": base_candidates,
+        "create_task_command": create_cmd,
+        "task_dir": None,
+        "duplicate_search": {
+            "performed": duplicate_search_performed,
+            "candidates": duplicates,
+        },
+        "issue_scope_ledger": {
+            "primary_issue": issue_entry(
+                issue_number,
+                issue["url"],
+                issue.get("title", ""),
+                "intake/handoff 主 issue，默认进入 close 候选。",
+            ),
+            "close_issues": [
+                issue_entry(
+                    issue_number,
+                    issue["url"],
+                    issue.get("title", ""),
+                    "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+                )
+            ],
+            "related_issues": [],
+            "followup_issues": [],
+        },
+        "preflight": {
+            "repo_root": str(root),
+            "current_checkout": str(root),
+            "current_branch": current,
+            "dirty": git_dirty(root),
+            "worktree_root": str(configured_worktree_root(root, config)),
+            "existing_worktrees": worktree_lines(root),
+            "selected_base_branch": base_ref,
+            "workspace_was_created_or_reused": workspace_ready,
+        },
+    }
+
+    if args.create_task:
+        payload["task_dir"] = create_task(root, payload, args)
+        run(["python3", "./.trellis/scripts/task.py", "set-branch", payload["task_dir"], branch_name], cwd=workspace_path, check=False)
+        run(["python3", "./.trellis/scripts/task.py", "set-base-branch", payload["task_dir"], base_ref], cwd=workspace_path, check=False)
+        run(["python3", "./.trellis/scripts/task.py", "set-scope", payload["task_dir"], f"GitHub issue: {issue['url']}"], cwd=workspace_path, check=False)
+        task_dir = resolve_task_dir(workspace_path, payload["task_dir"], payload)
+        ensure_issue_scope_ledger(task_dir, payload)
+
+    handoff = write_handoff(root, config, payload, workspace_path, workspace_ready)
+    payload["handoff_path"] = str(handoff)
+    return payload
+
+
+def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    task = task_json(task_dir)
+    base_branch = base_branch_from_sources(args, task, handoff)
+    ensure_issue_scope_ledger(task_dir, handoff)
+
+    findings = load_findings(args)
+    evidence = [str(item).strip() for item in (args.evidence or []) if str(item).strip()]
+    summary = str(args.summary or "").strip()
+    if args.pass_gate and blocking_findings(findings, config):
+        raise WorkflowError("--pass cannot be used when P0/P1/P2 findings are present.")
+    if args.pass_gate and not summary:
+        raise WorkflowError(
+            "Branch Review Gate pass needs --summary with a human-readable Chinese review conclusion.",
+            exit_code=2,
+        )
+    if args.pass_gate and not evidence:
+        raise WorkflowError(
+            "Branch Review Gate pass needs at least one --evidence line from the actual review.",
+            exit_code=2,
+        )
+    if not args.pass_gate and not findings:
+        raise WorkflowError(
+            "Branch Review Gate needs an explicit result. Use --pass after review found no P0/P1/P2, or provide --finding/--findings-file.",
+            exit_code=2,
+        )
+
+    payload = build_review_gate_payload(
+        root=root,
+        task_dir=task_dir,
+        config=config,
+        handoff=handoff,
+        base_branch=base_branch,
+        findings=findings,
+        command=sys.argv[:],
+        summary=summary,
+        evidence=evidence,
+        reviewer=args.reviewer or "",
+    )
+    if args.pass_gate and bool(review_gate_config(config).get("require_deployment_impact_evidence", True)):
+        deployment_errors = deployment_evidence_errors(payload.get("deployment_impact", {}), evidence, findings)
+        if deployment_errors:
+            raise WorkflowError(
+                "Branch Review Gate pass needs deployment impact evidence.",
+                exit_code=2,
+                payload={"errors": deployment_errors, "deployment_impact": payload.get("deployment_impact", {})},
+            )
+    path = configured_review_gate_path(task_dir, config)
+    if not args.dry_run:
+        write_json(path, payload)
+    payload["artifact_path"] = str(path)
+    payload["dry_run"] = bool(args.dry_run)
+    return payload
+
+
+def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    path, gate, errors = validate_review_gate(root, task_dir, config, args.allow_metadata_after_gate)
+    if errors:
+        raise WorkflowError(
+            "Branch Review Gate has not passed for the current HEAD.",
+            exit_code=2,
+            payload={"artifact_path": str(path), "errors": errors},
+        )
+    return {
+        "status": "ok",
+        "artifact_path": str(path),
+        "task_dir": str(task_dir),
+        "head": current_head(root),
+        "reviewed_head": gate.get("head"),
+    }
+
+
+def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    publish = publish_config(config)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    task = task_json(task_dir)
+    base_branch = base_branch_from_sources(args, task, handoff)
+    repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
+    if not repo:
+        raise WorkflowError("Could not resolve GitHub repo. Configure github_repo or pass --repo owner/repo.")
+
+    dirty, dirty_paths = has_non_metadata_dirty_paths(root)
+    if dirty:
+        raise WorkflowError(
+            "Working tree has uncommitted non-metadata changes. Commit task work before publish.",
+            exit_code=2,
+            payload={"dirty_paths": dirty_paths},
+        )
+
+    gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, args.allow_metadata_after_gate)
+    if gate_errors:
+        raise WorkflowError(
+            "Publish blocked because Branch Review Gate is not valid for the current HEAD.",
+            exit_code=2,
+            payload={"artifact_path": str(gate_path), "errors": gate_errors},
+        )
+
+    ledger = load_issue_scope_ledger(task_dir, handoff)
+    ledger_errors = validate_ledger_for_publish(ledger, gate)
+    if ledger_errors:
+        raise WorkflowError(
+            "Publish blocked because Issue Scope Ledger is incomplete.",
+            exit_code=2,
+            payload={"ledger_path": str(issue_scope_ledger_path(task_dir)), "errors": ledger_errors},
+        )
+
+    title = pr_title_from_task(task, args)
+    validations = list(args.validation or [])
+    body = build_pr_body(ledger, gate, validations, config)
+    branch = current_branch(root)
+    remote = str(args.remote or publish.get("remote") or "origin")
+    draft = bool(args.draft) if args.draft is not None else bool(publish.get("draft", False))
+
+    payload: dict[str, Any] = {
+        "status": "dry-run" if args.dry_run else "ok",
+        "repo": repo,
+        "base_branch": normalize_ref(base_branch).removeprefix("origin/"),
+        "head_branch": branch,
+        "remote": remote,
+        "draft": draft,
+        "title": title,
+        "body": body,
+        "review_gate": str(gate_path),
+        "issue_scope_ledger": str(issue_scope_ledger_path(task_dir)),
+    }
+    if args.dry_run:
+        return payload
+
+    require_gh_auth(root)
+    run_stdout(["git", "push", "-u", remote, branch], cwd=root)
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False) as tmp:
+        tmp.write(body)
+        body_file = tmp.name
+    try:
+        cmd = [
+            "pr",
+            "create",
+            "--repo",
+            repo,
+            "--base",
+            payload["base_branch"],
+            "--head",
+            branch,
+            "--title",
+            title,
+            "--body-file",
+            body_file,
+        ]
+        if draft:
+            cmd.append("--draft")
+        proc = run(["gh", *cmd], cwd=root, check=False)
+        if proc.returncode != 0:
+            raise WorkflowError(f"gh pr create failed:\n{proc.stderr.strip()}")
+        payload["pr_url"] = proc.stdout.strip()
+    finally:
+        Path(body_file).unlink(missing_ok=True)
+    return payload
+
+
+def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, False)
+    if gate_errors:
+        raise WorkflowError(
+            "finish-work blocked because Branch Review Gate is not valid for the current HEAD.",
+            exit_code=2,
+            payload={"artifact_path": str(gate_path), "errors": gate_errors},
+        )
+
+    dirty, dirty_paths = has_non_metadata_dirty_paths(root)
+    if dirty:
+        raise WorkflowError(
+            "Working tree has uncommitted non-metadata changes. Commit task work before finish-work.",
+            exit_code=2,
+            payload={"dirty_paths": dirty_paths},
+        )
+
+    reviewed_head = str(gate.get("head") or current_head(root))
+    task_name = args.task_name or task_dir.name
+    title = args.journal_title or f"完成：{task_json(task_dir).get('title') or task_name}"
+    summary = args.journal_summary or str(gate.get("conclusion", {}).get("summary") or "完成当前 Trellis task，并通过 Branch Review Gate。")
+    commits = args.commit or ",".join(recent_work_commits(root, reviewed_head))
+
+    if not args.skip_archive:
+        archive_script = root / ".trellis/scripts/task.py"
+        if not archive_script.exists():
+            raise WorkflowError(f"Trellis task.py not found: {archive_script}")
+        proc = run(["python3", "./.trellis/scripts/task.py", "archive", task_name], cwd=root, check=False)
+        if proc.returncode != 0:
+            raise WorkflowError(f"task.py archive failed:\n{proc.stderr.strip()}", payload={"stdout": proc.stdout.strip()})
+
+    if not args.skip_journal:
+        journal_script = root / ".trellis/scripts/add_session.py"
+        if not journal_script.exists():
+            raise WorkflowError(f"Trellis add_session.py not found: {journal_script}")
+        journal_cmd = [
+            "python3",
+            "./.trellis/scripts/add_session.py",
+            "--title",
+            title,
+            "--commit",
+            commits or reviewed_head,
+            "--summary",
+            summary,
+        ]
+        proc = run(journal_cmd, cwd=root, check=False)
+        if proc.returncode != 0:
+            raise WorkflowError(f"add_session.py failed:\n{proc.stderr.strip()}", payload={"stdout": proc.stdout.strip()})
+
+    metadata_commit = commit_if_metadata_dirty(root, "chore(trellis): finalize task metadata")
+    publish_task = args.task
+    if not publish_task:
+        archived_task = resolve_existing_task_dir(root, task_name)
+        publish_task = str(archived_task) if archived_task else str(task_dir)
+    publish_args = argparse.Namespace(
+        root=str(root),
+        task=publish_task,
+        repo=args.repo,
+        base_branch=args.base_branch,
+        remote=args.remote,
+        title=args.title,
+        validation=args.validation,
+        draft=args.draft,
+        allow_metadata_after_gate=True,
+        dry_run=args.dry_run,
+    )
+    publish_payload = cmd_publish_pr(publish_args)
+    return {
+        "status": "dry-run" if args.dry_run else "ok",
+        "task_dir": str(task_dir),
+        "task_name": task_name,
+        "review_gate": str(gate_path),
+        "reviewed_head": reviewed_head,
+        "metadata_commit": metadata_commit,
+        "publish": publish_payload,
+    }
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Guru Team Trellis workflow helpers")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    check_env = sub.add_parser("check-env")
+    check_env.add_argument("--root")
+    check_env.add_argument("--json", action="store_true")
+
+    prepare = sub.add_parser("prepare")
+    prepare.add_argument("--root")
+    prepare.add_argument("--json", action="store_true")
+    prepare.add_argument("--short-name")
+    prepare.add_argument("--reuse-issue", type=int)
+    prepare.add_argument("--force-new", action="store_true")
+    prepare.add_argument("--base-branch")
+    prepare.add_argument("--branch")
+    prepare.add_argument("--task-slug")
+    prepare.add_argument("--workspace-slug")
+    prepare.add_argument("--title")
+    prepare.add_argument("--assignee")
+    prepare.add_argument("--priority")
+    prepare.add_argument("--description")
+    prepare.add_argument("--worktree", action="store_true")
+    prepare.add_argument("--create-worktree", action="store_true")
+    prepare.add_argument("--create-task", action="store_true")
+    prepare.add_argument("requirement", nargs="*")
+
+    review = sub.add_parser("review-branch")
+    review.add_argument("--root")
+    review.add_argument("--json", action="store_true")
+    review.add_argument("--task")
+    review.add_argument("--base-branch")
+    review.add_argument("--pass", dest="pass_gate", action="store_true")
+    review.add_argument("--summary")
+    review.add_argument("--evidence", action="append", help="Chinese review evidence line. Required with --pass.")
+    review.add_argument("--reviewer", help="Reviewer name or AI/human review channel.")
+    review.add_argument("--finding", action="append", help="Finding as PRIORITY|message[|path].")
+    review.add_argument("--findings-file", help="JSON list or object with findings[].")
+    review.add_argument("--dry-run", action="store_true")
+
+    check_gate = sub.add_parser("check-review-gate")
+    check_gate.add_argument("--root")
+    check_gate.add_argument("--json", action="store_true")
+    check_gate.add_argument("--task")
+    check_gate.add_argument("--allow-metadata-after-gate", action="store_true")
+
+    publish = sub.add_parser("publish-pr")
+    publish.add_argument("--root")
+    publish.add_argument("--json", action="store_true")
+    publish.add_argument("--task")
+    publish.add_argument("--repo")
+    publish.add_argument("--base-branch")
+    publish.add_argument("--remote")
+    publish.add_argument("--title")
+    publish.add_argument("--validation", action="append", help="Chinese validation evidence line for PR body.")
+    publish.add_argument("--draft", dest="draft", action="store_true", default=None)
+    publish.add_argument("--no-draft", dest="draft", action="store_false")
+    publish.add_argument("--allow-metadata-after-gate", action="store_true")
+    publish.add_argument("--dry-run", action="store_true")
+
+    finish = sub.add_parser("finish-work")
+    finish.add_argument("--root")
+    finish.add_argument("--json", action="store_true")
+    finish.add_argument("--task")
+    finish.add_argument("--task-name", help="Task directory/name for task.py archive. Defaults to resolved task dir name.")
+    finish.add_argument("--repo")
+    finish.add_argument("--base-branch")
+    finish.add_argument("--remote")
+    finish.add_argument("--title", help="Chinese PR title override.")
+    finish.add_argument("--validation", action="append", help="Chinese validation evidence line for PR body.")
+    finish.add_argument("--draft", dest="draft", action="store_true", default=None)
+    finish.add_argument("--no-draft", dest="draft", action="store_false")
+    finish.add_argument("--journal-title", help="Chinese session journal title.")
+    finish.add_argument("--journal-summary", help="Chinese session journal summary.")
+    finish.add_argument("--commit", help="Comma-separated work commit hashes for add_session.py.")
+    finish.add_argument("--skip-archive", action="store_true", help="Internal recovery switch. Do not use in normal finish-work.")
+    finish.add_argument("--skip-journal", action="store_true", help="Internal recovery switch. Do not use in normal finish-work.")
+    finish.add_argument("--dry-run", action="store_true", help="Run archive/journal, then dry-run publish. Intended only for throwaway validation.")
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+    try:
+        if args.command == "check-env":
+            payload = check_env_payload(Path(args.root or os.getcwd()))
+        elif args.command == "prepare":
+            payload = cmd_prepare(args)
+        elif args.command == "review-branch":
+            payload = cmd_review_branch(args)
+        elif args.command == "check-review-gate":
+            payload = cmd_check_review_gate(args)
+        elif args.command == "publish-pr":
+            payload = cmd_publish_pr(args)
+        elif args.command == "finish-work":
+            payload = cmd_finish_work(args)
+        else:
+            raise WorkflowError(f"Unsupported command: {args.command}")
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 0
+    except WorkflowError as exc:
+        payload = {"status": "error", "error": str(exc), **exc.payload}
+        if getattr(args, "json", False):
+            print(json.dumps(payload, ensure_ascii=False, indent=2), file=sys.stderr)
+        else:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            if exc.payload:
+                print(json.dumps(exc.payload, ensure_ascii=False, indent=2), file=sys.stderr)
+        return exc.exit_code
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

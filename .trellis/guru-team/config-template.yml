@@ -1,0 +1,71 @@
+# Guru Team Trellis Workflow Configuration
+# Copy to .trellis/guru-team/config.yml in the target repository.
+
+# Target GitHub repository in owner/repo format. If empty, infer from git remote.
+github_repo: ""
+
+# Require users to provide an issue number or URL. When false, the workflow can create one.
+source_issue_required: false
+
+# Allow automatic issue creation when no source issue is provided and no blocking duplicate is found.
+auto_create_issue: true
+
+# Search open issues for likely duplicates before automatic issue creation.
+duplicate_search_required: true
+
+# Number of duplicate candidates to show or record.
+duplicate_candidate_limit: 5
+
+# Behavior when a high-similarity duplicate is found.
+# Allowed values: confirm, block
+duplicate_high_similarity_action: confirm
+
+# Prefix for feature branches.
+branch_prefix: "codex/"
+
+# Preferred base branch candidates, in order. The workflow selects the first local
+# or origin branch that exists. If the current branch is not the selected base,
+# the AI must report candidates and ask the user before proceeding.
+base_branch_candidates:
+  - dev
+  - develop
+  - main
+  - master
+
+# Workspace strategy.
+# Allowed values: worktree, current
+workspace_mode: worktree
+
+# Root directory for generated worktrees. Empty means ../<repo-name>-worktrees.
+worktree_root: ""
+
+# Handoff file consumed by the workflow and companion scripts.
+handoff_path: ".trellis/guru-team/handoff.json"
+
+# Language used for Trellis task planning artifacts and human-readable review fields.
+artifact_language: zh-CN
+
+# Branch Review Gate runs after task work is committed and before finish-work.
+review_gate:
+  artifact_path: review-gate.json
+  block_priorities:
+    - P0
+    - P1
+    - P2
+  require_head_match: true
+  require_deployment_impact_evidence: true
+
+# Publish PR runs after finish-work archives the task and records the journal.
+publish:
+  draft: false
+  close_keyword: Closes
+  pr_language: zh-CN
+  remote: origin
+
+# Labels applied when the workflow creates a new issue. Empty list means no labels.
+created_issue_labels: []
+
+# Optional marker used to identify final closeout comments.
+closeout_markers:
+  - "最终收口口径"
+  - "Final Closeout"
