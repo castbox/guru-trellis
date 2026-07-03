@@ -23,6 +23,20 @@ git clone https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
   --repo /path/to/project
 ```
 
+## Throwaway Install Verification
+
+Maintainers can verify the default non-interactive install path with:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh
+```
+
+The script creates a temporary Git repo, runs `trellis init -y` with the
+`guru-team` marketplace workflow, applies the preset, checks that
+`.trellis/workflow.md` exists, verifies that `check-env.sh` is executable, and
+runs `check-env --json`. It intentionally lives in this source repository and
+is not copied into target business repos as a managed companion asset.
+
 ## Installed Files
 
 - `.trellis/guru-team/config.yml`

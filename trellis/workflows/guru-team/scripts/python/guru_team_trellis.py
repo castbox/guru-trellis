@@ -1286,13 +1286,29 @@ def check_env_payload(root: Path) -> dict[str, Any]:
     repo = str(config.get("github_repo") or "").strip() or infer_github_repo(root)
     current = current_branch(root)
     base, candidates = resolve_base_branch(root, config)
-    return {
+    gh_installed = shutil.which("gh") is not None
+    gh_authenticated = run(["gh", "auth", "status"], cwd=root, check=False).returncode == 0 if gh_installed else False
+    warnings: list[str] = []
+    next_steps: list[str] = []
+    if not repo:
+        warnings.append("github_repo is not configured and could not be inferred from the Git origin remote.")
+        next_steps.append(
+            "Set `github_repo: owner/repo` in `.trellis/guru-team/config.yml` "
+            "or configure a GitHub `origin` remote before GitHub issue intake or publish."
+        )
+    if not gh_installed:
+        warnings.append("GitHub CLI is not installed.")
+        next_steps.append("Install `gh` before using Guru Team GitHub issue intake or publish.")
+    elif not gh_authenticated:
+        warnings.append("GitHub CLI is not authenticated.")
+        next_steps.append("Run `gh auth login` before using Guru Team GitHub issue intake or publish.")
+    payload = {
         "status": "ok",
         "repo_root": str(root),
         "github_repo": repo,
         "trellis_installed": (root / ".trellis").is_dir(),
-        "gh_installed": shutil.which("gh") is not None,
-        "gh_authenticated": run(["gh", "auth", "status"], cwd=root, check=False).returncode == 0 if shutil.which("gh") else False,
+        "gh_installed": gh_installed,
+        "gh_authenticated": gh_authenticated,
         "current_branch": current,
         "base_branch": base,
         "base_branch_candidates": candidates,
@@ -1300,6 +1316,11 @@ def check_env_payload(root: Path) -> dict[str, Any]:
         "worktree_root": str(configured_worktree_root(root, config)),
         "existing_worktrees": worktree_lines(root),
     }
+    if warnings:
+        payload["warnings"] = warnings
+    if next_steps:
+        payload["next_steps"] = next_steps
+    return payload
 
 
 def infer_assignee(root: Path, explicit: str | None) -> str | None:

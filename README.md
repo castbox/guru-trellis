@@ -8,9 +8,57 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 
 先确认目标 repo 只使用一个研发 harness。Trellis 不要和 Superpowers、Spec Kit、OpenSpec、GSD 等其它 SDD / agent harness 框架在同一个 repo 中混用；多套 harness 同时存在会让 workflow、task artifact、spec、hooks 和平台入口互相抢控制权，后续 AI 会话也更容易读错上下文。如果目标 repo 已经采用其它 harness，先迁移或清理，再安装 Trellis。
 
-不要手工照着命令一步步执行。把下面的 prompt 粘贴给 Codex、Cursor 或你正在使用的 AI 开发工具，让 AI 在目标业务仓库里完成安装、验证、提交和 push。
+本 README 提供两种安装入口：
+
+- **非交互命令行安装**：适合 throwaway 验证、CI 抽样、或你想自己明确执行每一步。
+- **AI 安装 prompt**：适合让 Codex、Cursor 或其它 AI 开发工具在目标业务仓库里完成安装、验证、提交和 push。
+
+团队默认安装和自动验收必须使用非交互 `trellis init` 命令，也就是加 `-y` 或显式指定
+`--template <name>`；如果你想手动选择 spec template，可以去掉 `-y`，但那不适合作为自动化验收路径。
 
 ### 安装 Trellis
+
+#### 非交互命令行安装
+
+在目标业务仓库根目录执行；先把 `<your-name>` 替换成你的 Trellis 用户名：
+
+```bash
+TRELLIS_USER="<your-name>"
+
+npm install -g @mindfoldhq/trellis@latest
+
+trellis init -y -u "$TRELLIS_USER" --codex --cursor \
+  --workflow guru-team \
+  --workflow-source gh:castbox/guru-trellis/trellis
+
+GURU_TRELLIS_DIR="$(mktemp -d)/guru-trellis"
+git clone --depth 1 https://github.com/castbox/guru-trellis.git "$GURU_TRELLIS_DIR"
+"$GURU_TRELLIS_DIR/trellis/presets/guru-team/scripts/bash/apply.sh" --repo "$PWD"
+```
+
+最小验证：
+
+```bash
+trellis --version
+test -f .trellis/.version
+test -f .trellis/workflow.md
+test -x .trellis/guru-team/scripts/bash/check-env.sh
+python3 ./.trellis/scripts/get_context.py --mode packages
+.trellis/guru-team/scripts/bash/check-env.sh --json
+```
+
+如果 `check-env` 输出的 `github_repo` 为空，或 JSON 中出现 `warnings` / `next_steps`，
+说明 workflow 还不能可靠执行 GitHub issue intake 或 publish；按提示配置
+`.trellis/guru-team/config.yml` 的 `github_repo: owner/repo`，或给当前 Git 仓库配置
+GitHub `origin` remote。
+
+本仓库也提供 throwaway 安装验证脚本，用来验证默认非交互路径是否仍可开箱运行：
+
+```bash
+./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh
+```
+
+#### AI 安装 prompt
 
 把这段 prompt 发给目标业务仓库里的 AI 会话：
 
@@ -23,13 +71,14 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 - 安装/升级全局 Trellis CLI 到 latest。
 - 默认只启用 Codex 和 Cursor 支持。
 - Trellis 用户名使用 <your-name>，请在执行前把这个占位符替换成你的用户名。
-- 如果当前 Repo 还没有 .trellis/，直接用 Guru Team workflow 初始化：`trellis init -u <your-name> --codex --cursor --workflow guru-team --workflow-source gh:castbox/guru-trellis/trellis`。
+- 如果当前 Repo 还没有 .trellis/，直接用 Guru Team workflow 的非交互命令初始化：`trellis init -y -u <your-name> --codex --cursor --workflow guru-team --workflow-source gh:castbox/guru-trellis/trellis`。
+- 如果我明确要求交互式选择 spec template，才可以去掉 `-y`；默认安装和自动验收必须使用 `-y` 或显式 `--template <name>`。
 - 获取本公开 preset 仓库的最新内容，例如 clone 到临时目录或复用已有本地副本并 `git pull --ff-only`：`https://github.com/castbox/guru-trellis.git`。
 - 执行 `<guru-trellis>/trellis/presets/guru-team/scripts/bash/apply.sh --repo <current-repo>`，把 Guru Team companion assets 和所选平台 overlay 应用到当前 Repo。
 - 安装后检查是否存在 `.trellis/tasks/00-bootstrap-guidelines/`。这是 `trellis init` 生成的一次性 Repo 级 spec bootstrap 任务，用于把 `.trellis/spec/` 从通用模板改成当前 Repo 的真实工程规范；它不是每个 task 都要做，也不能作为安装副作用静默完成。先向我说明它的目的、将检查哪些源码/文档、将修改哪些 `.trellis/spec/` 文件，并询问我是现在让 AI 完成，还是保留该 task 后续单独处理。
 - 只有在我明确确认现在执行 spec bootstrap 时，才扫描当前 Repo 的真实代码和文档，填充 `.trellis/spec/`、更新 `00-bootstrap-guidelines` checklist，并把这些改动纳入本次安装提交；如果我未确认，不要修改 `.trellis/spec/` 模板内容或 bootstrap task 状态。
 - 安装后确认当前 Repo 只保留你选择的平台入口目录；如果出现未选择的平台目录，例如 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等，说明原因并清理或请我确认。
-- 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env。
+- 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env；如果 check-env 的 `github_repo` 为空或输出 `warnings` / `next_steps`，必须明确报告需要配置 `.trellis/guru-team/config.yml` 或 GitHub origin remote。
 - 检查 git diff，确认没有敏感信息、.env、token、私钥或本机-only 身份文件被提交。
 - 提交前先做 Git 发布预检：检查当前分支、默认分支、远端、是否可能是受保护分支，以及是否已有未提交用户改动。不要默认直接 push 到 main/master/dev/develop 等共享分支。
 - 如果当前分支可能受保护或不适合直接推送，先询问我是在当前分支提交，还是创建单独分支并在完成后 push 分支、创建 PR。

@@ -10,10 +10,14 @@ Review Gate，以及 finish-work 成功后的自动 publish PR 规则。
 ## Marketplace 安装
 
 ```bash
-trellis init -u <name> --codex --cursor \
+trellis init -y -u <name> --codex --cursor \
   --workflow guru-team \
   --workflow-source gh:castbox/guru-trellis/trellis
 ```
+
+`-y` 是团队默认安装路径的一部分，用于跳过交互式 spec template picker。自动验收、
+throwaway 安装验证和 README 默认命令都必须使用非交互形式；只有用户明确想手动选择
+spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`。
 
 已有 Trellis 项目切换 active workflow：
 

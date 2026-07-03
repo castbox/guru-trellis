@@ -12,6 +12,19 @@ document implementation mechanics.
 
 ## Install and Upgrade Prompts
 
+README install docs must provide both:
+
+- a non-interactive command-line installation path for copy/paste or automated
+  verification;
+- an AI prompt path for users who want Codex, Cursor, or another AI tool to run
+  the install, validation, commit, and publish workflow.
+
+Default install commands must not enter the interactive spec template picker.
+Use `trellis init -y ... --workflow guru-team --workflow-source ...`, or an
+officially supported explicit `--template <name>` path when a specific template
+is intended. If docs mention interactive template selection, describe it as an
+opt-in user choice, not as the team default or automated validation path.
+
 Prompts in `README.md` are meant to be copied into an AI coding session in a
 target business repository. They should tell the AI to:
 
@@ -23,7 +36,10 @@ target business repository. They should tell the AI to:
   is a one-time repo-level task that needs explicit user confirmation before
   AI modifies `.trellis/spec/`
 - keep only selected platform entry directories
-- run minimal validation
+- run minimal validation, including `check-env --json`; if `github_repo` cannot
+  be inferred, the docs or prompt must tell the user to configure
+  `.trellis/guru-team/config.yml` or a GitHub `origin` remote before treating
+  GitHub issue intake / publish as ready
 - check for secrets before commit
 - do Git publishing preflight before pushing or opening a PR
 
