@@ -115,10 +115,12 @@ the workflow; they are not daily user-facing entries. `review-branch.sh`
 records and validates the prior AI/human review result; it is not the reviewer.
 Passing gates require a Chinese summary, concrete evidence, and either
 `--reviewer` or `--review-report`.
-`publish-pr.sh` rejects ordinary direct calls so `trellis-continue` cannot push
-or create a PR before finish-work. Normal PR publish is triggered only by
-`finish-work.sh` after archive and journal succeed; direct publish is reserved
-for explicit recovery/debug after finish-work already completed.
+`finish-work.sh` and `publish-pr.sh` reject ordinary direct calls so
+`trellis-continue` cannot chain closeout, push, or create a PR before the
+explicit `trellis-finish-work` entrypoint. Normal PR publish is triggered only
+by `finish-work.sh --from-trellis-finish-work` after archive and journal
+succeed; direct publish is reserved for explicit recovery/debug after
+finish-work already completed.
 
 ## Workflow Guardrails
 

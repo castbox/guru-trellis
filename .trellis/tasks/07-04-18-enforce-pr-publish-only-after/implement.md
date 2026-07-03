@@ -19,11 +19,15 @@
 ### 2. 脚本门禁 `[completed]`
 
 - 在 `guru_team_trellis.py` 中为 `publish-pr` 增加：
-  - `--from-finish-work` 内部 flag；
+  - Python 内部 `from_finish_work` marker；
   - `--recovery-after-finish-work` 显式恢复 flag；
   - `validate_publish_invocation()`。
 - 在 `cmd_publish_pr()` 最前面调用校验，确保失败发生在任何 push/PR 前。
 - 在 `cmd_finish_work()` 内部调用 publish 时传 `from_finish_work=True`。
+- 在 `guru_team_trellis.py` 中为 `finish-work` 增加：
+  - `--from-trellis-finish-work` 显式 intent marker；
+  - `validate_finish_work_invocation()`；
+  - 校验放在 `cmd_finish_work()` 最前面，确保裸调失败发生在 repo/gate/archive/journal/push/PR 前。
 - 同步 canonical `.trellis/guru-team/scripts/python/guru_team_trellis.py` 安装副本。
 
 ### 3. 测试 `[completed]`
@@ -31,6 +35,7 @@
 - 阅读现有测试结构；如已有 `test_guru_team_trellis.py`，扩展；如没有，创建 focused unit tests。
 - 覆盖：
   - direct `publish-pr` 默认失败；
+  - direct `finish-work` 未带 intent marker 默认失败；
   - recovery dry-run 可通过；
   - finish-work 内部 publish dry-run 可通过或至少 helper 参数构造路径可验证。
 
@@ -81,10 +86,11 @@ python3 -m unittest trellis.workflows.guru-team.scripts.python.test_guru_team_tr
 - `python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py` 通过。
 - `python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py` 通过，9 个测试。
 - `.trellis/guru-team/scripts/bash/publish-pr.sh --json --dry-run` 按预期失败，返回 `blocked_step=publish-pr` 和 `recovery_flag=--recovery-after-finish-work`。
+- `.trellis/guru-team/scripts/bash/finish-work.sh --json --dry-run` 未带 intent marker 时按预期失败，返回 `blocked_step=finish-work` 和 `intent_flag=--from-trellis-finish-work`。
 - `python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-04-18-enforce-pr-publish-only-after` 通过。
 - `trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh` 通过。
 - `python3 ./.trellis/scripts/get_context.py --mode phase --step 2.1`、`--step 3.5`、`--step 3.7` 通过，3.7 输出包含 direct publish block 规则。
-- `trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh` 通过，并验证新安装仓库 direct `publish-pr --dry-run` 被拒绝。
+- `trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh` 通过，并验证新安装仓库 direct `finish-work --dry-run` 与 direct `publish-pr --dry-run` 均被拒绝。
 - `git diff --check` 通过，无 `.new` / `.bak` / `__pycache__` 残留。
 
 ### 7. Branch Review Gate 和 finish-work `[pending]`

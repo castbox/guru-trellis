@@ -50,6 +50,17 @@ printf '%s\n' "$CHECK_ENV_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["github_repo"] == "castbox/guru-trellis-throwaway"; assert payload["status"] == "ok"' <<<"$CHECK_ENV_JSON"
 
 set +e
+FINISH_ERROR_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/finish-work.sh" --root "$TARGET" --json --dry-run 2>&1)"
+FINISH_STATUS=$?
+set -e
+if [[ "$FINISH_STATUS" -eq 0 ]]; then
+  echo "finish-work direct dry-run unexpectedly succeeded without explicit trellis-finish-work intent" >&2
+  exit 2
+fi
+printf '%s\n' "$FINISH_ERROR_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "error"; assert payload["blocked_step"] == "finish-work"; assert payload["intent_flag"] == "--from-trellis-finish-work"' <<<"$FINISH_ERROR_JSON"
+
+set +e
 PUBLISH_ERROR_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/publish-pr.sh" --root "$TARGET" --json --dry-run 2>&1)"
 PUBLISH_STATUS=$?
 set -e

@@ -1122,6 +1122,23 @@ def validate_publish_invocation(args: argparse.Namespace) -> None:
     )
 
 
+def validate_finish_work_invocation(args: argparse.Namespace) -> None:
+    if getattr(args, "from_trellis_finish_work", False):
+        return
+    raise WorkflowError(
+        "finish-work is the closeout helper and must be entered through the explicit "
+        "`trellis-finish-work` skill/command, not chained from `trellis-continue`. "
+        "Run `.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work` "
+        "only after the user/session explicitly invoked trellis-finish-work.",
+        exit_code=2,
+        payload={
+            "blocked_step": "finish-work",
+            "required_entrypoint": "trellis-finish-work",
+            "intent_flag": "--from-trellis-finish-work",
+        },
+    )
+
+
 def configured_review_gate_path(task_dir: Path, config: dict[str, Any]) -> Path:
     gate_config = review_gate_config(config)
     configured = Path(str(gate_config.get("artifact_path") or "review-gate.json"))
@@ -1890,6 +1907,7 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
+    validate_finish_work_invocation(args)
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     handoff = load_handoff(root, config)
@@ -2057,6 +2075,11 @@ def build_parser() -> argparse.ArgumentParser:
     finish.add_argument("--journal-title", help="Chinese session journal title.")
     finish.add_argument("--journal-summary", help="Chinese session journal summary.")
     finish.add_argument("--commit", help="Comma-separated work commit hashes for add_session.py.")
+    finish.add_argument(
+        "--from-trellis-finish-work",
+        action="store_true",
+        help="Required intent marker set by the explicit trellis-finish-work entrypoint.",
+    )
     finish.add_argument("--skip-archive", action="store_true", help="Internal recovery switch. Do not use in normal finish-work.")
     finish.add_argument("--skip-journal", action="store_true", help="Internal recovery switch. Do not use in normal finish-work.")
     finish.add_argument("--dry-run", action="store_true", help="Run archive/journal, then dry-run publish. Intended only for throwaway validation.")

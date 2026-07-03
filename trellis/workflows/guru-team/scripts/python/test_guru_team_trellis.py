@@ -77,6 +77,7 @@ def finish_args(**overrides: object) -> argparse.Namespace:
         "journal_title": None,
         "journal_summary": None,
         "commit": None,
+        "from_trellis_finish_work": True,
         "skip_archive": False,
         "skip_journal": False,
         "dry_run": True,
@@ -317,6 +318,21 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(payload["repo"], "owner/repo")
         self.assertEqual(payload["base_branch"], "main")
         self.assertEqual(payload["head_branch"], "codex/18-publish-boundary")
+
+    def test_finish_work_direct_call_requires_explicit_finish_work_entrypoint(self) -> None:
+        with (
+            mock.patch.object(gtt, "repo_root") as repo_root,
+            mock.patch.object(gtt, "run") as run,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.cmd_finish_work(finish_args(from_trellis_finish_work=False))
+
+        repo_root.assert_not_called()
+        run.assert_not_called()
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertEqual(raised.exception.payload["blocked_step"], "finish-work")
+        self.assertEqual(raised.exception.payload["required_entrypoint"], "trellis-finish-work")
+        self.assertEqual(raised.exception.payload["intent_flag"], "--from-trellis-finish-work")
 
     def test_finish_work_calls_publish_with_internal_marker(self) -> None:
         gate = {

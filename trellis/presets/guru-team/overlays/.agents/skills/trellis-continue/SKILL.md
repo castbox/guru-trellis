@@ -29,4 +29,4 @@ Route by current task status and `.trellis/workflow.md`.
 
 Use `--finding 'P2|message|path'` or `--findings-file findings.json` when review finds issues. P0/P1/P2 block finish-work; P3 may be recorded without blocking. A passing gate must include a Chinese `--summary`, at least one concrete `--evidence` line, and `--reviewer` or `--review-report`. `review-branch.sh` records and validates the prior review; it is not the reviewer.
 
-Do not push the branch, create a PR, or call `publish-pr` from `trellis-continue`. Publish PR remains the automatic follow-up inside `finish-work` after archive and journal succeed.
+Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`. Stop after Branch Review Gate and wait for the user/session to explicitly invoke `trellis-finish-work`; PR publish remains the automatic follow-up inside that finish entrypoint after archive and journal succeed.

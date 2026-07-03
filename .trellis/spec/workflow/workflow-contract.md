@@ -54,9 +54,9 @@ numbers, `trellis-continue`, and `trellis-finish-work`. `trellis-start` is a
 fallback orientation entry for disabled hooks, missing startup context, or an
 explicit reload request.
 
-Do not introduce `review-branch`, `check-review-gate`, or `publish-pr` as
-new user-facing phases. They are internal companion script subcommands used by
-the workflow.
+Do not introduce `review-branch`, `check-review-gate`, `finish-work.sh`, or
+`publish-pr` as new user-facing phases. They are companion script subcommands
+used by the workflow entrypoints.
 
 Reference files:
 
@@ -113,16 +113,20 @@ Passing the gate requires:
 
 ## Publish Boundary
 
-`finish-work.sh` is the closeout entry. It validates the current review gate,
-rejects uncommitted non-metadata changes, archives the active task, records the
-journal, commits remaining Trellis metadata, and then invokes publish.
+`trellis-finish-work` is the closeout entry. It calls `finish-work.sh` with the
+required `--from-trellis-finish-work` intent marker. The helper validates the
+current review gate, rejects uncommitted non-metadata changes, archives the
+active task, records the journal, commits remaining Trellis metadata, and then
+invokes publish.
 
 `trellis-continue` must stop at Branch Review Gate and must not push, create a
-PR, or invoke `publish-pr`. The publish helper is fail-closed: ordinary direct
-`publish-pr` calls are rejected before `git push` / `gh pr create`. It may run
-only from `finish-work.sh` after archive and journal succeed, or through an
-explicit recovery/debug flag when finish-work already completed but publish must
-be retried.
+PR, invoke `publish-pr`, or invoke `finish-work`. The finish and publish helpers
+are fail-closed: ordinary direct `finish-work.sh` calls are rejected before
+archive/journal/push side effects, and ordinary direct `publish-pr` calls are
+rejected before `git push` / `gh pr create`. Publish may run only from
+`finish-work.sh` after archive and journal succeed, or through an explicit
+recovery/debug flag when finish-work already completed but publish must be
+retried.
 
 The generated PR must be non-draft by default, target the intake/task
 `base_branch`, and use close keywords only for issues listed in the task-level

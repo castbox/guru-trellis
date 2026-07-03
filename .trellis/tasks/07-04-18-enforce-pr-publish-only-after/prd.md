@@ -10,12 +10,14 @@ Guru Team Trellis 的当前目标流程是：
 
 用户指出历史 Codex 会话中出现过执行漂移：有时 PR 在 `trellis-continue` 阶段被创建，有时才在 `trellis-finish-work` 阶段创建。用户明确期望：未完成 `finish-work` 前不允许 push 分支并创建 PR。
 
+后续证据补充：Codex 会话 `019f28a8-cc59-75e2-bebb-ab539719a1b3` 显示 `trellis-continue` 语境下继续链式执行了 `finish-work`，当前会话也曾准备在用户只要求提交后继续执行 `finish-work`，被用户终止。这说明边界不只在 `publish-pr`，还必须覆盖 `trellis-continue` 不能自动调用 `finish-work`。
+
 ## 目标
 
 本任务要按 Trellis 官方最佳实践和工程最佳实践收敛 PR 发布边界：
 
 1. 由 Markdown workflow / skill / command overlay 明确流程判断：`trellis-continue` 不发布 PR，`trellis-finish-work` 才发布 PR。
-2. Companion script 只做确定性门禁：普通 `publish-pr` 调用必须证明来自 `finish-work`，否则拒绝 push/PR。
+2. Companion script 只做确定性门禁：普通 `finish-work.sh` 必须证明来自显式 `trellis-finish-work` 入口，普通 `publish-pr` 调用必须证明来自 `finish-work`，否则拒绝 archive/push/PR。
 3. 保留显式 recovery/debug 能力，但必须是刻意选择、可审计、可在 dry-run/测试中验证的路径。
 4. canonical workflow、preset overlay、dogfood 安装副本和 README 语义保持一致。
 
@@ -53,15 +55,16 @@ Guru Team Trellis 的当前目标流程是：
 
 ## 需求
 
-### R1: `trellis-continue` 不得发布 PR
+### R1: `trellis-continue` 不得发布 PR 或执行 finish-work
 
 - Continue 入口必须明确：到 Branch Review Gate 为止，下一步是 `trellis-finish-work`。
 - Continue 文案不得暗示会 push 或创建 PR。
-- Continue 阶段如果需要发布，只能提示运行 finish-work；不能调用 `publish-pr`。
+- Continue 阶段如果需要发布，只能停止并提示显式进入 finish-work；不能调用 `finish-work` 或 `publish-pr`。
 
 ### R2: `trellis-finish-work` 后才能普通发布
 
 - `finish-work` 必须在通过 Branch Review Gate、archive task、journal 记录、metadata commit 之后调用 publish。
+- `finish-work.sh` 裸调必须失败；只有显式 `trellis-finish-work` 入口可携带 intent marker 进入 closeout。
 - `finish-work` 内部调用 publish 时要携带脚本可验证的内部标记，证明这是 closeout 后发布。
 - `finish-work --dry-run` 仍应能验证 publish payload，但不能产生 push/PR 副作用。
 
@@ -86,9 +89,10 @@ Guru Team Trellis 的当前目标流程是：
 ## 验收标准
 
 - [ ] 未带内部标记或 explicit recovery flag 的 `publish-pr --dry-run` 会失败。
+- [ ] 未带 explicit `trellis-finish-work` intent marker 的 `finish-work --dry-run` 会失败。
 - [ ] 带 explicit recovery flag 的 `publish-pr --dry-run` 在已有 gate/ledger 条件满足时可生成 payload。
 - [ ] `finish-work --dry-run` 可以通过内部标记调用 publish dry-run。
-- [ ] `trellis-continue` overlay / prompt / command 文案明确禁止 publish。
+- [ ] `trellis-continue` overlay / prompt / command 文案明确禁止 publish 和调用 finish-work。
 - [ ] `trellis-finish-work` 文案明确 archive + journal 成功后才 publish。
 - [ ] canonical 与 dogfood 副本一致。
 - [ ] `bash -n`、`py_compile`、task validate、dogfood drift、`git diff --check` 通过。
