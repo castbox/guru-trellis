@@ -40,7 +40,9 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 ```
 
 > **NOTE：复制 prompt 前必须先替换占位符。**
-> 把 `<your-name>` 替换成你的 Trellis 用户名；如果你不使用默认的 Codex + Cursor，也要先把 prompt 里的平台说明和 `trellis init` 平台参数改成你实际使用的 AI 开发工具，例如 Claude、OpenCode、Gemini、Copilot 等。
+>
+> - 把 `<your-name>` 替换成你的 Trellis 用户名（建议为姓名全拼）。
+> - 如果你不使用默认的 Codex + Cursor，也要先把 prompt 里的平台说明和 `trellis init` 平台参数改成你实际使用的 AI 开发工具，例如 Claude、OpenCode、Gemini、Copilot 等。
 
 ### 升级 Trellis
 
@@ -73,7 +75,9 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 ```
 
 > **NOTE：复制 prompt 前必须先确认平台范围。**
-> 默认升级 prompt 只保留 Codex + Cursor；如果你的 repo 使用其它 AI 开发工具，要先把平台说明改成实际需要的平台入口，例如 Claude、OpenCode、Gemini、Copilot 等，再执行升级。
+>
+> - 默认升级 prompt 只保留 Codex + Cursor。
+> - 如果你的 repo 使用其它 AI 开发工具，要先把平台说明改成实际需要的平台入口，例如 Claude、OpenCode、Gemini、Copilot 等，再执行升级。
 
 ## 仓库内容
 
