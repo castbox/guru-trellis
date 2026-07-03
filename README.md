@@ -23,8 +23,9 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 - 安装/升级全局 Trellis CLI 到 latest。
 - 默认只启用 Codex 和 Cursor 支持；如果你使用其它 AI 开发工具，请先把本条改成你需要的平台入口，例如 Claude、OpenCode、Gemini、Copilot 等。
 - Trellis 用户名使用 <your-name>，请在执行前把这个占位符替换成你的用户名。
-- 使用 Guru Team workflow：workflow id 是 guru-team，workflow source 是 gh:castbox/guru-trellis/trellis。
-- 参考 https://github.com/castbox/guru-trellis/tree/main/trellis 中的方式安装 Guru Team preset，把 companion assets 和所选平台 overlay 应用到当前 Repo。
+- 如果当前 Repo 还没有 .trellis/，直接用 Guru Team workflow 初始化：`trellis init -u <your-name> --codex --cursor --workflow guru-team --workflow-source gh:castbox/guru-trellis/trellis`；如果你修改了平台入口，也同步修改这个命令里的平台参数。
+- 获取本公开 preset 仓库的最新内容，例如 clone 到临时目录或复用已有本地副本并 `git pull --ff-only`：`https://github.com/castbox/guru-trellis.git`。
+- 执行 `<guru-trellis>/trellis/presets/guru-team/scripts/bash/apply.sh --repo <current-repo>`，把 Guru Team companion assets 和所选平台 overlay 应用到当前 Repo。
 - 安装后确认当前 Repo 只保留你选择的平台入口目录；如果出现未选择的平台目录，例如 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等，说明原因并清理或请我确认。
 - 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env。
 - 检查 git diff，确认没有敏感信息、.env、token、私钥或本机-only 身份文件被提交。
@@ -50,8 +51,9 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 - 升级前检查当前 Repo 是否同时存在 Superpowers、Spec Kit、OpenSpec、GSD 或其它 SDD / agent harness；如果存在，不要继续升级 Trellis，先报告冲突并让我确认迁移或清理方案。
 - 如果本机 Trellis CLI 不是 latest，安装/升级到 @mindfoldhq/trellis@latest。
 - 默认只保留当前 Repo 的 Codex 和 Cursor 支持；如果你使用其它 AI 开发工具，请先把本条改成你需要的平台入口，例如 Claude、OpenCode、Gemini、Copilot 等。
-- 当前 Repo 已有 .trellis/ 时，先用 Guru Team marketplace 生成 workflow 预览，再对比现有 .trellis/workflow.md 和预览内容；确认风险后切换到 workflow id guru-team，workflow source/marketplace 是 gh:castbox/guru-trellis/trellis。
-- 拉取或临时获取 https://github.com/castbox/guru-trellis 的最新内容，然后重新应用 trellis/presets/guru-team/scripts/bash/apply.sh 到当前 Repo。
+- 当前 Repo 已有 .trellis/ 时，先用 Guru Team marketplace 生成 workflow 预览：`trellis workflow --marketplace gh:castbox/guru-trellis/trellis --template guru-team --create-new`，再对比现有 `.trellis/workflow.md` 和 `.trellis/workflow.md.new`；确认风险后运行 `trellis workflow --marketplace gh:castbox/guru-trellis/trellis --template guru-team` 切换 active workflow。
+- 获取本公开 preset 仓库的最新内容，例如 clone 到临时目录或复用已有本地副本并 `git pull --ff-only`：`https://github.com/castbox/guru-trellis.git`。
+- 执行 `<guru-trellis>/trellis/presets/guru-team/scripts/bash/apply.sh --repo <current-repo>`，重新应用 Guru Team companion assets 和所选平台 overlay。
 - 如果 preset 生成 .new 或 .bak，逐个检查原因；不要静默覆盖未知本地改动。
 - 升级后确认当前 Repo 只保留你选择的平台入口目录；如果出现未选择的平台目录，例如 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等，说明原因并清理或请我确认。
 - 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env。
