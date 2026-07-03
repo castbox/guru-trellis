@@ -181,6 +181,15 @@ issue URL，或说“处理 issue #123”即可；AI 会根据 Trellis 自动注
 startup context、workflow-state、hook breadcrumb 或 skill matcher 判断是否进入
 Guru Team issue intake 和 worktree preflight。
 
+默认 `prepare-task.sh --json` 只是 intake/preflight planner：它可以读取明确提供的
+issue、搜索重复候选，并输出 proposed issue、base branch、branch name、workspace
+path 和 create-task command，但不会创建 GitHub issue、worktree、branch 或 Trellis
+task，也不会在未确认 source issue 时写 `.trellis/guru-team/handoff.json`。没有 source
+issue 的 freeform 请求必须先由 AI 展示 proposed issue title/body 和 duplicate
+evidence；stdout JSON 会标记 `handoff_written: false`。用户确认后才可用
+`--create-issue-confirmed --issue-title ... --issue-body-file ...` 执行 GitHub issue
+创建；`--create-worktree` / `--create-task` 同样只用于 handoff review 之后的显式执行。
+
 用户仍然需要记住的常用显式入口是：
 
 - `trellis-continue`

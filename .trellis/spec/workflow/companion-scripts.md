@@ -58,6 +58,14 @@ printing secrets or local-only data.
 Always gate GitHub operations with `gh auth status` through `require_gh_auth()`.
 Do not assume the GitHub CLI is configured just because `gh` exists.
 
+Default `prepare` must be side-effect-free for GitHub and filesystem writes
+until a source issue is confirmed. It may call `gh issue view/list` for explicit
+issues and duplicate search, but proposal-only output must stay on stdout and
+must not write `.trellis/guru-team/handoff.json`. It must not call
+`gh issue create`, `git worktree add`, or `task.py create` unless the
+corresponding explicit confirmed/executor flag is present and the workflow has
+already required AI/human handoff review.
+
 Before publish, reject uncommitted non-metadata changes. Metadata-only paths are
 defined by `METADATA_ONLY_PREFIXES` and `METADATA_ONLY_FILES`; update these
 constants deliberately if Trellis metadata ownership changes.

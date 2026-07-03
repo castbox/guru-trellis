@@ -20,7 +20,8 @@
       "type": "string"
     },
     "source_issue": {
-      "type": "object",
+      "type": ["object", "null"],
+      "description": "Confirmed GitHub issue used as intake provenance. Null means prepare only produced proposed_issue and still requires AI/human confirmation before GitHub writes or task creation.",
       "required": ["number", "url", "created_by_workflow"],
       "properties": {
         "number": {
@@ -37,6 +38,50 @@
         }
       },
       "additionalProperties": true
+    },
+    "proposed_issue": {
+      "type": ["object", "null"],
+      "description": "Side-effect-free proposed GitHub issue title/body for freeform intake when no source issue has been confirmed.",
+      "properties": {
+        "repo": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "body_reviewed": {
+          "type": "boolean"
+        },
+        "create_issue_command": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "requires_confirmation": {
+      "type": ["object", "null"],
+      "description": "Explicit confirmation required before side effects such as GitHub issue creation, worktree creation, branch creation, or Trellis task creation.",
+      "additionalProperties": true
+    },
+    "handoff_path": {
+      "type": "string",
+      "description": "Configured handoff path. Default proposal-only prepare output reports this path but does not write it until a source issue is confirmed."
+    },
+    "handoff_written": {
+      "type": "boolean",
+      "description": "True only when prepare wrote the handoff artifact after a confirmed source issue existed."
     },
     "slug": {
       "type": "string"
