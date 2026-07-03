@@ -39,7 +39,8 @@ trellis workflow \
   --create-new
 ```
 
-人工确认 `.trellis/workflow.md.new` 后，再切换 workflow 并重新应用 preset：
+人工确认 `.trellis/workflow.md.new` 后，再切换 workflow，并执行 `apply.sh` 把 Guru Team
+companion scripts 与平台入口 overlay 同步到目标业务仓库：
 
 ```bash
 trellis workflow \
@@ -63,7 +64,20 @@ trellis workflow \
   --create-new
 ```
 
-确认 `.trellis/workflow.md.new` 后再切换 workflow，并重新运行 preset installer。
+确认 `.trellis/workflow.md.new` 后再切换 workflow。随后更新本仓库本地副本，并在目标业务仓库上再次执行 `apply.sh`：
+
+```bash
+git -C /path/to/guru-trellis pull --ff-only
+/path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
+  --repo /path/to/project
+```
+
+这里的“再次执行 `apply.sh`”就是重新应用 preset。它只同步 Guru Team 自有资产，包括：
+
+- `.trellis/guru-team/` 下的配置模板、schema 和 companion scripts；
+- `.agents/skills/`、`.codex/`、`.claude/commands/`、`.cursor/commands/` 下的 Guru Team 入口 overlay。
+
+它不会修改 Trellis npm 全局包、`node_modules`、上游 Trellis 源码或 `.trellis/scripts/task.py`。
 
 preset installer 是幂等的：
 
