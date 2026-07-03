@@ -23,4 +23,6 @@ Route by task status:
 
 Use `--finding` or `--findings-file` when the review has P0/P1/P2/P3 findings. P0/P1/P2 block finish-work. A passing gate must include a Chinese `--summary`, at least one concrete `--evidence` line, and `--reviewer` or `--review-report`. `review-branch.sh` records and validates the prior review; it is not the reviewer.
 
+Do not push the branch, create a PR, or call `publish-pr` from `/trellis:continue`. Publish happens only inside `/trellis:finish-work` after archive and journal succeed.
+
 The full contract lives in `.trellis/workflow.md`.

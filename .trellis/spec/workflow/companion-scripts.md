@@ -72,6 +72,13 @@ Before publish, reject uncommitted non-metadata changes. Metadata-only paths are
 defined by `METADATA_ONLY_PREFIXES` and `METADATA_ONLY_FILES`; update these
 constants deliberately if Trellis metadata ownership changes.
 
+`publish-pr` is an internal helper, not the normal user path. It must reject
+ordinary direct calls before `git push` or `gh pr create`; only `finish-work`
+may set the internal marker after archive and journal succeed. A separate
+explicit recovery/debug flag may exist for rerunning publish after finish-work
+already completed, but it still must pass review gate, dirty state, issue ledger,
+base branch, and GitHub auth checks.
+
 Use the intake/task `base_branch` for diff ranges and PR base. Do not fall back
 to the GitHub default branch when the task has an explicit base.
 

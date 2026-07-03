@@ -49,4 +49,15 @@ CHECK_ENV_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-env.sh" --root 
 printf '%s\n' "$CHECK_ENV_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["github_repo"] == "castbox/guru-trellis-throwaway"; assert payload["status"] == "ok"' <<<"$CHECK_ENV_JSON"
 
+set +e
+PUBLISH_ERROR_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/publish-pr.sh" --root "$TARGET" --json --dry-run 2>&1)"
+PUBLISH_STATUS=$?
+set -e
+if [[ "$PUBLISH_STATUS" -eq 0 ]]; then
+  echo "publish-pr direct dry-run unexpectedly succeeded before finish-work" >&2
+  exit 2
+fi
+printf '%s\n' "$PUBLISH_ERROR_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "error"; assert payload["blocked_step"] == "publish-pr"; assert payload["recovery_flag"] == "--recovery-after-finish-work"' <<<"$PUBLISH_ERROR_JSON"
+
 echo "Verified throwaway Guru Team Trellis install at $TARGET"

@@ -1106,6 +1106,22 @@ def publish_config(config: dict[str, Any]) -> dict[str, Any]:
     return value if isinstance(value, dict) else dict(DEFAULTS["publish"])
 
 
+def validate_publish_invocation(args: argparse.Namespace) -> None:
+    if getattr(args, "from_finish_work", False) or getattr(args, "recovery_after_finish_work", False):
+        return
+    raise WorkflowError(
+        "publish-pr is an internal helper. Run `.trellis/guru-team/scripts/bash/finish-work.sh --json` "
+        "so archive and journal complete before PR publish. If finish-work already completed and only "
+        "publish recovery is needed, rerun publish-pr with --recovery-after-finish-work.",
+        exit_code=2,
+        payload={
+            "blocked_step": "publish-pr",
+            "required_entrypoint": ".trellis/guru-team/scripts/bash/finish-work.sh --json",
+            "recovery_flag": "--recovery-after-finish-work",
+        },
+    )
+
+
 def configured_review_gate_path(task_dir: Path, config: dict[str, Any]) -> Path:
     gate_config = review_gate_config(config)
     configured = Path(str(gate_config.get("artifact_path") or "review-gate.json"))
@@ -1783,6 +1799,7 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
+    validate_publish_invocation(args)
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     publish = publish_config(config)
@@ -1941,6 +1958,8 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         draft=args.draft,
         allow_metadata_after_gate=True,
         dry_run=args.dry_run,
+        from_finish_work=True,
+        recovery_after_finish_work=False,
     )
     publish_payload = cmd_publish_pr(publish_args)
     return {
@@ -2016,6 +2035,11 @@ def build_parser() -> argparse.ArgumentParser:
     publish.add_argument("--draft", dest="draft", action="store_true", default=None)
     publish.add_argument("--no-draft", dest="draft", action="store_false")
     publish.add_argument("--allow-metadata-after-gate", action="store_true")
+    publish.add_argument(
+        "--recovery-after-finish-work",
+        action="store_true",
+        help="Explicit recovery/debug path for rerunning publish after finish-work already completed.",
+    )
     publish.add_argument("--dry-run", action="store_true")
 
     finish = sub.add_parser("finish-work")

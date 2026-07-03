@@ -117,6 +117,13 @@ Passing the gate requires:
 rejects uncommitted non-metadata changes, archives the active task, records the
 journal, commits remaining Trellis metadata, and then invokes publish.
 
+`trellis-continue` must stop at Branch Review Gate and must not push, create a
+PR, or invoke `publish-pr`. The publish helper is fail-closed: ordinary direct
+`publish-pr` calls are rejected before `git push` / `gh pr create`. It may run
+only from `finish-work.sh` after archive and journal succeed, or through an
+explicit recovery/debug flag when finish-work already completed but publish must
+be retried.
+
 The generated PR must be non-draft by default, target the intake/task
 `base_branch`, and use close keywords only for issues listed in the task-level
 `issue-scope-ledger.json` `close_issues` array.

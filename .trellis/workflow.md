@@ -136,12 +136,14 @@ Guru Team companion scripts:
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json
-.trellis/guru-team/scripts/bash/publish-pr.sh --json --dry-run
+.trellis/guru-team/scripts/bash/finish-work.sh --json
 ```
 
 These are internal workflow helpers. `review-branch.sh` records and validates a
-review that already happened; it is not the reviewer. They are not new
-user-facing primary commands.
+review that already happened; it is not the reviewer. `publish-pr.sh` is
+intentionally omitted from the normal helper sequence because ordinary direct
+publish calls are blocked; PR publish is triggered by `finish-work.sh` after
+archive and journal succeed. They are not new user-facing primary commands.
 
 ### Sub-agent Boundary
 
@@ -449,6 +451,7 @@ Do not start implementation until the user approves the planning artifacts.
 
 [workflow-state:in_progress]
 Flow: `trellis-implement` -> `trellis-check` -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> `/trellis:finish-work`.
+Do not push the branch, create a PR, or call `publish-pr` from `trellis-continue`; PR publish is owned by `finish-work` after archive and journal succeed.
 Main-session default on dispatch platforms: dispatch implement/check sub-agents. Dispatch prompt starts with `Active task: <task path from task.py current>`.
 Sub-agent self-exemption: if already running as `trellis-implement` or `trellis-check`, do the work directly and do not spawn another Trellis implement/check agent.
 Before edits, confirm knowledge gate and docs SSOT responsibilities from artifacts.
@@ -457,6 +460,7 @@ Read context: jsonl entries -> `prd.md` -> `design.md if present` -> `implement.
 
 [workflow-state:in_progress-inline]
 Flow: `trellis-before-dev` -> edit -> `trellis-check` -> validation -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> `/trellis:finish-work`.
+Do not push the branch, create a PR, or call `publish-pr` from `trellis-continue`; PR publish is owned by `finish-work` after archive and journal succeed.
 Do not dispatch implement/check sub-agents in inline mode.
 Before edits, confirm knowledge gate and docs SSOT responsibilities from artifacts.
 Read context: `prd.md` -> `design.md if present` -> `implement.md if present`, plus relevant spec/research loaded by skills.
@@ -623,7 +627,7 @@ The helper runs the normal finish-work actions: it rejects uncommitted non-metad
 
 #### 3.7 Publish PR `[automatic after finish-work]`
 
-After archive and journal succeed, automatically publish the PR. This is not a new user-facing phase or command. The normal path is through `finish-work.sh`; `publish-pr.sh` remains an internal recovery/debug helper.
+After archive and journal succeed, automatically publish the PR. This is not a new user-facing phase or command. The normal path is through `finish-work.sh`; `publish-pr.sh` is an internal helper and rejects ordinary direct calls. Direct `publish-pr.sh` is allowed only when `finish-work` calls it with its internal marker, or when an operator uses the explicit recovery/debug flag after `finish-work` already completed archive and journal but publish must be retried.
 
 Publish behavior:
 
@@ -635,6 +639,8 @@ Publish behavior:
 - use `Closes #xx` only for `close_issues` in `issue-scope-ledger.json`;
 - use only `Refs #xx` or `Related #xx` semantics for `related_issues`;
 - never close `followup_issues`.
+
+`trellis-continue` must never run this publish behavior. It stops after Branch Review Gate and directs the user/session to `trellis-finish-work`.
 
 If any `close_issues` entry lacks acceptance/verification evidence, or the review gate does not record coverage for it, publish is blocked or the issue must be downgraded to `related_issues`.
 
@@ -649,7 +655,7 @@ If any `close_issues` entry lacks acceptance/verification evidence, or the revie
 4. Planning artifacts must be persisted before implementation.
 5. `prd.md`, `design.md`, `implement.md`, and review-gate human-readable fields are Chinese by default.
 6. Daily user entry points are natural-language task requests, issue URLs or issue numbers, `trellis-continue`, and `trellis-finish-work`; `trellis-start` remains a fallback / explicit orientation entry for no-auto-injection platforms, disabled hooks, suspected bootstrap failures, or manual context reloads.
-7. `review-branch` and `publish-pr` are internal companion script subcommands, not user-facing phases.
+7. `review-branch` and `publish-pr` are internal companion script subcommands, not user-facing phases; ordinary direct `publish-pr` calls are blocked before push/PR.
 8. Branch Review Gate belongs after commit and before finish-work; do not put it in a non-blocking hook.
 9. Publish PR belongs after successful finish-work; do not ask users to run a separate publish flow.
 10. Hooks are reminders and context injection only; the workflow contract owns the Guru Team process.
