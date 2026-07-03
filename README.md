@@ -6,7 +6,7 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 
 ## 推荐用法
 
-不要手工照着命令一步步执行。把下面的 prompt 粘贴给 Codex 或 Cursor，让 AI 在目标业务仓库里完成安装、验证、提交和 push。
+不要手工照着命令一步步执行。把下面的 prompt 粘贴给 Codex、Cursor 或你正在使用的 AI 开发工具，让 AI 在目标业务仓库里完成安装、验证、提交和 push。
 
 ### 安装 Trellis
 
@@ -18,11 +18,11 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 要求：
 - 先实时确认 npm 上 @mindfoldhq/trellis 的 latest 版本，不要凭记忆判断版本。
 - 安装/升级全局 Trellis CLI 到 latest。
-- 只启用 Codex 和 Cursor 支持，不要安装 Claude、OpenCode、Gemini、Copilot 或其它平台入口。
-- Trellis 用户名使用 <your-name>。
+- 默认只启用 Codex 和 Cursor 支持；如果你使用其它 AI 开发工具，请先把本条改成你需要的平台入口，例如 Claude、OpenCode、Gemini、Copilot 等。
+- Trellis 用户名使用 <your-name>，请在执行前把这个占位符替换成你的用户名。
 - 使用 Guru Team workflow：workflow id 是 guru-team，workflow source 是 gh:castbox/guru-trellis/trellis。
-- 参考 https://github.com/castbox/guru-trellis/tree/main/trellis 中的方式安装 Guru Team preset，把 companion assets 和 Codex/Cursor overlay 应用到当前 Repo。
-- 安装后确认当前 Repo 中不存在 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等非目标平台目录。
+- 参考 https://github.com/castbox/guru-trellis/tree/main/trellis 中的方式安装 Guru Team preset，把 companion assets 和所选平台 overlay 应用到当前 Repo。
+- 安装后确认当前 Repo 只保留你选择的平台入口目录；如果出现未选择的平台目录，例如 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等，说明原因并清理或请我确认。
 - 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env。
 - 检查 git diff，确认没有敏感信息、.env、token、私钥或本机-only 身份文件被提交。
 - 提交并 push。
@@ -30,12 +30,10 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 完成后告诉我：
 - 安装到的 Trellis 版本；
 - 使用的用户名；
-- 是否只保留了 Codex/Cursor；
+- 实际启用并保留了哪些平台入口；
 - 验证命令结果；
 - commit hash 和 push 结果。
 ```
-
-如果用户名固定为 `wumengye`，把 `<your-name>` 替换成 `wumengye`。
 
 ### 升级 Trellis
 
@@ -47,11 +45,11 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 要求：
 - 先实时确认 npm 上 @mindfoldhq/trellis 的 latest 版本，并检查当前 trellis --version、which -a trellis、npm list -g @mindfoldhq/trellis --depth=0。
 - 如果本机 Trellis CLI 不是 latest，安装/升级到 @mindfoldhq/trellis@latest。
-- 只保留当前 Repo 的 Codex 和 Cursor 支持，不要新增 Claude、OpenCode、Gemini、Copilot 或其它平台入口。
+- 默认只保留当前 Repo 的 Codex 和 Cursor 支持；如果你使用其它 AI 开发工具，请先把本条改成你需要的平台入口，例如 Claude、OpenCode、Gemini、Copilot 等。
 - 当前 Repo 已有 .trellis/ 时，先用 Guru Team marketplace 生成 workflow 预览，再对比现有 .trellis/workflow.md 和预览内容；确认风险后切换到 workflow id guru-team，workflow source/marketplace 是 gh:castbox/guru-trellis/trellis。
 - 拉取或临时获取 https://github.com/castbox/guru-trellis 的最新内容，然后重新应用 trellis/presets/guru-team/scripts/bash/apply.sh 到当前 Repo。
 - 如果 preset 生成 .new 或 .bak，逐个检查原因；不要静默覆盖未知本地改动。
-- 升级后确认当前 Repo 中不存在 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等非目标平台目录。
+- 升级后确认当前 Repo 只保留你选择的平台入口目录；如果出现未选择的平台目录，例如 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等，说明原因并清理或请我确认。
 - 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env。
 - 检查 git diff，确认没有敏感信息、.env、token、私钥或本机-only 身份文件被提交。
 - 提交并 push。
@@ -59,7 +57,7 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 完成后告诉我：
 - 升级前后的 Trellis 版本；
 - workflow/preset 是否已重新应用；
-- 是否只保留了 Codex/Cursor；
+- 实际启用并保留了哪些平台入口；
 - 是否产生 .new 或 .bak 以及处理结果；
 - 验证命令结果；
 - commit hash 和 push 结果。
