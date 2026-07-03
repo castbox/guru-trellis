@@ -88,23 +88,36 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 > - 默认升级 prompt 只保留 Codex + Cursor。
 > - 如果你的 repo 使用其它 AI 开发工具，要先把平台说明改成实际需要的平台入口，例如 Claude、OpenCode、Gemini、Copilot 等，再执行升级。
 
-## 关于 Spec Bootstrap
+## 如何完成 Spec Bootstrap
 
-`trellis init` 可能会生成 `.trellis/tasks/00-bootstrap-guidelines/`。这是一次性
-Repo 级任务，用来把 `.trellis/spec/` 从通用模板改成当前 Repo 的真实工程规范，让后续
-AI session 按项目实际约定实现和检查代码。
+`trellis init` 可能会生成 `.trellis/tasks/00-bootstrap-guidelines/`。这是安装
+Trellis 后的一次性 Repo 初始化步骤，不是每个需求都要做的 task。
 
-这个任务不应作为安装或升级的静默副作用自动完成。AI 可以发现并提示它，但必须先说明：
+Spec bootstrap 的目标是让 AI 先读当前 Repo 已经存在的 README、设计文档、目录结构、
+源码、测试、脚本和配置，再把 `.trellis/spec/` 从通用模板改写成这个 Repo 的真实工程
+规范。完成后，后续日常开发 task 只需要读取这些 spec；只有项目约定发生变化或踩到可复用
+问题时，才做小范围 spec update。
 
-- 为什么需要填充 `.trellis/spec/`；
-- 将读取哪些现有约定文档、源码、脚本、测试或 README；
-- 将新增、删除或改写哪些 spec 文件；
-- 是否会更新 `00-bootstrap-guidelines` task artifact；
-- 是否会把 spec bootstrap 改动纳入当前提交。
+建议在新 Repo 安装 Trellis 后、开始第一个正式开发 task 前完成 bootstrap。升级已有
+Repo 时不要默认重做；只有发现 `00-bootstrap-guidelines` 仍未完成，或 `.trellis/spec/`
+明显还是通用模板时，才单独处理。
 
-只有用户明确确认后，AI 才应执行 spec bootstrap。它通常每个 Repo 做一次；后续每个
-task 只是读取 `.trellis/spec/`，只有发现新的可复用约定或踩坑时才小范围更新 spec，
-那属于普通 spec update，不是重新 bootstrap。
+如果你想现在完成 bootstrap，把下面这段 prompt 发给目标 Repo 里的 AI 会话：
+
+```text
+请处理 Trellis 的一次性 spec bootstrap。
+
+要求：
+- 先检查 `.trellis/tasks/00-bootstrap-guidelines/` 和 `.trellis/spec/` 当前状态。
+- 先不要修改文件；先说明为什么需要 bootstrap、计划读取哪些 README / docs / source / tests / scripts / config，以及预计会新增、删除或改写哪些 `.trellis/spec/` 文件。
+- 等我明确确认“现在执行 spec bootstrap”后，再扫描 Repo 并更新 `.trellis/spec/`。
+- 更新完成后，同步更新 `00-bootstrap-guidelines` task 状态或 checklist，运行 Trellis context/task 校验，展示 changed files 和验证结果。
+- 提交前检查 diff，确认没有 `.env`、token、私钥、本机-only 配置或无关运行态文件。
+- 未经我确认，不要 push 到共享分支。
+```
+
+如果你暂时不想做 bootstrap，可以保留 `00-bootstrap-guidelines`，后续再单独让 AI 处理。
+不要把未确认的 spec bootstrap 混进普通功能开发提交里。
 
 ## 仓库内容
 
