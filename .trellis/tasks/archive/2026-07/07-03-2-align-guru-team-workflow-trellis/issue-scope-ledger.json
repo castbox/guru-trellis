@@ -1,0 +1,28 @@
+{
+  "primary_issue": {
+    "number": 2,
+    "url": "https://github.com/castbox/guru-trellis/issues/2",
+    "title": "Align guru-team workflow with Trellis auto-bootstrap start model",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "README.md 已将用户入口改为自然语言任务 / issue URL / issue number / trellis-continue / trellis-finish-work，并把 trellis-start 定位为 fallback / explicit orientation。",
+      "trellis/workflows/guru-team/workflow.md 与 .trellis/workflow.md 的 Request Triage、workflow-state:no_task、Rules 已明确 no active task 自然语言分类、issue intake + worktree preflight 和副作用 consent。",
+      "trellis/presets/guru-team/overlays 与本仓库 .agents/.codex 的 trellis-start overlay 已同步为 fallback orientation 文案。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 2,
+      "url": "https://github.com/castbox/guru-trellis/issues/2",
+      "title": "Align guru-team workflow with Trellis auto-bootstrap start model",
+      "reason": "本任务完整解决 issue #2 中关于 guru-team workflow、README、preset overlay 的 auto-bootstrap 入口心智模型对齐。",
+      "acceptance_evidence": [
+        "README.md、trellis/workflows/guru-team/README.md、trellis/presets/guru-team/README.md 已不再把 trellis-start 与 trellis-continue / trellis-finish-work 并列为用户必须记住的日常主入口。",
+        "workflow-state:no_task 已明确 issue URL、issue number、明确开发任务或文件改动会触发 Guru Team issue intake + Git base/worktree preflight。",
+        "旧口径残留搜索未命中：必须记住三个主入口、用户主流程仍然只有、entry points limited to start、normal Trellis start entry point、User primary entry points remain only。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

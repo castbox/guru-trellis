@@ -153,8 +153,10 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 
 ### Request Triage
 
+- Do not require the user to explicitly run `trellis-start` before new work. In normal auto-bootstrap platforms, classify the user's natural-language request from the injected Trellis context, workflow-state, startup context, hook breadcrumb, or skill matcher.
 - Simple conversation or small task: ask only whether this turn should create a Trellis task. If the user says no, skip Trellis for this session.
-- Complex task: ask whether you may run Guru Team intake and create a Trellis task for planning. If the user says no, do not create `.trellis/tasks/` artifacts.
+- Issue-backed, task-like, or file-changing request: run Guru Team issue intake and Git base/worktree preflight before task creation. This includes pasted issue URLs, issue numbers, and clear development tasks.
+- Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect.
 - User approval to create a task is not approval to start implementation. Planning still happens first.
 
 ### Planning Artifacts
@@ -173,9 +175,10 @@ Lightweight tasks may be PRD-only. Complex tasks must have `prd.md`, `design.md`
 <!-- Per-turn breadcrumb: shown when there is no active task (before Phase 1) -->
 
 [workflow-state:no_task]
-No active task. First classify the current turn.
-If a Trellis task is needed, run Guru Team issue intake + Git base/worktree preflight before `task.py create`.
-Do not write `.trellis/tasks/` artifacts until the user consents to task creation and preflight has a clear workspace.
+No active task. First classify the user's natural-language request; do not require the user to explicitly run `trellis-start`.
+If the request includes an issue URL, issue number, clear development task, or file change, run Guru Team issue intake + Git base/worktree preflight before `task.py create`.
+Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect.
+Do not write `.trellis/tasks/` artifacts until consent is clear and preflight has a clear workspace.
 [/workflow-state:no_task]
 
 ### Phase 0: Intake
@@ -483,7 +486,7 @@ If any `close_issues` entry lacks acceptance/verification evidence, or the revie
 2. Task creation approval is not implementation approval.
 3. Planning artifacts must be persisted before implementation.
 4. `prd.md`, `design.md`, `implement.md`, and review-gate human-readable fields are Chinese by default.
-5. User primary entry points remain only `trellis-start`, `trellis-continue`, and `trellis-finish-work`.
+5. Daily user entry points are natural-language task requests, issue URLs or issue numbers, `trellis-continue`, and `trellis-finish-work`; `trellis-start` remains a fallback / explicit orientation entry for no-auto-injection platforms, disabled hooks, suspected bootstrap failures, or manual context reloads.
 6. `review-branch` and `publish-pr` are internal companion script subcommands, not user-facing phases.
 7. Branch Review Gate belongs after commit and before finish-work; do not put it in a non-blocking hook.
 8. Publish PR belongs after successful finish-work; do not ask users to run a separate publish flow.

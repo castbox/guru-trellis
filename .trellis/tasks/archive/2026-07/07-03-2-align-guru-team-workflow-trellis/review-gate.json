@@ -1,0 +1,156 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-03T10:27:37Z",
+  "task_dir": ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis",
+  "base_branch": "main",
+  "base_ref": "origin/main",
+  "head_branch": "codex/2-align-guru-team-workflow-trellis",
+  "head": "2d687d4b1178578b0d2fb26558cb1ee0480f2d41",
+  "diff_range": "origin/main...HEAD",
+  "changed_files": [
+    ".agents/skills/trellis-start/SKILL.md",
+    ".codex/prompts/trellis-start.md",
+    ".codex/skills/trellis-start/SKILL.md",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/check.jsonl",
+    ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/design.md",
+    ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/implement.jsonl",
+    ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/implement.md",
+    ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/issue-scope-ledger.json",
+    ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/prd.md",
+    ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/research/official-trellis-auto-bootstrap.md",
+    ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/review-gate.json",
+    ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/task.json",
+    ".trellis/workflow.md",
+    "README.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "review_scope": [
+    "文档",
+    "代码",
+    "测试",
+    "Trellis artifacts",
+    "配置",
+    "脚本",
+    "schema",
+    "CI/CD workflow 与发布自动化",
+    "Dockerfile / Docker Compose / 容器启动脚本",
+    "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
+    "数据库 schema / migration / seed / backfill 脚本",
+    "各目录下本次变更涉及的 Makefile",
+    "preset installer"
+  ],
+  "command": [
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/2-align-guru-team-workflow-trellis/.trellis/guru-team/scripts/bash/../python/guru_team_trellis.py",
+    "review-branch",
+    "--json",
+    "--pass",
+    "--summary",
+    "已按 issue #2 范围复核当前 HEAD，代码变更与 Review Gate metadata 均无阻塞问题。",
+    "--evidence",
+    "当前 HEAD 2d687d4 包含 issue #2 代码/文档变更提交 9530576 以及 review-gate metadata 提交；完整 diff 基于 origin/main...HEAD 覆盖 README、workflow、preset README、preset overlay、.agents/.codex start overlay、task artifacts 与 review-gate.json。",
+    "--evidence",
+    "验证通过：python3 -m json.tool trellis/index.json；bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh；python3 -m py_compile 两个 guru_team Python 脚本；git diff --check origin/main...HEAD。",
+    "--evidence",
+    "旧口径残留搜索未命中：必须记住三个主入口、用户主流程仍然只有、entry points limited to start、normal Trellis start entry point、User primary entry points remain only。",
+    "--evidence",
+    "部署影响判断：本次只改文档、workflow 模板、平台入口 overlay 与 Trellis task/review artifacts，不新增 API 服务、CLI 命令、后台 worker、定时任务、队列 consumer、migration 入口或运行时配置；Dockerfile、Docker Compose、GitHub Actions、Kubernetes/Kustomize、数据库 migration、Makefile 均无需同步修改。"
+  ],
+  "conclusion": {
+    "passed": true,
+    "summary": "已按 issue #2 范围复核当前 HEAD，代码变更与 Review Gate metadata 均无阻塞问题。",
+    "block_priorities": [
+      "P0",
+      "P1",
+      "P2"
+    ],
+    "blocking_findings_count": 0
+  },
+  "findings": [],
+  "issue_scope": {
+    "ledger_path": ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/issue-scope-ledger.json",
+    "close_issues_reviewed": [
+      {
+        "number": 2,
+        "url": "https://github.com/castbox/guru-trellis/issues/2",
+        "title": "Align guru-team workflow with Trellis auto-bootstrap start model",
+        "reason": "本任务完整解决 issue #2 中关于 guru-team workflow、README、preset overlay 的 auto-bootstrap 入口心智模型对齐。",
+        "acceptance_evidence": [
+          "README.md、trellis/workflows/guru-team/README.md、trellis/presets/guru-team/README.md 已不再把 trellis-start 与 trellis-continue / trellis-finish-work 并列为用户必须记住的日常主入口。",
+          "workflow-state:no_task 已明确 issue URL、issue number、明确开发任务或文件改动会触发 Guru Team issue intake + Git base/worktree preflight。",
+          "旧口径残留搜索未命中：必须记住三个主入口、用户主流程仍然只有、entry points limited to start、normal Trellis start entry point、User primary entry points remain only。"
+        ]
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "verification_evidence": {
+    "base_head": "origin/main...2d687d4b1178578b0d2fb26558cb1ee0480f2d41",
+    "changed_file_count": 21,
+    "reviewer": "",
+    "evidence": [
+      "当前 HEAD 2d687d4 包含 issue #2 代码/文档变更提交 9530576 以及 review-gate metadata 提交；完整 diff 基于 origin/main...HEAD 覆盖 README、workflow、preset README、preset overlay、.agents/.codex start overlay、task artifacts 与 review-gate.json。",
+      "验证通过：python3 -m json.tool trellis/index.json；bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh；python3 -m py_compile 两个 guru_team Python 脚本；git diff --check origin/main...HEAD。",
+      "旧口径残留搜索未命中：必须记住三个主入口、用户主流程仍然只有、entry points limited to start、normal Trellis start entry point、User primary entry points remain only。",
+      "部署影响判断：本次只改文档、workflow 模板、平台入口 overlay 与 Trellis task/review artifacts，不新增 API 服务、CLI 命令、后台 worker、定时任务、队列 consumer、migration 入口或运行时配置；Dockerfile、Docker Compose、GitHub Actions、Kubernetes/Kustomize、数据库 migration、Makefile 均无需同步修改。"
+    ],
+    "notes": "review-branch 记录 diff 范围、结论和审查证据；具体审查判断由 AI/human review 输入 summary/evidence/findings。"
+  },
+  "deployment_impact": {
+    "changed_file_categories": {
+      "docs": [
+        ".agents/skills/trellis-start/SKILL.md",
+        ".codex/prompts/trellis-start.md",
+        ".codex/skills/trellis-start/SKILL.md",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/design.md",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/implement.md",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/prd.md",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/research/official-trellis-auto-bootstrap.md",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "trellis_artifacts": [
+        ".trellis/guru-team/handoff.json",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/check.jsonl",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/design.md",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/implement.jsonl",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/implement.md",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/issue-scope-ledger.json",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/prd.md",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/research/official-trellis-auto-bootstrap.md",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/review-gate.json",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/task.json",
+        ".trellis/workflow.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "config": [
+        ".trellis/guru-team/handoff.json",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/issue-scope-ledger.json",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/review-gate.json",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/task.json"
+      ]
+    },
+    "deployment_asset_categories": {},
+    "changed_deployment_assets": [],
+    "probable_runtime_changes_without_deployment_asset_change": [],
+    "needs_deployment_impact_review": false,
+    "review_instruction": "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；如果不需要，必须给出不需要的理由。"
+  }
+}
