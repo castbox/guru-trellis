@@ -27,7 +27,7 @@ from typing import Any
 DEFAULTS: dict[str, Any] = {
     "github_repo": "",
     "source_issue_required": False,
-    "auto_create_issue": True,
+    "auto_create_issue": False,
     "duplicate_search_required": True,
     "duplicate_candidate_limit": 5,
     "duplicate_high_similarity_action": "confirm",
@@ -319,10 +319,10 @@ def issue_body(requirement: str, duplicates: list[dict[str, Any]]) -> str:
         for candidate in duplicates
     )
     if not duplicate_lines:
-        duplicate_lines = "- 自动创建前未发现阻塞级重复 issue。"
+        duplicate_lines = "- 创建前未发现阻塞级重复 issue。"
     return f"""## Background
 
-This issue was created by the Guru Team Trellis intake workflow because the user request did not provide an existing source issue.
+This issue body was drafted by the Guru Team Trellis intake workflow because the user request did not provide an existing source issue.
 
 ## Current State
 
@@ -356,6 +356,47 @@ Clarify during Trellis planning.
 
 The workflow will record the Trellis task path, branch, base branch, and workspace path in the task artifacts or follow-up comments when the task is created.
 """
+
+
+def confirmed_issue_prepare_command(
+    args: argparse.Namespace,
+    title: str,
+    requirement: str,
+    force_new: bool | None = None,
+) -> list[str]:
+    cmd = [
+        "python3",
+        "./.trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "prepare",
+        "--json",
+        "--create-issue-confirmed",
+        "--issue-title",
+        title,
+        "--issue-body-file",
+        "<reviewed-issue-body.md>",
+    ]
+    option_map = [
+        ("short_name", "--short-name"),
+        ("base_branch", "--base-branch"),
+        ("branch", "--branch"),
+        ("task_slug", "--task-slug"),
+        ("workspace_slug", "--workspace-slug"),
+        ("title", "--title"),
+        ("assignee", "--assignee"),
+        ("priority", "--priority"),
+        ("description", "--description"),
+    ]
+    for attr, option in option_map:
+        value = getattr(args, attr, None)
+        if value:
+            cmd.extend([option, str(value)])
+    should_force_new = getattr(args, "force_new", False) if force_new is None else force_new
+    if should_force_new:
+        cmd.append("--force-new")
+    if getattr(args, "worktree", False):
+        cmd.append("--worktree")
+    cmd.append(requirement)
+    return cmd
 
 
 def issue_view(repo: str, number: int, root: Path) -> dict[str, Any]:
@@ -425,11 +466,15 @@ def duplicate_search(repo: str, requirement: str, root: Path, limit: int) -> lis
     return candidates[:limit]
 
 
-def create_issue(repo: str, requirement: str, duplicates: list[dict[str, Any]], root: Path, labels: list[str], short_name: str | None) -> dict[str, Any]:
-    title = make_issue_title(requirement, short_name)
-    body = issue_body(requirement, duplicates)
+def create_issue(repo: str, title: str, body: str, root: Path, labels: list[str]) -> dict[str, Any]:
+    title = title.strip()
+    body = body.strip()
+    if not title:
+        raise WorkflowError("Confirmed issue creation requires a non-empty issue title.")
+    if not body:
+        raise WorkflowError("Confirmed issue creation requires a non-empty issue body.")
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False) as tmp:
-        tmp.write(body)
+        tmp.write(body + "\n")
         tmp_path = tmp.name
     try:
         cmd = ["issue", "create", "--repo", repo, "--title", title, "--body-file", tmp_path]
@@ -447,6 +492,21 @@ def create_issue(repo: str, requirement: str, duplicates: list[dict[str, Any]], 
     if not match:
         raise WorkflowError(f"Could not parse created issue number from URL: {url}")
     return issue_view(repo, int(match.group(1)), root)
+
+
+def read_confirmed_issue_body(path_value: str | None) -> str:
+    if not path_value:
+        raise WorkflowError(
+            "--create-issue-confirmed requires --issue-body-file containing the AI/human reviewed issue body.",
+            exit_code=2,
+        )
+    path = Path(path_value)
+    if not path.exists():
+        raise WorkflowError(f"Confirmed issue body file not found: {path}")
+    body = path.read_text(encoding="utf-8").strip()
+    if not body:
+        raise WorkflowError(f"Confirmed issue body file is empty: {path}")
+    return body
 
 
 def git_branch_exists(root: Path, ref: str) -> bool:
@@ -803,9 +863,14 @@ def prepare_workspace(
     return mode, workspace_path, True
 
 
+def configured_handoff_path(root: Path, config: dict[str, Any]) -> Path:
+    rel = Path(str(config.get("handoff_path") or DEFAULTS["handoff_path"]))
+    return rel if rel.is_absolute() else root / rel
+
+
 def write_handoff(root: Path, config: dict[str, Any], payload: dict[str, Any], workspace_path: Path, mirror_to_workspace: bool) -> Path:
     rel = Path(str(config.get("handoff_path") or DEFAULTS["handoff_path"]))
-    path = rel if rel.is_absolute() else root / rel
+    path = configured_handoff_path(root, config)
     payload["handoff_path"] = str(path)
     content = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -837,8 +902,7 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
 
 
 def load_handoff(root: Path, config: dict[str, Any]) -> dict[str, Any]:
-    rel = Path(str(config.get("handoff_path") or DEFAULTS["handoff_path"]))
-    path = rel if rel.is_absolute() else root / rel
+    path = configured_handoff_path(root, config)
     if not path.exists():
         return {}
     payload = read_json(path)
@@ -1394,6 +1458,11 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
     repo = str(config.get("github_repo") or "").strip() or infer_github_repo(root)
     if not repo:
         raise WorkflowError("Could not resolve GitHub repo. Configure github_repo in .trellis/guru-team/config.yml.")
+    if args.create_issue_confirmed and not str(args.issue_title or "").strip():
+        raise WorkflowError(
+            "--create-issue-confirmed requires --issue-title containing the AI/human reviewed issue title.",
+            exit_code=2,
+        )
 
     require_tool("git")
     require_gh_auth(root)
@@ -1406,6 +1475,12 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
     duplicates: list[dict[str, Any]] = []
     duplicate_search_performed = False
     created_by_workflow = False
+    issue: dict[str, Any] | None = None
+    proposed_issue: dict[str, Any] | None = None
+    issue_title_for_planning = ""
+    issue_number_for_slug = "new"
+    source_issue: dict[str, Any] | None = None
+    confirmation_required: dict[str, Any] | None = None
 
     if args.reuse_issue:
         issue = issue_view(repo, int(args.reuse_issue), root)
@@ -1423,23 +1498,79 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
             duplicates = duplicate_search(repo, requirement, root, int(config.get("duplicate_candidate_limit") or 5))
             high = [item for item in duplicates if item.get("similarity") == "high"]
             if high and not args.force_new:
+                proposed_title = args.issue_title or make_issue_title(requirement, args.short_name)
+                proposed_body = issue_body(requirement, duplicates)
                 raise WorkflowError(
                     "Likely duplicate open issue found. Re-run with --reuse-issue <number> or --force-new after user confirmation.",
                     exit_code=2,
-                    payload={"duplicates": high, "repo": repo},
+                    payload={
+                        "duplicates": high,
+                        "repo": repo,
+                        "proposed_issue": {
+                            "repo": repo,
+                            "title": proposed_title,
+                            "body": proposed_body,
+                            "labels": list(config.get("created_issue_labels") or []),
+                            "body_reviewed": False,
+                            "create_issue_command": confirmed_issue_prepare_command(args, proposed_title, requirement, force_new=True),
+                        },
+                        "requires_confirmation": {
+                            "reuse_issue_or_force_new": True,
+                            "reason": "High-similarity duplicate candidates require AI/human review before binding an existing issue or forcing a new one.",
+                        },
+                    },
                 )
-        if not config.get("auto_create_issue", True):
-            raise WorkflowError("No source issue provided and auto_create_issue is false.")
-        issue = create_issue(repo, requirement, duplicates, root, list(config.get("created_issue_labels") or []), args.short_name)
-        created_by_workflow = True
+        proposed_title = args.issue_title or make_issue_title(requirement, args.short_name)
+        proposed_body = read_confirmed_issue_body(args.issue_body_file) if args.create_issue_confirmed else issue_body(requirement, duplicates)
+        proposed_issue = {
+            "repo": repo,
+            "title": proposed_title,
+            "body": proposed_body,
+            "labels": list(config.get("created_issue_labels") or []),
+            "body_reviewed": bool(args.create_issue_confirmed),
+            "create_issue_command": confirmed_issue_prepare_command(args, proposed_title, requirement),
+        }
+        if config.get("auto_create_issue", False):
+            proposed_issue["legacy_auto_create_issue_config_ignored"] = True
+            proposed_issue["legacy_auto_create_issue_note"] = (
+                "auto_create_issue is kept only for backward-compatible config parsing; "
+                "prepare requires --create-issue-confirmed before GitHub issue creation."
+            )
+        if args.create_issue_confirmed:
+            issue = create_issue(repo, proposed_title, proposed_body, root, list(config.get("created_issue_labels") or []))
+            created_by_workflow = True
+        else:
+            confirmation_required = {
+                "create_issue": True,
+                "reason": "No source issue was provided. prepare generated a proposed issue only; an AI/human must review title/body and rerun with --create-issue-confirmed before GitHub issue creation.",
+                "next_commands": proposed_issue["create_issue_command"],
+            }
 
-    issue_number = int(issue["number"])
-    issue_slug = slugify(args.short_name or issue.get("title", "") or requirement, f"issue-{issue_number}")
-    unique_prefix = f"{issue_number}-{issue_slug}"
+    if issue is not None:
+        issue_number = int(issue["number"])
+        issue_title_for_planning = str(issue.get("title") or make_issue_title(requirement, args.short_name))
+        issue_number_for_slug = str(issue_number)
+        source_issue = {
+            "number": issue_number,
+            "url": issue["url"],
+            "title": issue_title_for_planning,
+            "created_by_workflow": created_by_workflow,
+        }
+    else:
+        issue_title_for_planning = str(proposed_issue.get("title") if proposed_issue else make_issue_title(requirement, args.short_name))
+    if (args.create_worktree or args.create_task) and source_issue is None:
+        raise WorkflowError(
+            "--create-worktree and --create-task require a confirmed source issue. Review proposed_issue, create/bind the GitHub issue, then rerun prepare.",
+            exit_code=2,
+            payload={"proposed_issue": proposed_issue, "requires_confirmation": confirmation_required},
+        )
+    issue_slug = slugify(args.short_name or issue_title_for_planning or requirement, f"issue-{issue_number_for_slug}")
+    unique_prefix = f"{issue_number_for_slug}-{issue_slug}"
     task_slug = args.task_slug or unique_prefix
     workspace_slug = args.workspace_slug or unique_prefix
     branch_name = args.branch or f"{config.get('branch_prefix') or ''}{unique_prefix}"
-    task_title = args.title or f"#{issue_number} {issue.get('title', make_issue_title(requirement, args.short_name))}"
+    title_prefix = f"#{issue_number_for_slug}" if issue is not None else "[proposed-issue]"
+    task_title = args.title or f"{title_prefix} {issue_title_for_planning}"
     base_ref, base_candidates = resolve_base_branch(root, config, args.base_branch)
     should_create_worktree = args.create_worktree or args.create_task
     workspace_mode, workspace_path, workspace_ready = prepare_workspace(
@@ -1464,12 +1595,11 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
 
     payload: dict[str, Any] = {
         "schema_version": "1.1",
-        "source_issue": {
-            "number": issue_number,
-            "url": issue["url"],
-            "title": issue.get("title", ""),
-            "created_by_workflow": created_by_workflow,
-        },
+        "source_issue": source_issue,
+        "proposed_issue": proposed_issue,
+        "requires_confirmation": confirmation_required,
+        "handoff_path": str(configured_handoff_path(root, config)),
+        "handoff_written": False,
         "slug": issue_slug,
         "task_slug": task_slug,
         "task_title": task_title,
@@ -1485,24 +1615,7 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
             "performed": duplicate_search_performed,
             "candidates": duplicates,
         },
-        "issue_scope_ledger": {
-            "primary_issue": issue_entry(
-                issue_number,
-                issue["url"],
-                issue.get("title", ""),
-                "intake/handoff 主 issue，默认进入 close 候选。",
-            ),
-            "close_issues": [
-                issue_entry(
-                    issue_number,
-                    issue["url"],
-                    issue.get("title", ""),
-                    "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
-                )
-            ],
-            "related_issues": [],
-            "followup_issues": [],
-        },
+        "issue_scope_ledger": {},
         "preflight": {
             "repo_root": str(root),
             "current_checkout": str(root),
@@ -1514,17 +1627,55 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
             "workspace_was_created_or_reused": workspace_ready,
         },
     }
+    if source_issue is not None:
+        payload["issue_scope_ledger"] = {
+            "primary_issue": issue_entry(
+                source_issue["number"],
+                source_issue["url"],
+                source_issue.get("title", ""),
+                "intake/handoff 主 issue，默认进入 close 候选。",
+            ),
+            "close_issues": [
+                issue_entry(
+                    source_issue["number"],
+                    source_issue["url"],
+                    source_issue.get("title", ""),
+                    "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+                )
+            ],
+            "related_issues": [],
+            "followup_issues": [],
+        }
+    else:
+        payload["issue_scope_ledger"] = {
+            "primary_issue": None,
+            "close_issues": [],
+            "related_issues": [],
+            "followup_issues": [],
+            "notes": [
+                "尚未创建或绑定 source issue；用户确认 proposed_issue 后重新运行 prepare。",
+                "未绑定 source issue 前不得创建 Trellis task 或发布关闭语义。",
+            ],
+        }
 
     if args.create_task:
+        if source_issue is None:
+            raise WorkflowError(
+                "--create-task requires a confirmed source issue. Review proposed_issue, create/bind the GitHub issue, then rerun prepare.",
+                exit_code=2,
+                payload={"proposed_issue": proposed_issue, "requires_confirmation": confirmation_required},
+            )
         payload["task_dir"] = create_task(root, payload, args)
         run(["python3", "./.trellis/scripts/task.py", "set-branch", payload["task_dir"], branch_name], cwd=workspace_path, check=False)
         run(["python3", "./.trellis/scripts/task.py", "set-base-branch", payload["task_dir"], base_ref], cwd=workspace_path, check=False)
-        run(["python3", "./.trellis/scripts/task.py", "set-scope", payload["task_dir"], f"GitHub issue: {issue['url']}"], cwd=workspace_path, check=False)
+        run(["python3", "./.trellis/scripts/task.py", "set-scope", payload["task_dir"], f"GitHub issue: {source_issue['url']}"], cwd=workspace_path, check=False)
         task_dir = resolve_task_dir(workspace_path, payload["task_dir"], payload)
         ensure_issue_scope_ledger(task_dir, payload)
 
-    handoff = write_handoff(root, config, payload, workspace_path, workspace_ready)
-    payload["handoff_path"] = str(handoff)
+    if source_issue is not None:
+        payload["handoff_written"] = True
+        handoff = write_handoff(root, config, payload, workspace_path, workspace_ready)
+        payload["handoff_path"] = str(handoff)
     return payload
 
 
@@ -1807,6 +1958,9 @@ def build_parser() -> argparse.ArgumentParser:
     prepare.add_argument("--short-name")
     prepare.add_argument("--reuse-issue", type=int)
     prepare.add_argument("--force-new", action="store_true")
+    prepare.add_argument("--create-issue-confirmed", action="store_true", help="Create a GitHub issue only after AI/human review confirmed the proposed title/body.")
+    prepare.add_argument("--issue-title", help="Reviewed issue title used with --create-issue-confirmed.")
+    prepare.add_argument("--issue-body-file", help="Path to reviewed issue body used with --create-issue-confirmed.")
     prepare.add_argument("--base-branch")
     prepare.add_argument("--branch")
     prepare.add_argument("--task-slug")

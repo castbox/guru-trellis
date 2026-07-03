@@ -25,12 +25,14 @@ python3 ./.trellis/scripts/get_context.py --mode phase
 .trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request, issue number, or issue URL>"
 ```
 
-3. Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect.
+3. Treat default `prepare-task` as intake/preflight planning only. If it returns `proposed_issue` / `requires_confirmation`, show duplicate candidates, proposed title/body, base branch, branch name, workspace path, and the confirmed command; stop until the user approves GitHub issue creation. Only then rerun with `--create-issue-confirmed --issue-title "<reviewed title>" --issue-body-file <reviewed-body-file>`.
 
-4. Keep planning artifacts in Chinese: `prd.md`, `design.md`, `implement.md`, and human-readable review fields.
+4. Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect. `--create-worktree` and `--create-task` are executor flags for after handoff review, not default intake commands.
 
-5. During planning, follow `.trellis/workflow.md` for Middle-platform Knowledge Gate and Repo Docs SSOT discovery. MCP availability is checked from current AI tools/capabilities, not shell scripts.
+5. Keep planning artifacts in Chinese: `prd.md`, `design.md`, `implement.md`, and human-readable review fields.
 
-6. Treat `.trellis/guru-team/handoff.json` as intake provenance only. Final close/ref/followup scope belongs in the task-level `issue-scope-ledger.json`.
+6. During planning, follow `.trellis/workflow.md` for Middle-platform Knowledge Gate and Repo Docs SSOT discovery. MCP availability is checked from current AI tools/capabilities, not shell scripts.
+
+7. Treat `.trellis/guru-team/handoff.json` as intake provenance only. Final close/ref/followup scope belongs in the task-level `issue-scope-ledger.json`.
 
 Full contract lives in `.trellis/workflow.md`.

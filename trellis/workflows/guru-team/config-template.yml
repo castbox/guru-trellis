@@ -4,13 +4,16 @@
 # Target GitHub repository in owner/repo format. If empty, infer from git remote.
 github_repo: ""
 
-# Require users to provide an issue number or URL. When false, the workflow can create one.
+# Require users to provide an issue number or URL. When false, prepare can
+# propose a new issue for AI/human review.
 source_issue_required: false
 
-# Allow automatic issue creation when no source issue is provided and no blocking duplicate is found.
-auto_create_issue: true
+# Deprecated compatibility field. prepare never creates a GitHub issue from the
+# default command; issue creation requires --create-issue-confirmed plus a
+# reviewed --issue-body-file.
+auto_create_issue: false
 
-# Search open issues for likely duplicates before automatic issue creation.
+# Search open issues for likely duplicates before proposing or creating an issue.
 duplicate_search_required: true
 
 # Number of duplicate candidates to show or record.

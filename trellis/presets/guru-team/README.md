@@ -118,6 +118,15 @@ Passing gates require a Chinese summary, concrete evidence, and either
 
 ## Workflow Guardrails
 
+`prepare-task.sh --json` is an intake/preflight planner by default. It may read
+an explicit issue and search duplicates, but it does not create a GitHub issue,
+worktree, branch, Trellis task, or `.trellis/guru-team/handoff.json` before a
+source issue is confirmed. Freeform requests without a source issue return
+`proposed_issue`, `requires_confirmation`, and `handoff_written: false` in stdout
+JSON; the AI must show the proposed title/body and duplicate evidence, then
+rerun with `--create-issue-confirmed --issue-title ... --issue-body-file ...`
+only after approval.
+
 The installed workflow tells AI sessions to run a Middle-platform Knowledge Gate
 when a task may touch Guru Team SDKs or frameworks. If `guru-knowledge-center`
 MCP is available, the AI queries `project_domain=middle-platform` and persists

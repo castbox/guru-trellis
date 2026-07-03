@@ -5,7 +5,7 @@
 ## Core Principles
 
 1. **Plan before code** — figure out what to do before implementation starts.
-2. **Issue-backed intake** — durable work starts from a GitHub Issue or from a neutral issue created by the workflow.
+2. **Issue-backed intake** — durable work starts from a GitHub Issue or from a neutral issue proposed by the workflow and created only after AI/human review.
 3. **Git preflight before Trellis task files** — resolve base branch and workspace before `task.py create` writes task artifacts.
 4. **Specs injected, not remembered** — follow `.trellis/spec/` and task artifacts instead of chat memory.
 5. **Persist decisions** — requirements, research, implementation plans, and reusable lessons go to files.
@@ -28,7 +28,11 @@ Before creating a Trellis task or writing task artifacts, run the Guru Team inta
 .trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request, issue number, or issue URL>"
 ```
 
-The default prepare command plans the workspace path and writes handoff, but it does not create a new worktree. If the user explicitly asks to create the workspace or task after reviewing preflight output, run the same prepare command with `--create-worktree` or `--create-task`, then run the returned `create_task_command` in the returned `workspace_path` when needed.
+The default prepare command is side-effect-free intake/preflight planning for GitHub and filesystem writes: it may read an explicit issue and open duplicate candidates, then outputs source/proposed issue, base branch, branch name, workspace path, and `create_task_command`. When no `source_issue` is confirmed, this planner output is JSON only and does not write `.trellis/guru-team/handoff.json`, create a GitHub issue, worktree, branch, or Trellis task.
+
+If no source issue was supplied, prepare writes `proposed_issue` and `requires_confirmation`. The AI must show the duplicate-search result, proposed issue title/body, base branch, branch name, and workspace path to the user. Only after confirmation may it rerun prepare with `--create-issue-confirmed --issue-title "<reviewed title>" --issue-body-file <reviewed-body-file>`.
+
+After a confirmed source issue exists and the handoff has been reviewed, use `--create-worktree` or `--create-task` only with explicit user approval. `--create-task` is an executor path and must not be used as a shortcut around planning review.
 
 The companion scripts live under `.trellis/guru-team/` and are installed by the Guru Team Trellis preset. If they are missing, tell the user to run:
 
@@ -40,9 +44,10 @@ The companion scripts live under `.trellis/guru-team/` and are installed by the 
 
 - If the user supplies a GitHub issue number or URL, read that issue body and comments before planning.
 - If no issue is supplied, decide whether the request is clear enough for an intake issue.
-- Before creating an issue, search open issues for likely duplicates.
+- Before creating an issue, search open issues for likely duplicates and show the result to the user.
 - High-similarity candidates are never auto-bound. Ask the user whether to reuse the candidate or create a new issue.
-- Automatically created issue bodies use a neutral, reusable intake structure. Do not write project-private business rules into the generic issue template.
+- Proposed issue bodies use a neutral, reusable intake structure. GitHub issue creation requires `--create-issue-confirmed` and an AI/human reviewed body file; never let the default prepare command create the issue.
+- Do not rely on `auto_create_issue` in older configs. It is a deprecated compatibility field and must not override the explicit confirmation requirement.
 - Do not print tokens, secrets, private keys, signed URLs, `.env` content, or sensitive raw records in logs, docs, issues, or task artifacts.
 
 ### Git Preflight Rules
@@ -56,9 +61,10 @@ The companion scripts live under `.trellis/guru-team/` and are installed by the 
 
 ### Handoff
 
-The preflight script writes `.trellis/guru-team/handoff.json` in the source checkout and the target worktree. It contains:
+After a confirmed `source_issue` exists, the preflight script writes `.trellis/guru-team/handoff.json` in the source checkout and, when a worktree is created or reused, the target worktree. Proposal-only output sets `handoff_written: false` and remains stdout-only. A written handoff contains:
 
-- source issue number, URL, title, and creation flag; `source_issue` is intake provenance, not the final close scope
+- confirmed source issue number, URL, title, and creation flag; `source_issue` is intake provenance, not the final close scope
+- handoff path and `handoff_written` state
 - slug, task slug, task title, branch, base branch, workspace path
 - an Issue Scope Ledger seed that the task copies to `{TASK_DIR}/issue-scope-ledger.json`
 - duplicate-search candidates
@@ -262,9 +268,19 @@ Run:
 
 If the command exits with duplicate candidates, show the candidates and ask the user whether to reuse one or force a new issue. Never silently bind to a candidate the user did not provide.
 
+If the command returns `proposed_issue` / `requires_confirmation`, stop before any GitHub or filesystem write. Show the duplicate-search result, proposed issue title/body, base branch, branch name, workspace path, and next confirmed command. If the user confirms issue creation, write the reviewed issue body to a temporary local file and rerun:
+
+```bash
+.trellis/guru-team/scripts/bash/prepare-task.sh --json \
+  --create-issue-confirmed \
+  --issue-title "<reviewed issue title>" \
+  --issue-body-file <reviewed-issue-body.md> \
+  "<user request>"
+```
+
 #### 0.3 Git base branch and worktree preflight `[required · once]`
 
-Use the preflight output from `prepare-task.sh`. The default command plans the worktree path but does not create it; `--create-worktree` or `--create-task` is required for filesystem workspace creation.
+Use the preflight output from `prepare-task.sh`. The default command plans the worktree path but does not create it; `--create-worktree` or `--create-task` is required for filesystem workspace creation and is allowed only after a confirmed `source_issue` exists.
 
 If the selected base branch is not the current branch, report the current branch, selected base, and candidates. If the right base branch is ambiguous, ask the user to choose before creating the task.
 
@@ -275,6 +291,7 @@ Default to worktree mode. If the need for a new worktree is uncertain, ask the u
 Before `task.py create`, summarize:
 
 - source issue URL
+- proposed issue title/body when `source_issue` is still null
 - duplicate-search result
 - base branch
 - branch name

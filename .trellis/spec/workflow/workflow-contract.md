@@ -28,6 +28,16 @@ Do not move Phase 0 side effects into `task.py create`: `prepare-task.sh` must
 resolve the source issue, base branch, branch name, workspace path, and handoff
 before `.trellis/tasks/` artifacts are written.
 
+`prepare-task.sh --json` is the default planner path. It may read GitHub issues,
+search duplicates, and compute source/proposed issue data. When no
+`source_issue` is confirmed, it must be stdout-only and must not write
+`.trellis/guru-team/handoff.json`, create a GitHub issue, worktree, branch, or
+Trellis task. A written handoff is allowed only after an explicit source issue
+exists. GitHub issue creation requires an explicit confirmed executor flag such
+as `--create-issue-confirmed` plus reviewed title/body input.
+`--create-worktree` and `--create-task` are executor flags for after AI handoff
+review and user approval.
+
 ## User-Facing Entrypoints
 
 Daily user entrypoints are natural-language task requests, issue URLs or issue
