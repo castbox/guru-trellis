@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import os
 import re
@@ -1073,6 +1074,31 @@ def load_findings(args: argparse.Namespace) -> list[dict[str, Any]]:
     return findings
 
 
+def load_review_report(root: Path, report_arg: str | None) -> dict[str, Any] | None:
+    if not report_arg:
+        return None
+    raw_path = Path(report_arg).expanduser()
+    path = raw_path if raw_path.is_absolute() else root / raw_path
+    if not path.exists():
+        raise WorkflowError(f"--review-report not found: {path}")
+    if not path.is_file():
+        raise WorkflowError(f"--review-report must point to a file: {path}")
+    content = path.read_bytes()
+    if not content.strip():
+        raise WorkflowError("--review-report must not be empty.")
+    stat = path.stat()
+    return {
+        "path": repo_relative(root, path),
+        "sha256": hashlib.sha256(content).hexdigest(),
+        "size_bytes": stat.st_size,
+        "modified_at": datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
+    }
+
+
+def has_review_identity(reviewer: str, review_report: dict[str, Any] | None) -> bool:
+    return bool(str(reviewer or "").strip()) or bool(review_report)
+
+
 def blocking_findings(findings: list[dict[str, Any]], config: dict[str, Any]) -> list[dict[str, Any]]:
     block = {str(item).upper() for item in review_gate_config(config).get("block_priorities", ["P0", "P1", "P2"])}
     return [finding for finding in findings if str(finding.get("priority") or "").upper() in block]
@@ -1089,6 +1115,7 @@ def build_review_gate_payload(
     summary: str,
     evidence: list[str],
     reviewer: str,
+    review_report: dict[str, Any] | None,
 ) -> dict[str, Any]:
     diff_spec = diff_range(root, base_branch)
     files = changed_files(root, diff_spec)
@@ -1139,8 +1166,9 @@ def build_review_gate_payload(
             "base_head": f"{diff_base_ref(root, base_branch)}...{current_head(root)}",
             "changed_file_count": len(files),
             "reviewer": reviewer,
+            "review_report": review_report,
             "evidence": evidence,
-            "notes": "review-branch 记录 diff 范围、结论和审查证据；具体审查判断由 AI/human review 输入 summary/evidence/findings。",
+            "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。",
         },
         "deployment_impact": deployment_impact,
     }
@@ -1185,6 +1213,14 @@ def validate_review_gate(
     evidence = verification.get("evidence")
     if not (isinstance(evidence, list) and any(str(item).strip() for item in evidence)):
         errors.append("Branch Review Gate 缺少具体 review evidence。")
+    reviewer = str(verification.get("reviewer") or "").strip()
+    review_report = verification.get("review_report") if isinstance(verification.get("review_report"), dict) else None
+    if not has_review_identity(reviewer, review_report):
+        errors.append("Branch Review Gate 缺少 reviewer 或 review_report，不能证明 gate 前已执行独立 AI/human review。")
+    if review_report is not None:
+        for key in ["path", "sha256", "size_bytes"]:
+            if not review_report.get(key):
+                errors.append(f"Branch Review Gate review_report 缺少 {key}。")
     reviewed_head = str(gate.get("head") or "")
     head = current_head(root)
     gate_config = review_gate_config(config)
@@ -1504,7 +1540,8 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     findings = load_findings(args)
     evidence = [str(item).strip() for item in (args.evidence or []) if str(item).strip()]
     summary = str(args.summary or "").strip()
-    if args.pass_gate and blocking_findings(findings, config):
+    blockers = blocking_findings(findings, config)
+    if args.pass_gate and blockers:
         raise WorkflowError("--pass cannot be used when P0/P1/P2 findings are present.")
     if args.pass_gate and not summary:
         raise WorkflowError(
@@ -1514,6 +1551,18 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     if args.pass_gate and not evidence:
         raise WorkflowError(
             "Branch Review Gate pass needs at least one --evidence line from the actual review.",
+            exit_code=2,
+        )
+    reviewer = str(args.reviewer or "").strip()
+    review_report = load_review_report(root, args.review_report)
+    if not blockers and not evidence:
+        raise WorkflowError(
+            "Branch Review Gate passing result needs at least one --evidence line from the actual review.",
+            exit_code=2,
+        )
+    if not blockers and not has_review_identity(reviewer, review_report):
+        raise WorkflowError(
+            "Branch Review Gate passing result needs --reviewer or --review-report from the prior AI/human review.",
             exit_code=2,
         )
     if not args.pass_gate and not findings:
@@ -1532,7 +1581,8 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         command=sys.argv[:],
         summary=summary,
         evidence=evidence,
-        reviewer=args.reviewer or "",
+        reviewer=reviewer,
+        review_report=review_report,
     )
     if args.pass_gate and bool(review_gate_config(config).get("require_deployment_impact_evidence", True)):
         deployment_errors = deployment_evidence_errors(payload.get("deployment_impact", {}), evidence, findings)
@@ -1779,6 +1829,7 @@ def build_parser() -> argparse.ArgumentParser:
     review.add_argument("--summary")
     review.add_argument("--evidence", action="append", help="Chinese review evidence line. Required with --pass.")
     review.add_argument("--reviewer", help="Reviewer name or AI/human review channel.")
+    review.add_argument("--review-report", help="Path to the prior AI/human review report recorded before gate artifact creation.")
     review.add_argument("--finding", action="append", help="Finding as PRIORITY|message[|path].")
     review.add_argument("--findings-file", help="JSON list or object with findings[].")
     review.add_argument("--dry-run", action="store_true")
