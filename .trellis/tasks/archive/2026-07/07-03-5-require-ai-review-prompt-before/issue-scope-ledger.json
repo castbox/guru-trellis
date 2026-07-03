@@ -1,0 +1,29 @@
+{
+  "primary_issue": {
+    "number": 5,
+    "url": "https://github.com/castbox/guru-trellis/issues/5",
+    "title": "Require AI review prompt before Branch Review Gate artifact",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "PRD 已将 issue #5 的验收标准拆解为 workflow、overlay、companion script、文档和 dry-run 验证要求。",
+      "workflow / overlay / README 已明确 Branch Review Gate 先执行 AI/human review，再调用 review-branch.sh recorder。",
+      "Phase 3.5 context 读取显示 3.5.1 AI Review Prompt 和 3.5.2 Gate Artifact Recorder。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 5,
+      "url": "https://github.com/castbox/guru-trellis/issues/5",
+      "title": "Require AI review prompt before Branch Review Gate artifact",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "PRD 已确认本任务仅关闭 issue #5，不纳入此前 handoff 漂移到的 issue #8。",
+        "review-branch --pass --dry-run 缺少 reviewer/review-report 时被拒绝；提供 reviewer 或 review-report 时通过并记录证据。",
+        "P3-only 非阻塞 gate 缺少 evidence 时被拒绝；带 reviewer + evidence 时允许 dry-run。",
+        "preset installer 临时安装验证通过：config preserved、scripts executable、overlay 文案含 reviewer/no-review 约束。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

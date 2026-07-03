@@ -62,8 +62,10 @@ English when needed, but write the surrounding explanation in Chinese.
 
 ## Branch Review Gate
 
-Branch Review Gate is a post-commit release gate. It must review the complete
-branch diff from the intake base branch to `HEAD`, not just the latest edit.
+Branch Review Gate is a post-commit release gate. The AI/human review step must
+review the complete branch diff from the intake base branch to `HEAD`, not just
+the latest edit. `review-branch.sh` then records and validates that prior review
+result; the script is not the reviewer.
 
 The gate must cover docs, code, tests, Trellis artifacts, config, scripts,
 schemas, CI/CD, container files, Kubernetes/Kustomize/Helm assets, database
@@ -75,6 +77,7 @@ Passing the gate requires:
 - `review-branch.sh --json --pass`
 - a Chinese `--summary`
 - at least one concrete `--evidence` line
+- `--reviewer` or `--review-report`
 - deployment impact evidence, even when the conclusion is that no deployment
   asset needs a change
 - no P0/P1/P2 findings

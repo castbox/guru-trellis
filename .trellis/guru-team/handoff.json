@@ -28,7 +28,7 @@
     "--assignee",
     "name=wumengye\ninitialized_at=2026-07-03T17:44:00.461566"
   ],
-  "task_dir": null,
+  "task_dir": ".trellis/tasks/07-03-5-require-ai-review-prompt-before",
   "duplicate_search": {
     "performed": false,
     "candidates": []

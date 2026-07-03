@@ -36,7 +36,8 @@ finish, publish, installer behavior, or source-repo dogfood overlay sync.
 ## Review Focus
 
 Before Branch Review Gate, review the full branch diff from the task's intake
-base branch. Include:
+base branch in AI/human code-review stance, then record the result with
+`review-branch.sh`. Include:
 
 - marketplace index and docs
 - workflow and dogfood copy

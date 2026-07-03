@@ -77,6 +77,7 @@ Branch Review Gate 与 publish helper 是内部子命令：
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \
+  --reviewer "codex-main-session" \
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json
@@ -91,6 +92,9 @@ matcher 判断是否进入 Guru Team issue intake 和 worktree preflight。
 仍保留为 fallback / explicit orientation 入口，用于无自动注入平台、hook 未启用或
 未审批、怀疑自动注入没有运行，或需要完整上下文报告和重新加载 Trellis 上下文的场景。
 
-`review-branch.sh --pass` 必须带中文 `--summary` 和至少一条 `--evidence`，避免空白自证通过。
+Branch Review Gate 必须先由 AI/human review prompt 审查完整 diff，再调用
+`review-branch.sh` 固化结论。`review-branch.sh` 是 recorder / validator，不是
+reviewer；`--pass` 必须带中文 `--summary`、至少一条 `--evidence`，以及
+`--reviewer` 或 `--review-report`，避免空白自证通过。
 Phase 2 的官方 `trellis-check` sub-agent 负责 commit 前质量检查；Phase 3 Branch
 Review Gate 可由 sub-agent 辅助审查，但最终门禁以 `review-gate.json` 为准。
