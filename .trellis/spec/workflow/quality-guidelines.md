@@ -26,11 +26,12 @@ python3 -m json.tool trellis/index.json
 bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh
 python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
 python3 ./.trellis/scripts/task.py validate <task-dir>
+trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 git diff --check
 ```
 
 Add targeted script invocations when changing phase parsing, intake, review,
-finish, publish, or installer behavior.
+finish, publish, installer behavior, or source-repo dogfood overlay sync.
 
 ## Review Focus
 

@@ -201,3 +201,11 @@ script，不是需要用户日常手动记忆的新主流程。`review-branch.sh
 - 中台知识检索和 durable docs SSOT 对齐规则维护在通用 workflow 中，具体业务仓库只保留 task 证据和必要的 docs 更新。
 - 长期规则维护在本仓库的 marketplace workflow、preset、companion scripts 和 overlay 中。
 - 目标业务仓库中的 generated copy 只是安装结果，不作为长期维护源。
+- 修改 `trellis/presets/guru-team/overlays/` 后，先重新应用 preset 到本仓库 dogfood copy，再运行 drift check：
+
+```bash
+trellis/presets/guru-team/scripts/bash/apply.sh --repo .
+trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
+```
+
+如果 preset 产生 `.new` 或 `.bak`，必须逐个检查原因并处理，不能静默提交。

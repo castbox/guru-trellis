@@ -1,17 +1,17 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 5,
-    "url": "https://github.com/castbox/guru-trellis/issues/5",
-    "title": "Require AI review prompt before Branch Review Gate artifact",
+    "number": 9,
+    "url": "https://github.com/castbox/guru-trellis/issues/9",
+    "title": "Keep dogfood installed overlays in sync with canonical preset overlays",
     "created_by_workflow": false
   },
-  "slug": "require-ai-review-prompt-before",
-  "task_slug": "5-require-ai-review-prompt-before",
-  "task_title": "#5 Require AI review prompt before Branch Review Gate artifact",
-  "branch_name": "codex/5-require-ai-review-prompt-before",
+  "slug": "keep-dogfood-installed-overlays-in",
+  "task_slug": "9-keep-dogfood-installed-overlays-in",
+  "task_title": "#9 Keep dogfood installed overlays in sync with canonical preset overlays",
+  "branch_name": "codex/9-keep-dogfood-installed-overlays-in",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/5-require-ai-review-prompt-before",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/9-keep-dogfood-installed-overlays-in",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -22,9 +22,9 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#5 Require AI review prompt before Branch Review Gate artifact",
+    "#9 Keep dogfood installed overlays in sync with canonical preset overlays",
     "--slug",
-    "5-require-ai-review-prompt-before",
+    "9-keep-dogfood-installed-overlays-in",
     "--assignee",
     "name=wumengye\ninitialized_at=2026-07-03T17:44:00.461566"
   ],
@@ -35,17 +35,17 @@
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 5,
-      "url": "https://github.com/castbox/guru-trellis/issues/5",
-      "title": "Require AI review prompt before Branch Review Gate artifact",
+      "number": 9,
+      "url": "https://github.com/castbox/guru-trellis/issues/9",
+      "title": "Keep dogfood installed overlays in sync with canonical preset overlays",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 5,
-        "url": "https://github.com/castbox/guru-trellis/issues/5",
-        "title": "Require AI review prompt before Branch Review Gate artifact",
+        "number": 9,
+        "url": "https://github.com/castbox/guru-trellis/issues/9",
+        "title": "Keep dogfood installed overlays in sync with canonical preset overlays",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -60,10 +60,11 @@
     "dirty": true,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                38927a5 [main]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle  ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/2-align-guru-team-workflow-trellis   692cd9f [codex/2-align-guru-team-workflow-trellis]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/5-require-ai-review-prompt-before    38927a5 [codex/5-require-ai-review-prompt-before]"
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                 38927a5 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle   ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/2-align-guru-team-workflow-trellis    692cd9f [codex/2-align-guru-team-workflow-trellis]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/5-require-ai-review-prompt-before     38927a5 [codex/5-require-ai-review-prompt-before]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/9-keep-dogfood-installed-overlays-in  38927a5 [codex/9-keep-dogfood-installed-overlays-in]"
     ],
     "selected_base_branch": "main",
     "workspace_was_created_or_reused": true

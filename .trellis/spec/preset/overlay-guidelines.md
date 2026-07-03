@@ -57,6 +57,17 @@ find trellis/presets/guru-team/overlays -type f | sort
 rg "Branch Review Gate|finish-work|handoff.json|guru-team-overlay" trellis/presets/guru-team/overlays
 ```
 
+After canonical overlay edits, re-apply the preset to this source repository and
+run the dogfood drift check:
+
+```bash
+trellis/presets/guru-team/scripts/bash/apply.sh --repo .
+trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
+```
+
+The drift check is read-only and only verifies file presence/content equality.
+It does not decide whether an overlay change is semantically correct.
+
 Keep platform-specific command names only where needed, such as
 `/trellis:finish-work` for Claude and `/trellis-finish-work` for Cursor.
 

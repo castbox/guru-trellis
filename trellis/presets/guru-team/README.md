@@ -37,6 +37,26 @@ The script creates a temporary Git repo, runs `trellis init -y` with the
 runs `check-env --json`. It intentionally lives in this source repository and
 is not copied into target business repos as a managed companion asset.
 
+## Dogfood Overlay Drift Check
+
+After changing any file under `trellis/presets/guru-team/overlays/`, maintainers
+must re-apply the preset to this source repository and verify that installed
+dogfood copies still match the canonical overlays:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/apply.sh --repo .
+./trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
+```
+
+`check-dogfood-overlay-drift.sh` is read-only. It compares canonical overlay
+files with same-path installed copies in this repository and exits non-zero for
+missing or changed copies. It is a source-repository maintainer check and is not
+installed into target business repositories as a managed companion asset.
+
+If `apply.sh` creates `.new` or `.bak` files, inspect and resolve them before
+committing. A passing drift check is not a replacement for AI review or the
+Branch Review Gate.
+
 ## Installed Files
 
 - `.trellis/guru-team/config.yml`

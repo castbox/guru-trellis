@@ -12,11 +12,11 @@ Route by task status:
 
 - planning: keep required artifacts in Chinese, run Docs SSOT discovery and the Middle-platform Knowledge Gate when relevant, then ask for review before `task.py start`.
 - in_progress: confirm knowledge-gate and docs responsibilities from artifacts, implement, check, reconcile specs/docs, then commit.
-- after commit: first perform an AI/human review in code-review stance over the full diff, then run Branch Review Gate before `/trellis-finish-work`, including Docs SSOT reconciliation evidence.
+- after commit: first perform an AI/human review in code-review stance over the full diff, then run Branch Review Gate before `/trellis:finish-work`, including Docs SSOT reconciliation evidence.
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \
-  --reviewer "cursor-main-session" \
+  --reviewer "claude-main-session" \
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
 ```

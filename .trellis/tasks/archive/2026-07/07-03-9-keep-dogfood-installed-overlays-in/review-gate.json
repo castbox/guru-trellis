@@ -1,0 +1,196 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-03T13:27:01Z",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in",
+  "base_branch": "main",
+  "base_ref": "origin/main",
+  "head_branch": "codex/9-keep-dogfood-installed-overlays-in",
+  "head": "e7803543b60951e6702fe7b3e637461dea802aef",
+  "diff_range": "origin/main...HEAD",
+  "changed_files": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".agents/skills/trellis-finish-work/SKILL.md",
+    ".agents/skills/trellis-start/SKILL.md",
+    ".claude/commands/trellis/continue.md",
+    ".claude/commands/trellis/finish-work.md",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/prompts/trellis-finish-work.md",
+    ".codex/prompts/trellis-start.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".codex/skills/trellis-finish-work/SKILL.md",
+    ".codex/skills/trellis-start/SKILL.md",
+    ".cursor/commands/trellis-continue.md",
+    ".cursor/commands/trellis-finish-work.md",
+    ".trellis/guru-team/config-template.yml",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/check.jsonl",
+    ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/design.md",
+    ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/implement.jsonl",
+    ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/implement.md",
+    ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/issue-scope-ledger.json",
+    ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/prd.md",
+    ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/research/official-trellis-docs.md",
+    ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/review-gate.json",
+    ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/task.json",
+    ".trellis/workflow.md",
+    "AGENTS.md",
+    "README.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "review_scope": [
+    "文档",
+    "代码",
+    "测试",
+    "Trellis artifacts",
+    "配置",
+    "脚本",
+    "schema",
+    "CI/CD workflow 与发布自动化",
+    "Dockerfile / Docker Compose / 容器启动脚本",
+    "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
+    "数据库 schema / migration / seed / backfill 脚本",
+    "各目录下本次变更涉及的 Makefile",
+    "preset installer"
+  ],
+  "command": [
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/9-keep-dogfood-installed-overlays-in/.trellis/guru-team/scripts/bash/../python/guru_team_trellis.py",
+    "review-branch",
+    "--json",
+    "--task",
+    ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in",
+    "--pass",
+    "--summary",
+    "Branch Review Gate 通过：已审查 origin/main...HEAD 的完整 diff，当前 HEAD e7803543b60951e6702fe7b3e637461dea802aef 覆盖 issue #9 的 dogfood overlay 同步、只读 drift check、维护文档、任务归档 artifact 与 review-gate metadata，未发现 P0/P1/P2/P3 finding。",
+    "--evidence",
+    "Diff range: origin/main...HEAD，base=main，head=e7803543b60951e6702fe7b3e637461dea802aef；覆盖 .agents/.codex/.cursor/.claude dogfood overlay、.trellis/guru-team/config-template.yml、README/AGENTS/workflow/spec、check-dogfood-overlay-drift.sh、归档 task artifacts 与 review-gate.json metadata。",
+    "--evidence",
+    "已运行 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh，结果为 dogfood overlay copies match canonical Guru Team overlays；canonical overlay 与 dogfood installed copy 当前无漂移。",
+    "--evidence",
+    "验证通过：python3 -m json.tool trellis/index.json；bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh；python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py；python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-03-9-keep-dogfood-installed-overlays-in；git diff --check origin/main...HEAD。",
+    "--evidence",
+    "开箱即用门禁：此前已运行 verify-throwaway-install.sh，临时仓库可通过 trellis init -y --workflow guru-team --workflow-source gh:castbox/guru-trellis/trellis 初始化、apply preset，并通过 check-env --json；归档提交只移动 Trellis task evidence，不改变实现代码。",
+    "--evidence",
+    "Docs SSOT：本仓库没有 docs/ 目录；长期维护规则已合并到 README.md、trellis/presets/guru-team/README.md、AGENTS.md、trellis/workflows/guru-team/workflow.md、.trellis/workflow.md 与 .trellis/spec。归档 task artifact 和 review-gate.json 仅保留 issue #9 执行证据。",
+    "--evidence",
+    "部署影响：本次 diff 未修改 .github/workflows、Dockerfile、Docker Compose、Kubernetes/Kustomize/Helm、数据库 migration、Makefile；没有新增运行服务、API、worker、队列消费者、migration entrypoint 或 runtime config，故无需部署资产同步。",
+    "--evidence",
+    "Issue Scope Ledger 覆盖 close_issues=[#9]，验收证据已记录 apply preset、drift check、throwaway install 和验证命令结果；无 related_issues 或 followup_issues。"
+  ],
+  "conclusion": {
+    "passed": true,
+    "summary": "Branch Review Gate 通过：已审查 origin/main...HEAD 的完整 diff，当前 HEAD e7803543b60951e6702fe7b3e637461dea802aef 覆盖 issue #9 的 dogfood overlay 同步、只读 drift check、维护文档、任务归档 artifact 与 review-gate metadata，未发现 P0/P1/P2/P3 finding。",
+    "block_priorities": [
+      "P0",
+      "P1",
+      "P2"
+    ],
+    "blocking_findings_count": 0
+  },
+  "findings": [],
+  "issue_scope": {
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/issue-scope-ledger.json",
+    "close_issues_reviewed": [
+      {
+        "number": 9,
+        "url": "https://github.com/castbox/guru-trellis/issues/9",
+        "title": "Keep dogfood installed overlays in sync with canonical preset overlays",
+        "reason": "本任务同步 dogfood installed overlay copies，新增 drift check，并更新维护文档。",
+        "acceptance_evidence": [
+          "新增 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh，只读比较 canonical overlay 与 dogfood installed copy。",
+          "同步 .agents、.codex、.cursor dogfood overlay，并安装缺失的 .claude/commands/trellis/* dogfood entries。",
+          "README、trellis/presets/guru-team/README.md、AGENTS.md、workflow 与 .trellis/spec 均记录 overlay drift check 和 .new/.bak 处理要求。"
+        ]
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "verification_evidence": {
+    "base_head": "origin/main...e7803543b60951e6702fe7b3e637461dea802aef",
+    "changed_file_count": 32,
+    "reviewer": "",
+    "evidence": [
+      "Diff range: origin/main...HEAD，base=main，head=e7803543b60951e6702fe7b3e637461dea802aef；覆盖 .agents/.codex/.cursor/.claude dogfood overlay、.trellis/guru-team/config-template.yml、README/AGENTS/workflow/spec、check-dogfood-overlay-drift.sh、归档 task artifacts 与 review-gate.json metadata。",
+      "已运行 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh，结果为 dogfood overlay copies match canonical Guru Team overlays；canonical overlay 与 dogfood installed copy 当前无漂移。",
+      "验证通过：python3 -m json.tool trellis/index.json；bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh；python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py；python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-03-9-keep-dogfood-installed-overlays-in；git diff --check origin/main...HEAD。",
+      "开箱即用门禁：此前已运行 verify-throwaway-install.sh，临时仓库可通过 trellis init -y --workflow guru-team --workflow-source gh:castbox/guru-trellis/trellis 初始化、apply preset，并通过 check-env --json；归档提交只移动 Trellis task evidence，不改变实现代码。",
+      "Docs SSOT：本仓库没有 docs/ 目录；长期维护规则已合并到 README.md、trellis/presets/guru-team/README.md、AGENTS.md、trellis/workflows/guru-team/workflow.md、.trellis/workflow.md 与 .trellis/spec。归档 task artifact 和 review-gate.json 仅保留 issue #9 执行证据。",
+      "部署影响：本次 diff 未修改 .github/workflows、Dockerfile、Docker Compose、Kubernetes/Kustomize/Helm、数据库 migration、Makefile；没有新增运行服务、API、worker、队列消费者、migration entrypoint 或 runtime config，故无需部署资产同步。",
+      "Issue Scope Ledger 覆盖 close_issues=[#9]，验收证据已记录 apply preset、drift check、throwaway install 和验证命令结果；无 related_issues 或 followup_issues。"
+    ],
+    "notes": "review-branch 记录 diff 范围、结论和审查证据；具体审查判断由 AI/human review 输入 summary/evidence/findings。"
+  },
+  "deployment_impact": {
+    "changed_file_categories": {
+      "docs": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".agents/skills/trellis-finish-work/SKILL.md",
+        ".agents/skills/trellis-start/SKILL.md",
+        ".claude/commands/trellis/continue.md",
+        ".claude/commands/trellis/finish-work.md",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/prompts/trellis-finish-work.md",
+        ".codex/prompts/trellis-start.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".codex/skills/trellis-finish-work/SKILL.md",
+        ".codex/skills/trellis-start/SKILL.md",
+        ".cursor/commands/trellis-continue.md",
+        ".cursor/commands/trellis-finish-work.md",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/design.md",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/implement.md",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/prd.md",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/research/official-trellis-docs.md",
+        ".trellis/workflow.md",
+        "AGENTS.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "trellis_artifacts": [
+        ".trellis/guru-team/config-template.yml",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/check.jsonl",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/design.md",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/implement.jsonl",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/implement.md",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/prd.md",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/research/official-trellis-docs.md",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/review-gate.json",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/task.json",
+        ".trellis/workflow.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "config": [
+        ".trellis/guru-team/config-template.yml",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/review-gate.json",
+        ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/task.json"
+      ],
+      "scripts": [
+        "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
+      ]
+    },
+    "deployment_asset_categories": {},
+    "changed_deployment_assets": [],
+    "probable_runtime_changes_without_deployment_asset_change": [
+      ".claude/commands/trellis/continue.md",
+      ".claude/commands/trellis/finish-work.md",
+      ".cursor/commands/trellis-continue.md",
+      ".cursor/commands/trellis-finish-work.md"
+    ],
+    "needs_deployment_impact_review": true,
+    "review_instruction": "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；如果不需要，必须给出不需要的理由。"
+  }
+}
