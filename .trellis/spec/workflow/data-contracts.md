@@ -68,12 +68,14 @@ The artifact records:
 - changed files and classified deployment impact
 - review scope
 - conclusion summary
+- reviewer identity or review report digest
 - findings
 - Issue Scope Ledger coverage
 - validation evidence
 
 The gate is valid only for the reviewed `HEAD`, except that `finish-work` may
-allow metadata-only commits after the gate. Enforcement lives in
+allow metadata-only commits after the gate. A passed gate is invalid if it lacks
+both reviewer identity and review report metadata. Enforcement lives in
 `validate_review_gate()` and `metadata_only_since()`.
 
 ## JSON and Text Encoding
