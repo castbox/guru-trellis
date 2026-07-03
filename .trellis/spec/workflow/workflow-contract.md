@@ -94,6 +94,13 @@ no-task current-checkout direct-edit override, the review must verify explicit
 user approval evidence; otherwise it must verify Phase 0 handoff/preflight
 evidence for file-changing work.
 
+Before writing `review.md`, `review-gate.json`, or any task artifact during the
+gate, the AI must verify the shell/editor working directory is the task
+worktree selected by intake `workspace_path`. Manual edits must use a
+worktree-local absolute path when the editing tool cannot receive an explicit
+working directory. Relative task artifact paths are never relative to the source
+checkout or another worktree.
+
 Passing the gate requires:
 
 - `review-branch.sh --json --pass`

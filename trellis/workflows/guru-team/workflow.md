@@ -561,6 +561,13 @@ Persist the review result in the conversation and, when practical, in a task
 artifact such as `{TASK_DIR}/review.md`. The review must include concrete
 summary/evidence and findings, even when findings are empty.
 
+Before writing `review.md`, `review-gate.json`, or any task artifact, confirm the
+current working directory is the task's selected `workspace_path`, not the source
+checkout or another worktree. Use the worktree-local absolute path for manual
+file edits when the editing tool does not take an explicit working directory.
+Relative task artifact paths such as `{TASK_DIR}/review.md` are relative to the
+task worktree only.
+
 ##### 3.5.2 Gate Artifact Recorder
 
 Only after the AI/human review has completed, write the gate artifact. The pass

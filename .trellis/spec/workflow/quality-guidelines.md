@@ -54,6 +54,10 @@ base branch in AI/human code-review stance, then record the result with
 - generated or installed-copy expectations
 - Phase 0 handoff/preflight evidence, or explicit no-task direct-edit override
   evidence when the branch intentionally skipped issue/task/worktree/branch
+- task artifact write location: `review.md`, `review-gate.json`, and similar
+  files must be written under the task worktree selected by intake
+  `workspace_path`; when a manual editing tool has no explicit working
+  directory, use a worktree-local absolute path
 - deployment asset impact
 
 ## Anti-Patterns
@@ -65,6 +69,8 @@ base branch in AI/human code-review stance, then record the result with
 - Relying on chat memory for issue close scope, base branch, or reviewed head.
 - Treating "small fix" as permission to modify the current checkout under
   `no_task` without Phase 0 evidence or explicit direct-edit override evidence.
+- Writing task review artifacts into the source checkout because a manual edit
+  used a relative path while the active task lives in a separate worktree.
 - Leaving `.new` or `.bak` installer outputs unresolved in committed changes.
 - Committing local identity files, `.env`, tokens, signed URLs, or private
   provider output.
