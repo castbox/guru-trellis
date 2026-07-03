@@ -19,12 +19,20 @@ target business repository. They should tell the AI to:
 - detect conflicting SDD or agent harness frameworks before installing
 - use the `guru-team` marketplace workflow source
 - apply the preset installer from this public repository
+- detect `00-bootstrap-guidelines` after init and explain that spec bootstrap
+  is a one-time repo-level task that needs explicit user confirmation before
+  AI modifies `.trellis/spec/`
 - keep only selected platform entry directories
 - run minimal validation
 - check for secrets before commit
 - do Git publishing preflight before pushing or opening a PR
 
 Do not write prompts that assume direct push to protected branches.
+
+Do not write prompts that silently complete spec bootstrap as an install or
+upgrade side effect. Installation docs should tell the AI to report the
+bootstrap task, explain the intended `.trellis/spec/` changes, and ask whether
+to complete it now or leave it for a separate follow-up.
 
 ## SSOT Rules
 

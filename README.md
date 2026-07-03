@@ -26,6 +26,8 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 - 如果当前 Repo 还没有 .trellis/，直接用 Guru Team workflow 初始化：`trellis init -u <your-name> --codex --cursor --workflow guru-team --workflow-source gh:castbox/guru-trellis/trellis`。
 - 获取本公开 preset 仓库的最新内容，例如 clone 到临时目录或复用已有本地副本并 `git pull --ff-only`：`https://github.com/castbox/guru-trellis.git`。
 - 执行 `<guru-trellis>/trellis/presets/guru-team/scripts/bash/apply.sh --repo <current-repo>`，把 Guru Team companion assets 和所选平台 overlay 应用到当前 Repo。
+- 安装后检查是否存在 `.trellis/tasks/00-bootstrap-guidelines/`。这是 `trellis init` 生成的一次性 Repo 级 spec bootstrap 任务，用于把 `.trellis/spec/` 从通用模板改成当前 Repo 的真实工程规范；它不是每个 task 都要做，也不能作为安装副作用静默完成。先向我说明它的目的、将检查哪些源码/文档、将修改哪些 `.trellis/spec/` 文件，并询问我是现在让 AI 完成，还是保留该 task 后续单独处理。
+- 只有在我明确确认现在执行 spec bootstrap 时，才扫描当前 Repo 的真实代码和文档，填充 `.trellis/spec/`、更新 `00-bootstrap-guidelines` checklist，并把这些改动纳入本次安装提交；如果我未确认，不要修改 `.trellis/spec/` 模板内容或 bootstrap task 状态。
 - 安装后确认当前 Repo 只保留你选择的平台入口目录；如果出现未选择的平台目录，例如 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等，说明原因并清理或请我确认。
 - 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env。
 - 检查 git diff，确认没有敏感信息、.env、token、私钥或本机-only 身份文件被提交。
@@ -37,6 +39,7 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 - 安装到的 Trellis 版本；
 - 使用的用户名；
 - 实际启用并保留了哪些平台入口；
+- 是否发现 `00-bootstrap-guidelines`；是否已获得确认并完成 spec bootstrap，或保留为后续 task；
 - 验证命令结果；
 - Git 发布预检结论、最终分支、commit hash，以及 push / PR 结果或未 push 的原因。
 ```
@@ -62,6 +65,7 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 - 获取本公开 preset 仓库的最新内容，例如 clone 到临时目录或复用已有本地副本并 `git pull --ff-only`：`https://github.com/castbox/guru-trellis.git`。
 - 执行 `<guru-trellis>/trellis/presets/guru-team/scripts/bash/apply.sh --repo <current-repo>`，重新应用 Guru Team companion assets 和所选平台 overlay。
 - 如果 preset 生成 .new 或 .bak，逐个检查原因；不要静默覆盖未知本地改动。
+- 升级流程不要重新静默执行 spec bootstrap。若发现 `.trellis/tasks/00-bootstrap-guidelines/` 仍处于 active，或 `.trellis/spec/` 仍是通用模板，先报告这是尚未完成的一次性 Repo 级 bootstrap，并询问是否单独处理；未确认前不要修改 `.trellis/spec/` 模板内容或 bootstrap task 状态。
 - 升级后确认当前 Repo 只保留你选择的平台入口目录；如果出现未选择的平台目录，例如 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等，说明原因并清理或请我确认。
 - 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env。
 - 检查 git diff，确认没有敏感信息、.env、token、私钥或本机-only 身份文件被提交。
@@ -74,6 +78,7 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 - workflow/preset 是否已重新应用；
 - 实际启用并保留了哪些平台入口；
 - 是否产生 .new 或 .bak 以及处理结果；
+- 是否发现未完成的 `00-bootstrap-guidelines`，以及是否保留为后续单独处理；
 - 验证命令结果；
 - Git 发布预检结论、最终分支、commit hash，以及 push / PR 结果或未 push 的原因。
 ```
@@ -82,6 +87,24 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 >
 > - 默认升级 prompt 只保留 Codex + Cursor。
 > - 如果你的 repo 使用其它 AI 开发工具，要先把平台说明改成实际需要的平台入口，例如 Claude、OpenCode、Gemini、Copilot 等，再执行升级。
+
+## 关于 Spec Bootstrap
+
+`trellis init` 可能会生成 `.trellis/tasks/00-bootstrap-guidelines/`。这是一次性
+Repo 级任务，用来把 `.trellis/spec/` 从通用模板改成当前 Repo 的真实工程规范，让后续
+AI session 按项目实际约定实现和检查代码。
+
+这个任务不应作为安装或升级的静默副作用自动完成。AI 可以发现并提示它，但必须先说明：
+
+- 为什么需要填充 `.trellis/spec/`；
+- 将读取哪些现有约定文档、源码、脚本、测试或 README；
+- 将新增、删除或改写哪些 spec 文件；
+- 是否会更新 `00-bootstrap-guidelines` task artifact；
+- 是否会把 spec bootstrap 改动纳入当前提交。
+
+只有用户明确确认后，AI 才应执行 spec bootstrap。它通常每个 Repo 做一次；后续每个
+task 只是读取 `.trellis/spec/`，只有发现新的可复用约定或踩坑时才小范围更新 spec，
+那属于普通 spec update，不是重新 bootstrap。
 
 ## 仓库内容
 

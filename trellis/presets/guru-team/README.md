@@ -57,6 +57,19 @@ trellis workflow \
   --template guru-team
 ```
 
+## Spec Bootstrap
+
+`trellis init` may create `.trellis/tasks/00-bootstrap-guidelines/`. That task is
+a one-time repository-level prompt to replace generic `.trellis/spec/` templates
+with the target repository's real conventions.
+
+The Guru Team preset must not silently complete that task as an install or
+upgrade side effect. An AI installer may report that the task exists and explain
+what spec files it would inspect or modify, but it should ask the user whether
+to complete bootstrap now or leave it for a separate follow-up. If the user does
+not explicitly confirm, preserve the task and do not rewrite `.trellis/spec/`
+template content.
+
 The daily user-facing entry points are natural-language task requests, issue
 URLs or issue numbers, `trellis-continue`, and `trellis-finish-work`. The
 `trellis-start` overlay remains installed as a fallback / explicit orientation
