@@ -21,9 +21,11 @@
   "children": [],
   "parent": null,
   "relatedFiles": [
-    ".trellis/spec/backend/",
-    ".trellis/spec/frontend/"
+    ".trellis/spec/workflow/",
+    ".trellis/spec/preset/",
+    ".trellis/spec/docs/",
+    ".trellis/spec/guides/"
   ],
-  "notes": "First-time setup task created by trellis init (fullstack project)",
+  "notes": "First-time setup task created by trellis init; adapted to this repository's Guru Team workflow/preset/docs architecture.",
   "meta": {}
 }

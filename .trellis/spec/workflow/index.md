@@ -1,0 +1,61 @@
+# Guru Trellis Workflow Specs
+
+This repository is the public source for the reusable `guru-team` Trellis
+workflow and preset. It is not a product backend/frontend application.
+
+## Scope
+
+Use these specs when changing:
+
+- `trellis/workflows/guru-team/workflow.md`
+- `trellis/workflows/guru-team/config-template.yml`
+- `trellis/workflows/guru-team/schemas/`
+- `trellis/workflows/guru-team/scripts/`
+- `.trellis/workflow.md` when dogfooding the marketplace workflow in this repo
+
+## Pre-Development Checklist
+
+Before editing workflow behavior:
+
+1. Read [workflow-contract.md](./workflow-contract.md).
+2. Read [companion-scripts.md](./companion-scripts.md) when changing Bash or Python helpers.
+3. Read [data-contracts.md](./data-contracts.md) when changing config, handoff, review-gate, issue ledger, or PR payload data.
+4. Read [quality-guidelines.md](./quality-guidelines.md) before validation or commit.
+5. Read shared guides under `.trellis/spec/guides/` when the change touches multiple generated surfaces or payload contracts.
+
+## Local Architecture
+
+- `trellis/index.json` publishes the marketplace template id `guru-team`.
+- `trellis/workflows/guru-team/workflow.md` is the canonical workflow contract.
+- `.trellis/workflow.md` is this repository's dogfooded active copy and must stay synchronized when runtime parsing or local validation depends on the updated workflow.
+- `trellis/workflows/guru-team/config-template.yml` defines default Guru Team behavior.
+- `trellis/workflows/guru-team/scripts/bash/*.sh` are thin executable wrappers.
+- `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py` owns companion behavior.
+- `trellis/workflows/guru-team/schemas/intake-handoff.schema.json` documents the intake handoff JSON shape.
+
+## Required Validation
+
+Run the narrowest reliable set for your change, and include the result in the task record:
+
+```bash
+python3 -m json.tool trellis/index.json
+bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh
+python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
+python3 ./.trellis/scripts/task.py validate <task-dir>
+git diff --check
+```
+
+For workflow phase behavior, also run representative context reads:
+
+```bash
+python3 ./.trellis/scripts/get_context.py --mode phase
+python3 ./.trellis/scripts/get_context.py --mode phase --step 1.1
+python3 ./.trellis/scripts/get_context.py --mode phase --step 2.1
+python3 ./.trellis/scripts/get_context.py --mode phase --step 3.5
+```
+
+## Non-Applicable Template Areas
+
+There is no app frontend, database, API server, or ORM in this repository. Do
+not add React, database, route-handler, or service-layer guidance unless the
+repository actually grows those assets.

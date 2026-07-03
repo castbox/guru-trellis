@@ -1,0 +1,90 @@
+# Companion Scripts
+
+## Script Boundaries
+
+Bash files under `trellis/workflows/guru-team/scripts/bash/` are thin wrappers.
+They should use `set -euo pipefail`, resolve their own `SCRIPT_DIR`, and delegate
+behavior to the Python companion:
+
+```bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+python3 "$SCRIPT_DIR/../python/guru_team_trellis.py" <subcommand> "$@"
+```
+
+Keep argument parsing and workflow logic in
+`trellis/workflows/guru-team/scripts/python/guru_team_trellis.py` unless there
+is a shell-specific reason to handle it in Bash. Existing examples:
+
+- `trellis/workflows/guru-team/scripts/bash/prepare-task.sh`
+- `trellis/workflows/guru-team/scripts/bash/review-branch.sh`
+- `trellis/presets/guru-team/scripts/bash/apply.sh`
+
+## Python Runtime Constraints
+
+The companion script is installed into target repositories. Keep it portable:
+
+- Use the Python standard library only.
+- Shell out to `git` and `gh` through helper functions such as `run()` and
+  `run_stdout()`.
+- Use `pathlib.Path` for filesystem paths.
+- Use `json.dumps(..., ensure_ascii=False, indent=2)` for user-visible JSON
+  payloads and artifacts.
+- Keep typed helpers and constants near the top of the file when they define
+  reusable contracts.
+
+Reference files:
+
+- `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`
+- `trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py`
+
+## Error Handling
+
+Use `WorkflowError` for expected workflow failures in
+`guru_team_trellis.py`. Include `exit_code=2` for user-actionable blocked states
+such as duplicate issue confirmation, missing review-gate evidence, dirty
+non-metadata paths, or incomplete Issue Scope Ledger.
+
+The `main()` function prints a JSON error payload to stderr when `--json` is
+used. Do not scatter `sys.exit()` calls through helper functions in the workflow
+companion.
+
+The preset installer currently uses `SystemExit` for missing `.trellis/` or
+missing source directory because it is a small installer script. If adding more
+complex failure modes there, preserve JSON output for normal success and avoid
+printing secrets or local-only data.
+
+## GitHub and Git Operations
+
+Always gate GitHub operations with `gh auth status` through `require_gh_auth()`.
+Do not assume the GitHub CLI is configured just because `gh` exists.
+
+Before publish, reject uncommitted non-metadata changes. Metadata-only paths are
+defined by `METADATA_ONLY_PREFIXES` and `METADATA_ONLY_FILES`; update these
+constants deliberately if Trellis metadata ownership changes.
+
+Use the intake/task `base_branch` for diff ranges and PR base. Do not fall back
+to the GitHub default branch when the task has an explicit base.
+
+## Security Rules
+
+Never print or persist tokens, private keys, signed URLs, `.env` contents,
+database URLs, or sensitive raw records in logs, JSON artifacts, issues, PR
+bodies, or README examples.
+
+When writing temporary PR or issue body files, use `tempfile.NamedTemporaryFile`
+and unlink the file in a `finally` block. Existing examples:
+
+- `create_issue()`
+- `cmd_publish_pr()`
+
+## Validation
+
+For any script change, run:
+
+```bash
+bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh
+python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
+```
+
+When changing `review-branch`, `finish-work`, or `publish-pr`, also run dry-run
+or representative script paths in a disposable worktree whenever practical.

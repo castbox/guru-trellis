@@ -21,36 +21,44 @@ the rest conversationally.
 
 ## Status (update the checkboxes as you complete each item)
 
-- [ ] Fill backend guidelines
-- [ ] Fill frontend guidelines
-- [ ] Add code examples
+- [x] Fill workflow guidelines
+- [x] Fill preset installer and overlay guidelines
+- [x] Fill public documentation guidelines
+- [x] Add repository-backed examples
 
 ---
 
-## Spec files to populate
+## Spec files populated
 
+This repository is not a traditional backend/frontend application. It is the
+public marketplace and preset source for the reusable Guru Team Trellis workflow.
+The initial template directories were replaced with spec layers that match the
+actual repository:
 
-### Backend guidelines
+### Workflow guidelines
 
-| File | What to document |
-|------|------------------|
-| `.trellis/spec/backend/directory-structure.md` | Where different file types go (routes, services, utils) |
-| `.trellis/spec/backend/database-guidelines.md` | ORM, migrations, query patterns, naming conventions |
-| `.trellis/spec/backend/error-handling.md` | How errors are caught, logged, and returned |
-| `.trellis/spec/backend/logging-guidelines.md` | Log levels, format, what to log |
-| `.trellis/spec/backend/quality-guidelines.md` | Code review standards, testing requirements |
+| File | What it documents |
+|------|-------------------|
+| `.trellis/spec/workflow/index.md` | Workflow spec entrypoint, applicable files, validation |
+| `.trellis/spec/workflow/workflow-contract.md` | Phase ownership, user entrypoints, Branch Review Gate, publish boundary |
+| `.trellis/spec/workflow/companion-scripts.md` | Bash wrapper, Python helper, error handling, Git/GitHub and security rules |
+| `.trellis/spec/workflow/data-contracts.md` | Config, handoff, Issue Scope Ledger, review-gate, JSON encoding contracts |
+| `.trellis/spec/workflow/quality-guidelines.md` | Required checks, review focus, anti-patterns |
 
+### Preset guidelines
 
-### Frontend guidelines
+| File | What it documents |
+|------|-------------------|
+| `.trellis/spec/preset/index.md` | Preset spec entrypoint and local architecture |
+| `.trellis/spec/preset/installer.md` | Managed assets, config preservation, overlay conflict handling |
+| `.trellis/spec/preset/overlay-guidelines.md` | Cross-platform overlay consistency and required content |
 
-| File | What to document |
-|------|------------------|
-| `.trellis/spec/frontend/directory-structure.md` | Component/page/hook organization |
-| `.trellis/spec/frontend/component-guidelines.md` | Component patterns, props conventions |
-| `.trellis/spec/frontend/hook-guidelines.md` | Custom hook naming, patterns |
-| `.trellis/spec/frontend/state-management.md` | State library, patterns, what goes where |
-| `.trellis/spec/frontend/type-safety.md` | TypeScript conventions, type organization |
-| `.trellis/spec/frontend/quality-guidelines.md` | Linting, testing, accessibility |
+### Documentation guidelines
+
+| File | What it documents |
+|------|-------------------|
+| `.trellis/spec/docs/index.md` | Public documentation spec entrypoint |
+| `.trellis/spec/docs/public-docs.md` | README prompts, SSOT rules, safety, docs validation |
 
 
 ### Thinking guides (already populated)
