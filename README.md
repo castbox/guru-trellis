@@ -29,14 +29,16 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 - 安装后确认当前 Repo 只保留你选择的平台入口目录；如果出现未选择的平台目录，例如 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等，说明原因并清理或请我确认。
 - 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env。
 - 检查 git diff，确认没有敏感信息、.env、token、私钥或本机-only 身份文件被提交。
-- 提交并 push。
+- 提交前先做 Git 发布预检：检查当前分支、默认分支、远端、是否可能是受保护分支，以及是否已有未提交用户改动。不要默认直接 push 到 main/master/dev/develop 等共享分支。
+- 如果当前分支可能受保护或不适合直接推送，先询问我是在当前分支提交，还是创建单独分支并在完成后 push 分支、创建 PR。
+- 按我确认的分支策略提交；只有在确认允许 push 时才 push，只有在确认需要 PR 时才创建 PR。
 
 完成后告诉我：
 - 安装到的 Trellis 版本；
 - 使用的用户名；
 - 实际启用并保留了哪些平台入口；
 - 验证命令结果；
-- commit hash 和 push 结果。
+- Git 发布预检结论、最终分支、commit hash，以及 push / PR 结果或未 push 的原因。
 ```
 
 > **NOTE：复制 prompt 前必须先替换占位符。**
@@ -63,7 +65,9 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 - 升级后确认当前 Repo 只保留你选择的平台入口目录；如果出现未选择的平台目录，例如 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等，说明原因并清理或请我确认。
 - 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env。
 - 检查 git diff，确认没有敏感信息、.env、token、私钥或本机-only 身份文件被提交。
-- 提交并 push。
+- 提交前先做 Git 发布预检：检查当前分支、默认分支、远端、是否可能是受保护分支，以及是否已有未提交用户改动。不要默认直接 push 到 main/master/dev/develop 等共享分支。
+- 如果当前分支可能受保护或不适合直接推送，先询问我是在当前分支提交，还是创建单独分支并在完成后 push 分支、创建 PR。
+- 按我确认的分支策略提交；只有在确认允许 push 时才 push，只有在确认需要 PR 时才创建 PR。
 
 完成后告诉我：
 - 升级前后的 Trellis 版本；
@@ -71,7 +75,7 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 - 实际启用并保留了哪些平台入口；
 - 是否产生 .new 或 .bak 以及处理结果；
 - 验证命令结果；
-- commit hash 和 push 结果。
+- Git 发布预检结论、最终分支、commit hash，以及 push / PR 结果或未 push 的原因。
 ```
 
 > **NOTE：复制 prompt 前必须先确认平台范围。**
