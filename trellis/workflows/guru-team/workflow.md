@@ -498,6 +498,7 @@ Review must cover:
 - database schema/migration/seed/backfill scripts;
 - Makefiles in any directory when changed;
 - preset installer and overlays;
+- source-repo dogfood overlay drift check when the diff changes `trellis/presets/guru-team/overlays/` or installed dogfood copies;
 - any generated or marketplace files changed by this task.
 
 Findings use `P0`, `P1`, `P2`, `P3`:

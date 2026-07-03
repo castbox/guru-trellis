@@ -98,6 +98,7 @@ Python / shell 代码只负责确定性动作：
 
 - 长期源头必须在本仓库 canonical 位置：`trellis/workflows/guru-team/`、`trellis/presets/guru-team/`、`trellis/index.json`、`trellis/presets/guru-team/overlays/`。
 - 当前仓库 `.trellis/workflow.md`、`.agents/skills/`、`.codex/prompts/`、`.codex/skills/` 等 dogfood 安装副本只是运行副本；改动 canonical 后要同步 dogfood 副本，但不能把 dogfood 副本当作唯一源头。
+- 改动 `trellis/presets/guru-team/overlays/` 后，必须运行 `trellis/presets/guru-team/scripts/bash/apply.sh --repo .` 同步 dogfood 安装副本，并运行 `trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh` 验证无漂移；如产生 `.new` / `.bak` 必须逐个处理并记录。
 - 每次修改 workflow/preset/overlay 后，要检查后续 `trellis update` 是否会覆盖、删除或回退这些文件；如果会，必须调整为官方支持的 marketplace / preset / overlay 机制。
 - 旧版本上打过 patch 的文件不能因为“升级时未触碰”而继续保持旧状态；必须通过 canonical source、installer、hash/diff 或显式升级验证确认已迁移到新版本语义。
 - 对会被 Trellis 官方模板管理的文件，必须了解 `.trellis/.template-hashes.json`、`.new`、`.bak` 或官方冲突处理语义；不得静默覆盖用户本地修改。

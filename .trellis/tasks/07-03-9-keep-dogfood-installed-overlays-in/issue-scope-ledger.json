@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 9,
+    "url": "https://github.com/castbox/guru-trellis/issues/9",
+    "title": "Keep dogfood installed overlays in sync with canonical preset overlays",
+    "reason": "intake/handoff 主 issue，本任务承诺完整解决。",
+    "acceptance_evidence": [
+      "运行 trellis/presets/guru-team/scripts/bash/apply.sh --repo .，同步 dogfood installed overlay copies；结果无 .new，临时 .bak 已人工检查后删除。",
+      "运行 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh，确认 dogfood overlay copies match canonical Guru Team overlays。",
+      "运行 trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh，确认新临时仓库可通过 guru-team marketplace workflow 初始化、apply preset、执行 check-env --json。",
+      "运行 python3 -m json.tool、bash -n、python3 -m py_compile、task.py validate 和 git diff --check，均通过。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 9,
+      "url": "https://github.com/castbox/guru-trellis/issues/9",
+      "title": "Keep dogfood installed overlays in sync with canonical preset overlays",
+      "reason": "本任务同步 dogfood installed overlay copies，新增 drift check，并更新维护文档。",
+      "acceptance_evidence": [
+        "新增 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh，只读比较 canonical overlay 与 dogfood installed copy。",
+        "同步 .agents、.codex、.cursor dogfood overlay，并安装缺失的 .claude/commands/trellis/* dogfood entries。",
+        "README、trellis/presets/guru-team/README.md、AGENTS.md、workflow 与 .trellis/spec 均记录 overlay drift check 和 .new/.bak 处理要求。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

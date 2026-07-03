@@ -10,9 +10,9 @@ python3 ./.trellis/scripts/get_context.py --mode phase
 
 Route by task status:
 
-- planning: keep required artifacts in Chinese and ask for review before `task.py start`.
-- in_progress: implement, check, update specs, then commit.
-- after commit: run Branch Review Gate before `/trellis-finish-work`.
+- planning: keep required artifacts in Chinese, run Docs SSOT discovery and the Middle-platform Knowledge Gate when relevant, then ask for review before `task.py start`.
+- in_progress: confirm knowledge-gate and docs responsibilities from artifacts, implement, check, reconcile specs/docs, then commit.
+- after commit: run Branch Review Gate before `/trellis-finish-work`, including Docs SSOT reconciliation evidence.
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \
