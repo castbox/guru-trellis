@@ -59,7 +59,13 @@ Branch Review Gate 与 publish helper 是内部子命令：
 .trellis/guru-team/scripts/bash/finish-work.sh --json
 ```
 
-用户主流程仍然只有 `trellis-start`、`trellis-continue`、`trellis-finish-work`。
+用户日常可以直接描述任务、贴 issue URL，或说“处理 issue #123”。AI 依赖
+Trellis 自动注入的 startup context、workflow-state、hook breadcrumb 或 skill
+matcher 判断是否进入 Guru Team issue intake 和 worktree preflight。
+
+用户常用显式入口保留为 `trellis-continue` 和 `trellis-finish-work`。`trellis-start`
+仍保留为 fallback / explicit orientation 入口，用于无自动注入平台、hook 未启用或
+未审批、怀疑自动注入没有运行，或需要完整上下文报告和重新加载 Trellis 上下文的场景。
 
 `review-branch.sh --pass` 必须带中文 `--summary` 和至少一条 `--evidence`，避免空白自证通过。
 Phase 2 的官方 `trellis-check` sub-agent 负责 commit 前质量检查；Phase 3 Branch

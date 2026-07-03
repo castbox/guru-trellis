@@ -89,15 +89,24 @@ Guru Team Trellis 的公开 marketplace 与 preset 资产仓库。
 - `trellis/workflows/guru-team/`：workflow 主合同、配置模板、schema 和 companion scripts。
 - `trellis/presets/guru-team/`：把 companion scripts 和平台入口 overlay 安装到目标业务仓库的 preset installer。
 
-## 用户主流程
+## 日常入口
 
-安装后，用户仍然只需要记住三个主入口：
+安装后，用户日常不需要先手动输入 `trellis-start`。直接描述任务、贴 GitHub
+issue URL，或说“处理 issue #123”即可；AI 会根据 Trellis 自动注入的
+startup context、workflow-state、hook breadcrumb 或 skill matcher 判断是否进入
+Guru Team issue intake 和 worktree preflight。
 
-- `trellis-start`
+用户仍然需要记住的常用显式入口是：
+
 - `trellis-continue`
 - `trellis-finish-work`
 
-`review-branch`、`check-review-gate`、`publish-pr` 是 workflow 内部 companion script，不是需要用户日常手动记忆的新主流程。
+`trellis-start` 仍保留为 fallback / explicit orientation 入口，用于平台没有自动
+session/startup 注入、hook 未启用或未审批、怀疑自动注入没有运行，或用户需要完整
+上下文报告和重新加载 Trellis 上下文的场景。
+
+`review-branch`、`check-review-gate`、`publish-pr` 是 workflow 内部 companion
+script，不是需要用户日常手动记忆的新主流程。
 
 ## 维护原则
 

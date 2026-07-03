@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.1",
+  "source_issue": {
+    "number": 2,
+    "url": "https://github.com/castbox/guru-trellis/issues/2",
+    "title": "Align guru-team workflow with Trellis auto-bootstrap start model",
+    "created_by_workflow": false
+  },
+  "slug": "align-guru-team-workflow-trellis",
+  "task_slug": "2-align-guru-team-workflow-trellis",
+  "task_title": "#2 Align guru-team workflow with Trellis auto-bootstrap start model",
+  "branch_name": "codex/2-align-guru-team-workflow-trellis",
+  "workspace_mode": "worktree",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/2-align-guru-team-workflow-trellis",
+  "workspace_ready": true,
+  "base_branch": "main",
+  "base_branch_candidates": [
+    "main",
+    "origin/main"
+  ],
+  "create_task_command": [
+    "python3",
+    "./.trellis/scripts/task.py",
+    "create",
+    "#2 Align guru-team workflow with Trellis auto-bootstrap start model",
+    "--slug",
+    "2-align-guru-team-workflow-trellis",
+    "--assignee",
+    "name=wumengye\ninitialized_at=2026-07-03T17:44:00.461566"
+  ],
+  "task_dir": null,
+  "duplicate_search": {
+    "performed": false,
+    "candidates": []
+  },
+  "issue_scope_ledger": {
+    "primary_issue": {
+      "number": 2,
+      "url": "https://github.com/castbox/guru-trellis/issues/2",
+      "title": "Align guru-team workflow with Trellis auto-bootstrap start model",
+      "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 2,
+        "url": "https://github.com/castbox/guru-trellis/issues/2",
+        "title": "Align guru-team workflow with Trellis auto-bootstrap start model",
+        "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "preflight": {
+    "repo_root": "/Users/wumengye/Documents/GoProjects/guru-trellis",
+    "current_checkout": "/Users/wumengye/Documents/GoProjects/guru-trellis",
+    "current_branch": "main",
+    "dirty": true,
+    "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
+    "existing_worktrees": [
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                               16e6e10 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/2-align-guru-team-workflow-trellis  16e6e10 [codex/2-align-guru-team-workflow-trellis]"
+    ],
+    "selected_base_branch": "main",
+    "workspace_was_created_or_reused": true
+  },
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/guru-team/handoff.json"
+}

@@ -52,6 +52,11 @@ trellis workflow \
   --template guru-team
 ```
 
-The workflow keeps user-facing entry points limited to start / continue /
-finish-work. Review and publish helpers are internal companion script
-subcommands used by those entries.
+The daily user-facing entry points are natural-language task requests, issue
+URLs or issue numbers, `trellis-continue`, and `trellis-finish-work`. The
+`trellis-start` overlay remains installed as a fallback / explicit orientation
+entry for platforms without automatic startup injection, disabled or unapproved
+hooks, suspected bootstrap failures, or manual context reloads.
+
+Review and publish helpers are internal companion script subcommands used by
+the workflow; they are not daily user-facing entries.

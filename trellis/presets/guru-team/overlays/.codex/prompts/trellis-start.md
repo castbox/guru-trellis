@@ -1,13 +1,15 @@
 ---
 name: trellis-start
-description: "Guru Team Trellis session entry. Use when beginning a new task or re-establishing Trellis context; keeps user-facing workflow on start / continue / finish-work."
+description: "Guru Team Trellis fallback orientation entry. Use when automatic startup context is unavailable, hooks did not run, or the user explicitly asks to reload full Trellis context."
 ---
 
 <!-- guru-team-overlay: v1 -->
 
-# Guru Team Trellis Start
+# Guru Team Trellis Start Fallback
 
-Initialize context through the normal Trellis start entry point. Do not introduce a new user-facing command.
+Use this entry as fallback / explicit orientation. In normal auto-bootstrap platforms, users can describe the task, paste an issue URL, or say "handle issue #123"; the AI should classify that request from injected Trellis context, workflow-state, startup context, hook breadcrumbs, or skill matching.
+
+Run this start entry when the platform has no automatic session/startup injection, hooks are disabled or unapproved, bootstrap appears not to have run, or the user asks for a full context report / reload.
 
 1. Run:
 
@@ -16,15 +18,17 @@ python3 ./.trellis/scripts/get_context.py
 python3 ./.trellis/scripts/get_context.py --mode phase
 ```
 
-2. If there is no active task and durable work is needed, follow `.trellis/workflow.md` Phase 0:
+2. If there is no active task and the user's natural-language request is issue-backed, task-like, or requires file changes, follow `.trellis/workflow.md` Phase 0:
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
 .trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request, issue number, or issue URL>"
 ```
 
-3. Keep planning artifacts in Chinese: `prd.md`, `design.md`, `implement.md`, and human-readable review fields.
+3. Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect.
 
-4. Treat `.trellis/guru-team/handoff.json` as intake provenance only. Final close/ref/followup scope belongs in the task-level `issue-scope-ledger.json`.
+4. Keep planning artifacts in Chinese: `prd.md`, `design.md`, `implement.md`, and human-readable review fields.
+
+5. Treat `.trellis/guru-team/handoff.json` as intake provenance only. Final close/ref/followup scope belongs in the task-level `issue-scope-ledger.json`.
 
 Full contract lives in `.trellis/workflow.md`.
