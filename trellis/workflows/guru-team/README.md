@@ -41,8 +41,9 @@ installer 会写入 `.trellis/guru-team/`，并可安装 `.agents/skills`、
 `.claude/commands`、`.cursor/commands` 下的 Guru Team overlay。它不会修改 Trellis
 上游脚本、npm 全局包、`node_modules` 或 `.trellis/scripts/task.py`。
 
-installer 幂等：同内容跳过，缺失文件写入，识别为上游 Trellis 生成入口时替换为
-Guru Team overlay；未知本地改动写 `.new`，不静默覆盖。
+installer 幂等：同内容跳过，缺失文件写入，Guru-managed companion assets 会升级 active
+文件并把旧版保存为 `.bak`，已有 `.trellis/guru-team/config.yml` 不覆盖，识别为上游
+Trellis 生成入口时替换为 Guru Team overlay；未知本地改动写 `.new`，不静默覆盖。
 
 `prepare-task.sh --json` 默认只执行 intake 和 preflight planning，不创建新的
 worktree。只有在用户已经 review 计划中的 base branch 和 workspace path 后，才使用

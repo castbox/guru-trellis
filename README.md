@@ -83,8 +83,12 @@ preset installer 是幂等的：
 
 - 内容相同的文件会跳过。
 - 缺失文件会安装。
+- Guru-managed companion assets 会升级 active 文件，并把旧版保存为 `.bak`。
+- 本地 `.trellis/guru-team/config.yml` 只在缺失时创建，不会覆盖已有配置。
 - 已识别的上游 Trellis 生成入口会替换为 Guru Team overlay。
 - 未识别的本地改动会保留，并生成 `.new` 文件供人工对比。
+
+执行结果中的 `updated_managed` 表示本次已启用新版 Guru-managed 文件，`managed_backups` 表示对应旧版备份。
 
 ## 用户主流程
 

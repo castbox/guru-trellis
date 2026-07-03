@@ -13,6 +13,18 @@ from typing import Any
 
 
 GURU_OVERLAY_MARKER = "guru-team-overlay:"
+MANAGED_CONFIG = Path("config-template.yml")
+MANAGED_ASSET_PATHS = [
+    Path("config-template.yml"),
+    Path("schemas/intake-handoff.schema.json"),
+    Path("scripts/bash/check-env.sh"),
+    Path("scripts/bash/prepare-task.sh"),
+    Path("scripts/bash/review-branch.sh"),
+    Path("scripts/bash/check-review-gate.sh"),
+    Path("scripts/bash/publish-pr.sh"),
+    Path("scripts/bash/finish-work.sh"),
+    Path("scripts/python/guru_team_trellis.py"),
+]
 
 
 def read_text_if_exists(path: Path) -> str:
@@ -39,16 +51,17 @@ def ensure_executable(path: Path) -> None:
     path.chmod(path.stat().st_mode | 0o755)
 
 
-def copy_or_new(source: Path, target: Path) -> dict[str, str]:
+def copy_managed(source: Path, target: Path) -> dict[str, str]:
     target.parent.mkdir(parents=True, exist_ok=True)
     if not target.exists():
         shutil.copyfile(source, target)
         return {"path": str(target), "action": "installed"}
     if filecmp.cmp(source, target, shallow=False):
         return {"path": str(target), "action": "unchanged"}
-    new_target = target.with_name(f"{target.name}.new")
-    shutil.copyfile(source, new_target)
-    return {"path": str(new_target), "action": "new_copy", "existing": str(target)}
+    backup = target.with_name(f"{target.name}.bak")
+    shutil.copyfile(target, backup)
+    shutil.copyfile(source, target)
+    return {"path": str(target), "action": "updated_managed", "backup": str(backup)}
 
 
 def looks_like_trellis_generated_entry(relative: Path, target: Path) -> bool:
@@ -123,29 +136,24 @@ def install_assets(src: Path, dst: Path, repo: Path) -> dict[str, list[str]]:
     unchanged: list[str] = []
     new_copies: list[str] = []
     replaced_overlays: list[str] = []
-    for relative in [
-        Path("config-template.yml"),
-        Path("schemas/intake-handoff.schema.json"),
-        Path("scripts/bash/check-env.sh"),
-        Path("scripts/bash/prepare-task.sh"),
-        Path("scripts/bash/review-branch.sh"),
-        Path("scripts/bash/check-review-gate.sh"),
-        Path("scripts/bash/publish-pr.sh"),
-        Path("scripts/bash/finish-work.sh"),
-        Path("scripts/python/guru_team_trellis.py"),
-    ]:
-        result = copy_or_new(src / relative, dst / relative)
+    updated_managed: list[str] = []
+    managed_backups: list[str] = []
+    for relative in MANAGED_ASSET_PATHS:
+        result = copy_managed(src / relative, dst / relative)
         rel_path = Path(result["path"]).relative_to(repo).as_posix()
         if result["action"] == "installed":
             installed.append(rel_path)
         elif result["action"] == "unchanged":
             unchanged.append(rel_path)
-        else:
-            new_copies.append(rel_path)
+        elif result["action"] == "updated_managed":
+            updated_managed.append(rel_path)
+            backup = result.get("backup")
+            if backup:
+                managed_backups.append(Path(backup).relative_to(repo).as_posix())
 
     target_config = dst / "config.yml"
     if not target_config.exists():
-        shutil.copyfile(src / "config-template.yml", target_config)
+        shutil.copyfile(src / MANAGED_CONFIG, target_config)
         installed.append(target_config.relative_to(repo).as_posix())
 
     for script in [
@@ -165,12 +173,16 @@ def install_assets(src: Path, dst: Path, repo: Path) -> dict[str, list[str]]:
     unchanged.extend(overlays["unchanged"])
     new_copies.extend(overlays["new_copies"])
     replaced_overlays.extend(overlays["replaced_overlays"])
+    updated_managed.extend(overlays["updated_managed"])
+    managed_backups.extend(overlays["managed_backups"])
 
     return {
         "installed": installed,
         "unchanged": unchanged,
         "new_copies": new_copies,
         "replaced_overlays": replaced_overlays,
+        "updated_managed": updated_managed,
+        "managed_backups": managed_backups,
     }
 
 
@@ -180,12 +192,16 @@ def install_overlays(repo: Path, guru_root: Path) -> dict[str, list[str]]:
     unchanged: list[str] = []
     new_copies: list[str] = []
     replaced_overlays: list[str] = []
+    updated_managed: list[str] = []
+    managed_backups: list[str] = []
     if not overlay_root.is_dir():
         return {
             "installed": installed,
             "unchanged": unchanged,
             "new_copies": new_copies,
             "replaced_overlays": replaced_overlays,
+            "updated_managed": updated_managed,
+            "managed_backups": managed_backups,
         }
     for source in sorted(path for path in overlay_root.rglob("*") if path.is_file()):
         relative = source.relative_to(overlay_root)
@@ -205,6 +221,8 @@ def install_overlays(repo: Path, guru_root: Path) -> dict[str, list[str]]:
         "unchanged": unchanged,
         "new_copies": new_copies,
         "replaced_overlays": replaced_overlays,
+        "updated_managed": updated_managed,
+        "managed_backups": managed_backups,
     }
 
 
@@ -227,6 +245,8 @@ def main() -> int:
         "unchanged": result["unchanged"],
         "new_copies": result["new_copies"],
         "replaced_overlays": result["replaced_overlays"],
+        "updated_managed": result["updated_managed"],
+        "managed_backups": result["managed_backups"],
         "config": ".trellis/guru-team/config.yml",
         "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
         "public_workflow_marketplace": "gh:castbox/guru-trellis/trellis",

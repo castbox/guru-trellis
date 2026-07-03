@@ -5,9 +5,10 @@ The preset installs companion assets and Guru Team entry overlays for the
 
 It does not run `trellis init` and does not modify Trellis upstream files.
 It is idempotent: identical files are skipped, missing files are installed,
-known upstream Trellis-generated entry files are replaced with Guru Team
-overlays, and unknown local modifications are preserved by writing `.new`
-copies.
+Guru-managed companion assets are upgraded in place with `.bak` backups,
+existing `.trellis/guru-team/config.yml` is preserved, known upstream
+Trellis-generated entry files are replaced with Guru Team overlays, and unknown
+local modifications are preserved by writing `.new` copies.
 
 ## Apply
 
