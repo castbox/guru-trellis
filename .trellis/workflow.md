@@ -9,7 +9,7 @@
 3. **Git preflight before Trellis task files** — resolve base branch and workspace before `task.py create` writes task artifacts.
 4. **Specs injected, not remembered** — follow `.trellis/spec/` and task artifacts instead of chat memory.
 5. **Persist decisions** — requirements, research, implementation plans, and reusable lessons go to files.
-6. **Incremental development** — one task, one branch, one workspace unless the user explicitly chooses a smaller inline path.
+6. **Incremental development** — one task, one branch, one workspace unless the user explicitly approves a current-checkout direct-edit override for this turn.
 7. **Chinese artifacts by default** — Trellis task planning artifacts and human-readable review fields are written in Chinese.
 8. **Review before finish** — committed branch work must pass Branch Review Gate before `finish-work`.
 9. **Publish after finish** — `finish-work` archives the task, records the journal, then automatically pushes and creates a non-draft PR.
@@ -33,6 +33,16 @@ The default prepare command is side-effect-free intake/preflight planning for Gi
 If no source issue was supplied, prepare writes `proposed_issue` and `requires_confirmation`. The AI must show the duplicate-search result, proposed issue title/body, base branch, branch name, and workspace path to the user. Only after confirmation may it rerun prepare with `--create-issue-confirmed --issue-title "<reviewed title>" --issue-body-file <reviewed-body-file>`.
 
 After a confirmed source issue exists and the handoff plan has been reviewed, use `--create-worktree` or `--create-task` only with explicit user approval. Those executor paths create or reuse the chosen workspace and then write `.trellis/guru-team/handoff.json` inside that workspace. They must not be used as a shortcut around planning review.
+
+When there is no active task and the current turn requires file changes, do not
+silently edit the current checkout. First run Phase 0 intake/preflight, or ask
+for and receive explicit user approval for a current-checkout direct-edit
+override. That approval must state that the user wants to skip creating or
+reusing a GitHub issue, Trellis task, worktree, and branch for this turn. Before
+editing, summarize the expected side effects, changed-file scope, current
+checkout, current branch, and dirty state. The override only authorizes the
+described file edits; commit, push, PR creation, and issue closure still require
+their own explicit approval.
 
 The companion scripts live under `.trellis/guru-team/` and are installed by the Guru Team Trellis preset. If they are missing, tell the user to run:
 
@@ -168,6 +178,10 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - Do not require the user to explicitly run `trellis-start` before new work. In normal auto-bootstrap platforms, classify the user's natural-language request from the injected Trellis context, workflow-state, startup context, hook breadcrumb, or skill matcher.
 - Simple conversation or small task: ask only whether this turn should create a Trellis task. If the user says no, skip Trellis for this session.
 - Issue-backed, task-like, or file-changing request: run Guru Team issue intake and Git base/worktree preflight before task creation. This includes pasted issue URLs, issue numbers, and clear development tasks.
+- File-changing request with no active task: do not silently edit the current
+  checkout. A current-checkout direct-edit override is allowed only after the
+  user explicitly approves skipping GitHub issue, Trellis task, worktree, and
+  branch creation/reuse for this turn.
 - Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect.
 - User approval to create a task is not approval to start implementation. Planning still happens first.
 
@@ -237,6 +251,7 @@ Repos with no complete docs system must still record one explicit outcome:
 [workflow-state:no_task]
 No active task. First classify the user's natural-language request; do not require the user to explicitly run `trellis-start`.
 If the request includes an issue URL, issue number, clear development task, or file change, run Guru Team issue intake + Git base/worktree preflight before `task.py create`.
+Do not silently edit the current checkout. Direct edits require explicit user approval to skip GitHub issue, Trellis task, worktree, and branch for this turn.
 Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect.
 Do not write `.trellis/tasks/` artifacts until consent is clear and preflight has a clear workspace.
 [/workflow-state:no_task]
@@ -300,6 +315,14 @@ Before `task.py create`, summarize:
 - create-task command
 
 Only after this is clear, create the Trellis task in the chosen workspace.
+
+If the user explicitly requests a current-checkout direct-edit override instead
+of creating or reusing a GitHub issue, Trellis task, worktree, and branch,
+summarize the skipped artifacts, current checkout, current branch, dirty state,
+side effects, changed-file scope, and commit/push boundary before editing.
+Record the approval evidence in the task artifact, review report, or final
+handoff when practical. The override is scoped to the described file edits and
+does not approve commit, push, PR creation, or issue closure.
 
 ### Phase 1: Plan
 
@@ -538,6 +561,13 @@ Persist the review result in the conversation and, when practical, in a task
 artifact such as `{TASK_DIR}/review.md`. The review must include concrete
 summary/evidence and findings, even when findings are empty.
 
+Before writing `review.md`, `review-gate.json`, or any task artifact, confirm the
+current working directory is the task's selected `workspace_path`, not the source
+checkout or another worktree. Use the worktree-local absolute path for manual
+file edits when the editing tool does not take an explicit working directory.
+Relative task artifact paths such as `{TASK_DIR}/review.md` are relative to the
+task worktree only.
+
 ##### 3.5.2 Gate Artifact Recorder
 
 Only after the AI/human review has completed, write the gate artifact. The pass
@@ -612,21 +642,25 @@ If any `close_issues` entry lacks acceptance/verification evidence, or the revie
 
 1. Phase 0 runs before durable Trellis task creation.
 2. Task creation approval is not implementation approval.
-3. Planning artifacts must be persisted before implementation.
-4. `prd.md`, `design.md`, `implement.md`, and review-gate human-readable fields are Chinese by default.
-5. Daily user entry points are natural-language task requests, issue URLs or issue numbers, `trellis-continue`, and `trellis-finish-work`; `trellis-start` remains a fallback / explicit orientation entry for no-auto-injection platforms, disabled hooks, suspected bootstrap failures, or manual context reloads.
-6. `review-branch` and `publish-pr` are internal companion script subcommands, not user-facing phases.
-7. Branch Review Gate belongs after commit and before finish-work; do not put it in a non-blocking hook.
-8. Publish PR belongs after successful finish-work; do not ask users to run a separate publish flow.
-9. Hooks are reminders and context injection only; the workflow contract owns the Guru Team process.
-10. Companion scripts are local project assets under `.trellis/guru-team/`; do not modify Trellis upstream, `node_modules`, or generated copies in business repositories as the long-term source.
-11. Long-term Guru Team rules live in this marketplace workflow, preset installer, companion scripts, overlays, and team docs.
-12. If a platform command/skill entry must be overridden, use the Guru Team preset overlay and document its relationship with `trellis update`.
-13. Spec templates may contain reusable conventions, review checklists, and artifact language rules; they must not contain active task state, Issue Scope Ledger instances, PR runtime state, or project-private business rules.
-14. Missing `middle_platform_knowledge.mode` means `optional_warn`; `required` is opt-in only and `off` is opt-out only.
-15. `guru-knowledge-center` availability is checked by the AI runtime from available tools/capabilities, not by shell scripts.
-16. Trellis task artifacts may act as temporary task evidence, but durable repo docs remain the long-term SSOT when they exist.
-17. Never print tokens, secrets, private keys, signed URLs, `.env` content, or database URLs.
+3. Current-checkout direct edits with no active task require explicit user
+   approval to skip GitHub issue, Trellis task, worktree, and branch for this
+   turn; that approval does not approve commit, push, PR creation, or issue
+   closure.
+4. Planning artifacts must be persisted before implementation.
+5. `prd.md`, `design.md`, `implement.md`, and review-gate human-readable fields are Chinese by default.
+6. Daily user entry points are natural-language task requests, issue URLs or issue numbers, `trellis-continue`, and `trellis-finish-work`; `trellis-start` remains a fallback / explicit orientation entry for no-auto-injection platforms, disabled hooks, suspected bootstrap failures, or manual context reloads.
+7. `review-branch` and `publish-pr` are internal companion script subcommands, not user-facing phases.
+8. Branch Review Gate belongs after commit and before finish-work; do not put it in a non-blocking hook.
+9. Publish PR belongs after successful finish-work; do not ask users to run a separate publish flow.
+10. Hooks are reminders and context injection only; the workflow contract owns the Guru Team process.
+11. Companion scripts are local project assets under `.trellis/guru-team/`; do not modify Trellis upstream, `node_modules`, or generated copies in business repositories as the long-term source.
+12. Long-term Guru Team rules live in this marketplace workflow, preset installer, companion scripts, overlays, and team docs.
+13. If a platform command/skill entry must be overridden, use the Guru Team preset overlay and document its relationship with `trellis update`.
+14. Spec templates may contain reusable conventions, review checklists, and artifact language rules; they must not contain active task state, Issue Scope Ledger instances, PR runtime state, or project-private business rules.
+15. Missing `middle_platform_knowledge.mode` means `optional_warn`; `required` is opt-in only and `off` is opt-out only.
+16. `guru-knowledge-center` availability is checked by the AI runtime from available tools/capabilities, not by shell scripts.
+17. Trellis task artifacts may act as temporary task evidence, but durable repo docs remain the long-term SSOT when they exist.
+18. Never print tokens, secrets, private keys, signed URLs, `.env` content, or database URLs.
 
 ### Issue Scope Ledger Rules
 

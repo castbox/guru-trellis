@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-03T16:24:39Z",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task",
+  "base_branch": "main",
+  "base_ref": "origin/main",
+  "head_branch": "codex/15-require-explicit-approval-no-task",
+  "head": "d0ff1dde8a8c7e75a71d90ce1e5ec93bcf345142",
+  "diff_range": "origin/main...HEAD",
+  "changed_files": [
+    ".agents/skills/trellis-start/SKILL.md",
+    ".codex/prompts/trellis-start.md",
+    ".codex/skills/trellis-start/SKILL.md",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/check.jsonl",
+    ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/design.md",
+    ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/implement.jsonl",
+    ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/implement.md",
+    ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/issue-scope-ledger.json",
+    ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/prd.md",
+    ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review-gate.json",
+    ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review.md",
+    ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/task.json",
+    ".trellis/workflow.md",
+    ".trellis/workspace/wumengye/index.md",
+    ".trellis/workspace/wumengye/journal-1.md",
+    "README.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "review_scope": [
+    "文档",
+    "代码",
+    "测试",
+    "Trellis artifacts",
+    "配置",
+    "脚本",
+    "schema",
+    "CI/CD workflow 与发布自动化",
+    "Dockerfile / Docker Compose / 容器启动脚本",
+    "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
+    "数据库 schema / migration / seed / backfill 脚本",
+    "各目录下本次变更涉及的 Makefile",
+    "preset installer"
+  ],
+  "command": [
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task/.trellis/guru-team/scripts/bash/../python/guru_team_trellis.py",
+    "review-branch",
+    "--json",
+    "--pass",
+    "--reviewer",
+    "codex-main-session",
+    "--review-report",
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task/.trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review.md",
+    "--task",
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task/.trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task",
+    "--summary",
+    "Branch Review Gate 通过：已按 origin/main...HEAD 重新完整审查 issue 15 分支 diff，覆盖 d0ff1dd worktree-local review artifact 规则补充提交，未发现 P0/P1/P2/P3 finding。",
+    "--evidence",
+    "审查覆盖 canonical workflow、dogfood .trellis/workflow.md、trellis-start canonical overlays 与 dogfood installed copies、README、workflow specs、handoff、归档 task artifacts，以及新增的 worktree-local review artifact 写入规则。",
+    "--evidence",
+    "新增 d0ff1dd 仅修改 trellis/workflows/guru-team/workflow.md、.trellis/workflow.md、.trellis/spec/workflow/workflow-contract.md、.trellis/spec/workflow/quality-guidelines.md，明确 review.md/review-gate.json/task artifact 必须写入 task worktree，手工编辑工具无显式 workdir 时使用 worktree-local 绝对路径。",
+    "--evidence",
+    "验证已通过 git diff --check、git diff --check HEAD~1..HEAD、get_context phase parsing、cmp canonical workflow 与 dogfood workflow 一致；此前 json tool、bash -n、py_compile、task validate、preset apply、dogfood overlay drift、verify-throwaway-install 仍适用。",
+    "--evidence",
+    "本分支未修改 Python/shell companion scripts、schema、CI/CD、Docker/Compose、Kubernetes/Kustomize/Helm、数据库 migration、Makefile 或运行时配置；不改变部署形态，因此无需同步部署资产。",
+    "--evidence",
+    "issue-scope-ledger.json 仍仅将 #15 放入 close_issues，review 覆盖该 issue 的验收证据，无 related/followup issue 被关闭。"
+  ],
+  "conclusion": {
+    "passed": true,
+    "summary": "Branch Review Gate 通过：已按 origin/main...HEAD 重新完整审查 issue 15 分支 diff，覆盖 d0ff1dd worktree-local review artifact 规则补充提交，未发现 P0/P1/P2/P3 finding。",
+    "block_priorities": [
+      "P0",
+      "P1",
+      "P2"
+    ],
+    "blocking_findings_count": 0
+  },
+  "findings": [],
+  "issue_scope": {
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/issue-scope-ledger.json",
+    "close_issues_reviewed": [
+      {
+        "number": 15,
+        "url": "https://github.com/castbox/guru-trellis/issues/15",
+        "title": "Require explicit approval for no_task current-checkout direct edits",
+        "reason": "本 task 完整覆盖 issue 15 的 workflow、trellis-start overlay、spec/review checklist 与 README 一致性要求；publish 前需补齐实现和验证证据。",
+        "acceptance_evidence": [
+          "trellis/workflows/guru-team/workflow.md 与 .trellis/workflow.md 明确 no_task 文件修改默认走 Phase 0 intake/preflight，current-checkout direct-edit override 必须有用户显式批准。",
+          "workflow.md 明确 direct-edit override 必须说明跳过 GitHub issue、Trellis task、worktree、branch，且不包含 commit/push/PR/issue closure 批准。",
+          "trellis-start canonical overlays 与 .agents/.codex dogfood installed copies 同步 direct-edit override 规则；check-dogfood-overlay-drift.sh 已通过。",
+          ".trellis/spec/workflow/workflow-contract.md 与 quality-guidelines.md 增加 Phase 0 evidence / explicit override evidence 的 review checklist。",
+          "README.md、trellis/workflows/guru-team/README.md、trellis/presets/guru-team/README.md 已补充 direct-edit override 说明，避免描述为 AI 自行选择的默认捷径。",
+          "验证通过：json tool、bash -n、py_compile、task validate、git diff --check、get_context phase parsing、preset apply、dogfood overlay drift、verify-throwaway-install。"
+        ]
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "verification_evidence": {
+    "base_head": "origin/main...d0ff1dde8a8c7e75a71d90ce1e5ec93bcf345142",
+    "changed_file_count": 25,
+    "reviewer": "codex-main-session",
+    "review_report": {
+      "path": ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review.md",
+      "sha256": "cf68dc23c6bf271a8290d71f3e2dd0310906505794abe77ef65811db9451656e",
+      "size_bytes": 4522,
+      "modified_at": "2026-07-03T16:24:22.503897+00:00"
+    },
+    "evidence": [
+      "审查覆盖 canonical workflow、dogfood .trellis/workflow.md、trellis-start canonical overlays 与 dogfood installed copies、README、workflow specs、handoff、归档 task artifacts，以及新增的 worktree-local review artifact 写入规则。",
+      "新增 d0ff1dd 仅修改 trellis/workflows/guru-team/workflow.md、.trellis/workflow.md、.trellis/spec/workflow/workflow-contract.md、.trellis/spec/workflow/quality-guidelines.md，明确 review.md/review-gate.json/task artifact 必须写入 task worktree，手工编辑工具无显式 workdir 时使用 worktree-local 绝对路径。",
+      "验证已通过 git diff --check、git diff --check HEAD~1..HEAD、get_context phase parsing、cmp canonical workflow 与 dogfood workflow 一致；此前 json tool、bash -n、py_compile、task validate、preset apply、dogfood overlay drift、verify-throwaway-install 仍适用。",
+      "本分支未修改 Python/shell companion scripts、schema、CI/CD、Docker/Compose、Kubernetes/Kustomize/Helm、数据库 migration、Makefile 或运行时配置；不改变部署形态，因此无需同步部署资产。",
+      "issue-scope-ledger.json 仍仅将 #15 放入 close_issues，review 覆盖该 issue 的验收证据，无 related/followup issue 被关闭。"
+    ],
+    "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
+  },
+  "deployment_impact": {
+    "changed_file_categories": {
+      "docs": [
+        ".agents/skills/trellis-start/SKILL.md",
+        ".codex/prompts/trellis-start.md",
+        ".codex/skills/trellis-start/SKILL.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/design.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/implement.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/prd.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review.md",
+        ".trellis/workflow.md",
+        ".trellis/workspace/wumengye/index.md",
+        ".trellis/workspace/wumengye/journal-1.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "trellis_artifacts": [
+        ".trellis/guru-team/handoff.json",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/check.jsonl",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/design.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/implement.jsonl",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/implement.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/prd.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review-gate.json",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/task.json",
+        ".trellis/workflow.md",
+        ".trellis/workspace/wumengye/index.md",
+        ".trellis/workspace/wumengye/journal-1.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "config": [
+        ".trellis/guru-team/handoff.json",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review-gate.json",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/task.json"
+      ]
+    },
+    "deployment_asset_categories": {},
+    "changed_deployment_assets": [],
+    "probable_runtime_changes_without_deployment_asset_change": [],
+    "needs_deployment_impact_review": false,
+    "review_instruction": "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；如果不需要，必须给出不需要的理由。"
+  }
+}

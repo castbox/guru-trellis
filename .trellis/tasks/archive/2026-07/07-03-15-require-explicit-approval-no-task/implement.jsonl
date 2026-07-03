@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "workflow 行为合同，约束 no_task direct-edit override 的 canonical 语义"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "workflow/preset 变更的验证与 review checklist，需覆盖 override evidence"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "start overlay 修改必须符合 canonical/dogfood 同步与跨平台一致性规则"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "README / workflow README / preset README 修改需保持用户文档与 workflow 合同一致"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "workflow、overlay、dogfood copy、docs/spec 多表面同步属于跨层一致性变更"}

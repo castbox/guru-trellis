@@ -39,6 +39,14 @@ review and user approval; only these workspace executor paths may write the
 handoff artifact, and they write it inside the chosen workspace instead of
 dirtying the source checkout during new-session intake.
 
+When there is no active task and the current turn requires file changes,
+current-checkout direct edits are an explicit override, not a silent shortcut.
+The user approval must state that the AI should skip creating or reusing a
+GitHub issue, Trellis task, worktree, and branch for this turn. Before editing,
+the AI must summarize skipped artifacts, current checkout, current branch,
+dirty state, side effects, and changed-file scope. This approval does not cover
+commit, push, PR creation, or issue closure.
+
 ## User-Facing Entrypoints
 
 Daily user entrypoints are natural-language task requests, issue URLs or issue
@@ -81,7 +89,17 @@ result; the script is not the reviewer.
 The gate must cover docs, code, tests, Trellis artifacts, config, scripts,
 schemas, CI/CD, container files, Kubernetes/Kustomize/Helm assets, database
 migration assets, Makefiles, preset installer changes, generated marketplace
-files, Issue Scope Ledger, and publish readiness.
+files, Issue Scope Ledger, and publish readiness. If the task or branch used a
+no-task current-checkout direct-edit override, the review must verify explicit
+user approval evidence; otherwise it must verify Phase 0 handoff/preflight
+evidence for file-changing work.
+
+Before writing `review.md`, `review-gate.json`, or any task artifact during the
+gate, the AI must verify the shell/editor working directory is the task
+worktree selected by intake `workspace_path`. Manual edits must use a
+worktree-local absolute path when the editing tool cannot receive an explicit
+working directory. Relative task artifact paths are never relative to the source
+checkout or another worktree.
 
 Passing the gate requires:
 
@@ -116,4 +134,7 @@ intake provenance only.
   Review Gate.
 - Using `source_issue` to decide PR close keywords instead of the task-level
   Issue Scope Ledger.
+- Silently editing the current checkout in `no_task` because the change looks
+  small, instead of running Phase 0 or obtaining explicit direct-edit override
+  approval.
 - Recording project-private business rules in the reusable marketplace workflow.
