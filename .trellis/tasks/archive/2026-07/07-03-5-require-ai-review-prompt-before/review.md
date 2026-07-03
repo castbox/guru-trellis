@@ -3,12 +3,14 @@
 ## 审查范围
 
 - Diff range：`origin/main...HEAD`
-- Reviewed HEAD：`67eb848`
+- Reviewed HEAD：`cb53a56`
 - 覆盖文件：canonical workflow、dogfood `.trellis/workflow.md`、canonical Python companion、dogfood `.trellis/guru-team` script copy、preset overlays、dogfood `.agents` / `.codex` copies、README、workflow spec、task artifacts。
 
 ## Findings
 
 未发现 P0/P1/P2/P3 finding。
+
+补充审查：`5eebec2...cb53a56` 只新增 `review-gate.json` metadata artifact，未改变 workflow、script、overlay、docs、spec 或发布资产。重新生成的 gate artifact 将指向当前 HEAD，并由 `finish-work` 作为 metadata tail 统一归档提交。
 
 ## 覆盖结论
 

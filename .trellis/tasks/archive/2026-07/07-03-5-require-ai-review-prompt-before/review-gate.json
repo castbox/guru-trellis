@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-03T13:12:08Z",
+  "generated_at": "2026-07-03T13:13:26Z",
   "task_dir": ".trellis/tasks/07-03-5-require-ai-review-prompt-before",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/5-require-ai-review-prompt-before",
-  "head": "5eebec263224cb7d942ba157ce2e781062c87172",
+  "head": "cb53a56fbb6b6628d244946071f8ee305693a865",
   "diff_range": "origin/main...HEAD",
   "changed_files": [
     ".agents/skills/trellis-continue/SKILL.md",
@@ -26,6 +26,7 @@
     ".trellis/tasks/07-03-5-require-ai-review-prompt-before/issue-scope-ledger.json",
     ".trellis/tasks/07-03-5-require-ai-review-prompt-before/prd.md",
     ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review-dry-run.md",
+    ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review-gate.json",
     ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review.md",
     ".trellis/tasks/07-03-5-require-ai-review-prompt-before/task.json",
     ".trellis/workflow.md",
@@ -107,14 +108,14 @@
     "followup_issues": []
   },
   "verification_evidence": {
-    "base_head": "origin/main...5eebec263224cb7d942ba157ce2e781062c87172",
-    "changed_file_count": 36,
+    "base_head": "origin/main...cb53a56fbb6b6628d244946071f8ee305693a865",
+    "changed_file_count": 37,
     "reviewer": "",
     "review_report": {
       "path": ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review.md",
-      "sha256": "291dd0ddf8b781c5bd6b9574ba257259eaa348f08e4beeacb0dc20af0350b4eb",
-      "size_bytes": 2632,
-      "modified_at": "2026-07-03T13:11:56.705797+00:00"
+      "sha256": "51d2908fcc8d8319aa6517b12e451da3a6652ed45c9a449330db7fe545c754be",
+      "size_bytes": 2904,
+      "modified_at": "2026-07-03T13:13:15.245882+00:00"
     },
     "evidence": [
       "AI review report 已审查 canonical workflow、dogfood workflow、Python companion、preset overlays、dogfood .agents/.codex 副本、README、workflow spec、task artifacts。",
@@ -169,6 +170,7 @@
         ".trellis/tasks/07-03-5-require-ai-review-prompt-before/issue-scope-ledger.json",
         ".trellis/tasks/07-03-5-require-ai-review-prompt-before/prd.md",
         ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review-dry-run.md",
+        ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review-gate.json",
         ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review.md",
         ".trellis/tasks/07-03-5-require-ai-review-prompt-before/task.json",
         ".trellis/workflow.md",
@@ -190,6 +192,7 @@
       "config": [
         ".trellis/guru-team/handoff.json",
         ".trellis/tasks/07-03-5-require-ai-review-prompt-before/issue-scope-ledger.json",
+        ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review-gate.json",
         ".trellis/tasks/07-03-5-require-ai-review-prompt-before/task.json"
       ],
       "scripts": [
