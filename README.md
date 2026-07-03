@@ -24,6 +24,7 @@ trellis init -u <name> --codex --cursor \
 Then install Guru Team companion assets:
 
 ```bash
+git clone https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project
 ```
@@ -43,6 +44,7 @@ After review, switch and reapply the preset:
 trellis workflow \
   --marketplace gh:castbox/guru-trellis/trellis \
   --template guru-team
+git clone https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project
 ```

@@ -12,6 +12,7 @@ copies.
 ## Apply
 
 ```bash
+git clone https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project
 ```

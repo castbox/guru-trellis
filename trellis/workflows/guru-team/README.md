@@ -32,6 +32,7 @@ companion scripts、配置、schema 和团队自有入口 overlay 需要通过 p
 写入目标仓库：
 
 ```bash
+git clone https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project
 ```
