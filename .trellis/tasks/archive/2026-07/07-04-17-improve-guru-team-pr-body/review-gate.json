@@ -1,0 +1,205 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-04T05:13:11Z",
+  "task_dir": ".trellis/tasks/07-04-17-improve-guru-team-pr-body",
+  "base_branch": "main",
+  "base_ref": "origin/main",
+  "head_branch": "codex/17-improve-guru-team-pr-body",
+  "head": "803841d4553ffb3fae8556f6c04149706f49c10f",
+  "diff_range": "origin/main...HEAD",
+  "changed_files": [
+    ".agents/skills/trellis-finish-work/SKILL.md",
+    ".claude/commands/trellis/finish-work.md",
+    ".codex/prompts/trellis-finish-work.md",
+    ".codex/skills/trellis-finish-work/SKILL.md",
+    ".cursor/commands/trellis-finish-work.md",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/tasks/07-04-17-improve-guru-team-pr-body/check.jsonl",
+    ".trellis/tasks/07-04-17-improve-guru-team-pr-body/design.md",
+    ".trellis/tasks/07-04-17-improve-guru-team-pr-body/implement.jsonl",
+    ".trellis/tasks/07-04-17-improve-guru-team-pr-body/implement.md",
+    ".trellis/tasks/07-04-17-improve-guru-team-pr-body/issue-scope-ledger.json",
+    ".trellis/tasks/07-04-17-improve-guru-team-pr-body/prd.md",
+    ".trellis/tasks/07-04-17-improve-guru-team-pr-body/task.json",
+    ".trellis/workflow.md",
+    "README.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "review_scope": [
+    "文档",
+    "代码",
+    "测试",
+    "Trellis artifacts",
+    "配置",
+    "脚本",
+    "schema",
+    "CI/CD workflow 与发布自动化",
+    "Dockerfile / Docker Compose / 容器启动脚本",
+    "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
+    "数据库 schema / migration / seed / backfill 脚本",
+    "各目录下本次变更涉及的 Makefile",
+    "preset installer"
+  ],
+  "command": [
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/17-improve-guru-team-pr-body/.trellis/guru-team/scripts/bash/../python/guru_team_trellis.py",
+    "review-branch",
+    "--json",
+    "--pass",
+    "--reviewer",
+    "codex-main-session",
+    "--review-report",
+    ".trellis/tasks/07-04-17-improve-guru-team-pr-body/review.md",
+    "--summary",
+    "已按 origin/main...HEAD 完整审查 #17 分支，未发现 P0/P1/P2/P3 finding，PR body 质量合同、publish helper、测试、overlay 与文档同步满足验收。",
+    "--evidence",
+    "已审查 origin/main...HEAD 的 28 个变更文件，覆盖 canonical/dogfood workflow、finish-work overlays、publish helper、单元测试、README、preset/workflow README、.trellis/spec/workflow 与 task artifacts。",
+    "--evidence",
+    "验证通过：python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py；python3 -m py_compile canonical/dogfood helper；bash -n workflow/preset shell scripts；python3 -m json.tool trellis/index.json；git diff --check。",
+    "--evidence",
+    "验证通过：trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh；./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh；python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-04-17-improve-guru-team-pr-body。",
+    "--evidence",
+    "Docs SSOT 已同步 README.md、trellis/workflows/guru-team/README.md、trellis/presets/guru-team/README.md、.trellis/spec/workflow/workflow-contract.md、quality-guidelines.md、companion-scripts.md；本仓库无独立 docs/ durable docs 目录，无需新增 docs/。",
+    "--evidence",
+    "部署影响已审查：本次 diff 不改 .github/workflows、Dockerfile、Docker Compose、Kubernetes/Kustomize/Helm、数据库 migration/seed/backfill 或 Makefile；不新增 API/CLI/worker/runtime config，因而无需同步部署资产。"
+  ],
+  "conclusion": {
+    "passed": true,
+    "summary": "已按 origin/main...HEAD 完整审查 #17 分支，未发现 P0/P1/P2/P3 finding，PR body 质量合同、publish helper、测试、overlay 与文档同步满足验收。",
+    "block_priorities": [
+      "P0",
+      "P1",
+      "P2"
+    ],
+    "blocking_findings_count": 0
+  },
+  "findings": [],
+  "issue_scope": {
+    "ledger_path": ".trellis/tasks/07-04-17-improve-guru-team-pr-body/issue-scope-ledger.json",
+    "close_issues_reviewed": [
+      {
+        "number": 17,
+        "url": "https://github.com/castbox/guru-trellis/issues/17",
+        "title": "Improve Guru Team PR body quality standards",
+        "reason": "本任务完整实现 workflow、finish-work/publish、README/spec 与测试中的 PR body 质量标准。",
+        "acceptance_evidence": [
+          "workflow / finish-work overlay / README / spec 已明确 PR body 面向 GitHub reviewer，禁止低信息量 Trellis 内部语境摘要。",
+          "publish-pr 已支持 --body-file / --body-artifact，并优先使用 AI 审阅后的 body。",
+          "publish-pr 已校验必填 section、低信息量短语、具体内容和 close/ref 语义。",
+          "单元测试覆盖低信息量 body 失败、合格 body file 通过、body artifact 读取、related issue close keyword 阻塞。",
+          "throwaway install 验证、dogfood overlay drift check、脚本编译、bash -n、git diff --check 均已通过。"
+        ]
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "verification_evidence": {
+    "base_head": "origin/main...803841d4553ffb3fae8556f6c04149706f49c10f",
+    "changed_file_count": 28,
+    "reviewer": "codex-main-session",
+    "review_report": {
+      "path": ".trellis/tasks/07-04-17-improve-guru-team-pr-body/review.md",
+      "sha256": "cf8dcb8bf0b5f5f73db82365b1f1d59bed97ea049c52930e8f8c63e23f4c0983",
+      "size_bytes": 5124,
+      "modified_at": "2026-07-04T05:12:57.033379+00:00"
+    },
+    "evidence": [
+      "已审查 origin/main...HEAD 的 28 个变更文件，覆盖 canonical/dogfood workflow、finish-work overlays、publish helper、单元测试、README、preset/workflow README、.trellis/spec/workflow 与 task artifacts。",
+      "验证通过：python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py；python3 -m py_compile canonical/dogfood helper；bash -n workflow/preset shell scripts；python3 -m json.tool trellis/index.json；git diff --check。",
+      "验证通过：trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh；./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh；python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-04-17-improve-guru-team-pr-body。",
+      "Docs SSOT 已同步 README.md、trellis/workflows/guru-team/README.md、trellis/presets/guru-team/README.md、.trellis/spec/workflow/workflow-contract.md、quality-guidelines.md、companion-scripts.md；本仓库无独立 docs/ durable docs 目录，无需新增 docs/。",
+      "部署影响已审查：本次 diff 不改 .github/workflows、Dockerfile、Docker Compose、Kubernetes/Kustomize/Helm、数据库 migration/seed/backfill 或 Makefile；不新增 API/CLI/worker/runtime config，因而无需同步部署资产。"
+    ],
+    "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
+  },
+  "deployment_impact": {
+    "changed_file_categories": {
+      "docs": [
+        ".agents/skills/trellis-finish-work/SKILL.md",
+        ".claude/commands/trellis/finish-work.md",
+        ".codex/prompts/trellis-finish-work.md",
+        ".codex/skills/trellis-finish-work/SKILL.md",
+        ".cursor/commands/trellis-finish-work.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/design.md",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/implement.md",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/prd.md",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "tests": [
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "trellis_artifacts": [
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/check.jsonl",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/design.md",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/implement.jsonl",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/implement.md",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/issue-scope-ledger.json",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/prd.md",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/task.json",
+        ".trellis/workflow.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "config": [
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/issue-scope-ledger.json",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/task.json"
+      ],
+      "scripts": [
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "code": [
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ]
+    },
+    "deployment_asset_categories": {},
+    "changed_deployment_assets": [],
+    "probable_runtime_changes_without_deployment_asset_change": [
+      ".claude/commands/trellis/finish-work.md",
+      ".cursor/commands/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md"
+    ],
+    "needs_deployment_impact_review": true,
+    "review_instruction": "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；如果不需要，必须给出不需要的理由。"
+  }
+}
