@@ -1,48 +1,53 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-04T09:44:48Z",
+  "generated_at": "2026-07-04T10:03:39Z",
   "task_dir": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness",
   "base_branch": "main",
-  "head": "adbf5548c6cc40c5eb193cbc65ca359344cad264",
+  "head": "32ece0fe4e515b2f26f5f82cddff918dd003245b",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
+    ".codex/hooks/inject-workflow-state.py",
+    ".trellis/config.yaml",
     ".trellis/guru-team/handoff.json",
-    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/scripts/common/workflow_phase.py",
+    ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/issue-scope-ledger.json",
     ".trellis/workflow.md",
     "README.md",
     "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
     "trellis/workflows/guru-team/README.md",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
     "trellis/workflows/guru-team/workflow.md",
-    ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/"
+    ".codex/hooks/test_inject_workflow_state.py",
+    ".trellis/scripts/common/test_workflow_phase.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
   ],
   "checker": "codex-main-session",
-  "check_summary": "已按 issue #27 完整检查 finish-work --dry-run 语义和更新后的 issue-scope-ledger：dry-run 在 readiness 校验后返回无副作用 plan，不调用 archive、journal、metadata commit 或 publish；正式 finish-work 路径保持原行为。",
+  "check_summary": "已按扩展后的 issue #27 完整检查：finish-work --dry-run 无副作用 readiness preview 已保持；Codex 默认 dispatch 改为 sub-agent，显式 inline 仍可降级；preset installer 会 materialize 项目级 .trellis/config.yaml。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/prd.md",
-      "sha256": "0d734c9b21cee53da68a6d82d0085a20e4d108c1be87fb69f8bbf07e4212db49",
-      "size_bytes": 3299,
-      "modified_at": "2026-07-04T09:37:42.708524+00:00"
+      "sha256": "9bebac27e892a41da0566d44abfbee5d0a2acc137a30194974d39876153d07a0",
+      "size_bytes": 4556,
+      "modified_at": "2026-07-04T09:55:15.953089+00:00"
     },
     {
       "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/design.md",
-      "sha256": "343abcf3caea162eb16d2fa40656784b7a1b257062ea750145b1376ddd91dff6",
-      "size_bytes": 3435,
-      "modified_at": "2026-07-04T09:37:42.708782+00:00"
+      "sha256": "4b17faeb7d803a688a6cd1a6d7ee3df4181311aea4e7e2fd4e33a0cf7f0875cb",
+      "size_bytes": 5139,
+      "modified_at": "2026-07-04T09:55:15.953857+00:00"
     },
     {
       "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/implement.md",
-      "sha256": "f8c22371b125a94167afedc5dda04196b8820e570ef0d9dcbd0ed6cdda06eac2",
-      "size_bytes": 2178,
-      "modified_at": "2026-07-04T09:37:42.709016+00:00"
+      "sha256": "71ff8e4ca8ebac4731f71a8d1f6566fd36cb88b8ebfdcad325dcace3a4f893f3",
+      "size_bytes": 2874,
+      "modified_at": "2026-07-04T09:55:15.954243+00:00"
     },
     {
       "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/planning-approval.json",
-      "sha256": "6e4bc03da4c9d0ecb8b3df4cc3d1412a4dafca541ec9a9e1caef0e66a4be88b5",
-      "size_bytes": 1784,
-      "modified_at": "2026-07-04T09:37:55.423527+00:00"
+      "sha256": "28f31ee9fb80390d73805b77a8f1ccffdd134306eb0bb36eb959663c0faddc38",
+      "size_bytes": 1890,
+      "modified_at": "2026-07-04T09:55:28.657863+00:00"
     }
   ],
   "checked_specs": [],
@@ -58,8 +63,8 @@
   },
   "validation_commands": [
     {
-      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "result": "62 tests passed"
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py && python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py && python3 .trellis/scripts/common/test_workflow_phase.py && python3 .codex/hooks/test_inject_workflow_state.py",
+      "result": "62+4+4+3 tests passed"
     },
     {
       "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json && python3 -m json.tool .trellis/tasks/07-04-27-finish-work-dry-run-readiness/issue-scope-ledger.json",
@@ -70,11 +75,7 @@
       "result": "passed"
     },
     {
-      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
-      "result": "passed"
-    },
-    {
-      "command": "python3 ./.trellis/scripts/task.py validate 07-04-27-finish-work-dry-run-readiness",
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py .codex/hooks/inject-workflow-state.py .trellis/scripts/common/workflow_phase.py",
       "result": "passed"
     },
     {
@@ -82,12 +83,16 @@
       "result": "passed"
     },
     {
+      "command": "python3 ./.trellis/scripts/task.py validate 07-04-27-finish-work-dry-run-readiness",
+      "result": "passed"
+    },
+    {
       "command": "git diff --check",
       "result": "passed"
     },
     {
-      "command": "临时 repo finish-work --dry-run --from-trellis-finish-work fixture",
-      "result": "git status unchanged, HEAD unchanged, active task unchanged, archive unchanged, journal unchanged"
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo .",
+      "result": "codex_dispatch unchanged sub-agent, no .new/.bak"
     }
   ],
   "findings": [],

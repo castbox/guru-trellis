@@ -13,6 +13,17 @@ from typing import Any
 
 
 GURU_OVERLAY_MARKER = "guru-team-overlay:"
+CODEX_DISPATCH_HEADER = """#-------------------------------------------------------------------------------
+# Codex (dispatch behavior)
+#-------------------------------------------------------------------------------
+# Codex-only knob; other platforms ignore it. Default ("sub-agent") lets the
+# main Codex session dispatch trellis-implement / trellis-check /
+# trellis-research. Codex sub-agents run with `fork_turns="none"` isolation, so
+# the main session must include `Active task: <task path>` in dispatch prompts
+# and sub-agents fall back to `task.py current --source` if needed. Set
+# "inline" only as an explicit downgrade/debug mode where the main Codex agent
+# edits and checks directly.
+"""
 MANAGED_CONFIG = Path("config-template.yml")
 MANAGED_ASSET_PATHS = [
     Path("config-template.yml"),
@@ -53,6 +64,87 @@ def guru_root_from_script() -> Path:
 
 def ensure_executable(path: Path) -> None:
     path.chmod(path.stat().st_mode | 0o755)
+
+
+def leading_spaces(value: str) -> int:
+    return len(value) - len(value.lstrip(" "))
+
+
+def strip_inline_comment(value: str) -> str:
+    return value.split("#", 1)[0].strip().strip("\"'")
+
+
+def ensure_codex_dispatch_mode(repo: Path) -> dict[str, str | None]:
+    """Materialize the Guru Team Codex default in project .trellis/config.yaml.
+
+    Explicit `dispatch_mode: inline` is a user downgrade and is preserved.
+    Missing, commented-out, or invalid values are updated to `sub-agent` so
+    Codex can satisfy the independent Branch Review Gate path by default.
+    """
+
+    config_path = repo / ".trellis/config.yaml"
+    if not config_path.exists():
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        config_path.write_text(f"{CODEX_DISPATCH_HEADER}codex:\n  dispatch_mode: sub-agent\n", encoding="utf-8")
+        return {"action": "installed", "path": ".trellis/config.yaml", "previous": None, "mode": "sub-agent"}
+
+    original = config_path.read_text(encoding="utf-8")
+    lines = original.splitlines()
+    codex_index: int | None = None
+    codex_indent = 0
+    dispatch_index: int | None = None
+    dispatch_value: str | None = None
+
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if stripped == "codex:":
+            codex_index = index
+            codex_indent = leading_spaces(line)
+            continue
+        if codex_index is not None:
+            indent = leading_spaces(line)
+            if indent <= codex_indent:
+                break
+            if stripped.startswith("dispatch_mode:"):
+                dispatch_index = index
+                dispatch_value = strip_inline_comment(stripped.split(":", 1)[1])
+                break
+
+    if dispatch_value in {"sub-agent", "inline"}:
+        return {
+            "action": "unchanged",
+            "path": ".trellis/config.yaml",
+            "previous": dispatch_value,
+            "mode": dispatch_value,
+        }
+
+    if dispatch_index is not None:
+        indent = " " * leading_spaces(lines[dispatch_index])
+        previous = dispatch_value or None
+        lines[dispatch_index] = f"{indent}dispatch_mode: sub-agent"
+        updated = "\n".join(lines).rstrip() + "\n"
+        config_path.write_text(updated, encoding="utf-8")
+        return {"action": "updated", "path": ".trellis/config.yaml", "previous": previous, "mode": "sub-agent"}
+
+    if codex_index is not None:
+        insert_at = codex_index + 1
+        child_indent = " " * (codex_indent + 2)
+        while insert_at < len(lines):
+            line = lines[insert_at]
+            if line.strip() and not line.lstrip().startswith("#") and leading_spaces(line) <= codex_indent:
+                break
+            insert_at += 1
+        lines.insert(insert_at, f"{child_indent}dispatch_mode: sub-agent")
+        updated = "\n".join(lines).rstrip() + "\n"
+        config_path.write_text(updated, encoding="utf-8")
+        return {"action": "updated", "path": ".trellis/config.yaml", "previous": None, "mode": "sub-agent"}
+
+    separator = "" if original.endswith("\n") or not original else "\n"
+    addition = f"{separator}\n{CODEX_DISPATCH_HEADER}codex:\n  dispatch_mode: sub-agent\n"
+    config_path.write_text(original.rstrip() + addition, encoding="utf-8")
+    return {"action": "updated", "path": ".trellis/config.yaml", "previous": None, "mode": "sub-agent"}
 
 
 def copy_managed(source: Path, target: Path) -> dict[str, str]:
@@ -183,6 +275,7 @@ def install_assets(src: Path, dst: Path, repo: Path) -> dict[str, list[str]]:
     replaced_overlays.extend(overlays["replaced_overlays"])
     updated_managed.extend(overlays["updated_managed"])
     managed_backups.extend(overlays["managed_backups"])
+    codex_dispatch = ensure_codex_dispatch_mode(repo)
 
     return {
         "installed": installed,
@@ -191,6 +284,7 @@ def install_assets(src: Path, dst: Path, repo: Path) -> dict[str, list[str]]:
         "replaced_overlays": replaced_overlays,
         "updated_managed": updated_managed,
         "managed_backups": managed_backups,
+        "codex_dispatch": codex_dispatch,
     }
 
 
@@ -255,6 +349,7 @@ def main() -> int:
         "replaced_overlays": result["replaced_overlays"],
         "updated_managed": result["updated_managed"],
         "managed_backups": result["managed_backups"],
+        "codex_dispatch": result["codex_dispatch"],
         "config": ".trellis/guru-team/config.yml",
         "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
         "public_workflow_marketplace": "gh:castbox/guru-trellis/trellis",

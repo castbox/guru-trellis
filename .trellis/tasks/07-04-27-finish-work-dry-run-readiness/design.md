@@ -6,6 +6,8 @@
 
 正式路径继续使用现有实现：archive task、add session journal、`commit_if_metadata_dirty()`、重写 archived task artifact path、内部调用 `cmd_publish_pr()`。
 
+同时把 Guru Team Codex dispatch 默认模式改为 `sub-agent`：缺省配置与新安装项目走 `[workflow-state:in_progress]`，main session dispatch `trellis-implement` / `trellis-check`；显式 `codex.dispatch_mode: inline` 才走 `[workflow-state:in_progress-inline]`。这样 Branch Review Gate 的 independent review 要求在 Codex 默认路径下可达，不会因默认 inline 阻塞 `trellis-finish-work`。
+
 ## 行为边界
 
 - dry-run 允许读取文件、读取 Git 状态、解析 task/handoff/gate/ledger、校验 PR body/readiness。
@@ -18,6 +20,8 @@
   - `gh pr create`
 - publish readiness 校验仍在 dry-run 下执行；non-draft 缺少 reviewed body source 时仍阻塞，因为这是 readiness preview 的核心价值。
 - `publish-pr --dry-run` 自身保持内部 helper 语义不变；本任务只改变 `finish-work --dry-run` 不再通过 archive/journal 后转调 publish。
+- Codex sub-agent 不继承 parent transcript 的风险通过 agent prelude 消解：dispatch prompt 首行必须包含 `Active task: <task path>`，agent 若未拿到该行则运行 `task.py current --source`，再读取 `check.jsonl` / `implement.jsonl` 与 task artifacts。
+- `inline` 模式保留但必须显式配置，适用于暂时无法使用 Codex sub-agent 的项目或调试场景。
 
 ## Payload 设计
 
@@ -47,12 +51,14 @@
 - dogfood installed copy: `.trellis/guru-team/scripts/python/guru_team_trellis.py`
 - tests: `trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py`
 - workflow/docs: `trellis/workflows/guru-team/workflow.md`、`.trellis/workflow.md`、`trellis/workflows/guru-team/README.md`、`trellis/presets/guru-team/README.md`、`README.md`
+- Codex dispatch: `.codex/hooks/inject-workflow-state.py`、`.trellis/scripts/common/workflow_phase.py`、`.trellis/config.yaml`、`trellis/workflows/guru-team/config-template.yml`、`.codex/agents/trellis-check.toml`、`.codex/agents/trellis-implement.toml`
 
 ## 兼容性
 
 - 非 dry-run 正式 finish-work 输出仍包含 `metadata_commit` 和 `publish`。
 - dry-run 输出 shape 会新增 plan/checks 字段；这是 issue #27 的目标行为，不需要兼容旧的“archive/journal 后 dry-run publish”语义。
 - parser help 改为明确无副作用，避免 throwaway install 或人工 recovery 误用。
+- Codex 默认模式从 inline 改为 sub-agent 是行为变更；显式 `codex.dispatch_mode: inline` 继续兼容旧行为。
 
 ## 风险与缓解
 
@@ -62,3 +68,7 @@
   - 缓解：修改 canonical 后运行 preset apply 同步 dogfood，再运行 dogfood overlay drift check。
 - 风险：文档仍暗示 dry-run 会 archive/journal。
   - 缓解：搜索并更新 `finish-work` / `dry-run` 相关文案。
+- 风险：Codex sub-agent 在 `fork_turns="none"` 下拿不到上下文。
+  - 缓解：保留并强化 agent prelude 的 `Active task:` / `task.py current --source` 加载路径；增加 hook/parser 测试覆盖缺省 sub-agent 与显式 inline。
+- 风险：新安装项目缺少 `codex.dispatch_mode` 时行为变化。
+  - 缓解：在 `config-template.yml`、README 和 workflow 中明确默认 sub-agent，inline 作为显式降级；preset apply 同步 dogfood 后运行 drift check。

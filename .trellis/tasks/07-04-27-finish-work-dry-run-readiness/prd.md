@@ -2,7 +2,9 @@
 
 ## 目标
 
-修复 Guru Team companion helper 中 `finish-work --dry-run` 的危险语义：dry-run 必须只做客观 readiness 校验与 planned action 输出，不得 archive task、写 journal、写 metadata、创建 metadata commit、push branch 或创建 PR。
+修复 Guru Team companion helper 中 `finish-work --dry-run` 的危险语义，并修正阻塞本 issue closeout 的 Codex dispatch 默认模式。
+
+`finish-work --dry-run` 必须只做客观 readiness 校验与 planned action 输出，不得 archive task、写 journal、写 metadata、创建 metadata commit、push branch 或创建 PR。Guru Team Codex 默认模式也必须能 dispatch independent `trellis-check` 完成 Branch Review Gate，而不是默认 inline 后卡在 `trellis-finish-work` 前。
 
 ## 需求来源
 
@@ -21,6 +23,10 @@
 - 相关单测必须反转 dry-run 预期：dry-run 不调用 `task.py archive`、不调用 `add_session.py`、不调用 `commit_if_metadata_dirty`，且不通过 publish 产生 push/PR 副作用。
 - canonical workflow companion 与 dogfood 安装副本必须同步。
 - 文档必须说明 dry-run 是无副作用 preview，throwaway install 验证不能依赖 dry-run 执行 archive/journal。
+- Guru Team Codex 默认 dispatch 模式必须改为 `sub-agent`，使默认 workflow-state 能调度 `trellis-implement` / `trellis-check`。
+- `codex.dispatch_mode: inline` 必须保留为显式降级/调试模式；缺失或非法配置不应再默认为 inline。
+- Codex sub-agent context handoff 必须依赖 `Active task: <task path>` dispatch prompt 与 `task.py current --source`，不能要求继承 parent transcript。
+- canonical config template、dogfood `.trellis/config.yaml`、hook、workflow phase parser、README/workflow 文案必须一致。
 
 ## 非目标
 
@@ -28,11 +34,12 @@
 - 不处理 worktree `.trellis/.developer` 继承问题，该问题属于 #26。
 - 不把智能判断写入 Python / shell；脚本只做机器可判定的 readiness 校验和计划输出。
 - 不修改 Trellis 上游源码、全局 npm 包或 `node_modules`。
+- 不删除 inline 模式；只把它从默认模式改为显式降级模式。
 
 ## Docs SSOT 与知识门禁
 
 - 本仓库没有独立 `docs/` 目录；长期文档 SSOT 是 `README.md`、`trellis/workflows/guru-team/README.md`、`trellis/presets/guru-team/README.md` 与 reusable workflow 文档。
-- 本任务改变的是 Guru Team companion helper 的 dry-run 语义和用户文档，需要同步以上 README / workflow surfaces。
+- 本任务改变 Guru Team companion helper 的 dry-run 语义、Codex dispatch 默认契约和用户文档，需要同步 README / workflow / config comments / Codex hook / workflow phase parser。
 - Middle-platform Knowledge Gate 不适用：本任务不涉及 go-guru、proto-guru、Unity/Flutter SDK 或 Guru 中台框架。
 
 ## 验收标准
@@ -42,6 +49,9 @@
 - dry-run 后不新增或修改 `.trellis/workspace/<developer>/journal-*.md`。
 - dry-run 后不产生 commit。
 - dry-run JSON 输出包含 archive/journal/publish plan 与 readiness 结果。
+- 缺省配置下 Codex hook banner 输出 sub-agent 语义，workflow phase 选择 `codex-sub-agent`。
+- 显式 `codex.dispatch_mode: inline` 仍输出 inline 语义，作为降级模式。
+- Codex agent 文件清楚要求从 `Active task:` 或 `task.py current --source` 加载 task context。
 - 相关 Python 单测通过。
 - `python3 -m json.tool trellis/index.json`、Bash syntax、Python compile、task validate、dogfood overlay drift、`git diff --check` 通过。
 - 如无法完成 throwaway install 验证，最终报告必须列出未覆盖项与风险。

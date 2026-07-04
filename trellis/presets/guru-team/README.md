@@ -15,6 +15,13 @@ optional_warn`. Existing target repo configs are not overwritten just to add
 this key; if it is absent, the workflow interprets it as `optional_warn`.
 `required` is opt-in only, and `off` is opt-out only.
 
+The preset also materializes the project-level `.trellis/config.yaml`
+`codex.dispatch_mode` default. Missing, commented-out, or invalid values are
+updated to `sub-agent` so Codex can dispatch `trellis-implement` /
+`trellis-check` and satisfy Branch Review Gate by default. An explicit
+`codex.dispatch_mode: inline` value is preserved as a user-selected downgrade
+or debug mode.
+
 ## Apply
 
 ```bash

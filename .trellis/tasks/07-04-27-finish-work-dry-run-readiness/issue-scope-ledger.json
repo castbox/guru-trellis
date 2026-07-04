@@ -3,10 +3,11 @@
     "number": 27,
     "url": "https://github.com/castbox/guru-trellis/issues/27",
     "title": "让 finish-work --dry-run 成为真正无副作用的 readiness preview",
-    "reason": "本任务 intake/handoff 主 issue。",
+    "reason": "本任务 intake/handoff 主 issue；正文已扩展纳入 Codex 默认 sub-agent dispatch 修复。",
     "acceptance_evidence": [
       "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 通过 62 个测试。",
-      "临时 repo fixture 验证 finish-work --dry-run --from-trellis-finish-work 后 git status、HEAD、active task、archive snapshot、journal snapshot 均保持不变。"
+      "临时 repo fixture 验证 finish-work --dry-run --from-trellis-finish-work 后 git status、HEAD、active task、archive snapshot、journal snapshot 均保持不变。",
+      "issue #27 正文已扩展，纳入 Codex 默认 sub-agent dispatch 以解除 Branch Review Gate 默认 inline 阻塞。"
     ]
   },
   "close_issues": [
@@ -14,11 +15,12 @@
       "number": 27,
       "url": "https://github.com/castbox/guru-trellis/issues/27",
       "title": "让 finish-work --dry-run 成为真正无副作用的 readiness preview",
-      "reason": "本任务完整修复 finish-work --dry-run 副作用语义并同步测试、文档和 dogfood 副本。",
+      "reason": "本任务完整修复 finish-work --dry-run 副作用语义，并修正 Codex 默认 inline 导致 Branch Review Gate 无法开箱完成的问题。",
       "acceptance_evidence": [
         "dry-run 分支在 readiness 校验后直接返回 plan，不调用 task.py archive、add_session.py、commit_if_metadata_dirty 或 cmd_publish_pr。",
         "dogfood overlay copies match canonical Guru Team overlays。",
-        "README、workflow、preset README 已说明 --dry-run 是无副作用 readiness preview。"
+        "README、workflow、preset README 已说明 --dry-run 是无副作用 readiness preview。",
+        "待验证：缺省 Codex dispatch 为 sub-agent，显式 inline 仍可降级。"
       ]
     }
   ],
