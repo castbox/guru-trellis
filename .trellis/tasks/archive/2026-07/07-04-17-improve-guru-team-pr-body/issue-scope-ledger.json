@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 17,
+    "url": "https://github.com/castbox/guru-trellis/issues/17",
+    "title": "Improve Guru Team PR body quality standards",
+    "reason": "intake/handoff 主 issue，定义 Guru Team PR body 内容质量标准与 publish readiness 边界。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 17,
+      "url": "https://github.com/castbox/guru-trellis/issues/17",
+      "title": "Improve Guru Team PR body quality standards",
+      "reason": "本任务完整实现 workflow、finish-work/publish、README/spec 与测试中的 PR body 质量标准。",
+      "acceptance_evidence": [
+        "workflow / finish-work overlay / README / spec 已明确 PR body 面向 GitHub reviewer，禁止低信息量 Trellis 内部语境摘要。",
+        "publish-pr 已支持 --body-file / --body-artifact，并优先使用 AI 审阅后的 body。",
+        "publish-pr 已校验必填 section、低信息量短语、具体内容和 close/ref 语义。",
+        "单元测试覆盖低信息量 body 失败、合格 body file 通过、body artifact 读取、related issue close keyword 阻塞。",
+        "throwaway install 验证、dogfood overlay drift check、脚本编译、bash -n、git diff --check 均已通过。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": [],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。",
+    "新增 issue 进入 close_issues 前必须更新 prd/design/implement 并取得用户明确确认。"
+  ]
+}

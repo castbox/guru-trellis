@@ -39,6 +39,12 @@ git diff --check
 Add targeted script invocations when changing phase parsing, intake, review,
 finish, publish, installer behavior, or source-repo dogfood overlay sync.
 
+When changing PR publish behavior, include tests or dry-runs for both a blocked
+low-information body and an accepted reviewer-readable body. The accepted body
+must contain concrete `变更摘要`, `影响范围`, `验证结果`, `Review Gate`,
+`Issue 关闭范围`, and `安全说明` sections. The blocked case should cover phrases
+such as `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact`.
+
 ## Review Focus
 
 Before Branch Review Gate, review the full branch diff from the task's intake

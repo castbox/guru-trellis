@@ -56,6 +56,44 @@ DEFAULTS: dict[str, Any] = {
 VALID_PRIORITIES = {"P0", "P1", "P2", "P3"}
 METADATA_ONLY_PREFIXES = (".trellis/tasks/", ".trellis/workspace/", ".trellis/.runtime/")
 METADATA_ONLY_FILES = {".trellis/guru-team/handoff.json"}
+PR_BODY_REQUIRED_SECTIONS = [
+    "变更摘要",
+    "影响范围",
+    "验证结果",
+    "Review Gate",
+    "Issue 关闭范围",
+    "安全说明",
+]
+PR_BODY_SECTION_ALIASES = {
+    "变更摘要": ["变更摘要", "更新摘要"],
+    "影响范围": ["影响范围"],
+    "验证结果": ["验证结果", "验证"],
+    "Review Gate": ["Review Gate", "ReviewGate"],
+    "Issue 关闭范围": ["Issue 关闭范围", "议题关闭范围", "关联议题"],
+    "安全说明": ["安全说明", "安全与部署影响", "安全/部署影响", "安全和部署影响"],
+}
+PR_BODY_LOW_INFORMATION_PHRASES = [
+    "当前 Trellis task",
+    "已提交实现与文档更新",
+    "详见 artifact",
+    "详见 Trellis task artifact",
+    "详见 Trellis task artifact 与 Review Gate 记录",
+    "未提供具体 publish validation",
+    "需要 AI 在 body file 中补充",
+    "未记录 changed_files",
+]
+PR_BODY_PLACEHOLDER_VALUES = {
+    "",
+    "无",
+    "n/a",
+    "na",
+    "none",
+    "tbd",
+    "todo",
+    "待补充",
+    "待定",
+}
+PR_CLOSE_KEYWORDS = ["Closes", "Fixes", "Resolves", "Close", "Fix", "Resolve"]
 DEPLOYMENT_ASSET_CATEGORIES: dict[str, list[str]] = {
     "ci_cd": [
         ".github/workflows/",
@@ -1372,6 +1410,155 @@ def pr_issue_line(keyword: str, issue: dict[str, Any], mode: str) -> str:
     return f"- Refs #{number}{suffix}"
 
 
+def markdown_section_ranges(body: str) -> dict[str, str]:
+    matches = list(re.finditer(r"(?m)^(#{2,6})\s+(.+?)\s*$", body))
+    sections: dict[str, str] = {}
+    for index, match in enumerate(matches):
+        title = match.group(2).strip()
+        start = match.end()
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(body)
+        sections[title] = body[start:end].strip()
+    return sections
+
+
+def find_pr_body_sections(body: str) -> dict[str, str]:
+    raw_sections = markdown_section_ranges(body)
+    found: dict[str, str] = {}
+    for required, aliases in PR_BODY_SECTION_ALIASES.items():
+        for title, content in raw_sections.items():
+            normalized_title = re.sub(r"\s+", " ", title).strip()
+            if any(alias.lower() in normalized_title.lower() for alias in aliases):
+                found[required] = content
+                break
+    return found
+
+
+def normalized_body_line(line: str) -> str:
+    return line.strip().lstrip("-*•").strip()
+
+
+def section_has_specific_bullet(section: str) -> bool:
+    for line in section.splitlines():
+        stripped = line.strip()
+        if not (stripped.startswith("-") or stripped.startswith("*") or stripped.startswith("•")):
+            continue
+        normalized = normalized_body_line(stripped).lower()
+        if normalized in PR_BODY_PLACEHOLDER_VALUES:
+            continue
+        if "详见" in normalized:
+            continue
+        if len(normalized) < 8:
+            continue
+        return True
+    return False
+
+
+def section_has_substantive_text(section: str) -> bool:
+    lines = [normalized_body_line(line) for line in section.splitlines()]
+    meaningful = [line for line in lines if line and line.lower() not in PR_BODY_PLACEHOLDER_VALUES]
+    if not meaningful:
+        return False
+    return any("详见" not in line for line in meaningful)
+
+
+def issue_number_set(items: Any) -> set[int]:
+    return set(issue_numbers(items))
+
+
+def close_keyword_pattern() -> re.Pattern[str]:
+    return re.compile(r"(?i)\b(" + "|".join(re.escape(keyword) for keyword in PR_CLOSE_KEYWORDS) + r")\s+#(\d+)\b")
+
+
+def load_pr_body_artifact(root: Path, artifact_arg: str | None) -> tuple[str | None, Path | None]:
+    if not artifact_arg:
+        return None, None
+    raw_path = Path(artifact_arg).expanduser()
+    path = raw_path if raw_path.is_absolute() else root / raw_path
+    payload = read_json(path)
+    ready = payload.get("ready")
+    if ready is not None and ready is not True:
+        raise WorkflowError("PR body readiness artifact is not ready=true.", exit_code=2, payload={"artifact_path": str(path)})
+    body_file = str(payload.get("body_file") or "").strip()
+    if body_file:
+        body_path = Path(body_file).expanduser()
+        resolved = body_path if body_path.is_absolute() else path.parent / body_path
+        if not resolved.exists():
+            resolved = root / body_file
+        return read_pr_body_file(root, str(resolved)), resolved
+    body = payload.get("body")
+    if isinstance(body, str) and body.strip():
+        return body.strip() + "\n", path
+    raise WorkflowError(
+        "PR body readiness artifact must contain a non-empty body or body_file.",
+        exit_code=2,
+        payload={"artifact_path": str(path)},
+    )
+
+
+def read_pr_body_file(root: Path, body_file: str | None) -> str | None:
+    if not body_file:
+        return None
+    raw_path = Path(body_file).expanduser()
+    path = raw_path if raw_path.is_absolute() else root / raw_path
+    if not path.exists():
+        raise WorkflowError(f"PR body file not found: {path}", exit_code=2)
+    if not path.is_file():
+        raise WorkflowError(f"PR body file must point to a file: {path}", exit_code=2)
+    body = path.read_text(encoding="utf-8").strip()
+    if not body:
+        raise WorkflowError(f"PR body file is empty: {path}", exit_code=2)
+    return body + "\n"
+
+
+def resolve_pr_body(
+    root: Path,
+    args: argparse.Namespace,
+    ledger: dict[str, Any],
+    gate: dict[str, Any],
+    validations: list[str],
+    config: dict[str, Any],
+) -> tuple[str, str]:
+    file_body = read_pr_body_file(root, getattr(args, "body_file", None))
+    if file_body is not None:
+        return file_body, f"body-file:{getattr(args, 'body_file')}"
+    artifact_body, artifact_path = load_pr_body_artifact(root, getattr(args, "body_artifact", None))
+    if artifact_body is not None:
+        return artifact_body, f"body-artifact:{artifact_path}"
+    return build_pr_body(ledger, gate, validations, config), "generated"
+
+
+def validate_pr_body_quality(body: str, ledger: dict[str, Any], draft: bool) -> list[str]:
+    errors: list[str] = []
+    sections = find_pr_body_sections(body)
+    for section in PR_BODY_REQUIRED_SECTIONS:
+        if section not in sections:
+            errors.append(f"PR body 缺少 `{section}` section。")
+
+    if not draft:
+        for phrase in PR_BODY_LOW_INFORMATION_PHRASES:
+            if phrase in body:
+                errors.append(f"PR body 包含低信息量摘要或占位短语：{phrase}")
+
+    summary = sections.get("变更摘要", "")
+    if summary and not section_has_specific_bullet(summary):
+        errors.append("PR body `变更摘要` 缺少具体 bullet。")
+    for section in ["影响范围", "验证结果", "安全说明"]:
+        value = sections.get(section, "")
+        if value and not section_has_substantive_text(value):
+            errors.append(f"PR body `{section}` 缺少具体内容。")
+
+    close_allowed = issue_number_set(ledger.get("close_issues"))
+    related_numbers = issue_number_set(ledger.get("related_issues"))
+    followup_numbers = issue_number_set(ledger.get("followup_issues"))
+    for match in close_keyword_pattern().finditer(body):
+        number = int(match.group(2))
+        if number not in close_allowed:
+            errors.append(f"PR body 对非 close_issues issue #{number} 使用了 close keyword。")
+        if number in related_numbers or number in followup_numbers:
+            errors.append(f"PR body 对 related/followup issue #{number} 使用了 close keyword。")
+    return errors
+
+
 def build_pr_body(ledger: dict[str, Any], gate: dict[str, Any], validations: list[str], config: dict[str, Any]) -> str:
     publish = publish_config(config)
     keyword = str(publish.get("close_keyword") or "Closes")
@@ -1382,14 +1569,36 @@ def build_pr_body(ledger: dict[str, Any], gate: dict[str, Any], validations: lis
     close_lines = "\n".join(pr_issue_line(keyword, issue, "close") for issue in close_issues) or "- 无"
     related_lines = "\n".join(pr_issue_line(keyword, issue, "related") for issue in related_issues) or "- 无"
     followup_lines = "\n".join(pr_issue_line(keyword, issue, "followup") for issue in followup_issues) or "- 无"
-    validation_lines = "\n".join(f"- {item}" for item in validations) or "- 详见 Trellis task artifact 与 Review Gate 记录。"
+    validation_lines = "\n".join(f"- {item}" for item in validations) or "- 未提供具体 publish validation；non-draft publish 会被 PR body 质量校验阻塞。"
     gate_summary = gate.get("conclusion", {}).get("summary", "Branch Review Gate 通过。")
     gate_head = gate.get("head", "")
     gate_range = gate.get("diff_range", "")
+    changed_files = gate.get("changed_files") if isinstance(gate.get("changed_files"), list) else []
+    impact = gate.get("deployment_impact") if isinstance(gate.get("deployment_impact"), dict) else {}
+    changed_file_lines = "\n".join(f"- `{path}`" for path in changed_files[:12]) or "- 未记录 changed_files；需要 AI 在 body file 中补充影响范围。"
+    deployment_note = "未检测到部署资产变更。"
+    if impact.get("needs_deployment_impact_review"):
+        deployment_note = "Review Gate 已要求覆盖部署影响判断；请结合 gate evidence 确认是否需要 CI/CD、容器、K8s、migration 或 Makefile 更新。"
+    summary_items: list[str] = []
+    for issue in close_issues[:5]:
+        number = issue.get("number")
+        title = str(issue.get("title") or "").strip()
+        if number and title:
+            summary_items.append(f"- 完成 #{number}：{title}。")
+        elif number:
+            summary_items.append(f"- 完成 #{number} 对应的 PR 关闭范围。")
+    if not summary_items:
+        summary_items.append("- 完成 Issue Scope Ledger 中记录的 PR 关闭范围。")
+    summary_items.append(f"- Review Gate 结论：{gate_summary}")
+    summary_bullets = "\n".join(summary_items)
 
     return f"""## 变更摘要
 
-- 本 PR 承接当前 Trellis task 的已提交实现与文档更新。
+{summary_bullets}
+
+## 影响范围
+
+{changed_file_lines}
 
 ## 验证结果
 
@@ -1416,6 +1625,7 @@ def build_pr_body(ledger: dict[str, Any], gate: dict[str, Any], validations: lis
 ## 安全说明
 
 - 未在 PR 正文中包含 token、secret、签名 URL、`.env` 内容或数据库 URL。
+- {deployment_note}
 """
 
 
@@ -1857,12 +2067,19 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
             payload={"ledger_path": str(issue_scope_ledger_path(task_dir)), "errors": ledger_errors},
         )
 
-    title = pr_title_from_task(task, args)
-    validations = list(args.validation or [])
-    body = build_pr_body(ledger, gate, validations, config)
     branch = current_branch(root)
     remote = str(args.remote or publish.get("remote") or "origin")
     draft = bool(args.draft) if args.draft is not None else bool(publish.get("draft", False))
+    title = pr_title_from_task(task, args)
+    validations = list(args.validation or [])
+    body, body_source = resolve_pr_body(root, args, ledger, gate, validations, config)
+    body_errors = validate_pr_body_quality(body, ledger, draft)
+    if body_errors:
+        raise WorkflowError(
+            "Publish blocked because PR body is not reviewer-readable.",
+            exit_code=2,
+            payload={"errors": body_errors, "body_source": body_source},
+        )
 
     payload: dict[str, Any] = {
         "status": "dry-run" if args.dry_run else "ok",
@@ -1873,6 +2090,7 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
         "draft": draft,
         "title": title,
         "body": body,
+        "body_source": body_source,
         "review_gate": str(gate_path),
         "issue_scope_ledger": str(issue_scope_ledger_path(task_dir)),
     }
@@ -1977,6 +2195,8 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         remote=args.remote,
         title=args.title,
         validation=args.validation,
+        body_file=args.body_file,
+        body_artifact=args.body_artifact,
         draft=args.draft,
         allow_metadata_after_gate=True,
         dry_run=args.dry_run,
@@ -2054,6 +2274,8 @@ def build_parser() -> argparse.ArgumentParser:
     publish.add_argument("--remote")
     publish.add_argument("--title")
     publish.add_argument("--validation", action="append", help="Chinese validation evidence line for PR body.")
+    publish.add_argument("--body-file", help="AI-reviewed Markdown PR body. Preferred over generated fallback.")
+    publish.add_argument("--body-artifact", help="AI-reviewed JSON readiness artifact containing body or body_file.")
     publish.add_argument("--draft", dest="draft", action="store_true", default=None)
     publish.add_argument("--no-draft", dest="draft", action="store_false")
     publish.add_argument("--allow-metadata-after-gate", action="store_true")
@@ -2074,6 +2296,8 @@ def build_parser() -> argparse.ArgumentParser:
     finish.add_argument("--remote")
     finish.add_argument("--title", help="Chinese PR title override.")
     finish.add_argument("--validation", action="append", help="Chinese validation evidence line for PR body.")
+    finish.add_argument("--body-file", help="AI-reviewed Markdown PR body passed through to publish-pr.")
+    finish.add_argument("--body-artifact", help="AI-reviewed JSON readiness artifact passed through to publish-pr.")
     finish.add_argument("--draft", dest="draft", action="store_true", default=None)
     finish.add_argument("--no-draft", dest="draft", action="store_false")
     finish.add_argument("--journal-title", help="Chinese session journal title.")

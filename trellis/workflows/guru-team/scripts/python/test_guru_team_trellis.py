@@ -52,6 +52,8 @@ def publish_args(**overrides: object) -> argparse.Namespace:
         "remote": None,
         "title": None,
         "validation": [],
+        "body_file": None,
+        "body_artifact": None,
         "draft": None,
         "allow_metadata_after_gate": False,
         "from_finish_work": False,
@@ -73,6 +75,8 @@ def finish_args(**overrides: object) -> argparse.Namespace:
         "remote": None,
         "title": None,
         "validation": [],
+        "body_file": None,
+        "body_artifact": None,
         "draft": None,
         "journal_title": None,
         "journal_summary": None,
@@ -285,6 +289,7 @@ class PublishBoundaryTest(unittest.TestCase):
         gate = {
             "head": "abc123",
             "diff_range": "origin/main...HEAD",
+            "changed_files": ["trellis/workflows/guru-team/workflow.md"],
             "conclusion": {"passed": True, "summary": "发布边界检查通过。"},
             "issue_scope": {
                 "close_issues_reviewed": [{"number": 18, "title": "Publish boundary"}],
@@ -292,6 +297,11 @@ class PublishBoundaryTest(unittest.TestCase):
             "verification_evidence": {
                 "reviewer": "test",
                 "evidence": ["已覆盖 publish 边界。"],
+            },
+            "deployment_impact": {
+                "needs_deployment_impact_review": False,
+                "deployment_asset_categories": {},
+                "probable_runtime_changes_without_deployment_asset_change": [],
             },
         }
         return [
@@ -328,7 +338,12 @@ class PublishBoundaryTest(unittest.TestCase):
         for patcher in patches:
             patcher.start()
         try:
-            payload = gtt.cmd_publish_pr(publish_args(recovery_after_finish_work=True))
+            payload = gtt.cmd_publish_pr(
+                publish_args(
+                    recovery_after_finish_work=True,
+                    validation=["python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 通过"],
+                )
+            )
         finally:
             for patcher in reversed(patches):
                 patcher.stop()
@@ -337,6 +352,305 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(payload["repo"], "owner/repo")
         self.assertEqual(payload["base_branch"], "main")
         self.assertEqual(payload["head_branch"], "codex/18-publish-boundary")
+        self.assertEqual(payload["body_source"], "generated")
+
+    def test_publish_pr_rejects_generated_body_without_validation(self) -> None:
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_publish_pr(publish_args(recovery_after_finish_work=True))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertEqual(raised.exception.payload["body_source"], "generated")
+        self.assertTrue(any("publish validation" in error for error in raised.exception.payload["errors"]))
+
+    def test_publish_pr_rejects_low_information_body_file(self) -> None:
+        body_path = self.root / "pr-body.md"
+        body_path.write_text(
+            """## 变更摘要
+
+- 本 PR 承接当前 Trellis task 的已提交实现与文档更新。
+
+## 影响范围
+
+- workflow
+
+## 验证结果
+
+- python3 -m unittest 通过
+
+## Review Gate
+
+- Reviewed HEAD：`abc123`
+
+## Issue 关闭范围
+
+- Closes #18
+
+## 安全说明
+
+- 未涉及 secrets。
+""",
+            encoding="utf-8",
+        )
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_publish_pr(
+                    publish_args(
+                        recovery_after_finish_work=True,
+                        body_file=str(body_path),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertTrue(any("低信息量" in error for error in raised.exception.payload["errors"]))
+
+    def test_publish_pr_prefers_reviewed_body_file(self) -> None:
+        body_path = self.root / "pr-body.md"
+        body_path.write_text(
+            """## 📋 变更摘要
+
+- 增加 publish-pr 的 body file 读取路径，并在发布前校验 reviewer 可读性。
+
+## 🔍 影响范围
+
+- Guru Team publish helper
+- finish-work PR 发布入口
+
+## ✅ 验证结果
+
+- python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 通过
+
+## Review Gate
+
+- 结论：发布边界检查通过。
+- Reviewed HEAD：`abc123`
+
+## 🔗 Issue 关闭范围
+
+- Closes #18
+
+## 🔒 安全说明
+
+- 未涉及 secrets、runtime config 或部署资产。
+""",
+            encoding="utf-8",
+        )
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_publish_pr(
+                publish_args(
+                    recovery_after_finish_work=True,
+                    body_file=str(body_path),
+                    validation=["fallback validation should not replace body file"],
+                )
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(payload["status"], "dry-run")
+        self.assertIn("body-file:", payload["body_source"])
+        self.assertIn("增加 publish-pr 的 body file 读取路径", payload["body"])
+        self.assertNotIn("fallback validation should not replace body file", payload["body"])
+
+    def test_publish_pr_rejects_close_keyword_for_related_issue(self) -> None:
+        ledger_path = self.task_dir / "issue-scope-ledger.json"
+        ledger_path.write_text(
+            '{"close_issues":[{"number":18,"title":"Publish boundary","acceptance_evidence":["ok"]}],'
+            '"related_issues":[{"number":19,"title":"Related only"}],"followup_issues":[]}\n',
+            encoding="utf-8",
+        )
+        body_path = self.root / "pr-body.md"
+        body_path.write_text(
+            """## 变更摘要
+
+- 增加 publish-pr 的 close/ref 语义校验，避免误关闭 related issue。
+
+## 影响范围
+
+- Guru Team publish helper
+
+## 验证结果
+
+- python3 -m unittest 通过
+
+## Review Gate
+
+- 结论：发布边界检查通过。
+
+## Issue 关闭范围
+
+- Closes #19
+
+## 安全说明
+
+- 未涉及 secrets。
+""",
+            encoding="utf-8",
+        )
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_publish_pr(
+                    publish_args(
+                        recovery_after_finish_work=True,
+                        body_file=str(body_path),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(any("#19" in error for error in raised.exception.payload["errors"]))
+
+    def test_publish_pr_uses_body_artifact(self) -> None:
+        body_path = self.root / "artifact-body.md"
+        body_path.write_text(
+            """## 变更摘要
+
+- 从 readiness artifact 读取 AI 审阅后的 PR body。
+
+## 影响范围
+
+- Guru Team publish helper
+
+## 验证结果
+
+- python3 -m unittest 通过
+
+## Review Gate
+
+- 结论：发布边界检查通过。
+
+## Issue 关闭范围
+
+- Closes #18
+
+## 安全说明
+
+- 未涉及 secrets。
+""",
+            encoding="utf-8",
+        )
+        artifact_path = self.root / "body-artifact.json"
+        artifact_path.write_text(
+            gtt.json.dumps({"ready": True, "body_file": str(body_path)}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_publish_pr(
+                publish_args(
+                    recovery_after_finish_work=True,
+                    body_artifact=str(artifact_path),
+                )
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertIn("body-artifact:", payload["body_source"])
+        self.assertIn("readiness artifact", payload["body"])
+
+    def test_publish_pr_prefers_body_file_over_artifact_when_both_are_set(self) -> None:
+        body_path = self.root / "preferred-body.md"
+        body_path.write_text(
+            """## 变更摘要
+
+- 优先使用命令行传入的 reviewed body file。
+
+## 影响范围
+
+- Guru Team publish helper
+
+## 验证结果
+
+- python3 -m unittest 通过
+
+## Review Gate
+
+- 结论：发布边界检查通过。
+
+## Issue 关闭范围
+
+- Closes #18
+
+## 安全说明
+
+- 未涉及 secrets。
+""",
+            encoding="utf-8",
+        )
+        artifact_path = self.root / "body-artifact.json"
+        artifact_path.write_text(
+            gtt.json.dumps(
+                {
+                    "ready": True,
+                    "body": """## 变更摘要
+
+- artifact body 不应覆盖显式 body file。
+
+## 影响范围
+
+- Guru Team publish helper
+
+## 验证结果
+
+- python3 -m unittest 通过
+
+## Review Gate
+
+- 结论：发布边界检查通过。
+
+## Issue 关闭范围
+
+- Closes #18
+
+## 安全说明
+
+- 未涉及 secrets。
+""",
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_publish_pr(
+                publish_args(
+                    recovery_after_finish_work=True,
+                    body_file=str(body_path),
+                    body_artifact=str(artifact_path),
+                )
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertIn("body-file:", payload["body_source"])
+        self.assertIn("优先使用命令行传入的 reviewed body file", payload["body"])
+        self.assertNotIn("artifact body 不应覆盖显式 body file", payload["body"])
 
     def test_finish_work_direct_call_requires_explicit_finish_work_entrypoint(self) -> None:
         with (
@@ -379,6 +693,8 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertTrue(publish_args_obj.from_finish_work)
         self.assertFalse(publish_args_obj.recovery_after_finish_work)
         self.assertTrue(publish_args_obj.allow_metadata_after_gate)
+        self.assertIsNone(publish_args_obj.body_file)
+        self.assertIsNone(publish_args_obj.body_artifact)
         self.assertEqual(payload["publish"]["status"], "dry-run")
 
     def test_finish_work_validates_gate_with_metadata_tail_allowed(self) -> None:

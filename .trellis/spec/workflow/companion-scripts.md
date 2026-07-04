@@ -86,6 +86,14 @@ checks.
 Use the intake/task `base_branch` for diff ranges and PR base. Do not fall back
 to the GitHub default branch when the task has an explicit base.
 
+For PR body publishing, companion scripts may validate objective Markdown
+structure, required sections, forbidden low-information phrases, non-empty
+validation / impact / safety content, and Issue Scope Ledger close/ref
+semantics. They must not decide whether the release explanation is true or
+sufficient; that judgment belongs to the AI readiness review before
+`trellis-finish-work`. Prefer `--body-file` or `--body-artifact` inputs that
+were already reviewed by AI/human.
+
 ## Security Rules
 
 Never print or persist tokens, private keys, signed URLs, `.env` contents,

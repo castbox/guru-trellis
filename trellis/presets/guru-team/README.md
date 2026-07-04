@@ -124,6 +124,16 @@ archive, journal, and remaining Trellis metadata-only commit succeed; direct
 publish is reserved for explicit recovery/debug after finish-work already
 completed.
 
+Before finish-work publishes, the AI must generate or review a PR body for
+GitHub reviewers who do not know the Trellis task. The body should use concrete
+Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gate`,
+`Issue 关闭范围`, and `安全说明`. Low-information summaries such as
+`当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact` are blocked for
+non-draft publish. Pass reviewed Markdown with `--body-file <path>` or a JSON
+readiness artifact with `--body-artifact <path>`; the script validates
+objective structure and close/ref semantics but does not replace AI release
+judgment.
+
 ## Workflow Guardrails
 
 `prepare-task.sh --json` is an intake/preflight planner by default. It may read

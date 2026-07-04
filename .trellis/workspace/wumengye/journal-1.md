@@ -236,3 +236,36 @@ Branch Review Gate 通过：已审查 origin/main...HEAD 全量 diff，确认 is
 ### Next Steps
 
 - None - task complete
+
+
+## Session 8: 完成：#17 Improve Guru Team PR body quality standards
+
+**Date**: 2026-07-04
+**Task**: 完成：#17 Improve Guru Team PR body quality standards
+**Branch**: `codex/17-improve-guru-team-pr-body`
+
+### Summary
+
+已按 origin/main...HEAD 完整审查 #17 分支，未发现 P0/P1/P2/P3 finding，PR body 质量合同、publish helper、测试、overlay 与文档同步满足验收。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `803841d4553ffb3fae8556f6c04149706f49c10f` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

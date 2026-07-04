@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 7
+- **Total Sessions**: 8
 - **Last Active**: 2026-07-04
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~238 | Active |
+| `journal-1.md` | ~271 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 8 | 2026-07-04 | 完成：#17 Improve Guru Team PR body quality standards | `803841d4553ffb3fae8556f6c04149706f49c10f` | `codex/17-improve-guru-team-pr-body` |
 | 7 | 2026-07-04 | 完成：#20 强制 Branch Review Gate 每次产出 review，并由 finish-work 提交 metadata | `be437f8366470f53507572b43975b009e07591eb` | `codex/20-review-gate-report-metadata` |
 | 6 | 2026-07-04 | 完成：#18 Enforce PR publish only after finish-work | `8aa17e034fe8a6a0febef92f4fe32f826ba62054` | `codex/18-enforce-pr-publish-only-after` |
 | 5 | 2026-07-04 | 完成：#15 Require explicit approval for no_task current-checkout direct edits | `11e7c07586733196cf7a94503d8386c821b072d8` | `codex/15-require-explicit-approval-no-task` |
