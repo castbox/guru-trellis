@@ -1,21 +1,21 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 8,
-    "url": "https://github.com/castbox/guru-trellis/issues/8",
-    "title": "Add auditable evidence for planning approval and trellis-check",
+    "number": 26,
+    "url": "https://github.com/castbox/guru-trellis/issues/26",
+    "title": "worktree 创建后应继承 Trellis developer identity",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/8-auditable-evidence-planning-approval-trellis/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/26-worktree-trellis-developer-identity/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "auditable-evidence-planning-approval-trellis",
-  "task_slug": "8-auditable-evidence-planning-approval-trellis",
-  "task_title": "#8 Add auditable evidence for planning approval and trellis-check",
-  "branch_name": "codex/8-auditable-evidence-planning-approval-trellis",
+  "slug": "worktree-trellis-developer-identity",
+  "task_slug": "26-worktree-trellis-developer-identity",
+  "task_title": "#26 worktree 创建后应继承 Trellis developer identity",
+  "branch_name": "codex/26-worktree-trellis-developer-identity",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/8-auditable-evidence-planning-approval-trellis",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/26-worktree-trellis-developer-identity",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -26,30 +26,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#8 Add auditable evidence for planning approval and trellis-check",
+    "#26 worktree 创建后应继承 Trellis developer identity",
     "--slug",
-    "8-auditable-evidence-planning-approval-trellis",
+    "26-worktree-trellis-developer-identity",
     "--assignee",
-    "name=wumengye\ninitialized_at=2026-07-03T17:44:00.461566"
+    "wumengye"
   ],
-  "task_dir": null,
+  "task_dir": ".trellis/tasks/07-04-26-worktree-trellis-developer-identity",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 8,
-      "url": "https://github.com/castbox/guru-trellis/issues/8",
-      "title": "Add auditable evidence for planning approval and trellis-check",
+      "number": 26,
+      "url": "https://github.com/castbox/guru-trellis/issues/26",
+      "title": "worktree 创建后应继承 Trellis developer identity",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 8,
-        "url": "https://github.com/castbox/guru-trellis/issues/8",
-        "title": "Add auditable evidence for planning approval and trellis-check",
+        "number": 26,
+        "url": "https://github.com/castbox/guru-trellis/issues/26",
+        "title": "worktree 创建后应继承 Trellis developer identity",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -64,7 +64,7 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           46f950d [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           9b8c044 [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/17-improve-guru-team-pr-body                    6834b2a [codex/17-improve-guru-team-pr-body]",
@@ -72,12 +72,27 @@
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/2-align-guru-team-workflow-trellis              692cd9f [codex/2-align-guru-team-workflow-trellis]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/20-branch-review-gate-review                    8e8d987 [codex/20-branch-review-gate-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/20-review-gate-report-metadata                  d431ee8 [codex/20-review-gate-report-metadata]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/26-worktree-trellis-developer-identity          9b8c044 [codex/26-worktree-trellis-developer-identity]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/5-require-ai-review-prompt-before               44b29b0 [codex/5-require-ai-review-prompt-before]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/7-require-pr-readiness-review-before            5319076 [codex/7-require-pr-readiness-review-before]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/8-auditable-evidence-planning-approval-trellis  46f950d [codex/8-auditable-evidence-planning-approval-trellis]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/8-auditable-evidence-planning-approval-trellis  678fdfc [codex/8-auditable-evidence-planning-approval-trellis]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/9-keep-dogfood-installed-overlays-in            cacf0c7 [codex/9-keep-dogfood-installed-overlays-in]"
     ],
     "selected_base_branch": "main",
+    "base_freshness": {
+      "remote": "origin",
+      "base_branch": "main",
+      "base_ref": "main",
+      "remote_ref": "origin/main",
+      "local_head_before": "9b8c044a9783e7de0320bfc249b41e2e591f09d5",
+      "local_head_after": "9b8c044a9783e7de0320bfc249b41e2e591f09d5",
+      "remote_head": "9b8c044a9783e7de0320bfc249b41e2e591f09d5",
+      "fetch_performed": true,
+      "fast_forwarded": false,
+      "fresh": true,
+      "status": "fresh",
+      "base_ref_for_worktree": "main"
+    },
     "workspace_was_created_or_reused": true
   }
 }

@@ -93,6 +93,14 @@ executor 路径创建 worktree 前会先刷新所选 base branch：执行 `git f
 `preflight.base_freshness`、仅在安全时 fast-forward 本地 base，并在本地 base 与远端
 分叉或 freshness 无法确认时 fail closed。不要从过期的本地 `main` / `dev` 创建任务分支。
 
+executor 路径创建或复用 worktree 后还会确保目标 workspace 有 Trellis developer
+identity。脚本优先从发起 preflight 的 source checkout 复制 gitignored
+`.trellis/.developer`；如果 source checkout 缺失该文件但调用方显式提供
+`--assignee`，则在目标 worktree 初始化等价 identity；如果两者都不可用，会 fail
+closed 并提示运行 `python3 ./.trellis/scripts/init_developer.py <name>`。这保证
+`get_context.py`、`task.py list --mine` 和 `add_session.py` 不会等到 finish / journal
+阶段才暴露 developer identity 缺失。
+
 `no_task` 下的 current-checkout direct edit 是显式 override，而不是 AI 可自行选择的
 默认捷径。只有当用户明确批准本轮跳过创建或复用 GitHub issue、Trellis task、worktree
 和 branch 时，AI 才能在当前 checkout 改文件；改动前仍要说明 skipped artifacts、

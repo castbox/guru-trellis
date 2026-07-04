@@ -50,6 +50,15 @@ head before/after, remote head, fetch state, fast-forward state, and the ref use
 for worktree creation in `preflight.base_freshness`. Fail closed on divergence
 or unknown freshness instead of creating a branch from a stale base.
 
+Executor prepare paths must also ensure the selected workspace has
+`.trellis/.developer` before handoff/task creation continues. Prefer copying the
+source checkout identity into the target worktree. If the source identity is
+missing but an explicit developer/assignee name is available, initialize an
+equivalent target identity. If neither source identity nor explicit developer is
+available, fail closed with a recovery command instead of allowing journal or
+`task.py list --mine` to fail later. Record the objective result in
+`preflight.developer_identity`.
+
 ## Planning Approval Artifact
 
 `planning-approval.json` is the start gate evidence for Phase 1.4. It records:
