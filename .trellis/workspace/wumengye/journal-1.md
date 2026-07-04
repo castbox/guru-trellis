@@ -402,3 +402,36 @@ Branch Review Gate 通过：独立 Agent 已按 origin/main...HEAD 审查 issue 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 13: 完成：#11 Let preset installer apply only selected platform overlays
+
+**Date**: 2026-07-04
+**Task**: 完成：#11 Let preset installer apply only selected platform overlays
+**Branch**: `codex/11-let-preset-installer-apply-only`
+
+### Summary
+
+独立 trellis-check-agent 已审查 origin/main...HEAD 完整 diff，确认 issue #11 的 installer 平台过滤、测试、README/preset README、preset spec、task artifacts 与 Issue Scope Ledger 均满足要求，无 P0/P1/P2/P3 findings。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `59832b11aaecaf8bdf0fe13ef629d442d2629fa0` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

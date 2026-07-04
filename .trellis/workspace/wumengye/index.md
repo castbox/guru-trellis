@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 12
+- **Total Sessions**: 13
 - **Last Active**: 2026-07-04
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~404 | Active |
+| `journal-1.md` | ~437 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 13 | 2026-07-04 | 完成：#11 Let preset installer apply only selected platform overlays | `59832b11aaecaf8bdf0fe13ef629d442d2629fa0` | `codex/11-let-preset-installer-apply-only` |
 | 12 | 2026-07-04 | 完成 issue #27 finish-work dry-run readiness | `32ece0f`, `6885059` | `codex/27-finish-work-dry-run-readiness` |
 | 11 | 2026-07-04 | 完成：#26 worktree 创建后应继承 Trellis developer identity | `0e628860dad7bdc3a34ec7e68e168a7e9812d5b9` | `codex/26-worktree-trellis-developer-identity` |
 | 10 | 2026-07-04 | 完成：#8 可审计 planning/check gate | `fbf0dc49f33cc104243e95772e623b634ec10eda` | `codex/8-auditable-evidence-planning-approval-trellis` |
