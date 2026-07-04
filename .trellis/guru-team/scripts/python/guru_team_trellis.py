@@ -1885,7 +1885,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     config = load_config(root)
     handoff = load_handoff(root, config)
     task_dir = resolve_task_dir(root, args.task, handoff)
-    gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, False)
+    gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, True)
     if gate_errors:
         raise WorkflowError(
             "finish-work blocked because Branch Review Gate is not valid for the current HEAD.",

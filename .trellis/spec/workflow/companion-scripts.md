@@ -68,9 +68,13 @@ workflow has already required AI/human handoff review. Confirming or creating a
 source issue alone still must not write handoff; handoff is written only by
 `--create-worktree` or `--create-task` in the chosen workspace.
 
-Before publish, reject uncommitted non-metadata changes. Metadata-only paths are
-defined by `METADATA_ONLY_PREFIXES` and `METADATA_ONLY_FILES`; update these
-constants deliberately if Trellis metadata ownership changes.
+Before finish-work or publish, reject uncommitted non-metadata changes.
+Metadata-only paths are defined by `METADATA_ONLY_PREFIXES` and
+`METADATA_ONLY_FILES`; update these constants deliberately if Trellis metadata
+ownership changes. `finish-work` may validate a gate with
+`allow_metadata_after_gate=True` so metadata-only commits after the reviewed
+HEAD do not force a redundant re-review, but any non-metadata tail must still
+block.
 
 Use the intake/task `base_branch` for diff ranges and PR base. Do not fall back
 to the GitHub default branch when the task has an explicit base.

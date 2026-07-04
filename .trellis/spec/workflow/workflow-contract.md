@@ -113,11 +113,22 @@ Passing the gate requires:
   asset needs a change
 - no P0/P1/P2 findings
 
+`trellis-continue` owns producing the review report and gate artifact, but it
+must stop after writing `review.md` and `review-gate.json`. It must not stage or
+commit those artifacts, push the branch, or create the PR. This keeps the
+reviewed HEAD tied to the task-work commit and leaves all remaining Trellis
+metadata to the closeout entry.
+
 ## Publish Boundary
 
 `finish-work.sh` is the closeout entry. It validates the current review gate,
 rejects uncommitted non-metadata changes, archives the active task, records the
 journal, commits remaining Trellis metadata, and then invokes publish.
+
+The review gate may point at the reviewed task-work HEAD rather than the current
+HEAD when later commits are Trellis metadata-only. `finish-work` may accept that
+metadata-only tail, but any code, config, script, schema, CI/CD, deployment, or
+preset change after the reviewed HEAD requires a new Branch Review Gate.
 
 The generated PR must be non-draft by default, target the intake/task
 `base_branch`, and use close keywords only for issues listed in the task-level
@@ -134,6 +145,8 @@ intake provenance only.
   `trellis-continue` or `finish-work`.
 - Treating Phase 2 `trellis-check` as a replacement for the Phase 3 Branch
   Review Gate.
+- Committing `review.md` / `review-gate.json` from `trellis-continue`, which
+  makes the gate's reviewed HEAD drift before `finish-work`.
 - Using `source_issue` to decide PR close keywords instead of the task-level
   Issue Scope Ledger.
 - Silently editing the current checkout in `no_task` because the change looks

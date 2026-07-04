@@ -209,6 +209,8 @@ script，不是需要用户日常手动记忆的新主流程。`review-branch.sh
 完成的 AI/human review 结论，不替代真正的文档 + 代码 review。通过的 Branch
 Review Gate 必须先产出 task-local `review.md`，再由 `review-gate.json` 记录
 `review_report` digest；`--reviewer` 只是身份字段，不能替代 review report。
+`trellis-continue` 到这里必须停止，不能提交 review/gate metadata、push 分支或创建
+PR；`trellis-finish-work` 是唯一正常提交剩余 Trellis metadata 并发布 PR 的入口。
 
 ## 维护原则
 

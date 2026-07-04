@@ -152,6 +152,7 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
 - Phase 3 Branch Review Gate is a post-commit release gate. First, an AI/human review must inspect the complete branch diff from the intake base branch to `HEAD`, including docs, code, tests, Trellis artifacts, config, scripts, schemas, CI/CD workflows, Docker/Compose files, Kubernetes YAML, Kustomize overlays, database migrations, Makefiles, preset installer, Issue Scope Ledger, and publish readiness.
 - On platforms with sub-agents, the main session may dispatch `trellis-check` or a dedicated review sub-agent to perform the evidence-gathering review for Phase 3. On inline platforms, the main session performs the same review directly in code-review stance.
 - The sub-agent does not own the gate. The gate is valid only after the AI/human review has run, the review report has been written to task-local `{TASK_DIR}/review.md`, and `review-branch.sh` writes `{TASK_DIR}/review-gate.json` with summary, evidence, findings, review report digest, optional reviewer, base/head, and current `HEAD`.
+- `trellis-continue` stops after writing `{TASK_DIR}/review.md` and `{TASK_DIR}/review-gate.json`. It must not stage or commit those gate artifacts, push the branch, or create a PR. `finish-work` owns the remaining Trellis metadata commit plus publish.
 - `review-branch.sh` is a recorder / validator, not a reviewer. It must receive the prior review result through task-local `--review-report {TASK_DIR}/review.md`, `--summary`, `--evidence`, and `--finding` / `--findings-file` when applicable. `--reviewer` records identity only and cannot replace the review report.
 - Do not skip Phase 2 `trellis-check` just because Branch Review Gate exists; do not treat Phase 2 check success as permission to run `finish-work` without the Phase 3 artifact.
 
@@ -493,7 +494,7 @@ If implementation reveals a requirement defect, return to Phase 1 and update art
 - 3.7 Publish PR `[automatic after finish-work]`
 
 [workflow-state:completed]
-Code committed. Before `/trellis:finish-work`, confirm `review-gate.json` passed for the current HEAD. If missing or stale, run Branch Review Gate in Phase 3.5.
+Code committed. Before `/trellis:finish-work`, confirm `review-gate.json` passed for the reviewed HEAD and no non-metadata commits followed it. If missing or stale, run Branch Review Gate in Phase 3.5.
 [/workflow-state:completed]
 
 #### 3.2 Debug retrospective `[on demand]`
@@ -599,22 +600,33 @@ The artifact records base/head, diff command, conclusion, review report digest, 
 
 Passing the gate is not a blank assertion. `--pass` requires a task-local `--review-report`, a Chinese `--summary`, and at least one concrete `--evidence` line from the actual review. Use additional `--evidence` lines for important validation commands or review coverage notes. `--reviewer` may be supplied for identity, but reviewer-only passed gates are invalid.
 
+After `{TASK_DIR}/review.md` and `{TASK_DIR}/review-gate.json` are written,
+stop `trellis-continue`. Do not stage or commit the review report, gate
+artifact, archive, journal, branch push, or PR creation from `trellis-continue`.
+Those files are Trellis metadata owned by `finish-work`, which archives the task,
+records the journal, commits remaining metadata, pushes, and creates the PR.
+
 When the diff includes `docs/` files, CI/CD, container, Kubernetes, Kustomize, database migration, or Makefile changes, the gate evidence or findings must explicitly name those changed assets and the validation or risk judgment used for them.
 
 When the diff does not change deployment assets but the requirement or code changes the app's deployment shape, such as adding/removing an API service, CLI command, background worker, scheduled job, queue consumer, migration entrypoint, or runtime configuration, the gate evidence must still record whether Dockerfile, Docker Compose, GitHub Actions, Kubernetes/Kustomize, database migration, and Makefiles need updates. If no deployment asset update is needed, record the reason.
 
 When the diff does not change durable docs but the task changes a long-term product, architecture, API, data, deployment, operational, or test contract, the gate evidence must record why no durable docs update is acceptable or produce a blocking finding. For repos with no durable docs SSOT, record the explicit no-docs outcome.
 
-If a user manually commits on the command line, the next `trellis-continue` or `trellis-finish-work` must check whether `review-gate.json` matches the current HEAD. A missing, failed, or stale gate blocks finish-work.
+If a user manually commits on the command line, the next `trellis-continue` or
+`trellis-finish-work` must check whether `review-gate.json` still covers the
+branch. A gate is still usable only when its reviewed HEAD is the current HEAD,
+or every later commit changes Trellis metadata-only paths. A missing gate,
+failed gate, or non-metadata commit after the reviewed HEAD blocks finish-work.
 
 Do not implement this gate as a non-blocking task lifecycle hook. The workflow phase owns the review judgment; the companion script only records and validates the gate artifact.
 
 #### 3.6 Finish-work archive and journal `[required · once]`
 
-Start only after Branch Review Gate has passed for the current HEAD:
+Start only after Branch Review Gate has passed for the reviewed HEAD and no
+non-metadata commit followed it:
 
 ```bash
-.trellis/guru-team/scripts/bash/check-review-gate.sh --json
+.trellis/guru-team/scripts/bash/check-review-gate.sh --json --allow-metadata-after-gate
 ```
 
 Then run the internal Guru Team finish helper:
@@ -625,7 +637,12 @@ Then run the internal Guru Team finish helper:
 
 The helper runs the normal finish-work actions: it rejects uncommitted non-metadata changes, archives the active task with `task.py archive`, records the session journal with `add_session.py`, commits any remaining Trellis metadata-only changes, then invokes publish.
 
-`finish-work` may create Trellis metadata commits for archive and journal. These metadata commits do not invalidate the earlier code review gate; the helper only accepts Trellis metadata after the reviewed HEAD and blocks any code, config, script, schema, CI/CD, deployment, or preset change that appears after the gate.
+`finish-work` is the only normal owner of post-gate metadata commits, including
+`review.md`, `review-gate.json`, task archive files, and workspace journal
+updates. These metadata commits do not invalidate the earlier code review gate;
+the helper only accepts Trellis metadata after the reviewed HEAD and blocks any
+code, config, script, schema, CI/CD, deployment, or preset change that appears
+after the gate.
 
 #### 3.7 Publish PR `[automatic after finish-work]`
 

@@ -9,6 +9,6 @@ Run the internal Guru Team finish helper:
 .trellis/guru-team/scripts/bash/finish-work.sh --json
 ```
 
-The helper verifies the Branch Review Gate for the current HEAD, rejects uncommitted non-metadata changes, runs the normal Trellis archive and journal commands, commits any remaining Trellis metadata-only changes, then pushes and creates the PR. It does not perform review itself; the gate must already reference a task-local `review.md` through `review_report` digest evidence, plus Docs SSOT reconciliation and any required Middle-platform Knowledge Gate evidence.
+The helper verifies the reviewed HEAD has a passed Branch Review Gate and that any later commits are Trellis metadata-only, rejects uncommitted non-metadata changes, runs the normal Trellis archive and journal commands, commits any remaining Trellis metadata-only changes, then pushes and creates the PR. It does not perform review itself; the gate must already reference a task-local `review.md` through `review_report` digest evidence, plus Docs SSOT reconciliation and any required Middle-platform Knowledge Gate evidence.
 
 PR title, section headings, and body must be Chinese. Only `close_issues` from `issue-scope-ledger.json` may use `Closes #xx`.

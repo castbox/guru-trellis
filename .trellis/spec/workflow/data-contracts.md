@@ -75,10 +75,12 @@ The artifact records:
 - validation evidence
 
 The gate is valid only for the reviewed `HEAD`, except that `finish-work` may
-allow metadata-only commits after the gate. A passed gate is invalid if it lacks
-review report metadata. `--reviewer` is identity metadata only and does not
-replace the review report. Enforcement lives in `validate_review_gate()` and
-`metadata_only_since()`.
+allow metadata-only commits after the gate. `trellis-continue` writes
+`review.md` and `review-gate.json` but must leave them uncommitted for
+`finish-work` unless a recovery path explicitly handles metadata-only commits.
+A passed gate is invalid if it lacks review report metadata. `--reviewer` is
+identity metadata only and does not replace the review report. Enforcement lives
+in `validate_review_gate()` and `metadata_only_since()`.
 
 ## JSON and Text Encoding
 

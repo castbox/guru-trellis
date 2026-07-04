@@ -116,6 +116,10 @@ records and validates the prior AI/human review result; it is not the reviewer.
 Passing gates require a task-local `review.md` referenced through
 `--review-report`, a Chinese summary, and concrete evidence. `--reviewer` is
 identity metadata only and cannot replace the review report.
+Continue entries must stop after writing `review.md` and `review-gate.json`.
+They must not stage or commit those gate artifacts, push, or create a PR.
+Finish-work owns archive, journal, remaining Trellis metadata commits, and
+publish; it accepts only Trellis metadata-only commits after the reviewed HEAD.
 
 ## Workflow Guardrails
 

@@ -301,6 +301,144 @@ class ReviewGateReportRequiredTest(unittest.TestCase):
 
         self.assertTrue(any("review_report" in error for error in errors), errors)
 
+    def test_validate_review_gate_accepts_metadata_only_tail_when_allowed(self) -> None:
+        gate = {
+            "conclusion": {"passed": True, "summary": "通过"},
+            "head": "reviewed123",
+            "verification_evidence": {
+                "evidence": ["部署影响：无。"],
+                "review_report": {
+                    "path": ".trellis/tasks/07-04-review/review.md",
+                    "sha256": "a" * 64,
+                    "size_bytes": 42,
+                },
+            },
+        }
+        gtt.write_json(self.task_dir / "review-gate.json", gate)
+
+        with (
+            mock.patch.object(gtt, "is_ancestor", return_value=True) as is_ancestor,
+            mock.patch.object(
+                gtt,
+                "metadata_only_since",
+                return_value=(True, [".trellis/tasks/07-04-review/review-gate.json"]),
+            ) as metadata_only_since,
+        ):
+            _, _, errors = gtt.validate_review_gate(
+                self.root,
+                self.task_dir,
+                self.config,
+                allow_metadata_after_gate=True,
+            )
+
+        is_ancestor.assert_called_once_with(self.root, "reviewed123", "HEAD")
+        metadata_only_since.assert_called_once_with(self.root, "reviewed123")
+        self.assertEqual(errors, [])
+
+    def test_validate_review_gate_rejects_non_metadata_tail_even_when_allowed(self) -> None:
+        gate = {
+            "conclusion": {"passed": True, "summary": "通过"},
+            "head": "reviewed123",
+            "verification_evidence": {
+                "evidence": ["部署影响：无。"],
+                "review_report": {
+                    "path": ".trellis/tasks/07-04-review/review.md",
+                    "sha256": "a" * 64,
+                    "size_bytes": 42,
+                },
+            },
+        }
+        gtt.write_json(self.task_dir / "review-gate.json", gate)
+
+        with (
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(
+                gtt,
+                "metadata_only_since",
+                return_value=(False, ["trellis/workflows/guru-team/workflow.md"]),
+            ),
+        ):
+            _, _, errors = gtt.validate_review_gate(
+                self.root,
+                self.task_dir,
+                self.config,
+                allow_metadata_after_gate=True,
+            )
+
+        self.assertTrue(any("非 Trellis metadata" in error for error in errors), errors)
+        self.assertTrue(any("与当前 HEAD" in error for error in errors), errors)
+
+
+class FinishWorkGateValidationTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.task_dir = self.root / ".trellis/tasks/07-04-review"
+        self.task_dir.mkdir(parents=True)
+        (self.task_dir / "task.json").write_text(
+            '{"title":"review gate","base_branch":"main","branch":"codex/review"}',
+            encoding="utf-8",
+        )
+        self.config = {**gtt.DEFAULTS}
+        self.handoff = {"base_branch": "main"}
+        self.gate = {
+            "head": "reviewed123",
+            "conclusion": {"passed": True, "summary": "通过"},
+            "verification_evidence": {
+                "evidence": ["部署影响：无。"],
+                "review_report": {
+                    "path": ".trellis/tasks/07-04-review/review.md",
+                    "sha256": "a" * 64,
+                    "size_bytes": 42,
+                },
+            },
+        }
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def finish_args(self) -> argparse.Namespace:
+        return argparse.Namespace(
+            root=None,
+            json=True,
+            task=None,
+            task_name=None,
+            repo=None,
+            base_branch=None,
+            remote=None,
+            title=None,
+            validation=None,
+            draft=None,
+            journal_title=None,
+            journal_summary=None,
+            commit=None,
+            skip_archive=True,
+            skip_journal=True,
+            dry_run=True,
+        )
+
+    def test_finish_work_allows_metadata_only_tail_at_entry(self) -> None:
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "load_config", return_value=self.config),
+            mock.patch.object(gtt, "load_handoff", return_value=self.handoff),
+            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(
+                gtt,
+                "validate_review_gate",
+                return_value=(self.task_dir / "review-gate.json", self.gate, []),
+            ) as validate_review_gate,
+            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(gtt, "recent_work_commits", return_value=["reviewed123"]),
+            mock.patch.object(gtt, "commit_if_metadata_dirty", return_value={"committed": False, "paths": []}),
+            mock.patch.object(gtt, "cmd_publish_pr", return_value={"status": "dry-run"}),
+        ):
+            payload = gtt.cmd_finish_work(self.finish_args())
+
+        validate_review_gate.assert_called_once_with(self.root, self.task_dir, self.config, True)
+        self.assertEqual(payload["reviewed_head"], "reviewed123")
+        self.assertEqual(payload["publish"]["status"], "dry-run")
+
 
 if __name__ == "__main__":
     unittest.main()

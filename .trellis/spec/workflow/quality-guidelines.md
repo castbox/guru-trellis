@@ -44,6 +44,9 @@ finish, publish, installer behavior, or source-repo dogfood overlay sync.
 Before Branch Review Gate, review the full branch diff from the task's intake
 base branch in AI/human code-review stance, write the result to task-local
 `review.md`, then record the result with `review-branch.sh --review-report`.
+After `review.md` and `review-gate.json` exist, `trellis-continue` must stop
+without staging, committing, pushing, or creating the PR; `finish-work` owns the
+remaining Trellis metadata commit and publish.
 Include:
 
 - marketplace index and docs
