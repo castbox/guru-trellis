@@ -1,0 +1,6 @@
+{"file":".trellis/spec/docs/public-docs.md","reason":"约束 README / workflow README / preset README 的安装、升级、验证文案。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"约束 Guru Team extension manifest、installed provenance 和 release tag 数据合同。"}
+{"file":".trellis/spec/preset/installer.md","reason":"约束 preset installer 写 installed manifest、验证 throwaway install 和维护 release 版本。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"约束 workflow / preset 变更提交前的验证命令与 review 范围。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查 marketplace source `provider:user/repo/path#ref` 这类跨层字符串合同。"}
+{"file":".trellis/tasks/07-05-extension-v065-release-tag/research/official-trellis-marketplace-notes.md","reason":"记录官方 workflow / marketplace source 依据。"}

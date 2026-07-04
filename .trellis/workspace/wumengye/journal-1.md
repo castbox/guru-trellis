@@ -469,3 +469,36 @@ Branch Review Gate 通过：独立 Agent 已按 origin/main...HEAD 审查 issue 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 15: 完成：#33 Align Guru Team extension version and release tag to v0.6.5
+
+**Date**: 2026-07-05
+**Task**: 完成：#33 Align Guru Team extension version and release tag to v0.6.5
+**Branch**: `codex/extension-v065-release-tag`
+
+### Summary
+
+独立 trellis-check Agent 已审查 origin/main...HEAD 的完整 diff，确认 manifest/docs/spec/script/test/task artifacts 满足 #33 的 PR 前交付范围；无 P0/P1/P2/P3 findings；#33 仅作为 related issue 引用，tag 创建、tag-pinned throwaway 验证和旧 tag 退休保留为 post-merge/post-tag 操作。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1e498a01804684aa2cf7d5275c5b12c09d5755d9` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

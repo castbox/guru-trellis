@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-04T16:33:37Z",
+  "task_dir": ".trellis/tasks/07-05-extension-v065-release-tag",
+  "head": "dfc16d735e0ddc9ba74d3e83fdd746a8e2030e6e",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-05-extension-v065-release-tag/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已审查 #33 的 prd.md、design.md、implement.md、官方 Trellis marketplace 依据和 Docs SSOT 责任；需求边界明确，禁止在 merge 前创建 v0.6.5，实施计划覆盖 manifest、public docs、durable requirement、spec、dogfood installed manifest 和验证门禁，可以进入实现。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户在 2026-07-05 明确确认按建议进行：manifest version 对齐到 0.6.5，并采用 repo 级 v0.6.5 tag 而不是 guru-team/v0.6.5。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-05-extension-v065-release-tag/prd.md",
+      "sha256": "957869b31ad98ad8ea8895100437ff1575b49560be3db70e1be6ef46a442cd19",
+      "size_bytes": 4982,
+      "modified_at": "2026-07-04T16:33:17.256666+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-extension-v065-release-tag/design.md",
+      "sha256": "9b5a55232bbe3ef5568730cf0d787ed4dd6e33bb33aa08a4b92cbfbafda97d27",
+      "size_bytes": 3775,
+      "modified_at": "2026-07-04T16:33:17.256909+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-extension-v065-release-tag/implement.md",
+      "sha256": "a9dc3169911163ad96f7ef670fd0802f4515cc431cf907c33f14c95801544dfd",
+      "size_bytes": 3446,
+      "modified_at": "2026-07-04T16:33:17.257057+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

@@ -1,0 +1,6 @@
+{"file":".trellis/spec/docs/public-docs.md","reason":"检查公开安装、升级、版本说明是否自洽。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查 manifest / installed provenance / issue ledger 等数据合同是否被破坏。"}
+{"file":".trellis/spec/preset/installer.md","reason":"检查 preset installer 同步 dogfood manifest 和开箱验证边界。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查必须运行的验证命令与 Branch Review Gate 覆盖范围。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查 `#v0.6.5` source 格式没有写错层级或位置。"}
+{"file":".trellis/tasks/07-05-extension-v065-release-tag/research/official-trellis-marketplace-notes.md","reason":"检查实现是否仍符合官方 Trellis marketplace 依据。"}

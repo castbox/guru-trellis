@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 14
-- **Last Active**: 2026-07-04
+- **Total Sessions**: 15
+- **Last Active**: 2026-07-05
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~471 | Active |
+| `journal-1.md` | ~504 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 15 | 2026-07-05 | 完成：#33 Align Guru Team extension version and release tag to v0.6.5 | `1e498a01804684aa2cf7d5275c5b12c09d5755d9` | `codex/extension-v065-release-tag` |
 | 14 | 2026-07-04 | 完成：Guru Team extension version manifest | `b94c4fb4e74ba032511fa9f5aa5b6bac6899737c`, `5030cde306bf22962b729ef135d31186d532c893` | `codex/31-guru-team-extension-version-manifest` |
 | 13 | 2026-07-04 | 完成：#11 Let preset installer apply only selected platform overlays | `59832b11aaecaf8bdf0fe13ef629d442d2629fa0` | `codex/11-let-preset-installer-apply-only` |
 | 12 | 2026-07-04 | 完成 issue #27 finish-work dry-run readiness | `32ece0f`, `6885059` | `codex/27-finish-work-dry-run-readiness` |

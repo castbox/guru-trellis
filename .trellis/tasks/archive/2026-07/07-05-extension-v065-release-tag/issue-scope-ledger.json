@@ -1,0 +1,29 @@
+{
+  "primary_issue": {
+    "number": 33,
+    "url": "https://github.com/castbox/guru-trellis/issues/33",
+    "title": "Align Guru Team extension version and release tag to v0.6.5",
+    "reason": "intake/handoff 主 issue；本分支覆盖 manifest/docs/spec/script 侧变更，但 release tag 创建必须等 PR merge 后执行。",
+    "acceptance_evidence": [
+      "trellis/guru-team-extension.json.version 已改为 0.6.5，tested.trellis_cli 记录 0.6.5。",
+      "README.md、trellis/workflows/guru-team/README.md、trellis/presets/guru-team/README.md 已改为 stable install 使用 gh:castbox/guru-trellis/trellis#v0.6.5。",
+      "docs/requirements/requirement-main.md 与 .trellis/spec/workflow/data-contracts.md / .trellis/spec/preset/installer.md 已记录 repo 级 vX.Y.Z tag contract。",
+      ".trellis/guru-team/extension.json 已通过 apply.sh 同步为 installed extension version 0.6.5。",
+      "远程 gh:castbox/guru-trellis/trellis#v0.6.5 安装验证必须等 PR merge 并创建 tag 后执行。"
+    ]
+  },
+  "close_issues": [],
+  "related_issues": [
+    {
+      "number": 33,
+      "url": "https://github.com/castbox/guru-trellis/issues/33",
+      "title": "Align Guru Team extension version and release tag to v0.6.5",
+      "reason": "本 PR 只能完成 merge 前的 manifest/docs/spec/script 变更；#33 仍需 post-merge 创建 annotated tag v0.6.5、验证 tag-pinned Trellis init/workflow、再退休旧 guru-team/v0.6.5 tag 后才能关闭。",
+      "acceptance_evidence": [
+        "PR 合并前不能创建 v0.6.5，否则 tag 会指向不含 0.6.5 manifest/docs 的 commit。",
+        "PR body 必须使用 Refs #33，不使用 Closes #33。"
+      ]
+    }
+  ],
+  "followup_issues": []
+}

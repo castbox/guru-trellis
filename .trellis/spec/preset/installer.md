@@ -47,6 +47,14 @@ When adding user-facing version fields, expose them through `check-env --json`
 or `version.sh --json`; scripts may record and validate objective facts, but
 must not decide whether an upgrade or rollback is semantically safe.
 
+Stable install and upgrade docs must pin workflow marketplace sources to the
+repo release tag that matches the canonical extension version, for example
+`gh:castbox/guru-trellis/trellis#v0.6.5`. Keep `trellis/index.json.version` as
+the marketplace index schema version; do not reuse it as the Guru Team
+extension release number. If validation samples unpinned
+`gh:castbox/guru-trellis/trellis`, report it as latest/canary sampling rather
+than release-tag verification.
+
 ## Config Preservation
 
 `config-template.yml` is managed and may be upgraded with a `.bak`. Existing
