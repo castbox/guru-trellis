@@ -1,0 +1,180 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-04T16:50:08Z",
+  "task_dir": ".trellis/tasks/07-05-extension-v065-release-tag",
+  "base_branch": "main",
+  "base_ref": "origin/main",
+  "head_branch": "codex/extension-v065-release-tag",
+  "head": "1e498a01804684aa2cf7d5275c5b12c09d5755d9",
+  "diff_range": "origin/main...HEAD",
+  "changed_files": [
+    ".trellis/guru-team/extension.json",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/tasks/07-05-extension-v065-release-tag/check.jsonl",
+    ".trellis/tasks/07-05-extension-v065-release-tag/design.md",
+    ".trellis/tasks/07-05-extension-v065-release-tag/implement.jsonl",
+    ".trellis/tasks/07-05-extension-v065-release-tag/implement.md",
+    ".trellis/tasks/07-05-extension-v065-release-tag/issue-scope-ledger.json",
+    ".trellis/tasks/07-05-extension-v065-release-tag/phase2-check.json",
+    ".trellis/tasks/07-05-extension-v065-release-tag/planning-approval.json",
+    ".trellis/tasks/07-05-extension-v065-release-tag/prd.md",
+    ".trellis/tasks/07-05-extension-v065-release-tag/research/official-trellis-marketplace-notes.md",
+    ".trellis/tasks/07-05-extension-v065-release-tag/task.json",
+    "README.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/guru-team-extension.json",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "review_scope": [
+    "文档",
+    "代码",
+    "测试",
+    "Trellis artifacts",
+    "配置",
+    "脚本",
+    "schema",
+    "CI/CD workflow 与发布自动化",
+    "Dockerfile / Docker Compose / 容器启动脚本",
+    "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
+    "数据库 schema / migration / seed / backfill 脚本",
+    "各目录下本次变更涉及的 Makefile",
+    "preset installer"
+  ],
+  "command": [
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/extension-v065-release-tag/.trellis/guru-team/scripts/bash/../python/guru_team_trellis.py",
+    "review-branch",
+    "--json",
+    "--pass",
+    "--task",
+    ".trellis/tasks/07-05-extension-v065-release-tag",
+    "--review-source",
+    "independent-agent",
+    "--reviewer",
+    "trellis-check-agent-beauvoir",
+    "--review-report",
+    ".trellis/tasks/07-05-extension-v065-release-tag/review.md",
+    "--summary",
+    "独立 trellis-check Agent 已审查 origin/main...HEAD 的完整 diff，确认 manifest/docs/spec/script/test/task artifacts 满足 #33 的 PR 前交付范围；无 P0/P1/P2/P3 findings；#33 仅作为 related issue 引用，tag 创建、tag-pinned throwaway 验证和旧 tag 退休保留为 post-merge/post-tag 操作。",
+    "--evidence",
+    "diff range origin/main...HEAD，HEAD 1e498a01804684aa2cf7d5275c5b12c09d5755d9，覆盖 20 个已提交变更文件；当前未提交 .trellis/guru-team/handoff.json 不在审查范围且不得误提交。",
+    "--evidence",
+    "JSON、bash -n、python py_compile、83 个 unittest、task validate、dogfood overlay drift、git diff --check、version.sh --json、check-env.sh --json 均通过。",
+    "--evidence",
+    "Docs SSOT 已覆盖 README.md、trellis/workflows/guru-team/README.md、trellis/presets/guru-team/README.md、docs/requirements/requirement-main.md、.trellis/spec/workflow/data-contracts.md、.trellis/spec/preset/installer.md。",
+    "--evidence",
+    "部署影响已审查：本仓库无 app runtime，本次变更不需要 CI/CD、Docker、K8s/Kustomize/Helm、DB migration、Makefile 或运行时部署资产更新。",
+    "--evidence",
+    "开箱验证边界已记录：verify-throwaway-install.sh 默认 gh:castbox/guru-trellis/trellis#v0.6.5，远程 tag 验证必须等 PR merge 后创建 v0.6.5 再执行。"
+  ],
+  "conclusion": {
+    "passed": true,
+    "summary": "独立 trellis-check Agent 已审查 origin/main...HEAD 的完整 diff，确认 manifest/docs/spec/script/test/task artifacts 满足 #33 的 PR 前交付范围；无 P0/P1/P2/P3 findings；#33 仅作为 related issue 引用，tag 创建、tag-pinned throwaway 验证和旧 tag 退休保留为 post-merge/post-tag 操作。",
+    "block_priorities": [
+      "P0",
+      "P1",
+      "P2"
+    ],
+    "blocking_findings_count": 0
+  },
+  "findings": [],
+  "issue_scope": {
+    "ledger_path": ".trellis/tasks/07-05-extension-v065-release-tag/issue-scope-ledger.json",
+    "close_issues_reviewed": [],
+    "related_issues": [
+      {
+        "number": 33,
+        "url": "https://github.com/castbox/guru-trellis/issues/33",
+        "title": "Align Guru Team extension version and release tag to v0.6.5",
+        "reason": "本 PR 只能完成 merge 前的 manifest/docs/spec/script 变更；#33 仍需 post-merge 创建 annotated tag v0.6.5、验证 tag-pinned Trellis init/workflow、再退休旧 guru-team/v0.6.5 tag 后才能关闭。",
+        "acceptance_evidence": [
+          "PR 合并前不能创建 v0.6.5，否则 tag 会指向不含 0.6.5 manifest/docs 的 commit。",
+          "PR body 必须使用 Refs #33，不使用 Closes #33。"
+        ]
+      }
+    ],
+    "followup_issues": []
+  },
+  "verification_evidence": {
+    "base_head": "origin/main...1e498a01804684aa2cf7d5275c5b12c09d5755d9",
+    "changed_file_count": 20,
+    "reviewer": "trellis-check-agent-beauvoir",
+    "review_source": "independent-agent",
+    "review_report": {
+      "path": ".trellis/tasks/07-05-extension-v065-release-tag/review.md",
+      "sha256": "09cdb0aae2d96776118a39736beb814dd130321ae0c6200cc9be44634aaf3271",
+      "size_bytes": 4759,
+      "modified_at": "2026-07-04T16:49:52.561420+00:00"
+    },
+    "evidence": [
+      "diff range origin/main...HEAD，HEAD 1e498a01804684aa2cf7d5275c5b12c09d5755d9，覆盖 20 个已提交变更文件；当前未提交 .trellis/guru-team/handoff.json 不在审查范围且不得误提交。",
+      "JSON、bash -n、python py_compile、83 个 unittest、task validate、dogfood overlay drift、git diff --check、version.sh --json、check-env.sh --json 均通过。",
+      "Docs SSOT 已覆盖 README.md、trellis/workflows/guru-team/README.md、trellis/presets/guru-team/README.md、docs/requirements/requirement-main.md、.trellis/spec/workflow/data-contracts.md、.trellis/spec/preset/installer.md。",
+      "部署影响已审查：本仓库无 app runtime，本次变更不需要 CI/CD、Docker、K8s/Kustomize/Helm、DB migration、Makefile 或运行时部署资产更新。",
+      "开箱验证边界已记录：verify-throwaway-install.sh 默认 gh:castbox/guru-trellis/trellis#v0.6.5，远程 tag 验证必须等 PR merge 后创建 v0.6.5 再执行。"
+    ],
+    "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
+  },
+  "deployment_impact": {
+    "changed_file_categories": {
+      "docs": [
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/design.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/implement.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/prd.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/research/official-trellis-marketplace-notes.md",
+        "README.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "tests": [
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "trellis_artifacts": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/check.jsonl",
+        ".trellis/tasks/07-05-extension-v065-release-tag/design.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/implement.jsonl",
+        ".trellis/tasks/07-05-extension-v065-release-tag/implement.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/issue-scope-ledger.json",
+        ".trellis/tasks/07-05-extension-v065-release-tag/phase2-check.json",
+        ".trellis/tasks/07-05-extension-v065-release-tag/planning-approval.json",
+        ".trellis/tasks/07-05-extension-v065-release-tag/prd.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/research/official-trellis-marketplace-notes.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/task.json",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "config": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/tasks/07-05-extension-v065-release-tag/issue-scope-ledger.json",
+        ".trellis/tasks/07-05-extension-v065-release-tag/phase2-check.json",
+        ".trellis/tasks/07-05-extension-v065-release-tag/planning-approval.json",
+        ".trellis/tasks/07-05-extension-v065-release-tag/task.json",
+        "trellis/guru-team-extension.json"
+      ],
+      "scripts": [
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "code": [
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ]
+    },
+    "deployment_asset_categories": {},
+    "changed_deployment_assets": [],
+    "probable_runtime_changes_without_deployment_asset_change": [],
+    "needs_deployment_impact_review": false,
+    "review_instruction": "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；如果不需要，必须给出不需要的理由。"
+  }
+}
