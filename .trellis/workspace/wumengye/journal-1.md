@@ -435,3 +435,37 @@ Branch Review Gate 通过：独立 Agent 已按 origin/main...HEAD 审查 issue 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 14: 完成：Guru Team extension version manifest
+
+**Date**: 2026-07-04
+**Task**: 完成：Guru Team extension version manifest
+**Branch**: `codex/31-guru-team-extension-version-manifest`
+
+### Summary
+
+为 Guru Team Trellis extension 增加 canonical version manifest、installed provenance、check-env/version 查询入口、文档/spec 同步和验证证据；Branch Review Gate 已通过。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b94c4fb4e74ba032511fa9f5aa5b6bac6899737c` | (see git log) |
+| `5030cde306bf22962b729ef135d31186d532c893` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
