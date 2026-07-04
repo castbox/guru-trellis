@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0",
+  "extension": {
+    "schema_version": "1.0",
+    "extension_id": "guru-team",
+    "name": "Guru Team Trellis Extension",
+    "version": "0.1.0",
+    "workflow_template_id": "guru-team",
+    "marketplace_index_schema_version": 1,
+    "requires": {
+      "trellis_cli": ">=0.6.0"
+    },
+    "tested": {
+      "trellis_cli": []
+    },
+    "public_api": {
+      "workflow_template_id": "guru-team",
+      "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
+      "managed_paths": [
+        ".trellis/guru-team/",
+        ".agents/skills/trellis-start/",
+        ".agents/skills/trellis-continue/",
+        ".agents/skills/trellis-finish-work/",
+        ".codex/prompts/",
+        ".codex/skills/",
+        ".cursor/commands/",
+        ".claude/commands/trellis/"
+      ],
+      "config_files": [
+        ".trellis/guru-team/config.yml",
+        ".trellis/config.yaml"
+      ],
+      "artifact_contracts": [
+        ".trellis/guru-team/handoff.json",
+        ".trellis/guru-team/extension.json",
+        "planning-approval.json",
+        "phase2-check.json",
+        "issue-scope-ledger.json",
+        "review.md",
+        "review-gate.json",
+        "pr-readiness.json"
+      ],
+      "companion_scripts": [
+        "check-env",
+        "version",
+        "prepare-task",
+        "record-planning-approval",
+        "check-planning-approval",
+        "record-phase2-check",
+        "check-phase2-check",
+        "review-branch",
+        "check-review-gate",
+        "finish-work",
+        "publish-pr"
+      ]
+    },
+    "release_notes": "README.md#guru-team-extension-version"
+  },
+  "installed_at": "2026-07-04T12:16:10Z",
+  "source": {
+    "repo": "https://github.com/castbox/guru-trellis.git",
+    "ref": "codex/31-guru-team-extension-version-manifest",
+    "commit": "7a715753f19dc55124493dbed33f945eb30a0de2",
+    "tree_state": "dirty",
+    "is_mutable_ref": true
+  },
+  "install": {
+    "selected_platforms": [
+      "claude",
+      "codex",
+      "cursor"
+    ],
+    "all_platforms": true,
+    "managed_assets": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".agents/skills/trellis-finish-work/SKILL.md",
+      ".agents/skills/trellis-start/SKILL.md",
+      ".claude/commands/trellis/continue.md",
+      ".claude/commands/trellis/finish-work.md",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/prompts/trellis-finish-work.md",
+      ".codex/prompts/trellis-start.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".codex/skills/trellis-finish-work/SKILL.md",
+      ".codex/skills/trellis-start/SKILL.md",
+      ".cursor/commands/trellis-continue.md",
+      ".cursor/commands/trellis-finish-work.md",
+      ".trellis/guru-team/config-template.yml",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/schemas/intake-handoff.schema.json",
+      ".trellis/guru-team/scripts/bash/check-env.sh",
+      ".trellis/guru-team/scripts/bash/check-phase2-check.sh",
+      ".trellis/guru-team/scripts/bash/check-planning-approval.sh",
+      ".trellis/guru-team/scripts/bash/check-review-gate.sh",
+      ".trellis/guru-team/scripts/bash/finish-work.sh",
+      ".trellis/guru-team/scripts/bash/prepare-task.sh",
+      ".trellis/guru-team/scripts/bash/publish-pr.sh",
+      ".trellis/guru-team/scripts/bash/record-phase2-check.sh",
+      ".trellis/guru-team/scripts/bash/record-planning-approval.sh",
+      ".trellis/guru-team/scripts/bash/review-branch.sh",
+      ".trellis/guru-team/scripts/bash/version.sh",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+    ],
+    "new_copies": [],
+    "managed_backups": [],
+    "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
+    "workflow_template": "guru-team"
+  },
+  "notes": "This file records deterministic install provenance for the Guru Team Trellis extension. Upgrade and rollback judgment belongs to AI/human review."
+}

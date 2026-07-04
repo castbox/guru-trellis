@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import tempfile
 import unittest
@@ -1778,6 +1779,94 @@ class ReviewGateReportTest(unittest.TestCase):
             _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, True)
 
         self.assertTrue(any("非 Trellis metadata" in error for error in errors))
+
+
+class ExtensionVersionPayloadTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        (self.root / ".trellis/guru-team").mkdir(parents=True)
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def write_extension_manifest(self) -> None:
+        payload = {
+            "schema_version": "1.0",
+            "extension": {
+                "extension_id": "guru-team",
+                "version": "0.1.0",
+                "workflow_template_id": "guru-team",
+                "requires": {"trellis_cli": ">=0.6.0"},
+            },
+            "installed_at": "2026-07-04T00:00:00Z",
+            "source": {
+                "repo": "https://github.com/castbox/guru-trellis.git",
+                "ref": "main",
+                "commit": "abc123",
+                "tree_state": "clean",
+                "is_mutable_ref": True,
+            },
+            "install": {
+                "selected_platforms": ["codex", "cursor"],
+                "all_platforms": False,
+            },
+        }
+        (self.root / ".trellis/guru-team/extension.json").write_text(
+            json.dumps(payload),
+            encoding="utf-8",
+        )
+
+    def test_guru_team_extension_payload_reads_installed_manifest(self) -> None:
+        self.write_extension_manifest()
+
+        payload = gtt.guru_team_extension_payload(self.root)
+
+        self.assertEqual(payload["status"], "ok")
+        self.assertEqual(payload["version"], "0.1.0")
+        self.assertEqual(payload["workflow_template_id"], "guru-team")
+        self.assertEqual(payload["source_tree_state"], "clean")
+        self.assertEqual(payload["selected_platforms"], ["codex", "cursor"])
+
+    def test_guru_team_extension_payload_reports_missing_manifest(self) -> None:
+        payload = gtt.guru_team_extension_payload(self.root)
+
+        self.assertEqual(payload["status"], "missing")
+        self.assertEqual(payload["path"], ".trellis/guru-team/extension.json")
+
+    def test_guru_team_extension_payload_reports_invalid_manifest(self) -> None:
+        (self.root / ".trellis/guru-team/extension.json").write_text("{", encoding="utf-8")
+
+        payload = gtt.guru_team_extension_payload(self.root)
+
+        self.assertEqual(payload["status"], "invalid")
+        self.assertIn("invalid", payload["error"])
+
+    def test_check_env_payload_includes_extension_and_missing_warning(self) -> None:
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
+            mock.patch.object(gtt, "infer_github_repo", return_value="owner/repo"),
+            mock.patch.object(gtt, "current_branch", return_value="main"),
+            mock.patch.object(gtt, "resolve_base_branch", return_value=("main", ["main"])),
+            mock.patch.object(gtt, "git_dirty", return_value=False),
+            mock.patch.object(gtt, "configured_worktree_root", return_value=self.root / "worktrees"),
+            mock.patch.object(gtt, "worktree_lines", return_value=[]),
+            mock.patch.object(gtt.shutil, "which", return_value="/usr/bin/gh"),
+            mock.patch.object(gtt, "run", return_value=mock.Mock(returncode=0)),
+        ):
+            payload = gtt.check_env_payload(self.root)
+
+        self.assertEqual(payload["guru_team_extension"]["status"], "missing")
+        self.assertTrue(any("extension manifest" in item for item in payload["warnings"]))
+
+    def test_cmd_version_returns_extension_payload(self) -> None:
+        self.write_extension_manifest()
+        with mock.patch.object(gtt, "repo_root", return_value=self.root):
+            payload = gtt.cmd_version(argparse.Namespace(root=str(self.root), json=True))
+
+        self.assertEqual(payload["status"], "ok")
+        self.assertEqual(payload["guru_team_extension"]["version"], "0.1.0")
 
 
 if __name__ == "__main__":

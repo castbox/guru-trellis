@@ -22,6 +22,26 @@ scalars, lists, and one level of nested dictionaries used by the current config.
 Do not introduce complex YAML structures without replacing or extending the
 parser and validating older configs.
 
+## Extension Version Manifest
+
+`trellis/guru-team-extension.json` defines the reusable Guru Team extension
+version and public API metadata. `.trellis/guru-team/extension.json` is the
+installed provenance copy created by the preset installer in each target repo.
+
+The installed manifest should remain additive/backward-compatible for readers:
+
+- missing manifest means an older install; `check-env` should warn and continue;
+- invalid manifest should report `status: invalid` and continue with a clear
+  next step;
+- new fields should be optional for old installed manifests;
+- `source.tree_state` is objective provenance (`clean`, `dirty`, `archive`, or
+  `unknown`), not a release-readiness judgment;
+- `selected_platforms` records installer input and should not be inferred from
+  directory presence alone.
+
+Do not use `.trellis/guru-team/extension.json` as the canonical source of the
+team extension version. The canonical source is `trellis/guru-team-extension.json`.
+
 ## Handoff
 
 `.trellis/guru-team/handoff.json` records intake provenance and preflight:

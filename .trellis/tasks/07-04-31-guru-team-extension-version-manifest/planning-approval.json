@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-04T12:04:47Z",
+  "task_dir": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest",
+  "head": "7a715753f19dc55124493dbed33f945eb30a0de2",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已审阅 issue #31、官方 Trellis 扩展边界、本仓库 docs/preset/workflow spec 与当前 installer/check-env 代码；prd/design/implement 已覆盖 canonical manifest、installed provenance、check-env/version 输出、docs SSOT、测试和开箱验证。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户在当前会话明确要求：开始解决这个 issue。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/prd.md",
+      "sha256": "6ac6a274228d1618bad352201b0b1939937c7d0e0de912efb778fcdcca9cf1dd",
+      "size_bytes": 5698,
+      "modified_at": "2026-07-04T12:04:21.917413+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/design.md",
+      "sha256": "a3d9182ba4a9598928fed4745a4d960f0ab885a4512b63e2ee0e425a0f9b7cd5",
+      "size_bytes": 6182,
+      "modified_at": "2026-07-04T12:04:21.917985+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/implement.md",
+      "sha256": "a0bfa9d9c0dfffbad4696e076d2952aeb5695b200b0be886c817313a968b5b05",
+      "size_bytes": 4390,
+      "modified_at": "2026-07-04T12:04:21.918228+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

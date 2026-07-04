@@ -1,0 +1,34 @@
+{
+  "primary_issue": {
+    "number": 31,
+    "url": "https://github.com/castbox/guru-trellis/issues/31",
+    "title": "Add Guru Team extension version manifest and installed provenance",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "新增 trellis/guru-team-extension.json 作为 Guru Team extension canonical SemVer manifest。",
+      "preset installer 写入 .trellis/guru-team/extension.json，并在 apply 输出中暴露 guru_team_extension provenance。",
+      "check-env --json 与 version.sh --json 已输出 guru_team_extension version/source/ref/commit/tree_state/selected_platforms。",
+      "README、preset README、workflow README 与 docs/requirements/requirement-main.md 已说明 extension version 与 official Trellis CLI version 的区别。",
+      "验证通过：JSON 校验、bash -n、py_compile、两个 unittest、dogfood overlay drift check、task.py validate、git diff --check。",
+      "throwaway install 在 TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 下通过，覆盖本地 preset installed manifest、check-env 和 version.sh；当前分支 marketplace 本身因 Trellis gh source 不支持未合并分支而按设计 fail-closed。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 31,
+      "url": "https://github.com/castbox/guru-trellis/issues/31",
+      "title": "Add Guru Team extension version manifest and installed provenance",
+      "reason": "本任务完整实现 #31 的 manifest、installed provenance、可查询入口、文档和验证要求。",
+      "acceptance_evidence": [
+        "新增 trellis/guru-team-extension.json 作为 Guru Team extension canonical SemVer manifest。",
+        "preset installer 写入 .trellis/guru-team/extension.json，并在 apply 输出中暴露 guru_team_extension provenance。",
+        "check-env --json 与 version.sh --json 已输出 guru_team_extension version/source/ref/commit/tree_state/selected_platforms。",
+        "README、preset README、workflow README 与 docs/requirements/requirement-main.md 已说明 extension version 与 official Trellis CLI version 的区别。",
+        "验证通过：JSON 校验、bash -n、py_compile、两个 unittest、dogfood overlay drift check、task.py validate、git diff --check。",
+        "throwaway install 在 TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 下通过，覆盖本地 preset installed manifest、check-env 和 version.sh；当前分支 marketplace 本身因 Trellis gh source 不支持未合并分支而按设计 fail-closed。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

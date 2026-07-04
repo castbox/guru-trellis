@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -198,6 +199,72 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
                 preset.main()
 
         self.assertNotEqual(context.exception.code, 0)
+
+
+class ExtensionManifestInstallerTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tmp.name)
+        (self.repo / ".trellis").mkdir()
+        self.guru_root = preset.guru_root_from_script()
+        self.workflow_src = self.guru_root / "trellis/workflows/guru-team"
+        self.install_dst = self.repo / ".trellis/guru-team"
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_install_assets_writes_installed_extension_manifest(self) -> None:
+        payload = preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"})
+
+        manifest_path = self.repo / ".trellis/guru-team/extension.json"
+        self.assertTrue(manifest_path.is_file())
+        installed = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertEqual(installed["extension"]["extension_id"], "guru-team")
+        self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
+        self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
+        self.assertEqual(payload["extension_manifest"], ".trellis/guru-team/extension.json")
+
+    def test_main_version_prints_canonical_extension_version(self) -> None:
+        with mock.patch("sys.argv", ["apply_guru_team_trellis_preset.py", "--version"]):
+            stdout = StringIO()
+            with mock.patch("sys.stdout", stdout):
+                exit_code = preset.main()
+
+        self.assertEqual(exit_code, 0)
+        self.assertRegex(stdout.getvalue().strip(), r"^\d+\.\d+\.\d+")
+
+    def test_source_provenance_reports_archive_without_git_metadata(self) -> None:
+        with mock.patch.object(preset, "run_git") as run_git:
+            run_git.return_value = mock.Mock(returncode=1, stdout="", stderr="not a git repo")
+
+            provenance = preset.source_provenance(self.guru_root)
+
+        self.assertEqual(provenance["tree_state"], "archive")
+        self.assertIsNone(provenance["commit"])
+
+    def test_source_provenance_reports_dirty_git_tree(self) -> None:
+        def fake_git(args: list[str], cwd: Path) -> mock.Mock:
+            command = " ".join(args)
+            if command == "rev-parse --show-toplevel":
+                return mock.Mock(returncode=0, stdout=str(self.guru_root), stderr="")
+            if command == "remote get-url origin":
+                return mock.Mock(returncode=0, stdout="https://github.com/castbox/guru-trellis.git\n", stderr="")
+            if command == "rev-parse --abbrev-ref HEAD":
+                return mock.Mock(returncode=0, stdout="main\n", stderr="")
+            if command == "rev-parse HEAD":
+                return mock.Mock(returncode=0, stdout="abc123\n", stderr="")
+            if command == "describe --tags --exact-match HEAD":
+                return mock.Mock(returncode=1, stdout="", stderr="")
+            if command == "status --short":
+                return mock.Mock(returncode=0, stdout=" M README.md\n", stderr="")
+            return mock.Mock(returncode=1, stdout="", stderr="")
+
+        with mock.patch.object(preset, "run_git", side_effect=fake_git):
+            provenance = preset.source_provenance(self.guru_root)
+
+        self.assertEqual(provenance["tree_state"], "dirty")
+        self.assertTrue(provenance["is_mutable_ref"])
+        self.assertEqual(provenance["source_ref"] if "source_ref" in provenance else provenance["ref"], "main")
 
 
 if __name__ == "__main__":
