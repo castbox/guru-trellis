@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-04T08:14:37Z",
+  "task_dir": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis",
+  "base_branch": "main",
+  "head": "fd59a0f910b35a899f31e50575732be480b9d420",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [],
+  "checker": "codex-main-session",
+  "check_summary": "在最终代码修复 HEAD fd59a0f 上重录 Phase 2 check evidence：已验证 phase2-check post-commit audit 会拒绝旧 evidence 后出现的非 metadata committed tail；该修复防止 Branch Review Gate 被 stale Phase 2 evidence 绕过。未发现新的 P0/P1/P2/P3 finding；current-branch marketplace install 仍受 Trellis CLI gh source 不支持 branch ref 限制，脚本已 fail-closed，不能声称完整开箱验证通过。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/prd.md",
+      "sha256": "8e96fb45ae1cbcee11a268a3b37c527bb177844259ddcf544eddaaf5db3484db",
+      "size_bytes": 8169,
+      "modified_at": "2026-07-04T07:51:17.381743+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/design.md",
+      "sha256": "21ec180f54e8b30cb91e911423a59eb24875232f988d55c4bd8b07150654b641",
+      "size_bytes": 8131,
+      "modified_at": "2026-07-04T08:12:51.192924+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/implement.md",
+      "sha256": "6f4ab6db907551548665691a82bece38018e257d2c76954881da887f3acd25c4",
+      "size_bytes": 4927,
+      "modified_at": "2026-07-04T08:12:51.193497+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/planning-approval.json",
+      "sha256": "37f1c6e0cf59013f8cd8f19976c0507b0e2895ce4477f41d86294b220f032e43",
+      "size_bytes": 2031,
+      "modified_at": "2026-07-04T08:12:59.381356+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "71b81cf636eb474c3d0336064d4603b9740c8e87bfc2d09b7a2298f57fbd460f",
+      "size_bytes": 9141,
+      "modified_at": "2026-07-04T07:52:10.119924+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "6e5b9c066337ca11197c34e64ec1537df2a9eb79df4ade895c611890b11176c8",
+      "size_bytes": 6892,
+      "modified_at": "2026-07-04T07:52:10.120415+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "0f903c14d93b420e367f1a54dfbd3848e05790c0ecc3d3e7271d643f87f58bb1",
+      "size_bytes": 5634,
+      "modified_at": "2026-07-04T07:52:10.120169+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "547293b825d0d8f974c58fb5660ab13c5b3efa5647c32a6226ce8295ee7334ef",
+      "size_bytes": 3084,
+      "modified_at": "2026-07-04T07:54:36.033659+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "passed: 57 tests"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json && python3 -m json.tool .trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/planning-approval.json && python3 -m json.tool .trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/phase2-check.json",
+      "result": "passed"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py .trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis",
+      "result": "passed"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "passed"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "result": "passed fail-closed check: exit 2 blocked public marketplace sample on feature branch"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": ".trellis/guru-team/scripts/bash/review-branch.sh --json --pass --review-source independent-agent --reviewer independent-review-agent --review-report review.md --dry-run with stale phase2 evidence",
+      "result": "blocked as expected before this refresh"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

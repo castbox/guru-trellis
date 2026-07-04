@@ -169,6 +169,11 @@
           "items": {
             "type": "string"
           }
+        },
+        "base_freshness": {
+          "type": "object",
+          "description": "Freshness evidence for the selected base branch. Executor paths fetch the remote base, record local/remote heads, and fail closed on stale or divergent bases.",
+          "additionalProperties": true
         }
       },
       "additionalProperties": true

@@ -58,6 +58,11 @@ GitHub `origin` remote。
 ./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh
 ```
 
+Trellis CLI 目前只接受 `gh:user/repo/path` workflow marketplace source；在非 `main`
+分支或本地 marketplace 文件有改动时，该脚本会 fail closed，避免把公开远端验证误报为
+当前分支验证。需要刻意采样公开 marketplace 时，设置
+`TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1`。
+
 #### AI 安装 prompt
 
 把这段 prompt 发给目标业务仓库里的 AI 会话：
@@ -189,6 +194,9 @@ issue 的 freeform 请求必须先由 AI 展示 proposed issue title/body 和 du
 evidence；stdout JSON 会标记 `handoff_written: false`。用户确认后才可用
 `--create-issue-confirmed --issue-title ... --issue-body-file ...` 执行 GitHub issue
 创建；`--create-worktree` / `--create-task` 同样只用于 handoff review 之后的显式执行。
+这些 executor 路径创建 worktree 前会先刷新所选 base branch，记录
+`preflight.base_freshness`，并在本地 base 落后时只做安全 fast-forward；如果本地 base
+与远端分叉或 freshness 无法确认，会阻塞而不是从过期 ref 创建任务分支。
 
 `no_task` 下不是绝对禁止当前 checkout 直接修改，但这只能作为用户显式批准的 override：
 用户必须明确表示本轮跳过创建或复用 GitHub issue、Trellis task、worktree 和 branch。
@@ -204,11 +212,20 @@ AI 在改文件前要说明将跳过哪些 artifact、当前 checkout / branch /
 session/startup 注入、hook 未启用或未审批、怀疑自动注入没有运行，或用户需要完整
 上下文报告和重新加载 Trellis 上下文的场景。
 
-`review-branch`、`check-review-gate`、`publish-pr` 是 workflow 内部 companion
-script，不是需要用户日常手动记忆的新主流程。`review-branch.sh` 只记录和校验已经
+`record-planning-approval`、`check-planning-approval`、`record-phase2-check`、
+`check-phase2-check`、`review-branch`、`check-review-gate`、`publish-pr` 是 workflow
+内部 companion script，不是需要用户日常手动记忆的新主流程。
+`record-planning-approval.sh` / `check-planning-approval.sh` 在 `task.py start` 前记录并
+校验规划审查证据；`task.py start` 只写状态，不代表规划已审查。
+`record-phase2-check.sh` / `check-phase2-check.sh` 在 commit 前记录并校验完整
+`trellis-check` 证据；验证命令只是 report 中的一部分，不等于完整 check 覆盖。
+`review-branch.sh` 只记录和校验已经
 完成的 AI/human review 结论，不替代真正的文档 + 代码 review。通过 gate 必须先写
-task-local `review.md`，再用 `--review-report .trellis/tasks/<task>/review.md`
-让 `review-gate.json` 记录 digest；`--reviewer` 只记录身份，不能单独作为通过证据。
+task-local `review.md`，且该 report 必须来自独立 Agent 审查并确认无 P0/P1/P2
+finding；再用 `--review-source independent-agent` 和
+`--review-report .trellis/tasks/<task>/review.md` 让 `review-gate.json` 记录来源与
+digest。`--reviewer` 只记录身份，不能单独作为通过证据；`*-main-session` /
+`self-review` 不能通过 gate。
 `finish-work.sh` 和 `publish-pr.sh` 默认拒绝普通直接调用，避免
 `trellis-continue` 链式执行 closeout、提交 review metadata，或在未完成显式
 `trellis-finish-work` 时提前 push 分支并创建 PR；日常发布必须由 `trellis-finish-work` 入口带

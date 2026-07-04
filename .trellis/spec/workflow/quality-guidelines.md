@@ -47,9 +47,10 @@ such as `当前 Trellis task`, `已提交实现与文档更新`, or `详见 arti
 
 ## Review Focus
 
-Before Branch Review Gate, review the full branch diff from the task's intake
-base branch in AI/human code-review stance, then record the result with
-`review-branch.sh`. Include:
+Before Branch Review Gate, obtain an independent Agent review of the full branch
+diff from the task's intake base branch, then record the result with
+`review-branch.sh --review-source independent-agent`. Main-session self-review
+cannot pass the gate. Include:
 
 - marketplace index and docs
 - workflow and dogfood copy

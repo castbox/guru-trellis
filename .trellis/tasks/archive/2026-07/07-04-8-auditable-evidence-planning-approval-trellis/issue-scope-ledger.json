@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 8,
+    "url": "https://github.com/castbox/guru-trellis/issues/8",
+    "title": "Add auditable evidence for planning approval and trellis-check",
+    "reason": "intake/handoff 主 issue，本任务完整解决。",
+    "acceptance_evidence": [
+      "workflow.md / overlay / README 已明确 task.py start 只是状态写入，planning-approval.json 是进入实现前的 AI/human review evidence。",
+      "workflow.md / overlay / README 已明确验证命令只是 phase2-check.json 的证据之一，不等于完整 trellis-check 覆盖。",
+      "companion helper 已新增 record/check planning approval 与 record/check Phase 2 check，并由 review-branch 在 Branch Review Gate 前校验 phase2-check.json。",
+      "prepare-task executor 路径已在创建 worktree/task 前执行 base freshness 校验，记录 preflight.base_freshness，并在本地 base stale/diverged 时 fail closed。",
+      "单元测试、dogfood drift、throwaway install、schema/脚本/编译/phase context 验证均通过。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 8,
+      "url": "https://github.com/castbox/guru-trellis/issues/8",
+      "title": "Add auditable evidence for planning approval and trellis-check",
+      "reason": "本任务将为 planning approval、Phase 2 check 和 base freshness preflight 补齐 workflow 合同、helper、overlay、文档与验证。",
+      "acceptance_evidence": [
+        "workflow.md / overlay / README 已明确 task.py start 只是状态写入，planning-approval.json 是进入实现前的 AI/human review evidence。",
+        "workflow.md / overlay / README 已明确验证命令只是 phase2-check.json 的证据之一，不等于完整 trellis-check 覆盖。",
+        "companion helper 已新增 record/check planning approval 与 record/check Phase 2 check，并由 review-branch 在 Branch Review Gate 前校验 phase2-check.json。",
+        "prepare-task executor 路径已在创建 worktree/task 前执行 base freshness 校验，记录 preflight.base_freshness，并在本地 base stale/diverged 时 fail closed。",
+        "单元测试、dogfood drift、throwaway install、schema/脚本/编译/phase context 验证均通过。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": [],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。",
+    "新增 issue 进入 close_issues 前必须更新 prd/design/implement 并取得用户明确确认。"
+  ]
+}

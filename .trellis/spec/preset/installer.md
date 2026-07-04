@@ -58,6 +58,12 @@ python3 -m py_compile trellis/presets/guru-team/scripts/python/apply_guru_team_t
 For behavioral changes, run the installer against a temporary Trellis project
 or disposable copy and verify:
 
+- throwaway `trellis init` verifies the current branch's workflow marketplace
+  source; if Trellis CLI cannot address the current branch as a marketplace
+  source, the verification script must fail closed or the final report must
+  explicitly say only the public remote marketplace was sampled
+- existing-project `trellis workflow --marketplace ... --create-new` preview
+  and forced switch paths can read the Guru Team workflow
 - existing `.trellis/guru-team/config.yml` remains unchanged
 - managed companion assets update and produce `.bak`
 - unknown overlay edits produce `.new`

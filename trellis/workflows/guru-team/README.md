@@ -89,6 +89,10 @@ GitHub issue 创建必须在 AI/human review proposed title/body 之后显式执
 workspace，并把 `.trellis/guru-team/handoff.json` 写在该 workspace 内；仅启动新会话或
 执行默认 preflight 不应污染 source checkout。
 
+executor 路径创建 worktree 前会先刷新所选 base branch：执行 `git fetch`、记录
+`preflight.base_freshness`、仅在安全时 fast-forward 本地 base，并在本地 base 与远端
+分叉或 freshness 无法确认时 fail closed。不要从过期的本地 `main` / `dev` 创建任务分支。
+
 `no_task` 下的 current-checkout direct edit 是显式 override，而不是 AI 可自行选择的
 默认捷径。只有当用户明确批准本轮跳过创建或复用 GitHub issue、Trellis task、worktree
 和 branch 时，AI 才能在当前 checkout 改文件；改动前仍要说明 skipped artifacts、
@@ -99,7 +103,8 @@ Branch Review Gate 与 publish helper 是内部子命令：
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \
-  --reviewer "codex-main-session" \
+  --review-source independent-agent \
+  --reviewer "trellis-check-agent" \
   --review-report ".trellis/tasks/<task>/review.md" \
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
@@ -115,13 +120,23 @@ matcher 判断是否进入 Guru Team issue intake 和 worktree preflight。
 仍保留为 fallback / explicit orientation 入口，用于无自动注入平台、hook 未启用或
 未审批、怀疑自动注入没有运行，或需要完整上下文报告和重新加载 Trellis 上下文的场景。
 
-Branch Review Gate 必须先由 AI/human review prompt 审查完整 diff，再调用
+Planning start gate 和 Phase 2 check gate 都需要 task-local evidence。进入实现前先由
+AI/human 审查 `prd.md` / `design.md` / `implement.md`，获得用户确认后调用
+`record-planning-approval.sh` 写入 `planning-approval.json`，再用
+`check-planning-approval.sh` 校验；`task.py start` 只是状态写入，不代表规划已审查。
+commit 前必须完成完整 `trellis-check`，再用 `record-phase2-check.sh` 写入
+`phase2-check.json` 并用 `check-phase2-check.sh` 校验；几个验证命令通过只是 check
+evidence 的一部分，不等于完整 `trellis-check` 覆盖。
+
+Branch Review Gate 必须先由独立 Agent 审查完整 diff，并确认无 P0/P1/P2 finding，再调用
 `review-branch.sh` 固化结论。`review-branch.sh` 是 recorder / validator，不是
 reviewer；`--pass` 必须先写 task-local `review.md`，再带中文 `--summary`、
-至少一条 `--evidence`，以及 `--review-report .trellis/tasks/<task>/review.md`。
-`--reviewer` 只记录身份，不能替代 review report digest。
-Phase 2 的官方 `trellis-check` sub-agent 负责 commit 前质量检查；Phase 3 Branch
-Review Gate 可由 sub-agent 辅助审查，但最终门禁以 `review-gate.json` 为准。
+至少一条 `--evidence`，以及 `--review-source independent-agent` 和
+`--review-report .trellis/tasks/<task>/review.md`。`--reviewer` 只记录身份，不能替代
+review report digest；`*-main-session` / `self-review` 不能通过 gate。
+Phase 2 的官方 `trellis-check` sub-agent 负责 commit 前质量检查并以
+`phase2-check.json` 留痕；Phase 3 Branch Review Gate 可由 sub-agent 辅助审查，但
+最终门禁以 `review-gate.json` 为准，且 `review-branch.sh` 会先校验 Phase 2 check evidence。
 
 `trellis-continue` 不得 push 分支、创建 PR、调用 `publish-pr` 或调用
 `finish-work`，也不得提交 `review.md` / `review-gate.json` 等 Trellis metadata。

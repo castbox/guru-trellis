@@ -81,10 +81,25 @@ English when needed, but write the surrounding explanation in Chinese.
 
 ## Branch Review Gate
 
-Branch Review Gate is a post-commit release gate. The AI/human review step must
-review the complete branch diff from the intake base branch to `HEAD`, not just
-the latest edit. `review-branch.sh` then records and validates that prior review
-result; the script is not the reviewer.
+Branch Review Gate is a post-commit release gate. An independent Agent review
+step must review the complete branch diff from the intake base branch to `HEAD`,
+not just the latest edit, and must have no P0/P1/P2 findings before the gate can
+pass. `review-branch.sh` then records and validates that prior review result;
+the script is not the reviewer.
+
+Phase 1.4 and Phase 2.2 have their own evidence gates before the Branch Review
+Gate:
+
+- `planning-approval.json` records reviewed planning artifacts and user
+  confirmation before `task.py start`. `task.py start` is not proof of planning
+  review.
+- `phase2-check.json` records complete `trellis-check` coverage before commit.
+  Passing validation commands alone is not proof that requirements, design,
+  implementation, tests, specs, docs, cross-layer flow, and deployment impact
+  were checked.
+
+`review-branch.sh` must verify Phase 2 check evidence before writing
+`review-gate.json` so Branch Review Gate cannot bypass Phase 2.
 
 The gate must cover docs, code, tests, Trellis artifacts, config, scripts,
 schemas, CI/CD, container files, Kubernetes/Kustomize/Helm assets, database
@@ -104,11 +119,15 @@ checkout or another worktree.
 Passing the gate requires:
 
 - `review-branch.sh --json --pass`
+- `--review-source independent-agent`
 - a Chinese `--summary`
 - at least one concrete `--evidence` line
 - task-local `review.md`
 - `--review-report <task-local review.md>`
-- `--reviewer` only as optional identity metadata
+- `--reviewer` only as optional identity metadata for the independent reviewer;
+  `*-main-session` and `self-review` identities are rejected for passed gates
+- `--review-report` must point to the task-local file named `review.md`, not
+  another task artifact
 - deployment impact evidence, even when the conclusion is that no deployment
   asset needs a change
 - no P0/P1/P2 findings

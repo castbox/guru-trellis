@@ -34,8 +34,15 @@ Maintainers can verify the default non-interactive install path with:
 The script creates a temporary Git repo, runs `trellis init -y` with the
 `guru-team` marketplace workflow, applies the preset, checks that
 `.trellis/workflow.md` exists, verifies that `check-env.sh` is executable, and
-runs `check-env --json`. It intentionally lives in this source repository and
-is not copied into target business repos as a managed companion asset.
+runs `check-env --json`. Trellis CLI currently accepts `gh:user/repo/path`
+workflow marketplace sources, so the script fails closed on non-`main` branches
+or dirty marketplace workflow files unless
+`TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1` is set. This prevents public remote
+sampling from being reported as current-branch marketplace verification. When it
+does run, it also exercises the existing-project `trellis workflow --create-new`
+preview and forced switch paths. It intentionally lives in this source
+repository and is not copied into target business repos as a managed companion
+asset.
 
 ## Dogfood Overlay Drift Check
 
@@ -63,6 +70,10 @@ Branch Review Gate.
 - `.trellis/guru-team/schemas/intake-handoff.schema.json`
 - `.trellis/guru-team/scripts/bash/check-env.sh`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh`
+- `.trellis/guru-team/scripts/bash/record-planning-approval.sh`
+- `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
+- `.trellis/guru-team/scripts/bash/record-phase2-check.sh`
+- `.trellis/guru-team/scripts/bash/check-phase2-check.sh`
 - `.trellis/guru-team/scripts/bash/review-branch.sh`
 - `.trellis/guru-team/scripts/bash/check-review-gate.sh`
 - `.trellis/guru-team/scripts/bash/publish-pr.sh`
@@ -110,12 +121,20 @@ URLs or issue numbers, `trellis-continue`, and `trellis-finish-work`. The
 entry for platforms without automatic startup injection, disabled or unapproved
 hooks, suspected bootstrap failures, or manual context reloads.
 
-Review and publish helpers are internal companion script subcommands used by
-the workflow; they are not daily user-facing entries. `review-branch.sh`
+Planning, check, review, and publish helpers are internal companion script
+subcommands used by the workflow; they are not daily user-facing entries.
+`record-planning-approval.sh` records reviewed planning artifact hashes and the
+user confirmation before `task.py start`; `task.py start` remains only a status
+transition. `record-phase2-check.sh` records the full-scope `trellis-check`
+result before commit; validation commands are evidence inside that report, not
+a substitute for the check. `review-branch.sh`
 records and validates the prior AI/human review result; it is not the reviewer.
-Passing gates require task-local `review.md`, a Chinese summary, concrete
-evidence, and `--review-report <task-local review.md>`. `--reviewer` is
-identity metadata only and cannot replace the review report digest.
+Passing gates require independent Agent review with no P0/P1/P2 findings,
+task-local `review.md`, a Chinese summary, concrete evidence,
+`--review-source independent-agent`, and
+`--review-report <task-local review.md>`. `--reviewer` is identity metadata only
+and cannot replace the review report digest; `*-main-session` / `self-review`
+cannot pass the gate.
 `finish-work.sh` and `publish-pr.sh` reject ordinary direct calls so
 `trellis-continue` cannot chain closeout, commit review metadata, push, or
 create a PR before the explicit `trellis-finish-work` entrypoint. Normal PR
@@ -149,6 +168,12 @@ title/body and duplicate evidence, then rerun with `--create-issue-confirmed
 issue still remains stdout-only until the user approves `--create-worktree` or
 `--create-task`; those executor paths write the handoff inside the chosen
 workspace, not as a new-session side effect in the source checkout.
+
+When executor paths create or reuse a worktree, they first refresh the selected
+base branch with `git fetch`, record `preflight.base_freshness` in
+`handoff.json`, fast-forward the local base only when safe, and fail closed when
+the local base diverges from the remote. This prevents new task branches from
+silently starting from a stale local base.
 
 Current-checkout direct edits while `no_task` is active are allowed only as an
 explicit user override. The user approval must say this turn should skip

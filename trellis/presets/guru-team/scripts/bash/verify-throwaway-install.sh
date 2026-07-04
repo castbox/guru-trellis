@@ -5,6 +5,8 @@ USER_NAME="${TRELLIS_USER:-throwaway}"
 WORK_DIR="${1:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
+WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis}"
+ALLOW_PUBLIC_SAMPLE="${TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE:-0}"
 
 if [[ -z "$WORK_DIR" ]]; then
   WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/guru-trellis-install.XXXXXX")"
@@ -28,6 +30,27 @@ command -v git >/dev/null 2>&1 || {
   exit 127
 }
 
+CURRENT_BRANCH="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+CURRENT_DIRTY="$(git -C "$REPO_ROOT" status --short -- trellis/index.json trellis/workflows/guru-team/workflow.md 2>/dev/null || true)"
+if [[ "$WORKFLOW_SOURCE" == gh:castbox/guru-trellis/trellis && ( "$CURRENT_BRANCH" != "main" || -n "$CURRENT_DIRTY" ) && "$ALLOW_PUBLIC_SAMPLE" != "1" ]]; then
+  python3 - <<PY
+import json
+payload = {
+  "status": "error",
+  "error": "throwaway install would sample the public marketplace, not the current branch workflow source",
+  "workflow_source": "$WORKFLOW_SOURCE",
+  "current_branch": "$CURRENT_BRANCH",
+  "dirty_marketplace_paths": [line for line in """$CURRENT_DIRTY""".splitlines() if line.strip()],
+  "next_steps": [
+    "push the branch and rerun with TRELLIS_WORKFLOW_SOURCE pointing at a supported gh: source for that branch when Trellis supports refs",
+    "or rerun with TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 and report that current-branch marketplace install was not verified",
+  ],
+}
+print(json.dumps(payload, ensure_ascii=False, indent=2))
+PY
+  exit 2
+fi
+
 mkdir "$TARGET"
 git -C "$TARGET" init -q
 git -C "$TARGET" remote add origin https://github.com/castbox/guru-trellis-throwaway.git
@@ -36,13 +59,14 @@ git -C "$TARGET" remote add origin https://github.com/castbox/guru-trellis-throw
   cd "$TARGET"
   trellis init -y -u "$USER_NAME" --codex --cursor \
     --workflow guru-team \
-    --workflow-source gh:castbox/guru-trellis/trellis
+    --workflow-source "$WORKFLOW_SOURCE"
 )
 
 "$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" --repo "$TARGET"
 
 test -f "$TARGET/.trellis/workflow.md"
 grep -q "Guru Team Development Workflow" "$TARGET/.trellis/workflow.md"
+grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-env.sh"
 python3 "$TARGET/.trellis/scripts/get_context.py" --mode packages >/dev/null
 CHECK_ENV_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-env.sh" --root "$TARGET" --json)"
@@ -70,5 +94,18 @@ if [[ "$PUBLISH_STATUS" -eq 0 ]]; then
 fi
 printf '%s\n' "$PUBLISH_ERROR_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "error"; assert payload["blocked_step"] == "publish-pr"; assert payload["recovery_flag"] == "--recovery-after-finish-work"' <<<"$PUBLISH_ERROR_JSON"
+
+rm -f "$TARGET/.trellis/workflow.md.new"
+(
+  cd "$TARGET"
+  trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --create-new
+)
+test -f "$TARGET/.trellis/workflow.md.new"
+grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md.new"
+(
+  cd "$TARGET"
+  trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force
+)
+grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 
 echo "Verified throwaway Guru Team Trellis install at $TARGET"

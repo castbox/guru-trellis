@@ -100,6 +100,25 @@ When `finish-work` archives the active task before publish, rewrite active task
 artifact paths to the archived task path and read the final PR body from that
 archived artifact.
 
+Planning and Phase 2 helpers follow the same recorder / validator boundary:
+
+- `record-planning-approval.sh` records prior AI/human planning review and user
+  confirmation; it must not decide whether planning is sufficient.
+- `check-planning-approval.sh` validates artifact presence, hashes, and HEAD
+  freshness before `task.py start`.
+- `record-phase2-check.sh` records prior full-scope `trellis-check` evidence;
+  it must not replace check judgment with command exit codes.
+- `check-phase2-check.sh` validates coverage, validation evidence, findings,
+  hashes, and stale state before commit.
+
+`review-branch.sh --pass` must fail before writing Branch Review Gate when
+`phase2-check.json` is missing, stale, incomplete, or contains unresolved
+P0/P1/P2 findings. A passed gate must also include
+`--review-source independent-agent` and a reviewer identity that is not a
+main-session/self-review identity, and `--review-report` must point to the
+task-local file named `review.md`. The script validates those objective
+metadata fields; it still does not judge review quality.
+
 ## Security Rules
 
 Never print or persist tokens, private keys, signed URLs, `.env` contents,
