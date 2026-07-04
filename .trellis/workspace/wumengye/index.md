@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 6
+- **Total Sessions**: 7
 - **Last Active**: 2026-07-04
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~205 | Active |
+| `journal-1.md` | ~238 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 7 | 2026-07-04 | 完成：#20 强制 Branch Review Gate 每次产出 review，并由 finish-work 提交 metadata | `be437f8366470f53507572b43975b009e07591eb` | `codex/20-review-gate-report-metadata` |
 | 6 | 2026-07-04 | 完成：#18 Enforce PR publish only after finish-work | `8aa17e034fe8a6a0febef92f4fe32f826ba62054` | `codex/18-enforce-pr-publish-only-after` |
 | 5 | 2026-07-04 | 完成：#15 Require explicit approval for no_task current-checkout direct edits | `11e7c07586733196cf7a94503d8386c821b072d8` | `codex/15-require-explicit-approval-no-task` |
 | 4 | 2026-07-03 | 完成：#9 Keep dogfood installed overlays in sync with canonical preset overlays | `e7803543b60951e6702fe7b3e637461dea802aef` | `codex/9-keep-dogfood-installed-overlays-in` |
