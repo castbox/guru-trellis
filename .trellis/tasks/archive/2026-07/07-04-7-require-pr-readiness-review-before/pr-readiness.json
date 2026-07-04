@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "reviewed-pr-body.md",
+  "reviewed_by": "codex-main-session",
+  "reviewed_at": "2026-07-04T14:10:00+08:00",
+  "dry_run": {
+    "command": ".trellis/guru-team/scripts/bash/publish-pr.sh --json --recovery-after-finish-work --dry-run --body-file .trellis/tasks/07-04-7-require-pr-readiness-review-before/reviewed-pr-body.md",
+    "status": "dry-run",
+    "reviewed_source_required": true,
+    "reviewed_source_ok": true,
+    "reviewed_source_errors": []
+  },
+  "notes": [
+    "PR body 已按 #17 内容质量标准审阅，面向不了解 Trellis task 的 GitHub reviewer。",
+    "non-draft publish 将使用 archived task artifact 中的 reviewed-pr-body.md。"
+  ]
+}
