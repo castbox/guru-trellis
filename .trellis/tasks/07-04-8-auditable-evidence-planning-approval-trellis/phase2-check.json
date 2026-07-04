@@ -1,17 +1,13 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-04T08:13:40Z",
+  "generated_at": "2026-07-04T08:14:37Z",
   "task_dir": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis",
   "base_branch": "main",
-  "head": "a4e13021990eba1d34af0a9ec68b95fff65ecf4e",
+  "head": "fd59a0f910b35a899f31e50575732be480b9d420",
   "diff_range": "origin/main...HEAD",
-  "dirty_paths": [
-    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
-  ],
+  "dirty_paths": [],
   "checker": "codex-main-session",
-  "check_summary": "根据独立 Agent 二次 review 的 P1 finding 修复 Phase 2 post-commit audit：allow_committed_head 现在检查 phase2-check 记录 HEAD 到当前 HEAD 的 committed tail，只允许 Trellis metadata；非 metadata committed tail 会阻塞 Branch Review Gate。已补充回归测试并同步 dogfood Python 副本。未发现新的 P0/P1/P2/P3 finding；current-branch marketplace install 仍受 Trellis CLI gh source 不支持 branch ref 限制，脚本已 fail-closed，不能声称完整开箱验证通过。",
+  "check_summary": "在最终代码修复 HEAD fd59a0f 上重录 Phase 2 check evidence：已验证 phase2-check post-commit audit 会拒绝旧 evidence 后出现的非 metadata committed tail；该修复防止 Branch Review Gate 被 stale Phase 2 evidence 绕过。未发现新的 P0/P1/P2/P3 finding；current-branch marketplace install 仍受 Trellis CLI gh source 不支持 branch ref 限制，脚本已 fail-closed，不能声称完整开箱验证通过。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/prd.md",
@@ -106,6 +102,10 @@
     {
       "command": "git diff --check",
       "result": "passed"
+    },
+    {
+      "command": ".trellis/guru-team/scripts/bash/review-branch.sh --json --pass --review-source independent-agent --reviewer independent-review-agent --review-report review.md --dry-run with stale phase2 evidence",
+      "result": "blocked as expected before this refresh"
     }
   ],
   "findings": [],
