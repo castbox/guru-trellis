@@ -1,0 +1,167 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-04T11:14:02Z",
+  "task_dir": ".trellis/tasks/07-04-11-let-preset-installer-apply-only",
+  "base_branch": "main",
+  "base_ref": "origin/main",
+  "head_branch": "codex/11-let-preset-installer-apply-only",
+  "head": "59832b11aaecaf8bdf0fe13ef629d442d2629fa0",
+  "diff_range": "origin/main...HEAD",
+  "changed_files": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/tasks/07-04-11-let-preset-installer-apply-only/check.jsonl",
+    ".trellis/tasks/07-04-11-let-preset-installer-apply-only/design.md",
+    ".trellis/tasks/07-04-11-let-preset-installer-apply-only/implement.jsonl",
+    ".trellis/tasks/07-04-11-let-preset-installer-apply-only/implement.md",
+    ".trellis/tasks/07-04-11-let-preset-installer-apply-only/issue-scope-ledger.json",
+    ".trellis/tasks/07-04-11-let-preset-installer-apply-only/phase2-check.json",
+    ".trellis/tasks/07-04-11-let-preset-installer-apply-only/planning-approval.json",
+    ".trellis/tasks/07-04-11-let-preset-installer-apply-only/prd.md",
+    ".trellis/tasks/07-04-11-let-preset-installer-apply-only/task.json",
+    "README.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+  ],
+  "review_scope": [
+    "文档",
+    "代码",
+    "测试",
+    "Trellis artifacts",
+    "配置",
+    "脚本",
+    "schema",
+    "CI/CD workflow 与发布自动化",
+    "Dockerfile / Docker Compose / 容器启动脚本",
+    "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
+    "数据库 schema / migration / seed / backfill 脚本",
+    "各目录下本次变更涉及的 Makefile",
+    "preset installer"
+  ],
+  "command": [
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only/.trellis/guru-team/scripts/bash/../python/guru_team_trellis.py",
+    "review-branch",
+    "--json",
+    "--pass",
+    "--review-source",
+    "independent-agent",
+    "--reviewer",
+    "trellis-check-agent",
+    "--review-report",
+    ".trellis/tasks/07-04-11-let-preset-installer-apply-only/review.md",
+    "--summary",
+    "独立 trellis-check-agent 已审查 origin/main...HEAD 完整 diff，确认 issue #11 的 installer 平台过滤、测试、README/preset README、preset spec、task artifacts 与 Issue Scope Ledger 均满足要求，无 P0/P1/P2/P3 findings。",
+    "--evidence",
+    "审查覆盖 README、preset README、installer Python、installer 单测、throwaway 验证脚本、preset spec、Trellis task artifacts、handoff 和 Issue Scope Ledger。",
+    "--evidence",
+    "验证通过：单测 12 个、py_compile、bash -n、json.tool、task validate、git diff --check origin/main...HEAD、dogfood overlay drift check、临时 repo 平台过滤行为抽样。",
+    "--evidence",
+    "Docs SSOT：仓库无 docs/，长期公开文档 README.md 与 trellis/presets/guru-team/README.md 已同步；task artifact 内容保留为任务证据。",
+    "--evidence",
+    "部署影响：仅改本地 preset installer、公开文档、测试和 task evidence；不涉及 CI/CD、容器、K8s、DB、Makefile 或运行服务。"
+  ],
+  "conclusion": {
+    "passed": true,
+    "summary": "独立 trellis-check-agent 已审查 origin/main...HEAD 完整 diff，确认 issue #11 的 installer 平台过滤、测试、README/preset README、preset spec、task artifacts 与 Issue Scope Ledger 均满足要求，无 P0/P1/P2/P3 findings。",
+    "block_priorities": [
+      "P0",
+      "P1",
+      "P2"
+    ],
+    "blocking_findings_count": 0
+  },
+  "findings": [],
+  "issue_scope": {
+    "ledger_path": ".trellis/tasks/07-04-11-let-preset-installer-apply-only/issue-scope-ledger.json",
+    "close_issues_reviewed": [
+      {
+        "number": 11,
+        "url": "https://github.com/castbox/guru-trellis/issues/11",
+        "title": "Let preset installer apply only selected platform overlays",
+        "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+        "acceptance_evidence": [
+          "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py 通过",
+          "临时 repo 行为验证确认 Codex+Cursor 默认不创建 .claude，--all-platforms 创建 .claude",
+          "throwaway install 脚本已改为 --platform codex --platform cursor 并断言 .claude 不存在",
+          "README.md 与 trellis/presets/guru-team/README.md 已说明默认平台、显式平台和 --all-platforms"
+        ]
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "verification_evidence": {
+    "base_head": "origin/main...59832b11aaecaf8bdf0fe13ef629d442d2629fa0",
+    "changed_file_count": 16,
+    "reviewer": "trellis-check-agent",
+    "review_source": "independent-agent",
+    "review_report": {
+      "path": ".trellis/tasks/07-04-11-let-preset-installer-apply-only/review.md",
+      "sha256": "63488456cd9c3a8f63c59d7223d9d75ce40ca364cb9e4944318e2fa92cf00bd4",
+      "size_bytes": 2712,
+      "modified_at": "2026-07-04T11:13:08.497094+00:00"
+    },
+    "evidence": [
+      "审查覆盖 README、preset README、installer Python、installer 单测、throwaway 验证脚本、preset spec、Trellis task artifacts、handoff 和 Issue Scope Ledger。",
+      "验证通过：单测 12 个、py_compile、bash -n、json.tool、task validate、git diff --check origin/main...HEAD、dogfood overlay drift check、临时 repo 平台过滤行为抽样。",
+      "Docs SSOT：仓库无 docs/，长期公开文档 README.md 与 trellis/presets/guru-team/README.md 已同步；task artifact 内容保留为任务证据。",
+      "部署影响：仅改本地 preset installer、公开文档、测试和 task evidence；不涉及 CI/CD、容器、K8s、DB、Makefile 或运行服务。"
+    ],
+    "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
+  },
+  "deployment_impact": {
+    "changed_file_categories": {
+      "docs": [
+        ".trellis/spec/preset/installer.md",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/design.md",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/implement.md",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/prd.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md"
+      ],
+      "tests": [
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+      ],
+      "trellis_artifacts": [
+        ".trellis/guru-team/handoff.json",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/check.jsonl",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/design.md",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/implement.jsonl",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/implement.md",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/issue-scope-ledger.json",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/phase2-check.json",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/planning-approval.json",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/prd.md",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/task.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+      ],
+      "config": [
+        ".trellis/guru-team/handoff.json",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/issue-scope-ledger.json",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/phase2-check.json",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/planning-approval.json",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/task.json"
+      ],
+      "scripts": [
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+      ],
+      "code": [
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+      ]
+    },
+    "deployment_asset_categories": {},
+    "changed_deployment_assets": [],
+    "probable_runtime_changes_without_deployment_asset_change": [],
+    "needs_deployment_impact_review": false,
+    "review_instruction": "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；如果不需要，必须给出不需要的理由。"
+  }
+}

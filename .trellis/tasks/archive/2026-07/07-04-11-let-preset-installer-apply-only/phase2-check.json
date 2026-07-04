@@ -1,22 +1,15 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-04T11:07:40Z",
+  "generated_at": "2026-07-04T11:13:50Z",
   "task_dir": ".trellis/tasks/07-04-11-let-preset-installer-apply-only",
   "base_branch": "main",
-  "head": "75606d65f8302721c4cab604915111c0bd3f91d7",
+  "head": "59832b11aaecaf8bdf0fe13ef629d442d2629fa0",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".trellis/guru-team/handoff.json",
-    ".trellis/spec/preset/installer.md",
-    "README.md",
-    "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
-    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-    ".trellis/tasks/07-04-11-let-preset-installer-apply-only/"
+    ".trellis/tasks/07-04-11-let-preset-installer-apply-only/review.md"
   ],
   "checker": "trellis-check-agent",
-  "check_summary": "已完成 issue #11 的完整 trellis-check：installer 平台过滤实现、默认/显式/全量平台行为、重复 apply、README/preset README 同步、throwaway 验证脚本断言、Issue Scope Ledger 验收证据以及 .trellis/spec/preset/installer.md 命令合同更新均已检查；未发现 P0/P1/P2 finding。",
+  "check_summary": "已完成 issue #11 的完整 trellis-check，并在提交后由独立 trellis-check-agent 复核：installer 平台过滤实现、默认/显式/全量平台行为、README/preset README 同步、throwaway 验证脚本断言、Issue Scope Ledger 验收证据以及 .trellis/spec/preset/installer.md 命令合同更新均已检查；无 P0/P1/P2 finding。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-04-11-let-preset-installer-apply-only/prd.md",
@@ -43,7 +36,32 @@
       "modified_at": "2026-07-04T10:57:34.870106+00:00"
     }
   ],
-  "checked_specs": [],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "9a3939837dd297cceea4738d81886ba5cddb1c48e5ce01f0823cdba924106838",
+      "size_bytes": 5803,
+      "modified_at": "2026-07-04T11:07:15.277503+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "7e17027b3697a435cc4cd89599ed80fe79e4abc9bcbdd6ee809b9f071e1687b4",
+      "size_bytes": 3464,
+      "modified_at": "2026-07-04T10:54:19.280872+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "35891233237b0cb4be3d2009eac25b0a5bde359fd02098ce63e261d7854b836a",
+      "size_bytes": 3482,
+      "modified_at": "2026-07-04T10:54:19.279832+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "1c9b3d3f35e6461994d91bdd47f60d89d0dc84329a90f63c2adc6c5bf8bdc31c",
+      "size_bytes": 3874,
+      "modified_at": "2026-07-04T10:54:19.281374+00:00"
+    }
+  ],
   "coverage": {
     "requirements": true,
     "design": true,
@@ -76,7 +94,7 @@
       "result": "通过"
     },
     {
-      "command": "git diff --check",
+      "command": "git diff --check origin/main...HEAD",
       "result": "通过"
     },
     {
