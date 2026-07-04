@@ -1,29 +1,16 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-04T10:03:39Z",
+  "generated_at": "2026-07-04T10:35:25Z",
   "task_dir": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness",
   "base_branch": "main",
-  "head": "32ece0fe4e515b2f26f5f82cddff918dd003245b",
+  "head": "68850596ba7dcaaeebed7503378eedd3c798ef6a",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".codex/hooks/inject-workflow-state.py",
-    ".trellis/config.yaml",
     ".trellis/guru-team/handoff.json",
-    ".trellis/scripts/common/workflow_phase.py",
-    ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/issue-scope-ledger.json",
-    ".trellis/workflow.md",
-    "README.md",
-    "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
-    "trellis/workflows/guru-team/README.md",
-    "trellis/workflows/guru-team/workflow.md",
-    ".codex/hooks/test_inject_workflow_state.py",
-    ".trellis/scripts/common/test_workflow_phase.py",
-    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+    ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/review.md"
   ],
   "checker": "codex-main-session",
-  "check_summary": "已按扩展后的 issue #27 完整检查：finish-work --dry-run 无副作用 readiness preview 已保持；Codex 默认 dispatch 改为 sub-agent，显式 inline 仍可降级；preset installer 会 materialize 项目级 .trellis/config.yaml。",
+  "check_summary": "已按扩展后的 issue #27 和当前 HEAD 完整检查：finish-work --dry-run 无副作用 readiness preview 已保持；Codex 默认 dispatch 改为 sub-agent，显式 inline 仍可降级；preset installer、dogfood overlay、README/workflow 与测试同步。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/prd.md",
@@ -93,6 +80,10 @@
     {
       "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo .",
       "result": "codex_dispatch unchanged sub-agent, no .new/.bak"
+    },
+    {
+      "command": "independent Branch Review Gate review by trellis-check-agent Popper",
+      "result": "no P0/P1/P2 findings; P3 risks recorded in review.md"
     }
   ],
   "findings": [],
