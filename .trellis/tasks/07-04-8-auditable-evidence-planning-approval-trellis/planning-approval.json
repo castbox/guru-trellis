@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-04T07:53:24Z",
+  "task_dir": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis",
+  "head": "d829ba536ae036aedd99276352270afc42f9eeff",
+  "dirty_paths": [
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/phase2-check.json",
+    ".trellis/workflow.md",
+    "README.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "根据独立 Agent Branch Review Gate findings 修订规划 artifact：补充 review.md basename 强校验、post-commit planning evidence audit、当前分支 marketplace throwaway install 验证要求，规划 artifact 可继续作为修复依据。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户通过 trellis-continue 继续 issue #8，并提供独立 Agent review 结果；本次规划更新用于修复该 review 中的 P1/P2 阻塞 findings。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/prd.md",
+      "sha256": "8e96fb45ae1cbcee11a268a3b37c527bb177844259ddcf544eddaaf5db3484db",
+      "size_bytes": 8169,
+      "modified_at": "2026-07-04T07:51:17.381743+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/design.md",
+      "sha256": "846407a460fd485f11abb98901a43aad30f4be2d1e48e97076ff921a329483b5",
+      "size_bytes": 7555,
+      "modified_at": "2026-07-04T07:51:46.791003+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/implement.md",
+      "sha256": "d864e6b9635cfbccd58a27387813aa92b6c800d5f17dacdeb82a4ce5c744d8f6",
+      "size_bytes": 4403,
+      "modified_at": "2026-07-04T07:51:17.382040+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

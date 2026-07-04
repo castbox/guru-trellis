@@ -33,6 +33,7 @@ parser and validating older configs.
 - Issue Scope Ledger seed
 - exact task creation command
 - preflight evidence
+- base freshness evidence under `preflight.base_freshness`
 
 The schema lives at
 `trellis/workflows/guru-team/schemas/intake-handoff.schema.json`. Keep it
@@ -42,6 +43,44 @@ interoperate.
 Do not use `handoff.source_issue` as PR close scope. The task-level
 `issue-scope-ledger.json` owns `close_issues`, `related_issues`, and
 `followup_issues`.
+
+Executor prepare paths (`--create-worktree` / `--create-task`) must refresh the
+selected base branch before creating the task worktree. Record remote, local
+head before/after, remote head, fetch state, fast-forward state, and the ref used
+for worktree creation in `preflight.base_freshness`. Fail closed on divergence
+or unknown freshness instead of creating a branch from a stale base.
+
+## Planning Approval Artifact
+
+`planning-approval.json` is the start gate evidence for Phase 1.4. It records:
+
+- task directory and current `HEAD`
+- reviewer / AI process identity metadata
+- Chinese approval summary and user confirmation evidence
+- approved planning artifact digests for `prd.md`, `design.md`, and
+  `implement.md` when present
+- dirty paths at approval time
+
+The artifact is valid only while the recorded artifact hashes and `HEAD` match.
+`task.py start` is a status transition only and must not be treated as planning
+review evidence.
+
+## Phase 2 Check Artifact
+
+`phase2-check.json` is the commit-preflight evidence for Phase 2.2. It records:
+
+- task directory, base branch, current `HEAD`, diff range, and dirty paths
+- checker / AI process identity metadata
+- task artifacts and spec files read during check
+- validation commands and result summaries
+- coverage keys for requirements, design, code, tests, spec sync, cross-layer
+  consistency, Docs SSOT, and deployment impact
+- findings and resolution status
+
+P0/P1/P2 findings block commit until resolved. Validation commands are evidence
+inside the report, not a substitute for full `trellis-check` coverage.
+`review-branch.sh` must verify Phase 2 check evidence exists before recording
+Branch Review Gate.
 
 ## Issue Scope Ledger
 
@@ -69,6 +108,8 @@ The artifact records:
 - review scope
 - conclusion summary
 - reviewer identity metadata
+- independent review source metadata (`review_source: independent-agent`) for
+  passed gates
 - required review report digest: `review_report.path`, `sha256`,
   `size_bytes`, and `modified_at`
 - findings
@@ -77,9 +118,11 @@ The artifact records:
 
 The gate is valid only for the reviewed `HEAD`, except that `finish-work` may
 allow metadata-only commits after the gate. A passed gate is invalid if it lacks
-review report metadata. `--reviewer` alone is only identity metadata and cannot
-prove the review report evidence. Enforcement lives in
-`validate_review_gate()` and `metadata_only_since()`.
+review report metadata, `review_source: independent-agent`, or a task-local
+file named `review.md`. `--reviewer` alone is only identity metadata and cannot
+prove the review report evidence; main-session/self-review identities are
+rejected for passed gates. Enforcement lives in `validate_review_gate()` and
+`metadata_only_since()`.
 
 ## JSON and Text Encoding
 

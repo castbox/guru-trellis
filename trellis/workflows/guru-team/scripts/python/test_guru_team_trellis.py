@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -128,8 +129,44 @@ def review_args(**overrides: object) -> argparse.Namespace:
         "pass_gate": True,
         "summary": "Branch Review Gate 通过。",
         "evidence": ["已覆盖 CI/CD、Docker、K8s、migration、Makefile 部署影响判断。"],
-        "reviewer": "codex-main-session",
+        "reviewer": "trellis-check-agent",
+        "review_source": gtt.INDEPENDENT_REVIEW_SOURCE,
         "review_report": None,
+        "finding": [],
+        "findings_file": None,
+        "dry_run": False,
+    }
+    values.update(overrides)
+    return argparse.Namespace(**values)
+
+
+def planning_args(**overrides: object) -> argparse.Namespace:
+    values: dict[str, object] = {
+        "root": None,
+        "json": True,
+        "task": None,
+        "reviewer": "codex-main-session",
+        "summary": "规划 artifact 已审阅，可以进入实现。",
+        "user_confirmation": "用户确认进入实现。",
+        "artifact": None,
+        "dry_run": False,
+    }
+    values.update(overrides)
+    return argparse.Namespace(**values)
+
+
+def phase2_args(**overrides: object) -> argparse.Namespace:
+    values: dict[str, object] = {
+        "root": None,
+        "json": True,
+        "task": None,
+        "pass_check": True,
+        "checker": "codex-main-session",
+        "summary": "已按完整 task scope 执行 trellis-check。",
+        "checked_artifact": None,
+        "checked_spec": None,
+        "coverage": list(gtt.REQUIRED_PHASE2_COVERAGE),
+        "validation": ["python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py|passed"],
         "finding": [],
         "findings_file": None,
         "dry_run": False,
@@ -260,6 +297,20 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
 
         with (
             mock.patch.object(gtt, "issue_view", return_value=existing_issue),
+            mock.patch.object(gtt, "ensure_base_freshness", return_value={
+                "remote": "origin",
+                "base_branch": "main",
+                "base_ref": "main",
+                "remote_ref": "origin/main",
+                "local_head_before": "abc",
+                "local_head_after": "abc",
+                "remote_head": "abc",
+                "fetch_performed": True,
+                "fast_forwarded": False,
+                "fresh": True,
+                "status": "fresh",
+                "base_ref_for_worktree": "main",
+            }),
             mock.patch.object(gtt, "run_stdout") as run_stdout,
         ):
             payload = gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
@@ -271,6 +322,102 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertTrue((workspace / "handoff.json").exists())
         self.assertFalse((self.root / "handoff.json").exists())
         self.assertEqual(payload["handoff_path"], str(workspace / "handoff.json"))
+
+    def test_create_worktree_refreshes_base_before_workspace_creation(self) -> None:
+        existing_issue = {
+            "number": 42,
+            "url": "https://github.com/owner/repo/issues/42",
+            "title": "Existing issue",
+        }
+        with (
+            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
+            mock.patch.object(gtt, "ensure_base_freshness", return_value={
+                "remote": "origin",
+                "base_branch": "main",
+                "base_ref": "main",
+                "remote_ref": "origin/main",
+                "local_head_before": "old",
+                "local_head_after": "new",
+                "remote_head": "new",
+                "fetch_performed": True,
+                "fast_forwarded": True,
+                "fresh": True,
+                "status": "fresh",
+                "base_ref_for_worktree": "main",
+            }) as refresh,
+            mock.patch.object(gtt, "prepare_workspace", return_value=("worktree", self.worktree_root / "42-existing", True)) as prepare_workspace,
+        ):
+            payload = gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
+
+        refresh.assert_called_once_with(self.root, "main")
+        prepare_workspace.assert_called_once()
+        self.assertEqual(payload["preflight"]["base_freshness"]["fetch_performed"], True)
+        self.assertEqual(payload["preflight"]["base_freshness"]["remote_head"], "new")
+
+    def test_ensure_base_freshness_fast_forwards_current_base(self) -> None:
+        fetch_result = mock.Mock(returncode=0, stdout="", stderr="")
+        with (
+            mock.patch.object(gtt, "ref_head", side_effect=["old", "new", "new"]),
+            mock.patch.object(gtt, "run", return_value=fetch_result) as run,
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(gtt, "current_branch", return_value="main"),
+            mock.patch.object(gtt, "git_dirty", return_value=False),
+            mock.patch.object(gtt, "run_stdout") as run_stdout,
+        ):
+            payload = gtt.ensure_base_freshness(self.root, "main")
+
+        run.assert_called_once_with(["git", "fetch", "origin", "main"], cwd=self.root, check=False)
+        run_stdout.assert_called_once_with(["git", "merge", "--ff-only", "origin/main"], cwd=self.root)
+        self.assertTrue(payload["fresh"])
+        self.assertTrue(payload["fast_forwarded"])
+        self.assertEqual(payload["base_ref_for_worktree"], "main")
+
+    def test_ensure_base_freshness_rejects_diverged_base(self) -> None:
+        fetch_result = mock.Mock(returncode=0, stdout="", stderr="")
+        with (
+            mock.patch.object(gtt, "ref_head", side_effect=["local", "remote"]),
+            mock.patch.object(gtt, "run", return_value=fetch_result),
+            mock.patch.object(gtt, "is_ancestor", return_value=False),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.ensure_base_freshness(self.root, "main")
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("diverged", str(raised.exception))
+        self.assertEqual(raised.exception.payload["remote_ref"], "origin/main")
+
+    def test_ensure_base_freshness_fetches_remote_tracking_ref(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            remote = tmp_path / "remote.git"
+            seed = tmp_path / "seed"
+            local = tmp_path / "local"
+            subprocess.run(["git", "init", "--bare", str(remote)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "init", "-b", "main", str(seed)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=seed, check=True)
+            subprocess.run(["git", "config", "user.name", "Test User"], cwd=seed, check=True)
+            (seed / "README.md").write_text("one\n", encoding="utf-8")
+            subprocess.run(["git", "add", "README.md"], cwd=seed, check=True)
+            subprocess.run(["git", "commit", "-m", "one"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=seed, check=True)
+            subprocess.run(["git", "push", "-u", "origin", "main"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "clone", str(remote), str(local)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=local, check=True)
+            subprocess.run(["git", "config", "user.name", "Test User"], cwd=local, check=True)
+
+            (seed / "README.md").write_text("two\n", encoding="utf-8")
+            subprocess.run(["git", "commit", "-am", "two"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "push", "origin", "main"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            remote_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=seed, text=True).strip()
+
+            payload = gtt.ensure_base_freshness(local, "main")
+
+            self.assertTrue(payload["fetch_performed"])
+            self.assertTrue(payload["fast_forwarded"])
+            self.assertTrue(payload["fresh"])
+            self.assertEqual(payload["remote_head"], remote_head)
+            self.assertEqual(gtt.ref_head(local, "main"), remote_head)
+            self.assertEqual(gtt.ref_head(local, "origin/main"), remote_head)
 
     def test_confirmed_issue_creation_requires_reviewed_title(self) -> None:
         body_path = self.root / "reviewed-issue.md"
@@ -288,6 +435,295 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
 
         create_issue.assert_not_called()
         self.assertIn("--issue-title", str(raised.exception))
+
+
+class PlanningAndPhase2GateTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.task_dir = self.root / ".trellis/tasks/07-04-gates"
+        self.task_dir.mkdir(parents=True)
+        (self.root / ".trellis/guru-team").mkdir(parents=True)
+        (self.root / ".git").mkdir()
+        (self.task_dir / "task.json").write_text(
+            '{"title":"Gate task","base_branch":"main"}\n',
+            encoding="utf-8",
+        )
+        (self.task_dir / "prd.md").write_text("# PRD\n\n需求。\n", encoding="utf-8")
+        (self.task_dir / "design.md").write_text("# Design\n\n设计。\n", encoding="utf-8")
+        (self.task_dir / "implement.md").write_text("# Implement\n\n计划。\n", encoding="utf-8")
+        (self.root / ".trellis/spec").mkdir(parents=True)
+        (self.root / ".trellis/spec/index.md").write_text("# Spec\n\n规则。\n", encoding="utf-8")
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def patch_common(self) -> list[mock._patch]:
+        return [
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
+            mock.patch.object(gtt, "load_handoff", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "current_head", return_value="abc123"),
+            mock.patch.object(gtt, "git_status_paths", return_value=[]),
+        ]
+
+    def test_check_planning_approval_rejects_missing_artifact(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("Planning approval artifact not found", str(raised.exception))
+
+    def test_record_and_check_planning_approval(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_record_planning_approval(planning_args())
+            check = gtt.cmd_check_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue((self.task_dir / "planning-approval.json").exists())
+        self.assertEqual(payload["head"], "abc123")
+        self.assertEqual(check["status"], "ok")
+        self.assertEqual(len(payload["approved_artifacts"]), 3)
+
+    def test_record_planning_approval_requires_reviewer(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_record_planning_approval(planning_args(reviewer=""))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("--reviewer", str(raised.exception))
+
+    def test_check_planning_approval_rejects_changed_artifact(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            (self.task_dir / "prd.md").write_text("# PRD\n\n需求变更。\n", encoding="utf-8")
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(any("已过期" in error for error in raised.exception.payload["errors"]))
+
+    def test_check_planning_approval_allows_committed_head_only_when_explicit(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        with mock.patch.object(gtt, "current_head", return_value="def456"):
+            _path, _payload, strict_errors = gtt.validate_planning_approval(self.root, self.task_dir)
+        self.assertTrue(any("HEAD" in error for error in strict_errors))
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value="def456"),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+        ):
+            _path, _payload, relaxed_errors = gtt.validate_planning_approval(
+                self.root,
+                self.task_dir,
+                allow_committed_head=True,
+            )
+        self.assertEqual(relaxed_errors, [])
+
+    def test_record_phase2_check_requires_full_coverage_on_pass(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_record_phase2_check(phase2_args(coverage=["requirements"]))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("missing_coverage", raised.exception.payload)
+
+    def test_record_and_check_phase2_check(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            payload = gtt.cmd_record_phase2_check(
+                phase2_args(checked_spec=[".trellis/spec/index.md"])
+            )
+            check = gtt.cmd_check_phase2_check(phase2_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue((self.task_dir / "phase2-check.json").exists())
+        self.assertEqual(payload["head"], "abc123")
+        self.assertEqual(check["status"], "ok")
+        self.assertTrue(all(payload["coverage"].values()))
+
+    def test_check_phase2_ignores_recorded_task_artifact_dirty_paths(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            gtt.cmd_record_phase2_check(phase2_args())
+            with mock.patch.object(
+                gtt,
+                "git_status_paths",
+                return_value=[
+                    ".trellis/tasks/07-04-gates/prd.md",
+                    ".trellis/tasks/07-04-gates/planning-approval.json",
+                    ".trellis/tasks/07-04-gates/phase2-check.json",
+                ],
+            ):
+                check = gtt.cmd_check_phase2_check(phase2_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(check["status"], "ok")
+
+    def test_record_phase2_check_requires_checker(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_record_phase2_check(phase2_args(checker=""))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("--checker", str(raised.exception))
+
+    def test_record_phase2_check_rejects_checked_spec_outside_spec_dir(self) -> None:
+        outside = self.root / "README.md"
+        outside.write_text("# README\n", encoding="utf-8")
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_record_phase2_check(phase2_args(checked_spec=["README.md"]))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn(".trellis/spec", str(raised.exception))
+
+    def test_check_phase2_rejects_unresolved_blocking_finding(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            gtt.cmd_record_phase2_check(
+                phase2_args(
+                    pass_check=False,
+                    finding=["P2|需要修复|trellis/workflows/guru-team/workflow.md"],
+                )
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_phase2_check(phase2_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(any("P0/P1/P2" in error for error in raised.exception.payload["errors"]))
+
+    def test_check_phase2_rejects_dirty_state_drift(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            gtt.cmd_record_phase2_check(phase2_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with mock.patch.object(gtt, "git_status_paths", return_value=["trellis/workflows/guru-team/workflow.md"]):
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    gtt.cmd_check_phase2_check(phase2_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(any("dirty_paths" in error for error in raised.exception.payload["errors"]))
+
+    def test_validate_phase2_allows_post_commit_task_metadata_only(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            gtt.cmd_record_phase2_check(phase2_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value="def456"),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(gtt, "git_status_paths", return_value=[".trellis/tasks/07-04-gates/review.md"]),
+        ):
+            _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
+
+        self.assertEqual(errors, [])
+
+    def test_validate_phase2_rejects_post_commit_non_metadata_dirty_state(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            gtt.cmd_record_phase2_check(phase2_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value="def456"),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(True, ["trellis/workflows/guru-team/workflow.md"])),
+            mock.patch.object(gtt, "git_status_paths", return_value=["trellis/workflows/guru-team/workflow.md"]),
+        ):
+            _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
+
+        self.assertTrue(any("非 Trellis metadata" in error for error in errors))
 
 
 class PublishBoundaryTest(unittest.TestCase):
@@ -940,6 +1376,8 @@ class ReviewGateReportTest(unittest.TestCase):
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
             mock.patch.object(gtt, "load_handoff", return_value={"base_branch": "main"}),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "validate_planning_approval", return_value=(self.task_dir / "planning-approval.json", {}, [])),
+            mock.patch.object(gtt, "validate_phase2_check", return_value=(self.task_dir / "phase2-check.json", {}, [])),
             mock.patch.object(gtt, "current_branch", return_value="codex/20-review-gate"),
             mock.patch.object(gtt, "current_head", return_value="abc123"),
             mock.patch.object(gtt, "diff_base_ref", return_value="origin/main"),
@@ -980,6 +1418,50 @@ class ReviewGateReportTest(unittest.TestCase):
         self.assertTrue(recorded["modified_at"])
         self.assertTrue((self.task_dir / "review-gate.json").exists())
 
+    def test_review_branch_pass_rejects_main_session_reviewer(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\n主会话自审不应通过。\n", encoding="utf-8")
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_review_branch(
+                    review_args(
+                        reviewer="codex-main-session",
+                        review_source=gtt.INDEPENDENT_REVIEW_SOURCE,
+                        review_report=str(review_report),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("independent Agent", str(raised.exception))
+        self.assertIn("main-session", raised.exception.payload["errors"][0])
+
+    def test_review_branch_pass_requires_independent_review_source(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\n缺 review_source 不应通过。\n", encoding="utf-8")
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_review_branch(
+                    review_args(
+                        review_source="",
+                        review_report=str(review_report),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn(gtt.INDEPENDENT_REVIEW_SOURCE, raised.exception.payload["errors"][0])
+
     def test_review_branch_requires_report_even_with_blocking_findings(self) -> None:
         patches = self.patch_review_command()
         for patcher in patches:
@@ -1000,6 +1482,25 @@ class ReviewGateReportTest(unittest.TestCase):
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn("--review-report", str(raised.exception))
 
+    def test_review_branch_requires_phase2_check_report(self) -> None:
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with mock.patch.object(
+                gtt,
+                "validate_phase2_check",
+                return_value=(self.task_dir / "phase2-check.json", {}, ["phase2 missing"]),
+            ):
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    gtt.cmd_review_branch(review_args(review_report=str(self.task_dir / "review.md")))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("Phase 2 check report", str(raised.exception))
+
     def test_review_branch_requires_task_local_review_report(self) -> None:
         outside_report = self.root / "review.md"
         outside_report.write_text("# Review\n\n错误位置。\n", encoding="utf-8")
@@ -1015,12 +1516,28 @@ class ReviewGateReportTest(unittest.TestCase):
 
         self.assertIn("task-local review.md", str(raised.exception))
 
+    def test_review_branch_requires_review_report_named_review_md(self) -> None:
+        wrong_report = self.task_dir / "prd.md"
+        wrong_report.write_text("# PRD\n\n不是 review report。\n", encoding="utf-8")
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_review_branch(review_args(review_report=str(wrong_report)))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertIn("review.md", str(raised.exception))
+
     def write_gate(self, head: str = "abc123", review_report: dict[str, object] | None = None) -> None:
         gate = {
             "head": head,
             "conclusion": {"passed": True, "summary": "Branch Review Gate 通过。"},
             "verification_evidence": {
-                "reviewer": "codex-main-session",
+                "reviewer": "trellis-check-agent",
+                "review_source": gtt.INDEPENDENT_REVIEW_SOURCE,
                 "review_report": review_report,
                 "evidence": ["已覆盖 CI/CD、Docker、K8s、migration、Makefile 部署影响判断。"],
             },
@@ -1044,6 +1561,32 @@ class ReviewGateReportTest(unittest.TestCase):
             _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
 
         self.assertTrue(any("review_report" in error for error in errors))
+
+    def test_validate_review_gate_rejects_missing_review_source(self) -> None:
+        self.write_gate(review_report=self.valid_report())
+        gate = gtt.read_json(self.task_dir / "review-gate.json")
+        gate["verification_evidence"].pop("review_source")
+        (self.task_dir / "review-gate.json").write_text(
+            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        with mock.patch.object(gtt, "current_head", return_value="abc123"):
+            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
+
+        self.assertTrue(any("review_source" in error for error in errors))
+
+    def test_validate_review_gate_rejects_main_session_reviewer(self) -> None:
+        self.write_gate(review_report=self.valid_report())
+        gate = gtt.read_json(self.task_dir / "review-gate.json")
+        gate["verification_evidence"]["reviewer"] = "codex-main-session"
+        (self.task_dir / "review-gate.json").write_text(
+            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        with mock.patch.object(gtt, "current_head", return_value="abc123"):
+            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
+
+        self.assertTrue(any("main-session" in error for error in errors))
 
     def test_validate_review_gate_requires_modified_at(self) -> None:
         report = self.valid_report()

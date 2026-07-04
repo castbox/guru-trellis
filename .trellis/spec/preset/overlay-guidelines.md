@@ -31,7 +31,11 @@ Continue entries must:
 - route by task status
 - keep planning artifacts and review fields in Chinese
 - write task-local `review.md`, run Branch Review Gate with
+  `--review-source independent-agent` and
   `--review-report <task-local review.md>`, then stop before finish-work
+- state that main-session self-review cannot pass Branch Review Gate; if
+  independent Agent review is unavailable, continue must stop with the gate
+  pending
 - state that `trellis-continue` must not stage/commit review metadata, push,
   create a PR, call `publish-pr`, or invoke `finish-work`
 - avoid adding a separate user-facing publish step

@@ -54,6 +54,32 @@ DEFAULTS: dict[str, Any] = {
 }
 
 VALID_PRIORITIES = {"P0", "P1", "P2", "P3"}
+BLOCKING_PRIORITIES = {"P0", "P1", "P2"}
+PLANNING_APPROVAL_ARTIFACT = "planning-approval.json"
+PHASE2_CHECK_ARTIFACT = "phase2-check.json"
+DEFAULT_PLANNING_ARTIFACTS = ["prd.md", "design.md", "implement.md"]
+DEFAULT_PHASE2_TASK_ARTIFACTS = [
+    "prd.md",
+    "design.md",
+    "implement.md",
+    PLANNING_APPROVAL_ARTIFACT,
+]
+REQUIRED_PHASE2_COVERAGE = [
+    "requirements",
+    "design",
+    "code",
+    "tests",
+    "spec_sync",
+    "cross_layer",
+    "docs_ssot",
+    "deployment",
+]
+RESOLVED_FINDING_STATUSES = {"resolved", "fixed", "closed"}
+INDEPENDENT_REVIEW_SOURCE = "independent-agent"
+SELF_REVIEWER_PATTERNS = [
+    re.compile(r"(^|[-_./\s])main[-_./\s]*session($|[-_./\s])", re.IGNORECASE),
+    re.compile(r"(^|[-_./\s])self[-_./\s]*review($|[-_./\s])", re.IGNORECASE),
+]
 METADATA_ONLY_PREFIXES = (".trellis/tasks/", ".trellis/workspace/", ".trellis/.runtime/")
 METADATA_ONLY_FILES = {".trellis/guru-team/handoff.json"}
 PR_BODY_REQUIRED_SECTIONS = [
@@ -554,6 +580,111 @@ def git_branch_exists(root: Path, ref: str) -> bool:
 
 def local_branch_exists(root: Path, branch: str) -> bool:
     return git_branch_exists(root, f"refs/heads/{branch}")
+
+
+def ref_head(root: Path, ref: str) -> str | None:
+    proc = run(["git", "rev-parse", "--verify", "--quiet", ref], cwd=root, check=False)
+    value = proc.stdout.strip()
+    if proc.returncode == 0 and value:
+        return value
+    return None
+
+
+def base_short_name(base_ref: str) -> str:
+    normalized = normalize_ref(base_ref)
+    return normalized.split("/", 1)[1] if normalized.startswith("origin/") else normalized
+
+
+def inspect_base_freshness(root: Path, base_ref: str, remote: str = "origin") -> dict[str, Any]:
+    base = base_short_name(base_ref)
+    local_head = ref_head(root, base)
+    remote_ref = f"{remote}/{base}"
+    remote_head = ref_head(root, remote_ref)
+    fresh = bool(remote_head and local_head == remote_head)
+    if remote_head and not local_head:
+        fresh = True
+    status = "fresh" if fresh else "unknown"
+    if remote_head and local_head and local_head != remote_head:
+        status = "stale"
+    if not remote_head:
+        status = "remote_ref_missing"
+    return {
+        "remote": remote,
+        "base_branch": base,
+        "base_ref": base_ref,
+        "remote_ref": remote_ref,
+        "local_head_before": local_head,
+        "local_head_after": local_head,
+        "remote_head": remote_head,
+        "fetch_performed": False,
+        "fast_forwarded": False,
+        "fresh": fresh,
+        "status": status,
+        "base_ref_for_worktree": remote_ref if remote_head else base_ref,
+    }
+
+
+def ensure_base_freshness(root: Path, base_ref: str, remote: str = "origin") -> dict[str, Any]:
+    base = base_short_name(base_ref)
+    remote_ref = f"{remote}/{base}"
+    local_head_before = ref_head(root, base)
+    fetch_proc = run(["git", "fetch", remote, base], cwd=root, check=False)
+    if fetch_proc.returncode != 0:
+        raise WorkflowError(
+            f"Could not refresh base branch before worktree creation: git fetch {remote} {base}\n{fetch_proc.stderr.strip()}",
+            exit_code=2,
+        )
+    remote_head = ref_head(root, remote_ref)
+    if not remote_head:
+        raise WorkflowError(
+            f"Remote base ref not found after fetch: {remote_ref}",
+            exit_code=2,
+            payload={"remote": remote, "base_branch": base, "remote_ref": remote_ref},
+        )
+
+    fast_forwarded = False
+    if local_head_before:
+        if local_head_before == remote_head:
+            pass
+        elif is_ancestor(root, local_head_before, remote_ref):
+            if current_branch(root) == base:
+                if git_dirty(root):
+                    raise WorkflowError(
+                        f"Base branch {base} is behind {remote_ref}, but the checkout is dirty and cannot be fast-forwarded safely.",
+                        exit_code=2,
+                    )
+                run_stdout(["git", "merge", "--ff-only", remote_ref], cwd=root)
+            else:
+                run_stdout(["git", "branch", "-f", base, remote_ref], cwd=root)
+            fast_forwarded = True
+        else:
+            raise WorkflowError(
+                f"Local base branch {base} diverged from {remote_ref}; cannot create task worktree from stale base.",
+                exit_code=2,
+                payload={
+                    "base_branch": base,
+                    "local_head": local_head_before,
+                    "remote_head": remote_head,
+                    "remote_ref": remote_ref,
+                },
+            )
+
+    local_head_after = ref_head(root, base)
+    fresh = local_head_after == remote_head if local_head_after else True
+    return {
+        "remote": remote,
+        "base_branch": base,
+        "base_ref": base_ref,
+        "remote_ref": remote_ref,
+        "local_head_before": local_head_before,
+        "local_head_after": local_head_after,
+        "remote_head": remote_head,
+        "fetch_performed": True,
+        "fast_forwarded": fast_forwarded,
+        "fresh": fresh,
+        "status": "fresh" if fresh else "remote_only",
+        "base_ref_for_worktree": base if fresh and local_head_after else remote_ref,
+    }
 
 
 def resolve_base_branch(root: Path, config: dict[str, Any], explicit: str | None = None) -> tuple[str, list[str]]:
@@ -1231,6 +1362,8 @@ def load_review_report(root: Path, task_dir: Path, report_arg: str | None) -> di
         raise WorkflowError(f"--review-report must point to a file: {path}")
     if task_dir.resolve() not in [path.resolve(), *path.resolve().parents]:
         raise WorkflowError("--review-report must point to a task-local review.md inside the current task directory.")
+    if path.name != "review.md":
+        raise WorkflowError("--review-report must point to the task-local review.md file, not another task artifact.")
     content = path.read_bytes()
     if not content.strip():
         raise WorkflowError("--review-report must not be empty.")
@@ -1243,6 +1376,93 @@ def load_review_report(root: Path, task_dir: Path, report_arg: str | None) -> di
     }
 
 
+def resolve_task_local_path(root: Path, task_dir: Path, value: str) -> Path:
+    raw_path = Path(value).expanduser()
+    if raw_path.is_absolute():
+        path = raw_path
+    elif str(value).startswith(".trellis/") or str(value).startswith("trellis/"):
+        path = root / raw_path
+    else:
+        path = task_dir / raw_path
+    resolved = path.resolve()
+    if task_dir.resolve() not in [resolved, *resolved.parents]:
+        raise WorkflowError(f"Artifact path must stay inside the current task directory: {value}")
+    return resolved
+
+
+def resolve_repo_path(root: Path, value: str) -> Path:
+    raw_path = Path(value).expanduser()
+    return raw_path if raw_path.is_absolute() else root / raw_path
+
+
+def resolve_checked_spec_path(root: Path, value: str) -> Path:
+    path = resolve_repo_path(root, value).resolve()
+    spec_root = (root / ".trellis/spec").resolve()
+    if spec_root not in [path, *path.parents]:
+        raise WorkflowError(f"Checked spec must stay inside .trellis/spec: {value}", exit_code=2)
+    return path
+
+
+def file_digest(root: Path, path: Path) -> dict[str, Any]:
+    if not path.exists():
+        raise WorkflowError(f"Required artifact not found: {path}")
+    if not path.is_file():
+        raise WorkflowError(f"Artifact must point to a file: {path}")
+    content = path.read_bytes()
+    if not content.strip():
+        raise WorkflowError(f"Artifact must not be empty: {path}")
+    stat = path.stat()
+    return {
+        "path": repo_relative(root, path),
+        "sha256": hashlib.sha256(content).hexdigest(),
+        "size_bytes": stat.st_size,
+        "modified_at": datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
+    }
+
+
+def digest_errors(root: Path, entry: Any, label: str) -> list[str]:
+    if not isinstance(entry, dict):
+        return [f"{label} 中存在非对象 artifact entry。"]
+    errors: list[str] = []
+    path_value = str(entry.get("path") or "").strip()
+    if not path_value:
+        return [f"{label} artifact entry 缺少 path。"]
+    path = resolve_repo_path(root, path_value)
+    if not path.exists() or not path.is_file():
+        return [f"{label} artifact 不存在或不是文件: {path_value}。"]
+    current = file_digest(root, path)
+    for key in ["sha256", "size_bytes"]:
+        if entry.get(key) != current.get(key):
+            errors.append(f"{label} artifact 已过期: {path_value} 的 {key} 不匹配。")
+    if not entry.get("modified_at"):
+        errors.append(f"{label} artifact 缺少 modified_at: {path_value}。")
+    return errors
+
+
+def default_existing_task_artifacts(task_dir: Path, names: list[str]) -> list[str]:
+    artifacts: list[str] = []
+    for name in names:
+        if (task_dir / name).is_file():
+            artifacts.append(name)
+    return artifacts
+
+
+def dirty_paths_excluding(root: Path, excluded: set[str]) -> list[str]:
+    return [
+        path
+        for path in git_status_paths(root)
+        if path not in excluded
+    ]
+
+
+def planning_approval_path(task_dir: Path) -> Path:
+    return task_dir / PLANNING_APPROVAL_ARTIFACT
+
+
+def phase2_check_path(task_dir: Path) -> Path:
+    return task_dir / PHASE2_CHECK_ARTIFACT
+
+
 def valid_review_report_fields(review_report: Any) -> list[str]:
     if not isinstance(review_report, dict):
         return ["Branch Review Gate 缺少 review_report；passed gate 必须引用 task-local review.md digest。"]
@@ -1253,9 +1473,250 @@ def valid_review_report_fields(review_report: Any) -> list[str]:
     return errors
 
 
+def reviewer_identity_errors(reviewer: str) -> list[str]:
+    value = reviewer.strip()
+    if not value:
+        return ["Branch Review Gate 缺少 reviewer identity。"]
+    if any(pattern.search(value) for pattern in SELF_REVIEWER_PATTERNS):
+        return [
+            "Branch Review Gate reviewer 不能是 main-session / self-review；通过门禁必须基于独立 Agent 审查。",
+        ]
+    return []
+
+
+def independent_review_source_errors(review_source: str, reviewer: str) -> list[str]:
+    errors: list[str] = []
+    if review_source != INDEPENDENT_REVIEW_SOURCE:
+        errors.append(
+            f"Branch Review Gate review_source 必须是 {INDEPENDENT_REVIEW_SOURCE}；脚本 gate 只能记录独立 Agent 审查后的结果。",
+        )
+    errors.extend(reviewer_identity_errors(reviewer))
+    return errors
+
+
 def blocking_findings(findings: list[dict[str, Any]], config: dict[str, Any]) -> list[dict[str, Any]]:
     block = {str(item).upper() for item in review_gate_config(config).get("block_priorities", ["P0", "P1", "P2"])}
     return [finding for finding in findings if str(finding.get("priority") or "").upper() in block]
+
+
+def unresolved_blocking_findings(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    blockers: list[dict[str, Any]] = []
+    for finding in findings:
+        priority = str(finding.get("priority") or "").upper()
+        status = str(finding.get("status") or "").strip().lower()
+        if priority in BLOCKING_PRIORITIES and status not in RESOLVED_FINDING_STATUSES:
+            blockers.append(finding)
+    return blockers
+
+
+def build_planning_approval_payload(
+    root: Path,
+    task_dir: Path,
+    reviewer: str,
+    approval_summary: str,
+    user_confirmation: str,
+    artifacts: list[str],
+) -> dict[str, Any]:
+    artifact_paths = artifacts or default_existing_task_artifacts(task_dir, DEFAULT_PLANNING_ARTIFACTS)
+    if not artifact_paths:
+        raise WorkflowError("planning approval needs at least prd.md as an approved artifact.", exit_code=2)
+    approved = [file_digest(root, resolve_task_local_path(root, task_dir, item)) for item in artifact_paths]
+    artifact_repo_paths = {str(item["path"]) for item in approved}
+    dirty_paths = dirty_paths_excluding(root, artifact_repo_paths)
+    return {
+        "schema_version": "1.0",
+        "generated_at": now_iso(),
+        "task_dir": repo_relative(root, task_dir),
+        "head": current_head(root),
+        "dirty_paths": dirty_paths,
+        "reviewer": reviewer,
+        "approval_summary": approval_summary,
+        "user_confirmation": {
+            "source": "workflow",
+            "message": user_confirmation,
+        },
+        "approved_artifacts": approved,
+        "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。",
+    }
+
+
+def validate_planning_approval(
+    root: Path,
+    task_dir: Path,
+    allow_committed_head: bool = False,
+) -> tuple[Path, dict[str, Any], list[str]]:
+    path = planning_approval_path(task_dir)
+    if not path.exists():
+        raise WorkflowError(f"Planning approval artifact not found: {path}", exit_code=2)
+    payload = read_json(path)
+    errors: list[str] = []
+    if not str(payload.get("approval_summary") or "").strip():
+        errors.append("planning-approval.json 缺少 approval_summary。")
+    if not str(payload.get("reviewer") or "").strip():
+        errors.append("planning-approval.json 缺少 reviewer。")
+    if not isinstance(payload.get("user_confirmation"), dict) or not str(payload["user_confirmation"].get("message") or "").strip():
+        errors.append("planning-approval.json 缺少用户确认摘要。")
+    recorded_head = str(payload.get("head") or "")
+    head = current_head(root)
+    if recorded_head != head:
+        if allow_committed_head and recorded_head and is_ancestor(root, recorded_head, "HEAD"):
+            pass
+        else:
+            errors.append(f"planning-approval.json 记录的 HEAD {recorded_head or '(missing)'} 与当前 HEAD {head} 不一致。")
+    approved = payload.get("approved_artifacts")
+    if not isinstance(approved, list) or not approved:
+        errors.append("planning-approval.json 缺少 approved_artifacts。")
+    else:
+        approved_paths = {str(item.get("path") or "") for item in approved if isinstance(item, dict)}
+        if repo_relative(root, task_dir / "prd.md") not in approved_paths:
+            errors.append("planning-approval.json 未记录 prd.md。")
+        for item in approved:
+            errors.extend(digest_errors(root, item, "planning approval"))
+    return path, payload, errors
+
+
+def normalize_coverage(items: list[str] | None) -> dict[str, bool]:
+    coverage = {key: False for key in REQUIRED_PHASE2_COVERAGE}
+    for item in items or []:
+        key = str(item).strip()
+        if not key:
+            continue
+        if key not in coverage:
+            raise WorkflowError(
+                f"Unknown phase2 coverage key: {key}. Valid keys: {', '.join(REQUIRED_PHASE2_COVERAGE)}",
+                exit_code=2,
+            )
+        coverage[key] = True
+    return coverage
+
+
+def recorded_digest_paths(entries: Any) -> set[str]:
+    if not isinstance(entries, list):
+        return set()
+    paths: set[str] = set()
+    for entry in entries:
+        if isinstance(entry, dict) and str(entry.get("path") or "").strip():
+            paths.add(str(entry["path"]))
+    return paths
+
+
+def parse_validation_arg(value: str) -> dict[str, Any]:
+    parts = [part.strip() for part in value.split("|", 1)]
+    command = parts[0]
+    result = parts[1] if len(parts) > 1 else "recorded"
+    if not command:
+        raise WorkflowError("Validation evidence command must not be empty.", exit_code=2)
+    return {"command": command, "result": result}
+
+
+def build_phase2_check_payload(
+    root: Path,
+    task_dir: Path,
+    handoff: dict[str, Any],
+    task: dict[str, Any],
+    checker: str,
+    check_summary: str,
+    checked_artifacts: list[str],
+    checked_specs: list[str],
+    coverage_items: list[str],
+    validation_items: list[str],
+    findings: list[dict[str, Any]],
+) -> dict[str, Any]:
+    base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, handoff)
+    task_artifact_names = checked_artifacts or default_existing_task_artifacts(task_dir, DEFAULT_PHASE2_TASK_ARTIFACTS)
+    task_artifacts = [file_digest(root, resolve_task_local_path(root, task_dir, item)) for item in task_artifact_names]
+    specs = [file_digest(root, resolve_checked_spec_path(root, item)) for item in checked_specs]
+    validation_commands = [parse_validation_arg(item) for item in validation_items]
+    coverage = normalize_coverage(coverage_items)
+    excluded = {str(item["path"]) for item in task_artifacts}
+    excluded.add(repo_relative(root, phase2_check_path(task_dir)))
+    dirty_paths = dirty_paths_excluding(root, excluded)
+    return {
+        "schema_version": "1.0",
+        "generated_at": now_iso(),
+        "task_dir": repo_relative(root, task_dir),
+        "base_branch": base_branch,
+        "head": current_head(root),
+        "diff_range": diff_range(root, base_branch),
+        "dirty_paths": dirty_paths,
+        "checker": checker,
+        "check_summary": check_summary,
+        "checked_artifacts": task_artifacts,
+        "checked_specs": specs,
+        "coverage": coverage,
+        "validation_commands": validation_commands,
+        "findings": findings,
+        "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。",
+    }
+
+
+def validate_phase2_check(
+    root: Path,
+    task_dir: Path,
+    allow_committed_head: bool = False,
+) -> tuple[Path, dict[str, Any], list[str]]:
+    path = phase2_check_path(task_dir)
+    if not path.exists():
+        raise WorkflowError(f"Phase 2 check artifact not found: {path}", exit_code=2)
+    payload = read_json(path)
+    errors: list[str] = []
+    if not str(payload.get("check_summary") or "").strip():
+        errors.append("phase2-check.json 缺少 check_summary。")
+    if not str(payload.get("checker") or "").strip():
+        errors.append("phase2-check.json 缺少 checker。")
+    recorded_head = str(payload.get("head") or "")
+    head = current_head(root)
+    accepted_committed_state = False
+    if recorded_head != head:
+        if allow_committed_head and recorded_head and is_ancestor(root, recorded_head, "HEAD"):
+            has_non_metadata, non_metadata_paths = has_non_metadata_dirty_paths(root)
+            if has_non_metadata:
+                errors.append(
+                    "phase2-check.json 记录的 HEAD 是当前 HEAD 的祖先，但工作区存在非 Trellis metadata 变更: "
+                    + ", ".join(non_metadata_paths[:20])
+                )
+            else:
+                accepted_committed_state = True
+        else:
+            errors.append(f"phase2-check.json 记录的 HEAD {recorded_head or '(missing)'} 与当前 HEAD {head} 不一致。")
+    dirty_excluded = {repo_relative(root, phase2_check_path(task_dir))}
+    dirty_excluded.update(recorded_digest_paths(payload.get("checked_artifacts")))
+    dirty_now = dirty_paths_excluding(root, dirty_excluded)
+    recorded_dirty = payload.get("dirty_paths")
+    if not isinstance(recorded_dirty, list):
+        errors.append("phase2-check.json 缺少 dirty_paths 数组。")
+    elif accepted_committed_state:
+        pass
+    elif sorted(str(item) for item in recorded_dirty) != sorted(dirty_now):
+        errors.append("phase2-check.json 记录的 dirty_paths 与当前 working tree 不一致。")
+    coverage = payload.get("coverage")
+    if not isinstance(coverage, dict):
+        errors.append("phase2-check.json 缺少 coverage。")
+    else:
+        for key in REQUIRED_PHASE2_COVERAGE:
+            if coverage.get(key) is not True:
+                errors.append(f"phase2-check.json coverage.{key} 不是 true。")
+    validation_commands = payload.get("validation_commands")
+    if not isinstance(validation_commands, list) or not validation_commands:
+        errors.append("phase2-check.json 缺少 validation_commands。")
+    checked_artifacts = payload.get("checked_artifacts")
+    if not isinstance(checked_artifacts, list) or not checked_artifacts:
+        errors.append("phase2-check.json 缺少 checked_artifacts。")
+    else:
+        for item in checked_artifacts:
+            errors.extend(digest_errors(root, item, "phase2 checked_artifacts"))
+    checked_specs = payload.get("checked_specs")
+    if isinstance(checked_specs, list):
+        for item in checked_specs:
+            errors.extend(digest_errors(root, item, "phase2 checked_specs"))
+    findings = payload.get("findings")
+    if not isinstance(findings, list):
+        errors.append("phase2-check.json 缺少 findings 数组。")
+    else:
+        blockers = unresolved_blocking_findings([item for item in findings if isinstance(item, dict)])
+        if blockers:
+            errors.append("phase2-check.json 存在未 resolved 的 P0/P1/P2 finding。")
+    return path, payload, errors
 
 
 def build_review_gate_payload(
@@ -1269,6 +1730,7 @@ def build_review_gate_payload(
     summary: str,
     evidence: list[str],
     reviewer: str,
+    review_source: str,
     review_report: dict[str, Any] | None,
 ) -> dict[str, Any]:
     diff_spec = diff_range(root, base_branch)
@@ -1320,6 +1782,7 @@ def build_review_gate_payload(
             "base_head": f"{diff_base_ref(root, base_branch)}...{current_head(root)}",
             "changed_file_count": len(files),
             "reviewer": reviewer,
+            "review_source": review_source,
             "review_report": review_report,
             "evidence": evidence,
             "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。",
@@ -1368,6 +1831,8 @@ def validate_review_gate(
     if not (isinstance(evidence, list) and any(str(item).strip() for item in evidence)):
         errors.append("Branch Review Gate 缺少具体 review evidence。")
     reviewer = str(verification.get("reviewer") or "").strip()
+    review_source = str(verification.get("review_source") or "").strip()
+    errors.extend(independent_review_source_errors(review_source, reviewer))
     review_report = verification.get("review_report") if isinstance(verification.get("review_report"), dict) else None
     errors.extend(valid_review_report_fields(review_report))
     reviewed_head = str(gate.get("head") or "")
@@ -1858,12 +2323,18 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
     task_title = args.title or f"{title_prefix} {issue_title_for_planning}"
     base_ref, base_candidates = resolve_base_branch(root, config, args.base_branch)
     should_create_worktree = args.create_worktree or args.create_task
+    base_freshness = (
+        ensure_base_freshness(root, base_ref)
+        if should_create_worktree
+        else inspect_base_freshness(root, base_ref)
+    )
+    workspace_base_ref = str(base_freshness.get("base_ref_for_worktree") or base_ref)
     workspace_mode, workspace_path, workspace_ready = prepare_workspace(
         root,
         config,
         branch_name,
         workspace_slug,
-        base_ref,
+        workspace_base_ref,
         args.worktree,
         should_create_worktree,
     )
@@ -1909,6 +2380,7 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
             "worktree_root": str(configured_worktree_root(root, config)),
             "existing_worktrees": worktree_lines(root),
             "selected_base_branch": base_ref,
+            "base_freshness": base_freshness,
             "workspace_was_created_or_reused": workspace_ready,
         },
     }
@@ -1972,6 +2444,24 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     task = task_json(task_dir)
     base_branch = base_branch_from_sources(args, task, handoff)
     ensure_issue_scope_ledger(task_dir, handoff)
+    planning_path, _planning_payload, planning_errors = validate_planning_approval(
+        root,
+        task_dir,
+        allow_committed_head=True,
+    )
+    if planning_errors:
+        raise WorkflowError(
+            "Branch Review Gate blocked because planning approval evidence is missing, stale, or incomplete.",
+            exit_code=2,
+            payload={"artifact_path": str(planning_path), "errors": planning_errors},
+        )
+    phase2_path, _phase2_payload, phase2_errors = validate_phase2_check(root, task_dir, allow_committed_head=True)
+    if phase2_errors:
+        raise WorkflowError(
+            "Branch Review Gate blocked because Phase 2 check report is missing, stale, or incomplete.",
+            exit_code=2,
+            payload={"artifact_path": str(phase2_path), "errors": phase2_errors},
+        )
 
     findings = load_findings(args)
     evidence = [str(item).strip() for item in (args.evidence or []) if str(item).strip()]
@@ -1990,6 +2480,15 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
         )
     reviewer = str(args.reviewer or "").strip()
+    review_source = str(getattr(args, "review_source", "") or "").strip()
+    if args.pass_gate:
+        source_errors = independent_review_source_errors(review_source, reviewer)
+        if source_errors:
+            raise WorkflowError(
+                "Branch Review Gate pass requires independent Agent review evidence.",
+                exit_code=2,
+                payload={"errors": source_errors},
+            )
     review_report = load_review_report(root, task_dir, args.review_report)
     if not blockers and not evidence:
         raise WorkflowError(
@@ -2019,6 +2518,7 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         summary=summary,
         evidence=evidence,
         reviewer=reviewer,
+        review_source=review_source,
         review_report=review_report,
     )
     if args.pass_gate and bool(review_gate_config(config).get("require_deployment_impact_evidence", True)):
@@ -2035,6 +2535,128 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     payload["artifact_path"] = str(path)
     payload["dry_run"] = bool(args.dry_run)
     return payload
+
+
+def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    reviewer = str(args.reviewer or "").strip()
+    summary = str(args.summary or "").strip()
+    confirmation = str(args.user_confirmation or "").strip()
+    if not reviewer:
+        raise WorkflowError("record-planning-approval requires --reviewer identity metadata.", exit_code=2)
+    if not summary:
+        raise WorkflowError("record-planning-approval requires --summary with the planning review conclusion.", exit_code=2)
+    if not confirmation:
+        raise WorkflowError("record-planning-approval requires --user-confirmation evidence.", exit_code=2)
+    payload = build_planning_approval_payload(
+        root=root,
+        task_dir=task_dir,
+        reviewer=reviewer,
+        approval_summary=summary,
+        user_confirmation=confirmation,
+        artifacts=list(args.artifact or []),
+    )
+    path = planning_approval_path(task_dir)
+    if not args.dry_run:
+        write_json(path, payload)
+    payload["artifact_path"] = str(path)
+    payload["dry_run"] = bool(args.dry_run)
+    return payload
+
+
+def cmd_check_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    path, payload, errors = validate_planning_approval(
+        root,
+        task_dir,
+        allow_committed_head=bool(getattr(args, "allow_committed_head", False)),
+    )
+    if errors:
+        raise WorkflowError(
+            "Planning approval is missing or stale.",
+            exit_code=2,
+            payload={"artifact_path": str(path), "errors": errors},
+        )
+    return {
+        "status": "ok",
+        "artifact_path": str(path),
+        "task_dir": str(task_dir),
+        "head": current_head(root),
+        "approved_head": payload.get("head"),
+    }
+
+
+def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    task = task_json(task_dir)
+    checker = str(args.checker or "").strip()
+    summary = str(args.summary or "").strip()
+    if not checker:
+        raise WorkflowError("record-phase2-check requires --checker identity metadata.", exit_code=2)
+    if not summary:
+        raise WorkflowError("record-phase2-check requires --summary with the trellis-check conclusion.", exit_code=2)
+    findings = load_findings(args)
+    payload = build_phase2_check_payload(
+        root=root,
+        task_dir=task_dir,
+        handoff=handoff,
+        task=task,
+        checker=checker,
+        check_summary=summary,
+        checked_artifacts=list(args.checked_artifact or []),
+        checked_specs=list(args.checked_spec or []),
+        coverage_items=list(args.coverage or []),
+        validation_items=list(args.validation or []),
+        findings=findings,
+    )
+    blockers = unresolved_blocking_findings(findings)
+    if args.pass_check and blockers:
+        raise WorkflowError("--pass cannot be used while unresolved P0/P1/P2 findings are present.", exit_code=2)
+    if args.pass_check and any(value is not True for value in payload["coverage"].values()):
+        missing = [key for key, value in payload["coverage"].items() if value is not True]
+        raise WorkflowError(
+            "record-phase2-check --pass requires every coverage key to be explicitly checked.",
+            exit_code=2,
+            payload={"missing_coverage": missing},
+        )
+    if args.pass_check and not payload["validation_commands"]:
+        raise WorkflowError("record-phase2-check --pass requires at least one --validation evidence line.", exit_code=2)
+    path = phase2_check_path(task_dir)
+    if not args.dry_run:
+        write_json(path, payload)
+    payload["artifact_path"] = str(path)
+    payload["dry_run"] = bool(args.dry_run)
+    return payload
+
+
+def cmd_check_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    path, payload, errors = validate_phase2_check(root, task_dir)
+    if errors:
+        raise WorkflowError(
+            "Phase 2 check report is missing, stale, or incomplete.",
+            exit_code=2,
+            payload={"artifact_path": str(path), "errors": errors},
+        )
+    return {
+        "status": "ok",
+        "artifact_path": str(path),
+        "task_dir": str(task_dir),
+        "head": current_head(root),
+        "checked_head": payload.get("head"),
+    }
 
 
 def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
@@ -2320,10 +2942,47 @@ def build_parser() -> argparse.ArgumentParser:
     review.add_argument("--summary")
     review.add_argument("--evidence", action="append", help="Chinese review evidence line. Required with --pass.")
     review.add_argument("--reviewer", help="Reviewer name or AI/human review channel.")
+    review.add_argument("--review-source", help="Review source metadata. Passing gate requires independent-agent.")
     review.add_argument("--review-report", help="Path to the prior AI/human review report recorded before gate artifact creation.")
     review.add_argument("--finding", action="append", help="Finding as PRIORITY|message[|path].")
     review.add_argument("--findings-file", help="JSON list or object with findings[].")
     review.add_argument("--dry-run", action="store_true")
+
+    planning = sub.add_parser("record-planning-approval")
+    planning.add_argument("--root")
+    planning.add_argument("--json", action="store_true")
+    planning.add_argument("--task")
+    planning.add_argument("--reviewer", required=True, help="Reviewer name or AI/human review channel.")
+    planning.add_argument("--summary", required=True, help="Chinese planning review conclusion.")
+    planning.add_argument("--user-confirmation", required=True, help="Evidence summary for user approval to enter implementation.")
+    planning.add_argument("--artifact", action="append", help="Task-local artifact path to approve. Defaults to existing prd/design/implement.")
+    planning.add_argument("--dry-run", action="store_true")
+
+    check_planning = sub.add_parser("check-planning-approval")
+    check_planning.add_argument("--root")
+    check_planning.add_argument("--json", action="store_true")
+    check_planning.add_argument("--task")
+    check_planning.add_argument("--allow-committed-head", action="store_true", help="Allow the approved planning HEAD to be an ancestor for post-commit gate audits.")
+
+    phase2 = sub.add_parser("record-phase2-check")
+    phase2.add_argument("--root")
+    phase2.add_argument("--json", action="store_true")
+    phase2.add_argument("--task")
+    phase2.add_argument("--pass", dest="pass_check", action="store_true")
+    phase2.add_argument("--checker", required=True, help="Checker name or AI/human check channel.")
+    phase2.add_argument("--summary", required=True, help="Chinese trellis-check conclusion.")
+    phase2.add_argument("--checked-artifact", action="append", help="Task-local artifact read by the check. Defaults to existing task planning/gate artifacts.")
+    phase2.add_argument("--checked-spec", action="append", help="Repo-relative .trellis/spec file read by the check.")
+    phase2.add_argument("--coverage", action="append", help="Coverage key. Required keys: requirements, design, code, tests, spec_sync, cross_layer, docs_ssot, deployment.")
+    phase2.add_argument("--validation", action="append", help="Validation command evidence as COMMAND or COMMAND|RESULT.")
+    phase2.add_argument("--finding", action="append", help="Finding as PRIORITY|message[|path]. Add status in findings-file for resolved blocking findings.")
+    phase2.add_argument("--findings-file", help="JSON list or object with findings[].")
+    phase2.add_argument("--dry-run", action="store_true")
+
+    check_phase2 = sub.add_parser("check-phase2-check")
+    check_phase2.add_argument("--root")
+    check_phase2.add_argument("--json", action="store_true")
+    check_phase2.add_argument("--task")
 
     check_gate = sub.add_parser("check-review-gate")
     check_gate.add_argument("--root")
@@ -2390,6 +3049,14 @@ def main() -> int:
             payload = cmd_prepare(args)
         elif args.command == "review-branch":
             payload = cmd_review_branch(args)
+        elif args.command == "record-planning-approval":
+            payload = cmd_record_planning_approval(args)
+        elif args.command == "check-planning-approval":
+            payload = cmd_check_planning_approval(args)
+        elif args.command == "record-phase2-check":
+            payload = cmd_record_phase2_check(args)
+        elif args.command == "check-phase2-check":
+            payload = cmd_check_phase2_check(args)
         elif args.command == "check-review-gate":
             payload = cmd_check_review_gate(args)
         elif args.command == "publish-pr":
