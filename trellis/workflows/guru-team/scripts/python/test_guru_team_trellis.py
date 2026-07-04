@@ -42,6 +42,28 @@ def prepare_args(**overrides: object) -> argparse.Namespace:
     return argparse.Namespace(**values)
 
 
+def review_args(**overrides: object) -> argparse.Namespace:
+    values: dict[str, object] = {
+        "root": None,
+        "json": True,
+        "task": None,
+        "base_branch": None,
+        "pass_gate": True,
+        "summary": "Branch Review Gate 通过：已审查完整 diff，未发现阻塞问题。",
+        "evidence": [
+            "审查范围：origin/main...HEAD，覆盖文档、代码、测试、Trellis artifacts、脚本、schema、preset overlay 和 issue ledger。",
+            "部署影响：本次仅修改 Trellis workflow companion，不新增 API、worker、CI/CD、容器、K8s、DB migration 或 Makefile。",
+        ],
+        "reviewer": "codex-main-session",
+        "review_report": None,
+        "finding": None,
+        "findings_file": None,
+        "dry_run": True,
+    }
+    values.update(overrides)
+    return argparse.Namespace(**values)
+
+
 class PrepareSideEffectBoundaryTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -192,6 +214,92 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
 
         create_issue.assert_not_called()
         self.assertIn("--issue-title", str(raised.exception))
+
+
+class ReviewGateReportRequiredTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        (self.root / ".trellis/guru-team").mkdir(parents=True)
+        self.task_dir = self.root / ".trellis/tasks/07-04-review"
+        self.task_dir.mkdir(parents=True)
+        (self.task_dir / "task.json").write_text(
+            '{"title":"review gate","base_branch":"main","branch":"codex/review"}',
+            encoding="utf-8",
+        )
+        (self.task_dir / "issue-scope-ledger.json").write_text(
+            '{"close_issues":[],"related_issues":[],"followup_issues":[]}',
+            encoding="utf-8",
+        )
+        self.handoff = {
+            "base_branch": "main",
+            "issue_scope_ledger": {"close_issues": [], "related_issues": [], "followup_issues": []},
+        }
+        self.config = {
+            **gtt.DEFAULTS,
+            "review_gate": {
+                **gtt.DEFAULTS["review_gate"],
+                "require_deployment_impact_evidence": True,
+            },
+        }
+
+        self.patches = [
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "load_config", return_value=self.config),
+            mock.patch.object(gtt, "load_handoff", return_value=self.handoff),
+            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "current_branch", return_value="codex/review"),
+            mock.patch.object(gtt, "current_head", return_value="abc123"),
+            mock.patch.object(gtt, "diff_base_ref", return_value="origin/main"),
+            mock.patch.object(gtt, "changed_files", return_value=["trellis/workflows/guru-team/workflow.md"]),
+        ]
+        for patcher in self.patches:
+            patcher.start()
+
+    def tearDown(self) -> None:
+        for patcher in reversed(self.patches):
+            patcher.stop()
+        self.tmp.cleanup()
+
+    def test_pass_gate_requires_review_report_even_with_reviewer(self) -> None:
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.cmd_review_branch(review_args())
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("--review-report", str(raised.exception))
+        self.assertIn("cannot replace", str(raised.exception))
+
+    def test_pass_gate_accepts_review_report_and_records_digest(self) -> None:
+        report = self.task_dir / "review.md"
+        report.write_text("# Branch Review Gate 审查报告\n\n未发现阻塞问题。\n", encoding="utf-8")
+
+        payload = gtt.cmd_review_branch(review_args(review_report=str(report)))
+        review_report = payload["verification_evidence"]["review_report"]
+
+        self.assertEqual(review_report["path"], ".trellis/tasks/07-04-review/review.md")
+        self.assertEqual(review_report["size_bytes"], report.stat().st_size)
+        self.assertRegex(review_report["sha256"], r"^[0-9a-f]{64}$")
+        self.assertEqual(payload["verification_evidence"]["reviewer"], "codex-main-session")
+
+    def test_validate_review_gate_rejects_reviewer_only_passed_gate(self) -> None:
+        gate = {
+            "conclusion": {"passed": True, "summary": "通过"},
+            "head": "abc123",
+            "verification_evidence": {
+                "reviewer": "codex-main-session",
+                "evidence": ["部署影响：无。"],
+            },
+        }
+        gtt.write_json(self.task_dir / "review-gate.json", gate)
+
+        _, _, errors = gtt.validate_review_gate(
+            self.root,
+            self.task_dir,
+            self.config,
+            allow_metadata_after_gate=False,
+        )
+
+        self.assertTrue(any("review_report" in error for error in errors), errors)
 
 
 if __name__ == "__main__":

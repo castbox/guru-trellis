@@ -1,0 +1,32 @@
+{
+  "primary_issue": {
+    "number": 20,
+    "url": "https://github.com/castbox/guru-trellis/issues/20",
+    "title": "强制 Branch Review Gate 每次产出 review",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "Python companion 已收紧：review-branch --pass 必须提供 task-local --review-report；validate_review_gate 拒绝缺少 review_report digest 的 passed gate。",
+      "单元测试覆盖 reviewer-only pass 失败、review-report pass 成功、reviewer-only gate validation 失败。",
+      "workflow、overlay、README、spec 已同步 review.md 必产物语义；preset apply 后 dogfood overlay drift check 通过。",
+      "dry-run 验证 reviewer-only passed gate 返回 exit 2；带 review-dry-run.md 的 --review-report 通过并记录 64 位 sha256、size_bytes、modified_at。",
+      "verify-throwaway-install.sh 通过，确认新安装项目可获得更新后的 workflow/preset/overlay/companion scripts。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 20,
+      "url": "https://github.com/castbox/guru-trellis/issues/20",
+      "title": "强制 Branch Review Gate 每次产出 review",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "Python companion 已收紧：review-branch --pass 必须提供 task-local --review-report；validate_review_gate 拒绝缺少 review_report digest 的 passed gate。",
+        "单元测试覆盖 reviewer-only pass 失败、review-report pass 成功、reviewer-only gate validation 失败。",
+        "workflow、overlay、README、spec 已同步 review.md 必产物语义；preset apply 后 dogfood overlay drift check 通过。",
+        "dry-run 验证 reviewer-only passed gate 返回 exit 2；带 review-dry-run.md 的 --review-report 通过并记录 64 位 sha256、size_bytes、modified_at。",
+        "verify-throwaway-install.sh 通过，确认新安装项目可获得更新后的 workflow/preset/overlay/companion scripts。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

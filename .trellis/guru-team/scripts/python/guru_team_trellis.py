@@ -1169,8 +1169,16 @@ def load_review_report(root: Path, report_arg: str | None) -> dict[str, Any] | N
     }
 
 
-def has_review_identity(reviewer: str, review_report: dict[str, Any] | None) -> bool:
-    return bool(str(reviewer or "").strip()) or bool(review_report)
+def has_required_review_report(review_report: dict[str, Any] | None) -> bool:
+    if not isinstance(review_report, dict):
+        return False
+    required = ["path", "sha256", "size_bytes"]
+    if any(not review_report.get(key) for key in required):
+        return False
+    try:
+        return int(review_report.get("size_bytes", 0)) > 0
+    except (TypeError, ValueError):
+        return False
 
 
 def blocking_findings(findings: list[dict[str, Any]], config: dict[str, Any]) -> list[dict[str, Any]]:
@@ -1287,10 +1295,9 @@ def validate_review_gate(
     evidence = verification.get("evidence")
     if not (isinstance(evidence, list) and any(str(item).strip() for item in evidence)):
         errors.append("Branch Review Gate 缺少具体 review evidence。")
-    reviewer = str(verification.get("reviewer") or "").strip()
     review_report = verification.get("review_report") if isinstance(verification.get("review_report"), dict) else None
-    if not has_review_identity(reviewer, review_report):
-        errors.append("Branch Review Gate 缺少 reviewer 或 review_report，不能证明 gate 前已执行独立 AI/human review。")
+    if not has_required_review_report(review_report):
+        errors.append("Branch Review Gate 缺少有效 review_report；passed gate 必须引用 task-local review.md 的 digest。")
     if review_report is not None:
         for key in ["path", "sha256", "size_bytes"]:
             if not review_report.get(key):
@@ -1721,9 +1728,10 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
             "Branch Review Gate passing result needs at least one --evidence line from the actual review.",
             exit_code=2,
         )
-    if not blockers and not has_review_identity(reviewer, review_report):
+    if not blockers and not has_required_review_report(review_report):
         raise WorkflowError(
-            "Branch Review Gate passing result needs --reviewer or --review-report from the prior AI/human review.",
+            "Branch Review Gate passing result needs --review-report pointing to task-local review.md. "
+            "--reviewer is identity metadata and cannot replace the review report.",
             exit_code=2,
         )
     if not args.pass_gate and not findings:

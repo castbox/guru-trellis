@@ -113,8 +113,9 @@ hooks, suspected bootstrap failures, or manual context reloads.
 Review and publish helpers are internal companion script subcommands used by
 the workflow; they are not daily user-facing entries. `review-branch.sh`
 records and validates the prior AI/human review result; it is not the reviewer.
-Passing gates require a Chinese summary, concrete evidence, and either
-`--reviewer` or `--review-report`.
+Passing gates require a task-local `review.md` referenced through
+`--review-report`, a Chinese summary, and concrete evidence. `--reviewer` is
+identity metadata only and cannot replace the review report.
 
 ## Workflow Guardrails
 

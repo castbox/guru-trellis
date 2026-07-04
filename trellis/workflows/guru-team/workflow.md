@@ -133,6 +133,7 @@ Guru Team companion scripts:
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \
   --reviewer "codex-main-session" \
+  --review-report ".trellis/tasks/<task>/review.md" \
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json
@@ -150,8 +151,8 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
 - Phase 2 `trellis-check` is the implementation quality check step. It reviews the current task against specs, runs lint/typecheck/tests when appropriate, and may self-fix before commit.
 - Phase 3 Branch Review Gate is a post-commit release gate. First, an AI/human review must inspect the complete branch diff from the intake base branch to `HEAD`, including docs, code, tests, Trellis artifacts, config, scripts, schemas, CI/CD workflows, Docker/Compose files, Kubernetes YAML, Kustomize overlays, database migrations, Makefiles, preset installer, Issue Scope Ledger, and publish readiness.
 - On platforms with sub-agents, the main session may dispatch `trellis-check` or a dedicated review sub-agent to perform the evidence-gathering review for Phase 3. On inline platforms, the main session performs the same review directly in code-review stance.
-- The sub-agent does not own the gate. The gate is valid only after the AI/human review has run and `review-branch.sh` writes `{TASK_DIR}/review-gate.json` with summary, evidence, findings, reviewer or review report, base/head, and current `HEAD`.
-- `review-branch.sh` is a recorder / validator, not a reviewer. It must receive the prior review result through `--summary`, `--evidence`, `--finding` / `--findings-file`, plus `--reviewer` or `--review-report`.
+- The sub-agent does not own the gate. The gate is valid only after the AI/human review has run, the review report has been written to task-local `{TASK_DIR}/review.md`, and `review-branch.sh` writes `{TASK_DIR}/review-gate.json` with summary, evidence, findings, review report digest, optional reviewer, base/head, and current `HEAD`.
+- `review-branch.sh` is a recorder / validator, not a reviewer. It must receive the prior review result through task-local `--review-report {TASK_DIR}/review.md`, `--summary`, `--evidence`, and `--finding` / `--findings-file` when applicable. `--reviewer` records identity only and cannot replace the review report.
 - Do not skip Phase 2 `trellis-check` just because Branch Review Gate exists; do not treat Phase 2 check success as permission to run `finish-work` without the Phase 3 artifact.
 
 ### Context Script
@@ -557,9 +558,11 @@ Findings use `P0`, `P1`, `P2`, `P3`:
 - `P0/P1/P2`: block `finish-work`.
 - `P3`: record but does not block.
 
-Persist the review result in the conversation and, when practical, in a task
-artifact such as `{TASK_DIR}/review.md`. The review must include concrete
-summary/evidence and findings, even when findings are empty.
+Persist the review result in the conversation and in a task-local artifact at
+`{TASK_DIR}/review.md`. This review report is required before a passed Branch
+Review Gate can be recorded. The report must include concrete summary/evidence,
+validation, Docs SSOT and deployment-impact judgment, issue close/ref/followup
+coverage, and findings, even when findings are empty.
 
 Before writing `review.md`, `review-gate.json`, or any task artifact, confirm the
 current working directory is the task's selected `workspace_path`, not the source
@@ -570,13 +573,15 @@ task worktree only.
 
 ##### 3.5.2 Gate Artifact Recorder
 
-Only after the AI/human review has completed, write the gate artifact. The pass
-path must include `--reviewer` or `--review-report` so the artifact can prove a
-review identity or report existed before publishing:
+Only after the AI/human review has completed and `{TASK_DIR}/review.md` exists,
+write the gate artifact. The pass path must include `--review-report` pointing
+to that task-local report so the artifact records its digest before publishing.
+`--reviewer` is optional identity metadata and does not replace the report:
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \
   --reviewer "codex-main-session" \
+  --review-report ".trellis/tasks/<task>/review.md" \
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
 ```
@@ -586,12 +591,13 @@ or, when findings exist:
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json \
   --reviewer "codex-main-session" \
+  --review-report ".trellis/tasks/<task>/review.md" \
   --finding 'P2|中文问题说明|path/to/file'
 ```
 
-The artifact records base/head, diff command, conclusion, reviewer or review report, summary, concrete evidence lines, findings, changed files, Issue Scope Ledger coverage, and validation evidence. It is written to `{TASK_DIR}/review-gate.json` by default.
+The artifact records base/head, diff command, conclusion, review report digest, optional reviewer identity, summary, concrete evidence lines, findings, changed files, Issue Scope Ledger coverage, and validation evidence. It is written to `{TASK_DIR}/review-gate.json` by default.
 
-Passing the gate is not a blank assertion. `--pass` requires a Chinese `--summary`, at least one concrete `--evidence` line from the actual review, and either `--reviewer` or `--review-report`. Use additional `--evidence` lines for important validation commands or review coverage notes.
+Passing the gate is not a blank assertion. `--pass` requires a task-local `--review-report`, a Chinese `--summary`, and at least one concrete `--evidence` line from the actual review. Use additional `--evidence` lines for important validation commands or review coverage notes. `--reviewer` may be supplied for identity, but reviewer-only passed gates are invalid.
 
 When the diff includes `docs/` files, CI/CD, container, Kubernetes, Kustomize, database migration, or Makefile changes, the gate evidence or findings must explicitly name those changed assets and the validation or risk judgment used for them.
 

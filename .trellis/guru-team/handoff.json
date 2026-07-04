@@ -1,21 +1,39 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 15,
-    "url": "https://github.com/castbox/guru-trellis/issues/15",
-    "title": "Require explicit approval for no_task current-checkout direct edits",
-    "created_by_workflow": false
+    "number": 20,
+    "url": "https://github.com/castbox/guru-trellis/issues/20",
+    "title": "强制 Branch Review Gate 每次产出 review",
+    "created_by_workflow": true
   },
-  "proposed_issue": null,
+  "proposed_issue": {
+    "repo": "castbox/guru-trellis",
+    "title": "强制 Branch Review Gate 每次产出 review",
+    "body": "## Background\n\nGuru Team Branch Review Gate 目前允许两种通过路径：`--reviewer + --evidence` 或 `--review-report`。这会导致有些 Review Gate 产出 `review.md`，有些只产出 `review-gate.json`，审计体验和跨会话一致性不足。\n\n## Problem or Gap\n\n`review.md` 应作为 AI/human review 判断的主证据，而不是可选最佳实践。`review-gate.json` 应引用该 review report 的 digest。`--reviewer` 只能作为审查身份字段，不能替代审查报告主证据。\n\n## Requirement Change\n\n- Branch Review Gate 每次都必须产出 task-local `review.md`。\n- `review-branch.sh` 的 pass gate 必须接收并记录有效 `--review-report`。\n- `review-gate.json` 必须记录 `review_report.path`、`sha256`、`size_bytes`、`modified_at`。\n- `--reviewer` 保留为身份字段，但不能单独满足 passed gate 的 review evidence 要求。\n- workflow、skill、prompt、README、spec、tests 和 dogfood overlay 必须保持一致。\n\n## Acceptance Criteria\n\n- 裸 `review-branch.sh --pass --reviewer ... --evidence ...` 不提供 `--review-report` 时失败。\n- 提供有效 `review.md` 的 `review-branch.sh --pass --review-report ...` 成功并记录 digest。\n- `check-review-gate.sh` / `finish-work.sh` 拒绝缺少 `review_report` digest 的 passed gate。\n- `trellis-continue` 文档明确先写 `review.md`，再调用 Branch Review Gate recorder。\n- 新仓库安装和 dogfood overlay 同步后语义一致。\n\n## Out of Scope\n\n- 不改变官方 Trellis upstream 源码、全局 npm 包或 `node_modules`。\n- 不把 AI review 判断写进 shell/Python 脚本；脚本只做 recorder / validator。\n- 不在本任务解决 PR body 质量 issue，除非为说明本次 gate 证据必须同步最小文案。\n\n## Duplicate Issue Search\n\nIntake found related but non-identical issues: #7, #17, #8. This task should be tracked as a new issue because it specifically changes Branch Review Gate evidence requirements for `review.md`.",
+    "labels": [],
+    "body_reviewed": true,
+    "create_issue_command": [
+      "python3",
+      "./.trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "prepare",
+      "--json",
+      "--create-issue-confirmed",
+      "--issue-title",
+      "强制 Branch Review Gate 每次产出 review",
+      "--issue-body-file",
+      "<reviewed-issue-body.md>",
+      "强制 Branch Review Gate 每次产出 review.md，并让 review-gate.json 引用该 review report digest；--reviewer 只能作为身份字段，不能替代审查报告主证据"
+    ]
+  },
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/20-branch-review-gate-review/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "require-explicit-approval-no-task",
-  "task_slug": "15-require-explicit-approval-no-task",
-  "task_title": "#15 Require explicit approval for no_task current-checkout direct edits",
-  "branch_name": "codex/15-require-explicit-approval-no-task",
+  "slug": "branch-review-gate-review",
+  "task_slug": "20-branch-review-gate-review",
+  "task_title": "#20 强制 Branch Review Gate 每次产出 review",
+  "branch_name": "codex/20-branch-review-gate-review",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/20-branch-review-gate-review",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -26,30 +44,55 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#15 Require explicit approval for no_task current-checkout direct edits",
+    "#20 强制 Branch Review Gate 每次产出 review",
     "--slug",
-    "15-require-explicit-approval-no-task",
+    "20-branch-review-gate-review",
     "--assignee",
     "name=wumengye\ninitialized_at=2026-07-03T17:44:00.461566"
   ],
-  "task_dir": ".trellis/tasks/07-03-15-require-explicit-approval-no-task",
+  "task_dir": ".trellis/tasks/07-04-20-branch-review-gate-review",
   "duplicate_search": {
-    "performed": false,
-    "candidates": []
+    "performed": true,
+    "candidates": [
+      {
+        "number": 7,
+        "title": "Require PR readiness review before finish-work publishes",
+        "url": "https://github.com/castbox/guru-trellis/issues/7",
+        "score": 0.342,
+        "similarity": "medium",
+        "reason": "keyword overlap: branch, gate, json, md, report, review, reviewer, 不能"
+      },
+      {
+        "number": 17,
+        "title": "Improve Guru Team PR body quality standards",
+        "url": "https://github.com/castbox/guru-trellis/issues/17",
+        "score": 0.263,
+        "similarity": "medium",
+        "reason": "keyword overlap: gate, json, review, reviewer, 不能, 作为, 审查, 强制"
+      },
+      {
+        "number": 8,
+        "title": "Add auditable evidence for planning approval and trellis-check",
+        "url": "https://github.com/castbox/guru-trellis/issues/8",
+        "score": 0.237,
+        "similarity": "low",
+        "reason": "keyword overlap: branch, gate, json, md, report, review, 审查, 强制"
+      }
+    ]
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 15,
-      "url": "https://github.com/castbox/guru-trellis/issues/15",
-      "title": "Require explicit approval for no_task current-checkout direct edits",
+      "number": 20,
+      "url": "https://github.com/castbox/guru-trellis/issues/20",
+      "title": "强制 Branch Review Gate 每次产出 review",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 15,
-        "url": "https://github.com/castbox/guru-trellis/issues/15",
-        "title": "Require explicit approval for no_task current-checkout direct edits",
+        "number": 20,
+        "url": "https://github.com/castbox/guru-trellis/issues/20",
+        "title": "强制 Branch Review Gate 每次产出 review",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -64,10 +107,12 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                 42dd2e5 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                 0ffda86 [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle   ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task  42dd2e5 [codex/15-require-explicit-approval-no-task]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task  230cc8d [codex/15-require-explicit-approval-no-task]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/18-enforce-pr-publish-only-after      a876400 [codex/18-enforce-pr-publish-only-after]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/2-align-guru-team-workflow-trellis    692cd9f [codex/2-align-guru-team-workflow-trellis]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/20-branch-review-gate-review          0ffda86 [codex/20-branch-review-gate-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/5-require-ai-review-prompt-before     44b29b0 [codex/5-require-ai-review-prompt-before]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/9-keep-dogfood-installed-overlays-in  cacf0c7 [codex/9-keep-dogfood-installed-overlays-in]"
     ],
