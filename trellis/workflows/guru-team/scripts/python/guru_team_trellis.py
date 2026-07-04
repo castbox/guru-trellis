@@ -2891,6 +2891,95 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
     return payload
 
 
+def build_finish_work_dry_run_plan(
+    root: Path,
+    args: argparse.Namespace,
+    config: dict[str, Any],
+    handoff: dict[str, Any],
+    task_dir: Path,
+    task_name: str,
+    gate_path: Path,
+    gate: dict[str, Any],
+    reviewed_head: str,
+    title: str,
+    summary: str,
+    commits: str,
+    draft: bool,
+    body_source: str,
+    body_errors: list[str],
+    reviewed_source_errors: list[str],
+) -> dict[str, Any]:
+    publish = publish_config(config)
+    task = task_json(task_dir)
+    base_branch = base_branch_from_sources(args, task, handoff)
+    repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
+    remote = str(args.remote or publish.get("remote") or "origin")
+    head_branch = current_branch(root)
+    pr_title = pr_title_from_task(task, args)
+    archive_would_run = not args.skip_archive
+    journal_would_run = not args.skip_journal
+    return {
+        "status": "dry-run",
+        "task_dir": str(task_dir),
+        "task_name": task_name,
+        "review_gate": str(gate_path),
+        "reviewed_head": reviewed_head,
+        "dry_run_side_effects": False,
+        "checks": {
+            "non_metadata_dirty_paths": [],
+            "pr_readiness": {
+                "body_source": body_source,
+                "body_quality_ok": not body_errors,
+                "body_quality_errors": body_errors,
+                "reviewed_source_required": not draft,
+                "reviewed_source_ok": not reviewed_source_errors,
+                "reviewed_source_errors": reviewed_source_errors,
+            },
+        },
+        "plan": {
+            "archive": {
+                "would_run": archive_would_run,
+                "skip": bool(args.skip_archive),
+                "task_name": task_name,
+                "command": ["python3", "./.trellis/scripts/task.py", "archive", task_name],
+            },
+            "journal": {
+                "would_run": journal_would_run,
+                "skip": bool(args.skip_journal),
+                "title": title,
+                "summary": summary,
+                "commits": commits or reviewed_head,
+                "command": [
+                    "python3",
+                    "./.trellis/scripts/add_session.py",
+                    "--title",
+                    title,
+                    "--commit",
+                    commits or reviewed_head,
+                    "--summary",
+                    summary,
+                ],
+            },
+            "metadata_commit": {
+                "would_run": True,
+                "message": "chore(trellis): finalize task metadata",
+            },
+            "publish": {
+                "would_run": True,
+                "repo": repo,
+                "base_branch": normalize_ref(base_branch).removeprefix("origin/"),
+                "head_branch": head_branch,
+                "remote": remote,
+                "draft": draft,
+                "title": pr_title,
+                "body_source": body_source,
+                "allow_metadata_after_gate": True,
+                "from_finish_work": True,
+            },
+        },
+    }
+
+
 def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     validate_finish_work_invocation(args)
     root = repo_root(Path(args.root or os.getcwd()))
@@ -2936,6 +3025,26 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
                 "reviewed_source_required": not draft,
                 "reviewed_source_ok": not reviewed_source_errors,
             },
+        )
+
+    if args.dry_run:
+        return build_finish_work_dry_run_plan(
+            root,
+            args,
+            config,
+            handoff,
+            task_dir,
+            task_name,
+            gate_path,
+            gate,
+            reviewed_head,
+            title,
+            summary,
+            commits,
+            draft,
+            body_source,
+            body_errors,
+            reviewed_source_errors,
         )
 
     if not args.skip_archive:
@@ -3132,7 +3241,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     finish.add_argument("--skip-archive", action="store_true", help="Internal recovery switch. Do not use in normal finish-work.")
     finish.add_argument("--skip-journal", action="store_true", help="Internal recovery switch. Do not use in normal finish-work.")
-    finish.add_argument("--dry-run", action="store_true", help="Run archive/journal, then dry-run publish. Intended only for throwaway validation.")
+    finish.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate finish-work readiness and print planned archive/journal/publish actions without writing files.",
+    )
     return parser
 
 

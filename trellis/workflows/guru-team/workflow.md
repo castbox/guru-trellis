@@ -690,6 +690,8 @@ Then run the internal Guru Team finish helper:
 
 The `--from-trellis-finish-work` marker is required proof that the explicit finish entrypoint was invoked; `trellis-continue` must not add or synthesize it. Ordinary direct `finish-work.sh` calls fail before gate, archive, journal, push, or PR side effects. The helper then runs the normal finish-work actions: it verifies the passed gate has `review_report` digest evidence, rejects uncommitted non-metadata changes, archives the active task with `task.py archive`, records the session journal with `add_session.py`, commits any remaining Trellis metadata-only changes, then invokes publish.
 
+When `--dry-run` is also passed with the explicit finish intent marker, the helper is a side-effect-free readiness preview: it validates the same gate, dirty-state, and PR body/readiness inputs, then prints the planned archive, journal, metadata commit, and publish actions without moving task files, writing journal entries, creating commits, pushing, or creating a PR.
+
 `finish-work` may create Trellis metadata commits for archive and journal. These metadata commits do not invalidate the earlier code review gate; the helper only accepts Trellis metadata after the reviewed HEAD and blocks any code, config, script, schema, CI/CD, deployment, or preset change that appears after the gate.
 
 #### 3.7 Publish PR `[automatic after finish-work]`

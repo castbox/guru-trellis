@@ -143,6 +143,12 @@ archive, journal, and remaining Trellis metadata-only commit succeed; direct
 publish is reserved for explicit recovery/debug after finish-work already
 completed.
 
+`finish-work.sh --dry-run --from-trellis-finish-work` is a side-effect-free
+readiness preview. It validates the gate, dirty state, and PR body/readiness,
+then prints the planned archive, journal, metadata commit, and publish actions
+without moving task files, writing journal entries, creating commits, pushing,
+or creating a PR.
+
 Before finish-work publishes, the AI must generate or review a PR body for
 GitHub reviewers who do not know the Trellis task. The body should use concrete
 Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gate`,

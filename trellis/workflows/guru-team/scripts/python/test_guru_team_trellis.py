@@ -1431,7 +1431,7 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "cmd_publish_pr", return_value={"status": "dry-run"}) as publish,
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
-            payload = gtt.cmd_finish_work(finish_args(body_file=str(body_path)))
+            payload = gtt.cmd_finish_work(finish_args(body_file=str(body_path), dry_run=False))
 
         publish.assert_called_once()
         publish_args_obj = publish.call_args.args[0]
@@ -1442,6 +1442,45 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(publish_args_obj.body_file, str(archived_task_dir / "reviewed-pr-body.md"))
         self.assertIsNone(publish_args_obj.body_artifact)
         self.assertEqual(payload["publish"]["status"], "dry-run")
+
+    def test_finish_work_dry_run_returns_plan_without_archive_journal_commit_or_publish(self) -> None:
+        body_path = self.task_dir / "reviewed-pr-body.md"
+        body_path.write_text(valid_pr_body("finish-work dry-run 只输出 readiness preview。"), encoding="utf-8")
+        gate = {
+            "head": "abc123",
+            "conclusion": {"passed": True, "summary": "finish-work dry-run preview。"},
+            "changed_files": ["trellis/workflows/guru-team/workflow.md"],
+        }
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
+            mock.patch.object(gtt, "load_handoff", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])),
+            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(gtt, "recent_work_commits", return_value=["abc123"]),
+            mock.patch.object(gtt, "current_branch", return_value="codex/27-finish-work-dry-run-readiness"),
+            mock.patch.object(gtt, "run") as run,
+            mock.patch.object(gtt, "commit_if_metadata_dirty") as commit_metadata,
+            mock.patch.object(gtt, "cmd_publish_pr") as publish,
+        ):
+            payload = gtt.cmd_finish_work(finish_args(body_file=str(body_path)))
+
+        run_commands = [call.args[0] for call in run.call_args_list]
+        self.assertNotIn(["python3", "./.trellis/scripts/task.py", "archive", self.task_dir.name], run_commands)
+        self.assertFalse(any(command[:3] == ["python3", "./.trellis/scripts/add_session.py", "--title"] for command in run_commands))
+        commit_metadata.assert_not_called()
+        publish.assert_not_called()
+        self.assertEqual(payload["status"], "dry-run")
+        self.assertFalse(payload["dry_run_side_effects"])
+        self.assertEqual(payload["plan"]["archive"]["task_name"], self.task_dir.name)
+        self.assertEqual(payload["plan"]["journal"]["commits"], "abc123")
+        self.assertEqual(payload["plan"]["publish"]["repo"], "owner/repo")
+        self.assertEqual(payload["plan"]["publish"]["base_branch"], "main")
+        self.assertEqual(payload["plan"]["publish"]["head_branch"], "codex/27-finish-work-dry-run-readiness")
+        self.assertIn("body-file:", payload["checks"]["pr_readiness"]["body_source"])
+        self.assertTrue(payload["checks"]["pr_readiness"]["body_quality_ok"])
+        self.assertTrue(payload["checks"]["pr_readiness"]["reviewed_source_ok"])
 
     def test_finish_work_validates_gate_with_metadata_tail_allowed(self) -> None:
         body_path = self.task_dir / "reviewed-pr-body.md"
@@ -1465,7 +1504,7 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "cmd_publish_pr", return_value={"status": "dry-run"}),
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
-            gtt.cmd_finish_work(finish_args(body_file=str(body_path)))
+            gtt.cmd_finish_work(finish_args(body_file=str(body_path), dry_run=False))
 
         self.assertTrue(validate_gate.call_args.args[3])
 

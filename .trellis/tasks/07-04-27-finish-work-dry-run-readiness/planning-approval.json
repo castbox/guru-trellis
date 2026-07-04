@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-04T09:37:55Z",
+  "task_dir": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness",
+  "head": "adbf5548c6cc40c5eb193cbc65ca359344cad264",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已审查 issue #27、handoff、workflow/preset spec 和现有 finish-work 实现；规划明确 dry-run 必须在 archive/journal/metadata commit/publish 前返回无副作用 readiness plan，正式 finish-work 行为保持不变。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户在 handoff 计划后调用 -continue，确认按 Guru Team 流程继续创建 task、规划并实现 issue #27。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/prd.md",
+      "sha256": "0d734c9b21cee53da68a6d82d0085a20e4d108c1be87fb69f8bbf07e4212db49",
+      "size_bytes": 3299,
+      "modified_at": "2026-07-04T09:37:42.708524+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/design.md",
+      "sha256": "343abcf3caea162eb16d2fa40656784b7a1b257062ea750145b1376ddd91dff6",
+      "size_bytes": 3435,
+      "modified_at": "2026-07-04T09:37:42.708782+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/implement.md",
+      "sha256": "f8c22371b125a94167afedc5dda04196b8820e570ef0d9dcbd0ed6cdda06eac2",
+      "size_bytes": 2178,
+      "modified_at": "2026-07-04T09:37:42.709016+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

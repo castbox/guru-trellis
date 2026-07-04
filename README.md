@@ -233,6 +233,10 @@ digest。`--reviewer` 只记录身份，不能单独作为通过证据；`*-main
 Trellis metadata 之后内部触发。只有 finish-work 已完成但 publish 需要重试时，才使用
 显式 recovery/debug flag。
 
+`finish-work.sh --dry-run --from-trellis-finish-work` 是无副作用 readiness preview：
+只校验 gate、dirty state 和 PR body/readiness，并输出将要 archive、journal、
+metadata commit 与 publish 的计划；不会移动 task、写 journal、创建 commit、push 或创建 PR。
+
 发布前 AI 必须生成或审查 PR body readiness。PR body 面向不了解 Trellis task 的
 GitHub reviewer，而不是 Trellis session 内部摘要；应包含具体的 `变更摘要`、
 `影响范围`、`验证结果`、`Review Gate`、`Issue 关闭范围` 和 `安全说明`。禁止用
