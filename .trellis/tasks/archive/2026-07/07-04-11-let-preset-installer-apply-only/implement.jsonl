@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/preset/installer.md", "reason": "preset installer 复制、冲突处理和验证规则"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "平台 overlay canonical 关系和 dogfood drift 要求"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "README 安装/升级 prompt 与公开文档同步规则"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "workflow/preset 改动的验证命令和 review 覆盖要求"}

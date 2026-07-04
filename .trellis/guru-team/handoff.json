@@ -1,21 +1,21 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 27,
-    "url": "https://github.com/castbox/guru-trellis/issues/27",
-    "title": "让 finish-work --dry-run 成为真正无副作用的 readiness preview",
+    "number": 11,
+    "url": "https://github.com/castbox/guru-trellis/issues/11",
+    "title": "Let preset installer apply only selected platform overlays",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/27-finish-work-dry-run-readiness/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "finish-work-dry-run-readiness",
-  "task_slug": "27-finish-work-dry-run-readiness",
-  "task_title": "#27 让 finish-work --dry-run 成为真正无副作用的 readiness preview",
-  "branch_name": "codex/27-finish-work-dry-run-readiness",
+  "slug": "let-preset-installer-apply-only",
+  "task_slug": "11-let-preset-installer-apply-only",
+  "task_title": "#11 Let preset installer apply only selected platform overlays",
+  "branch_name": "codex/11-let-preset-installer-apply-only",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/27-finish-work-dry-run-readiness",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -26,30 +26,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#27 让 finish-work --dry-run 成为真正无副作用的 readiness preview",
+    "#11 Let preset installer apply only selected platform overlays",
     "--slug",
-    "27-finish-work-dry-run-readiness",
+    "11-let-preset-installer-apply-only",
     "--assignee",
-    "name=wumengye\ninitialized_at=2026-07-03T17:44:00.461566"
+    "wumengye"
   ],
-  "task_dir": null,
+  "task_dir": ".trellis/tasks/07-04-11-let-preset-installer-apply-only",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 27,
-      "url": "https://github.com/castbox/guru-trellis/issues/27",
-      "title": "让 finish-work --dry-run 成为真正无副作用的 readiness preview",
+      "number": 11,
+      "url": "https://github.com/castbox/guru-trellis/issues/11",
+      "title": "Let preset installer apply only selected platform overlays",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 27,
-        "url": "https://github.com/castbox/guru-trellis/issues/27",
-        "title": "让 finish-work --dry-run 成为真正无副作用的 readiness preview",
+        "number": 11,
+        "url": "https://github.com/castbox/guru-trellis/issues/11",
+        "title": "Let preset installer apply only selected platform overlays",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -64,8 +64,9 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           adbf554 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           75606d6 [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              75606d6 [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/17-improve-guru-team-pr-body                    6834b2a [codex/17-improve-guru-team-pr-body]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/18-enforce-pr-publish-only-after                a876400 [codex/18-enforce-pr-publish-only-after]",
@@ -73,7 +74,7 @@
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/20-branch-review-gate-review                    8e8d987 [codex/20-branch-review-gate-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/20-review-gate-report-metadata                  d431ee8 [codex/20-review-gate-report-metadata]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/26-worktree-trellis-developer-identity          d9042da [codex/26-worktree-trellis-developer-identity]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/27-finish-work-dry-run-readiness                adbf554 [codex/27-finish-work-dry-run-readiness]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/27-finish-work-dry-run-readiness                8e3c68b [codex/27-finish-work-dry-run-readiness]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/5-require-ai-review-prompt-before               44b29b0 [codex/5-require-ai-review-prompt-before]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/7-require-pr-readiness-review-before            5319076 [codex/7-require-pr-readiness-review-before]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/8-auditable-evidence-planning-approval-trellis  678fdfc [codex/8-auditable-evidence-planning-approval-trellis]",
@@ -85,15 +86,21 @@
       "base_branch": "main",
       "base_ref": "main",
       "remote_ref": "origin/main",
-      "local_head_before": "9b8c044a9783e7de0320bfc249b41e2e591f09d5",
-      "local_head_after": "adbf5548c6cc40c5eb193cbc65ca359344cad264",
-      "remote_head": "adbf5548c6cc40c5eb193cbc65ca359344cad264",
+      "local_head_before": "adbf5548c6cc40c5eb193cbc65ca359344cad264",
+      "local_head_after": "75606d65f8302721c4cab604915111c0bd3f91d7",
+      "remote_head": "75606d65f8302721c4cab604915111c0bd3f91d7",
       "fetch_performed": true,
       "fast_forwarded": true,
       "fresh": true,
       "status": "fresh",
       "base_ref_for_worktree": "main"
     },
-    "workspace_was_created_or_reused": true
+    "workspace_was_created_or_reused": true,
+    "developer_identity": {
+      "status": "copied",
+      "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only/.trellis/.developer",
+      "developer": "wumengye"
+    }
   }
 }

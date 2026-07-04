@@ -13,6 +13,14 @@ from typing import Any
 
 
 GURU_OVERLAY_MARKER = "guru-team-overlay:"
+DEFAULT_PLATFORMS = ("codex", "cursor")
+PLATFORM_OVERLAY_PREFIXES = {
+    "codex": (Path(".codex"),),
+    "cursor": (Path(".cursor"),),
+    "claude": (Path(".claude"),),
+}
+ALL_PLATFORMS = tuple(PLATFORM_OVERLAY_PREFIXES)
+ALWAYS_OVERLAY_PREFIXES = (Path(".agents"),)
 CODEX_DISPATCH_HEADER = """#-------------------------------------------------------------------------------
 # Codex (dispatch behavior)
 #-------------------------------------------------------------------------------
@@ -64,6 +72,29 @@ def guru_root_from_script() -> Path:
 
 def ensure_executable(path: Path) -> None:
     path.chmod(path.stat().st_mode | 0o755)
+
+
+def path_has_prefix(path: Path, prefix: Path) -> bool:
+    return path == prefix or prefix in path.parents
+
+
+def overlay_selected(relative: Path, platforms: set[str]) -> bool:
+    if any(path_has_prefix(relative, prefix) for prefix in ALWAYS_OVERLAY_PREFIXES):
+        return True
+    selected_prefixes = [
+        prefix
+        for platform in sorted(platforms)
+        for prefix in PLATFORM_OVERLAY_PREFIXES[platform]
+    ]
+    return any(path_has_prefix(relative, prefix) for prefix in selected_prefixes)
+
+
+def selected_platforms(platforms: list[str] | None, all_platforms: bool) -> tuple[set[str], bool]:
+    if all_platforms:
+        return set(ALL_PLATFORMS), True
+    if platforms:
+        return set(platforms), False
+    return set(DEFAULT_PLATFORMS), False
 
 
 def leading_spaces(value: str) -> int:
@@ -222,7 +253,13 @@ def copy_overlay(source: Path, target: Path, relative: Path) -> dict[str, str]:
     return {"path": str(new_target), "action": "new_copy", "existing": str(target)}
 
 
-def install_assets(src: Path, dst: Path, repo: Path) -> dict[str, list[str]]:
+def install_assets(
+    src: Path,
+    dst: Path,
+    repo: Path,
+    platforms: set[str] | None = None,
+    all_platforms: bool = False,
+) -> dict[str, Any]:
     if not src.is_dir():
         raise SystemExit(f"Missing source directory: {src}")
 
@@ -268,7 +305,8 @@ def install_assets(src: Path, dst: Path, repo: Path) -> dict[str, list[str]]:
         if script.exists():
             ensure_executable(script)
 
-    overlays = install_overlays(repo, guru_root_from_script())
+    selected = platforms or set(DEFAULT_PLATFORMS)
+    overlays = install_overlays(repo, guru_root_from_script(), selected)
     installed.extend(overlays["installed"])
     unchanged.extend(overlays["unchanged"])
     new_copies.extend(overlays["new_copies"])
@@ -285,10 +323,12 @@ def install_assets(src: Path, dst: Path, repo: Path) -> dict[str, list[str]]:
         "updated_managed": updated_managed,
         "managed_backups": managed_backups,
         "codex_dispatch": codex_dispatch,
+        "platforms": sorted(selected),
+        "all_platforms": all_platforms,
     }
 
 
-def install_overlays(repo: Path, guru_root: Path) -> dict[str, list[str]]:
+def install_overlays(repo: Path, guru_root: Path, platforms: set[str]) -> dict[str, list[str]]:
     overlay_root = guru_root / "trellis/presets/guru-team/overlays"
     installed: list[str] = []
     unchanged: list[str] = []
@@ -304,9 +344,11 @@ def install_overlays(repo: Path, guru_root: Path) -> dict[str, list[str]]:
             "replaced_overlays": replaced_overlays,
             "updated_managed": updated_managed,
             "managed_backups": managed_backups,
-        }
+    }
     for source in sorted(path for path in overlay_root.rglob("*") if path.is_file()):
         relative = source.relative_to(overlay_root)
+        if not overlay_selected(relative, platforms):
+            continue
         target = repo / relative
         result = copy_overlay(source, target, relative)
         rel_path = Path(result["path"]).relative_to(repo).as_posix()
@@ -332,17 +374,32 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Apply Guru team Trellis preset")
     parser.add_argument("--repo", help="Target repository root. Defaults to current directory.")
     parser.add_argument("--json", action="store_true")
+    platform_group = parser.add_mutually_exclusive_group()
+    platform_group.add_argument(
+        "--platform",
+        action="append",
+        choices=ALL_PLATFORMS,
+        help="Platform overlay to install. Repeat to select multiple platforms. Defaults to codex + cursor.",
+    )
+    platform_group.add_argument(
+        "--all-platforms",
+        action="store_true",
+        help="Install every known platform overlay, preserving the historical full-overlay behavior.",
+    )
     args = parser.parse_args()
 
     repo = repo_root_from_args(args.repo)
+    platforms, all_platforms = selected_platforms(args.platform, args.all_platforms)
     guru_root = guru_root_from_script()
     src = guru_root / "trellis/workflows/guru-team"
     dst = repo / ".trellis/guru-team"
-    result = install_assets(src, dst, repo)
+    result = install_assets(src, dst, repo, platforms, all_platforms=all_platforms)
 
     payload: dict[str, Any] = {
         "status": "ok",
         "repo": str(repo),
+        "platforms": result["platforms"],
+        "all_platforms": result["all_platforms"],
         "installed": result["installed"],
         "unchanged": result["unchanged"],
         "new_copies": result["new_copies"],
