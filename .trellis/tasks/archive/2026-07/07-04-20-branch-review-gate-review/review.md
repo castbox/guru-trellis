@@ -5,10 +5,10 @@
 - Task：`.trellis/tasks/07-04-20-branch-review-gate-review`
 - Issue：#20 强制 Branch Review Gate 每次产出 review
 - Diff range：`origin/main...HEAD`
-- Reviewed HEAD：`dc360bd`
+- Reviewed HEAD：`6277464`
 - 审查者：`codex-main-session`
 
-本次审查覆盖完整分支 diff，包括 canonical workflow、dogfood workflow、Guru Team companion Python、单元测试、preset overlays、dogfood installed copies、README、workflow specs、Trellis task artifacts、Issue Scope Ledger、throwaway install 验证和 Branch Review Gate dry-run 证据。当前 HEAD `dc360bd` 相比工作提交 `3ada1c4` 只新增上一轮 `review.md` / `review-gate.json` metadata commit，本次重新 gate 用于让 finish-work 的严格 HEAD 校验匹配当前 HEAD。
+本次审查覆盖完整分支 diff，包括 canonical workflow、dogfood workflow、Guru Team companion Python、单元测试、preset overlays、dogfood installed copies、README、workflow specs、Trellis task artifacts、Issue Scope Ledger、throwaway install 验证和 Branch Review Gate dry-run 证据。当前 HEAD `6277464` 相比工作提交 `3ada1c4` 只新增 review/gate metadata commit 和 task archive metadata commit，本次恢复 gate 用于让 finish-work 的严格 HEAD 校验匹配当前已归档 HEAD。
 
 ## 结论
 
