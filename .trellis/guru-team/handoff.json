@@ -1,21 +1,21 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 17,
-    "url": "https://github.com/castbox/guru-trellis/issues/17",
-    "title": "Improve Guru Team PR body quality standards",
+    "number": 7,
+    "url": "https://github.com/castbox/guru-trellis/issues/7",
+    "title": "Require PR readiness review before finish-work publishes",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/17-improve-guru-team-pr-body/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/7-require-pr-readiness-review-before/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "improve-guru-team-pr-body",
-  "task_slug": "17-improve-guru-team-pr-body",
-  "task_title": "#17 Improve Guru Team PR body quality standards",
-  "branch_name": "codex/17-improve-guru-team-pr-body",
+  "slug": "require-pr-readiness-review-before",
+  "task_slug": "7-require-pr-readiness-review-before",
+  "task_title": "#7 Require PR readiness review before finish-work publishes",
+  "branch_name": "codex/7-require-pr-readiness-review-before",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/17-improve-guru-team-pr-body",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/7-require-pr-readiness-review-before",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -26,30 +26,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#17 Improve Guru Team PR body quality standards",
+    "#7 Require PR readiness review before finish-work publishes",
     "--slug",
-    "17-improve-guru-team-pr-body",
+    "7-require-pr-readiness-review-before",
     "--assignee",
     "name=wumengye\ninitialized_at=2026-07-03T17:44:00.461566"
   ],
-  "task_dir": null,
+  "task_dir": ".trellis/tasks/07-04-7-require-pr-readiness-review-before",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 17,
-      "url": "https://github.com/castbox/guru-trellis/issues/17",
-      "title": "Improve Guru Team PR body quality standards",
+      "number": 7,
+      "url": "https://github.com/castbox/guru-trellis/issues/7",
+      "title": "Require PR readiness review before finish-work publishes",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 17,
-        "url": "https://github.com/castbox/guru-trellis/issues/17",
-        "title": "Improve Guru Team PR body quality standards",
+        "number": 7,
+        "url": "https://github.com/castbox/guru-trellis/issues/7",
+        "title": "Require PR readiness review before finish-work publishes",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -64,15 +64,16 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                 7a1b006 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                 2e9f775 [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle   ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task  230cc8d [codex/15-require-explicit-approval-no-task]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/17-improve-guru-team-pr-body          7a1b006 [codex/17-improve-guru-team-pr-body]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/17-improve-guru-team-pr-body          6834b2a [codex/17-improve-guru-team-pr-body]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/18-enforce-pr-publish-only-after      a876400 [codex/18-enforce-pr-publish-only-after]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/2-align-guru-team-workflow-trellis    692cd9f [codex/2-align-guru-team-workflow-trellis]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/20-branch-review-gate-review          8e8d987 [codex/20-branch-review-gate-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/20-review-gate-report-metadata        d431ee8 [codex/20-review-gate-report-metadata]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/5-require-ai-review-prompt-before     44b29b0 [codex/5-require-ai-review-prompt-before]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/7-require-pr-readiness-review-before  2e9f775 [codex/7-require-pr-readiness-review-before]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/9-keep-dogfood-installed-overlays-in  cacf0c7 [codex/9-keep-dogfood-installed-overlays-in]"
     ],
     "selected_base_branch": "main",

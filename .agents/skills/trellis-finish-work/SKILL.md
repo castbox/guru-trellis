@@ -14,9 +14,12 @@ who do not know the Trellis task. The body must be Chinese and self-explanatory:
 `变更摘要`, `影响范围`, `验证结果`, `Review Gate`, `Issue 关闭范围`, and
 `安全说明` must contain concrete content. Do not use low-information summaries
 such as `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact`.
-When practical, write the reviewed Markdown body to a task-local file and pass
-it with `--body-file <path>`; a reviewed JSON readiness artifact may be passed
-with `--body-artifact <path>`.
+Write the reviewed Markdown body to a task-local file and pass it with
+`--body-file <path>`, or pass a task-local JSON readiness artifact with
+`--body-artifact <path>`. Non-draft publish requires one of these reviewed
+sources; script-generated `generated` bodies are preview/draft-only and do not
+count as readiness evidence. The readiness/body files are Trellis task metadata
+and publish reads the final body from the archived task artifact after archive.
 
 Run the internal Guru Team finish helper:
 

@@ -94,6 +94,7 @@ PR_BODY_PLACEHOLDER_VALUES = {
     "待定",
 }
 PR_CLOSE_KEYWORDS = ["Closes", "Fixes", "Resolves", "Close", "Fix", "Resolve"]
+REVIEWED_PR_BODY_SOURCE_PREFIXES = ("body-file:", "body-artifact:")
 DEPLOYMENT_ASSET_CATEGORIES: dict[str, list[str]] = {
     "ci_cd": [
         ".github/workflows/",
@@ -1469,6 +1470,28 @@ def close_keyword_pattern() -> re.Pattern[str]:
     return re.compile(r"(?i)\b(" + "|".join(re.escape(keyword) for keyword in PR_CLOSE_KEYWORDS) + r")\s+#(\d+)\b")
 
 
+def is_reviewed_pr_body_source(body_source: str) -> bool:
+    return body_source.startswith(REVIEWED_PR_BODY_SOURCE_PREFIXES)
+
+
+def active_task_relative_path(root: Path, task_dir: Path, body_path_arg: str | None) -> str | None:
+    if not body_path_arg:
+        return None
+    raw_path = Path(body_path_arg).expanduser()
+    path = raw_path if raw_path.is_absolute() else root / raw_path
+    try:
+        return path.resolve().relative_to(task_dir.resolve()).as_posix()
+    except ValueError:
+        return None
+
+
+def rewrite_active_task_artifact_path(root: Path, task_dir: Path, archived_task_dir: Path, body_path_arg: str | None) -> str | None:
+    relative = active_task_relative_path(root, task_dir, body_path_arg)
+    if relative is None:
+        return body_path_arg
+    return str(archived_task_dir / relative)
+
+
 def load_pr_body_artifact(root: Path, artifact_arg: str | None) -> tuple[str | None, Path | None]:
     if not artifact_arg:
         return None, None
@@ -1476,14 +1499,12 @@ def load_pr_body_artifact(root: Path, artifact_arg: str | None) -> tuple[str | N
     path = raw_path if raw_path.is_absolute() else root / raw_path
     payload = read_json(path)
     ready = payload.get("ready")
-    if ready is not None and ready is not True:
+    if ready is not True:
         raise WorkflowError("PR body readiness artifact is not ready=true.", exit_code=2, payload={"artifact_path": str(path)})
     body_file = str(payload.get("body_file") or "").strip()
     if body_file:
         body_path = Path(body_file).expanduser()
         resolved = body_path if body_path.is_absolute() else path.parent / body_path
-        if not resolved.exists():
-            resolved = root / body_file
         return read_pr_body_file(root, str(resolved)), resolved
     body = payload.get("body")
     if isinstance(body, str) and body.strip():
@@ -1525,6 +1546,14 @@ def resolve_pr_body(
     if artifact_body is not None:
         return artifact_body, f"body-artifact:{artifact_path}"
     return build_pr_body(ledger, gate, validations, config), "generated"
+
+
+def validate_reviewed_body_source_for_publish(body_source: str, draft: bool) -> list[str]:
+    if draft or is_reviewed_pr_body_source(body_source):
+        return []
+    return [
+        "non-draft publish requires an AI-reviewed --body-file or --body-artifact; generated PR body is preview-only.",
+    ]
 
 
 def validate_pr_body_quality(body: str, ledger: dict[str, Any], draft: bool) -> list[str]:
@@ -2074,11 +2103,23 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
     validations = list(args.validation or [])
     body, body_source = resolve_pr_body(root, args, ledger, gate, validations, config)
     body_errors = validate_pr_body_quality(body, ledger, draft)
+    reviewed_source_errors = validate_reviewed_body_source_for_publish(body_source, draft)
     if body_errors:
         raise WorkflowError(
             "Publish blocked because PR body is not reviewer-readable.",
             exit_code=2,
             payload={"errors": body_errors, "body_source": body_source},
+        )
+    if reviewed_source_errors and not args.dry_run:
+        raise WorkflowError(
+            "Publish blocked because non-draft PR body lacks reviewed source evidence.",
+            exit_code=2,
+            payload={
+                "errors": reviewed_source_errors,
+                "body_source": body_source,
+                "reviewed_source_required": True,
+                "reviewed_source_ok": False,
+            },
         )
 
     payload: dict[str, Any] = {
@@ -2091,6 +2132,9 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
         "title": title,
         "body": body,
         "body_source": body_source,
+        "reviewed_source_required": not draft,
+        "reviewed_source_ok": not reviewed_source_errors,
+        "reviewed_source_errors": reviewed_source_errors,
         "review_gate": str(gate_path),
         "issue_scope_ledger": str(issue_scope_ledger_path(task_dir)),
     }
@@ -2155,6 +2199,25 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     title = args.journal_title or f"完成：{task_json(task_dir).get('title') or task_name}"
     summary = args.journal_summary or str(gate.get("conclusion", {}).get("summary") or "完成当前 Trellis task，并通过 Branch Review Gate。")
     commits = args.commit or ",".join(recent_work_commits(root, reviewed_head))
+    draft = bool(args.draft) if args.draft is not None else bool(publish_config(config).get("draft", False))
+
+    ledger = load_issue_scope_ledger(task_dir, handoff)
+    validations = list(args.validation or [])
+    body, body_source = resolve_pr_body(root, args, ledger, gate, validations, config)
+    body_errors = validate_pr_body_quality(body, ledger, draft)
+    reviewed_source_errors = validate_reviewed_body_source_for_publish(body_source, draft)
+    readiness_errors = body_errors + reviewed_source_errors
+    if readiness_errors:
+        raise WorkflowError(
+            "finish-work blocked because PR readiness evidence is incomplete.",
+            exit_code=2,
+            payload={
+                "errors": readiness_errors,
+                "body_source": body_source,
+                "reviewed_source_required": not draft,
+                "reviewed_source_ok": not reviewed_source_errors,
+            },
+        )
 
     if not args.skip_archive:
         archive_script = root / ".trellis/scripts/task.py"
@@ -2183,10 +2246,13 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             raise WorkflowError(f"add_session.py failed:\n{proc.stderr.strip()}", payload={"stdout": proc.stdout.strip()})
 
     metadata_commit = commit_if_metadata_dirty(root, "chore(trellis): finalize task metadata")
-    publish_task = args.task
-    if not publish_task:
-        archived_task = resolve_existing_task_dir(root, task_name)
-        publish_task = str(archived_task) if archived_task else str(task_dir)
+    archived_task_dir = resolve_existing_task_dir(root, task_name)
+    publish_task = str(archived_task_dir) if archived_task_dir else (args.task or str(task_dir))
+    publish_body_file = args.body_file
+    publish_body_artifact = args.body_artifact
+    if archived_task_dir:
+        publish_body_file = rewrite_active_task_artifact_path(root, task_dir, archived_task_dir, publish_body_file)
+        publish_body_artifact = rewrite_active_task_artifact_path(root, task_dir, archived_task_dir, publish_body_artifact)
     publish_args = argparse.Namespace(
         root=str(root),
         task=publish_task,
@@ -2195,8 +2261,8 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         remote=args.remote,
         title=args.title,
         validation=args.validation,
-        body_file=args.body_file,
-        body_artifact=args.body_artifact,
+        body_file=publish_body_file,
+        body_artifact=publish_body_artifact,
         draft=args.draft,
         allow_metadata_after_gate=True,
         dry_run=args.dry_run,

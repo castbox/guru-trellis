@@ -91,8 +91,14 @@ structure, required sections, forbidden low-information phrases, non-empty
 validation / impact / safety content, and Issue Scope Ledger close/ref
 semantics. They must not decide whether the release explanation is true or
 sufficient; that judgment belongs to the AI readiness review before
-`trellis-finish-work`. Prefer `--body-file` or `--body-artifact` inputs that
-were already reviewed by AI/human.
+`trellis-finish-work`. Non-draft publish must require `--body-file` or
+`--body-artifact` inputs that were already reviewed by AI/human; `generated`
+bodies are limited to draft/preview paths. `--body-artifact` must carry
+`ready: true` and a non-empty `body` or `body_file`. Resolve relative
+`body_file` values from the artifact directory, not the repository root.
+When `finish-work` archives the active task before publish, rewrite active task
+artifact paths to the archived task path and read the final PR body from that
+archived artifact.
 
 ## Security Rules
 

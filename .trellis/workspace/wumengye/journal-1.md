@@ -269,3 +269,36 @@ Branch Review Gate 通过：已审查 origin/main...HEAD 全量 diff，确认 is
 ### Next Steps
 
 - None - task complete
+
+
+## Session 9: 完成：#7 Require PR readiness review before finish-work publishes
+
+**Date**: 2026-07-04
+**Task**: 完成：#7 Require PR readiness review before finish-work publishes
+**Branch**: `codex/7-require-pr-readiness-review-before`
+
+### Summary
+
+#7 PR readiness source 门禁已覆盖 origin/main...HEAD 完整 diff，未发现 P0/P1/P2/P3 findings。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d5c333e160817857d1bc202668cafa110a6d9823` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

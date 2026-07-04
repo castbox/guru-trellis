@@ -642,8 +642,12 @@ GitHub reviewer who has no Trellis session context. The body is not a task
 artifact summary. It must explain what behavior changed, which modules or
 workflow surfaces are affected, how the change was validated, what Review Gate
 covered, which issues are closed vs only referenced, and the real safety /
-deployment impact. Prefer passing the reviewed body through `--body-file
-<reviewed-pr-body.md>` or a readiness artifact passed as `--body-artifact`.
+deployment impact. For non-draft publish, pass the reviewed body through
+`--body-file <reviewed-pr-body.md>` or a readiness artifact passed as
+`--body-artifact <pr-readiness.json>`; `generated` bodies are preview-only and
+are not publish readiness evidence. The reviewed body/readiness files are task
+metadata, should normally live under the current task directory before
+finish-work, and are read from the archived task artifact after archive.
 
 Publish behavior:
 
@@ -652,7 +656,7 @@ Publish behavior:
 - target the intake/task `base_branch`, not the GitHub default branch;
 - write the PR title, headings, and body in Chinese;
 - include Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gate`, `Issue 关闭范围`, and `安全说明`;
-- prefer an AI-reviewed `--body-file` / `--body-artifact`; generated fallback bodies are allowed only when they still pass the same reviewer-readability checks;
+- require an AI-reviewed `--body-file` / `--body-artifact` for non-draft publish; generated fallback bodies are allowed only for draft/preview paths and must still pass reviewer-readability checks;
 - block non-draft publish if `变更摘要`, `影响范围`, `验证结果`, or `安全说明` are missing, empty, or low-information;
 - never use phrases such as `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact` as the main PR summary;
 - use `Closes #xx` only for `close_issues` in `issue-scope-ledger.json`;
@@ -661,9 +665,10 @@ Publish behavior:
 
 The PR body quality judgment belongs to the AI readiness review. `publish-pr`
 only validates objective structure, forbidden low-information phrases,
-body-file/artifact presence, close/ref issue semantics, and then executes the
-GitHub operation. It must not invent reviewer-facing justification or replace
-the AI's release judgment with a script-generated claim.
+reviewed body-file/artifact presence, close/ref issue semantics, archive-path
+resolution, and then executes the GitHub operation. It must not invent
+reviewer-facing justification or replace the AI's release judgment with a
+script-generated claim.
 
 `trellis-continue` must never run this publish behavior or call `finish-work`. It stops after Branch Review Gate and waits for the user/session to explicitly invoke `trellis-finish-work`.
 

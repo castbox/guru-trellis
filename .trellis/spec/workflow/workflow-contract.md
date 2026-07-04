@@ -138,10 +138,17 @@ The generated PR must be non-draft by default, target the intake/task
 Before publish, the AI must generate or review a PR body that is readable to a
 GitHub reviewer without Trellis session context. The body must include concrete
 Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gate`,
-`Issue 关闭范围`, and `安全说明`. `publish-pr` may accept an AI-reviewed
-`--body-file` or `--body-artifact`; it validates objective structure, forbidden
-low-information phrases, and close/ref issue semantics, but it must not decide
-whether the business explanation is true or sufficient.
+`Issue 关闭范围`, and `安全说明`. Non-draft publish must receive an AI-reviewed
+`--body-file` or `--body-artifact`; script-generated `generated` bodies are
+preview/draft-only and never count as publish readiness evidence. Reviewed
+body/readiness files are task metadata: they may be written in the active task
+directory before `finish-work`, then `finish-work` archives the task and publish
+reads the final body from the archived task artifact. If a readiness artifact
+references a relative `body_file`, resolve it relative to the artifact's own
+directory. `publish-pr` validates objective structure, forbidden
+low-information phrases, reviewed source presence, archive-path resolution, and
+close/ref issue semantics, but it must not decide whether the business
+explanation is true or sufficient.
 
 Do not treat `.trellis/guru-team/handoff.json` as final close scope. It is
 intake provenance only.

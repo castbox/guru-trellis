@@ -90,6 +90,35 @@ def finish_args(**overrides: object) -> argparse.Namespace:
     return argparse.Namespace(**values)
 
 
+def valid_pr_body(summary: str = "增加 publish-pr 的 reviewed body source 门禁。") -> str:
+    return f"""## 变更摘要
+
+- {summary}
+
+## 影响范围
+
+- Guru Team publish helper
+- finish-work PR 发布入口
+
+## 验证结果
+
+- python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 通过
+
+## Review Gate
+
+- 结论：发布边界检查通过。
+- Reviewed HEAD：`abc123`
+
+## Issue 关闭范围
+
+- Closes #18
+
+## 安全说明
+
+- 未涉及 secrets、runtime config 或部署资产。
+"""
+
+
 def review_args(**overrides: object) -> argparse.Namespace:
     values: dict[str, object] = {
         "root": None,
@@ -333,7 +362,7 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertIn("finish-work.sh", str(raised.exception))
         self.assertEqual(raised.exception.payload["recovery_flag"], "--recovery-after-finish-work")
 
-    def test_publish_pr_recovery_dry_run_uses_existing_publish_checks(self) -> None:
+    def test_publish_pr_recovery_dry_run_reports_generated_body_is_not_reviewed_source(self) -> None:
         patches = self.patch_publish_success_path()
         for patcher in patches:
             patcher.start()
@@ -353,6 +382,57 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(payload["base_branch"], "main")
         self.assertEqual(payload["head_branch"], "codex/18-publish-boundary")
         self.assertEqual(payload["body_source"], "generated")
+        self.assertTrue(payload["reviewed_source_required"])
+        self.assertFalse(payload["reviewed_source_ok"])
+        self.assertIn("generated PR body is preview-only", payload["reviewed_source_errors"][0])
+
+    def test_publish_pr_non_draft_rejects_generated_body_before_push(self) -> None:
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with (
+                mock.patch.object(gtt, "require_gh_auth") as require_auth,
+                mock.patch.object(gtt, "run_stdout") as run_stdout,
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.cmd_publish_pr(
+                    publish_args(
+                        recovery_after_finish_work=True,
+                        dry_run=False,
+                        validation=["python3 -m unittest 通过"],
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        require_auth.assert_not_called()
+        run_stdout.assert_not_called()
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertEqual(raised.exception.payload["body_source"], "generated")
+        self.assertFalse(raised.exception.payload["reviewed_source_ok"])
+
+    def test_publish_pr_draft_allows_generated_body_preview(self) -> None:
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_publish_pr(
+                publish_args(
+                    recovery_after_finish_work=True,
+                    draft=True,
+                    validation=["python3 -m unittest 通过"],
+                )
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(payload["body_source"], "generated")
+        self.assertFalse(payload["reviewed_source_required"])
+        self.assertTrue(payload["reviewed_source_ok"])
+        self.assertEqual(payload["reviewed_source_errors"], [])
 
     def test_publish_pr_rejects_generated_body_without_validation(self) -> None:
         patches = self.patch_publish_success_path()
@@ -570,6 +650,83 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertIn("body-artifact:", payload["body_source"])
         self.assertIn("readiness artifact", payload["body"])
 
+    def test_publish_pr_resolves_relative_body_file_from_artifact_directory(self) -> None:
+        artifact_dir = self.root / "artifacts"
+        artifact_dir.mkdir()
+        body_path = artifact_dir / "reviewed-pr-body.md"
+        body_path.write_text(valid_pr_body("从 artifact 所在目录解析相对 body_file。"), encoding="utf-8")
+        artifact_path = artifact_dir / "pr-readiness.json"
+        artifact_path.write_text(
+            gtt.json.dumps({"ready": True, "body_file": "reviewed-pr-body.md"}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_publish_pr(
+                publish_args(
+                    recovery_after_finish_work=True,
+                    body_artifact=str(artifact_path),
+                )
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertIn("body-artifact:", payload["body_source"])
+        self.assertIn("artifact 所在目录解析", payload["body"])
+
+    def test_publish_pr_rejects_body_artifact_without_ready_true(self) -> None:
+        artifact_path = self.root / "body-artifact.json"
+        artifact_path.write_text(
+            gtt.json.dumps({"body": valid_pr_body("缺少 ready true 的 artifact 不可发布。")}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_publish_pr(
+                    publish_args(
+                        recovery_after_finish_work=True,
+                        body_artifact=str(artifact_path),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("ready=true", str(raised.exception))
+
+    def test_rewrite_active_task_artifact_path_to_archived_task(self) -> None:
+        active_path = self.task_dir / "pr-readiness.json"
+        archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-publish-boundary"
+
+        rewritten = gtt.rewrite_active_task_artifact_path(
+            self.root,
+            self.task_dir,
+            archived_task_dir,
+            str(active_path),
+        )
+
+        self.assertEqual(rewritten, str(archived_task_dir / "pr-readiness.json"))
+
+    def test_rewrite_active_task_artifact_path_keeps_external_path(self) -> None:
+        external_path = self.root / "pr-readiness.json"
+        archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-publish-boundary"
+
+        rewritten = gtt.rewrite_active_task_artifact_path(
+            self.root,
+            self.task_dir,
+            archived_task_dir,
+            str(external_path),
+        )
+
+        self.assertEqual(rewritten, str(external_path))
+
     def test_publish_pr_prefers_body_file_over_artifact_when_both_are_set(self) -> None:
         body_path = self.root / "preferred-body.md"
         body_path.write_text(
@@ -661,17 +818,48 @@ class PublishBoundaryTest(unittest.TestCase):
             gtt.cmd_finish_work(finish_args(from_trellis_finish_work=False))
 
         repo_root.assert_not_called()
-        run.assert_not_called()
+        run_commands = [call.args[0] for call in run.call_args_list]
+        self.assertNotIn(["python3", "./.trellis/scripts/task.py", "archive", self.task_dir.name], run_commands)
+        self.assertFalse(any(command[:3] == ["python3", "./.trellis/scripts/add_session.py", "--title"] for command in run_commands))
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertEqual(raised.exception.payload["blocked_step"], "finish-work")
         self.assertEqual(raised.exception.payload["required_entrypoint"], "trellis-finish-work")
         self.assertEqual(raised.exception.payload["intent_flag"], "--from-trellis-finish-work")
 
-    def test_finish_work_calls_publish_with_internal_marker(self) -> None:
+    def test_finish_work_rejects_missing_reviewed_source_before_archive(self) -> None:
         gate = {
             "head": "abc123",
             "conclusion": {"passed": True, "summary": "finish-work 后发布。"},
+            "changed_files": ["trellis/workflows/guru-team/workflow.md"],
         }
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
+            mock.patch.object(gtt, "load_handoff", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])),
+            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(gtt, "run") as run,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.cmd_finish_work(finish_args(validation=["python3 -m unittest 通过"]))
+
+        run_commands = [call.args[0] for call in run.call_args_list]
+        self.assertNotIn(["python3", "./.trellis/scripts/task.py", "archive", self.task_dir.name], run_commands)
+        self.assertFalse(any(command[:3] == ["python3", "./.trellis/scripts/add_session.py", "--title"] for command in run_commands))
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertEqual(raised.exception.payload["body_source"], "generated")
+        self.assertFalse(raised.exception.payload["reviewed_source_ok"])
+
+    def test_finish_work_calls_publish_with_internal_marker(self) -> None:
+        body_path = self.task_dir / "reviewed-pr-body.md"
+        body_path.write_text(valid_pr_body("finish-work 传递 reviewed body file。"), encoding="utf-8")
+        gate = {
+            "head": "abc123",
+            "conclusion": {"passed": True, "summary": "finish-work 后发布。"},
+            "changed_files": ["trellis/workflows/guru-team/workflow.md"],
+        }
+        archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-publish-boundary"
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
@@ -682,25 +870,29 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "recent_work_commits", return_value=["abc123"]),
             mock.patch.object(gtt, "run") as run,
             mock.patch.object(gtt, "commit_if_metadata_dirty", return_value=None),
-            mock.patch.object(gtt, "resolve_existing_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "resolve_existing_task_dir", return_value=archived_task_dir),
             mock.patch.object(gtt, "cmd_publish_pr", return_value={"status": "dry-run"}) as publish,
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
-            payload = gtt.cmd_finish_work(finish_args())
+            payload = gtt.cmd_finish_work(finish_args(body_file=str(body_path)))
 
         publish.assert_called_once()
         publish_args_obj = publish.call_args.args[0]
         self.assertTrue(publish_args_obj.from_finish_work)
         self.assertFalse(publish_args_obj.recovery_after_finish_work)
         self.assertTrue(publish_args_obj.allow_metadata_after_gate)
-        self.assertIsNone(publish_args_obj.body_file)
+        self.assertEqual(publish_args_obj.task, str(archived_task_dir))
+        self.assertEqual(publish_args_obj.body_file, str(archived_task_dir / "reviewed-pr-body.md"))
         self.assertIsNone(publish_args_obj.body_artifact)
         self.assertEqual(payload["publish"]["status"], "dry-run")
 
     def test_finish_work_validates_gate_with_metadata_tail_allowed(self) -> None:
+        body_path = self.task_dir / "reviewed-pr-body.md"
+        body_path.write_text(valid_pr_body("finish-work 校验 gate metadata tail。"), encoding="utf-8")
         gate = {
             "head": "abc123",
             "conclusion": {"passed": True, "summary": "finish-work 后发布。"},
+            "changed_files": ["trellis/workflows/guru-team/workflow.md"],
         }
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
@@ -716,7 +908,7 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "cmd_publish_pr", return_value={"status": "dry-run"}),
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
-            gtt.cmd_finish_work(finish_args())
+            gtt.cmd_finish_work(finish_args(body_file=str(body_path)))
 
         self.assertTrue(validate_gate.call_args.args[3])
 

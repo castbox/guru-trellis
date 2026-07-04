@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 8
+- **Total Sessions**: 9
 - **Last Active**: 2026-07-04
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~271 | Active |
+| `journal-1.md` | ~304 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 9 | 2026-07-04 | 完成：#7 Require PR readiness review before finish-work publishes | `d5c333e160817857d1bc202668cafa110a6d9823` | `codex/7-require-pr-readiness-review-before` |
 | 8 | 2026-07-04 | 完成：#17 Improve Guru Team PR body quality standards | `803841d4553ffb3fae8556f6c04149706f49c10f` | `codex/17-improve-guru-team-pr-body` |
 | 7 | 2026-07-04 | 完成：#20 强制 Branch Review Gate 每次产出 review，并由 finish-work 提交 metadata | `be437f8366470f53507572b43975b009e07591eb` | `codex/20-review-gate-report-metadata` |
 | 6 | 2026-07-04 | 完成：#18 Enforce PR publish only after finish-work | `8aa17e034fe8a6a0febef92f4fe32f826ba62054` | `codex/18-enforce-pr-publish-only-after` |
