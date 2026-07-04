@@ -15,6 +15,13 @@ optional_warn`. Existing target repo configs are not overwritten just to add
 this key; if it is absent, the workflow interprets it as `optional_warn`.
 `required` is opt-in only, and `off` is opt-out only.
 
+The preset also materializes the project-level `.trellis/config.yaml`
+`codex.dispatch_mode` default. Missing, commented-out, or invalid values are
+updated to `sub-agent` so Codex can dispatch `trellis-implement` /
+`trellis-check` and satisfy Branch Review Gate by default. An explicit
+`codex.dispatch_mode: inline` value is preserved as a user-selected downgrade
+or debug mode.
+
 ## Apply
 
 ```bash
@@ -142,6 +149,12 @@ publish is triggered only by `finish-work.sh --from-trellis-finish-work` after
 archive, journal, and remaining Trellis metadata-only commit succeed; direct
 publish is reserved for explicit recovery/debug after finish-work already
 completed.
+
+`finish-work.sh --dry-run --from-trellis-finish-work` is a side-effect-free
+readiness preview. It validates the gate, dirty state, and PR body/readiness,
+then prints the planned archive, journal, metadata commit, and publish actions
+without moving task files, writing journal entries, creating commits, pushing,
+or creating a PR.
 
 Before finish-work publishes, the AI must generate or review a PR body for
 GitHub reviewers who do not know the Trellis task. The body should use concrete

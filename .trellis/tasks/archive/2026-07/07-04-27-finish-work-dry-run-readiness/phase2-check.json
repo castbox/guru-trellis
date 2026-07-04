@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-04T10:35:25Z",
+  "task_dir": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness",
+  "base_branch": "main",
+  "head": "68850596ba7dcaaeebed7503378eedd3c798ef6a",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/review.md"
+  ],
+  "checker": "codex-main-session",
+  "check_summary": "已按扩展后的 issue #27 和当前 HEAD 完整检查：finish-work --dry-run 无副作用 readiness preview 已保持；Codex 默认 dispatch 改为 sub-agent，显式 inline 仍可降级；preset installer、dogfood overlay、README/workflow 与测试同步。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/prd.md",
+      "sha256": "9bebac27e892a41da0566d44abfbee5d0a2acc137a30194974d39876153d07a0",
+      "size_bytes": 4556,
+      "modified_at": "2026-07-04T09:55:15.953089+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/design.md",
+      "sha256": "4b17faeb7d803a688a6cd1a6d7ee3df4181311aea4e7e2fd4e33a0cf7f0875cb",
+      "size_bytes": 5139,
+      "modified_at": "2026-07-04T09:55:15.953857+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/implement.md",
+      "sha256": "71ff8e4ca8ebac4731f71a8d1f6566fd36cb88b8ebfdcad325dcace3a4f893f3",
+      "size_bytes": 2874,
+      "modified_at": "2026-07-04T09:55:15.954243+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/planning-approval.json",
+      "sha256": "28f31ee9fb80390d73805b77a8f1ccffdd134306eb0bb36eb959663c0faddc38",
+      "size_bytes": 1890,
+      "modified_at": "2026-07-04T09:55:28.657863+00:00"
+    }
+  ],
+  "checked_specs": [],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py && python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py && python3 .trellis/scripts/common/test_workflow_phase.py && python3 .codex/hooks/test_inject_workflow_state.py",
+      "result": "62+4+4+3 tests passed"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json && python3 -m json.tool .trellis/tasks/07-04-27-finish-work-dry-run-readiness/issue-scope-ledger.json",
+      "result": "passed"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py .codex/hooks/inject-workflow-state.py .trellis/scripts/common/workflow_phase.py",
+      "result": "passed"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate 07-04-27-finish-work-dry-run-readiness",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo .",
+      "result": "codex_dispatch unchanged sub-agent, no .new/.bak"
+    },
+    {
+      "command": "independent Branch Review Gate review by trellis-check-agent Popper",
+      "result": "no P0/P1/P2 findings; P3 risks recorded in review.md"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

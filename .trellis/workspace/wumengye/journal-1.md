@@ -368,3 +368,37 @@ Branch Review Gate 通过：独立 Agent 已按 origin/main...HEAD 审查 issue 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 12: 完成 issue #27 finish-work dry-run readiness
+
+**Date**: 2026-07-04
+**Task**: 完成 issue #27 finish-work dry-run readiness
+**Branch**: `codex/27-finish-work-dry-run-readiness`
+
+### Summary
+
+修复 finish-work dry-run readiness preview 的无副作用语义，并将 Codex 默认 dispatch 改为 sub-agent；Branch Review Gate 已由独立 Agent 通过。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `32ece0f` | (see git log) |
+| `6885059` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

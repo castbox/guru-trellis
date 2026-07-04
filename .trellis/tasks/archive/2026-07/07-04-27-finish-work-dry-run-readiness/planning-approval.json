@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-04T09:55:28Z",
+  "task_dir": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness",
+  "head": "32ece0fe4e515b2f26f5f82cddff918dd003245b",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/issue-scope-ledger.json"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已根据用户确认修订 issue #27 和 task artifacts：除 finish-work --dry-run 无副作用外，纳入 Codex 默认 sub-agent dispatch 修复；设计明确缺省 sub-agent、显式 inline 降级、Active task/task.py current 上下文加载和同步验证范围。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户明确同意按完整方案修改，并要求先修改 issue #27 正文、重新修订当前 task 的 prd/design/implement 等 artifact，再动实际文件。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/prd.md",
+      "sha256": "9bebac27e892a41da0566d44abfbee5d0a2acc137a30194974d39876153d07a0",
+      "size_bytes": 4556,
+      "modified_at": "2026-07-04T09:55:15.953089+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/design.md",
+      "sha256": "4b17faeb7d803a688a6cd1a6d7ee3df4181311aea4e7e2fd4e33a0cf7f0875cb",
+      "size_bytes": 5139,
+      "modified_at": "2026-07-04T09:55:15.953857+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/implement.md",
+      "sha256": "71ff8e4ca8ebac4731f71a8d1f6566fd36cb88b8ebfdcad325dcace3a4f893f3",
+      "size_bytes": 2874,
+      "modified_at": "2026-07-04T09:55:15.954243+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}
