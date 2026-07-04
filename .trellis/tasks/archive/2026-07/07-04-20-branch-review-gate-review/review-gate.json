@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-04T03:28:20Z",
+  "generated_at": "2026-07-04T03:31:56Z",
   "task_dir": ".trellis/tasks/07-04-20-branch-review-gate-review",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/20-branch-review-gate-review",
-  "head": "3ada1c48d6e669947e8d9e15506facce3b9509b3",
+  "head": "dc360bd14a0e4b2c27a7964a92fb121b7da32e9e",
   "diff_range": "origin/main...HEAD",
   "changed_files": [
     ".agents/skills/trellis-continue/SKILL.md",
@@ -30,6 +30,8 @@
     ".trellis/tasks/07-04-20-branch-review-gate-review/issue-scope-ledger.json",
     ".trellis/tasks/07-04-20-branch-review-gate-review/prd.md",
     ".trellis/tasks/07-04-20-branch-review-gate-review/review-dry-run.md",
+    ".trellis/tasks/07-04-20-branch-review-gate-review/review-gate.json",
+    ".trellis/tasks/07-04-20-branch-review-gate-review/review.md",
     ".trellis/tasks/07-04-20-branch-review-gate-review/task.json",
     ".trellis/workflow.md",
     "README.md",
@@ -74,9 +76,11 @@
     "--review-report",
     ".trellis/tasks/07-04-20-branch-review-gate-review/review.md",
     "--summary",
-    "Branch Review Gate 通过：已按 origin/main...HEAD 完整审查 issue #20 的 review.md 强制证据路径，未发现 P0/P1/P2/P3 finding。",
+    "Branch Review Gate 通过：已按 origin/main...HEAD 完整审查 issue #20 的 review.md 强制证据路径，并覆盖当前 HEAD dc360bd 的 gate metadata commit，未发现 P0/P1/P2/P3 finding。",
     "--evidence",
     "审查范围：origin/main...HEAD 完整 diff，覆盖 canonical workflow、dogfood workflow、Guru Team companion Python、单元测试、preset overlays、dogfood installed copies、README、workflow specs、Trellis task artifacts、Issue Scope Ledger、throwaway install 验证和 Branch Review Gate dry-run 证据。",
+    "--evidence",
+    "当前 HEAD 说明：dc360bd 相比工作提交 3ada1c4 只新增上一轮 review.md/review-gate.json Trellis metadata commit；本次重新 gate 让 finish-work 严格 HEAD 校验匹配当前 HEAD。",
     "--evidence",
     "关键行为：review-branch --pass 缺少 task-local --review-report 时 fail closed；提供 review.md 时记录 review_report.path、sha256、size_bytes、modified_at；--reviewer 仅为身份字段，不能替代 review.md。",
     "--evidence",
@@ -88,7 +92,7 @@
   ],
   "conclusion": {
     "passed": true,
-    "summary": "Branch Review Gate 通过：已按 origin/main...HEAD 完整审查 issue #20 的 review.md 强制证据路径，未发现 P0/P1/P2/P3 finding。",
+    "summary": "Branch Review Gate 通过：已按 origin/main...HEAD 完整审查 issue #20 的 review.md 强制证据路径，并覆盖当前 HEAD dc360bd 的 gate metadata commit，未发现 P0/P1/P2/P3 finding。",
     "block_priorities": [
       "P0",
       "P1",
@@ -118,17 +122,18 @@
     "followup_issues": []
   },
   "verification_evidence": {
-    "base_head": "origin/main...3ada1c48d6e669947e8d9e15506facce3b9509b3",
-    "changed_file_count": 40,
+    "base_head": "origin/main...dc360bd14a0e4b2c27a7964a92fb121b7da32e9e",
+    "changed_file_count": 42,
     "reviewer": "codex-main-session",
     "review_report": {
       "path": ".trellis/tasks/07-04-20-branch-review-gate-review/review.md",
-      "sha256": "ed97155d1155019346dfad7331ec9c3bb234ca07bba10813092ac577c7a7b6ea",
-      "size_bytes": 4000,
-      "modified_at": "2026-07-04T03:27:55.448420+00:00"
+      "sha256": "635e9fd4770122b75cea8d34db102b13fa0111f2b5a2ebe234aa9ca4edeb8e63",
+      "size_bytes": 4202,
+      "modified_at": "2026-07-04T03:31:38.723686+00:00"
     },
     "evidence": [
       "审查范围：origin/main...HEAD 完整 diff，覆盖 canonical workflow、dogfood workflow、Guru Team companion Python、单元测试、preset overlays、dogfood installed copies、README、workflow specs、Trellis task artifacts、Issue Scope Ledger、throwaway install 验证和 Branch Review Gate dry-run 证据。",
+      "当前 HEAD 说明：dc360bd 相比工作提交 3ada1c4 只新增上一轮 review.md/review-gate.json Trellis metadata commit；本次重新 gate 让 finish-work 严格 HEAD 校验匹配当前 HEAD。",
       "关键行为：review-branch --pass 缺少 task-local --review-report 时 fail closed；提供 review.md 时记录 review_report.path、sha256、size_bytes、modified_at；--reviewer 仅为身份字段，不能替代 review.md。",
       "验证通过：test_guru_team_trellis.py；json.tool；bash -n；py_compile；task.py validate；get_context phase 3.5；reviewer-only dry-run fail-closed；review-report dry-run success；check-dogfood-overlay-drift.sh；verify-throwaway-install.sh；git diff --check origin/main...HEAD。",
       "Docs SSOT：本仓库没有独立 docs/ durable docs 目录；长期规则已同步 README、trellis/workflows/guru-team/README.md、trellis/presets/guru-team/README.md、canonical workflow、dogfood workflow、overlay skill/prompt/commands 和 .trellis/spec/workflow/*。",
@@ -156,6 +161,7 @@
         ".trellis/tasks/07-04-20-branch-review-gate-review/implement.md",
         ".trellis/tasks/07-04-20-branch-review-gate-review/prd.md",
         ".trellis/tasks/07-04-20-branch-review-gate-review/review-dry-run.md",
+        ".trellis/tasks/07-04-20-branch-review-gate-review/review.md",
         ".trellis/workflow.md",
         "README.md",
         "trellis/presets/guru-team/README.md",
@@ -188,6 +194,8 @@
         ".trellis/tasks/07-04-20-branch-review-gate-review/issue-scope-ledger.json",
         ".trellis/tasks/07-04-20-branch-review-gate-review/prd.md",
         ".trellis/tasks/07-04-20-branch-review-gate-review/review-dry-run.md",
+        ".trellis/tasks/07-04-20-branch-review-gate-review/review-gate.json",
+        ".trellis/tasks/07-04-20-branch-review-gate-review/review.md",
         ".trellis/tasks/07-04-20-branch-review-gate-review/task.json",
         ".trellis/workflow.md",
         "trellis/presets/guru-team/README.md",
@@ -209,6 +217,7 @@
       "config": [
         ".trellis/guru-team/handoff.json",
         ".trellis/tasks/07-04-20-branch-review-gate-review/issue-scope-ledger.json",
+        ".trellis/tasks/07-04-20-branch-review-gate-review/review-gate.json",
         ".trellis/tasks/07-04-20-branch-review-gate-review/task.json"
       ],
       "scripts": [
