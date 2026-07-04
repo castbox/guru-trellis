@@ -1181,7 +1181,7 @@ def load_findings(args: argparse.Namespace) -> list[dict[str, Any]]:
     return findings
 
 
-def load_review_report(root: Path, report_arg: str | None) -> dict[str, Any] | None:
+def load_review_report(root: Path, task_dir: Path, report_arg: str | None) -> dict[str, Any] | None:
     if not report_arg:
         return None
     raw_path = Path(report_arg).expanduser()
@@ -1190,6 +1190,8 @@ def load_review_report(root: Path, report_arg: str | None) -> dict[str, Any] | N
         raise WorkflowError(f"--review-report not found: {path}")
     if not path.is_file():
         raise WorkflowError(f"--review-report must point to a file: {path}")
+    if task_dir.resolve() not in [path.resolve(), *path.resolve().parents]:
+        raise WorkflowError("--review-report must point to a task-local review.md inside the current task directory.")
     content = path.read_bytes()
     if not content.strip():
         raise WorkflowError("--review-report must not be empty.")
@@ -1202,8 +1204,14 @@ def load_review_report(root: Path, report_arg: str | None) -> dict[str, Any] | N
     }
 
 
-def has_review_identity(reviewer: str, review_report: dict[str, Any] | None) -> bool:
-    return bool(str(reviewer or "").strip()) or bool(review_report)
+def valid_review_report_fields(review_report: Any) -> list[str]:
+    if not isinstance(review_report, dict):
+        return ["Branch Review Gate 缺少 review_report；passed gate 必须引用 task-local review.md digest。"]
+    errors: list[str] = []
+    for key in ["path", "sha256", "size_bytes", "modified_at"]:
+        if not review_report.get(key):
+            errors.append(f"Branch Review Gate review_report 缺少 {key}。")
+    return errors
 
 
 def blocking_findings(findings: list[dict[str, Any]], config: dict[str, Any]) -> list[dict[str, Any]]:
@@ -1322,12 +1330,7 @@ def validate_review_gate(
         errors.append("Branch Review Gate 缺少具体 review evidence。")
     reviewer = str(verification.get("reviewer") or "").strip()
     review_report = verification.get("review_report") if isinstance(verification.get("review_report"), dict) else None
-    if not has_review_identity(reviewer, review_report):
-        errors.append("Branch Review Gate 缺少 reviewer 或 review_report，不能证明 gate 前已执行独立 AI/human review。")
-    if review_report is not None:
-        for key in ["path", "sha256", "size_bytes"]:
-            if not review_report.get(key):
-                errors.append(f"Branch Review Gate review_report 缺少 {key}。")
+    errors.extend(valid_review_report_fields(review_report))
     reviewed_head = str(gate.get("head") or "")
     head = current_head(root)
     gate_config = review_gate_config(config)
@@ -1748,15 +1751,16 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
         )
     reviewer = str(args.reviewer or "").strip()
-    review_report = load_review_report(root, args.review_report)
+    review_report = load_review_report(root, task_dir, args.review_report)
     if not blockers and not evidence:
         raise WorkflowError(
             "Branch Review Gate passing result needs at least one --evidence line from the actual review.",
             exit_code=2,
         )
-    if not blockers and not has_review_identity(reviewer, review_report):
+    if review_report is None:
         raise WorkflowError(
-            "Branch Review Gate passing result needs --reviewer or --review-report from the prior AI/human review.",
+            "Branch Review Gate needs --review-report pointing to the task-local review.md from the prior AI/human review. "
+            "--reviewer is identity metadata only and cannot satisfy passed gate evidence.",
             exit_code=2,
         )
     if not args.pass_gate and not findings:
@@ -1912,7 +1916,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     config = load_config(root)
     handoff = load_handoff(root, config)
     task_dir = resolve_task_dir(root, args.task, handoff)
-    gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, False)
+    gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, True)
     if gate_errors:
         raise WorkflowError(
             "finish-work blocked because Branch Review Gate is not valid for the current HEAD.",

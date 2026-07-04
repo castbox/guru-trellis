@@ -30,7 +30,10 @@ Continue entries must:
 - run `python3 ./.trellis/scripts/get_context.py --mode phase`
 - route by task status
 - keep planning artifacts and review fields in Chinese
-- run Branch Review Gate before finish-work
+- write task-local `review.md`, run Branch Review Gate with
+  `--review-report <task-local review.md>`, then stop before finish-work
+- state that `trellis-continue` must not stage/commit review metadata, push,
+  create a PR, call `publish-pr`, or invoke `finish-work`
 - avoid adding a separate user-facing publish step
 
 Finish entries must:
@@ -40,6 +43,10 @@ Finish entries must:
   finish entries and must not be copied into continue entries
 - explain that finish-work archives the task, records journal metadata, and
   publishes a non-draft PR
+- explain that finish-work may commit Trellis metadata-only changes after the
+  reviewed HEAD, but rejects non-metadata changes
+- explain that the gate must already contain task-local `review.md`
+  `review_report` digest evidence
 - state that only `close_issues` may use close keywords
 
 Start entries must:

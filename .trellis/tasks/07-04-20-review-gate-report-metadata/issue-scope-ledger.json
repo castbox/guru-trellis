@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 20,
+    "url": "https://github.com/castbox/guru-trellis/issues/20",
+    "title": "强制 Branch Review Gate 每次产出 review",
+    "reason": "本任务的 intake/handoff 主 issue，要求强制产出 task-local review.md 并由 review-gate.json 记录 digest。",
+    "acceptance_evidence": [
+      "规划明确 reviewer-only pass 不再满足 gate evidence。",
+      "规划明确 trellis-continue 只产出 review.md / review-gate.json 后停止，finish-work 负责 metadata commit 和 publish。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 20,
+      "url": "https://github.com/castbox/guru-trellis/issues/20",
+      "title": "强制 Branch Review Gate 每次产出 review",
+      "reason": "本任务完整解决 Branch Review Gate review.md 必填、review_report digest 校验、continue/finish-work metadata 边界。",
+      "acceptance_evidence": [
+        "脚本测试覆盖裸 reviewer-only pass 失败、有效 review.md pass 成功并记录 digest。",
+        "脚本测试覆盖 check-review-gate / finish-work 拒绝缺少 review_report digest 的历史 passed gate。",
+        "workflow、skill、prompt、README、spec 和 dogfood overlay 同步为 review.md 必填与 finish-work metadata commit 规则。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": [],
+  "rules": [
+    "PR body 只能对 close_issues 使用 Closes/Fixes/Resolves。",
+    "Branch Review Gate 必须记录对 close issue #20 的覆盖结论后才允许 publish。"
+  ]
+}

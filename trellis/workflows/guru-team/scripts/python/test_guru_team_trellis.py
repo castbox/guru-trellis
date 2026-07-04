@@ -86,6 +86,25 @@ def finish_args(**overrides: object) -> argparse.Namespace:
     return argparse.Namespace(**values)
 
 
+def review_args(**overrides: object) -> argparse.Namespace:
+    values: dict[str, object] = {
+        "root": None,
+        "json": True,
+        "task": None,
+        "base_branch": None,
+        "pass_gate": True,
+        "summary": "Branch Review Gate 通过。",
+        "evidence": ["已覆盖 CI/CD、Docker、K8s、migration、Makefile 部署影响判断。"],
+        "reviewer": "codex-main-session",
+        "review_report": None,
+        "finding": [],
+        "findings_file": None,
+        "dry_run": False,
+    }
+    values.update(overrides)
+    return argparse.Namespace(**values)
+
+
 class PrepareSideEffectBoundaryTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -361,6 +380,193 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertFalse(publish_args_obj.recovery_after_finish_work)
         self.assertTrue(publish_args_obj.allow_metadata_after_gate)
         self.assertEqual(payload["publish"]["status"], "dry-run")
+
+    def test_finish_work_validates_gate_with_metadata_tail_allowed(self) -> None:
+        gate = {
+            "head": "abc123",
+            "conclusion": {"passed": True, "summary": "finish-work 后发布。"},
+        }
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
+            mock.patch.object(gtt, "load_handoff", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])) as validate_gate,
+            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(gtt, "recent_work_commits", return_value=["abc123"]),
+            mock.patch.object(gtt, "run") as run,
+            mock.patch.object(gtt, "commit_if_metadata_dirty", return_value=None),
+            mock.patch.object(gtt, "resolve_existing_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "cmd_publish_pr", return_value={"status": "dry-run"}),
+        ):
+            run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
+            gtt.cmd_finish_work(finish_args())
+
+        self.assertTrue(validate_gate.call_args.args[3])
+
+
+class ReviewGateReportTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.task_dir = self.root / ".trellis/tasks/07-04-review-gate"
+        self.task_dir.mkdir(parents=True)
+        (self.root / ".trellis/guru-team").mkdir(parents=True)
+        (self.root / ".git").mkdir()
+        (self.task_dir / "task.json").write_text(
+            '{"title":"Review gate","base_branch":"main"}\n',
+            encoding="utf-8",
+        )
+        (self.task_dir / "issue-scope-ledger.json").write_text(
+            '{"close_issues":[{"number":20,"title":"Review gate","acceptance_evidence":["ok"]}],'
+            '"related_issues":[],"followup_issues":[]}\n',
+            encoding="utf-8",
+        )
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def patch_review_command(self) -> list[mock._patch]:
+        return [
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
+            mock.patch.object(gtt, "load_handoff", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "current_branch", return_value="codex/20-review-gate"),
+            mock.patch.object(gtt, "current_head", return_value="abc123"),
+            mock.patch.object(gtt, "diff_base_ref", return_value="origin/main"),
+            mock.patch.object(gtt, "changed_files", return_value=["trellis/workflows/guru-team/workflow.md"]),
+        ]
+
+    def test_review_branch_pass_requires_review_report(self) -> None:
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_review_branch(review_args(review_report=None))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("--review-report", str(raised.exception))
+        self.assertIn("--reviewer is identity metadata only", str(raised.exception))
+
+    def test_review_branch_records_review_report_digest(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\n无 P0/P1/P2 finding。\n", encoding="utf-8")
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_review_branch(review_args(review_report=str(review_report)))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        recorded = payload["verification_evidence"]["review_report"]
+        self.assertEqual(recorded["path"], ".trellis/tasks/07-04-review-gate/review.md")
+        self.assertEqual(recorded["size_bytes"], review_report.stat().st_size)
+        self.assertEqual(recorded["sha256"], gtt.hashlib.sha256(review_report.read_bytes()).hexdigest())
+        self.assertTrue(recorded["modified_at"])
+        self.assertTrue((self.task_dir / "review-gate.json").exists())
+
+    def test_review_branch_requires_report_even_with_blocking_findings(self) -> None:
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_review_branch(
+                    review_args(
+                        pass_gate=False,
+                        review_report=None,
+                        finding=["P2|需要修复|trellis/workflows/guru-team/workflow.md"],
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("--review-report", str(raised.exception))
+
+    def test_review_branch_requires_task_local_review_report(self) -> None:
+        outside_report = self.root / "review.md"
+        outside_report.write_text("# Review\n\n错误位置。\n", encoding="utf-8")
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_review_branch(review_args(review_report=str(outside_report)))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertIn("task-local review.md", str(raised.exception))
+
+    def write_gate(self, head: str = "abc123", review_report: dict[str, object] | None = None) -> None:
+        gate = {
+            "head": head,
+            "conclusion": {"passed": True, "summary": "Branch Review Gate 通过。"},
+            "verification_evidence": {
+                "reviewer": "codex-main-session",
+                "review_report": review_report,
+                "evidence": ["已覆盖 CI/CD、Docker、K8s、migration、Makefile 部署影响判断。"],
+            },
+        }
+        (self.task_dir / "review-gate.json").write_text(
+            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+    def valid_report(self) -> dict[str, object]:
+        return {
+            "path": ".trellis/tasks/07-04-review-gate/review.md",
+            "sha256": "a" * 64,
+            "size_bytes": 32,
+            "modified_at": "2026-07-04T00:00:00+00:00",
+        }
+
+    def test_validate_review_gate_rejects_reviewer_only_passed_gate(self) -> None:
+        self.write_gate(review_report=None)
+        with mock.patch.object(gtt, "current_head", return_value="abc123"):
+            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
+
+        self.assertTrue(any("review_report" in error for error in errors))
+
+    def test_validate_review_gate_requires_modified_at(self) -> None:
+        report = self.valid_report()
+        report.pop("modified_at")
+        self.write_gate(review_report=report)
+        with mock.patch.object(gtt, "current_head", return_value="abc123"):
+            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
+
+        self.assertIn("Branch Review Gate review_report 缺少 modified_at。", errors)
+
+    def test_validate_review_gate_accepts_metadata_only_tail_when_allowed(self) -> None:
+        self.write_gate(head="old123", review_report=self.valid_report())
+        with (
+            mock.patch.object(gtt, "current_head", return_value="new123"),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(gtt, "metadata_only_since", return_value=(True, [".trellis/tasks/archive/07-04-review-gate/task.json"])),
+        ):
+            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, True)
+
+        self.assertEqual(errors, [])
+
+    def test_validate_review_gate_rejects_non_metadata_tail(self) -> None:
+        self.write_gate(head="old123", review_report=self.valid_report())
+        with (
+            mock.patch.object(gtt, "current_head", return_value="new123"),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(gtt, "metadata_only_since", return_value=(False, ["trellis/workflows/guru-team/workflow.md"])),
+        ):
+            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, True)
+
+        self.assertTrue(any("非 Trellis metadata" in error for error in errors))
 
 
 if __name__ == "__main__":
