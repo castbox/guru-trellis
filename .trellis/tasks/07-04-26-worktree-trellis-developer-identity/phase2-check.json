@@ -1,22 +1,13 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-04T08:53:14Z",
+  "generated_at": "2026-07-04T08:54:38Z",
   "task_dir": ".trellis/tasks/07-04-26-worktree-trellis-developer-identity",
   "base_branch": "main",
-  "head": "9b8c044a9783e7de0320bfc249b41e2e591f09d5",
+  "head": "7a5aff9b9947e18783096fd3ff50b559a2e0fa25",
   "diff_range": "origin/main...HEAD",
-  "dirty_paths": [
-    ".trellis/guru-team/handoff.json",
-    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    ".trellis/spec/workflow/data-contracts.md",
-    "trellis/presets/guru-team/README.md",
-    "trellis/workflows/guru-team/README.md",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/"
-  ],
+  "dirty_paths": [],
   "checker": "codex-main-session",
-  "check_summary": "已按 issue #26 完整 task scope 执行 trellis-check：需求、设计、代码、测试、canonical/dogfood 同步、Docs SSOT 与部署影响均已覆盖，未发现 P0/P1/P2 finding。",
+  "check_summary": "已在提交 7a5aff9 后按 issue #26 完整 task scope 重新执行 trellis-check：需求、设计、代码、测试、canonical/dogfood 同步、Docs SSOT 与部署影响均已覆盖，未发现 P0/P1/P2 finding。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/prd.md",
