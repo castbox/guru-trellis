@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-04T03:34:08Z",
+  "generated_at": "2026-07-04T03:55:06Z",
   "task_dir": ".trellis/tasks/archive/2026-07/07-04-20-branch-review-gate-review",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/20-branch-review-gate-review",
-  "head": "627746491f711a6396cced8a3f5dcf1a41d97635",
+  "head": "afe1afb1e9a5cf5a59468723603fce409847e903",
   "diff_range": "origin/main...HEAD",
   "changed_files": [
     ".agents/skills/trellis-continue/SKILL.md",
@@ -20,6 +20,7 @@
     ".cursor/commands/trellis-finish-work.md",
     ".trellis/guru-team/handoff.json",
     ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/workflow/companion-scripts.md",
     ".trellis/spec/workflow/data-contracts.md",
     ".trellis/spec/workflow/quality-guidelines.md",
     ".trellis/spec/workflow/workflow-contract.md",
@@ -34,6 +35,8 @@
     ".trellis/tasks/archive/2026-07/07-04-20-branch-review-gate-review/review.md",
     ".trellis/tasks/archive/2026-07/07-04-20-branch-review-gate-review/task.json",
     ".trellis/workflow.md",
+    ".trellis/workspace/wumengye/index.md",
+    ".trellis/workspace/wumengye/journal-1.md",
     "README.md",
     "trellis/presets/guru-team/README.md",
     "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
@@ -78,15 +81,15 @@
     "--review-report",
     ".trellis/tasks/archive/2026-07/07-04-20-branch-review-gate-review/review.md",
     "--summary",
-    "Branch Review Gate 通过：已按 origin/main...HEAD 完整审查 issue #20 的 review.md 强制证据路径，并覆盖当前已归档 HEAD 6277464 的 metadata commit，未发现 P0/P1/P2/P3 finding。",
+    "Branch Review Gate 通过：已按 origin/main...HEAD 完整审查 issue #20 的 review.md 强制产物与 metadata 提交边界修复，reviewed HEAD afe1afb 未发现 P0/P1/P2/P3 finding。",
     "--evidence",
-    "审查范围：origin/main...HEAD 完整 diff，覆盖 canonical workflow、dogfood workflow、Guru Team companion Python、单元测试、preset overlays、dogfood installed copies、README、workflow specs、Trellis task artifacts、Issue Scope Ledger、throwaway install 验证和 Branch Review Gate dry-run 证据。",
+    "审查范围：origin/main...HEAD 完整 diff，覆盖 canonical workflow、dogfood workflow、Guru Team companion Python、单元测试、preset overlays、dogfood installed copies、README、workflow specs、Trellis task artifacts、Issue Scope Ledger、throwaway install 验证和 metadata-only tail 行为。",
     "--evidence",
-    "当前 HEAD 说明：6277464 相比工作提交 3ada1c4 只新增 review/gate metadata commit 和 task archive metadata commit；本次恢复 gate 让 finish-work 严格 HEAD 校验匹配当前已归档 HEAD。",
+    "关键行为：trellis-continue 写完 review.md/review-gate.json 后必须停止，不 stage/commit/push/PR；finish-work 是 archive、journal、remaining Trellis metadata commit 与 publish 的唯一正常入口。",
     "--evidence",
-    "关键行为：review-branch --pass 缺少 task-local --review-report 时 fail closed；提供 review.md 时记录 review_report.path、sha256、size_bytes、modified_at；--reviewer 仅为身份字段，不能替代 review.md。",
+    "脚本行为：cmd_finish_work 入口使用 validate_review_gate(..., allow_metadata_after_gate=True)，只接受 reviewed HEAD 之后的 Trellis metadata-only tail；非 metadata tail 仍阻塞。",
     "--evidence",
-    "验证通过：test_guru_team_trellis.py；json.tool；bash -n；py_compile；task.py validate；get_context phase 3.5；reviewer-only dry-run fail-closed；review-report dry-run success；check-dogfood-overlay-drift.sh；verify-throwaway-install.sh；git diff --check origin/main...HEAD。",
+    "验证通过：test_guru_team_trellis.py 12 tests OK；json.tool；bash -n；py_compile；get_context phase 3.5/3.6；task.py validate archived task；check-dogfood-overlay-drift.sh；verify-throwaway-install.sh；git diff --check。",
     "--evidence",
     "Docs SSOT：本仓库没有独立 docs/ durable docs 目录；长期规则已同步 README、trellis/workflows/guru-team/README.md、trellis/presets/guru-team/README.md、canonical workflow、dogfood workflow、overlay skill/prompt/commands 和 .trellis/spec/workflow/*。",
     "--evidence",
@@ -94,7 +97,7 @@
   ],
   "conclusion": {
     "passed": true,
-    "summary": "Branch Review Gate 通过：已按 origin/main...HEAD 完整审查 issue #20 的 review.md 强制证据路径，并覆盖当前已归档 HEAD 6277464 的 metadata commit，未发现 P0/P1/P2/P3 finding。",
+    "summary": "Branch Review Gate 通过：已按 origin/main...HEAD 完整审查 issue #20 的 review.md 强制产物与 metadata 提交边界修复，reviewed HEAD afe1afb 未发现 P0/P1/P2/P3 finding。",
     "block_priorities": [
       "P0",
       "P1",
@@ -116,6 +119,8 @@
           "单元测试覆盖 reviewer-only pass 失败、review-report pass 成功、reviewer-only gate validation 失败。",
           "workflow、overlay、README、spec 已同步 review.md 必产物语义；preset apply 后 dogfood overlay drift check 通过。",
           "dry-run 验证 reviewer-only passed gate 返回 exit 2；带 review-dry-run.md 的 --review-report 通过并记录 64 位 sha256、size_bytes、modified_at。",
+          "后续修复明确 metadata 提交边界：trellis-continue 写完 review.md/review-gate.json 后停止，不 stage/commit/push/PR；finish-work 负责剩余 Trellis metadata commit 与 publish。",
+          "finish-work 入口改为允许 reviewed HEAD 后的 Trellis metadata-only tail，同时测试覆盖 metadata-only tail 通过、非 metadata tail 阻塞、finish-work 调用 allow_metadata_after_gate=True。",
           "verify-throwaway-install.sh 通过，确认新安装项目可获得更新后的 workflow/preset/overlay/companion scripts。"
         ]
       }
@@ -124,20 +129,20 @@
     "followup_issues": []
   },
   "verification_evidence": {
-    "base_head": "origin/main...627746491f711a6396cced8a3f5dcf1a41d97635",
-    "changed_file_count": 42,
+    "base_head": "origin/main...afe1afb1e9a5cf5a59468723603fce409847e903",
+    "changed_file_count": 45,
     "reviewer": "codex-main-session",
     "review_report": {
       "path": ".trellis/tasks/archive/2026-07/07-04-20-branch-review-gate-review/review.md",
-      "sha256": "9fb99dfd626eaf13e51c0d0ff5da022bb6c9c31cd980ed0e6926ba423d922f02",
-      "size_bytes": 4214,
-      "modified_at": "2026-07-04T03:33:49.176980+00:00"
+      "sha256": "7849326fd47683d6dab8450fa1a6658cfbceddcb7a31de83fea75c1cac260b36",
+      "size_bytes": 4529,
+      "modified_at": "2026-07-04T03:54:50.768497+00:00"
     },
     "evidence": [
-      "审查范围：origin/main...HEAD 完整 diff，覆盖 canonical workflow、dogfood workflow、Guru Team companion Python、单元测试、preset overlays、dogfood installed copies、README、workflow specs、Trellis task artifacts、Issue Scope Ledger、throwaway install 验证和 Branch Review Gate dry-run 证据。",
-      "当前 HEAD 说明：6277464 相比工作提交 3ada1c4 只新增 review/gate metadata commit 和 task archive metadata commit；本次恢复 gate 让 finish-work 严格 HEAD 校验匹配当前已归档 HEAD。",
-      "关键行为：review-branch --pass 缺少 task-local --review-report 时 fail closed；提供 review.md 时记录 review_report.path、sha256、size_bytes、modified_at；--reviewer 仅为身份字段，不能替代 review.md。",
-      "验证通过：test_guru_team_trellis.py；json.tool；bash -n；py_compile；task.py validate；get_context phase 3.5；reviewer-only dry-run fail-closed；review-report dry-run success；check-dogfood-overlay-drift.sh；verify-throwaway-install.sh；git diff --check origin/main...HEAD。",
+      "审查范围：origin/main...HEAD 完整 diff，覆盖 canonical workflow、dogfood workflow、Guru Team companion Python、单元测试、preset overlays、dogfood installed copies、README、workflow specs、Trellis task artifacts、Issue Scope Ledger、throwaway install 验证和 metadata-only tail 行为。",
+      "关键行为：trellis-continue 写完 review.md/review-gate.json 后必须停止，不 stage/commit/push/PR；finish-work 是 archive、journal、remaining Trellis metadata commit 与 publish 的唯一正常入口。",
+      "脚本行为：cmd_finish_work 入口使用 validate_review_gate(..., allow_metadata_after_gate=True)，只接受 reviewed HEAD 之后的 Trellis metadata-only tail；非 metadata tail 仍阻塞。",
+      "验证通过：test_guru_team_trellis.py 12 tests OK；json.tool；bash -n；py_compile；get_context phase 3.5/3.6；task.py validate archived task；check-dogfood-overlay-drift.sh；verify-throwaway-install.sh；git diff --check。",
       "Docs SSOT：本仓库没有独立 docs/ durable docs 目录；长期规则已同步 README、trellis/workflows/guru-team/README.md、trellis/presets/guru-team/README.md、canonical workflow、dogfood workflow、overlay skill/prompt/commands 和 .trellis/spec/workflow/*。",
       "部署影响：本次仅修改 Trellis workflow/preset/overlay/companion scripts/docs/task artifacts，不新增 API service、CLI runtime entrypoint、background worker、scheduled job、queue consumer、runtime config、CI/CD、Docker/Compose、K8s/Kustomize、DB migration 或 Makefile；无需部署资产更新。"
     ],
@@ -156,6 +161,7 @@
         ".codex/skills/trellis-finish-work/SKILL.md",
         ".cursor/commands/trellis-continue.md",
         ".cursor/commands/trellis-finish-work.md",
+        ".trellis/spec/workflow/companion-scripts.md",
         ".trellis/spec/workflow/data-contracts.md",
         ".trellis/spec/workflow/quality-guidelines.md",
         ".trellis/spec/workflow/workflow-contract.md",
@@ -165,6 +171,8 @@
         ".trellis/tasks/archive/2026-07/07-04-20-branch-review-gate-review/review-dry-run.md",
         ".trellis/tasks/archive/2026-07/07-04-20-branch-review-gate-review/review.md",
         ".trellis/workflow.md",
+        ".trellis/workspace/wumengye/index.md",
+        ".trellis/workspace/wumengye/journal-1.md",
         "README.md",
         "trellis/presets/guru-team/README.md",
         "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
@@ -186,6 +194,7 @@
       "trellis_artifacts": [
         ".trellis/guru-team/handoff.json",
         ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/workflow/companion-scripts.md",
         ".trellis/spec/workflow/data-contracts.md",
         ".trellis/spec/workflow/quality-guidelines.md",
         ".trellis/spec/workflow/workflow-contract.md",
@@ -200,6 +209,8 @@
         ".trellis/tasks/archive/2026-07/07-04-20-branch-review-gate-review/review.md",
         ".trellis/tasks/archive/2026-07/07-04-20-branch-review-gate-review/task.json",
         ".trellis/workflow.md",
+        ".trellis/workspace/wumengye/index.md",
+        ".trellis/workspace/wumengye/journal-1.md",
         "trellis/presets/guru-team/README.md",
         "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
         "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",

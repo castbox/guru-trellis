@@ -57,6 +57,15 @@
 - [ ] 用 `review-branch.sh --review-report ...` 写 `review-gate.json`。
 - [ ] `check-review-gate.sh --json` 通过。
 
+## 阶段 7：后续修复 metadata 提交边界
+
+- [x] 确认根因：`trellis-continue` 曾提交 `review.md` / `review-gate.json`，导致 gate reviewed HEAD 与后续 metadata HEAD 分离；同时 `finish-work` 入口使用严格 HEAD 校验，没有复用 publish 路径的 metadata-only tail 容忍逻辑。
+- [x] 收紧流程合同：`trellis-continue` 只负责产出 task-local `review.md` 和 `review-gate.json`，写完即停止，不得 stage/commit/push/PR；`finish-work` 是 archive、journal、剩余 Trellis metadata commit 与 publish 的唯一正常入口。
+- [x] 修复 helper：`cmd_finish_work()` 入口调用 `validate_review_gate(..., allow_metadata_after_gate=True)`，允许 reviewed HEAD 之后只出现 Trellis metadata-only commit；非 metadata tail 仍阻塞。
+- [x] 补测试：新增 metadata-only tail 可通过、非 metadata tail 会阻塞、finish-work 入口使用 allow_metadata_after_gate 的回归测试。
+- [x] 同步 canonical workflow、dogfood workflow、preset overlays、dogfood installed copies、README 与 workflow specs。
+- [x] 验证：`test_guru_team_trellis.py` 12 tests OK、JSON/schema 校验、bash -n、py_compile、`get_context` Phase 3.5/3.6、dogfood overlay drift、throwaway install、task validate、git diff --check 均通过。
+
 ## 回滚
 
 如果新合同阻塞合理的 finish-work 路径，回滚 Python companion 与 workflow/overlay/spec/docs 到 reviewer-or-report 语义，并保留 task artifact 说明本次收紧失败原因。
