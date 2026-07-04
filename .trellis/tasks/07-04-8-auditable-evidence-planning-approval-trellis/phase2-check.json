@@ -1,24 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-04T07:55:38Z",
+  "generated_at": "2026-07-04T08:01:57Z",
   "task_dir": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis",
   "base_branch": "main",
-  "head": "d829ba536ae036aedd99276352270afc42f9eeff",
+  "head": "417a4b622b9ce7f74b58ca156474c5d0d517f83d",
   "diff_range": "origin/main...HEAD",
-  "dirty_paths": [
-    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    ".trellis/spec/preset/installer.md",
-    ".trellis/spec/workflow/companion-scripts.md",
-    ".trellis/spec/workflow/data-contracts.md",
-    ".trellis/spec/workflow/workflow-contract.md",
-    ".trellis/workflow.md",
-    "README.md",
-    "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    "trellis/workflows/guru-team/workflow.md"
-  ],
+  "dirty_paths": [],
   "checker": "codex-main-session",
   "check_summary": "根据独立 Agent Branch Review Gate findings 修复后重录 Phase 2 check evidence：覆盖 review-report 必须为 task-local review.md、planning approval post-commit audit、throwaway install public marketplace fail-closed 口径、phase2/check gate、base freshness、canonical/dogfood/docs/spec 同步。未发现新的 P0/P1/P2/P3 finding；current-branch marketplace install 仍受 Trellis CLI gh source 不支持 branch ref 限制，脚本已 fail-closed，不能声称完整开箱验证通过。",
   "checked_artifacts": [
@@ -42,24 +29,12 @@
     },
     {
       "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/planning-approval.json",
-      "sha256": "850f2ef16432957cd5aa401c3ee038543023c4b7895e4f70d7a9ae2c14e5c0ab",
-      "size_bytes": 2496,
-      "modified_at": "2026-07-04T07:53:24.718853+00:00"
-    },
-    {
-      "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/issue-scope-ledger.json",
-      "sha256": "22b75269a5c211d8bb8711eb9d2df30a197de90308031888ab37434841d03362",
-      "size_bytes": 2710,
-      "modified_at": "2026-07-04T06:58:48.930922+00:00"
+      "sha256": "947403538151b8857de49ce6846d7559e80e8a7aeb25d54800ca181a0b4a4916",
+      "size_bytes": 1823,
+      "modified_at": "2026-07-04T08:01:34.761390+00:00"
     }
   ],
   "checked_specs": [
-    {
-      "path": ".trellis/spec/workflow/index.md",
-      "sha256": "bb784f9f53269062866aea1adcb0bb760e7a50784ced634ace7b29ee29b42d71",
-      "size_bytes": 2811,
-      "modified_at": "2026-07-04T06:20:23.257173+00:00"
-    },
     {
       "path": ".trellis/spec/workflow/workflow-contract.md",
       "sha256": "71b81cf636eb474c3d0336064d4603b9740c8e87bfc2d09b7a2298f57fbd460f",
@@ -79,58 +54,10 @@
       "modified_at": "2026-07-04T07:52:10.120169+00:00"
     },
     {
-      "path": ".trellis/spec/workflow/quality-guidelines.md",
-      "sha256": "1c9b3d3f35e6461994d91bdd47f60d89d0dc84329a90f63c2adc6c5bf8bdc31c",
-      "size_bytes": 3874,
-      "modified_at": "2026-07-04T07:20:21.573653+00:00"
-    },
-    {
-      "path": ".trellis/spec/preset/index.md",
-      "sha256": "c0dd0106536ba1c187dbbc16d11df270eb19eb5b1440c7e7847c97a15ae287f3",
-      "size_bytes": 1457,
-      "modified_at": "2026-07-04T06:20:23.256563+00:00"
-    },
-    {
       "path": ".trellis/spec/preset/installer.md",
       "sha256": "547293b825d0d8f974c58fb5660ab13c5b3efa5647c32a6226ce8295ee7334ef",
       "size_bytes": 3084,
       "modified_at": "2026-07-04T07:54:36.033659+00:00"
-    },
-    {
-      "path": ".trellis/spec/preset/overlay-guidelines.md",
-      "sha256": "7e17027b3697a435cc4cd89599ed80fe79e4abc9bcbdd6ee809b9f071e1687b4",
-      "size_bytes": 3464,
-      "modified_at": "2026-07-04T07:20:31.413742+00:00"
-    },
-    {
-      "path": ".trellis/spec/docs/index.md",
-      "sha256": "94fcfb6a6d2ff77f8f11535a9ca02501a41e043b812866e0af5ed8783db7f2a3",
-      "size_bytes": 797,
-      "modified_at": "2026-07-04T06:20:23.255545+00:00"
-    },
-    {
-      "path": ".trellis/spec/docs/public-docs.md",
-      "sha256": "35891233237b0cb4be3d2009eac25b0a5bde359fd02098ce63e261d7854b836a",
-      "size_bytes": 3482,
-      "modified_at": "2026-07-04T06:20:23.255919+00:00"
-    },
-    {
-      "path": ".trellis/spec/guides/index.md",
-      "sha256": "aa45e5d0f245aae0b34677b121f7d083620308b4b87cda929bd134c77d1f61fd",
-      "size_bytes": 3680,
-      "modified_at": "2026-07-04T06:20:23.256432+00:00"
-    },
-    {
-      "path": ".trellis/spec/guides/code-reuse-thinking-guide.md",
-      "sha256": "86fd10dc10916c00309714aa2275234f01b0ad40d21a485d43b3422e7ca79397",
-      "size_bytes": 7381,
-      "modified_at": "2026-07-04T06:20:23.256118+00:00"
-    },
-    {
-      "path": ".trellis/spec/guides/cross-layer-thinking-guide.md",
-      "sha256": "cb66957f7fad60eec4c5bd737a4d910b162a093142b1fad1d0ab48d4784c5ce3",
-      "size_bytes": 14981,
-      "modified_at": "2026-07-04T06:20:23.256269+00:00"
     }
   ],
   "coverage": {
@@ -149,7 +76,7 @@
       "result": "passed: 56 tests"
     },
     {
-      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json && python3 -m json.tool .trellis/guru-team/schemas/intake-handoff.schema.json",
+      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json && python3 -m json.tool .trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/planning-approval.json && python3 -m json.tool .trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/phase2-check.json",
       "result": "passed"
     },
     {
@@ -157,7 +84,7 @@
       "result": "passed"
     },
     {
-      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py .trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py .trellis/guru-team/scripts/python/guru_team_trellis.py",
       "result": "passed"
     },
     {
@@ -170,7 +97,7 @@
     },
     {
       "command": ".trellis/guru-team/scripts/bash/check-planning-approval.sh --json --allow-committed-head",
-      "result": "passed"
+      "result": "passed before metadata refresh"
     },
     {
       "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
@@ -178,7 +105,7 @@
     },
     {
       "command": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "result": "passed fail-closed check: blocked public marketplace sample on feature branch"
+      "result": "passed fail-closed check: exit 2 blocked public marketplace sample on feature branch/current dirty marketplace"
     },
     {
       "command": "git diff --check",
