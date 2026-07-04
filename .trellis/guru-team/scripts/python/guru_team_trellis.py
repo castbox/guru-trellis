@@ -1033,6 +1033,96 @@ def prepare_workspace(
     return mode, workspace_path, True
 
 
+def developer_identity_path(root: Path) -> Path:
+    return root / ".trellis/.developer"
+
+
+def parse_developer_identity(content: str) -> dict[str, str]:
+    identity: dict[str, str] = {}
+    for raw in content.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if "=" not in line:
+            identity.setdefault("name", line)
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if key:
+            identity[key] = value
+    return identity
+
+
+def read_developer_identity(root: Path) -> dict[str, str] | None:
+    path = developer_identity_path(root)
+    if not path.exists():
+        return None
+    content = path.read_text(encoding="utf-8").strip()
+    if not content:
+        return None
+    return parse_developer_identity(content)
+
+
+def developer_name_from_identity(identity: dict[str, str] | None) -> str | None:
+    if not identity:
+        return None
+    value = str(identity.get("name") or "").strip()
+    return value or None
+
+
+def write_developer_identity(path: Path, name: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    content = f"name={name}\ninitialized_at={now_iso()}\n"
+    path.write_text(content, encoding="utf-8")
+
+
+def ensure_workspace_developer_identity(source_root: Path, workspace_path: Path, assignee: str | None = None) -> dict[str, Any]:
+    source_identity_path = developer_identity_path(source_root)
+    workspace_identity_path = developer_identity_path(workspace_path)
+    if workspace_identity_path.exists():
+        workspace_identity = read_developer_identity(workspace_path)
+        return {
+            "status": "exists",
+            "source": "workspace",
+            "path": str(workspace_identity_path),
+            "developer": developer_name_from_identity(workspace_identity),
+        }
+
+    if source_identity_path.exists():
+        workspace_identity_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_identity_path, workspace_identity_path)
+        workspace_identity = read_developer_identity(workspace_path)
+        return {
+            "status": "copied",
+            "source": str(source_identity_path),
+            "path": str(workspace_identity_path),
+            "developer": developer_name_from_identity(workspace_identity),
+        }
+
+    normalized_assignee = str(assignee or "").strip()
+    if normalized_assignee:
+        write_developer_identity(workspace_identity_path, normalized_assignee)
+        return {
+            "status": "initialized",
+            "source": "--assignee",
+            "path": str(workspace_identity_path),
+            "developer": normalized_assignee,
+        }
+
+    recovery_command = "python3 ./.trellis/scripts/init_developer.py <name>"
+    raise WorkflowError(
+        "Trellis developer identity is missing. Initialize the source checkout before creating a task worktree.",
+        exit_code=2,
+        payload={
+            "missing_identity": True,
+            "source_identity_path": str(source_identity_path),
+            "workspace_identity_path": str(workspace_identity_path),
+            "recovery_command": recovery_command,
+        },
+    )
+
+
 def configured_handoff_path(root: Path, config: dict[str, Any]) -> Path:
     rel = Path(str(config.get("handoff_path") or DEFAULTS["handoff_path"]))
     return rel if rel.is_absolute() else root / rel
@@ -2183,11 +2273,7 @@ def check_env_payload(root: Path) -> dict[str, Any]:
 def infer_assignee(root: Path, explicit: str | None) -> str | None:
     if explicit:
         return explicit
-    developer = root / ".trellis/.developer"
-    if developer.exists():
-        value = developer.read_text(encoding="utf-8").strip()
-        return value or None
-    return None
+    return developer_name_from_identity(read_developer_identity(root))
 
 
 def create_task(root: Path, payload: dict[str, Any], args: argparse.Namespace) -> str:
@@ -2346,9 +2432,12 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
         should_create_worktree,
     )
     current = current_branch(root)
+    assignee = infer_assignee(root, args.assignee)
+    developer_identity: dict[str, Any] | None = None
+    if should_create_worktree and workspace_ready:
+        developer_identity = ensure_workspace_developer_identity(root, workspace_path, assignee)
 
     create_cmd = ["python3", "./.trellis/scripts/task.py", "create", task_title, "--slug", task_slug]
-    assignee = infer_assignee(root, args.assignee)
     if assignee:
         create_cmd.extend(["--assignee", assignee])
     if args.priority:
@@ -2389,6 +2478,7 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
             "selected_base_branch": base_ref,
             "base_freshness": base_freshness,
             "workspace_was_created_or_reused": workspace_ready,
+            "developer_identity": developer_identity,
         },
     }
     if source_issue is not None:

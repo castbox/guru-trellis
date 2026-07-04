@@ -181,6 +181,10 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.root = Path(self.tmp.name)
         (self.root / ".trellis").mkdir()
         self.worktree_root = self.root / "worktrees"
+        (self.root / ".trellis/.developer").write_text(
+            "name=tester\ninitialized_at=2026-07-04T00:00:00\n",
+            encoding="utf-8",
+        )
 
         self.patches = [
             mock.patch.object(gtt, "repo_root", return_value=self.root),
@@ -322,6 +326,9 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertTrue((workspace / "handoff.json").exists())
         self.assertFalse((self.root / "handoff.json").exists())
         self.assertEqual(payload["handoff_path"], str(workspace / "handoff.json"))
+        self.assertTrue((workspace / ".trellis/.developer").exists())
+        self.assertEqual((workspace / ".trellis/.developer").read_text(encoding="utf-8"), "name=tester\ninitialized_at=2026-07-04T00:00:00\n")
+        self.assertEqual(payload["preflight"]["developer_identity"]["status"], "copied")
 
     def test_create_worktree_refreshes_base_before_workspace_creation(self) -> None:
         existing_issue = {
@@ -346,13 +353,103 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
                 "base_ref_for_worktree": "main",
             }) as refresh,
             mock.patch.object(gtt, "prepare_workspace", return_value=("worktree", self.worktree_root / "42-existing", True)) as prepare_workspace,
+            mock.patch.object(gtt, "ensure_workspace_developer_identity", return_value={
+                "status": "copied",
+                "developer": "tester",
+            }) as ensure_identity,
         ):
             payload = gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
 
         refresh.assert_called_once_with(self.root, "main")
         prepare_workspace.assert_called_once()
+        ensure_identity.assert_called_once_with(self.root, self.worktree_root / "42-existing", "tester")
         self.assertEqual(payload["preflight"]["base_freshness"]["fetch_performed"], True)
         self.assertEqual(payload["preflight"]["base_freshness"]["remote_head"], "new")
+
+    def test_infer_assignee_reads_developer_name_field(self) -> None:
+        self.assertEqual(gtt.infer_assignee(self.root, None), "tester")
+        self.assertEqual(gtt.infer_assignee(self.root, "explicit-dev"), "explicit-dev")
+
+    def test_infer_assignee_allows_legacy_single_line_identity(self) -> None:
+        (self.root / ".trellis/.developer").write_text("legacy-dev\n", encoding="utf-8")
+        self.assertEqual(gtt.infer_assignee(self.root, None), "legacy-dev")
+
+    def test_create_worktree_initializes_developer_identity_from_explicit_assignee(self) -> None:
+        existing_issue = {
+            "number": 42,
+            "url": "https://github.com/owner/repo/issues/42",
+            "title": "Existing issue",
+        }
+        (self.root / ".trellis/.developer").unlink()
+        workspace = self.worktree_root / "42-existing"
+        workspace.mkdir(parents=True)
+        (workspace / ".git").mkdir()
+
+        with (
+            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
+            mock.patch.object(gtt, "ensure_base_freshness", return_value={
+                "remote": "origin",
+                "base_branch": "main",
+                "base_ref": "main",
+                "remote_ref": "origin/main",
+                "local_head_before": "abc",
+                "local_head_after": "abc",
+                "remote_head": "abc",
+                "fetch_performed": True,
+                "fast_forwarded": False,
+                "fresh": True,
+                "status": "fresh",
+                "base_ref_for_worktree": "main",
+            }),
+        ):
+            payload = gtt.cmd_prepare(
+                prepare_args(
+                    requirement=["#42"],
+                    create_worktree=True,
+                    assignee="explicit-dev",
+                )
+            )
+
+        identity = (workspace / ".trellis/.developer").read_text(encoding="utf-8")
+        self.assertIn("name=explicit-dev\n", identity)
+        self.assertEqual(payload["preflight"]["developer_identity"]["status"], "initialized")
+        self.assertEqual(payload["preflight"]["developer_identity"]["developer"], "explicit-dev")
+
+    def test_create_worktree_blocks_when_developer_identity_missing(self) -> None:
+        existing_issue = {
+            "number": 42,
+            "url": "https://github.com/owner/repo/issues/42",
+            "title": "Existing issue",
+        }
+        (self.root / ".trellis/.developer").unlink()
+        workspace = self.worktree_root / "42-existing"
+        workspace.mkdir(parents=True)
+        (workspace / ".git").mkdir()
+
+        with (
+            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
+            mock.patch.object(gtt, "ensure_base_freshness", return_value={
+                "remote": "origin",
+                "base_branch": "main",
+                "base_ref": "main",
+                "remote_ref": "origin/main",
+                "local_head_before": "abc",
+                "local_head_after": "abc",
+                "remote_head": "abc",
+                "fetch_performed": True,
+                "fast_forwarded": False,
+                "fresh": True,
+                "status": "fresh",
+                "base_ref_for_worktree": "main",
+            }),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertTrue(raised.exception.payload["missing_identity"])
+        self.assertIn("init_developer.py <name>", raised.exception.payload["recovery_command"])
+        self.assertFalse((workspace / ".trellis/.developer").exists())
 
     def test_ensure_base_freshness_fast_forwards_current_base(self) -> None:
         fetch_result = mock.Mock(returncode=0, stdout="", stderr="")

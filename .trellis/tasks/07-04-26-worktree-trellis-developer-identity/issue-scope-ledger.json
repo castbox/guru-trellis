@@ -1,0 +1,28 @@
+{
+  "primary_issue": {
+    "number": 26,
+    "url": "https://github.com/castbox/guru-trellis/issues/26",
+    "title": "worktree 创建后应继承 Trellis developer identity",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "新增 developer identity helper：executor path 创建或复用 worktree 后确保目标 `.trellis/.developer` 存在。",
+      "新增单测覆盖 source identity 复制、显式 --assignee 初始化、缺 identity 阻塞恢复命令、infer_assignee 解析 name= 字段。",
+      "disposable repo 验证 `prepare --create-worktree` 输出 preflight.developer_identity.status=copied，目标 worktree `.trellis/.developer` 内容为 tempdev。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 26,
+      "url": "https://github.com/castbox/guru-trellis/issues/26",
+      "title": "worktree 创建后应继承 Trellis developer identity",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 通过，61 个测试覆盖新增 identity 合同。",
+        "bash -n、py_compile、json.tool、git diff --check 均通过。",
+        "preset apply 已同步 dogfood `.trellis/guru-team/scripts/python/guru_team_trellis.py`，check-dogfood-overlay-drift.sh 通过。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

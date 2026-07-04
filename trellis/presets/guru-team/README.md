@@ -175,6 +175,15 @@ base branch with `git fetch`, record `preflight.base_freshness` in
 the local base diverges from the remote. This prevents new task branches from
 silently starting from a stale local base.
 
+After the worktree exists, the executor ensures the target workspace has
+Trellis developer identity before writing handoff or creating a task. It copies
+the gitignored source checkout `.trellis/.developer` when available, initializes
+an equivalent target identity from an explicit `--assignee` when the source file
+is missing, and otherwise fails closed with the recovery command
+`python3 ./.trellis/scripts/init_developer.py <name>`. This makes the new
+worktree immediately usable by `get_context.py`, `task.py list --mine`, and
+`add_session.py`.
+
 Current-checkout direct edits while `no_task` is active are allowed only as an
 explicit user override. The user approval must say this turn should skip
 creating or reusing a GitHub issue, Trellis task, worktree, and branch. Before
