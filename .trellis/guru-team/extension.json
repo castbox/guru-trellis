@@ -56,11 +56,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-04T12:16:10Z",
+  "installed_at": "2026-07-04T12:30:46Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/31-guru-team-extension-version-manifest",
-    "commit": "7a715753f19dc55124493dbed33f945eb30a0de2",
+    "commit": "b94c4fb4e74ba032511fa9f5aa5b6bac6899737c",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -106,5 +106,5 @@
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
   },
-  "notes": "This file records deterministic install provenance for the Guru Team Trellis extension. Upgrade and rollback judgment belongs to AI/human review."
+  "notes": "This file records deterministic install provenance for the Guru Team Trellis extension. source.commit and source.tree_state describe the extension source observed at apply time; they are not a claim that this installed manifest is contained in that commit. Upgrade and rollback judgment belongs to AI/human review."
 }

@@ -36,6 +36,9 @@ The installed manifest should remain additive/backward-compatible for readers:
 - new fields should be optional for old installed manifests;
 - `source.tree_state` is objective provenance (`clean`, `dirty`, `archive`, or
   `unknown`), not a release-readiness judgment;
+- `source.commit` and `source.tree_state` describe the extension source observed
+  at apply time. They are not a self-referential claim that the installed
+  manifest file is contained in that same commit;
 - `selected_platforms` records installer input and should not be inferred from
   directory presence alone.
 

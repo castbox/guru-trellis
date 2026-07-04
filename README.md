@@ -214,8 +214,10 @@ overlay entrypoints，以及 `.new` / `.bak` conflict handling。版本号按 Se
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录
 extension version、workflow template id、source repo/ref/commit、source tree state、selected
-platforms 和安装时间。脚本只记录事实；是否升级、回滚或关闭 issue 仍由 AI/human review
-根据证据判断。
+platforms 和安装时间。`source.commit` / `source.tree_state` 表示 installer 运行时观测到的
+Guru Team extension source 快照；在本仓库 dogfood 提交中，它不是“该 installed manifest
+自身所在提交”的自指证明。脚本只记录事实；是否升级、回滚或关闭 issue 仍由 AI/human
+review 根据证据判断。
 
 ## 日常入口
 

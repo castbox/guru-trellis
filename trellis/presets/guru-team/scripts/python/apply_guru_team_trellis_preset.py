@@ -200,7 +200,12 @@ def build_installed_extension_manifest(
             "workflow_marketplace": WORKFLOW_MARKETPLACE,
             "workflow_template": WORKFLOW_TEMPLATE,
         },
-        "notes": "This file records deterministic install provenance for the Guru Team Trellis extension. Upgrade and rollback judgment belongs to AI/human review.",
+        "notes": (
+            "This file records deterministic install provenance for the Guru Team Trellis extension. "
+            "source.commit and source.tree_state describe the extension source observed at apply time; "
+            "they are not a claim that this installed manifest is contained in that commit. "
+            "Upgrade and rollback judgment belongs to AI/human review."
+        ),
     }
 
 

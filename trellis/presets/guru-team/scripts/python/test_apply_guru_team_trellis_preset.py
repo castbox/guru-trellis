@@ -222,6 +222,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
         self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
+        self.assertIn("observed at apply time", installed["notes"])
+        self.assertIn("not a claim", installed["notes"])
         self.assertEqual(payload["extension_manifest"], ".trellis/guru-team/extension.json")
 
     def test_main_version_prints_canonical_extension_version(self) -> None:

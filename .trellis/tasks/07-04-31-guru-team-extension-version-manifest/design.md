@@ -84,6 +84,11 @@ preset installer 写入 `.trellis/guru-team/extension.json`：
 - `archive`: source 不在 Git repo 内，但存在 canonical manifest；
 - `unknown`: metadata 探测失败。
 
+`source.commit` / `source.tree_state` 表示 installer 运行时观测到的 Guru Team extension
+source 快照。对于本仓库 dogfood 提交，`.trellis/guru-team/extension.json` 记录的是上一次
+apply 的安装事实，不是“该 installed manifest 自身所在提交”的自指证明；canonical version
+仍只以 `trellis/guru-team-extension.json` 为准。
+
 `source.is_mutable_ref` 规则：
 
 - `true`: branch name、`main`、`master`、`dev`、`develop`、`HEAD` 等可移动 ref；
