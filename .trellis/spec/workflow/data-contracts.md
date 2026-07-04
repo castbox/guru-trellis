@@ -45,6 +45,19 @@ The installed manifest should remain additive/backward-compatible for readers:
 Do not use `.trellis/guru-team/extension.json` as the canonical source of the
 team extension version. The canonical source is `trellis/guru-team-extension.json`.
 
+Repository release tags for the Guru Team extension use repo-level SemVer tags
+such as `v0.6.5`, not namespaced tags such as `guru-team/v0.6.5`. The tag's
+`X.Y.Z` must match `trellis/guru-team-extension.json.version`. Stable workflow
+marketplace examples should use
+`gh:castbox/guru-trellis/trellis#vX.Y.Z`; unpinned
+`gh:castbox/guru-trellis/trellis` means latest/canary and must be reported as a
+mutable source in install or upgrade evidence.
+
+Release order matters: merge the manifest/docs PR first, create the annotated
+`vX.Y.Z` tag on the merge commit, verify tag-pinned `trellis init` and
+`trellis workflow` marketplace commands, then retire any old competing tag
+names only after the new tag is verified.
+
 ## Handoff
 
 `.trellis/guru-team/handoff.json` records intake provenance and preflight:

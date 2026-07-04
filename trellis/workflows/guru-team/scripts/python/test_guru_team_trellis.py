@@ -1795,7 +1795,7 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
             "schema_version": "1.0",
             "extension": {
                 "extension_id": "guru-team",
-                "version": "0.1.0",
+                "version": "0.6.5",
                 "workflow_template_id": "guru-team",
                 "requires": {"trellis_cli": ">=0.6.0"},
             },
@@ -1823,7 +1823,7 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
         payload = gtt.guru_team_extension_payload(self.root)
 
         self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["version"], "0.1.0")
+        self.assertEqual(payload["version"], "0.6.5")
         self.assertEqual(payload["workflow_template_id"], "guru-team")
         self.assertEqual(payload["source_tree_state"], "clean")
         self.assertEqual(payload["selected_platforms"], ["codex", "cursor"])
@@ -1866,7 +1866,7 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
             payload = gtt.cmd_version(argparse.Namespace(root=str(self.root), json=True))
 
         self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["guru_team_extension"]["version"], "0.1.0")
+        self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5")
 
 
 if __name__ == "__main__":
