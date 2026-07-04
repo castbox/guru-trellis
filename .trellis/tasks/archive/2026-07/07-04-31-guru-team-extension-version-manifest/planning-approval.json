@@ -1,17 +1,17 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-04T12:04:47Z",
+  "generated_at": "2026-07-04T12:37:23Z",
   "task_dir": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest",
-  "head": "7a715753f19dc55124493dbed33f945eb30a0de2",
+  "head": "5030cde306bf22962b729ef135d31186d532c893",
   "dirty_paths": [
-    ".trellis/guru-team/handoff.json",
-    ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/"
+    ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/phase2-check.json",
+    ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/review.md"
   ],
   "reviewer": "codex-main-session",
-  "approval_summary": "已审阅 issue #31、官方 Trellis 扩展边界、本仓库 docs/preset/workflow spec 与当前 installer/check-env 代码；prd/design/implement 已覆盖 canonical manifest、installed provenance、check-env/version 输出、docs SSOT、测试和开箱验证。",
+  "approval_summary": "已重新审阅 issue #31 的 prd/design/implement；design.md 仅补充独立 review P2 要求的 installed provenance apply-time 语义，未扩大需求、实现边界、测试范围或关闭范围，仍可进入/保持实现与收口阶段。",
   "user_confirmation": {
     "source": "workflow",
-    "message": "用户在当前会话明确要求：开始解决这个 issue。"
+    "message": "用户已在当前会话明确要求开始解决该 issue；本次 planning artifact 更新属于同一 issue #31 内对 review P2 的语义澄清，不引入新 scope。"
   },
   "approved_artifacts": [
     {
@@ -22,9 +22,9 @@
     },
     {
       "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/design.md",
-      "sha256": "a3d9182ba4a9598928fed4745a4d960f0ab885a4512b63e2ee0e425a0f9b7cd5",
-      "size_bytes": 6182,
-      "modified_at": "2026-07-04T12:04:21.917985+00:00"
+      "sha256": "297c0fcf0259fe41e10f26f9c03665201b55a3dd99b2edf8462c527b0d205672",
+      "size_bytes": 6555,
+      "modified_at": "2026-07-04T12:30:37.839793+00:00"
     },
     {
       "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/implement.md",

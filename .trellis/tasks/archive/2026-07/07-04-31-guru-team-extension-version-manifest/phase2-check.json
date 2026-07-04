@@ -1,32 +1,15 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-04T12:16:50Z",
+  "generated_at": "2026-07-04T12:37:41Z",
   "task_dir": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest",
   "base_branch": "main",
-  "head": "7a715753f19dc55124493dbed33f945eb30a0de2",
+  "head": "5030cde306bf22962b729ef135d31186d532c893",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".trellis/guru-team/handoff.json",
-    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    ".trellis/spec/preset/installer.md",
-    ".trellis/spec/workflow/data-contracts.md",
-    "README.md",
-    "docs/requirements/requirement-main.md",
-    "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
-    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-    "trellis/workflows/guru-team/README.md",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    ".trellis/guru-team/extension.json",
-    ".trellis/guru-team/scripts/bash/version.sh",
-    ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/",
-    "trellis/guru-team-extension.json",
-    "trellis/workflows/guru-team/scripts/bash/version.sh"
+    ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/review.md"
   ],
   "checker": "codex-main-session",
-  "check_summary": "已按 issue #31 和当前 task scope 完整检查：canonical extension manifest、installed provenance、check-env/version 查询入口、installer 兼容行为、docs SSOT、dogfood sync、throwaway install 与安全边界均已覆盖；未发现 P0/P1/P2 finding。",
+  "check_summary": "已按 issue #31、更新后的 planning approval、独立 review P2 反馈和当前 task scope 完整复查：canonical extension manifest、installed provenance 语义、installer notes、check-env/version 查询入口、installer 兼容行为、docs SSOT、dogfood sync、throwaway install 与安全边界均已覆盖；P2 stale evidence 与 provenance 语义问题已修复，未发现新的 P0/P1/P2 finding。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/prd.md",
@@ -36,9 +19,9 @@
     },
     {
       "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/design.md",
-      "sha256": "a3d9182ba4a9598928fed4745a4d960f0ab885a4512b63e2ee0e425a0f9b7cd5",
-      "size_bytes": 6182,
-      "modified_at": "2026-07-04T12:04:21.917985+00:00"
+      "sha256": "297c0fcf0259fe41e10f26f9c03665201b55a3dd99b2edf8462c527b0d205672",
+      "size_bytes": 6555,
+      "modified_at": "2026-07-04T12:30:37.839793+00:00"
     },
     {
       "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/implement.md",
@@ -48,15 +31,9 @@
     },
     {
       "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/planning-approval.json",
-      "sha256": "4c6cf992ec998daabd21e2e1888eab2544e357d784229c58f55f6d413246e9db",
-      "size_bytes": 1793,
-      "modified_at": "2026-07-04T12:04:47.371343+00:00"
-    },
-    {
-      "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/issue-scope-ledger.json",
-      "sha256": "f932f18c085ea87721bce65df0164fd845d179fa6592fbc85ae289b7bec9c810",
-      "size_bytes": 2624,
-      "modified_at": "2026-07-04T12:15:59.790833+00:00"
+      "sha256": "de740f3cad915230d880abb9a5e74ca83501973d560d1b6b97f986182d4a1769",
+      "size_bytes": 1937,
+      "modified_at": "2026-07-04T12:37:24.001695+00:00"
     }
   ],
   "checked_specs": [
@@ -80,9 +57,9 @@
     },
     {
       "path": ".trellis/spec/workflow/data-contracts.md",
-      "sha256": "67cfc26b1d4ba2a921bc302ed6a1aa2f92a5849213e4e836292ca73a08aec508",
-      "size_bytes": 7168,
-      "modified_at": "2026-07-04T12:15:59.790416+00:00"
+      "sha256": "2976546e8cd2049c2d3ef405298879a593975c86dc7e5ee6431d9d9dbaad384a",
+      "size_bytes": 7373,
+      "modified_at": "2026-07-04T12:30:37.839542+00:00"
     },
     {
       "path": ".trellis/spec/workflow/quality-guidelines.md",
@@ -127,24 +104,16 @@
       "result": "passed"
     },
     {
-      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "result": "passed"
-    },
-    {
-      "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "result": "passed"
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "passed, 83 tests"
     },
     {
       "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms",
-      "result": "passed"
+      "result": "passed during fix validation; dogfood manifest updated and committed in 5030cde"
     },
     {
       "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
       "result": "passed"
-    },
-    {
-      "command": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "result": "failed-closed on branch marketplace sampling as designed"
     },
     {
       "command": "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
