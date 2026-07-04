@@ -30,7 +30,7 @@
     "--slug",
     "26-worktree-trellis-developer-identity",
     "--assignee",
-    "name=wumengye\ninitialized_at=2026-07-03T17:44:00.461566"
+    "wumengye"
   ],
   "task_dir": ".trellis/tasks/07-04-26-worktree-trellis-developer-identity",
   "duplicate_search": {
