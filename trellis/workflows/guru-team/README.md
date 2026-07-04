@@ -130,3 +130,19 @@ PR 发布只发生在显式 `trellis-finish-work` 入口带
 Trellis metadata 之后。裸 `finish-work.sh` 和 `publish-pr.sh` 默认拒绝普通直接调用；
 只有 `finish-work.sh` 的显式 finish entrypoint 调用或 finish-work 已完成后的显式
 recovery/debug flag 可以进入 publish 检查。
+
+PR body 是给 GitHub reviewer 看的发布材料，不是 Trellis task artifact 的内部索引。
+AI 在调用 finish helper 前必须生成或审查 body readiness，确认 `变更摘要` 具体、
+`影响范围` 明确、`验证结果` 是实际命令与结果、`Review Gate` 写明 reviewed HEAD /
+diff range / findings 状态、`Issue 关闭范围` 只关闭 ledger 中的 `close_issues`，并且
+`安全说明` / 部署影响与本次 diff 相符。推荐把审阅后的 Markdown body 存成 task-local
+文件并传给 helper：
+
+```bash
+.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
+  --body-file .trellis/tasks/<task>/pr-body.md
+```
+
+`publish-pr` 也支持 `--body-artifact <path>` 读取 readiness artifact。脚本只做客观
+结构校验、低信息量短语阻塞和 close/ref 语义校验；不能用脚本生成的空泛摘要替代 AI
+发布判断。

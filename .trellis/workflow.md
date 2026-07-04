@@ -637,16 +637,33 @@ The `--from-trellis-finish-work` marker is required proof that the explicit fini
 
 After archive and journal succeed, automatically publish the PR. This is not a new user-facing phase or command. The normal path is through the explicit `trellis-finish-work` entrypoint, which calls `finish-work.sh --from-trellis-finish-work`; `publish-pr.sh` is an internal helper and rejects ordinary direct calls. Direct `publish-pr.sh` is allowed only when `finish-work` calls it with its internal marker, or when an operator uses the explicit recovery/debug flag after `finish-work` already completed archive and journal but publish must be retried.
 
+Before invoking finish-work, the AI must generate or review the PR body for a
+GitHub reviewer who has no Trellis session context. The body is not a task
+artifact summary. It must explain what behavior changed, which modules or
+workflow surfaces are affected, how the change was validated, what Review Gate
+covered, which issues are closed vs only referenced, and the real safety /
+deployment impact. Prefer passing the reviewed body through `--body-file
+<reviewed-pr-body.md>` or a readiness artifact passed as `--body-artifact`.
+
 Publish behavior:
 
 - push the current branch;
 - create an open, non-draft GitHub PR;
 - target the intake/task `base_branch`, not the GitHub default branch;
 - write the PR title, headings, and body in Chinese;
-- include Chinese sections for `变更摘要`, `验证结果`, `Review Gate`, `Issue 关闭范围`, and `安全说明`;
+- include Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gate`, `Issue 关闭范围`, and `安全说明`;
+- prefer an AI-reviewed `--body-file` / `--body-artifact`; generated fallback bodies are allowed only when they still pass the same reviewer-readability checks;
+- block non-draft publish if `变更摘要`, `影响范围`, `验证结果`, or `安全说明` are missing, empty, or low-information;
+- never use phrases such as `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact` as the main PR summary;
 - use `Closes #xx` only for `close_issues` in `issue-scope-ledger.json`;
 - use only `Refs #xx` or `Related #xx` semantics for `related_issues`;
 - never close `followup_issues`.
+
+The PR body quality judgment belongs to the AI readiness review. `publish-pr`
+only validates objective structure, forbidden low-information phrases,
+body-file/artifact presence, close/ref issue semantics, and then executes the
+GitHub operation. It must not invent reviewer-facing justification or replace
+the AI's release judgment with a script-generated claim.
 
 `trellis-continue` must never run this publish behavior or call `finish-work`. It stops after Branch Review Gate and waits for the user/session to explicitly invoke `trellis-finish-work`.
 

@@ -135,6 +135,14 @@ The generated PR must be non-draft by default, target the intake/task
 `base_branch`, and use close keywords only for issues listed in the task-level
 `issue-scope-ledger.json` `close_issues` array.
 
+Before publish, the AI must generate or review a PR body that is readable to a
+GitHub reviewer without Trellis session context. The body must include concrete
+Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gate`,
+`Issue 关闭范围`, and `安全说明`. `publish-pr` may accept an AI-reviewed
+`--body-file` or `--body-artifact`; it validates objective structure, forbidden
+low-information phrases, and close/ref issue semantics, but it must not decide
+whether the business explanation is true or sufficient.
+
 Do not treat `.trellis/guru-team/handoff.json` as final close scope. It is
 intake provenance only.
 

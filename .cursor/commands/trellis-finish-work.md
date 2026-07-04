@@ -3,6 +3,15 @@
 
 Finish-work archives the task, records the journal, then automatically publishes a non-draft PR. There is no separate user-facing publish command.
 
+Before running the helper, generate or review the PR body for GitHub reviewers
+who do not know the Trellis task. The body must be Chinese and self-explanatory:
+`变更摘要`, `影响范围`, `验证结果`, `Review Gate`, `Issue 关闭范围`, and
+`安全说明` must contain concrete content. Do not use low-information summaries
+such as `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact`.
+When practical, write the reviewed Markdown body to a task-local file and pass
+it with `--body-file <path>`; a reviewed JSON readiness artifact may be passed
+with `--body-artifact <path>`.
+
 Run the internal Guru Team finish helper:
 
 ```bash

@@ -216,6 +216,14 @@ task-local `review.md`，再用 `--review-report .trellis/tasks/<task>/review.md
 Trellis metadata 之后内部触发。只有 finish-work 已完成但 publish 需要重试时，才使用
 显式 recovery/debug flag。
 
+发布前 AI 必须生成或审查 PR body readiness。PR body 面向不了解 Trellis task 的
+GitHub reviewer，而不是 Trellis session 内部摘要；应包含具体的 `变更摘要`、
+`影响范围`、`验证结果`、`Review Gate`、`Issue 关闭范围` 和 `安全说明`。禁止用
+“当前 Trellis task”“已提交实现与文档更新”“详见 artifact”作为主要摘要。
+`trellis-finish-work` 可把 AI 审阅后的 Markdown 通过 `--body-file <path>` 传给内部
+publish，也可用 `--body-artifact <path>` 传 readiness artifact；脚本只校验客观结构、
+低信息量短语和 close/ref 语义，不替代 AI 判断内容是否真实充分。
+
 ## 维护原则
 
 - 不修改 Trellis npm 全局包、`node_modules` 或上游 Trellis 源码。
