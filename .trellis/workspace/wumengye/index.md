@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 9
+- **Total Sessions**: 10
 - **Last Active**: 2026-07-04
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~304 | Active |
+| `journal-1.md` | ~337 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 10 | 2026-07-04 | 完成：#8 可审计 planning/check gate | `fbf0dc49f33cc104243e95772e623b634ec10eda` | `codex/8-auditable-evidence-planning-approval-trellis` |
 | 9 | 2026-07-04 | 完成：#7 Require PR readiness review before finish-work publishes | `d5c333e160817857d1bc202668cafa110a6d9823` | `codex/7-require-pr-readiness-review-before` |
 | 8 | 2026-07-04 | 完成：#17 Improve Guru Team PR body quality standards | `803841d4553ffb3fae8556f6c04149706f49c10f` | `codex/17-improve-guru-team-pr-body` |
 | 7 | 2026-07-04 | 完成：#20 强制 Branch Review Gate 每次产出 review，并由 finish-work 提交 metadata | `be437f8366470f53507572b43975b009e07591eb` | `codex/20-review-gate-report-metadata` |

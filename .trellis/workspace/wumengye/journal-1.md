@@ -302,3 +302,36 @@ Branch Review Gate 通过：已审查 origin/main...HEAD 全量 diff，确认 is
 ### Next Steps
 
 - None - task complete
+
+
+## Session 10: 完成：#8 可审计 planning/check gate
+
+**Date**: 2026-07-04
+**Task**: 完成：#8 可审计 planning/check gate
+**Branch**: `codex/8-auditable-evidence-planning-approval-trellis`
+
+### Summary
+
+为 Guru Team workflow 增加 planning-approval 与 phase2-check gate，强化独立 Agent Branch Review Gate，并修复 worktree base freshness preflight。独立 Agent review 无 P0/P1/P2 后发布。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `fbf0dc49f33cc104243e95772e623b634ec10eda` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
