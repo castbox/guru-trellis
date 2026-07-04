@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"workflow、finish-work、publish 边界和 PR body readiness 的 canonical 规则。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Python companion script 的 executor/validator 边界、错误处理、GitHub/publish 操作规则。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"Review Gate、Issue Scope Ledger、JSON artifact 和 metadata-only tail 合同。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"finish-work overlays 跨平台同步和 dogfood drift 验证要求。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"README、workflow README、preset README 的用户文案同步要求。"}

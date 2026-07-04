@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"workflow/preset/script 改动的必跑验证、review 范围和防漂移要求。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"验证 review gate、issue ledger、PR payload 与 JSON artifact 合同没有漂移。"}
+{"file":".trellis/spec/preset/installer.md","reason":"验证 preset managed assets、overlay 安装和 dogfood 同步行为。"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"新增 helper 前检查现有路径解析和 body source 逻辑，避免重复实现。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"覆盖 companion script、workflow Markdown、overlay、README 和测试之间的契约同步。"}

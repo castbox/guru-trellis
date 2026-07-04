@@ -129,10 +129,13 @@ GitHub reviewers who do not know the Trellis task. The body should use concrete
 Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gate`,
 `Issue 关闭范围`, and `安全说明`. Low-information summaries such as
 `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact` are blocked for
-non-draft publish. Pass reviewed Markdown with `--body-file <path>` or a JSON
-readiness artifact with `--body-artifact <path>`; the script validates
-objective structure and close/ref semantics but does not replace AI release
-judgment.
+non-draft publish. Non-draft publish requires reviewed Markdown with
+`--body-file <path>` or a JSON readiness artifact with `--body-artifact <path>`;
+generated fallback bodies are preview/draft-only. These readiness/body files
+belong to task metadata and are read from the archived task artifact after
+finish-work archives the task. The script validates objective structure,
+reviewed source presence, and close/ref semantics but does not replace AI
+release judgment.
 
 ## Workflow Guardrails
 

@@ -135,14 +135,16 @@ PR body 是给 GitHub reviewer 看的发布材料，不是 Trellis task artifact
 AI 在调用 finish helper 前必须生成或审查 body readiness，确认 `变更摘要` 具体、
 `影响范围` 明确、`验证结果` 是实际命令与结果、`Review Gate` 写明 reviewed HEAD /
 diff range / findings 状态、`Issue 关闭范围` 只关闭 ledger 中的 `close_issues`，并且
-`安全说明` / 部署影响与本次 diff 相符。推荐把审阅后的 Markdown body 存成 task-local
-文件并传给 helper：
+`安全说明` / 部署影响与本次 diff 相符。non-draft publish 必须把审阅后的 Markdown
+body 存成 task-local 文件并传给 helper，或传入 task-local readiness artifact：
 
 ```bash
 .trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
-  --body-file .trellis/tasks/<task>/pr-body.md
+  --body-file .trellis/tasks/<task>/reviewed-pr-body.md
 ```
 
-`publish-pr` 也支持 `--body-artifact <path>` 读取 readiness artifact。脚本只做客观
-结构校验、低信息量短语阻塞和 close/ref 语义校验；不能用脚本生成的空泛摘要替代 AI
-发布判断。
+`publish-pr` 也支持 `--body-artifact .trellis/tasks/<task>/pr-readiness.json`
+读取 readiness artifact。readiness/body 文件属于 Trellis task metadata，`finish-work`
+会在 archive 后从 `.trellis/tasks/archive/YYYY-MM/<task>/...` 读取最终 PR body。
+脚本只做客观结构校验、低信息量短语阻塞、close/ref 语义校验和 reviewed source 门禁；
+不能用脚本生成的空泛摘要或 `generated` body 替代 AI 发布判断。

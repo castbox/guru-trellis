@@ -1,0 +1,32 @@
+{
+  "primary_issue": {
+    "number": 7,
+    "url": "https://github.com/castbox/guru-trellis/issues/7",
+    "title": "Require PR readiness review before finish-work publishes",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py 已阻塞 non-draft generated body source，并要求 --body-file 或 --body-artifact。",
+      "finish-work 已在 archive 前做 reviewed source preflight，并在 archive 后把 active task source path 重写到 archived task artifact。",
+      "readiness artifact 现在要求 ready=true；相对 body_file 按 artifact 所在目录解析。",
+      "test_guru_team_trellis.py 覆盖 non-draft publish/finish-work 缺少 reviewed source 失败、draft preview 允许 generated、archive 后路径重写、artifact 相对 body_file。",
+      "workflow、README、preset README、finish-work overlays 和 dogfood copies 已同步 #7 门禁，并通过 dogfood overlay drift check。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 7,
+      "url": "https://github.com/castbox/guru-trellis/issues/7",
+      "title": "Require PR readiness review before finish-work publishes",
+      "reason": "本任务实现 non-draft publish reviewed body source 门禁、archive 后 artifact SSOT 和跨 surface 文案同步。",
+      "acceptance_evidence": [
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py 已阻塞 non-draft generated body source，并要求 --body-file 或 --body-artifact。",
+        "finish-work 已在 archive 前做 reviewed source preflight，并在 archive 后把 active task source path 重写到 archived task artifact。",
+        "readiness artifact 现在要求 ready=true；相对 body_file 按 artifact 所在目录解析。",
+        "test_guru_team_trellis.py 覆盖 non-draft publish/finish-work 缺少 reviewed source 失败、draft preview 允许 generated、archive 后路径重写、artifact 相对 body_file。",
+        "workflow、README、preset README、finish-work overlays 和 dogfood copies 已同步 #7 门禁，并通过 dogfood overlay drift check。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}
