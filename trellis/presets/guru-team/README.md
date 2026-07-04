@@ -22,12 +22,35 @@ updated to `sub-agent` so Codex can dispatch `trellis-implement` /
 `codex.dispatch_mode: inline` value is preserved as a user-selected downgrade
 or debug mode.
 
+Platform overlays are selectable. By default, the installer applies shared
+`.agents/skills` entries plus Codex and Cursor overlays. Repeat
+`--platform <name>` to select a specific set; supported values are `codex`,
+`cursor`, and `claude`. Use `--all-platforms` to preserve the historical
+full-overlay behavior. `--platform` and `--all-platforms` are mutually
+exclusive, and invalid platform names fail closed.
+
 ## Apply
 
 ```bash
 git clone https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
-  --repo /path/to/project
+  --repo /path/to/project \
+  --platform codex \
+  --platform cursor
+```
+
+Examples:
+
+```bash
+# Shared overlays plus Claude only.
+/path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
+  --repo /path/to/project \
+  --platform claude
+
+# Shared overlays plus every known platform overlay.
+/path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
+  --repo /path/to/project \
+  --all-platforms
 ```
 
 ## Throwaway Install Verification
@@ -39,9 +62,11 @@ Maintainers can verify the default non-interactive install path with:
 ```
 
 The script creates a temporary Git repo, runs `trellis init -y` with the
-`guru-team` marketplace workflow, applies the preset, checks that
-`.trellis/workflow.md` exists, verifies that `check-env.sh` is executable, and
-runs `check-env --json`. Trellis CLI currently accepts `gh:user/repo/path`
+`guru-team` marketplace workflow, applies the preset with
+`--platform codex --platform cursor`, checks that `.trellis/workflow.md`
+exists, verifies that `check-env.sh` is executable, asserts `.claude/` was not
+created, and runs `check-env --json`. Trellis CLI currently accepts
+`gh:user/repo/path`
 workflow marketplace sources, so the script fails closed on non-`main` branches
 or dirty marketplace workflow files unless
 `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1` is set. This prevents public remote
@@ -58,7 +83,9 @@ must re-apply the preset to this source repository and verify that installed
 dogfood copies still match the canonical overlays:
 
 ```bash
-./trellis/presets/guru-team/scripts/bash/apply.sh --repo .
+./trellis/presets/guru-team/scripts/bash/apply.sh \
+  --repo . \
+  --all-platforms
 ./trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 ```
 
@@ -73,6 +100,9 @@ Branch Review Gate.
 
 ## Installed Files
 
+Managed Guru Team assets are installed under `.trellis/guru-team/` regardless of
+platform selection:
+
 - `.trellis/guru-team/config.yml`
 - `.trellis/guru-team/schemas/intake-handoff.schema.json`
 - `.trellis/guru-team/scripts/bash/check-env.sh`
@@ -86,19 +116,34 @@ Branch Review Gate.
 - `.trellis/guru-team/scripts/bash/publish-pr.sh`
 - `.trellis/guru-team/scripts/bash/finish-work.sh`
 - `.trellis/guru-team/scripts/python/guru_team_trellis.py`
+
+Shared overlays are always installed:
+
 - `.agents/skills/trellis-start/SKILL.md`
 - `.agents/skills/trellis-continue/SKILL.md`
 - `.agents/skills/trellis-finish-work/SKILL.md`
+
+Default Codex overlays are installed when no platform flag is provided, or when
+`--platform codex` / `--all-platforms` is used:
+
 - `.codex/prompts/trellis-start.md`
 - `.codex/prompts/trellis-continue.md`
 - `.codex/prompts/trellis-finish-work.md`
 - `.codex/skills/trellis-start/SKILL.md`
 - `.codex/skills/trellis-continue/SKILL.md`
 - `.codex/skills/trellis-finish-work/SKILL.md`
-- `.claude/commands/trellis/continue.md`
-- `.claude/commands/trellis/finish-work.md`
+
+Default Cursor overlays are installed when no platform flag is provided, or when
+`--platform cursor` / `--all-platforms` is used:
+
 - `.cursor/commands/trellis-continue.md`
 - `.cursor/commands/trellis-finish-work.md`
+
+Claude overlays are installed only when `--platform claude` or `--all-platforms`
+is used:
+
+- `.claude/commands/trellis/continue.md`
+- `.claude/commands/trellis/finish-work.md`
 
 The active `.trellis/workflow.md` is installed or switched through the official
 Trellis workflow marketplace:

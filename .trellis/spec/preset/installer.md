@@ -46,6 +46,80 @@ Use `copy_overlay()` behavior:
 Do not overwrite unknown platform command, prompt, or skill edits. The target
 repo owner must inspect `.new` when local customization exists.
 
+## Platform Overlay Selection
+
+### 1. Scope / Trigger
+
+Changing the preset installer platform flags changes the public install command
+contract and the overlay files copied into target repositories.
+
+### 2. Signatures
+
+The supported installer platform flags are:
+
+```bash
+trellis/presets/guru-team/scripts/bash/apply.sh --repo <repo> \
+  [--platform codex] [--platform cursor] [--platform claude]
+
+trellis/presets/guru-team/scripts/bash/apply.sh --repo <repo> --all-platforms
+```
+
+### 3. Contracts
+
+- With no `--platform` and no `--all-platforms`, install shared `.agents/skills`
+  overlays plus Codex and Cursor overlays.
+- `--platform <name>` is repeatable and installs shared overlays plus exactly
+  the selected platform overlay groups.
+- `--all-platforms` installs shared overlays plus every known platform overlay.
+- `--platform` and `--all-platforms` are mutually exclusive.
+- Unknown platform names fail closed; do not silently ignore them.
+- Shared `.agents/skills` overlays are always installed because Codex and some
+  agentskills-compatible tools depend on the shared skill layer.
+
+### 4. Validation & Error Matrix
+
+| Condition | Expected behavior |
+| --- | --- |
+| no platform flags | install `.agents/`, `.codex/`, `.cursor/`; do not create `.claude/` |
+| repeated `--platform codex --platform cursor` | install `.agents/`, `.codex/`, `.cursor/`; do not create `.claude/` |
+| `--platform claude` | install `.agents/` and `.claude/`; do not create `.codex/` or `.cursor/` |
+| `--all-platforms` | install `.agents/`, `.codex/`, `.cursor/`, `.claude/` |
+| `--platform codex --all-platforms` | argparse exits non-zero |
+| `--platform unknown` | argparse exits non-zero |
+
+### 5. Good/Base/Bad Cases
+
+- Good: README default install uses `trellis init --codex --cursor` and
+  `apply.sh --platform codex --platform cursor`.
+- Base: Maintainers use `apply.sh --repo . --all-platforms` only when dogfood
+  overlay copies must include every canonical overlay.
+- Bad: Installer recursively copies all platform overlays after a Codex +
+  Cursor init and relies on an AI prompt to delete `.claude/` later.
+
+### 6. Tests Required
+
+- Unit tests for default platform selection, repeated platform flags,
+  `--platform claude`, `--all-platforms`, mutual exclusion, and invalid
+  platform names.
+- Temporary repo behavior test or throwaway install validation that asserts the
+  default Codex + Cursor path does not create `.claude/`.
+- README/preset README command review whenever platform flags change.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```bash
+apply.sh --repo "$PWD"
+# Then ask the AI to remove .claude/ if it was not selected.
+```
+
+#### Correct
+
+```bash
+apply.sh --repo "$PWD" --platform codex --platform cursor
+```
+
 ## Validation
 
 At minimum:

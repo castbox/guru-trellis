@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-04T11:07:40Z",
+  "task_dir": ".trellis/tasks/07-04-11-let-preset-installer-apply-only",
+  "base_branch": "main",
+  "head": "75606d65f8302721c4cab604915111c0bd3f91d7",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/spec/preset/installer.md",
+    "README.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    ".trellis/tasks/07-04-11-let-preset-installer-apply-only/"
+  ],
+  "checker": "trellis-check-agent",
+  "check_summary": "已完成 issue #11 的完整 trellis-check：installer 平台过滤实现、默认/显式/全量平台行为、重复 apply、README/preset README 同步、throwaway 验证脚本断言、Issue Scope Ledger 验收证据以及 .trellis/spec/preset/installer.md 命令合同更新均已检查；未发现 P0/P1/P2 finding。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-04-11-let-preset-installer-apply-only/prd.md",
+      "sha256": "bf52883a1938c849d708c106712f899d96758260b898d52358fb31000b0423d3",
+      "size_bytes": 4037,
+      "modified_at": "2026-07-04T10:56:44.646309+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-11-let-preset-installer-apply-only/design.md",
+      "sha256": "9ee754753ff920baa31f2a6b7288edc3cbf1ab8f16ae441bc2ded1d00049fbda",
+      "size_bytes": 3408,
+      "modified_at": "2026-07-04T10:56:44.646534+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-11-let-preset-installer-apply-only/implement.md",
+      "sha256": "27c5ca6871396780d1adb873d65aa28d55e8ec745478c6556b4ccfc0a97c5804",
+      "size_bytes": 2114,
+      "modified_at": "2026-07-04T10:56:44.646762+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-11-let-preset-installer-apply-only/planning-approval.json",
+      "sha256": "c79367e91f7dfab33f1d6d701fcda933ef45a41135736226aeca2b489b5268b2",
+      "size_bytes": 1832,
+      "modified_at": "2026-07-04T10:57:34.870106+00:00"
+    }
+  ],
+  "checked_specs": [],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "通过，12 个测试覆盖平台过滤、互斥/非法参数和 Codex dispatch"
+    },
+    {
+      "command": "python3 -m py_compile trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "通过"
+    },
+    {
+      "command": "bash -n trellis/presets/guru-team/scripts/bash/apply.sh trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "result": "通过"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json",
+      "result": "通过"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-04-11-let-preset-installer-apply-only",
+      "result": "通过"
+    },
+    {
+      "command": "git diff --check",
+      "result": "通过"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "通过；本任务未修改 canonical overlays，因此未执行会写 dogfood copy 的 apply.sh --repo ."
+    },
+    {
+      "command": "临时 repo installer 行为验证",
+      "result": "默认 apply 安装 .agents/.codex/.cursor 且不创建 .claude；--all-platforms 创建 .claude"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

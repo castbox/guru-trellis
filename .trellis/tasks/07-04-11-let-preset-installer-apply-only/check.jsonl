@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/preset/installer.md", "reason": "审核 installer 行为、幂等性、managed asset 与 overlay 冲突处理"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "审核公开 README 命令、prompt 与实际 installer 参数一致"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "审核验证命令、dogfood drift 与 Branch Review Gate 覆盖要求"}

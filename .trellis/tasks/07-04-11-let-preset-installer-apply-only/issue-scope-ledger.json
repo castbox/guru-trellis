@@ -1,0 +1,29 @@
+{
+  "primary_issue": {
+    "number": 11,
+    "url": "https://github.com/castbox/guru-trellis/issues/11",
+    "title": "Let preset installer apply only selected platform overlays",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "installer 支持 --platform codex/cursor/claude、默认 Codex+Cursor、--all-platforms 全量行为，并由单测覆盖",
+      "临时 repo 验证默认 apply 不创建 .claude，--all-platforms 会安装 .claude",
+      "README 与 preset README 已同步平台参数和默认范围"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 11,
+      "url": "https://github.com/castbox/guru-trellis/issues/11",
+      "title": "Let preset installer apply only selected platform overlays",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py 通过",
+        "临时 repo 行为验证确认 Codex+Cursor 默认不创建 .claude，--all-platforms 创建 .claude",
+        "throwaway install 脚本已改为 --platform codex --platform cursor 并断言 .claude 不存在",
+        "README.md 与 trellis/presets/guru-team/README.md 已说明默认平台、显式平台和 --all-platforms"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

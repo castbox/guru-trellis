@@ -62,13 +62,20 @@ git -C "$TARGET" remote add origin https://github.com/castbox/guru-trellis-throw
     --workflow-source "$WORKFLOW_SOURCE"
 )
 
-"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" --repo "$TARGET"
+"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
+  --repo "$TARGET" \
+  --platform codex \
+  --platform cursor
 
 test -f "$TARGET/.trellis/workflow.md"
 grep -q "Guru Team Development Workflow" "$TARGET/.trellis/workflow.md"
 grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 grep -q "dispatch_mode: sub-agent" "$TARGET/.trellis/config.yaml"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-env.sh"
+test -d "$TARGET/.agents/skills"
+test -d "$TARGET/.codex"
+test -d "$TARGET/.cursor"
+test ! -e "$TARGET/.claude"
 python3 "$TARGET/.trellis/scripts/get_context.py" --mode packages >/dev/null
 CHECK_ENV_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-env.sh" --root "$TARGET" --json)"
 printf '%s\n' "$CHECK_ENV_JSON"
