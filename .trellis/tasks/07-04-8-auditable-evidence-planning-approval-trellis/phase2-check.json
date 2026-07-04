@@ -1,13 +1,17 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-04T08:01:57Z",
+  "generated_at": "2026-07-04T08:13:40Z",
   "task_dir": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis",
   "base_branch": "main",
-  "head": "417a4b622b9ce7f74b58ca156474c5d0d517f83d",
+  "head": "a4e13021990eba1d34af0a9ec68b95fff65ecf4e",
   "diff_range": "origin/main...HEAD",
-  "dirty_paths": [],
+  "dirty_paths": [
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
   "checker": "codex-main-session",
-  "check_summary": "根据独立 Agent Branch Review Gate findings 修复后重录 Phase 2 check evidence：覆盖 review-report 必须为 task-local review.md、planning approval post-commit audit、throwaway install public marketplace fail-closed 口径、phase2/check gate、base freshness、canonical/dogfood/docs/spec 同步。未发现新的 P0/P1/P2/P3 finding；current-branch marketplace install 仍受 Trellis CLI gh source 不支持 branch ref 限制，脚本已 fail-closed，不能声称完整开箱验证通过。",
+  "check_summary": "根据独立 Agent 二次 review 的 P1 finding 修复 Phase 2 post-commit audit：allow_committed_head 现在检查 phase2-check 记录 HEAD 到当前 HEAD 的 committed tail，只允许 Trellis metadata；非 metadata committed tail 会阻塞 Branch Review Gate。已补充回归测试并同步 dogfood Python 副本。未发现新的 P0/P1/P2/P3 finding；current-branch marketplace install 仍受 Trellis CLI gh source 不支持 branch ref 限制，脚本已 fail-closed，不能声称完整开箱验证通过。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/prd.md",
@@ -17,21 +21,21 @@
     },
     {
       "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/design.md",
-      "sha256": "846407a460fd485f11abb98901a43aad30f4be2d1e48e97076ff921a329483b5",
-      "size_bytes": 7555,
-      "modified_at": "2026-07-04T07:51:46.791003+00:00"
+      "sha256": "21ec180f54e8b30cb91e911423a59eb24875232f988d55c4bd8b07150654b641",
+      "size_bytes": 8131,
+      "modified_at": "2026-07-04T08:12:51.192924+00:00"
     },
     {
       "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/implement.md",
-      "sha256": "d864e6b9635cfbccd58a27387813aa92b6c800d5f17dacdeb82a4ce5c744d8f6",
-      "size_bytes": 4403,
-      "modified_at": "2026-07-04T07:51:17.382040+00:00"
+      "sha256": "6f4ab6db907551548665691a82bece38018e257d2c76954881da887f3acd25c4",
+      "size_bytes": 4927,
+      "modified_at": "2026-07-04T08:12:51.193497+00:00"
     },
     {
       "path": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/planning-approval.json",
-      "sha256": "947403538151b8857de49ce6846d7559e80e8a7aeb25d54800ca181a0b4a4916",
-      "size_bytes": 1823,
-      "modified_at": "2026-07-04T08:01:34.761390+00:00"
+      "sha256": "37f1c6e0cf59013f8cd8f19976c0507b0e2895ce4477f41d86294b220f032e43",
+      "size_bytes": 2031,
+      "modified_at": "2026-07-04T08:12:59.381356+00:00"
     }
   ],
   "checked_specs": [
@@ -73,7 +77,7 @@
   "validation_commands": [
     {
       "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "result": "passed: 56 tests"
+      "result": "passed: 57 tests"
     },
     {
       "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json && python3 -m json.tool .trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/planning-approval.json && python3 -m json.tool .trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/phase2-check.json",
@@ -92,20 +96,12 @@
       "result": "passed"
     },
     {
-      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 1.4 && --step 2.2 && --step 3.4 && --step 3.5",
-      "result": "passed"
-    },
-    {
-      "command": ".trellis/guru-team/scripts/bash/check-planning-approval.sh --json --allow-committed-head",
-      "result": "passed before metadata refresh"
-    },
-    {
       "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
       "result": "passed"
     },
     {
       "command": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "result": "passed fail-closed check: exit 2 blocked public marketplace sample on feature branch/current dirty marketplace"
+      "result": "passed fail-closed check: exit 2 blocked public marketplace sample on feature branch"
     },
     {
       "command": "git diff --check",

@@ -75,6 +75,12 @@
 - commit 后执行完整 Branch Review Gate，范围为 `origin/main...HEAD`。
 - PR body 必须中文、具体，`Closes #8` 只能在 ledger 验收证据和 Review Gate 覆盖后使用。
 
+## 独立 review 后修复
+
+- [x] 修复 P1：`validate_phase2_check(..., allow_committed_head=True)` 不再只看 working tree dirty；它会检查 `phase2-check.json.head..HEAD` 的 committed tail，只允许 Trellis metadata 文件。非 metadata committed tail 会阻塞 Branch Review Gate。
+- [x] 补充回归测试：metadata-only committed tail 允许，非 metadata committed tail 拒绝。
+- [x] 同步 dogfood `.trellis/guru-team/scripts/python/guru_team_trellis.py`，并删除 preset apply 产生的 `.bak`。
+
 ## 阻塞项
 
 当前无阻塞项。进入实现前需要用户确认本规划 artifact 可作为 start 依据。

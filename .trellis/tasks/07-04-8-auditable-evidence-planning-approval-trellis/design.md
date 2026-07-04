@@ -121,6 +121,8 @@ Python 新增 subcommand：
 
 `check-planning-approval` 默认仍严格要求批准 HEAD 等于当前 HEAD，用于进入实现前的 start gate。Branch Review Gate / post-commit audit 路径使用显式 `allow_committed_head`，允许 planning approval 记录的 HEAD 是当前提交祖先；这样不要求每次实现提交后重批规划，但仍要求规划文件 hash 未变。
 
+`check-phase2-check` 默认仍严格要求 check HEAD 等于当前 HEAD，用于 commit 前 gate。Branch Review Gate / post-commit audit 路径允许 `phase2-check.json` 记录的 HEAD 是当前提交祖先，但只能接受该 HEAD 之后的 committed tail 全部属于 Trellis metadata，例如 task/review/journal artifact；如果 `recorded_head..HEAD` 含有 workflow、script、preset、README、schema、CI/CD、部署或其他非 metadata 文件，必须 fail closed。只检查当前 working tree dirty 状态不够，因为非 metadata 变更可能已经提交。
+
 ## Preflight Base Freshness
 
 在 `cmd_prepare()` 内解析 base 后增加 freshness 检查：

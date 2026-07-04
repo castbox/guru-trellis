@@ -697,12 +697,35 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         with (
             mock.patch.object(gtt, "current_head", return_value="def456"),
             mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(gtt, "metadata_only_since", return_value=(True, [".trellis/tasks/07-04-gates/review.md"])),
             mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
             mock.patch.object(gtt, "git_status_paths", return_value=[".trellis/tasks/07-04-gates/review.md"]),
         ):
             _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
 
         self.assertEqual(errors, [])
+
+    def test_validate_phase2_rejects_post_commit_non_metadata_committed_tail(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            gtt.cmd_record_phase2_check(phase2_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value="def456"),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(gtt, "metadata_only_since", return_value=(False, ["trellis/workflows/guru-team/workflow.md"])),
+            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(gtt, "git_status_paths", return_value=[]),
+        ):
+            _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
+
+        self.assertTrue(any("之后提交了非 Trellis metadata" in error for error in errors))
 
     def test_validate_phase2_rejects_post_commit_non_metadata_dirty_state(self) -> None:
         patches = self.patch_common()
@@ -718,6 +741,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         with (
             mock.patch.object(gtt, "current_head", return_value="def456"),
             mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(gtt, "metadata_only_since", return_value=(True, [".trellis/tasks/07-04-gates/review.md"])),
             mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(True, ["trellis/workflows/guru-team/workflow.md"])),
             mock.patch.object(gtt, "git_status_paths", return_value=["trellis/workflows/guru-team/workflow.md"]),
         ):

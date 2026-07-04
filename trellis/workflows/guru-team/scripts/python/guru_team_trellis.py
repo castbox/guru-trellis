@@ -1669,14 +1669,21 @@ def validate_phase2_check(
     accepted_committed_state = False
     if recorded_head != head:
         if allow_committed_head and recorded_head and is_ancestor(root, recorded_head, "HEAD"):
-            has_non_metadata, non_metadata_paths = has_non_metadata_dirty_paths(root)
-            if has_non_metadata:
+            metadata_only, tail_files = metadata_only_since(root, recorded_head)
+            if not metadata_only:
                 errors.append(
-                    "phase2-check.json 记录的 HEAD 是当前 HEAD 的祖先，但工作区存在非 Trellis metadata 变更: "
-                    + ", ".join(non_metadata_paths[:20])
+                    "phase2-check.json 记录的 HEAD 是当前 HEAD 的祖先，但之后提交了非 Trellis metadata 变更: "
+                    + ", ".join(tail_files[:20])
                 )
             else:
-                accepted_committed_state = True
+                has_non_metadata, non_metadata_paths = has_non_metadata_dirty_paths(root)
+                if has_non_metadata:
+                    errors.append(
+                        "phase2-check.json 记录的 HEAD 是当前 HEAD 的祖先，但工作区存在非 Trellis metadata 变更: "
+                        + ", ".join(non_metadata_paths[:20])
+                    )
+                else:
+                    accepted_committed_state = True
         else:
             errors.append(f"phase2-check.json 记录的 HEAD {recorded_head or '(missing)'} 与当前 HEAD {head} 不一致。")
     dirty_excluded = {repo_relative(root, phase2_check_path(task_dir))}
