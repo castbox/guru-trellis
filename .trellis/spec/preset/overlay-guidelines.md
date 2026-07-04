@@ -35,7 +35,9 @@ Continue entries must:
 
 Finish entries must:
 
-- call `.trellis/guru-team/scripts/bash/finish-work.sh --json`
+- call `.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work`
+- explain that the `--from-trellis-finish-work` marker belongs only in explicit
+  finish entries and must not be copied into continue entries
 - explain that finish-work archives the task, records journal metadata, and
   publishes a non-draft PR
 - state that only `close_issues` may use close keywords

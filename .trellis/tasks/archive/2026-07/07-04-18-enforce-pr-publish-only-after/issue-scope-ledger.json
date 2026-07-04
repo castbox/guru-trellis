@@ -1,0 +1,36 @@
+{
+  "primary_issue": {
+    "number": 18,
+    "url": "https://github.com/castbox/guru-trellis/issues/18",
+    "title": "Enforce PR publish only after finish-work",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py 已在 cmd_publish_pr 入口增加 validate_publish_invocation，普通 direct publish-pr 在解析 repo/gate/push 前 fail closed。",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py 已在 cmd_finish_work 入口增加 validate_finish_work_invocation，普通 direct finish-work 在解析 repo/gate/archive/journal 前 fail closed。",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 覆盖 direct publish-pr 默认失败、direct finish-work 默认失败、recovery dry-run 通过、finish-work 内部调用携带 from_finish_work。",
+      ".trellis/guru-team/scripts/bash/publish-pr.sh --json --dry-run 已验证返回 blocked_step=publish-pr 和 recovery_flag=--recovery-after-finish-work，未执行 push/PR。",
+      ".trellis/guru-team/scripts/bash/finish-work.sh --json --dry-run 未带 intent marker 时已验证返回 blocked_step=finish-work 和 intent_flag=--from-trellis-finish-work，未执行 archive/journal/push/PR。",
+      "trellis/workflows/guru-team/workflow.md、.trellis/workflow.md、README、workflow README、preset README、spec 和各平台 continue/finish overlay 已同步声明 continue 不 push/PR、不调用 finish-work，显式 trellis-finish-work 后才 publish。",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh 已新增新安装仓库 direct finish-work 和 direct publish-pr 被拒绝的断言，throwaway install 验证通过。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 18,
+      "url": "https://github.com/castbox/guru-trellis/issues/18",
+      "title": "Enforce PR publish only after finish-work",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 通过，10 个测试覆盖新增 finish/publish 边界。",
+        "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh 通过。",
+        "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 通过。",
+        "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh 通过，dogfood overlay copies match canonical Guru Team overlays。",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh 通过，且验证新安装仓库 direct finish-work --dry-run 与 direct publish-pr --dry-run 均被拒绝。",
+        "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-04-18-enforce-pr-publish-only-after 通过。",
+        "git diff --check 通过且无 .new/.bak/__pycache__ 残留。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}
