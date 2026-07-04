@@ -113,14 +113,16 @@ hooks, suspected bootstrap failures, or manual context reloads.
 Review and publish helpers are internal companion script subcommands used by
 the workflow; they are not daily user-facing entries. `review-branch.sh`
 records and validates the prior AI/human review result; it is not the reviewer.
-Passing gates require a Chinese summary, concrete evidence, and either
-`--reviewer` or `--review-report`.
+Passing gates require task-local `review.md`, a Chinese summary, concrete
+evidence, and `--review-report <task-local review.md>`. `--reviewer` is
+identity metadata only and cannot replace the review report digest.
 `finish-work.sh` and `publish-pr.sh` reject ordinary direct calls so
-`trellis-continue` cannot chain closeout, push, or create a PR before the
-explicit `trellis-finish-work` entrypoint. Normal PR publish is triggered only
-by `finish-work.sh --from-trellis-finish-work` after archive and journal
-succeed; direct publish is reserved for explicit recovery/debug after
-finish-work already completed.
+`trellis-continue` cannot chain closeout, commit review metadata, push, or
+create a PR before the explicit `trellis-finish-work` entrypoint. Normal PR
+publish is triggered only by `finish-work.sh --from-trellis-finish-work` after
+archive, journal, and remaining Trellis metadata-only commit succeed; direct
+publish is reserved for explicit recovery/debug after finish-work already
+completed.
 
 ## Workflow Guardrails
 

@@ -106,7 +106,9 @@ Passing the gate requires:
 - `review-branch.sh --json --pass`
 - a Chinese `--summary`
 - at least one concrete `--evidence` line
-- `--reviewer` or `--review-report`
+- task-local `review.md`
+- `--review-report <task-local review.md>`
+- `--reviewer` only as optional identity metadata
 - deployment impact evidence, even when the conclusion is that no deployment
   asset needs a change
 - no P0/P1/P2 findings
@@ -115,9 +117,10 @@ Passing the gate requires:
 
 `trellis-finish-work` is the closeout entry. It calls `finish-work.sh` with the
 required `--from-trellis-finish-work` intent marker. The helper validates the
-current review gate, rejects uncommitted non-metadata changes, archives the
-active task, records the journal, commits remaining Trellis metadata, and then
-invokes publish.
+passed review gate and its `review_report` digest, allows only Trellis
+metadata after the reviewed HEAD, rejects uncommitted non-metadata changes,
+archives the active task, records the journal, commits remaining Trellis
+metadata, and then invokes publish.
 
 `trellis-continue` must stop at Branch Review Gate and must not push, create a
 PR, invoke `publish-pr`, or invoke `finish-work`. The finish and publish helpers

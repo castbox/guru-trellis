@@ -68,14 +68,17 @@ The artifact records:
 - changed files and classified deployment impact
 - review scope
 - conclusion summary
-- reviewer identity or review report digest
+- reviewer identity metadata
+- required review report digest: `review_report.path`, `sha256`,
+  `size_bytes`, and `modified_at`
 - findings
 - Issue Scope Ledger coverage
 - validation evidence
 
 The gate is valid only for the reviewed `HEAD`, except that `finish-work` may
 allow metadata-only commits after the gate. A passed gate is invalid if it lacks
-both reviewer identity and review report metadata. Enforcement lives in
+review report metadata. `--reviewer` alone is only identity metadata and cannot
+prove the review report evidence. Enforcement lives in
 `validate_review_gate()` and `metadata_only_since()`.
 
 ## JSON and Text Encoding

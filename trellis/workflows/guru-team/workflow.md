@@ -110,7 +110,7 @@ Update spec when a task discovers a reusable pattern, pitfall, convention, or te
 
 ### Task System
 
-Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, optional `design.md`, optional `implement.md`, optional `research/`, the task-level `issue-scope-ledger.json`, the Branch Review Gate artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms.
+Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, optional `design.md`, optional `implement.md`, optional `research/`, the task-level `issue-scope-ledger.json`, the Branch Review Gate review report (`review.md`) and recorder artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms.
 
 ```bash
 python3 ./.trellis/scripts/task.py create "<title>" --slug <name>
@@ -133,6 +133,7 @@ Guru Team companion scripts:
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \
   --reviewer "codex-main-session" \
+  --review-report ".trellis/tasks/<task>/review.md" \
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json
@@ -154,8 +155,8 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
 - Phase 2 `trellis-check` is the implementation quality check step. It reviews the current task against specs, runs lint/typecheck/tests when appropriate, and may self-fix before commit.
 - Phase 3 Branch Review Gate is a post-commit release gate. First, an AI/human review must inspect the complete branch diff from the intake base branch to `HEAD`, including docs, code, tests, Trellis artifacts, config, scripts, schemas, CI/CD workflows, Docker/Compose files, Kubernetes YAML, Kustomize overlays, database migrations, Makefiles, preset installer, Issue Scope Ledger, and publish readiness.
 - On platforms with sub-agents, the main session may dispatch `trellis-check` or a dedicated review sub-agent to perform the evidence-gathering review for Phase 3. On inline platforms, the main session performs the same review directly in code-review stance.
-- The sub-agent does not own the gate. The gate is valid only after the AI/human review has run and `review-branch.sh` writes `{TASK_DIR}/review-gate.json` with summary, evidence, findings, reviewer or review report, base/head, and current `HEAD`.
-- `review-branch.sh` is a recorder / validator, not a reviewer. It must receive the prior review result through `--summary`, `--evidence`, `--finding` / `--findings-file`, plus `--reviewer` or `--review-report`.
+- The sub-agent does not own the gate. The gate is valid only after the AI/human review has run, written task-local `{TASK_DIR}/review.md`, and `review-branch.sh --review-report {TASK_DIR}/review.md` writes `{TASK_DIR}/review-gate.json` with summary, evidence, findings, reviewer identity, review-report digest, base/head, and current `HEAD`.
+- `review-branch.sh` is a recorder / validator, not a reviewer. It must receive the prior review result through `--summary`, `--evidence`, `--finding` / `--findings-file`, and `--review-report`; `--reviewer` is identity metadata only and cannot satisfy passed gate evidence by itself.
 - Do not skip Phase 2 `trellis-check` just because Branch Review Gate exists; do not treat Phase 2 check success as permission to run `finish-work` without the Phase 3 artifact.
 
 ### Context Script
@@ -563,9 +564,10 @@ Findings use `P0`, `P1`, `P2`, `P3`:
 - `P0/P1/P2`: block `finish-work`.
 - `P3`: record but does not block.
 
-Persist the review result in the conversation and, when practical, in a task
-artifact such as `{TASK_DIR}/review.md`. The review must include concrete
-summary/evidence and findings, even when findings are empty.
+Persist the review result in the conversation and in the task-local artifact
+`{TASK_DIR}/review.md`. The review report must include concrete
+summary/evidence, checked diff range, validation notes, deployment impact
+judgment, Docs SSOT reconciliation, and findings, even when findings are empty.
 
 Before writing `review.md`, `review-gate.json`, or any task artifact, confirm the
 current working directory is the task's selected `workspace_path`, not the source
@@ -576,13 +578,15 @@ task worktree only.
 
 ##### 3.5.2 Gate Artifact Recorder
 
-Only after the AI/human review has completed, write the gate artifact. The pass
-path must include `--reviewer` or `--review-report` so the artifact can prove a
-review identity or report existed before publishing:
+Only after the AI/human review has completed and `{TASK_DIR}/review.md` exists,
+write the gate artifact. The pass path must include `--review-report
+{TASK_DIR}/review.md`; `--reviewer` may additionally record identity, but it
+cannot replace the review report:
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \
   --reviewer "codex-main-session" \
+  --review-report ".trellis/tasks/<task>/review.md" \
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
 ```
@@ -595,9 +599,9 @@ or, when findings exist:
   --finding 'P2|中文问题说明|path/to/file'
 ```
 
-The artifact records base/head, diff command, conclusion, reviewer or review report, summary, concrete evidence lines, findings, changed files, Issue Scope Ledger coverage, and validation evidence. It is written to `{TASK_DIR}/review-gate.json` by default.
+The artifact records base/head, diff command, conclusion, reviewer identity metadata, review-report digest, summary, concrete evidence lines, findings, changed files, Issue Scope Ledger coverage, and validation evidence. It is written to `{TASK_DIR}/review-gate.json` by default.
 
-Passing the gate is not a blank assertion. `--pass` requires a Chinese `--summary`, at least one concrete `--evidence` line from the actual review, and either `--reviewer` or `--review-report`. Use additional `--evidence` lines for important validation commands or review coverage notes.
+Passing the gate is not a blank assertion. `--pass` requires a Chinese `--summary`, at least one concrete `--evidence` line from the actual review, and `--review-report` pointing at the task-local `review.md`. `review-gate.json` must record `review_report.path`, `sha256`, `size_bytes`, and `modified_at`. Use additional `--evidence` lines for important validation commands or review coverage notes.
 
 When the diff includes `docs/` files, CI/CD, container, Kubernetes, Kustomize, database migration, or Makefile changes, the gate evidence or findings must explicitly name those changed assets and the validation or risk judgment used for them.
 
@@ -605,16 +609,18 @@ When the diff does not change deployment assets but the requirement or code chan
 
 When the diff does not change durable docs but the task changes a long-term product, architecture, API, data, deployment, operational, or test contract, the gate evidence must record why no durable docs update is acceptable or produce a blocking finding. For repos with no durable docs SSOT, record the explicit no-docs outcome.
 
-If a user manually commits on the command line, the next `trellis-continue` or `trellis-finish-work` must check whether `review-gate.json` matches the current HEAD. A missing, failed, or stale gate blocks finish-work.
+If a user manually commits on the command line, the next `trellis-continue` or `trellis-finish-work` must check whether `review-gate.json` matches the current HEAD. A missing, failed, stale, or reviewer-only gate blocks finish-work.
 
 Do not implement this gate as a non-blocking task lifecycle hook. The workflow phase owns the review judgment; the companion script only records and validates the gate artifact.
 
 #### 3.6 Finish-work archive and journal `[required · once]`
 
-Start only after Branch Review Gate has passed for the current HEAD:
+Start only after Branch Review Gate has passed for the current HEAD. If only
+Trellis metadata such as `review.md` / `review-gate.json` remains uncommitted
+after the reviewed code HEAD, finish-work may allow that metadata tail:
 
 ```bash
-.trellis/guru-team/scripts/bash/check-review-gate.sh --json
+.trellis/guru-team/scripts/bash/check-review-gate.sh --json --allow-metadata-after-gate
 ```
 
 Then run the internal Guru Team finish helper:
@@ -623,7 +629,7 @@ Then run the internal Guru Team finish helper:
 .trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work
 ```
 
-The `--from-trellis-finish-work` marker is required proof that the explicit finish entrypoint was invoked; `trellis-continue` must not add or synthesize it. Ordinary direct `finish-work.sh` calls fail before gate, archive, journal, push, or PR side effects. The helper then runs the normal finish-work actions: it rejects uncommitted non-metadata changes, archives the active task with `task.py archive`, records the session journal with `add_session.py`, commits any remaining Trellis metadata-only changes, then invokes publish.
+The `--from-trellis-finish-work` marker is required proof that the explicit finish entrypoint was invoked; `trellis-continue` must not add or synthesize it. Ordinary direct `finish-work.sh` calls fail before gate, archive, journal, push, or PR side effects. The helper then runs the normal finish-work actions: it verifies the passed gate has `review_report` digest evidence, rejects uncommitted non-metadata changes, archives the active task with `task.py archive`, records the session journal with `add_session.py`, commits any remaining Trellis metadata-only changes, then invokes publish.
 
 `finish-work` may create Trellis metadata commits for archive and journal. These metadata commits do not invalidate the earlier code review gate; the helper only accepts Trellis metadata after the reviewed HEAD and blocks any code, config, script, schema, CI/CD, deployment, or preset change that appears after the gate.
 

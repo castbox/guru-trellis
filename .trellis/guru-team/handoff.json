@@ -1,21 +1,21 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 18,
-    "url": "https://github.com/castbox/guru-trellis/issues/18",
-    "title": "Enforce PR publish only after finish-work",
+    "number": 20,
+    "url": "https://github.com/castbox/guru-trellis/issues/20",
+    "title": "强制 Branch Review Gate 每次产出 review",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/18-enforce-pr-publish-only-after/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/20-review-gate-report-metadata/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "enforce-pr-publish-only-after",
-  "task_slug": "18-enforce-pr-publish-only-after",
-  "task_title": "#18 Enforce PR publish only after finish-work",
-  "branch_name": "codex/18-enforce-pr-publish-only-after",
+  "slug": "branch-review-gate-review",
+  "task_slug": "20-review-gate-report-metadata",
+  "task_title": "#20 强制 Branch Review Gate 每次产出 review，并由 finish-work 提交 metadata",
+  "branch_name": "codex/20-review-gate-report-metadata",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/18-enforce-pr-publish-only-after",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/20-review-gate-report-metadata",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -26,30 +26,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#18 Enforce PR publish only after finish-work",
+    "#20 强制 Branch Review Gate 每次产出 review，并由 finish-work 提交 metadata",
     "--slug",
-    "18-enforce-pr-publish-only-after",
+    "20-review-gate-report-metadata",
     "--assignee",
     "name=wumengye\ninitialized_at=2026-07-03T17:44:00.461566"
   ],
-  "task_dir": ".trellis/tasks/07-04-18-enforce-pr-publish-only-after",
+  "task_dir": ".trellis/tasks/07-04-20-review-gate-report-metadata",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 18,
-      "url": "https://github.com/castbox/guru-trellis/issues/18",
-      "title": "Enforce PR publish only after finish-work",
+      "number": 20,
+      "url": "https://github.com/castbox/guru-trellis/issues/20",
+      "title": "强制 Branch Review Gate 每次产出 review",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 18,
-        "url": "https://github.com/castbox/guru-trellis/issues/18",
-        "title": "Enforce PR publish only after finish-work",
+        "number": 20,
+        "url": "https://github.com/castbox/guru-trellis/issues/20",
+        "title": "强制 Branch Review Gate 每次产出 review",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -64,11 +64,13 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                 0ffda86 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                 ab37a64 [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle   ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task  230cc8d [codex/15-require-explicit-approval-no-task]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/18-enforce-pr-publish-only-after      0ffda86 [codex/18-enforce-pr-publish-only-after]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/18-enforce-pr-publish-only-after      a876400 [codex/18-enforce-pr-publish-only-after]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/2-align-guru-team-workflow-trellis    692cd9f [codex/2-align-guru-team-workflow-trellis]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/20-branch-review-gate-review          8e8d987 [codex/20-branch-review-gate-review]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/20-review-gate-report-metadata        ab37a64 [codex/20-review-gate-report-metadata]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/5-require-ai-review-prompt-before     44b29b0 [codex/5-require-ai-review-prompt-before]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/9-keep-dogfood-installed-overlays-in  cacf0c7 [codex/9-keep-dogfood-installed-overlays-in]"
     ],

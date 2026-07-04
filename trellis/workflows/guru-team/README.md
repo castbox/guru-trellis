@@ -100,6 +100,7 @@ Branch Review Gate 与 publish helper 是内部子命令：
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \
   --reviewer "codex-main-session" \
+  --review-report ".trellis/tasks/<task>/review.md" \
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json
@@ -116,13 +117,15 @@ matcher 判断是否进入 Guru Team issue intake 和 worktree preflight。
 
 Branch Review Gate 必须先由 AI/human review prompt 审查完整 diff，再调用
 `review-branch.sh` 固化结论。`review-branch.sh` 是 recorder / validator，不是
-reviewer；`--pass` 必须带中文 `--summary`、至少一条 `--evidence`，以及
-`--reviewer` 或 `--review-report`，避免空白自证通过。
+reviewer；`--pass` 必须先写 task-local `review.md`，再带中文 `--summary`、
+至少一条 `--evidence`，以及 `--review-report .trellis/tasks/<task>/review.md`。
+`--reviewer` 只记录身份，不能替代 review report digest。
 Phase 2 的官方 `trellis-check` sub-agent 负责 commit 前质量检查；Phase 3 Branch
 Review Gate 可由 sub-agent 辅助审查，但最终门禁以 `review-gate.json` 为准。
 
 `trellis-continue` 不得 push 分支、创建 PR、调用 `publish-pr` 或调用
-`finish-work`。PR 发布只发生在显式 `trellis-finish-work` 入口带
+`finish-work`，也不得提交 `review.md` / `review-gate.json` 等 Trellis metadata。
+PR 发布只发生在显式 `trellis-finish-work` 入口带
 `--from-trellis-finish-work` 意图标记、成功 archive task、记录 journal、提交允许的
 Trellis metadata 之后。裸 `finish-work.sh` 和 `publish-pr.sh` 默认拒绝普通直接调用；
 只有 `finish-work.sh` 的显式 finish entrypoint 调用或 finish-work 已完成后的显式
