@@ -7,6 +7,12 @@ intake、Git base branch/worktree preflight、中文 planning artifact、Issue S
 Ledger、Middle-platform Knowledge Gate、Repo Docs SSOT reconciliation、Branch
 Review Gate，以及 finish-work 成功后的自动 publish PR 规则。
 
+Guru Team extension 版本不等于官方 Trellis CLI 版本，也不等于 `trellis/index.json`
+里的 marketplace index schema version。canonical extension version 位于
+`trellis/guru-team-extension.json`；preset installer 会把当前安装版本和 source
+provenance 写入目标仓库的 `.trellis/guru-team/extension.json`，并通过
+`check-env --json` / `version.sh --json` 暴露给用户和 AI 排障流程。
+
 ## Marketplace 安装
 
 ```bash
@@ -45,6 +51,10 @@ git clone https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 installer 会写入 `.trellis/guru-team/`，并可安装 `.agents/skills`、
 `.claude/commands`、`.cursor/commands` 下的 Guru Team overlay。它不会修改 Trellis
 上游脚本、npm 全局包、`node_modules` 或 `.trellis/scripts/task.py`。
+
+installer 还会写入 `.trellis/guru-team/extension.json`，记录 Guru Team extension
+version、workflow template id、source repo/ref/commit、source tree state、selected
+platforms 和安装时间。这个文件是安装事实记录，不是用户配置。
 
 installer 幂等：同内容跳过，缺失文件写入，Guru-managed companion assets 会升级 active
 文件并把旧版保存为 `.bak`，已有 `.trellis/guru-team/config.yml` 不覆盖，识别为上游

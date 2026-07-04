@@ -57,6 +57,7 @@ VALID_PRIORITIES = {"P0", "P1", "P2", "P3"}
 BLOCKING_PRIORITIES = {"P0", "P1", "P2"}
 PLANNING_APPROVAL_ARTIFACT = "planning-approval.json"
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
+GURU_TEAM_EXTENSION_MANIFEST = Path(".trellis/guru-team/extension.json")
 DEFAULT_PLANNING_ARTIFACTS = ["prd.md", "design.md", "implement.md"]
 DEFAULT_PHASE2_TASK_ARTIFACTS = [
     "prd.md",
@@ -1171,6 +1172,54 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def read_optional_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return None, "missing"
+    except json.JSONDecodeError as exc:
+        return None, f"invalid: {exc}"
+    if not isinstance(payload, dict):
+        return None, "invalid: JSON root is not an object"
+    return payload, None
+
+
+def guru_team_extension_payload(root: Path) -> dict[str, Any]:
+    path = root / GURU_TEAM_EXTENSION_MANIFEST
+    payload, error = read_optional_json(path)
+    if payload is None:
+        status = "missing" if error == "missing" else "invalid"
+        result: dict[str, Any] = {
+            "status": status,
+            "path": GURU_TEAM_EXTENSION_MANIFEST.as_posix(),
+        }
+        if error and error != "missing":
+            result["error"] = error
+        return result
+
+    extension = payload.get("extension") if isinstance(payload.get("extension"), dict) else {}
+    source = payload.get("source") if isinstance(payload.get("source"), dict) else {}
+    install = payload.get("install") if isinstance(payload.get("install"), dict) else {}
+    requires = extension.get("requires") if isinstance(extension.get("requires"), dict) else {}
+    return {
+        "status": "ok",
+        "path": GURU_TEAM_EXTENSION_MANIFEST.as_posix(),
+        "schema_version": payload.get("schema_version"),
+        "extension_id": extension.get("extension_id"),
+        "version": extension.get("version"),
+        "workflow_template_id": extension.get("workflow_template_id"),
+        "trellis_cli_compatibility": requires.get("trellis_cli"),
+        "installed_at": payload.get("installed_at"),
+        "source_repo": source.get("repo"),
+        "source_ref": source.get("ref"),
+        "source_commit": source.get("commit"),
+        "source_tree_state": source.get("tree_state"),
+        "source_is_mutable_ref": source.get("is_mutable_ref"),
+        "selected_platforms": install.get("selected_platforms") if isinstance(install.get("selected_platforms"), list) else [],
+        "all_platforms": install.get("all_platforms"),
+    }
+
+
 def load_handoff(root: Path, config: dict[str, Any]) -> dict[str, Any]:
     path = configured_handoff_path(root, config)
     if not path.exists():
@@ -2235,6 +2284,7 @@ def check_env_payload(root: Path) -> dict[str, Any]:
     base, candidates = resolve_base_branch(root, config)
     gh_installed = shutil.which("gh") is not None
     gh_authenticated = run(["gh", "auth", "status"], cwd=root, check=False).returncode == 0 if gh_installed else False
+    extension = guru_team_extension_payload(root)
     warnings: list[str] = []
     next_steps: list[str] = []
     if not repo:
@@ -2249,11 +2299,18 @@ def check_env_payload(root: Path) -> dict[str, Any]:
     elif not gh_authenticated:
         warnings.append("GitHub CLI is not authenticated.")
         next_steps.append("Run `gh auth login` before using Guru Team GitHub issue intake or publish.")
+    if extension.get("status") == "missing":
+        warnings.append("Guru Team extension manifest is not installed.")
+        next_steps.append("Re-apply the Guru Team preset so `.trellis/guru-team/extension.json` records the installed extension version.")
+    elif extension.get("status") == "invalid":
+        warnings.append("Guru Team extension manifest is invalid.")
+        next_steps.append("Inspect `.trellis/guru-team/extension.json` or re-apply the Guru Team preset.")
     payload = {
         "status": "ok",
         "repo_root": str(root),
         "github_repo": repo,
         "trellis_installed": (root / ".trellis").is_dir(),
+        "guru_team_extension": extension,
         "gh_installed": gh_installed,
         "gh_authenticated": gh_authenticated,
         "current_branch": current,
@@ -2268,6 +2325,15 @@ def check_env_payload(root: Path) -> dict[str, Any]:
     if next_steps:
         payload["next_steps"] = next_steps
     return payload
+
+
+def cmd_version(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    return {
+        "status": "ok",
+        "repo_root": str(root),
+        "guru_team_extension": guru_team_extension_payload(root),
+    }
 
 
 def infer_assignee(root: Path, explicit: str | None) -> str | None:
@@ -3117,6 +3183,10 @@ def build_parser() -> argparse.ArgumentParser:
     check_env.add_argument("--root")
     check_env.add_argument("--json", action="store_true")
 
+    version = sub.add_parser("version")
+    version.add_argument("--root")
+    version.add_argument("--json", action="store_true")
+
     prepare = sub.add_parser("prepare")
     prepare.add_argument("--root")
     prepare.add_argument("--json", action="store_true")
@@ -3255,6 +3325,8 @@ def main() -> int:
     try:
         if args.command == "check-env":
             payload = check_env_payload(Path(args.root or os.getcwd()))
+        elif args.command == "version":
+            payload = cmd_version(args)
         elif args.command == "prepare":
             payload = cmd_prepare(args)
         elif args.command == "review-branch":

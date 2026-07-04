@@ -1,0 +1,133 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-04T12:37:41Z",
+  "task_dir": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest",
+  "base_branch": "main",
+  "head": "5030cde306bf22962b729ef135d31186d532c893",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/review.md"
+  ],
+  "checker": "codex-main-session",
+  "check_summary": "已按 issue #31、更新后的 planning approval、独立 review P2 反馈和当前 task scope 完整复查：canonical extension manifest、installed provenance 语义、installer notes、check-env/version 查询入口、installer 兼容行为、docs SSOT、dogfood sync、throwaway install 与安全边界均已覆盖；P2 stale evidence 与 provenance 语义问题已修复，未发现新的 P0/P1/P2 finding。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/prd.md",
+      "sha256": "6ac6a274228d1618bad352201b0b1939937c7d0e0de912efb778fcdcca9cf1dd",
+      "size_bytes": 5698,
+      "modified_at": "2026-07-04T12:04:21.917413+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/design.md",
+      "sha256": "297c0fcf0259fe41e10f26f9c03665201b55a3dd99b2edf8462c527b0d205672",
+      "size_bytes": 6555,
+      "modified_at": "2026-07-04T12:30:37.839793+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/implement.md",
+      "sha256": "a0bfa9d9c0dfffbad4696e076d2952aeb5695b200b0be886c817313a968b5b05",
+      "size_bytes": 4390,
+      "modified_at": "2026-07-04T12:04:21.918228+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/planning-approval.json",
+      "sha256": "de740f3cad915230d880abb9a5e74ca83501973d560d1b6b97f986182d4a1769",
+      "size_bytes": 1937,
+      "modified_at": "2026-07-04T12:37:24.001695+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "35891233237b0cb4be3d2009eac25b0a5bde359fd02098ce63e261d7854b836a",
+      "size_bytes": 3482,
+      "modified_at": "2026-07-04T11:56:36.330080+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "68c297b8311acea6368b960aebdd402070a7fa3796d15cc95d563d6f999c7785",
+      "size_bytes": 7032,
+      "modified_at": "2026-07-04T12:15:59.790118+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "6e5b9c066337ca11197c34e64ec1537df2a9eb79df4ade895c611890b11176c8",
+      "size_bytes": 6892,
+      "modified_at": "2026-07-04T11:56:36.331823+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "2976546e8cd2049c2d3ef405298879a593975c86dc7e5ee6431d9d9dbaad384a",
+      "size_bytes": 7373,
+      "modified_at": "2026-07-04T12:30:37.839542+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "1c9b3d3f35e6461994d91bdd47f60d89d0dc84329a90f63c2adc6c5bf8bdc31c",
+      "size_bytes": 3874,
+      "modified_at": "2026-07-04T11:56:36.332400+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/code-reuse-thinking-guide.md",
+      "sha256": "86fd10dc10916c00309714aa2275234f01b0ad40d21a485d43b3422e7ca79397",
+      "size_bytes": 7381,
+      "modified_at": "2026-07-04T11:56:36.330360+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/cross-layer-thinking-guide.md",
+      "sha256": "cb66957f7fad60eec4c5bd737a4d910b162a093142b1fad1d0ab48d4784c5ce3",
+      "size_bytes": 14981,
+      "modified_at": "2026-07-04T11:56:36.330701+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/guru-team-extension.json && python3 -m json.tool .trellis/guru-team/extension.json",
+      "result": "passed"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py .trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "passed, 83 tests"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms",
+      "result": "passed during fix validation; dogfood manifest updated and committed in 5030cde"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "passed"
+    },
+    {
+      "command": "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "result": "passed for public workflow sample plus current local preset"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-04-31-guru-team-extension-version-manifest",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

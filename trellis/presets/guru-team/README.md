@@ -29,6 +29,12 @@ Platform overlays are selectable. By default, the installer applies shared
 full-overlay behavior. `--platform` and `--all-platforms` are mutually
 exclusive, and invalid platform names fail closed.
 
+The preset records the installed Guru Team extension version and source
+provenance in `.trellis/guru-team/extension.json`. The canonical extension
+version lives in `trellis/guru-team-extension.json`; it is separate from the
+official Trellis CLI version and from the marketplace index schema version in
+`trellis/index.json`.
+
 ## Apply
 
 ```bash
@@ -64,8 +70,9 @@ Maintainers can verify the default non-interactive install path with:
 The script creates a temporary Git repo, runs `trellis init -y` with the
 `guru-team` marketplace workflow, applies the preset with
 `--platform codex --platform cursor`, checks that `.trellis/workflow.md`
-exists, verifies that `check-env.sh` is executable, asserts `.claude/` was not
-created, and runs `check-env --json`. Trellis CLI currently accepts
+exists, verifies that `check-env.sh` and `version.sh` are executable, asserts
+`.trellis/guru-team/extension.json` exists, asserts `.claude/` was not created,
+and runs `check-env --json` plus `version.sh --json`. Trellis CLI currently accepts
 `gh:user/repo/path`
 workflow marketplace sources, so the script fails closed on non-`main` branches
 or dirty marketplace workflow files unless
@@ -104,8 +111,10 @@ Managed Guru Team assets are installed under `.trellis/guru-team/` regardless of
 platform selection:
 
 - `.trellis/guru-team/config.yml`
+- `.trellis/guru-team/extension.json`
 - `.trellis/guru-team/schemas/intake-handoff.schema.json`
 - `.trellis/guru-team/scripts/bash/check-env.sh`
+- `.trellis/guru-team/scripts/bash/version.sh`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh`
 - `.trellis/guru-team/scripts/bash/record-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/check-planning-approval.sh`

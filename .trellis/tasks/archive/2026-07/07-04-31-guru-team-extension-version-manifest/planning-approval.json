@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-04T12:37:23Z",
+  "task_dir": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest",
+  "head": "5030cde306bf22962b729ef135d31186d532c893",
+  "dirty_paths": [
+    ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/phase2-check.json",
+    ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/review.md"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已重新审阅 issue #31 的 prd/design/implement；design.md 仅补充独立 review P2 要求的 installed provenance apply-time 语义，未扩大需求、实现边界、测试范围或关闭范围，仍可进入/保持实现与收口阶段。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户已在当前会话明确要求开始解决该 issue；本次 planning artifact 更新属于同一 issue #31 内对 review P2 的语义澄清，不引入新 scope。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/prd.md",
+      "sha256": "6ac6a274228d1618bad352201b0b1939937c7d0e0de912efb778fcdcca9cf1dd",
+      "size_bytes": 5698,
+      "modified_at": "2026-07-04T12:04:21.917413+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/design.md",
+      "sha256": "297c0fcf0259fe41e10f26f9c03665201b55a3dd99b2edf8462c527b0d205672",
+      "size_bytes": 6555,
+      "modified_at": "2026-07-04T12:30:37.839793+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/implement.md",
+      "sha256": "a0bfa9d9c0dfffbad4696e076d2952aeb5695b200b0be886c817313a968b5b05",
+      "size_bytes": 4390,
+      "modified_at": "2026-07-04T12:04:21.918228+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

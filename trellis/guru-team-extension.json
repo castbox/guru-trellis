@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "extension_id": "guru-team",
+  "name": "Guru Team Trellis Extension",
+  "version": "0.1.0",
+  "workflow_template_id": "guru-team",
+  "marketplace_index_schema_version": 1,
+  "requires": {
+    "trellis_cli": ">=0.6.0"
+  },
+  "tested": {
+    "trellis_cli": []
+  },
+  "public_api": {
+    "workflow_template_id": "guru-team",
+    "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
+    "managed_paths": [
+      ".trellis/guru-team/",
+      ".agents/skills/trellis-start/",
+      ".agents/skills/trellis-continue/",
+      ".agents/skills/trellis-finish-work/",
+      ".codex/prompts/",
+      ".codex/skills/",
+      ".cursor/commands/",
+      ".claude/commands/trellis/"
+    ],
+    "config_files": [
+      ".trellis/guru-team/config.yml",
+      ".trellis/config.yaml"
+    ],
+    "artifact_contracts": [
+      ".trellis/guru-team/handoff.json",
+      ".trellis/guru-team/extension.json",
+      "planning-approval.json",
+      "phase2-check.json",
+      "issue-scope-ledger.json",
+      "review.md",
+      "review-gate.json",
+      "pr-readiness.json"
+    ],
+    "companion_scripts": [
+      "check-env",
+      "version",
+      "prepare-task",
+      "record-planning-approval",
+      "check-planning-approval",
+      "record-phase2-check",
+      "check-phase2-check",
+      "review-branch",
+      "check-review-gate",
+      "finish-work",
+      "publish-pr"
+    ]
+  },
+  "release_notes": "README.md#guru-team-extension-version"
+}

@@ -22,6 +22,31 @@ template:
 4. Update `trellis/presets/guru-team/README.md` installed-file list.
 5. Validate a temporary install or upgrade path.
 
+## Extension Version Manifest
+
+`trellis/guru-team-extension.json` is the canonical source for the Guru Team
+extension version. It is separate from the official Trellis CLI version,
+`.trellis/.version`, and `trellis/index.json.version`, which is the marketplace
+index schema version.
+
+The preset installer must write `.trellis/guru-team/extension.json` into target
+repositories on every apply. That installed manifest is an install provenance
+record, not user configuration:
+
+- overwrite it with the current deterministic install facts instead of writing
+  `.new`;
+- include extension id, SemVer version, workflow template id, source repo/ref,
+  source commit when available, source tree state, selected platforms, and
+  install timestamp;
+- do not record tokens, GitHub auth details, `.env` contents, signed URLs, or
+  unnecessary local-only source paths;
+- tolerate source directories that are Git archives or lack `git` by recording
+  `archive` / `unknown` provenance instead of failing the install.
+
+When adding user-facing version fields, expose them through `check-env --json`
+or `version.sh --json`; scripts may record and validate objective facts, but
+must not decide whether an upgrade or rollback is semantically safe.
+
 ## Config Preservation
 
 `config-template.yml` is managed and may be upgraded with a `.bak`. Existing
