@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-05T15:53:45Z",
+  "generated_at": "2026-07-05T16:40:47Z",
   "task_dir": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh",
   "base_branch": "main",
-  "head": "d6e32a29e1cb9a350033796cca4c4724a4d050f2",
+  "head": "54cb5535e8c7a5ebec1416677ea2619862fe939d",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [],
   "checker": "codex-main-session",
-  "check_summary": "已针对归档后 Branch Review Gate 发布恢复补丁执行 Phase 2 检查：代码、测试、dogfood 安装副本、spec 与当前归档 task artifact 均已覆盖，未发现未解决 P0/P1/P2 findings。",
+  "check_summary": "已针对归档后 planning approval / review gate recovery 补丁执行 Phase 2 检查：代码、测试、dogfood 安装副本、spec 与当前归档 task artifact 均已覆盖，未发现未解决 P0/P1/P2 findings。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/prd.md",
@@ -29,21 +29,27 @@
     },
     {
       "path": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/issue-scope-ledger.json",
-      "sha256": "051099ebe4341c58df9a34ac453ebaa213a9326038210df85be6c7f8171cb83f",
-      "size_bytes": 2197,
-      "modified_at": "2026-07-05T15:36:29.707258+00:00"
+      "sha256": "d8047fa0067bfe92d4841380d3229f8ffff4df4e19265131d72c5fb797bcec86",
+      "size_bytes": 2877,
+      "modified_at": "2026-07-05T16:20:26.361784+00:00"
+    },
+    {
+      "path": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/planning-approval.json",
+      "sha256": "120685fbb508fc4f7b05582ae128b5026f4757bdbb65250bcfeab0796f8df04f",
+      "size_bytes": 2373,
+      "modified_at": "2026-07-05T15:31:16.644526+00:00"
     },
     {
       "path": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/review.md",
-      "sha256": "a2db5e3f6fdb43fa0e65f0952735af8b56037884220ffafb406d4776d4bc7d23",
-      "size_bytes": 1707,
-      "modified_at": "2026-07-05T15:30:24.839886+00:00"
+      "sha256": "67f4b9cf64ba11de5e23b14b2b75bf46acffbaefcb0410858136c2cb96ee7ed8",
+      "size_bytes": 2815,
+      "modified_at": "2026-07-05T16:36:52.232186+00:00"
     },
     {
       "path": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/agent-assignment.json",
-      "sha256": "576dae6c1499a7bc446c905cf133033791263f8540a41d2d82abf94099a2fd15",
-      "size_bytes": 13106,
-      "modified_at": "2026-07-05T15:30:07.204999+00:00"
+      "sha256": "e5ffee90b78104e08ca92b0c7d534d1639c45f0075f67b93b7cd7f6b76f0d395",
+      "size_bytes": 16579,
+      "modified_at": "2026-07-05T16:37:06.434389+00:00"
     },
     {
       "path": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/review-gate.json",
@@ -79,7 +85,7 @@
   "validation_commands": [
     {
       "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "result": "126 tests OK"
+      "result": "127 tests OK"
     },
     {
       "command": "PYTHONPYCACHEPREFIX=/tmp/guru-trellis-pycache python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
