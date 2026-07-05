@@ -98,7 +98,11 @@ bodies are limited to draft/preview paths. `--body-artifact` must carry
 `body_file` values from the artifact directory, not the repository root.
 When `finish-work` archives the active task before publish, rewrite active task
 artifact paths to the archived task path and read the final PR body from that
-archived artifact.
+archived artifact. If the archived `review-gate.json` still contains
+pre-archive task-local paths for `review.md`, `agent-assignment.json`, or
+`issue-scope-ledger.json`, the helper may deterministically rewrite those paths
+to the archived task directory and recompute only the affected digest metadata
+before publish. This is archive metadata migration, not review judgment.
 
 Planning and Phase 2 helpers follow the same recorder / validator boundary:
 

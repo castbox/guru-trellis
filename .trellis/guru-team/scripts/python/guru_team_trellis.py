@@ -1929,6 +1929,12 @@ def validate_agent_assignment_payload(
     return errors
 
 
+def normalize_agent_assignment_for_task(root: Path, task_dir: Path, payload: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(payload)
+    normalized["task"] = normalized_archive_task_value(root, task_dir, normalized.get("task"))
+    return normalized
+
+
 def summarize_agent_assignment(root: Path, task_dir: Path, path: Path, payload: dict[str, Any]) -> dict[str, Any]:
     digest = file_digest(root, path)
     roles = sorted(
@@ -2090,7 +2096,7 @@ def validate_agent_assignment(
     path = resolve_task_local_path(root, task_dir, assignment_arg) if assignment_arg else agent_assignment_path(task_dir)
     if not path.exists():
         raise WorkflowError(f"Agent assignment artifact not found: {path}", exit_code=2)
-    payload = read_json(path)
+    payload = normalize_agent_assignment_for_task(root, task_dir, read_json(path))
     errors = validate_agent_assignment_payload(root, task_dir, payload, require_current_head=require_current_head)
     summary = summarize_agent_assignment(root, task_dir, path, payload) if not errors else {}
     return path, payload, errors, summary
@@ -2131,6 +2137,47 @@ def dirty_paths_excluding(root: Path, excluded: set[str]) -> list[str]:
     ]
 
 
+def task_dir_is_archived(root: Path, task_dir: Path) -> bool:
+    try:
+        task_dir.resolve().relative_to((tasks_root(root) / "archive").resolve())
+        return True
+    except ValueError:
+        return False
+
+
+def active_task_relative_for_archive(root: Path, task_dir: Path) -> str | None:
+    if not task_dir_is_archived(root, task_dir):
+        return None
+    return (tasks_root(root) / task_dir.name).relative_to(root).as_posix()
+
+
+def migrated_archive_entry(root: Path, task_dir: Path, entry: Any, expected_name: str) -> dict[str, Any] | None:
+    if not isinstance(entry, dict):
+        return None
+    active_task = active_task_relative_for_archive(root, task_dir)
+    if active_task is None:
+        return None
+    path_value = str(entry.get("path") or "").strip()
+    if not path_value:
+        return None
+    expected_active_path = f"{active_task}/{expected_name}"
+    if path_value != expected_active_path:
+        return None
+    archived_path = task_dir / expected_name
+    if not archived_path.is_file():
+        return None
+    migrated = dict(entry)
+    migrated.update(file_digest(root, archived_path))
+    return migrated
+
+
+def normalized_archive_task_value(root: Path, task_dir: Path, value: Any) -> Any:
+    active_task = active_task_relative_for_archive(root, task_dir)
+    if active_task is None or value != active_task:
+        return value
+    return repo_relative(root, task_dir)
+
+
 def planning_approval_path(task_dir: Path) -> Path:
     return task_dir / PLANNING_APPROVAL_ARTIFACT
 
@@ -2142,6 +2189,7 @@ def phase2_check_path(task_dir: Path) -> Path:
 def valid_review_report_fields(root: Path, task_dir: Path, review_report: Any) -> list[str]:
     if not isinstance(review_report, dict):
         return ["Branch Review Gate 缺少 review_report；passed gate 必须引用 task-local review.md digest。"]
+    review_report = migrated_archive_entry(root, task_dir, review_report, REVIEW_REPORT_ARTIFACT) or review_report
     errors: list[str] = []
     for key in ["path", "sha256", "size_bytes", "modified_at"]:
         if not review_report.get(key):
@@ -2166,6 +2214,7 @@ def valid_agent_assignment_summary_fields(
 ) -> list[str]:
     if not isinstance(agent_assignment, dict) or not agent_assignment:
         return ["Branch Review Gate 缺少 agent_assignment；passed gate 必须记录 fresh 最终放行审查代理的 agent-assignment.json digest。"]
+    agent_assignment = migrated_archive_entry(root, task_dir, agent_assignment, AGENT_ASSIGNMENT_ARTIFACT) or agent_assignment
     errors: list[str] = []
     errors.extend(digest_errors(root, agent_assignment, "Branch Review Gate agent_assignment"))
     path_value = str(agent_assignment.get("path") or "").strip()
@@ -2184,6 +2233,7 @@ def valid_agent_assignment_summary_fields(
     except WorkflowError as exc:
         errors.append(str(exc))
         return errors
+    payload = normalize_agent_assignment_for_task(root, task_dir, payload)
     errors.extend(validate_agent_assignment_payload(root, task_dir, payload, require_current_head=False))
     errors.extend(final_review_round_errors(root, payload, expected_head=expected_head))
     roles = agent_assignment.get("roles")
@@ -2566,6 +2616,59 @@ def load_review_gate(task_dir: Path, config: dict[str, Any]) -> tuple[Path, dict
     if not path.exists():
         raise WorkflowError(f"Branch Review Gate artifact not found: {path}")
     return path, read_json(path)
+
+
+def migrate_review_gate_for_archived_task(root: Path, task_dir: Path, config: dict[str, Any]) -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "migrated": False,
+        "path": None,
+        "updates": [],
+    }
+    if not task_dir_is_archived(root, task_dir):
+        return result
+    path = configured_review_gate_path(task_dir, config)
+    result["path"] = str(path)
+    if not path.exists():
+        return result
+    gate = read_json(path)
+    changed = False
+
+    archived_task = repo_relative(root, task_dir)
+    if gate.get("task_dir") != archived_task:
+        gate["task_dir"] = archived_task
+        result["updates"].append("task_dir")
+        changed = True
+
+    issue_scope = gate.get("issue_scope")
+    if isinstance(issue_scope, dict):
+        expected_ledger = repo_relative(root, issue_scope_ledger_path(task_dir))
+        if issue_scope.get("ledger_path") != expected_ledger:
+            issue_scope["ledger_path"] = expected_ledger
+            result["updates"].append("issue_scope.ledger_path")
+            changed = True
+
+    verification = gate.get("verification_evidence")
+    if isinstance(verification, dict):
+        review_report = verification.get("review_report")
+        migrated_report = migrated_archive_entry(root, task_dir, review_report, REVIEW_REPORT_ARTIFACT)
+        if migrated_report is not None and migrated_report != review_report:
+            verification["review_report"] = migrated_report
+            result["updates"].append("verification_evidence.review_report")
+            changed = True
+
+        agent_assignment = verification.get("agent_assignment")
+        migrated_assignment = migrated_archive_entry(root, task_dir, agent_assignment, AGENT_ASSIGNMENT_ARTIFACT)
+        if migrated_assignment is not None:
+            migrated_assignment["task"] = normalized_archive_task_value(root, task_dir, migrated_assignment.get("task"))
+            if migrated_assignment != agent_assignment:
+                verification["agent_assignment"] = migrated_assignment
+                result["updates"].append("verification_evidence.agent_assignment")
+                changed = True
+
+    if changed:
+        write_json(path, gate)
+        result["migrated"] = True
+    return result
 
 
 def metadata_only_since(root: Path, reviewed_head: str) -> tuple[bool, list[str]]:
@@ -3683,6 +3786,13 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
             },
         )
 
+    archive_migration = None
+    metadata_commit: dict[str, Any] | None = None
+    if not args.dry_run:
+        archive_migration = migrate_review_gate_for_archived_task(root, task_dir, config)
+        if archive_migration.get("migrated"):
+            metadata_commit = commit_if_metadata_dirty(root, "chore(trellis): finalize task metadata")
+
     payload: dict[str, Any] = {
         "status": "dry-run" if args.dry_run else "ok",
         "repo": repo,
@@ -3698,6 +3808,8 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
         "reviewed_source_errors": reviewed_source_errors,
         "review_gate": str(gate_path),
         "issue_scope_ledger": str(issue_scope_ledger_path(task_dir)),
+        "archive_migration": archive_migration,
+        "metadata_commit": metadata_commit,
     }
     if args.dry_run:
         return payload
@@ -3920,7 +4032,10 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     publish_task = str(archived_task_dir) if archived_task_dir else (args.task or str(task_dir))
     publish_body_file = args.body_file
     publish_body_artifact = args.body_artifact
+    archive_migration: dict[str, Any] | None = None
     if archived_task_dir:
+        archive_migration = migrate_review_gate_for_archived_task(root, archived_task_dir, config)
+        metadata_commit = commit_if_metadata_dirty(root, "chore(trellis): finalize task metadata")
         publish_body_file = rewrite_active_task_artifact_path(root, task_dir, archived_task_dir, publish_body_file)
         publish_body_artifact = rewrite_active_task_artifact_path(root, task_dir, archived_task_dir, publish_body_artifact)
     publish_args = argparse.Namespace(
@@ -3947,6 +4062,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         "review_gate": str(gate_path),
         "reviewed_head": reviewed_head,
         "metadata_commit": metadata_commit,
+        "archive_migration": archive_migration,
         "publish": publish_payload,
     }
 

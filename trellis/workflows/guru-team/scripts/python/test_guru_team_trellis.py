@@ -1620,6 +1620,42 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertIsNone(publish_args_obj.body_artifact)
         self.assertEqual(payload["publish"]["status"], "dry-run")
 
+    def test_finish_work_migrates_archived_review_gate_before_publish(self) -> None:
+        body_path = self.task_dir / "reviewed-pr-body.md"
+        body_path.write_text(valid_pr_body("finish-work 归档后迁移 review gate。"), encoding="utf-8")
+        gate = {
+            "head": "abc123",
+            "conclusion": {"passed": True, "summary": "finish-work 后发布。"},
+            "changed_files": ["trellis/workflows/guru-team/workflow.md"],
+        }
+        archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-publish-boundary"
+        archive_migration = {"migrated": True, "updates": ["verification_evidence.review_report"]}
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
+            mock.patch.object(gtt, "load_handoff", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])),
+            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(gtt, "recent_work_commits", return_value=["abc123"]),
+            mock.patch.object(gtt, "run") as run,
+            mock.patch.object(gtt, "commit_if_metadata_dirty", side_effect=[
+                {"committed": True, "commit": "archive"},
+                {"committed": True, "commit": "migration"},
+            ]) as commit_metadata,
+            mock.patch.object(gtt, "resolve_existing_task_dir", return_value=archived_task_dir),
+            mock.patch.object(gtt, "migrate_review_gate_for_archived_task", return_value=archive_migration) as migrate,
+            mock.patch.object(gtt, "cmd_publish_pr", return_value={"status": "dry-run"}) as publish,
+        ):
+            run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
+            payload = gtt.cmd_finish_work(finish_args(body_file=str(body_path), dry_run=False))
+
+        migrate.assert_called_once_with(self.root, archived_task_dir, {**gtt.DEFAULTS, "github_repo": "owner/repo"})
+        self.assertEqual(commit_metadata.call_count, 2)
+        publish.assert_called_once()
+        self.assertEqual(payload["archive_migration"], archive_migration)
+        self.assertEqual(payload["metadata_commit"]["commit"], "migration")
+
     def test_finish_work_dry_run_returns_plan_without_archive_journal_commit_or_publish(self) -> None:
         body_path = self.task_dir / "reviewed-pr-body.md"
         body_path.write_text(valid_pr_body("finish-work dry-run 只输出 readiness preview。"), encoding="utf-8")
@@ -2710,6 +2746,49 @@ class ReviewGateReportTest(unittest.TestCase):
             "reuse_decisions_count": 0,
         }
 
+    def write_archived_gate_with_active_paths(self) -> Path:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\n最终放行审查代理给出 0 findings。\n", encoding="utf-8")
+        assignment = self.write_agent_assignment()
+        self.write_gate(review_report=gtt.file_digest(self.root, review_report))
+        gate = gtt.read_json(self.task_dir / "review-gate.json")
+        gate["task_dir"] = ".trellis/tasks/07-04-review-gate"
+        gate["findings"] = []
+        gate["conclusion"]["findings_count"] = 0
+        gate["conclusion"]["blocking_findings_count"] = 0
+        gate["issue_scope"] = {
+            "ledger_path": ".trellis/tasks/07-04-review-gate/issue-scope-ledger.json",
+            "close_issues_reviewed": [{"number": 20, "title": "Review gate"}],
+        }
+        gate["verification_evidence"]["agent_assignment"] = {
+            "path": ".trellis/tasks/07-04-review-gate/agent-assignment.json",
+            "sha256": gtt.hashlib.sha256(assignment.read_bytes()).hexdigest(),
+            "size_bytes": assignment.stat().st_size,
+            "modified_at": "2026-07-04T00:00:00+00:00",
+            "roles": ["实现代理", "最终放行审查代理"],
+            "agents_count": 1,
+            "review_rounds_count": 1,
+            "reuse_decisions_count": 0,
+            "task": ".trellis/tasks/07-04-review-gate",
+        }
+        (self.task_dir / "review-gate.json").write_text(
+            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-review-gate"
+        archived_task_dir.mkdir(parents=True)
+        for name in [
+            "task.json",
+            "issue-scope-ledger.json",
+            "review.md",
+            "agent-assignment.json",
+            "review-gate.json",
+        ]:
+            (archived_task_dir / name).write_bytes((self.task_dir / name).read_bytes())
+        review_report.unlink()
+        assignment.unlink()
+        return archived_task_dir
+
     def test_validate_review_gate_rejects_reviewer_only_passed_gate(self) -> None:
         self.write_gate(review_report=None)
         with mock.patch.object(gtt, "current_head", return_value="abc123"):
@@ -2802,6 +2881,29 @@ class ReviewGateReportTest(unittest.TestCase):
             _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
 
         self.assertEqual(errors, [])
+
+    def test_validate_review_gate_accepts_archived_task_with_active_artifact_paths(self) -> None:
+        archived_task_dir = self.write_archived_gate_with_active_paths()
+        with (
+            mock.patch.object(gtt, "current_head", return_value="abc123"),
+            mock.patch.object(gtt, "git_object_exists", return_value=True),
+        ):
+            _, _, errors = gtt.validate_review_gate(self.root, archived_task_dir, gtt.DEFAULTS, False)
+
+        self.assertEqual(errors, [])
+
+    def test_migrate_review_gate_for_archived_task_rewrites_task_local_paths(self) -> None:
+        archived_task_dir = self.write_archived_gate_with_active_paths()
+        migration = gtt.migrate_review_gate_for_archived_task(self.root, archived_task_dir, gtt.DEFAULTS)
+        gate = gtt.read_json(archived_task_dir / "review-gate.json")
+        archived_task = ".trellis/tasks/archive/2026-07/07-04-review-gate"
+
+        self.assertTrue(migration["migrated"])
+        self.assertEqual(gate["task_dir"], archived_task)
+        self.assertEqual(gate["issue_scope"]["ledger_path"], f"{archived_task}/issue-scope-ledger.json")
+        self.assertEqual(gate["verification_evidence"]["review_report"]["path"], f"{archived_task}/review.md")
+        self.assertEqual(gate["verification_evidence"]["agent_assignment"]["path"], f"{archived_task}/agent-assignment.json")
+        self.assertEqual(gate["verification_evidence"]["agent_assignment"]["task"], archived_task)
 
     def test_validate_review_gate_rejects_main_session_reviewer(self) -> None:
         self.write_gate(review_report=self.valid_report())

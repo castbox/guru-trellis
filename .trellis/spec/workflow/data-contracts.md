@@ -239,6 +239,14 @@ prove the review report evidence; main-session/self-review identities are
 rejected for passed gates. Enforcement lives in `validate_review_gate()` and
 `metadata_only_since()`.
 
+After `task.py archive`, the archived task is the new task-local boundary.
+Validators may accept a gate whose digest entries still point at the
+pre-archive active task path when the corresponding archived files exist and
+their content digests match. Finish/publish recovery may then rewrite only the
+task path, ledger path, `review_report`, and `agent_assignment` digest metadata
+to the archived task path before committing Trellis metadata. This does not
+change the reviewed code `HEAD` or the AI review conclusion.
+
 Branch Review Gate treats every finding priority (`P0`, `P1`, `P2`, `P3`) as
 blocking. `observations[]` are non-blocking notes, and
 `followup_candidates[]` are out-of-scope future work candidates. They must not
