@@ -172,7 +172,7 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
 - Phase 3 Branch Review Gate is a post-commit release gate. First, an AI/human review must inspect the complete branch diff from the intake base branch to `HEAD`, including docs, code, tests, Trellis artifacts, config, scripts, schemas, CI/CD workflows, Docker/Compose files, Kubernetes YAML, Kustomize overlays, database migrations, Makefiles, preset installer, Issue Scope Ledger, and publish readiness.
 - Passing Phase 3 Branch Review Gate requires independent Agent review evidence. The main session may coordinate the review, inspect the report, and run the recorder, but the main session's own self-review must not pass the gate.
 - Phase 3 also performs a post-commit Phase 2 audit: `phase2-check.json` is recorded before commit with the then-current `dirty_paths`, and `review-branch.sh` later verifies that committed non-metadata task work after the recorded HEAD is covered by those paths. Do not re-record Phase 2 after the task work commit just to make HEAD match; return to Phase 2 only when new non-metadata changes appear or evidence is invalid.
-- On platforms with sub-agents, dispatch `trellis-check` or a dedicated review sub-agent to perform the evidence-gathering review for Phase 3. On inline platforms, stop before a passing gate unless an independent Agent review report is available through an external/team process.
+- On platforms with sub-agents, dispatch `trellis-check` or a dedicated review sub-agent to perform the evidence-gathering review for Phase 3. The review sub-agent reviews docs, code, tests, artifacts, and diff evidence as an AI reviewer; it must not run Guru Team recorder/validator extension scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*` as part of its review. On inline platforms, stop before a passing gate unless an independent Agent review report is available through an external/team process.
 - Codex defaults to `codex.dispatch_mode: sub-agent` in Guru Team projects. The main session's dispatch prompt must start with `Active task: <task path>`, and Codex sub-agents fall back to `task.py current --source` when that line is unavailable. Explicit `codex.dispatch_mode: inline` is a downgrade/debug mode.
 - The sub-agent does not own the gate. The gate is valid only after the independent AI/human review has run, written task-local `{TASK_DIR}/review.md`, and `review-branch.sh --review-source independent-agent --review-report {TASK_DIR}/review.md --agent-assignment {TASK_DIR}/agent-assignment.json` writes `{TASK_DIR}/review-gate.json` with summary, evidence, findings, reviewer identity, review source, review-report digest, agent-assignment digest, base/head, and current `HEAD`.
 - `review-branch.sh` is a recorder / validator, not a reviewer. It must receive the prior review result through `--summary`, `--evidence`, `--finding` / `--findings-file`, optional `--observation` / `--followup-candidate`, `--review-source independent-agent`, and `--review-report`; `--reviewer` is identity metadata only and cannot satisfy passed gate evidence by itself. Reviewer identities such as `codex-main-session`, `claude-main-session`, `cursor-main-session`, `*-main-session`, or `self-review` are rejected for a passing gate.
@@ -669,7 +669,7 @@ Before or immediately after dispatching the independent review, record the revie
 - follow-up review that verifies fixes may use `问题闭环审查代理`;
 - the pass/final release review uses `最终放行审查代理`.
 
-Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reuse_policy`, and `reuse_decision`; `round` values must be unique and strictly increasing in recorded order so the final round is unambiguous. If any review round finds a finding, including a previous `最终放行审查代理` round that discovered a new issue, that same technical `agent_id` must first be reused as `问题闭环审查代理` on the current HEAD and record `findings_count: 0` with `reuse_decision: reuse-for-closure`. Only after every finding owner has a later successful closure round may the workflow dispatch a fresh new `最终放行审查代理`. A finding owner must not become the `最终放行审查代理`. The final pass round must be the last review round, use a fresh new `最终放行审查代理`, set `reuse_decision: new-agent`, review the current HEAD's complete diff, and record `findings_count: 0`. If the same technical agent is reused for closure, record why reuse is limited to closure. If an agent is replaced, record why the replacement was chosen. `platform_nickname` should be the Chinese UI nickname when the platform provides one; otherwise record the raw automatic nickname. It remains display-only either way.
+Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reuse_policy`, and `reuse_decision`; `round` values must be unique and strictly increasing in recorded order so the final round is unambiguous. If any review round finds a finding, including a previous `最终放行审查代理` round that discovered a new issue, that same technical `agent_id` must later be reused as `问题闭环审查代理` and record `findings_count: 0` with `reuse_decision: reuse-for-closure` to confirm its own finding is closed. Only after every finding owner has a later successful closure round may the workflow dispatch a fresh new `最终放行审查代理`. A finding owner must not become the `最终放行审查代理`. The final pass round must be the last review round, use a fresh new `最终放行审查代理`, set `reuse_decision: new-agent`, review the current HEAD's complete diff, and record `findings_count: 0`. If the same technical agent is reused for closure, record why reuse is limited to closure. If an agent is replaced, record why the replacement was chosen. `platform_nickname` should be the Chinese UI nickname when the platform provides one; otherwise record the raw automatic nickname. It remains display-only either way.
 
 The AI/human review must cover:
 
@@ -695,7 +695,13 @@ Review results must distinguish:
 - `followup_candidate`: out-of-scope future work candidate that should become a follow-up issue or Issue Scope Ledger entry when appropriate, but is not a current PR finding.
 
 Persist the independent review result in the conversation and in the task-local
-artifact `{TASK_DIR}/review.md`. The review report must include concrete
+artifact `{TASK_DIR}/review.md`. Independent review agents must review the
+branch diff and repository artifacts directly from an AI reviewer perspective;
+they do not execute Guru Team recorder/validator extension scripts such as
+`review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or
+`record-*`. The main session runs those scripts only after the review result
+exists, to record and validate objective gate evidence. The review report must
+include concrete
 summary/evidence, checked diff range, validation notes, deployment impact
 judgment, Docs SSOT reconciliation, findings/observations/follow-up candidates
 even when each list is empty, and the Chinese logical review role plus whether
@@ -711,7 +717,7 @@ task worktree only.
 ##### 3.5.2 Gate Artifact Recorder
 
 Only after every finding owner has completed a successful same-agent
-`问题闭环审查代理` closure round, then a fresh `最终放行审查代理` has completed an
+`问题闭环审查代理` closure round for its finding, then a fresh `最终放行审查代理` has completed an
 independent review of the current HEAD's full diff with zero findings and
 `{TASK_DIR}/review.md` exists, write the passing gate artifact. The pass path must include
 `--review-source independent-agent` and `--review-report {TASK_DIR}/review.md`;

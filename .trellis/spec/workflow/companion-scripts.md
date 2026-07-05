@@ -145,7 +145,7 @@ final or fresh final reviewer metadata.
 
 When a review round has findings, including a previous final-review round that
 found a new issue, the same technical `agent_id` must later be recorded only as
-`问题闭环审查代理` to confirm the fix on the reviewed code HEAD. A passing gate
+`问题闭环审查代理` to confirm its finding is closed. A passing gate
 must validate that every finding owner has such a later closure round with
 `findings_count: 0` and `reuse_decision: reuse-for-closure`, and then validate a
 fresh `最终放行审查代理` review round: `review_rounds[].round` values are unique
@@ -154,6 +154,13 @@ and strictly increasing in recorded order, it is the unambiguous last round,
 `reuse_decision` is `new-agent`, and the final reviewer did not own any earlier
 finding round. This is an objective metadata check only; the AI/human review
 still owns the judgment that the review covered the full diff.
+
+Independent review agents do not run Guru Team recorder/validator extension
+scripts as part of their review. They may inspect docs, code, tests, diffs, and
+ordinary validation evidence, but `review-branch.sh`, `check-review-gate.sh`,
+`record-agent-assignment.sh`, and `record-*` calls belong to the main session
+after the review result exists. Those calls record and validate objective
+artifact evidence; they are not review work.
 
 `review-branch.sh` may record non-blocking `observations[]` and
 `followup_candidates[]` in `review-gate.json`. They are not findings and do not

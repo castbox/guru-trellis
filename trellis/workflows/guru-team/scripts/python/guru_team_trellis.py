@@ -1898,7 +1898,7 @@ def validate_agent_assignment_payload(
                 seen_round_numbers.add(round_value)
                 previous_round_number = round_value
             findings_count = item.get("findings_count")
-            if not isinstance(findings_count, int) or isinstance(findings_count, bool) or findings_count < 0:
+            if not is_strict_int(findings_count) or findings_count < 0:
                 errors.append(f"agent-assignment.json review_rounds[{index}].findings_count 必须是非负整数。")
             if str(item.get("reuse_decision") or "").strip() not in ALLOWED_REUSE_DECISIONS:
                 errors.append(f"agent-assignment.json review_rounds[{index}].reuse_decision 非法。")
@@ -1961,11 +1961,13 @@ def summarize_agent_assignment(root: Path, task_dir: Path, path: Path, payload: 
     }
 
 
+def is_strict_int(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
 def review_round_number(item: dict[str, Any]) -> int:
     value = item.get("round")
-    if isinstance(value, bool):
-        return 0
-    if isinstance(value, int):
+    if is_strict_int(value):
         return value
     return 0
 
@@ -2014,8 +2016,9 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
         errors.append("最终放行审查代理必须是最后一轮 review_rounds[]；后续轮次: " + ", ".join(later_rounds) + "。")
     if reviewed_head != current:
         errors.append(f"最终放行审查代理 reviewed_head {reviewed_head or '(missing)'} 与当前 HEAD {current} 不一致。")
-    if final_round.get("findings_count") != 0:
-        errors.append("最终放行审查代理 findings_count 必须为 0。")
+    final_findings_count = final_round.get("findings_count")
+    if not is_strict_int(final_findings_count) or final_findings_count != 0:
+        errors.append("最终放行审查代理 findings_count 必须为明确整数 0。")
     if str(final_round.get("reuse_decision") or "").strip() != "new-agent":
         errors.append("最终放行审查代理 reuse_decision 必须是 new-agent，不能复用问题发现/闭环审查代理。")
     if not final_agent:
@@ -2025,7 +2028,7 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
         for item in rounds
         if isinstance(item, dict)
         and item is not final_round
-        and isinstance(item.get("findings_count"), int)
+        and is_strict_int(item.get("findings_count"))
         and item["findings_count"] > 0
         and str(item.get("agent_id") or "").strip()
     }
@@ -2034,7 +2037,7 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
         for index, item in enumerate(rounds)
         if isinstance(item, dict)
         and item is not final_round
-        and isinstance(item.get("findings_count"), int)
+        and is_strict_int(item.get("findings_count"))
         and item["findings_count"] > 0
         and not str(item.get("agent_id") or "").strip()
     ]
@@ -2049,7 +2052,7 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
         for item in rounds
         if isinstance(item, dict)
         and item is not final_round
-        and isinstance(item.get("findings_count"), int)
+        and is_strict_int(item.get("findings_count"))
         and item["findings_count"] > 0
         and str(item.get("agent_id") or "").strip()
     ]
@@ -2064,13 +2067,13 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
             and review_round_number(item) < final_round_number
             and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
             and str(item.get("agent_id") or "").strip() == finding_agent
-            and item.get("findings_count") == 0
-            and str(item.get("reviewed_head") or "").strip() == current
+            and is_strict_int(item.get("findings_count"))
+            and item["findings_count"] == 0
             and str(item.get("reuse_decision") or "").strip() == "reuse-for-closure"
         ]
         if not closure_candidates:
             errors.append(
-                "发现过 finding 的 review agent 必须先以问题闭环审查代理复审当前 HEAD 并给出 0 findings，"
+                "发现过 finding 的 review agent 必须先以问题闭环审查代理复审并给出 0 findings，"
                 f"然后才能启动新的最终放行审查代理；缺少闭环轮次: round {finding_round.get('round') or finding_round_number} agent {finding_agent}。"
             )
     if final_agent and final_agent in finding_owner_agents:

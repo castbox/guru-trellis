@@ -90,6 +90,13 @@ reviewer. Non-blocking `observations[]` and out-of-scope
 `followup_candidates[]` may be recorded separately, but must not hide
 current-scope defects.
 
+Independent review agents must inspect docs, code, tests, artifacts, and diff
+evidence from an AI reviewer perspective. They must not run Guru Team
+recorder/validator extension scripts such as `review-branch.sh`,
+`check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*` as part of
+their review. The main session runs recorder/validator scripts only after the
+review result exists, to persist objective gate evidence.
+
 Phase 1.4 and Phase 2.2 have their own evidence gates before the Branch Review
 Gate:
 
@@ -161,8 +168,10 @@ Passing the gate requires:
 - `review_rounds[].round` values must be unique and strictly increasing in
   recorded order, so the final pass round is unambiguous
 - every review round with `findings_count > 0` must have a later same-agent
-  `问题闭环审查代理` round on the reviewed code HEAD with `findings_count: 0` and
-  `reuse_decision: reuse-for-closure` before any fresh final round can pass
+  `问题闭环审查代理` round with `findings_count: 0` and
+  `reuse_decision: reuse-for-closure` before any fresh final round can pass;
+  this closure proves that agent's own finding is closed and does not need to
+  be repeated for every later HEAD
 - the final `最终放行审查代理` review round must be fresh and last: reviewed code
   HEAD, `findings_count: 0`, `reuse_decision: new-agent`, and a technical
   `agent_id` that did not own any earlier finding round

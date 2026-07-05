@@ -2,7 +2,7 @@
 
 ## 目标
 
-把 Guru Team Branch Review Gate 从“P0/P1/P2 finding 阻断、P3 可记录放行”收紧为“任何 finding 都阻断”。当某轮 review 发现 finding 后，该 review agent 后续必须先作为同一 `问题闭环审查代理` 在当前 reviewed HEAD 上复审到 0 findings；随后才允许启动新的 fresh `最终放行审查代理`，并且该代理要在当前 HEAD 上完整审查 `origin/<base>...HEAD` 后给出 0 findings。
+把 Guru Team Branch Review Gate 从“P0/P1/P2 finding 阻断、P3 可记录放行”收紧为“任何 finding 都阻断”。当某轮 review 发现 finding 后，该 review agent 后续必须先作为同一 `问题闭环审查代理` 复审自己的 finding 并给出 0 findings；该闭环证据不需要在每个后续 HEAD 重跑。随后才允许启动新的 fresh `最终放行审查代理`，并且该代理要在当前 HEAD 上完整审查 `origin/<base>...HEAD` 后给出 0 findings。
 
 ## 背景与确认事实
 
@@ -25,7 +25,7 @@
 4. 有 findings 的 review round 不能直接 pass gate；修复后必须由同 agent 做 `问题闭环审查代理` 确认到 0 findings，然后最终 pass 才能启动新的 fresh `最终放行审查代理`。
 5. `review-branch --pass` 必须传入 `--agent-assignment`，并校验 review round 顺序：
    - `review_rounds[].round` 必须唯一，并按记录顺序严格递增，避免最终放行轮次有歧义。
-   - 每个 `findings_count > 0` 的 round 都有后续同 `agent_id`、同当前 reviewed HEAD、`logical_role=问题闭环审查代理`、`findings_count=0`、`reuse_decision=reuse-for-closure` 的闭环 round。
+   - 每个 `findings_count > 0` 的 round 都有后续同 `agent_id`、`logical_role=问题闭环审查代理`、`findings_count=0`、`reuse_decision=reuse-for-closure` 的闭环 round，用于证明该 agent 自己发现的 finding 已关闭。
    - 最终 review round 的 `logical_role` 是 `最终放行审查代理`。
    - 最终 review round 是最后一轮。
    - `reviewed_head` 等于当前 HEAD。

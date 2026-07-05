@@ -192,10 +192,13 @@ sub-agent assignment 记录在 task-local `agent-assignment.json`。`logical_rol
 校验 JSON 结构、角色枚举、HEAD 与 digest，不替代判断。
 
 Branch Review Gate 必须先让所有发现过 finding 的 reviewer 作为同一 technical
-`问题闭环审查代理` 在当前 reviewed HEAD 复审到 0 findings，然后再由 fresh
+`问题闭环审查代理` 确认其 finding 已闭环并记录 0 findings，然后再由 fresh
 `最终放行审查代理` 独立审查当前 HEAD 的完整 diff 并确认 0 findings，最后调用
 `review-branch.sh` 固化结论。任意 finding priority（P0/P1/P2/P3）都会阻断；
 `observation` 仅记录非阻断观察，`followup_candidate` 仅记录 scope 外后续候选。
+独立 review sub-agent 只从 AI 角度审查文档、代码、测试、artifact 和 diff evidence，
+不运行 `review-branch.sh`、`check-review-gate.sh` 或 `record-*` 这类 Guru Team
+recorder/validator 扩展脚本；这些脚本由 main session 在 review 完成后执行。
 `review-branch.sh` 是 recorder / validator，不是 reviewer；`--pass` 必须先写
 task-local `review.md`，再带中文 `--summary`、至少一条 `--evidence`，
 `--review-source independent-agent`、`--review-report .trellis/tasks/<task>/review.md`

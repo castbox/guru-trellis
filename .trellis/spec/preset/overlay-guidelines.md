@@ -46,6 +46,10 @@ Continue entries must:
 - state that a review agent with findings may only perform closure review and
   must do that same-agent closure review before the passing gate can use a fresh
   `最终放行审查代理`
+- state that independent review sub-agents review docs/code/diff evidence as AI
+  reviewers and must not run Guru Team recorder/validator extension scripts
+  such as `review-branch.sh`, `check-review-gate.sh`, or `record-*`; the main
+  session runs those scripts only after review
 - state that passing Branch Review Gate requires task-local
   `--agent-assignment`
 - state that main-session self-review cannot pass Branch Review Gate; if

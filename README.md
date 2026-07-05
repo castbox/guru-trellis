@@ -302,10 +302,12 @@ sub-agent 流程身份使用 task-local `agent-assignment.json` 记录：`logica
 `review-branch.sh` 只记录和校验已经
 完成的 AI/human review 结论，不替代真正的文档 + 代码 review。通过 gate 必须先写
 task-local `review.md`，且该 report 必须来自所有 finding owner 完成同 agent
-`问题闭环审查代理` 复审到 0 findings 之后，再由 fresh `最终放行审查代理` 对当前
+`问题闭环审查代理` 确认其 finding 已闭环并记录 0 findings 之后，再由 fresh `最终放行审查代理` 对当前
 HEAD 完整 diff 的独立审查并确认 0 findings；任意 finding priority（P0/P1/P2/P3）
 都会阻断。非阻断 `observation` 和 scope 外 `followup_candidate` 可记录，但不能替代
-当前 scope finding。再用 `--review-source independent-agent`、
+当前 scope finding。独立 review sub-agent 只从 AI 角度审查文档、代码、测试、artifact
+和 diff evidence，不运行 `review-branch.sh`、`check-review-gate.sh` 或 `record-*`
+这类 Guru Team recorder/validator 扩展脚本；这些脚本由 main session 在 review 完成后执行。再用 `--review-source independent-agent`、
 `--review-report .trellis/tasks/<task>/review.md` 和
 `--agent-assignment .trellis/tasks/<task>/agent-assignment.json` 让 `review-gate.json`
 记录来源、review report digest、assignment digest、roles 和 review round 摘要，并校验

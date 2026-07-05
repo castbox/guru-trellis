@@ -168,9 +168,10 @@ review is sufficient.
 For Branch Review Gate, any review agent that recorded findings may be reused
 only as `问题闭环审查代理` for fix confirmation. This includes a previous
 `最终放行审查代理` round that found a new issue. Every finding owner must have a
-later same-agent closure round on the reviewed code HEAD with `findings_count:
-0` and `reuse_decision: reuse-for-closure` before a passing gate can be
-recorded. The final passing review round must be the last
+later same-agent closure round with `findings_count: 0` and
+`reuse_decision: reuse-for-closure` before a passing gate can be recorded. That
+closure confirms the agent's own finding is closed and does not need to be
+repeated for every later HEAD. The final passing review round must be the last
 `最终放行审查代理`, use a fresh technical `agent_id` that did not own an earlier
 finding round, set `findings_count` to 0, set `reuse_decision` to `new-agent`,
 record the reviewed code `HEAD` in `reviewed_head`, and have a unique,
