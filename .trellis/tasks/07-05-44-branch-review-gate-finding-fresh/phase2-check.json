@@ -1,18 +1,17 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-05T11:14:29Z",
+  "generated_at": "2026-07-05T11:32:01Z",
   "task_dir": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh",
   "base_branch": "main",
-  "head": "c9bd0c138bd35001aae8f3c111d2f51a7a9394da",
+  "head": "9de5facd590d4b0b1d6c673b16d3a94eedc16c98",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/agent-assignment.json"
+    ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/agent-assignment.json",
+    ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/review-gate.json",
+    ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/review.md"
   ],
   "checker": "codex-main-session",
-  "check_summary": "修复 Branch Review Gate 复验路径：validate_review_gate 现在会 fail closed 拒绝 passed=true 但 findings[] 非空、findings_count 非零、blocking_findings_count 非零或计数不一致的 gate artifact，并补充对应单元测试。",
+  "check_summary": "修复 Branch Review Gate 复验路径并收敛 Phase 2 evidence 边界：validate_review_gate 会 fail closed 拒绝 passed=true 但 findings/count 不一致的 artifact；Phase 2 check 只记录 task work 与规划/spec 证据，不记录会在 Branch Review Gate 阶段重写的 review.md/review-gate.json。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/prd.md",
@@ -37,18 +36,6 @@
       "sha256": "ada9ef3c4a64d74dbff20e1c701e47e168b381b27f277a370d0a9aefabd044e1",
       "size_bytes": 1904,
       "modified_at": "2026-07-05T10:37:01.555145+00:00"
-    },
-    {
-      "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/review.md",
-      "sha256": "6fc80a0cd87579c5ea69d3a581910acc8e41cdd093bb99abd26e925008e3b6bf",
-      "size_bytes": 5328,
-      "modified_at": "2026-07-05T11:10:44.231300+00:00"
-    },
-    {
-      "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/review-gate.json",
-      "sha256": "608e4aca37a62700bac25a9d2770e5fb743953986e823df281b8d41334743e7a",
-      "size_bytes": 13766,
-      "modified_at": "2026-07-05T11:10:56.832448+00:00"
     }
   ],
   "checked_specs": [
