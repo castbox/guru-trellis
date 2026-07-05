@@ -3,6 +3,7 @@
 - 收紧 Guru Team Branch Review Gate：任意 `finding` 都阻断通过，包括 P3；`observation` 和 `followup_candidate` 只能作为非阻断记录，不能替代当前 scope defect。
 - 强制通过态 gate 绑定 task-local `agent-assignment.json` 与 `review.md` digest，校验 review round 唯一递增、finding owner later same-agent closure、fresh final reviewer、当前 HEAD 和 0 findings。
 - 修正用户指出的 reviewer 职责边界：finding owner closure 只证明自己的 finding 已关闭，不要求每个后续 HEAD 重跑；fresh final reviewer 负责当前 HEAD 完整 diff；独立 review subagent 不调用 Guru Team recorder/validator 扩展脚本。
+- 修正 Phase 2 post-commit audit 与 Branch Review Gate metadata 的边界：`review.md`、`review-gate.json`、`agent-assignment.json`、PR body/readiness 和 issue ledger 这类 gate/publish metadata 可在 final review/publish 阶段变化，并由 gate/publish validator 重新校验；source、script、docs、schema、preset、overlay 等非 metadata drift 仍阻断。
 - 补齐归档后 publish recovery：归档 task 成为新的 task-local 边界，validator 可只读接受 pre-archive active task path 的 digest entry，finish/publish recovery 只迁移路径与 digest 元数据并提交 Trellis metadata。
 - 同步 canonical workflow、dogfood workflow、preset overlay、平台 continue 入口、README、requirements 与 `.trellis/spec/workflow/*`，避免不同入口继续传播旧 gate 语义。
 
@@ -10,6 +11,7 @@
 
 - 影响 Guru Team workflow / preset / dogfood 安装副本：`trellis/workflows/guru-team/workflow.md`、`.trellis/workflow.md`、`trellis/presets/guru-team/overlays/**`、`.agents`、`.codex`、`.cursor`、`.claude` continue 入口。
 - 影响 companion script：`guru_team_trellis.py` 的 Branch Review Gate recorder/validator、agent-assignment 校验、review report digest 校验、follow-up/observation 记录和归档后 gate publish recovery。
+- 影响 Phase 2 post-commit audit：新增明确的 gate/publish metadata mutable allowlist，避免 fresh final review 后必然更新的 metadata 被旧 Phase 2 digest 卡死，同时保持非 metadata 变更 fail-closed。
 - 影响测试：`test_guru_team_trellis.py` 覆盖任意 finding 阻断、bool findings_count fail-closed、closure-before-final、fresh final reviewer、review report digest stale、round 唯一递增、archived gate active-path digest 兼容和 finish-work 归档后迁移等路径。
 - 影响文档与规范：`README.md`、`trellis/workflows/guru-team/README.md`、`trellis/presets/guru-team/README.md`、`docs/requirements/requirement-main.md`、`.trellis/spec/workflow/*` 和 `.trellis/spec/preset/overlay-guidelines.md`。
 - 不涉及应用运行时部署资产：未修改 GitHub Actions、Docker/Compose、K8s/Helm/Kustomize、数据库 migration/schema/seed/backfill 或 Makefile。
