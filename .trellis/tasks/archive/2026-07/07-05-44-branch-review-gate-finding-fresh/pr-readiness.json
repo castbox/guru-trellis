@@ -6,8 +6,8 @@
   "checks": [
     "PR body 为中文且包含变更摘要、影响范围、验证结果、Review Gate、Issue 关闭范围、安全说明。",
     "close keyword 只用于 issue-scope-ledger.json close_issues 中的 #44。",
-    "验证结果包含当前 HEAD 2b742d8714e7b7ff1502b16bca6c82fcce25c969 上的 126 tests OK、py_compile、bash -n、JSON、phase parser、dogfood overlay drift、git diff --check 和 task validate 证据。",
+    "验证结果包含 126 tests OK、py_compile、bash -n、JSON、phase parser、dogfood overlay drift、git diff --check 和 task validate 证据。",
     "PR body 已说明归档后 publish recovery 修复、部署影响和安全说明，不使用低信息量占位文本。",
-    "Review Gate 将在最新 final reviewer 闭环后重新记录并由 check-review-gate 校验当前 HEAD 2b742d8714e7b7ff1502b16bca6c82fcce25c969。"
+    "Review Gate 以最终 review-gate.json 的 reviewed_head、digest 和 check-review-gate --allow-metadata-after-gate 对当前 HEAD 的校验为准；PR readiness 不声明易随 metadata commit 过期的瞬时 HEAD。"
   ]
 }

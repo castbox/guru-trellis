@@ -26,9 +26,9 @@
 
 ## Review Gate
 
-- 当前最新审查 HEAD：`2b742d8714e7b7ff1502b16bca6c82fcce25c969`。
-- Fresh final reviewer 将在 publish 前记录到 task-local `review.md`、`agent-assignment.json` 和 `review-gate.json`；review evidence 必须明确 reviewer 未调用 `review-branch.sh`、`check-review-gate.sh`、`record-agent-assignment.sh` 或 `record-*` 扩展脚本，主会话只在 review 完成后运行 recorder/validator。
-- `check-review-gate.sh --json --allow-metadata-after-gate` 必须在最终 gate 记录后校验当前 HEAD 与 review gate 一致。
+- Branch Review Gate 由 task-local `review.md`、`agent-assignment.json` 和 `review-gate.json` 记录；fresh final reviewer evidence 必须明确 reviewer 未调用 `review-branch.sh`、`check-review-gate.sh`、`record-agent-assignment.sh` 或 `record-*` 扩展脚本，主会话只在 review 完成后运行 recorder/validator。
+- Gate artifact 绑定 final reviewer 的 `reviewed_head`，publish 前必须由 `check-review-gate.sh --json --allow-metadata-after-gate` 校验：当前 HEAD 要么等于 gate reviewed HEAD，要么仅包含 Trellis metadata-only tail。
+- PR readiness 不声明一个会被后续 metadata commit 立即弄脏的瞬时 HEAD；最终放行以 `review-gate.json` 的 digest、reviewed HEAD 和 metadata-only tail 校验为准。
 
 ## Issue 关闭范围
 
