@@ -94,7 +94,14 @@ SELF_REVIEWER_PATTERNS = [
 ]
 METADATA_ONLY_PREFIXES = (".trellis/tasks/", ".trellis/workspace/", ".trellis/.runtime/")
 METADATA_ONLY_FILES = {".trellis/guru-team/handoff.json"}
-PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS = {AGENT_ASSIGNMENT_ARTIFACT}
+PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS = {
+    "issue-scope-ledger.json",
+    "pr-body.md",
+    "pr-readiness.json",
+    AGENT_ASSIGNMENT_ARTIFACT,
+    REVIEW_REPORT_ARTIFACT,
+    "review-gate.json",
+}
 PR_BODY_REQUIRED_SECTIONS = [
     "变更摘要",
     "影响范围",

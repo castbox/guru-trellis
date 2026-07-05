@@ -1,13 +1,35 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-05T16:40:47Z",
+  "generated_at": "2026-07-05T17:38:25Z",
   "task_dir": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh",
   "base_branch": "main",
-  "head": "54cb5535e8c7a5ebec1416677ea2619862fe939d",
+  "head": "6b6f9868817ed67953ae32178e887a55b3de1cb3",
   "diff_range": "origin/main...HEAD",
-  "dirty_paths": [],
+  "dirty_paths": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".claude/commands/trellis/continue.md",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".cursor/commands/trellis-continue.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/agent-assignment.json",
+    ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/review.md",
+    ".trellis/workflow.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
   "checker": "codex-main-session",
-  "check_summary": "已针对归档后 planning approval / review gate recovery 补丁执行 Phase 2 检查：代码、测试、dogfood 安装副本、spec 与当前归档 task artifact 均已覆盖，未发现未解决 P0/P1/P2 findings。",
+  "check_summary": "已针对 Branch Review Gate post-commit metadata digest 合同修复执行 Phase 2 检查：代码、单测、canonical/dogfood 副本、continue overlays、workflow/spec 文案、preset apply 与 dogfood drift 均已覆盖，未发现未解决 P0/P1/P2 finding。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/prd.md",
@@ -29,47 +51,35 @@
     },
     {
       "path": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/issue-scope-ledger.json",
-      "sha256": "d8047fa0067bfe92d4841380d3229f8ffff4df4e19265131d72c5fb797bcec86",
-      "size_bytes": 2877,
-      "modified_at": "2026-07-05T16:20:26.361784+00:00"
+      "sha256": "7370a157822919550ae2c655b27eb0405ee78e9e40431dae5235e0395ea40a98",
+      "size_bytes": 2975,
+      "modified_at": "2026-07-05T16:50:25.949425+00:00"
     },
     {
       "path": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/planning-approval.json",
       "sha256": "120685fbb508fc4f7b05582ae128b5026f4757bdbb65250bcfeab0796f8df04f",
       "size_bytes": 2373,
       "modified_at": "2026-07-05T15:31:16.644526+00:00"
-    },
-    {
-      "path": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/review.md",
-      "sha256": "67f4b9cf64ba11de5e23b14b2b75bf46acffbaefcb0410858136c2cb96ee7ed8",
-      "size_bytes": 2815,
-      "modified_at": "2026-07-05T16:36:52.232186+00:00"
-    },
-    {
-      "path": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/agent-assignment.json",
-      "sha256": "e5ffee90b78104e08ca92b0c7d534d1639c45f0075f67b93b7cd7f6b76f0d395",
-      "size_bytes": 16579,
-      "modified_at": "2026-07-05T16:37:06.434389+00:00"
-    },
-    {
-      "path": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/review-gate.json",
-      "sha256": "5419be83da1956f84528c4978e60b389e350e40d465e594f954bb5719a53688d",
-      "size_bytes": 14319,
-      "modified_at": "2026-07-05T15:32:50.992594+00:00"
     }
   ],
   "checked_specs": [
     {
       "path": ".trellis/spec/workflow/companion-scripts.md",
-      "sha256": "20c1161dbe42085cc847e75c9df59d7bf06e880635401c7a35b9f8a87cd66570",
-      "size_bytes": 10490,
-      "modified_at": "2026-07-05T15:51:39.028806+00:00"
+      "sha256": "6005c0b31fd2bb25018a46723490ea2f462b6289130a266f697f73b98e0e71ae",
+      "size_bytes": 10659,
+      "modified_at": "2026-07-05T17:28:37.720135+00:00"
     },
     {
       "path": ".trellis/spec/workflow/data-contracts.md",
-      "sha256": "f222a8e85f9043de9edaecdd447ff0b0dc8cf8357cc0efc03e5a1a4cbc365fcc",
-      "size_bytes": 12553,
-      "modified_at": "2026-07-05T15:51:51.039805+00:00"
+      "sha256": "979070359dd13f42e13c3f112f92f703ec063d6df9a2fb437a2141a6268eb35c",
+      "size_bytes": 13136,
+      "modified_at": "2026-07-05T17:28:27.661511+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "a1437dff864e388183a51488de5daa5c3a599f179a79ee4dd8d390cdf23606bf",
+      "size_bytes": 12495,
+      "modified_at": "2026-07-05T17:28:49.532496+00:00"
     }
   ],
   "coverage": {
@@ -85,7 +95,7 @@
   "validation_commands": [
     {
       "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "result": "127 tests OK"
+      "result": "128 tests OK"
     },
     {
       "command": "PYTHONPYCACHEPREFIX=/tmp/guru-trellis-pycache python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
@@ -96,12 +106,24 @@
       "result": "passed"
     },
     {
-      "command": "git diff --check origin/main...HEAD && git diff --check",
+      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
       "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 3.5",
+      "result": "passed"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms",
+      "result": "passed; no .new/.bak"
     },
     {
       "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
       "result": "Dogfood overlay copies match canonical Guru Team overlays"
+    },
+    {
+      "command": "git diff --check origin/main...HEAD && git diff --check",
+      "result": "passed"
     },
     {
       "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh",

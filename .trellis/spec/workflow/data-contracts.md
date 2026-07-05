@@ -130,6 +130,15 @@ an ancestor HEAD remains valid only when all later non-metadata committed paths
 are covered by the recorded `dirty_paths`, or the later tail is Trellis
 metadata only. Any uncovered non-metadata committed path, or any current
 non-metadata dirty path, makes the artifact stale.
+Branch Review Gate and publish readiness metadata may legitimately change after
+Phase 2 because independent final review and release readiness happen after the
+task work commit. In post-commit audit mode, the validator may ignore stale
+Phase 2 digest entries for task-local `issue-scope-ledger.json`, `pr-body.md`,
+`pr-readiness.json`, `agent-assignment.json`, `review.md`, and
+`review-gate.json`; those files are instead revalidated by Branch Review Gate
+or publish-specific validators before pass or publish. This exception does not
+allow source, config, script, docs, schema, preset, overlay, or other
+non-metadata drift.
 
 ## Agent Assignment Artifact
 
@@ -179,12 +188,11 @@ strictly increasing `round` value so no later record can make the final round
 ambiguous.
 
 Because `最终放行审查代理` is assigned after the task work commit,
-`agent-assignment.json` is the only Phase 2 checked artifact that may receive a
-post-commit metadata update before Branch Review Gate. `review-branch.sh` must
-then receive `--agent-assignment` so the gate records the current digest,
-roles, assignment count, review round count, and reuse decision count. This
-does not permit post-commit changes to non-metadata paths or to other checked
-artifacts.
+`agent-assignment.json` may receive a post-commit metadata update before Branch
+Review Gate. `review-branch.sh` must then receive `--agent-assignment` so the
+gate records the current digest, roles, assignment count, review round count,
+and reuse decision count. This does not permit post-commit changes to
+non-metadata paths or to non-gate task artifacts.
 
 Project agent definitions have a separate display contract. Technical dispatch
 ids (`trellis-implement`, `trellis-check`, `trellis-research`, `implement`,

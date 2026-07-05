@@ -126,14 +126,15 @@ Gate:
 `phase2-check.json.head` is an ancestor of the current `HEAD`, the audit may
 accept non-metadata committed paths only when every such path is covered by
 `phase2-check.json.dirty_paths` and the current working tree has no
-non-metadata dirty paths. The one expected mutable checked artifact is
-task-local `agent-assignment.json`: final reviewer assignment and
-`review_rounds[]` are recorded after the work commit, then Branch Review Gate
-must revalidate that file through `--agent-assignment` and record its current
-digest. This exception is only for assignment metadata; source, config, script,
-schema, docs, preset, overlay, and other task artifact drift still blocks the
-gate. Do not re-record Phase 2 after the task work commit just to make HEAD
-match.
+non-metadata dirty paths. Branch Review Gate / publish readiness metadata may
+change after Phase 2 because final review and release readiness are produced
+after the work commit. The post-commit audit may ignore stale Phase 2 digest
+entries for task-local `issue-scope-ledger.json`, `pr-body.md`,
+`pr-readiness.json`, `agent-assignment.json`, `review.md`, and
+`review-gate.json`; Branch Review Gate or publish validators must revalidate
+the current files before pass or publish. Source, config, script, schema, docs,
+preset, overlay, and non-gate task artifact drift still blocks the gate. Do not
+re-record Phase 2 after the task work commit just to make HEAD match.
 
 The gate must cover docs, code, tests, Trellis artifacts, config, scripts,
 schemas, CI/CD, container files, Kubernetes/Kustomize/Helm assets, database

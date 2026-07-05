@@ -133,12 +133,14 @@ For post-commit Phase 2 audit, the script may accept a `phase2-check.json`
 recorded at an ancestor HEAD only when every later non-metadata committed path
 is covered by the artifact's `dirty_paths`, or when the later tail is Trellis
 metadata only. The validator may ignore stale Phase 2 digest metadata for
-task-local `agent-assignment.json` during this post-commit audit because the
-final review assignment and `review_rounds[]` are recorded after the work
-commit; `review-branch.sh --agent-assignment` must validate and digest the
-current file before passing the gate. Any uncovered non-metadata committed path
-or current non-metadata dirty path must block the gate instead of encouraging a
-post-commit Phase 2 re-record.
+task-local Branch Review Gate / publish readiness metadata during this
+post-commit audit because final review and release readiness are produced after
+the work commit. The allowed mutable task-local digest entries are
+`issue-scope-ledger.json`, `pr-body.md`, `pr-readiness.json`,
+`agent-assignment.json`, `review.md`, and `review-gate.json`; Branch Review
+Gate or publish validators must revalidate the current files before passing.
+Any uncovered non-metadata committed path or current non-metadata dirty path
+must block the gate instead of encouraging a post-commit Phase 2 re-record.
 
 `review-branch.sh --pass` must receive `--agent-assignment <task-local
 agent-assignment.json>`. It validates that artifact and records its digest,

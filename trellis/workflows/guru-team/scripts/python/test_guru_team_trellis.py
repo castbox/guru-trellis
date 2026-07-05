@@ -926,6 +926,77 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
+    def test_validate_phase2_allows_post_commit_review_gate_metadata_updates(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\n旧 final review evidence。\n", encoding="utf-8")
+        ledger = self.task_dir / "issue-scope-ledger.json"
+        ledger.write_text(
+            gtt.json.dumps(
+                {
+                    "primary_issue": None,
+                    "close_issues": [],
+                    "related_issues": [],
+                    "followup_issues": [],
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            gtt.cmd_record_phase2_check(
+                phase2_args(checked_artifact=["review.md", "issue-scope-ledger.json"])
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        review_report.write_text("# Review\n\n新的 fresh final review evidence。\n", encoding="utf-8")
+        ledger.write_text(
+            gtt.json.dumps(
+                {
+                    "primary_issue": None,
+                    "close_issues": [
+                        {
+                            "number": 44,
+                            "url": "https://github.com/castbox/guru-trellis/issues/44",
+                            "title": "收紧 Branch Review Gate",
+                            "acceptance_evidence": ["Branch Review Gate 已覆盖 Issue #44。"],
+                        }
+                    ],
+                    "related_issues": [],
+                    "followup_issues": [],
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value="def456"),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(gtt, "committed_paths_match_phase2_dirty_paths", return_value=(True, [])),
+            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(
+                gtt,
+                "git_status_paths",
+                return_value=[
+                    ".trellis/tasks/07-04-gates/review.md",
+                    ".trellis/tasks/07-04-gates/issue-scope-ledger.json",
+                ],
+            ),
+        ):
+            _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
+
+        self.assertEqual(errors, [])
+
     def test_validate_phase2_allows_post_commit_paths_recorded_as_dirty(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
