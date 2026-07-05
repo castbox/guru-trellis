@@ -2028,6 +2028,42 @@ class ReviewGateReportTest(unittest.TestCase):
         self.assertTrue(payload["conclusion"]["passed"])
         self.assertEqual(payload["verification_evidence"]["agent_assignment"]["review_rounds_count"], 3)
 
+    def test_review_branch_rejects_bool_findings_count(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\nfindings_count 必须是明确整数 0。\n", encoding="utf-8")
+        assignment = self.write_agent_assignment(
+            [
+                {
+                    "round": 1,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "platform_nickname": "最终代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": False,
+                    "reuse_policy": "错误示例：JSON false 不能冒充明确的 0 findings。",
+                    "reuse_decision": "new-agent",
+                }
+            ]
+        )
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with mock.patch.object(gtt, "git_object_exists", return_value=True):
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    gtt.cmd_review_branch(
+                        review_args(
+                            review_report=str(review_report),
+                            agent_assignment=str(assignment),
+                        )
+                    )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertTrue(any("findings_count 必须是非负整数" in error for error in raised.exception.payload["errors"]))
+
     def test_review_branch_rejects_final_reviewer_without_prior_closure_round(self) -> None:
         review_report = self.task_dir / "review.md"
         review_report.write_text("# Review\n\n缺少问题闭环审查代理。\n", encoding="utf-8")

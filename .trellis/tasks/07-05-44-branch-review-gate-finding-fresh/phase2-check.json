@@ -1,14 +1,12 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-05T13:19:55Z",
+  "generated_at": "2026-07-05T14:37:30Z",
   "task_dir": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh",
   "base_branch": "main",
-  "head": "5e663cf12073dcca9aac2906b290214242e71d93",
+  "head": "1220ce7c1f978b6ac2058bcd1fc484e3db87e9f2",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".trellis/guru-team/extension.json",
     ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    ".trellis/spec/workflow/workflow-contract.md",
     "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
     "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
     ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/agent-assignment.json",
@@ -16,7 +14,7 @@
     ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/review.md"
   ],
   "checker": "codex-main-session",
-  "check_summary": "Issue 44 修复已继续更新：Branch Review Gate 任意 finding 阻断、finding owner 同 agent 闭环、fresh final reviewer、review_rounds[].round 唯一严格递增，并且 passed review gate 会复算 task-local review.md digest，防止 review_report 过期 fail-open。",
+  "check_summary": "Issue 44 当前工作树已补充 findings_count bool fail-closed 修复：agent-assignment review_rounds[].findings_count 显式拒绝 JSON bool，防止 false 冒充 0 findings；canonical/dogfood Python 已同步，回归测试覆盖 review-branch --pass 阻断该情况。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/prd.md",
@@ -38,9 +36,9 @@
     },
     {
       "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/planning-approval.json",
-      "sha256": "ada9ef3c4a64d74dbff20e1c701e47e168b381b27f277a370d0a9aefabd044e1",
-      "size_bytes": 1904,
-      "modified_at": "2026-07-05T10:37:01.555145+00:00"
+      "sha256": "67404cc71e4dd0d7e51d02f5d2ff421b7f733b72070d873b3d4e448e8853f048",
+      "size_bytes": 2119,
+      "modified_at": "2026-07-05T14:10:00.301539+00:00"
     }
   ],
   "checked_specs": [
@@ -87,11 +85,11 @@
   },
   "validation_commands": [
     {
-      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "result": "120 tests OK"
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "121 tests OK"
     },
     {
-      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "command": "PYTHONPYCACHEPREFIX=/tmp/guru-trellis-pycache python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
       "result": "passed"
     },
     {
@@ -103,19 +101,11 @@
       "result": "passed"
     },
     {
-      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 3.5",
-      "result": "parsed Branch Review Gate"
-    },
-    {
-      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms",
-      "result": "passed, no .new/.bak"
-    },
-    {
       "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
       "result": "passed"
     },
     {
-      "command": "git diff --check",
+      "command": "git diff --check origin/main...HEAD && git diff --check",
       "result": "passed"
     },
     {

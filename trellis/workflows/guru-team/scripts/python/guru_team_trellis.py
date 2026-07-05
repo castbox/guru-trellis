@@ -1897,7 +1897,8 @@ def validate_agent_assignment_payload(
                     )
                 seen_round_numbers.add(round_value)
                 previous_round_number = round_value
-            if not isinstance(item.get("findings_count"), int) or item["findings_count"] < 0:
+            findings_count = item.get("findings_count")
+            if not isinstance(findings_count, int) or isinstance(findings_count, bool) or findings_count < 0:
                 errors.append(f"agent-assignment.json review_rounds[{index}].findings_count 必须是非负整数。")
             if str(item.get("reuse_decision") or "").strip() not in ALLOWED_REUSE_DECISIONS:
                 errors.append(f"agent-assignment.json review_rounds[{index}].reuse_decision 非法。")
