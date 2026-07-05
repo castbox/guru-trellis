@@ -916,6 +916,19 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertFalse(matches)
         self.assertEqual(uncovered, ["trellis/workflows/guru-team/workflow.md"])
 
+    def test_committed_paths_match_phase2_dirty_paths_allows_recorded_directory(self) -> None:
+        diff_result = subprocess.CompletedProcess(
+            ["git", "diff", "--name-only", "abc123..HEAD"],
+            0,
+            stdout="docs/newdir/file.md\n",
+            stderr="",
+        )
+        with mock.patch.object(gtt, "run", return_value=diff_result):
+            matches, uncovered = gtt.committed_paths_match_phase2_dirty_paths(self.root, "abc123", ["docs/"])
+
+        self.assertTrue(matches)
+        self.assertEqual(uncovered, [])
+
 
 class PublishBoundaryTest(unittest.TestCase):
     def setUp(self) -> None:

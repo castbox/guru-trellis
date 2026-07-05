@@ -756,15 +756,33 @@ def committed_paths_match_phase2_dirty_paths(
     if proc.returncode != 0:
         return False, []
     files = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
-    recorded = {str(path) for path in recorded_dirty_paths}
     uncovered = [
         path
         for path in files
         if not path.startswith(METADATA_ONLY_PREFIXES)
         and path not in METADATA_ONLY_FILES
-        and path not in recorded
+        and not committed_path_covered_by_phase2_dirty_path(path, recorded_dirty_paths)
     ]
     return not uncovered, uncovered
+
+
+def committed_path_covered_by_phase2_dirty_path(
+    committed_path: str,
+    recorded_dirty_paths: list[Any],
+) -> bool:
+    committed = committed_path.strip().rstrip("/")
+    if not committed:
+        return False
+    for item in recorded_dirty_paths:
+        raw = str(item).strip()
+        if not raw:
+            continue
+        dirty = raw.rstrip("/")
+        if committed == dirty:
+            return True
+        if raw.endswith("/") and committed.startswith(f"{dirty}/"):
+            return True
+    return False
 
 
 def stage_metadata_paths(root: Path) -> list[str]:
