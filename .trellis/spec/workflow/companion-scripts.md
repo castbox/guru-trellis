@@ -98,7 +98,11 @@ bodies are limited to draft/preview paths. `--body-artifact` must carry
 `body_file` values from the artifact directory, not the repository root.
 When `finish-work` archives the active task before publish, rewrite active task
 artifact paths to the archived task path and read the final PR body from that
-archived artifact.
+archived artifact. If the archived `review-gate.json` still contains
+pre-archive task-local paths for `review.md`, `agent-assignment.json`, or
+`issue-scope-ledger.json`, the helper may deterministically rewrite those paths
+to the archived task directory and recompute only the affected digest metadata
+before publish. This is archive metadata migration, not review judgment.
 
 Planning and Phase 2 helpers follow the same recorder / validator boundary:
 
@@ -119,7 +123,8 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
 
 `review-branch.sh --pass` must fail before writing Branch Review Gate when
 `phase2-check.json` is missing, stale, incomplete, or contains unresolved
-P0/P1/P2 findings. A passed gate must also include
+P0/P1/P2 findings. It must also fail when the Phase 3 review result contains
+any finding, including P3. A passed gate must include zero findings,
 `--review-source independent-agent` and a reviewer identity that is not a
 main-session/self-review identity, and `--review-report` must point to the
 task-local file named `review.md`. The script validates those objective
@@ -128,19 +133,45 @@ For post-commit Phase 2 audit, the script may accept a `phase2-check.json`
 recorded at an ancestor HEAD only when every later non-metadata committed path
 is covered by the artifact's `dirty_paths`, or when the later tail is Trellis
 metadata only. The validator may ignore stale Phase 2 digest metadata for
-task-local `agent-assignment.json` during this post-commit audit because the
-final review assignment and `review_rounds[]` are recorded after the work
-commit; `review-branch.sh --agent-assignment` must validate and digest the
-current file before passing the gate. Any uncovered non-metadata committed path
-or current non-metadata dirty path must block the gate instead of encouraging a
-post-commit Phase 2 re-record.
+task-local Branch Review Gate / publish readiness metadata during this
+post-commit audit because final review and release readiness are produced after
+the work commit. The allowed mutable task-local digest entries are
+`issue-scope-ledger.json`, `pr-body.md`, `pr-readiness.json`,
+`agent-assignment.json`, `review.md`, and `review-gate.json`; Branch Review
+Gate or publish validators must revalidate the current files before passing.
+Any uncovered non-metadata committed path or current non-metadata dirty path
+must block the gate instead of encouraging a post-commit Phase 2 re-record.
 
-When `review-branch.sh` receives `--agent-assignment <task-local
-agent-assignment.json>`, it validates that artifact and records its digest,
+`review-branch.sh --pass` must receive `--agent-assignment <task-local
+agent-assignment.json>`. It validates that artifact and records its digest,
 roles, assignment count, review round count, and reuse decision count under
 `review-gate.json.verification_evidence.agent_assignment`. Missing assignment
-evidence remains backward-compatible for older tasks, but new sub-agent flows
-should record it before Branch Review Gate.
+evidence blocks a passed gate because the recorder cannot verify closure-before-
+final or fresh final reviewer metadata.
+
+When a review round has findings, including a previous final-review round that
+found a new issue, the same technical `agent_id` must later be recorded only as
+`问题闭环审查代理` to confirm its finding is closed. A passing gate
+must validate that every finding owner has such a later closure round with
+`findings_count: 0` and `reuse_decision: reuse-for-closure`, and then validate a
+fresh `最终放行审查代理` review round: `review_rounds[].round` values are unique
+and strictly increasing in recorded order, it is the unambiguous last round,
+`reviewed_head` equals the reviewed code HEAD, `findings_count` is 0,
+`reuse_decision` is `new-agent`, and the final reviewer did not own any earlier
+finding round. This is an objective metadata check only; the AI/human review
+still owns the judgment that the review covered the full diff.
+
+Independent review agents do not run Guru Team recorder/validator extension
+scripts as part of their review. They may inspect docs, code, tests, diffs, and
+ordinary validation evidence, but `review-branch.sh`, `check-review-gate.sh`,
+`record-agent-assignment.sh`, and `record-*` calls belong to the main session
+after the review result exists. Those calls record and validate objective
+artifact evidence; they are not review work.
+
+`review-branch.sh` may record non-blocking `observations[]` and
+`followup_candidates[]` in `review-gate.json`. They are not findings and do not
+block by themselves, but the AI/human reviewer must not downgrade an actual
+current-scope defect into either category to make the gate pass.
 
 ## Security Rules
 

@@ -1,0 +1,33 @@
+{
+  "primary_issue": {
+    "number": 44,
+    "url": "https://github.com/castbox/guru-trellis/issues/44",
+    "title": "收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "review-branch.sh --pass 在 review-gate.json 中记录 block_priorities=[P0,P1,P2,P3]，任意 finding 阻断。",
+      "agent-assignment.json 记录 fresh 最终放行审查代理必须 findings_count=0，且历史 finding owner 均已有 later same-agent closure；closure 只证明自身 finding 已闭环，不要求每个后续 HEAD 重跑。",
+      "workflow、continue overlay、README、requirements 与 .trellis/spec/workflow/* 已同步说明 AI subagent review 不调用 Guru Team recorder/validator 扩展脚本。",
+      "归档后 publish recovery 已补齐：archived task 是新的 task-local 边界，validator 可只读接受 pre-archive active task path 的 digest entry，finish/publish recovery 只迁移路径与 digest 元数据。",
+      "Phase 2 evidence 已覆盖代码、文档、脚本、spec 与归档 task artifact；验证包含 unittest、py_compile、bash -n、JSON、phase parser、dogfood overlay drift、git diff --check 和 task validate，具体测试数量见 task-local phase2-check.json。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 44,
+      "url": "https://github.com/castbox/guru-trellis/issues/44",
+      "title": "收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "任意 finding 阻断：review-gate.json 的 conclusion.block_priorities 包含 P0/P1/P2/P3，findings_count=0 才允许 pass。",
+        "fresh final reviewer：agent-assignment.json 要求最终放行审查代理使用 fresh agent_id，reuse_decision=new-agent，reviewed_head 等于当前 review gate HEAD。",
+        "closure 合同：脚本和文档要求 finding owner 有 later same-agent 闭环，不要求每个后续 HEAD 重跑 closure；fresh final reviewer 负责当前 HEAD 完整 diff。",
+        "reviewer/recorder 分层：workflow、continue entry、spec 和 README 明确独立 review subagent 不运行 review-branch/check-review-gate/record-* 扩展脚本。",
+        "归档后 publish recovery：增加 archived gate active-path digest 兼容、finish-work 归档后 gate 元数据迁移和 publish recovery metadata commit。",
+        "验证：unittest、py_compile、bash -n、JSON 校验、phase parser、dogfood overlay drift、git diff --check、task validate；具体测试数量见 task-local phase2-check.json，最终 Branch Review Gate 以 review-gate.json 的 reviewed_head、digest 和 check-review-gate --allow-metadata-after-gate 校验为准。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

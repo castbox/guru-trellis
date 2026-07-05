@@ -28,7 +28,7 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
 | --- | --- | --- | --- |
 | P0 | Workflow 主合同与日常入口 | #1, #2 | `guru-team` marketplace workflow 定义 Phase 0-3、auto-bootstrap 日常入口、知识门禁和 docs SSOT。 |
 | P0 | Intake / worktree / no_task 副作用边界 | #6, #15, #26 | 创建 issue、worktree、branch、task 或当前 checkout 直改前必须有 AI/human handoff 与用户授权。 |
-| P0 | Planning / check / Branch Review Gate 证据链 | #5, #8, #20 | planning、phase2 check、独立 review、review report digest 和 gate artifact 形成可审计链路。 |
+| P0 | Planning / check / Branch Review Gate 证据链 | #5, #8, #20, #44 | planning、phase2 check、独立 review、review report digest、任意 finding 阻断、fresh 最终放行审查和 gate artifact 形成可审计链路。 |
 | P0 | Finish / publish / PR readiness | #7, #17, #18, #27 | PR 发布只能在 finish-work 后发生，且必须有 AI 审查过的 reviewer-facing body 与 readiness evidence。 |
 | P1 | Preset installer 与平台 overlay | #9, #11 | preset 安装 companion assets 与平台入口，支持 overlay 选择，并保持 canonical / dogfood 同步。 |
 | P1 | 安装、升级、开箱验证 | #10, #27 | README 非交互安装、throwaway install、dry-run readiness 和 Codex 默认 sub-agent 让新项目可开箱使用。 |
@@ -55,7 +55,7 @@ dogfood 副本当成唯一来源。
 | --- | --- | --- |
 | 中台知识门禁与 Docs SSOT | #1 | #4 |
 | Trellis auto-bootstrap 日常入口 | #2 | #3 |
-| AI review prompt 与 Branch Review Gate | #5, #20 | #12, #22 |
+| AI review prompt 与 Branch Review Gate | #5, #20, #44 | #12, #22 |
 | prepare-task 无副作用 planner | #6 | #14 |
 | PR readiness 与 PR body 质量 | #7, #17 | #23, #24 |
 | Planning / phase2 可审计证据 | #8 | #25 |

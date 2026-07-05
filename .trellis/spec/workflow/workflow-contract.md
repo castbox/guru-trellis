@@ -83,9 +83,19 @@ English when needed, but write the surrounding explanation in Chinese.
 
 Branch Review Gate is a post-commit release gate. An independent Agent review
 step must review the complete branch diff from the intake base branch to `HEAD`,
-not just the latest edit, and must have no P0/P1/P2 findings before the gate can
-pass. `review-branch.sh` then records and validates that prior review result;
-the script is not the reviewer.
+not just the latest edit, and must have zero findings before the gate can pass.
+Any finding priority (`P0`, `P1`, `P2`, or `P3`) blocks. `review-branch.sh`
+then records and validates that prior review result; the script is not the
+reviewer. Non-blocking `observations[]` and out-of-scope
+`followup_candidates[]` may be recorded separately, but must not hide
+current-scope defects.
+
+Independent review agents must inspect docs, code, tests, artifacts, and diff
+evidence from an AI reviewer perspective. They must not run Guru Team
+recorder/validator extension scripts such as `review-branch.sh`,
+`check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*` as part of
+their review. The main session runs recorder/validator scripts only after the
+review result exists, to persist objective gate evidence.
 
 Phase 1.4 and Phase 2.2 have their own evidence gates before the Branch Review
 Gate:
@@ -116,14 +126,15 @@ Gate:
 `phase2-check.json.head` is an ancestor of the current `HEAD`, the audit may
 accept non-metadata committed paths only when every such path is covered by
 `phase2-check.json.dirty_paths` and the current working tree has no
-non-metadata dirty paths. The one expected mutable checked artifact is
-task-local `agent-assignment.json`: final reviewer assignment and
-`review_rounds[]` are recorded after the work commit, then Branch Review Gate
-must revalidate that file through `--agent-assignment` and record its current
-digest. This exception is only for assignment metadata; source, config, script,
-schema, docs, preset, overlay, and other task artifact drift still blocks the
-gate. Do not re-record Phase 2 after the task work commit just to make HEAD
-match.
+non-metadata dirty paths. Branch Review Gate / publish readiness metadata may
+change after Phase 2 because final review and release readiness are produced
+after the work commit. The post-commit audit may ignore stale Phase 2 digest
+entries for task-local `issue-scope-ledger.json`, `pr-body.md`,
+`pr-readiness.json`, `agent-assignment.json`, `review.md`, and
+`review-gate.json`; Branch Review Gate or publish validators must revalidate
+the current files before pass or publish. Source, config, script, schema, docs,
+preset, overlay, and non-gate task artifact drift still blocks the gate. Do not
+re-record Phase 2 after the task work commit just to make HEAD match.
 
 The gate must cover docs, code, tests, Trellis artifacts, config, scripts,
 schemas, CI/CD, container files, Kubernetes/Kustomize/Helm assets, database
@@ -151,13 +162,23 @@ Passing the gate requires:
 - `--reviewer` only as optional identity metadata for the independent reviewer;
   `*-main-session` and `self-review` identities are rejected for passed gates
 - `--review-report` must point to the task-local file named `review.md`, not
-  another task artifact
-- when sub-agents were dispatched or reviewer reuse/replacement was decided,
-  `--agent-assignment` should point to the task-local `agent-assignment.json`
-  so the gate records its digest and Chinese logical-role summary
+  another task artifact, and the recorded digest must still match the current
+  file
+- `--agent-assignment` must point to the task-local `agent-assignment.json` so
+  the gate records its digest and Chinese logical-role summary
+- `review_rounds[].round` values must be unique and strictly increasing in
+  recorded order, so the final pass round is unambiguous
+- every review round with `findings_count > 0` must have a later same-agent
+  `问题闭环审查代理` round with `findings_count: 0` and
+  `reuse_decision: reuse-for-closure` before any fresh final round can pass;
+  this closure proves that agent's own finding is closed and does not need to
+  be repeated for every later HEAD
+- the final `最终放行审查代理` review round must be fresh and last: reviewed code
+  HEAD, `findings_count: 0`, `reuse_decision: new-agent`, and a technical
+  `agent_id` that did not own any earlier finding round
 - deployment impact evidence, even when the conclusion is that no deployment
   asset needs a change
-- no P0/P1/P2 findings
+- no findings of any priority
 
 ## Publish Boundary
 

@@ -31,7 +31,7 @@ after handoff review and user approval.
 Search before editing a phrase, command, marker, or config key:
 
 ```bash
-rg "review-branch|finish-work|publish-pr|issue-scope-ledger|middle_platform_knowledge|guru-team-overlay"
+rg "review-branch|finding|observation|followup-candidate|最终放行审查代理|finish-work|publish-pr|issue-scope-ledger|middle_platform_knowledge|guru-team-overlay"
 ```
 
 ## Required Checks

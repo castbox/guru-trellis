@@ -49,12 +49,16 @@ handoff_path: ".trellis/guru-team/handoff.json"
 artifact_language: zh-CN
 
 # Branch Review Gate runs after task work is committed and before finish-work.
+# Any finding priority blocks Branch Review Gate. `block_priorities` is retained
+# as compatibility metadata for older installed configs and should list every
+# valid finding priority.
 review_gate:
   artifact_path: review-gate.json
   block_priorities:
     - P0
     - P1
     - P2
+    - P3
   require_head_match: true
   require_deployment_impact_evidence: true
 

@@ -233,15 +233,23 @@ non-metadata task paths after the Phase 2 recorded HEAD are covered by those
 dirty paths and that no non-metadata dirty paths remain in the working tree.
 Do not re-record Phase 2 after commit just to make HEAD match. `review-branch.sh`
 records and validates the prior AI/human review result; it is not the reviewer.
-Passing gates require independent Agent review with no P0/P1/P2 findings,
-task-local `review.md`, a Chinese summary, concrete evidence,
-`--review-source independent-agent`, and
-`--review-report <task-local review.md>`. When sub-agents were dispatched or
-reviewer reuse/replacement was decided, pass `--agent-assignment
-<task-local agent-assignment.json>` so the gate stores its digest and Chinese
-roles summary. `--reviewer` is identity metadata only and cannot replace the
-review report digest; `*-main-session` / `self-review`
-cannot pass the gate.
+Passing gates require every finding owner to complete a later same-agent
+`问题闭环审查代理` review with zero findings for its finding before a fresh `最终放行审查代理`
+independent review can pass. The final review must cover the full current HEAD
+diff with zero findings of any priority and be recorded with task-local
+`review.md`, a Chinese summary, concrete evidence, `--review-source
+independent-agent`, `--review-report <task-local review.md>`, and
+`--agent-assignment <task-local agent-assignment.json>`. The gate stores the
+assignment digest and Chinese roles summary and validates closure-before-final,
+the last fresh final round, and that the final reviewer did not own an earlier
+finding round. Observations and follow-up candidates may be recorded separately,
+but they must not hide current-scope findings. Independent review sub-agents
+review docs, code, tests, artifacts, and diff evidence as AI reviewers; they do
+not run Guru Team recorder/validator extension scripts such as
+`review-branch.sh`, `check-review-gate.sh`, or `record-*`. The main session runs
+those scripts only after the review result exists. `--reviewer` is identity metadata
+only and cannot replace the review report digest; `*-main-session` /
+`self-review` cannot pass the gate.
 `finish-work.sh` and `publish-pr.sh` reject ordinary direct calls so
 `trellis-continue` cannot chain closeout, commit review metadata, push, or
 create a PR before the explicit `trellis-finish-work` entrypoint. Normal PR

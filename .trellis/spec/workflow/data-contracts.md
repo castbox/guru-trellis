@@ -130,11 +130,20 @@ an ancestor HEAD remains valid only when all later non-metadata committed paths
 are covered by the recorded `dirty_paths`, or the later tail is Trellis
 metadata only. Any uncovered non-metadata committed path, or any current
 non-metadata dirty path, makes the artifact stale.
+Branch Review Gate and publish readiness metadata may legitimately change after
+Phase 2 because independent final review and release readiness happen after the
+task work commit. In post-commit audit mode, the validator may ignore stale
+Phase 2 digest entries for task-local `issue-scope-ledger.json`, `pr-body.md`,
+`pr-readiness.json`, `agent-assignment.json`, `review.md`, and
+`review-gate.json`; those files are instead revalidated by Branch Review Gate
+or publish-specific validators before pass or publish. This exception does not
+allow source, config, script, docs, schema, preset, overlay, or other
+non-metadata drift.
 
 ## Agent Assignment Artifact
 
-`agent-assignment.json` is optional for older tasks and expected for new
-sub-agent-dispatch Guru Team tasks. It records the AI/human assignment decisions
+`agent-assignment.json` is required for Branch Review Gate pass and expected for
+new sub-agent-dispatch Guru Team tasks. It records the AI/human assignment decisions
 that already happened in the workflow:
 
 - `schema_version`, current task path, and current `HEAD`
@@ -145,7 +154,8 @@ that already happened in the workflow:
 - `platform_nickname` as display-only UI metadata that never participates in
   gate decisions; prefer configured Chinese UI nicknames when the platform
   exposes them, otherwise record the raw automatic/random nickname
-- `review_rounds[]` entries with review round number, reviewed HEAD,
+- `review_rounds[]` entries with unique, strictly increasing review round
+  number, reviewed HEAD,
   findings count, reuse policy, and reuse decision
 - `reuse_decisions[]` entries for explicit reuse/replacement decisions across
   rounds
@@ -164,13 +174,25 @@ and file digest metadata. It must not decide which sub-agent should be used,
 whether reviewer reuse is semantically acceptable, or whether a final release
 review is sufficient.
 
+For Branch Review Gate, any review agent that recorded findings may be reused
+only as `问题闭环审查代理` for fix confirmation. This includes a previous
+`最终放行审查代理` round that found a new issue. Every finding owner must have a
+later same-agent closure round with `findings_count: 0` and
+`reuse_decision: reuse-for-closure` before a passing gate can be recorded. That
+closure confirms the agent's own finding is closed and does not need to be
+repeated for every later HEAD. The final passing review round must be the last
+`最终放行审查代理`, use a fresh technical `agent_id` that did not own an earlier
+finding round, set `findings_count` to 0, set `reuse_decision` to `new-agent`,
+record the reviewed code `HEAD` in `reviewed_head`, and have a unique,
+strictly increasing `round` value so no later record can make the final round
+ambiguous.
+
 Because `最终放行审查代理` is assigned after the task work commit,
-`agent-assignment.json` is the only Phase 2 checked artifact that may receive a
-post-commit metadata update before Branch Review Gate. `review-branch.sh` must
-then receive `--agent-assignment` so the gate records the current digest,
-roles, assignment count, review round count, and reuse decision count. This
-does not permit post-commit changes to non-metadata paths or to other checked
-artifacts.
+`agent-assignment.json` may receive a post-commit metadata update before Branch
+Review Gate. `review-branch.sh` must then receive `--agent-assignment` so the
+gate records the current digest, roles, assignment count, review round count,
+and reuse decision count. This does not permit post-commit changes to
+non-metadata paths or to non-gate task artifacts.
 
 Project agent definitions have a separate display contract. Technical dispatch
 ids (`trellis-implement`, `trellis-check`, `trellis-research`, `implement`,
@@ -210,10 +232,12 @@ The artifact records:
 - required review report digest: `review_report.path`, `sha256`,
   `size_bytes`, and `modified_at`
 - findings
+- observations
+- follow-up candidates
 - Issue Scope Ledger coverage
 - validation evidence
-- optional `agent_assignment` digest summary when `review-branch.sh` receives a
-  task-local `agent-assignment.json`
+- required `agent_assignment` digest summary from task-local
+  `agent-assignment.json`
 
 The gate is valid only for the reviewed `HEAD`, except that `finish-work` may
 allow metadata-only commits after the gate. A passed gate is invalid if it lacks
@@ -222,6 +246,19 @@ file named `review.md`. `--reviewer` alone is only identity metadata and cannot
 prove the review report evidence; main-session/self-review identities are
 rejected for passed gates. Enforcement lives in `validate_review_gate()` and
 `metadata_only_since()`.
+
+After `task.py archive`, the archived task is the new task-local boundary.
+Validators may accept a gate whose digest entries still point at the
+pre-archive active task path when the corresponding archived files exist and
+their content digests match. Finish/publish recovery may then rewrite only the
+task path, ledger path, `review_report`, and `agent_assignment` digest metadata
+to the archived task path before committing Trellis metadata. This does not
+change the reviewed code `HEAD` or the AI review conclusion.
+
+Branch Review Gate treats every finding priority (`P0`, `P1`, `P2`, `P3`) as
+blocking. `observations[]` are non-blocking notes, and
+`followup_candidates[]` are out-of-scope future work candidates. They must not
+be used to hide current-scope defects.
 
 ## JSON and Text Encoding
 
