@@ -2171,6 +2171,30 @@ def migrated_archive_entry(root: Path, task_dir: Path, entry: Any, expected_name
     return migrated
 
 
+def migrated_archive_digest_entry(root: Path, task_dir: Path, entry: Any) -> dict[str, Any] | None:
+    if not isinstance(entry, dict):
+        return None
+    active_task = active_task_relative_for_archive(root, task_dir)
+    if active_task is None:
+        return None
+    path_value = str(entry.get("path") or "").strip()
+    if not path_value or not path_value.startswith(f"{active_task}/"):
+        return None
+    relative_name = path_value.removeprefix(f"{active_task}/")
+    if not relative_name or "/" in relative_name:
+        return None
+    archived_path = task_dir / relative_name
+    if not archived_path.is_file():
+        return None
+    migrated = dict(entry)
+    migrated.update(file_digest(root, archived_path))
+    return migrated
+
+
+def normalized_digest_entry(root: Path, task_dir: Path, entry: Any) -> Any:
+    return migrated_archive_digest_entry(root, task_dir, entry) or entry
+
+
 def normalized_archive_task_value(root: Path, task_dir: Path, value: Any) -> Any:
     active_task = active_task_relative_for_archive(root, task_dir)
     if active_task is None or value != active_task:
@@ -2347,10 +2371,14 @@ def validate_planning_approval(
     if not isinstance(approved, list) or not approved:
         errors.append("planning-approval.json 缺少 approved_artifacts。")
     else:
-        approved_paths = {str(item.get("path") or "") for item in approved if isinstance(item, dict)}
+        normalized_approved = [
+            normalized_digest_entry(root, task_dir, item)
+            for item in approved
+        ]
+        approved_paths = {str(item.get("path") or "") for item in normalized_approved if isinstance(item, dict)}
         if repo_relative(root, task_dir / "prd.md") not in approved_paths:
             errors.append("planning-approval.json 未记录 prd.md。")
-        for item in approved:
+        for item in normalized_approved:
             errors.extend(digest_errors(root, item, "planning approval"))
     return path, payload, errors
 

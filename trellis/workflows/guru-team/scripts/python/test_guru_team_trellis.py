@@ -625,6 +625,35 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertEqual(check["status"], "ok")
         self.assertEqual(len(payload["approved_artifacts"]), 3)
 
+    def test_validate_planning_approval_accepts_archived_task_with_active_artifact_paths(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-gates"
+        archived_task_dir.mkdir(parents=True)
+        for name in ["task.json", "prd.md", "design.md", "implement.md", "planning-approval.json"]:
+            (archived_task_dir / name).write_bytes((self.task_dir / name).read_bytes())
+        for name in ["prd.md", "design.md", "implement.md"]:
+            (self.task_dir / name).unlink()
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value="def456"),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+        ):
+            _path, _payload, errors = gtt.validate_planning_approval(
+                self.root,
+                archived_task_dir,
+                allow_committed_head=True,
+            )
+
+        self.assertEqual(errors, [])
+
     def test_record_planning_approval_requires_reviewer(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
