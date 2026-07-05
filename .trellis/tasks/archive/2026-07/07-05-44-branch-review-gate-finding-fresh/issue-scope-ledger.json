@@ -6,9 +6,10 @@
     "reason": "intake/handoff 主 issue，默认进入 close 候选。",
     "acceptance_evidence": [
       "review-branch.sh --pass 在 review-gate.json 中记录 block_priorities=[P0,P1,P2,P3]，任意 finding 阻断。",
-      "agent-assignment.json round 19 记录 fresh 最终放行审查代理 findings_count=0，且历史 finding owner 均已有 later same-agent closure。",
+      "agent-assignment.json 记录 fresh 最终放行审查代理必须 findings_count=0，且历史 finding owner 均已有 later same-agent closure；closure 只证明自身 finding 已闭环，不要求每个后续 HEAD 重跑。",
       "workflow、continue overlay、README、requirements 与 .trellis/spec/workflow/* 已同步说明 AI subagent review 不调用 Guru Team recorder/validator 扩展脚本。",
-      "Branch Review Gate 已通过并由 check-review-gate.sh --json --allow-metadata-after-gate 校验当前 HEAD 38908e0。"
+      "归档后 publish recovery 已补齐：archived task 是新的 task-local 边界，validator 可只读接受 pre-archive active task path 的 digest entry，finish/publish recovery 只迁移路径与 digest 元数据。",
+      "当前 HEAD 2b742d8714e7b7ff1502b16bca6c82fcce25c969 上已记录 Phase 2 evidence，验证包含 126 tests OK、py_compile、bash -n、JSON、phase parser、dogfood overlay drift、git diff --check 和 task validate。"
     ]
   },
   "close_issues": [
@@ -19,10 +20,11 @@
       "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
       "acceptance_evidence": [
         "任意 finding 阻断：review-gate.json 的 conclusion.block_priorities 包含 P0/P1/P2/P3，findings_count=0 才允许 pass。",
-        "fresh final reviewer：agent-assignment.json round 19 使用新的 agent_id=019f32d7-c974-7232-ad65-8d90803d22e2，reuse_decision=new-agent，reviewed_head=38908e0。",
+        "fresh final reviewer：agent-assignment.json 要求最终放行审查代理使用 fresh agent_id，reuse_decision=new-agent，reviewed_head 等于当前 review gate HEAD。",
         "closure 合同：脚本和文档要求 finding owner 有 later same-agent 闭环，不要求每个后续 HEAD 重跑 closure；fresh final reviewer 负责当前 HEAD 完整 diff。",
         "reviewer/recorder 分层：workflow、continue entry、spec 和 README 明确独立 review subagent 不运行 review-branch/check-review-gate/record-* 扩展脚本。",
-        "验证：123 tests OK、py_compile、bash -n、JSON 校验、phase parser、preset apply、dogfood overlay drift、git diff --check、task validate、Branch Review Gate pass。"
+        "归档后 publish recovery：当前 HEAD 2b742d8714e7b7ff1502b16bca6c82fcce25c969 增加 archived gate active-path digest 兼容、finish-work 归档后 gate 元数据迁移和 publish recovery metadata commit。",
+        "验证：126 tests OK、py_compile、bash -n、JSON 校验、phase parser、dogfood overlay drift、git diff --check、task validate；最终 Branch Review Gate 将在 latest final reviewer 闭环后重新记录。"
       ]
     }
   ],
