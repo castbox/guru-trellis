@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-05T10:00:53Z",
+  "generated_at": "2026-07-05T10:05:55Z",
   "task_dir": ".trellis/tasks/07-05-43-trellis-subagent",
   "base_branch": "main",
-  "head": "667359dd47d6539904c12391381f14b15bc3c802",
+  "head": "6582064396408d421b7eed5c0e880c9a34c99cad",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [],
   "checker": "codex-main-session",
-  "check_summary": "提交 667359d 后回到 Phase 2 复核：当前仅有 task-local agent-assignment.json metadata 变更，用于记录问题闭环审查代理；源代码、workflow、spec、overlay、preset、docs 无新增非 metadata 改动。当前无 P0/P1/P2 blocker。",
+  "check_summary": "问题闭环审查发现 planning approval evidence stale 后，已复核并刷新规划批准证据：prd/design/implement 当前 digest 覆盖 UI 中文展示名、assignment ledger、post-commit metadata 设计和验证计划；当前仅有 planning-approval.json metadata 变更，无源代码或 durable docs 新改动。当前无 P0/P1/P2 blocker。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-05-43-trellis-subagent/prd.md",
@@ -29,9 +29,9 @@
     },
     {
       "path": ".trellis/tasks/07-05-43-trellis-subagent/planning-approval.json",
-      "sha256": "9939d445b229e0c47aac8fea66e254e509449a75854b63d08446a5b9656af4ed",
-      "size_bytes": 1975,
-      "modified_at": "2026-07-05T08:17:22.814587+00:00"
+      "sha256": "853962f8bdf09bee7f2bc7a3a595eb843938badcf562dcd8e76a445ec053880d",
+      "size_bytes": 2082,
+      "modified_at": "2026-07-05T10:05:25.515916+00:00"
     },
     {
       "path": ".trellis/tasks/07-05-43-trellis-subagent/agent-assignment.json",
@@ -114,12 +114,16 @@
   },
   "validation_commands": [
     {
+      "command": ".trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task .trellis/tasks/07-05-43-trellis-subagent",
+      "result": "pass"
+    },
+    {
       "command": ".trellis/guru-team/scripts/bash/check-agent-assignment.sh --json --task .trellis/tasks/07-05-43-trellis-subagent --require-current-head",
       "result": "pass"
     },
     {
       "command": "git status --short --branch --untracked-files=all",
-      "result": "only .trellis/tasks/07-05-43-trellis-subagent/agent-assignment.json dirty before phase2 record"
+      "result": "only .trellis/tasks/07-05-43-trellis-subagent/planning-approval.json dirty before phase2 record"
     },
     {
       "command": "previous Phase 2 validation on 667359d",

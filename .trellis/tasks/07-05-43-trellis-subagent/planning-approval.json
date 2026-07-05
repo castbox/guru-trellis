@@ -1,36 +1,35 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-05T08:17:22Z",
+  "generated_at": "2026-07-05T10:05:25Z",
   "task_dir": ".trellis/tasks/07-05-43-trellis-subagent",
-  "head": "49c8f5c734a2e6e8a4e85613f7ae8c151a2d7b11",
+  "head": "6582064396408d421b7eed5c0e880c9a34c99cad",
   "dirty_paths": [
-    ".trellis/guru-team/handoff.json",
-    ".trellis/tasks/07-05-43-trellis-subagent/"
+    ".trellis/tasks/07-05-43-trellis-subagent/planning-approval.json"
   ],
   "reviewer": "codex-main-session",
-  "approval_summary": "已审查 issue #43 的中文规划 artifact：prd.md 明确中文逻辑角色、agent-assignment.json、review gate 引用、脚本边界、多平台 overlay 与 durable docs 更新；design.md 给出数据合同和 companion recorder/validator 设计；implement.md 给出同步 canonical、dogfood、验证与 review gate 的执行计划。规划覆盖需求、设计、实现顺序、Docs SSOT 和中台知识门禁不适用结论，可进入实现。",
+  "approval_summary": "已复核 #43 最新规划 artifact：prd.md 已纳入用户新增的 subagent UI 中文展示名要求，并明确 Codex nickname_candidates ASCII 限制、Cursor/Claude/channel runtime 中文 description/标题、agent-assignment.json、review gate digest、脚本 recorder/validator 边界；design.md 与 implement.md 已覆盖 canonical/dogfood 同步、post-commit assignment metadata、Docs SSOT 和验证计划。规划仍限定在 issue #43 范围内，可继续完成 gate 闭环。",
   "user_confirmation": {
     "source": "workflow",
-    "message": "用户在 2026-07-05 调用 $trellis-continue，承接上一轮已展示的规划文件并要求继续；按 Guru Team workflow 视为确认进入实现。"
+    "message": "用户在 2026-07-05 多次调用 $trellis-continue 并明确追加‘UI 展示的 subagent 名字也应该是中文’，随后确认继续；本记录用于刷新已扩展规划 artifact 的 gate evidence，不新增 issue #43 外范围。"
   },
   "approved_artifacts": [
     {
       "path": ".trellis/tasks/07-05-43-trellis-subagent/prd.md",
-      "sha256": "0b3853aed21c308b3118e2259c5d74d446306b5e03fe62283f36d89958268e19",
-      "size_bytes": 7659,
-      "modified_at": "2026-07-05T08:15:55.521538+00:00"
+      "sha256": "217a42c584a58268e8d1e65b00a7664ecff1f3c8b7f81f67456cf445f875d264",
+      "size_bytes": 9629,
+      "modified_at": "2026-07-05T09:24:39.156737+00:00"
     },
     {
       "path": ".trellis/tasks/07-05-43-trellis-subagent/design.md",
-      "sha256": "3ac9900597e237e117a69a56ecd97ba3abe22c2873024a11426c0d727421703e",
-      "size_bytes": 8701,
-      "modified_at": "2026-07-05T08:15:55.521719+00:00"
+      "sha256": "c9b27b38474c77003f9a69ac74db65d563f8896a7230f9ccbf6ca15dd553672c",
+      "size_bytes": 11250,
+      "modified_at": "2026-07-05T09:24:39.157142+00:00"
     },
     {
       "path": ".trellis/tasks/07-05-43-trellis-subagent/implement.md",
-      "sha256": "1d82d276f99c509a191702a4a10f0ba1125e4ff7df0935d8482dfd067f724a7e",
-      "size_bytes": 5210,
-      "modified_at": "2026-07-05T08:15:55.521916+00:00"
+      "sha256": "d211892b548757677265bfd25c4038bf7f5cc886ba7440cf161ad6ff5281b1fd",
+      "size_bytes": 6175,
+      "modified_at": "2026-07-05T09:24:39.157612+00:00"
     }
   ],
   "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
