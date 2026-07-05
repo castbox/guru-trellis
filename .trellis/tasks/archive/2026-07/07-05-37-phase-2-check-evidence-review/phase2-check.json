@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-05T07:35:48Z",
+  "task_dir": ".trellis/tasks/07-05-37-phase-2-check-evidence-review",
+  "base_branch": "main",
+  "head": "5f43612ddd6480552a49c13a1cc7947b8dd3605c",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [],
+  "checker": "codex-main-session",
+  "check_summary": "当前 HEAD 已按 issue #37 全范围重新完成 trellis-check：包含 dirty_paths 目录覆盖边界修复；需求、设计、代码、测试、spec 同步、Docs SSOT 与部署影响均已覆盖；未发现 P0/P1/P2 finding。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/prd.md",
+      "sha256": "83bd0eee6758f5f4a31537015c17e29aa5523165e81b05895fcc0be12a9198fc",
+      "size_bytes": 4977,
+      "modified_at": "2026-07-05T07:05:29.601825+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/design.md",
+      "sha256": "c1f1cce322d3d46bf5e455b5803a9736be30dfea0769c643619fb90edf84c6b3",
+      "size_bytes": 3825,
+      "modified_at": "2026-07-05T07:05:29.602117+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/implement.md",
+      "sha256": "5ca80fbeb648955ab2efb4286b6b2c01d4cf1f732f3e8e00de2232970da4489e",
+      "size_bytes": 5159,
+      "modified_at": "2026-07-05T07:20:09.304901+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/planning-approval.json",
+      "sha256": "5cee5285eb6bb159666c787e682f892e8883af726985d99987973ad6f446d901",
+      "size_bytes": 1616,
+      "modified_at": "2026-07-05T07:35:48.255689+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "78e10c6c99966f33020c19f8822bdf3ccf836d6a8aad4cfeb7fff51a8b44ff0c",
+      "size_bytes": 7292,
+      "modified_at": "2026-07-05T07:11:14.995900+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "fe7b26656a2df171becbb3448d55adb372abdf4d60a6b1dc9e20f6743ddc4ef1",
+      "size_bytes": 9586,
+      "modified_at": "2026-07-05T07:11:14.995460+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "b3239579450b6ec5005a40e9aa096e94b1301c626be2d4173051f563f1dfb239",
+      "size_bytes": 8420,
+      "modified_at": "2026-07-05T07:11:14.995704+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "468343b7257202c85538def252d65c8234388ea7c8b6901fe216227cdc270b19",
+      "size_bytes": 4387,
+      "modified_at": "2026-07-05T07:01:15.175776+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "35891233237b0cb4be3d2009eac25b0a5bde359fd02098ce63e261d7854b836a",
+      "size_bytes": 3482,
+      "modified_at": "2026-07-05T07:01:15.173142+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "71 tests OK"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json && python3 -m json.tool task ledger",
+      "result": "passed"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-05-37-phase-2-check-evidence-review",
+      "result": "passed"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

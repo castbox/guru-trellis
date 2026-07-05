@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"实现前必须遵守 companion script 的 recorder/validator 边界与 Python portable 约束。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"修改 Phase 2 check 与 Branch Review Gate 的流程合同，需要保持 canonical workflow 与 dogfood copy 同步。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"phase2-check.json 与 review-gate.json 的 artifact 语义和兼容性约束来自此数据合同。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"规定 workflow/preset/script 变更的同步面和验证命令。"}
+{"file":".trellis/spec/guides/index.md","reason":"共享思考指南要求新增 helper/常量前先搜索复用并关注跨层 payload 合同。"}

@@ -535,3 +535,36 @@ Branch Review Gate 通过：独立 Agent 已按 origin/main...HEAD 审查 issue 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 17: 完成：修复 Phase 2 check evidence 提交后审计
+
+**Date**: 2026-07-05
+**Task**: 完成：修复 Phase 2 check evidence 提交后审计
+**Branch**: `codex/37-phase-2-check-evidence-review`
+
+### Summary
+
+修复 Branch Review Gate 对提交前 Phase 2 check evidence 的 stale 误判，补齐 dirty_paths post-commit audit、目录覆盖边界、workflow/overlay/docs/spec 同步，并通过独立 Review Gate。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9095ea10437d4486c8e3a191d8100defbf7f19c7` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

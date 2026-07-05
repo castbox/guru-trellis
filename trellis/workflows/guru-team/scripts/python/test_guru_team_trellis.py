@@ -795,7 +795,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         with (
             mock.patch.object(gtt, "current_head", return_value="def456"),
             mock.patch.object(gtt, "is_ancestor", return_value=True),
-            mock.patch.object(gtt, "metadata_only_since", return_value=(True, [".trellis/tasks/07-04-gates/review.md"])),
+            mock.patch.object(gtt, "committed_paths_match_phase2_dirty_paths", return_value=(True, [])),
             mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
             mock.patch.object(gtt, "git_status_paths", return_value=[".trellis/tasks/07-04-gates/review.md"]),
         ):
@@ -803,7 +803,40 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
-    def test_validate_phase2_rejects_post_commit_non_metadata_committed_tail(self) -> None:
+    def test_validate_phase2_allows_post_commit_paths_recorded_as_dirty(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            with mock.patch.object(
+                gtt,
+                "git_status_paths",
+                return_value=["trellis/workflows/guru-team/workflow.md"],
+            ):
+                gtt.cmd_record_phase2_check(phase2_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        diff_result = subprocess.CompletedProcess(
+            ["git", "diff", "--name-only", "abc123..HEAD"],
+            0,
+            stdout="trellis/workflows/guru-team/workflow.md\n",
+            stderr="",
+        )
+        with (
+            mock.patch.object(gtt, "current_head", return_value="def456"),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(gtt, "run", return_value=diff_result),
+            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(gtt, "git_status_paths", return_value=[]),
+        ):
+            _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
+
+        self.assertEqual(errors, [])
+
+    def test_validate_phase2_rejects_post_commit_paths_outside_recorded_dirty_paths(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
@@ -817,13 +850,18 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         with (
             mock.patch.object(gtt, "current_head", return_value="def456"),
             mock.patch.object(gtt, "is_ancestor", return_value=True),
-            mock.patch.object(gtt, "metadata_only_since", return_value=(False, ["trellis/workflows/guru-team/workflow.md"])),
+            mock.patch.object(
+                gtt,
+                "committed_paths_match_phase2_dirty_paths",
+                return_value=(False, ["trellis/workflows/guru-team/workflow.md"]),
+            ),
             mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
             mock.patch.object(gtt, "git_status_paths", return_value=[]),
         ):
             _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
 
-        self.assertTrue(any("之后提交了非 Trellis metadata" in error for error in errors))
+        self.assertTrue(any("dirty_paths" in error for error in errors))
+        self.assertFalse(any("working tree 不一致" in error for error in errors))
 
     def test_validate_phase2_rejects_post_commit_non_metadata_dirty_state(self) -> None:
         patches = self.patch_common()
@@ -839,13 +877,57 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         with (
             mock.patch.object(gtt, "current_head", return_value="def456"),
             mock.patch.object(gtt, "is_ancestor", return_value=True),
-            mock.patch.object(gtt, "metadata_only_since", return_value=(True, [".trellis/tasks/07-04-gates/review.md"])),
+            mock.patch.object(gtt, "committed_paths_match_phase2_dirty_paths", return_value=(True, [])),
             mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(True, ["trellis/workflows/guru-team/workflow.md"])),
             mock.patch.object(gtt, "git_status_paths", return_value=["trellis/workflows/guru-team/workflow.md"]),
         ):
             _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
 
         self.assertTrue(any("非 Trellis metadata" in error for error in errors))
+
+    def test_committed_paths_match_phase2_dirty_paths_uses_direct_range(self) -> None:
+        diff_result = subprocess.CompletedProcess(
+            ["git", "diff", "--name-only", "abc123..HEAD"],
+            0,
+            stdout="trellis/workflows/guru-team/workflow.md\n.trellis/tasks/07-04-gates/review.md\n",
+            stderr="",
+        )
+        with mock.patch.object(gtt, "run", return_value=diff_result) as run:
+            matches, uncovered = gtt.committed_paths_match_phase2_dirty_paths(
+                self.root,
+                "abc123",
+                ["trellis/workflows/guru-team/workflow.md"],
+            )
+
+        self.assertTrue(matches)
+        self.assertEqual(uncovered, [])
+        run.assert_called_once_with(["git", "diff", "--name-only", "abc123..HEAD"], cwd=self.root, check=False)
+
+    def test_committed_paths_match_phase2_dirty_paths_reports_uncovered_paths(self) -> None:
+        diff_result = subprocess.CompletedProcess(
+            ["git", "diff", "--name-only", "abc123..HEAD"],
+            0,
+            stdout="trellis/workflows/guru-team/workflow.md\n",
+            stderr="",
+        )
+        with mock.patch.object(gtt, "run", return_value=diff_result):
+            matches, uncovered = gtt.committed_paths_match_phase2_dirty_paths(self.root, "abc123", [])
+
+        self.assertFalse(matches)
+        self.assertEqual(uncovered, ["trellis/workflows/guru-team/workflow.md"])
+
+    def test_committed_paths_match_phase2_dirty_paths_allows_recorded_directory(self) -> None:
+        diff_result = subprocess.CompletedProcess(
+            ["git", "diff", "--name-only", "abc123..HEAD"],
+            0,
+            stdout="docs/newdir/file.md\n",
+            stderr="",
+        )
+        with mock.patch.object(gtt, "run", return_value=diff_result):
+            matches, uncovered = gtt.committed_paths_match_phase2_dirty_paths(self.root, "abc123", ["docs/"])
+
+        self.assertTrue(matches)
+        self.assertEqual(uncovered, [])
 
 
 class PublishBoundaryTest(unittest.TestCase):

@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"检查脚本是否仍只执行客观验证，未把 AI 判断写入 Python。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"检查 workflow / overlay / dogfood 文案是否一致表达 post-commit audit 语义。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查 phase2-check 与 review-gate artifact 合同是否保持强校验和兼容性。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查必须验证项、overlay drift、dogfood 同步和 deployment/docs 判断。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"检查 durable docs / public docs 是否需要同步更新，避免 task artifact 成为长期 SSOT。"}

@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-05T07:35:48Z",
+  "task_dir": ".trellis/tasks/07-05-37-phase-2-check-evidence-review",
+  "head": "5f43612ddd6480552a49c13a1cc7947b8dd3605c",
+  "dirty_paths": [],
+  "reviewer": "codex-main-session",
+  "approval_summary": "独立 review 期间发现并修复 dirty_paths 目录覆盖边界，需求和设计目标不变；更新后的 task artifacts 已复核，可以继续 Branch Review Gate。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户调用 -continue 要求推进 issue #37；本次重新记录仅修正当前 HEAD 的 metadata gate evidence。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/prd.md",
+      "sha256": "83bd0eee6758f5f4a31537015c17e29aa5523165e81b05895fcc0be12a9198fc",
+      "size_bytes": 4977,
+      "modified_at": "2026-07-05T07:05:29.601825+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/design.md",
+      "sha256": "c1f1cce322d3d46bf5e455b5803a9736be30dfea0769c643619fb90edf84c6b3",
+      "size_bytes": 3825,
+      "modified_at": "2026-07-05T07:05:29.602117+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/implement.md",
+      "sha256": "5ca80fbeb648955ab2efb4286b6b2c01d4cf1f732f3e8e00de2232970da4489e",
+      "size_bytes": 5159,
+      "modified_at": "2026-07-05T07:20:09.304901+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}
