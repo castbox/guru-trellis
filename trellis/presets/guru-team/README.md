@@ -233,13 +233,15 @@ non-metadata task paths after the Phase 2 recorded HEAD are covered by those
 dirty paths and that no non-metadata dirty paths remain in the working tree.
 Do not re-record Phase 2 after commit just to make HEAD match. `review-branch.sh`
 records and validates the prior AI/human review result; it is not the reviewer.
-Passing gates require independent Agent review with no P0/P1/P2 findings,
-task-local `review.md`, a Chinese summary, concrete evidence,
+Passing gates require a fresh `最终放行审查代理` independent review with zero
+findings of any priority, task-local `review.md`, a Chinese summary, concrete evidence,
 `--review-source independent-agent`, and
 `--review-report <task-local review.md>`. When sub-agents were dispatched or
 reviewer reuse/replacement was decided, pass `--agent-assignment
 <task-local agent-assignment.json>` so the gate stores its digest and Chinese
-roles summary. `--reviewer` is identity metadata only and cannot replace the
+roles summary and can validate that the final reviewer did not own an earlier
+finding round. Observations and follow-up candidates may be recorded separately,
+but they must not hide current-scope findings. `--reviewer` is identity metadata only and cannot replace the
 review report digest; `*-main-session` / `self-review`
 cannot pass the gate.
 `finish-work.sh` and `publish-pr.sh` reject ordinary direct calls so

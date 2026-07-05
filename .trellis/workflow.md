@@ -175,7 +175,7 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
 - On platforms with sub-agents, dispatch `trellis-check` or a dedicated review sub-agent to perform the evidence-gathering review for Phase 3. On inline platforms, stop before a passing gate unless an independent Agent review report is available through an external/team process.
 - Codex defaults to `codex.dispatch_mode: sub-agent` in Guru Team projects. The main session's dispatch prompt must start with `Active task: <task path>`, and Codex sub-agents fall back to `task.py current --source` when that line is unavailable. Explicit `codex.dispatch_mode: inline` is a downgrade/debug mode.
 - The sub-agent does not own the gate. The gate is valid only after the independent AI/human review has run, written task-local `{TASK_DIR}/review.md`, and `review-branch.sh --review-source independent-agent --review-report {TASK_DIR}/review.md` writes `{TASK_DIR}/review-gate.json` with summary, evidence, findings, reviewer identity, review source, review-report digest, optional agent-assignment digest, base/head, and current `HEAD`.
-- `review-branch.sh` is a recorder / validator, not a reviewer. It must receive the prior review result through `--summary`, `--evidence`, `--finding` / `--findings-file`, `--review-source independent-agent`, and `--review-report`; `--reviewer` is identity metadata only and cannot satisfy passed gate evidence by itself. Reviewer identities such as `codex-main-session`, `claude-main-session`, `cursor-main-session`, `*-main-session`, or `self-review` are rejected for a passing gate.
+- `review-branch.sh` is a recorder / validator, not a reviewer. It must receive the prior review result through `--summary`, `--evidence`, `--finding` / `--findings-file`, optional `--observation` / `--followup-candidate`, `--review-source independent-agent`, and `--review-report`; `--reviewer` is identity metadata only and cannot satisfy passed gate evidence by itself. Reviewer identities such as `codex-main-session`, `claude-main-session`, `cursor-main-session`, `*-main-session`, or `self-review` are rejected for a passing gate.
 - Do not skip Phase 2 `trellis-check` just because Branch Review Gate exists; do not treat Phase 2 check success as permission to run `finish-work` without the Phase 3 artifact.
 
 ### Context Script
@@ -669,7 +669,7 @@ Before or immediately after dispatching the independent review, record the revie
 - follow-up review that verifies fixes may use `问题闭环审查代理`;
 - the pass/final release review uses `最终放行审查代理`.
 
-Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reuse_policy`, and `reuse_decision`. If the same technical agent is reused, record why reuse is acceptable for that round. If an agent is replaced, record why the replacement was chosen. `platform_nickname` should be the Chinese UI nickname when the platform provides one; otherwise record the raw automatic nickname. It remains display-only either way.
+Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reuse_policy`, and `reuse_decision`. If a review round finds any finding, that technical agent may be reused only as `问题闭环审查代理` to confirm fixes; it must not become the `最终放行审查代理`. The final pass round must use a fresh new `最终放行审查代理`, set `reuse_decision: new-agent`, review the current HEAD's complete diff, and record `findings_count: 0`. If the same technical agent is reused for closure, record why reuse is limited to closure. If an agent is replaced, record why the replacement was chosen. `platform_nickname` should be the Chinese UI nickname when the platform provides one; otherwise record the raw automatic nickname. It remains display-only either way.
 
 The AI/human review must cover:
 
@@ -688,17 +688,18 @@ The AI/human review must cover:
 - source-repo dogfood overlay drift check when the diff changes `trellis/presets/guru-team/overlays/` or installed dogfood copies;
 - any generated or marketplace files changed by this task.
 
-Findings use `P0`, `P1`, `P2`, `P3`:
+Review results must distinguish:
 
-- `P0/P1/P2`: block `finish-work`.
-- `P3`: record but does not block.
+- `finding`: current diff has a known issue. Any finding priority `P0`, `P1`, `P2`, or `P3` blocks Branch Review Gate and `finish-work`.
+- `observation`: non-blocking review note that does not claim the current PR is defective.
+- `followup_candidate`: out-of-scope future work candidate that should become a follow-up issue or Issue Scope Ledger entry when appropriate, but is not a current PR finding.
 
 Persist the independent review result in the conversation and in the task-local
 artifact `{TASK_DIR}/review.md`. The review report must include concrete
 summary/evidence, checked diff range, validation notes, deployment impact
-judgment, Docs SSOT reconciliation, findings even when findings are empty,
-and the Chinese logical review role plus whether `agent-assignment.json`
-records reuse/replacement decisions.
+judgment, Docs SSOT reconciliation, findings/observations/follow-up candidates
+even when each list is empty, and the Chinese logical review role plus whether
+`agent-assignment.json` records reuse/replacement decisions.
 
 Before writing `review.md`, `review-gate.json`, or any task artifact, confirm the
 current working directory is the task's selected `workspace_path`, not the source
@@ -709,11 +710,15 @@ task worktree only.
 
 ##### 3.5.2 Gate Artifact Recorder
 
-Only after the independent Agent review has completed with no P0/P1/P2 findings
-and `{TASK_DIR}/review.md` exists, write the passing gate artifact. The pass path
-must include `--review-source independent-agent` and `--review-report
-{TASK_DIR}/review.md`; `--reviewer` may additionally record the independent
-reviewer identity, but it cannot replace the review report:
+Only after a fresh `最终放行审查代理` has completed an independent review of the
+current HEAD's full diff with zero findings and `{TASK_DIR}/review.md` exists,
+write the passing gate artifact. The pass path must include
+`--review-source independent-agent` and `--review-report {TASK_DIR}/review.md`;
+`--reviewer` may additionally record the independent reviewer identity, but it
+cannot replace the review report. When `agent-assignment.json` exists, pass it
+so the recorder validates that the final review round is fresh, has
+`findings_count: 0`, reviewed the current HEAD, and is not an agent that found
+findings in an earlier round:
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \
@@ -732,12 +737,17 @@ or, when findings exist:
   --reviewer "trellis-check-agent" \
   --review-report ".trellis/tasks/<task>/review.md" \
   --summary "中文审查结论" \
-  --finding 'P2|中文问题说明|path/to/file'
+  --finding 'P3|中文问题说明|path/to/file'
 ```
 
-The artifact records base/head, diff command, conclusion, reviewer identity metadata, review source, review-report digest, optional agent-assignment digest/roles summary, summary, concrete evidence lines, findings, changed files, Issue Scope Ledger coverage, and validation evidence. It is written to `{TASK_DIR}/review-gate.json` by default.
+Use `--observation '中文观察|path/to/file'` for non-blocking observations and
+`--followup-candidate '中文后续候选|path/to/file'` for out-of-scope follow-up
+candidates. Do not downgrade an actual current-scope defect into an observation
+or follow-up candidate to pass the gate.
 
-Passing the gate is not a blank assertion. `--pass` requires `--review-source independent-agent`, a non-main-session `--reviewer`, a Chinese `--summary`, at least one concrete `--evidence` line from the actual review, and `--review-report` pointing at the task-local `review.md`. `review-gate.json` must record `review_source`, `review_report.path`, `sha256`, `size_bytes`, and `modified_at`. When sub-agents were dispatched or reviewer reuse/replacement was decided, pass `--agent-assignment` so the gate records `agent_assignment.path`, `sha256`, `size_bytes`, `modified_at`, `roles`, and review round counts. Use additional `--evidence` lines for important validation commands or review coverage notes. If the current platform/session cannot provide independent Agent review evidence, do not write a passing gate; stop with Branch Review Gate pending.
+The artifact records base/head, diff command, conclusion, reviewer identity metadata, review source, review-report digest, optional agent-assignment digest/roles summary, summary, concrete evidence lines, findings, observations, follow-up candidates, changed files, Issue Scope Ledger coverage, and validation evidence. It is written to `{TASK_DIR}/review-gate.json` by default.
+
+Passing the gate is not a blank assertion. `--pass` requires zero findings, `--review-source independent-agent`, a non-main-session `--reviewer`, a Chinese `--summary`, at least one concrete `--evidence` line from the actual review, and `--review-report` pointing at the task-local `review.md`. `review-gate.json` must record `review_source`, `review_report.path`, `sha256`, `size_bytes`, and `modified_at`. When sub-agents were dispatched or reviewer reuse/replacement was decided, pass `--agent-assignment` so the gate records `agent_assignment.path`, `sha256`, `size_bytes`, `modified_at`, `roles`, and review round counts, and so the recorder can validate fresh final reviewer metadata. Use additional `--evidence` lines for important validation commands or review coverage notes. If the current platform/session cannot provide independent Agent review evidence, do not write a passing gate; stop with Branch Review Gate pending.
 
 `--review-report` must be exactly the task-local `review.md`; do not pass `prd.md`, `design.md`, `phase2-check.json`, or any other task artifact as the review report.
 

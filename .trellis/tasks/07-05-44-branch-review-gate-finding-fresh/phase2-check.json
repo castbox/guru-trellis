@@ -1,0 +1,151 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-05T10:51:29Z",
+  "task_dir": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh",
+  "base_branch": "main",
+  "head": "67df7ff0cefbfa0dbdb6db7b213f8b34b56e5841",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".claude/commands/trellis/continue.md",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".cursor/commands/trellis-continue.md",
+    ".trellis/guru-team/config-template.yml",
+    ".trellis/guru-team/config.yml",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/README.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/config-template.yml",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/"
+  ],
+  "checker": "codex-main-session",
+  "check_summary": "已完成 issue #44 实现与自检：Branch Review Gate 改为任意 finding 阻断，新增 observation/followup_candidate 记录，校验 fresh 最终放行审查代理，且同步 workflow、overlay、dogfood 副本、spec 与 durable docs。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/prd.md",
+      "sha256": "0f13e174294b07b85f34cdf2e6953259aecca32dae4804a64fff80e28e7a506d",
+      "size_bytes": 5071,
+      "modified_at": "2026-07-05T10:36:50.098216+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/design.md",
+      "sha256": "fb0bb2292671627a1a06e4497243dda407dace5e8bc337642d7e6c50c9b4102f",
+      "size_bytes": 4601,
+      "modified_at": "2026-07-05T10:36:50.098524+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/implement.md",
+      "sha256": "9168208fd396182ac43a47c83aa2c066431ea2cdacfa10186b2e9de280821021",
+      "size_bytes": 2717,
+      "modified_at": "2026-07-05T10:36:50.098647+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/planning-approval.json",
+      "sha256": "ada9ef3c4a64d74dbff20e1c701e47e168b381b27f277a370d0a9aefabd044e1",
+      "size_bytes": 1904,
+      "modified_at": "2026-07-05T10:37:01.555145+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "478c9f1299f30573e4ab8e5b6c1fa5deb4fe57d48c64a04a24fc996372da442f",
+      "size_bytes": 11525,
+      "modified_at": "2026-07-05T10:45:25.078286+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "940517e51e96f05792509f4adaec365ec91dcbdea39f54bd04b7ba36ee963790",
+      "size_bytes": 9375,
+      "modified_at": "2026-07-05T10:45:25.077485+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "4fbd71ac69c83026c45ddff34c627e7cfa36ebd783c72d7df4d313993a6200f6",
+      "size_bytes": 11542,
+      "modified_at": "2026-07-05T10:45:25.077948+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "b1c097e3fa803967f40854552b13bb5fb67e47202c3846ee4746fa84db7b9083",
+      "size_bytes": 4451,
+      "modified_at": "2026-07-05T10:50:10.421667+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "762dee78d690d4198474cfec23568224eeb237b972a1fbfa4d9ae3edf9a1fc1a",
+      "size_bytes": 4504,
+      "modified_at": "2026-07-05T10:50:10.421476+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "86 tests passed"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py .trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "result": "passed"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json && python3 -m json.tool .trellis/guru-team/extension.json",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 3.5",
+      "result": "parsed updated Branch Review Gate step"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms",
+      "result": "dogfood all-platform apply passed; no .new files"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "Dogfood overlay copies match canonical Guru Team overlays"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-05-44-branch-review-gate-finding-fresh",
+      "result": "passed"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

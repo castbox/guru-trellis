@@ -136,6 +136,10 @@ def review_args(**overrides: object) -> argparse.Namespace:
         "agent_assignment": None,
         "finding": [],
         "findings_file": None,
+        "observation": [],
+        "observations_file": None,
+        "followup_candidate": [],
+        "followup_candidates_file": None,
         "dry_run": False,
     }
     values.update(overrides)
@@ -1717,8 +1721,20 @@ class ReviewGateReportTest(unittest.TestCase):
             mock.patch.object(gtt, "changed_files", return_value=["trellis/workflows/guru-team/workflow.md"]),
         ]
 
-    def write_agent_assignment(self) -> Path:
+    def write_agent_assignment(self, review_rounds: list[dict[str, object]] | None = None) -> Path:
         assignment = self.task_dir / "agent-assignment.json"
+        rounds = review_rounds if review_rounds is not None else [
+            {
+                "round": 1,
+                "logical_role": "最终放行审查代理",
+                "agent_id": "019f315a-f262-7521-acdf-78e4adc99a11",
+                "platform_nickname": "Gibbs",
+                "reviewed_head": "abc123",
+                "findings_count": 0,
+                "reuse_policy": "最终放行审查代理必须是 fresh new agent，并完整审查当前 diff。",
+                "reuse_decision": "new-agent",
+            }
+        ]
         assignment.write_text(
             gtt.json.dumps(
                 {
@@ -1735,18 +1751,7 @@ class ReviewGateReportTest(unittest.TestCase):
                             "reason": "Codex sub-agent 模式下分配实现代理。",
                         }
                     ],
-                    "review_rounds": [
-                        {
-                            "round": 1,
-                            "logical_role": "最终放行审查代理",
-                            "agent_id": "019f315a-f262-7521-acdf-78e4adc99a11",
-                            "platform_nickname": "Gibbs",
-                            "reviewed_head": "abc123",
-                            "findings_count": 0,
-                            "reuse_policy": "最终放行审查代理必须独立于主会话。",
-                            "reuse_decision": "new-agent",
-                        }
-                    ],
+                    "review_rounds": rounds,
                     "reuse_decisions": [],
                 },
                 ensure_ascii=False,
@@ -1774,7 +1779,7 @@ class ReviewGateReportTest(unittest.TestCase):
 
     def test_review_branch_records_review_report_digest(self) -> None:
         review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n无 P0/P1/P2 finding。\n", encoding="utf-8")
+        review_report.write_text("# Review\n\n无 finding。\n", encoding="utf-8")
         patches = self.patch_review_command()
         for patcher in patches:
             patcher.start()
@@ -1791,9 +1796,74 @@ class ReviewGateReportTest(unittest.TestCase):
         self.assertTrue(recorded["modified_at"])
         self.assertTrue((self.task_dir / "review-gate.json").exists())
 
+    def test_review_branch_pass_rejects_p3_finding(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\nP3 finding 也必须阻断。\n", encoding="utf-8")
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_review_branch(
+                    review_args(
+                        review_report=str(review_report),
+                        finding=["P3|需要收敛的轻微问题|trellis/workflows/guru-team/workflow.md"],
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("any findings", str(raised.exception))
+
+    def test_review_branch_records_observations_without_blocking_pass(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\n无 finding，仅有 observation。\n", encoding="utf-8")
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_review_branch(
+                review_args(
+                    review_report=str(review_report),
+                    observation=["文案可后续更精炼|trellis/workflows/guru-team/workflow.md"],
+                )
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(payload["conclusion"]["passed"])
+        self.assertEqual(payload["conclusion"]["findings_count"], 0)
+        self.assertEqual(payload["conclusion"]["observations_count"], 1)
+        self.assertEqual(payload["observations"][0]["kind"], "observation")
+
+    def test_review_branch_records_followup_candidates_without_blocking_pass(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\n无 finding，仅有 follow-up candidate。\n", encoding="utf-8")
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_review_branch(
+                review_args(
+                    review_report=str(review_report),
+                    followup_candidate=["后续可增强 PR body lint|trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"],
+                )
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(payload["conclusion"]["passed"])
+        self.assertEqual(payload["conclusion"]["findings_count"], 0)
+        self.assertEqual(payload["conclusion"]["followup_candidates_count"], 1)
+        self.assertEqual(payload["followup_candidates"][0]["kind"], "followup_candidate")
+
     def test_review_branch_records_agent_assignment_digest(self) -> None:
         review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n无 P0/P1/P2 finding。\n", encoding="utf-8")
+        review_report.write_text("# Review\n\nfresh 最终放行审查代理给出 0 findings。\n", encoding="utf-8")
         assignment = self.write_agent_assignment()
         patches = self.patch_review_command()
         for patcher in patches:
@@ -1817,9 +1887,159 @@ class ReviewGateReportTest(unittest.TestCase):
         self.assertEqual(recorded["agents_count"], 1)
         self.assertEqual(recorded["review_rounds_count"], 1)
 
+    def test_review_branch_rejects_finding_owner_as_final_reviewer(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\n同一 agent 不能从 finding owner 变成最终放行。\n", encoding="utf-8")
+        assignment = self.write_agent_assignment(
+            [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "发现代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 1,
+                    "reuse_policy": "发现问题后可继续闭环确认，但不能最终放行。",
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "发现代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_policy": "同一 agent 只确认上一轮 finding 是否修复。",
+                    "reuse_decision": "reuse-for-closure",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "发现代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_policy": "错误示例：复用 finding owner 作为最终放行。",
+                    "reuse_decision": "new-agent",
+                },
+            ]
+        )
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with mock.patch.object(gtt, "git_object_exists", return_value=True):
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    gtt.cmd_review_branch(
+                        review_args(
+                            review_report=str(review_report),
+                            agent_assignment=str(assignment),
+                        )
+                    )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertTrue(any("不能作为最终放行审查代理" in error for error in raised.exception.payload["errors"]))
+
+    def test_review_branch_accepts_fresh_final_reviewer_after_finding_closure(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\nfresh final reviewer 完整审查当前 HEAD，0 findings。\n", encoding="utf-8")
+        assignment = self.write_agent_assignment(
+            [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "发现代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 1,
+                    "reuse_policy": "发现问题后可继续闭环确认，但不能最终放行。",
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "发现代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_policy": "同一 agent 只确认上一轮 finding 是否修复。",
+                    "reuse_decision": "reuse-for-closure",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "platform_nickname": "最终代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_policy": "fresh final reviewer 必须完整审查当前 diff。",
+                    "reuse_decision": "new-agent",
+                },
+            ]
+        )
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with mock.patch.object(gtt, "git_object_exists", return_value=True):
+                payload = gtt.cmd_review_branch(
+                    review_args(
+                        review_report=str(review_report),
+                        agent_assignment=str(assignment),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(payload["conclusion"]["passed"])
+        self.assertEqual(payload["verification_evidence"]["agent_assignment"]["review_rounds_count"], 3)
+
+    def test_review_branch_rejects_stale_final_review_round_head(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\n最终放行 round 的 HEAD 过期。\n", encoding="utf-8")
+        assignment = self.write_agent_assignment(
+            [
+                {
+                    "round": 1,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "platform_nickname": "最终代理",
+                    "reviewed_head": "old123",
+                    "findings_count": 0,
+                    "reuse_policy": "fresh final reviewer 必须完整审查当前 diff。",
+                    "reuse_decision": "new-agent",
+                }
+            ]
+        )
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            def object_exists(_root: Path, ref: str) -> bool:
+                return ref in {"abc123", "old123"}
+
+            with mock.patch.object(gtt, "git_object_exists", side_effect=object_exists):
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    gtt.cmd_review_branch(
+                        review_args(
+                            review_report=str(review_report),
+                            agent_assignment=str(assignment),
+                        )
+                    )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertTrue(any("与当前 HEAD" in error for error in raised.exception.payload["errors"]))
+
     def test_review_branch_rejects_invalid_agent_assignment(self) -> None:
         review_report = self.task_dir / "review.md"
-        review_report.write_text("# Review\n\n无 P0/P1/P2 finding。\n", encoding="utf-8")
+        review_report.write_text("# Review\n\n无 finding。\n", encoding="utf-8")
         assignment = self.write_agent_assignment()
         payload = gtt.read_json(assignment)
         payload["agents"][0]["logical_role"] = "Reviewer"

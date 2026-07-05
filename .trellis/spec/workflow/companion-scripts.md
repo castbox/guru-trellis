@@ -119,7 +119,8 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
 
 `review-branch.sh --pass` must fail before writing Branch Review Gate when
 `phase2-check.json` is missing, stale, incomplete, or contains unresolved
-P0/P1/P2 findings. A passed gate must also include
+P0/P1/P2 findings. It must also fail when the Phase 3 review result contains
+any finding, including P3. A passed gate must include zero findings,
 `--review-source independent-agent` and a reviewer identity that is not a
 main-session/self-review identity, and `--review-report` must point to the
 task-local file named `review.md`. The script validates those objective
@@ -141,6 +142,19 @@ roles, assignment count, review round count, and reuse decision count under
 `review-gate.json.verification_evidence.agent_assignment`. Missing assignment
 evidence remains backward-compatible for older tasks, but new sub-agent flows
 should record it before Branch Review Gate.
+
+When a review round has findings, the same technical `agent_id` may later be
+recorded only as `问题闭环审查代理` to confirm the fix. A passing gate with
+`--agent-assignment` must validate a fresh `最终放行审查代理` review round:
+`reviewed_head` equals current HEAD, `findings_count` is 0,
+`reuse_decision` is `new-agent`, and the final reviewer did not own any earlier
+finding round. This is an objective metadata check only; the AI/human review
+still owns the judgment that the review covered the full diff.
+
+`review-branch.sh` may record non-blocking `observations[]` and
+`followup_candidates[]` in `review-gate.json`. They are not findings and do not
+block by themselves, but the AI/human reviewer must not downgrade an actual
+current-scope defect into either category to make the gate pass.
 
 ## Security Rules
 

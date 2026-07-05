@@ -41,6 +41,10 @@ Continue entries must:
 - write task-local `review.md`, run Branch Review Gate with
   `--review-source independent-agent` and
   `--review-report <task-local review.md>`, then stop before finish-work
+- state that any finding priority blocks Branch Review Gate, while
+  `observation` and `followup_candidate` are separate non-blocking records
+- state that a review agent with findings may only perform closure review and
+  the passing gate needs a fresh `最终放行审查代理`
 - state that main-session self-review cannot pass Branch Review Gate; if
   independent Agent review is unavailable, continue must stop with the gate
   pending
@@ -84,7 +88,7 @@ When changing one overlay, search all copies:
 
 ```bash
 find trellis/presets/guru-team/overlays -type f | sort
-rg "Branch Review Gate|finish-work|handoff.json|guru-team-overlay" trellis/presets/guru-team/overlays
+rg "Branch Review Gate|finding|observation|followup-candidate|最终放行审查代理|finish-work|handoff.json|guru-team-overlay" trellis/presets/guru-team/overlays
 ```
 
 After canonical overlay edits, re-apply the preset to this source repository and

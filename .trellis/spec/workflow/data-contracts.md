@@ -164,6 +164,12 @@ and file digest metadata. It must not decide which sub-agent should be used,
 whether reviewer reuse is semantically acceptable, or whether a final release
 review is sufficient.
 
+For Branch Review Gate, a review agent that recorded findings may be reused
+only as `问题闭环审查代理` for fix confirmation. The final passing review round
+must be `最终放行审查代理`, use a fresh technical `agent_id` that did not own an
+earlier finding round, set `findings_count` to 0, set `reuse_decision` to
+`new-agent`, and record the current `HEAD` in `reviewed_head`.
+
 Because `最终放行审查代理` is assigned after the task work commit,
 `agent-assignment.json` is the only Phase 2 checked artifact that may receive a
 post-commit metadata update before Branch Review Gate. `review-branch.sh` must
@@ -210,6 +216,8 @@ The artifact records:
 - required review report digest: `review_report.path`, `sha256`,
   `size_bytes`, and `modified_at`
 - findings
+- observations
+- follow-up candidates
 - Issue Scope Ledger coverage
 - validation evidence
 - optional `agent_assignment` digest summary when `review-branch.sh` receives a
@@ -222,6 +230,11 @@ file named `review.md`. `--reviewer` alone is only identity metadata and cannot
 prove the review report evidence; main-session/self-review identities are
 rejected for passed gates. Enforcement lives in `validate_review_gate()` and
 `metadata_only_since()`.
+
+Branch Review Gate treats every finding priority (`P0`, `P1`, `P2`, `P3`) as
+blocking. `observations[]` are non-blocking notes, and
+`followup_candidates[]` are out-of-scope future work candidates. They must not
+be used to hide current-scope defects.
 
 ## JSON and Text Encoding
 

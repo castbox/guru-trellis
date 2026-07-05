@@ -83,9 +83,12 @@ English when needed, but write the surrounding explanation in Chinese.
 
 Branch Review Gate is a post-commit release gate. An independent Agent review
 step must review the complete branch diff from the intake base branch to `HEAD`,
-not just the latest edit, and must have no P0/P1/P2 findings before the gate can
-pass. `review-branch.sh` then records and validates that prior review result;
-the script is not the reviewer.
+not just the latest edit, and must have zero findings before the gate can pass.
+Any finding priority (`P0`, `P1`, `P2`, or `P3`) blocks. `review-branch.sh`
+then records and validates that prior review result; the script is not the
+reviewer. Non-blocking `observations[]` and out-of-scope
+`followup_candidates[]` may be recorded separately, but must not hide
+current-scope defects.
 
 Phase 1.4 and Phase 2.2 have their own evidence gates before the Branch Review
 Gate:
@@ -155,9 +158,13 @@ Passing the gate requires:
 - when sub-agents were dispatched or reviewer reuse/replacement was decided,
   `--agent-assignment` should point to the task-local `agent-assignment.json`
   so the gate records its digest and Chinese logical-role summary
+- when `--agent-assignment` is present, the final `最终放行审查代理` review
+  round must be fresh: current `reviewed_head`, `findings_count: 0`,
+  `reuse_decision: new-agent`, and a technical `agent_id` that did not own an
+  earlier finding round
 - deployment impact evidence, even when the conclusion is that no deployment
   asset needs a change
-- no P0/P1/P2 findings
+- no findings of any priority
 
 ## Publish Boundary
 

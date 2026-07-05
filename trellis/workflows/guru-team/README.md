@@ -191,14 +191,17 @@ sub-agent assignment 记录在 task-local `agent-assignment.json`。`logical_rol
 原始值。它不参与 gate 判断。AI/human 决定分配、复用或更换 agent 后，脚本只能记录和
 校验 JSON 结构、角色枚举、HEAD 与 digest，不替代判断。
 
-Branch Review Gate 必须先由独立 Agent 审查完整 diff，并确认无 P0/P1/P2 finding，再调用
-`review-branch.sh` 固化结论。`review-branch.sh` 是 recorder / validator，不是
+Branch Review Gate 必须先由 fresh `最终放行审查代理` 独立审查当前 HEAD 的完整 diff，
+并确认 0 findings，再调用 `review-branch.sh` 固化结论。任意 finding priority
+（P0/P1/P2/P3）都会阻断；`observation` 仅记录非阻断观察，`followup_candidate`
+仅记录 scope 外后续候选。`review-branch.sh` 是 recorder / validator，不是
 reviewer；`--pass` 必须先写 task-local `review.md`，再带中文 `--summary`、
 至少一条 `--evidence`，以及 `--review-source independent-agent` 和
 `--review-report .trellis/tasks/<task>/review.md`。如果本 task 使用了 sub-agent 或有
 reviewer 复用/更换判断，还应传 `--agent-assignment` 让 `review-gate.json` 记录 assignment
-digest 和中文角色摘要。`--reviewer` 只记录身份，不能替代 review report digest；
-`*-main-session` / `self-review` 不能通过 gate。
+digest 和中文角色摘要，并校验最终放行代理不是 earlier finding owner。`--reviewer`
+只记录身份，不能替代 review report digest；`*-main-session` / `self-review`
+不能通过 gate。
 Phase 2 的官方 `trellis-check` sub-agent 负责 commit 前质量检查并以
 `phase2-check.json` 留痕；Phase 3 Branch Review Gate 可由 sub-agent 辅助审查，但
 最终门禁以 `review-gate.json` 为准，且 `review-branch.sh` 会先校验 Phase 2 check

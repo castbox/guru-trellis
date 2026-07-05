@@ -301,13 +301,16 @@ sub-agent 流程身份使用 task-local `agent-assignment.json` 记录：`logica
 脚本只校验 JSON、枚举、HEAD 和 digest，不决定该复用哪个 agent。
 `review-branch.sh` 只记录和校验已经
 完成的 AI/human review 结论，不替代真正的文档 + 代码 review。通过 gate 必须先写
-task-local `review.md`，且该 report 必须来自独立 Agent 审查并确认无 P0/P1/P2
-finding；再用 `--review-source independent-agent` 和
+task-local `review.md`，且该 report 必须来自 fresh `最终放行审查代理` 对当前
+HEAD 完整 diff 的独立审查并确认 0 findings；任意 finding priority（P0/P1/P2/P3）
+都会阻断。非阻断 `observation` 和 scope 外 `followup_candidate` 可记录，但不能替代
+当前 scope finding。再用 `--review-source independent-agent` 和
 `--review-report .trellis/tasks/<task>/review.md` 让 `review-gate.json` 记录来源与
 digest。发生 sub-agent dispatch 或 reviewer 复用/更换时，同时传
 `--agent-assignment .trellis/tasks/<task>/agent-assignment.json`，让 gate 固化该
-artifact 的 digest、roles 和 review round 摘要。`--reviewer` 只记录身份，不能单独作为
-通过证据；`*-main-session` / `self-review` 不能通过 gate。
+artifact 的 digest、roles 和 review round 摘要，并校验最终放行代理不是 earlier finding
+owner。`--reviewer` 只记录身份，不能单独作为通过证据；`*-main-session` /
+`self-review` 不能通过 gate。
 `finish-work.sh` 和 `publish-pr.sh` 默认拒绝普通直接调用，避免
 `trellis-continue` 链式执行 closeout、提交 review metadata，或在未完成显式
 `trellis-finish-work` 时提前 push 分支并创建 PR；日常发布必须由 `trellis-finish-work` 入口带
