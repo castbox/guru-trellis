@@ -125,7 +125,11 @@ review evidence.
 P0/P1/P2 findings block commit until resolved. Validation commands are evidence
 inside the report, not a substitute for full `trellis-check` coverage.
 `review-branch.sh` must verify Phase 2 check evidence exists before recording
-Branch Review Gate.
+Branch Review Gate. After the task work commit, a Phase 2 artifact recorded at
+an ancestor HEAD remains valid only when all later non-metadata committed paths
+are covered by the recorded `dirty_paths`, or the later tail is Trellis
+metadata only. Any uncovered non-metadata committed path, or any current
+non-metadata dirty path, makes the artifact stale.
 
 ## Issue Scope Ledger
 

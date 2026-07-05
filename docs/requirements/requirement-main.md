@@ -92,12 +92,12 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 | 能力 | Artifact / 脚本 | 说明 |
 | --- | --- | --- |
 | Planning start gate | `planning-approval.json`、`record-planning-approval.sh`、`check-planning-approval.sh` | 记录 planning artifact hash、reviewer、user confirmation、HEAD；`task.py start` 只是状态写入。 |
-| Phase 2 check gate | `phase2-check.json`、`record-phase2-check.sh`、`check-phase2-check.sh` | 记录完整 `trellis-check` 覆盖范围、验证命令、findings、dirty state；命令通过只是 evidence 的一部分。 |
+| Phase 2 check gate | `phase2-check.json`、`record-phase2-check.sh`、`check-phase2-check.sh` | commit 前记录完整 `trellis-check` 覆盖范围、验证命令、findings 和当时的 `dirty_paths`；命令通过只是 evidence 的一部分。 |
 | AI review prompt | workflow / overlay 文案 | Branch Review Gate 前必须先审查 `origin/<base>...HEAD` 完整 diff。 |
 | Review report 必填 | `review.md` | AI/human review 判断的主证据，必须 task-local。 |
 | Review gate recorder | `review-branch.sh`、`check-review-gate.sh`、`review-gate.json` | 固化 review result、review report digest、base/head、evidence、findings；脚本不是 reviewer。 |
 | Independent review source | `--review-source independent-agent` | 通过 gate 不能来自 `self-review` 或 `*-main-session`。 |
-| Metadata tail 规则 | `finish-work.sh` / gate 校验 | review 后只允许 Trellis metadata tail；非 metadata 变更会使 evidence stale。 |
+| Post-commit audit / metadata tail 规则 | `review-branch.sh`、`finish-work.sh` / gate 校验 | Branch Review Gate 接受 Phase 2 后提交的非 metadata task paths，但这些 paths 必须已被 commit 前 `phase2-check.json.dirty_paths` 覆盖；review gate 通过后到 finish-work 之间仍只允许 Trellis metadata tail，新的非 metadata 变更会使 evidence stale。 |
 
 覆盖范围：
 

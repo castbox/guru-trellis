@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-05T07:05:45Z",
+  "task_dir": ".trellis/tasks/07-05-37-phase-2-check-evidence-review",
+  "head": "93be70b768ac331b673870529e560b4d0257692c",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-05-37-phase-2-check-evidence-review/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已基于 GitHub issue #37、官方 Trellis workflow 文档、本仓库 workflow/data-contract/companion-script 规范、现有 guru_team_trellis.py 与单元测试完成规划审查；需求、设计、实现计划均明确 post-commit Phase 2 evidence audit 语义、canonical/dogfood 同步面、Docs SSOT 更新和验证命令，可以进入实现。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户在本会话明确调用 -continue 继续处理 issue #37；此前 Phase 0 已展示并确认 worktree/task 创建方案。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/prd.md",
+      "sha256": "83bd0eee6758f5f4a31537015c17e29aa5523165e81b05895fcc0be12a9198fc",
+      "size_bytes": 4977,
+      "modified_at": "2026-07-05T07:05:29.601825+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/design.md",
+      "sha256": "c1f1cce322d3d46bf5e455b5803a9736be30dfea0769c643619fb90edf84c6b3",
+      "size_bytes": 3825,
+      "modified_at": "2026-07-05T07:05:29.602117+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/implement.md",
+      "sha256": "32a89a1a9967b09b9235fbe6854ac95d37851bfc397ce38a56180b4b3eff0397",
+      "size_bytes": 3526,
+      "modified_at": "2026-07-05T07:05:29.602400+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

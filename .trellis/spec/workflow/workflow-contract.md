@@ -96,10 +96,16 @@ Gate:
 - `phase2-check.json` records complete `trellis-check` coverage before commit.
   Passing validation commands alone is not proof that requirements, design,
   implementation, tests, specs, docs, cross-layer flow, and deployment impact
-  were checked.
+  were checked. It also records the pre-commit `dirty_paths` that the later
+  post-commit audit may accept as the task work commit.
 
 `review-branch.sh` must verify Phase 2 check evidence before writing
-`review-gate.json` so Branch Review Gate cannot bypass Phase 2.
+`review-gate.json` so Branch Review Gate cannot bypass Phase 2. When
+`phase2-check.json.head` is an ancestor of the current `HEAD`, the audit may
+accept non-metadata committed paths only when every such path is covered by
+`phase2-check.json.dirty_paths` and the current working tree has no
+non-metadata dirty paths. Do not re-record Phase 2 after the task work commit
+just to make HEAD match.
 
 The gate must cover docs, code, tests, Trellis artifacts, config, scripts,
 schemas, CI/CD, container files, Kubernetes/Kustomize/Helm assets, database

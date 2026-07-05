@@ -118,6 +118,12 @@ P0/P1/P2 findings. A passed gate must also include
 main-session/self-review identity, and `--review-report` must point to the
 task-local file named `review.md`. The script validates those objective
 metadata fields; it still does not judge review quality.
+For post-commit Phase 2 audit, the script may accept a `phase2-check.json`
+recorded at an ancestor HEAD only when every later non-metadata committed path
+is covered by the artifact's `dirty_paths`, or when the later tail is Trellis
+metadata only. Any uncovered non-metadata committed path or current
+non-metadata dirty path must block the gate instead of encouraging a
+post-commit Phase 2 re-record.
 
 ## Security Rules
 

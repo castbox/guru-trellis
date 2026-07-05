@@ -747,6 +747,26 @@ def has_non_metadata_dirty_paths(root: Path) -> tuple[bool, list[str]]:
     return bool(non_metadata), non_metadata
 
 
+def committed_paths_match_phase2_dirty_paths(
+    root: Path,
+    recorded_head: str,
+    recorded_dirty_paths: list[Any],
+) -> tuple[bool, list[str]]:
+    proc = run(["git", "diff", "--name-only", f"{recorded_head}..HEAD"], cwd=root, check=False)
+    if proc.returncode != 0:
+        return False, []
+    files = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    recorded = {str(path) for path in recorded_dirty_paths}
+    uncovered = [
+        path
+        for path in files
+        if not path.startswith(METADATA_ONLY_PREFIXES)
+        and path not in METADATA_ONLY_FILES
+        and path not in recorded
+    ]
+    return not uncovered, uncovered
+
+
 def stage_metadata_paths(root: Path) -> list[str]:
     metadata_paths = [
         path
@@ -1806,23 +1826,31 @@ def validate_phase2_check(
     recorded_head = str(payload.get("head") or "")
     head = current_head(root)
     accepted_committed_state = False
+    committed_head_audit_performed = False
     if recorded_head != head:
         if allow_committed_head and recorded_head and is_ancestor(root, recorded_head, "HEAD"):
-            metadata_only, tail_files = metadata_only_since(root, recorded_head)
-            if not metadata_only:
+            committed_head_audit_performed = True
+            recorded_dirty = payload.get("dirty_paths")
+            if not isinstance(recorded_dirty, list):
+                errors.append("phase2-check.json 缺少 dirty_paths 数组。")
+            committed_paths_covered, uncovered_paths = committed_paths_match_phase2_dirty_paths(
+                root,
+                recorded_head,
+                recorded_dirty if isinstance(recorded_dirty, list) else [],
+            )
+            if not committed_paths_covered:
                 errors.append(
-                    "phase2-check.json 记录的 HEAD 是当前 HEAD 的祖先，但之后提交了非 Trellis metadata 变更: "
-                    + ", ".join(tail_files[:20])
+                    "phase2-check.json 记录的 HEAD 是当前 HEAD 的祖先，但之后提交了未被 dirty_paths 覆盖的非 Trellis metadata 变更: "
+                    + ", ".join(uncovered_paths[:20])
+                )
+            has_non_metadata, non_metadata_paths = has_non_metadata_dirty_paths(root)
+            if has_non_metadata:
+                errors.append(
+                    "phase2-check.json 记录的 HEAD 是当前 HEAD 的祖先，但工作区存在非 Trellis metadata 变更: "
+                    + ", ".join(non_metadata_paths[:20])
                 )
             else:
-                has_non_metadata, non_metadata_paths = has_non_metadata_dirty_paths(root)
-                if has_non_metadata:
-                    errors.append(
-                        "phase2-check.json 记录的 HEAD 是当前 HEAD 的祖先，但工作区存在非 Trellis metadata 变更: "
-                        + ", ".join(non_metadata_paths[:20])
-                    )
-                else:
-                    accepted_committed_state = True
+                accepted_committed_state = committed_paths_covered
         else:
             errors.append(f"phase2-check.json 记录的 HEAD {recorded_head or '(missing)'} 与当前 HEAD {head} 不一致。")
     dirty_excluded = {repo_relative(root, phase2_check_path(task_dir))}
@@ -1830,8 +1858,9 @@ def validate_phase2_check(
     dirty_now = dirty_paths_excluding(root, dirty_excluded)
     recorded_dirty = payload.get("dirty_paths")
     if not isinstance(recorded_dirty, list):
-        errors.append("phase2-check.json 缺少 dirty_paths 数组。")
-    elif accepted_committed_state:
+        if "phase2-check.json 缺少 dirty_paths 数组。" not in errors:
+            errors.append("phase2-check.json 缺少 dirty_paths 数组。")
+    elif accepted_committed_state or committed_head_audit_performed:
         pass
     elif sorted(str(item) for item in recorded_dirty) != sorted(dirty_now):
         errors.append("phase2-check.json 记录的 dirty_paths 与当前 working tree 不一致。")

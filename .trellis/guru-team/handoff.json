@@ -1,21 +1,21 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 35,
-    "url": "https://github.com/castbox/guru-trellis/issues/35",
-    "title": "修复 Guru Team no_task intake 防止绕过 worktree",
+    "number": 37,
+    "url": "https://github.com/castbox/guru-trellis/issues/37",
+    "title": "修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/35-guru-team-no-task-intake/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/37-phase-2-check-evidence-review/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "guru-team-no-task-intake",
-  "task_slug": "35-guru-team-no-task-intake",
-  "task_title": "#35 修复 Guru Team no_task intake 防止绕过 worktree",
-  "branch_name": "codex/35-guru-team-no-task-intake",
+  "slug": "phase-2-check-evidence-review",
+  "task_slug": "37-phase-2-check-evidence-review",
+  "task_title": "#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判",
+  "branch_name": "codex/37-phase-2-check-evidence-review",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/35-guru-team-no-task-intake",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/37-phase-2-check-evidence-review",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -26,30 +26,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#35 修复 Guru Team no_task intake 防止绕过 worktree",
+    "#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判",
     "--slug",
-    "35-guru-team-no-task-intake",
+    "37-phase-2-check-evidence-review",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-05-35-guru-team-no-task-intake",
+  "task_dir": ".trellis/tasks/07-05-37-phase-2-check-evidence-review",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 35,
-      "url": "https://github.com/castbox/guru-trellis/issues/35",
-      "title": "修复 Guru Team no_task intake 防止绕过 worktree",
+      "number": 37,
+      "url": "https://github.com/castbox/guru-trellis/issues/37",
+      "title": "修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 35,
-        "url": "https://github.com/castbox/guru-trellis/issues/35",
-        "title": "修复 Guru Team no_task intake 防止绕过 worktree",
+        "number": 37,
+        "url": "https://github.com/castbox/guru-trellis/issues/37",
+        "title": "修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -64,7 +64,7 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           059f8f9 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           93be70b [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
@@ -76,7 +76,8 @@
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/26-worktree-trellis-developer-identity          d9042da [codex/26-worktree-trellis-developer-identity]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/27-finish-work-dry-run-readiness                8e3c68b [codex/27-finish-work-dry-run-readiness]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/31-guru-team-extension-version-manifest         aa9ee7b [codex/31-guru-team-extension-version-manifest]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/35-guru-team-no-task-intake                     059f8f9 [codex/35-guru-team-no-task-intake]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/35-guru-team-no-task-intake                     105c981 [codex/35-guru-team-no-task-intake]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/37-phase-2-check-evidence-review                93be70b [codex/37-phase-2-check-evidence-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/5-require-ai-review-prompt-before               44b29b0 [codex/5-require-ai-review-prompt-before]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/7-require-pr-readiness-review-before            5319076 [codex/7-require-pr-readiness-review-before]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/8-auditable-evidence-planning-approval-trellis  678fdfc [codex/8-auditable-evidence-planning-approval-trellis]",
@@ -90,10 +91,10 @@
       "base_ref": "main",
       "remote_ref": "origin/main",
       "local_head_before": "059f8f9fe2b377f37a03b9b533dba3121458cd3e",
-      "local_head_after": "059f8f9fe2b377f37a03b9b533dba3121458cd3e",
-      "remote_head": "059f8f9fe2b377f37a03b9b533dba3121458cd3e",
+      "local_head_after": "93be70b768ac331b673870529e560b4d0257692c",
+      "remote_head": "93be70b768ac331b673870529e560b4d0257692c",
       "fetch_performed": true,
-      "fast_forwarded": false,
+      "fast_forwarded": true,
       "fresh": true,
       "status": "fresh",
       "base_ref_for_worktree": "main"
@@ -102,7 +103,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/35-guru-team-no-task-intake/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/37-phase-2-check-evidence-review/.trellis/.developer",
       "developer": "wumengye"
     }
   }

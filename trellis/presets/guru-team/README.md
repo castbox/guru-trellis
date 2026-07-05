@@ -196,8 +196,12 @@ subcommands used by the workflow; they are not daily user-facing entries.
 `record-planning-approval.sh` records reviewed planning artifact hashes and the
 user confirmation before `task.py start`; `task.py start` remains only a status
 transition. `record-phase2-check.sh` records the full-scope `trellis-check`
-result before commit; validation commands are evidence inside that report, not
-a substitute for the check. `review-branch.sh`
+result before commit, including the pre-commit `dirty_paths`; validation
+commands are evidence inside that report, not a substitute for the check.
+After the task work commit, `review-branch.sh` audits that committed
+non-metadata task paths after the Phase 2 recorded HEAD are covered by those
+dirty paths and that no non-metadata dirty paths remain in the working tree.
+Do not re-record Phase 2 after commit just to make HEAD match. `review-branch.sh`
 records and validates the prior AI/human review result; it is not the reviewer.
 Passing gates require independent Agent review with no P0/P1/P2 findings,
 task-local `review.md`, a Chinese summary, concrete evidence,
