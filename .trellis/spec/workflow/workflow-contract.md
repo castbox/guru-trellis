@@ -154,7 +154,8 @@ Passing the gate requires:
 - `--reviewer` only as optional identity metadata for the independent reviewer;
   `*-main-session` and `self-review` identities are rejected for passed gates
 - `--review-report` must point to the task-local file named `review.md`, not
-  another task artifact
+  another task artifact, and the recorded digest must still match the current
+  file
 - `--agent-assignment` must point to the task-local `agent-assignment.json` so
   the gate records its digest and Chinese logical-role summary
 - `review_rounds[].round` values must be unique and strictly increasing in

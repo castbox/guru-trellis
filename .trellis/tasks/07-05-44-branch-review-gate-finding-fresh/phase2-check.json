@@ -1,26 +1,22 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-05T13:01:21Z",
+  "generated_at": "2026-07-05T13:19:55Z",
   "task_dir": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh",
   "base_branch": "main",
-  "head": "a8b7e1cb83204cba2e8e1efed4deeb69817b16ba",
+  "head": "5e663cf12073dcca9aac2906b290214242e71d93",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
     ".trellis/guru-team/extension.json",
     ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    ".trellis/spec/workflow/companion-scripts.md",
-    ".trellis/spec/workflow/data-contracts.md",
     ".trellis/spec/workflow/workflow-contract.md",
-    ".trellis/workflow.md",
     "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
     "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    "trellis/workflows/guru-team/workflow.md",
     ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/agent-assignment.json",
     ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/review-gate.json",
     ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/review.md"
   ],
   "checker": "codex-main-session",
-  "check_summary": "Issue 44 修复已更新：Branch Review Gate 任意 finding 阻断、finding owner 同 agent 闭环、fresh final reviewer、以及 review_rounds[].round 唯一且严格递增，避免最终放行轮次歧义；脚本仅校验客观字段，workflow/spec/task artifacts 已同步。",
+  "check_summary": "Issue 44 修复已继续更新：Branch Review Gate 任意 finding 阻断、finding owner 同 agent 闭环、fresh final reviewer、review_rounds[].round 唯一严格递增，并且 passed review gate 会复算 task-local review.md digest，防止 review_report 过期 fail-open。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/prd.md",
@@ -30,9 +26,9 @@
     },
     {
       "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/design.md",
-      "sha256": "c6a3afb8350ee8cafcb45f576998bd99e0b3114a5e69c24750857ab3d3930b8f",
-      "size_bytes": 4880,
-      "modified_at": "2026-07-05T13:00:47.405921+00:00"
+      "sha256": "7ebb7941fbb5b7f16ed865beb2d29b62a317a23c7e95d2edb2c809d630e55f40",
+      "size_bytes": 5068,
+      "modified_at": "2026-07-05T13:19:10.291489+00:00"
     },
     {
       "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/implement.md",
@@ -50,9 +46,9 @@
   "checked_specs": [
     {
       "path": ".trellis/spec/workflow/workflow-contract.md",
-      "sha256": "23f80fc79f637adaf7544e76afa8dd1d28133038f4e655de33bb07153a534c2c",
-      "size_bytes": 11785,
-      "modified_at": "2026-07-05T13:00:47.404021+00:00"
+      "sha256": "0ad83178822d9407036526f41b0f4ecf1c26a09c53ee0cd2582da6d2f58f0d97",
+      "size_bytes": 11846,
+      "modified_at": "2026-07-05T13:19:10.290974+00:00"
     },
     {
       "path": ".trellis/spec/workflow/companion-scripts.md",
@@ -91,8 +87,8 @@
   },
   "validation_commands": [
     {
-      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "result": "101 tests OK"
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "120 tests OK"
     },
     {
       "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",

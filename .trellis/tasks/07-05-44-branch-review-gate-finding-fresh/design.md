@@ -19,6 +19,7 @@
 - `conclusion.findings_count`: 新增任意 finding 数量。
 - `conclusion.observations_count`: 新增 observation 数量。
 - `conclusion.followup_candidates_count`: 新增 followup candidate 数量。
+- `verification_evidence.review_report`: 必须指向当前 task-local `review.md`，并在复验时重新计算 `sha256` / `size_bytes`，防止 review report 被后续篡改或过期。
 - `verification_evidence.agent_assignment`: 继续记录 digest 和 review round summary；`--pass` 必须提供该 artifact，脚本校验 closure-before-final 和 fresh final reviewer 客观条件。
 
 `agent-assignment.json` 暂不升级 schema，复用现有 `review_rounds[]` 字段：

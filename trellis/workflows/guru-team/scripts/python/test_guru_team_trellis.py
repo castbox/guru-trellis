@@ -2583,12 +2583,10 @@ class ReviewGateReportTest(unittest.TestCase):
         )
 
     def valid_report(self) -> dict[str, object]:
-        return {
-            "path": ".trellis/tasks/07-04-review-gate/review.md",
-            "sha256": "a" * 64,
-            "size_bytes": 32,
-            "modified_at": "2026-07-04T00:00:00+00:00",
-        }
+        review_report = self.task_dir / "review.md"
+        if not review_report.exists():
+            review_report.write_text("# Review\n\n最终放行审查代理给出 0 findings。\n", encoding="utf-8")
+        return gtt.file_digest(self.root, review_report)
 
     def valid_assignment_summary(self) -> dict[str, object]:
         assignment = self.write_agent_assignment()
@@ -2717,6 +2715,29 @@ class ReviewGateReportTest(unittest.TestCase):
             _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
 
         self.assertIn("Branch Review Gate review_report 缺少 modified_at。", errors)
+
+    def test_validate_review_gate_rejects_stale_review_report_digest(self) -> None:
+        report = self.valid_report()
+        report["sha256"] = "0" * 64
+        report["size_bytes"] = int(report["size_bytes"]) + 1
+        self.write_gate(review_report=report)
+        gate = gtt.read_json(self.task_dir / "review-gate.json")
+        gate["findings"] = []
+        gate["conclusion"]["findings_count"] = 0
+        gate["conclusion"]["blocking_findings_count"] = 0
+        gate["verification_evidence"]["agent_assignment"] = self.valid_assignment_summary()
+        (self.task_dir / "review-gate.json").write_text(
+            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        with (
+            mock.patch.object(gtt, "current_head", return_value="abc123"),
+            mock.patch.object(gtt, "git_object_exists", return_value=True),
+        ):
+            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
+
+        self.assertTrue(any("review_report artifact 已过期" in error and "sha256" in error for error in errors))
+        self.assertTrue(any("review_report artifact 已过期" in error and "size_bytes" in error for error in errors))
 
     def test_validate_review_gate_accepts_agent_assignment_summary(self) -> None:
         self.write_gate(review_report=self.valid_report())

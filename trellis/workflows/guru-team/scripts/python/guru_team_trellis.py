@@ -58,6 +58,7 @@ BLOCKING_PRIORITIES = {"P0", "P1", "P2"}
 PLANNING_APPROVAL_ARTIFACT = "planning-approval.json"
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
+REVIEW_REPORT_ARTIFACT = "review.md"
 GURU_TEAM_EXTENSION_MANIFEST = Path(".trellis/guru-team/extension.json")
 DEFAULT_PLANNING_ARTIFACTS = ["prd.md", "design.md", "implement.md"]
 DEFAULT_PHASE2_TASK_ARTIFACTS = [
@@ -1615,7 +1616,7 @@ def load_review_report(root: Path, task_dir: Path, report_arg: str | None) -> di
         raise WorkflowError(f"--review-report must point to a file: {path}")
     if task_dir.resolve() not in [path.resolve(), *path.resolve().parents]:
         raise WorkflowError("--review-report must point to a task-local review.md inside the current task directory.")
-    if path.name != "review.md":
+    if path.name != REVIEW_REPORT_ARTIFACT:
         raise WorkflowError("--review-report must point to the task-local review.md file, not another task artifact.")
     content = path.read_bytes()
     if not content.strip():
@@ -2134,13 +2135,22 @@ def phase2_check_path(task_dir: Path) -> Path:
     return task_dir / PHASE2_CHECK_ARTIFACT
 
 
-def valid_review_report_fields(review_report: Any) -> list[str]:
+def valid_review_report_fields(root: Path, task_dir: Path, review_report: Any) -> list[str]:
     if not isinstance(review_report, dict):
         return ["Branch Review Gate 缺少 review_report；passed gate 必须引用 task-local review.md digest。"]
     errors: list[str] = []
     for key in ["path", "sha256", "size_bytes", "modified_at"]:
         if not review_report.get(key):
             errors.append(f"Branch Review Gate review_report 缺少 {key}。")
+    path_value = str(review_report.get("path") or "").strip()
+    if path_value:
+        path = resolve_repo_path(root, path_value).resolve()
+        if task_dir.resolve() not in [path, *path.parents]:
+            errors.append("Branch Review Gate review_report 必须指向当前 task-local review.md。")
+        if path.name != REVIEW_REPORT_ARTIFACT:
+            errors.append("Branch Review Gate review_report 必须指向 task-local review.md。")
+    if not errors:
+        errors.extend(digest_errors(root, review_report, "Branch Review Gate review_report"))
     return errors
 
 
@@ -2605,7 +2615,7 @@ def validate_review_gate(
     review_source = str(verification.get("review_source") or "").strip()
     errors.extend(independent_review_source_errors(review_source, reviewer))
     review_report = verification.get("review_report") if isinstance(verification.get("review_report"), dict) else None
-    errors.extend(valid_review_report_fields(review_report))
+    errors.extend(valid_review_report_fields(root, task_dir, review_report))
     reviewed_head = str(gate.get("head") or "")
     agent_assignment = verification.get("agent_assignment")
     errors.extend(valid_agent_assignment_summary_fields(root, task_dir, agent_assignment, expected_head=reviewed_head))
