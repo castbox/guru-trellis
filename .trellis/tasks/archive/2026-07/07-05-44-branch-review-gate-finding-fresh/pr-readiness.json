@@ -1,0 +1,12 @@
+{
+  "ready": true,
+  "reviewer": "codex-main-session",
+  "reviewed_at": "2026-07-05T15:36:00Z",
+  "body_file": "pr-body.md",
+  "checks": [
+    "PR body 为中文且包含变更摘要、影响范围、验证结果、Review Gate、Issue 关闭范围、安全说明。",
+    "close keyword 只用于 issue-scope-ledger.json close_issues 中的 #44。",
+    "验证结果、部署影响和安全说明均为具体内容，不使用低信息量占位文本。",
+    "Review Gate 已通过当前 HEAD 38908e0ba3d814b4e0024d6dbe116ecf4f64108b。"
+  ]
+}

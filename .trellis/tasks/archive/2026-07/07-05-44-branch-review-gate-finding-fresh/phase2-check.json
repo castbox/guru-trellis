@@ -1,41 +1,17 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-05T15:09:51Z",
+  "generated_at": "2026-07-05T15:32:30Z",
   "task_dir": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh",
   "base_branch": "main",
-  "head": "8ba8acbff7ac0027d32515be61cfa18d76640384",
+  "head": "38908e0ba3d814b4e0024d6dbe116ecf4f64108b",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".agents/skills/trellis-continue/SKILL.md",
-    ".claude/commands/trellis/continue.md",
-    ".codex/prompts/trellis-continue.md",
-    ".codex/skills/trellis-continue/SKILL.md",
-    ".cursor/commands/trellis-continue.md",
-    ".trellis/guru-team/extension.json",
-    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    ".trellis/spec/preset/overlay-guidelines.md",
-    ".trellis/spec/workflow/companion-scripts.md",
-    ".trellis/spec/workflow/data-contracts.md",
-    ".trellis/spec/workflow/workflow-contract.md",
-    ".trellis/workflow.md",
-    "README.md",
-    "docs/requirements/requirement-main.md",
-    "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
-    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
-    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
-    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
-    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
-    "trellis/workflows/guru-team/README.md",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    "trellis/workflows/guru-team/workflow.md",
     ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/agent-assignment.json",
     ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/review-gate.json",
     ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/review.md"
   ],
   "checker": "codex-main-session",
-  "check_summary": "Issue 44 当前工作树已补齐 closure/fresh-final 合同修正：同 agent closure 只证明原 finding 已闭环，不要求每个后续 HEAD 重跑；fresh final reviewer 负责当前 HEAD 全量 diff；独立 review sub-agent 不调用 Guru Team recorder/validator 扩展脚本。同步更新 canonical/dogfood workflow、overlay、spec、README、任务 artifact，并收紧 final findings_count bool 校验。",
+  "check_summary": "Issue 44 Phase 2 evidence 已在最终 gate 前刷新：代码/文档/overlay/spec 的 task work 已提交到 38908e0；当前仅 planning-approval、agent-assignment、review.md、review-gate metadata 发生 gate evidence 更新。重录用于更新 planning-approval digest，保持 Phase 2 post-commit audit 可客观校验；不引入新的非 metadata 任务改动。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/prd.md",
@@ -57,9 +33,9 @@
     },
     {
       "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/planning-approval.json",
-      "sha256": "67404cc71e4dd0d7e51d02f5d2ff421b7f733b72070d873b3d4e448e8853f048",
-      "size_bytes": 2119,
-      "modified_at": "2026-07-05T14:10:00.301539+00:00"
+      "sha256": "120685fbb508fc4f7b05582ae128b5026f4757bdbb65250bcfeab0796f8df04f",
+      "size_bytes": 2373,
+      "modified_at": "2026-07-05T15:31:16.644526+00:00"
     }
   ],
   "checked_specs": [
@@ -127,7 +103,7 @@
     },
     {
       "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms",
-      "result": "passed; replaced .claude/commands/trellis/continue.md; no .bak/.new"
+      "result": "passed; no .bak/.new"
     },
     {
       "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
