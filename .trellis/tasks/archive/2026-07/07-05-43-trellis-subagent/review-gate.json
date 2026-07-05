@@ -169,10 +169,10 @@
       "modified_at": "2026-07-05T10:15:33.116338+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-05-43-trellis-subagent/agent-assignment.json",
-      "sha256": "0473ce95095890180b2840a54593d1a83411d46f9c6498c878c044b044e8f366",
-      "size_bytes": 4281,
-      "modified_at": "2026-07-05T10:15:33.371371+00:00",
+      "path": ".trellis/tasks/archive/2026-07/07-05-43-trellis-subagent/agent-assignment.json",
+      "sha256": "7aa63fe32479491f30bd4c0b61bfd8e80059a174add1be6cb2358d1fcf37cc47",
+      "size_bytes": 4297,
+      "modified_at": "2026-07-05T10:26:10.742919+00:00",
       "schema_version": "1.0",
       "artifact_head": "26185a6b3098c0fa7e6e4051043ca3829f07e9ea",
       "roles": [
@@ -184,7 +184,7 @@
       "agents_count": 5,
       "review_rounds_count": 2,
       "reuse_decisions_count": 1,
-      "task": ".trellis/tasks/07-05-43-trellis-subagent",
+      "task": ".trellis/tasks/archive/2026-07/07-05-43-trellis-subagent",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "evidence": [
