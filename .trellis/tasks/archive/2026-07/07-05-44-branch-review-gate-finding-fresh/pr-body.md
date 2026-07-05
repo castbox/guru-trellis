@@ -16,7 +16,7 @@
 
 ## 验证结果
 
-- `PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py`：126 tests OK。
+- `PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py`：通过；具体测试数量见 task-local `phase2-check.json` 验证记录。
 - `PYTHONPYCACHEPREFIX=/tmp/guru-trellis-pycache python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py`：通过。
 - `bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh`：通过。
 - `python3 -m json.tool trellis/index.json`、schema 与 `.trellis/guru-team/extension.json`：通过。
