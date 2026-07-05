@@ -1,0 +1,32 @@
+{
+  "primary_issue": {
+    "number": 35,
+    "url": "https://github.com/castbox/guru-trellis/issues/35",
+    "title": "修复 Guru Team no_task intake 防止绕过 worktree",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "trellis/workflows/guru-team/workflow.md 与 .trellis/workflow.md 的 workflow-state:no_task 直接列出 check-env / prepare-task，并要求 worktree mode 使用 prepare-task --create-worktree --create-task。",
+      "trellis-start canonical overlay 与 .agents/.codex dogfood 副本同步，明确禁止 issue-backed/file-changing 任务在 source checkout 直接裸 task.py create。",
+      ".codex/hooks/test_inject_workflow_state.py 新增 no_task breadcrumb 回归断言，覆盖 prepare/worktree 入口和 task creation consent 不等于 direct-edit consent。",
+      "验证通过：json.tool、bash -n、py_compile、Codex workflow-state tests、workflow_phase tests、task validate、get_context phase/step、dogfood overlay drift、git diff --check、check-env --json。",
+      "throwaway install 通过 public marketplace sample + 当前本地 preset installer；当前未合并分支的远端 gh:...#codex/35... marketplace source 未覆盖，因 Trellis 未能从该 source 获取 index.json。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 35,
+      "url": "https://github.com/castbox/guru-trellis/issues/35",
+      "title": "修复 Guru Team no_task intake 防止绕过 worktree",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "trellis/workflows/guru-team/workflow.md 与 .trellis/workflow.md 的 workflow-state:no_task 直接列出 check-env / prepare-task，并要求 worktree mode 使用 prepare-task --create-worktree --create-task。",
+        "trellis-start canonical overlay 与 .agents/.codex dogfood 副本同步，明确禁止 issue-backed/file-changing 任务在 source checkout 直接裸 task.py create。",
+        ".codex/hooks/test_inject_workflow_state.py 新增 no_task breadcrumb 回归断言，覆盖 prepare/worktree 入口和 task creation consent 不等于 direct-edit consent。",
+        "验证通过：json.tool、bash -n、py_compile、Codex workflow-state tests、workflow_phase tests、task validate、get_context phase/step、dogfood overlay drift、git diff --check、check-env --json。",
+        "throwaway install 通过 public marketplace sample + 当前本地 preset installer；当前未合并分支的远端 gh:...#codex/35... marketplace source 未覆盖，因 Trellis 未能从该 source 获取 index.json。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

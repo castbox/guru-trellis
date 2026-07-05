@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查 workflow 修复是否符合 Phase 0/1 合同"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查验证命令和 no_task direct-edit/preflight evidence 规则"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 overlay 内容和 dogfood drift"}
+{"file": ".codex/hooks/test_inject_workflow_state.py", "reason": "回归测试覆盖 workflow-state no_task 注入"}
+{"file": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh", "reason": "overlay 同步验证入口"}

@@ -240,7 +240,13 @@ review 根据证据判断。
 安装后，用户日常不需要先手动输入 `trellis-start`。直接描述任务、贴 GitHub
 issue URL，或说“处理 issue #123”即可；AI 会根据 Trellis 自动注入的
 startup context、workflow-state、hook breadcrumb 或 skill matcher 判断是否进入
-Guru Team issue intake 和 worktree preflight。
+Guru Team issue intake 和 worktree preflight。对 issue-backed、task-like 或需要文件
+修改的请求，第一跳不是裸 `task.py create`，而是：
+
+```bash
+.trellis/guru-team/scripts/bash/check-env.sh --json
+.trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request or issue URL>"
+```
 
 默认 `prepare-task.sh --json` 只是 intake/preflight planner：它可以读取明确提供的
 issue、搜索重复候选，并输出 proposed issue、base branch、branch name、workspace
@@ -250,6 +256,9 @@ issue 的 freeform 请求必须先由 AI 展示 proposed issue title/body 和 du
 evidence；stdout JSON 会标记 `handoff_written: false`。用户确认后才可用
 `--create-issue-confirmed --issue-title ... --issue-body-file ...` 执行 GitHub issue
 创建；`--create-worktree` / `--create-task` 同样只用于 handoff review 之后的显式执行。
+当 `workspace_mode: worktree` 时，执行环境和 task 创建应通过
+`prepare-task --create-worktree --create-task` 或等价 Guru Team 受控入口完成，不能把
+task creation consent 当成在 source checkout 直接运行 `task.py create` 的批准。
 这些 executor 路径创建 worktree 前会先刷新所选 base branch，记录
 `preflight.base_freshness`，并在本地 base 落后时只做安全 fast-forward；如果本地 base
 与远端分叉或 freshness 无法确认，会阻塞而不是从过期 ref 创建任务分支。

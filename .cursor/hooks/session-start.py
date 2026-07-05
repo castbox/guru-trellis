@@ -331,9 +331,10 @@ def _get_task_status(trellis_dir: Path, input_data: dict) -> str:
     if not active.task_path:
         return (
             "Status: NO ACTIVE TASK\n"
-            "Next-Action: Classify the current turn before creating any Trellis task. "
-            "Simple conversation / small task asks only whether this turn should create a Trellis task. "
-            "Complex task asks whether task creation and planning are allowed."
+            "Next-Action: Follow the per-turn workflow-state before creating any Trellis task. "
+            "In Guru Team projects, issue-backed, task-like, or file-changing requests run "
+            "`check-env.sh --json` and `prepare-task.sh --json` before task creation; "
+            "task creation consent is not current-checkout direct-edit consent."
         )
 
     task_ref = active.task_path

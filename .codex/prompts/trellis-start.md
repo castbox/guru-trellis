@@ -18,7 +18,7 @@ python3 ./.trellis/scripts/get_context.py
 python3 ./.trellis/scripts/get_context.py --mode phase
 ```
 
-2. If there is no active task and the user's natural-language request is issue-backed, task-like, or requires file changes, do not silently edit the current checkout. Follow `.trellis/workflow.md` Phase 0:
+2. If there is no active task and the user's natural-language request is issue-backed, task-like, or requires file changes, the first priority is Guru Team Phase 0 intake, not bare `task.py create` in the current checkout. Do not silently edit the current checkout. Run:
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
@@ -27,9 +27,10 @@ python3 ./.trellis/scripts/get_context.py --mode phase
 
 3. Treat default `prepare-task` as intake/preflight planning only. If it returns `proposed_issue` / `requires_confirmation`, show duplicate candidates, proposed title/body, base branch, branch name, workspace path, and the confirmed command; stop until the user approves GitHub issue creation. Only then rerun with `--create-issue-confirmed --issue-title "<reviewed title>" --issue-body-file <reviewed-body-file>`.
 
-4. Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect. `--create-worktree` and `--create-task` are executor flags for after handoff review, not default intake commands.
+4. Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect. `--create-worktree` and `--create-task` are executor flags for after handoff review, not default intake commands. In `workspace_mode: worktree`, use `prepare-task --create-worktree --create-task` or an equivalent controlled Guru Team executor to create the execution worktree and task; do not run bare `python3 ./.trellis/scripts/task.py create ...` in the source checkout.
 
-5. A current-checkout direct-edit override is allowed only after explicit user
+5. Task creation consent is not current-checkout direct-edit consent. A
+   current-checkout direct-edit override is allowed only after explicit user
    approval. The approval must state that the user wants to skip creating or
    reusing a GitHub issue, Trellis task, worktree, and branch for this turn.
    Before editing, summarize the skipped artifacts, current checkout, current

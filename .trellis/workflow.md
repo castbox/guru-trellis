@@ -184,13 +184,15 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 ### Request Triage
 
 - Do not require the user to explicitly run `trellis-start` before new work. In normal auto-bootstrap platforms, classify the user's natural-language request from the injected Trellis context, workflow-state, startup context, hook breadcrumb, or skill matcher.
-- Simple conversation or small task: ask only whether this turn should create a Trellis task. If the user says no, skip Trellis for this session.
-- Issue-backed, task-like, or file-changing request: run Guru Team issue intake and Git base/worktree preflight before task creation. This includes pasted issue URLs, issue numbers, and clear development tasks.
+- Simple conversation or non-file-changing small task: ask only whether this turn should create a Trellis task. If the user says no, skip Trellis for this session.
+- Issue-backed, task-like, or file-changing request: first run Guru Team issue intake and Git base/worktree preflight before task creation. This includes pasted issue URLs, issue numbers, and clear development tasks. The first commands are:
+  - `.trellis/guru-team/scripts/bash/check-env.sh --json`
+  - `.trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request, issue number, or issue URL>"`
 - File-changing request with no active task: do not silently edit the current
   checkout. A current-checkout direct-edit override is allowed only after the
   user explicitly approves skipping GitHub issue, Trellis task, worktree, and
   branch creation/reuse for this turn.
-- Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect.
+- Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect. Task creation consent is not current-checkout direct-edit consent.
 - User approval to create a task is not approval to start implementation. Planning still happens first.
 
 ### Planning Artifacts
@@ -260,10 +262,13 @@ Repos with no complete docs system must still record one explicit outcome:
 
 [workflow-state:no_task]
 No active task. First classify the user's natural-language request; do not require the user to explicitly run `trellis-start`.
-If the request includes an issue URL, issue number, clear development task, or file change, run Guru Team issue intake + Git base/worktree preflight before `task.py create`.
+If the request includes an issue URL, issue number, clear development task, or file change, the first priority is Guru Team Phase 0 intake, not bare `task.py create`:
+`.trellis/guru-team/scripts/bash/check-env.sh --json`
+`.trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request, issue number, or issue URL>"`
+Default `prepare-task` is planner-only. After handoff review and user approval in `workspace_mode: worktree`, create the execution environment with `prepare-task --create-worktree --create-task` or an equivalent controlled Guru Team executor.
 Do not silently edit the current checkout. Direct edits require explicit user approval to skip GitHub issue, Trellis task, worktree, and branch for this turn.
 Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect.
-Do not write `.trellis/tasks/` artifacts until consent is clear and preflight has a clear workspace.
+Task creation consent is not current-checkout direct-edit consent. Do not write `.trellis/tasks/` artifacts until consent is clear and preflight has a clear workspace.
 [/workflow-state:no_task]
 
 ### Phase 0: Intake
@@ -315,7 +320,7 @@ Default to worktree mode. If the need for a new worktree is uncertain, ask the u
 
 #### 0.4 Handoff review `[required · once]`
 
-Before `task.py create`, summarize:
+Before task creation, summarize:
 
 - source issue URL
 - proposed issue title/body when `source_issue` is still null
@@ -325,9 +330,20 @@ Before `task.py create`, summarize:
 - branch name
 - workspace path
 - current checkout and current branch
-- create-task command
+- create-task command or confirmed Guru Team executor command
 
-Only after this is clear, create the Trellis task in the chosen workspace.
+Only after this is clear, create the Trellis task in the chosen workspace. When
+`workspace_mode: worktree`, the normal executor is:
+
+```bash
+.trellis/guru-team/scripts/bash/prepare-task.sh --json \
+  --create-worktree \
+  --create-task \
+  "<source issue URL or approved request>"
+```
+
+Do not run bare `python3 ./.trellis/scripts/task.py create ...` in the source
+checkout for issue-backed or file-changing Guru Team worktree tasks.
 
 If the user explicitly requests a current-checkout direct-edit override instead
 of creating or reusing a GitHub issue, Trellis task, worktree, and branch,
@@ -366,7 +382,21 @@ Inline mode: skip jsonl curation; Phase 2 reads artifacts/specs via `trellis-bef
 
 #### 1.0 Create task `[required · once]`
 
-If Phase 0 only produced planner output, rerun `prepare-task.sh` after user approval:
+If Phase 0 only produced planner output, rerun `prepare-task.sh` after user approval.
+Task creation consent is not current-checkout direct-edit consent, and it is not
+permission to bypass the selected worktree, branch, or handoff.
+
+When `workspace_mode: worktree`, prefer the single controlled executor path:
+
+```bash
+.trellis/guru-team/scripts/bash/prepare-task.sh --json \
+  --create-worktree \
+  --create-task \
+  "<source issue URL or approved request>"
+```
+
+This creates or reuses the chosen workspace, creates the branch and Trellis task
+there, and writes `.trellis/guru-team/handoff.json` inside that workspace.
 
 - Use `--create-worktree` to create or reuse the chosen workspace and write `.trellis/guru-team/handoff.json`; then run the `create_task_command` from that workspace handoff in `workspace_path`.
 - Use `--create-task` only when the user approved task creation as part of the executor step; it creates or reuses the chosen workspace, creates the Trellis task, and writes the workspace handoff.
@@ -375,7 +405,12 @@ If Phase 0 only produced planner output, rerun `prepare-task.sh` after user appr
 python3 ./.trellis/scripts/task.py create "<task title>" --slug <issue-or-unique-slug>
 ```
 
-Use `task.py set-branch`, `set-base-branch`, and `set-scope` to record handoff details when the prepare script has not already done that.
+The bare `task.py create` command above is only a follow-up for controlled
+cases where `prepare-task --create-worktree` has already written the handoff and
+the shell/editor is operating inside the returned `workspace_path`. Do not run
+it from the source checkout for issue-backed or file-changing Guru Team tasks.
+
+Use `task.py set-branch`, `set-base-branch`, and `set-scope` to record handoff details only when the prepare script has not already done that.
 
 Copy or materialize the Issue Scope Ledger seed from `.trellis/guru-team/handoff.json` into:
 

@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Guru Team workflow Phase 0/1 合同，约束 prepare-task 与 task.py create 边界"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "trellis-start overlay 内容和 dogfood 同步规则"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "workflow/preset 修改后的验证要求"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "canonical Guru Team workflow 控制面"}
+{"file": "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md", "reason": "canonical trellis-start overlay"}
