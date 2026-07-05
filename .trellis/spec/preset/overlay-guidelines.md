@@ -11,6 +11,14 @@ Reference overlay groups:
 - `.agents/skills/trellis-start/SKILL.md`
 - `.agents/skills/trellis-continue/SKILL.md`
 - `.agents/skills/trellis-finish-work/SKILL.md`
+- `.trellis/agents/implement.md`
+- `.trellis/agents/check.md`
+- `.codex/agents/trellis-implement.toml`
+- `.codex/agents/trellis-check.toml`
+- `.codex/agents/trellis-research.toml`
+- `.cursor/agents/trellis-implement.md`
+- `.cursor/agents/trellis-check.md`
+- `.cursor/agents/trellis-research.md`
 - `.codex/prompts/trellis-start.md`
 - `.codex/skills/trellis-continue/SKILL.md`
 - `.claude/commands/trellis/continue.md`
@@ -60,6 +68,15 @@ Start entries must:
 - ask for consent before creating GitHub issues, worktrees, branches, or Trellis
   tasks unless explicitly requested
 - treat `handoff.json` as intake provenance only
+
+Sub-agent overlay entries must:
+
+- keep technical dispatch `name` values stable;
+- use Chinese UI-facing descriptions and headings;
+- for Codex custom agents, keep `nickname_candidates` ASCII so Codex loads the
+  agent file, and put the Chinese display role in `description`;
+- keep recursion guards and task-context loading preludes intact;
+- avoid turning agent files into workflow judgment rules.
 
 ## Cross-Platform Consistency
 

@@ -1,0 +1,11 @@
+{
+  "findings": [
+    {
+      "priority": "P2",
+      "status": "fixed",
+      "message": "agent-assignment/check-review-gate 读取合法 JSON 但根不是 object 时可能 AttributeError，而不是结构化 validator 错误。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "fix": "通用 read_json() 现在拒绝非对象 JSON root 并抛出 WorkflowError；canonical 与 dogfood companion copy 已同步，新增 check-agent-assignment 非对象 JSON 回归测试。"
+    }
+  ]
+}

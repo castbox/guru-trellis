@@ -57,6 +57,7 @@ VALID_PRIORITIES = {"P0", "P1", "P2", "P3"}
 BLOCKING_PRIORITIES = {"P0", "P1", "P2"}
 PLANNING_APPROVAL_ARTIFACT = "planning-approval.json"
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
+AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 GURU_TEAM_EXTENSION_MANIFEST = Path(".trellis/guru-team/extension.json")
 DEFAULT_PLANNING_ARTIFACTS = ["prd.md", "design.md", "implement.md"]
 DEFAULT_PHASE2_TASK_ARTIFACTS = [
@@ -77,12 +78,22 @@ REQUIRED_PHASE2_COVERAGE = [
 ]
 RESOLVED_FINDING_STATUSES = {"resolved", "fixed", "closed"}
 INDEPENDENT_REVIEW_SOURCE = "independent-agent"
+AGENT_ASSIGNMENT_SCHEMA_VERSION = "1.0"
+ALLOWED_LOGICAL_ROLES = [
+    "实现代理",
+    "阶段二检查代理",
+    "问题发现审查代理",
+    "问题闭环审查代理",
+    "最终放行审查代理",
+]
+ALLOWED_REUSE_DECISIONS = {"reuse", "replace", "reuse-for-closure", "new-agent", "not-applicable"}
 SELF_REVIEWER_PATTERNS = [
     re.compile(r"(^|[-_./\s])main[-_./\s]*session($|[-_./\s])", re.IGNORECASE),
     re.compile(r"(^|[-_./\s])self[-_./\s]*review($|[-_./\s])", re.IGNORECASE),
 ]
 METADATA_ONLY_PREFIXES = (".trellis/tasks/", ".trellis/workspace/", ".trellis/.runtime/")
 METADATA_ONLY_FILES = {".trellis/guru-team/handoff.json"}
+PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS = {AGENT_ASSIGNMENT_ARTIFACT}
 PR_BODY_REQUIRED_SECTIONS = [
     "变更摘要",
     "影响范围",
@@ -1198,11 +1209,14 @@ def now_iso() -> str:
 
 def read_json(path: Path) -> dict[str, Any]:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        payload = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError as exc:
         raise WorkflowError(f"Required JSON file not found: {path}") from exc
     except json.JSONDecodeError as exc:
         raise WorkflowError(f"Invalid JSON file: {path}\n{exc}") from exc
+    if not isinstance(payload, dict):
+        raise WorkflowError(f"Invalid JSON file: {path}\nJSON root must be an object.", exit_code=2)
+    return payload
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -1597,6 +1611,294 @@ def file_digest(root: Path, path: Path) -> dict[str, Any]:
     }
 
 
+def agent_assignment_path(task_dir: Path) -> Path:
+    return task_dir / AGENT_ASSIGNMENT_ARTIFACT
+
+
+def default_agent_assignment_payload(root: Path, task_dir: Path) -> dict[str, Any]:
+    return {
+        "schema_version": AGENT_ASSIGNMENT_SCHEMA_VERSION,
+        "generated_at": now_iso(),
+        "updated_at": now_iso(),
+        "task": repo_relative(root, task_dir),
+        "head": current_head(root),
+        "agents": [],
+        "review_rounds": [],
+        "reuse_decisions": [],
+        "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用或更换；脚本只记录和校验客观字段、HEAD、digest 与枚举值。",
+    }
+
+
+def load_agent_assignment(root: Path, task_dir: Path) -> dict[str, Any]:
+    path = agent_assignment_path(task_dir)
+    if not path.exists():
+        return default_agent_assignment_payload(root, task_dir)
+    payload = read_json(path)
+    if not isinstance(payload.get("agents"), list):
+        payload["agents"] = []
+    if not isinstance(payload.get("review_rounds"), list):
+        payload["review_rounds"] = []
+    if not isinstance(payload.get("reuse_decisions"), list):
+        payload["reuse_decisions"] = []
+    payload.setdefault("schema_version", AGENT_ASSIGNMENT_SCHEMA_VERSION)
+    payload.setdefault("task", repo_relative(root, task_dir))
+    payload.setdefault("head", current_head(root))
+    return payload
+
+
+def clean_optional_text(value: Any) -> str:
+    return str(value or "").strip()
+
+
+def validate_logical_role(value: str) -> str:
+    role = value.strip()
+    if role not in ALLOWED_LOGICAL_ROLES:
+        raise WorkflowError(
+            f"Invalid logical role: {role or '(empty)'}. Valid roles: {', '.join(ALLOWED_LOGICAL_ROLES)}",
+            exit_code=2,
+        )
+    return role
+
+
+def validate_reuse_decision_value(value: str) -> str:
+    decision = value.strip()
+    if decision not in ALLOWED_REUSE_DECISIONS:
+        raise WorkflowError(
+            f"Invalid reuse decision: {decision or '(empty)'}. Valid decisions: {', '.join(sorted(ALLOWED_REUSE_DECISIONS))}",
+            exit_code=2,
+        )
+    return decision
+
+
+def append_agent_assignment_event(
+    payload: dict[str, Any],
+    root: Path,
+    logical_role: str,
+    agent_id: str,
+    platform_nickname: str,
+    reason: str,
+) -> dict[str, Any]:
+    if not reason:
+        raise WorkflowError("record-agent-assignment requires --reason explaining the AI/human assignment decision.", exit_code=2)
+    event = {
+        "logical_role": validate_logical_role(logical_role),
+        "agent_id": agent_id,
+        "platform_nickname": platform_nickname,
+        "assigned_at": now_iso(),
+        "assigned_head": current_head(root),
+        "reason": reason,
+    }
+    payload["agents"].append(event)
+    return event
+
+
+def append_agent_review_round(
+    payload: dict[str, Any],
+    root: Path,
+    logical_role: str,
+    agent_id: str,
+    platform_nickname: str,
+    round_value: int,
+    findings_count: int,
+    reuse_policy: str,
+    reuse_decision: str,
+    reviewed_head: str | None,
+) -> dict[str, Any]:
+    if round_value <= 0:
+        raise WorkflowError("review round must be a positive integer.", exit_code=2)
+    if findings_count < 0:
+        raise WorkflowError("findings count must be a non-negative integer.", exit_code=2)
+    if not reuse_policy:
+        raise WorkflowError("review round requires --reuse-policy with the AI/human review reuse rule.", exit_code=2)
+    event = {
+        "round": round_value,
+        "logical_role": validate_logical_role(logical_role),
+        "agent_id": agent_id,
+        "platform_nickname": platform_nickname,
+        "reviewed_head": reviewed_head or current_head(root),
+        "findings_count": findings_count,
+        "reuse_policy": reuse_policy,
+        "reuse_decision": validate_reuse_decision_value(reuse_decision),
+        "recorded_at": now_iso(),
+    }
+    payload["review_rounds"].append(event)
+    return event
+
+
+def append_agent_reuse_decision(
+    payload: dict[str, Any],
+    root: Path,
+    logical_role: str,
+    agent_id: str,
+    decision: str,
+    reason: str,
+    from_round: int | None,
+    to_round: int | None,
+    head: str | None,
+) -> dict[str, Any]:
+    if not reason:
+        raise WorkflowError("reuse decision requires --reuse-reason with the AI/human decision rationale.", exit_code=2)
+    if from_round is not None and from_round <= 0:
+        raise WorkflowError("--from-round must be a positive integer.", exit_code=2)
+    if to_round is not None and to_round <= 0:
+        raise WorkflowError("--to-round must be a positive integer.", exit_code=2)
+    event = {
+        "logical_role": validate_logical_role(logical_role),
+        "agent_id": agent_id,
+        "decision": validate_reuse_decision_value(decision),
+        "reason": reason,
+        "head": head or current_head(root),
+        "recorded_at": now_iso(),
+    }
+    if from_round is not None:
+        event["from_round"] = from_round
+    if to_round is not None:
+        event["to_round"] = to_round
+    payload["reuse_decisions"].append(event)
+    return event
+
+
+def git_object_exists(root: Path, ref: str) -> bool:
+    if not ref:
+        return False
+    return run(["git", "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"], cwd=root, check=False).returncode == 0
+
+
+def validate_head_field(root: Path, value: Any, label: str, errors: list[str], require_current: bool = False) -> None:
+    head = str(value or "").strip()
+    if not head:
+        errors.append(f"agent-assignment.json 缺少 {label}。")
+        return
+    if not git_object_exists(root, head):
+        errors.append(f"agent-assignment.json {label} 不是可解析的 Git commit: {head}。")
+        return
+    if require_current and head != current_head(root):
+        errors.append(f"agent-assignment.json {label} {head} 与当前 HEAD {current_head(root)} 不一致。")
+
+
+def validate_agent_assignment_payload(
+    root: Path,
+    task_dir: Path,
+    payload: dict[str, Any],
+    require_current_head: bool = False,
+) -> list[str]:
+    errors: list[str] = []
+    if payload.get("schema_version") != AGENT_ASSIGNMENT_SCHEMA_VERSION:
+        errors.append(f"agent-assignment.json schema_version 必须是 {AGENT_ASSIGNMENT_SCHEMA_VERSION}。")
+    if payload.get("task") != repo_relative(root, task_dir):
+        errors.append(f"agent-assignment.json task 必须是 {repo_relative(root, task_dir)}。")
+    validate_head_field(root, payload.get("head"), "head", errors, require_current=require_current_head)
+
+    agents = payload.get("agents")
+    if not isinstance(agents, list):
+        errors.append("agent-assignment.json agents 必须是数组。")
+    else:
+        for index, item in enumerate(agents):
+            if not isinstance(item, dict):
+                errors.append(f"agent-assignment.json agents[{index}] 必须是对象。")
+                continue
+            role = str(item.get("logical_role") or "").strip()
+            if role not in ALLOWED_LOGICAL_ROLES:
+                errors.append(f"agent-assignment.json agents[{index}].logical_role 非法: {role or '(missing)'}。")
+            if "agent_id" not in item:
+                errors.append(f"agent-assignment.json agents[{index}] 缺少 agent_id 字段。")
+            if "platform_nickname" not in item:
+                errors.append(f"agent-assignment.json agents[{index}] 缺少 platform_nickname 字段。")
+            if not str(item.get("reason") or "").strip():
+                errors.append(f"agent-assignment.json agents[{index}] 缺少 reason。")
+            validate_head_field(root, item.get("assigned_head"), f"agents[{index}].assigned_head", errors)
+
+    rounds = payload.get("review_rounds")
+    if not isinstance(rounds, list):
+        errors.append("agent-assignment.json review_rounds 必须是数组。")
+    else:
+        for index, item in enumerate(rounds):
+            if not isinstance(item, dict):
+                errors.append(f"agent-assignment.json review_rounds[{index}] 必须是对象。")
+                continue
+            role = str(item.get("logical_role") or "").strip()
+            if role not in ALLOWED_LOGICAL_ROLES:
+                errors.append(f"agent-assignment.json review_rounds[{index}].logical_role 非法: {role or '(missing)'}。")
+            if not isinstance(item.get("round"), int) or item["round"] <= 0:
+                errors.append(f"agent-assignment.json review_rounds[{index}].round 必须是正整数。")
+            if not isinstance(item.get("findings_count"), int) or item["findings_count"] < 0:
+                errors.append(f"agent-assignment.json review_rounds[{index}].findings_count 必须是非负整数。")
+            if str(item.get("reuse_decision") or "").strip() not in ALLOWED_REUSE_DECISIONS:
+                errors.append(f"agent-assignment.json review_rounds[{index}].reuse_decision 非法。")
+            if not str(item.get("reuse_policy") or "").strip():
+                errors.append(f"agent-assignment.json review_rounds[{index}] 缺少 reuse_policy。")
+            if "agent_id" not in item:
+                errors.append(f"agent-assignment.json review_rounds[{index}] 缺少 agent_id 字段。")
+            if "platform_nickname" not in item:
+                errors.append(f"agent-assignment.json review_rounds[{index}] 缺少 platform_nickname 字段。")
+            validate_head_field(root, item.get("reviewed_head"), f"review_rounds[{index}].reviewed_head", errors)
+
+    decisions = payload.get("reuse_decisions")
+    if not isinstance(decisions, list):
+        errors.append("agent-assignment.json reuse_decisions 必须是数组。")
+    else:
+        for index, item in enumerate(decisions):
+            if not isinstance(item, dict):
+                errors.append(f"agent-assignment.json reuse_decisions[{index}] 必须是对象。")
+                continue
+            role = str(item.get("logical_role") or "").strip()
+            if role not in ALLOWED_LOGICAL_ROLES:
+                errors.append(f"agent-assignment.json reuse_decisions[{index}].logical_role 非法: {role or '(missing)'}。")
+            if str(item.get("decision") or "").strip() not in ALLOWED_REUSE_DECISIONS:
+                errors.append(f"agent-assignment.json reuse_decisions[{index}].decision 非法。")
+            if not str(item.get("reason") or "").strip():
+                errors.append(f"agent-assignment.json reuse_decisions[{index}] 缺少 reason。")
+            validate_head_field(root, item.get("head"), f"reuse_decisions[{index}].head", errors)
+    return errors
+
+
+def summarize_agent_assignment(root: Path, task_dir: Path, path: Path, payload: dict[str, Any]) -> dict[str, Any]:
+    digest = file_digest(root, path)
+    roles = sorted(
+        {
+            str(item.get("logical_role") or "").strip()
+            for item in payload.get("agents", [])
+            if isinstance(item, dict) and str(item.get("logical_role") or "").strip()
+        }
+        | {
+            str(item.get("logical_role") or "").strip()
+            for item in payload.get("review_rounds", [])
+            if isinstance(item, dict) and str(item.get("logical_role") or "").strip()
+        }
+        | {
+            str(item.get("logical_role") or "").strip()
+            for item in payload.get("reuse_decisions", [])
+            if isinstance(item, dict) and str(item.get("logical_role") or "").strip()
+        }
+    )
+    return {
+        **digest,
+        "schema_version": payload.get("schema_version"),
+        "artifact_head": payload.get("head"),
+        "roles": roles,
+        "agents_count": len(payload.get("agents", [])) if isinstance(payload.get("agents"), list) else 0,
+        "review_rounds_count": len(payload.get("review_rounds", [])) if isinstance(payload.get("review_rounds"), list) else 0,
+        "reuse_decisions_count": len(payload.get("reuse_decisions", [])) if isinstance(payload.get("reuse_decisions"), list) else 0,
+        "task": repo_relative(root, task_dir),
+        "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。",
+    }
+
+
+def validate_agent_assignment(
+    root: Path,
+    task_dir: Path,
+    assignment_arg: str | None = None,
+    require_current_head: bool = False,
+) -> tuple[Path, dict[str, Any], list[str], dict[str, Any]]:
+    path = resolve_task_local_path(root, task_dir, assignment_arg) if assignment_arg else agent_assignment_path(task_dir)
+    if not path.exists():
+        raise WorkflowError(f"Agent assignment artifact not found: {path}", exit_code=2)
+    payload = read_json(path)
+    errors = validate_agent_assignment_payload(root, task_dir, payload, require_current_head=require_current_head)
+    summary = summarize_agent_assignment(root, task_dir, path, payload) if not errors else {}
+    return path, payload, errors, summary
+
+
 def digest_errors(root: Path, entry: Any, label: str) -> list[str]:
     if not isinstance(entry, dict):
         return [f"{label} 中存在非对象 artifact entry。"]
@@ -1647,6 +1949,45 @@ def valid_review_report_fields(review_report: Any) -> list[str]:
     for key in ["path", "sha256", "size_bytes", "modified_at"]:
         if not review_report.get(key):
             errors.append(f"Branch Review Gate review_report 缺少 {key}。")
+    return errors
+
+
+def valid_agent_assignment_summary_fields(
+    root: Path,
+    task_dir: Path,
+    agent_assignment: Any,
+) -> list[str]:
+    if not isinstance(agent_assignment, dict) or not agent_assignment:
+        return []
+    errors: list[str] = []
+    errors.extend(digest_errors(root, agent_assignment, "Branch Review Gate agent_assignment"))
+    path_value = str(agent_assignment.get("path") or "").strip()
+    if not path_value:
+        errors.append("Branch Review Gate agent_assignment 缺少 path。")
+        return errors
+    path = resolve_repo_path(root, path_value).resolve()
+    if task_dir.resolve() not in [path, *path.parents]:
+        errors.append("Branch Review Gate agent_assignment 必须指向当前 task-local agent-assignment.json。")
+        return errors
+    if path.name != AGENT_ASSIGNMENT_ARTIFACT:
+        errors.append("Branch Review Gate agent_assignment 必须指向 task-local agent-assignment.json。")
+        return errors
+    try:
+        payload = read_json(path)
+    except WorkflowError as exc:
+        errors.append(str(exc))
+        return errors
+    errors.extend(validate_agent_assignment_payload(root, task_dir, payload, require_current_head=False))
+    roles = agent_assignment.get("roles")
+    if not isinstance(roles, list) or not roles:
+        errors.append("Branch Review Gate agent_assignment 缺少 roles 摘要。")
+    else:
+        invalid_roles = [str(role) for role in roles if str(role) not in ALLOWED_LOGICAL_ROLES]
+        if invalid_roles:
+            errors.append("Branch Review Gate agent_assignment roles 存在非法中文逻辑角色: " + ", ".join(invalid_roles) + "。")
+    for key in ["agents_count", "review_rounds_count", "reuse_decisions_count"]:
+        if key in agent_assignment and (not isinstance(agent_assignment.get(key), int) or agent_assignment[key] < 0):
+            errors.append(f"Branch Review Gate agent_assignment.{key} 必须是非负整数。")
     return errors
 
 
@@ -1897,6 +2238,14 @@ def validate_phase2_check(
         errors.append("phase2-check.json 缺少 checked_artifacts。")
     else:
         for item in checked_artifacts:
+            artifact_path = str(item.get("path") or "").strip() if isinstance(item, dict) else ""
+            artifact_name = Path(artifact_path).name if artifact_path else ""
+            if (
+                allow_committed_head
+                and committed_head_audit_performed
+                and artifact_name in PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS
+            ):
+                continue
             errors.extend(digest_errors(root, item, "phase2 checked_artifacts"))
     checked_specs = payload.get("checked_specs")
     if isinstance(checked_specs, list):
@@ -1925,6 +2274,7 @@ def build_review_gate_payload(
     reviewer: str,
     review_source: str,
     review_report: dict[str, Any] | None,
+    agent_assignment: dict[str, Any] | None,
 ) -> dict[str, Any]:
     diff_spec = diff_range(root, base_branch)
     files = changed_files(root, diff_spec)
@@ -1977,6 +2327,7 @@ def build_review_gate_payload(
             "reviewer": reviewer,
             "review_source": review_source,
             "review_report": review_report,
+            "agent_assignment": agent_assignment,
             "evidence": evidence,
             "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。",
         },
@@ -2028,6 +2379,8 @@ def validate_review_gate(
     errors.extend(independent_review_source_errors(review_source, reviewer))
     review_report = verification.get("review_report") if isinstance(verification.get("review_report"), dict) else None
     errors.extend(valid_review_report_fields(review_report))
+    agent_assignment = verification.get("agent_assignment")
+    errors.extend(valid_agent_assignment_summary_fields(root, task_dir, agent_assignment))
     reviewed_head = str(gate.get("head") or "")
     head = current_head(root)
     gate_config = review_gate_config(config)
@@ -2711,6 +3064,21 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
             "--reviewer is identity metadata only and cannot satisfy passed gate evidence.",
             exit_code=2,
         )
+    agent_assignment_summary: dict[str, Any] | None = None
+    if getattr(args, "agent_assignment", None):
+        assignment_path, _assignment_payload, assignment_errors, assignment_summary = validate_agent_assignment(
+            root,
+            task_dir,
+            args.agent_assignment,
+            require_current_head=False,
+        )
+        if assignment_errors:
+            raise WorkflowError(
+                "Branch Review Gate blocked because agent assignment evidence is invalid.",
+                exit_code=2,
+                payload={"artifact_path": str(assignment_path), "errors": assignment_errors},
+            )
+        agent_assignment_summary = assignment_summary
     if not args.pass_gate and not findings:
         raise WorkflowError(
             "Branch Review Gate needs an explicit result. Use --pass after review found no P0/P1/P2, or provide --finding/--findings-file.",
@@ -2730,6 +3098,7 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         reviewer=reviewer,
         review_source=review_source,
         review_report=review_report,
+        agent_assignment=agent_assignment_summary,
     )
     if args.pass_gate and bool(review_gate_config(config).get("require_deployment_impact_evidence", True)):
         deployment_errors = deployment_evidence_errors(payload.get("deployment_impact", {}), evidence, findings)
@@ -2745,6 +3114,113 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     payload["artifact_path"] = str(path)
     payload["dry_run"] = bool(args.dry_run)
     return payload
+
+
+def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    payload = load_agent_assignment(root, task_dir)
+    payload["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
+    payload["task"] = repo_relative(root, task_dir)
+    payload["head"] = current_head(root)
+    payload["updated_at"] = now_iso()
+
+    logical_role = clean_optional_text(args.logical_role)
+    agent_id = clean_optional_text(args.agent_id)
+    platform_nickname = clean_optional_text(args.platform_nickname)
+    recorded: dict[str, Any] | None = None
+    if args.review_round is not None:
+        recorded = append_agent_review_round(
+            payload,
+            root,
+            logical_role,
+            agent_id,
+            platform_nickname,
+            int(args.review_round),
+            int(args.findings_count or 0),
+            clean_optional_text(args.reuse_policy),
+            clean_optional_text(args.reuse_decision or "not-applicable"),
+            clean_optional_text(args.reviewed_head) or None,
+        )
+    elif args.reuse_decision:
+        recorded = append_agent_reuse_decision(
+            payload,
+            root,
+            logical_role,
+            agent_id,
+            clean_optional_text(args.reuse_decision),
+            clean_optional_text(args.reuse_reason),
+            args.from_round,
+            args.to_round,
+            clean_optional_text(args.decision_head) or None,
+        )
+    else:
+        recorded = append_agent_assignment_event(
+            payload,
+            root,
+            logical_role,
+            agent_id,
+            platform_nickname,
+            clean_optional_text(args.reason),
+        )
+
+    errors = validate_agent_assignment_payload(root, task_dir, payload, require_current_head=True)
+    if errors:
+        raise WorkflowError(
+            "agent-assignment.json validation failed before write.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    path = agent_assignment_path(task_dir)
+    if not args.dry_run:
+        write_json(path, payload)
+    summary = summarize_agent_assignment(root, task_dir, path, payload) if path.exists() else {
+        "path": repo_relative(root, path),
+        "roles": sorted(
+            {
+                str(item.get("logical_role") or "")
+                for collection in [payload.get("agents", []), payload.get("review_rounds", []), payload.get("reuse_decisions", [])]
+                for item in collection
+                if isinstance(item, dict) and str(item.get("logical_role") or "")
+            }
+        ),
+    }
+    return {
+        "status": "dry-run" if args.dry_run else "ok",
+        "artifact_path": str(path),
+        "recorded": recorded,
+        "summary": summary,
+        "notes": "record-agent-assignment 只记录 AI/human 已做出的分配或复用判断，不决定应使用哪个 sub-agent。",
+    }
+
+
+def cmd_check_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    path, payload, errors, summary = validate_agent_assignment(
+        root,
+        task_dir,
+        args.agent_assignment,
+        require_current_head=bool(args.require_current_head),
+    )
+    if errors:
+        raise WorkflowError(
+            "agent-assignment.json validation failed.",
+            exit_code=2,
+            payload={"artifact_path": str(path), "errors": errors},
+        )
+    return {
+        "status": "ok",
+        "artifact_path": str(path),
+        "summary": summary,
+        "agents_count": len(payload.get("agents", [])) if isinstance(payload.get("agents"), list) else 0,
+        "review_rounds_count": len(payload.get("review_rounds", [])) if isinstance(payload.get("review_rounds"), list) else 0,
+        "reuse_decisions_count": len(payload.get("reuse_decisions", [])) if isinstance(payload.get("reuse_decisions"), list) else 0,
+    }
 
 
 def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
@@ -3267,6 +3743,7 @@ def build_parser() -> argparse.ArgumentParser:
     review.add_argument("--reviewer", help="Reviewer name or AI/human review channel.")
     review.add_argument("--review-source", help="Review source metadata. Passing gate requires independent-agent.")
     review.add_argument("--review-report", help="Path to the prior AI/human review report recorded before gate artifact creation.")
+    review.add_argument("--agent-assignment", help="Optional task-local agent-assignment.json to digest into review-gate verification evidence.")
     review.add_argument("--finding", action="append", help="Finding as PRIORITY|message[|path].")
     review.add_argument("--findings-file", help="JSON list or object with findings[].")
     review.add_argument("--dry-run", action="store_true")
@@ -3306,6 +3783,32 @@ def build_parser() -> argparse.ArgumentParser:
     check_phase2.add_argument("--root")
     check_phase2.add_argument("--json", action="store_true")
     check_phase2.add_argument("--task")
+
+    assignment = sub.add_parser("record-agent-assignment")
+    assignment.add_argument("--root")
+    assignment.add_argument("--json", action="store_true")
+    assignment.add_argument("--task")
+    assignment.add_argument("--logical-role", required=True, choices=ALLOWED_LOGICAL_ROLES)
+    assignment.add_argument("--agent-id", default="", help="Technical platform agent id. Use empty string when unavailable and explain in --reason.")
+    assignment.add_argument("--platform-nickname", default="", help="Display-only platform nickname; never used for gate decisions.")
+    assignment.add_argument("--reason", help="Chinese AI/human assignment rationale for agents[].")
+    assignment.add_argument("--review-round", type=int, help="Record a review_rounds[] entry instead of an agents[] entry.")
+    assignment.add_argument("--reviewed-head", help="Reviewed HEAD for a review round. Defaults to current HEAD.")
+    assignment.add_argument("--findings-count", type=int, default=0)
+    assignment.add_argument("--reuse-policy", help="Chinese review reuse policy used for this review round.")
+    assignment.add_argument("--reuse-decision", choices=sorted(ALLOWED_REUSE_DECISIONS), help="Record reuse/replacement decision.")
+    assignment.add_argument("--reuse-reason", help="Chinese AI/human reason for reuse_decisions[].")
+    assignment.add_argument("--from-round", type=int)
+    assignment.add_argument("--to-round", type=int)
+    assignment.add_argument("--decision-head", help="HEAD for reuse_decisions[]. Defaults to current HEAD.")
+    assignment.add_argument("--dry-run", action="store_true")
+
+    check_assignment = sub.add_parser("check-agent-assignment")
+    check_assignment.add_argument("--root")
+    check_assignment.add_argument("--json", action="store_true")
+    check_assignment.add_argument("--task")
+    check_assignment.add_argument("--agent-assignment", help="Task-local assignment artifact path. Defaults to agent-assignment.json.")
+    check_assignment.add_argument("--require-current-head", action="store_true")
 
     check_gate = sub.add_parser("check-review-gate")
     check_gate.add_argument("--root")
@@ -3386,6 +3889,10 @@ def main() -> int:
             payload = cmd_record_phase2_check(args)
         elif args.command == "check-phase2-check":
             payload = cmd_check_phase2_check(args)
+        elif args.command == "record-agent-assignment":
+            payload = cmd_record_agent_assignment(args)
+        elif args.command == "check-agent-assignment":
+            payload = cmd_check_agent_assignment(args)
         elif args.command == "check-review-gate":
             payload = cmd_check_review_gate(args)
         elif args.command == "publish-pr":

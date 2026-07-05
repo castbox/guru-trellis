@@ -110,6 +110,12 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   it must not replace check judgment with command exit codes.
 - `check-phase2-check.sh` validates coverage, validation evidence, findings,
   hashes, and stale state before commit.
+- `record-agent-assignment.sh` records prior AI/human sub-agent assignment,
+  review round, reuse, or replacement decisions in task-local
+  `agent-assignment.json`; it must not decide which sub-agent to use.
+- `check-agent-assignment.sh` validates JSON structure, Chinese logical-role
+  enum values, required fields, HEAD resolvability, optional current-HEAD
+  freshness, and digest metadata; it must not judge semantic reuse quality.
 
 `review-branch.sh --pass` must fail before writing Branch Review Gate when
 `phase2-check.json` is missing, stale, incomplete, or contains unresolved
@@ -121,9 +127,20 @@ metadata fields; it still does not judge review quality.
 For post-commit Phase 2 audit, the script may accept a `phase2-check.json`
 recorded at an ancestor HEAD only when every later non-metadata committed path
 is covered by the artifact's `dirty_paths`, or when the later tail is Trellis
-metadata only. Any uncovered non-metadata committed path or current
-non-metadata dirty path must block the gate instead of encouraging a
+metadata only. The validator may ignore stale Phase 2 digest metadata for
+task-local `agent-assignment.json` during this post-commit audit because the
+final review assignment and `review_rounds[]` are recorded after the work
+commit; `review-branch.sh --agent-assignment` must validate and digest the
+current file before passing the gate. Any uncovered non-metadata committed path
+or current non-metadata dirty path must block the gate instead of encouraging a
 post-commit Phase 2 re-record.
+
+When `review-branch.sh` receives `--agent-assignment <task-local
+agent-assignment.json>`, it validates that artifact and records its digest,
+roles, assignment count, review round count, and reuse decision count under
+`review-gate.json.verification_evidence.agent_assignment`. Missing assignment
+evidence remains backward-compatible for older tasks, but new sub-agent flows
+should record it before Branch Review Gate.
 
 ## Security Rules
 

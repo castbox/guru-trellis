@@ -76,8 +76,13 @@ Use `copy_overlay()` behavior:
   `looks_like_trellis_generated_entry()`
 - write `.new` for unknown local edits
 
-Do not overwrite unknown platform command, prompt, or skill edits. The target
-repo owner must inspect `.new` when local customization exists.
+Known Trellis-generated entries include Guru Team command/skill overlays and
+the shipped `trellis-implement`, `trellis-check`, `trellis-research`,
+`implement`, and `check` agent definitions when their content still carries
+standard Trellis prelude, JSONL, research, or channel-runtime signals.
+
+Do not overwrite unknown platform command, prompt, skill, or agent edits. The
+target repo owner must inspect `.new` when local customization exists.
 
 ## Platform Overlay Selection
 

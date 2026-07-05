@@ -97,6 +97,7 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 | Review report 必填 | `review.md` | AI/human review 判断的主证据，必须 task-local。 |
 | Review gate recorder | `review-branch.sh`、`check-review-gate.sh`、`review-gate.json` | 固化 review result、review report digest、base/head、evidence、findings；脚本不是 reviewer。 |
 | Independent review source | `--review-source independent-agent` | 通过 gate 不能来自 `self-review` 或 `*-main-session`。 |
+| Sub-agent assignment ledger | `agent-assignment.json`、`record-agent-assignment.sh`、`check-agent-assignment.sh`、`review-branch --agent-assignment` | 记录中文 `logical_role`、技术 `agent_id`、展示用 `platform_nickname`、HEAD、review round 和复用/更换判断；脚本只做客观校验，不决定复用。UI 展示面优先使用中文 subagent 名称，平台只给随机/自动昵称时记录原始值。 |
 | Post-commit audit / metadata tail 规则 | `review-branch.sh`、`finish-work.sh` / gate 校验 | Branch Review Gate 接受 Phase 2 后提交的非 metadata task paths，但这些 paths 必须已被 commit 前 `phase2-check.json.dirty_paths` 覆盖；review gate 通过后到 finish-work 之间仍只允许 Trellis metadata tail，新的非 metadata 变更会使 evidence stale。 |
 
 覆盖范围：
@@ -167,6 +168,7 @@ Canonical 资产：
 | 幂等更新 | 同内容跳过；Guru-managed 文件升级 active 文件并保留 `.bak`；未知本地改动写 `.new`。 |
 | 配置保护 | 已有 `.trellis/guru-team/config.yml` 不为补 key 被覆盖；`middle_platform_knowledge.mode` 缺失时按 `optional_warn`。 |
 | Codex dispatch 默认 | 物化 `.trellis/config.yaml` 的 `codex.dispatch_mode: sub-agent` 默认，显式 `inline` 保留。 |
+| Subagent UI 中文展示名 | 安装 `.trellis/agents`、`.codex/agents`、`.cursor/agents`、`.claude/agents`；保留 `trellis-implement` / `trellis-check` / `trellis-research` / `implement` / `check` 技术标识。Cursor / Claude / channel runtime 用中文 `description` 和标题作为展示名来源；Codex 当前限制 `nickname_candidates` 为 ASCII，因此只用中文 `description` 和 assignment 角色表达中文 UI 语义。 |
 | 平台可选安装 | 默认安装 shared + Codex + Cursor；支持重复 `--platform codex|cursor|claude`；支持 `--all-platforms`。 |
 | 未选择平台不恢复 | 默认 Codex + Cursor 安装不创建 `.claude/`；重复 apply 不会恢复未选择平台目录。 |
 | Extension version/provenance | `trellis/guru-team-extension.json` 是 Guru Team extension canonical version；installer 写入 `.trellis/guru-team/extension.json` 记录安装版本、source ref/commit、source tree state 和 selected platforms。 |
@@ -178,9 +180,10 @@ Canonical 资产：
 | 平台/层 | 文件 |
 | --- | --- |
 | Shared skills | `.agents/skills/trellis-start`、`trellis-continue`、`trellis-finish-work` |
-| Codex | `.codex/prompts/*` 与 `.codex/skills/*` |
-| Cursor | `.cursor/commands/trellis-continue.md`、`.cursor/commands/trellis-finish-work.md` |
-| Claude | `.claude/commands/trellis/continue.md`、`.claude/commands/trellis/finish-work.md` |
+| Channel runtime | `.trellis/agents/implement.md`、`.trellis/agents/check.md` |
+| Codex | `.codex/agents/trellis-*.toml`、`.codex/prompts/*` 与 `.codex/skills/*` |
+| Cursor | `.cursor/agents/trellis-*.md`、`.cursor/commands/trellis-continue.md`、`.cursor/commands/trellis-finish-work.md` |
+| Claude | `.claude/agents/trellis-*.md`、`.claude/commands/trellis/continue.md`、`.claude/commands/trellis/finish-work.md` |
 
 ## 6. P1：安装、升级与开箱验证
 
@@ -258,6 +261,7 @@ Canonical 资产：
 | #27 | closed | #29 merged | `finish-work --dry-run` 真正无副作用；Codex 默认 `sub-agent` dispatch。 |
 | #31 | closed | #32 merged | Guru Team extension canonical manifest、installed provenance、`check-env` / `version.sh` 可观测入口。 |
 | #33 | open | 当前任务 | Guru Team extension version 对齐 `0.6.5`；repo release tag 使用 `v0.6.5`；稳定 marketplace source 使用 `#v0.6.5`。 |
+| #43 | open | 当前任务 | Trellis sub-agent 中文逻辑角色、UI 展示名中文化、`agent-assignment.json`、reviewer 复用/更换记录和 gate digest 集成。 |
 
 ## 9. 当前扩展边界
 
@@ -266,6 +270,7 @@ Canonical 资产：
 - 本仓库维护 `guru-team` 可复用 workflow 与 preset，不 fork 官方 Trellis。
 - 脚本可以执行事实动作、校验 JSON/hash/HEAD/diff/dirty state，但不替代 AI 判断。
 - Platform overlay 是 harness 适配层，不是新的 workflow source。
+- Subagent 技术 `name` 是调度 API，不为了中文 UI 展示改名；中文展示名通过 description、标题和 `agent-assignment.json.logical_role` 表达。Codex 当前 `nickname_candidates` 只能是 ASCII，不能用它承载中文展示名。
 - Task artifact 是任务证据，不是 durable docs 的替代品。
 - PR publish 必须经过 finish-work 与 review/readiness evidence，不能由普通 `publish-pr` 直接触发。
 

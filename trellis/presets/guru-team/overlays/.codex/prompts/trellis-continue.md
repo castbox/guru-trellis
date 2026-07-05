@@ -11,19 +11,22 @@ python3 ./.trellis/scripts/get_context.py --mode phase
 Route by task status:
 
 - planning: keep required artifacts in Chinese, run Docs SSOT discovery and the Middle-platform Knowledge Gate when relevant, then ask for review, record/check `planning-approval.json`, and only then run `task.py start`.
-- in_progress: confirm knowledge-gate and docs responsibilities from artifacts, implement, run full `trellis-check`, record/check `phase2-check.json` with the current pre-commit `dirty_paths`, reconcile specs/docs, then commit.
-- after commit: obtain an independent Agent review over the full diff, write task-local `{TASK_DIR}/review.md`, then run Branch Review Gate before `/trellis:finish-work`, including Docs SSOT reconciliation evidence. Do not pass the gate from main-session self-review.
+- in_progress: confirm knowledge-gate and docs responsibilities from artifacts, implement, record sub-agent assignment when dispatching implement/check agents, run full `trellis-check`, record/check `phase2-check.json` with the current pre-commit `dirty_paths`, reconcile specs/docs, then commit.
+- after commit: obtain an independent Agent review over the full diff, record review role/reuse decisions in `agent-assignment.json` when sub-agents are used, write task-local `{TASK_DIR}/review.md`, then run Branch Review Gate before `/trellis:finish-work`, including Docs SSOT reconciliation evidence. Do not pass the gate from main-session self-review.
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \
   --review-source independent-agent \
   --reviewer "trellis-check-agent" \
   --review-report ".trellis/tasks/<task>/review.md" \
+  --agent-assignment ".trellis/tasks/<task>/agent-assignment.json" \
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
 ```
 
-Use `--finding` or `--findings-file` when the review has P0/P1/P2/P3 findings. P0/P1/P2 block finish-work. A passing gate must include `--review-source independent-agent`, a non-main-session `--reviewer`, a Chinese `--summary`, at least one concrete `--evidence` line, and `--review-report` pointing at task-local `review.md`; `--reviewer` is identity metadata only. `review-branch.sh` records and validates the prior independent review; it is not the reviewer. If independent Agent review is unavailable, stop with Branch Review Gate pending instead of writing a passing gate.
+Use `--finding` or `--findings-file` when the review has P0/P1/P2/P3 findings. P0/P1/P2 block finish-work. A passing gate must include `--review-source independent-agent`, a non-main-session `--reviewer`, a Chinese `--summary`, at least one concrete `--evidence` line, and `--review-report` pointing at task-local `review.md`; when sub-agents were dispatched or reviewer reuse/replacement was decided, also pass task-local `--agent-assignment`. `--reviewer` is identity metadata only. `review-branch.sh` records and validates the prior independent review; it is not the reviewer. If independent Agent review is unavailable, stop with Branch Review Gate pending instead of writing a passing gate.
+
+Sub-agent identity rule: `logical_role` is the Chinese Trellis role (`实现代理`, `阶段二检查代理`, `问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`); `agent_id` is the technical identity; `platform_nickname` is display-only and never used for gate judgment. Use `record-agent-assignment.sh` / `check-agent-assignment.sh` only as recorder/validator tools, not to decide agent reuse.
 
 `task.py start` is only a status transition; `planning-approval.json` is the start gate evidence. Validation commands are only evidence inside `phase2-check.json`; they do not replace complete `trellis-check` coverage. `review-branch.sh` validates that Phase 2 check evidence exists before recording Branch Review Gate and performs the post-commit audit: committed non-metadata task work after the Phase 2 recorded HEAD must be covered by `phase2-check.json.dirty_paths`, and the current working tree must not contain non-metadata dirty paths. Do not re-record Phase 2 after the task work commit just to make HEAD match; return to Phase 2 only when new non-metadata changes appear or evidence is invalid.
 

@@ -110,7 +110,7 @@ Update spec when a task discovers a reusable pattern, pitfall, convention, or te
 
 ### Task System
 
-Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, optional `design.md`, optional `implement.md`, optional `research/`, the task-level `issue-scope-ledger.json`, the Branch Review Gate review report (`review.md`) and recorder artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms.
+Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, optional `design.md`, optional `implement.md`, optional `research/`, the task-level `issue-scope-ledger.json`, optional sub-agent assignment evidence (`agent-assignment.json`), the Branch Review Gate review report (`review.md`) and recorder artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms.
 
 ```bash
 python3 ./.trellis/scripts/task.py create "<title>" --slug <name>
@@ -153,13 +153,28 @@ and journal succeed. They are not new user-facing primary commands.
 
 Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-agents on agent-capable platforms. Guru Team keeps that official model:
 
+- Guru Team workflow identity uses Chinese logical roles recorded in task artifacts, not platform UI names. Allowed roles are `实现代理`, `阶段二检查代理`, `问题发现审查代理`, `问题闭环审查代理`, and `最终放行审查代理`.
+- `logical_role` is the Trellis process identity used in task artifacts, review reports, review gates, and final handoff. `agent_id` is the technical platform identity used for continuing or reusing an agent. `platform_nickname` is display-only and must not participate in gate decisions.
+- Platform agent dispatch identifiers such as `trellis-implement`, `trellis-check`, `trellis-research`, channel-runtime `implement`, and channel-runtime `check` are technical API ids and must stay stable. User-facing agent labels should be Chinese where the platform supports it. Markdown-based agent files use Chinese headings and descriptions. Codex custom agents use Chinese `description`, but `nickname_candidates` must stay ASCII in current Codex releases or Codex ignores the agent file. If a platform still emits an automatic/random nickname, record that raw value in `platform_nickname` only and continue to use `logical_role` for workflow judgment.
+- When a main session dispatches or reuses a sub-agent, record the AI/human decision in `{TASK_DIR}/agent-assignment.json`. The recorder can be:
+
+```bash
+.trellis/guru-team/scripts/bash/record-agent-assignment.sh --json \
+  --logical-role "实现代理" \
+  --agent-id "019f..." \
+  --platform-nickname "Gibbs" \
+  --reason "中文分配原因"
+.trellis/guru-team/scripts/bash/check-agent-assignment.sh --json
+```
+
+- When review rounds reuse or replace a reviewer, record the review round and reuse decision. The script validates objective fields only; it does not decide whether reuse is semantically correct.
 - Phase 2 `trellis-check` is the implementation quality check step. It reviews the current task against specs, runs lint/typecheck/tests when appropriate, and may self-fix before commit.
 - Phase 3 Branch Review Gate is a post-commit release gate. First, an AI/human review must inspect the complete branch diff from the intake base branch to `HEAD`, including docs, code, tests, Trellis artifacts, config, scripts, schemas, CI/CD workflows, Docker/Compose files, Kubernetes YAML, Kustomize overlays, database migrations, Makefiles, preset installer, Issue Scope Ledger, and publish readiness.
 - Passing Phase 3 Branch Review Gate requires independent Agent review evidence. The main session may coordinate the review, inspect the report, and run the recorder, but the main session's own self-review must not pass the gate.
 - Phase 3 also performs a post-commit Phase 2 audit: `phase2-check.json` is recorded before commit with the then-current `dirty_paths`, and `review-branch.sh` later verifies that committed non-metadata task work after the recorded HEAD is covered by those paths. Do not re-record Phase 2 after the task work commit just to make HEAD match; return to Phase 2 only when new non-metadata changes appear or evidence is invalid.
 - On platforms with sub-agents, dispatch `trellis-check` or a dedicated review sub-agent to perform the evidence-gathering review for Phase 3. On inline platforms, stop before a passing gate unless an independent Agent review report is available through an external/team process.
 - Codex defaults to `codex.dispatch_mode: sub-agent` in Guru Team projects. The main session's dispatch prompt must start with `Active task: <task path>`, and Codex sub-agents fall back to `task.py current --source` when that line is unavailable. Explicit `codex.dispatch_mode: inline` is a downgrade/debug mode.
-- The sub-agent does not own the gate. The gate is valid only after the independent AI/human review has run, written task-local `{TASK_DIR}/review.md`, and `review-branch.sh --review-source independent-agent --review-report {TASK_DIR}/review.md` writes `{TASK_DIR}/review-gate.json` with summary, evidence, findings, reviewer identity, review source, review-report digest, base/head, and current `HEAD`.
+- The sub-agent does not own the gate. The gate is valid only after the independent AI/human review has run, written task-local `{TASK_DIR}/review.md`, and `review-branch.sh --review-source independent-agent --review-report {TASK_DIR}/review.md` writes `{TASK_DIR}/review-gate.json` with summary, evidence, findings, reviewer identity, review source, review-report digest, optional agent-assignment digest, base/head, and current `HEAD`.
 - `review-branch.sh` is a recorder / validator, not a reviewer. It must receive the prior review result through `--summary`, `--evidence`, `--finding` / `--findings-file`, `--review-source independent-agent`, and `--review-report`; `--reviewer` is identity metadata only and cannot satisfy passed gate evidence by itself. Reviewer identities such as `codex-main-session`, `claude-main-session`, `cursor-main-session`, `*-main-session`, or `self-review` are rejected for a passing gate.
 - Do not skip Phase 2 `trellis-check` just because Branch Review Gate exists; do not treat Phase 2 check success as permission to run `finish-work` without the Phase 3 artifact.
 
@@ -204,12 +219,13 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - `planning-approval.json` — start gate evidence for reviewed planning artifacts and user confirmation; `task.py start` is only a status write.
 - `phase2-check.json` — Phase 2 `trellis-check` report for full task-scope quality coverage before commit and Branch Review Gate.
 - `issue-scope-ledger.json` — task-level close/ref/followup scope; do not overload `source_issue`.
+- `agent-assignment.json` — task-local sub-agent assignment ledger with Chinese logical roles, technical `agent_id`, display-only `platform_nickname`, HEAD evidence, review rounds, and reuse/replacement decisions.
 - `review-gate.json` — Branch Review Gate result for the reviewed HEAD.
 - `implement.jsonl` / `check.jsonl` — spec and research manifests for sub-agent context. They do not replace `implement.md`.
 
 Lightweight tasks may be PRD-only. Complex tasks must have `prd.md`, `design.md`, and `implement.md` before `task.py start`.
 
-`prd.md`, `design.md`, `implement.md`, `planning-approval.json`, `phase2-check.json`, and human-readable fields in `review-gate.json` / `review.md` must be written in Chinese. If an external API, code symbol, command, or GitHub keyword must stay in English, keep the literal token and write the surrounding explanation in Chinese.
+`prd.md`, `design.md`, `implement.md`, `planning-approval.json`, `phase2-check.json`, `agent-assignment.json`, and human-readable fields in `review-gate.json` / `review.md` must be written in Chinese. If an external API, code symbol, command, or GitHub keyword must stay in English, keep the literal token and write the surrounding explanation in Chinese.
 
 ### Middle-platform Knowledge Gate
 
@@ -514,6 +530,7 @@ Flow: `trellis-implement` -> `trellis-check` -> `trellis-update-spec` -> commit 
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and journal succeed.
 Before commit, record and check `phase2-check.json`; validation commands alone are not a complete `trellis-check`.
 Main-session default on dispatch platforms: dispatch implement/check sub-agents. Dispatch prompt starts with `Active task: <task path from task.py current>`.
+After dispatching an implement/check sub-agent, record `实现代理` or `阶段二检查代理` in `agent-assignment.json`; prefer the Chinese UI nickname configured by the agent file when available. If the platform does not expose `agent_id` or nickname, keep the field as an empty string and explain that fact in the Chinese reason.
 Sub-agent self-exemption: if already running as `trellis-implement` or `trellis-check`, do the work directly and do not spawn another Trellis implement/check agent.
 Before edits, confirm knowledge gate and docs SSOT responsibilities from artifacts.
 Read context: jsonl entries -> `prd.md` -> `design.md if present` -> `implement.md if present`.
@@ -532,6 +549,18 @@ Read context: `prd.md` -> `design.md if present` -> `implement.md if present`, p
 
 Dispatch or inline-implement according to the platform mode. Keep changes focused on the reviewed task artifacts and the source issue scope.
 
+On sub-agent-capable platforms, the main session records implementation assignment after dispatch:
+
+```bash
+.trellis/guru-team/scripts/bash/record-agent-assignment.sh --json \
+  --logical-role "实现代理" \
+  --agent-id "<technical-agent-id-or-empty>" \
+  --platform-nickname "<display-name-or-empty>" \
+  --reason "中文说明为什么本轮实现由该 agent 承担"
+```
+
+The assignment artifact is evidence of an AI/human decision already made by the workflow. The companion script must not choose the agent or infer whether reuse is appropriate.
+
 Before writing code or generated assets, confirm the Middle-platform Knowledge Gate result for any middle-platform-relevant work:
 
 - `off`: no action required.
@@ -543,6 +572,8 @@ Also follow the planning artifact's durable docs responsibilities. If implementa
 #### 2.2 Quality check `[required · repeatable]`
 
 Run `trellis-check` or dispatch the check agent. The final check before commit must cover the full task scope, not only the latest implementation chunk.
+
+When dispatching a Phase 2 check agent, record `阶段二检查代理` in `agent-assignment.json` before or immediately after the check handoff. This is separate from `phase2-check.json`: assignment records who took the logical role; `phase2-check.json` records the check judgment and evidence.
 
 After the AI/human check has completed, record the task-local check report:
 
@@ -617,7 +648,7 @@ The commit must include task work and relevant artifact updates through `prd.md`
 
 Run after the task work commit and before `finish-work`.
 
-`review-branch.sh` validates that planning approval evidence exists and that a Phase 2 check report exists for the work that was committed. It uses post-commit audit semantics: planning approval may point at the approved pre-implementation HEAD as long as the approved artifact hashes still match, and Phase 2 check may point at an ancestor when later non-metadata committed paths are covered by the recorded `phase2-check.json.dirty_paths` or when the later tail is Trellis metadata only. If the commit contains non-metadata paths that were not recorded in Phase 2 dirty paths, or the current working tree has non-metadata dirty paths, return to Phase 2 instead of re-recording evidence after the fact. Do not use Branch Review Gate to bypass `trellis-check`; Phase 2 check and Phase 3 review gate are separate artifacts.
+`review-branch.sh` validates that planning approval evidence exists and that a Phase 2 check report exists for the work that was committed. It uses post-commit audit semantics: planning approval may point at the approved pre-implementation HEAD as long as the approved artifact hashes still match, and Phase 2 check may point at an ancestor when later non-metadata committed paths are covered by the recorded `phase2-check.json.dirty_paths` or when the later tail is Trellis metadata only. Because final reviewer assignment is recorded after the work commit, task-local `agent-assignment.json` may be updated as Branch Review Gate metadata and is revalidated through `--agent-assignment`; this exception must not apply to source, config, script, docs, schema, preset, overlay, or other non-metadata paths. If the commit contains non-metadata paths that were not recorded in Phase 2 dirty paths, or the current working tree has non-metadata dirty paths, return to Phase 2 instead of re-recording evidence after the fact. Do not use Branch Review Gate to bypass `trellis-check`; Phase 2 check and Phase 3 review gate are separate artifacts.
 
 ##### 3.5.1 AI Review Prompt
 
@@ -631,6 +662,14 @@ origin/<base>...HEAD
 ```
 
 Use the handoff/task `base_branch`; do not guess from GitHub default branch.
+
+Before or immediately after dispatching the independent review, record the reviewer logical role in `agent-assignment.json`:
+
+- first issue-finding review uses `问题发现审查代理`;
+- follow-up review that verifies fixes may use `问题闭环审查代理`;
+- the pass/final release review uses `最终放行审查代理`.
+
+Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reuse_policy`, and `reuse_decision`. If the same technical agent is reused, record why reuse is acceptable for that round. If an agent is replaced, record why the replacement was chosen. `platform_nickname` should be the Chinese UI nickname when the platform provides one; otherwise record the raw automatic nickname. It remains display-only either way.
 
 The AI/human review must cover:
 
@@ -657,7 +696,9 @@ Findings use `P0`, `P1`, `P2`, `P3`:
 Persist the independent review result in the conversation and in the task-local
 artifact `{TASK_DIR}/review.md`. The review report must include concrete
 summary/evidence, checked diff range, validation notes, deployment impact
-judgment, Docs SSOT reconciliation, and findings, even when findings are empty.
+judgment, Docs SSOT reconciliation, findings even when findings are empty,
+and the Chinese logical review role plus whether `agent-assignment.json`
+records reuse/replacement decisions.
 
 Before writing `review.md`, `review-gate.json`, or any task artifact, confirm the
 current working directory is the task's selected `workspace_path`, not the source
@@ -679,6 +720,7 @@ reviewer identity, but it cannot replace the review report:
   --review-source independent-agent \
   --reviewer "trellis-check-agent" \
   --review-report ".trellis/tasks/<task>/review.md" \
+  --agent-assignment ".trellis/tasks/<task>/agent-assignment.json" \
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
 ```
@@ -693,9 +735,9 @@ or, when findings exist:
   --finding 'P2|中文问题说明|path/to/file'
 ```
 
-The artifact records base/head, diff command, conclusion, reviewer identity metadata, review source, review-report digest, summary, concrete evidence lines, findings, changed files, Issue Scope Ledger coverage, and validation evidence. It is written to `{TASK_DIR}/review-gate.json` by default.
+The artifact records base/head, diff command, conclusion, reviewer identity metadata, review source, review-report digest, optional agent-assignment digest/roles summary, summary, concrete evidence lines, findings, changed files, Issue Scope Ledger coverage, and validation evidence. It is written to `{TASK_DIR}/review-gate.json` by default.
 
-Passing the gate is not a blank assertion. `--pass` requires `--review-source independent-agent`, a non-main-session `--reviewer`, a Chinese `--summary`, at least one concrete `--evidence` line from the actual review, and `--review-report` pointing at the task-local `review.md`. `review-gate.json` must record `review_source`, `review_report.path`, `sha256`, `size_bytes`, and `modified_at`. Use additional `--evidence` lines for important validation commands or review coverage notes. If the current platform/session cannot provide independent Agent review evidence, do not write a passing gate; stop with Branch Review Gate pending.
+Passing the gate is not a blank assertion. `--pass` requires `--review-source independent-agent`, a non-main-session `--reviewer`, a Chinese `--summary`, at least one concrete `--evidence` line from the actual review, and `--review-report` pointing at the task-local `review.md`. `review-gate.json` must record `review_source`, `review_report.path`, `sha256`, `size_bytes`, and `modified_at`. When sub-agents were dispatched or reviewer reuse/replacement was decided, pass `--agent-assignment` so the gate records `agent_assignment.path`, `sha256`, `size_bytes`, `modified_at`, `roles`, and review round counts. Use additional `--evidence` lines for important validation commands or review coverage notes. If the current platform/session cannot provide independent Agent review evidence, do not write a passing gate; stop with Branch Review Gate pending.
 
 `--review-report` must be exactly the task-local `review.md`; do not pass `prd.md`, `design.md`, `phase2-check.json`, or any other task artifact as the review report.
 

@@ -79,6 +79,19 @@ test -d "$TARGET/.agents/skills"
 test -d "$TARGET/.codex"
 test -d "$TARGET/.cursor"
 test ! -e "$TARGET/.claude"
+test -f "$TARGET/.trellis/agents/implement.md"
+grep -q "实现代理" "$TARGET/.trellis/agents/implement.md"
+test -f "$TARGET/.codex/agents/trellis-implement.toml"
+grep -q "实现代理" "$TARGET/.codex/agents/trellis-implement.toml"
+grep -q 'nickname_candidates.*Implement Agent' "$TARGET/.codex/agents/trellis-implement.toml"
+if grep -q 'nickname_candidates.*实现代理' "$TARGET/.codex/agents/trellis-implement.toml"; then
+  echo "Codex nickname_candidates must stay ASCII or Codex ignores the agent file" >&2
+  exit 2
+fi
+test -f "$TARGET/.codex/agents/trellis-check.toml"
+grep -q "阶段二检查代理" "$TARGET/.codex/agents/trellis-check.toml"
+test -f "$TARGET/.cursor/agents/trellis-check.md"
+grep -q "阶段二检查代理" "$TARGET/.cursor/agents/trellis-check.md"
 python3 "$TARGET/.trellis/scripts/get_context.py" --mode packages >/dev/null
 CHECK_ENV_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-env.sh" --root "$TARGET" --json)"
 printf '%s\n' "$CHECK_ENV_JSON"

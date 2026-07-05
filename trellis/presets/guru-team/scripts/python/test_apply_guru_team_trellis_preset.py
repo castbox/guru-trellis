@@ -89,8 +89,17 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertEqual(payload["platforms"], ["codex", "cursor"])
         self.assertFalse(payload["all_platforms"])
         self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".trellis/agents/implement.md").is_file())
+        self.assertIn("实现代理", (self.repo / ".trellis/agents/implement.md").read_text(encoding="utf-8"))
         self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
+        self.assertTrue((self.repo / ".codex/agents/trellis-implement.toml").is_file())
+        codex_implement = (self.repo / ".codex/agents/trellis-implement.toml").read_text(encoding="utf-8")
+        self.assertIn("实现代理", codex_implement)
+        self.assertIn('nickname_candidates = ["Implement Agent"', codex_implement)
+        self.assertNotIn('nickname_candidates = ["实现代理"', codex_implement)
         self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
+        self.assertTrue((self.repo / ".cursor/agents/trellis-check.md").is_file())
+        self.assertIn("阶段二检查代理", (self.repo / ".cursor/agents/trellis-check.md").read_text(encoding="utf-8"))
         self.assertFalse((self.repo / ".claude").exists())
 
     def test_repeated_default_apply_does_not_restore_unselected_claude_overlay(self) -> None:
@@ -108,7 +117,9 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertEqual(payload["platforms"], ["claude"])
         self.assertFalse(payload["all_platforms"])
         self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".trellis/agents/check.md").is_file())
         self.assertTrue((self.repo / ".claude/commands/trellis/continue.md").is_file())
+        self.assertTrue((self.repo / ".claude/agents/trellis-implement.md").is_file())
         self.assertFalse((self.repo / ".codex").exists())
         self.assertFalse((self.repo / ".cursor").exists())
 
@@ -119,9 +130,13 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertTrue(all_platforms)
         self.assertEqual(payload["platforms"], ["claude", "codex", "cursor"])
         self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".trellis/agents/implement.md").is_file())
         self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
+        self.assertTrue((self.repo / ".codex/agents/trellis-check.toml").is_file())
         self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
+        self.assertTrue((self.repo / ".cursor/agents/trellis-research.md").is_file())
         self.assertTrue((self.repo / ".claude/commands/trellis/continue.md").is_file())
+        self.assertTrue((self.repo / ".claude/agents/trellis-research.md").is_file())
 
     def test_main_accepts_repeated_platform_arguments(self) -> None:
         with mock.patch(
@@ -141,8 +156,44 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
+        self.assertTrue((self.repo / ".codex/agents/trellis-research.toml").is_file())
         self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
+        self.assertTrue((self.repo / ".cursor/agents/trellis-implement.md").is_file())
         self.assertFalse((self.repo / ".claude").exists())
+
+    def test_known_trellis_agent_entries_are_replaced_with_chinese_overlays(self) -> None:
+        existing = self.repo / ".codex/agents/trellis-check.toml"
+        existing.parent.mkdir(parents=True)
+        existing.write_text(
+            'name = "trellis-check"\n'
+            'description = "Workspace-write Trellis reviewer that self-fixes spec drift."\n'
+            'sandbox_mode = "workspace-write"\n',
+            encoding="utf-8",
+        )
+
+        payload = self.install({"codex"})
+
+        self.assertIn(".codex/agents/trellis-check.toml", payload["replaced_overlays"])
+        text = existing.read_text(encoding="utf-8")
+        self.assertIn("阶段二检查代理", text)
+        self.assertIn('nickname_candidates = ["Check Agent"', text)
+        self.assertNotIn('nickname_candidates = ["阶段二检查代理"', text)
+
+    def test_unknown_local_agent_edit_gets_new_copy(self) -> None:
+        existing = self.repo / ".codex/agents/trellis-check.toml"
+        existing.parent.mkdir(parents=True)
+        existing.write_text(
+            'name = "trellis-check"\n'
+            'description = "Local custom reviewer without Trellis defaults."\n'
+            'sandbox_mode = "workspace-write"\n',
+            encoding="utf-8",
+        )
+
+        payload = self.install({"codex"})
+
+        self.assertIn(".codex/agents/trellis-check.toml.new", payload["new_copies"])
+        self.assertIn("Local custom reviewer", existing.read_text(encoding="utf-8"))
+        self.assertTrue((self.repo / ".codex/agents/trellis-check.toml.new").is_file())
 
     def test_main_reports_explicit_all_platforms_only_for_all_platforms_flag(self) -> None:
         with mock.patch(

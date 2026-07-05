@@ -22,6 +22,14 @@ updated to `sub-agent` so Codex can dispatch `trellis-implement` /
 `codex.dispatch_mode: inline` value is preserved as a user-selected downgrade
 or debug mode.
 
+The preset also installs Guru Team sub-agent definitions. Technical dispatch ids
+stay stable (`trellis-implement`, `trellis-check`, `trellis-research`, channel
+runtime `implement` / `check`), while UI-facing labels are Chinese where the
+platform supports them. Codex uses Chinese `description`, but keeps
+`nickname_candidates` ASCII because current Codex rejects non-ASCII nicknames and
+ignores malformed agent files. Markdown-based agent files use Chinese
+descriptions and headings.
+
 Platform overlays are selectable. By default, the installer applies shared
 `.agents/skills` entries plus Codex and Cursor overlays. Repeat
 `--platform <name>` to select a specific set; supported values are `codex`,
@@ -129,6 +137,8 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/record-phase2-check.sh`
 - `.trellis/guru-team/scripts/bash/check-phase2-check.sh`
+- `.trellis/guru-team/scripts/bash/record-agent-assignment.sh`
+- `.trellis/guru-team/scripts/bash/check-agent-assignment.sh`
 - `.trellis/guru-team/scripts/bash/review-branch.sh`
 - `.trellis/guru-team/scripts/bash/check-review-gate.sh`
 - `.trellis/guru-team/scripts/bash/publish-pr.sh`
@@ -137,6 +147,8 @@ platform selection:
 
 Shared overlays are always installed:
 
+- `.trellis/agents/implement.md`
+- `.trellis/agents/check.md`
 - `.agents/skills/trellis-start/SKILL.md`
 - `.agents/skills/trellis-continue/SKILL.md`
 - `.agents/skills/trellis-finish-work/SKILL.md`
@@ -144,6 +156,9 @@ Shared overlays are always installed:
 Default Codex overlays are installed when no platform flag is provided, or when
 `--platform codex` / `--all-platforms` is used:
 
+- `.codex/agents/trellis-implement.toml`
+- `.codex/agents/trellis-check.toml`
+- `.codex/agents/trellis-research.toml`
 - `.codex/prompts/trellis-start.md`
 - `.codex/prompts/trellis-continue.md`
 - `.codex/prompts/trellis-finish-work.md`
@@ -154,12 +169,18 @@ Default Codex overlays are installed when no platform flag is provided, or when
 Default Cursor overlays are installed when no platform flag is provided, or when
 `--platform cursor` / `--all-platforms` is used:
 
+- `.cursor/agents/trellis-implement.md`
+- `.cursor/agents/trellis-check.md`
+- `.cursor/agents/trellis-research.md`
 - `.cursor/commands/trellis-continue.md`
 - `.cursor/commands/trellis-finish-work.md`
 
 Claude overlays are installed only when `--platform claude` or `--all-platforms`
 is used:
 
+- `.claude/agents/trellis-implement.md`
+- `.claude/agents/trellis-check.md`
+- `.claude/agents/trellis-research.md`
 - `.claude/commands/trellis/continue.md`
 - `.claude/commands/trellis/finish-work.md`
 
@@ -198,6 +219,15 @@ user confirmation before `task.py start`; `task.py start` remains only a status
 transition. `record-phase2-check.sh` records the full-scope `trellis-check`
 result before commit, including the pre-commit `dirty_paths`; validation
 commands are evidence inside that report, not a substitute for the check.
+`record-agent-assignment.sh` / `check-agent-assignment.sh` manage task-local
+`agent-assignment.json`: Chinese `logical_role` is the Trellis process identity,
+`agent_id` is the technical platform id, and `platform_nickname` is display-only.
+When the platform exposes a configured Chinese UI nickname, record that value;
+when it exposes only an automatic/random nickname, record the raw value. Either
+way, gate decisions use `logical_role`, `agent_id`, HEAD, and digest evidence,
+not display names. The scripts record assignment, review round, reuse, and
+replacement decisions already made by AI/human; they do not decide which
+sub-agent should be used.
 After the task work commit, `review-branch.sh` audits that committed
 non-metadata task paths after the Phase 2 recorded HEAD are covered by those
 dirty paths and that no non-metadata dirty paths remain in the working tree.
@@ -206,8 +236,11 @@ records and validates the prior AI/human review result; it is not the reviewer.
 Passing gates require independent Agent review with no P0/P1/P2 findings,
 task-local `review.md`, a Chinese summary, concrete evidence,
 `--review-source independent-agent`, and
-`--review-report <task-local review.md>`. `--reviewer` is identity metadata only
-and cannot replace the review report digest; `*-main-session` / `self-review`
+`--review-report <task-local review.md>`. When sub-agents were dispatched or
+reviewer reuse/replacement was decided, pass `--agent-assignment
+<task-local agent-assignment.json>` so the gate stores its digest and Chinese
+roles summary. `--reviewer` is identity metadata only and cannot replace the
+review report digest; `*-main-session` / `self-review`
 cannot pass the gate.
 `finish-work.sh` and `publish-pr.sh` reject ordinary direct calls so
 `trellis-continue` cannot chain closeout, commit review metadata, push, or
