@@ -1,32 +1,15 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-05T05:20:23Z",
+  "generated_at": "2026-07-05T05:56:02Z",
   "task_dir": ".trellis/tasks/07-05-35-guru-team-no-task-intake",
   "base_branch": "main",
-  "head": "059f8f9fe2b377f37a03b9b533dba3121458cd3e",
+  "head": "ef72b424bfdf159863ed5606787e4b7dac6c2028",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".agents/skills/trellis-start/SKILL.md",
-    ".codex/hooks/session-start.py",
-    ".codex/hooks/test_inject_workflow_state.py",
-    ".codex/prompts/trellis-start.md",
-    ".codex/skills/trellis-start/SKILL.md",
-    ".cursor/hooks/session-start.py",
-    ".trellis/guru-team/extension.json",
-    ".trellis/guru-team/handoff.json",
-    ".trellis/spec/workflow/quality-guidelines.md",
-    ".trellis/workflow.md",
-    "README.md",
-    "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
-    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
-    "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
-    "trellis/workflows/guru-team/README.md",
-    "trellis/workflows/guru-team/workflow.md",
-    ".trellis/tasks/07-05-35-guru-team-no-task-intake/"
+    ".trellis/tasks/07-05-35-guru-team-no-task-intake/review.md"
   ],
   "checker": "codex-main-session",
-  "check_summary": "已按 Issue #35 和 planning artifacts 完成 Guru Team no_task / Phase 1 intake 修复检查：canonical workflow、dogfood active workflow、trellis-start overlay、Codex/Cursor session-start fallback、README/spec、回归测试、dogfood overlay drift、throwaway install 均已覆盖；普通 Trellis native task.py create 未被脚本层改动。当前未合并分支的远端 marketplace gh:...#codex/35... 未能获取 index.json，已作为未覆盖项记录。",
+  "check_summary": "已在提交 ef72b42 后并在独立 review.md 写入后重新核对 Issue #35 的 Guru Team no_task / Phase 1 intake 修复：canonical workflow、dogfood active workflow、trellis-start overlay、Codex/Cursor session-start fallback、README/spec、回归测试、dogfood overlay drift、throwaway install 证据仍覆盖本次提交；普通 Trellis native task.py create 行为未被脚本层改动。Cursor session-start fallback 已补自动化回归断言。当前未合并分支的远端 marketplace gh:...#codex/35... 未能获取 index.json，仍作为未覆盖项记录，不声称通过。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-05-35-guru-team-no-task-intake/prd.md",
@@ -79,7 +62,7 @@
     },
     {
       "command": "python3 .codex/hooks/test_inject_workflow_state.py && python3 .trellis/scripts/common/test_workflow_phase.py",
-      "result": "通过，5+4 tests"
+      "result": "通过，6+4 tests"
     },
     {
       "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-05-35-guru-team-no-task-intake",
@@ -94,7 +77,7 @@
       "result": "通过"
     },
     {
-      "command": "git diff --check",
+      "command": "git diff --check origin/main...HEAD",
       "result": "通过"
     },
     {
