@@ -1,0 +1,168 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-05T09:58:54Z",
+  "task_dir": ".trellis/tasks/07-05-43-trellis-subagent",
+  "base_branch": "main",
+  "head": "8f942114b8d800e14990851fad095716d3f3c147",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/workflow.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "checker": "codex-main-session",
+  "check_summary": "已针对独立审查发现的 gate evidence blocker 回到 Phase 2 复查：补充 Phase 2 post-commit audit 对 task-local agent-assignment metadata 的窄口径处理、记录最终放行审查 review_rounds[]，同步 workflow/spec/canonical 与 dogfood helper，并验证非 metadata 变更仍会阻塞 gate。当前无 P0/P1/P2 blocker。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-05-43-trellis-subagent/prd.md",
+      "sha256": "217a42c584a58268e8d1e65b00a7664ecff1f3c8b7f81f67456cf445f875d264",
+      "size_bytes": 9629,
+      "modified_at": "2026-07-05T09:24:39.156737+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-43-trellis-subagent/design.md",
+      "sha256": "c9b27b38474c77003f9a69ac74db65d563f8896a7230f9ccbf6ca15dd553672c",
+      "size_bytes": 11250,
+      "modified_at": "2026-07-05T09:24:39.157142+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-43-trellis-subagent/implement.md",
+      "sha256": "d211892b548757677265bfd25c4038bf7f5cc886ba7440cf161ad6ff5281b1fd",
+      "size_bytes": 6175,
+      "modified_at": "2026-07-05T09:24:39.157612+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-43-trellis-subagent/planning-approval.json",
+      "sha256": "9939d445b229e0c47aac8fea66e254e509449a75854b63d08446a5b9656af4ed",
+      "size_bytes": 1975,
+      "modified_at": "2026-07-05T08:17:22.814587+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-43-trellis-subagent/agent-assignment.json",
+      "sha256": "443f24ca3ec5d4a5b8de472a4d1ab95ac60cc793d05842fdb5c986f9dfc6d2c5",
+      "size_bytes": 2743,
+      "modified_at": "2026-07-05T09:55:57.622977+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-43-trellis-subagent/issue-scope-ledger.json",
+      "sha256": "fad29bba025b78fa52e86e7eab4a6b775ea484d4386fd5b5557a460ba402bfa1",
+      "size_bytes": 669,
+      "modified_at": "2026-07-05T08:08:53.107256+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "ea1946c7fd50ca7dae01368b390ad0bd8bc48e6032e18441e50ebf01b4bd7981",
+      "size_bytes": 11073,
+      "modified_at": "2026-07-05T09:57:37.304692+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "c11fe594f843d4f2d2e772ce25a047dbe19acf27d1e822853518818969b11f08",
+      "size_bytes": 8468,
+      "modified_at": "2026-07-05T09:57:37.305484+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "ad776172d5deea815d57ee52e378627db3b076fd29531f3ae959e8bbb02bad1f",
+      "size_bytes": 10862,
+      "modified_at": "2026-07-05T09:57:37.305015+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "468343b7257202c85538def252d65c8234388ea7c8b6901fe216227cdc270b19",
+      "size_bytes": 4387,
+      "modified_at": "2026-07-05T08:08:52.763485+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "efa7df0c75d57a2a25f1cec6e61e3fb298fe4c9b24f5339494a014aaacba894a",
+      "size_bytes": 7803,
+      "modified_at": "2026-07-05T09:12:04.583590+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "628d969b49489b82b38d95164945008fea0d5ce856968a4245f2b3e2d58edea9",
+      "size_bytes": 4160,
+      "modified_at": "2026-07-05T09:24:39.159606+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "35891233237b0cb4be3d2009eac25b0a5bde359fd02098ce63e261d7854b836a",
+      "size_bytes": 3482,
+      "modified_at": "2026-07-05T08:08:52.760607+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/code-reuse-thinking-guide.md",
+      "sha256": "86fd10dc10916c00309714aa2275234f01b0ad40d21a485d43b3422e7ca79397",
+      "size_bytes": 7381,
+      "modified_at": "2026-07-05T08:08:52.761019+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/cross-layer-thinking-guide.md",
+      "sha256": "cb66957f7fad60eec4c5bd737a4d910b162a093142b1fad1d0ab48d4784c5ce3",
+      "size_bytes": 14981,
+      "modified_at": "2026-07-05T08:08:52.761342+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m json.tool trellis/index.json; python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json; python3 -m json.tool .trellis/tasks/07-05-43-trellis-subagent/agent-assignment.json",
+      "result": "pass"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "pass"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "pass"
+    },
+    {
+      "command": "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "pass: 80 tests"
+    },
+    {
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "pass: 18 tests"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-05-43-trellis-subagent",
+      "result": "pass"
+    },
+    {
+      "command": "python3 - <<'PY' ... validate_phase2_check(..., allow_committed_head=True) before refresh",
+      "result": "blocked non-metadata dirty paths and stale checked specs as expected"
+    },
+    {
+      "command": ".trellis/guru-team/scripts/bash/check-agent-assignment.sh --json --task .trellis/tasks/07-05-43-trellis-subagent --require-current-head",
+      "result": "pass"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查 workflow 和 review gate 是否符合主合同"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查脚本是否只做 recorder / validator"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查 agent-assignment 与 review-gate 数据兼容性"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查必跑验证、dogfood drift 和 deployment evidence"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查 managed assets / executable / preset README 是否同步"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 overlay 与 dogfood installed copies 无漂移"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查 README 与 durable docs 更新质量"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查是否复用现有 digest/artifact helper"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查 JSON artifact 在脚本、docs、workflow、overlay 中一致"}

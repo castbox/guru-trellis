@@ -98,14 +98,32 @@ Gate:
   implementation, tests, specs, docs, cross-layer flow, and deployment impact
   were checked. It also records the pre-commit `dirty_paths` that the later
   post-commit audit may accept as the task work commit.
+- `agent-assignment.json` records Chinese logical roles, technical `agent_id`,
+  display-only platform nickname, HEAD evidence, review rounds, and
+  reuse/replacement decisions for sub-agent-dispatch tasks. It is assignment
+  evidence, not a script-owned decision about who should review or implement.
+- Sub-agent technical identifiers remain stable and usually English
+  (`trellis-implement`, `trellis-check`, `trellis-research`, channel runtime
+  `implement` / `check`). User-facing labels should be Chinese where the
+  platform has a display surface. Markdown-based agent files use Chinese
+  descriptions/headings. Codex custom agents currently require ASCII
+  `nickname_candidates`, so use Chinese `description` plus assignment
+  `logical_role` for Chinese UI semantics there. Never change dispatch
+  identifiers just for display.
 
 `review-branch.sh` must verify Phase 2 check evidence before writing
 `review-gate.json` so Branch Review Gate cannot bypass Phase 2. When
 `phase2-check.json.head` is an ancestor of the current `HEAD`, the audit may
 accept non-metadata committed paths only when every such path is covered by
 `phase2-check.json.dirty_paths` and the current working tree has no
-non-metadata dirty paths. Do not re-record Phase 2 after the task work commit
-just to make HEAD match.
+non-metadata dirty paths. The one expected mutable checked artifact is
+task-local `agent-assignment.json`: final reviewer assignment and
+`review_rounds[]` are recorded after the work commit, then Branch Review Gate
+must revalidate that file through `--agent-assignment` and record its current
+digest. This exception is only for assignment metadata; source, config, script,
+schema, docs, preset, overlay, and other task artifact drift still blocks the
+gate. Do not re-record Phase 2 after the task work commit just to make HEAD
+match.
 
 The gate must cover docs, code, tests, Trellis artifacts, config, scripts,
 schemas, CI/CD, container files, Kubernetes/Kustomize/Helm assets, database
@@ -134,6 +152,9 @@ Passing the gate requires:
   `*-main-session` and `self-review` identities are rejected for passed gates
 - `--review-report` must point to the task-local file named `review.md`, not
   another task artifact
+- when sub-agents were dispatched or reviewer reuse/replacement was decided,
+  `--agent-assignment` should point to the task-local `agent-assignment.json`
+  so the gate records its digest and Chinese logical-role summary
 - deployment impact evidence, even when the conclusion is that no deployment
   asset needs a change
 - no P0/P1/P2 findings

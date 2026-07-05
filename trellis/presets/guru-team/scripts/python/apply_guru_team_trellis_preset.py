@@ -25,7 +25,7 @@ PLATFORM_OVERLAY_PREFIXES = {
     "claude": (Path(".claude"),),
 }
 ALL_PLATFORMS = tuple(PLATFORM_OVERLAY_PREFIXES)
-ALWAYS_OVERLAY_PREFIXES = (Path(".agents"),)
+ALWAYS_OVERLAY_PREFIXES = (Path(".agents"), Path(".trellis/agents"))
 CODEX_DISPATCH_HEADER = """#-------------------------------------------------------------------------------
 # Codex (dispatch behavior)
 #-------------------------------------------------------------------------------
@@ -48,6 +48,8 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/check-planning-approval.sh"),
     Path("scripts/bash/record-phase2-check.sh"),
     Path("scripts/bash/check-phase2-check.sh"),
+    Path("scripts/bash/record-agent-assignment.sh"),
+    Path("scripts/bash/check-agent-assignment.sh"),
     Path("scripts/bash/review-branch.sh"),
     Path("scripts/bash/check-review-gate.sh"),
     Path("scripts/bash/publish-pr.sh"),
@@ -355,6 +357,27 @@ def looks_like_trellis_generated_entry(relative: Path, target: Path) -> bool:
     if "trellis" not in lower:
         return False
 
+    is_trellis_agent = (
+        rel.startswith(".codex/agents/trellis-")
+        or rel.startswith(".cursor/agents/trellis-")
+        or rel.startswith(".claude/agents/trellis-")
+        or rel in {".trellis/agents/implement.md", ".trellis/agents/check.md"}
+    )
+    if is_trellis_agent and any(
+        signal in text
+        for signal in [
+            "Required: Load Trellis Context First",
+            "Recursion Guard",
+            "Trellis workflow",
+            "Trellis channel",
+            "implement.jsonl",
+            "check.jsonl",
+            "{TASK_DIR}/research",
+            "Workspace-write Trellis",
+        ]
+    ):
+        return True
+
     is_start = rel.endswith("trellis-start/SKILL.md") or rel.endswith("trellis-start.md")
     is_continue = rel.endswith("trellis-continue/SKILL.md") or rel.endswith("trellis-continue.md") or rel.endswith("continue.md")
     is_finish = rel.endswith("trellis-finish-work/SKILL.md") or rel.endswith("trellis-finish-work.md") or rel.endswith("finish-work.md")
@@ -443,6 +466,8 @@ def install_assets(
         dst / "scripts/bash/check-planning-approval.sh",
         dst / "scripts/bash/record-phase2-check.sh",
         dst / "scripts/bash/check-phase2-check.sh",
+        dst / "scripts/bash/record-agent-assignment.sh",
+        dst / "scripts/bash/check-agent-assignment.sh",
         dst / "scripts/bash/review-branch.sh",
         dst / "scripts/bash/check-review-gate.sh",
         dst / "scripts/bash/publish-pr.sh",

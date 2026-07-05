@@ -41,6 +41,6 @@ python3 ./.trellis/scripts/get_context.py --mode phase
 
 7. During planning, follow `.trellis/workflow.md` for Middle-platform Knowledge Gate and Repo Docs SSOT discovery. MCP availability is checked from current AI tools/capabilities, not shell scripts.
 
-8. Treat `.trellis/guru-team/handoff.json` as intake provenance only. Final close/ref/followup scope belongs in the task-level `issue-scope-ledger.json`.
+8. Treat `.trellis/guru-team/handoff.json` as intake provenance only. Final close/ref/followup scope belongs in the task-level `issue-scope-ledger.json`; sub-agent assignment and reuse evidence belongs in task-local `agent-assignment.json`.
 
 Full contract lives in `.trellis/workflow.md`.

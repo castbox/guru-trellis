@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "workflow、review gate 与 publish 边界主规范"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "recorder / validator 与脚本边界"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "新增 agent-assignment.json 与 review-gate 摘要字段的数据合同"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "workflow / preset 变更的必跑验证与 review 重点"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "新增 wrapper 和 overlay 同步后的 preset 安装要求"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "平台 overlay 同步规则"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "README 和 durable docs 更新规则"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "新增常量/helper 前搜索复用"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "新增 JSON artifact 跨 workflow/script/docs/overlay 一致性"}

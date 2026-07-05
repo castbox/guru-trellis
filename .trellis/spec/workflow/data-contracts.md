@@ -131,6 +131,54 @@ are covered by the recorded `dirty_paths`, or the later tail is Trellis
 metadata only. Any uncovered non-metadata committed path, or any current
 non-metadata dirty path, makes the artifact stale.
 
+## Agent Assignment Artifact
+
+`agent-assignment.json` is optional for older tasks and expected for new
+sub-agent-dispatch Guru Team tasks. It records the AI/human assignment decisions
+that already happened in the workflow:
+
+- `schema_version`, current task path, and current `HEAD`
+- `agents[]` entries for implementation/check/review assignment events
+- `logical_role` as the Chinese Trellis process identity
+- `agent_id` as the technical platform identity used for continuing/reusing an
+  agent
+- `platform_nickname` as display-only UI metadata that never participates in
+  gate decisions; prefer configured Chinese UI nicknames when the platform
+  exposes them, otherwise record the raw automatic/random nickname
+- `review_rounds[]` entries with review round number, reviewed HEAD,
+  findings count, reuse policy, and reuse decision
+- `reuse_decisions[]` entries for explicit reuse/replacement decisions across
+  rounds
+
+Allowed logical roles are:
+
+- `实现代理`
+- `阶段二检查代理`
+- `问题发现审查代理`
+- `问题闭环审查代理`
+- `最终放行审查代理`
+
+The companion recorder/validator may check JSON structure, required fields,
+role enum values, HEAD resolvability, current-HEAD freshness when requested,
+and file digest metadata. It must not decide which sub-agent should be used,
+whether reviewer reuse is semantically acceptable, or whether a final release
+review is sufficient.
+
+Because `最终放行审查代理` is assigned after the task work commit,
+`agent-assignment.json` is the only Phase 2 checked artifact that may receive a
+post-commit metadata update before Branch Review Gate. `review-branch.sh` must
+then receive `--agent-assignment` so the gate records the current digest,
+roles, assignment count, review round count, and reuse decision count. This
+does not permit post-commit changes to non-metadata paths or to other checked
+artifacts.
+
+Project agent definitions have a separate display contract. Technical dispatch
+ids (`trellis-implement`, `trellis-check`, `trellis-research`, `implement`,
+`check`) are public API. UI-facing text belongs in Codex
+Markdown descriptions, headings, and assignment `logical_role`. Codex
+`nickname_candidates` must stay ASCII in current Codex releases. Do not use
+`agent-assignment.json.platform_nickname` as the source of dispatch behavior.
+
 ## Issue Scope Ledger
 
 Issue close semantics must be explicit:
@@ -164,6 +212,8 @@ The artifact records:
 - findings
 - Issue Scope Ledger coverage
 - validation evidence
+- optional `agent_assignment` digest summary when `review-branch.sh` receives a
+  task-local `agent-assignment.json`
 
 The gate is valid only for the reviewed `HEAD`, except that `finish-work` may
 allow metadata-only commits after the gate. A passed gate is invalid if it lacks

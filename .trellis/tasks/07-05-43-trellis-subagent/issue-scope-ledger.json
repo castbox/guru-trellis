@@ -1,0 +1,20 @@
+{
+  "primary_issue": {
+    "number": 43,
+    "url": "https://github.com/castbox/guru-trellis/issues/43",
+    "title": "规范 Trellis subagent 中文逻辑角色与复用记录",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 43,
+      "url": "https://github.com/castbox/guru-trellis/issues/43",
+      "title": "规范 Trellis subagent 中文逻辑角色与复用记录",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

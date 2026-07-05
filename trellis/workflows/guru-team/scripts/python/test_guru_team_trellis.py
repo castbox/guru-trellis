@@ -133,6 +133,7 @@ def review_args(**overrides: object) -> argparse.Namespace:
         "reviewer": "trellis-check-agent",
         "review_source": gtt.INDEPENDENT_REVIEW_SOURCE,
         "review_report": None,
+        "agent_assignment": None,
         "finding": [],
         "findings_file": None,
         "dry_run": False,
@@ -170,6 +171,30 @@ def phase2_args(**overrides: object) -> argparse.Namespace:
         "validation": ["python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py|passed"],
         "finding": [],
         "findings_file": None,
+        "dry_run": False,
+    }
+    values.update(overrides)
+    return argparse.Namespace(**values)
+
+
+def assignment_args(**overrides: object) -> argparse.Namespace:
+    values: dict[str, object] = {
+        "root": None,
+        "json": True,
+        "task": None,
+        "logical_role": "实现代理",
+        "agent_id": "019f315a-f262-7521-acdf-78e4adc99a11",
+        "platform_nickname": "Gibbs",
+        "reason": "Codex sub-agent 模式下分配实现代理。",
+        "review_round": None,
+        "reviewed_head": None,
+        "findings_count": 0,
+        "reuse_policy": None,
+        "reuse_decision": None,
+        "reuse_reason": None,
+        "from_round": None,
+        "to_round": None,
+        "decision_head": None,
         "dry_run": False,
     }
     values.update(overrides)
@@ -798,6 +823,71 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             mock.patch.object(gtt, "committed_paths_match_phase2_dirty_paths", return_value=(True, [])),
             mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
             mock.patch.object(gtt, "git_status_paths", return_value=[".trellis/tasks/07-04-gates/review.md"]),
+        ):
+            _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
+
+        self.assertEqual(errors, [])
+
+    def test_validate_phase2_allows_post_commit_agent_assignment_metadata_update(self) -> None:
+        assignment = self.task_dir / "agent-assignment.json"
+        assignment.write_text(
+            gtt.json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "task": ".trellis/tasks/07-04-gates",
+                    "head": "abc123",
+                    "agents": [],
+                    "review_rounds": [],
+                    "reuse_decisions": [],
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            gtt.cmd_record_phase2_check(phase2_args(checked_artifact=["agent-assignment.json"]))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        assignment.write_text(
+            gtt.json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "task": ".trellis/tasks/07-04-gates",
+                    "head": "def456",
+                    "agents": [
+                        {
+                            "logical_role": "最终放行审查代理",
+                            "agent_id": "agent-1",
+                            "platform_nickname": "Pasteur",
+                            "assigned_at": "2026-07-05T00:00:00Z",
+                            "assigned_head": "def456",
+                            "reason": "提交后记录最终放行审查代理。",
+                        }
+                    ],
+                    "review_rounds": [],
+                    "reuse_decisions": [],
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value="def456"),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(gtt, "committed_paths_match_phase2_dirty_paths", return_value=(True, [])),
+            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(gtt, "git_status_paths", return_value=[".trellis/tasks/07-04-gates/agent-assignment.json"]),
         ):
             _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
 
@@ -1627,6 +1717,46 @@ class ReviewGateReportTest(unittest.TestCase):
             mock.patch.object(gtt, "changed_files", return_value=["trellis/workflows/guru-team/workflow.md"]),
         ]
 
+    def write_agent_assignment(self) -> Path:
+        assignment = self.task_dir / "agent-assignment.json"
+        assignment.write_text(
+            gtt.json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "task": ".trellis/tasks/07-04-review-gate",
+                    "head": "abc123",
+                    "agents": [
+                        {
+                            "logical_role": "实现代理",
+                            "agent_id": "019f315a-f262-7521-acdf-78e4adc99a11",
+                            "platform_nickname": "Gibbs",
+                            "assigned_at": "2026-07-05T00:00:00Z",
+                            "assigned_head": "abc123",
+                            "reason": "Codex sub-agent 模式下分配实现代理。",
+                        }
+                    ],
+                    "review_rounds": [
+                        {
+                            "round": 1,
+                            "logical_role": "最终放行审查代理",
+                            "agent_id": "019f315a-f262-7521-acdf-78e4adc99a11",
+                            "platform_nickname": "Gibbs",
+                            "reviewed_head": "abc123",
+                            "findings_count": 0,
+                            "reuse_policy": "最终放行审查代理必须独立于主会话。",
+                            "reuse_decision": "new-agent",
+                        }
+                    ],
+                    "reuse_decisions": [],
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        return assignment
+
     def test_review_branch_pass_requires_review_report(self) -> None:
         patches = self.patch_review_command()
         for patcher in patches:
@@ -1660,6 +1790,59 @@ class ReviewGateReportTest(unittest.TestCase):
         self.assertEqual(recorded["sha256"], gtt.hashlib.sha256(review_report.read_bytes()).hexdigest())
         self.assertTrue(recorded["modified_at"])
         self.assertTrue((self.task_dir / "review-gate.json").exists())
+
+    def test_review_branch_records_agent_assignment_digest(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\n无 P0/P1/P2 finding。\n", encoding="utf-8")
+        assignment = self.write_agent_assignment()
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with mock.patch.object(gtt, "git_object_exists", return_value=True):
+                payload = gtt.cmd_review_branch(
+                    review_args(
+                        review_report=str(review_report),
+                        agent_assignment=str(assignment),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        recorded = payload["verification_evidence"]["agent_assignment"]
+        self.assertEqual(recorded["path"], ".trellis/tasks/07-04-review-gate/agent-assignment.json")
+        self.assertEqual(recorded["sha256"], gtt.hashlib.sha256(assignment.read_bytes()).hexdigest())
+        self.assertEqual(recorded["roles"], ["实现代理", "最终放行审查代理"])
+        self.assertEqual(recorded["agents_count"], 1)
+        self.assertEqual(recorded["review_rounds_count"], 1)
+
+    def test_review_branch_rejects_invalid_agent_assignment(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\n无 P0/P1/P2 finding。\n", encoding="utf-8")
+        assignment = self.write_agent_assignment()
+        payload = gtt.read_json(assignment)
+        payload["agents"][0]["logical_role"] = "Reviewer"
+        assignment.write_text(gtt.json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with mock.patch.object(gtt, "git_object_exists", return_value=True):
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    gtt.cmd_review_branch(
+                        review_args(
+                            review_report=str(review_report),
+                            agent_assignment=str(assignment),
+                        )
+                    )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("agent assignment", str(raised.exception).lower())
+        self.assertTrue(any("logical_role" in error for error in raised.exception.payload["errors"]))
 
     def test_review_branch_pass_rejects_main_session_reviewer(self) -> None:
         review_report = self.task_dir / "review.md"
@@ -1798,6 +1981,19 @@ class ReviewGateReportTest(unittest.TestCase):
             "modified_at": "2026-07-04T00:00:00+00:00",
         }
 
+    def valid_assignment_summary(self) -> dict[str, object]:
+        assignment = self.write_agent_assignment()
+        return {
+            "path": ".trellis/tasks/07-04-review-gate/agent-assignment.json",
+            "sha256": gtt.hashlib.sha256(assignment.read_bytes()).hexdigest(),
+            "size_bytes": assignment.stat().st_size,
+            "modified_at": "2026-07-04T00:00:00+00:00",
+            "roles": ["实现代理", "最终放行审查代理"],
+            "agents_count": 1,
+            "review_rounds_count": 1,
+            "reuse_decisions_count": 0,
+        }
+
     def test_validate_review_gate_rejects_reviewer_only_passed_gate(self) -> None:
         self.write_gate(review_report=None)
         with mock.patch.object(gtt, "current_head", return_value="abc123"):
@@ -1840,6 +2036,43 @@ class ReviewGateReportTest(unittest.TestCase):
 
         self.assertIn("Branch Review Gate review_report 缺少 modified_at。", errors)
 
+    def test_validate_review_gate_accepts_agent_assignment_summary(self) -> None:
+        self.write_gate(review_report=self.valid_report())
+        gate = gtt.read_json(self.task_dir / "review-gate.json")
+        gate["verification_evidence"]["agent_assignment"] = self.valid_assignment_summary()
+        (self.task_dir / "review-gate.json").write_text(
+            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        with (
+            mock.patch.object(gtt, "current_head", return_value="abc123"),
+            mock.patch.object(gtt, "git_object_exists", return_value=True),
+        ):
+            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
+
+        self.assertEqual(errors, [])
+
+    def test_validate_review_gate_rejects_non_task_local_agent_assignment(self) -> None:
+        outside = self.root / "agent-assignment.json"
+        outside.write_text(gtt.json.dumps(gtt.read_json(self.write_agent_assignment()), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        self.write_gate(review_report=self.valid_report())
+        gate = gtt.read_json(self.task_dir / "review-gate.json")
+        gate["verification_evidence"]["agent_assignment"] = {
+            "path": "agent-assignment.json",
+            "sha256": gtt.hashlib.sha256(outside.read_bytes()).hexdigest(),
+            "size_bytes": outside.stat().st_size,
+            "modified_at": "2026-07-04T00:00:00+00:00",
+            "roles": ["实现代理"],
+        }
+        (self.task_dir / "review-gate.json").write_text(
+            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        with mock.patch.object(gtt, "current_head", return_value="abc123"):
+            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
+
+        self.assertTrue(any("task-local" in error for error in errors))
+
     def test_validate_review_gate_accepts_metadata_only_tail_when_allowed(self) -> None:
         self.write_gate(head="old123", review_report=self.valid_report())
         with (
@@ -1861,6 +2094,139 @@ class ReviewGateReportTest(unittest.TestCase):
             _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, True)
 
         self.assertTrue(any("非 Trellis metadata" in error for error in errors))
+
+
+class AgentAssignmentArtifactTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.task_dir = self.root / ".trellis/tasks/07-05-agent-assignment"
+        self.task_dir.mkdir(parents=True)
+        (self.root / ".trellis/guru-team").mkdir(parents=True)
+        (self.root / ".git").mkdir()
+        (self.task_dir / "task.json").write_text(
+            '{"title":"Agent assignment","base_branch":"main"}\n',
+            encoding="utf-8",
+        )
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def patch_assignment_command(self) -> list[mock._patch]:
+        return [
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
+            mock.patch.object(gtt, "load_handoff", return_value={"task_dir": ".trellis/tasks/07-05-agent-assignment"}),
+            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "current_head", return_value="abc123"),
+            mock.patch.object(gtt, "git_object_exists", return_value=True),
+        ]
+
+    def test_record_agent_assignment_writes_agents_entry(self) -> None:
+        patches = self.patch_assignment_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_record_agent_assignment(assignment_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        artifact = self.task_dir / "agent-assignment.json"
+        self.assertTrue(artifact.exists())
+        recorded = gtt.read_json(artifact)
+        self.assertEqual(payload["recorded"]["logical_role"], "实现代理")
+        self.assertEqual(recorded["task"], ".trellis/tasks/07-05-agent-assignment")
+        self.assertEqual(recorded["head"], "abc123")
+        self.assertEqual(recorded["agents"][0]["platform_nickname"], "Gibbs")
+
+    def test_record_agent_assignment_writes_review_round(self) -> None:
+        patches = self.patch_assignment_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_agent_assignment(assignment_args())
+            payload = gtt.cmd_record_agent_assignment(
+                assignment_args(
+                    logical_role="问题发现审查代理",
+                    review_round=1,
+                    findings_count=2,
+                    reuse_policy="问题发现代理可继续闭环复查，但不能作为最终放行审查代理。",
+                    reuse_decision="reuse-for-closure",
+                    reason=None,
+                )
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        recorded = gtt.read_json(self.task_dir / "agent-assignment.json")
+        self.assertEqual(payload["recorded"]["round"], 1)
+        self.assertEqual(recorded["review_rounds"][0]["logical_role"], "问题发现审查代理")
+        self.assertEqual(recorded["review_rounds"][0]["findings_count"], 2)
+
+    def test_check_agent_assignment_rejects_stale_head_when_required(self) -> None:
+        artifact = self.task_dir / "agent-assignment.json"
+        artifact.write_text(
+            gtt.json.dumps(
+                {
+                    "schema_version": "1.0",
+                    "task": ".trellis/tasks/07-05-agent-assignment",
+                    "head": "old123",
+                    "agents": [],
+                    "review_rounds": [],
+                    "reuse_decisions": [],
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        patches = self.patch_assignment_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_agent_assignment(
+                    argparse.Namespace(
+                        root=None,
+                        json=True,
+                        task=None,
+                        agent_assignment=None,
+                        require_current_head=True,
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertTrue(any("当前 HEAD" in error for error in raised.exception.payload["errors"]))
+
+    def test_check_agent_assignment_rejects_non_object_json(self) -> None:
+        artifact = self.task_dir / "agent-assignment.json"
+        artifact.write_text("[]\n", encoding="utf-8")
+        patches = self.patch_assignment_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_agent_assignment(
+                    argparse.Namespace(
+                        root=None,
+                        json=True,
+                        task=None,
+                        agent_assignment=None,
+                        require_current_head=False,
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("JSON root must be an object", str(raised.exception))
 
 
 class ExtensionVersionPayloadTest(unittest.TestCase):
