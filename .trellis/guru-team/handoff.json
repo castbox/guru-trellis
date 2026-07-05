@@ -1,47 +1,21 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 33,
-    "url": "https://github.com/castbox/guru-trellis/issues/33",
-    "title": "Align Guru Team extension version and release tag to v0.6.5",
-    "created_by_workflow": true
+    "number": 35,
+    "url": "https://github.com/castbox/guru-trellis/issues/35",
+    "title": "修复 Guru Team no_task intake 防止绕过 worktree",
+    "created_by_workflow": false
   },
-  "proposed_issue": {
-    "repo": "castbox/guru-trellis",
-    "title": "Align Guru Team extension version and release tag to v0.6.5",
-    "body": "## Background\n\nGuru Team Trellis extension already has a canonical manifest and installed provenance support, but the current manifest version remains `0.1.0` while release/tag discussion moved toward Trellis CLI-aligned `0.6.5` release coordinates.\n\nA previous test confirmed Trellis CLI `0.6.5` supports workflow marketplace `#ref`, including `gh:castbox/guru-trellis/trellis#guru-team/v0.6.5`. The team now prefers the simpler repo-level release tag `v0.6.5` because this repository is dedicated to Guru Team extensions for Trellis.\n\n## Requirement\n\n- Align `trellis/guru-team-extension.json.version` to `0.6.5`.\n- Update public docs and preset/workflow docs to recommend tag-pinned workflow marketplace usage with `v0.6.5`.\n- Document that repo release tags use `vX.Y.Z` and should match `trellis/guru-team-extension.json.version`.\n- Keep `guru-team` workflow template id unchanged.\n- Keep Trellis official CLI version, `.trellis/.version`, marketplace `index.json.version`, and Guru Team extension version clearly separated.\n- After the PR merges, create and push annotated tag `v0.6.5` on the merge commit.\n- After `v0.6.5` is verified, retire the previously created `guru-team/v0.6.5` tag to avoid two competing release coordinates.\n\n## Acceptance Criteria\n\n- Manifest version is `0.6.5`.\n- Docs show `gh:castbox/guru-trellis/trellis#v0.6.5` examples for `trellis init` and `trellis workflow` where tag-pinning is appropriate.\n- Docs explain that mutable `main` is acceptable for latest/canary usage, while `#vX.Y.Z` is the stable install form.\n- Tests or validation confirm the JSON manifest is valid and current docs/scripts remain coherent.\n- Release/tag operation order is documented: merge first, then tag the merged commit, then optionally delete old namespaced tag.\n\n## Out of Scope\n\n- Do not change Trellis upstream source or global npm packages.\n- Do not change workflow template id `guru-team`.\n- Do not create `v0.6.5` before manifest/docs are merged to `main`.",
-    "labels": [],
-    "body_reviewed": true,
-    "create_issue_command": [
-      "python3",
-      "./.trellis/guru-team/scripts/python/guru_team_trellis.py",
-      "prepare",
-      "--json",
-      "--create-issue-confirmed",
-      "--issue-title",
-      "Align Guru Team extension version and release tag to v0.6.5",
-      "--issue-body-file",
-      "<reviewed-issue-body.md>",
-      "--short-name",
-      "extension-v065-release-tag",
-      "--branch",
-      "codex/extension-v065-release-tag",
-      "--task-slug",
-      "extension-v065-release-tag",
-      "--workspace-slug",
-      "extension-v065-release-tag",
-      "Align Guru Team extension manifest version to 0.6.5 and document repo tag strategy using v0.6.5 instead of guru-team/v0.6.5; after merge, tag the release commit as v0.6.5."
-    ]
-  },
+  "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/extension-v065-release-tag/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/35-guru-team-no-task-intake/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "extension-v065-release-tag",
-  "task_slug": "extension-v065-release-tag",
-  "task_title": "#33 Align Guru Team extension version and release tag to v0.6.5",
-  "branch_name": "codex/extension-v065-release-tag",
+  "slug": "guru-team-no-task-intake",
+  "task_slug": "35-guru-team-no-task-intake",
+  "task_title": "#35 修复 Guru Team no_task intake 防止绕过 worktree",
+  "branch_name": "codex/35-guru-team-no-task-intake",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/extension-v065-release-tag",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/35-guru-team-no-task-intake",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -52,30 +26,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#33 Align Guru Team extension version and release tag to v0.6.5",
+    "#35 修复 Guru Team no_task intake 防止绕过 worktree",
     "--slug",
-    "extension-v065-release-tag",
+    "35-guru-team-no-task-intake",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-05-extension-v065-release-tag",
+  "task_dir": ".trellis/tasks/07-05-35-guru-team-no-task-intake",
   "duplicate_search": {
-    "performed": true,
+    "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 33,
-      "url": "https://github.com/castbox/guru-trellis/issues/33",
-      "title": "Align Guru Team extension version and release tag to v0.6.5",
+      "number": 35,
+      "url": "https://github.com/castbox/guru-trellis/issues/35",
+      "title": "修复 Guru Team no_task intake 防止绕过 worktree",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 33,
-        "url": "https://github.com/castbox/guru-trellis/issues/33",
-        "title": "Align Guru Team extension version and release tag to v0.6.5",
+        "number": 35,
+        "url": "https://github.com/castbox/guru-trellis/issues/35",
+        "title": "修复 Guru Team no_task intake 防止绕过 worktree",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -90,7 +64,7 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           dfc16d7 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           059f8f9 [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
@@ -102,11 +76,12 @@
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/26-worktree-trellis-developer-identity          d9042da [codex/26-worktree-trellis-developer-identity]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/27-finish-work-dry-run-readiness                8e3c68b [codex/27-finish-work-dry-run-readiness]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/31-guru-team-extension-version-manifest         aa9ee7b [codex/31-guru-team-extension-version-manifest]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/35-guru-team-no-task-intake                     059f8f9 [codex/35-guru-team-no-task-intake]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/5-require-ai-review-prompt-before               44b29b0 [codex/5-require-ai-review-prompt-before]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/7-require-pr-readiness-review-before            5319076 [codex/7-require-pr-readiness-review-before]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/8-auditable-evidence-planning-approval-trellis  678fdfc [codex/8-auditable-evidence-planning-approval-trellis]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/9-keep-dogfood-installed-overlays-in            cacf0c7 [codex/9-keep-dogfood-installed-overlays-in]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/extension-v065-release-tag                      dfc16d7 [codex/extension-v065-release-tag]"
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/extension-v065-release-tag                      2715460 [codex/extension-v065-release-tag]"
     ],
     "selected_base_branch": "main",
     "base_freshness": {
@@ -114,9 +89,9 @@
       "base_branch": "main",
       "base_ref": "main",
       "remote_ref": "origin/main",
-      "local_head_before": "dfc16d735e0ddc9ba74d3e83fdd746a8e2030e6e",
-      "local_head_after": "dfc16d735e0ddc9ba74d3e83fdd746a8e2030e6e",
-      "remote_head": "dfc16d735e0ddc9ba74d3e83fdd746a8e2030e6e",
+      "local_head_before": "059f8f9fe2b377f37a03b9b533dba3121458cd3e",
+      "local_head_after": "059f8f9fe2b377f37a03b9b533dba3121458cd3e",
+      "remote_head": "059f8f9fe2b377f37a03b9b533dba3121458cd3e",
       "fetch_performed": true,
       "fast_forwarded": false,
       "fresh": true,
@@ -127,7 +102,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/extension-v065-release-tag/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/35-guru-team-no-task-intake/.trellis/.developer",
       "developer": "wumengye"
     }
   }

@@ -234,6 +234,14 @@ release judgment.
 
 ## Workflow Guardrails
 
+For `no_task` issue-backed, task-like, or file-changing requests in a Guru Team
+project, the first hop is Guru Team intake, not bare `task.py create`:
+
+```bash
+.trellis/guru-team/scripts/bash/check-env.sh --json
+.trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request or issue URL>"
+```
+
 `prepare-task.sh --json` is an intake/preflight planner by default. It may read
 an explicit issue and search duplicates, but it does not create a GitHub issue,
 worktree, branch, Trellis task, or `.trellis/guru-team/handoff.json`. Freeform
@@ -244,6 +252,10 @@ title/body and duplicate evidence, then rerun with `--create-issue-confirmed
 issue still remains stdout-only until the user approves `--create-worktree` or
 `--create-task`; those executor paths write the handoff inside the chosen
 workspace, not as a new-session side effect in the source checkout.
+When `workspace_mode: worktree`, create the execution workspace and task through
+`prepare-task --create-worktree --create-task` or an equivalent controlled Guru
+Team executor. Task creation consent is not approval to run bare
+`python3 ./.trellis/scripts/task.py create ...` in the source checkout.
 
 When executor paths create or reuse a worktree, they first refresh the selected
 base branch with `git fetch`, record `preflight.base_freshness` in

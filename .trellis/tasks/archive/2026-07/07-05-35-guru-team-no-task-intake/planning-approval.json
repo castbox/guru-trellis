@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-05T05:06:33Z",
+  "task_dir": ".trellis/tasks/07-05-35-guru-team-no-task-intake",
+  "head": "059f8f9fe2b377f37a03b9b533dba3121458cd3e",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-05-35-guru-team-no-task-intake/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已审查 Issue #35 的 prd/design/implement：范围限定为 Guru Team workflow、overlay、session-start 提示、测试、docs/spec 同步；不修改 Trellis upstream、node_modules 或普通 native task.py create 语义；验收标准覆盖 no_task prepare/worktree 入口、Phase 1.0 防裸 task.py create、dogfood overlay drift 和回归测试。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户已明确确认走推荐的 Guru Team worktree + task 通道；原始请求要求先读真实模板、测试和生成链路后给方案并实现。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-05-35-guru-team-no-task-intake/prd.md",
+      "sha256": "0b1e71d9b9d6236e78bc9ce417bf552b1c78626741a7511dcf01b0f2812e0550",
+      "size_bytes": 4937,
+      "modified_at": "2026-07-05T05:05:17.292231+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-35-guru-team-no-task-intake/design.md",
+      "sha256": "f4cc87e2a5b73b4f7017c27c0010ee6f259e8d74c00da3d9f01e942925156612",
+      "size_bytes": 3352,
+      "modified_at": "2026-07-05T05:05:38.691267+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-35-guru-team-no-task-intake/implement.md",
+      "sha256": "18092ad1f122286ef9509ac5488101f3ab839622ef91911fd2ac3da8eaad23cd",
+      "size_bytes": 3184,
+      "modified_at": "2026-07-05T05:06:01.676505+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

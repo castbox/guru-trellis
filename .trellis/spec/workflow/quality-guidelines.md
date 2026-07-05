@@ -17,6 +17,17 @@ direct-edit override: explicit user approval to skip GitHub issue, Trellis
 task, worktree, and branch for that turn. Do not express that decision as an
 AI-internal convenience path.
 
+When Guru Team overlay is enabled, issue-backed, task-like, or file-changing
+`no_task` prompts must name both entry commands:
+
+- `.trellis/guru-team/scripts/bash/check-env.sh --json`
+- `.trellis/guru-team/scripts/bash/prepare-task.sh --json`
+
+Phase 1.0 must not leave bare `task.py create` as the apparent source-checkout
+path for `workspace_mode: worktree`; it should point to `prepare-task
+--create-worktree --create-task` or an equivalent controlled Guru Team executor
+after handoff review and user approval.
+
 Search before editing a phrase, command, marker, or config key:
 
 ```bash

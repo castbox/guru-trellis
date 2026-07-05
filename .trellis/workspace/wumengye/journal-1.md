@@ -502,3 +502,36 @@ Branch Review Gate 通过：独立 Agent 已按 origin/main...HEAD 审查 issue 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 16: 完成：#35 修复 Guru Team no_task intake 防止绕过 worktree
+
+**Date**: 2026-07-05
+**Task**: 完成：#35 修复 Guru Team no_task intake 防止绕过 worktree
+**Branch**: `codex/35-guru-team-no-task-intake`
+
+### Summary
+
+独立 trellis-check agent 已复审 origin/main...HEAD 完整 diff，确认 Guru Team no_task / Phase 1 intake 修复满足 Issue #35，当前无 P0/P1/P2/P3 findings。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ef72b424bfdf159863ed5606787e4b7dac6c2028` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

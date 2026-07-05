@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-05T05:56:02Z",
+  "task_dir": ".trellis/tasks/07-05-35-guru-team-no-task-intake",
+  "base_branch": "main",
+  "head": "ef72b424bfdf159863ed5606787e4b7dac6c2028",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/tasks/07-05-35-guru-team-no-task-intake/review.md"
+  ],
+  "checker": "codex-main-session",
+  "check_summary": "已在提交 ef72b42 后并在独立 review.md 写入后重新核对 Issue #35 的 Guru Team no_task / Phase 1 intake 修复：canonical workflow、dogfood active workflow、trellis-start overlay、Codex/Cursor session-start fallback、README/spec、回归测试、dogfood overlay drift、throwaway install 证据仍覆盖本次提交；普通 Trellis native task.py create 行为未被脚本层改动。Cursor session-start fallback 已补自动化回归断言。当前未合并分支的远端 marketplace gh:...#codex/35... 未能获取 index.json，仍作为未覆盖项记录，不声称通过。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-05-35-guru-team-no-task-intake/prd.md",
+      "sha256": "0b1e71d9b9d6236e78bc9ce417bf552b1c78626741a7511dcf01b0f2812e0550",
+      "size_bytes": 4937,
+      "modified_at": "2026-07-05T05:05:17.292231+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-35-guru-team-no-task-intake/design.md",
+      "sha256": "f4cc87e2a5b73b4f7017c27c0010ee6f259e8d74c00da3d9f01e942925156612",
+      "size_bytes": 3352,
+      "modified_at": "2026-07-05T05:05:38.691267+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-35-guru-team-no-task-intake/implement.md",
+      "sha256": "18092ad1f122286ef9509ac5488101f3ab839622ef91911fd2ac3da8eaad23cd",
+      "size_bytes": 3184,
+      "modified_at": "2026-07-05T05:06:01.676505+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-05-35-guru-team-no-task-intake/planning-approval.json",
+      "sha256": "a9837427f5b99363c955eff6a31495cf74052b6605f1df94ec1075502b99b4b5",
+      "size_bytes": 1913,
+      "modified_at": "2026-07-05T05:06:33.707602+00:00"
+    }
+  ],
+  "checked_specs": [],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
+      "result": "通过"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "通过"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py .codex/hooks/inject-workflow-state.py .codex/hooks/session-start.py .cursor/hooks/session-start.py",
+      "result": "通过"
+    },
+    {
+      "command": "python3 .codex/hooks/test_inject_workflow_state.py && python3 .trellis/scripts/common/test_workflow_phase.py",
+      "result": "通过，6+4 tests"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-05-35-guru-team-no-task-intake",
+      "result": "通过"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase / --step 1.0 / --step 0.4",
+      "result": "通过，输出包含 check-env、prepare-task、--create-worktree --create-task 和 source checkout 禁止语义"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "通过"
+    },
+    {
+      "command": "git diff --check origin/main...HEAD",
+      "result": "通过"
+    },
+    {
+      "command": "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "result": "通过，覆盖 public marketplace sample + 当前本地 preset installer"
+    },
+    {
+      "command": "TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#codex/35-guru-team-no-task-intake verify-throwaway-install.sh",
+      "result": "未通过：未合并分支 remote marketplace source 未取到 index.json，本轮不声称覆盖当前分支远端 marketplace"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}
