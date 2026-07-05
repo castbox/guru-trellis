@@ -23,6 +23,7 @@
 
 `agent-assignment.json` 暂不升级 schema，复用现有 `review_rounds[]` 字段：
 
+- `round`: 必须唯一，并按记录顺序严格递增，确保最终放行 round 可被唯一判定为最后一轮。
 - `logical_role`: `问题闭环审查代理` 表示 finding owner 闭环确认 round，`最终放行审查代理` 表示最终放行 round。
 - `reviewed_head`: 必须等于当前 HEAD。
 - `findings_count`: 闭环和最终放行必须为 0。
@@ -49,7 +50,7 @@ Passing 校验：
 
 - `args.pass_gate and findings` 直接失败，错误文案使用“any findings”。
 - `not args.pass_gate and not findings` 仍要求显式 result；observation/followup candidate 不是 failed gate 的替代结果。
-- `--pass` 必须传入 `--agent-assignment`，校验每个 finding owner 都先完成同 agent 闭环 round，再校验最新/最高 round 的 `最终放行审查代理` 满足 fresh final reviewer 条件。
+- `--pass` 必须传入 `--agent-assignment`，先校验 `review_rounds[].round` 唯一且严格递增，再校验每个 finding owner 都先完成同 agent 闭环 round，最后校验最新/最高 round 的 `最终放行审查代理` 满足 fresh final reviewer 条件。
 
 ## Workflow 与平台同步
 

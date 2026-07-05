@@ -145,7 +145,8 @@ that already happened in the workflow:
 - `platform_nickname` as display-only UI metadata that never participates in
   gate decisions; prefer configured Chinese UI nicknames when the platform
   exposes them, otherwise record the raw automatic/random nickname
-- `review_rounds[]` entries with review round number, reviewed HEAD,
+- `review_rounds[]` entries with unique, strictly increasing review round
+  number, reviewed HEAD,
   findings count, reuse policy, and reuse decision
 - `reuse_decisions[]` entries for explicit reuse/replacement decisions across
   rounds
@@ -172,7 +173,9 @@ later same-agent closure round on the reviewed code HEAD with `findings_count:
 recorded. The final passing review round must be the last
 `最终放行审查代理`, use a fresh technical `agent_id` that did not own an earlier
 finding round, set `findings_count` to 0, set `reuse_decision` to `new-agent`,
-and record the reviewed code `HEAD` in `reviewed_head`.
+record the reviewed code `HEAD` in `reviewed_head`, and have a unique,
+strictly increasing `round` value so no later record can make the final round
+ambiguous.
 
 Because `最终放行审查代理` is assigned after the task work commit,
 `agent-assignment.json` is the only Phase 2 checked artifact that may receive a

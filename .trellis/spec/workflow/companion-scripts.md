@@ -148,11 +148,12 @@ found a new issue, the same technical `agent_id` must later be recorded only as
 `问题闭环审查代理` to confirm the fix on the reviewed code HEAD. A passing gate
 must validate that every finding owner has such a later closure round with
 `findings_count: 0` and `reuse_decision: reuse-for-closure`, and then validate a
-fresh `最终放行审查代理` review round: it is the last round, `reviewed_head`
-equals the reviewed code HEAD, `findings_count` is 0, `reuse_decision` is
-`new-agent`, and the final reviewer did not own any earlier finding round. This
-is an objective metadata check only; the AI/human review still owns the
-judgment that the review covered the full diff.
+fresh `最终放行审查代理` review round: `review_rounds[].round` values are unique
+and strictly increasing in recorded order, it is the unambiguous last round,
+`reviewed_head` equals the reviewed code HEAD, `findings_count` is 0,
+`reuse_decision` is `new-agent`, and the final reviewer did not own any earlier
+finding round. This is an objective metadata check only; the AI/human review
+still owns the judgment that the review covered the full diff.
 
 `review-branch.sh` may record non-blocking `observations[]` and
 `followup_candidates[]` in `review-gate.json`. They are not findings and do not

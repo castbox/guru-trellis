@@ -24,6 +24,7 @@
 3. `review-gate.json` 必须记录 findings、observations、followup candidates，并在 conclusion 中体现 blocking finding 计数和 observation/followup 计数。
 4. 有 findings 的 review round 不能直接 pass gate；修复后必须由同 agent 做 `问题闭环审查代理` 确认到 0 findings，然后最终 pass 才能启动新的 fresh `最终放行审查代理`。
 5. `review-branch --pass` 必须传入 `--agent-assignment`，并校验 review round 顺序：
+   - `review_rounds[].round` 必须唯一，并按记录顺序严格递增，避免最终放行轮次有歧义。
    - 每个 `findings_count > 0` 的 round 都有后续同 `agent_id`、同当前 reviewed HEAD、`logical_role=问题闭环审查代理`、`findings_count=0`、`reuse_decision=reuse-for-closure` 的闭环 round。
    - 最终 review round 的 `logical_role` 是 `最终放行审查代理`。
    - 最终 review round 是最后一轮。

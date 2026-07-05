@@ -1,32 +1,17 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-05T12:13:38Z",
+  "generated_at": "2026-07-05T13:01:21Z",
   "task_dir": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh",
   "base_branch": "main",
-  "head": "41092b4994b08b09069c3e60952c0112d9d38f90",
+  "head": "a8b7e1cb83204cba2e8e1efed4deeb69817b16ba",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".agents/skills/trellis-continue/SKILL.md",
-    ".claude/commands/trellis/continue.md",
-    ".codex/prompts/trellis-continue.md",
-    ".codex/skills/trellis-continue/SKILL.md",
-    ".cursor/commands/trellis-continue.md",
     ".trellis/guru-team/extension.json",
     ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    ".trellis/spec/preset/overlay-guidelines.md",
     ".trellis/spec/workflow/companion-scripts.md",
     ".trellis/spec/workflow/data-contracts.md",
     ".trellis/spec/workflow/workflow-contract.md",
     ".trellis/workflow.md",
-    "README.md",
-    "docs/requirements/requirement-main.md",
-    "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
-    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
-    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
-    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
-    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
-    "trellis/workflows/guru-team/README.md",
     "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
     "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
     "trellis/workflows/guru-team/workflow.md",
@@ -35,19 +20,19 @@
     ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/review.md"
   ],
   "checker": "codex-main-session",
-  "check_summary": "Issue 44 修复已完成：Branch Review Gate 任意 finding 阻断，finding owner 必须先同 agent 闭环到 0 findings，随后 fresh 最终放行审查代理才能通过；脚本只校验 review report、agent-assignment、HEAD、digest 与计数字段，workflow/overlay/spec/docs 已同步。",
+  "check_summary": "Issue 44 修复已更新：Branch Review Gate 任意 finding 阻断、finding owner 同 agent 闭环、fresh final reviewer、以及 review_rounds[].round 唯一且严格递增，避免最终放行轮次歧义；脚本仅校验客观字段，workflow/spec/task artifacts 已同步。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/prd.md",
-      "sha256": "80d50552ee38b444285bd7a6403b4a4dbb3f5a884bf36d221b7db868eda9b3f3",
-      "size_bytes": 5516,
-      "modified_at": "2026-07-05T12:12:50.100121+00:00"
+      "sha256": "11d3021f7955fff1850064c8747e11aaa950396b6c895eee628da83a7b4791bb",
+      "size_bytes": 5630,
+      "modified_at": "2026-07-05T13:00:47.405656+00:00"
     },
     {
       "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/design.md",
-      "sha256": "5cf05e010401f2f19fd843b37c9dccbecdfa42c9f0e0c713cbc8a0e23e47bb94",
-      "size_bytes": 4695,
-      "modified_at": "2026-07-05T12:06:58.947897+00:00"
+      "sha256": "c6a3afb8350ee8cafcb45f576998bd99e0b3114a5e69c24750857ab3d3930b8f",
+      "size_bytes": 4880,
+      "modified_at": "2026-07-05T13:00:47.405921+00:00"
     },
     {
       "path": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh/implement.md",
@@ -65,21 +50,21 @@
   "checked_specs": [
     {
       "path": ".trellis/spec/workflow/workflow-contract.md",
-      "sha256": "d958617c767de8e146fc576d501e04ac5302268c999d284fe7a7165c094737e1",
-      "size_bytes": 11653,
-      "modified_at": "2026-07-05T12:05:52.206294+00:00"
+      "sha256": "23f80fc79f637adaf7544e76afa8dd1d28133038f4e655de33bb07153a534c2c",
+      "size_bytes": 11785,
+      "modified_at": "2026-07-05T13:00:47.404021+00:00"
     },
     {
       "path": ".trellis/spec/workflow/companion-scripts.md",
-      "sha256": "8a9cfa8581e00af6dd8f112ebfda9d487e20be17a756b5005b0b2d5a35b43865",
-      "size_bytes": 9617,
-      "modified_at": "2026-07-05T12:05:52.206612+00:00"
+      "sha256": "e839415e1a392f047cb85f14111bba3ce50f0ac7a669ed9e46d15db8fce812b7",
+      "size_bytes": 9714,
+      "modified_at": "2026-07-05T13:00:47.404441+00:00"
     },
     {
       "path": ".trellis/spec/workflow/data-contracts.md",
-      "sha256": "2672d8a37e4adc58653643c87f438803c30df570bd76dc676c117f79506064c6",
-      "size_bytes": 11816,
-      "modified_at": "2026-07-05T12:05:52.206889+00:00"
+      "sha256": "682b39010adca334c2f4ccdd4f3c465be36818a997ee524ce128ee347ad75333",
+      "size_bytes": 11950,
+      "modified_at": "2026-07-05T13:00:47.404994+00:00"
     },
     {
       "path": ".trellis/spec/workflow/quality-guidelines.md",
@@ -92,18 +77,6 @@
       "sha256": "7e69b18add87b983c311360d5edbead38e9962213066f9b87e1db1f8da23e17e",
       "size_bytes": 4637,
       "modified_at": "2026-07-05T12:05:52.207295+00:00"
-    },
-    {
-      "path": ".trellis/spec/preset/installer.md",
-      "sha256": "efa7df0c75d57a2a25f1cec6e61e3fb298fe4c9b24f5339494a014aaacba894a",
-      "size_bytes": 7803,
-      "modified_at": "2026-07-05T10:30:09.121880+00:00"
-    },
-    {
-      "path": ".trellis/spec/docs/public-docs.md",
-      "sha256": "35891233237b0cb4be3d2009eac25b0a5bde359fd02098ce63e261d7854b836a",
-      "size_bytes": 3482,
-      "modified_at": "2026-07-05T10:30:09.120894+00:00"
     }
   ],
   "coverage": {
@@ -118,8 +91,8 @@
   },
   "validation_commands": [
     {
-      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "result": "115 tests passed"
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "101 tests OK"
     },
     {
       "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
@@ -130,19 +103,19 @@
       "result": "passed"
     },
     {
-      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms",
-      "result": "replaced continue overlays, no .new/.bak"
-    },
-    {
-      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
-      "result": "Dogfood overlay copies match canonical Guru Team overlays"
+      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json && python3 -m json.tool .trellis/guru-team/extension.json",
+      "result": "passed"
     },
     {
       "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 3.5",
-      "result": "parsed Branch Review Gate step"
+      "result": "parsed Branch Review Gate"
     },
     {
-      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json && python3 -m json.tool .trellis/guru-team/extension.json",
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms",
+      "result": "passed, no .new/.bak"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
       "result": "passed"
     },
     {

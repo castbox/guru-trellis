@@ -1874,6 +1874,8 @@ def validate_agent_assignment_payload(
     if not isinstance(rounds, list):
         errors.append("agent-assignment.json review_rounds 必须是数组。")
     else:
+        seen_round_numbers: set[int] = set()
+        previous_round_number = 0
         for index, item in enumerate(rounds):
             if not isinstance(item, dict):
                 errors.append(f"agent-assignment.json review_rounds[{index}] 必须是对象。")
@@ -1881,8 +1883,19 @@ def validate_agent_assignment_payload(
             role = str(item.get("logical_role") or "").strip()
             if role not in ALLOWED_LOGICAL_ROLES:
                 errors.append(f"agent-assignment.json review_rounds[{index}].logical_role 非法: {role or '(missing)'}。")
-            if not isinstance(item.get("round"), int) or item["round"] <= 0:
+            round_value = item.get("round")
+            if not isinstance(round_value, int) or isinstance(round_value, bool) or round_value <= 0:
                 errors.append(f"agent-assignment.json review_rounds[{index}].round 必须是正整数。")
+            else:
+                if round_value in seen_round_numbers:
+                    errors.append(f"agent-assignment.json review_rounds[{index}].round {round_value} 重复；review_rounds[].round 必须唯一。")
+                if round_value <= previous_round_number:
+                    errors.append(
+                        f"agent-assignment.json review_rounds[{index}].round {round_value} 必须按记录顺序严格递增，"
+                        f"上一轮是 {previous_round_number}。"
+                    )
+                seen_round_numbers.add(round_value)
+                previous_round_number = round_value
             if not isinstance(item.get("findings_count"), int) or item["findings_count"] < 0:
                 errors.append(f"agent-assignment.json review_rounds[{index}].findings_count 必须是非负整数。")
             if str(item.get("reuse_decision") or "").strip() not in ALLOWED_REUSE_DECISIONS:
@@ -1959,15 +1972,33 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
     rounds = payload.get("review_rounds")
     if not isinstance(rounds, list) or not rounds:
         return ["Branch Review Gate pass 需要 agent-assignment.json 记录最终放行审查轮次。"]
+    errors: list[str] = []
+    seen_round_numbers: set[int] = set()
+    previous_round_number = 0
+    for index, item in enumerate(rounds):
+        if not isinstance(item, dict):
+            continue
+        value = item.get("round")
+        if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+            continue
+        if value in seen_round_numbers:
+            errors.append(f"review_rounds[{index}].round {value} 重复；无法证明最终放行审查代理是唯一最后一轮。")
+        if value <= previous_round_number:
+            errors.append(
+                f"review_rounds[{index}].round {value} 未按记录顺序严格递增；"
+                f"无法证明最终放行审查代理是最后一轮。"
+            )
+        seen_round_numbers.add(value)
+        previous_round_number = value
     final_rounds = [
         item
         for item in rounds
         if isinstance(item, dict) and str(item.get("logical_role") or "").strip() == "最终放行审查代理"
     ]
     if not final_rounds:
-        return ["Branch Review Gate pass 需要 logical_role=最终放行审查代理 的 review_rounds[] 记录。"]
+        errors.append("Branch Review Gate pass 需要 logical_role=最终放行审查代理 的 review_rounds[] 记录。")
+        return errors
     final_round = max(final_rounds, key=review_round_number)
-    errors: list[str] = []
     current = expected_head or current_head(root)
     final_round_number = review_round_number(final_round)
     final_agent = str(final_round.get("agent_id") or "").strip()

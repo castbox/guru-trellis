@@ -157,6 +157,8 @@ Passing the gate requires:
   another task artifact
 - `--agent-assignment` must point to the task-local `agent-assignment.json` so
   the gate records its digest and Chinese logical-role summary
+- `review_rounds[].round` values must be unique and strictly increasing in
+  recorded order, so the final pass round is unambiguous
 - every review round with `findings_count > 0` must have a later same-agent
   `问题闭环审查代理` round on the reviewed code HEAD with `findings_count: 0` and
   `reuse_decision: reuse-for-closure` before any fresh final round can pass
