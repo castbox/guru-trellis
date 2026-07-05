@@ -155,13 +155,14 @@ Passing the gate requires:
   `*-main-session` and `self-review` identities are rejected for passed gates
 - `--review-report` must point to the task-local file named `review.md`, not
   another task artifact
-- when sub-agents were dispatched or reviewer reuse/replacement was decided,
-  `--agent-assignment` should point to the task-local `agent-assignment.json`
-  so the gate records its digest and Chinese logical-role summary
-- when `--agent-assignment` is present, the final `最终放行审查代理` review
-  round must be fresh: current `reviewed_head`, `findings_count: 0`,
-  `reuse_decision: new-agent`, and a technical `agent_id` that did not own an
-  earlier finding round
+- `--agent-assignment` must point to the task-local `agent-assignment.json` so
+  the gate records its digest and Chinese logical-role summary
+- every review round with `findings_count > 0` must have a later same-agent
+  `问题闭环审查代理` round on the reviewed code HEAD with `findings_count: 0` and
+  `reuse_decision: reuse-for-closure` before any fresh final round can pass
+- the final `最终放行审查代理` review round must be fresh and last: reviewed code
+  HEAD, `findings_count: 0`, `reuse_decision: new-agent`, and a technical
+  `agent_id` that did not own any earlier finding round
 - deployment impact evidence, even when the conclusion is that no deployment
   asset needs a change
 - no findings of any priority

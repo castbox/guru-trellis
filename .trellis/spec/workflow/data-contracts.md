@@ -133,8 +133,8 @@ non-metadata dirty path, makes the artifact stale.
 
 ## Agent Assignment Artifact
 
-`agent-assignment.json` is optional for older tasks and expected for new
-sub-agent-dispatch Guru Team tasks. It records the AI/human assignment decisions
+`agent-assignment.json` is required for Branch Review Gate pass and expected for
+new sub-agent-dispatch Guru Team tasks. It records the AI/human assignment decisions
 that already happened in the workflow:
 
 - `schema_version`, current task path, and current `HEAD`
@@ -164,11 +164,15 @@ and file digest metadata. It must not decide which sub-agent should be used,
 whether reviewer reuse is semantically acceptable, or whether a final release
 review is sufficient.
 
-For Branch Review Gate, a review agent that recorded findings may be reused
-only as `问题闭环审查代理` for fix confirmation. The final passing review round
-must be `最终放行审查代理`, use a fresh technical `agent_id` that did not own an
-earlier finding round, set `findings_count` to 0, set `reuse_decision` to
-`new-agent`, and record the current `HEAD` in `reviewed_head`.
+For Branch Review Gate, any review agent that recorded findings may be reused
+only as `问题闭环审查代理` for fix confirmation. This includes a previous
+`最终放行审查代理` round that found a new issue. Every finding owner must have a
+later same-agent closure round on the reviewed code HEAD with `findings_count:
+0` and `reuse_decision: reuse-for-closure` before a passing gate can be
+recorded. The final passing review round must be the last
+`最终放行审查代理`, use a fresh technical `agent_id` that did not own an earlier
+finding round, set `findings_count` to 0, set `reuse_decision` to `new-agent`,
+and record the reviewed code `HEAD` in `reviewed_head`.
 
 Because `最终放行审查代理` is assigned after the task work commit,
 `agent-assignment.json` is the only Phase 2 checked artifact that may receive a
@@ -220,8 +224,8 @@ The artifact records:
 - follow-up candidates
 - Issue Scope Ledger coverage
 - validation evidence
-- optional `agent_assignment` digest summary when `review-branch.sh` receives a
-  task-local `agent-assignment.json`
+- required `agent_assignment` digest summary from task-local
+  `agent-assignment.json`
 
 The gate is valid only for the reviewed `HEAD`, except that `finish-work` may
 allow metadata-only commits after the gate. A passed gate is invalid if it lacks

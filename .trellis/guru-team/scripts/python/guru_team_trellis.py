@@ -1946,7 +1946,16 @@ def summarize_agent_assignment(root: Path, task_dir: Path, path: Path, payload: 
     }
 
 
-def final_review_round_errors(root: Path, payload: dict[str, Any]) -> list[str]:
+def review_round_number(item: dict[str, Any]) -> int:
+    value = item.get("round")
+    if isinstance(value, bool):
+        return 0
+    if isinstance(value, int):
+        return value
+    return 0
+
+
+def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head: str | None = None) -> list[str]:
     rounds = payload.get("review_rounds")
     if not isinstance(rounds, list) or not rounds:
         return ["Branch Review Gate pass 需要 agent-assignment.json 记录最终放行审查轮次。"]
@@ -1957,11 +1966,19 @@ def final_review_round_errors(root: Path, payload: dict[str, Any]) -> list[str]:
     ]
     if not final_rounds:
         return ["Branch Review Gate pass 需要 logical_role=最终放行审查代理 的 review_rounds[] 记录。"]
-    final_round = max(final_rounds, key=lambda item: int(item.get("round") or 0))
+    final_round = max(final_rounds, key=review_round_number)
     errors: list[str] = []
-    current = current_head(root)
+    current = expected_head or current_head(root)
+    final_round_number = review_round_number(final_round)
     final_agent = str(final_round.get("agent_id") or "").strip()
     reviewed_head = str(final_round.get("reviewed_head") or "").strip()
+    later_rounds = [
+        str(item.get("round") or index)
+        for index, item in enumerate(rounds)
+        if isinstance(item, dict) and review_round_number(item) > final_round_number
+    ]
+    if later_rounds:
+        errors.append("最终放行审查代理必须是最后一轮 review_rounds[]；后续轮次: " + ", ".join(later_rounds) + "。")
     if reviewed_head != current:
         errors.append(f"最终放行审查代理 reviewed_head {reviewed_head or '(missing)'} 与当前 HEAD {current} 不一致。")
     if final_round.get("findings_count") != 0:
@@ -1979,6 +1996,50 @@ def final_review_round_errors(root: Path, payload: dict[str, Any]) -> list[str]:
         and item["findings_count"] > 0
         and str(item.get("agent_id") or "").strip()
     }
+    missing_finding_owner_agent_rounds = [
+        str(item.get("round") or index)
+        for index, item in enumerate(rounds)
+        if isinstance(item, dict)
+        and item is not final_round
+        and isinstance(item.get("findings_count"), int)
+        and item["findings_count"] > 0
+        and not str(item.get("agent_id") or "").strip()
+    ]
+    if missing_finding_owner_agent_rounds:
+        errors.append(
+            "发现过 finding 的 review_rounds[] 必须记录 agent_id，无法证明最终放行审查代理 fresh；缺失轮次: "
+            + ", ".join(missing_finding_owner_agent_rounds)
+            + "。"
+        )
+    finding_rounds = [
+        item
+        for item in rounds
+        if isinstance(item, dict)
+        and item is not final_round
+        and isinstance(item.get("findings_count"), int)
+        and item["findings_count"] > 0
+        and str(item.get("agent_id") or "").strip()
+    ]
+    for finding_round in finding_rounds:
+        finding_agent = str(finding_round.get("agent_id") or "").strip()
+        finding_round_number = review_round_number(finding_round)
+        closure_candidates = [
+            item
+            for item in rounds
+            if isinstance(item, dict)
+            and review_round_number(item) > finding_round_number
+            and review_round_number(item) < final_round_number
+            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+            and str(item.get("agent_id") or "").strip() == finding_agent
+            and item.get("findings_count") == 0
+            and str(item.get("reviewed_head") or "").strip() == current
+            and str(item.get("reuse_decision") or "").strip() == "reuse-for-closure"
+        ]
+        if not closure_candidates:
+            errors.append(
+                "发现过 finding 的 review agent 必须先以问题闭环审查代理复审当前 HEAD 并给出 0 findings，"
+                f"然后才能启动新的最终放行审查代理；缺少闭环轮次: round {finding_round.get('round') or finding_round_number} agent {finding_agent}。"
+            )
     if final_agent and final_agent in finding_owner_agents:
         errors.append("发现过 finding 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
     return errors
@@ -2056,9 +2117,10 @@ def valid_agent_assignment_summary_fields(
     root: Path,
     task_dir: Path,
     agent_assignment: Any,
+    expected_head: str | None = None,
 ) -> list[str]:
     if not isinstance(agent_assignment, dict) or not agent_assignment:
-        return []
+        return ["Branch Review Gate 缺少 agent_assignment；passed gate 必须记录 fresh 最终放行审查代理的 agent-assignment.json digest。"]
     errors: list[str] = []
     errors.extend(digest_errors(root, agent_assignment, "Branch Review Gate agent_assignment"))
     path_value = str(agent_assignment.get("path") or "").strip()
@@ -2078,6 +2140,7 @@ def valid_agent_assignment_summary_fields(
         errors.append(str(exc))
         return errors
     errors.extend(validate_agent_assignment_payload(root, task_dir, payload, require_current_head=False))
+    errors.extend(final_review_round_errors(root, payload, expected_head=expected_head))
     roles = agent_assignment.get("roles")
     if not isinstance(roles, list) or not roles:
         errors.append("Branch Review Gate agent_assignment 缺少 roles 摘要。")
@@ -2512,9 +2575,9 @@ def validate_review_gate(
     errors.extend(independent_review_source_errors(review_source, reviewer))
     review_report = verification.get("review_report") if isinstance(verification.get("review_report"), dict) else None
     errors.extend(valid_review_report_fields(review_report))
-    agent_assignment = verification.get("agent_assignment")
-    errors.extend(valid_agent_assignment_summary_fields(root, task_dir, agent_assignment))
     reviewed_head = str(gate.get("head") or "")
+    agent_assignment = verification.get("agent_assignment")
+    errors.extend(valid_agent_assignment_summary_fields(root, task_dir, agent_assignment, expected_head=reviewed_head))
     head = current_head(root)
     gate_config = review_gate_config(config)
     require_head_match = bool(gate_config.get("require_head_match", True))
@@ -3197,6 +3260,12 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         raise WorkflowError(
             "Branch Review Gate needs --review-report pointing to the task-local review.md from the prior AI/human review. "
             "--reviewer is identity metadata only and cannot satisfy passed gate evidence.",
+            exit_code=2,
+        )
+    if args.pass_gate and not getattr(args, "agent_assignment", None):
+        raise WorkflowError(
+            "Branch Review Gate pass needs --agent-assignment pointing to task-local agent-assignment.json "
+            "so the fresh 最终放行审查代理 round can be validated.",
             exit_code=2,
         )
     agent_assignment_summary: dict[str, Any] | None = None
@@ -3882,7 +3951,7 @@ def build_parser() -> argparse.ArgumentParser:
     review.add_argument("--reviewer", help="Reviewer name or AI/human review channel.")
     review.add_argument("--review-source", help="Review source metadata. Passing gate requires independent-agent.")
     review.add_argument("--review-report", help="Path to the prior AI/human review report recorded before gate artifact creation.")
-    review.add_argument("--agent-assignment", help="Optional task-local agent-assignment.json to digest into review-gate verification evidence.")
+    review.add_argument("--agent-assignment", help="Task-local agent-assignment.json. Required with --pass to validate closure-before-final and fresh final reviewer evidence.")
     review.add_argument("--finding", action="append", help="Finding as PRIORITY|message[|path].")
     review.add_argument("--findings-file", help="JSON list or object with findings[].")
     review.add_argument("--observation", action="append", help="Non-blocking observation as message[|path].")

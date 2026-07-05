@@ -44,7 +44,10 @@ Continue entries must:
 - state that any finding priority blocks Branch Review Gate, while
   `observation` and `followup_candidate` are separate non-blocking records
 - state that a review agent with findings may only perform closure review and
-  the passing gate needs a fresh `最终放行审查代理`
+  must do that same-agent closure review before the passing gate can use a fresh
+  `最终放行审查代理`
+- state that passing Branch Review Gate requires task-local
+  `--agent-assignment`
 - state that main-session self-review cannot pass Branch Review Gate; if
   independent Agent review is unavailable, continue must stop with the gate
   pending

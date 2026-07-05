@@ -96,7 +96,7 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 | AI review prompt | workflow / overlay 文案 | Branch Review Gate 前必须先审查 `origin/<base>...HEAD` 完整 diff。 |
 | Review report 必填 | `review.md` | AI/human review 判断的主证据，必须 task-local。 |
 | Finding 全阻断 | workflow、`review-branch.sh`、`review-gate.json` | Branch Review Gate 中任意 finding 都阻断，包括 P3；`observation` 与 `followup_candidate` 可记录但不是放行 finding 的替代品。 |
-| Fresh 最终放行审查 | `agent-assignment.json`、`review-branch --agent-assignment` | 发现过 findings 的 agent 只能做问题闭环确认；最终 pass 必须由 fresh `最终放行审查代理` 完整审查当前 HEAD diff 并记录 0 findings。 |
+| 闭环后 Fresh 最终放行审查 | `agent-assignment.json`、`review-branch --agent-assignment` | 任何发现过 findings 的 agent 必须先作为同一 `问题闭环审查代理` 在当前 reviewed HEAD 复审到 0 findings；之后最终 pass 必须由新的 fresh `最终放行审查代理` 完整审查当前 HEAD diff 并记录 0 findings。 |
 | Review gate recorder | `review-branch.sh`、`check-review-gate.sh`、`review-gate.json` | 固化 review result、review report digest、base/head、evidence、findings、observations、follow-up candidates；脚本不是 reviewer。 |
 | Independent review source | `--review-source independent-agent` | 通过 gate 不能来自 `self-review` 或 `*-main-session`。 |
 | Sub-agent assignment ledger | `agent-assignment.json`、`record-agent-assignment.sh`、`check-agent-assignment.sh`、`review-branch --agent-assignment` | 记录中文 `logical_role`、技术 `agent_id`、展示用 `platform_nickname`、HEAD、review round 和复用/更换判断；脚本只做客观校验，不决定复用。UI 展示面优先使用中文 subagent 名称，平台只给随机/自动昵称时记录原始值。 |

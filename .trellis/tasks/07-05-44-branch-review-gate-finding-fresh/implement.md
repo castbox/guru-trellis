@@ -5,14 +5,15 @@
 1. 更新 `guru_team_trellis.py`
    - 将 Branch Review Gate blocker 改为任意 finding。
    - 新增 observation / followup candidate 解析与 payload 字段。
-   - 新增 fresh final reviewer 客观校验。
+   - 新增 closure-before-final 与 fresh final reviewer 客观校验。
    - 更新错误文案中 “P0/P1/P2” 的 Branch Review Gate 语义。
 2. 更新 `test_guru_team_trellis.py`
    - 覆盖 P3 / 任意 finding 阻断 pass。
    - 覆盖 observation 不阻断。
    - 覆盖 followup candidate 不阻断。
-   - 覆盖 finding owner 的 closure review 不能作为最终放行。
+   - 覆盖缺少 finding owner closure review 阻断。
    - 覆盖 fresh final reviewer 0 findings 可放行。
+   - 覆盖缺少 `--agent-assignment` 阻断。
    - 覆盖 final review round reviewed HEAD stale 阻断。
 3. 更新 workflow 与 overlay 文案
    - canonical workflow 与 dogfood `.trellis/workflow.md`。
@@ -46,7 +47,7 @@
 
 ## Branch Review Gate 计划
 
-提交 task work 后，调度 fresh `最终放行审查代理` 审查完整 `origin/main...HEAD` diff。若发现 finding，该 agent 后续只可做闭环确认；修复后再调度新的 fresh final reviewer。
+提交 task work 后，如果上一轮 reviewer 已发现 findings，先把当前 HEAD 交回该 reviewer 作为 `问题闭环审查代理` 复审到 0 findings；随后再调度新的 fresh `最终放行审查代理` 审查完整 `origin/main...HEAD` diff。若新的 fresh final reviewer 又发现 finding，该 agent 也先作为闭环代理复审到 0，再调度另一位新的 fresh final reviewer。
 
 ## 未计划执行
 

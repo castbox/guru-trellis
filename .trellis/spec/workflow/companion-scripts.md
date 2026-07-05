@@ -136,20 +136,23 @@ current file before passing the gate. Any uncovered non-metadata committed path
 or current non-metadata dirty path must block the gate instead of encouraging a
 post-commit Phase 2 re-record.
 
-When `review-branch.sh` receives `--agent-assignment <task-local
-agent-assignment.json>`, it validates that artifact and records its digest,
+`review-branch.sh --pass` must receive `--agent-assignment <task-local
+agent-assignment.json>`. It validates that artifact and records its digest,
 roles, assignment count, review round count, and reuse decision count under
 `review-gate.json.verification_evidence.agent_assignment`. Missing assignment
-evidence remains backward-compatible for older tasks, but new sub-agent flows
-should record it before Branch Review Gate.
+evidence blocks a passed gate because the recorder cannot verify closure-before-
+final or fresh final reviewer metadata.
 
-When a review round has findings, the same technical `agent_id` may later be
-recorded only as `问题闭环审查代理` to confirm the fix. A passing gate with
-`--agent-assignment` must validate a fresh `最终放行审查代理` review round:
-`reviewed_head` equals current HEAD, `findings_count` is 0,
-`reuse_decision` is `new-agent`, and the final reviewer did not own any earlier
-finding round. This is an objective metadata check only; the AI/human review
-still owns the judgment that the review covered the full diff.
+When a review round has findings, including a previous final-review round that
+found a new issue, the same technical `agent_id` must later be recorded only as
+`问题闭环审查代理` to confirm the fix on the reviewed code HEAD. A passing gate
+must validate that every finding owner has such a later closure round with
+`findings_count: 0` and `reuse_decision: reuse-for-closure`, and then validate a
+fresh `最终放行审查代理` review round: it is the last round, `reviewed_head`
+equals the reviewed code HEAD, `findings_count` is 0, `reuse_decision` is
+`new-agent`, and the final reviewer did not own any earlier finding round. This
+is an objective metadata check only; the AI/human review still owns the
+judgment that the review covered the full diff.
 
 `review-branch.sh` may record non-blocking `observations[]` and
 `followup_candidates[]` in `review-gate.json`. They are not findings and do not

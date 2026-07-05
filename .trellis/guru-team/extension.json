@@ -58,11 +58,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-05T10:48:07Z",
+  "installed_at": "2026-07-05T12:08:37Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/44-branch-review-gate-finding-fresh",
-    "commit": "67df7ff0cefbfa0dbdb6db7b213f8b34b56e5841",
+    "commit": "41092b4994b08b09069c3e60952c0112d9d38f90",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -117,9 +117,7 @@
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"
     ],
     "new_copies": [],
-    "managed_backups": [
-      ".trellis/guru-team/scripts/python/guru_team_trellis.py.bak"
-    ],
+    "managed_backups": [],
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
   },

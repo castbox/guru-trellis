@@ -4,7 +4,7 @@
 
 本任务保留现有 Guru Team 架构边界：Markdown workflow 决定 AI 流程与判断，`guru_team_trellis.py` 只作为 companion recorder / validator。实现分三层：
 
-1. **Workflow 合同层**：把 Branch Review Gate 改为任何 finding 阻断；明确 `finding`、`observation`、`followup_candidate` 的语义；要求 finding owner 只能做闭环确认，最终放行必须来自 fresh `最终放行审查代理`。
+1. **Workflow 合同层**：把 Branch Review Gate 改为任何 finding 阻断；明确 `finding`、`observation`、`followup_candidate` 的语义；要求 finding owner 必须先做同 agent 闭环确认到 0 findings，最终放行必须来自之后启动的 fresh `最终放行审查代理`。
 2. **Artifact / CLI 层**：`review-branch` 支持记录 observations 和 followup candidates；`review-gate.json` 记录三类条目与计数；passing path 校验任意 finding、final review round、current HEAD 和 fresh reviewer 客观字段。
 3. **安装/运行副本层**：canonical workflow、preset overlay、dogfood installed copies、spec 和 durable docs 同步，避免安装新仓库或 dogfood 仓库读取旧语义。
 
@@ -19,15 +19,15 @@
 - `conclusion.findings_count`: 新增任意 finding 数量。
 - `conclusion.observations_count`: 新增 observation 数量。
 - `conclusion.followup_candidates_count`: 新增 followup candidate 数量。
-- `verification_evidence.agent_assignment`: 继续记录 digest 和 review round summary；当 `--pass` 且提供该 artifact 时，脚本校验 fresh final reviewer 客观条件。
+- `verification_evidence.agent_assignment`: 继续记录 digest 和 review round summary；`--pass` 必须提供该 artifact，脚本校验 closure-before-final 和 fresh final reviewer 客观条件。
 
 `agent-assignment.json` 暂不升级 schema，复用现有 `review_rounds[]` 字段：
 
-- `logical_role`: `最终放行审查代理` 表示最终放行 round。
+- `logical_role`: `问题闭环审查代理` 表示 finding owner 闭环确认 round，`最终放行审查代理` 表示最终放行 round。
 - `reviewed_head`: 必须等于当前 HEAD。
-- `findings_count`: 最终放行必须为 0。
+- `findings_count`: 闭环和最终放行必须为 0。
 - `agent_id`: 最终 agent 不能出现在 earlier finding rounds 中。
-- `reuse_decision`: 最终放行使用 `new-agent`，不接受 `reuse` / `reuse-for-closure`。
+- `reuse_decision`: 闭环使用 `reuse-for-closure`，最终放行使用 `new-agent`，不接受 `reuse`。
 
 ## CLI 设计
 
@@ -49,8 +49,7 @@ Passing 校验：
 
 - `args.pass_gate and findings` 直接失败，错误文案使用“any findings”。
 - `not args.pass_gate and not findings` 仍要求显式 result；observation/followup candidate 不是 failed gate 的替代结果。
-- 传入 `--agent-assignment` 且 `--pass` 时，校验最新/最高 round 的 `最终放行审查代理` 满足 fresh final reviewer 条件。
-- 不传 `--agent-assignment` 的旧任务仍保持兼容，但 workflow 与 overlay 要求新 sub-agent flows 必须传。
+- `--pass` 必须传入 `--agent-assignment`，校验每个 finding owner 都先完成同 agent 闭环 round，再校验最新/最高 round 的 `最终放行审查代理` 满足 fresh final reviewer 条件。
 
 ## Workflow 与平台同步
 
