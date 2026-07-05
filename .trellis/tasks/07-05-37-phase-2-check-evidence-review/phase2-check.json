@@ -1,35 +1,13 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-05T07:20:26Z",
+  "generated_at": "2026-07-05T07:23:32Z",
   "task_dir": ".trellis/tasks/07-05-37-phase-2-check-evidence-review",
   "base_branch": "main",
-  "head": "93be70b768ac331b673870529e560b4d0257692c",
+  "head": "042a782b15a211c95680846fd84838a27b0024a3",
   "diff_range": "origin/main...HEAD",
-  "dirty_paths": [
-    ".agents/skills/trellis-continue/SKILL.md",
-    ".codex/prompts/trellis-continue.md",
-    ".codex/skills/trellis-continue/SKILL.md",
-    ".cursor/commands/trellis-continue.md",
-    ".trellis/guru-team/handoff.json",
-    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    ".trellis/spec/workflow/companion-scripts.md",
-    ".trellis/spec/workflow/data-contracts.md",
-    ".trellis/spec/workflow/workflow-contract.md",
-    ".trellis/workflow.md",
-    "docs/requirements/requirement-main.md",
-    "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
-    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
-    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
-    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
-    "trellis/workflows/guru-team/README.md",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    "trellis/workflows/guru-team/workflow.md",
-    ".trellis/tasks/07-05-37-phase-2-check-evidence-review/"
-  ],
+  "dirty_paths": [],
   "checker": "codex-main-session",
-  "check_summary": "已按 issue #37 全范围完成 trellis-check：需求、设计、代码、测试、spec 同步、跨 artifact 一致性、Docs SSOT 与部署影响均已覆盖；未发现 P0/P1/P2 finding。",
+  "check_summary": "重录 task metadata tail 后的 Phase 2 check evidence：实现和验证范围未变，更新 planning-approval digest 后重新记录完整 check 覆盖；未发现 P0/P1/P2 finding。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/prd.md",
@@ -51,9 +29,9 @@
     },
     {
       "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/planning-approval.json",
-      "sha256": "6994f18e57a30e6de39851712fb6f83edce4881251fe58a889ae6b636702724d",
-      "size_bytes": 1913,
-      "modified_at": "2026-07-05T07:05:45.121800+00:00"
+      "sha256": "118615a7e05f1f85cb58e5c3414c166b08a6f509f7066fd6e3e93f7c64f81001",
+      "size_bytes": 1712,
+      "modified_at": "2026-07-05T07:22:58.831450+00:00"
     }
   ],
   "checked_specs": [
