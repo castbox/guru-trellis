@@ -1,0 +1,30 @@
+{
+  "primary_issue": {
+    "number": 43,
+    "url": "https://github.com/castbox/guru-trellis/issues/43",
+    "title": "规范 Trellis subagent 中文逻辑角色与复用记录",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "实现引入 task-local agent-assignment.json，记录中文 logical_role、agent_id、platform_nickname、HEAD/digest、review_rounds 与 reuse_decisions。",
+      "review-branch 已接入 --agent-assignment digest，Branch Review Gate 固化 assignment ledger 摘要并覆盖 close issue #43。",
+      "Codex/Cursor/Claude/.trellis agents canonical overlay 与 dogfood 副本均同步中文 UI 展示描述；Codex nickname_candidates 的 ASCII 限制已在文档中说明。",
+      "验证通过：80 个 workflow helper tests、18 个 preset installer tests、task validate、phase context、check-agent-assignment、check-dogfood-overlay-drift 和 git diff --check。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 43,
+      "url": "https://github.com/castbox/guru-trellis/issues/43",
+      "title": "规范 Trellis subagent 中文逻辑角色与复用记录",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "实现引入 task-local agent-assignment.json，记录中文 logical_role、agent_id、platform_nickname、HEAD/digest、review_rounds 与 reuse_decisions。",
+        "review-branch 已接入 --agent-assignment digest，Branch Review Gate 固化 assignment ledger 摘要并覆盖 close issue #43。",
+        "Codex/Cursor/Claude/.trellis agents canonical overlay 与 dogfood 副本均同步中文 UI 展示描述；Codex nickname_candidates 的 ASCII 限制已在文档中说明。",
+        "验证通过：80 个 workflow helper tests、18 个 preset installer tests、task validate、phase context、check-agent-assignment、check-dogfood-overlay-drift 和 git diff --check。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}
