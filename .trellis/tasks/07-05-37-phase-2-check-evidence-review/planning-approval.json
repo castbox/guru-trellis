@@ -1,14 +1,14 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-05T07:22:58Z",
+  "generated_at": "2026-07-05T07:35:48Z",
   "task_dir": ".trellis/tasks/07-05-37-phase-2-check-evidence-review",
-  "head": "042a782b15a211c95680846fd84838a27b0024a3",
+  "head": "5f43612ddd6480552a49c13a1cc7947b8dd3605c",
   "dirty_paths": [],
   "reviewer": "codex-main-session",
-  "approval_summary": "规划 artifact 已在实现后补充验证结果和 Docs SSOT reconciliation；需求、设计和实现边界未改变，更新后的 prd/design/implement hash 已复核，可以继续完成提交后的 Branch Review Gate。",
+  "approval_summary": "独立 review 期间发现并修复 dirty_paths 目录覆盖边界，需求和设计目标不变；更新后的 task artifacts 已复核，可以继续 Branch Review Gate。",
   "user_confirmation": {
     "source": "workflow",
-    "message": "用户调用 -continue 要求推进 issue #37；本次重新记录仅修正 implement.md 补充验证结果后的 stale planning hash，不扩大实现范围。"
+    "message": "用户调用 -continue 要求推进 issue #37；本次重新记录仅修正当前 HEAD 的 metadata gate evidence。"
   },
   "approved_artifacts": [
     {

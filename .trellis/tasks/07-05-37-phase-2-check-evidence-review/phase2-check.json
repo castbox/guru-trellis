@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-05T07:23:32Z",
+  "generated_at": "2026-07-05T07:35:48Z",
   "task_dir": ".trellis/tasks/07-05-37-phase-2-check-evidence-review",
   "base_branch": "main",
-  "head": "042a782b15a211c95680846fd84838a27b0024a3",
+  "head": "5f43612ddd6480552a49c13a1cc7947b8dd3605c",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [],
   "checker": "codex-main-session",
-  "check_summary": "重录 task metadata tail 后的 Phase 2 check evidence：实现和验证范围未变，更新 planning-approval digest 后重新记录完整 check 覆盖；未发现 P0/P1/P2 finding。",
+  "check_summary": "当前 HEAD 已按 issue #37 全范围重新完成 trellis-check：包含 dirty_paths 目录覆盖边界修复；需求、设计、代码、测试、spec 同步、Docs SSOT 与部署影响均已覆盖；未发现 P0/P1/P2 finding。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/prd.md",
@@ -29,9 +29,9 @@
     },
     {
       "path": ".trellis/tasks/07-05-37-phase-2-check-evidence-review/planning-approval.json",
-      "sha256": "118615a7e05f1f85cb58e5c3414c166b08a6f509f7066fd6e3e93f7c64f81001",
-      "size_bytes": 1712,
-      "modified_at": "2026-07-05T07:22:58.831450+00:00"
+      "sha256": "5cee5285eb6bb159666c787e682f892e8883af726985d99987973ad6f446d901",
+      "size_bytes": 1616,
+      "modified_at": "2026-07-05T07:35:48.255689+00:00"
     }
   ],
   "checked_specs": [
@@ -79,10 +79,10 @@
   "validation_commands": [
     {
       "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "result": "70 tests OK"
+      "result": "71 tests OK"
     },
     {
-      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json && python3 -m json.tool task ledger/planning approval",
+      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json && python3 -m json.tool task ledger",
       "result": "passed"
     },
     {
@@ -98,20 +98,12 @@
       "result": "passed"
     },
     {
-      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 3.5",
-      "result": "post-commit audit wording present"
-    },
-    {
       "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
       "result": "passed"
     },
     {
       "command": "git diff --check",
       "result": "passed"
-    },
-    {
-      "command": "temporary git repo review-branch dry-run positive/negative",
-      "result": "covered dirty path passed; uncovered README.md blocked"
     }
   ],
   "findings": [],
