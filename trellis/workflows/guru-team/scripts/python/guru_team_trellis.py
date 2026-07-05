@@ -2481,6 +2481,28 @@ def validate_review_gate(
         errors.append("Branch Review Gate 结论不是 passed=true。")
     if not str(conclusion.get("summary") or "").strip():
         errors.append("Branch Review Gate 缺少中文 summary。")
+    findings_raw = gate.get("findings", [])
+    findings = findings_raw if isinstance(findings_raw, list) else []
+    if "findings" in gate and not isinstance(findings_raw, list):
+        errors.append("Branch Review Gate findings 必须是数组。")
+    if findings:
+        errors.append("Branch Review Gate passed=true 但 findings[] 非空；任意 finding 均阻断。")
+    for key in ["findings_count", "blocking_findings_count"]:
+        raw_count = conclusion.get(key)
+        if raw_count is None:
+            continue
+        if isinstance(raw_count, bool) or not isinstance(raw_count, int):
+            errors.append(f"Branch Review Gate conclusion.{key} 必须是整数。")
+            continue
+        if raw_count < 0:
+            errors.append(f"Branch Review Gate conclusion.{key} 不能为负数。")
+            continue
+        if raw_count > 0:
+            errors.append(f"Branch Review Gate passed=true 但 conclusion.{key}={raw_count}；任意 finding 均阻断。")
+        if raw_count != len(findings):
+            errors.append(
+                f"Branch Review Gate conclusion.{key}={raw_count} 与 findings[] 数量 {len(findings)} 不一致。"
+            )
     verification = gate.get("verification_evidence") if isinstance(gate.get("verification_evidence"), dict) else {}
     evidence = verification.get("evidence")
     if not (isinstance(evidence, list) and any(str(item).strip() for item in evidence)):

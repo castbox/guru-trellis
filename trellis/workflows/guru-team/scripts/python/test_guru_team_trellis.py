@@ -2234,6 +2234,60 @@ class ReviewGateReportTest(unittest.TestCase):
 
         self.assertTrue(any("review_source" in error for error in errors))
 
+    def test_validate_review_gate_rejects_passed_gate_with_findings(self) -> None:
+        self.write_gate(review_report=self.valid_report())
+        gate = gtt.read_json(self.task_dir / "review-gate.json")
+        gate["findings"] = [
+            {
+                "priority": "P3",
+                "message": "P3 也必须阻断。",
+                "path": "trellis/workflows/guru-team/workflow.md",
+            }
+        ]
+        gate["conclusion"]["findings_count"] = 1
+        gate["conclusion"]["blocking_findings_count"] = 1
+        (self.task_dir / "review-gate.json").write_text(
+            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        with mock.patch.object(gtt, "current_head", return_value="abc123"):
+            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
+
+        self.assertTrue(any("findings[] 非空" in error for error in errors))
+        self.assertTrue(any("findings_count=1" in error for error in errors))
+        self.assertTrue(any("blocking_findings_count=1" in error for error in errors))
+
+    def test_validate_review_gate_rejects_passed_gate_with_nonzero_finding_count(self) -> None:
+        self.write_gate(review_report=self.valid_report())
+        gate = gtt.read_json(self.task_dir / "review-gate.json")
+        gate["findings"] = []
+        gate["conclusion"]["findings_count"] = 1
+        gate["conclusion"]["blocking_findings_count"] = 0
+        (self.task_dir / "review-gate.json").write_text(
+            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        with mock.patch.object(gtt, "current_head", return_value="abc123"):
+            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
+
+        self.assertTrue(any("findings_count=1" in error for error in errors))
+        self.assertTrue(any("与 findings[] 数量 0 不一致" in error for error in errors))
+
+    def test_validate_review_gate_accepts_zero_finding_counts(self) -> None:
+        self.write_gate(review_report=self.valid_report())
+        gate = gtt.read_json(self.task_dir / "review-gate.json")
+        gate["findings"] = []
+        gate["conclusion"]["findings_count"] = 0
+        gate["conclusion"]["blocking_findings_count"] = 0
+        (self.task_dir / "review-gate.json").write_text(
+            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        with mock.patch.object(gtt, "current_head", return_value="abc123"):
+            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
+
+        self.assertEqual(errors, [])
+
     def test_validate_review_gate_rejects_main_session_reviewer(self) -> None:
         self.write_gate(review_report=self.valid_report())
         gate = gtt.read_json(self.task_dir / "review-gate.json")
