@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-06T05:36:40Z",
+  "updated_at": "2026-07-06T05:36:40Z",
+  "task": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr",
+  "head": "fb4a7b0275cbab3ca9f243c8cf2f850a9857c642",
+  "agents": [],
+  "review_rounds": [
+    {
+      "round": 1,
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f35ed-86fc-7a02-95cf-e6b268ef5aae",
+      "platform_nickname": "Review Agent",
+      "reviewed_head": "fb4a7b0275cbab3ca9f243c8cf2f850a9857c642",
+      "findings_count": 0,
+      "reuse_policy": "首次最终放行审查，必须使用 fresh new agent。",
+      "reuse_decision": "new-agent",
+      "recorded_at": "2026-07-06T05:36:40Z"
+    }
+  ],
+  "reuse_decisions": [],
+  "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用或更换；脚本只记录和校验客观字段、HEAD、digest 与枚举值。"
+}
