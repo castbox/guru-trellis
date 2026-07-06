@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-06T05:43:31Z",
-  "task_dir": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-06-40-workflow-state-completed-closeout-pr",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/40-workflow-state-completed-closeout-pr",
@@ -103,7 +103,7 @@
     }
   ],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-06-40-workflow-state-completed-closeout-pr/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 40,
@@ -127,13 +127,13 @@
     "reviewer": "019f35ed-86fc-7a02-95cf-e6b268ef5aae",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-06-40-workflow-state-completed-closeout-pr/review.md",
       "sha256": "daef1c1bf08cce3bf978c34a69937b5dc2564edf6f8bf517e825dcc7f0ac90c4",
       "size_bytes": 4366,
       "modified_at": "2026-07-06T05:43:09.421836+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-06-40-workflow-state-completed-closeout-pr/agent-assignment.json",
       "sha256": "d15cd80a6d5bc9a4c4ad94c2ed63a35558483d99cec179cdd137d4154d4ba415",
       "size_bytes": 940,
       "modified_at": "2026-07-06T05:36:40.180690+00:00",
@@ -145,7 +145,7 @@
       "agents_count": 0,
       "review_rounds_count": 1,
       "reuse_decisions_count": 0,
-      "task": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr",
+      "task": ".trellis/tasks/archive/2026-07/07-06-40-workflow-state-completed-closeout-pr",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "evidence": [
