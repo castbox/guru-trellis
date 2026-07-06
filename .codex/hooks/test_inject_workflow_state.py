@@ -50,6 +50,22 @@ class CodexModeBannerTest(unittest.TestCase):
         self.assertIn("Task creation consent is not current-checkout direct-edit consent", breadcrumb)
         self.assertIn("not bare `task.py create`", breadcrumb)
 
+    def test_completed_workflow_state_contains_closeout_readiness(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        templates = self.hook.load_breadcrumbs(root)
+        breadcrumb = self.hook.build_breadcrumb("example-task", "completed", templates)
+
+        self.assertIn("Task: example-task (completed)", breadcrumb)
+        self.assertIn("Fallback/legacy closeout breadcrumb", breadcrumb)
+        self.assertIn("review-gate.json", breadcrumb)
+        self.assertIn("Phase 3.5", breadcrumb)
+        self.assertIn("pr-body.md", breadcrumb)
+        self.assertIn("--body-file", breadcrumb)
+        self.assertIn("--body-artifact", breadcrumb)
+        self.assertIn("--dry-run", breadcrumb)
+        self.assertIn("metadata tail", breadcrumb)
+        self.assertIn("publish-pr", breadcrumb)
+
 
 class CodexSessionStartNoTaskTest(unittest.TestCase):
     @classmethod

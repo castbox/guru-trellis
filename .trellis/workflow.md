@@ -628,7 +628,14 @@ If implementation reveals a requirement defect, return to Phase 1 and update art
 - 3.7 Publish PR `[automatic after finish-work]`
 
 [workflow-state:completed]
-Code committed. Before `/trellis:finish-work`, confirm `review-gate.json` passed for the current HEAD. If missing or stale, run Branch Review Gate in Phase 3.5.
+Fallback/legacy closeout breadcrumb for an active task already marked `completed`; the normal path is `trellis-continue` stops after Branch Review Gate and the user/session explicitly invokes `/trellis:finish-work`.
+If `review-gate.json` is missing, failed, stale for the current HEAD, or reviewer-only, return to Phase 3.5 for independent review and the `review-branch` recorder.
+If the gate passed, create or review task-local PR readiness: `{TASK_DIR}/pr-body.md` via `--body-file "{TASK_DIR}/pr-body.md"` or a task-local `--body-artifact`.
+Run a dry-run first:
+`.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work --body-file "{TASK_DIR}/pr-body.md" --dry-run`
+Review the dry-run output, then run the same command without `--dry-run`.
+Finish-work accepts only Trellis metadata tail such as `review.md`, `review-gate.json`, `pr-body.md`, and `pr-readiness.json`; any non-metadata dirty path or non-metadata committed drift must go back to `trellis-continue` / Phase 2-3.
+Do not call `publish-pr` directly; normal publish is only through the explicit `trellis-finish-work` closeout after archive and journal.
 [/workflow-state:completed]
 
 #### 3.2 Debug retrospective `[on demand]`

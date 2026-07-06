@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-06T05:29:51Z",
+  "task_dir": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr",
+  "head": "7aedeba8d318208634e15549c609c92c218b9820",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已审查 issue #40、官方 Trellis custom-workflow 文档、当前主干 finish-work 规则和本 task 的 prd/design/implement。问题仍存在但方案已收窄为同步 completed workflow-state breadcrumb 与 hook 回归测试；不修改 companion script 执行语义，不新增 publish 入口。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户在 Phase 0 handoff 后回复“批准”，批准创建 worktree/task 并按所述方案更新 canonical workflow、dogfood workflow 与测试；本规划 artifact 与该方案一致。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/prd.md",
+      "sha256": "bf0ed92d058f934c1147f3cdd92120e09fb0e983ca3532e03f036176ac075136",
+      "size_bytes": 3556,
+      "modified_at": "2026-07-06T05:29:20.836059+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/design.md",
+      "sha256": "c5a2f36916db3e31c9b3d41b23ab0bbd38118c15fb47c8a8a3fe7a5984ff601c",
+      "size_bytes": 3318,
+      "modified_at": "2026-07-06T05:29:20.836307+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/implement.md",
+      "sha256": "77918629ba0c532e72d07db23b84f1187d240145787b79f31e301451f91bb052",
+      "size_bytes": 1970,
+      "modified_at": "2026-07-06T05:29:20.836481+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

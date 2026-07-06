@@ -1,21 +1,21 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 39,
-    "url": "https://github.com/castbox/guru-trellis/issues/39",
-    "title": "收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact",
+    "number": 40,
+    "url": "https://github.com/castbox/guru-trellis/issues/40",
+    "title": "扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/39-review-branch-findings-reviewer-only/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/40-workflow-state-completed-closeout-pr/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "review-branch-findings-reviewer-only",
-  "task_slug": "39-review-branch-findings-reviewer-only",
-  "task_title": "#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact",
-  "branch_name": "codex/39-review-branch-findings-reviewer-only",
+  "slug": "workflow-state-completed-closeout-pr",
+  "task_slug": "40-workflow-state-completed-closeout-pr",
+  "task_title": "#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail",
+  "branch_name": "codex/40-workflow-state-completed-closeout-pr",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/39-review-branch-findings-reviewer-only",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/40-workflow-state-completed-closeout-pr",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -26,30 +26,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact",
+    "#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail",
     "--slug",
-    "39-review-branch-findings-reviewer-only",
+    "40-workflow-state-completed-closeout-pr",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only",
+  "task_dir": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 39,
-      "url": "https://github.com/castbox/guru-trellis/issues/39",
-      "title": "收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact",
+      "number": 40,
+      "url": "https://github.com/castbox/guru-trellis/issues/40",
+      "title": "扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 39,
-        "url": "https://github.com/castbox/guru-trellis/issues/39",
-        "title": "收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact",
+        "number": 40,
+        "url": "https://github.com/castbox/guru-trellis/issues/40",
+        "title": "扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -64,7 +64,7 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           38b95b2 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           7aedeba [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
@@ -79,7 +79,8 @@
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/35-guru-team-no-task-intake                     105c981 [codex/35-guru-team-no-task-intake]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/37-phase-2-check-evidence-review                4c780db [codex/37-phase-2-check-evidence-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/38-trellis-finish-work-pr-body                  3aa05be [codex/38-trellis-finish-work-pr-body]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/39-review-branch-findings-reviewer-only         38b95b2 [codex/39-review-branch-findings-reviewer-only]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/39-review-branch-findings-reviewer-only         723ebd4 [codex/39-review-branch-findings-reviewer-only]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/40-workflow-state-completed-closeout-pr         7aedeba [codex/40-workflow-state-completed-closeout-pr]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/41-task-system-task-py-create                   e7770df [codex/41-task-system-task-py-create]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/43-trellis-subagent                             e7a4c3d [codex/43-trellis-subagent]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/44-branch-review-gate-finding-fresh             3bc50d1 [codex/44-branch-review-gate-finding-fresh]",
@@ -95,11 +96,11 @@
       "base_branch": "main",
       "base_ref": "main",
       "remote_ref": "origin/main",
-      "local_head_before": "d240626e4754d5f3dae2947e3e5b2de8739edc83",
-      "local_head_after": "38b95b215271d5e1a29d2142eb9af6094a510aeb",
-      "remote_head": "38b95b215271d5e1a29d2142eb9af6094a510aeb",
+      "local_head_before": "7aedeba8d318208634e15549c609c92c218b9820",
+      "local_head_after": "7aedeba8d318208634e15549c609c92c218b9820",
+      "remote_head": "7aedeba8d318208634e15549c609c92c218b9820",
       "fetch_performed": true,
-      "fast_forwarded": true,
+      "fast_forwarded": false,
       "fresh": true,
       "status": "fresh",
       "base_ref_for_worktree": "main"
@@ -108,7 +109,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/39-review-branch-findings-reviewer-only/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/40-workflow-state-completed-closeout-pr/.trellis/.developer",
       "developer": "wumengye"
     }
   }
