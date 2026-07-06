@@ -634,3 +634,36 @@ Branch Review Gate 通过：独立 Agent 已按 origin/main...HEAD 审查 issue 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 20: 完成 issue #41 Task System reference-only 提示
+
+**Date**: 2026-07-06
+**Task**: 完成 issue #41 Task System reference-only 提示
+**Branch**: `codex/41-task-system-task-py-create`
+
+### Summary
+
+在 Guru Team workflow 的 Task System 命令目录前补充 reference-only 与 Phase 0 prepare-first 说明，同步 dogfood workflow，并通过 Branch Review Gate。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0074a7b98cc348083b2a48b3ff33f88d108e175b` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
