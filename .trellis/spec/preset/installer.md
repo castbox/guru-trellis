@@ -36,8 +36,8 @@ record, not user configuration:
 - overwrite it with the current deterministic install facts instead of writing
   `.new`;
 - include extension id, SemVer version, workflow template id, source repo/ref,
-  source commit when available, source tree state, selected platforms, and
-  install timestamp;
+  target Trellis CLI, source commit when available, source tree state, selected
+  platforms, and install timestamp;
 - do not record tokens, GitHub auth details, `.env` contents, signed URLs, or
   unnecessary local-only source paths;
 - tolerate source directories that are Git archives or lack `git` by recording
@@ -48,10 +48,10 @@ or `version.sh --json`; scripts may record and validate objective facts, but
 must not decide whether an upgrade or rollback is semantically safe.
 
 Stable install and upgrade docs must pin workflow marketplace sources to the
-repo release tag that matches the canonical extension version, for example
-`gh:castbox/guru-trellis/trellis#v0.6.5`. Keep `trellis/index.json.version` as
-the marketplace index schema version; do not reuse it as the Guru Team
-extension release number. If validation samples unpinned
+repo release tag that combines the target official Trellis CLI version and Guru
+Team revision, for example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.1`.
+Keep `trellis/index.json.version` as the marketplace index schema version; do
+not reuse it as the Guru Team extension release number. If validation samples unpinned
 `gh:castbox/guru-trellis/trellis`, report it as latest/canary sampling rather
 than release-tag verification.
 

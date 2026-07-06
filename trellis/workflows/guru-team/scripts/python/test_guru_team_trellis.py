@@ -3585,9 +3585,11 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
             "schema_version": "1.0",
             "extension": {
                 "extension_id": "guru-team",
-                "version": "0.6.5",
+                "version": "0.6.5-guru.1",
                 "workflow_template_id": "guru-team",
-                "requires": {"trellis_cli": ">=0.6.0"},
+                "target_trellis_cli": "0.6.5",
+                "requires": {"trellis_cli": "0.6.5"},
+                "tested": {"trellis_cli": ["0.6.5"]},
             },
             "installed_at": "2026-07-04T00:00:00Z",
             "source": {
@@ -3613,8 +3615,11 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
         payload = gtt.guru_team_extension_payload(self.root)
 
         self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["version"], "0.6.5")
+        self.assertEqual(payload["version"], "0.6.5-guru.1")
         self.assertEqual(payload["workflow_template_id"], "guru-team")
+        self.assertEqual(payload["target_trellis_cli"], "0.6.5")
+        self.assertEqual(payload["trellis_cli_compatibility"], "0.6.5")
+        self.assertEqual(payload["tested_trellis_cli"], ["0.6.5"])
         self.assertEqual(payload["source_tree_state"], "clean")
         self.assertEqual(payload["selected_platforms"], ["codex", "cursor"])
 
@@ -3656,7 +3661,8 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
             payload = gtt.cmd_version(argparse.Namespace(root=str(self.root), json=True))
 
         self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5")
+        self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5-guru.1")
+        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.5")
 
 
 if __name__ == "__main__":

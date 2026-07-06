@@ -163,11 +163,14 @@ def source_provenance(guru_root: Path) -> dict[str, Any]:
 
 def extension_summary(manifest: dict[str, Any], source: dict[str, Any]) -> dict[str, Any]:
     requires = manifest.get("requires") if isinstance(manifest.get("requires"), dict) else {}
+    tested = manifest.get("tested") if isinstance(manifest.get("tested"), dict) else {}
     return {
         "extension_id": manifest.get("extension_id"),
         "version": manifest.get("version"),
         "workflow_template_id": manifest.get("workflow_template_id"),
+        "target_trellis_cli": manifest.get("target_trellis_cli"),
         "trellis_cli_compatibility": requires.get("trellis_cli"),
+        "tested_trellis_cli": tested.get("trellis_cli") if isinstance(tested.get("trellis_cli"), list) else [],
         "source_repo": source.get("repo"),
         "source_ref": source.get("ref"),
         "source_commit": source.get("commit"),

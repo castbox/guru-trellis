@@ -28,7 +28,9 @@ opt-in user choice, not as the team default or automated validation path.
 Prompts in `README.md` are meant to be copied into an AI coding session in a
 target business repository. They should tell the AI to:
 
-- confirm the current `@mindfoldhq/trellis` latest version live
+- confirm the current `@mindfoldhq/trellis` latest version live, while clearly
+  distinguishing it from the pinned official Trellis target used by the current
+  Guru Team stable release
 - detect conflicting SDD or agent harness frameworks before installing
 - use the `guru-team` marketplace workflow source
 - apply the preset installer from this public repository

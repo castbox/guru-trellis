@@ -4,11 +4,12 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5",
+    "version": "0.6.5-guru.1",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
+    "target_trellis_cli": "0.6.5",
     "requires": {
-      "trellis_cli": ">=0.6.0"
+      "trellis_cli": "0.6.5"
     },
     "tested": {
       "trellis_cli": [
@@ -58,11 +59,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-06T04:38:08Z",
+  "installed_at": "2026-07-06T06:03:54Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/39-review-branch-findings-reviewer-only",
-    "commit": "38b95b215271d5e1a29d2142eb9af6094a510aeb",
+    "ref": "main",
+    "commit": "1b9cb808975a6210225423fd750bb4f66dd5e311",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

@@ -1261,6 +1261,7 @@ def guru_team_extension_payload(root: Path) -> dict[str, Any]:
     source = payload.get("source") if isinstance(payload.get("source"), dict) else {}
     install = payload.get("install") if isinstance(payload.get("install"), dict) else {}
     requires = extension.get("requires") if isinstance(extension.get("requires"), dict) else {}
+    tested = extension.get("tested") if isinstance(extension.get("tested"), dict) else {}
     return {
         "status": "ok",
         "path": GURU_TEAM_EXTENSION_MANIFEST.as_posix(),
@@ -1268,7 +1269,9 @@ def guru_team_extension_payload(root: Path) -> dict[str, Any]:
         "extension_id": extension.get("extension_id"),
         "version": extension.get("version"),
         "workflow_template_id": extension.get("workflow_template_id"),
+        "target_trellis_cli": extension.get("target_trellis_cli"),
         "trellis_cli_compatibility": requires.get("trellis_cli"),
+        "tested_trellis_cli": tested.get("trellis_cli") if isinstance(tested.get("trellis_cli"), list) else [],
         "installed_at": payload.get("installed_at"),
         "source_repo": source.get("repo"),
         "source_ref": source.get("ref"),

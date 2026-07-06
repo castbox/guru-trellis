@@ -5,7 +5,7 @@ USER_NAME="${TRELLIS_USER:-throwaway}"
 WORK_DIR="${1:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#v0.6.5}"
+WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#v0.6.5-guru.1}"
 ALLOW_PUBLIC_SAMPLE="${TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE:-0}"
 
 if [[ -z "$WORK_DIR" ]]; then
@@ -42,7 +42,7 @@ payload = {
   "current_branch": "$CURRENT_BRANCH",
   "dirty_marketplace_paths": [line for line in """$CURRENT_DIRTY""".splitlines() if line.strip()],
   "next_steps": [
-    "push the branch or create the release tag, then rerun with TRELLIS_WORKFLOW_SOURCE pointing at a supported gh: source with #ref, for example gh:castbox/guru-trellis/trellis#v0.6.5",
+    "push the branch or create the release tag, then rerun with TRELLIS_WORKFLOW_SOURCE pointing at a supported gh: source with #ref, for example gh:castbox/guru-trellis/trellis#v0.6.5-guru.1",
     "or rerun with TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 and report that current-branch marketplace install was not verified",
   ],
 }
@@ -74,7 +74,7 @@ grep -q "dispatch_mode: sub-agent" "$TARGET/.trellis/config.yaml"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-env.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/version.sh"
 test -f "$TARGET/.trellis/guru-team/extension.json"
-python3 -c 'import json, sys; payload = json.load(open(sys.argv[1], encoding="utf-8")); assert payload["extension"]["extension_id"] == "guru-team"; assert payload["extension"]["version"]' "$TARGET/.trellis/guru-team/extension.json"
+python3 -c 'import json, sys; payload = json.load(open(sys.argv[1], encoding="utf-8")); assert payload["extension"]["extension_id"] == "guru-team"; assert payload["extension"]["version"]; assert payload["extension"]["target_trellis_cli"] == "0.6.5"' "$TARGET/.trellis/guru-team/extension.json"
 test -d "$TARGET/.agents/skills"
 test -d "$TARGET/.codex"
 test -d "$TARGET/.cursor"
@@ -95,10 +95,10 @@ grep -q "阶段二检查代理" "$TARGET/.cursor/agents/trellis-check.md"
 python3 "$TARGET/.trellis/scripts/get_context.py" --mode packages >/dev/null
 CHECK_ENV_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-env.sh" --root "$TARGET" --json)"
 printf '%s\n' "$CHECK_ENV_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["github_repo"] == "castbox/guru-trellis-throwaway"; assert payload["status"] == "ok"; assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]' <<<"$CHECK_ENV_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["github_repo"] == "castbox/guru-trellis-throwaway"; assert payload["status"] == "ok"; assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == "0.6.5"' <<<"$CHECK_ENV_JSON"
 VERSION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/version.sh" --root "$TARGET" --json)"
 printf '%s\n' "$VERSION_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]' <<<"$VERSION_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == "0.6.5"' <<<"$VERSION_JSON"
 
 set +e
 FINISH_ERROR_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/finish-work.sh" --root "$TARGET" --json --dry-run 2>&1)"

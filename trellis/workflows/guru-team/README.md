@@ -8,8 +8,8 @@ Ledger、Middle-platform Knowledge Gate、Repo Docs SSOT reconciliation、Branch
 Review Gate，以及 finish-work 成功后的自动 publish PR 规则。
 
 Guru Team extension 版本不等于官方 Trellis CLI 版本，也不等于 `trellis/index.json`
-里的 marketplace index schema version。canonical extension version 位于
-`trellis/guru-team-extension.json`；preset installer 会把当前安装版本和 source
+里的 marketplace index schema version。canonical extension version 和目标官方
+Trellis CLI 版本位于 `trellis/guru-team-extension.json`；preset installer 会把当前安装版本和 source
 provenance 写入目标仓库的 `.trellis/guru-team/extension.json`，并通过
 `check-env --json` / `version.sh --json` 暴露给用户和 AI 排障流程。
 
@@ -18,23 +18,24 @@ provenance 写入目标仓库的 `.trellis/guru-team/extension.json`，并通过
 ```bash
 trellis init -y -u <name> --codex --cursor \
   --workflow guru-team \
-  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5
+  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.1
 ```
 
 `-y` 是团队默认安装路径的一部分，用于跳过交互式 spec template picker。自动验收、
 throwaway 安装验证和 README 默认命令都必须使用非交互形式；只有用户明确想手动选择
 spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`。
 
-稳定安装 source 使用 repo release tag `#v0.6.5`。维护者刻意跟随最新 `main` / canary
-时可以去掉 `#ref` 或改用其它 branch/tag ref，但应在验证和排障报告中说明 source 是否
-为 mutable ref。Guru Team release tag 使用 repo 级 `vX.Y.Z`，并与
-`trellis/guru-team-extension.json.version` 保持一致。
+稳定安装 source 使用 repo release tag `#v0.6.5-guru.1`，并要求官方 Trellis CLI 安装到
+`0.6.5`。维护者刻意跟随最新 `main` / canary 时可以去掉 `#ref` 或改用其它 branch/tag ref，
+但应在验证和排障报告中说明 source 是否为 mutable ref，以及是否仍以官方 Trellis `0.6.5`
+为目标基线。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
+并与 `trellis/guru-team-extension.json.version` 对应。
 
 已有 Trellis 项目切换 active workflow：
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.1 \
   --template guru-team
 ```
 
@@ -48,7 +49,7 @@ companion scripts、配置、schema 和团队自有入口 overlay 需要通过 p
 写入目标仓库：
 
 ```bash
-git clone --depth 1 --branch v0.6.5 \
+git clone --depth 1 --branch v0.6.5-guru.1 \
   https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project
@@ -59,8 +60,8 @@ installer 会写入 `.trellis/guru-team/`，并可安装 `.agents/skills`、
 上游脚本、npm 全局包、`node_modules` 或 `.trellis/scripts/task.py`。
 
 installer 还会写入 `.trellis/guru-team/extension.json`，记录 Guru Team extension
-version、workflow template id、source repo/ref/commit、source tree state、selected
-platforms 和安装时间。这个文件是安装事实记录，不是用户配置。
+version、target Trellis CLI、workflow template id、source repo/ref/commit、source tree state、
+selected platforms 和安装时间。这个文件是安装事实记录，不是用户配置。
 
 installer 幂等：同内容跳过，缺失文件写入，Guru-managed companion assets 会升级 active
 文件并把旧版保存为 `.bak`，已有 `.trellis/guru-team/config.yml` 不覆盖，识别为上游

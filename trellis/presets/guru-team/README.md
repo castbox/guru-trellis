@@ -43,16 +43,16 @@ version lives in `trellis/guru-team-extension.json`; it is separate from the
 official Trellis CLI version and from the marketplace index schema version in
 `trellis/index.json`.
 
-Stable workflow marketplace installs should pin the same repo release tag as
-the canonical extension version, for example
-`gh:castbox/guru-trellis/trellis#v0.6.5`. Unpinned
-`gh:castbox/guru-trellis/trellis` is a latest/canary source and should be
-reported as mutable provenance.
+Stable workflow marketplace installs should pin the repo release tag that
+combines the target official Trellis CLI version and Guru Team revision, for
+example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.1`. That release targets
+official `@mindfoldhq/trellis` `0.6.5`. Unpinned `gh:castbox/guru-trellis/trellis`
+is a latest/canary source and should be reported as mutable provenance.
 
 ## Apply
 
 ```bash
-git clone --depth 1 --branch v0.6.5 \
+git clone --depth 1 --branch v0.6.5-guru.1 \
   https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project \
@@ -89,7 +89,7 @@ exists, verifies that `check-env.sh` and `version.sh` are executable, asserts
 `.trellis/guru-team/extension.json` exists, asserts `.claude/` was not created,
 and runs `check-env --json` plus `version.sh --json`. Trellis CLI accepts
 `gh:user/repo/path#ref` workflow marketplace sources; the script defaults to
-`TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#v0.6.5` for stable
+`TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#v0.6.5-guru.1` for stable
 release verification. When the source is unpinned
 `gh:castbox/guru-trellis/trellis`, the script fails closed on non-`main` branches
 or dirty marketplace workflow files unless
@@ -189,7 +189,7 @@ Trellis workflow marketplace:
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.1 \
   --template guru-team
 ```
 
