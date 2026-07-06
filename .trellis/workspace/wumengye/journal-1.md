@@ -733,3 +733,36 @@ Branch Review Gate 通过：独立 Agent 已按 origin/main...HEAD 审查 issue 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 23: 完成：#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail
+
+**Date**: 2026-07-06
+**Task**: 完成：#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail
+**Branch**: `codex/40-workflow-state-completed-closeout-pr`
+
+### Summary
+
+独立最终放行审查代理已按 origin/main...HEAD 完整审查 issue #40 的 workflow breadcrumb、hook 测试、task artifacts、spec 和公开文案；未发现 P0/P1/P2/P3 finding。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `fb4a7b0275cbab3ca9f243c8cf2f850a9857c642` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
