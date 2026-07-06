@@ -129,6 +129,11 @@ any finding, including P3. A passed gate must include zero findings,
 main-session/self-review identity, and `--review-report` must point to the
 task-local file named `review.md`. The script validates those objective
 metadata fields; it still does not judge review quality.
+Failed findings artifacts are also Branch Review Gate records. They must include
+`--review-source independent-agent` and a task-local `--review-report review.md`
+so the artifact records a prior independent review instead of only reviewer
+identity metadata. They do not require the final-pass `agent-assignment`
+closure checks unless the user is trying to pass the gate.
 For post-commit Phase 2 audit, the script may accept a `phase2-check.json`
 recorded at an ancestor HEAD only when every later non-metadata committed path
 is covered by the artifact's `dirty_paths`, or when the later tail is Trellis

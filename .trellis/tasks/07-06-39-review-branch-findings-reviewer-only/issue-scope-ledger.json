@@ -1,0 +1,29 @@
+{
+  "primary_issue": {
+    "number": 39,
+    "url": "https://github.com/castbox/guru-trellis/issues/39",
+    "title": "收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "workflow pass/findings 示例均携带 --review-source independent-agent 与 task-local review.md。",
+      "review-branch recorder 仅在显式 --pass 且零 findings 时写 passed=true；P0/P1/P2/P3 任意 finding 均阻断 pass。",
+      "unit tests 覆盖 P3 finding failed artifact、missing review_source、missing review_report、pass path 与 passed=true 校验。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 39,
+      "url": "https://github.com/castbox/guru-trellis/issues/39",
+      "title": "收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact",
+      "reason": "本任务完整收敛 issue #39 的 workflow 示例、overlay 文案、companion script 语义与回归测试。",
+      "acceptance_evidence": [
+        "workflow pass/findings 示例均携带 --review-source independent-agent 与 task-local review.md。",
+        "review-branch recorder 仅在显式 --pass 且零 findings 时写 passed=true；P0/P1/P2/P3 任意 finding 均阻断 pass。",
+        "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 通过。",
+        "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh 通过。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

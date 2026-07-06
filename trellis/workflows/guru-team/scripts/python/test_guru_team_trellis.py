@@ -1978,6 +1978,31 @@ class ReviewGateReportTest(unittest.TestCase):
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn("any findings", str(raised.exception))
 
+    def test_review_branch_records_blocking_finding_as_failed_artifact(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\n独立审查发现 P3 finding。\n", encoding="utf-8")
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_review_branch(
+                review_args(
+                    pass_gate=False,
+                    review_report=str(review_report),
+                    finding=["P3|需要收敛的轻微问题|trellis/workflows/guru-team/workflow.md"],
+                )
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertFalse(payload["conclusion"]["passed"])
+        self.assertEqual(payload["conclusion"]["findings_count"], 1)
+        self.assertEqual(payload["conclusion"]["blocking_findings_count"], 1)
+        self.assertEqual(payload["verification_evidence"]["review_source"], gtt.INDEPENDENT_REVIEW_SOURCE)
+        self.assertEqual(payload["verification_evidence"]["review_report"]["path"], ".trellis/tasks/07-04-review-gate/review.md")
+        self.assertTrue((self.task_dir / "review-gate.json").exists())
+
     def test_review_branch_records_observations_without_blocking_pass(self) -> None:
         review_report = self.task_dir / "review.md"
         review_report.write_text("# Review\n\n无 finding，仅有 observation。\n", encoding="utf-8")
@@ -2734,6 +2759,29 @@ class ReviewGateReportTest(unittest.TestCase):
                     review_args(
                         review_source="",
                         review_report=str(review_report),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn(gtt.INDEPENDENT_REVIEW_SOURCE, raised.exception.payload["errors"][0])
+
+    def test_review_branch_findings_require_independent_review_source(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text("# Review\n\nfindings artifact 也需要 independent source。\n", encoding="utf-8")
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_review_branch(
+                    review_args(
+                        pass_gate=False,
+                        review_source="",
+                        review_report=str(review_report),
+                        finding=["P3|需要修复|trellis/workflows/guru-team/workflow.md"],
                     )
                 )
         finally:

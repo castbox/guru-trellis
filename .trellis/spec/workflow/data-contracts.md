@@ -228,7 +228,7 @@ The artifact records:
 - conclusion summary
 - reviewer identity metadata
 - independent review source metadata (`review_source: independent-agent`) for
-  passed gates
+  both passed gates and failed findings artifacts
 - required review report digest: `review_report.path`, `sha256`,
   `size_bytes`, and `modified_at`
 - findings
@@ -246,6 +246,11 @@ file named `review.md`. `--reviewer` alone is only identity metadata and cannot
 prove the review report evidence; main-session/self-review identities are
 rejected for passed gates. Enforcement lives in `validate_review_gate()` and
 `metadata_only_since()`.
+
+A failed findings artifact is also invalid recorder evidence when it lacks
+`review_source: independent-agent` or a task-local `review.md` digest. Its
+`conclusion.passed` must be `false`; `passed=true` is reserved for explicit
+`--pass` with zero findings.
 
 After `task.py archive`, the archived task is the new task-local boundary.
 Validators may accept a gate whose digest entries still point at the
