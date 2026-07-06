@@ -700,3 +700,36 @@ Branch Review Gate 通过：独立 Agent 已按 origin/main...HEAD 审查 issue 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 22: 完成：#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact
+
+**Date**: 2026-07-06
+**Task**: 完成：#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact
+**Branch**: `codex/39-review-branch-findings-reviewer-only`
+
+### Summary
+
+最终放行审查通过：独立审查代理覆盖 origin/main...HEAD 当前 HEAD 完整 diff，确认 issue #39 的 review-branch findings/pass 语义、workflow/overlay/spec 同步和回归测试均满足要求，未发现 P0/P1/P2/P3 finding。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `cdc58d9961ee25dacf782b6c24b215b6eb6c2130` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
