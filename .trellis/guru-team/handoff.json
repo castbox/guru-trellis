@@ -1,21 +1,21 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 44,
-    "url": "https://github.com/castbox/guru-trellis/issues/44",
-    "title": "收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查",
+    "number": 41,
+    "url": "https://github.com/castbox/guru-trellis/issues/41",
+    "title": "在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/44-branch-review-gate-finding-fresh/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/41-task-system-task-py-create/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "branch-review-gate-finding-fresh",
-  "task_slug": "44-branch-review-gate-finding-fresh",
-  "task_title": "#44 收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查",
-  "branch_name": "codex/44-branch-review-gate-finding-fresh",
+  "slug": "task-system-task-py-create",
+  "task_slug": "41-task-system-task-py-create",
+  "task_title": "#41 在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0",
+  "branch_name": "codex/41-task-system-task-py-create",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/44-branch-review-gate-finding-fresh",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/41-task-system-task-py-create",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -26,30 +26,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#44 收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查",
+    "#41 在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0",
     "--slug",
-    "44-branch-review-gate-finding-fresh",
+    "41-task-system-task-py-create",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-05-44-branch-review-gate-finding-fresh",
+  "task_dir": ".trellis/tasks/07-06-41-task-system-task-py-create",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 44,
-      "url": "https://github.com/castbox/guru-trellis/issues/44",
-      "title": "收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查",
+      "number": 41,
+      "url": "https://github.com/castbox/guru-trellis/issues/41",
+      "title": "在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 44,
-        "url": "https://github.com/castbox/guru-trellis/issues/44",
-        "title": "收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查",
+        "number": 41,
+        "url": "https://github.com/castbox/guru-trellis/issues/41",
+        "title": "在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -64,7 +64,7 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           67df7ff [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           af4f618 [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
@@ -78,8 +78,9 @@
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/31-guru-team-extension-version-manifest         aa9ee7b [codex/31-guru-team-extension-version-manifest]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/35-guru-team-no-task-intake                     105c981 [codex/35-guru-team-no-task-intake]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/37-phase-2-check-evidence-review                4c780db [codex/37-phase-2-check-evidence-review]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/41-task-system-task-py-create                   af4f618 [codex/41-task-system-task-py-create]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/43-trellis-subagent                             e7a4c3d [codex/43-trellis-subagent]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/44-branch-review-gate-finding-fresh             67df7ff [codex/44-branch-review-gate-finding-fresh]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/44-branch-review-gate-finding-fresh             3bc50d1 [codex/44-branch-review-gate-finding-fresh]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/5-require-ai-review-prompt-before               44b29b0 [codex/5-require-ai-review-prompt-before]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/7-require-pr-readiness-review-before            5319076 [codex/7-require-pr-readiness-review-before]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/8-auditable-evidence-planning-approval-trellis  678fdfc [codex/8-auditable-evidence-planning-approval-trellis]",
@@ -93,10 +94,10 @@
       "base_ref": "main",
       "remote_ref": "origin/main",
       "local_head_before": "67df7ff0cefbfa0dbdb6db7b213f8b34b56e5841",
-      "local_head_after": "67df7ff0cefbfa0dbdb6db7b213f8b34b56e5841",
-      "remote_head": "67df7ff0cefbfa0dbdb6db7b213f8b34b56e5841",
+      "local_head_after": "af4f618ad60018a3dc3b9ffa599a89cfe81f7236",
+      "remote_head": "af4f618ad60018a3dc3b9ffa599a89cfe81f7236",
       "fetch_performed": true,
-      "fast_forwarded": false,
+      "fast_forwarded": true,
       "fresh": true,
       "status": "fresh",
       "base_ref_for_worktree": "main"
@@ -105,7 +106,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/44-branch-review-gate-finding-fresh/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/41-task-system-task-py-create/.trellis/.developer",
       "developer": "wumengye"
     }
   }

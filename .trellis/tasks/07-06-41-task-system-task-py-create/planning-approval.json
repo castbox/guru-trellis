@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-06T02:02:17Z",
+  "task_dir": ".trellis/tasks/07-06-41-task-system-task-py-create",
+  "head": "af4f618ad60018a3dc3b9ffa599a89cfe81f7236",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-06-41-task-system-task-py-create/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已审查 issue #41、官方 Trellis workflow 文档、本仓库 workflow/preset/docs 规范和当前 Task System 命令目录位置；本任务范围收敛为仅在 canonical guru-team workflow 与 dogfood active workflow 的 Task System 命令列表前增加 reference-only、Phase 0 prepare-first、source checkout 禁止和 workspace_path controlled follow-up 说明。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户在 Phase 0 handoff 后多次回复继续，确认创建 worktree/task 并推进规划与实现。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-06-41-task-system-task-py-create/prd.md",
+      "sha256": "ba754d575f3846d734b916324854d7f3e115fa8805ce5342d9dc0d2ec6cd6c04",
+      "size_bytes": 3537,
+      "modified_at": "2026-07-06T02:02:01.599333+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-41-task-system-task-py-create/design.md",
+      "sha256": "b51b907689a11b68e1e82f489f5209f155695750658ecdae9cf2421ce030ccce",
+      "size_bytes": 2277,
+      "modified_at": "2026-07-06T02:02:01.599552+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-41-task-system-task-py-create/implement.md",
+      "sha256": "b601a0b8455e3f97bf035025f8747911c6cdb4bac198e7cf91666feae8d78197",
+      "size_bytes": 1671,
+      "modified_at": "2026-07-06T02:02:01.599711+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

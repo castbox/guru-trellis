@@ -1,0 +1,28 @@
+{
+  "primary_issue": {
+    "number": 41,
+    "url": "https://github.com/castbox/guru-trellis/issues/41",
+    "title": "在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "已在 trellis/workflows/guru-team/workflow.md 的 Task System 命令目录前加入 reference-only / Phase 0 prepare-first / source checkout 禁止 / workspace_path controlled follow-up 说明。",
+      "已在 dogfood .trellis/workflow.md 同步相同说明。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 41,
+      "url": "https://github.com/castbox/guru-trellis/issues/41",
+      "title": "在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "rg -n 'Reference only|Phase 0 `check-env` \\+ `prepare-task`|source checkout|workspace_path' trellis/workflows/guru-team/workflow.md .trellis/workflow.md 已定位到两份 workflow 的新增说明。",
+        "python3 ./.trellis/scripts/get_context.py --mode phase 已成功解析 workflow phase 内容。",
+        "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-06-41-task-system-task-py-create 已通过。",
+        "git diff --check 已通过。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}
