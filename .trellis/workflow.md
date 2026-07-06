@@ -760,6 +760,7 @@ or, when findings exist:
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json \
+  --review-source independent-agent \
   --reviewer "trellis-check-agent" \
   --review-report ".trellis/tasks/<task>/review.md" \
   --agent-assignment ".trellis/tasks/<task>/agent-assignment.json" \
@@ -775,6 +776,12 @@ or follow-up candidate to pass the gate.
 The artifact records base/head, diff command, conclusion, reviewer identity metadata, review source, review-report digest, agent-assignment digest/roles summary, summary, concrete evidence lines, findings, observations, follow-up candidates, changed files, Issue Scope Ledger coverage, and validation evidence. It is written to `{TASK_DIR}/review-gate.json` by default.
 
 Passing the gate is not a blank assertion. `--pass` requires zero findings, `--review-source independent-agent`, a non-main-session `--reviewer`, a Chinese `--summary`, at least one concrete `--evidence` line from the actual review, `--review-report` pointing at the task-local `review.md`, and `--agent-assignment` pointing at the task-local `agent-assignment.json`. `review-gate.json` must record `review_source`, `review_report.path`, `sha256`, `size_bytes`, `modified_at`, `agent_assignment.path`, `sha256`, `size_bytes`, `modified_at`, `roles`, and review round counts, and so the recorder can validate closure-before-final and fresh final reviewer metadata. Use additional `--evidence` lines for important validation commands or review coverage notes. If the current platform/session cannot provide independent Agent review evidence, do not write a passing gate; stop with Branch Review Gate pending.
+
+Findings artifacts are failed Branch Review Gate records, but they still record
+a prior independent review. The findings path must also include
+`--review-source independent-agent` and `--review-report` pointing at the
+task-local `review.md`; omitting either means the artifact is reviewer-only and
+must be rejected.
 
 `--review-report` must be exactly the task-local `review.md`; do not pass `prd.md`, `design.md`, `phase2-check.json`, or any other task artifact as the review report.
 

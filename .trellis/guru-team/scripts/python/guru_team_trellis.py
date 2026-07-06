@@ -2564,6 +2564,7 @@ def build_review_gate_payload(
     config: dict[str, Any],
     handoff: dict[str, Any],
     base_branch: str,
+    pass_gate: bool,
     findings: list[dict[str, Any]],
     observations: list[dict[str, Any]],
     followup_candidates: list[dict[str, Any]],
@@ -2608,8 +2609,8 @@ def build_review_gate_payload(
         ],
         "command": command,
         "conclusion": {
-            "passed": not blockers,
-            "summary": summary or ("Branch Review Gate 通过。" if not blockers else "Branch Review Gate 未通过。"),
+            "passed": bool(pass_gate and not blockers),
+            "summary": summary or ("Branch Review Gate 通过。" if pass_gate and not blockers else "Branch Review Gate 未通过。"),
             "block_priorities": review_gate_config(config).get("block_priorities", ["P0", "P1", "P2", "P3"]),
             "blocking_findings_count": len(blockers),
             "findings_count": len(findings),
@@ -3425,14 +3426,13 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         )
     reviewer = str(args.reviewer or "").strip()
     review_source = str(getattr(args, "review_source", "") or "").strip()
-    if args.pass_gate:
-        source_errors = independent_review_source_errors(review_source, reviewer)
-        if source_errors:
-            raise WorkflowError(
-                "Branch Review Gate pass requires independent Agent review evidence.",
-                exit_code=2,
-                payload={"errors": source_errors},
-            )
+    source_errors = independent_review_source_errors(review_source, reviewer)
+    if source_errors:
+        raise WorkflowError(
+            "Branch Review Gate requires independent Agent review evidence before recording pass or findings.",
+            exit_code=2,
+            payload={"errors": source_errors},
+        )
     review_report = load_review_report(root, task_dir, args.review_report)
     if not blockers and not evidence:
         raise WorkflowError(
@@ -3442,7 +3442,7 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     if review_report is None:
         raise WorkflowError(
             "Branch Review Gate needs --review-report pointing to the task-local review.md from the prior AI/human review. "
-            "--reviewer is identity metadata only and cannot satisfy passed gate evidence.",
+            "--reviewer is identity metadata only and cannot satisfy independent review evidence.",
             exit_code=2,
         )
     if args.pass_gate and not getattr(args, "agent_assignment", None):
@@ -3480,6 +3480,7 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         config=config,
         handoff=handoff,
         base_branch=base_branch,
+        pass_gate=bool(args.pass_gate),
         findings=findings,
         observations=observations,
         followup_candidates=followup_candidates,
@@ -4145,7 +4146,7 @@ def build_parser() -> argparse.ArgumentParser:
     review.add_argument("--summary")
     review.add_argument("--evidence", action="append", help="Chinese review evidence line. Required with --pass.")
     review.add_argument("--reviewer", help="Reviewer name or AI/human review channel.")
-    review.add_argument("--review-source", help="Review source metadata. Passing gate requires independent-agent.")
+    review.add_argument("--review-source", help="Review source metadata. Pass and findings records require independent-agent.")
     review.add_argument("--review-report", help="Path to the prior AI/human review report recorded before gate artifact creation.")
     review.add_argument("--agent-assignment", help="Task-local agent-assignment.json. Required with --pass to validate closure-before-final and fresh final reviewer evidence.")
     review.add_argument("--finding", action="append", help="Finding as PRIORITY|message[|path].")

@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 21
+- **Total Sessions**: 22
 - **Last Active**: 2026-07-06
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~702 | Active |
+| `journal-1.md` | ~735 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 22 | 2026-07-06 | 完成：#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact | `cdc58d9961ee25dacf782b6c24b215b6eb6c2130` | `codex/39-review-branch-findings-reviewer-only` |
 | 21 | 2026-07-06 | 完成：#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程 | `156fcf43bb90b7dcc801f989c1871eb640b71c80` | `codex/38-trellis-finish-work-pr-body` |
 | 20 | 2026-07-06 | 完成 issue #41 Task System reference-only 提示 | `0074a7b98cc348083b2a48b3ff33f88d108e175b` | `codex/41-task-system-task-py-create` |
 | 19 | 2026-07-05 | 完成 Issue 44 Branch Review Gate 收紧 | `38908e0ba3d814b4e0024d6dbe116ecf4f64108b` | `codex/44-branch-review-gate-finding-fresh` |
