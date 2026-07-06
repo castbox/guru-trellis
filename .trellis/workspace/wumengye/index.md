@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 19
-- **Last Active**: 2026-07-05
+- **Total Sessions**: 20
+- **Last Active**: 2026-07-06
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~636 | Active |
+| `journal-1.md` | ~669 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 20 | 2026-07-06 | 完成 issue #41 Task System reference-only 提示 | `0074a7b98cc348083b2a48b3ff33f88d108e175b` | `codex/41-task-system-task-py-create` |
 | 19 | 2026-07-05 | 完成 Issue 44 Branch Review Gate 收紧 | `38908e0ba3d814b4e0024d6dbe116ecf4f64108b` | `codex/44-branch-review-gate-finding-fresh` |
 | 18 | 2026-07-05 | 完成：#43 规范 Trellis subagent 中文逻辑角色与复用记录 | `26185a6b3098c0fa7e6e4051043ca3829f07e9ea` | `codex/43-trellis-subagent` |
 | 17 | 2026-07-05 | 完成：修复 Phase 2 check evidence 提交后审计 | `9095ea10437d4486c8e3a191d8100defbf7f19c7` | `codex/37-phase-2-check-evidence-review` |

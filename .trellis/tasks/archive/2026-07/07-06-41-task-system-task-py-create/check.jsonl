@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查 workflow contract 是否仍保持 Phase 0 prepare-first 与 Task System command catalog 的正确边界。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查 task validate、phase parsing、diff whitespace 等必跑验证。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查 runtime-parsed workflow template 与 dogfood copy 的一致性。"}

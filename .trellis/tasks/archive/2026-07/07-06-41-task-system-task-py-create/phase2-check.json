@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-06T02:38:31Z",
+  "task_dir": ".trellis/tasks/07-06-41-task-system-task-py-create",
+  "base_branch": "main",
+  "head": "af4f618ad60018a3dc3b9ffa599a89cfe81f7236",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/workflow.md",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-06-41-task-system-task-py-create/"
+  ],
+  "checker": "codex-main-session",
+  "check_summary": "已按 issue #41、官方 Trellis workflow 文档、本仓库 workflow/preset/docs 规范和当前 diff 完成 Phase 2 检查：canonical guru-team workflow 与 dogfood active workflow 已同步增加 Task System reference-only / Phase 0 prepare-first / source checkout 禁止 / workspace_path controlled follow-up 说明；未改脚本、schema、preset installer、部署资产或 durable docs。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-06-41-task-system-task-py-create/prd.md",
+      "sha256": "ba754d575f3846d734b916324854d7f3e115fa8805ce5342d9dc0d2ec6cd6c04",
+      "size_bytes": 3537,
+      "modified_at": "2026-07-06T02:02:01.599333+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-41-task-system-task-py-create/design.md",
+      "sha256": "b51b907689a11b68e1e82f489f5209f155695750658ecdae9cf2421ce030ccce",
+      "size_bytes": 2277,
+      "modified_at": "2026-07-06T02:02:01.599552+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-41-task-system-task-py-create/implement.md",
+      "sha256": "b601a0b8455e3f97bf035025f8747911c6cdb4bac198e7cf91666feae8d78197",
+      "size_bytes": 1671,
+      "modified_at": "2026-07-06T02:02:01.599711+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-41-task-system-task-py-create/issue-scope-ledger.json",
+      "sha256": "7fc6fc1ff0bf63c32942633179c995ed748d34a0011242f7b92ed41c05215d8a",
+      "size_bytes": 1505,
+      "modified_at": "2026-07-06T02:36:17.048048+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "a1437dff864e388183a51488de5daa5c3a599f179a79ee4dd8d390cdf23606bf",
+      "size_bytes": 12495,
+      "modified_at": "2026-07-05T18:14:37.949443+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "b1c097e3fa803967f40854552b13bb5fb67e47202c3846ee4746fa84db7b9083",
+      "size_bytes": 4451,
+      "modified_at": "2026-07-05T18:14:37.949317+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "35891233237b0cb4be3d2009eac25b0a5bde359fd02098ce63e261d7854b836a",
+      "size_bytes": 3482,
+      "modified_at": "2026-07-05T18:14:37.948016+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "rg -n reference-only prepare-first source-checkout workspace-path workflow files",
+      "result": "两份 workflow 均定位到新增说明"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase",
+      "result": "成功解析 633 行 phase 内容"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 1.0 && --step 2.1 && --step 3.5",
+      "result": "关键 step 解析成功"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json",
+      "result": "通过"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh",
+      "result": "通过"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "通过"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-06-41-task-system-task-py-create",
+      "result": "通过"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "通过，overlay copies match canonical overlays"
+    },
+    {
+      "command": "git diff --check",
+      "result": "通过"
+    },
+    {
+      "command": "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "result": "已发布 release tag throwaway install 通过；当前未推送分支无法作为 gh marketplace source 验证，待 push 后补 #codex/41-task-system-task-py-create 验证"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

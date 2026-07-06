@@ -110,6 +110,14 @@ Update spec when a task discovers a reusable pattern, pitfall, convention, or te
 
 ### Task System
 
+Reference only: this command list documents the Trellis task CLI. In Guru Team
+workflows, durable, issue-backed, task-like, or file-changing work enters
+through Phase 0 `check-env` + `prepare-task` first. Do not use the bare
+`task.py create` command below from the source checkout for Guru Team worktree
+tasks. The bare create command is only a Phase 1.0 controlled follow-up after
+`prepare-task` has returned or written the selected `workspace_path` and the
+shell/editor is already operating inside that workspace.
+
 Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, optional `design.md`, optional `implement.md`, optional `research/`, the task-level `issue-scope-ledger.json`, sub-agent/review assignment evidence (`agent-assignment.json`), the Branch Review Gate review report (`review.md`) and recorder artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms.
 
 ```bash

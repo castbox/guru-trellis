@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "定义 canonical workflow 与 dogfood active copy 的同步关系，以及 Phase 0/Task System 边界。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定义 workflow 文案变更需要覆盖的验证命令和 review 关注点。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "确认本次不需要更新 README/durable docs 的判断边界。"}
