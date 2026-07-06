@@ -1,0 +1,133 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-06T05:34:16Z",
+  "task_dir": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr",
+  "base_branch": "main",
+  "head": "7aedeba8d318208634e15549c609c92c218b9820",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".codex/hooks/test_inject_workflow_state.py",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/workflow.md",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/"
+  ],
+  "checker": "codex-main-session",
+  "check_summary": "已按 issue #40 和规划 artifact 完整复核：问题仍存在但方案已收窄；canonical workflow 与 dogfood active workflow 的 completed breadcrumb 已同步扩展；hook 回归测试覆盖 closeout readiness；未改 companion script 执行语义、未改 marketplace id/preset path、未引入安全敏感信息。current-branch throwaway install 因未推送 slash branch ref 无法采样，需在分支推送后用可解析 ref 复验。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/prd.md",
+      "sha256": "bf0ed92d058f934c1147f3cdd92120e09fb0e983ca3532e03f036176ac075136",
+      "size_bytes": 3556,
+      "modified_at": "2026-07-06T05:29:20.836059+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/design.md",
+      "sha256": "c5a2f36916db3e31c9b3d41b23ab0bbd38118c15fb47c8a8a3fe7a5984ff601c",
+      "size_bytes": 3318,
+      "modified_at": "2026-07-06T05:29:20.836307+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/implement.md",
+      "sha256": "77918629ba0c532e72d07db23b84f1187d240145787b79f31e301451f91bb052",
+      "size_bytes": 1970,
+      "modified_at": "2026-07-06T05:29:20.836481+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/research/official-trellis-workflow-docs.md",
+      "sha256": "3d44aaed232762d36221796a251547f704002627ffeaf89b3b7dce7b6eeaff98",
+      "size_bytes": 2025,
+      "modified_at": "2026-07-06T05:29:20.835313+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/issue-scope-ledger.json",
+      "sha256": "52dc97cc50e435b208a764c959f24e4576b4859a004772f2a243b3430808e782",
+      "size_bytes": 2017,
+      "modified_at": "2026-07-06T05:33:51.185070+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/index.md",
+      "sha256": "bb784f9f53269062866aea1adcb0bb760e7a50784ced634ace7b29ee29b42d71",
+      "size_bytes": 2811,
+      "modified_at": "2026-07-06T05:27:17.477788+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "a1437dff864e388183a51488de5daa5c3a599f179a79ee4dd8d390cdf23606bf",
+      "size_bytes": 12495,
+      "modified_at": "2026-07-06T05:27:17.478063+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "6432e8cadb2c3059da1f5a5e24f2aaa988c07ec6ff80ff0cb264333427be77be",
+      "size_bytes": 4836,
+      "modified_at": "2026-07-06T05:27:17.477899+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "66f0882c8afeb7292dff40ff4b4a281885517e57e2258ff8f76e70f849b17550",
+      "size_bytes": 4918,
+      "modified_at": "2026-07-06T05:27:17.477221+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 .codex/hooks/test_inject_workflow_state.py",
+      "result": "7 tests passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 3.5",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 3.6",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json",
+      "result": "passed"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py .codex/hooks/inject-workflow-state.py .codex/hooks/test_inject_workflow_state.py",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-06-40-workflow-state-completed-closeout-pr",
+      "result": "passed"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#codex/40-workflow-state-completed-closeout-pr verify-throwaway-install.sh",
+      "result": "failed as expected before push: gh workflow source could not fetch trellis/index.json for slash branch ref; current-branch install must be rechecked after push with a supported ref"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

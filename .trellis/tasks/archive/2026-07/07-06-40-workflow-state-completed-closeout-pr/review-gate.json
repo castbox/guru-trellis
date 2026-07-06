@@ -1,0 +1,204 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-06T05:43:31Z",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-06-40-workflow-state-completed-closeout-pr",
+  "base_branch": "main",
+  "base_ref": "origin/main",
+  "head_branch": "codex/40-workflow-state-completed-closeout-pr",
+  "head": "fb4a7b0275cbab3ca9f243c8cf2f850a9857c642",
+  "diff_range": "origin/main...HEAD",
+  "changed_files": [
+    ".codex/hooks/test_inject_workflow_state.py",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/check.jsonl",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/design.md",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/implement.jsonl",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/implement.md",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/issue-scope-ledger.json",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/phase2-check.json",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/planning-approval.json",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/prd.md",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/research/official-trellis-workflow-docs.md",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/task.json",
+    ".trellis/workflow.md",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "review_scope": [
+    "文档",
+    "代码",
+    "测试",
+    "Trellis artifacts",
+    "配置",
+    "脚本",
+    "schema",
+    "CI/CD workflow 与发布自动化",
+    "Dockerfile / Docker Compose / 容器启动脚本",
+    "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
+    "数据库 schema / migration / seed / backfill 脚本",
+    "各目录下本次变更涉及的 Makefile",
+    "preset installer"
+  ],
+  "command": [
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/40-workflow-state-completed-closeout-pr/.trellis/guru-team/scripts/bash/../python/guru_team_trellis.py",
+    "review-branch",
+    "--json",
+    "--pass",
+    "--review-source",
+    "independent-agent",
+    "--reviewer",
+    "019f35ed-86fc-7a02-95cf-e6b268ef5aae",
+    "--review-report",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/review.md",
+    "--agent-assignment",
+    ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/agent-assignment.json",
+    "--summary",
+    "独立最终放行审查代理已按 origin/main...HEAD 完整审查 issue #40 的 workflow breadcrumb、hook 测试、task artifacts、spec 和公开文案；未发现 P0/P1/P2/P3 finding。",
+    "--evidence",
+    "review.md 记录 reviewed_head=fb4a7b0275cbab3ca9f243c8cf2f850a9857c642，覆盖 trellis/workflows/guru-team/workflow.md、.trellis/workflow.md、.codex/hooks/test_inject_workflow_state.py、task artifacts、workflow/preset specs、README/overlay 相关文案和完整 changed-file list。",
+    "--evidence",
+    "验证通过：python3 .codex/hooks/test_inject_workflow_state.py、git diff --check origin/main...HEAD、get_context phase --step 3.5/3.6、json.tool、py_compile、task validate。",
+    "--evidence",
+    "Docs SSOT：canonical workflow 与 dogfood workflow 的 completed block 字节一致；README/workflow README/preset README 已有 finish-work/dry-run/metadata-only/direct publish 限制文案，本次未改安装命令或 spec template marketplace。",
+    "--evidence",
+    "部署与安全：未修改 CI/CD、Docker、Compose、K8s/Kustomize、DB migration、Makefile、runtime config 或 installer 脚本；diff 仅含公开 workflow 文案、hook 测试与任务元数据，未发现 secret/token/.env/签名 URL。",
+    "--observation",
+    "check.jsonl/implement.jsonl 只有 seed 行；独立审查按 fallback 读取 task artifacts 和指定 specs，task.py validate 通过，不构成 finding|.trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/check.jsonl",
+    "--observation",
+    "current-branch throwaway install 未完全验证：Trellis 0.6.5 不接受本地路径作为 workflow-source，未推送 slash branch ref 也无法采样；本 PR 未改 marketplace index、安装命令、preset、overlay 或 installer，因此记录为风险而非当前 finding|trellis/workflows/guru-team/workflow.md",
+    "--followup-candidate",
+    "推送分支或合并后补跑 current-branch/main throwaway install smoke test，确认 guru-team workflow marketplace 安装能读取本次 completed breadcrumb|trellis/workflows/guru-team/workflow.md"
+  ],
+  "conclusion": {
+    "passed": true,
+    "summary": "独立最终放行审查代理已按 origin/main...HEAD 完整审查 issue #40 的 workflow breadcrumb、hook 测试、task artifacts、spec 和公开文案；未发现 P0/P1/P2/P3 finding。",
+    "block_priorities": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "blocking_findings_count": 0,
+    "findings_count": 0,
+    "observations_count": 2,
+    "followup_candidates_count": 1
+  },
+  "findings": [],
+  "observations": [
+    {
+      "kind": "observation",
+      "message": "check.jsonl/implement.jsonl 只有 seed 行；独立审查按 fallback 读取 task artifacts 和指定 specs，task.py validate 通过，不构成 finding",
+      "path": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/check.jsonl"
+    },
+    {
+      "kind": "observation",
+      "message": "current-branch throwaway install 未完全验证：Trellis 0.6.5 不接受本地路径作为 workflow-source，未推送 slash branch ref 也无法采样；本 PR 未改 marketplace index、安装命令、preset、overlay 或 installer，因此记录为风险而非当前 finding",
+      "path": "trellis/workflows/guru-team/workflow.md"
+    }
+  ],
+  "followup_candidates": [
+    {
+      "kind": "followup_candidate",
+      "message": "推送分支或合并后补跑 current-branch/main throwaway install smoke test，确认 guru-team workflow marketplace 安装能读取本次 completed breadcrumb",
+      "path": "trellis/workflows/guru-team/workflow.md"
+    }
+  ],
+  "issue_scope": {
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-06-40-workflow-state-completed-closeout-pr/issue-scope-ledger.json",
+    "close_issues_reviewed": [
+      {
+        "number": 40,
+        "url": "https://github.com/castbox/guru-trellis/issues/40",
+        "title": "扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail",
+        "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+        "acceptance_evidence": [
+          "canonical workflow 和 dogfood active workflow 的 completed breadcrumb 已保持一致。",
+          "breadcrumb 明确 completed 是 fallback/legacy closeout breadcrumb，并说明正常路径是 Branch Review Gate 后显式 trellis-finish-work。",
+          "breadcrumb 明确缺失/失败/stale/reviewer-only gate 返回 Phase 3.5；gate 通过后使用 task-local PR body/readiness，先 dry-run 再正式 finish-work，禁止直接 publish-pr。",
+          "hook 回归测试覆盖 completed breadcrumb 关键内容。"
+        ]
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "verification_evidence": {
+    "base_head": "origin/main...fb4a7b0275cbab3ca9f243c8cf2f850a9857c642",
+    "changed_file_count": 14,
+    "reviewer": "019f35ed-86fc-7a02-95cf-e6b268ef5aae",
+    "review_source": "independent-agent",
+    "review_report": {
+      "path": ".trellis/tasks/archive/2026-07/07-06-40-workflow-state-completed-closeout-pr/review.md",
+      "sha256": "daef1c1bf08cce3bf978c34a69937b5dc2564edf6f8bf517e825dcc7f0ac90c4",
+      "size_bytes": 4366,
+      "modified_at": "2026-07-06T05:43:09.421836+00:00"
+    },
+    "agent_assignment": {
+      "path": ".trellis/tasks/archive/2026-07/07-06-40-workflow-state-completed-closeout-pr/agent-assignment.json",
+      "sha256": "d15cd80a6d5bc9a4c4ad94c2ed63a35558483d99cec179cdd137d4154d4ba415",
+      "size_bytes": 940,
+      "modified_at": "2026-07-06T05:36:40.180690+00:00",
+      "schema_version": "1.0",
+      "artifact_head": "fb4a7b0275cbab3ca9f243c8cf2f850a9857c642",
+      "roles": [
+        "最终放行审查代理"
+      ],
+      "agents_count": 0,
+      "review_rounds_count": 1,
+      "reuse_decisions_count": 0,
+      "task": ".trellis/tasks/archive/2026-07/07-06-40-workflow-state-completed-closeout-pr",
+      "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
+    },
+    "evidence": [
+      "review.md 记录 reviewed_head=fb4a7b0275cbab3ca9f243c8cf2f850a9857c642，覆盖 trellis/workflows/guru-team/workflow.md、.trellis/workflow.md、.codex/hooks/test_inject_workflow_state.py、task artifacts、workflow/preset specs、README/overlay 相关文案和完整 changed-file list。",
+      "验证通过：python3 .codex/hooks/test_inject_workflow_state.py、git diff --check origin/main...HEAD、get_context phase --step 3.5/3.6、json.tool、py_compile、task validate。",
+      "Docs SSOT：canonical workflow 与 dogfood workflow 的 completed block 字节一致；README/workflow README/preset README 已有 finish-work/dry-run/metadata-only/direct publish 限制文案，本次未改安装命令或 spec template marketplace。",
+      "部署与安全：未修改 CI/CD、Docker、Compose、K8s/Kustomize、DB migration、Makefile、runtime config 或 installer 脚本；diff 仅含公开 workflow 文案、hook 测试与任务元数据，未发现 secret/token/.env/签名 URL。"
+    ],
+    "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
+  },
+  "deployment_impact": {
+    "changed_file_categories": {
+      "docs": [
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/design.md",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/implement.md",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/prd.md",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/research/official-trellis-workflow-docs.md",
+        ".trellis/workflow.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "tests": [
+        ".codex/hooks/test_inject_workflow_state.py"
+      ],
+      "trellis_artifacts": [
+        ".trellis/guru-team/handoff.json",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/check.jsonl",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/design.md",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/implement.jsonl",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/implement.md",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/issue-scope-ledger.json",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/phase2-check.json",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/planning-approval.json",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/prd.md",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/research/official-trellis-workflow-docs.md",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/task.json",
+        ".trellis/workflow.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "config": [
+        ".trellis/guru-team/handoff.json",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/issue-scope-ledger.json",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/phase2-check.json",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/planning-approval.json",
+        ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr/task.json"
+      ],
+      "code": [
+        ".codex/hooks/test_inject_workflow_state.py"
+      ]
+    },
+    "deployment_asset_categories": {},
+    "changed_deployment_assets": [],
+    "probable_runtime_changes_without_deployment_asset_change": [],
+    "needs_deployment_impact_review": false,
+    "review_instruction": "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；如果不需要，必须给出不需要的理由。"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "primary_issue": {
+    "number": 40,
+    "url": "https://github.com/castbox/guru-trellis/issues/40",
+    "title": "扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "trellis/workflows/guru-team/workflow.md 与 .trellis/workflow.md 的 [workflow-state:completed] 已同步扩展，覆盖 gate stale fallback、PR body/readiness、dry-run、metadata tail 和 direct publish 禁止。",
+      ".codex/hooks/test_inject_workflow_state.py 增加 completed breadcrumb 回归测试，验证 hook parser 从 workflow Markdown 读取关键 closeout 文案。",
+      "验证通过：python3 .codex/hooks/test_inject_workflow_state.py、get_context phase/3.5/3.6、json.tool、bash -n、py_compile、task validate、dogfood overlay drift、git diff --check。current-branch throwaway install 受未推送 slash branch ref 限制未完成，已记录为 publish 后复验风险。"
+    ]
+  },
+  "close_issues": [
+    {
+        "number": 40,
+        "url": "https://github.com/castbox/guru-trellis/issues/40",
+        "title": "扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail",
+        "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+        "acceptance_evidence": [
+          "canonical workflow 和 dogfood active workflow 的 completed breadcrumb 已保持一致。",
+          "breadcrumb 明确 completed 是 fallback/legacy closeout breadcrumb，并说明正常路径是 Branch Review Gate 后显式 trellis-finish-work。",
+          "breadcrumb 明确缺失/失败/stale/reviewer-only gate 返回 Phase 3.5；gate 通过后使用 task-local PR body/readiness，先 dry-run 再正式 finish-work，禁止直接 publish-pr。",
+          "hook 回归测试覆盖 completed breadcrumb 关键内容。"
+        ]
+      }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}
