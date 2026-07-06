@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-06T02:40:57Z",
+  "updated_at": "2026-07-06T02:46:21Z",
+  "task": ".trellis/tasks/07-06-41-task-system-task-py-create",
+  "head": "0074a7b98cc348083b2a48b3ff33f88d108e175b",
+  "agents": [
+    {
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f354c-a58d-72a3-8546-f79b72664c6d",
+      "platform_nickname": "Check Agent",
+      "assigned_at": "2026-07-06T02:40:57Z",
+      "assigned_head": "0074a7b98cc348083b2a48b3ff33f88d108e175b",
+      "reason": "Branch Review Gate 需要独立最终放行审查代理审查 origin/main...HEAD 完整 diff，主会话不能自审通过 gate。"
+    }
+  ],
+  "review_rounds": [
+    {
+      "round": 1,
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f354c-a58d-72a3-8546-f79b72664c6d",
+      "platform_nickname": "Check Agent",
+      "reviewed_head": "0074a7b98cc348083b2a48b3ff33f88d108e175b",
+      "findings_count": 0,
+      "reuse_policy": "首轮 Branch Review Gate 使用 fresh final reviewer；无前序 finding owner 需要闭环。",
+      "reuse_decision": "new-agent",
+      "recorded_at": "2026-07-06T02:46:21Z"
+    }
+  ],
+  "reuse_decisions": [],
+  "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用或更换；脚本只记录和校验客观字段、HEAD、digest 与枚举值。"
+}
