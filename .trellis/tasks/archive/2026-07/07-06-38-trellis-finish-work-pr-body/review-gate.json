@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-06T03:39:41Z",
-  "task_dir": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-06-38-trellis-finish-work-pr-body",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/38-trellis-finish-work-pr-body",
@@ -112,7 +112,7 @@
   ],
   "followup_candidates": [],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-06-38-trellis-finish-work-pr-body/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 38,
@@ -136,13 +136,13 @@
     "reviewer": "019f357b-04c5-72d0-b6bc-c4d4a087ac05 (Closure Agent)",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-06-38-trellis-finish-work-pr-body/review.md",
       "sha256": "b73a4f1d5762a1f1ee0f437f6b2f56f3faa21509b66a4d67202fd010f4d84d28",
       "size_bytes": 4092,
       "modified_at": "2026-07-06T03:39:10.602671+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-06-38-trellis-finish-work-pr-body/agent-assignment.json",
       "sha256": "f4616c681dbe5c374c7dc23d583ccc1dfee1eb3e362194fd4e93c993ec997f89",
       "size_bytes": 2454,
       "modified_at": "2026-07-06T03:39:20.942233+00:00",
@@ -156,7 +156,7 @@
       "agents_count": 3,
       "review_rounds_count": 1,
       "reuse_decisions_count": 0,
-      "task": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body",
+      "task": ".trellis/tasks/archive/2026-07/07-06-38-trellis-finish-work-pr-body",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "evidence": [
