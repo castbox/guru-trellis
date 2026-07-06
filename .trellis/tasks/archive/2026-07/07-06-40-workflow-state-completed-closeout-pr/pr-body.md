@@ -22,7 +22,7 @@
 - `python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-06-40-workflow-state-completed-closeout-pr`：通过。
 - `trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh`：通过。
 - `git diff --check`：通过。
-- current-branch throwaway install 未完整验证：Trellis 0.6.5 不接受本地路径作为 `--workflow-source`，且审查时远端尚无该 slash branch 可采样。本 PR 未改 marketplace index、preset、installer 或安装命令；推送分支或合并后应补跑 marketplace smoke test，确认新安装可读取本次 completed breadcrumb。
+- PR 分支推送后补跑 `TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#codex/40-workflow-state-completed-closeout-pr trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh`：通过。验证覆盖 throwaway `trellis init`、preset apply、`check-env`、`version`、direct `finish-work` / `publish-pr` fail-closed，以及 `trellis workflow --create-new` / `--force`，安装 manifest 记录 `source_commit=ada11f5b2b7d62ac5e8703c436d0c60b937a73f3`。
 
 ## Review Gate
 
