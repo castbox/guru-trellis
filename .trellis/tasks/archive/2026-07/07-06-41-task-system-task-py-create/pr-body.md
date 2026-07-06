@@ -35,8 +35,9 @@
 - `trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh`
 - `git diff --check`
 - `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh`
+- `TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#codex/41-task-system-task-py-create trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh`
 
-已发布 release tag 的 throwaway install 验证通过；当前未推送分支在 publish 前无法作为 `gh:...#branch` marketplace source 验证，publish 后需用 `gh:castbox/guru-trellis/trellis#codex/41-task-system-task-py-create` 补一次当前分支 marketplace 安装验证。
+已发布 release tag 的 throwaway install 验证通过；PR publish 后已补跑当前分支 marketplace 安装验证，`gh:castbox/guru-trellis/trellis#codex/41-task-system-task-py-create` 能完成 `trellis init`、preset apply、`check-env`、`version.sh`、finish/publish direct-call guard、workflow preview 与 forced switch 验证。
 
 ## Review Gate
 
