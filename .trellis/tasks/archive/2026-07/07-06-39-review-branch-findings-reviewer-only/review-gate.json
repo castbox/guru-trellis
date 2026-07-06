@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-06T05:03:17Z",
-  "task_dir": ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-06-39-review-branch-findings-reviewer-only",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/39-review-branch-findings-reviewer-only",
@@ -99,7 +99,7 @@
   "observations": [],
   "followup_candidates": [],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-06-39-review-branch-findings-reviewer-only/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 39,
@@ -123,13 +123,13 @@
     "reviewer": "019f35c6-da2d-7b71-b637-fd8a111839ef",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-06-39-review-branch-findings-reviewer-only/review.md",
       "sha256": "dd4cf826c41c0504f481b8e3b8179f65e4437699c7d201cfb84dcbd2e0d10a86",
       "size_bytes": 4750,
       "modified_at": "2026-07-06T05:02:53.310664+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-06-39-review-branch-findings-reviewer-only/agent-assignment.json",
       "sha256": "0d7c858c0fef30a9f2a7ace80bf8217fb109e118c28574f36b66308deda32500",
       "size_bytes": 2323,
       "modified_at": "2026-07-06T05:02:20.270920+00:00",
@@ -143,7 +143,7 @@
       "agents_count": 3,
       "review_rounds_count": 1,
       "reuse_decisions_count": 0,
-      "task": ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only",
+      "task": ".trellis/tasks/archive/2026-07/07-06-39-review-branch-findings-reviewer-only",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "evidence": [
