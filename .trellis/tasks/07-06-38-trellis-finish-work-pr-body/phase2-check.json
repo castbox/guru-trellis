@@ -1,0 +1,161 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-06T03:25:47Z",
+  "task_dir": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body",
+  "base_branch": "main",
+  "head": "d240626e4754d5f3dae2947e3e5b2de8739edc83",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/trellis-finish-work/SKILL.md",
+    ".claude/commands/trellis/finish-work.md",
+    ".codex/prompts/trellis-finish-work.md",
+    ".codex/skills/trellis-finish-work/SKILL.md",
+    ".cursor/commands/trellis-finish-work.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/workflow.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/"
+  ],
+  "checker": "trellis-check-agent:019f356c-7b01-7f41-97dd-96880a6a650d",
+  "check_summary": "阶段二检查通过：#38 已将 trellis-finish-work workflow、canonical overlays、dogfood 入口和 public workflow README 的 finish 示例统一为先写 task-local PR body、再 --body-file dry-run、最后正式 --body-file 执行；检查代理发现的 README 旧示例与 public docs 测试缺口均已修复；补充 workflow quality spec，要求命令示例变更同时覆盖 public docs；无未解决 P0/P1/P2/P3 finding。Docs SSOT 已同步 workflow README，部署资产不受影响。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/prd.md",
+      "sha256": "42a4d10234942604bf3a4e682d7a1d427ef40e5fb9588a19576d4b260c0b6ace",
+      "size_bytes": 3570,
+      "modified_at": "2026-07-06T03:03:01.402982+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/design.md",
+      "sha256": "cc85419bed66ee42a6c7052eed90a222381224b4e74b4e9083c1badd8c9ecad5",
+      "size_bytes": 2630,
+      "modified_at": "2026-07-06T03:03:01.403185+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/implement.md",
+      "sha256": "78a32ec819fa1206abe55c9738f2502e80d4974a93e6d3576c2150e9c9bbd0cf",
+      "size_bytes": 2191,
+      "modified_at": "2026-07-06T03:03:01.403371+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/issue-scope-ledger.json",
+      "sha256": "c144c43f4131afc440c02d438c3e252b1f8a7274775efa0b3b23038103e696cc",
+      "size_bytes": 1621,
+      "modified_at": "2026-07-06T03:21:36.981282+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/phase2-findings.json",
+      "sha256": "c867528913194e4ffb263c7c37e949e777f52ec0fc0da4ceea778b43902d25cb",
+      "size_bytes": 675,
+      "modified_at": "2026-07-06T03:23:31.816221+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "a1437dff864e388183a51488de5daa5c3a599f179a79ee4dd8d390cdf23606bf",
+      "size_bytes": 12495,
+      "modified_at": "2026-07-06T02:57:34.301308+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "6432e8cadb2c3059da1f5a5e24f2aaa988c07ec6ff80ff0cb264333427be77be",
+      "size_bytes": 4836,
+      "modified_at": "2026-07-06T03:24:36.216088+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "66f0882c8afeb7292dff40ff4b4a281885517e57e2258ff8f76e70f849b17550",
+      "size_bytes": 4918,
+      "modified_at": "2026-07-06T02:57:34.300099+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "efa7df0c75d57a2a25f1cec6e61e3fb298fe4c9b24f5339494a014aaacba894a",
+      "size_bytes": 7803,
+      "modified_at": "2026-07-06T02:57:34.299985+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "35891233237b0cb4be3d2009eac25b0a5bde359fd02098ce63e261d7854b836a",
+      "size_bytes": 3482,
+      "modified_at": "2026-07-06T02:57:34.297743+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "passed, 112 tests"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json",
+      "result": "passed"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-06-38-trellis-finish-work-pr-body",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase",
+      "result": "passed, 639 lines"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 3.6",
+      "result": "passed, 27 lines"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "passed, dogfood overlay copies match canonical Guru Team overlays"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "result": "passed, tag-pinned public workflow plus current checkout preset overlay install verified; unpushed current branch marketplace workflow not verified"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "findings": [
+    {
+      "priority": "P2",
+      "message": "Public workflow README still showed the old bare finish-work helper line; replaced it with task-local pr-body.md, dry-run readiness preview, then formal finish execution.",
+      "path": "trellis/workflows/guru-team/README.md",
+      "status": "resolved"
+    },
+    {
+      "priority": "P3",
+      "message": "Regression test covered workflow and overlay entrypoints but not public docs; added public docs assertion for README, workflow README, preset README, and requirement-main.",
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "status": "resolved"
+    }
+  ],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

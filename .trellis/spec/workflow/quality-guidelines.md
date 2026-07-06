@@ -56,6 +56,12 @@ must contain concrete `变更摘要`, `影响范围`, `验证结果`, `Review Ga
 `Issue 关闭范围`, and `安全说明` sections. The blocked case should cover phrases
 such as `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact`.
 
+When changing user-facing workflow command examples, especially closeout or
+publish examples, add regression coverage or explicit grep checks for both the
+runtime entrypoints and public docs (`README.md`, workflow README, preset README,
+and durable requirement docs when present). A command example can be correct in
+overlays but still mislead users if a README keeps the older copy.
+
 ## Review Focus
 
 Before Branch Review Gate, obtain an independent Agent review of the full branch

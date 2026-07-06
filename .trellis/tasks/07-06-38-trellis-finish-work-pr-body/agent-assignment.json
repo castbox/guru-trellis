@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-06T03:04:35Z",
+  "updated_at": "2026-07-06T03:15:43Z",
+  "task": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body",
+  "head": "d240626e4754d5f3dae2947e3e5b2de8739edc83",
+  "agents": [
+    {
+      "logical_role": "实现代理",
+      "agent_id": "019f3562-4da0-77b0-8297-72765bde02ae",
+      "platform_nickname": "Implement Agent",
+      "assigned_at": "2026-07-06T03:04:35Z",
+      "assigned_head": "d240626e4754d5f3dae2947e3e5b2de8739edc83",
+      "reason": "按当前 Codex mode，Phase 2 实现默认交给 Trellis 实现代理；本轮实现范围限定为 #38 的 workflow/overlay 文案、dogfood 同步和 overlay 断言测试。"
+    },
+    {
+      "logical_role": "阶段二检查代理",
+      "agent_id": "019f356c-7b01-7f41-97dd-96880a6a650d",
+      "platform_nickname": "Check Agent",
+      "assigned_at": "2026-07-06T03:15:43Z",
+      "assigned_head": "d240626e4754d5f3dae2947e3e5b2de8739edc83",
+      "reason": "Phase 2 需要覆盖 #38 的需求、设计、workflow/overlay/test diff、dogfood drift、docs SSOT 与部署影响，因此派 Trellis 检查代理执行完整质量检查。"
+    }
+  ],
+  "review_rounds": [],
+  "reuse_decisions": [],
+  "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用或更换；脚本只记录和校验客观字段、HEAD、digest 与枚举值。"
+}
