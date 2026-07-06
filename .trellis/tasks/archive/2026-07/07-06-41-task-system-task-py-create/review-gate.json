@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-06T02:47:20Z",
-  "task_dir": ".trellis/tasks/07-06-41-task-system-task-py-create",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-06-41-task-system-task-py-create",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/41-task-system-task-py-create",
@@ -78,7 +78,7 @@
   "observations": [],
   "followup_candidates": [],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-06-41-task-system-task-py-create/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-06-41-task-system-task-py-create/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 41,
@@ -102,13 +102,13 @@
     "reviewer": "019f354c-a58d-72a3-8546-f79b72664c6d",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-06-41-task-system-task-py-create/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-06-41-task-system-task-py-create/review.md",
       "sha256": "a48b5f14e58671146e39aead523a59c58f8a0320c6e6ccbf52c49cc3708a9ce3",
       "size_bytes": 3487,
       "modified_at": "2026-07-06T02:46:50.212998+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-06-41-task-system-task-py-create/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-06-41-task-system-task-py-create/agent-assignment.json",
       "sha256": "0c6c414f8c66dcab23e811ae0f990f63a6f339dcfd5e5e81d9c37a93491f0f7f",
       "size_bytes": 1392,
       "modified_at": "2026-07-06T02:46:21.934629+00:00",
@@ -120,7 +120,7 @@
       "agents_count": 1,
       "review_rounds_count": 1,
       "reuse_decisions_count": 0,
-      "task": ".trellis/tasks/07-06-41-task-system-task-py-create",
+      "task": ".trellis/tasks/archive/2026-07/07-06-41-task-system-task-py-create",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "evidence": [
