@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import tempfile
 import unittest
@@ -3449,6 +3450,77 @@ class AgentAssignmentArtifactTest(unittest.TestCase):
 
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn("JSON root must be an object", str(raised.exception))
+
+
+class FinishWorkEntrypointContractTest(unittest.TestCase):
+    REPO_ROOT = Path(__file__).resolve().parents[5]
+    ENTRYPOINT_FILES = [
+        "trellis/workflows/guru-team/workflow.md",
+        ".trellis/workflow.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+    ]
+    PUBLIC_DOC_FILES = [
+        "README.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/presets/guru-team/README.md",
+        "docs/requirements/requirement-main.md",
+    ]
+    CODE_BLOCK_RE = re.compile(r"```(?:bash)?\n(.*?)```", re.DOTALL)
+    BARE_FINISH_COMMAND = ".trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work"
+
+    def finish_work_code_blocks(self, content: str) -> list[str]:
+        return [
+            block.strip()
+            for block in self.CODE_BLOCK_RE.findall(content)
+            if "finish-work.sh" in block
+        ]
+
+    def test_finish_work_entrypoints_show_reviewed_body_and_dry_run(self) -> None:
+        for relpath in self.ENTRYPOINT_FILES:
+            with self.subTest(path=relpath):
+                content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
+                finish_blocks = self.finish_work_code_blocks(content)
+
+                self.assertTrue(finish_blocks, f"{relpath} must show finish-work command examples")
+                self.assertTrue(
+                    any("--body-file" in block or "--body-artifact" in block for block in finish_blocks),
+                    f"{relpath} must pass a reviewed PR body source",
+                )
+                self.assertTrue(
+                    any("--dry-run" in block for block in finish_blocks),
+                    f"{relpath} must show a dry-run readiness preview",
+                )
+                for block in finish_blocks:
+                    normalized = "\n".join(line.rstrip() for line in block.splitlines()).strip()
+                    self.assertFalse(
+                        any(line.strip() == self.BARE_FINISH_COMMAND for line in block.splitlines()),
+                        f"{relpath} must not keep a bare finish-work command line",
+                    )
+                    self.assertNotEqual(
+                        normalized,
+                        self.BARE_FINISH_COMMAND,
+                        f"{relpath} must not keep a bare finish-work main example",
+                    )
+
+    def test_public_docs_do_not_show_bare_finish_work_command(self) -> None:
+        for relpath in self.PUBLIC_DOC_FILES:
+            with self.subTest(path=relpath):
+                content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
+                bare_lines = [
+                    line_number
+                    for line_number, line in enumerate(content.splitlines(), start=1)
+                    if line.strip() == self.BARE_FINISH_COMMAND
+                ]
+
+                self.assertEqual(
+                    bare_lines,
+                    [],
+                    f"{relpath} must not show bare finish-work command lines",
+                )
 
 
 class ExtensionVersionPayloadTest(unittest.TestCase):

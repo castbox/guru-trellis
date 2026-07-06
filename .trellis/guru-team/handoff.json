@@ -1,21 +1,21 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 41,
-    "url": "https://github.com/castbox/guru-trellis/issues/41",
-    "title": "在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0",
+    "number": 38,
+    "url": "https://github.com/castbox/guru-trellis/issues/38",
+    "title": "完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/41-task-system-task-py-create/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/38-trellis-finish-work-pr-body/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "task-system-task-py-create",
-  "task_slug": "41-task-system-task-py-create",
-  "task_title": "#41 在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0",
-  "branch_name": "codex/41-task-system-task-py-create",
+  "slug": "trellis-finish-work-pr-body",
+  "task_slug": "38-trellis-finish-work-pr-body",
+  "task_title": "#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程",
+  "branch_name": "codex/38-trellis-finish-work-pr-body",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/41-task-system-task-py-create",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/38-trellis-finish-work-pr-body",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -26,30 +26,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#41 在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0",
+    "#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程",
     "--slug",
-    "41-task-system-task-py-create",
+    "38-trellis-finish-work-pr-body",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-06-41-task-system-task-py-create",
+  "task_dir": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 41,
-      "url": "https://github.com/castbox/guru-trellis/issues/41",
-      "title": "在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0",
+      "number": 38,
+      "url": "https://github.com/castbox/guru-trellis/issues/38",
+      "title": "完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 41,
-        "url": "https://github.com/castbox/guru-trellis/issues/41",
-        "title": "在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0",
+        "number": 38,
+        "url": "https://github.com/castbox/guru-trellis/issues/38",
+        "title": "完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -64,7 +64,7 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           af4f618 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           d240626 [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
@@ -78,7 +78,8 @@
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/31-guru-team-extension-version-manifest         aa9ee7b [codex/31-guru-team-extension-version-manifest]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/35-guru-team-no-task-intake                     105c981 [codex/35-guru-team-no-task-intake]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/37-phase-2-check-evidence-review                4c780db [codex/37-phase-2-check-evidence-review]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/41-task-system-task-py-create                   af4f618 [codex/41-task-system-task-py-create]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/38-trellis-finish-work-pr-body                  d240626 [codex/38-trellis-finish-work-pr-body]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/41-task-system-task-py-create                   e7770df [codex/41-task-system-task-py-create]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/43-trellis-subagent                             e7a4c3d [codex/43-trellis-subagent]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/44-branch-review-gate-finding-fresh             3bc50d1 [codex/44-branch-review-gate-finding-fresh]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/5-require-ai-review-prompt-before               44b29b0 [codex/5-require-ai-review-prompt-before]",
@@ -93,9 +94,9 @@
       "base_branch": "main",
       "base_ref": "main",
       "remote_ref": "origin/main",
-      "local_head_before": "67df7ff0cefbfa0dbdb6db7b213f8b34b56e5841",
-      "local_head_after": "af4f618ad60018a3dc3b9ffa599a89cfe81f7236",
-      "remote_head": "af4f618ad60018a3dc3b9ffa599a89cfe81f7236",
+      "local_head_before": "af4f618ad60018a3dc3b9ffa599a89cfe81f7236",
+      "local_head_after": "d240626e4754d5f3dae2947e3e5b2de8739edc83",
+      "remote_head": "d240626e4754d5f3dae2947e3e5b2de8739edc83",
       "fetch_performed": true,
       "fast_forwarded": true,
       "fresh": true,
@@ -106,7 +107,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/41-task-system-task-py-create/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/38-trellis-finish-work-pr-body/.trellis/.developer",
       "developer": "wumengye"
     }
   }

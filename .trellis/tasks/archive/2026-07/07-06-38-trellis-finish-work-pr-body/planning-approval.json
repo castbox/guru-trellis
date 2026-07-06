@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-06T03:03:27Z",
+  "task_dir": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body",
+  "head": "d240626e4754d5f3dae2947e3e5b2de8739edc83",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已审阅 #38 的 prd/design/implement：需求来自 GitHub issue，范围限定为 finish-work workflow/overlay 文案、dogfood 同步和测试断言；官方 Trellis 文档核对后确认应通过 Markdown workflow/overlay 改动实现，不修改脚本语义或上游源码。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户在 Phase 0 handoff 后回复“继续”，确认创建 worktree/task 并推进本 issue 的规划与实现；仓库证据未留下需要再次决策的产品问题。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/prd.md",
+      "sha256": "42a4d10234942604bf3a4e682d7a1d427ef40e5fb9588a19576d4b260c0b6ace",
+      "size_bytes": 3570,
+      "modified_at": "2026-07-06T03:03:01.402982+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/design.md",
+      "sha256": "cc85419bed66ee42a6c7052eed90a222381224b4e74b4e9083c1badd8c9ecad5",
+      "size_bytes": 2630,
+      "modified_at": "2026-07-06T03:03:01.403185+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/implement.md",
+      "sha256": "78a32ec819fa1206abe55c9738f2502e80d4974a93e6d3576c2150e9c9bbd0cf",
+      "size_bytes": 2191,
+      "modified_at": "2026-07-06T03:03:01.403371+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

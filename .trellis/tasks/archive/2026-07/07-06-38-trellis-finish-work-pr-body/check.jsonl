@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查 workflow、finish-work、publish 和 review gate 合同是否一致"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查验证命令、测试和 commit 前质量门禁覆盖"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 overlay 跨平台一致性和 dogfood drift"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查 preset apply 后安装副本和升级兼容风险"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查 durable docs / README 是否需要同步"}

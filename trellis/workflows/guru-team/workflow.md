@@ -146,7 +146,18 @@ Guru Team companion scripts:
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json
-.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work
+```
+
+Before the explicit finish entrypoint runs, create or review the task-local PR
+body at `{TASK_DIR}/pr-body.md`, then preview readiness before the formal
+finish:
+
+```bash
+.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
+  --body-file "{TASK_DIR}/pr-body.md" \
+  --dry-run
+.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
+  --body-file "{TASK_DIR}/pr-body.md"
 ```
 
 These are internal workflow helpers. `review-branch.sh` records and validates a
@@ -787,10 +798,16 @@ after the reviewed code HEAD, finish-work may allow that metadata tail:
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json --allow-metadata-after-gate
 ```
 
-Then run the internal Guru Team finish helper:
+Then create or review the task-local PR body at `{TASK_DIR}/pr-body.md` and
+run the internal Guru Team finish helper first as a side-effect-free readiness
+preview, then as the formal finish:
 
 ```bash
-.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work
+.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
+  --body-file "{TASK_DIR}/pr-body.md" \
+  --dry-run
+.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
+  --body-file "{TASK_DIR}/pr-body.md"
 ```
 
 The `--from-trellis-finish-work` marker is required proof that the explicit finish entrypoint was invoked; `trellis-continue` must not add or synthesize it. Ordinary direct `finish-work.sh` calls fail before gate, archive, journal, push, or PR side effects. The helper then runs the normal finish-work actions: it verifies the passed gate has `review_report` digest evidence, rejects uncommitted non-metadata changes, archives the active task with `task.py archive`, records the session journal with `add_session.py`, commits any remaining Trellis metadata-only changes, then invokes publish.

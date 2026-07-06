@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "workflow finish/publish 边界、canonical/dogfood 同步和 Branch Review Gate 规则"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "workflow/preset 修改的必跑验证与 review 关注点"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "平台 overlay 同步、preset apply 和 dogfood drift 规则"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "preset installer overlay 冲突处理和升级兼容规则"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "README / durable docs SSOT 影响判断"}

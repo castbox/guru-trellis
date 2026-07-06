@@ -667,3 +667,36 @@ Branch Review Gate 通过：独立 Agent 已按 origin/main...HEAD 审查 issue 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 21: 完成：#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程
+
+**Date**: 2026-07-06
+**Task**: 完成：#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程
+**Branch**: `codex/38-trellis-finish-work-pr-body`
+
+### Summary
+
+最终放行审查代理已按 origin/main...HEAD 审查当前 HEAD，未发现 P0/P1/P2/P3 finding，本分支可通过 Branch Review Gate。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `156fcf43bb90b7dcc801f989c1871eb640b71c80` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

@@ -1,0 +1,16 @@
+{
+  "findings": [
+    {
+      "priority": "P2",
+      "message": "Public workflow README still showed the old bare finish-work helper line; replaced it with task-local pr-body.md, dry-run readiness preview, then formal finish execution.",
+      "path": "trellis/workflows/guru-team/README.md",
+      "status": "resolved"
+    },
+    {
+      "priority": "P3",
+      "message": "Regression test covered workflow and overlay entrypoints but not public docs; added public docs assertion for README, workflow README, preset README, and requirement-main.",
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "status": "resolved"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "primary_issue": {
+    "number": 38,
+    "url": "https://github.com/castbox/guru-trellis/issues/38",
+    "title": "完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "trellis-finish-work canonical workflow/overlay 示例已改为先 --body-file dry-run，再正式 --body-file 执行",
+      "Codex/Claude/Cursor/.agents dogfood 副本经 preset apply 同步，check-dogfood-overlay-drift 通过",
+      "回归测试 FinishWorkEntrypointContractTest 覆盖入口和 public docs，python3 -m unittest 通过",
+      "trellis/workflows/guru-team/README.md 中旧 bare finish-work 示例已同步修正"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 38,
+      "url": "https://github.com/castbox/guru-trellis/issues/38",
+      "title": "完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "trellis-finish-work canonical workflow/overlay 示例已改为先 --body-file dry-run，再正式 --body-file 执行",
+        "Codex/Claude/Cursor/.agents dogfood 副本经 preset apply 同步，check-dogfood-overlay-drift 通过",
+        "回归测试 FinishWorkEntrypointContractTest 覆盖入口和 public docs，python3 -m unittest 通过",
+        "trellis/workflows/guru-team/README.md 中旧 bare finish-work 示例已同步修正"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}
