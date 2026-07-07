@@ -932,3 +932,36 @@ Branch Review Gate 通过：独立 Agent 已按 origin/main...HEAD 审查 issue 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 29: 完成：#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行
+
+**Date**: 2026-07-08
+**Task**: 完成：#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行
+**Branch**: `codex/072-subagent-execution-boundaries`
+
+### Summary
+
+Release Agent 已独立审查 issue #72 的 origin/main...HEAD 完整 diff，当前无 findings，可通过 Branch Review Gate。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `80ef050bd27f6556b3896b23a59447957225baab` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
