@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-07T11:15:00Z",
-  "task_dir": ".trellis/tasks/07-07-057-chinese-doc-language",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-07-057-chinese-doc-language",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/057-chinese-doc-language",
@@ -130,7 +130,7 @@
     }
   ],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-07-057-chinese-doc-language/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-07-057-chinese-doc-language/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 57,
@@ -155,13 +155,13 @@
     "reviewer": "019f3c3f-497f-7780-a8c4-12a9eb1e7c7a",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-07-057-chinese-doc-language/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-07-057-chinese-doc-language/review.md",
       "sha256": "d22b191f0130b56e92d8a4c73a414ecac16605cd3adbbbc943c6832dccd0a2f2",
       "size_bytes": 3442,
       "modified_at": "2026-07-07T11:11:27.266667+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-07-057-chinese-doc-language/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-07-057-chinese-doc-language/agent-assignment.json",
       "sha256": "3347f2b32e58201c94f112ee65d147918b27d8d14ab08d286d6f1aef1905bb2b",
       "size_bytes": 2360,
       "modified_at": "2026-07-07T11:11:39.665878+00:00",
@@ -174,7 +174,7 @@
       "agents_count": 2,
       "review_rounds_count": 1,
       "reuse_decisions_count": 1,
-      "task": ".trellis/tasks/07-07-057-chinese-doc-language",
+      "task": ".trellis/tasks/archive/2026-07/07-07-057-chinese-doc-language",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "evidence": [
