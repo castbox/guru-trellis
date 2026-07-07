@@ -45,7 +45,8 @@ worktree_root: ""
 # Handoff file consumed by the workflow and companion scripts.
 handoff_path: ".trellis/guru-team/handoff.json"
 
-# Language used for Trellis task planning artifacts and human-readable review fields.
+# Business-project human-readable documentation default for workflow artifacts,
+# .trellis/spec/**, .trellis/tasks/**, docs/**, and bootstrap-created docs SSOT.
 artifact_language: zh-CN
 
 # Middle-platform framework knowledge lookup.

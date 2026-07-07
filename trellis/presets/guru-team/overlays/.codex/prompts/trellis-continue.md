@@ -10,7 +10,7 @@ python3 ./.trellis/scripts/get_context.py --mode phase
 
 Route by task status:
 
-- planning: keep required artifacts in Chinese, run Docs SSOT discovery and the Middle-platform Knowledge Gate when relevant, use `trellis-brainstorm` when intake evidence is ambiguous, update GitHub issue comment/body or proposed issue body as appropriate, then ask for review, record/check `planning-approval.json`, and only then run `task.py start`.
+- planning: apply the business-project Chinese documentation default from `.trellis/workflow.md` across `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**`, `00-bootstrap-guidelines` docs SSOT, and human-readable artifact fields; run Docs SSOT discovery and the Middle-platform Knowledge Gate when relevant, use `trellis-brainstorm` when intake evidence is ambiguous, update GitHub issue comment/body or proposed issue body as appropriate, then ask for review, record/check `planning-approval.json`, and only then run `task.py start`.
 - in_progress: confirm knowledge-gate and docs responsibilities from artifacts, implement, record sub-agent assignment when dispatching implement/check agents, run full `trellis-check`, record/check `phase2-check.json` with the current pre-commit `dirty_paths`, reconcile specs/docs, then commit.
 - after commit: obtain an independent Agent review over the full diff, record review role/reuse decisions in `agent-assignment.json` when sub-agents are used, write task-local `{TASK_DIR}/review.md`, then run Branch Review Gate before `/trellis:finish-work`, including Docs SSOT reconciliation evidence. Do not pass the gate from main-session self-review.
 

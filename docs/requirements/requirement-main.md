@@ -32,6 +32,7 @@ Canonical 资产：
 | 固定 marketplace id | `trellis/index.json` 暴露 `guru-team` workflow，稳定安装使用 `trellis init --workflow guru-team --workflow-source gh:castbox/guru-trellis/trellis#vX.Y.Z`，latest/canary 才使用不带 `#ref` 的 source。 |
 | Phase 0 intake | 文件变更类任务先进入 issue intake、duplicate search、base branch 选择和 worktree preflight；默认 planner 不写 task artifact。 |
 | Intake clarity / scope evolution | AI 读取 issue body/comment 或自然语言请求后，必须判断是否需要 `trellis-brainstorm`；澄清结果应回写 issue comment/body 或 proposed issue body。任务中新增需求或引用其他 issue 时，先确认纳入当前 task、related，还是 follow-up/new issue，并同步 `issue-scope-ledger.json`。 |
+| 业务项目中文文档默认规则 | 业务项目 `.trellis/spec/**`、`.trellis/tasks/**`、`docs/**` durable docs、`00-bootstrap-guidelines` 生成或补齐的 docs SSOT，以及 workflow artifact human-readable 字段默认中文；literal token 可保留英文。 |
 | Phase 1 planning | Trellis task 创建后写中文 `prd.md` / `design.md` / `implement.md`，并要求规划审查证据后才能进入实现。 |
 | Phase 2 execute/check | 实现后运行完整 `trellis-check`，检查需求、设计、代码、测试、spec、docs 和部署影响，不用少量命令通过替代完整检查。 |
 | Phase 3 finish/publish | commit 后经过 Branch Review Gate，再由 `trellis-finish-work` archive task、记录 journal、提交 metadata 并发布非 draft PR。 |
@@ -183,6 +184,7 @@ Canonical 资产：
 | Extension version/provenance | `trellis/guru-team-extension.json` 是 Guru Team extension canonical version；installer 写入 `.trellis/guru-team/extension.json` 记录安装版本、source ref/commit、source tree state 和 selected platforms。 |
 | Release tag contract | Guru Team extension release tag 使用 repo 级 `vX.Y.Z`，并与 `trellis/guru-team-extension.json.version` 一致；tag-pinned stable marketplace source 使用 `gh:castbox/guru-trellis/trellis#vX.Y.Z`。 |
 | Dogfood drift check | canonical overlay 与本仓库安装副本可通过 `check-dogfood-overlay-drift.sh` 比对。 |
+| 业务项目语言归一化 | preset installer 确定性替换 `.trellis/spec/**`、workspace index 和 `00-bootstrap-guidelines` 中已知 Trellis 英文文档语言规则，不扫描普通 task 历史或翻译业务 `docs/**`。 |
 
 平台 overlay 当前覆盖：
 
@@ -246,6 +248,7 @@ Canonical 资产：
 | Configurable knowledge mode | `middle_platform_knowledge.mode` 支持 `off`、`optional_warn`、`required`；缺失时按 `optional_warn`。 |
 | Repo Docs SSOT reconciliation | Planning 阶段识别 durable docs；finish 前记录哪些 docs 更新、哪些 task 内容合并回长期文档、哪些只保留为 task history。 |
 | Spec bootstrap 边界 | 安装后发现 `00-bootstrap-guidelines` 时只报告并询问，不把 spec bootstrap 作为安装副作用静默完成。 |
+| Bootstrap/docs 中文规则 | 用户确认 bootstrap 后，生成或刷新 `.trellis/spec/**` 与 `docs/**` SSOT 主文档时按业务项目中文默认规则写作。 |
 | Spec update 判断 | 每个任务 closeout 前判断是否需要更新 `.trellis/spec/`，但不把 active task 或私有业务 PRD 放入公共 template / marketplace。 |
 | Public docs 规范 | `.trellis/spec/docs/public-docs.md` 约束 README 安装/升级 prompt、Git 发布预检、安全和 SSOT 一致性。 |
 
@@ -272,6 +275,7 @@ Canonical 资产：
 | #33 | open | 当前任务 | Guru Team extension version 对齐 `0.6.5`；repo release tag 使用 `v0.6.5`；稳定 marketplace source 使用 `#v0.6.5`。 |
 | #43 | open | 当前任务 | Trellis sub-agent 中文逻辑角色、UI 展示名中文化、`agent-assignment.json`、reviewer 复用/更换记录和 gate digest 集成。 |
 | #55 | open | 当前任务 | issue intake clarity / brainstorming、issue body/comment/new issue 留痕、任务中 scope-change gate。 |
+| #57 | open | 当前任务 | 业务项目 Trellis 文档语言默认中文；installer 归一化已知英文模板语言规则；bootstrap docs SSOT 中文规则。 |
 
 ## 9. 当前扩展边界
 

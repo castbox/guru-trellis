@@ -43,6 +43,15 @@ version lives in `trellis/guru-team-extension.json`; it is separate from the
 official Trellis CLI version and from the marketplace index schema version in
 `trellis/index.json`.
 
+The preset also normalizes known Trellis-generated English documentation
+language rules in target business repositories. It deterministically replaces
+the fixed `All documentation ... English` template lines in `.trellis/spec/**`,
+`.trellis/workspace/index.md`, `.trellis/workspace/*/index.md`, and
+`.trellis/tasks/00-bootstrap-guidelines/**/*.md` with the Guru Team Chinese
+documentation rule. It does not scan ordinary task history or translate
+business `docs/**`; those documents are governed by the workflow's AI-facing
+Chinese documentation contract.
+
 Stable workflow marketplace installs should pin the repo release tag that
 combines the target official Trellis CLI version and Guru Team revision, for
 example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.1`. That release targets
@@ -87,7 +96,9 @@ The script creates a temporary Git repo, runs `trellis init -y` with the
 `--platform codex --platform cursor`, checks that `.trellis/workflow.md`
 exists, verifies that `check-env.sh` and `version.sh` are executable, asserts
 `.trellis/guru-team/extension.json` exists, asserts `.claude/` was not created,
-and runs `check-env --json` plus `version.sh --json`. Trellis CLI accepts
+asserts target `.trellis/spec/**`, workspace indexes, and
+`00-bootstrap-guidelines` do not retain known English documentation language
+requirements, and runs `check-env --json` plus `version.sh --json`. Trellis CLI accepts
 `gh:user/repo/path#ref` workflow marketplace sources; the script defaults to
 `TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#v0.6.5-guru.1` for stable
 release verification. When the source is unpinned
@@ -205,6 +216,12 @@ what spec files it would inspect or modify, but it should ask the user whether
 to complete bootstrap now or leave it for a separate follow-up. If the user does
 not explicitly confirm, preserve the task and do not rewrite `.trellis/spec/`
 template content.
+
+When the user does confirm bootstrap in a target business repository, generated
+or refreshed `.trellis/spec/**` prose and any docs SSOT files created or
+completed under `docs/**` must use Chinese human-readable prose by default.
+Literal commands, paths, config keys, GitHub keywords, external API names, and
+code symbols may remain English.
 
 The daily user-facing entry points are natural-language task requests, issue
 URLs or issue numbers, `trellis-continue`, and `trellis-finish-work`. The

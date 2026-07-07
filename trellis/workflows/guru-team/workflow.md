@@ -10,7 +10,7 @@
 4. **Specs injected, not remembered** — follow `.trellis/spec/` and task artifacts instead of chat memory.
 5. **Persist decisions** — requirements, research, implementation plans, and reusable lessons go to files.
 6. **Incremental development** — one task, one branch, one workspace unless the user explicitly approves a current-checkout direct-edit override for this turn.
-7. **Chinese artifacts by default** — Trellis task planning artifacts and human-readable review fields are written in Chinese.
+7. **Business project Chinese docs by default** — In target business repositories, `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**` durable docs, `00-bootstrap-guidelines` generated docs SSOT, and human-readable workflow artifact fields are written in Chinese by default.
 8. **Review before finish** — committed branch work must pass Branch Review Gate before `finish-work`.
 9. **Publish after finish** — `finish-work` archives the task, records the journal, then automatically pushes and creates a non-draft PR.
 10. **Capture learnings** — after each task, review whether `.trellis/spec/` needs updates.
@@ -252,7 +252,19 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 
 Lightweight tasks may be PRD-only. Complex tasks must have `prd.md`, `design.md`, and `implement.md` before `task.py start`.
 
-`prd.md`, `design.md`, `implement.md`, `planning-approval.json`, `phase2-check.json`, `agent-assignment.json`, and human-readable fields in `review-gate.json` / `review.md` must be written in Chinese. If an external API, code symbol, command, or GitHub keyword must stay in English, keep the literal token and write the surrounding explanation in Chinese.
+### Business Project Documentation Language
+
+For repositories that install and use the Guru Team workflow as a business project workflow, human-readable documentation is Chinese by default:
+
+- `.trellis/spec/**` project conventions and bootstrap outputs;
+- `.trellis/tasks/**` task artifacts, including `prd.md`, `design.md`, `implement.md`, `review.md`, and human-readable fields in JSON artifacts such as `planning-approval.json`, `phase2-check.json`, `agent-assignment.json`, and `review-gate.json`;
+- `docs/**` durable requirements, design, test, deploy, operations, and versioned docs;
+- docs SSOT files created or completed by `00-bootstrap-guidelines`;
+- workflow/helper artifact fields that are meant for humans to read, including summaries, evidence, findings, observations, follow-up candidates, PR titles, and PR bodies.
+
+Keep literal command names, file paths, GitHub keywords, configuration keys, external API names, code symbols, and other required tokens in English when needed, but write the surrounding explanation in Chinese.
+
+The `guru-trellis` source repository itself is a public extension repository, not a target business project. Its public README/source comments/script help/marketplace metadata may remain English or bilingual when that is clearer for distribution, interoperability, or literal API compatibility. Do not use that exception to keep business-project `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**`, or bootstrap-generated docs SSOT in English.
 
 ### Middle-platform Knowledge Gate
 
@@ -287,6 +299,8 @@ During planning, inspect whether the target repo has a durable docs library, typ
 - versioned design docs.
 
 If complete or partial durable docs exist, `prd.md`, `design.md`, and `implement.md` should describe task-scoped deltas, decisions, evidence, and links to relevant durable docs. They should also list which durable docs need updates in this task, or why no durable docs update is needed.
+
+Any durable docs created or updated through this workflow, including docs SSOT files created or completed by `00-bootstrap-guidelines`, must follow the business-project Chinese documentation default above.
 
 Before commit, Branch Review Gate, finish-work, and publish, run Docs SSOT reconciliation:
 
@@ -899,7 +913,7 @@ If any `close_issues` entry lacks acceptance/verification evidence, or the revie
    turn; that approval does not approve commit, push, PR creation, or issue
    closure.
 4. Planning artifacts must be persisted before implementation.
-5. `prd.md`, `design.md`, `implement.md`, and review-gate human-readable fields are Chinese by default.
+5. In business projects, `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**` durable docs, `00-bootstrap-guidelines` generated docs SSOT, and workflow artifact human-readable fields are Chinese by default, with English reserved for literal tokens such as commands, paths, config keys, GitHub keywords, and code symbols.
 6. Daily user entry points are natural-language task requests, issue URLs or issue numbers, `trellis-continue`, and `trellis-finish-work`; `trellis-start` remains a fallback / explicit orientation entry for no-auto-injection platforms, disabled hooks, suspected bootstrap failures, or manual context reloads.
 7. `review-branch`, `finish-work.sh`, and `publish-pr` are companion script subcommands, not user-facing phases; ordinary direct `finish-work.sh` and `publish-pr` calls are blocked before archive/push/PR.
 8. Branch Review Gate belongs after commit and before finish-work; do not put it in a non-blocking hook.

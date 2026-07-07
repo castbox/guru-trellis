@@ -39,7 +39,7 @@ python3 ./.trellis/scripts/get_context.py --mode phase
    branch, dirty state, expected side effects, changed-file scope, and that
    commit/push/PR still require separate approval.
 
-7. Keep planning artifacts in Chinese: `prd.md`, `design.md`, `implement.md`, and human-readable review fields.
+7. In target business repositories, keep human-readable documentation in Chinese by default: `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**`, docs SSOT created or completed by `00-bootstrap-guidelines`, and workflow artifact fields such as summaries, evidence, findings, observations, follow-up candidates, PR titles, and PR bodies. Literal commands, paths, config keys, GitHub keywords, external API names, and code symbols may stay in English.
 
 8. During planning, follow `.trellis/workflow.md` for Middle-platform Knowledge Gate and Repo Docs SSOT discovery. MCP availability is checked from current AI tools/capabilities, not shell scripts.
 

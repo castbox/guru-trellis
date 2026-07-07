@@ -1,0 +1,32 @@
+{
+  "primary_issue": {
+    "number": 57,
+    "url": "https://github.com/castbox/guru-trellis/issues/57",
+    "title": "统一业务项目 Trellis 文档语言为中文",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "workflow / overlay / README / spec / durable docs 已明确业务项目 .trellis/spec、.trellis/tasks、docs、00-bootstrap-guidelines docs SSOT 和 workflow artifact human-readable 字段默认中文，并记录 guru-trellis 源码仓库例外边界。",
+      "preset installer language_guidance 确定性替换 .trellis/spec、workspace index 和 .trellis/tasks/00-bootstrap-guidelines 中已知 Trellis 英文语言规则，不扫描普通历史 task 或业务 docs。",
+      "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py 通过，覆盖 spec、workspace、bootstrap task、docs 不扫描和 payload。",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh 通过，临时项目中 backend/frontend spec 与 workspace 旧英文规则被替换，且无已知英文语言规则残留。",
+      "rg 检查 overlay、dogfood 副本、README、workflow/preset docs、.trellis/spec、workspace 和 bootstrap task 未发现旧英文文档语言规则。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 57,
+      "url": "https://github.com/castbox/guru-trellis/issues/57",
+      "title": "统一业务项目 Trellis 文档语言为中文",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+        "acceptance_evidence": [
+          "workflow / overlay / README / spec / durable docs 已明确业务项目 .trellis/spec、.trellis/tasks、docs、00-bootstrap-guidelines docs SSOT 和 workflow artifact human-readable 字段默认中文，并记录 guru-trellis 源码仓库例外边界。",
+          "preset installer language_guidance 确定性替换 .trellis/spec、workspace index 和 .trellis/tasks/00-bootstrap-guidelines 中已知 Trellis 英文语言规则，不扫描普通历史 task 或业务 docs。",
+          "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py 通过，覆盖 spec、workspace、bootstrap task、docs 不扫描和 payload。",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh 通过，临时项目中 backend/frontend spec 与 workspace 旧英文规则被替换，且无已知英文语言规则残留。",
+          "rg 检查 overlay、dogfood 副本、README、workflow/preset docs、.trellis/spec、workspace 和 bootstrap task 未发现旧英文文档语言规则。"
+        ]
+      }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

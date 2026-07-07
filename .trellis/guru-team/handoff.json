@@ -1,72 +1,72 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 55,
-    "url": "https://github.com/castbox/guru-trellis/issues/55",
-    "title": "github issue intake 的过程需要与时俱进",
+    "number": 57,
+    "url": "https://github.com/castbox/guru-trellis/issues/57",
+    "title": "统一业务项目 Trellis 文档语言为中文",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/057-chinese-doc-language/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "055-intake-scope-evolution",
+  "slug": "057-chinese-doc-language",
   "naming_quality": {
     "ok": true,
     "reason": "naming includes enough business tokens",
     "requires_semantic_name": false,
-    "current_slug": "055-intake-scope-evolution",
+    "current_slug": "057-chinese-doc-language",
     "current_surface": "workspace_slug",
     "suggested_override_flags": [],
     "checked_names": {
       "slug": {
         "ok": true,
-        "slug": "055-intake-scope-evolution",
+        "slug": "057-chinese-doc-language",
         "reason": "ok",
         "business_tokens": [
-          "intake",
-          "scope",
-          "evolution"
+          "chinese",
+          "doc",
+          "language"
         ]
       },
       "task_slug": {
         "ok": true,
-        "slug": "055-intake-scope-evolution",
+        "slug": "057-chinese-doc-language",
         "reason": "ok",
         "business_tokens": [
-          "intake",
-          "scope",
-          "evolution"
+          "chinese",
+          "doc",
+          "language"
         ]
       },
       "workspace_slug": {
         "ok": true,
-        "slug": "055-intake-scope-evolution",
+        "slug": "057-chinese-doc-language",
         "reason": "ok",
         "business_tokens": [
-          "intake",
-          "scope",
-          "evolution"
+          "chinese",
+          "doc",
+          "language"
         ]
       },
       "branch_name": {
         "ok": true,
-        "slug": "055-intake-scope-evolution",
+        "slug": "057-chinese-doc-language",
         "reason": "ok",
         "business_tokens": [
-          "intake",
-          "scope",
-          "evolution"
+          "chinese",
+          "doc",
+          "language"
         ]
       }
     }
   },
-  "task_slug": "055-intake-scope-evolution",
-  "task_title": "#55 github issue intake 的过程需要与时俱进",
-  "branch_name": "codex/055-intake-scope-evolution",
-  "workspace_slug": "055-intake-scope-evolution",
+  "task_slug": "057-chinese-doc-language",
+  "task_title": "#57 统一业务项目 Trellis 文档语言为中文",
+  "branch_name": "codex/057-chinese-doc-language",
+  "workspace_slug": "057-chinese-doc-language",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/057-chinese-doc-language",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -77,30 +77,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#55 github issue intake 的过程需要与时俱进",
+    "#57 统一业务项目 Trellis 文档语言为中文",
     "--slug",
-    "055-intake-scope-evolution",
+    "057-chinese-doc-language",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-07-055-intake-scope-evolution",
+  "task_dir": ".trellis/tasks/07-07-057-chinese-doc-language",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 55,
-      "url": "https://github.com/castbox/guru-trellis/issues/55",
-      "title": "github issue intake 的过程需要与时俱进",
+      "number": 57,
+      "url": "https://github.com/castbox/guru-trellis/issues/57",
+      "title": "统一业务项目 Trellis 文档语言为中文",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 55,
-        "url": "https://github.com/castbox/guru-trellis/issues/55",
-        "title": "github issue intake 的过程需要与时俱进",
+        "number": 57,
+        "url": "https://github.com/castbox/guru-trellis/issues/57",
+        "title": "统一业务项目 Trellis 文档语言为中文",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -115,9 +115,10 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           1442489 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           4295e05 [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate            44254bb [codex/051-prepare-task-naming-quality-gate]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution                      1442489 [codex/055-intake-scope-evolution]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution                      a366142 [codex/055-intake-scope-evolution]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/057-chinese-doc-language                        4295e05 [codex/057-chinese-doc-language]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness                      bbf68e0 [codex/059-refresh-base-freshness]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
@@ -151,10 +152,10 @@
       "base_ref": "main",
       "remote_ref": "origin/main",
       "local_head_before": "14424897c902fd12b3dbd07a6d4ec68e5a8aa4df",
-      "local_head_after": "14424897c902fd12b3dbd07a6d4ec68e5a8aa4df",
-      "remote_head": "14424897c902fd12b3dbd07a6d4ec68e5a8aa4df",
+      "local_head_after": "4295e05219a3c9d73c580201abd274c9c27d9753",
+      "remote_head": "4295e05219a3c9d73c580201abd274c9c27d9753",
       "fetch_performed": true,
-      "fast_forwarded": false,
+      "fast_forwarded": true,
       "fresh": true,
       "status": "fresh",
       "base_ref_for_worktree": "main"
@@ -163,7 +164,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/057-chinese-doc-language/.trellis/.developer",
       "developer": "wumengye"
     }
   }

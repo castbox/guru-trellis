@@ -37,7 +37,7 @@ Continue entries must:
 - run `python3 ./.trellis/scripts/get_context.py`
 - run `python3 ./.trellis/scripts/get_context.py --mode phase`
 - route by task status
-- keep planning artifacts and review fields in Chinese
+- apply the business-project Chinese documentation default from `.trellis/workflow.md` across `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**`, `00-bootstrap-guidelines` docs SSOT, and human-readable workflow artifact fields
 - write task-local `review.md`, run Branch Review Gate with
   `--review-source independent-agent` and
   `--review-report <task-local review.md>`, then stop before finish-work

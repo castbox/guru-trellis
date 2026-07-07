@@ -66,6 +66,31 @@ Do not add installer behavior that silently merges unknown local config values
 unless the merge is deterministic, covered by tests or validation, and safe for
 older configs.
 
+## Language Guidance Normalization
+
+The preset installer may perform deterministic language-rule normalization for
+target business repositories after managed assets and overlays are applied. The
+allowed scope is limited to:
+
+- `.trellis/spec/**/*.md`
+- `.trellis/workspace/index.md`
+- `.trellis/workspace/*/index.md`
+- `.trellis/tasks/00-bootstrap-guidelines/**/*.md`
+
+It must only replace the known Trellis-generated English language-rule
+sentences enumerated in the installer's `ENGLISH_LANGUAGE_RULES` constant with
+the Guru Team Chinese documentation rule. Do not write those exact legacy
+sentences into source-repo `.trellis/spec/**` guidance, because dogfood
+installer apply intentionally scans specs for target-project normalization. It
+must not scan ordinary historical task directories, rewrite unknown task
+content, or translate business `docs/**`; durable docs language is an AI
+workflow contract, not an installer rewrite job.
+
+The CLI JSON success payload must expose a `language_guidance` result block with
+checked paths, updated paths, replacement count, and the normalized rule. This
+is deterministic install evidence only; the script must not judge whether an
+unknown document should be translated.
+
 ## Overlay Conflict Handling
 
 Use `copy_overlay()` behavior:
@@ -181,6 +206,11 @@ or disposable copy and verify:
 - unknown overlay edits produce `.new`
 - known upstream Trellis-generated entries are replaced
 - scripts remain executable
+- `language_guidance` reports checked/updated `.trellis/spec/**` and workspace
+  index paths without modifying business `docs/**`
+- throwaway validation fails if `.trellis/spec/**`, workspace index files, or
+  `00-bootstrap-guidelines` still contain known English documentation language
+  requirements
 
 ## Common Mistakes
 

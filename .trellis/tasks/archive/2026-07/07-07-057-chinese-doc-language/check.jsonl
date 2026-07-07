@@ -1,0 +1,12 @@
+{"file": ".trellis/tasks/07-07-057-chinese-doc-language/prd.md", "reason": "检查需求和验收标准是否覆盖 issue #57。"}
+{"file": ".trellis/tasks/07-07-057-chinese-doc-language/design.md", "reason": "检查实现是否符合设计边界。"}
+{"file": ".trellis/tasks/07-07-057-chinese-doc-language/implement.md", "reason": "检查验证命令和执行顺序。"}
+{"file": ".trellis/tasks/07-07-057-chinese-doc-language/research/official-trellis-docs.md", "reason": "检查是否遵从官方 workflow / spec marketplace 扩展面。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查 installer 行为、单测和冲突处理。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 overlay 和 dogfood 副本同步。"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查 workflow 语言规则和 gate 合同。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查 companion script 边界。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查验证命令和 review focus。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查 public docs / durable docs SSOT 更新。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查新增 helper 是否复用现有模式。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查 workflow / installer / docs / tests 多层一致性。"}

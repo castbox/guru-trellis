@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 26
+- **Total Sessions**: 27
 - **Last Active**: 2026-07-07
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~868 | Active |
+| `journal-1.md` | ~901 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 27 | 2026-07-07 | 完成：#57 统一业务项目 Trellis 文档语言为中文 | `c19b9e2af89399f2b7fbd8f0f0ef26bc44b83dc8` | `codex/057-chinese-doc-language` |
 | 26 | 2026-07-07 | 完成：#55 github issue intake 的过程需要与时俱进 | `ecfa4c51f5da93f2672a28913f50450406408307` | `codex/055-intake-scope-evolution` |
 | 25 | 2026-07-07 | 完成：#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态 | `548a24f8e9709b1a720088ae053e8c80d6b8cf98` | `codex/059-refresh-base-freshness` |
 | 24 | 2026-07-07 | 完成：#51 修正 prepare-task 命名质量门禁 | `7d877da12e4e009485b77b36e9043f3c0745905e`, `4981f15082c8c7ca4a7425253bc9c5949ac1c68c` | `codex/051-prepare-task-naming-quality-gate` |

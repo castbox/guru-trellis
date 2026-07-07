@@ -68,6 +68,130 @@ class CodexDispatchModeInstallerTest(unittest.TestCase):
         self.assertIn("dispatch_mode: sub-agent", config.read_text(encoding="utf-8"))
 
 
+class LanguageGuidanceInstallerTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tmp.name)
+        (self.repo / ".trellis").mkdir()
+        self.guru_root = preset.guru_root_from_script()
+        self.workflow_src = self.guru_root / "trellis/workflows/guru-team"
+        self.install_dst = self.repo / ".trellis/guru-team"
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_spec_index_english_language_rule_is_replaced_with_chinese(self) -> None:
+        spec_index = self.repo / ".trellis/spec/backend/index.md"
+        spec_index.parent.mkdir(parents=True)
+        spec_index.write_text(
+            "# Backend\n\n**Language**: All documentation must be written in **English**.\n",
+            encoding="utf-8",
+        )
+
+        payload = preset.normalize_business_doc_language_guidance(self.repo)
+
+        self.assertEqual(payload["replacement_count"], 1)
+        self.assertEqual(payload["updated_paths"], [{"path": ".trellis/spec/backend/index.md", "replacements": 1}])
+        self.assertIn(".trellis/spec/backend/index.md", payload["checked_paths"])
+        text = spec_index.read_text(encoding="utf-8")
+        self.assertIn("业务项目人类可读文档默认使用**中文**", text)
+        self.assertNotIn("All documentation must be written in **English**", text)
+
+    def test_workspace_indexes_english_language_rules_are_replaced_with_chinese(self) -> None:
+        root_index = self.repo / ".trellis/workspace/index.md"
+        user_index = self.repo / ".trellis/workspace/wumengye/index.md"
+        user_index.parent.mkdir(parents=True)
+        root_index.write_text(
+            "**Language**: All documentation should be written in **English**.\n",
+            encoding="utf-8",
+        )
+        user_index.write_text(
+            "**Language**: All documentation must be written in **English**.\n",
+            encoding="utf-8",
+        )
+
+        payload = preset.normalize_business_doc_language_guidance(self.repo)
+
+        self.assertEqual(payload["replacement_count"], 2)
+        self.assertEqual(
+            payload["updated_paths"],
+            [
+                {"path": ".trellis/workspace/index.md", "replacements": 1},
+                {"path": ".trellis/workspace/wumengye/index.md", "replacements": 1},
+            ],
+        )
+        self.assertIn("业务项目人类可读文档默认使用**中文**", root_index.read_text(encoding="utf-8"))
+        self.assertIn("业务项目人类可读文档默认使用**中文**", user_index.read_text(encoding="utf-8"))
+
+    def test_bootstrap_guidelines_language_rule_is_replaced_with_chinese(self) -> None:
+        bootstrap_prd = self.repo / ".trellis/tasks/00-bootstrap-guidelines/prd.md"
+        bootstrap_prd.parent.mkdir(parents=True)
+        bootstrap_prd.write_text(
+            "# Bootstrap\n\n**Language**: All documentation must be written in **English**.\n",
+            encoding="utf-8",
+        )
+
+        payload = preset.normalize_business_doc_language_guidance(self.repo)
+
+        self.assertEqual(payload["replacement_count"], 1)
+        self.assertEqual(
+            payload["updated_paths"],
+            [{"path": ".trellis/tasks/00-bootstrap-guidelines/prd.md", "replacements": 1}],
+        )
+        self.assertIn(".trellis/tasks/00-bootstrap-guidelines/**/*.md", payload["scope"])
+        text = bootstrap_prd.read_text(encoding="utf-8")
+        self.assertIn("业务项目人类可读文档默认使用**中文**", text)
+        self.assertNotIn("All documentation must be written in **English**", text)
+
+    def test_files_without_known_language_rule_remain_unchanged_and_docs_are_not_scanned(self) -> None:
+        spec_index = self.repo / ".trellis/spec/backend/index.md"
+        docs_file = self.repo / "docs/requirements/index.md"
+        spec_index.parent.mkdir(parents=True)
+        docs_file.parent.mkdir(parents=True)
+        spec_text = "# Backend\n\nWrite examples with precise command names.\n"
+        docs_text = "**Language**: All documentation must be written in **English**.\n"
+        spec_index.write_text(spec_text, encoding="utf-8")
+        docs_file.write_text(docs_text, encoding="utf-8")
+
+        payload = preset.normalize_business_doc_language_guidance(self.repo)
+
+        self.assertEqual(payload["action"], "checked")
+        self.assertEqual(payload["replacement_count"], 0)
+        self.assertEqual(payload["updated_paths"], [])
+        self.assertIn(".trellis/spec/backend/index.md", payload["checked_paths"])
+        self.assertNotIn("docs/requirements/index.md", payload["checked_paths"])
+        self.assertEqual(spec_index.read_text(encoding="utf-8"), spec_text)
+        self.assertEqual(docs_file.read_text(encoding="utf-8"), docs_text)
+
+    def test_main_payload_reports_language_guidance(self) -> None:
+        spec_index = self.repo / ".trellis/spec/backend/index.md"
+        spec_index.parent.mkdir(parents=True)
+        spec_index.write_text(
+            "**Language**: All documentation must be written in **English**.\n",
+            encoding="utf-8",
+        )
+
+        with mock.patch(
+            "sys.argv",
+            [
+                "apply_guru_team_trellis_preset.py",
+                "--repo",
+                str(self.repo),
+                "--platform",
+                "codex",
+            ],
+        ):
+            stdout = StringIO()
+            with mock.patch("sys.stdout", stdout):
+                exit_code = preset.main()
+
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(payload["language_guidance"]["replacement_count"], 1)
+        self.assertEqual(payload["language_guidance"]["updated_paths"][0]["path"], ".trellis/spec/backend/index.md")
+        self.assertIn(".trellis/spec/**/*.md", payload["language_guidance"]["scope"])
+
+
 class PlatformOverlayInstallerTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
