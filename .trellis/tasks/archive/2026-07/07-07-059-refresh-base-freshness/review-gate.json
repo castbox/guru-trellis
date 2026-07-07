@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-07T08:46:38Z",
-  "task_dir": ".trellis/tasks/07-07-059-refresh-base-freshness",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-07-059-refresh-base-freshness",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/059-refresh-base-freshness",
@@ -108,7 +108,7 @@
     }
   ],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-07-059-refresh-base-freshness/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-07-059-refresh-base-freshness/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 59,
@@ -142,13 +142,13 @@
     "reviewer": "trellis-check-agent:019f3bb9-e1ce-7e32-8de5-68ab9b059e74",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-07-059-refresh-base-freshness/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-07-059-refresh-base-freshness/review.md",
       "sha256": "9187abddd0f008003525b34acc49062ba2b1e230f8f3937e9c65b61c11a55101",
       "size_bytes": 4378,
       "modified_at": "2026-07-07T08:46:13.898476+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-07-059-refresh-base-freshness/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-07-059-refresh-base-freshness/agent-assignment.json",
       "sha256": "bc1ba5a2b4c86138235d5156e116db43b17807630f2a40576ef1f79b4ee80462",
       "size_bytes": 2486,
       "modified_at": "2026-07-07T08:45:39.173489+00:00",
@@ -162,7 +162,7 @@
       "agents_count": 3,
       "review_rounds_count": 1,
       "reuse_decisions_count": 0,
-      "task": ".trellis/tasks/07-07-059-refresh-base-freshness",
+      "task": ".trellis/tasks/archive/2026-07/07-07-059-refresh-base-freshness",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "evidence": [
