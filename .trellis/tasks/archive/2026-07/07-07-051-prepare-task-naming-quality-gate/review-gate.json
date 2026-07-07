@@ -1,0 +1,216 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T07:29:36Z",
+  "task_dir": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate",
+  "base_branch": "main",
+  "base_ref": "origin/main",
+  "head_branch": "codex/051-prepare-task-naming-quality-gate",
+  "head": "4981f15082c8c7ca4a7425253bc9c5949ac1c68c",
+  "diff_range": "origin/main...HEAD",
+  "changed_files": [
+    ".agents/skills/trellis-start/SKILL.md",
+    ".codex/prompts/trellis-start.md",
+    ".codex/skills/trellis-start/SKILL.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/schemas/intake-handoff.schema.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/README.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "review_scope": [
+    "文档",
+    "代码",
+    "测试",
+    "Trellis artifacts",
+    "配置",
+    "脚本",
+    "schema",
+    "CI/CD workflow 与发布自动化",
+    "Dockerfile / Docker Compose / 容器启动脚本",
+    "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
+    "数据库 schema / migration / seed / backfill 脚本",
+    "各目录下本次变更涉及的 Makefile",
+    "preset installer"
+  ],
+  "command": [
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate/.trellis/guru-team/scripts/bash/../python/guru_team_trellis.py",
+    "review-branch",
+    "--json",
+    "--pass",
+    "--review-source",
+    "independent-agent",
+    "--reviewer",
+    "019f3b57-29da-7e21-855f-75132d940af7",
+    "--review-report",
+    ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/review.md",
+    "--agent-assignment",
+    ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/agent-assignment.json",
+    "--summary",
+    "最终放行审查代理完整审查 origin/main...HEAD 当前 HEAD diff，确认 prepare-task 命名质量门禁、schema/handoff、测试、Docs SSOT、workflow/preset/overlay/dogfood 同步均满足任务范围，P0/P1/P2/P3 findings 为 0。",
+    "--evidence",
+    "审查范围覆盖 origin/main...HEAD 全量 diff；实现包含 naming_quality JSON、低信息 slug 阻断、中文/非 ASCII title 语义 short-name 要求、显式覆盖优先和 create 路径副作用前失败。",
+    "--evidence",
+    "验证命令通过：python3 -m unittest test_guru_team_trellis.py 123 tests OK；py_compile pass；json.tool pass；bash -n pass；check-dogfood-overlay-drift pass；task.py validate pass；git diff --check pass。",
+    "--evidence",
+    "Docs SSOT 已覆盖 README、workflow README、preset README、.trellis/spec/workflow/data-contracts.md 以及 docs/requirements；上一轮 P3 durable requirements finding 已由同一问题发现代理闭环为 0 findings。",
+    "--evidence",
+    "部署影响已审查：本次未改 CI/CD、Docker、K8s/Kustomize/Helm、DB migration 或 Makefile；变更限于 Trellis workflow companion script/schema/docs/overlay/test，不需要部署资产更新。",
+    "--evidence",
+    "开箱即用/upgrade-update 已覆盖 dogfood drift、local preset smoke、index/schema 可解析；当前 HEAD 远端 marketplace throwaway install 因分支未推送未验证，未声称通过。"
+  ],
+  "conclusion": {
+    "passed": true,
+    "summary": "最终放行审查代理完整审查 origin/main...HEAD 当前 HEAD diff，确认 prepare-task 命名质量门禁、schema/handoff、测试、Docs SSOT、workflow/preset/overlay/dogfood 同步均满足任务范围，P0/P1/P2/P3 findings 为 0。",
+    "block_priorities": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "blocking_findings_count": 0,
+    "findings_count": 0,
+    "observations_count": 0,
+    "followup_candidates_count": 0
+  },
+  "findings": [],
+  "observations": [],
+  "followup_candidates": [],
+  "issue_scope": {
+    "ledger_path": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/issue-scope-ledger.json",
+    "close_issues_reviewed": [
+      {
+        "number": 51,
+        "url": "https://github.com/castbox/guru-trellis/issues/51",
+        "title": "修正 prepare-task 命名质量门禁",
+        "reason": "本任务完整解决 prepare-task 命名质量门禁，并已通过 Phase 2 检查。",
+        "acceptance_evidence": [
+          "prepare payload 新增 naming_quality，并同步 canonical/dogfood intake-handoff schema。",
+          "create-worktree/create-task 路径在低信息自动命名、中文/非 ASCII 未显式语义覆盖、低信息覆盖值时均以 exit 2 阻断。",
+          "显式 --short-name/--workspace-slug/--task-slug/--branch 语义覆盖生成 051-prepare-task-naming-quality-gate。",
+          "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 通过，123 tests OK。",
+          "CLI probes、dogfood overlay drift、task validate、json/schema/bash/py_compile、runtime phase context 和 git diff --check 均通过。"
+        ]
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "verification_evidence": {
+    "base_head": "origin/main...4981f15082c8c7ca4a7425253bc9c5949ac1c68c",
+    "changed_file_count": 20,
+    "reviewer": "019f3b57-29da-7e21-855f-75132d940af7",
+    "review_source": "independent-agent",
+    "review_report": {
+      "path": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/review.md",
+      "sha256": "1c48486cfbed7487a22c37a7efe192a208bda3c63a60f398d972a3385342b361",
+      "size_bytes": 3148,
+      "modified_at": "2026-07-07T07:28:52.779268+00:00"
+    },
+    "agent_assignment": {
+      "path": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/agent-assignment.json",
+      "sha256": "0d5710b9223a8b49964d5044ff2d892c5af2b444041a1fa19a658e87d7bc0955",
+      "size_bytes": 3528,
+      "modified_at": "2026-07-07T07:29:09.613640+00:00",
+      "schema_version": "1.0",
+      "artifact_head": "4981f15082c8c7ca4a7425253bc9c5949ac1c68c",
+      "roles": [
+        "实现代理",
+        "最终放行审查代理",
+        "问题发现审查代理",
+        "问题闭环审查代理",
+        "阶段二检查代理"
+      ],
+      "agents_count": 3,
+      "review_rounds_count": 3,
+      "reuse_decisions_count": 0,
+      "task": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate",
+      "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
+    },
+    "evidence": [
+      "审查范围覆盖 origin/main...HEAD 全量 diff；实现包含 naming_quality JSON、低信息 slug 阻断、中文/非 ASCII title 语义 short-name 要求、显式覆盖优先和 create 路径副作用前失败。",
+      "验证命令通过：python3 -m unittest test_guru_team_trellis.py 123 tests OK；py_compile pass；json.tool pass；bash -n pass；check-dogfood-overlay-drift pass；task.py validate pass；git diff --check pass。",
+      "Docs SSOT 已覆盖 README、workflow README、preset README、.trellis/spec/workflow/data-contracts.md 以及 docs/requirements；上一轮 P3 durable requirements finding 已由同一问题发现代理闭环为 0 findings。",
+      "部署影响已审查：本次未改 CI/CD、Docker、K8s/Kustomize/Helm、DB migration 或 Makefile；变更限于 Trellis workflow companion script/schema/docs/overlay/test，不需要部署资产更新。",
+      "开箱即用/upgrade-update 已覆盖 dogfood drift、local preset smoke、index/schema 可解析；当前 HEAD 远端 marketplace throwaway install 因分支未推送未验证，未声称通过。"
+    ],
+    "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
+  },
+  "deployment_impact": {
+    "changed_file_categories": {
+      "docs": [
+        ".agents/skills/trellis-start/SKILL.md",
+        ".codex/prompts/trellis-start.md",
+        ".codex/skills/trellis-start/SKILL.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/README.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "tests": [
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "trellis_artifacts": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/schemas/intake-handoff.schema.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/workflow.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "config": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/schemas/intake-handoff.schema.json",
+        "trellis/workflows/guru-team/schemas/intake-handoff.schema.json"
+      ],
+      "scripts": [
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "schemas": [
+        ".trellis/guru-team/schemas/intake-handoff.schema.json",
+        "trellis/workflows/guru-team/schemas/intake-handoff.schema.json"
+      ],
+      "code": [
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ]
+    },
+    "deployment_asset_categories": {},
+    "changed_deployment_assets": [],
+    "probable_runtime_changes_without_deployment_asset_change": [
+      ".trellis/guru-team/schemas/intake-handoff.schema.json",
+      "trellis/workflows/guru-team/schemas/intake-handoff.schema.json"
+    ],
+    "needs_deployment_impact_review": true,
+    "review_instruction": "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；如果不需要，必须给出不需要的理由。"
+  }
+}

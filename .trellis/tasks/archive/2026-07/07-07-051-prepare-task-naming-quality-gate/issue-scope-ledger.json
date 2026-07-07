@@ -1,0 +1,32 @@
+{
+  "primary_issue": {
+    "number": 51,
+    "url": "https://github.com/castbox/guru-trellis/issues/51",
+    "title": "修正 prepare-task 命名质量门禁",
+    "reason": "intake/handoff 主 issue，本任务完整解决。",
+    "acceptance_evidence": [
+      "prepare payload 新增 naming_quality，并同步 canonical/dogfood intake-handoff schema。",
+      "create-worktree/create-task 路径在低信息自动命名、中文/非 ASCII 未显式语义覆盖、低信息覆盖值时均以 exit 2 阻断。",
+      "显式 --short-name/--workspace-slug/--task-slug/--branch 语义覆盖生成 051-prepare-task-naming-quality-gate。",
+      "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 通过，123 tests OK。",
+      "CLI probes、dogfood overlay drift、task validate、json/schema/bash/py_compile、runtime phase context 和 git diff --check 均通过。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 51,
+      "url": "https://github.com/castbox/guru-trellis/issues/51",
+      "title": "修正 prepare-task 命名质量门禁",
+      "reason": "本任务完整解决 prepare-task 命名质量门禁，并已通过 Phase 2 检查。",
+      "acceptance_evidence": [
+        "prepare payload 新增 naming_quality，并同步 canonical/dogfood intake-handoff schema。",
+        "create-worktree/create-task 路径在低信息自动命名、中文/非 ASCII 未显式语义覆盖、低信息覆盖值时均以 exit 2 阻断。",
+        "显式 --short-name/--workspace-slug/--task-slug/--branch 语义覆盖生成 051-prepare-task-naming-quality-gate。",
+        "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 通过，123 tests OK。",
+        "CLI probes、dogfood overlay drift、task validate、json/schema/bash/py_compile、runtime phase context 和 git diff --check 均通过。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

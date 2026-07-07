@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T05:39:57Z",
+  "updated_at": "2026-07-07T07:29:09Z",
+  "task": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate",
+  "head": "4981f15082c8c7ca4a7425253bc9c5949ac1c68c",
+  "agents": [
+    {
+      "logical_role": "实现代理",
+      "agent_id": "019f3b16-db36-77a3-a5aa-f3a7a93dcdc5",
+      "platform_nickname": "Implement Agent",
+      "assigned_at": "2026-07-07T05:39:57Z",
+      "assigned_head": "662bc4730999f81efd0b815ce5a9310ba2032e4c",
+      "reason": "按 Codex mode 将核心 prepare 命名门禁 Python 实现与单测委派给 Trellis implement sub-agent；主会话并行处理 schema/docs 与同步，避免写集重叠。"
+    },
+    {
+      "logical_role": "阶段二检查代理",
+      "agent_id": "019f3b25-5585-76a3-8982-c4fba132b27a",
+      "platform_nickname": "Review Agent",
+      "assigned_at": "2026-07-07T05:55:39Z",
+      "assigned_head": "662bc4730999f81efd0b815ce5a9310ba2032e4c",
+      "reason": "按 Codex sub-agent 模式委派 Phase 2 trellis-check，检查当前 diff 是否完整承接 issue #51、规划 artifacts、workflow specs，并覆盖脚本/schema/docs/tests/dogfood 同步与验证证据。"
+    },
+    {
+      "logical_role": "阶段二检查代理",
+      "agent_id": "019f3b35-6363-7722-b7c5-0910e815c48d",
+      "platform_nickname": "Release Agent",
+      "assigned_at": "2026-07-07T06:13:18Z",
+      "assigned_head": "662bc4730999f81efd0b815ce5a9310ba2032e4c",
+      "reason": "修复上一轮 Phase 2 检查提出的 handoff naming_quality、start overlay/spec 同步和测试缺口后，委派新的检查代理复核当前 diff 是否已无 P0/P1/P2/P3 finding。"
+    }
+  ],
+  "review_rounds": [
+    {
+      "round": 1,
+      "logical_role": "问题发现审查代理",
+      "agent_id": "019f3b46-7843-7653-9975-5e0fb367a45b",
+      "platform_nickname": "Closure Agent",
+      "reviewed_head": "7d877da12e4e009485b77b36e9043f3c0745905e",
+      "findings_count": 1,
+      "reuse_policy": "发现任意 finding 后，该技术 agent 只能作为问题闭环审查代理复核其发现；最终放行必须另派 fresh agent 完整审查当前 HEAD。",
+      "reuse_decision": "new-agent",
+      "recorded_at": "2026-07-07T06:42:42Z"
+    },
+    {
+      "round": 2,
+      "logical_role": "问题闭环审查代理",
+      "agent_id": "019f3b46-7843-7653-9975-5e0fb367a45b",
+      "platform_nickname": "Closure Agent",
+      "reviewed_head": "4981f15082c8c7ca4a7425253bc9c5949ac1c68c",
+      "findings_count": 0,
+      "reuse_policy": "发现 finding 的技术 agent 仅复用于其自身 finding 的闭环确认；闭环完成后必须另派 fresh 最终放行审查代理完整审查当前 HEAD。",
+      "reuse_decision": "reuse-for-closure",
+      "recorded_at": "2026-07-07T06:49:35Z"
+    },
+    {
+      "round": 3,
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f3b57-29da-7e21-855f-75132d940af7",
+      "platform_nickname": "Check Agent",
+      "reviewed_head": "4981f15082c8c7ca4a7425253bc9c5949ac1c68c",
+      "findings_count": 0,
+      "reuse_policy": "最终放行必须使用未发现过 finding 的 fresh technical agent，并完整审查当前 HEAD diff。",
+      "reuse_decision": "new-agent",
+      "recorded_at": "2026-07-07T07:29:09Z"
+    }
+  ],
+  "reuse_decisions": [],
+  "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用或更换；脚本只记录和校验客观字段、HEAD、digest 与枚举值。"
+}
