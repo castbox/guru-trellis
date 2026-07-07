@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-07T17:16:07Z",
-  "updated_at": "2026-07-07T21:29:14Z",
+  "updated_at": "2026-07-07T21:51:22Z",
   "task": ".trellis/tasks/07-08-052-explicit-planning-review",
-  "head": "f3e9f2ea28a863fd7731a40db87ddc670a8bf3a5",
+  "head": "16c240ba890e6997f7ea131ecaa528db84607705",
   "agents": [
     {
       "logical_role": "实现代理",
@@ -92,6 +92,22 @@
       "assigned_at": "2026-07-07T21:21:05Z",
       "assigned_head": "f3e9f2ea28a863fd7731a40db87ddc670a8bf3a5",
       "reason": "第四轮 final review 发现 planning-approval dirty_paths freshness P2 后，主会话完成最小修复并派发新的阶段二检查代理复核本轮未提交修复、回归测试、canonical/installed copy 同步与 spec/docs 影响；该代理不运行 Guru Team recorder/validator，不提交不发布。"
+    },
+    {
+      "logical_role": "问题闭环审查代理",
+      "agent_id": "019f3e62-c950-7942-95dd-87fb448a209f",
+      "platform_nickname": "Check Agent the 2nd",
+      "assigned_at": "2026-07-07T21:32:27Z",
+      "assigned_head": "16c240ba890e6997f7ea131ecaa528db84607705",
+      "reason": "同一 technical agent 在 review round 7 发现 planning-approval dirty_paths freshness P2；修复提交 16c240b 后，按 closure-before-final 规则复用该 agent 仅作为问题闭环审查代理确认自己的 finding 已关闭。"
+    },
+    {
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f3e85-f072-7400-b620-79d6b408a357",
+      "platform_nickname": "Review Agent the 2nd",
+      "assigned_at": "2026-07-07T21:40:09Z",
+      "assigned_head": "16c240ba890e6997f7ea131ecaa528db84607705",
+      "reason": "round 1/3/5/7 finding owners 均已完成 same-agent closure 且 findings_count=0；按 Branch Review Gate 要求派发 fresh new-agent 对 current HEAD 16c240b 的 origin/main...HEAD 完整 diff 做最终放行审查。"
     }
   ],
   "review_rounds": [
@@ -171,6 +187,28 @@
       "reuse_policy": "fresh final reviewer 必须独立审完整 diff；若发现 finding，该 reviewer 后续只能作为问题闭环审查代理复核自己的 finding，不能作为最终放行审查代理。",
       "reuse_decision": "new-agent",
       "recorded_at": "2026-07-07T21:12:24Z"
+    },
+    {
+      "round": 8,
+      "logical_role": "问题闭环审查代理",
+      "agent_id": "019f3e62-c950-7942-95dd-87fb448a209f",
+      "platform_nickname": "Check Agent the 2nd",
+      "reviewed_head": "16c240ba890e6997f7ea131ecaa528db84607705",
+      "findings_count": 0,
+      "reuse_policy": "review round 7 的 finding owner 必须同一 technical agent 复核 closure；该 closure agent 不得作为最终放行审查代理。",
+      "reuse_decision": "reuse-for-closure",
+      "recorded_at": "2026-07-07T21:39:17Z"
+    },
+    {
+      "round": 9,
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f3e85-f072-7400-b620-79d6b408a357",
+      "platform_nickname": "Review Agent the 2nd",
+      "reviewed_head": "16c240ba890e6997f7ea131ecaa528db84607705",
+      "findings_count": 0,
+      "reuse_policy": "fresh final reviewer 必须独立审完整 diff；本轮在所有 prior finding owners 完成 same-agent closure 后执行，且该 technical agent 未拥有任何 earlier finding round。",
+      "reuse_decision": "new-agent",
+      "recorded_at": "2026-07-07T21:51:08Z"
     }
   ],
   "reuse_decisions": [],
@@ -682,6 +720,51 @@
       "running_command_evidence": "multi_agent wait_agent 返回 completed final status。",
       "decision": "mark-completed",
       "reason": "Phase 2 check 已完成且 findings 均已修复，无 blocker；可以记录新的 phase2-check.json 并进入提交。",
+      "supersedes_agent_id": "",
+      "handoff_summary": ""
+    },
+    {
+      "event": "completed",
+      "logical_role": "问题闭环审查代理",
+      "agent_id": "019f3e62-c950-7942-95dd-87fb448a209f",
+      "platform_nickname": "Check Agent the 2nd",
+      "head": "16c240ba890e6997f7ea131ecaa528db84607705",
+      "observed_at": "2026-07-07T21:38:25Z",
+      "last_observed_progress_at": "",
+      "workspace_evidence": "问题闭环审查代理复核 round 7 的 P2 finding，确认 current HEAD 16c240b 已关闭，findings_count=0；闭环报告已追加到 review.md。",
+      "running_command_evidence": "multi_agent wait_agent 返回 completed final status。",
+      "decision": "mark-completed",
+      "reason": "同一 finding owner 已完成第四轮 closure review，允许派 fresh final reviewer 进行最终放行审查。",
+      "supersedes_agent_id": "",
+      "handoff_summary": ""
+    },
+    {
+      "event": "wait-timeout",
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f3e85-f072-7400-b620-79d6b408a357",
+      "platform_nickname": "Review Agent the 2nd",
+      "head": "16c240ba890e6997f7ea131ecaa528db84607705",
+      "observed_at": "2026-07-07T21:45:32Z",
+      "last_observed_progress_at": "",
+      "workspace_evidence": "fresh final review 首个 5 分钟等待窗口后尚未返回 final status；当前主工作树仍只有 handoff、agent-assignment、review.md、review-gate.json metadata tail。",
+      "running_command_evidence": "multi_agent wait_agent 返回 timed_out=true，尚无 completed/failed final status。",
+      "decision": "continue-waiting",
+      "reason": "Branch Review Gate 仍需 fresh final reviewer 报告；等待窗口超时不代表失败，继续等待。",
+      "supersedes_agent_id": "",
+      "handoff_summary": ""
+    },
+    {
+      "event": "completed",
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f3e85-f072-7400-b620-79d6b408a357",
+      "platform_nickname": "Review Agent the 2nd",
+      "head": "16c240ba890e6997f7ea131ecaa528db84607705",
+      "observed_at": "2026-07-07T21:51:22Z",
+      "last_observed_progress_at": "",
+      "workspace_evidence": "fresh final reviewer 对 current HEAD 16c240b 的 origin/main...HEAD 完整 diff 返回 PASS，findings_count=0；最终报告已追加到 review.md。",
+      "running_command_evidence": "multi_agent wait_agent 返回 completed final status。",
+      "decision": "mark-completed",
+      "reason": "最终放行审查通过，可以运行 Branch Review Gate recorder。",
       "supersedes_agent_id": "",
       "handoff_summary": ""
     }
