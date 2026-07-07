@@ -23,13 +23,13 @@
 - `git diff --check`
 - `trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh`
 - `rg` 检查 overlay、dogfood 副本、README、workflow / preset docs、`.trellis/spec`、workspace 和 bootstrap task 范围，未发现旧英文文档语言规则残留。
-- 开箱验证已覆盖 stable workflow source sample + 当前本地 preset；由于分支发布前远端不存在 `codex/057-chinese-doc-language`，尚未覆盖 `gh:castbox/guru-trellis/trellis#codex/057-chinese-doc-language` 的 current-branch marketplace throwaway install。
+- 开箱验证已覆盖 stable workflow source sample + 当前本地 preset；PR 发布后追加运行 `TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#codex/057-chinese-doc-language trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh`，current-branch marketplace throwaway install 通过。
 
 ## Review Gate
 
 - Branch Review Gate 已通过，reviewed head 为 `c19b9e2af89399f2b7fbd8f0f0ef26bc44b83dc8`，diff range 为 `origin/main...HEAD`。
 - 独立最终审查代理 `019f3c3f-497f-7780-a8c4-12a9eb1e7c7a` / `Closure Agent` 审查了 issue #57、完整 diff、task artifacts、workflow / preset / overlay / dogfood / docs / spec / installer / test 触点，P0/P1/P2/P3 findings 均为 0。
-- Gate 记录包含 review report digest、agent assignment digest、issue scope、验证证据、部署影响判断和未覆盖 current-branch marketplace 验证的 observation。
+- Gate 记录包含 review report digest、agent assignment digest、issue scope、验证证据、部署影响判断，以及 gate 执行时 current-branch marketplace 尚未验证的 observation；该 observation 已由 PR 发布后的追加 throwaway install 验证补齐。
 
 ## Issue 关闭范围
 
