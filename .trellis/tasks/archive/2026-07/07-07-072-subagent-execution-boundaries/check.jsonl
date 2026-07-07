@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/index.md", "reason": "检查 workflow 修改是否符合索引要求"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查 phase、sub-agent、gate 边界是否一致"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查脚本仍只承担 recorder/validator/executor"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查 phase2-check、agent-assignment、review-gate 语义"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查验证命令与 dogfood drift 覆盖"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 overlay 与 installed copies 是否同步"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查 workflow、overlay、docs 跨层一致性"}

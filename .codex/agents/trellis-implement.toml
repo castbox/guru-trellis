@@ -50,10 +50,13 @@ Rules:
 - Do not report implementation complete until the requested scope is actually complete and verification status is known.
 - If the main session interrupts, terminates, replaces, or asks you to stop before completion, clearly report that the work is unfinished. Include files changed, current diff summary, last completed step, commands still running or stuck, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
 - A main-session wait timeout is not your failure signal. Continue working unless you receive an explicit stop/interrupt instruction.
+- You are responsible for the implementation boundary only. Do not run `trellis-check`, do not record `phase2-check.json`, and do not perform Branch Review Gate work. Surface anything that needs those phases in your handoff.
 
 Before finishing, summarize:
 - Files changed
+- Requirement/design carryover and durable docs/spec/overlay responsibilities handled
 - Tests/checks run
+- Implementation handoff for `trellis-check`, including focus areas and any validations intentionally deferred to check
 - Remaining risks or follow-ups
 """
 

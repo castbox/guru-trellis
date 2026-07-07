@@ -31,7 +31,7 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
 | --- | --- | --- | --- |
 | P0 | Workflow 主合同与日常入口 | #1, #2, #57 | `guru-team` marketplace workflow 定义 Phase 0-3、auto-bootstrap 日常入口、业务项目中文文档默认规则、知识门禁和 docs SSOT。 |
 | P0 | Intake / worktree / no_task 副作用边界 | #6, #15, #26, #51 | 创建 issue、worktree、branch、task 或当前 checkout 直改前必须有 AI/human handoff、用户授权和语义命名门禁。 |
-| P0 | Planning / check / Branch Review Gate 证据链 | #5, #8, #20, #44 | planning、phase2 check、独立 review、review report digest、任意 finding 阻断、fresh 最终放行审查和 gate artifact 形成可审计链路。 |
+| P0 | Planning / check / Branch Review Gate 证据链 | #5, #8, #20, #44, #62, #72 | planning、phase2 check、独立 review、review report digest、任意 finding 阻断、fresh 最终放行审查、sub-agent wait/termination 恢复链和 gate artifact 形成可审计链路；默认 sub-agent mode 下 implement、check、Branch Review 都必须有真实 sub-agent evidence。 |
 | P0 | Finish / publish / PR readiness | #7, #17, #18, #27 | PR 发布只能在 finish-work 后发生，且必须有 AI 审查过的 reviewer-facing body 与 readiness evidence。 |
 | P1 | Preset installer 与平台 overlay | #9, #11 | preset 安装 companion assets 与平台入口，支持 overlay 选择，并保持 canonical / dogfood 同步。 |
 | P1 | 安装、升级、开箱验证 | #10, #27 | README 非交互安装、throwaway install、dry-run readiness 和 Codex 默认 sub-agent 让新项目可开箱使用。 |

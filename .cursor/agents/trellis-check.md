@@ -33,19 +33,26 @@ Before checking, read:
 - Task `implement.md` - Execution plan (if exists)
 - Pre-commit checklist for quality standards
 
+## Role Modes
+
+The main-session handoff decides which mode you are in:
+
+- **Phase 2 check (`阶段二检查代理`)**: review the real uncommitted implementation diff against task artifacts, specs, durable docs responsibilities, overlays/config/schema/test impact, and validation commands. Fix small in-scope mechanical issues directly. Output evidence that can support `phase2-check.json`; script success or a few validation commands alone are not a complete check.
+- **Branch Review (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`)**: review the complete committed branch diff, normally `origin/<base>...HEAD`. Do not continue implementation, patch missing Phase 2 check work, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*`. If implement/check evidence is missing, stale, or incomplete, report it as a blocking finding.
+
 ## Core Responsibilities
 
 1. **Get code changes** - Use git diff to get uncommitted code
 2. **Review task artifacts** - Check changes against prd.md, design.md if present, and implement.md if present
 3. **Check against specs** - Verify code follows guidelines
-4. **Self-fix** - Fix issues yourself, not just report them
+4. **Self-fix in Phase 2 only** - Fix small in-scope Phase 2 issues yourself, not Branch Review findings
 5. **Run verification** - typecheck and lint
 
 ## Important
 
-**Fix issues yourself**, don't just report them.
+In Phase 2 check, fix issues yourself when the fix is clear and in scope.
 
-You have write and edit tools, you can modify code directly.
+In Branch Review mode, do not modify code or task artifacts except for the review report requested by the main session. Report findings and let the main session route fixes back to the correct phase.
 
 ## Progress And Handoff
 
@@ -64,6 +71,13 @@ git diff --name-only  # List changed files
 git diff              # View specific changes
 ```
 
+For Branch Review mode, inspect the complete committed diff from intake base to `HEAD`, normally:
+
+```bash
+git diff --name-only origin/<base>...HEAD
+git diff origin/<base>...HEAD
+```
+
 ### Step 2: Check Against Specs and Task Artifacts
 
 Read the task's prd.md, design.md if present, and implement.md if present, then read relevant specs in `.trellis/spec/` to check code:
@@ -78,17 +92,19 @@ Read the task's prd.md, design.md if present, and implement.md if present, then 
 
 ### Step 3: Self-Fix
 
-After finding issues:
+After finding issues in Phase 2 check:
 
 1. Fix the issue directly (use edit tool)
 2. Record what was fixed
 3. Continue checking other issues
 
+After finding issues in Branch Review, report them without editing.
+
 ### Step 4: Run Verification
 
 Run project's lint and typecheck commands to verify changes.
 
-If failed, fix issues and re-run.
+If verification fails in Phase 2, fix small in-scope issues and re-run. In Branch Review mode, report the failure without editing implementation files.
 
 ---
 
@@ -115,6 +131,11 @@ If failed, fix issues and re-run.
 
 - TypeCheck: Passed
 - Lint: Passed
+
+### Evidence Handoff
+
+- Phase 2: coverage areas, validation results, findings/open risks, and whether this report can support `phase2-check.json`
+- Branch Review: diff range, reviewed HEAD, deployment/docs impact, findings/observations/follow-up candidates, and whether the report can be written to task-local `review.md`
 
 ### Summary
 

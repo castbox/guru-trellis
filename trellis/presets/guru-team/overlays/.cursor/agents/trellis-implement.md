@@ -39,7 +39,7 @@ Before implementing, read:
 2. **Understand task artifacts** - Read prd.md, design.md if present, and implement.md if present
 3. **Implement features** - Write code following specs and task artifacts
 4. **Self-check** - Ensure code quality
-5. **Report results** - Report completion status
+5. **Report implementation handoff** - Report completion status, changed files, verification, remaining risks, and focus areas for `trellis-check`
 
 ## Forbidden Operations
 
@@ -54,6 +54,8 @@ Before implementing, read:
 - Do not report `Implementation Complete` until the requested scope is actually complete and verification status is known.
 - If the main session interrupts, terminates, replaces, or asks you to stop before completion, explicitly report `Implementation Unfinished` instead. Include files changed, current diff summary, last completed step, commands still running or stuck, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
 - A main-session wait timeout is not your failure signal. Continue working unless you receive an explicit stop/interrupt instruction.
+- Do not run `trellis-check`, record `phase2-check.json`, or perform Branch Review Gate work. You own the implementation boundary; later check/review phases need your handoff, not a substitute check.
+- Your completion handoff must include requirement/design carryover, durable docs/spec/overlay responsibilities handled, verification run or deferred, remaining risks, and concrete `trellis-check` focus areas.
 
 ---
 
@@ -105,6 +107,12 @@ Run project's lint and typecheck commands to verify changes.
 
 - Lint: Passed
 - TypeCheck: Passed
+
+### Handoff For Check
+
+- Focus areas:
+- Validation intentionally deferred to `trellis-check`:
+- Remaining risks:
 ```
 
 ---

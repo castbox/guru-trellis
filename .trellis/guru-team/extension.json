@@ -59,11 +59,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-07T13:19:13Z",
+  "installed_at": "2026-07-07T16:02:14Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/062-subagent-timeout-stale-policy",
-    "commit": "87b4728d51a3a0cff895183323ff5eada9dba043",
+    "ref": "codex/072-subagent-execution-boundaries",
+    "commit": "62d00cffb7cada17912052a12add7bfa34dcf0f7",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

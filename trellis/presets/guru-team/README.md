@@ -18,9 +18,15 @@ this key; if it is absent, the workflow interprets it as `optional_warn`.
 The preset also materializes the project-level `.trellis/config.yaml`
 `codex.dispatch_mode` default. Missing, commented-out, or invalid values are
 updated to `sub-agent` so Codex can dispatch `trellis-implement` /
-`trellis-check` and satisfy Branch Review Gate by default. An explicit
-`codex.dispatch_mode: inline` value is preserved as a user-selected downgrade
-or debug mode.
+`trellis-check` and satisfy Branch Review Gate by default. In that default mode
+implementation, Phase 2 check, and post-commit Branch Review are three separate
+sub-agent evidence boundaries: `trellis-implement` / channel `implement`
+produces implementation handoff, `trellis-check` / channel `check` produces
+evidence for `phase2-check.json`, and an independent review sub-agent reviews
+the full committed branch diff before the main session records Branch Review
+Gate. An explicit `codex.dispatch_mode: inline` value is preserved as a
+user-selected downgrade or debug mode; missing sub-agent evidence must fail
+closed unless explicit inline/self-exemption artifact evidence exists.
 
 The preset also installs Guru Team sub-agent definitions. Technical dispatch ids
 stay stable (`trellis-implement`, `trellis-check`, `trellis-research`, channel
@@ -239,6 +245,10 @@ user confirmation before `task.py start`; `task.py start` remains only a status
 transition. `record-phase2-check.sh` records the full-scope `trellis-check`
 result before commit, including the pre-commit `dirty_paths`; validation
 commands are evidence inside that report, not a substitute for the check.
+`phase2-check.json` is a Guru Team artifact that freezes the completed
+`trellis-check` AI judgment, coverage, validation results, findings, and dirty
+paths; it is not the Trellis-native step itself and script recorder/validator
+success cannot replace `trellis-check`.
 `record-agent-assignment.sh` / `check-agent-assignment.sh` manage task-local
 `agent-assignment.json`: Chinese `logical_role` is the Trellis process identity,
 `agent_id` is the technical platform id, and `platform_nickname` is display-only.
@@ -261,7 +271,8 @@ records and validates the prior AI/human review result; it is not the reviewer.
 Passing gates require every finding owner to complete a later same-agent
 `问题闭环审查代理` review with zero findings for its finding before a fresh `最终放行审查代理`
 independent review can pass. The final review must cover the full current HEAD
-diff with zero findings of any priority and be recorded with task-local
+diff with zero findings of any priority, must not continue implementation or
+patch missing Phase 2 check work, and be recorded with task-local
 `review.md`, a Chinese summary, concrete evidence, `--review-source
 independent-agent`, `--review-report <task-local review.md>`, and
 `--agent-assignment <task-local agent-assignment.json>`. The gate stores the

@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T15:17:18Z",
+  "task_dir": ".trellis/tasks/07-07-072-subagent-execution-boundaries",
+  "head": "62d00cffb7cada17912052a12add7bfa34dcf0f7",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-07-072-subagent-execution-boundaries/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已审查 issue #72、官方 Trellis 扩展面、workflow/preset 规范与 durable docs。规划明确本任务只修改 Markdown workflow、preset overlay、agent contract 与长期文档；默认 sub-agent mode 下实现、Phase 2 check、Branch Review 三个边界必须由真实 subagent 执行，脚本只做 recorder/validator/executor。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户在 Phase 0 handoff 后回复“确认”，同意创建 worktree、branch、Trellis task，并继续按规划进入实现、验证和 review gate。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-07-072-subagent-execution-boundaries/prd.md",
+      "sha256": "7ee4277bc5270cc3ed8db729b9184ac236cb1de3b16964ba5c41ceca48d60510",
+      "size_bytes": 4840,
+      "modified_at": "2026-07-07T15:16:50.091987+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-072-subagent-execution-boundaries/design.md",
+      "sha256": "176d38217f9652f83f49956bc6d46078f4c862a0a32693b60001b5cdab018cf4",
+      "size_bytes": 4357,
+      "modified_at": "2026-07-07T15:16:50.092227+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-072-subagent-execution-boundaries/implement.md",
+      "sha256": "b416c0685980a6708f14a009f056b197303fca93534eabf32751e277c45be656",
+      "size_bytes": 2628,
+      "modified_at": "2026-07-07T15:16:50.092429+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

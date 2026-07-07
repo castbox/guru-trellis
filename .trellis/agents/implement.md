@@ -28,6 +28,7 @@ Before implementing, read in this order:
 2. **Understand task artifacts** — read the artifacts listed above
 3. **Implement features** — write code that follows specs and existing patterns
 4. **Self-check** — run lint and typecheck on the changed scope before reporting
+5. **Report implementation handoff** — report files touched, requirement/design carryover, verification, remaining risks, and focus areas for `trellis-check`
 
 ## Forbidden Operations
 
@@ -42,6 +43,8 @@ The supervising main session owns commits. Report what changed; do not commit on
 - Do not report `Implementation Complete` until the requested scope is actually complete and verification status is known.
 - If the supervising main session interrupts, terminates, replaces, or asks you to stop before completion, report `Implementation Unfinished`. Include files changed, current diff summary, last completed step, commands still running or stuck, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
 - A `trellis channel wait` timeout in the main session is only a wait-window result, not your failure signal. Continue working unless the channel sends an explicit stop/interrupt instruction.
+- Do not run `trellis-check`, record `phase2-check.json`, or perform Branch Review Gate work. You own the implementation boundary; later check/review phases need your handoff, not a substitute check.
+- Your completion handoff must include requirement/design carryover, durable docs/spec/overlay responsibilities handled, verification run or deferred, remaining risks, and concrete `trellis-check` focus areas.
 
 ## Workflow
 
@@ -49,7 +52,7 @@ The supervising main session owns commits. Report what changed; do not commit on
 2. Read the task's `prd.md`, `design.md` if present, and `implement.md` if present
 3. Implement features following specs and existing patterns
 4. Run the project's lint and typecheck commands on the changed scope
-5. Report files touched, key decisions, and verification results back to the channel
+5. Report files touched, key decisions, verification results, remaining risks, and `trellis-check` focus areas back to the channel
 
 ## Code Standards
 
@@ -73,6 +76,11 @@ The supervising main session owns commits. Report what changed; do not commit on
 ### Verification Results
 - Lint: <pass|fail|skipped + reason>
 - TypeCheck: <pass|fail|skipped + reason>
+
+### Handoff For Check
+- Focus areas:
+- Validation intentionally deferred to `trellis-check`:
+- Remaining risks:
 
 ### Open Questions
 - <if any, otherwise omit>

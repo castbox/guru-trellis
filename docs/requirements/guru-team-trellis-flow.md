@@ -310,7 +310,7 @@ PR readiness 要求：
 | `planning-approval.json` | Phase 1.4 | Guru Team gate evidence | `task.py start` 前校验、Branch Review Gate audit。 |
 | `implement.jsonl` / `check.jsonl` | Phase 1.3 | Trellis sub-agent context manifest | `trellis-implement` / `trellis-check`。 |
 | `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity/status ledger | review closure/fresh final reviewer 和 unfinished termination recovery-chain 校验。 |
-| `phase2-check.json` | Phase 2.2 | Guru Team check evidence | commit 前 gate、Branch Review Gate post-commit audit。 |
+| `phase2-check.json` | Phase 2.2 | Guru Team check evidence | 固化 `trellis-check` AI check 的覆盖范围、验证结果、findings 和 dirty paths；commit 前 gate、Branch Review Gate post-commit audit。 |
 | `review.md` | Phase 3.5 | Independent review report | `review-branch.sh` digest、finish-work readiness。 |
 | `review-gate.json` | Phase 3.5 | Branch Review Gate artifact | `check-review-gate.sh`、finish-work。 |
 | `pr-body.md` / `pr-readiness.json` | Phase 3.6 前 | PR readiness artifact | finish-work archive 后 publish。 |
@@ -324,8 +324,8 @@ PR readiness 要求：
 2. Guru Team 没有 fork Trellis，而是通过 official marketplace workflow 安装 `guru-team`。
 3. 我们把“任务还没创建之前”的风险收进 Phase 0：issue、duplicate、base branch、worktree、命名和副作用授权都先审查。
 4. `task.py create/start/archive` 仍是官方 Trellis lifecycle，但 Guru Team 在 start 前增加 planning approval evidence。
-5. 实现阶段默认用 Codex sub-agent；主会话只协调并记录 assignment，脚本不替 AI 选择 agent。
-6. commit 前必须有 `phase2-check.json`，commit 后必须有独立 review 的 `review.md` 和 recorder 生成的 `review-gate.json`。
+5. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出 `review.md`；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
+6. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，commit 后必须有独立 review 的 `review.md` 和 recorder 生成的 `review-gate.json`；主会话自检、自审或脚本校验通过不能替代这些证据。
 7. 任意 finding 都阻断；发现过问题的 reviewer 只能闭环自己的 finding，最终放行必须是 fresh reviewer。
 8. `trellis-continue` 到 Branch Review Gate 就停；`trellis-finish-work` 才能 archive、journal、提交 metadata 并自动 publish PR。
 9. PR body 是给 GitHub reviewer 的发布材料，不是内部 task 摘要；关闭 issue 的语义由 `issue-scope-ledger.json` 控制。

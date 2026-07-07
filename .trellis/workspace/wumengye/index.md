@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 28
-- **Last Active**: 2026-07-07
+- **Total Sessions**: 29
+- **Last Active**: 2026-07-08
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~934 | Active |
+| `journal-1.md` | ~967 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 29 | 2026-07-08 | 完成：#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行 | `80ef050bd27f6556b3896b23a59447957225baab` | `codex/072-subagent-execution-boundaries` |
 | 28 | 2026-07-07 | 完成：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果 | `413713cc8cf0ce4f04377e00609d0e6801b3b856` | `codex/062-subagent-timeout-stale-policy` |
 | 27 | 2026-07-07 | 完成：#57 统一业务项目 Trellis 文档语言为中文 | `c19b9e2af89399f2b7fbd8f0f0ef26bc44b83dc8` | `codex/057-chinese-doc-language` |
 | 26 | 2026-07-07 | 完成：#55 github issue intake 的过程需要与时俱进 | `ecfa4c51f5da93f2672a28913f50450406408307` | `codex/055-intake-scope-evolution` |
