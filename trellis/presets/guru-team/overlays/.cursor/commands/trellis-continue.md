@@ -10,9 +10,11 @@ python3 ./.trellis/scripts/get_context.py --mode phase
 
 Route by task status:
 
-- planning: keep required artifacts in Chinese, run Docs SSOT discovery and the Middle-platform Knowledge Gate when relevant, then ask for review, record/check `planning-approval.json`, and only then run `task.py start`.
+- planning: keep required artifacts in Chinese, run Docs SSOT discovery and the Middle-platform Knowledge Gate when relevant, use `trellis-brainstorm` when intake evidence is ambiguous, update GitHub issue comment/body or proposed issue body as appropriate, then ask for review, record/check `planning-approval.json`, and only then run `task.py start`.
 - in_progress: confirm knowledge-gate and docs responsibilities from artifacts, implement, record sub-agent assignment when dispatching implement/check agents, run full `trellis-check`, record/check `phase2-check.json` with the current pre-commit `dirty_paths`, reconcile specs/docs, then commit.
 - after commit: obtain an independent Agent review over the full diff, record review role/reuse decisions in `agent-assignment.json` when sub-agents are used, write task-local `{TASK_DIR}/review.md`, then run Branch Review Gate before `/trellis-finish-work`, including Docs SSOT reconciliation evidence. Do not pass the gate from main-session self-review.
+
+If a user adds requirements, references another issue, or discovers new scope during the task, pause and follow `.trellis/workflow.md` Scope Change Gate before continuing implementation: recommend whether the change belongs in current `close_issues`, `related_issues`, or `followup_issues` / new issue, get user confirmation when classification is not explicit, update planning artifacts and `issue-scope-ledger.json`, and leave GitHub-visible issue evidence.
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \

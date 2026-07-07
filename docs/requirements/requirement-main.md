@@ -31,6 +31,7 @@ Canonical 资产：
 | --- | --- |
 | 固定 marketplace id | `trellis/index.json` 暴露 `guru-team` workflow，稳定安装使用 `trellis init --workflow guru-team --workflow-source gh:castbox/guru-trellis/trellis#vX.Y.Z`，latest/canary 才使用不带 `#ref` 的 source。 |
 | Phase 0 intake | 文件变更类任务先进入 issue intake、duplicate search、base branch 选择和 worktree preflight；默认 planner 不写 task artifact。 |
+| Intake clarity / scope evolution | AI 读取 issue body/comment 或自然语言请求后，必须判断是否需要 `trellis-brainstorm`；澄清结果应回写 issue comment/body 或 proposed issue body。任务中新增需求或引用其他 issue 时，先确认纳入当前 task、related，还是 follow-up/new issue，并同步 `issue-scope-ledger.json`。 |
 | Phase 1 planning | Trellis task 创建后写中文 `prd.md` / `design.md` / `implement.md`，并要求规划审查证据后才能进入实现。 |
 | Phase 2 execute/check | 实现后运行完整 `trellis-check`，检查需求、设计、代码、测试、spec、docs 和部署影响，不用少量命令通过替代完整检查。 |
 | Phase 3 finish/publish | commit 后经过 Branch Review Gate，再由 `trellis-finish-work` archive task、记录 journal、提交 metadata 并发布非 draft PR。 |
@@ -55,6 +56,7 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 - Issue #15 / PR #16：`no_task` 当前 checkout 直接修改必须显式审批。
 - Issue #26 / PR #28：worktree 创建后继承或初始化 Trellis developer identity。
 - Issue #51：`prepare-task` slug / branch / worktree / task 命名质量门禁。
+- Issue #55：intake clarity / brainstorming、issue evidence update、任务中 scope change 留痕。
 
 已实现能力：
 
@@ -62,12 +64,14 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 | --- | --- |
 | Side-effect-free prepare | `prepare-task.sh --json` 默认只输出 stdout JSON，不创建 GitHub issue、worktree、branch、Trellis task，也不写 handoff。 |
 | Duplicate / proposed issue review | freeform 请求先输出 proposed issue、duplicate candidates、base branch、branch name、workspace path 和后续命令，由 AI 展示给用户确认。 |
+| Intake clarity gate | 读取 issue body/comment 或自然语言请求后，AI 判断需求是否足以进入 planning；模糊时先用 `trellis-brainstorm` 澄清，并把澄清结果写入 issue comment/body 或 reviewed proposed issue body。 |
 | Confirmed issue creation | 创建 GitHub issue 必须使用 `--create-issue-confirmed --issue-title ... --issue-body-file ...`，标题和正文来自 AI/human 已审阅内容。 |
 | Worktree executor boundary | `--create-worktree` / `--create-task` 只在 handoff review 和用户确认后使用，并把 handoff 写入选定 workspace。 |
 | Base freshness | executor 路径创建 worktree 前刷新 base branch，只允许安全 fast-forward，本地 base 分叉或 freshness 不明时 fail closed。 |
 | Naming quality gate | planner 输出 `naming_quality`；中文、非 ASCII 或低信息自动 slug（如 `issue-52`、`52-issue-52`、纯编号、仅通用词）不得静默进入 create 路径，agent 必须在读完 issue 后显式传入语义英文 `--short-name` / `--workspace-slug` / `--task-slug` / `--branch`。 |
 | Developer identity | 新 worktree 优先复制 source checkout 的 gitignored `.trellis/.developer`；缺失但有 `--assignee` 时初始化；两者都没有则阻塞并给恢复命令。 |
 | no_task direct edit override | 当前 checkout 直改必须由用户明确批准跳过 issue、Trellis task、worktree 和 branch；批准不包含 commit、push、PR 或 issue close。 |
+| Scope-change gate | task 进行中新增需求、引用其他 issue 或发现新 bug 时，AI 先询问/确认是当前 close scope、related context，还是 follow-up/new issue；结论同步到 GitHub issue 证据和 `issue-scope-ledger.json`。 |
 
 实现资产：
 
@@ -267,6 +271,7 @@ Canonical 资产：
 | #31 | closed | #32 merged | Guru Team extension canonical manifest、installed provenance、`check-env` / `version.sh` 可观测入口。 |
 | #33 | open | 当前任务 | Guru Team extension version 对齐 `0.6.5`；repo release tag 使用 `v0.6.5`；稳定 marketplace source 使用 `#v0.6.5`。 |
 | #43 | open | 当前任务 | Trellis sub-agent 中文逻辑角色、UI 展示名中文化、`agent-assignment.json`、reviewer 复用/更换记录和 gate digest 集成。 |
+| #55 | open | 当前任务 | issue intake clarity / brainstorming、issue body/comment/new issue 留痕、任务中 scope-change gate。 |
 
 ## 9. 当前扩展边界
 

@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T09:55:30Z",
+  "task_dir": ".trellis/tasks/07-07-055-intake-scope-evolution",
+  "head": "14424897c902fd12b3dbd07a6d4ec68e5a8aa4df",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-07-055-intake-scope-evolution/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已基于 issue #55、官方 Trellis workflow 文档、本仓库 workflow/spec/docs 证据审查规划：本任务应修改 Markdown workflow 与 overlay，强制 intake clarity/brainstorming、issue evidence update、scope-change gate；不把智能判断写进 companion script。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户在 Phase 0 handoff 后回复“确认”，同意创建 worktree/branch/task，并要求继续解决 issue #55；规划 artifact 已按该 issue 范围收敛，无额外产品决策阻塞。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-07-055-intake-scope-evolution/prd.md",
+      "sha256": "4acfca469431c4febd966b9dbfd462fbe4b58a6599162d7e92c3a2c10eab7944",
+      "size_bytes": 5837,
+      "modified_at": "2026-07-07T09:53:31.603134+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-055-intake-scope-evolution/design.md",
+      "sha256": "5190caf4ecc603778619988982955db9289cd5f452ea22d844dd5a3a301889f7",
+      "size_bytes": 4709,
+      "modified_at": "2026-07-07T09:54:00.105464+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-055-intake-scope-evolution/implement.md",
+      "sha256": "c631689e5ea9cc67a779a6b4981e4f417fb2da7c4e3669332d69b84e9e27722d",
+      "size_bytes": 3053,
+      "modified_at": "2026-07-07T09:54:28.925154+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}
