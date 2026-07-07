@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T10:07:36Z",
+  "updated_at": "2026-07-07T10:07:36Z",
+  "task": ".trellis/tasks/07-07-055-intake-scope-evolution",
+  "head": "ecfa4c51f5da93f2672a28913f50450406408307",
+  "agents": [],
+  "review_rounds": [
+    {
+      "round": 1,
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f3c0b-f959-7233-b215-bef77849195b",
+      "platform_nickname": "Release Agent",
+      "reviewed_head": "ecfa4c51f5da93f2672a28913f50450406408307",
+      "findings_count": 0,
+      "reuse_policy": "fresh-final-reviewer",
+      "reuse_decision": "new-agent",
+      "recorded_at": "2026-07-07T10:07:36Z"
+    }
+  ],
+  "reuse_decisions": [],
+  "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用或更换；脚本只记录和校验客观字段、HEAD、digest 与枚举值。"
+}
