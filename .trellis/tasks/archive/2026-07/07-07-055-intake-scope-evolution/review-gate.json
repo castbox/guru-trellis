@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-07T10:15:06Z",
-  "task_dir": ".trellis/tasks/07-07-055-intake-scope-evolution",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-07-055-intake-scope-evolution",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/055-intake-scope-evolution",
@@ -98,7 +98,7 @@
   "observations": [],
   "followup_candidates": [],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-07-055-intake-scope-evolution/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-07-055-intake-scope-evolution/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 55,
@@ -123,13 +123,13 @@
     "reviewer": "019f3c0b-f959-7233-b215-bef77849195b Release Agent",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-07-055-intake-scope-evolution/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-07-055-intake-scope-evolution/review.md",
       "sha256": "ed512da6b1464c25bd26e27fdec464abbabdda03638f0675549d74363febcd7a",
       "size_bytes": 4126,
       "modified_at": "2026-07-07T10:14:51.549527+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-07-055-intake-scope-evolution/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-07-055-intake-scope-evolution/agent-assignment.json",
       "sha256": "4fb4e4b6e7f51cf10a2b1975511e40141613b809cc1fcc9eb5643c8db12fed35",
       "size_bytes": 890,
       "modified_at": "2026-07-07T10:07:36.092884+00:00",
@@ -141,7 +141,7 @@
       "agents_count": 0,
       "review_rounds_count": 1,
       "reuse_decisions_count": 0,
-      "task": ".trellis/tasks/07-07-055-intake-scope-evolution",
+      "task": ".trellis/tasks/archive/2026-07/07-07-055-intake-scope-evolution",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "evidence": [
