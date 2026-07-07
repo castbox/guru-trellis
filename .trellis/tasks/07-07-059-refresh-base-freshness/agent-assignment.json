@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T07:56:38Z",
+  "updated_at": "2026-07-07T08:14:44Z",
+  "task": ".trellis/tasks/07-07-059-refresh-base-freshness",
+  "head": "542ea9bda51e762f98bbd6d7cecca241732893a8",
+  "agents": [
+    {
+      "logical_role": "实现代理",
+      "agent_id": "019f3b94-061b-7551-b9ec-4ce3f5f10efc",
+      "platform_nickname": "Build Agent",
+      "assigned_at": "2026-07-07T07:56:38Z",
+      "assigned_head": "542ea9bda51e762f98bbd6d7cecca241732893a8",
+      "reason": "按 Codex/Trellis sub-agent 默认策略，将 issue #59 的 companion script、测试、workflow/preset 文档和 dogfood 同步实现交给 trellis-implement；主会话负责规划、集成、验证、记录与后续 gate。"
+    },
+    {
+      "logical_role": "阶段二检查代理",
+      "agent_id": "019f3ba4-8294-7cb3-adf8-b278d00f28a1",
+      "platform_nickname": "Review Agent",
+      "assigned_at": "2026-07-07T08:14:44Z",
+      "assigned_head": "542ea9bda51e762f98bbd6d7cecca241732893a8",
+      "reason": "按 Guru Team Phase 2 要求，将 issue #59 当前完整 diff 的需求、设计、实现、测试、文档同步、dogfood 同步与部署影响检查交给 trellis-check；主会话只记录和验证结果。"
+    }
+  ],
+  "review_rounds": [],
+  "reuse_decisions": [],
+  "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用或更换；脚本只记录和校验客观字段、HEAD、digest 与枚举值。"
+}

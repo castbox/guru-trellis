@@ -1,65 +1,72 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 51,
-    "url": "https://github.com/castbox/guru-trellis/issues/51",
-    "title": "修正 prepare-task 命名质量门禁",
+    "number": 59,
+    "url": "https://github.com/castbox/guru-trellis/issues/59",
+    "title": "prepare-task 应在 planner 阶段刷新 base 分支远程状态",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "051-prepare-task-naming-quality-gate",
+  "slug": "059-refresh-base-freshness",
   "naming_quality": {
     "ok": true,
     "reason": "naming includes enough business tokens",
     "requires_semantic_name": false,
-    "current_slug": "051-prepare-task-naming-quality-gate",
+    "current_slug": "059-refresh-base-freshness",
     "current_surface": "workspace_slug",
     "suggested_override_flags": [],
     "checked_names": {
-      "task_slug": {
+      "slug": {
         "ok": true,
-        "slug": "051-prepare-task-naming-quality-gate",
+        "slug": "059-refresh-base-freshness",
         "reason": "ok",
         "business_tokens": [
-          "prepare",
-          "naming",
-          "quality",
-          "gate"
+          "refresh",
+          "base",
+          "freshness"
+        ]
+      },
+      "task_slug": {
+        "ok": true,
+        "slug": "059-refresh-base-freshness",
+        "reason": "ok",
+        "business_tokens": [
+          "refresh",
+          "base",
+          "freshness"
         ]
       },
       "workspace_slug": {
         "ok": true,
-        "slug": "051-prepare-task-naming-quality-gate",
+        "slug": "059-refresh-base-freshness",
         "reason": "ok",
         "business_tokens": [
-          "prepare",
-          "naming",
-          "quality",
-          "gate"
+          "refresh",
+          "base",
+          "freshness"
         ]
       },
       "branch_name": {
         "ok": true,
-        "slug": "051-prepare-task-naming-quality-gate",
+        "slug": "059-refresh-base-freshness",
         "reason": "ok",
         "business_tokens": [
-          "prepare",
-          "naming",
-          "quality",
-          "gate"
+          "refresh",
+          "base",
+          "freshness"
         ]
       }
     }
   },
-  "task_slug": "051-prepare-task-naming-quality-gate",
-  "task_title": "#51 修正 prepare-task 命名质量门禁",
-  "branch_name": "codex/051-prepare-task-naming-quality-gate",
-  "workspace_slug": "051-prepare-task-naming-quality-gate",
+  "task_slug": "059-refresh-base-freshness",
+  "task_title": "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态",
+  "branch_name": "codex/059-refresh-base-freshness",
+  "workspace_slug": "059-refresh-base-freshness",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -70,30 +77,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#51 修正 prepare-task 命名质量门禁",
+    "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态",
     "--slug",
-    "051-prepare-task-naming-quality-gate",
+    "059-refresh-base-freshness",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate",
+  "task_dir": ".trellis/tasks/07-07-059-refresh-base-freshness",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 51,
-      "url": "https://github.com/castbox/guru-trellis/issues/51",
-      "title": "修正 prepare-task 命名质量门禁",
+      "number": 59,
+      "url": "https://github.com/castbox/guru-trellis/issues/59",
+      "title": "prepare-task 应在 planner 阶段刷新 base 分支远程状态",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 51,
-        "url": "https://github.com/castbox/guru-trellis/issues/51",
-        "title": "修正 prepare-task 命名质量门禁",
+        "number": 59,
+        "url": "https://github.com/castbox/guru-trellis/issues/59",
+        "title": "prepare-task 应在 planner 阶段刷新 base 分支远程状态",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -108,8 +115,9 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           662bc47 [main]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate            662bc47 [codex/051-prepare-task-naming-quality-gate]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           542ea9b [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate            44254bb [codex/051-prepare-task-naming-quality-gate]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness                      542ea9b [codex/059-refresh-base-freshness]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
@@ -141,9 +149,9 @@
       "base_branch": "main",
       "base_ref": "main",
       "remote_ref": "origin/main",
-      "local_head_before": "662bc4730999f81efd0b815ce5a9310ba2032e4c",
-      "local_head_after": "662bc4730999f81efd0b815ce5a9310ba2032e4c",
-      "remote_head": "662bc4730999f81efd0b815ce5a9310ba2032e4c",
+      "local_head_before": "542ea9bda51e762f98bbd6d7cecca241732893a8",
+      "local_head_after": "542ea9bda51e762f98bbd6d7cecca241732893a8",
+      "remote_head": "542ea9bda51e762f98bbd6d7cecca241732893a8",
       "fetch_performed": true,
       "fast_forwarded": false,
       "fresh": true,
@@ -152,9 +160,9 @@
     },
     "workspace_was_created_or_reused": true,
     "developer_identity": {
-      "status": "exists",
-      "source": "workspace",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate/.trellis/.developer",
+      "status": "copied",
+      "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness/.trellis/.developer",
       "developer": "wumengye"
     }
   }

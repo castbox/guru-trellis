@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T07:54:31Z",
+  "task_dir": ".trellis/tasks/07-07-059-refresh-base-freshness",
+  "head": "542ea9bda51e762f98bbd6d7cecca241732893a8",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-07-059-refresh-base-freshness/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已审阅 prd.md、design.md、implement.md 与 implement/check JSONL；规划覆盖 issue #59 的 planner-only base freshness 刷新、executor 路径保持强校验、canonical 与 dogfood 副本同步、测试与文档验收。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户在 2026-07-07 回复“继续”，批准当前规划 artifact 进入实现阶段。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-07-059-refresh-base-freshness/prd.md",
+      "sha256": "b3007942324b86968d71450ca8b366285430e809ac413ebb4df41d7d0826d2e7",
+      "size_bytes": 4480,
+      "modified_at": "2026-07-07T07:51:54.860147+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-059-refresh-base-freshness/design.md",
+      "sha256": "17b269ab5b9164f9a7872a7ad5d5aeed2bcba86327bcd0fc92e7ee46e6e99a2c",
+      "size_bytes": 4124,
+      "modified_at": "2026-07-07T07:51:54.860460+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-059-refresh-base-freshness/implement.md",
+      "sha256": "52ea7825c88054c72dccd2aabe012b11452b891e96d4793add6f5a651fff9837",
+      "size_bytes": 2425,
+      "modified_at": "2026-07-07T07:51:54.860610+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

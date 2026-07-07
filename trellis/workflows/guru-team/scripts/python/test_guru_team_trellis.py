@@ -286,6 +286,43 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertEqual(payload["workspace_slug"], "52-resume-detail-inline-attachment-preview")
         self.assertEqual(payload["branch_name"], "codex/52-resume-detail-inline-attachment-preview")
 
+    def test_prepare_planner_refreshes_base_without_executor_fast_forward(self) -> None:
+        existing_issue = {
+            "number": 52,
+            "url": "https://github.com/owner/repo/issues/52",
+            "title": "Add resume detail inline attachment preview",
+        }
+        freshness = {
+            "remote": "origin",
+            "base_branch": "main",
+            "base_ref": "main",
+            "remote_ref": "origin/main",
+            "local_head_before": "old",
+            "local_head_after": "old",
+            "remote_head": "new",
+            "remote_head_source": "fetched",
+            "fetch_attempted": True,
+            "fetch_performed": True,
+            "fast_forwarded": False,
+            "fresh": False,
+            "status": "stale",
+            "base_ref_for_worktree": "origin/main",
+        }
+        with (
+            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
+            mock.patch.object(gtt, "refresh_base_freshness_for_planner", return_value=freshness) as refresh,
+            mock.patch.object(gtt, "ensure_base_freshness") as ensure_base_freshness,
+        ):
+            payload = gtt.cmd_prepare(prepare_args(requirement=["#52"]))
+
+        refresh.assert_called_once_with(self.root, "main")
+        ensure_base_freshness.assert_not_called()
+        self.assertEqual(payload["preflight"]["base_freshness"]["fetch_performed"], True)
+        self.assertEqual(payload["preflight"]["base_freshness"]["fast_forwarded"], False)
+        self.assertEqual(payload["preflight"]["base_freshness"]["status"], "stale")
+        self.assertEqual(payload["preflight"]["base_freshness"]["local_head_before"], "old")
+        self.assertEqual(payload["preflight"]["base_freshness"]["local_head_after"], "old")
+
     def test_prepare_chinese_issue_title_marks_naming_quality_without_side_effects(self) -> None:
         existing_issue = {
             "number": 52,
@@ -637,6 +674,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
                 "status": "fresh",
                 "base_ref_for_worktree": "main",
             }) as refresh,
+            mock.patch.object(gtt, "refresh_base_freshness_for_planner") as planner_refresh,
             mock.patch.object(gtt, "prepare_workspace", return_value=("worktree", self.worktree_root / "42-resume-attachment-preview", True)) as prepare_workspace,
             mock.patch.object(gtt, "ensure_workspace_developer_identity", return_value={
                 "status": "copied",
@@ -646,6 +684,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             payload = gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
 
         refresh.assert_called_once_with(self.root, "main")
+        planner_refresh.assert_not_called()
         prepare_workspace.assert_called_once()
         ensure_identity.assert_called_once_with(self.root, self.worktree_root / "42-resume-attachment-preview", "tester")
         self.assertEqual(payload["preflight"]["base_freshness"]["fetch_performed"], True)
@@ -800,6 +839,87 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             self.assertEqual(payload["remote_head"], remote_head)
             self.assertEqual(gtt.ref_head(local, "main"), remote_head)
             self.assertEqual(gtt.ref_head(local, "origin/main"), remote_head)
+
+    def test_planner_refresh_base_freshness_fetches_without_fast_forwarding_local_base(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            remote = tmp_path / "remote.git"
+            seed = tmp_path / "seed"
+            local = tmp_path / "local"
+            subprocess.run(["git", "init", "--bare", str(remote)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "init", "-b", "main", str(seed)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=seed, check=True)
+            subprocess.run(["git", "config", "user.name", "Test User"], cwd=seed, check=True)
+            (seed / "README.md").write_text("one\n", encoding="utf-8")
+            subprocess.run(["git", "add", "README.md"], cwd=seed, check=True)
+            subprocess.run(["git", "commit", "-m", "one"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=seed, check=True)
+            subprocess.run(["git", "push", "-u", "origin", "main"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "symbolic-ref", "HEAD", "refs/heads/main"], cwd=remote, check=True)
+            subprocess.run(["git", "clone", str(remote), str(local)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+            local_head_before = gtt.ref_head(local, "main")
+            self.assertEqual(local_head_before, gtt.ref_head(local, "origin/main"))
+
+            (seed / "README.md").write_text("two\n", encoding="utf-8")
+            subprocess.run(["git", "commit", "-am", "two"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "push", "origin", "main"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            remote_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=seed, text=True).strip()
+
+            payload = gtt.refresh_base_freshness_for_planner(local, "main")
+
+            self.assertTrue(payload["fetch_attempted"])
+            self.assertTrue(payload["fetch_performed"])
+            self.assertFalse(payload["fast_forwarded"])
+            self.assertFalse(payload["fresh"])
+            self.assertEqual(payload["status"], "stale")
+            self.assertEqual(payload["local_head_before"], local_head_before)
+            self.assertEqual(payload["local_head_after"], local_head_before)
+            self.assertEqual(payload["remote_head"], remote_head)
+            self.assertEqual(payload["base_ref_for_worktree"], "origin/main")
+            self.assertEqual(gtt.ref_head(local, "main"), local_head_before)
+            self.assertEqual(gtt.ref_head(local, "origin/main"), remote_head)
+
+    def test_planner_refresh_base_freshness_reports_diverged(self) -> None:
+        fetch_result = mock.Mock(returncode=0, stdout="", stderr="")
+        with (
+            mock.patch.object(gtt, "ref_head", side_effect=["local", "remote", "local"]),
+            mock.patch.object(gtt, "run", return_value=fetch_result) as run,
+            mock.patch.object(gtt, "is_ancestor", return_value=False) as is_ancestor,
+        ):
+            payload = gtt.refresh_base_freshness_for_planner(self.root, "main")
+
+        run.assert_called_once_with(["git", "fetch", "origin", "main"], cwd=self.root, check=False)
+        is_ancestor.assert_called_once_with(self.root, "local", "origin/main")
+        self.assertTrue(payload["fetch_performed"])
+        self.assertFalse(payload["fresh"])
+        self.assertEqual(payload["fast_forwarded"], False)
+        self.assertEqual(payload["status"], "diverged")
+        self.assertEqual(payload["local_head_before"], "local")
+        self.assertEqual(payload["local_head_after"], "local")
+        self.assertEqual(payload["remote_head"], "remote")
+
+    def test_planner_refresh_base_freshness_reports_fetch_failed(self) -> None:
+        fetch_result = mock.Mock(returncode=128, stdout="", stderr="network unavailable\n")
+        with (
+            mock.patch.object(gtt, "ref_head", side_effect=["local-before", "local-after"]),
+            mock.patch.object(gtt, "run", return_value=fetch_result) as run,
+            mock.patch.object(gtt, "is_ancestor") as is_ancestor,
+        ):
+            payload = gtt.refresh_base_freshness_for_planner(self.root, "main")
+
+        run.assert_called_once_with(["git", "fetch", "origin", "main"], cwd=self.root, check=False)
+        is_ancestor.assert_not_called()
+        self.assertTrue(payload["fetch_attempted"])
+        self.assertFalse(payload["fetch_performed"])
+        self.assertFalse(payload["fast_forwarded"])
+        self.assertFalse(payload["fresh"])
+        self.assertEqual(payload["status"], "fetch_failed")
+        self.assertEqual(payload["remote_head_source"], "unconfirmed")
+        self.assertEqual(payload["fetch_error"], "network unavailable")
+        self.assertEqual(payload["local_head_before"], "local-before")
+        self.assertEqual(payload["local_head_after"], "local-after")
+        self.assertIsNone(payload["remote_head"])
 
     def test_confirmed_issue_creation_requires_reviewed_title(self) -> None:
         body_path = self.root / "reviewed-issue.md"

@@ -204,7 +204,59 @@
         },
         "base_freshness": {
           "type": "object",
-          "description": "Freshness evidence for the selected base branch. Executor paths fetch the remote base, record local/remote heads, and fail closed on stale or divergent bases.",
+          "description": "Freshness evidence for the selected base branch. Planner paths fetch or explicitly confirm the remote base before reporting freshness; executor paths fetch again, may safely fast-forward the local base, and fail closed on divergent or unknown bases.",
+          "properties": {
+            "remote": {
+              "type": "string"
+            },
+            "base_branch": {
+              "type": "string"
+            },
+            "base_ref": {
+              "type": "string"
+            },
+            "remote_ref": {
+              "type": "string"
+            },
+            "local_head_before": {
+              "type": ["string", "null"]
+            },
+            "local_head_after": {
+              "type": ["string", "null"]
+            },
+            "remote_head": {
+              "type": ["string", "null"],
+              "description": "Remote head observed after a successful refresh, or null when the remote state could not be confirmed."
+            },
+            "remote_head_source": {
+              "type": "string",
+              "description": "How remote_head was obtained, for example fetched, missing, or unconfirmed."
+            },
+            "fetch_attempted": {
+              "type": "boolean"
+            },
+            "fetch_performed": {
+              "type": "boolean",
+              "description": "True only when the selected remote base was successfully fetched or equivalently refreshed."
+            },
+            "fast_forwarded": {
+              "type": "boolean",
+              "description": "Planner paths keep this false because they must not move the local base branch."
+            },
+            "fresh": {
+              "type": "boolean"
+            },
+            "status": {
+              "type": "string",
+              "description": "Expected values include fresh, stale, diverged, remote_ref_missing, fetch_failed, and remote_only."
+            },
+            "base_ref_for_worktree": {
+              "type": ["string", "null"]
+            },
+            "fetch_error": {
+              "type": "string"
+            }
+          },
           "additionalProperties": true
         }
       },

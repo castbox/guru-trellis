@@ -1,0 +1,40 @@
+{
+  "primary_issue": {
+    "number": 59,
+    "url": "https://github.com/castbox/guru-trellis/issues/59",
+    "title": "prepare-task 应在 planner 阶段刷新 base 分支远程状态",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "实现 refresh_base_freshness_for_planner：planner-only 执行 git fetch origin <base>，不 fast-forward 本地 base，并输出 fetched/stale/diverged/fetch_failed freshness 证据。",
+      "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 通过，127 tests OK，覆盖 planner-only stale/diverged/fetch_failed 与 executor 强刷新。",
+      "真实 dogfood prepare-task planner-only 验证：fetch_attempted=true、fetch_performed=true、fast_forwarded=false、remote_head_source=fetched、handoff_written=false、workspace_ready=false。",
+      "canonical 与 dogfood script/schema/workflow 已同步；check-dogfood-overlay-drift 通过且无 .new/.bak 残留。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 59,
+      "url": "https://github.com/castbox/guru-trellis/issues/59",
+      "title": "prepare-task 应在 planner 阶段刷新 base 分支远程状态",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "实现 refresh_base_freshness_for_planner：planner-only 执行 git fetch origin <base>，不 fast-forward 本地 base，并输出 fetched/stale/diverged/fetch_failed freshness 证据。",
+        "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 通过，127 tests OK，覆盖 planner-only stale/diverged/fetch_failed 与 executor 强刷新。",
+        "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py 通过，18 tests OK。",
+        "python3 -m py_compile、python3 -m json.tool、bash -n、task validate、check-dogfood-overlay-drift、git diff --check 均通过。",
+        "真实 dogfood prepare-task planner-only 验证：fetch_attempted=true、fetch_performed=true、fast_forwarded=false、remote_head_source=fetched、handoff_written=false、workspace_ready=false。",
+        "阶段二检查代理 019f3ba4-8294-7cb3-adf8-b278d00f28a1 完成 full task-scope check，结论通过；补充 fetch_failed 分支测试后无未修复 findings。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": [
+    {
+      "number": 62,
+      "url": "https://github.com/castbox/guru-trellis/issues/62",
+      "title": "subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果",
+      "reason": "本任务执行过程中暴露的独立 subagent 协作流程缺陷；不属于 #59 base freshness 修复范围，后续单独处理。",
+      "acceptance_evidence": []
+    }
+  ]
+}

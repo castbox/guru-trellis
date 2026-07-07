@@ -291,8 +291,13 @@ project, the first hop is Guru Team intake, not bare `task.py create`:
 an explicit issue and search duplicates, but it does not create a GitHub issue,
 worktree, branch, Trellis task, or `.trellis/guru-team/handoff.json`. Freeform
 requests without a source issue return `proposed_issue`, `requires_confirmation`,
-`naming_quality`, and `handoff_written: false` in stdout JSON; the AI must show
-the proposed title/body and duplicate evidence, then rerun with
+`naming_quality`, `preflight.base_freshness`, and `handoff_written: false` in
+stdout JSON. Planner output fetches or explicitly confirms the selected remote
+base before reporting freshness; `fetch_performed: false` must not be treated as
+`fresh: true` evidence. When local base is behind remote, planner output reports
+`fresh: false`, `status: stale`, keeps `fast_forwarded: false`, and leaves
+`local_head_before` / `local_head_after` unchanged. The AI must show the
+proposed title/body and duplicate evidence, then rerun with
 `--create-issue-confirmed --issue-title ... --issue-body-file ...` only after
 approval. A confirmed source issue still remains stdout-only until the user
 approves `--create-worktree` or `--create-task`; those executor paths write the
@@ -317,10 +322,11 @@ worktree, branch, or Trellis task if the generated or overridden name is low
 information, such as `issue-52`, `52-issue-52`, a bare number, or only generic
 tokens like `bug`, `fix`, `task`, `work`, `update`, or `change`.
 
-When executor paths create or reuse a worktree, they first refresh the selected
-base branch with `git fetch`, record `preflight.base_freshness` in
+When executor paths create or reuse a worktree, they refresh the selected base
+branch again with `git fetch`, record `preflight.base_freshness` in
 `handoff.json`, fast-forward the local base only when safe, and fail closed when
-the local base diverges from the remote. This prevents new task branches from
+the local base diverges from the remote. Planner refresh evidence does not
+replace the executor's create-time guard; this prevents new task branches from
 silently starting from a stale local base.
 
 After the worktree exists, the executor ensures the target workspace has

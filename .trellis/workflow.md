@@ -352,7 +352,7 @@ If the command returns `proposed_issue` / `requires_confirmation`, stop before a
 
 Use the preflight output from `prepare-task.sh`. The default command plans the worktree path but does not create it; `--create-worktree` or `--create-task` is required for filesystem workspace creation and is allowed only after a confirmed `source_issue` exists.
 
-Planner output should include `preflight.base_freshness` when remote refs are available. Executor paths `--create-worktree` and `--create-task` must refresh the selected base before creating the worktree/branch: fetch the remote base, record local/remote HEAD evidence, fast-forward the local base only when safe, and fail closed on divergence or unknown freshness. Do not create a task branch from a stale local base.
+Planner output must include `preflight.base_freshness` based on a fresh `git fetch origin <base>` or an explicit remote-confirmation failure status. Treat `fetch_performed: false` with `fresh: true` as invalid evidence. If local base is behind the refreshed remote, planner output must report `fresh: false`, `status: stale`, and keep `fast_forwarded: false`; if local and remote diverged, it must report `status: diverged` or fail closed. Executor paths `--create-worktree` and `--create-task` must refresh the selected base again before creating the worktree/branch: fetch the remote base, record local/remote HEAD evidence, fast-forward the local base only when safe, and fail closed on divergence or unknown freshness. Do not create a task branch from a stale local base.
 
 If the selected base branch is not the current branch, report the current branch, selected base, and candidates. If the right base branch is ambiguous, ask the user to choose before creating the task.
 
