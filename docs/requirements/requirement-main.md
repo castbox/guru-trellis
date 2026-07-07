@@ -1,7 +1,8 @@
 # Guru Team Trellis 已实现扩展总览
 
 本文按重要性说明本仓库已经在官方 Trellis 之上建设的扩展。内容基于本 repo 全量
-GitHub issue / PR 历史，包括已 closed issue、已 merged PR 和已 closed 未合并 PR。
+GitHub issue / PR 历史，包括已 closed issue、已 merged PR、已 closed 未合并 PR，
+并在后续维护中追加当前 active issue 已形成的长期能力。
 
 重点不是重新写一份抽象流程，而是把历史迭代已经沉淀出的 Trellis 扩展能力分类，并说明
 每类能力的职责边界、实现资产和历史来源。
@@ -53,6 +54,7 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 - Issue #6 / PR #14：`prepare-task` 默认路径改为无副作用 planner。
 - Issue #15 / PR #16：`no_task` 当前 checkout 直接修改必须显式审批。
 - Issue #26 / PR #28：worktree 创建后继承或初始化 Trellis developer identity。
+- Issue #51：`prepare-task` slug / branch / worktree / task 命名质量门禁。
 
 已实现能力：
 
@@ -63,6 +65,7 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 | Confirmed issue creation | 创建 GitHub issue 必须使用 `--create-issue-confirmed --issue-title ... --issue-body-file ...`，标题和正文来自 AI/human 已审阅内容。 |
 | Worktree executor boundary | `--create-worktree` / `--create-task` 只在 handoff review 和用户确认后使用，并把 handoff 写入选定 workspace。 |
 | Base freshness | executor 路径创建 worktree 前刷新 base branch，只允许安全 fast-forward，本地 base 分叉或 freshness 不明时 fail closed。 |
+| Naming quality gate | planner 输出 `naming_quality`；中文、非 ASCII 或低信息自动 slug（如 `issue-52`、`52-issue-52`、纯编号、仅通用词）不得静默进入 create 路径，agent 必须在读完 issue 后显式传入语义英文 `--short-name` / `--workspace-slug` / `--task-slug` / `--branch`。 |
 | Developer identity | 新 worktree 优先复制 source checkout 的 gitignored `.trellis/.developer`；缺失但有 `--assignee` 时初始化；两者都没有则阻塞并给恢复命令。 |
 | no_task direct edit override | 当前 checkout 直改必须由用户明确批准跳过 issue、Trellis task、worktree 和 branch；批准不包含 commit、push、PR 或 issue close。 |
 
