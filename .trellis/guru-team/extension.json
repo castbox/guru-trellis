@@ -59,11 +59,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-07T06:11:01Z",
+  "installed_at": "2026-07-07T08:13:20Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/051-prepare-task-naming-quality-gate",
-    "commit": "662bc4730999f81efd0b815ce5a9310ba2032e4c",
+    "ref": "codex/059-refresh-base-freshness",
+    "commit": "542ea9bda51e762f98bbd6d7cecca241732893a8",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

@@ -84,6 +84,28 @@ Do not use `handoff.source_issue` as PR close scope. The task-level
 `issue-scope-ledger.json` owns `close_issues`, `related_issues`, and
 `followup_issues`.
 
+Planner-only prepare paths must refresh or explicitly confirm the selected
+remote base before reporting `preflight.base_freshness`. The planner may run
+`git fetch <remote> <base>` and update the remote-tracking ref, but it must not
+fast-forward or otherwise move the local base branch, write handoff artifacts,
+create a worktree, or create a task. Its freshness payload must make the
+evidence source auditable:
+
+- `fetch_attempted: true` when a remote refresh was attempted;
+- `fetch_performed: true` only after the selected remote base was successfully
+  refreshed or equivalently confirmed;
+- `fast_forwarded: false` for planner-only output;
+- `fresh: false`, `status: stale`, and unchanged
+  `local_head_before` / `local_head_after` when local base is behind remote;
+- `status: diverged` when local and remote are not in an ancestor relationship;
+- `status: fetch_failed` or `remote_ref_missing` when remote freshness cannot
+  be confirmed.
+
+`fetch_performed: false` must never be presented as `fresh: true` handoff
+evidence. If the planner cannot confirm remote freshness, the AI handoff review
+must treat the freshness evidence as blocked or stale-risk instead of
+approving a task branch from local cache.
+
 Executor prepare paths (`--create-worktree` / `--create-task`) must refresh the
 selected base branch before creating the task worktree. Record remote, local
 head before/after, remote head, fetch state, fast-forward state, and the ref used

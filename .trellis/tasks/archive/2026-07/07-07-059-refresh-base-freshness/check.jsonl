@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查 workflow/preset 改动必须覆盖 canonical、dogfood 副本、脚本编译、task validate、dogfood drift 和 diff check。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查脚本没有把 AI 判断写进 Python，并且 planner-only 仍保持除 git fetch 之外的无 workspace/task 副作用。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查 handoff schema 与 base_freshness 输出字段兼容，并能区分 fresh/stale/diverged/unknown。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 canonical overlay/dogfood 同步是否产生 drift、.new 或 .bak。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查是否复用现有 Git helper/is_ancestor/ref_head/run 逻辑，没有复制分叉判断代码。"}

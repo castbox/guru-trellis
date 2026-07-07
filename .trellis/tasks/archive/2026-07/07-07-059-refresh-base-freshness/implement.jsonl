@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "实现 prepare-task companion script 时必须遵守 planner/executor 副作用边界、Git/GitHub 操作和 WorkflowError 规则。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "preflight.base_freshness 是 handoff JSON 合同，需要保持向后兼容并记录可审计 freshness 证据。"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "workflow 与 dogfood copy 必须同步，Phase 0 handoff 不能被 task.py create 替代。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "canonical workflow assets 需要通过 preset installer 同步到 .trellis/guru-team dogfood 副本。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "base_freshness 字段跨脚本、schema、workflow README、dogfood 副本消费，需要防止合同漂移。"}

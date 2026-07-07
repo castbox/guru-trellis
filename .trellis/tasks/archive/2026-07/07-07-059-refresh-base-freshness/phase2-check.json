@@ -1,0 +1,143 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T08:33:44Z",
+  "task_dir": ".trellis/tasks/07-07-059-refresh-base-freshness",
+  "base_branch": "main",
+  "head": "542ea9bda51e762f98bbd6d7cecca241732893a8",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/guru-team/schemas/intake-handoff.schema.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/workflow.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-07-059-refresh-base-freshness/"
+  ],
+  "checker": "trellis-check-agent:019f3ba4-8294-7cb3-adf8-b278d00f28a1",
+  "check_summary": "阶段二检查通过：issue #59 的 planner-only base freshness 刷新已实现，executor 创建前强刷新保持不变；测试覆盖 stale/diverged/fetch_failed，canonical workflow/preset 文档、.trellis/spec/workflow/data-contracts.md 与 dogfood 副本已同步；#62 已登记为 follow-up，不属于本次关闭范围。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-07-059-refresh-base-freshness/prd.md",
+      "sha256": "b3007942324b86968d71450ca8b366285430e809ac413ebb4df41d7d0826d2e7",
+      "size_bytes": 4480,
+      "modified_at": "2026-07-07T07:51:54.860147+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-059-refresh-base-freshness/design.md",
+      "sha256": "17b269ab5b9164f9a7872a7ad5d5aeed2bcba86327bcd0fc92e7ee46e6e99a2c",
+      "size_bytes": 4124,
+      "modified_at": "2026-07-07T07:51:54.860460+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-059-refresh-base-freshness/implement.md",
+      "sha256": "52ea7825c88054c72dccd2aabe012b11452b891e96d4793add6f5a651fff9837",
+      "size_bytes": 2425,
+      "modified_at": "2026-07-07T07:51:54.860610+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-059-refresh-base-freshness/issue-scope-ledger.json",
+      "sha256": "df61a626107b3f560710a031f62b2a06f234d63f5ad16b939007aea3e4c61ccc",
+      "size_bytes": 2833,
+      "modified_at": "2026-07-07T08:28:05.543148+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-059-refresh-base-freshness/agent-assignment.json",
+      "sha256": "d20d5222c905d222653f21ea239c8eae10c6a33a3420feeac946e8b907a2f70f",
+      "size_bytes": 1498,
+      "modified_at": "2026-07-07T08:14:44.197463+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "ac50c91ee1b6c81194142da4b4e725f2c627f5aefae2275ccb7688ebf5abbd63",
+      "size_bytes": 11029,
+      "modified_at": "2026-07-07T07:48:22.466577+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "47184888bf1eda49d254c77dd64623e58ae04c920ae7ebb313eeedf47a4b5402",
+      "size_bytes": 15752,
+      "modified_at": "2026-07-07T08:29:19.475432+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "a1437dff864e388183a51488de5daa5c3a599f179a79ee4dd8d390cdf23606bf",
+      "size_bytes": 12495,
+      "modified_at": "2026-07-07T07:48:22.467501+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "6432e8cadb2c3059da1f5a5e24f2aaa988c07ec6ff80ff0cb264333427be77be",
+      "size_bytes": 4836,
+      "modified_at": "2026-07-07T07:48:22.467286+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "55283f64a79f80997e5c61fd96159f52a3770bd941108ccc189444e652113001",
+      "size_bytes": 7862,
+      "modified_at": "2026-07-07T07:48:22.465993+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "passed, 127 tests OK"
+    },
+    {
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "passed, 18 tests OK"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py .trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json && python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json && python3 -m json.tool .trellis/guru-team/schemas/intake-handoff.schema.json",
+      "result": "passed"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-07-059-refresh-base-freshness",
+      "result": "passed"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "dogfood prepare-task planner-only smoke",
+      "result": "fetch_attempted=true, fetch_performed=true, fast_forwarded=false, remote_head_source=fetched, handoff_written=false, workspace_ready=false"
+    },
+    {
+      "command": "trellis-check-agent spec delta复核",
+      "result": ".trellis/spec/workflow/data-contracts.md 与实现/测试/workflow/README/schema 一致，无 findings"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

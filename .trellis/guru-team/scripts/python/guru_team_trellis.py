@@ -853,6 +853,70 @@ def inspect_base_freshness(root: Path, base_ref: str, remote: str = "origin") ->
     }
 
 
+def refresh_base_freshness_for_planner(root: Path, base_ref: str, remote: str = "origin") -> dict[str, Any]:
+    base = base_short_name(base_ref)
+    remote_ref = f"{remote}/{base}"
+    local_head_before = ref_head(root, base)
+    fetch_proc = run(["git", "fetch", remote, base], cwd=root, check=False)
+    if fetch_proc.returncode != 0:
+        local_head_after = ref_head(root, base)
+        return {
+            "remote": remote,
+            "base_branch": base,
+            "base_ref": base_ref,
+            "remote_ref": remote_ref,
+            "local_head_before": local_head_before,
+            "local_head_after": local_head_after,
+            "remote_head": None,
+            "remote_head_source": "unconfirmed",
+            "fetch_attempted": True,
+            "fetch_performed": False,
+            "fast_forwarded": False,
+            "fresh": False,
+            "status": "fetch_failed",
+            "fetch_error": fetch_proc.stderr.strip(),
+            "base_ref_for_worktree": base_ref,
+        }
+
+    remote_head = ref_head(root, remote_ref)
+    local_head_after = ref_head(root, base)
+    fresh = False
+    status = "remote_ref_missing"
+    base_ref_for_worktree = base_ref
+    if remote_head:
+        if not local_head_after:
+            fresh = True
+            status = "remote_only"
+            base_ref_for_worktree = remote_ref
+        elif local_head_after == remote_head:
+            fresh = True
+            status = "fresh"
+            base_ref_for_worktree = base
+        elif is_ancestor(root, local_head_after, remote_ref):
+            status = "stale"
+            base_ref_for_worktree = remote_ref
+        else:
+            status = "diverged"
+            base_ref_for_worktree = remote_ref
+
+    return {
+        "remote": remote,
+        "base_branch": base,
+        "base_ref": base_ref,
+        "remote_ref": remote_ref,
+        "local_head_before": local_head_before,
+        "local_head_after": local_head_after,
+        "remote_head": remote_head,
+        "remote_head_source": "fetched" if remote_head else "missing",
+        "fetch_attempted": True,
+        "fetch_performed": True,
+        "fast_forwarded": False,
+        "fresh": fresh,
+        "status": status,
+        "base_ref_for_worktree": base_ref_for_worktree,
+    }
+
+
 def ensure_base_freshness(root: Path, base_ref: str, remote: str = "origin") -> dict[str, Any]:
     base = base_short_name(base_ref)
     remote_ref = f"{remote}/{base}"
@@ -3483,7 +3547,7 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
     base_freshness = (
         ensure_base_freshness(root, base_ref)
         if should_create_worktree
-        else inspect_base_freshness(root, base_ref)
+        else refresh_base_freshness_for_planner(root, base_ref)
     )
     workspace_base_ref = str(base_freshness.get("base_ref_for_worktree") or base_ref)
     workspace_mode, workspace_path, workspace_ready = prepare_workspace(
