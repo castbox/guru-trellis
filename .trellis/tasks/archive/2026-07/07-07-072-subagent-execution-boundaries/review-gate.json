@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-07T16:46:32Z",
-  "task_dir": ".trellis/tasks/07-07-072-subagent-execution-boundaries",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-07-072-subagent-execution-boundaries",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/072-subagent-execution-boundaries",
@@ -147,7 +147,7 @@
     }
   ],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-07-072-subagent-execution-boundaries/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-07-072-subagent-execution-boundaries/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 72,
@@ -170,13 +170,13 @@
     "reviewer": "trellis-check-agent:019f3d72-1657-7153-b0e3-2efbe6918ecf",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-07-072-subagent-execution-boundaries/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-07-072-subagent-execution-boundaries/review.md",
       "sha256": "1b87d7c27b651116ff523992839b399800866ae95a39eb404282d050fdcf0959",
       "size_bytes": 3388,
       "modified_at": "2026-07-07T16:45:11.740202+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-07-072-subagent-execution-boundaries/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-07-072-subagent-execution-boundaries/agent-assignment.json",
       "sha256": "abaf891d932d7bb3d1de84aff2bcacebefebc445f06907b829c387bf2e750995",
       "size_bytes": 15074,
       "modified_at": "2026-07-07T16:45:45.802218+00:00",
@@ -191,7 +191,7 @@
       "review_rounds_count": 1,
       "reuse_decisions_count": 0,
       "status_events_count": 11,
-      "task": ".trellis/tasks/07-07-072-subagent-execution-boundaries",
+      "task": ".trellis/tasks/archive/2026-07/07-07-072-subagent-execution-boundaries",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "evidence": [
