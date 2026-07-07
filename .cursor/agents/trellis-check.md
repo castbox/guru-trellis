@@ -29,8 +29,8 @@ Look for the `<!-- trellis-hook-injected -->` marker in your input above.
 Before checking, read:
 - `.trellis/spec/` - Development guidelines
 - Task `prd.md` - Requirements document
-- Task `design.md` - Technical design (if exists)
-- Task `implement.md` - Execution plan (if exists)
+- Task `design.md` - required Guru Team technical design
+- Task `implement.md` - required Guru Team execution plan
 - Pre-commit checklist for quality standards
 
 ## Role Modes
@@ -83,7 +83,7 @@ git diff origin/<base>...HEAD
 Read the task's prd.md, required design.md, and required implement.md, then read relevant specs in `.trellis/spec/` to check code:
 
 - Does it satisfy the task requirements
-- Does it follow the technical design and implementation plan when present
+- Does it follow the required technical design and implementation plan
 - Does it follow directory structure conventions
 - Does it follow naming conventions
 - Does it follow code patterns

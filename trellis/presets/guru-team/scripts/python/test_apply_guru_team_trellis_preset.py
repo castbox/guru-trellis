@@ -15,6 +15,25 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import apply_guru_team_trellis_preset as preset
 
 
+STALE_PLANNING_HINTS = (
+    "Task `design.md` - Technical design (if exists)",
+    "Task `implement.md` - Execution plan (if exists)",
+    "design.md` if present",
+    "implement.md` if present",
+    "design.md if present",
+    "implement.md if present",
+    "optional `design.md` / `implement.md`",
+    "technical design and implementation plan when present",
+)
+
+
+def assert_required_planning_context(testcase: unittest.TestCase, text: str) -> None:
+    testcase.assertIn("Task `design.md` - required Guru Team technical design", text)
+    testcase.assertIn("Task `implement.md` - required Guru Team execution plan", text)
+    for stale_hint in STALE_PLANNING_HINTS:
+        testcase.assertNotIn(stale_hint, text)
+
+
 class CodexDispatchModeInstallerTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -266,7 +285,9 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertNotIn("optional `design.md` / `implement.md`", codex_agents_doc)
         self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
         self.assertTrue((self.repo / ".cursor/agents/trellis-check.md").is_file())
-        self.assertIn("阶段二检查代理", (self.repo / ".cursor/agents/trellis-check.md").read_text(encoding="utf-8"))
+        cursor_check_agent = (self.repo / ".cursor/agents/trellis-check.md").read_text(encoding="utf-8")
+        self.assertIn("阶段二检查代理", cursor_check_agent)
+        assert_required_planning_context(self, cursor_check_agent)
         self.assertTrue((self.repo / ".cursor/skills/trellis-brainstorm/SKILL.md").is_file())
         cursor_brainstorm = (self.repo / ".cursor/skills/trellis-brainstorm/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("explicit post-planning confirmation", cursor_brainstorm)
@@ -337,6 +358,10 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertTrue((self.repo / ".trellis/agents/check.md").is_file())
         self.assertTrue((self.repo / ".claude/commands/trellis/continue.md").is_file())
         self.assertTrue((self.repo / ".claude/agents/trellis-implement.md").is_file())
+        self.assertTrue((self.repo / ".claude/agents/trellis-check.md").is_file())
+        claude_check_agent = (self.repo / ".claude/agents/trellis-check.md").read_text(encoding="utf-8")
+        self.assertIn("阶段二检查代理", claude_check_agent)
+        assert_required_planning_context(self, claude_check_agent)
         self.assertFalse((self.repo / ".agents/skills/trellis-meta").exists())
         self.assertFalse((self.repo / ".codex").exists())
         self.assertFalse((self.repo / ".cursor").exists())
@@ -362,6 +387,11 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertTrue((self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md").is_file())
         self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
         self.assertTrue((self.repo / ".cursor/agents/trellis-research.md").is_file())
+        self.assertTrue((self.repo / ".cursor/agents/trellis-check.md").is_file())
+        assert_required_planning_context(
+            self,
+            (self.repo / ".cursor/agents/trellis-check.md").read_text(encoding="utf-8"),
+        )
         self.assertTrue((self.repo / ".cursor/hooks/session-start.py").is_file())
         self.assertTrue((self.repo / ".cursor/hooks/inject-subagent-context.py").is_file())
         self.assertTrue((self.repo / ".cursor/skills/trellis-brainstorm/SKILL.md").is_file())
@@ -374,6 +404,11 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertTrue((self.repo / ".cursor/skills/trellis-meta/references/local-architecture/task-system.md").is_file())
         self.assertTrue((self.repo / ".claude/commands/trellis/continue.md").is_file())
         self.assertTrue((self.repo / ".claude/agents/trellis-research.md").is_file())
+        self.assertTrue((self.repo / ".claude/agents/trellis-check.md").is_file())
+        assert_required_planning_context(
+            self,
+            (self.repo / ".claude/agents/trellis-check.md").read_text(encoding="utf-8"),
+        )
 
     def test_main_accepts_repeated_platform_arguments(self) -> None:
         with mock.patch(
@@ -417,6 +452,33 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertIn("阶段二检查代理", text)
         self.assertIn('nickname_candidates = ["Check Agent"', text)
         self.assertNotIn('nickname_candidates = ["阶段二检查代理"', text)
+
+    def test_generated_markdown_check_agents_replace_optional_context_hints(self) -> None:
+        stale_agent = (
+            "---\n"
+            "name: trellis-check\n"
+            "---\n"
+            "# Trellis workflow check agent\n\n"
+            "Read check.jsonl, then task artifacts.\n\n"
+            "## Context\n"
+            "- Task `prd.md` - Requirements document\n"
+            "- Task `design.md` - Technical design (if exists)\n"
+            "- Task `implement.md` - Execution plan (if exists)\n\n"
+            "- Does it follow the technical design and implementation plan when present\n"
+        )
+        claude_check = self.repo / ".claude/agents/trellis-check.md"
+        cursor_check = self.repo / ".cursor/agents/trellis-check.md"
+        claude_check.parent.mkdir(parents=True)
+        cursor_check.parent.mkdir(parents=True)
+        claude_check.write_text(stale_agent, encoding="utf-8")
+        cursor_check.write_text(stale_agent, encoding="utf-8")
+
+        payload = self.install({"claude", "cursor"})
+
+        self.assertIn(".claude/agents/trellis-check.md", payload["replaced_overlays"])
+        self.assertIn(".cursor/agents/trellis-check.md", payload["replaced_overlays"])
+        assert_required_planning_context(self, claude_check.read_text(encoding="utf-8"))
+        assert_required_planning_context(self, cursor_check.read_text(encoding="utf-8"))
 
     def test_unknown_local_agent_edit_gets_new_copy(self) -> None:
         existing = self.repo / ".codex/agents/trellis-check.toml"

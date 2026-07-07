@@ -59,11 +59,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-07T19:27:25Z",
+  "installed_at": "2026-07-07T20:04:01Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/052-explicit-planning-review",
-    "commit": "011d4247b6f632b4a76f89a79c3a33ce2420d4a1",
+    "commit": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

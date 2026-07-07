@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-07T17:16:07Z",
-  "updated_at": "2026-07-07T19:26:49Z",
+  "updated_at": "2026-07-07T20:03:36Z",
   "task": ".trellis/tasks/07-08-052-explicit-planning-review",
-  "head": "011d4247b6f632b4a76f89a79c3a33ce2420d4a1",
+  "head": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
   "agents": [
     {
       "logical_role": "实现代理",
@@ -28,6 +28,30 @@
       "assigned_at": "2026-07-07T18:33:31Z",
       "assigned_head": "011d4247b6f632b4a76f89a79c3a33ce2420d4a1",
       "reason": "实现提交 011d424 后，按 Branch Review Gate 要求派发 fresh 最终放行审查代理，覆盖 origin/main...HEAD 的完整 diff；该代理只审查并输出报告，不运行 recorder/validator，也不修改文件。"
+    },
+    {
+      "logical_role": "问题闭环审查代理",
+      "agent_id": "019f3dda-c3c0-7bf3-8b7b-2e7f08a122fb",
+      "platform_nickname": "Check Agent",
+      "assigned_at": "2026-07-07T19:30:37Z",
+      "assigned_head": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
+      "reason": "同一 technical agent 在 review round 1 发现 P1/P2 findings；按 closure-before-final 规则，修复提交 0c0cdbb 后必须复用该 agent 作为问题闭环审查代理确认自己的 findings 已关闭，且不得作为最终放行审查代理。"
+    },
+    {
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f3e13-63f3-7480-8158-3e8c79194a72",
+      "platform_nickname": "Review Agent",
+      "assigned_at": "2026-07-07T19:34:57Z",
+      "assigned_head": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
+      "reason": "round 1 finding owner 已由同一 agent 作为问题闭环审查代理完成 closure round 2，findings_count=0；按 Branch Review Gate 要求派发 fresh new-agent 对 current HEAD 0c0cdbb 的 origin/main...HEAD 完整 diff 做最终放行审查。"
+    },
+    {
+      "logical_role": "实现代理",
+      "agent_id": "019f3e22-514f-7d92-90a3-42edd0cecbce",
+      "platform_nickname": "Patch Agent",
+      "assigned_at": "2026-07-07T19:51:17Z",
+      "assigned_head": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
+      "reason": "原实现代理句柄不可用；第二轮 final review 发现 P2 后，派发新的实现代理仅修复 Claude/Cursor trellis-check Context 的 design.md/implement.md if exists 残留文案，并补充 throwaway stale grep 与 installer tests。"
     }
   ],
   "review_rounds": [
@@ -41,6 +65,28 @@
       "reuse_policy": "Branch Review Gate 首轮最终放行审查必须使用 fresh new-agent；若发现 finding，该 agent 后续只能作为问题闭环审查代理复核自己的 finding，不能作为最终放行审查代理。",
       "reuse_decision": "new-agent",
       "recorded_at": "2026-07-07T18:44:33Z"
+    },
+    {
+      "round": 2,
+      "logical_role": "问题闭环审查代理",
+      "agent_id": "019f3dda-c3c0-7bf3-8b7b-2e7f08a122fb",
+      "platform_nickname": "Check Agent",
+      "reviewed_head": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
+      "findings_count": 0,
+      "reuse_policy": "review round 1 的 finding owner 必须同一 technical agent 复核 closure；该 closure agent 不得作为最终放行审查代理。",
+      "reuse_decision": "reuse-for-closure",
+      "recorded_at": "2026-07-07T19:34:20Z"
+    },
+    {
+      "round": 3,
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f3e13-63f3-7480-8158-3e8c79194a72",
+      "platform_nickname": "Review Agent",
+      "reviewed_head": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
+      "findings_count": 1,
+      "reuse_policy": "fresh final reviewer 必须独立审完整 diff；若发现 finding，该 reviewer 后续只能作为问题闭环审查代理复核自己的 finding，不能作为最终放行审查代理。",
+      "reuse_decision": "new-agent",
+      "recorded_at": "2026-07-07T19:50:16Z"
     }
   ],
   "reuse_decisions": [],
@@ -267,6 +313,96 @@
       "running_command_evidence": "multi_agent wait_agent 返回 completed final status；检查代理报告 apply/drift/throwaway/tests/stale grep/diff check/secret scan 均通过。",
       "decision": "mark-completed",
       "reason": "Phase 2 check 已完成，P1/P2 blocker 与额外 stale wording 风险均闭环，进入 phase2-check recorder 与提交准备。",
+      "supersedes_agent_id": "",
+      "handoff_summary": ""
+    },
+    {
+      "event": "completed",
+      "logical_role": "问题闭环审查代理",
+      "agent_id": "019f3dda-c3c0-7bf3-8b7b-2e7f08a122fb",
+      "platform_nickname": "Check Agent",
+      "head": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
+      "observed_at": "2026-07-07T19:34:20Z",
+      "last_observed_progress_at": "",
+      "workspace_evidence": "问题闭环审查代理复核 round 1 的 P1/P2 findings，确认 current HEAD 0c0cdbb 已关闭，findings_count=0；闭环报告已追加到 review.md。",
+      "running_command_evidence": "multi_agent wait_agent 返回 completed final status。",
+      "decision": "mark-completed",
+      "reason": "同一 finding owner 已完成 closure review，允许派 fresh final reviewer 进行最终放行审查。",
+      "supersedes_agent_id": "",
+      "handoff_summary": ""
+    },
+    {
+      "event": "wait-timeout",
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f3e13-63f3-7480-8158-3e8c79194a72",
+      "platform_nickname": "Review Agent",
+      "head": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
+      "observed_at": "2026-07-07T19:40:30Z",
+      "last_observed_progress_at": "",
+      "workspace_evidence": "final review 首个 5 分钟等待窗口后，工作树仍只有 metadata tail：handoff、agent-assignment、review.md、review-gate.json；没有非预期代码/overlay 写入。",
+      "running_command_evidence": "multi_agent wait_agent 返回 timed_out=true，尚无 final status；未观察到失败证据。",
+      "decision": "continue-waiting",
+      "reason": "Branch Review Gate 仍需 fresh final reviewer 报告；等待窗口超时不代表失败，继续等待。",
+      "supersedes_agent_id": "",
+      "handoff_summary": ""
+    },
+    {
+      "event": "completed",
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f3e13-63f3-7480-8158-3e8c79194a72",
+      "platform_nickname": "Review Agent",
+      "head": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
+      "observed_at": "2026-07-07T19:50:16Z",
+      "last_observed_progress_at": "",
+      "workspace_evidence": "fresh final reviewer 返回第二轮 BLOCK 报告，发现 1 个 P2：Claude/Cursor check agent Context 仍保留 design.md/implement.md if exists 文案；报告已追加到 review.md。",
+      "running_command_evidence": "multi_agent wait_agent 返回 completed final status。",
+      "decision": "mark-completed",
+      "reason": "最终放行审查未通过，必须返回实现阶段修复并由同一 finding owner 后续做问题闭环审查。",
+      "supersedes_agent_id": "",
+      "handoff_summary": ""
+    },
+    {
+      "event": "progress-observed",
+      "logical_role": "实现代理",
+      "agent_id": "019f3e22-514f-7d92-90a3-42edd0cecbce",
+      "platform_nickname": "Patch Agent",
+      "head": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
+      "observed_at": "2026-07-07T19:56:51Z",
+      "last_observed_progress_at": "",
+      "workspace_evidence": "P2 修复实现代理已修改 Claude/Cursor trellis-check canonical overlays、dogfood installed copies、verify-throwaway-install.sh 与 installer tests；行为 surfaces 中 if exists grep 已无命中，剩余命中在测试 fixture/常量。",
+      "running_command_evidence": "multi_agent wait_agent 首个 5 分钟窗口返回 timed_out=true，尚无 final handoff；未观察到失败证据。",
+      "decision": "continue-waiting",
+      "reason": "已有 in-scope 修复进展，继续等待实现代理完成验证并返回 handoff。",
+      "supersedes_agent_id": "",
+      "handoff_summary": ""
+    },
+    {
+      "event": "completed",
+      "logical_role": "实现代理",
+      "agent_id": "019f3e22-514f-7d92-90a3-42edd0cecbce",
+      "platform_nickname": "Patch Agent",
+      "head": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
+      "observed_at": "2026-07-07T20:00:06Z",
+      "last_observed_progress_at": "",
+      "workspace_evidence": "Patch Agent 完成第二轮 P2 修复：Claude/Cursor trellis-check Context 去除 design.md/implement.md if exists 语义，扩展 verify-throwaway stale pattern 与 installer tests，并同步 dogfood copies。",
+      "running_command_evidence": "multi_agent wait_agent 返回 completed final status；Patch Agent 报告 apply/drift/installer tests/stale grep/diff check 通过，未运行 recorder/gate。",
+      "decision": "mark-completed",
+      "reason": "实现代理已完成第二轮 P2 finding 修复，需进入 Phase 2 检查代理复查并补跑完整 throwaway 开箱验证。",
+      "supersedes_agent_id": "",
+      "handoff_summary": ""
+    },
+    {
+      "event": "completed",
+      "logical_role": "阶段二检查代理",
+      "agent_id": "019f3db5-0d00-77e0-855f-5c17cc094b07",
+      "platform_nickname": "Closure Agent",
+      "head": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
+      "observed_at": "2026-07-07T20:03:36Z",
+      "last_observed_progress_at": "",
+      "workspace_evidence": "阶段二检查代理复查第二轮 P2：Claude/Cursor trellis-check Context 已去除 if exists optional 语义，verify-throwaway stale pattern/test 覆盖 if exists 变体，当前无 findings。",
+      "running_command_evidence": "multi_agent wait_agent 返回 completed final status；检查代理报告 apply/drift/installer tests/verify-throwaway/stale grep/diff check/py_compile/bash-n/task validate 均通过。",
+      "decision": "mark-completed",
+      "reason": "Phase 2 check 复查完成，可以刷新 phase2-check evidence 并提交第二轮 P2 修复。",
       "supersedes_agent_id": "",
       "handoff_summary": ""
     }
