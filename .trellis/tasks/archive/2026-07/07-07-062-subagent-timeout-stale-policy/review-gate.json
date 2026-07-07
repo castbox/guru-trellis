@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-07T13:34:16Z",
-  "task_dir": ".trellis/tasks/07-07-062-subagent-timeout-stale-policy",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-07-062-subagent-timeout-stale-policy",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/062-subagent-timeout-stale-policy",
@@ -135,7 +135,7 @@
   ],
   "followup_candidates": [],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-07-062-subagent-timeout-stale-policy/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 62,
@@ -154,13 +154,13 @@
     "reviewer": "019f3cbf-785e-7871-bbf9-a75f169a56ef",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-07-062-subagent-timeout-stale-policy/review.md",
       "sha256": "1c0fc7ed6e0c8a55b95749b84a18016bf75cd2551901bd7b0e717a06227598f1",
       "size_bytes": 4729,
       "modified_at": "2026-07-07T13:33:19.876332+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-07-062-subagent-timeout-stale-policy/agent-assignment.json",
       "sha256": "e57c4785bb00ba8b21ee31bc81a379d3a26be7e2d0cbb6b681fcc983dde953f0",
       "size_bytes": 2070,
       "modified_at": "2026-07-07T13:33:44.907651+00:00",
@@ -173,7 +173,7 @@
       "review_rounds_count": 1,
       "reuse_decisions_count": 0,
       "status_events_count": 1,
-      "task": ".trellis/tasks/07-07-062-subagent-timeout-stale-policy",
+      "task": ".trellis/tasks/archive/2026-07/07-07-062-subagent-timeout-stale-policy",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "evidence": [
