@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-07T21:51:37Z",
-  "task_dir": ".trellis/tasks/07-08-052-explicit-planning-review",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-08-052-explicit-planning-review",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/052-explicit-planning-review",
@@ -163,7 +163,7 @@
   "observations": [],
   "followup_candidates": [],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-08-052-explicit-planning-review/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-08-052-explicit-planning-review/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 52,
@@ -192,13 +192,13 @@
     "reviewer": "019f3e85-f072-7400-b620-79d6b408a357",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-08-052-explicit-planning-review/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-08-052-explicit-planning-review/review.md",
       "sha256": "c181d0df4fab69f41c3dd7e6b9d68d3c50968dd20e6bd415be374b80799e4f85",
       "size_bytes": 27542,
       "modified_at": "2026-07-07T21:50:57.674145+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-08-052-explicit-planning-review/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-08-052-explicit-planning-review/agent-assignment.json",
       "sha256": "0e18270e60d722c052df8405b137b1bd6687d90a241c9c47b7664ee0d6dff4d0",
       "size_bytes": 47154,
       "modified_at": "2026-07-07T21:51:22.528066+00:00",
@@ -214,7 +214,7 @@
       "review_rounds_count": 9,
       "reuse_decisions_count": 0,
       "status_events_count": 37,
-      "task": ".trellis/tasks/07-08-052-explicit-planning-review",
+      "task": ".trellis/tasks/archive/2026-07/07-08-052-explicit-planning-review",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "evidence": [
