@@ -116,8 +116,13 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
 - `check-planning-approval.sh` validates all three planning artifact entries,
   hash / size / modified-time metadata, approved HEAD freshness, and
   confirmation source before `task.py start`, before implementation dispatch,
-  and before `phase2-check.json` can be recorded. Old `source=workflow`,
-  Phase 0 handoff confirmation, missing docs, or stale metadata fail closed.
+  and before `phase2-check.json` can be recorded. At the same `HEAD`, it also
+  compares the recorded `dirty_paths` with the current working tree after
+  excluding the approval artifact and reviewed planning documents. When
+  committed-head audit explicitly allows an ancestor planning HEAD, the current
+  working tree must still be metadata-only; any non-metadata dirty path fails
+  closed. Old `source=workflow`, Phase 0 handoff confirmation, missing docs, or
+  stale metadata fail closed.
 - `record-phase2-check.sh` records prior full-scope `trellis-check` evidence;
   it must not replace check judgment with command exit codes.
 - `check-phase2-check.sh` validates coverage, validation evidence, findings,

@@ -2900,13 +2900,28 @@ def validate_planning_approval(
         )
     recorded_head = str(payload.get("head") or "")
     head = current_head(root)
+    accepted_committed_head = False
     if recorded_head != head:
         if allow_committed_head and recorded_head and is_ancestor(root, recorded_head, "HEAD"):
-            pass
+            accepted_committed_head = True
         else:
             errors.append(f"planning-approval.json 记录的 HEAD {recorded_head or '(missing)'} 与当前 HEAD {head} 不一致。")
-    if not isinstance(payload.get("dirty_paths"), list):
+    recorded_dirty = payload.get("dirty_paths")
+    if not isinstance(recorded_dirty, list):
         errors.append("planning-approval.json 缺少 dirty_paths 数组。")
+    elif accepted_committed_head:
+        has_non_metadata, non_metadata_paths = has_non_metadata_dirty_paths(root)
+        if has_non_metadata:
+            errors.append(
+                "planning-approval.json 记录的 HEAD 是当前 HEAD 的祖先，但工作区存在非 Trellis metadata 变更: "
+                + ", ".join(non_metadata_paths[:20])
+            )
+    else:
+        dirty_excluded = {repo_relative(root, planning_approval_path(task_dir))}
+        dirty_excluded.update(recorded_digest_paths(payload.get("reviewed_artifacts")))
+        dirty_now = dirty_paths_excluding(root, dirty_excluded)
+        if sorted(str(item) for item in recorded_dirty) != sorted(dirty_now):
+            errors.append("planning-approval.json 记录的 dirty_paths 与当前 working tree 不一致。")
     reviewed = payload.get("reviewed_artifacts")
     approved_alias = payload.get("approved_artifacts")
     if not isinstance(reviewed, list) or not reviewed:

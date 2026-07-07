@@ -1,19 +1,25 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-07T20:52:03Z",
+  "generated_at": "2026-07-07T21:30:37Z",
   "task_dir": ".trellis/tasks/07-08-052-explicit-planning-review",
   "base_branch": "main",
-  "head": "0e1592201ea00e0bdfdc737bd2ca1035af82fdfd",
+  "head": "f3e9f2ea28a863fd7731a40db87ddc670a8bf3a5",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
+    ".trellis/guru-team/extension.json",
     ".trellis/guru-team/handoff.json",
-    ".trellis/workflow.md",
-    "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-    "trellis/workflows/guru-team/workflow.md"
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    ".trellis/tasks/07-08-052-explicit-planning-review/review-gate.json",
+    ".trellis/tasks/07-08-052-explicit-planning-review/review.md"
   ],
-  "checker": "019f3db5-0d00-77e0-855f-5c17cc094b07 阶段二检查代理",
-  "check_summary": "阶段二检查代理复查第三轮 final review P2 后确认无未修复 findings；canonical workflow 与 dogfood .trellis/workflow.md 的 Task System 均已改为 Guru Team 三文档必需，verify-throwaway-install 已扫描安装后的 active workflow 并覆盖 optional design/implement stale wording。完整 default public throwaway 当前因发布 tag v0.6.5-guru.1 尚未包含本地修复而 fail closed，不能作为通过证据，需 push/release 后重跑。",
+  "checker": "019f3e74-8853-7df0-8933-a91747115168 阶段二检查代理",
+  "check_summary": "阶段二检查代理复核第四轮 final review P2 后确认无未修复 findings；validate_planning_approval 现在校验 dirty_paths freshness：同 HEAD 下 recorded/current dirty paths 必须一致，allow_committed_head 只允许 metadata-only 工作区 tail，非 metadata dirty path fail closed。canonical 与 installed copy 已同步，spec/docs 已补充客观 freshness 合同；脚本仍不判断规划内容充分性。完整 public throwaway install 仍需 push/release 后基于新 tag/ref 重跑。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-08-052-explicit-planning-review/prd.md",
@@ -53,24 +59,36 @@
     },
     {
       "path": ".trellis/tasks/07-08-052-explicit-planning-review/agent-assignment.json",
-      "sha256": "853b8cb0f819a8febef7f0507e1c7aede1033a4a40e2a2805b0fa0e44d34d16d",
-      "size_bytes": 35146,
-      "modified_at": "2026-07-07T20:49:56.968532+00:00"
-    },
-    {
-      "path": ".trellis/tasks/07-08-052-explicit-planning-review/review.md",
-      "sha256": "e4fb3fc51f744a8524a43b39612008400637e69d445b018378dfc16664520421",
-      "size_bytes": 15849,
-      "modified_at": "2026-07-07T20:34:49.759223+00:00"
-    },
-    {
-      "path": ".trellis/tasks/07-08-052-explicit-planning-review/review-gate.json",
-      "sha256": "1575c4bec50401a73176c2a679e6c5417183116a181b5eca87cf6bb4594b8edb",
-      "size_bytes": 18351,
-      "modified_at": "2026-07-07T18:44:48.223835+00:00"
+      "sha256": "cfeb632d3957e807d883ef2e32b36954f79756576dd5584c4281f3f282e1329f",
+      "size_bytes": 42418,
+      "modified_at": "2026-07-07T21:29:14.787236+00:00"
     }
   ],
   "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "6b282f475d4bd272b76ecc751f73a61df1cf52f9844eae4f9a1a81975cef7581",
+      "size_bytes": 15776,
+      "modified_at": "2026-07-07T21:27:34.987527+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "b0f93885927de88a15566cd4fd34600b6ad9f1ca1817cd6108dbf0b59b815035",
+      "size_bytes": 12681,
+      "modified_at": "2026-07-07T21:27:34.988236+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "19756848267b739d3eb27ecc5393575953e22f594a03f2800017e3c7ecc61160",
+      "size_bytes": 19529,
+      "modified_at": "2026-07-07T21:27:34.989199+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "1f495cf83ebbe7873bf35d2ec684722cd4ce27e72e425405dc82e947f5c0b20a",
+      "size_bytes": 5098,
+      "modified_at": "2026-07-07T17:46:59.429293+00:00"
+    },
     {
       "path": ".trellis/spec/preset/installer.md",
       "sha256": "f5fb68b573053f79e51045e73d4e8b457e0a8db115f4ff4e5cbd8290647c9253",
@@ -82,18 +100,6 @@
       "sha256": "efa3d71fe8592f98c37787bf22e8d65974fbdf6e3ec28bc7d265c5247c83a411",
       "size_bytes": 9361,
       "modified_at": "2026-07-07T19:19:27.287023+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/workflow-contract.md",
-      "sha256": "eb83a6b128fd212c9659934a43b9c7e98e48125591b44e3e8da783159b954c87",
-      "size_bytes": 15404,
-      "modified_at": "2026-07-07T17:34:36.396054+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/quality-guidelines.md",
-      "sha256": "1f495cf83ebbe7873bf35d2ec684722cd4ce27e72e425405dc82e947f5c0b20a",
-      "size_bytes": 5098,
-      "modified_at": "2026-07-07T17:46:59.429293+00:00"
     }
   ],
   "coverage": {
@@ -108,23 +114,35 @@
   },
   "validation_commands": [
     {
-      "command": "cmp -s trellis/workflows/guru-team/workflow.md .trellis/workflow.md",
-      "result": "OK"
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "OK, 146 tests"
     },
     {
-      "command": "rg stale optional planning phrases across runtime workflow, overlays and dogfood platform copies",
-      "result": "OK, no output"
-    },
-    {
-      "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
       "result": "OK, 27 tests"
     },
     {
-      "command": "git diff --check HEAD",
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
       "result": "OK"
     },
     {
-      "command": "bash -n trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh",
+      "result": "OK"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms --json",
+      "result": "OK, managed script copy synchronized; no .new/.bak left after second apply"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh --repo .",
+      "result": "OK"
+    },
+    {
+      "command": "cmp -s trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "result": "OK, exit 0"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json >/dev/null",
       "result": "OK"
     },
     {
@@ -132,28 +150,12 @@
       "result": "OK, implement.jsonl 24 entries and check.jsonl 57 entries"
     },
     {
-      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh --repo .",
+      "command": "git diff --check",
       "result": "OK"
-    },
-    {
-      "command": "python3 ./.trellis/scripts/get_context.py --mode packages && python3 ./.trellis/scripts/get_context.py --mode phase",
-      "result": "OK"
-    },
-    {
-      "command": "git ls-remote --heads origin codex/052-explicit-planning-review",
-      "result": "OK, no remote branch output; current branch marketplace ref unavailable before push"
-    },
-    {
-      "command": "git show v0.6.5-guru.1:trellis/workflows/guru-team/workflow.md grep optional planning wording",
-      "result": "CONFIRMED public release tag still contains old optional design/implement wording"
     },
     {
       "command": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "result": "EXPECTED FAIL before publish/release: default public marketplace ref still lacks this local workflow fix"
-    },
-    {
-      "command": "find . -name '*.new' -o -name '*.bak' -o -name '*.pyc'",
-      "result": "OK, no output after cleanup"
+      "result": "EXPECTED FAIL before push/release: public tag v0.6.5-guru.1 and missing remote branch ref do not include current local workflow/script changes"
     }
   ],
   "findings": [],

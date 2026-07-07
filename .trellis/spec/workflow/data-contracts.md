@@ -156,8 +156,13 @@ It records:
 The artifact is valid only while the recorded artifact hashes and `HEAD` match.
 `check-planning-approval.sh` must also verify all three planning docs are
 present, the digest / size / modified-time metadata still matches, and the
-confirmation source is `explicit-post-planning-review`. `task.py start` is a
-status transition only and must not be treated as planning review evidence.
+confirmation source is `explicit-post-planning-review`. At the same `HEAD`,
+the recorded `dirty_paths` must match the current working tree after excluding
+the approval artifact and reviewed planning documents. In committed-head audit
+mode, the planning approval may point at an ancestor `HEAD`, but the current
+working tree must be metadata-only; a non-metadata dirty path makes the
+approval stale. `task.py start` is a status transition only and must not be
+treated as planning review evidence.
 
 ## Phase 2 Check Artifact
 

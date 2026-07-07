@@ -1241,6 +1241,77 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             )
         self.assertEqual(relaxed_errors, [])
 
+    def test_check_planning_approval_rejects_dirty_path_drift(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value="abc123"),
+            mock.patch.object(gtt, "git_status_paths", return_value=["new-dirty-file.txt"]),
+        ):
+            _path, _payload, errors = gtt.validate_planning_approval(self.root, self.task_dir)
+
+        self.assertTrue(any("dirty_paths" in error for error in errors))
+
+    def test_check_planning_approval_rejects_non_metadata_dirty_after_committed_head(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value="def456"),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(gtt, "git_status_paths", return_value=["new-dirty-file.txt"]),
+        ):
+            _path, _payload, errors = gtt.validate_planning_approval(
+                self.root,
+                self.task_dir,
+                allow_committed_head=True,
+            )
+
+        self.assertTrue(any("非 Trellis metadata" in error for error in errors))
+
+    def test_check_planning_approval_allows_metadata_dirty_after_committed_head(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        with (
+            mock.patch.object(gtt, "current_head", return_value="def456"),
+            mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(
+                gtt,
+                "git_status_paths",
+                return_value=[
+                    ".trellis/guru-team/handoff.json",
+                    ".trellis/tasks/07-04-gates/review.md",
+                ],
+            ),
+        ):
+            _path, _payload, errors = gtt.validate_planning_approval(
+                self.root,
+                self.task_dir,
+                allow_committed_head=True,
+            )
+
+        self.assertEqual(errors, [])
+
     def test_record_phase2_check_requires_full_coverage_on_pass(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
