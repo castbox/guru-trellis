@@ -1,76 +1,72 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 62,
-    "url": "https://github.com/castbox/guru-trellis/issues/62",
-    "title": "subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果",
+    "number": 72,
+    "url": "https://github.com/castbox/guru-trellis/issues/72",
+    "title": "默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/062-subagent-timeout-stale-policy/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/072-subagent-execution-boundaries/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "062-subagent-timeout-stale-policy",
+  "slug": "subagent-execution-boundaries",
   "naming_quality": {
     "ok": true,
     "reason": "naming includes enough business tokens",
     "requires_semantic_name": false,
-    "current_slug": "062-subagent-timeout-stale-policy",
+    "current_slug": "072-subagent-execution-boundaries",
     "current_surface": "workspace_slug",
     "suggested_override_flags": [],
     "checked_names": {
       "slug": {
         "ok": true,
-        "slug": "062-subagent-timeout-stale-policy",
+        "slug": "subagent-execution-boundaries",
         "reason": "ok",
         "business_tokens": [
           "subagent",
-          "timeout",
-          "stale",
-          "policy"
+          "execution",
+          "boundaries"
         ]
       },
       "task_slug": {
         "ok": true,
-        "slug": "062-subagent-timeout-stale-policy",
+        "slug": "072-subagent-execution-boundaries",
         "reason": "ok",
         "business_tokens": [
           "subagent",
-          "timeout",
-          "stale",
-          "policy"
+          "execution",
+          "boundaries"
         ]
       },
       "workspace_slug": {
         "ok": true,
-        "slug": "062-subagent-timeout-stale-policy",
+        "slug": "072-subagent-execution-boundaries",
         "reason": "ok",
         "business_tokens": [
           "subagent",
-          "timeout",
-          "stale",
-          "policy"
+          "execution",
+          "boundaries"
         ]
       },
       "branch_name": {
         "ok": true,
-        "slug": "062-subagent-timeout-stale-policy",
+        "slug": "072-subagent-execution-boundaries",
         "reason": "ok",
         "business_tokens": [
           "subagent",
-          "timeout",
-          "stale",
-          "policy"
+          "execution",
+          "boundaries"
         ]
       }
     }
   },
-  "task_slug": "062-subagent-timeout-stale-policy",
-  "task_title": "#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果",
-  "branch_name": "codex/062-subagent-timeout-stale-policy",
-  "workspace_slug": "062-subagent-timeout-stale-policy",
+  "task_slug": "072-subagent-execution-boundaries",
+  "task_title": "#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行",
+  "branch_name": "codex/072-subagent-execution-boundaries",
+  "workspace_slug": "072-subagent-execution-boundaries",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/062-subagent-timeout-stale-policy",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/072-subagent-execution-boundaries",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -81,30 +77,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果",
+    "#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行",
     "--slug",
-    "062-subagent-timeout-stale-policy",
+    "072-subagent-execution-boundaries",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-07-062-subagent-timeout-stale-policy",
+  "task_dir": ".trellis/tasks/07-07-072-subagent-execution-boundaries",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 62,
-      "url": "https://github.com/castbox/guru-trellis/issues/62",
-      "title": "subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果",
+      "number": 72,
+      "url": "https://github.com/castbox/guru-trellis/issues/72",
+      "title": "默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 62,
-        "url": "https://github.com/castbox/guru-trellis/issues/62",
-        "title": "subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果",
+        "number": 72,
+        "url": "https://github.com/castbox/guru-trellis/issues/72",
+        "title": "默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -119,12 +115,13 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           87b4728 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           62d00cf [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate            44254bb [codex/051-prepare-task-naming-quality-gate]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution                      a366142 [codex/055-intake-scope-evolution]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/057-chinese-doc-language                        378748d [codex/057-chinese-doc-language]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness                      bbf68e0 [codex/059-refresh-base-freshness]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/062-subagent-timeout-stale-policy               87b4728 [codex/062-subagent-timeout-stale-policy]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/062-subagent-timeout-stale-policy               71ec9d8 [codex/062-subagent-timeout-stale-policy]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/072-subagent-execution-boundaries               62d00cf [codex/072-subagent-execution-boundaries]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
@@ -156,9 +153,9 @@
       "base_branch": "main",
       "base_ref": "main",
       "remote_ref": "origin/main",
-      "local_head_before": "4295e05219a3c9d73c580201abd274c9c27d9753",
-      "local_head_after": "87b4728d51a3a0cff895183323ff5eada9dba043",
-      "remote_head": "87b4728d51a3a0cff895183323ff5eada9dba043",
+      "local_head_before": "87b4728d51a3a0cff895183323ff5eada9dba043",
+      "local_head_after": "62d00cffb7cada17912052a12add7bfa34dcf0f7",
+      "remote_head": "62d00cffb7cada17912052a12add7bfa34dcf0f7",
       "fetch_performed": true,
       "fast_forwarded": true,
       "fresh": true,
@@ -169,7 +166,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/062-subagent-timeout-stale-policy/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/072-subagent-execution-boundaries/.trellis/.developer",
       "developer": "wumengye"
     }
   }
