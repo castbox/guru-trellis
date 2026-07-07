@@ -1,0 +1,32 @@
+{
+  "primary_issue": {
+    "number": 55,
+    "url": "https://github.com/castbox/guru-trellis/issues/55",
+    "title": "github issue intake 的过程需要与时俱进",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "trellis/workflows/guru-team/workflow.md 增加 intake clarity check、GitHub issue evidence update 和 Scope Change Gate 合同。",
+      "trellis/presets/guru-team/overlays/ 与 dogfood installed copies 同步 start/continue 入口提示。",
+      "docs/requirements/guru-team-trellis-flow.md 与 docs/requirements/requirement-main.md 记录长期需求能力。",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 增加 IntakeScopeEvolutionContractTest 回归测试。",
+      "验证命令通过：test_guru_team_trellis.py、test_apply_guru_team_trellis_preset.py、check-dogfood-overlay-drift.sh、verify-throwaway-install.sh、git diff --check。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 55,
+      "url": "https://github.com/castbox/guru-trellis/issues/55",
+      "title": "github issue intake 的过程需要与时俱进",
+      "reason": "本任务完整实现 issue #55 要求：初始 intake 与任务中 scope 变化均需要 AI 判断、按需 brainstorming、GitHub-visible evidence 和 Issue Scope Ledger 留痕。",
+      "acceptance_evidence": [
+        "trellis/workflows/guru-team/workflow.md 增加 intake clarity check、GitHub issue evidence update 和 Scope Change Gate 合同。",
+        "trellis/presets/guru-team/overlays/ 与 dogfood installed copies 同步 start/continue 入口提示。",
+        "docs/requirements/guru-team-trellis-flow.md 与 docs/requirements/requirement-main.md 记录长期需求能力。",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 增加 IntakeScopeEvolutionContractTest 回归测试。",
+        "验证命令通过：test_guru_team_trellis.py、test_apply_guru_team_trellis_preset.py、check-dogfood-overlay-drift.sh、verify-throwaway-install.sh、git diff --check。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

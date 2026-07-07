@@ -145,11 +145,12 @@ sequenceDiagram
 
 ## 4. Phase 0：Pre-task intake
 
-Phase 0 是 Guru Team 加在官方 Trellis task 创建之前的门禁。它解决三个问题：
+Phase 0 是 Guru Team 加在官方 Trellis task 创建之前的门禁。它解决四个问题：
 
 | 问题 | Guru Team 规则 | 确定性资产 |
 | --- | --- | --- |
 | 任务是否应绑定 GitHub issue | AI 读取用户请求、issue body/comment 和 duplicate candidates 后判断；无 issue 时先提出 neutral issue draft。 | `prepare-task.sh --json` 只读取/搜索/输出候选；创建 issue 必须带 `--create-issue-confirmed`。 |
+| Intake clarity / 需求是否足够清晰 | AI 判断 issue body/comment 或自然语言请求是否足以进入 planning；范围、验收、close/ref 语义或实现目标模糊时，先进入 `trellis-brainstorm`，并把澄清结论同步到 issue comment/body 或 reviewed proposed issue body。 | 脚本只提供 issue/comment/duplicate 等原始事实，不决定需求是否充分。 |
 | 分支和 worktree 从哪里来 | AI 审查 base branch、workspace path、branch name、current checkout、dirty state。 | executor 创建 worktree 前重新 fetch base，只在安全时 fast-forward，本地/远端分叉时 fail closed。 |
 | 命名是否足够语义化 | AI 读 issue 后决定英文 short-name，低信息名称不得进入 executor。 | `naming_quality` 和 `--short-name` / `--workspace-slug` / `--task-slug` / `--branch`。 |
 
@@ -167,11 +168,12 @@ task-local `issue-scope-ledger.json` 负责。
 | 2 | `prd.md` | Guru Team artifact | 中文记录需求、约束、验收、不做范围、issue/comment 取舍。 |
 | 3 | `design.md` | Guru Team artifact | 复杂任务记录边界、契约、数据流、兼容性、部署影响、取舍。 |
 | 4 | `implement.md` | Guru Team artifact | 记录实现计划、验证命令、回滚点、review gate。 |
-| 5 | Docs SSOT discovery | Guru Team gate | 检查 `docs/` durable docs 是否需要更新；task artifact 不能替代长期文档。 |
-| 6 | Middle-platform Knowledge Gate | Guru Team gate | 中台 SDK/framework 相关任务要检查 `guru-knowledge-center` MCP 可用性并留 citation 或 warning。 |
-| 7 | `implement.jsonl` / `check.jsonl` | Trellis + Guru context | sub-agent 模式下整理 spec/research manifest；inline 模式由 skill 拉取上下文。 |
-| 8 | `planning-approval.json` | Guru Team gate evidence | AI/human 审查规划并得到用户确认后，用 recorder 写 artifact。 |
-| 9 | `task.py start` | 官方 Trellis | 只做状态迁移到 `in_progress`；不代表规划已经被审查。 |
+| 5 | Scope-change gate | Guru Team gate | planning 或执行中新增需求、引用其他 issue 或发现新 bug 时，先确认当前 close scope、related，还是 follow-up/new issue；结论同步到 GitHub issue 证据和 `issue-scope-ledger.json`。 |
+| 6 | Docs SSOT discovery | Guru Team gate | 检查 `docs/` durable docs 是否需要更新；task artifact 不能替代长期文档。 |
+| 7 | Middle-platform Knowledge Gate | Guru Team gate | 中台 SDK/framework 相关任务要检查 `guru-knowledge-center` MCP 可用性并留 citation 或 warning。 |
+| 8 | `implement.jsonl` / `check.jsonl` | Trellis + Guru context | sub-agent 模式下整理 spec/research manifest；inline 模式由 skill 拉取上下文。 |
+| 9 | `planning-approval.json` | Guru Team gate evidence | AI/human 审查规划并得到用户确认后，用 recorder 写 artifact。 |
+| 10 | `task.py start` | 官方 Trellis | 只做状态迁移到 `in_progress`；不代表规划已经被审查。 |
 
 关键边界：用户同意创建 task，不等于同意进入实现；`task.py start` 之前必须先有
 `planning-approval.json` 且 `check-planning-approval.sh` 通过。

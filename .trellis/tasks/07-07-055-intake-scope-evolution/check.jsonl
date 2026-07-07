@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查需确认新增 intake/scope 规则在 canonical workflow、dogfood workflow、Issue Scope Ledger、Review Gate 边界中一致。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查需确认 canonical overlay 与 dogfood installed copies 一致，没有平台入口残留旧流程。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查需确认 durable docs 记录长期行为，且用户文档不与 workflow 合同冲突。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查需确认没有把 brainstorming、scope 纳入/拆分等 AI 判断写成脚本决策。"}

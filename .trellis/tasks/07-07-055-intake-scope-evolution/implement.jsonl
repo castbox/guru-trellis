@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "实现需遵守 Guru Team workflow canonical/dogfood 同步、Phase 0/1/2/3 gate、Branch Review Gate 和 companion script 边界。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "实现会修改 start/continue overlay，必须保持 overlay 简短、跨平台一致，并通过 preset apply + drift check 同步 dogfood。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "实现会更新 durable docs，需保持中文用户文档、README/requirements 与 canonical workflow 不矛盾。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "如果触碰脚本或测试，必须保持 companion script 只做 executor/validator/recorder，不承载智能判断。"}

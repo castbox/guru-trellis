@@ -54,9 +54,13 @@ The companion scripts live under `.trellis/guru-team/` and are installed by the 
 
 - If the user supplies a GitHub issue number or URL, read that issue body and comments before planning.
 - If no issue is supplied, decide whether the request is clear enough for an intake issue.
+- After reading the request, issue body, and comments, perform an intake clarity check before handoff review. If the problem statement, acceptance criteria, close scope, risk boundary, or implementation target is still ambiguous, load `trellis-brainstorm`, inspect repository evidence before asking user questions, and clarify the scope before creating or starting the Trellis task.
+- For an existing source issue, decide whether clarified requirements should be captured as a new issue comment or by asking the user to update the original issue body. Use comments for additive clarifications, scope decisions, and user confirmations; use body edits only when the original body would mislead future intake and the edit has been reviewed.
+- For a no-issue natural-language request, proposed issue title/body must incorporate the clarified scope before `--create-issue-confirmed`; do not create a generic placeholder issue and expect `prd.md` to repair the source issue later.
 - Before creating an issue, search open issues for likely duplicates and show the result to the user.
 - High-similarity candidates are never auto-bound. Ask the user whether to reuse the candidate or create a new issue.
 - Proposed issue bodies use a neutral, reusable intake structure. GitHub issue creation requires `--create-issue-confirmed` and an AI/human reviewed body file; never let the default prepare command create the issue.
+- If the task scope evolves during planning or execution, pause and ask the user whether the new requirement or referenced issue belongs in the current task, should be recorded as related context, or should become a follow-up issue / new Trellis task. Record the decision in both GitHub-visible issue evidence and task-local artifacts.
 - Do not rely on `auto_create_issue` in older configs. It is a deprecated compatibility field and must not override the explicit confirmation requirement.
 - Do not print tokens, secrets, private keys, signed URLs, `.env` content, or sensitive raw records in logs, docs, issues, or task artifacts.
 
@@ -469,6 +473,14 @@ Load `trellis-brainstorm` and update `prd.md` immediately after each important u
 
 Issue body and comments are intake evidence, not a replacement for `prd.md`. If issue comments conflict, prefer the latest explicit final closeout comment and record the chosen source in `prd.md`.
 
+When intake evidence is incomplete, use `trellis-brainstorm` before implementation planning. Ask only for product intent, scope, risk tolerance, or close/ref decisions that cannot be answered from repository evidence. After each material clarification, update `prd.md` immediately and decide whether the GitHub source of truth needs one of these updates:
+
+- append a comment to the current source issue with the clarified scope, user confirmation, or final closeout interpretation;
+- ask the user to update the original issue body when the body has become misleading for future sessions;
+- create or propose a new issue when the clarification is a separate delivery unit or materially expands the current task.
+
+Do not let task artifacts become the only record of changed requirements when a GitHub issue anchors the work. The issue or a related issue must carry enough public evidence for a later session to understand why the task scope changed.
+
 Discover the repo's durable docs SSOT before planning converges. Inspect `docs/` or equivalent long-lived documentation directories and record one of these in `prd.md`, `design.md`, or `implement.md`:
 
 - complete docs exist and the task's affected durable docs are listed;
@@ -477,12 +489,14 @@ Discover the repo's durable docs SSOT before planning converges. Inspect `docs/`
 
 Run the Middle-platform Knowledge Gate when the task may involve Guru Team middle-platform SDKs or frameworks. Persist citations or the unavailable-MCP warning before design and implementation artifacts are considered ready.
 
-When scope changes, update `issue-scope-ledger.json` immediately:
+Scope Change Gate: when scope changes, first stop and ask the user how to classify the new requirement or referenced issue unless the user already made that classification explicit. Then update `issue-scope-ledger.json` immediately:
 
 - `primary_issue`: the intake/handoff issue that anchors the task.
 - `close_issues`: issues this task explicitly promises to complete and close.
 - `related_issues`: context, reusable mechanism, partial overlap, or references only.
 - `followup_issues`: new scope, new bug, or expansion that should become a new Trellis task.
+
+The same decision must also leave GitHub-visible evidence: add a comment to the current issue, add a comment to the referenced issue, or create/propose a follow-up issue. Companion scripts may execute deterministic writes after reviewed text is supplied, but they must not decide whether the new scope belongs in the current task.
 
 Do not put active task state, PR runtime state, or project-private business rules into a spec template or marketplace entry.
 
@@ -911,4 +925,6 @@ Task-level `issue-scope-ledger.json` owns close/ref/followup semantics:
 - `related_issues`: context, reuse, partial overlap, or non-closing references; PR body may use `Refs` or `Related`, never close keywords.
 - `followup_issues`: expanded scope, newly found bug, or later work; never close from the current PR.
 
-Default best practice for new issues, new bugs, or expanded requirements is to create a new Trellis task. Add a new issue to current `close_issues` only when it is the same delivery unit, does not materially expand boundary/risk/test scope, the planning artifacts are updated, the user explicitly confirms inclusion, and Branch Review Gate records coverage.
+Default best practice for new issues, new bugs, or expanded requirements is to create a new Trellis task. Add a new issue to current `close_issues` only when it is the same delivery unit, does not materially expand boundary/risk/test scope, the planning artifacts are updated, the user explicitly confirms inclusion, GitHub-visible evidence records the decision, and Branch Review Gate records coverage.
+
+If a user changes requirements during an active task, the AI must preserve the decision trail before continuing implementation: summarize the new request, recommend `close_issues` / `related_issues` / `followup_issues`, get confirmation when classification is not explicit, update planning artifacts when the current task scope changes, and add issue comment/body/new issue evidence as appropriate. Do not close a referenced issue merely because it was discussed during the task.

@@ -1,72 +1,72 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 59,
-    "url": "https://github.com/castbox/guru-trellis/issues/59",
-    "title": "prepare-task 应在 planner 阶段刷新 base 分支远程状态",
+    "number": 55,
+    "url": "https://github.com/castbox/guru-trellis/issues/55",
+    "title": "github issue intake 的过程需要与时俱进",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "059-refresh-base-freshness",
+  "slug": "055-intake-scope-evolution",
   "naming_quality": {
     "ok": true,
     "reason": "naming includes enough business tokens",
     "requires_semantic_name": false,
-    "current_slug": "059-refresh-base-freshness",
+    "current_slug": "055-intake-scope-evolution",
     "current_surface": "workspace_slug",
     "suggested_override_flags": [],
     "checked_names": {
       "slug": {
         "ok": true,
-        "slug": "059-refresh-base-freshness",
+        "slug": "055-intake-scope-evolution",
         "reason": "ok",
         "business_tokens": [
-          "refresh",
-          "base",
-          "freshness"
+          "intake",
+          "scope",
+          "evolution"
         ]
       },
       "task_slug": {
         "ok": true,
-        "slug": "059-refresh-base-freshness",
+        "slug": "055-intake-scope-evolution",
         "reason": "ok",
         "business_tokens": [
-          "refresh",
-          "base",
-          "freshness"
+          "intake",
+          "scope",
+          "evolution"
         ]
       },
       "workspace_slug": {
         "ok": true,
-        "slug": "059-refresh-base-freshness",
+        "slug": "055-intake-scope-evolution",
         "reason": "ok",
         "business_tokens": [
-          "refresh",
-          "base",
-          "freshness"
+          "intake",
+          "scope",
+          "evolution"
         ]
       },
       "branch_name": {
         "ok": true,
-        "slug": "059-refresh-base-freshness",
+        "slug": "055-intake-scope-evolution",
         "reason": "ok",
         "business_tokens": [
-          "refresh",
-          "base",
-          "freshness"
+          "intake",
+          "scope",
+          "evolution"
         ]
       }
     }
   },
-  "task_slug": "059-refresh-base-freshness",
-  "task_title": "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态",
-  "branch_name": "codex/059-refresh-base-freshness",
-  "workspace_slug": "059-refresh-base-freshness",
+  "task_slug": "055-intake-scope-evolution",
+  "task_title": "#55 github issue intake 的过程需要与时俱进",
+  "branch_name": "codex/055-intake-scope-evolution",
+  "workspace_slug": "055-intake-scope-evolution",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -77,30 +77,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态",
+    "#55 github issue intake 的过程需要与时俱进",
     "--slug",
-    "059-refresh-base-freshness",
+    "055-intake-scope-evolution",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-07-059-refresh-base-freshness",
+  "task_dir": ".trellis/tasks/07-07-055-intake-scope-evolution",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 59,
-      "url": "https://github.com/castbox/guru-trellis/issues/59",
-      "title": "prepare-task 应在 planner 阶段刷新 base 分支远程状态",
+      "number": 55,
+      "url": "https://github.com/castbox/guru-trellis/issues/55",
+      "title": "github issue intake 的过程需要与时俱进",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 59,
-        "url": "https://github.com/castbox/guru-trellis/issues/59",
-        "title": "prepare-task 应在 planner 阶段刷新 base 分支远程状态",
+        "number": 55,
+        "url": "https://github.com/castbox/guru-trellis/issues/55",
+        "title": "github issue intake 的过程需要与时俱进",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -115,9 +115,10 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           542ea9b [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           1442489 [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate            44254bb [codex/051-prepare-task-naming-quality-gate]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness                      542ea9b [codex/059-refresh-base-freshness]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution                      1442489 [codex/055-intake-scope-evolution]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness                      bbf68e0 [codex/059-refresh-base-freshness]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
@@ -149,9 +150,9 @@
       "base_branch": "main",
       "base_ref": "main",
       "remote_ref": "origin/main",
-      "local_head_before": "542ea9bda51e762f98bbd6d7cecca241732893a8",
-      "local_head_after": "542ea9bda51e762f98bbd6d7cecca241732893a8",
-      "remote_head": "542ea9bda51e762f98bbd6d7cecca241732893a8",
+      "local_head_before": "14424897c902fd12b3dbd07a6d4ec68e5a8aa4df",
+      "local_head_after": "14424897c902fd12b3dbd07a6d4ec68e5a8aa4df",
+      "remote_head": "14424897c902fd12b3dbd07a6d4ec68e5a8aa4df",
       "fetch_performed": true,
       "fast_forwarded": false,
       "fresh": true,
@@ -162,7 +163,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution/.trellis/.developer",
       "developer": "wumengye"
     }
   }

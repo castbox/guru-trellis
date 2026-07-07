@@ -3945,6 +3945,89 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
                 )
 
 
+class IntakeScopeEvolutionContractTest(unittest.TestCase):
+    REPO_ROOT = Path(__file__).resolve().parents[5]
+    WORKFLOW_FILES = [
+        "trellis/workflows/guru-team/workflow.md",
+        ".trellis/workflow.md",
+    ]
+    START_ENTRYPOINT_FILES = [
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+    ]
+    CONTINUE_ENTRYPOINT_FILES = [
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    ]
+    PUBLIC_DOC_FILES = [
+        "docs/requirements/requirement-main.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+    ]
+
+    def assert_file_contains(self, relpath: str, snippets: list[str]) -> None:
+        content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
+        for snippet in snippets:
+            self.assertIn(snippet, content, f"{relpath} must mention {snippet!r}")
+
+    def test_workflow_requires_intake_clarity_and_scope_change_gates(self) -> None:
+        for relpath in self.WORKFLOW_FILES:
+            with self.subTest(path=relpath):
+                self.assert_file_contains(
+                    relpath,
+                    [
+                        "intake clarity check",
+                        "trellis-brainstorm",
+                        "issue comment",
+                        "Scope Change Gate",
+                        "GitHub-visible evidence",
+                        "issue-scope-ledger.json",
+                    ],
+                )
+
+    def test_start_entrypoints_prompt_intake_clarity_check(self) -> None:
+        for relpath in self.START_ENTRYPOINT_FILES:
+            with self.subTest(path=relpath):
+                self.assert_file_contains(
+                    relpath,
+                    [
+                        "intake clarity check",
+                        "trellis-brainstorm",
+                        "issue body/comments",
+                        "reviewed proposed issue body",
+                    ],
+                )
+
+    def test_continue_entrypoints_prompt_scope_change_gate(self) -> None:
+        for relpath in self.CONTINUE_ENTRYPOINT_FILES:
+            with self.subTest(path=relpath):
+                self.assert_file_contains(
+                    relpath,
+                    [
+                        "Scope Change Gate",
+                        "close_issues",
+                        "related_issues",
+                        "followup_issues",
+                        "GitHub-visible issue evidence",
+                    ],
+                )
+
+    def test_public_docs_describe_scope_evolution_contract(self) -> None:
+        for relpath in self.PUBLIC_DOC_FILES:
+            with self.subTest(path=relpath):
+                self.assert_file_contains(
+                    relpath,
+                    [
+                        "Intake clarity",
+                        "trellis-brainstorm",
+                        "issue-scope-ledger.json",
+                    ],
+                )
+
+
 class ExtensionVersionPayloadTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()

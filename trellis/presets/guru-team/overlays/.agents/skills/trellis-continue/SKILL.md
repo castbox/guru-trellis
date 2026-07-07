@@ -16,9 +16,11 @@ python3 ./.trellis/scripts/get_context.py --mode phase
 
 Route by current task status and `.trellis/workflow.md`.
 
-- `planning`: keep `prd.md`, `design.md`, and `implement.md` in Chinese where required; run Docs SSOT discovery and the Middle-platform Knowledge Gate when relevant; ask for review, then record and check `planning-approval.json` before `task.py start`.
+- `planning`: keep `prd.md`, `design.md`, and `implement.md` in Chinese where required; run Docs SSOT discovery and the Middle-platform Knowledge Gate when relevant; if intake evidence is ambiguous, use `trellis-brainstorm` and update the GitHub issue comment/body or proposed issue body as appropriate; ask for review, then record and check `planning-approval.json` before `task.py start`.
 - `in_progress`: confirm knowledge-gate and docs responsibilities from artifacts, implement, record sub-agent assignment when dispatching implement/check agents, run full `trellis-check`, record and check `phase2-check.json` with the current pre-commit `dirty_paths`, reconcile specs/docs, then commit in Phase 3.4.
 - after commit and before `finish-work`: obtain an independent Agent review over the full diff from the intake base branch to HEAD, record review role/reuse decisions in `agent-assignment.json` when sub-agents are used, including Docs SSOT reconciliation evidence; write that review to task-local `{TASK_DIR}/review.md`; then record that review with Branch Review Gate. Do not pass the gate from main-session self-review:
+
+If a user adds requirements, references another issue, or discovers new scope during the task, pause and follow `.trellis/workflow.md` Scope Change Gate before continuing implementation: recommend whether the change belongs in current `close_issues`, `related_issues`, or `followup_issues` / new issue, get user confirmation when classification is not explicit, update planning artifacts and `issue-scope-ledger.json`, and leave GitHub-visible issue evidence.
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \
