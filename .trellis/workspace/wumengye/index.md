@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 23
-- **Last Active**: 2026-07-06
+- **Total Sessions**: 24
+- **Last Active**: 2026-07-07
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~768 | Active |
+| `journal-1.md` | ~802 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 24 | 2026-07-07 | 完成：#51 修正 prepare-task 命名质量门禁 | `7d877da12e4e009485b77b36e9043f3c0745905e`, `4981f15082c8c7ca4a7425253bc9c5949ac1c68c` | `codex/051-prepare-task-naming-quality-gate` |
 | 23 | 2026-07-06 | 完成：#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail | `fb4a7b0275cbab3ca9f243c8cf2f850a9857c642` | `codex/40-workflow-state-completed-closeout-pr` |
 | 22 | 2026-07-06 | 完成：#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact | `cdc58d9961ee25dacf782b6c24b215b6eb6c2130` | `codex/39-review-branch-findings-reviewer-only` |
 | 21 | 2026-07-06 | 完成：#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程 | `156fcf43bb90b7dcc801f989c1871eb640b71c80` | `codex/38-trellis-finish-work-pr-body` |
