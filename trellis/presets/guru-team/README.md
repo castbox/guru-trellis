@@ -103,12 +103,13 @@ Maintainers can verify the stable non-interactive install path with:
 The script creates a temporary Git repo, runs `trellis init -y` with the
 `guru-team` marketplace workflow, applies the preset with
 `--platform codex --platform cursor`, checks that `.trellis/workflow.md`
-exists, verifies that `check-env.sh` and `version.sh` are executable, asserts
-`.trellis/guru-team/extension.json` exists, asserts `.claude/` was not created,
-asserts Codex / Cursor SessionStart hooks, Cursor sub-agent context hook,
-brainstorm/check/before-dev skills, and Trellis meta planning references no
-longer contain legacy `PRD-only` / lightweight / optional-design planning
-hints,
+exists, verifies that the active workflow requires the three Guru Team planning
+artifacts, verifies that `check-env.sh` and `version.sh` are executable,
+asserts `.trellis/guru-team/extension.json` exists, asserts `.claude/` was not
+created, asserts the active workflow, Codex / Cursor SessionStart hooks, Cursor
+sub-agent context hook, brainstorm/check/before-dev skills, and Trellis meta
+planning references no longer contain legacy `PRD-only` / lightweight /
+optional-design planning hints,
 asserts target `.trellis/spec/**`, workspace indexes, and
 `00-bootstrap-guidelines` do not retain known English documentation language
 requirements, and runs `check-env --json` plus `version.sh --json`. Trellis CLI accepts

@@ -1,22 +1,19 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-07T20:05:08Z",
+  "generated_at": "2026-07-07T20:52:03Z",
   "task_dir": ".trellis/tasks/07-08-052-explicit-planning-review",
   "base_branch": "main",
-  "head": "0c0cdbbdfd7759efdfccfb77c0e0dd70c4a49fb9",
+  "head": "0e1592201ea00e0bdfdc737bd2ca1035af82fdfd",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".claude/agents/trellis-check.md",
-    ".cursor/agents/trellis-check.md",
-    ".trellis/guru-team/extension.json",
     ".trellis/guru-team/handoff.json",
-    "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
-    "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+    ".trellis/workflow.md",
+    "trellis/presets/guru-team/README.md",
     "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+    "trellis/workflows/guru-team/workflow.md"
   ],
   "checker": "019f3db5-0d00-77e0-855f-5c17cc094b07 阶段二检查代理",
-  "check_summary": "阶段二检查代理复查第二轮 final review P2 后确认无未修复 findings；Claude/Cursor trellis-check Context 已去除 design.md/implement.md if exists optional 语义，verify-throwaway stale pattern 与 installer tests 覆盖 if exists 变体，dogfood/fresh install 验证通过。",
+  "check_summary": "阶段二检查代理复查第三轮 final review P2 后确认无未修复 findings；canonical workflow 与 dogfood .trellis/workflow.md 的 Task System 均已改为 Guru Team 三文档必需，verify-throwaway-install 已扫描安装后的 active workflow 并覆盖 optional design/implement stale wording。完整 default public throwaway 当前因发布 tag v0.6.5-guru.1 尚未包含本地修复而 fail closed，不能作为通过证据，需 push/release 后重跑。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-08-052-explicit-planning-review/prd.md",
@@ -56,15 +53,15 @@
     },
     {
       "path": ".trellis/tasks/07-08-052-explicit-planning-review/agent-assignment.json",
-      "sha256": "982d2dd5f2fbd4a3fcfea4909dadef9d0e15509729b47f5b1e9080a777d876e2",
-      "size_bytes": 25430,
-      "modified_at": "2026-07-07T20:03:37.285192+00:00"
+      "sha256": "853b8cb0f819a8febef7f0507e1c7aede1033a4a40e2a2805b0fa0e44d34d16d",
+      "size_bytes": 35146,
+      "modified_at": "2026-07-07T20:49:56.968532+00:00"
     },
     {
       "path": ".trellis/tasks/07-08-052-explicit-planning-review/review.md",
-      "sha256": "e8e68451a6635d82d136c73edeb3afe47dc81ab2b620fef227f223a0a294ce48",
-      "size_bytes": 10923,
-      "modified_at": "2026-07-07T19:50:16.313267+00:00"
+      "sha256": "e4fb3fc51f744a8524a43b39612008400637e69d445b018378dfc16664520421",
+      "size_bytes": 15849,
+      "modified_at": "2026-07-07T20:34:49.759223+00:00"
     },
     {
       "path": ".trellis/tasks/07-08-052-explicit-planning-review/review-gate.json",
@@ -111,15 +108,23 @@
   },
   "validation_commands": [
     {
+      "command": "cmp -s trellis/workflows/guru-team/workflow.md .trellis/workflow.md",
+      "result": "OK"
+    },
+    {
+      "command": "rg stale optional planning phrases across runtime workflow, overlays and dogfood platform copies",
+      "result": "OK, no output"
+    },
+    {
       "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
       "result": "OK, 27 tests"
     },
     {
-      "command": "rg stale optional planning phrases including if exists across .agents/.cursor/.codex/.claude/.trellis/agents and canonical overlays",
-      "result": "OK, no output"
+      "command": "git diff --check HEAD",
+      "result": "OK"
     },
     {
-      "command": "git diff --check HEAD && python3 -m json.tool trellis/index.json",
+      "command": "bash -n trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "result": "OK"
     },
     {
@@ -127,24 +132,24 @@
       "result": "OK, implement.jsonl 24 entries and check.jsonl 57 entries"
     },
     {
-      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms --json",
-      "result": "OK, overlays unchanged after sync, no .new/.bak"
-    },
-    {
       "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh --repo .",
       "result": "OK"
     },
     {
-      "command": "python3 -m py_compile workflow/preset scripts and Codex/Cursor hooks",
+      "command": "python3 ./.trellis/scripts/get_context.py --mode packages && python3 ./.trellis/scripts/get_context.py --mode phase",
       "result": "OK"
     },
     {
-      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
-      "result": "OK"
+      "command": "git ls-remote --heads origin codex/052-explicit-planning-review",
+      "result": "OK, no remote branch output; current branch marketplace ref unavailable before push"
+    },
+    {
+      "command": "git show v0.6.5-guru.1:trellis/workflows/guru-team/workflow.md grep optional planning wording",
+      "result": "CONFIRMED public release tag still contains old optional design/implement wording"
     },
     {
       "command": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "result": "OK, fresh install stale grep includes if exists variants"
+      "result": "EXPECTED FAIL before publish/release: default public marketplace ref still lacks this local workflow fix"
     },
     {
       "command": "find . -name '*.new' -o -name '*.bak' -o -name '*.pyc'",
