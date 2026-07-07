@@ -1,0 +1,29 @@
+{
+  "primary_issue": {
+    "number": 62,
+    "url": "https://github.com/castbox/guru-trellis/issues/62",
+    "title": "subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果",
+    "reason": "intake/handoff 主 issue，本任务完整解决并由 Branch Review Gate 覆盖。",
+    "acceptance_evidence": [
+      "实现提交 413713cc8cf0ce4f04377e00609d0e6801b3b856 增加 agent-assignment.json.status_events[] additive contract，明确 wait timeout、stale、unfinished termination、resume/replacement、completed/failed 语义。",
+      "Phase 2 check 记录验证通过：Python 编译、136 个 guru_team_trellis 单测、task.py validate、phase context、dogfood overlay drift、status-event dry-run、git diff --check。",
+      "Branch Review Gate review-gate.json 对 issue #62 close scope 记录 coverage，独立最终放行审查代理返回 PASS，0 findings。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 62,
+      "url": "https://github.com/castbox/guru-trellis/issues/62",
+      "title": "subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果",
+      "reason": "当前任务完整解决 #62：等待窗口 timeout 不再作为失败或半成品通过证据，未完成终止必须有恢复/继任闭环后才能通过 gate。",
+      "acceptance_evidence": [
+        "workflow、trellis-continue、实现/检查/审查 agent overlay 和 durable docs 均同步声明：wait_agent / trellis channel wait timeout 只是等待窗口结果，不代表失败或可接受完成。",
+        "companion script 只作为 recorder/validator：记录 status_events[] 字段、校验枚举/时间/证据字段，并在 Branch Review Gate pass 前阻断未闭环 terminated-unfinished 链。",
+        "单测覆盖 wait-timeout 记录、非法 status event 拒绝、证据不足 terminated-unfinished 拒绝、未闭环终止阻断 gate、replacement-started -> completed 放行链；共 136 个测试通过。",
+        "dogfood installed copies 与 canonical overlays 已通过 check-dogfood-overlay-drift.sh 验证一致，Branch Review Gate 独立审查 PASS。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

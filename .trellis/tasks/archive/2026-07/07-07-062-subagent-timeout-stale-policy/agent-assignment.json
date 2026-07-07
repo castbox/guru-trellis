@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T13:23:38Z",
+  "updated_at": "2026-07-07T13:33:44Z",
+  "task": ".trellis/tasks/07-07-062-subagent-timeout-stale-policy",
+  "head": "413713cc8cf0ce4f04377e00609d0e6801b3b856",
+  "agents": [
+    {
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f3cbf-785e-7871-bbf9-a75f169a56ef",
+      "platform_nickname": "Review Agent",
+      "assigned_at": "2026-07-07T13:23:38Z",
+      "assigned_head": "413713cc8cf0ce4f04377e00609d0e6801b3b856",
+      "reason": "提交 413713c 后，按 Branch Review Gate 要求启动 fresh 独立最终放行审查代理，覆盖 origin/main...HEAD 完整 diff。"
+    }
+  ],
+  "review_rounds": [
+    {
+      "round": 1,
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f3cbf-785e-7871-bbf9-a75f169a56ef",
+      "platform_nickname": "Review Agent",
+      "reviewed_head": "413713cc8cf0ce4f04377e00609d0e6801b3b856",
+      "findings_count": 0,
+      "reuse_policy": "fresh final reviewer after implementation commit; no previous finding owner reused as final",
+      "reuse_decision": "new-agent",
+      "recorded_at": "2026-07-07T13:33:34Z"
+    }
+  ],
+  "reuse_decisions": [],
+  "status_events": [
+    {
+      "event": "completed",
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f3cbf-785e-7871-bbf9-a75f169a56ef",
+      "platform_nickname": "Review Agent",
+      "head": "413713cc8cf0ce4f04377e00609d0e6801b3b856",
+      "observed_at": "2026-07-07T13:33:44Z",
+      "last_observed_progress_at": "",
+      "workspace_evidence": "",
+      "running_command_evidence": "",
+      "decision": "mark-completed",
+      "reason": "最终放行审查代理已完成 origin/main...HEAD 完整 diff 审查，返回 PASS 且 findings_count=0。",
+      "supersedes_agent_id": "",
+      "handoff_summary": ""
+    }
+  ],
+  "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用、更换或状态处理；脚本只记录和校验客观字段、HEAD、digest 与枚举值。"
+}
