@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T10:43:37Z",
+  "updated_at": "2026-07-07T10:50:14Z",
+  "task": ".trellis/tasks/07-07-057-chinese-doc-language",
+  "head": "4295e05219a3c9d73c580201abd274c9c27d9753",
+  "agents": [
+    {
+      "logical_role": "实现代理",
+      "agent_id": "019f3c2c-fd31-7662-8994-f5c61dacaa38",
+      "platform_nickname": "Build Agent",
+      "assigned_at": "2026-07-07T10:43:37Z",
+      "assigned_head": "4295e05219a3c9d73c580201abd274c9c27d9753",
+      "reason": "规划通过后按 Codex sub-agent 模式将 issue #57 的 installer、workflow、overlay、docs/spec 实现交给 Trellis 实现代理；主会话保留协调、验证和 gate 记录职责。"
+    }
+  ],
+  "review_rounds": [],
+  "reuse_decisions": [
+    {
+      "logical_role": "实现代理",
+      "agent_id": "codex-main-session",
+      "decision": "replace",
+      "reason": "替换原因：原实现代理未交付可集成结果，当前任务需要继续推进；替换仅限实现执行，不用于通过 Branch Review Gate。",
+      "head": "4295e05219a3c9d73c580201abd274c9c27d9753",
+      "recorded_at": "2026-07-07T10:50:14Z"
+    }
+  ],
+  "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用或更换；脚本只记录和校验客观字段、HEAD、digest 与枚举值。"
+}

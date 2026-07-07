@@ -122,4 +122,4 @@ Use this template when recording sessions:
 
 ---
 
-**Language**: All documentation must be written in **English**.
+**Language**: 业务项目人类可读文档默认使用**中文**；命令、路径、代码符号、配置键、GitHub keyword 等 literal token 可保留英文。

@@ -56,6 +56,14 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/finish-work.sh"),
     Path("scripts/python/guru_team_trellis.py"),
 ]
+ENGLISH_LANGUAGE_RULES = (
+    "**Language**: All documentation must be written in **English**.",
+    "**Language**: All documentation should be written in **English**.",
+)
+CHINESE_LANGUAGE_RULE = (
+    "**Language**: 业务项目人类可读文档默认使用**中文**；"
+    "命令、路径、代码符号、配置键、GitHub keyword 等 literal token 可保留英文。"
+)
 
 
 def now_iso() -> str:
@@ -425,6 +433,68 @@ def copy_overlay(source: Path, target: Path, relative: Path) -> dict[str, str]:
     return {"path": str(new_target), "action": "new_copy", "existing": str(target)}
 
 
+def language_guidance_targets(repo: Path) -> list[Path]:
+    targets: set[Path] = set()
+    spec_root = repo / ".trellis/spec"
+    if spec_root.is_dir():
+        targets.update(path for path in spec_root.rglob("*.md") if path.is_file())
+
+    workspace_root = repo / ".trellis/workspace"
+    workspace_index = workspace_root / "index.md"
+    if workspace_index.is_file():
+        targets.add(workspace_index)
+    if workspace_root.is_dir():
+        targets.update(path for path in workspace_root.glob("*/index.md") if path.is_file())
+
+    bootstrap_root = repo / ".trellis/tasks/00-bootstrap-guidelines"
+    if bootstrap_root.is_dir():
+        targets.update(path for path in bootstrap_root.rglob("*.md") if path.is_file())
+
+    return sorted(targets)
+
+
+def normalize_business_doc_language_guidance(repo: Path) -> dict[str, Any]:
+    checked_paths: list[str] = []
+    updated_paths: list[dict[str, Any]] = []
+    replacement_count = 0
+
+    for path in language_guidance_targets(repo):
+        rel_path = path.relative_to(repo).as_posix()
+        checked_paths.append(rel_path)
+        try:
+            original = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+
+        updated = original
+        path_replacements = 0
+        for english_rule in ENGLISH_LANGUAGE_RULES:
+            occurrences = updated.count(english_rule)
+            if occurrences:
+                updated = updated.replace(english_rule, CHINESE_LANGUAGE_RULE)
+                path_replacements += occurrences
+
+        if path_replacements:
+            path.write_text(updated, encoding="utf-8")
+            replacement_count += path_replacements
+            updated_paths.append({"path": rel_path, "replacements": path_replacements})
+
+    return {
+        "action": "updated" if replacement_count else "checked",
+        "rule": "business-project-human-readable-docs-default-chinese",
+        "replacement": CHINESE_LANGUAGE_RULE,
+        "checked_paths": checked_paths,
+        "updated_paths": updated_paths,
+        "replacement_count": replacement_count,
+        "scope": [
+            ".trellis/spec/**/*.md",
+            ".trellis/workspace/index.md",
+            ".trellis/workspace/*/index.md",
+            ".trellis/tasks/00-bootstrap-guidelines/**/*.md",
+        ],
+    }
+
+
 def install_assets(
     src: Path,
     dst: Path,
@@ -489,6 +559,7 @@ def install_assets(
     updated_managed.extend(overlays["updated_managed"])
     managed_backups.extend(overlays["managed_backups"])
     codex_dispatch = ensure_codex_dispatch_mode(repo)
+    language_guidance = normalize_business_doc_language_guidance(repo)
 
     result = {
         "installed": installed,
@@ -498,6 +569,7 @@ def install_assets(
         "updated_managed": updated_managed,
         "managed_backups": managed_backups,
         "codex_dispatch": codex_dispatch,
+        "language_guidance": language_guidance,
         "platforms": sorted(selected),
         "all_platforms": all_platforms,
     }
@@ -597,6 +669,7 @@ def main() -> int:
         "updated_managed": result["updated_managed"],
         "managed_backups": result["managed_backups"],
         "codex_dispatch": result["codex_dispatch"],
+        "language_guidance": result["language_guidance"],
         "extension_manifest": result["extension_manifest"],
         "guru_team_extension": result["guru_team_extension"],
         "config": ".trellis/guru-team/config.yml",

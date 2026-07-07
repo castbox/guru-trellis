@@ -1,0 +1,15 @@
+{"file": ".trellis/tasks/07-07-057-chinese-doc-language/prd.md", "reason": "任务需求、验收标准和 scope 边界。"}
+{"file": ".trellis/tasks/07-07-057-chinese-doc-language/design.md", "reason": "实现设计、兼容性和验证策略。"}
+{"file": ".trellis/tasks/07-07-057-chinese-doc-language/implement.md", "reason": "执行顺序和验证命令计划。"}
+{"file": ".trellis/tasks/07-07-057-chinese-doc-language/research/official-trellis-docs.md", "reason": "官方 Trellis workflow / spec template marketplace 依据。"}
+{"file": ".trellis/spec/preset/index.md", "reason": "preset installer 和 overlay 修改入口。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "installer 幂等、managed assets、验证和冲突处理规则。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "overlay 同步和 dogfood drift 检查规则。"}
+{"file": ".trellis/spec/workflow/index.md", "reason": "workflow 修改入口和必读 spec。"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "workflow 行为、artifact language 和 gate 合同。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "Python/Bash companion script 边界和验证要求。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "提交前验证和 review focus。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "README / durable docs 语言和 SSOT 规则。"}
+{"file": ".trellis/spec/guides/index.md", "reason": "共享思考指南索引。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "修改 helper/常量前搜索和复用规则。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "installer payload / workflow / docs 多层同步规则。"}

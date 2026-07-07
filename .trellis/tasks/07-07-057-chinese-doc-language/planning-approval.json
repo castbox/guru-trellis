@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T10:42:16Z",
+  "task_dir": ".trellis/tasks/07-07-057-chinese-doc-language",
+  "head": "4295e05219a3c9d73c580201abd274c9c27d9753",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-07-057-chinese-doc-language/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已审查 issue #57 的 prd/design/implement 和官方 Trellis 扩展依据；规划覆盖业务项目 .trellis/spec、task artifacts、docs durable SSOT、00-bootstrap-guidelines 生成文档的中文规则，以及 guru-trellis 自身文档例外边界。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户在规划校验通过后回复“继续”，确认进入实现。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-07-057-chinese-doc-language/prd.md",
+      "sha256": "b1675f7aecf224c33d5138a9696f9202eb3f1f941fa3c742bde0c0f999135771",
+      "size_bytes": 3870,
+      "modified_at": "2026-07-07T10:41:13.862446+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-057-chinese-doc-language/design.md",
+      "sha256": "3e88e220bde4ffd4d7e5a65c9bd8ceb977aaefdf320dcdd6a8175174e03c6f83",
+      "size_bytes": 4238,
+      "modified_at": "2026-07-07T10:41:13.862811+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-057-chinese-doc-language/implement.md",
+      "sha256": "279e51a982d26203921386567a5a3c0789616b300a7aa9220fa12e6832f7d7ad",
+      "size_bytes": 2883,
+      "modified_at": "2026-07-07T10:41:13.863106+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

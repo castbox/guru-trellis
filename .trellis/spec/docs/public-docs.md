@@ -10,6 +10,15 @@ English.
 Lower-level script comments and Python docstrings may stay English when they
 document implementation mechanics.
 
+When public docs describe behavior inside target business repositories, state
+the Guru Team default explicitly: `.trellis/spec/**`, `.trellis/tasks/**`,
+`docs/**` durable docs, docs SSOT created or completed by
+`00-bootstrap-guidelines`, and workflow artifact human-readable fields should be
+Chinese. Literal commands, paths, config keys, GitHub keywords, marketplace ids,
+and code symbols may remain English. `guru-trellis` itself is a public extension
+repository, so public README/source comments/script help/marketplace metadata
+may remain English or bilingual when that is clearer.
+
 ## Install and Upgrade Prompts
 
 README install docs must provide both:
@@ -37,6 +46,8 @@ target business repository. They should tell the AI to:
 - detect `00-bootstrap-guidelines` after init and explain that spec bootstrap
   is a one-time repo-level task that needs explicit user confirmation before
   AI modifies `.trellis/spec/`
+- explain that bootstrap-created `.trellis/spec/**` and docs SSOT content in
+  target business repos should use Chinese human-readable prose by default
 - keep only selected platform entry directories
 - run minimal validation, including `check-env --json`; if `github_repo` cannot
   be inferred, the docs or prompt must tell the user to configure

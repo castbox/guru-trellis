@@ -7,6 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#v0.6.5-guru.1}"
 ALLOW_PUBLIC_SAMPLE="${TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE:-0}"
+ENGLISH_LANGUAGE_RULE_PATTERN='All documentation (must|should) be written in .*English'
 
 if [[ -z "$WORK_DIR" ]]; then
   WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/guru-trellis-install.XXXXXX")"
@@ -28,6 +29,21 @@ command -v trellis >/dev/null 2>&1 || {
 command -v git >/dev/null 2>&1 || {
   echo "git not found on PATH" >&2
   exit 127
+}
+
+fail_if_english_language_rule() {
+  local label="$1"
+  shift
+  local matches
+  if [[ "$#" -eq 0 ]]; then
+    return 0
+  fi
+  matches="$(grep -RInE "$ENGLISH_LANGUAGE_RULE_PATTERN" "$@" 2>/dev/null || true)"
+  if [[ -n "$matches" ]]; then
+    echo "Unexpected English documentation language rule in $label:" >&2
+    printf '%s\n' "$matches" >&2
+    exit 2
+  fi
 }
 
 CURRENT_BRANCH="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
@@ -71,6 +87,18 @@ test -f "$TARGET/.trellis/workflow.md"
 grep -q "Guru Team Development Workflow" "$TARGET/.trellis/workflow.md"
 grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 grep -q "dispatch_mode: sub-agent" "$TARGET/.trellis/config.yaml"
+fail_if_english_language_rule ".trellis/spec" "$TARGET/.trellis/spec"
+WORKSPACE_LANGUAGE_FILES=()
+if [[ -f "$TARGET/.trellis/workspace/index.md" ]]; then
+  WORKSPACE_LANGUAGE_FILES+=("$TARGET/.trellis/workspace/index.md")
+fi
+while IFS= read -r -d '' path; do
+  WORKSPACE_LANGUAGE_FILES+=("$path")
+done < <(find "$TARGET/.trellis/workspace" -mindepth 2 -maxdepth 2 -type f -name index.md -print0 2>/dev/null || true)
+fail_if_english_language_rule ".trellis/workspace index files" "${WORKSPACE_LANGUAGE_FILES[@]}"
+if [[ -d "$TARGET/.trellis/tasks/00-bootstrap-guidelines" ]]; then
+  fail_if_english_language_rule "00-bootstrap-guidelines" "$TARGET/.trellis/tasks/00-bootstrap-guidelines"
+fi
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-env.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/version.sh"
 test -f "$TARGET/.trellis/guru-team/extension.json"
