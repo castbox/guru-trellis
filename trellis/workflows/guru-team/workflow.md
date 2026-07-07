@@ -184,6 +184,12 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
 - Guru Team workflow identity uses Chinese logical roles recorded in task artifacts, not platform UI names. Allowed roles are `实现代理`, `阶段二检查代理`, `问题发现审查代理`, `问题闭环审查代理`, and `最终放行审查代理`.
 - `logical_role` is the Trellis process identity used in task artifacts, review reports, review gates, and final handoff. `agent_id` is the technical platform identity used for continuing or reusing an agent. `platform_nickname` is display-only and must not participate in gate decisions.
 - Platform agent dispatch identifiers such as `trellis-implement`, `trellis-check`, `trellis-research`, channel-runtime `implement`, and channel-runtime `check` are technical API ids and must stay stable. User-facing agent labels should be Chinese where the platform supports it. Markdown-based agent files use Chinese headings and descriptions. Codex custom agents use Chinese `description`, but `nickname_candidates` must stay ASCII in current Codex releases or Codex ignores the agent file. If a platform still emits an automatic/random nickname, record that raw value in `platform_nickname` only and continue to use `logical_role` for workflow judgment.
+- In default `sub-agent` mode, Guru Team has three mandatory execution boundaries:
+  - implementation must be performed by `trellis-implement` or channel-runtime `implement` and produce an implementation handoff;
+  - Phase 2 check must be performed by `trellis-check` or channel-runtime `check` and produce evidence that can be recorded in `phase2-check.json`;
+  - Branch Review must be performed by an independent review sub-agent after the task work commit and produce task-local `review.md` before the main session records Branch Review Gate.
+- The main session coordinates planning, dispatch, waiting, resume/replacement decisions, evidence recording, commit, recorder/validator calls, and finish preparation. It must not replace the three mandatory sub-agent boundaries with its own implementation, its own Phase 2 check, its own Branch Review, or script validation output.
+- Inline mode or self-exemption is valid only when explicit artifact evidence explains why the default `sub-agent` boundary does not apply. A sub-agent that is already running as `trellis-implement` / `trellis-check` must do its own role directly and return the required handoff/report; a main session in default `sub-agent` mode cannot claim that exemption for itself. Missing implement, check, or review sub-agent evidence fails closed.
 - `wait_agent`, `trellis channel wait`, or an equivalent wait command timing out only means this wait window ended without a final completion event. It is not evidence that the sub-agent is stuck, failed, should stop, or that its partial output is acceptable completion evidence.
 - Distinguish long total runtime from stale state. A sub-agent may run for more than an hour. If it is still producing output, changing the worktree in-scope, running validations, emitting channel events, or otherwise showing meaningful progress, continue waiting and record that observation when needed. Stale assessment must be based on no observable progress for a recent window, default at least 5 minutes, not on total runtime.
 - When a main session dispatches or reuses a sub-agent, record the AI/human decision in `{TASK_DIR}/agent-assignment.json`. The recorder can be:
@@ -215,11 +221,11 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
 
 - Before soft interrupt, hard stop, or terminating an unfinished sub-agent, record the latest output/change time, worktree/channel/diff evidence, running command evidence, decision, reason, and handoff summary. If an unfinished agent is interrupted or terminated, recover the same technical `agent_id` or start a replacement agent with the predecessor output/channel log summary, current diff, task artifacts, remaining checklist, and blocking gate. Continue until a later `completed` or explicit `failed` status event closes that recovery chain.
 - Unfinished, interrupted, terminated, or unclosed replacement output is intermediate evidence only. It must not be treated as implementation completion, Phase 2 check pass evidence, or Branch Review Gate pass evidence. `review-branch.sh --pass` validates objective ledger completeness and fails closed when `status_events[]` contains an unclosed `terminated-unfinished` chain.
-- Phase 2 `trellis-check` is the implementation quality check step. It reviews the current task against specs, runs lint/typecheck/tests when appropriate, and may self-fix before commit.
+- Phase 2 `trellis-check` is the implementation quality check step. It reviews the current task against specs, runs lint/typecheck/tests when appropriate, and may self-fix before commit. `phase2-check.json` is the Guru Team artifact that records the completed `trellis-check` AI judgment, coverage, validations, findings, and dirty-path evidence; it is not the Trellis-native step itself and recorder/validator scripts cannot substitute for that AI check.
 - Phase 3 Branch Review Gate is a post-commit release gate. First, an AI/human review must inspect the complete branch diff from the intake base branch to `HEAD`, including docs, code, tests, Trellis artifacts, config, scripts, schemas, CI/CD workflows, Docker/Compose files, Kubernetes YAML, Kustomize overlays, database migrations, Makefiles, preset installer, Issue Scope Ledger, and publish readiness.
 - Passing Phase 3 Branch Review Gate requires independent Agent review evidence. The main session may coordinate the review, inspect the report, and run the recorder, but the main session's own self-review must not pass the gate.
 - Phase 3 also performs a post-commit Phase 2 audit: `phase2-check.json` is recorded before commit with the then-current `dirty_paths`, and `review-branch.sh` later verifies that committed non-metadata task work after the recorded HEAD is covered by those paths. Do not re-record Phase 2 after the task work commit just to make HEAD match; return to Phase 2 only when new non-metadata changes appear or evidence is invalid.
-- On platforms with sub-agents, dispatch `trellis-check` or a dedicated review sub-agent to perform the evidence-gathering review for Phase 3. The review sub-agent reviews docs, code, tests, artifacts, and diff evidence as an AI reviewer; it must not run Guru Team recorder/validator extension scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*` as part of its review. On inline platforms, stop before a passing gate unless an independent Agent review report is available through an external/team process.
+- In default `sub-agent` mode, dispatch `trellis-check` in an independent review role or a dedicated review sub-agent to perform the evidence-gathering review for Phase 3. The review sub-agent reviews docs, code, tests, artifacts, and diff evidence as an AI reviewer; it must not continue implementation, patch Phase 2 gaps, or run Guru Team recorder/validator extension scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*` as part of its review. On inline platforms, stop before a passing gate unless an independent Agent review report is available through an external/team process.
 - Codex defaults to `codex.dispatch_mode: sub-agent` in Guru Team projects. The main session's dispatch prompt must start with `Active task: <task path>`, and Codex sub-agents fall back to `task.py current --source` when that line is unavailable. Explicit `codex.dispatch_mode: inline` is a downgrade/debug mode.
 - The sub-agent does not own the gate. The gate is valid only after the independent AI/human review has run, written task-local `{TASK_DIR}/review.md`, and `review-branch.sh --review-source independent-agent --review-report {TASK_DIR}/review.md --agent-assignment {TASK_DIR}/agent-assignment.json` writes `{TASK_DIR}/review-gate.json` with summary, evidence, findings, reviewer identity, review source, review-report digest, agent-assignment digest, base/head, and current `HEAD`.
 - `review-branch.sh` is a recorder / validator, not a reviewer. It must receive the prior review result through `--summary`, `--evidence`, `--finding` / `--findings-file`, optional `--observation` / `--followup-candidate`, `--review-source independent-agent`, and `--review-report`; `--reviewer` is identity metadata only and cannot satisfy passed gate evidence by itself. Reviewer identities such as `codex-main-session`, `claude-main-session`, `cursor-main-session`, `*-main-session`, or `self-review` are rejected for a passing gate.
@@ -600,10 +606,10 @@ Do not start implementation until the user approves the planning artifacts and `
 [workflow-state:in_progress]
 Flow: `trellis-implement` -> `trellis-check` -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and journal succeed.
-Before commit, record and check `phase2-check.json`; validation commands alone are not a complete `trellis-check`.
-Main-session default on dispatch platforms: dispatch implement/check sub-agents. Dispatch prompt starts with `Active task: <task path from task.py current>`.
+Before commit, record and check `phase2-check.json`; it records completed `trellis-check` AI evidence, and validation commands or recorder success alone are not a complete check.
+Main-session default on dispatch platforms: dispatch `trellis-implement` / channel `implement`, wait for an implementation handoff, then dispatch `trellis-check` / channel `check`. Dispatch prompt starts with `Active task: <task path from task.py current>`. The main session may coordinate and record evidence, but it must not directly implement or directly check in default `sub-agent` mode.
 After dispatching an implement/check sub-agent, record `实现代理` or `阶段二检查代理` in `agent-assignment.json`; prefer the Chinese UI nickname configured by the agent file when available. If the platform does not expose `agent_id` or nickname, keep the field as an empty string and explain that fact in the Chinese reason. A wait timeout is only a wait-window result; do not terminate or summarize a still-progressing sub-agent because total runtime is long. Record `status_events[]` for wait timeout, progress observed, stale assessment, continue-waiting, resume/replacement, unfinished termination, completion, or explicit failure.
-Sub-agent self-exemption: if already running as `trellis-implement` or `trellis-check`, do the work directly and do not spawn another Trellis implement/check agent.
+Sub-agent self-exemption: if already running as `trellis-implement` or `trellis-check`, do the work directly, do not spawn another Trellis implement/check agent, and return the role-specific handoff/report as artifact evidence. Main-session inline/self-exemption needs explicit artifact evidence; otherwise missing sub-agent evidence fails closed.
 Before edits, confirm knowledge gate and docs SSOT responsibilities from artifacts.
 Read context: jsonl entries -> `prd.md` -> `design.md if present` -> `implement.md if present`.
 [/workflow-state:in_progress]
@@ -619,7 +625,7 @@ Read context: `prd.md` -> `design.md if present` -> `implement.md if present`, p
 
 #### 2.1 Implement `[required · repeatable]`
 
-Dispatch or inline-implement according to the platform mode. Keep changes focused on the reviewed task artifacts and the source issue scope.
+Dispatch or inline-implement according to the platform mode. In default `sub-agent` mode, the main session must dispatch `trellis-implement` or channel-runtime `implement`; it may not directly edit files and later present that work as `实现代理` evidence. Keep changes focused on the reviewed task artifacts and the source issue scope.
 
 On sub-agent-capable platforms, the main session records implementation assignment after dispatch:
 
@@ -633,6 +639,8 @@ On sub-agent-capable platforms, the main session records implementation assignme
 
 The assignment artifact is evidence of an AI/human decision already made by the workflow. The companion script must not choose the agent or infer whether reuse is appropriate.
 
+The implementation handoff must include files changed, key requirement/design carryover points, verification already run or explicitly deferred to Phase 2, remaining risks or a no-known-risk statement, completion status, and concrete focus areas for the later `trellis-check`. Do not report implementation completion until the requested scope is actually complete and verification status is known.
+
 When a dispatched implementation agent hits a wait timeout, first inspect recent output, worktree changes, validation progress, and channel events. If progress exists, keep waiting and optionally record `--status-event wait-timeout --decision continue-waiting` or `--status-event progress-observed`. Only after at least the stale window with no observable progress should the AI/human workflow assess stale state and record `--status-event stale-assessed`; interruption or unfinished termination must be followed by `resume-same-agent` or `replacement-started`, then a later `completed` or `failed` event for the same recovery chain.
 
 Before writing code or generated assets, confirm the Middle-platform Knowledge Gate result for any middle-platform-relevant work:
@@ -645,17 +653,17 @@ Also follow the planning artifact's durable docs responsibilities. If implementa
 
 #### 2.2 Quality check `[required · repeatable]`
 
-Run `trellis-check` or dispatch the check agent. The final check before commit must cover the full task scope, not only the latest implementation chunk.
+Run `trellis-check` or dispatch the check agent. In default `sub-agent` mode, the main session must dispatch `trellis-check` or channel-runtime `check`; it may not directly run a few validations or inspect the diff and then present that as `阶段二检查代理` evidence. The final check before commit must cover the full task scope, not only the latest implementation chunk.
 
 When dispatching a Phase 2 check agent, record `阶段二检查代理` in `agent-assignment.json` before or immediately after the check handoff. This is separate from `phase2-check.json`: assignment records who took the logical role; `phase2-check.json` records the check judgment and evidence.
 
 Before recording a passing Phase 2 check, confirm the check did not rely on a terminated-unfinished implementation/check sub-agent's partial output. If `agent-assignment.json.status_events[]` contains unfinished termination, the same agent or a replacement must have continued the work and reached `completed` or explicit `failed`; otherwise return to implementation/check handoff instead of passing Phase 2.
 
-After the AI/human check has completed, record the task-local check report:
+After the `trellis-check` AI check has completed, record the task-local check report:
 
 ```bash
 .trellis/guru-team/scripts/bash/record-phase2-check.sh --json --pass \
-  --checker "codex-main-session" \
+  --checker "trellis-check-agent" \
   --summary "中文 trellis-check 结论" \
   --coverage requirements \
   --coverage design \
@@ -669,7 +677,7 @@ After the AI/human check has completed, record the task-local check report:
 .trellis/guru-team/scripts/bash/check-phase2-check.sh --json
 ```
 
-Use `--finding 'P2|中文问题说明|path/to/file'` or `--findings-file findings.json` when check finds issues. P0/P1/P2 findings must be resolved before `--pass`. `record-phase2-check` is a recorder / validator; validation commands are evidence inside the report, not a substitute for complete `trellis-check` coverage.
+Use `--finding 'P2|中文问题说明|path/to/file'` or `--findings-file findings.json` when check finds issues. P0/P1/P2 findings must be resolved before `--pass`. `record-phase2-check` is a recorder / validator; validation commands and script success are evidence inside the report, not a substitute for complete `trellis-check` coverage.
 
 #### 2.3 Rollback `[on demand]`
 
@@ -735,10 +743,15 @@ Run after the task work commit and before `finish-work`.
 
 ##### 3.5.1 AI Review Prompt
 
-Dispatch or obtain an independent reviewer/check Agent review. The main session
-may prepare context and later record the result, but its own self-review cannot
-pass Branch Review Gate. The review scope is the complete current branch diff
-against the base branch selected during intake, normally:
+Dispatch or obtain an independent reviewer/check Agent review. In default
+`sub-agent` mode this must be a real review sub-agent, using `trellis-check` in
+a review role or a dedicated review sub-agent. The main session may prepare
+context and later record the result, but its own self-review cannot pass Branch
+Review Gate. The review sub-agent must not continue implementation or fill
+missing Phase 2 check work; if it finds that implement/check evidence is
+missing or stale, it reports a blocking finding and the workflow returns to the
+earlier phase. The review scope is the complete current branch diff against the
+base branch selected during intake, normally:
 
 ```text
 origin/<base>...HEAD

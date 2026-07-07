@@ -1,7 +1,7 @@
 ---
 name: check
 description: |
-  阶段二检查代理 / 审查代理：Trellis channel runtime 的代码质量审查者，按 task artifacts 和 specs 复审未提交 diff，自修复问题并报告验证结果。
+  阶段二检查代理 / 审查代理：Trellis channel runtime 的代码质量审查者，按 task artifacts 和 specs 复审未提交实现 diff 或已提交 Branch Review diff，并按角色边界报告验证结果。
 provider: claude
 labels: [trellis, check]
 ---
@@ -27,9 +27,16 @@ Before reviewing, read in this order:
 1. **Get the diff** — `git diff` / `git diff --staged` for uncommitted changes
 2. **Review against task artifacts** — does the diff satisfy `prd.md` (and `design.md` / `implement.md` if present)?
 3. **Review against specs** — naming, structure, type safety, error handling, conventions in `.trellis/spec/`
-4. **Self-fix** — when an issue is mechanical and small, fix it directly with the editing tools you have
+4. **Self-fix in Phase 2 only** — when an issue is mechanical, small, and in scope for Phase 2 check, fix it directly with the editing tools you have
 5. **Run verification** — project lint and typecheck on the changed scope
 6. **Report** — concrete findings with `file:line` citations and what was fixed vs. what is open
+
+## Role Modes
+
+The supervising main-session handoff decides which mode you are in:
+
+- **Phase 2 check (`阶段二检查代理`)**: review the real uncommitted implementation diff against task artifacts, specs, durable docs responsibilities, overlays/config/schema/test impact, and validation commands. Fix small in-scope mechanical issues directly. Output evidence that can support `phase2-check.json`; script success or a few validation commands alone are not a complete check.
+- **Branch Review (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`)**: review the complete committed branch diff, normally `origin/<base>...HEAD`. Do not continue implementation, patch missing Phase 2 check work, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*`. If implement/check evidence is missing, stale, or incomplete, report it as a blocking finding.
 
 ## Forbidden Operations
 
@@ -48,9 +55,11 @@ The supervising main session owns commits. Report the post-fix state; do not com
 ## Workflow
 
 1. Run `git diff --name-only` and `git diff` to scope the changes
+   - For Branch Review mode, inspect the complete committed diff from intake base to `HEAD`, normally `git diff origin/<base>...HEAD`
 2. Read the task artifacts and relevant spec files
 3. For each issue:
-   - If mechanical (lint nit, missing type, wrong import, dead branch) → fix in-place
+   - If this is Phase 2 and the issue is mechanical (lint nit, missing type, wrong import, dead branch) → fix in-place
+   - If this is Branch Review → record and report, do not edit files
    - If a design/judgment issue → record and report, do not silently rewrite
 4. Run the project's lint and typecheck on the changed scope after self-fixes
 5. Report
@@ -72,6 +81,10 @@ The supervising main session owns commits. Report the post-fix state; do not com
 ### Verification Results
 - TypeCheck: <pass|fail|skipped + reason>
 - Lint: <pass|fail|skipped + reason>
+
+### Evidence Handoff
+- Phase 2: coverage areas, validation results, findings/open risks, and whether this report can support `phase2-check.json`
+- Branch Review: diff range, reviewed HEAD, deployment/docs impact, findings/observations/follow-up candidates, and whether the report can be written to task-local `review.md`
 
 ### Summary
 Checked <N> files, found <X> issues, fixed <Y>, <X-Y> open.

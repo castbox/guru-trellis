@@ -133,6 +133,24 @@ Gate:
   `nickname_candidates`, so use Chinese `description` plus assignment
   `logical_role` for Chinese UI semantics there. Never change dispatch
   identifiers just for display.
+- Default `sub-agent` mode has three mandatory execution boundaries:
+  implementation is performed by `trellis-implement` / channel `implement`,
+  Phase 2 check is performed by `trellis-check` / channel `check`, and
+  Branch Review is performed by an independent review sub-agent after the task
+  work commit. The main session coordinates dispatch, waiting, recovery,
+  evidence recording, commit, and recorder/validator calls. It must not present
+  its own implementation, its own Phase 2 check, its own self-review, or script
+  validation output as any of those sub-agent results. Inline/self-exemption is
+  valid only with explicit artifact evidence; otherwise missing sub-agent
+  evidence fails closed.
+- `phase2-check.json` is Guru Team evidence for a completed `trellis-check`
+  AI check. It records coverage, validations, findings, and dirty paths, but it
+  is not the Trellis-native check step itself and recorder/validator success is
+  not a substitute for the AI check judgment.
+- Branch Review sub-agents are review-only. They inspect the full committed
+  diff, normally `origin/<base>...HEAD`, and report findings/observations/
+  follow-up candidates. They do not continue implementation, patch missing
+  Phase 2 work, or run Guru Team recorder/validator scripts.
 
 `review-branch.sh` must verify Phase 2 check evidence before writing
 `review-gate.json` so Branch Review Gate cannot bypass Phase 2. When

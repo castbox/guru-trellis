@@ -38,6 +38,11 @@ Continue entries must:
 - run `python3 ./.trellis/scripts/get_context.py --mode phase`
 - route by task status
 - apply the business-project Chinese documentation default from `.trellis/workflow.md` across `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**`, `00-bootstrap-guidelines` docs SSOT, and human-readable workflow artifact fields
+- state that default `sub-agent` mode requires the main session to dispatch
+  `trellis-implement` / channel `implement`, then `trellis-check` / channel
+  `check`, and later a Branch Review review sub-agent; the main session cannot
+  replace those boundaries with its own implementation, check, self-review, or
+  script validation output
 - write task-local `review.md`, run Branch Review Gate with
   `--review-source independent-agent` and
   `--review-report <task-local review.md>`, then stop before finish-work
@@ -92,6 +97,13 @@ Sub-agent overlay entries must:
 - for Codex custom agents, keep `nickname_candidates` ASCII so Codex loads the
   agent file, and put the Chinese display role in `description`;
 - keep recursion guards and task-context loading preludes intact;
+- require implement agents to output a completion handoff with files changed,
+  requirement/design carryover, verification state, remaining risks, completion
+  status, and focus areas for `trellis-check`;
+- require check agents to distinguish Phase 2 check from Branch Review: Phase 2
+  may self-fix small in-scope mechanical issues and must output evidence that
+  can support `phase2-check.json`; Branch Review is review-only over the full
+  committed diff and must report, not patch, missing implementation/check work;
 - require unfinished handoff reporting when interrupted/replaced before
   completion, including current diff, remaining work, validation state, and gate
   blockers for same-agent resume or replacement;

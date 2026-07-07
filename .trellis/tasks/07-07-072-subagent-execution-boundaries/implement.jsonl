@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/index.md", "reason": "workflow 修改入口与必读索引"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "workflow phase、sub-agent、Branch Review Gate 合同"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "workflow / overlay 修改后的验证要求"}
+{"file": ".trellis/spec/preset/index.md", "reason": "preset overlay 修改入口与安装边界"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "跨平台 overlay 同步与 dogfood drift 要求"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "多文件重复文案修改前搜索与同步"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "workflow / overlay / docs 跨层一致性"}

@@ -1,0 +1,29 @@
+{
+  "primary_issue": {
+    "number": 72,
+    "url": "https://github.com/castbox/guru-trellis/issues/72",
+    "title": "默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "trellis/workflows/guru-team/workflow.md 与 .trellis/workflow.md 已明确默认 sub-agent mode 下 implement、Phase 2 check、Branch Review 三段强制 subagent 边界。",
+      "trellis/presets/guru-team/overlays/** 与 dogfood installed copies 已同步更新 continue entries、implement/check agent contract，并通过 dogfood overlay drift check。",
+      "docs/requirements/**、README.md、workflow README、preset README 已同步 durable workflow 说明，明确 phase2-check.json 是 trellis-check evidence artifact，脚本不能替代 AI check。",
+      "实现代理 019f3d27-f5e6-70f3-bb67-b9c55b748eee 与阶段二检查代理 019f3d3b-8cdd-7d02-a474-2b5d845a74dc 均已完成并记录在 agent-assignment.json。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 72,
+      "url": "https://github.com/castbox/guru-trellis/issues/72",
+      "title": "默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "Phase 2 check 已由 trellis-check subagent 完成，报告无未修复 findings，并修复了 Claude/Cursor channel runtime 命名、Branch Review review-only 文案和 check agent diff 范围描述。",
+        "验证命令覆盖 JSON/TOML/shell/Python 语法、task validate、workflow phase parser、preset apply --all-platforms、dogfood overlay drift、git diff --check 和 .new/.bak 检查。",
+        "Branch Review Gate 将在 commit 后覆盖 issue #72 的完整 diff 与 close scope。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}
