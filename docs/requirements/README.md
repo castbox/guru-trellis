@@ -11,6 +11,7 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
 | 文档 | 内容 |
 | --- | --- |
 | [requirement-main.md](./requirement-main.md) | 基于本 repo 全量 issue / PR 历史整理的已实现 Trellis 扩展总览。 |
+| [guru-team-trellis-flow.md](./guru-team-trellis-flow.md) | 面向演示的 Guru Team Trellis 全流程图：从 Codex prompt hook 触发 pre-task intake 到 `trellis-finish-work` closeout，并用颜色区分官方 Trellis 原生机制、Guru Team 扩展、平台入口和 companion scripts。 |
 
 ## 历史扫描范围
 
