@@ -188,12 +188,13 @@ flowchart LR
   Main["Codex main session<br/>协调 / 记录 / commit / finish"]:::codex
   Assign1["record-agent-assignment<br/>logical_role=实现代理"]:::script
   Impl["trellis-implement<br/>读取 Active task + JSONL + artifacts"]:::codex
+  Status["status_events[]<br/>timeout / progress / stale / resume / replacement"]:::artifact
   Assign2["record-agent-assignment<br/>logical_role=阶段二检查代理"]:::script
   Check["trellis-check<br/>完整任务范围质量检查"]:::codex
   Phase2["phase2-check.json<br/>coverage + validations + dirty_paths"]:::artifact
   Commit["Phase 3.4 commit<br/>提交 task work"]:::guru
 
-  Main --> Assign1 --> Impl --> Assign2 --> Check --> Phase2 --> Commit
+  Main --> Assign1 --> Impl --> Status --> Assign2 --> Check --> Phase2 --> Commit
 
   classDef guru fill:#FFF3E0,stroke:#EF6C00,color:#4A2600;
   classDef codex fill:#E3F2FD,stroke:#1565C0,color:#073763;
@@ -202,6 +203,14 @@ flowchart LR
 ```
 
 Phase 2 的核心证据是 `phase2-check.json`：
+
+Sub-agent 等待和终止策略由 workflow 判断，脚本只记录/校验。`wait_agent` /
+`trellis channel wait` timeout 只表示等待窗口结束，不代表 agent 失败或应该收口。
+只要仍有输出、工作区合理变化、验证进展或 channel event，就继续等待；stale 默认至少基于
+5 分钟无可观察进展。若未完成 agent 被中断或终止，必须在
+`agent-assignment.json.status_events[]` 记录证据，并恢复同一 `agent_id` 或启动
+replacement agent 继承前任输出、当前 diff、task artifacts、剩余工作和 gate 阻塞点，直到
+后续 `completed` 或明确 `failed`。未闭环的部分输出不能作为 Phase 2 pass evidence。
 
 | 字段/内容 | 目的 |
 | --- | --- |
@@ -247,6 +256,7 @@ Gate 必须满足：
 | 独立 review | 主会话自审不能 pass；需要 independent agent 或等价 AI/human review。 |
 | `review.md` | task-local 审查报告必须存在，包含 summary/evidence、diff range、validation、deployment、Docs SSOT、findings/observations/followups。 |
 | `agent-assignment.json` | 记录中文 logical role、technical `agent_id`、review rounds、finding owner closure、fresh final reviewer。 |
+| `status_events[]` | 记录 wait timeout / stale / terminated unfinished / resume / replacement / completed / failed；未完成终止的恢复链未到达 completed/failed 时 gate 不能 pass。 |
 | 任意 finding 阻断 | P0/P1/P2/P3 都阻断；`observation` 和 `followup_candidate` 不能替代当前 scope defect。 |
 | Recorder 不做判断 | `review-branch.sh` 只记录并校验已发生的 review，不是 reviewer。独立 review sub-agent 不运行 `review-branch.sh` / `check-review-gate.sh` / `record-*`。 |
 | Metadata tail 规则 | Gate 后到 finish-work 前只允许 `review.md`、`review-gate.json`、`pr-body.md` 等 Trellis metadata；新的 source/config/script/docs/schema/preset 变更必须回到 Phase 2/3。 |
@@ -299,7 +309,7 @@ PR readiness 要求：
 | `implement.md` | Phase 1 complex task | Guru Team planning artifact | Implement/check/review。 |
 | `planning-approval.json` | Phase 1.4 | Guru Team gate evidence | `task.py start` 前校验、Branch Review Gate audit。 |
 | `implement.jsonl` / `check.jsonl` | Phase 1.3 | Trellis sub-agent context manifest | `trellis-implement` / `trellis-check`。 |
-| `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity ledger | review closure/fresh final reviewer 校验。 |
+| `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity/status ledger | review closure/fresh final reviewer 和 unfinished termination recovery-chain 校验。 |
 | `phase2-check.json` | Phase 2.2 | Guru Team check evidence | commit 前 gate、Branch Review Gate post-commit audit。 |
 | `review.md` | Phase 3.5 | Independent review report | `review-branch.sh` digest、finish-work readiness。 |
 | `review-gate.json` | Phase 3.5 | Branch Review Gate artifact | `check-review-gate.sh`、finish-work。 |

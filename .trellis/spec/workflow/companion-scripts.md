@@ -115,11 +115,14 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
 - `check-phase2-check.sh` validates coverage, validation evidence, findings,
   hashes, and stale state before commit.
 - `record-agent-assignment.sh` records prior AI/human sub-agent assignment,
-  review round, reuse, or replacement decisions in task-local
-  `agent-assignment.json`; it must not decide which sub-agent to use.
+  review round, reuse, replacement, or status handling decisions in task-local
+  `agent-assignment.json`; it must not decide which sub-agent to use, whether
+  an agent is stale, whether to interrupt/terminate it, or whether to start a
+  replacement.
 - `check-agent-assignment.sh` validates JSON structure, Chinese logical-role
   enum values, required fields, HEAD resolvability, optional current-HEAD
-  freshness, and digest metadata; it must not judge semantic reuse quality.
+  freshness, status event enum/evidence fields, and digest metadata; it must
+  not judge semantic reuse quality or stale/termination correctness.
 
 `review-branch.sh --pass` must fail before writing Branch Review Gate when
 `phase2-check.json` is missing, stale, incomplete, or contains unresolved
@@ -153,6 +156,14 @@ roles, assignment count, review round count, and reuse decision count under
 `review-gate.json.verification_evidence.agent_assignment`. Missing assignment
 evidence blocks a passed gate because the recorder cannot verify closure-before-
 final or fresh final reviewer metadata.
+
+When `agent-assignment.json.status_events[]` contains
+`terminated-unfinished`, `review-branch.sh --pass` must fail closed unless the
+ledger has later objective evidence that the same technical agent resumed or a
+replacement started, and that recovery chain later reached `completed` or
+explicit `failed`. This is only ledger-completeness validation. The script must
+not decide whether a `wait_agent` timeout means stale, whether a running agent
+should be stopped, or whether a failed agent's partial output is acceptable.
 
 When a review round has findings, including a previous final-review round that
 found a new issue, the same technical `agent_id` must later be recorded only as

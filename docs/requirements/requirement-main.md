@@ -94,6 +94,8 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 - Issue #20 / PR #22：Branch Review Gate 每次必须产出 task-local `review.md`，并由
   `review-gate.json` 记录 digest。
 - PR #21：`#20` 的早期 closed 未合并实现，由 PR #22 替代。
+- Issue #62：sub-agent wait timeout / stale / unfinished termination 策略，避免把等待窗口
+  timeout 或未闭环部分输出当作 pass evidence。
 
 已实现能力：
 
@@ -105,6 +107,7 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 | Review report 必填 | `review.md` | AI/human review 判断的主证据，必须 task-local。 |
 | Finding 全阻断 | workflow、`review-branch.sh`、`review-gate.json` | Branch Review Gate 中任意 finding 都阻断，包括 P3；`observation` 与 `followup_candidate` 可记录但不是放行 finding 的替代品。 |
 | 闭环后 Fresh 最终放行审查 | `agent-assignment.json`、`review-branch --agent-assignment` | 任何发现过 findings 的 agent 必须先作为同一 `问题闭环审查代理` 确认其 finding 已闭环并记录 0 findings；之后最终 pass 必须由新的 fresh `最终放行审查代理` 完整审查当前 HEAD diff 并记录 0 findings。 |
+| Sub-agent status ledger | `agent-assignment.json.status_events[]`、`record-agent-assignment.sh`、`review-branch --agent-assignment` | 记录 wait timeout、progress observed、stale assessed、continue waiting、resume/replacement、terminated unfinished、completed、failed；`wait_agent` / `trellis channel wait` timeout 不是失败证据，未完成终止必须恢复同一 agent 或由 replacement 继承上下文并到达 completed/failed，否则 Phase 2 / Branch Review Gate 不得放行。 |
 | Review gate recorder | `review-branch.sh`、`check-review-gate.sh`、`review-gate.json` | 固化 review result、review report digest、base/head、evidence、findings、observations、follow-up candidates；脚本不是 reviewer，且独立 review sub-agent 不调用这些 recorder/validator 扩展脚本作为审查过程。 |
 | Independent review source | `--review-source independent-agent` | 通过 gate 不能来自 `self-review` 或 `*-main-session`。 |
 | Sub-agent assignment ledger | `agent-assignment.json`、`record-agent-assignment.sh`、`check-agent-assignment.sh`、`review-branch --agent-assignment` | 记录中文 `logical_role`、技术 `agent_id`、展示用 `platform_nickname`、HEAD、review round 和复用/更换判断；脚本只做客观校验，不决定复用。UI 展示面优先使用中文 subagent 名称，平台只给随机/自动昵称时记录原始值。 |

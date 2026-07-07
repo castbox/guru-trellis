@@ -1,0 +1,10 @@
+{"file": ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/research/official-trellis-docs.md", "reason": "官方 Trellis custom workflow / sub-agent / spec marketplace 约束"}
+{"file": ".trellis/spec/workflow/index.md", "reason": "workflow 变更入口与验证清单"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Guru Team workflow phase、sub-agent、review gate 合同"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "agent-assignment.json 数据合同扩展"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "recorder / validator 边界与脚本约束"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "workflow / preset 变更验证要求"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "platform overlay 同步规则"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "README 与 durable docs 语言和 SSOT 规则"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "跨 workflow / scripts / overlay / docs 一致性检查"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "修改脚本常量与重复规则前先搜索复用"}

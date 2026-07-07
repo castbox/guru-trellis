@@ -1,0 +1,8 @@
+{"file": ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/research/official-trellis-docs.md", "reason": "检查实现是否符合官方扩展面约束"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查 workflow、gate 与 sub-agent 合同一致性"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查 agent-assignment.json status_events 数据兼容性"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查脚本是否只做 recorder / validator"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查验证命令、dogfood overlay drift 与 release gate 要求"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 overlay 与 installed dogfood copy 同步"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查 README / durable docs SSOT 更新"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查跨层同步与遗漏面"}

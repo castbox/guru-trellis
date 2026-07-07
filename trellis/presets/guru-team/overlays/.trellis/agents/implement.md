@@ -37,6 +37,12 @@ Before implementing, read in this order:
 
 The supervising main session owns commits. Report what changed; do not commit on its behalf.
 
+## Progress And Handoff
+
+- Do not report `Implementation Complete` until the requested scope is actually complete and verification status is known.
+- If the supervising main session interrupts, terminates, replaces, or asks you to stop before completion, report `Implementation Unfinished`. Include files changed, current diff summary, last completed step, commands still running or stuck, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
+- A `trellis channel wait` timeout in the main session is only a wait-window result, not your failure signal. Continue working unless the channel sends an explicit stop/interrupt instruction.
+
 ## Workflow
 
 1. Read relevant specs based on task type and the files in `implement.jsonl` if present

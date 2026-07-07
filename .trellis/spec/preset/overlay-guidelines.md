@@ -52,6 +52,11 @@ Continue entries must:
   session runs those scripts only after review
 - state that passing Branch Review Gate requires task-local
   `--agent-assignment`
+- state that `wait_agent`, `trellis channel wait`, or equivalent timeout is only
+  a wait-window result, not failure or partial-completion evidence; unfinished
+  termination must be recorded in `agent-assignment.json.status_events[]` and
+  must have same-agent resume or replacement plus later `completed` / `failed`
+  before gate pass
 - state that main-session self-review cannot pass Branch Review Gate; if
   independent Agent review is unavailable, continue must stop with the gate
   pending
@@ -87,6 +92,9 @@ Sub-agent overlay entries must:
 - for Codex custom agents, keep `nickname_candidates` ASCII so Codex loads the
   agent file, and put the Chinese display role in `description`;
 - keep recursion guards and task-context loading preludes intact;
+- require unfinished handoff reporting when interrupted/replaced before
+  completion, including current diff, remaining work, validation state, and gate
+  blockers for same-agent resume or replacement;
 - avoid turning agent files into workflow judgment rules.
 
 ## Cross-Platform Consistency

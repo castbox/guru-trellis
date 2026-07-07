@@ -196,6 +196,9 @@ that already happened in the workflow:
   findings count, reuse policy, and reuse decision
 - `reuse_decisions[]` entries for explicit reuse/replacement decisions across
   rounds
+- `status_events[]` entries for wait-window timeout, progress observation,
+  stale assessment, continue-waiting, same-agent resume, replacement start,
+  unfinished termination, completion, and explicit failure handling
 
 Allowed logical roles are:
 
@@ -207,9 +210,48 @@ Allowed logical roles are:
 
 The companion recorder/validator may check JSON structure, required fields,
 role enum values, HEAD resolvability, current-HEAD freshness when requested,
-and file digest metadata. It must not decide which sub-agent should be used,
-whether reviewer reuse is semantically acceptable, or whether a final release
-review is sufficient.
+file digest metadata, status event enum values, required evidence fields, and
+objective recovery-chain completeness for Branch Review Gate pass. It must not
+decide which sub-agent should be used, whether an agent is stale, whether an
+agent should be terminated, whether reviewer reuse is semantically acceptable,
+or whether a final release review is sufficient.
+
+`status_events[]` is additive and older artifacts that omit it are normalized
+to an empty array by the loader. Each status event records:
+
+- `event`: one of `wait-timeout`, `progress-observed`, `stale-assessed`,
+  `continue-waiting`, `resume-same-agent`, `replacement-started`,
+  `terminated-unfinished`, `completed`, or `failed`;
+- `logical_role`: one of the allowed Chinese roles listed above;
+- `agent_id`: technical platform identity, empty only when the platform cannot
+  expose it and the human-readable reason explains that fact;
+- `platform_nickname`: display-only UI nickname;
+- `head`: current Git commit when the status was recorded;
+- `observed_at`: ISO-8601 observation time;
+- `last_observed_progress_at`: ISO-8601 time of the last observable progress
+  when available, required for stale/unfinished termination events;
+- `workspace_evidence`: Chinese summary of output, worktree, diff, validation,
+  or channel-event evidence;
+- `running_command_evidence`: Chinese summary of running, stuck, completed, or
+  non-applicable command state;
+- `decision`: one of `continue-waiting`, `resume-same-agent`,
+  `start-replacement`, `terminate-unfinished`, `mark-completed`, or
+  `mark-failed`;
+- `reason`: Chinese AI/human rationale for the status handling decision;
+- `supersedes_agent_id`: predecessor technical id for `replacement-started`;
+- `handoff_summary`: predecessor output, current diff, remaining work, and gate
+  blockers for `replacement-started` and `terminated-unfinished`.
+
+`wait_agent`, `trellis channel wait`, or equivalent wait command timeout means
+only that the current wait window ended without final completion. It is not a
+failure signal and must not be used as pass evidence. A stale assessment is
+based on no observable progress for a recent window, default at least 5
+minutes, not on total runtime. If `status_events[]` contains
+`terminated-unfinished`, a passing Branch Review Gate must fail closed unless
+later events show same-agent resume or replacement start and a later
+`completed` or `failed` event for that recovery chain. This is an objective
+ledger-completeness check; the AI/human review still owns whether the work is
+actually complete and whether failed agent output blocks the task.
 
 For Branch Review Gate, any review agent that recorded findings may be reused
 only as `问题闭环审查代理` for fix confirmation. This includes a previous
@@ -228,8 +270,8 @@ Because `最终放行审查代理` is assigned after the task work commit,
 `agent-assignment.json` may receive a post-commit metadata update before Branch
 Review Gate. `review-branch.sh` must then receive `--agent-assignment` so the
 gate records the current digest, roles, assignment count, review round count,
-and reuse decision count. This does not permit post-commit changes to
-non-metadata paths or to non-gate task artifacts.
+reuse decision count, and status event count. This does not permit post-commit
+changes to non-metadata paths or to non-gate task artifacts.
 
 Project agent definitions have a separate display contract. Technical dispatch
 ids (`trellis-implement`, `trellis-check`, `trellis-research`, `implement`,

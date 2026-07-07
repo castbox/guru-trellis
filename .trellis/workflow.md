@@ -126,7 +126,7 @@ tasks. The bare create command is only a Phase 1.0 controlled follow-up after
 `prepare-task` has returned or written the selected `workspace_path` and the
 shell/editor is already operating inside that workspace.
 
-Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, optional `design.md`, optional `implement.md`, optional `research/`, the task-level `issue-scope-ledger.json`, sub-agent/review assignment evidence (`agent-assignment.json`), the Branch Review Gate review report (`review.md`) and recorder artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms.
+Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, optional `design.md`, optional `implement.md`, optional `research/`, the task-level `issue-scope-ledger.json`, sub-agent/review assignment and status evidence (`agent-assignment.json`), the Branch Review Gate review report (`review.md`) and recorder artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms.
 
 ```bash
 python3 ./.trellis/scripts/task.py create "<title>" --slug <name>
@@ -151,6 +151,7 @@ Guru Team companion scripts:
   --review-source independent-agent \
   --reviewer "trellis-check-agent" \
   --review-report ".trellis/tasks/<task>/review.md" \
+  --agent-assignment ".trellis/tasks/<task>/agent-assignment.json" \
   --summary "中文审查结论" \
   --evidence "已按 intake base 到 HEAD 的完整 diff 覆盖文档、代码、测试、Trellis artifacts、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile，并判断本次变更的部署影响及是否需要同步修改部署资产"
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json
@@ -183,6 +184,8 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
 - Guru Team workflow identity uses Chinese logical roles recorded in task artifacts, not platform UI names. Allowed roles are `实现代理`, `阶段二检查代理`, `问题发现审查代理`, `问题闭环审查代理`, and `最终放行审查代理`.
 - `logical_role` is the Trellis process identity used in task artifacts, review reports, review gates, and final handoff. `agent_id` is the technical platform identity used for continuing or reusing an agent. `platform_nickname` is display-only and must not participate in gate decisions.
 - Platform agent dispatch identifiers such as `trellis-implement`, `trellis-check`, `trellis-research`, channel-runtime `implement`, and channel-runtime `check` are technical API ids and must stay stable. User-facing agent labels should be Chinese where the platform supports it. Markdown-based agent files use Chinese headings and descriptions. Codex custom agents use Chinese `description`, but `nickname_candidates` must stay ASCII in current Codex releases or Codex ignores the agent file. If a platform still emits an automatic/random nickname, record that raw value in `platform_nickname` only and continue to use `logical_role` for workflow judgment.
+- `wait_agent`, `trellis channel wait`, or an equivalent wait command timing out only means this wait window ended without a final completion event. It is not evidence that the sub-agent is stuck, failed, should stop, or that its partial output is acceptable completion evidence.
+- Distinguish long total runtime from stale state. A sub-agent may run for more than an hour. If it is still producing output, changing the worktree in-scope, running validations, emitting channel events, or otherwise showing meaningful progress, continue waiting and record that observation when needed. Stale assessment must be based on no observable progress for a recent window, default at least 5 minutes, not on total runtime.
 - When a main session dispatches or reuses a sub-agent, record the AI/human decision in `{TASK_DIR}/agent-assignment.json`. The recorder can be:
 
 ```bash
@@ -195,6 +198,23 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
 ```
 
 - When review rounds reuse or replace a reviewer, record the review round and reuse decision. The script validates objective fields only; it does not decide whether reuse is semantically correct.
+- When a wait timeout, stale assessment, interruption, unfinished termination, same-agent resume, replacement start, completion, or explicit failure happens, record `status_events[]` in the same task-local `agent-assignment.json`. The companion script records objective fields only; the AI/human workflow decides whether the agent is stale, should continue, should be interrupted, or should be replaced:
+
+```bash
+.trellis/guru-team/scripts/bash/record-agent-assignment.sh --json \
+  --logical-role "实现代理" \
+  --agent-id "<technical-agent-id-or-empty>" \
+  --platform-nickname "<display-name-or-empty>" \
+  --status-event wait-timeout \
+  --decision continue-waiting \
+  --reason "等待窗口 timeout，但最近仍有输出和工作区变化，继续等待。" \
+  --last-observed-progress-at "2026-07-07T00:00:00Z" \
+  --workspace-evidence "git diff 仍在变化。" \
+  --running-command-evidence "验证命令仍在运行。"
+```
+
+- Before soft interrupt, hard stop, or terminating an unfinished sub-agent, record the latest output/change time, worktree/channel/diff evidence, running command evidence, decision, reason, and handoff summary. If an unfinished agent is interrupted or terminated, recover the same technical `agent_id` or start a replacement agent with the predecessor output/channel log summary, current diff, task artifacts, remaining checklist, and blocking gate. Continue until a later `completed` or explicit `failed` status event closes that recovery chain.
+- Unfinished, interrupted, terminated, or unclosed replacement output is intermediate evidence only. It must not be treated as implementation completion, Phase 2 check pass evidence, or Branch Review Gate pass evidence. `review-branch.sh --pass` validates objective ledger completeness and fails closed when `status_events[]` contains an unclosed `terminated-unfinished` chain.
 - Phase 2 `trellis-check` is the implementation quality check step. It reviews the current task against specs, runs lint/typecheck/tests when appropriate, and may self-fix before commit.
 - Phase 3 Branch Review Gate is a post-commit release gate. First, an AI/human review must inspect the complete branch diff from the intake base branch to `HEAD`, including docs, code, tests, Trellis artifacts, config, scripts, schemas, CI/CD workflows, Docker/Compose files, Kubernetes YAML, Kustomize overlays, database migrations, Makefiles, preset installer, Issue Scope Ledger, and publish readiness.
 - Passing Phase 3 Branch Review Gate requires independent Agent review evidence. The main session may coordinate the review, inspect the report, and run the recorder, but the main session's own self-review must not pass the gate.
@@ -582,7 +602,7 @@ Flow: `trellis-implement` -> `trellis-check` -> `trellis-update-spec` -> commit 
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and journal succeed.
 Before commit, record and check `phase2-check.json`; validation commands alone are not a complete `trellis-check`.
 Main-session default on dispatch platforms: dispatch implement/check sub-agents. Dispatch prompt starts with `Active task: <task path from task.py current>`.
-After dispatching an implement/check sub-agent, record `实现代理` or `阶段二检查代理` in `agent-assignment.json`; prefer the Chinese UI nickname configured by the agent file when available. If the platform does not expose `agent_id` or nickname, keep the field as an empty string and explain that fact in the Chinese reason.
+After dispatching an implement/check sub-agent, record `实现代理` or `阶段二检查代理` in `agent-assignment.json`; prefer the Chinese UI nickname configured by the agent file when available. If the platform does not expose `agent_id` or nickname, keep the field as an empty string and explain that fact in the Chinese reason. A wait timeout is only a wait-window result; do not terminate or summarize a still-progressing sub-agent because total runtime is long. Record `status_events[]` for wait timeout, progress observed, stale assessment, continue-waiting, resume/replacement, unfinished termination, completion, or explicit failure.
 Sub-agent self-exemption: if already running as `trellis-implement` or `trellis-check`, do the work directly and do not spawn another Trellis implement/check agent.
 Before edits, confirm knowledge gate and docs SSOT responsibilities from artifacts.
 Read context: jsonl entries -> `prd.md` -> `design.md if present` -> `implement.md if present`.
@@ -613,6 +633,8 @@ On sub-agent-capable platforms, the main session records implementation assignme
 
 The assignment artifact is evidence of an AI/human decision already made by the workflow. The companion script must not choose the agent or infer whether reuse is appropriate.
 
+When a dispatched implementation agent hits a wait timeout, first inspect recent output, worktree changes, validation progress, and channel events. If progress exists, keep waiting and optionally record `--status-event wait-timeout --decision continue-waiting` or `--status-event progress-observed`. Only after at least the stale window with no observable progress should the AI/human workflow assess stale state and record `--status-event stale-assessed`; interruption or unfinished termination must be followed by `resume-same-agent` or `replacement-started`, then a later `completed` or `failed` event for the same recovery chain.
+
 Before writing code or generated assets, confirm the Middle-platform Knowledge Gate result for any middle-platform-relevant work:
 
 - `off`: no action required.
@@ -626,6 +648,8 @@ Also follow the planning artifact's durable docs responsibilities. If implementa
 Run `trellis-check` or dispatch the check agent. The final check before commit must cover the full task scope, not only the latest implementation chunk.
 
 When dispatching a Phase 2 check agent, record `阶段二检查代理` in `agent-assignment.json` before or immediately after the check handoff. This is separate from `phase2-check.json`: assignment records who took the logical role; `phase2-check.json` records the check judgment and evidence.
+
+Before recording a passing Phase 2 check, confirm the check did not rely on a terminated-unfinished implementation/check sub-agent's partial output. If `agent-assignment.json.status_events[]` contains unfinished termination, the same agent or a replacement must have continued the work and reached `completed` or explicit `failed`; otherwise return to implementation/check handoff instead of passing Phase 2.
 
 After the AI/human check has completed, record the task-local check report:
 
@@ -728,7 +752,7 @@ Before or immediately after dispatching the independent review, record the revie
 - follow-up review that verifies fixes may use `问题闭环审查代理`;
 - the pass/final release review uses `最终放行审查代理`.
 
-Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reuse_policy`, and `reuse_decision`; `round` values must be unique and strictly increasing in recorded order so the final round is unambiguous. If any review round finds a finding, including a previous `最终放行审查代理` round that discovered a new issue, that same technical `agent_id` must later be reused as `问题闭环审查代理` and record `findings_count: 0` with `reuse_decision: reuse-for-closure` to confirm its own finding is closed. Only after every finding owner has a later successful closure round may the workflow dispatch a fresh new `最终放行审查代理`. A finding owner must not become the `最终放行审查代理`. The final pass round must be the last review round, use a fresh new `最终放行审查代理`, set `reuse_decision: new-agent`, review the current HEAD's complete diff, and record `findings_count: 0`. If the same technical agent is reused for closure, record why reuse is limited to closure. If an agent is replaced, record why the replacement was chosen. `platform_nickname` should be the Chinese UI nickname when the platform provides one; otherwise record the raw automatic nickname. It remains display-only either way.
+Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reuse_policy`, and `reuse_decision`; `round` values must be unique and strictly increasing in recorded order so the final round is unambiguous. If any review round finds a finding, including a previous `最终放行审查代理` round that discovered a new issue, that same technical `agent_id` must later be reused as `问题闭环审查代理` and record `findings_count: 0` with `reuse_decision: reuse-for-closure` to confirm its own finding is closed. Only after every finding owner has a later successful closure round may the workflow dispatch a fresh new `最终放行审查代理`. A finding owner must not become the `最终放行审查代理`. The final pass round must be the last review round, use a fresh new `最终放行审查代理`, set `reuse_decision: new-agent`, review the current HEAD's complete diff, and record `findings_count: 0`. If the same technical agent is reused for closure, record why reuse is limited to closure. If an agent is replaced or an unfinished review agent is interrupted, record the `status_events[]` reason, predecessor output/diff handoff, and later completion/failure chain. `platform_nickname` should be the Chinese UI nickname when the platform provides one; otherwise record the raw automatic nickname. It remains display-only either way.
 
 The AI/human review must cover:
 
@@ -764,7 +788,7 @@ include concrete
 summary/evidence, checked diff range, validation notes, deployment impact
 judgment, Docs SSOT reconciliation, findings/observations/follow-up candidates
 even when each list is empty, and the Chinese logical review role plus whether
-`agent-assignment.json` records reuse/replacement decisions.
+`agent-assignment.json` records reuse/replacement decisions and any wait timeout, stale, interruption, unfinished termination, resume/replacement, completion, or failure status events that affected sub-agent evidence.
 
 Before writing `review.md`, `review-gate.json`, or any task artifact, confirm the
 current working directory is the task's selected `workspace_path`, not the source
@@ -778,11 +802,11 @@ task worktree only.
 Only after every finding owner has completed a successful same-agent
 `问题闭环审查代理` closure round for its finding, then a fresh `最终放行审查代理` has completed an
 independent review of the current HEAD's full diff with zero findings and
-`{TASK_DIR}/review.md` exists, write the passing gate artifact. The pass path must include
+`{TASK_DIR}/review.md` exists, and `agent-assignment.json.status_events[]` has no unclosed `terminated-unfinished` chain, write the passing gate artifact. The pass path must include
 `--review-source independent-agent` and `--review-report {TASK_DIR}/review.md`;
 `--reviewer` may additionally record the independent reviewer identity, but it
 cannot replace the review report. Always pass task-local `agent-assignment.json`
-so the recorder validates that every finding owner has a later closure round and
+so the recorder validates that every finding owner has a later closure round, every unfinished terminated agent has same-agent resume or replacement plus later `completed`/`failed` status evidence, and
 the final review round is fresh, last, has `findings_count: 0`, reviewed the
 current HEAD, and is not an agent that found findings in an earlier round:
 
@@ -815,7 +839,7 @@ or follow-up candidate to pass the gate.
 
 The artifact records base/head, diff command, conclusion, reviewer identity metadata, review source, review-report digest, agent-assignment digest/roles summary, summary, concrete evidence lines, findings, observations, follow-up candidates, changed files, Issue Scope Ledger coverage, and validation evidence. It is written to `{TASK_DIR}/review-gate.json` by default.
 
-Passing the gate is not a blank assertion. `--pass` requires zero findings, `--review-source independent-agent`, a non-main-session `--reviewer`, a Chinese `--summary`, at least one concrete `--evidence` line from the actual review, `--review-report` pointing at the task-local `review.md`, and `--agent-assignment` pointing at the task-local `agent-assignment.json`. `review-gate.json` must record `review_source`, `review_report.path`, `sha256`, `size_bytes`, `modified_at`, `agent_assignment.path`, `sha256`, `size_bytes`, `modified_at`, `roles`, and review round counts, and so the recorder can validate closure-before-final and fresh final reviewer metadata. Use additional `--evidence` lines for important validation commands or review coverage notes. If the current platform/session cannot provide independent Agent review evidence, do not write a passing gate; stop with Branch Review Gate pending.
+Passing the gate is not a blank assertion. `--pass` requires zero findings, `--review-source independent-agent`, a non-main-session `--reviewer`, a Chinese `--summary`, at least one concrete `--evidence` line from the actual review, `--review-report` pointing at the task-local `review.md`, and `--agent-assignment` pointing at the task-local `agent-assignment.json`. `review-gate.json` must record `review_source`, `review_report.path`, `sha256`, `size_bytes`, `modified_at`, `agent_assignment.path`, `sha256`, `size_bytes`, `modified_at`, `roles`, review round counts, and status event counts, so the recorder can validate closure-before-final, fresh final reviewer metadata, and unfinished sub-agent recovery-chain completeness. Use additional `--evidence` lines for important validation commands or review coverage notes. If the current platform/session cannot provide independent Agent review evidence, do not write a passing gate; stop with Branch Review Gate pending.
 
 Findings artifacts are failed Branch Review Gate records, but they still record
 a prior independent review. The findings path must also include
