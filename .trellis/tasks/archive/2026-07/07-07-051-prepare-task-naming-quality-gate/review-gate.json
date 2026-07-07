@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-07T07:29:36Z",
-  "task_dir": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-07-051-prepare-task-naming-quality-gate",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/051-prepare-task-naming-quality-gate",
@@ -88,7 +88,7 @@
   "observations": [],
   "followup_candidates": [],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-07-051-prepare-task-naming-quality-gate/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 51,
@@ -113,13 +113,13 @@
     "reviewer": "019f3b57-29da-7e21-855f-75132d940af7",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-07-051-prepare-task-naming-quality-gate/review.md",
       "sha256": "1c48486cfbed7487a22c37a7efe192a208bda3c63a60f398d972a3385342b361",
       "size_bytes": 3148,
       "modified_at": "2026-07-07T07:28:52.779268+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-07-051-prepare-task-naming-quality-gate/agent-assignment.json",
       "sha256": "0d5710b9223a8b49964d5044ff2d892c5af2b444041a1fa19a658e87d7bc0955",
       "size_bytes": 3528,
       "modified_at": "2026-07-07T07:29:09.613640+00:00",
@@ -135,7 +135,7 @@
       "agents_count": 3,
       "review_rounds_count": 3,
       "reuse_decisions_count": 0,
-      "task": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate",
+      "task": ".trellis/tasks/archive/2026-07/07-07-051-prepare-task-naming-quality-gate",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "evidence": [
