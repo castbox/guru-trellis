@@ -28,11 +28,11 @@ Before creating a Trellis task or writing task artifacts, run the Guru Team inta
 .trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request, issue number, or issue URL>"
 ```
 
-The default prepare command is side-effect-free intake/preflight planning for GitHub and filesystem writes: it may read an explicit issue and open duplicate candidates, then outputs source/proposed issue, base branch, branch name, workspace path, and `create_task_command`. Planner output is JSON only and does not write `.trellis/guru-team/handoff.json`, create a GitHub issue, worktree, branch, or Trellis task.
+The default prepare command is side-effect-free intake/preflight planning for GitHub and filesystem writes: it may read an explicit issue and open duplicate candidates, then outputs source/proposed issue, base branch, branch name, workspace path, `create_task_command`, and `naming_quality`. Planner output is JSON only and does not write `.trellis/guru-team/handoff.json`, create a GitHub issue, worktree, branch, or Trellis task.
 
 If no source issue was supplied, prepare writes `proposed_issue` and `requires_confirmation`. The AI must show the duplicate-search result, proposed issue title/body, base branch, branch name, and workspace path to the user. Only after confirmation may it rerun prepare with `--create-issue-confirmed --issue-title "<reviewed title>" --issue-body-file <reviewed-body-file>`.
 
-After a confirmed source issue exists and the handoff plan has been reviewed, use `--create-worktree` or `--create-task` only with explicit user approval. Those executor paths create or reuse the chosen workspace and then write `.trellis/guru-team/handoff.json` inside that workspace. They must not be used as a shortcut around planning review.
+After a confirmed source issue exists and the handoff plan has been reviewed, use `--create-worktree` or `--create-task` only with explicit user approval. Those executor paths create or reuse the chosen workspace and then write `.trellis/guru-team/handoff.json` inside that workspace. They must not be used as a shortcut around planning review. They also enforce `naming_quality`: if the generated or overridden slug, branch, workspace slug, or task slug is low-information, the executor fails before creating a worktree or Trellis task and asks the agent to pass semantic overrides.
 
 When there is no active task and the current turn requires file changes, do not
 silently edit the current checkout. First run Phase 0 intake/preflight, or ask
@@ -67,7 +67,10 @@ The companion scripts live under `.trellis/guru-team/` and are installed by the 
 - If the current branch is not the selected base, report the current branch, selected base, and candidates before proceeding.
 - Default workspace is a Git worktree under `../<repo-name>-worktrees`.
 - Report current checkout path, current branch, base branch, worktree path, branch name, dirty state, and existing worktrees.
-- Slugs, branch names, worktree names, and task names must include an issue number or another unique id. Do not rely on Trellis date prefixes or auto-increment-like names for parallel work.
+- Slugs, branch names, worktree names, and task names must include an issue number or another unique id plus semantic English business tokens. Do not rely on Trellis date prefixes or auto-increment-like names for parallel work.
+- If an issue title is Chinese, non-ASCII, or too generic to produce business tokens, the agent must read the issue and explicitly pass a semantic English short-name. `prepare-task` must not translate Chinese, convert titles to pinyin, or pretend it inferred business meaning from non-ASCII text.
+- Recommended worktree/task slug format is `NNN-business-capability`; recommended branch format is `codex/NNN-business-capability`. Example: `052-resume-detail-inline-attachment-preview`.
+- Use `--short-name`, `--workspace-slug`, `--task-slug`, and `--branch` as the deterministic interface from the agent's semantic judgment into the companion script. Explicit overrides still go through the same low-information naming gate.
 
 ### Handoff
 
@@ -76,6 +79,7 @@ Planner output, including output with a confirmed `source_issue`, sets `handoff_
 - confirmed source issue number, URL, title, and creation flag; `source_issue` is intake provenance, not the final close scope
 - handoff path and `handoff_written` state
 - slug, task slug, task title, branch, base branch, workspace path
+- `naming_quality` with `ok`, `reason`, `requires_semantic_name`, `current_slug`, and `suggested_override_flags`
 - an Issue Scope Ledger seed that the task copies to `{TASK_DIR}/issue-scope-ledger.json`
 - duplicate-search candidates
 - preflight evidence
@@ -361,6 +365,7 @@ Before task creation, summarize:
 - source issue URL
 - proposed issue title/body when `source_issue` is still null
 - duplicate-search result
+- naming quality result, including whether `--short-name`, `--workspace-slug`, `--task-slug`, or `--branch` semantic overrides are required
 - base branch
 - base freshness evidence from `preflight.base_freshness`
 - branch name

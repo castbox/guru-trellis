@@ -67,6 +67,7 @@ names only after the new tag is verified.
 
 - source issue
 - slug, task slug, task title
+- `naming_quality` with `ok`, `reason`, `requires_semantic_name`, `current_slug`, and `suggested_override_flags`
 - branch, base branch, workspace path
 - duplicate-search result
 - Issue Scope Ledger seed
@@ -88,6 +89,17 @@ selected base branch before creating the task worktree. Record remote, local
 head before/after, remote head, fetch state, fast-forward state, and the ref used
 for worktree creation in `preflight.base_freshness`. Fail closed on divergence
 or unknown freshness instead of creating a branch from a stale base.
+
+Executor prepare paths must also enforce `naming_quality` before any worktree,
+branch, GitHub issue, or Trellis task side effect. Chinese or non-ASCII source
+titles must not be transliterated or mechanically converted to pinyin by the
+script; the agent reads the issue and passes semantic English naming through
+`--short-name`, `--workspace-slug`, `--task-slug`, and `--branch`. Low-information
+names such as `issue-52`, `52-issue-52`, a bare number, or only generic tokens
+like `bug`, `fix`, `task`, `work`, `update`, and `change` must block create
+paths with a user-actionable error. Planner-only output may report
+`naming_quality.ok=false` so the handoff review can choose the semantic
+override before executor flags are used.
 
 Executor prepare paths must also ensure the selected workspace has
 `.trellis/.developer` before handoff/task creation continues. Prefer copying the

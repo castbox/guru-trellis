@@ -271,6 +271,256 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         create_issue.assert_not_called()
         run_stdout.assert_not_called()
 
+    def test_prepare_english_issue_title_passes_automatic_naming_quality(self) -> None:
+        existing_issue = {
+            "number": 52,
+            "url": "https://github.com/owner/repo/issues/52",
+            "title": "Add resume detail inline attachment preview",
+        }
+        with mock.patch.object(gtt, "issue_view", return_value=existing_issue):
+            payload = gtt.cmd_prepare(prepare_args(requirement=["#52"]))
+
+        self.assertTrue(payload["naming_quality"]["ok"])
+        self.assertFalse(payload["naming_quality"]["requires_semantic_name"])
+        self.assertEqual(payload["task_slug"], "52-resume-detail-inline-attachment-preview")
+        self.assertEqual(payload["workspace_slug"], "52-resume-detail-inline-attachment-preview")
+        self.assertEqual(payload["branch_name"], "codex/52-resume-detail-inline-attachment-preview")
+
+    def test_prepare_chinese_issue_title_marks_naming_quality_without_side_effects(self) -> None:
+        existing_issue = {
+            "number": 52,
+            "url": "https://github.com/owner/repo/issues/52",
+            "title": "简历详情页的原始简历查看功能应该强化",
+        }
+        with (
+            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
+            mock.patch.object(gtt, "create_task") as create_task,
+            mock.patch.object(gtt, "run_stdout") as run_stdout,
+        ):
+            payload = gtt.cmd_prepare(prepare_args(requirement=["#52"]))
+
+        create_task.assert_not_called()
+        run_stdout.assert_not_called()
+        self.assertFalse(payload["naming_quality"]["ok"])
+        self.assertTrue(payload["naming_quality"]["requires_semantic_name"])
+        self.assertEqual(payload["naming_quality"]["current_slug"], "issue-52")
+        self.assertIn("--short-name", " ".join(payload["naming_quality"]["suggested_override_flags"]))
+        self.assertEqual(payload["task_slug"], "52-issue-52")
+        self.assertFalse(payload["workspace_ready"])
+
+    def test_prepare_chinese_issue_title_blocks_create_before_side_effects(self) -> None:
+        existing_issue = {
+            "number": 52,
+            "url": "https://github.com/owner/repo/issues/52",
+            "title": "简历详情页的原始简历查看功能应该强化",
+        }
+        with (
+            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
+            mock.patch.object(gtt, "ensure_base_freshness") as ensure_base_freshness,
+            mock.patch.object(gtt, "prepare_workspace") as prepare_workspace,
+            mock.patch.object(gtt, "create_task") as create_task,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.cmd_prepare(prepare_args(requirement=["#52"], create_worktree=True))
+
+        ensure_base_freshness.assert_not_called()
+        prepare_workspace.assert_not_called()
+        create_task.assert_not_called()
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertFalse(raised.exception.payload["naming_quality"]["ok"])
+        self.assertTrue(raised.exception.payload["naming_quality"]["requires_semantic_name"])
+        self.assertIn("--short-name/--workspace-slug/--branch/--task-slug", str(raised.exception))
+
+    def test_prepare_mixed_non_ascii_title_requires_explicit_semantic_name(self) -> None:
+        existing_issue = {
+            "number": 52,
+            "url": "https://github.com/owner/repo/issues/52",
+            "title": "强化 resume detail inline attachment preview",
+        }
+        with mock.patch.object(gtt, "issue_view", return_value=existing_issue):
+            payload = gtt.cmd_prepare(prepare_args(requirement=["#52"]))
+
+        self.assertFalse(payload["naming_quality"]["ok"])
+        self.assertTrue(payload["naming_quality"]["requires_semantic_name"])
+        self.assertIn("non-ASCII", payload["naming_quality"]["reason"])
+        self.assertEqual(payload["task_slug"], "52-resume-detail-inline-attachment-preview")
+
+    def test_prepare_confirmed_chinese_issue_blocks_before_issue_creation(self) -> None:
+        body_path = self.root / "reviewed-issue.md"
+        body_path.write_text("Reviewed issue body\n", encoding="utf-8")
+        with (
+            mock.patch.object(gtt, "create_issue") as create_issue,
+            mock.patch.object(gtt, "ensure_base_freshness") as ensure_base_freshness,
+            mock.patch.object(gtt, "prepare_workspace") as prepare_workspace,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.cmd_prepare(
+                prepare_args(
+                    requirement=["简历详情页的原始简历查看功能应该强化，并补充任务命名门禁。"],
+                    create_issue_confirmed=True,
+                    issue_title="简历详情页的原始简历查看功能应该强化",
+                    issue_body_file=str(body_path),
+                    create_worktree=True,
+                )
+            )
+
+        create_issue.assert_not_called()
+        ensure_base_freshness.assert_not_called()
+        prepare_workspace.assert_not_called()
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertFalse(raised.exception.payload["naming_quality"]["ok"])
+
+    def test_prepare_semantic_short_name_override_passes_create_naming_quality(self) -> None:
+        existing_issue = {
+            "number": 52,
+            "url": "https://github.com/owner/repo/issues/52",
+            "title": "简历详情页的原始简历查看功能应该强化",
+        }
+        workspace = self.worktree_root / "052-resume-detail-inline-attachment-preview"
+        with (
+            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
+            mock.patch.object(gtt, "ensure_base_freshness", return_value={
+                "remote": "origin",
+                "base_branch": "main",
+                "base_ref": "main",
+                "remote_ref": "origin/main",
+                "local_head_before": "abc",
+                "local_head_after": "abc",
+                "remote_head": "abc",
+                "fetch_performed": True,
+                "fast_forwarded": False,
+                "fresh": True,
+                "status": "fresh",
+                "base_ref_for_worktree": "main",
+            }),
+            mock.patch.object(gtt, "prepare_workspace", return_value=("worktree", workspace, True)) as prepare_workspace,
+            mock.patch.object(gtt, "ensure_workspace_developer_identity", return_value={
+                "status": "copied",
+                "developer": "tester",
+            }),
+        ):
+            payload = gtt.cmd_prepare(
+                prepare_args(
+                    requirement=["#52"],
+                    short_name="052-resume-detail-inline-attachment-preview",
+                    create_worktree=True,
+                )
+            )
+
+        self.assertTrue(payload["naming_quality"]["ok"])
+        self.assertEqual(payload["task_slug"], "052-resume-detail-inline-attachment-preview")
+        self.assertEqual(payload["workspace_slug"], "052-resume-detail-inline-attachment-preview")
+        self.assertEqual(payload["branch_name"], "codex/052-resume-detail-inline-attachment-preview")
+        prepare_workspace.assert_called_once_with(
+            self.root,
+            mock.ANY,
+            "codex/052-resume-detail-inline-attachment-preview",
+            "052-resume-detail-inline-attachment-preview",
+            "main",
+            False,
+            True,
+        )
+
+    def test_prepare_all_semantic_override_surfaces_pass_create_naming_quality(self) -> None:
+        existing_issue = {
+            "number": 52,
+            "url": "https://github.com/owner/repo/issues/52",
+            "title": "简历详情页的原始简历查看功能应该强化",
+        }
+        workspace = self.worktree_root / "052-resume-detail-inline-attachment-preview"
+        with (
+            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
+            mock.patch.object(gtt, "ensure_base_freshness", return_value={
+                "remote": "origin",
+                "base_branch": "main",
+                "base_ref": "main",
+                "remote_ref": "origin/main",
+                "local_head_before": "abc",
+                "local_head_after": "abc",
+                "remote_head": "abc",
+                "fetch_performed": True,
+                "fast_forwarded": False,
+                "fresh": True,
+                "status": "fresh",
+                "base_ref_for_worktree": "main",
+            }),
+            mock.patch.object(gtt, "prepare_workspace", return_value=("worktree", workspace, True)),
+            mock.patch.object(gtt, "ensure_workspace_developer_identity", return_value={
+                "status": "copied",
+                "developer": "tester",
+            }),
+        ):
+            payload = gtt.cmd_prepare(
+                prepare_args(
+                    requirement=["#52"],
+                    short_name="052-resume-detail-inline-attachment-preview",
+                    workspace_slug="052-resume-detail-inline-attachment-preview",
+                    task_slug="052-resume-detail-inline-attachment-preview",
+                    branch="codex/052-resume-detail-inline-attachment-preview",
+                    create_worktree=True,
+                )
+            )
+
+        self.assertTrue(payload["naming_quality"]["ok"])
+        self.assertEqual(payload["slug"], "052-resume-detail-inline-attachment-preview")
+        self.assertEqual(payload["task_slug"], "052-resume-detail-inline-attachment-preview")
+        self.assertEqual(payload["workspace_slug"], "052-resume-detail-inline-attachment-preview")
+        self.assertEqual(payload["branch_name"], "codex/052-resume-detail-inline-attachment-preview")
+
+    def test_prepare_blocks_when_short_name_missing_even_if_other_surfaces_are_semantic(self) -> None:
+        existing_issue = {
+            "number": 52,
+            "url": "https://github.com/owner/repo/issues/52",
+            "title": "简历详情页的原始简历查看功能应该强化",
+        }
+        with (
+            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
+            mock.patch.object(gtt, "ensure_base_freshness") as ensure_base_freshness,
+            mock.patch.object(gtt, "prepare_workspace") as prepare_workspace,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.cmd_prepare(
+                prepare_args(
+                    requirement=["#52"],
+                    workspace_slug="052-resume-detail-inline-attachment-preview",
+                    task_slug="052-resume-detail-inline-attachment-preview",
+                    branch="codex/052-resume-detail-inline-attachment-preview",
+                    create_worktree=True,
+                )
+            )
+
+        ensure_base_freshness.assert_not_called()
+        prepare_workspace.assert_not_called()
+        self.assertFalse(raised.exception.payload["naming_quality"]["ok"])
+        self.assertEqual(raised.exception.payload["naming_quality"]["current_surface"], "slug")
+        self.assertEqual(raised.exception.payload["naming_quality"]["current_slug"], "issue-52")
+
+    def test_prepare_low_information_short_name_override_blocks_create(self) -> None:
+        existing_issue = {
+            "number": 52,
+            "url": "https://github.com/owner/repo/issues/52",
+            "title": "Add resume detail inline attachment preview",
+        }
+        with (
+            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
+            mock.patch.object(gtt, "ensure_base_freshness") as ensure_base_freshness,
+            mock.patch.object(gtt, "prepare_workspace") as prepare_workspace,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.cmd_prepare(
+                prepare_args(
+                    requirement=["#52"],
+                    short_name="issue-52",
+                    create_worktree=True,
+                )
+            )
+
+        ensure_base_freshness.assert_not_called()
+        prepare_workspace.assert_not_called()
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertFalse(raised.exception.payload["naming_quality"]["ok"])
+        self.assertEqual(raised.exception.payload["naming_quality"]["current_slug"], "issue-52")
+
     def test_high_duplicate_payload_includes_reviewed_force_new_command(self) -> None:
         duplicate = {
             "number": 6,
@@ -324,9 +574,9 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         existing_issue = {
             "number": 42,
             "url": "https://github.com/owner/repo/issues/42",
-            "title": "Existing issue",
+            "title": "Resume attachment preview",
         }
-        workspace = self.worktree_root / "42-existing"
+        workspace = self.worktree_root / "42-resume-attachment-preview"
         workspace.mkdir(parents=True)
         (workspace / ".git").mkdir()
 
@@ -355,6 +605,10 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertTrue(payload["handoff_written"])
         self.assertEqual(payload["workspace_path"], str(workspace))
         self.assertTrue((workspace / "handoff.json").exists())
+        handoff = json.loads((workspace / "handoff.json").read_text(encoding="utf-8"))
+        self.assertIn("naming_quality", handoff)
+        self.assertTrue(handoff["naming_quality"]["ok"])
+        self.assertEqual(handoff["naming_quality"]["current_slug"], "42-resume-attachment-preview")
         self.assertFalse((self.root / "handoff.json").exists())
         self.assertEqual(payload["handoff_path"], str(workspace / "handoff.json"))
         self.assertTrue((workspace / ".trellis/.developer").exists())
@@ -365,7 +619,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         existing_issue = {
             "number": 42,
             "url": "https://github.com/owner/repo/issues/42",
-            "title": "Existing issue",
+            "title": "Resume attachment preview",
         }
         with (
             mock.patch.object(gtt, "issue_view", return_value=existing_issue),
@@ -383,7 +637,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
                 "status": "fresh",
                 "base_ref_for_worktree": "main",
             }) as refresh,
-            mock.patch.object(gtt, "prepare_workspace", return_value=("worktree", self.worktree_root / "42-existing", True)) as prepare_workspace,
+            mock.patch.object(gtt, "prepare_workspace", return_value=("worktree", self.worktree_root / "42-resume-attachment-preview", True)) as prepare_workspace,
             mock.patch.object(gtt, "ensure_workspace_developer_identity", return_value={
                 "status": "copied",
                 "developer": "tester",
@@ -393,7 +647,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
 
         refresh.assert_called_once_with(self.root, "main")
         prepare_workspace.assert_called_once()
-        ensure_identity.assert_called_once_with(self.root, self.worktree_root / "42-existing", "tester")
+        ensure_identity.assert_called_once_with(self.root, self.worktree_root / "42-resume-attachment-preview", "tester")
         self.assertEqual(payload["preflight"]["base_freshness"]["fetch_performed"], True)
         self.assertEqual(payload["preflight"]["base_freshness"]["remote_head"], "new")
 
@@ -409,10 +663,10 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         existing_issue = {
             "number": 42,
             "url": "https://github.com/owner/repo/issues/42",
-            "title": "Existing issue",
+            "title": "Resume attachment preview",
         }
         (self.root / ".trellis/.developer").unlink()
-        workspace = self.worktree_root / "42-existing"
+        workspace = self.worktree_root / "42-resume-attachment-preview"
         workspace.mkdir(parents=True)
         (workspace / ".git").mkdir()
 
@@ -450,10 +704,10 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         existing_issue = {
             "number": 42,
             "url": "https://github.com/owner/repo/issues/42",
-            "title": "Existing issue",
+            "title": "Resume attachment preview",
         }
         (self.root / ".trellis/.developer").unlink()
-        workspace = self.worktree_root / "42-existing"
+        workspace = self.worktree_root / "42-resume-attachment-preview"
         workspace.mkdir(parents=True)
         (workspace / ".git").mkdir()
 

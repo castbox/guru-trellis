@@ -92,6 +92,38 @@
     "task_title": {
       "type": "string"
     },
+    "naming_quality": {
+      "type": "object",
+      "description": "Deterministic quality gate result for slug, branch, workspace, and task naming. Planner output may report ok=false, but executor paths must fail closed before creating worktrees or tasks when semantic naming is required.",
+      "required": [
+        "ok",
+        "reason",
+        "requires_semantic_name",
+        "current_slug",
+        "suggested_override_flags"
+      ],
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "requires_semantic_name": {
+          "type": "boolean"
+        },
+        "current_slug": {
+          "type": "string"
+        },
+        "suggested_override_flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
     "branch_name": {
       "type": "string"
     },
