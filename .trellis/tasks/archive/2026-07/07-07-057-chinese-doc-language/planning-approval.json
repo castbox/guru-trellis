@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T11:13:31Z",
+  "task_dir": ".trellis/tasks/07-07-057-chinese-doc-language",
+  "head": "c19b9e2af89399f2b7fbd8f0f0ef26bc44b83dc8",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-07-057-chinese-doc-language/agent-assignment.json",
+    ".trellis/tasks/07-07-057-chinese-doc-language/review.md"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已重新审查 issue #57 的 prd/design/implement；实现阶段只对 design/implement 做了范围说明和执行清单状态同步，未改变用户已批准的业务项目中文文档规则、installer 确定性归一化、bootstrap docs SSOT 和 guru-trellis 例外边界。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户此前回复“继续”批准进入实现；本次重录仅修正实现中同步后的规划 artifact hash，未扩大 scope。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-07-057-chinese-doc-language/prd.md",
+      "sha256": "b1675f7aecf224c33d5138a9696f9202eb3f1f941fa3c742bde0c0f999135771",
+      "size_bytes": 3870,
+      "modified_at": "2026-07-07T10:41:13.862446+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-057-chinese-doc-language/design.md",
+      "sha256": "e3af6cf00be4250ba9ca49a842da47c996e224172e70eea89a80161fa7585440",
+      "size_bytes": 4208,
+      "modified_at": "2026-07-07T10:59:24.384588+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-057-chinese-doc-language/implement.md",
+      "sha256": "97f6be4785a358d916243637e74120aa183cf90bc576f44541e26ef16ef73cc6",
+      "size_bytes": 3020,
+      "modified_at": "2026-07-07T10:59:38.471558+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}
