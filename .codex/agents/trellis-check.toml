@@ -50,6 +50,9 @@ Review checklist:
 - Check whether `.trellis/spec/` docs need sync after implementation.
 - Run lint and type-check; fix any failures.
 - Prefer concrete findings over speculative warnings.
+- Do not report check/review complete until the requested check scope is actually complete and verification status is known.
+- If the main session interrupts, terminates, replaces, or asks you to stop before completion, clearly report that the check is unfinished. Include files checked, current diff summary, last completed review step, commands still running or stuck, findings already identified, remaining checklist, validation not yet run, and gate blockers so the same agent can resume or a replacement can inherit the work.
+- A main-session wait timeout is not your failure signal. Continue working unless you receive an explicit stop/interrupt instruction.
 
 When you find an issue:
 1. Fix it directly using edit/write tools.

@@ -28,7 +28,10 @@ runtime `implement` / `check`), while UI-facing labels are Chinese where the
 platform supports them. Codex uses Chinese `description`, but keeps
 `nickname_candidates` ASCII because current Codex rejects non-ASCII nicknames and
 ignores malformed agent files. Markdown-based agent files use Chinese
-descriptions and headings.
+descriptions and headings. Implement/check definitions require an unfinished
+handoff instead of a false completion claim when the main session interrupts or
+replaces a worker, including current diff, remaining work, validation state, and
+gate blockers for same-agent resume or replacement handoff.
 
 Platform overlays are selectable. By default, the installer applies shared
 `.agents/skills` entries plus Codex and Cursor overlays. Repeat
@@ -242,9 +245,14 @@ commands are evidence inside that report, not a substitute for the check.
 When the platform exposes a configured Chinese UI nickname, record that value;
 when it exposes only an automatic/random nickname, record the raw value. Either
 way, gate decisions use `logical_role`, `agent_id`, HEAD, and digest evidence,
-not display names. The scripts record assignment, review round, reuse, and
-replacement decisions already made by AI/human; they do not decide which
-sub-agent should be used.
+not display names. The scripts record assignment, review round, reuse,
+replacement, and status handling decisions already made by AI/human; they do
+not decide which sub-agent should be used, whether a wait timeout means stale,
+or whether an agent should be terminated. `wait_agent` / `trellis channel wait`
+timeout is only a wait-window result. Unfinished termination must be followed by
+same-agent resume or replacement inheritance, then a later `completed` or
+explicit `failed` status event before Branch Review Gate can pass.
+
 After the task work commit, `review-branch.sh` audits that committed
 non-metadata task paths after the Phase 2 recorded HEAD are covered by those
 dirty paths and that no non-metadata dirty paths remain in the working tree.
@@ -257,8 +265,9 @@ diff with zero findings of any priority and be recorded with task-local
 `review.md`, a Chinese summary, concrete evidence, `--review-source
 independent-agent`, `--review-report <task-local review.md>`, and
 `--agent-assignment <task-local agent-assignment.json>`. The gate stores the
-assignment digest and Chinese roles summary and validates closure-before-final,
-the last fresh final round, and that the final reviewer did not own an earlier
+assignment digest, Chinese roles summary, and status event count, and validates
+closure-before-final, unfinished termination recovery-chain completeness, the
+last fresh final round, and that the final reviewer did not own an earlier
 finding round. Observations and follow-up candidates may be recorded separately,
 but they must not hide current-scope findings. Independent review sub-agents
 review docs, code, tests, artifacts, and diff evidence as AI reviewers; they do

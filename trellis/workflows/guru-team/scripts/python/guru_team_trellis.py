@@ -88,6 +88,27 @@ ALLOWED_LOGICAL_ROLES = [
     "最终放行审查代理",
 ]
 ALLOWED_REUSE_DECISIONS = {"reuse", "replace", "reuse-for-closure", "new-agent", "not-applicable"}
+ALLOWED_AGENT_STATUS_EVENTS = {
+    "wait-timeout",
+    "progress-observed",
+    "stale-assessed",
+    "continue-waiting",
+    "resume-same-agent",
+    "replacement-started",
+    "terminated-unfinished",
+    "completed",
+    "failed",
+}
+ALLOWED_AGENT_STATUS_DECISIONS = {
+    "continue-waiting",
+    "resume-same-agent",
+    "start-replacement",
+    "terminate-unfinished",
+    "mark-completed",
+    "mark-failed",
+}
+AGENT_STATUS_EVENTS_REQUIRE_PROGRESS_EVIDENCE = {"stale-assessed", "terminated-unfinished"}
+AGENT_STATUS_EVENTS_REQUIRE_HANDOFF = {"replacement-started", "terminated-unfinished"}
 SELF_REVIEWER_PATTERNS = [
     re.compile(r"(^|[-_./\s])main[-_./\s]*session($|[-_./\s])", re.IGNORECASE),
     re.compile(r"(^|[-_./\s])self[-_./\s]*review($|[-_./\s])", re.IGNORECASE),
@@ -1971,7 +1992,8 @@ def default_agent_assignment_payload(root: Path, task_dir: Path) -> dict[str, An
         "agents": [],
         "review_rounds": [],
         "reuse_decisions": [],
-        "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用或更换；脚本只记录和校验客观字段、HEAD、digest 与枚举值。",
+        "status_events": [],
+        "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用、更换或状态处理；脚本只记录和校验客观字段、HEAD、digest 与枚举值。",
     }
 
 
@@ -1986,6 +2008,8 @@ def load_agent_assignment(root: Path, task_dir: Path) -> dict[str, Any]:
         payload["review_rounds"] = []
     if not isinstance(payload.get("reuse_decisions"), list):
         payload["reuse_decisions"] = []
+    if not isinstance(payload.get("status_events"), list):
+        payload["status_events"] = []
     payload.setdefault("schema_version", AGENT_ASSIGNMENT_SCHEMA_VERSION)
     payload.setdefault("task", repo_relative(root, task_dir))
     payload.setdefault("head", current_head(root))
@@ -2011,6 +2035,26 @@ def validate_reuse_decision_value(value: str) -> str:
     if decision not in ALLOWED_REUSE_DECISIONS:
         raise WorkflowError(
             f"Invalid reuse decision: {decision or '(empty)'}. Valid decisions: {', '.join(sorted(ALLOWED_REUSE_DECISIONS))}",
+            exit_code=2,
+        )
+    return decision
+
+
+def validate_agent_status_event_value(value: str) -> str:
+    event = value.strip()
+    if event not in ALLOWED_AGENT_STATUS_EVENTS:
+        raise WorkflowError(
+            f"Invalid agent status event: {event or '(empty)'}. Valid events: {', '.join(sorted(ALLOWED_AGENT_STATUS_EVENTS))}",
+            exit_code=2,
+        )
+    return event
+
+
+def validate_agent_status_decision_value(value: str) -> str:
+    decision = value.strip()
+    if decision not in ALLOWED_AGENT_STATUS_DECISIONS:
+        raise WorkflowError(
+            f"Invalid agent status decision: {decision or '(empty)'}. Valid decisions: {', '.join(sorted(ALLOWED_AGENT_STATUS_DECISIONS))}",
             exit_code=2,
         )
     return decision
@@ -2104,6 +2148,56 @@ def append_agent_reuse_decision(
     return event
 
 
+def append_agent_status_event(
+    payload: dict[str, Any],
+    root: Path,
+    logical_role: str,
+    agent_id: str,
+    platform_nickname: str,
+    status_event: str,
+    decision: str,
+    reason: str,
+    observed_at: str,
+    last_observed_progress_at: str,
+    workspace_evidence: str,
+    running_command_evidence: str,
+    supersedes_agent_id: str,
+    handoff_summary: str,
+) -> dict[str, Any]:
+    event_name = validate_agent_status_event_value(status_event)
+    decision_name = validate_agent_status_decision_value(decision)
+    if not reason:
+        raise WorkflowError("status event requires --reason with the AI/human status handling rationale.", exit_code=2)
+    if event_name in AGENT_STATUS_EVENTS_REQUIRE_PROGRESS_EVIDENCE:
+        if not last_observed_progress_at:
+            raise WorkflowError(f"{event_name} requires --last-observed-progress-at.", exit_code=2)
+        if not workspace_evidence:
+            raise WorkflowError(f"{event_name} requires --workspace-evidence.", exit_code=2)
+        if not running_command_evidence:
+            raise WorkflowError(f"{event_name} requires --running-command-evidence.", exit_code=2)
+    if event_name == "replacement-started" and not supersedes_agent_id:
+        raise WorkflowError("replacement-started requires --supersedes-agent-id.", exit_code=2)
+    if event_name in AGENT_STATUS_EVENTS_REQUIRE_HANDOFF and not handoff_summary:
+        raise WorkflowError(f"{event_name} requires --handoff-summary.", exit_code=2)
+    event = {
+        "event": event_name,
+        "logical_role": validate_logical_role(logical_role),
+        "agent_id": agent_id,
+        "platform_nickname": platform_nickname,
+        "head": current_head(root),
+        "observed_at": observed_at or now_iso(),
+        "last_observed_progress_at": last_observed_progress_at,
+        "workspace_evidence": workspace_evidence,
+        "running_command_evidence": running_command_evidence,
+        "decision": decision_name,
+        "reason": reason,
+        "supersedes_agent_id": supersedes_agent_id,
+        "handoff_summary": handoff_summary,
+    }
+    payload.setdefault("status_events", []).append(event)
+    return event
+
+
 def git_object_exists(root: Path, ref: str) -> bool:
     if not ref:
         return False
@@ -2120,6 +2214,19 @@ def validate_head_field(root: Path, value: Any, label: str, errors: list[str], r
         return
     if require_current and head != current_head(root):
         errors.append(f"agent-assignment.json {label} {head} 与当前 HEAD {current_head(root)} 不一致。")
+
+
+def validate_timestamp_field(value: Any, label: str, errors: list[str], required: bool = True) -> None:
+    text = str(value or "").strip()
+    if not text:
+        if required:
+            errors.append(f"agent-assignment.json 缺少 {label}。")
+        return
+    normalized = text.removesuffix("Z") + "+00:00" if text.endswith("Z") else text
+    try:
+        datetime.fromisoformat(normalized)
+    except ValueError:
+        errors.append(f"agent-assignment.json {label} 必须是 ISO-8601 时间: {text}。")
 
 
 def validate_agent_assignment_payload(
@@ -2209,6 +2316,45 @@ def validate_agent_assignment_payload(
             if not str(item.get("reason") or "").strip():
                 errors.append(f"agent-assignment.json reuse_decisions[{index}] 缺少 reason。")
             validate_head_field(root, item.get("head"), f"reuse_decisions[{index}].head", errors)
+    status_events = payload.get("status_events")
+    if not isinstance(status_events, list):
+        errors.append("agent-assignment.json status_events 必须是数组。")
+    else:
+        for index, item in enumerate(status_events):
+            if not isinstance(item, dict):
+                errors.append(f"agent-assignment.json status_events[{index}] 必须是对象。")
+                continue
+            event_name = str(item.get("event") or "").strip()
+            if event_name not in ALLOWED_AGENT_STATUS_EVENTS:
+                errors.append(f"agent-assignment.json status_events[{index}].event 非法: {event_name or '(missing)'}。")
+            role = str(item.get("logical_role") or "").strip()
+            if role not in ALLOWED_LOGICAL_ROLES:
+                errors.append(f"agent-assignment.json status_events[{index}].logical_role 非法: {role or '(missing)'}。")
+            if "agent_id" not in item:
+                errors.append(f"agent-assignment.json status_events[{index}] 缺少 agent_id 字段。")
+            if "platform_nickname" not in item:
+                errors.append(f"agent-assignment.json status_events[{index}] 缺少 platform_nickname 字段。")
+            validate_head_field(root, item.get("head"), f"status_events[{index}].head", errors)
+            validate_timestamp_field(item.get("observed_at"), f"status_events[{index}].observed_at", errors)
+            validate_timestamp_field(
+                item.get("last_observed_progress_at"),
+                f"status_events[{index}].last_observed_progress_at",
+                errors,
+                required=event_name in AGENT_STATUS_EVENTS_REQUIRE_PROGRESS_EVIDENCE,
+            )
+            if str(item.get("decision") or "").strip() not in ALLOWED_AGENT_STATUS_DECISIONS:
+                errors.append(f"agent-assignment.json status_events[{index}].decision 非法。")
+            if not str(item.get("reason") or "").strip():
+                errors.append(f"agent-assignment.json status_events[{index}] 缺少 reason。")
+            if event_name in AGENT_STATUS_EVENTS_REQUIRE_PROGRESS_EVIDENCE:
+                if not str(item.get("workspace_evidence") or "").strip():
+                    errors.append(f"agent-assignment.json status_events[{index}] 缺少 workspace_evidence。")
+                if not str(item.get("running_command_evidence") or "").strip():
+                    errors.append(f"agent-assignment.json status_events[{index}] 缺少 running_command_evidence。")
+            if event_name == "replacement-started" and not str(item.get("supersedes_agent_id") or "").strip():
+                errors.append(f"agent-assignment.json status_events[{index}] 缺少 supersedes_agent_id。")
+            if event_name in AGENT_STATUS_EVENTS_REQUIRE_HANDOFF and not str(item.get("handoff_summary") or "").strip():
+                errors.append(f"agent-assignment.json status_events[{index}] 缺少 handoff_summary。")
     return errors
 
 
@@ -2236,6 +2382,11 @@ def summarize_agent_assignment(root: Path, task_dir: Path, path: Path, payload: 
             for item in payload.get("reuse_decisions", [])
             if isinstance(item, dict) and str(item.get("logical_role") or "").strip()
         }
+        | {
+            str(item.get("logical_role") or "").strip()
+            for item in payload.get("status_events", [])
+            if isinstance(item, dict) and str(item.get("logical_role") or "").strip()
+        }
     )
     return {
         **digest,
@@ -2245,6 +2396,7 @@ def summarize_agent_assignment(root: Path, task_dir: Path, path: Path, payload: 
         "agents_count": len(payload.get("agents", [])) if isinstance(payload.get("agents"), list) else 0,
         "review_rounds_count": len(payload.get("review_rounds", [])) if isinstance(payload.get("review_rounds"), list) else 0,
         "reuse_decisions_count": len(payload.get("reuse_decisions", [])) if isinstance(payload.get("reuse_decisions"), list) else 0,
+        "status_events_count": len(payload.get("status_events", [])) if isinstance(payload.get("status_events"), list) else 0,
         "task": repo_relative(root, task_dir),
         "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。",
     }
@@ -2367,6 +2519,48 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
             )
     if final_agent and final_agent in finding_owner_agents:
         errors.append("发现过 finding 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
+    return errors
+
+
+def status_event_completion_errors(payload: dict[str, Any]) -> list[str]:
+    status_events = payload.get("status_events")
+    if not isinstance(status_events, list):
+        return ["agent-assignment.json status_events 必须是数组。"]
+    errors: list[str] = []
+    for index, item in enumerate(status_events):
+        if not isinstance(item, dict):
+            continue
+        if str(item.get("event") or "").strip() != "terminated-unfinished":
+            continue
+        original_agent = str(item.get("agent_id") or "").strip()
+        if not original_agent:
+            errors.append(f"status_events[{index}] terminated-unfinished 缺少 agent_id，无法证明后续恢复或继任。")
+            continue
+        chain_agents = {original_agent}
+        recovery_seen = False
+        terminal_seen = False
+        for later in status_events[index + 1:]:
+            if not isinstance(later, dict):
+                continue
+            later_event = str(later.get("event") or "").strip()
+            later_agent = str(later.get("agent_id") or "").strip()
+            supersedes = str(later.get("supersedes_agent_id") or "").strip()
+            if later_event == "resume-same-agent" and later_agent in chain_agents:
+                recovery_seen = True
+            if later_event == "replacement-started" and supersedes in chain_agents and later_agent:
+                chain_agents.add(later_agent)
+                recovery_seen = True
+            if later_event in {"completed", "failed"} and later_agent in chain_agents:
+                terminal_seen = True
+                break
+        if not recovery_seen:
+            errors.append(
+                f"status_events[{index}] terminated-unfinished 后缺少 resume-same-agent 或 replacement-started 继任证据。"
+            )
+        if not terminal_seen:
+            errors.append(
+                f"status_events[{index}] terminated-unfinished 的恢复/继任链缺少后续 completed 或 failed 终态事件。"
+            )
     return errors
 
 
@@ -2543,6 +2737,7 @@ def valid_agent_assignment_summary_fields(
     payload = normalize_agent_assignment_for_task(root, task_dir, payload)
     errors.extend(validate_agent_assignment_payload(root, task_dir, payload, require_current_head=False))
     errors.extend(final_review_round_errors(root, payload, expected_head=expected_head))
+    errors.extend(status_event_completion_errors(payload))
     roles = agent_assignment.get("roles")
     if not isinstance(roles, list) or not roles:
         errors.append("Branch Review Gate agent_assignment 缺少 roles 摘要。")
@@ -2550,7 +2745,7 @@ def valid_agent_assignment_summary_fields(
         invalid_roles = [str(role) for role in roles if str(role) not in ALLOWED_LOGICAL_ROLES]
         if invalid_roles:
             errors.append("Branch Review Gate agent_assignment roles 存在非法中文逻辑角色: " + ", ".join(invalid_roles) + "。")
-    for key in ["agents_count", "review_rounds_count", "reuse_decisions_count"]:
+    for key in ["agents_count", "review_rounds_count", "reuse_decisions_count", "status_events_count"]:
         if key in agent_assignment and (not isinstance(agent_assignment.get(key), int) or agent_assignment[key] < 0):
             errors.append(f"Branch Review Gate agent_assignment.{key} 必须是非负整数。")
     return errors
@@ -3745,6 +3940,7 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         )
         if args.pass_gate and not assignment_errors:
             assignment_errors.extend(final_review_round_errors(root, assignment_payload))
+            assignment_errors.extend(status_event_completion_errors(assignment_payload))
         if assignment_errors:
             raise WorkflowError(
                 "Branch Review Gate blocked because agent assignment evidence is invalid.",
@@ -3807,7 +4003,29 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
     agent_id = clean_optional_text(args.agent_id)
     platform_nickname = clean_optional_text(args.platform_nickname)
     recorded: dict[str, Any] | None = None
-    if args.review_round is not None:
+    status_event = clean_optional_text(getattr(args, "status_event", None))
+    if status_event and args.review_round is not None:
+        raise WorkflowError("--status-event cannot be combined with --review-round.", exit_code=2)
+    if status_event and getattr(args, "reuse_decision", None):
+        raise WorkflowError("--status-event cannot be combined with --reuse-decision.", exit_code=2)
+    if status_event:
+        recorded = append_agent_status_event(
+            payload,
+            root,
+            logical_role,
+            agent_id,
+            platform_nickname,
+            status_event,
+            clean_optional_text(getattr(args, "decision", None)),
+            clean_optional_text(args.reason),
+            clean_optional_text(getattr(args, "observed_at", None)),
+            clean_optional_text(getattr(args, "last_observed_progress_at", None)),
+            clean_optional_text(getattr(args, "workspace_evidence", None)),
+            clean_optional_text(getattr(args, "running_command_evidence", None)),
+            clean_optional_text(getattr(args, "supersedes_agent_id", None)),
+            clean_optional_text(getattr(args, "handoff_summary", None)),
+        )
+    elif args.review_round is not None:
         recorded = append_agent_review_round(
             payload,
             root,
@@ -3861,6 +4079,11 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
                 for item in collection
                 if isinstance(item, dict) and str(item.get("logical_role") or "")
             }
+            | {
+                str(item.get("logical_role") or "")
+                for item in payload.get("status_events", [])
+                if isinstance(item, dict) and str(item.get("logical_role") or "")
+            }
         ),
     }
     return {
@@ -3868,7 +4091,7 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
         "artifact_path": str(path),
         "recorded": recorded,
         "summary": summary,
-        "notes": "record-agent-assignment 只记录 AI/human 已做出的分配或复用判断，不决定应使用哪个 sub-agent。",
+        "notes": "record-agent-assignment 只记录 AI/human 已做出的分配、复用或状态处理判断，不决定应使用哪个 sub-agent、是否 stale 或是否应终止。",
     }
 
 
@@ -3896,6 +4119,7 @@ def cmd_check_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
         "agents_count": len(payload.get("agents", [])) if isinstance(payload.get("agents"), list) else 0,
         "review_rounds_count": len(payload.get("review_rounds", [])) if isinstance(payload.get("review_rounds"), list) else 0,
         "reuse_decisions_count": len(payload.get("reuse_decisions", [])) if isinstance(payload.get("reuse_decisions"), list) else 0,
+        "status_events_count": len(payload.get("status_events", [])) if isinstance(payload.get("status_events"), list) else 0,
     }
 
 
@@ -4494,6 +4718,14 @@ def build_parser() -> argparse.ArgumentParser:
     assignment.add_argument("--from-round", type=int)
     assignment.add_argument("--to-round", type=int)
     assignment.add_argument("--decision-head", help="HEAD for reuse_decisions[]. Defaults to current HEAD.")
+    assignment.add_argument("--status-event", choices=sorted(ALLOWED_AGENT_STATUS_EVENTS), help="Record status_events[] observation/handling event.")
+    assignment.add_argument("--decision", choices=sorted(ALLOWED_AGENT_STATUS_DECISIONS), help="Decision recorded with --status-event.")
+    assignment.add_argument("--observed-at", help="ISO-8601 observation time for --status-event. Defaults to now.")
+    assignment.add_argument("--last-observed-progress-at", help="ISO-8601 time of the latest observable agent progress.")
+    assignment.add_argument("--workspace-evidence", help="Chinese workspace/diff/channel/output evidence for --status-event.")
+    assignment.add_argument("--running-command-evidence", help="Chinese running or stuck command evidence for --status-event.")
+    assignment.add_argument("--supersedes-agent-id", help="Predecessor technical agent id when --status-event replacement-started.")
+    assignment.add_argument("--handoff-summary", help="Chinese handoff summary for terminated/replacement status events.")
     assignment.add_argument("--dry-run", action="store_true")
 
     check_assignment = sub.add_parser("check-agent-assignment")

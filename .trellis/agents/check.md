@@ -39,6 +39,12 @@ Before reviewing, read in this order:
 
 The supervising main session owns commits. Report the post-fix state; do not commit on its behalf.
 
+## Progress And Handoff
+
+- Do not report `Self-Check Complete` until the requested check/review scope is actually complete and verification status is known.
+- If the supervising main session interrupts, terminates, replaces, or asks you to stop before completion, report `Self-Check Unfinished`. Include files checked, current diff summary, last completed review step, commands still running or stuck, findings already identified, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
+- A `trellis channel wait` timeout in the main session is only a wait-window result, not your failure signal. Continue working unless the channel sends an explicit stop/interrupt instruction.
+
 ## Workflow
 
 1. Run `git diff --name-only` and `git diff` to scope the changes

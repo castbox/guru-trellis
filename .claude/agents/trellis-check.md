@@ -47,6 +47,12 @@ Before checking, read:
 
 You have write and edit tools, you can modify code directly.
 
+## Progress And Handoff
+
+- Do not report `Self-Check Complete` until the requested check/review scope is actually complete and verification status is known.
+- If the main session interrupts, terminates, replaces, or asks you to stop before completion, explicitly report `Self-Check Unfinished` instead. Include files checked, current diff summary, last completed review step, commands still running or stuck, findings already identified, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
+- A main-session wait timeout is not your failure signal. Continue working unless you receive an explicit stop/interrupt instruction.
+
 ---
 
 ## Workflow
