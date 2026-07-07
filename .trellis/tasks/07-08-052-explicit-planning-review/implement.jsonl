@@ -1,0 +1,24 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Guru Team Phase 1 planning approval、default sub-agent mode 和 Branch Review Gate 的长期 workflow contract。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "record/check planning approval 的 recorder/validator 边界与验证命令要求。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "planning-approval.json schema 1.1、source、reviewed_artifacts 与 approved_artifacts alias 的数据合同。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "workflow/preset 变更后的针对性验证命令与 planning approval 回归要求。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "generated hook 与 trellis-meta reference overlay 的 replace/new-copy installer 合同。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "修改 canonical overlay 后同步 dogfood installed copies 与跨平台一致性要求。"}
+{"file": "docs/requirements/requirement-main.md", "reason": "长期需求总览中 Planning / check / Branch Review Gate 能力需要同步 #52 新门禁。"}
+{"file": "docs/requirements/guru-team-trellis-flow.md", "reason": "全流程说明中的 Phase 1 planning gate 需要补充三文档显式用户审核。"}
+{"file": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py", "reason": "planning approval recorder/validator 新 schema、source 与三文档 metadata 校验实现。"}
+{"file": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py", "reason": "planning approval 新旧 schema/source、缺文档、缺 metadata 与 stale 校验测试。"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "canonical Guru Team workflow 中显式 planning review 和 Phase 2 fail-closed 路由。"}
+{"file": ".trellis/workflow.md", "reason": "dogfood active workflow 运行副本必须与 canonical workflow 的 planning gate 保持一致。"}
+{"file": "trellis/presets/guru-team/README.md", "reason": "preset installed-file list 与 throwaway install 验证范围需要包含 hooks / trellis-meta overlays。"}
+{"file": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py", "reason": "installer overlay selection 与 generated hook/trellis-meta replacement 行为。"}
+{"file": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py", "reason": "installer regression tests for canonical hook and trellis-meta overlay installation/replacement。"}
+{"file": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh", "reason": "throwaway install must grep installed hooks/meta docs for stale PRD-only planning hints。"}
+{"file": "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md", "reason": "shared continue overlay 中三文档链接展示和 post-planning 确认规则。"}
+{"file": "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/local-architecture/task-system.md", "reason": "Codex shared trellis-meta task-system reference must not keep old PRD-only wording after preset apply。"}
+{"file": "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml", "reason": "Codex implement agent 的 planning approval 前置校验规则。"}
+{"file": "trellis/presets/guru-team/overlays/.codex/hooks/session-start.py", "reason": "Codex SessionStart planning next-action must be canonical, not dogfood-only。"}
+{"file": "trellis/presets/guru-team/overlays/.cursor/hooks/session-start.py", "reason": "Cursor SessionStart planning next-action must be canonical, not dogfood-only。"}
+{"file": "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/local-architecture/task-system.md", "reason": "Cursor trellis-meta task-system reference must not keep old PRD-only wording after preset apply。"}
+{"file": ".codex/hooks/session-start.py", "reason": "Codex SessionStart planning next-action 不得提示 PRD-only start review。"}
+{"file": ".cursor/hooks/session-start.py", "reason": "Cursor SessionStart planning next-action 不得提示 PRD-only start review。"}

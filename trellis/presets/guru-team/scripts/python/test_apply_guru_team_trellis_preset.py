@@ -217,13 +217,33 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertIn("实现代理", (self.repo / ".trellis/agents/implement.md").read_text(encoding="utf-8"))
         self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
         self.assertTrue((self.repo / ".codex/agents/trellis-implement.toml").is_file())
+        self.assertTrue((self.repo / ".codex/hooks/session-start.py").is_file())
         codex_implement = (self.repo / ".codex/agents/trellis-implement.toml").read_text(encoding="utf-8")
         self.assertIn("实现代理", codex_implement)
         self.assertIn('nickname_candidates = ["Implement Agent"', codex_implement)
         self.assertNotIn('nickname_candidates = ["实现代理"', codex_implement)
+        codex_hook = (self.repo / ".codex/hooks/session-start.py").read_text(encoding="utf-8")
+        self.assertIn("post-planning confirmation", codex_hook)
+        self.assertNotIn("PRD-only", codex_hook)
+        self.assertNotIn("Missing optional artifacts", codex_hook)
+        codex_meta = (
+            self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Guru Team requires it before implementation", codex_meta)
+        self.assertNotIn("Lightweight tasks may be PRD-only", codex_meta)
         self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
         self.assertTrue((self.repo / ".cursor/agents/trellis-check.md").is_file())
         self.assertIn("阶段二检查代理", (self.repo / ".cursor/agents/trellis-check.md").read_text(encoding="utf-8"))
+        self.assertTrue((self.repo / ".cursor/hooks/session-start.py").is_file())
+        cursor_hook = (self.repo / ".cursor/hooks/session-start.py").read_text(encoding="utf-8")
+        self.assertIn("post-planning confirmation", cursor_hook)
+        self.assertNotIn("PRD-only", cursor_hook)
+        self.assertNotIn("Missing optional artifacts", cursor_hook)
+        cursor_meta = (
+            self.repo / ".cursor/skills/trellis-meta/references/local-architecture/task-system.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Guru Team requires it before implementation", cursor_meta)
+        self.assertNotIn("Lightweight tasks may be PRD-only", cursor_meta)
         self.assertFalse((self.repo / ".claude").exists())
 
     def test_repeated_default_apply_does_not_restore_unselected_claude_overlay(self) -> None:
@@ -244,6 +264,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertTrue((self.repo / ".trellis/agents/check.md").is_file())
         self.assertTrue((self.repo / ".claude/commands/trellis/continue.md").is_file())
         self.assertTrue((self.repo / ".claude/agents/trellis-implement.md").is_file())
+        self.assertFalse((self.repo / ".agents/skills/trellis-meta").exists())
         self.assertFalse((self.repo / ".codex").exists())
         self.assertFalse((self.repo / ".cursor").exists())
 
@@ -257,8 +278,12 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertTrue((self.repo / ".trellis/agents/implement.md").is_file())
         self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
         self.assertTrue((self.repo / ".codex/agents/trellis-check.toml").is_file())
+        self.assertTrue((self.repo / ".codex/hooks/session-start.py").is_file())
+        self.assertTrue((self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md").is_file())
         self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
         self.assertTrue((self.repo / ".cursor/agents/trellis-research.md").is_file())
+        self.assertTrue((self.repo / ".cursor/hooks/session-start.py").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/trellis-meta/references/local-architecture/task-system.md").is_file())
         self.assertTrue((self.repo / ".claude/commands/trellis/continue.md").is_file())
         self.assertTrue((self.repo / ".claude/agents/trellis-research.md").is_file())
 
@@ -281,8 +306,10 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
         self.assertTrue((self.repo / ".codex/agents/trellis-research.toml").is_file())
+        self.assertTrue((self.repo / ".codex/hooks/session-start.py").is_file())
         self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
         self.assertTrue((self.repo / ".cursor/agents/trellis-implement.md").is_file())
+        self.assertTrue((self.repo / ".cursor/hooks/session-start.py").is_file())
         self.assertFalse((self.repo / ".claude").exists())
 
     def test_known_trellis_agent_entries_are_replaced_with_chinese_overlays(self) -> None:
@@ -318,6 +345,57 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertIn(".codex/agents/trellis-check.toml.new", payload["new_copies"])
         self.assertIn("Local custom reviewer", existing.read_text(encoding="utf-8"))
         self.assertTrue((self.repo / ".codex/agents/trellis-check.toml.new").is_file())
+
+    def test_generated_session_start_hooks_are_replaced_with_planning_gate_overlays(self) -> None:
+        codex_hook = self.repo / ".codex/hooks/session-start.py"
+        cursor_hook = self.repo / ".cursor/hooks/session-start.py"
+        codex_hook.parent.mkdir(parents=True)
+        cursor_hook.parent.mkdir(parents=True)
+        stale_hook = (
+            "#!/usr/bin/env python3\n"
+            "\"\"\"Trellis Session Start Hook\"\"\"\n"
+            "def _get_task_status(trellis_dir, hook_input):\n"
+            "    return 'Lightweight task can ask for start review with PRD-only'\n"
+        )
+        codex_hook.write_text(stale_hook, encoding="utf-8")
+        cursor_hook.write_text(stale_hook, encoding="utf-8")
+
+        payload = self.install({"codex", "cursor"})
+
+        self.assertIn(".codex/hooks/session-start.py", payload["replaced_overlays"])
+        self.assertIn(".cursor/hooks/session-start.py", payload["replaced_overlays"])
+        self.assertIn("post-planning confirmation", codex_hook.read_text(encoding="utf-8"))
+        self.assertIn("post-planning confirmation", cursor_hook.read_text(encoding="utf-8"))
+        self.assertNotIn("PRD-only", codex_hook.read_text(encoding="utf-8"))
+        self.assertNotIn("PRD-only", cursor_hook.read_text(encoding="utf-8"))
+
+    def test_generated_trellis_meta_task_system_docs_are_replaced_with_guru_team_overlay(self) -> None:
+        shared_meta = self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md"
+        cursor_meta = self.repo / ".cursor/skills/trellis-meta/references/local-architecture/task-system.md"
+        stale_meta = (
+            "# Local Task System\n\n"
+            "The Trellis task system is stored under `.trellis/tasks/`.\n\n"
+            "| `prd.md` | Requirements. Lightweight tasks may be PRD-only. |\n"
+        )
+        shared_meta.parent.mkdir(parents=True)
+        cursor_meta.parent.mkdir(parents=True)
+        shared_meta.write_text(stale_meta, encoding="utf-8")
+        cursor_meta.write_text(stale_meta, encoding="utf-8")
+
+        payload = self.install({"codex", "cursor"})
+
+        self.assertIn(
+            ".agents/skills/trellis-meta/references/local-architecture/task-system.md",
+            payload["replaced_overlays"],
+        )
+        self.assertIn(
+            ".cursor/skills/trellis-meta/references/local-architecture/task-system.md",
+            payload["replaced_overlays"],
+        )
+        self.assertIn("Guru Team requires it before implementation", shared_meta.read_text(encoding="utf-8"))
+        self.assertIn("Guru Team requires it before implementation", cursor_meta.read_text(encoding="utf-8"))
+        self.assertNotIn("Lightweight tasks may be PRD-only", shared_meta.read_text(encoding="utf-8"))
+        self.assertNotIn("Lightweight tasks may be PRD-only", cursor_meta.read_text(encoding="utf-8"))
 
     def test_main_reports_explicit_all_platforms_only_for_all_platforms_flag(self) -> None:
         with mock.patch(

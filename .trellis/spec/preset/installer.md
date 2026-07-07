@@ -104,7 +104,12 @@ Use `copy_overlay()` behavior:
 Known Trellis-generated entries include Guru Team command/skill overlays and
 the shipped `trellis-implement`, `trellis-check`, `trellis-research`,
 `implement`, and `check` agent definitions when their content still carries
-standard Trellis prelude, JSONL, research, or channel-runtime signals.
+standard Trellis prelude, JSONL, research, or channel-runtime signals. They
+also include generated Codex / Cursor SessionStart hooks and Trellis meta
+`task-system.md` references when those files still carry standard Trellis task
+context signals. Guru Team replaces those generated surfaces so new installs
+do not keep stale `PRD-only` planning hints after the canonical workflow has a
+stricter post-planning approval gate.
 
 Do not overwrite unknown platform command, prompt, skill, or agent edits. The
 target repo owner must inspect `.new` when local customization exists.

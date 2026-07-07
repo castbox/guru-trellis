@@ -59,11 +59,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-07T16:02:14Z",
+  "installed_at": "2026-07-07T18:19:28Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/072-subagent-execution-boundaries",
-    "commit": "62d00cffb7cada17912052a12add7bfa34dcf0f7",
+    "ref": "codex/052-explicit-planning-review",
+    "commit": "c1007f6283fbc04494a03f6ef7dc2a45c7984b10",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -77,6 +77,7 @@
     "managed_assets": [
       ".agents/skills/trellis-continue/SKILL.md",
       ".agents/skills/trellis-finish-work/SKILL.md",
+      ".agents/skills/trellis-meta/references/local-architecture/task-system.md",
       ".agents/skills/trellis-start/SKILL.md",
       ".claude/agents/trellis-check.md",
       ".claude/agents/trellis-implement.md",
@@ -86,6 +87,7 @@
       ".codex/agents/trellis-check.toml",
       ".codex/agents/trellis-implement.toml",
       ".codex/agents/trellis-research.toml",
+      ".codex/hooks/session-start.py",
       ".codex/prompts/trellis-continue.md",
       ".codex/prompts/trellis-finish-work.md",
       ".codex/prompts/trellis-start.md",
@@ -97,6 +99,8 @@
       ".cursor/agents/trellis-research.md",
       ".cursor/commands/trellis-continue.md",
       ".cursor/commands/trellis-finish-work.md",
+      ".cursor/hooks/session-start.py",
+      ".cursor/skills/trellis-meta/references/local-architecture/task-system.md",
       ".trellis/agents/check.md",
       ".trellis/agents/implement.md",
       ".trellis/guru-team/config-template.yml",

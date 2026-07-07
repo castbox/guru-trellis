@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import tempfile
@@ -155,6 +156,8 @@ def planning_args(**overrides: object) -> argparse.Namespace:
         "reviewer": "codex-main-session",
         "summary": "规划 artifact 已审阅，可以进入实现。",
         "user_confirmation": "用户确认进入实现。",
+        "review_prompt_presented_at": None,
+        "confirmation_source": gtt.PLANNING_APPROVAL_CONFIRMATION_SOURCE,
         "artifact": None,
         "dry_run": False,
     }
@@ -1004,8 +1007,13 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                 patcher.stop()
 
         self.assertTrue((self.task_dir / "planning-approval.json").exists())
+        self.assertEqual(payload["schema_version"], gtt.PLANNING_APPROVAL_SCHEMA_VERSION)
+        self.assertTrue(payload["review_prompt_presented_at"])
+        self.assertTrue(payload["approved_at"])
+        self.assertEqual(payload["user_confirmation"]["source"], gtt.PLANNING_APPROVAL_CONFIRMATION_SOURCE)
         self.assertEqual(payload["head"], "abc123")
         self.assertEqual(check["status"], "ok")
+        self.assertEqual(len(payload["reviewed_artifacts"]), 3)
         self.assertEqual(len(payload["approved_artifacts"]), 3)
 
     def test_validate_planning_approval_accepts_archived_task_with_active_artifact_paths(self) -> None:
@@ -1051,6 +1059,131 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn("--reviewer", str(raised.exception))
 
+    def test_record_planning_approval_rejects_workflow_confirmation_source(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_record_planning_approval(planning_args(confirmation_source="workflow"))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn(gtt.PLANNING_APPROVAL_CONFIRMATION_SOURCE, str(raised.exception))
+
+    def test_record_planning_approval_requires_all_three_planning_docs(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_record_planning_approval(planning_args(artifact=["prd.md"]))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("design.md", str(raised.exception))
+        self.assertIn("implement.md", str(raised.exception))
+
+    def test_check_planning_approval_rejects_legacy_workflow_source(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_record_planning_approval(planning_args())
+            payload["schema_version"] = "1.0"
+            payload["user_confirmation"]["source"] = "workflow"
+            payload.pop("review_prompt_presented_at")
+            payload.pop("approved_at")
+            payload.pop("reviewed_artifacts")
+            payload.pop("artifact_path", None)
+            payload.pop("dry_run", None)
+            (self.task_dir / "planning-approval.json").write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        errors = raised.exception.payload["errors"]
+        self.assertTrue(any("schema_version" in error for error in errors))
+        self.assertTrue(any("user_confirmation.source" in error for error in errors))
+        self.assertTrue(any("reviewed_artifacts" in error for error in errors))
+
+    def test_check_planning_approval_rejects_phase0_handoff_source(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_record_planning_approval(planning_args())
+            payload["user_confirmation"]["source"] = "phase0-handoff"
+            payload.pop("artifact_path", None)
+            payload.pop("dry_run", None)
+            (self.task_dir / "planning-approval.json").write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(any("Phase 0 handoff" in error for error in raised.exception.payload["errors"]))
+
+    def test_check_planning_approval_rejects_missing_required_doc_entry(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_record_planning_approval(planning_args())
+            payload["reviewed_artifacts"] = [
+                item for item in payload["reviewed_artifacts"] if not str(item["path"]).endswith("/design.md")
+            ]
+            payload["approved_artifacts"] = [
+                item for item in payload["approved_artifacts"] if not str(item["path"]).endswith("/design.md")
+            ]
+            payload.pop("artifact_path", None)
+            payload.pop("dry_run", None)
+            (self.task_dir / "planning-approval.json").write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(any("design.md" in error for error in raised.exception.payload["errors"]))
+
+    def test_check_planning_approval_rejects_missing_digest_metadata(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_record_planning_approval(planning_args())
+            payload["reviewed_artifacts"][0].pop("sha256")
+            payload.pop("artifact_path", None)
+            payload.pop("dry_run", None)
+            (self.task_dir / "planning-approval.json").write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(any("缺少 sha256" in error for error in raised.exception.payload["errors"]))
+
     def test_check_planning_approval_rejects_changed_artifact(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
@@ -1065,6 +1198,23 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                 patcher.stop()
 
         self.assertTrue(any("已过期" in error for error in raised.exception.payload["errors"]))
+
+    def test_check_planning_approval_rejects_modified_at_drift(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            prd = self.task_dir / "prd.md"
+            new_mtime = prd.stat().st_mtime + 10
+            os.utime(prd, (new_mtime, new_mtime))
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(any("modified_at" in error for error in raised.exception.payload["errors"]))
 
     def test_check_planning_approval_allows_committed_head_only_when_explicit(self) -> None:
         patches = self.patch_common()

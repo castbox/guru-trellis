@@ -8,6 +8,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#v0.6.5-guru.1}"
 ALLOW_PUBLIC_SAMPLE="${TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE:-0}"
 ENGLISH_LANGUAGE_RULE_PATTERN='All documentation (must|should) be written in .*English'
+STALE_PLANNING_HINT_PATTERN='PRD-only|Lightweight tasks may be PRD-only|Lightweight task can (ask|request)|Missing optional artifacts|skipped for lightweight tasks'
 
 if [[ -z "$WORK_DIR" ]]; then
   WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/guru-trellis-install.XXXXXX")"
@@ -41,6 +42,21 @@ fail_if_english_language_rule() {
   matches="$(grep -RInE "$ENGLISH_LANGUAGE_RULE_PATTERN" "$@" 2>/dev/null || true)"
   if [[ -n "$matches" ]]; then
     echo "Unexpected English documentation language rule in $label:" >&2
+    printf '%s\n' "$matches" >&2
+    exit 2
+  fi
+}
+
+fail_if_stale_planning_hint() {
+  local label="$1"
+  shift
+  local matches
+  if [[ "$#" -eq 0 ]]; then
+    return 0
+  fi
+  matches="$(grep -RInE "$STALE_PLANNING_HINT_PATTERN" "$@" 2>/dev/null || true)"
+  if [[ -n "$matches" ]]; then
+    echo "Unexpected legacy planning hint in $label:" >&2
     printf '%s\n' "$matches" >&2
     exit 2
   fi
@@ -107,6 +123,20 @@ test -d "$TARGET/.agents/skills"
 test -d "$TARGET/.codex"
 test -d "$TARGET/.cursor"
 test ! -e "$TARGET/.claude"
+test -f "$TARGET/.codex/hooks/session-start.py"
+test -f "$TARGET/.cursor/hooks/session-start.py"
+test -f "$TARGET/.agents/skills/trellis-meta/references/local-architecture/task-system.md"
+test -f "$TARGET/.cursor/skills/trellis-meta/references/local-architecture/task-system.md"
+fail_if_stale_planning_hint \
+  "Codex/Cursor SessionStart hooks and trellis-meta task-system docs" \
+  "$TARGET/.codex/hooks/session-start.py" \
+  "$TARGET/.cursor/hooks/session-start.py" \
+  "$TARGET/.agents/skills/trellis-meta/references/local-architecture/task-system.md" \
+  "$TARGET/.cursor/skills/trellis-meta/references/local-architecture/task-system.md"
+grep -q "post-planning confirmation" "$TARGET/.codex/hooks/session-start.py"
+grep -q "post-planning confirmation" "$TARGET/.cursor/hooks/session-start.py"
+grep -q "Guru Team requires it before implementation" "$TARGET/.agents/skills/trellis-meta/references/local-architecture/task-system.md"
+grep -q "Guru Team requires it before implementation" "$TARGET/.cursor/skills/trellis-meta/references/local-architecture/task-system.md"
 test -f "$TARGET/.trellis/agents/implement.md"
 grep -q "实现代理" "$TARGET/.trellis/agents/implement.md"
 test -f "$TARGET/.codex/agents/trellis-implement.toml"

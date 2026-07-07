@@ -1,3 +1,5 @@
+<!-- guru-team-overlay: v1 -->
+
 # Local Task System
 
 The Trellis task system is stored entirely under `.trellis/tasks/` in the user project. Each task is a directory containing requirements, context, research, state, and relationship information.
@@ -21,9 +23,9 @@ The Trellis task system is stored entirely under `.trellis/tasks/` in the user p
 | File | Purpose |
 | --- | --- |
 | `task.json` | Task metadata: status, assignee, priority, branch, parent/child tasks, and similar fields. |
-| `prd.md` | Requirements, constraints, and acceptance criteria. Lightweight tasks may be PRD-only. |
-| `design.md` | Technical design for complex tasks: boundaries, contracts, data flow, compatibility, tradeoffs. |
-| `implement.md` | Execution plan for complex tasks: ordered checklist, validation commands, review gates, rollback points. |
+| `prd.md` | Requirements, constraints, and acceptance criteria. |
+| `design.md` | Technical design: boundaries, contracts, data flow, compatibility, tradeoffs. Some native Trellis workflows treat it as optional for lightweight tasks; Guru Team requires it before implementation. |
+| `implement.md` | Execution plan: ordered checklist, validation commands, review gates, rollback points. Some native Trellis workflows treat it as optional for lightweight tasks; Guru Team requires it before implementation. |
 | `implement.jsonl` | List of spec/research files the implement agent must read first. |
 | `check.jsonl` | List of spec/research files the check agent must read first. |
 | `research/` | Research artifacts. Complex findings should not live only in chat. |

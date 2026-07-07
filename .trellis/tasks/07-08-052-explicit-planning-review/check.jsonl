@@ -1,0 +1,25 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查实现是否符合 Phase 1 planning approval、Phase 2 fail-closed 和 Branch Review Gate 合同。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查脚本是否只做 recorder/validator 且新增测试覆盖 objective validation。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查 planning-approval.json schema 1.1、三文档 metadata 和 alias 合同是否同步。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查 workflow 变更验证命令和 planning approval 回归要求是否记录。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查 generated hook 与 trellis-meta reference overlay replacement 合同是否覆盖 P2 finding。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 canonical overlay 与 dogfood installed copies 是否同步且跨平台文案一致。"}
+{"file": "docs/requirements/requirement-main.md", "reason": "检查 durable docs 是否同步长期需求与历史能力索引。"}
+{"file": "docs/requirements/guru-team-trellis-flow.md", "reason": "检查演示流程文档是否准确表达显式规划审核门禁。"}
+{"file": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py", "reason": "检查 recorder/validator 是否 fail closed 且不替代 AI planning 判断。"}
+{"file": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py", "reason": "检查单测是否覆盖 post-planning source、旧 workflow source、phase0 source、缺文档、缺 metadata 与 stale。"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "检查 canonical workflow 是否要求三链接展示、用户确认前不实现/不派发/不记录 phase2 check。"}
+{"file": ".trellis/workflow.md", "reason": "检查 dogfood active workflow 是否已同步 canonical planning gate。"}
+{"file": "trellis/presets/guru-team/README.md", "reason": "检查 installed-file list 与 throwaway install 验证说明是否包含 hooks / trellis-meta overlays。"}
+{"file": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py", "reason": "检查 installer 是否安装并替换 canonical hooks / trellis-meta overlay surfaces。"}
+{"file": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py", "reason": "检查 installer regression 是否覆盖 stale generated hook/meta replacement。"}
+{"file": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh", "reason": "检查 throwaway install 是否会 fail stale PRD-only planning hints。"}
+{"file": "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md", "reason": "检查 shared continue overlay 与 canonical workflow 一致。"}
+{"file": "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/local-architecture/task-system.md", "reason": "检查 Codex shared trellis-meta reference 是否 canonical 且无 PRD-only wording。"}
+{"file": "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md", "reason": "检查 Codex continue prompt 与 shared/canonical 语义一致。"}
+{"file": "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml", "reason": "检查 implement agent 是否将 valid planning approval evidence 作为前置条件。"}
+{"file": "trellis/presets/guru-team/overlays/.codex/hooks/session-start.py", "reason": "检查 Codex SessionStart overlay 是否 canonical 且无 PRD-only wording。"}
+{"file": "trellis/presets/guru-team/overlays/.cursor/hooks/session-start.py", "reason": "检查 Cursor SessionStart overlay 是否 canonical 且无 PRD-only wording。"}
+{"file": "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/local-architecture/task-system.md", "reason": "检查 Cursor trellis-meta reference 是否 canonical 且无 PRD-only wording。"}
+{"file": ".codex/hooks/session-start.py", "reason": "检查 Codex SessionStart 不再提示 PRD-only start review。"}
+{"file": ".cursor/hooks/session-start.py", "reason": "检查 Cursor SessionStart 不再提示 PRD-only start review。"}

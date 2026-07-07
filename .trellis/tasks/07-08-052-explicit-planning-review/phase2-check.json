@@ -1,0 +1,207 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T18:27:14Z",
+  "task_dir": ".trellis/tasks/07-08-052-explicit-planning-review",
+  "base_branch": "main",
+  "head": "c1007f6283fbc04494a03f6ef7dc2a45c7984b10",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".agents/skills/trellis-meta/references/local-architecture/task-system.md",
+    ".claude/agents/trellis-implement.md",
+    ".claude/commands/trellis/continue.md",
+    ".codex/agents/trellis-check.toml",
+    ".codex/agents/trellis-implement.toml",
+    ".codex/hooks/session-start.py",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".cursor/agents/trellis-implement.md",
+    ".cursor/commands/trellis-continue.md",
+    ".cursor/hooks/session-start.py",
+    ".cursor/skills/trellis-meta/references/local-architecture/task-system.md",
+    ".trellis/agents/implement.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+    "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+    "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-08-052-explicit-planning-review/",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/",
+    "trellis/presets/guru-team/overlays/.codex/hooks/",
+    "trellis/presets/guru-team/overlays/.cursor/hooks/",
+    "trellis/presets/guru-team/overlays/.cursor/skills/"
+  ],
+  "checker": "trellis-check:019f3db5-0d00-77e0-855f-5c17cc094b07",
+  "check_summary": "阶段二检查代理已按 #52 task artifacts、spec、当前 diff、canonical/dogfood overlay、installer、throwaway install 与验证命令完成 Phase 2 检查；前一轮发现的 P2 fresh install stale PRD-only hook/meta 文案已由实现代理修复，并由同一检查代理复查闭环；当前无 P0/P1/P2/P3 findings。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-08-052-explicit-planning-review/prd.md",
+      "sha256": "e1d8578f464b63ad4ec488ba303230f60fb40d996729570d95fc34a5de0a59ca",
+      "size_bytes": 5202,
+      "modified_at": "2026-07-07T17:12:39.028769+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-052-explicit-planning-review/design.md",
+      "sha256": "a9abf6a40f8da56c5c9725f43cd439accb2f524318429fddb27c4f110cccac0b",
+      "size_bytes": 6493,
+      "modified_at": "2026-07-07T17:12:39.029112+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-052-explicit-planning-review/implement.md",
+      "sha256": "99430ba210cd1408c5059e0e4b0b3996d33a7180e8ce5cc53bae9c4f3ad1425e",
+      "size_bytes": 4143,
+      "modified_at": "2026-07-07T17:12:39.029425+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-052-explicit-planning-review/planning-approval.json",
+      "sha256": "576bf774408cbf45711472f86e82990d0e33c03f9ce56d36a341b630f19ef36c",
+      "size_bytes": 4807,
+      "modified_at": "2026-07-07T17:48:40.882486+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-052-explicit-planning-review/issue-scope-ledger.json",
+      "sha256": "1006b1bbd1e0d00c1bb679ac2644895052d2bbd5c0d0d0f14e41976174246ecc",
+      "size_bytes": 1192,
+      "modified_at": "2026-07-07T17:13:18.398660+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-052-explicit-planning-review/agent-assignment.json",
+      "sha256": "19ba3e72029df727c99a7739993ca7ced9acad271c0c67621329ba54d3bfba0e",
+      "size_bytes": 8240,
+      "modified_at": "2026-07-07T18:26:45.961868+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "eb83a6b128fd212c9659934a43b9c7e98e48125591b44e3e8da783159b954c87",
+      "size_bytes": 15404,
+      "modified_at": "2026-07-07T17:34:36.396054+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "74530343dd2e5e75a06488f5ea0b268d4c8fe6356f44cbedf5c42524ac3f889f",
+      "size_bytes": 12339,
+      "modified_at": "2026-07-07T17:34:36.396810+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "6a13445d53bcd15cdca267937981bd0a5bc61262989806c8f623553f7f9db84a",
+      "size_bytes": 19186,
+      "modified_at": "2026-07-07T17:46:32.944737+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "1f495cf83ebbe7873bf35d2ec684722cd4ce27e72e425405dc82e947f5c0b20a",
+      "size_bytes": 5098,
+      "modified_at": "2026-07-07T17:46:59.429293+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "03e540963edf4e4eae86214925b3862079af48645117678eaf30def99294c8d7",
+      "size_bytes": 9733,
+      "modified_at": "2026-07-07T18:09:10.104391+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "1f177d8e46e2b0b81c08be1b4bc328083c97d211ffa3ddf17850c7c95a541eda",
+      "size_bytes": 8276,
+      "modified_at": "2026-07-07T18:08:58.354012+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "3dcb9e138dc54489b539b7d2f579ef68bfcdfb3c293fad5a80ceafdf4c5cb64e",
+      "size_bytes": 4343,
+      "modified_at": "2026-07-07T17:08:53.743358+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "pass, 25 tests"
+    },
+    {
+      "command": "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "pass, 143 tests"
+    },
+    {
+      "command": "python3 .codex/hooks/test_inject_workflow_state.py",
+      "result": "pass, 7 tests"
+    },
+    {
+      "command": "python3 -m py_compile workflow helper, installed helper, preset installer, Codex/Cursor hooks",
+      "result": "pass"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "pass"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh --repo .",
+      "result": "pass"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "result": "pass"
+    },
+    {
+      "command": "manual throwaway grep for stale PRD-only / Lightweight task can / Missing optional artifacts / skipped for lightweight tasks",
+      "result": "pass, no stale matches in Codex/Cursor hooks or trellis-meta task-system surfaces"
+    },
+    {
+      "command": "./.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task .trellis/tasks/07-08-052-explicit-planning-review",
+      "result": "pass"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-08-052-explicit-planning-review",
+      "result": "pass"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check HEAD",
+      "result": "pass"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

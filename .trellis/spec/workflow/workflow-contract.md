@@ -20,7 +20,7 @@ Reference files:
 The workflow has four durable phases:
 
 - Phase 0: issue intake, Git base branch selection, and worktree preflight.
-- Phase 1: Trellis task creation and planning artifacts.
+- Phase 1: Trellis task creation, planning artifacts, explicit post-planning user review, and start gate evidence.
 - Phase 2: implementation and quality check.
 - Phase 3: spec decision, commit, Branch Review Gate, finish-work, and automatic publish.
 
@@ -113,9 +113,13 @@ review result exists, to persist objective gate evidence.
 Phase 1.4 and Phase 2.2 have their own evidence gates before the Branch Review
 Gate:
 
-- `planning-approval.json` records reviewed planning artifacts and user
-  confirmation before `task.py start`. `task.py start` is not proof of planning
-  review.
+- `planning-approval.json` records that the main session displayed task-local
+  links to `prd.md`, `design.md`, and `implement.md`, then received explicit
+  post-planning user confirmation before `task.py start`. It must use
+  `user_confirmation.source=explicit-post-planning-review` and record matching
+  hash / size / modified-time metadata for all three planning documents. Phase
+  0 handoff approval, generic workflow confirmation, or old `source=workflow`
+  artifacts fail closed. `task.py start` is not proof of planning review.
 - `phase2-check.json` records complete `trellis-check` coverage before commit.
   Passing validation commands alone is not proof that requirements, design,
   implementation, tests, specs, docs, cross-layer flow, and deployment impact
@@ -142,7 +146,10 @@ Gate:
   its own implementation, its own Phase 2 check, its own self-review, or script
   validation output as any of those sub-agent results. Inline/self-exemption is
   valid only with explicit artifact evidence; otherwise missing sub-agent
-  evidence fails closed.
+  evidence fails closed. Before dispatching implementation or recording
+  `phase2-check.json`, the main session must rerun
+  `check-planning-approval.sh --json`; implement agents must also stop if that
+  validator fails for the active task.
 - `phase2-check.json` is Guru Team evidence for a completed `trellis-check`
   AI check. It records coverage, validations, findings, and dirty paths, but it
   is not the Trellis-native check step itself and recorder/validator success is

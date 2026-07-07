@@ -106,10 +106,18 @@ before publish. This is archive metadata migration, not review judgment.
 
 Planning and Phase 2 helpers follow the same recorder / validator boundary:
 
-- `record-planning-approval.sh` records prior AI/human planning review and user
-  confirmation; it must not decide whether planning is sufficient.
-- `check-planning-approval.sh` validates artifact presence, hashes, and HEAD
-  freshness before `task.py start`.
+- `record-planning-approval.sh` records prior AI/human planning review and the
+  user's explicit post-planning confirmation after the main session displayed
+  task-local links to `prd.md`, `design.md`, and `implement.md`; it must not
+  decide whether planning is sufficient. New artifacts use
+  `schema_version=1.1`, `review_prompt_presented_at`, `approved_at`,
+  `reviewed_artifacts[]`, the `approved_artifacts` alias, and
+  `user_confirmation.source=explicit-post-planning-review`.
+- `check-planning-approval.sh` validates all three planning artifact entries,
+  hash / size / modified-time metadata, approved HEAD freshness, and
+  confirmation source before `task.py start`, before implementation dispatch,
+  and before `phase2-check.json` can be recorded. Old `source=workflow`,
+  Phase 0 handoff confirmation, missing docs, or stale metadata fail closed.
 - `record-phase2-check.sh` records prior full-scope `trellis-check` evidence;
   it must not replace check judgment with command exit codes.
 - `check-phase2-check.sh` validates coverage, validation evidence, findings,

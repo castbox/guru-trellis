@@ -166,22 +166,28 @@ task-local `issue-scope-ledger.json` 负责。
 | --- | --- | --- | --- |
 | 1 | `task.py create` | 官方 Trellis | 创建 `.trellis/tasks/<task>/task.json`，状态为 `planning`。 |
 | 2 | `prd.md` | Guru Team artifact | 中文记录需求、约束、验收、不做范围、issue/comment 取舍。 |
-| 3 | `design.md` | Guru Team artifact | 复杂任务记录边界、契约、数据流、兼容性、部署影响、取舍。 |
+| 3 | `design.md` | Guru Team artifact | 进入实现前记录边界、契约、数据流、兼容性、部署影响、取舍。 |
 | 4 | `implement.md` | Guru Team artifact | 记录实现计划、验证命令、回滚点、review gate。 |
 | 5 | Scope-change gate | Guru Team gate | planning 或执行中新增需求、引用其他 issue 或发现新 bug 时，先确认当前 close scope、related，还是 follow-up/new issue；结论同步到 GitHub issue 证据和 `issue-scope-ledger.json`。 |
 | 6 | Docs SSOT discovery | Guru Team gate | 检查 `docs/` durable docs 是否需要更新；task artifact 不能替代长期文档。 |
 | 7 | Middle-platform Knowledge Gate | Guru Team gate | 中台 SDK/framework 相关任务要检查 `guru-knowledge-center` MCP 可用性并留 citation 或 warning。 |
 | 8 | `implement.jsonl` / `check.jsonl` | Trellis + Guru context | sub-agent 模式下整理 spec/research manifest；inline 模式由 skill 拉取上下文。 |
-| 9 | `planning-approval.json` | Guru Team gate evidence | AI/human 审查规划并得到用户确认后，用 recorder 写 artifact。 |
-| 10 | `task.py start` | 官方 Trellis | 只做状态迁移到 `in_progress`；不代表规划已经被审查。 |
+| 9 | Explicit post-planning review | Guru Team gate | 主会话展示 `prd.md`、`design.md`、`implement.md` 三个 task-local 链接，并说明用户确认前不会进入实现、不会派发 `trellis-implement`、不会记录 `phase2-check.json`。 |
+| 10 | `planning-approval.json` | Guru Team gate evidence | 用户在看到三份规划文档链接后明确确认，recorder 写入 `review_prompt_presented_at`、`approved_at`、三份 artifact hash/size/mtime、HEAD、dirty paths 和 `user_confirmation.source=explicit-post-planning-review`。 |
+| 11 | `task.py start` | 官方 Trellis | 只做状态迁移到 `in_progress`；不代表规划已经被审查。 |
 
 关键边界：用户同意创建 task，不等于同意进入实现；`task.py start` 之前必须先有
-`planning-approval.json` 且 `check-planning-approval.sh` 通过。
+`planning-approval.json` 且 `check-planning-approval.sh` 通过。Phase 0 handoff confirmation、旧
+`source=workflow` planning approval、或规划文档确认后发生 hash/size/mtime 变化，均必须 fail
+closed，并重新展示三份规划文档链接等待用户确认。
 
 ## 6. Phase 2：Execute / check
 
 Codex 在 Guru Team 项目中默认 `codex.dispatch_mode: sub-agent`。主会话负责协调、澄清、
 记录 artifact、commit 和 finish；实现/检查默认交给 Trellis sub-agent。
+进入 Phase 2 或派发 `trellis-implement` / channel `implement` 前，主会话和实现代理都必须先运行
+`check-planning-approval.sh --json`。缺少有效 `explicit-post-planning-review` evidence 时，不得实现、
+不得派发实现代理，也不得记录 `phase2-check.json`。
 
 ```mermaid
 flowchart LR
@@ -305,9 +311,9 @@ PR readiness 要求：
 | `.trellis/guru-team/handoff.json` | Phase 0 executor | Guru Team intake provenance | Phase 1 task seed、debug、issue/worktree provenance。 |
 | `issue-scope-ledger.json` | Phase 1 起持续维护 | Guru Team issue close/ref/followup SSOT | Branch Review Gate、PR body、publish close keyword validator。 |
 | `prd.md` | Phase 1 | Guru Team planning artifact | Implement/check/review/publish。 |
-| `design.md` | Phase 1 complex task | Guru Team planning artifact | Implement/check/review。 |
-| `implement.md` | Phase 1 complex task | Guru Team planning artifact | Implement/check/review。 |
-| `planning-approval.json` | Phase 1.4 | Guru Team gate evidence | `task.py start` 前校验、Branch Review Gate audit。 |
+| `design.md` | Phase 1 | Guru Team planning artifact | Implement/check/review。 |
+| `implement.md` | Phase 1 | Guru Team planning artifact | Implement/check/review。 |
+| `planning-approval.json` | Phase 1.4/1.5 | Guru Team gate evidence | 记录三文档链接展示后的显式用户确认；`task.py start`、Phase 2 dispatch 和 Branch Review Gate audit 前校验。 |
 | `implement.jsonl` / `check.jsonl` | Phase 1.3 | Trellis sub-agent context manifest | `trellis-implement` / `trellis-check`。 |
 | `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity/status ledger | review closure/fresh final reviewer 和 unfinished termination recovery-chain 校验。 |
 | `phase2-check.json` | Phase 2.2 | Guru Team check evidence | 固化 `trellis-check` AI check 的覆盖范围、验证结果、findings 和 dirty paths；commit 前 gate、Branch Review Gate post-commit audit。 |
@@ -323,7 +329,7 @@ PR readiness 要求：
 1. 官方 Trellis 的核心优势是把流程放在 `.trellis/workflow.md`，hooks 只负责注入上下文。
 2. Guru Team 没有 fork Trellis，而是通过 official marketplace workflow 安装 `guru-team`。
 3. 我们把“任务还没创建之前”的风险收进 Phase 0：issue、duplicate、base branch、worktree、命名和副作用授权都先审查。
-4. `task.py create/start/archive` 仍是官方 Trellis lifecycle，但 Guru Team 在 start 前增加 planning approval evidence。
+4. `task.py create/start/archive` 仍是官方 Trellis lifecycle，但 Guru Team 在 start 前要求展示 `prd.md` / `design.md` / `implement.md` 三个链接并得到 explicit post-planning confirmation，Phase 0 handoff 确认不能替代。
 5. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出 `review.md`；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
 6. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，commit 后必须有独立 review 的 `review.md` 和 recorder 生成的 `review-gate.json`；主会话自检、自审或脚本校验通过不能替代这些证据。
 7. 任意 finding 都阻断；发现过问题的 reviewer 只能闭环自己的 finding，最终放行必须是 fresh reviewer。

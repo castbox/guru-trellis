@@ -105,6 +105,8 @@ The script creates a temporary Git repo, runs `trellis init -y` with the
 `--platform codex --platform cursor`, checks that `.trellis/workflow.md`
 exists, verifies that `check-env.sh` and `version.sh` are executable, asserts
 `.trellis/guru-team/extension.json` exists, asserts `.claude/` was not created,
+asserts Codex / Cursor SessionStart hooks and Trellis meta task-system docs no
+longer contain legacy `PRD-only` planning hints,
 asserts target `.trellis/spec/**`, workspace indexes, and
 `00-bootstrap-guidelines` do not retain known English documentation language
 requirements, and runs `check-env --json` plus `version.sh --json`. Trellis CLI accepts
@@ -179,12 +181,14 @@ Default Codex overlays are installed when no platform flag is provided, or when
 - `.codex/agents/trellis-implement.toml`
 - `.codex/agents/trellis-check.toml`
 - `.codex/agents/trellis-research.toml`
+- `.codex/hooks/session-start.py`
 - `.codex/prompts/trellis-start.md`
 - `.codex/prompts/trellis-continue.md`
 - `.codex/prompts/trellis-finish-work.md`
 - `.codex/skills/trellis-start/SKILL.md`
 - `.codex/skills/trellis-continue/SKILL.md`
 - `.codex/skills/trellis-finish-work/SKILL.md`
+- `.agents/skills/trellis-meta/references/local-architecture/task-system.md`
 
 Default Cursor overlays are installed when no platform flag is provided, or when
 `--platform cursor` / `--all-platforms` is used:
@@ -192,8 +196,10 @@ Default Cursor overlays are installed when no platform flag is provided, or when
 - `.cursor/agents/trellis-implement.md`
 - `.cursor/agents/trellis-check.md`
 - `.cursor/agents/trellis-research.md`
+- `.cursor/hooks/session-start.py`
 - `.cursor/commands/trellis-continue.md`
 - `.cursor/commands/trellis-finish-work.md`
+- `.cursor/skills/trellis-meta/references/local-architecture/task-system.md`
 
 Claude overlays are installed only when `--platform claude` or `--all-platforms`
 is used:
@@ -240,9 +246,13 @@ hooks, suspected bootstrap failures, or manual context reloads.
 
 Planning, check, review, and publish helpers are internal companion script
 subcommands used by the workflow; they are not daily user-facing entries.
-`record-planning-approval.sh` records reviewed planning artifact hashes and the
-user confirmation before `task.py start`; `task.py start` remains only a status
-transition. `record-phase2-check.sh` records the full-scope `trellis-check`
+`record-planning-approval.sh` records the explicit post-planning confirmation
+after the main session displayed task-local links to `prd.md`, `design.md`, and
+`implement.md`. The artifact uses
+`user_confirmation.source=explicit-post-planning-review` and records hash /
+size / modified-time metadata for all three files; Phase 0 handoff approval or
+old `source=workflow` evidence must fail closed. `task.py start` remains only a
+status transition. `record-phase2-check.sh` records the full-scope `trellis-check`
 result before commit, including the pre-commit `dirty_paths`; validation
 commands are evidence inside that report, not a substitute for the check.
 `phase2-check.json` is a Guru Team artifact that freezes the completed

@@ -60,7 +60,7 @@ while IFS= read -r source; do
     printf 'CHANGED %s\n' "$relative"
     changed=$((changed + 1))
   fi
-done < <(find "$OVERLAY_ROOT" -type f | sort)
+done < <(find "$OVERLAY_ROOT" -type f ! -path '*/__pycache__/*' ! -name '*.pyc' | sort)
 
 if [[ "$missing" -gt 0 || "$changed" -gt 0 ]]; then
   printf 'Dogfood overlay drift detected: %s missing, %s changed\n' "$missing" "$changed" >&2

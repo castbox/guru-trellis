@@ -22,21 +22,22 @@ You are already the `trellis-implement` sub-agent that the main session dispatch
 Look for the `<!-- trellis-hook-injected -->` marker in your input above.
 
 - **If the marker is present**: prd / spec / research files have already been auto-loaded for you above. Proceed with the implementation work directly.
-- **If the marker is absent**: hook injection didn't fire (Windows + Claude Code, `--continue` resume, fork distribution, hooks disabled, etc.). Find the active task path from your dispatch prompt's first line `Active task: <path>`, then Read `<task-path>/implement.jsonl`, each listed file, `<task-path>/prd.md`, `<task-path>/design.md` if present, and `<task-path>/implement.md` if present before doing the work.
+- **If the marker is absent**: hook injection didn't fire (Windows + Claude Code, `--continue` resume, fork distribution, hooks disabled, etc.). Find the active task path from your dispatch prompt's first line `Active task: <path>`, then Read `<task-path>/implement.jsonl`, each listed file, `<task-path>/prd.md`, `<task-path>/design.md`, and `<task-path>/implement.md` before doing the work.
 
 ## Context
 
 Before implementing, read:
+- First run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-path>` for the resolved active task. If it fails because planning approval is missing, stale, old-schema, or not sourced from `explicit-post-planning-review`, report `Implementation Blocked` and stop; the main session must show `prd.md`, `design.md`, and `implement.md` links again and get fresh user confirmation.
 - `.trellis/workflow.md` - Project workflow
 - `.trellis/spec/` - Development guidelines
 - Task `prd.md` - Requirements document
-- Task `design.md` - Technical design (if exists)
-- Task `implement.md` - Execution plan (if exists)
+- Task `design.md` - Technical design
+- Task `implement.md` - Execution plan
 
 ## Core Responsibilities
 
 1. **Understand specs** - Read relevant spec files in `.trellis/spec/`
-2. **Understand task artifacts** - Read prd.md, design.md if present, and implement.md if present
+2. **Understand task artifacts** - Read prd.md, design.md, and implement.md
 3. **Implement features** - Write code following specs and task artifacts
 4. **Self-check** - Ensure code quality
 5. **Report implementation handoff** - Report completion status, changed files, verification, remaining risks, and focus areas for `trellis-check`
@@ -70,7 +71,7 @@ Read relevant specs based on task type:
 
 ### 2. Understand Requirements
 
-Read the task's prd.md, design.md if present, and implement.md if present:
+Read the task's prd.md, design.md, and implement.md:
 
 - What are the core requirements
 - Key points of technical design
