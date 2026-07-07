@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 29
+- **Total Sessions**: 30
 - **Last Active**: 2026-07-08
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~967 | Active |
+| `journal-1.md` | ~1000 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 30 | 2026-07-08 | 完成：#52 prd/design/implement 文档需要显式用户审核 | `16c240ba890e6997f7ea131ecaa528db84607705` | `codex/052-explicit-planning-review` |
 | 29 | 2026-07-08 | 完成：#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行 | `80ef050bd27f6556b3896b23a59447957225baab` | `codex/072-subagent-execution-boundaries` |
 | 28 | 2026-07-07 | 完成：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果 | `413713cc8cf0ce4f04377e00609d0e6801b3b856` | `codex/062-subagent-timeout-stale-policy` |
 | 27 | 2026-07-07 | 完成：#57 统一业务项目 Trellis 文档语言为中文 | `c19b9e2af89399f2b7fbd8f0f0ef26bc44b83dc8` | `codex/057-chinese-doc-language` |
