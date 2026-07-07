@@ -293,7 +293,7 @@ def _get_task_status(trellis_dir: Path, hook_input: dict) -> str:
     return (
         f"Status: {task_status.upper()}\nTask: {task_title}\nPresent: {present_line}\n"
         "Next: Follow the matching per-turn workflow-state. Context order is jsonl entries, "
-        "prd.md, design.md if present, implement.md if present."
+        "prd.md, required design.md, and required implement.md."
     )
 
 

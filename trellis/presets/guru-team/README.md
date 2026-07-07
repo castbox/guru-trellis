@@ -105,8 +105,10 @@ The script creates a temporary Git repo, runs `trellis init -y` with the
 `--platform codex --platform cursor`, checks that `.trellis/workflow.md`
 exists, verifies that `check-env.sh` and `version.sh` are executable, asserts
 `.trellis/guru-team/extension.json` exists, asserts `.claude/` was not created,
-asserts Codex / Cursor SessionStart hooks and Trellis meta task-system docs no
-longer contain legacy `PRD-only` planning hints,
+asserts Codex / Cursor SessionStart hooks, Cursor sub-agent context hook,
+brainstorm/check/before-dev skills, and Trellis meta planning references no
+longer contain legacy `PRD-only` / lightweight / optional-design planning
+hints,
 asserts target `.trellis/spec/**`, workspace indexes, and
 `00-bootstrap-guidelines` do not retain known English documentation language
 requirements, and runs `check-env --json` plus `version.sh --json`. Trellis CLI accepts
@@ -172,6 +174,9 @@ Shared overlays are always installed:
 - `.trellis/agents/implement.md`
 - `.trellis/agents/check.md`
 - `.agents/skills/trellis-start/SKILL.md`
+- `.agents/skills/trellis-brainstorm/SKILL.md`
+- `.agents/skills/trellis-before-dev/SKILL.md`
+- `.agents/skills/trellis-check/SKILL.md`
 - `.agents/skills/trellis-continue/SKILL.md`
 - `.agents/skills/trellis-finish-work/SKILL.md`
 
@@ -188,7 +193,11 @@ Default Codex overlays are installed when no platform flag is provided, or when
 - `.codex/skills/trellis-start/SKILL.md`
 - `.codex/skills/trellis-continue/SKILL.md`
 - `.codex/skills/trellis-finish-work/SKILL.md`
+- `.agents/skills/trellis-meta/references/customize-local/change-workflow.md`
+- `.agents/skills/trellis-meta/references/customize-local/change-context-loading.md`
+- `.agents/skills/trellis-meta/references/local-architecture/context-injection.md`
 - `.agents/skills/trellis-meta/references/local-architecture/task-system.md`
+- `.agents/skills/trellis-meta/references/platform-files/agents.md`
 
 Default Cursor overlays are installed when no platform flag is provided, or when
 `--platform cursor` / `--all-platforms` is used:
@@ -197,9 +206,17 @@ Default Cursor overlays are installed when no platform flag is provided, or when
 - `.cursor/agents/trellis-check.md`
 - `.cursor/agents/trellis-research.md`
 - `.cursor/hooks/session-start.py`
+- `.cursor/hooks/inject-subagent-context.py`
 - `.cursor/commands/trellis-continue.md`
 - `.cursor/commands/trellis-finish-work.md`
+- `.cursor/skills/trellis-brainstorm/SKILL.md`
+- `.cursor/skills/trellis-before-dev/SKILL.md`
+- `.cursor/skills/trellis-check/SKILL.md`
+- `.cursor/skills/trellis-meta/references/customize-local/change-workflow.md`
+- `.cursor/skills/trellis-meta/references/customize-local/change-context-loading.md`
+- `.cursor/skills/trellis-meta/references/local-architecture/context-injection.md`
 - `.cursor/skills/trellis-meta/references/local-architecture/task-system.md`
+- `.cursor/skills/trellis-meta/references/platform-files/agents.md`
 
 Claude overlays are installed only when `--platform claude` or `--all-platforms`
 is used:

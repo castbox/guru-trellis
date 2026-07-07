@@ -9,6 +9,9 @@ duplicating the full workflow.
 Reference overlay groups:
 
 - `.agents/skills/trellis-start/SKILL.md`
+- `.agents/skills/trellis-brainstorm/SKILL.md`
+- `.agents/skills/trellis-before-dev/SKILL.md`
+- `.agents/skills/trellis-check/SKILL.md`
 - `.agents/skills/trellis-continue/SKILL.md`
 - `.agents/skills/trellis-finish-work/SKILL.md`
 - `.trellis/agents/implement.md`
@@ -21,12 +24,24 @@ Reference overlay groups:
 - `.cursor/agents/trellis-check.md`
 - `.cursor/agents/trellis-research.md`
 - `.cursor/hooks/session-start.py`
+- `.cursor/hooks/inject-subagent-context.py`
 - `.codex/prompts/trellis-start.md`
 - `.codex/skills/trellis-continue/SKILL.md`
 - `.claude/commands/trellis/continue.md`
 - `.cursor/commands/trellis-finish-work.md`
 - `.agents/skills/trellis-meta/references/local-architecture/task-system.md`
+- `.agents/skills/trellis-meta/references/local-architecture/context-injection.md`
+- `.agents/skills/trellis-meta/references/customize-local/change-context-loading.md`
+- `.agents/skills/trellis-meta/references/customize-local/change-workflow.md`
+- `.agents/skills/trellis-meta/references/platform-files/agents.md`
+- `.cursor/skills/trellis-brainstorm/SKILL.md`
+- `.cursor/skills/trellis-before-dev/SKILL.md`
+- `.cursor/skills/trellis-check/SKILL.md`
 - `.cursor/skills/trellis-meta/references/local-architecture/task-system.md`
+- `.cursor/skills/trellis-meta/references/local-architecture/context-injection.md`
+- `.cursor/skills/trellis-meta/references/customize-local/change-context-loading.md`
+- `.cursor/skills/trellis-meta/references/customize-local/change-workflow.md`
+- `.cursor/skills/trellis-meta/references/platform-files/agents.md`
 
 ## Required Content
 
@@ -104,14 +119,15 @@ Start entries must:
   tasks unless explicitly requested
 - treat `handoff.json` as intake provenance only
 
-SessionStart and trellis-meta reference overlays must:
+SessionStart, sub-agent context injection, brainstorm, and trellis-meta reference overlays must:
 
 - stay context-injection/documentation surfaces only; do not move AI planning
   sufficiency judgment into Python hooks
-- avoid legacy `PRD-only` or optional planning wording for Guru Team start
-  gates; if they mention native Trellis optional files, they must explicitly
-  say Guru Team requires `prd.md`, `design.md`, and `implement.md` before
-  implementation
+- avoid legacy `PRD-only`, lightweight-PRD-only, or optional design/implement
+  planning wording for Guru Team start gates; if they mention native Trellis
+  optional planning behavior, they must explicitly say it is not the Guru Team
+  start gate and that Guru Team requires `prd.md`, `design.md`, and
+  `implement.md` before implementation
 - point agents back to workflow-state / `.trellis/workflow.md` for the full
   process instead of duplicating the workflow in hooks
 

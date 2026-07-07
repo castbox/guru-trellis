@@ -1,3 +1,5 @@
+<!-- guru-team-overlay: v1 -->
+
 # Change Local Context Loading
 
 Context loading determines when AI reads workflow, task, spec, research, workspace, and git status. Read this page when the user says "AI does not know the current task," "the agent did not read specs," or "there is too much/too little context."
@@ -69,8 +71,8 @@ In both modes, make sure the agent ultimately reads:
 2. the corresponding JSONL
 3. spec/research referenced by the JSONL
 4. `prd.md`
-5. `design.md` if present
-6. `implement.md` if present
+5. required `design.md`
+6. required `implement.md`
 
 ## Troubleshooting Order
 

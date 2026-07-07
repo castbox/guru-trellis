@@ -24,8 +24,8 @@ The Trellis task system is stored entirely under `.trellis/tasks/` in the user p
 | --- | --- |
 | `task.json` | Task metadata: status, assignee, priority, branch, parent/child tasks, and similar fields. |
 | `prd.md` | Requirements, constraints, and acceptance criteria. |
-| `design.md` | Technical design: boundaries, contracts, data flow, compatibility, tradeoffs. Some native Trellis workflows treat it as optional for lightweight tasks; Guru Team requires it before implementation. |
-| `implement.md` | Execution plan: ordered checklist, validation commands, review gates, rollback points. Some native Trellis workflows treat it as optional for lightweight tasks; Guru Team requires it before implementation. |
+| `design.md` | Technical design: boundaries, contracts, data flow, compatibility, tradeoffs. Native Trellis templates may vary, but Guru Team requires this document before implementation. |
+| `implement.md` | Execution plan: ordered checklist, validation commands, review gates, rollback points. Native Trellis templates may vary, but Guru Team requires this document before implementation. |
 | `implement.jsonl` | List of spec/research files the implement agent must read first. |
 | `check.jsonl` | List of spec/research files the check agent must read first. |
 | `research/` | Research artifacts. Complex findings should not live only in chat. |
@@ -73,7 +73,7 @@ python3 ./.trellis/scripts/task.py remove-subtask <parent-dir> <child-dir>
 
 `children` on the parent is a historical list. When a child is archived, Trellis keeps that child name in the parent so progress like `[2/3 done]` remains meaningful after completed children move to `archive/`.
 
-The AI should not treat phase numbers as task status. Task progress is mainly determined by `status`, artifact presence (`prd.md`, optional `design.md` / `implement.md`), whether JSONL context is configured for sub-agent mode, and the phase descriptions in `workflow.md`.
+The AI should not treat phase numbers as task status. Task progress is mainly determined by `status`, Guru Team planning artifact presence (`prd.md`, `design.md`, and `implement.md` are all required before implementation), whether JSONL context is configured for sub-agent mode, and the phase descriptions in `workflow.md`.
 
 ## Active Task
 

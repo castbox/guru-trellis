@@ -1,65 +1,66 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-07T18:27:14Z",
+  "generated_at": "2026-07-07T19:28:59Z",
   "task_dir": ".trellis/tasks/07-08-052-explicit-planning-review",
   "base_branch": "main",
-  "head": "c1007f6283fbc04494a03f6ef7dc2a45c7984b10",
+  "head": "011d4247b6f632b4a76f89a79c3a33ce2420d4a1",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".agents/skills/trellis-continue/SKILL.md",
+    ".agents/skills/trellis-before-dev/SKILL.md",
+    ".agents/skills/trellis-brainstorm/SKILL.md",
+    ".agents/skills/trellis-check/SKILL.md",
+    ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md",
+    ".agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+    ".agents/skills/trellis-meta/references/local-architecture/context-injection.md",
     ".agents/skills/trellis-meta/references/local-architecture/task-system.md",
-    ".claude/agents/trellis-implement.md",
-    ".claude/commands/trellis/continue.md",
+    ".agents/skills/trellis-meta/references/platform-files/agents.md",
+    ".claude/agents/trellis-check.md",
     ".codex/agents/trellis-check.toml",
-    ".codex/agents/trellis-implement.toml",
     ".codex/hooks/session-start.py",
-    ".codex/prompts/trellis-continue.md",
-    ".codex/skills/trellis-continue/SKILL.md",
-    ".cursor/agents/trellis-implement.md",
-    ".cursor/commands/trellis-continue.md",
+    ".cursor/agents/trellis-check.md",
+    ".cursor/hooks/inject-subagent-context.py",
     ".cursor/hooks/session-start.py",
+    ".cursor/skills/trellis-before-dev/SKILL.md",
+    ".cursor/skills/trellis-brainstorm/SKILL.md",
+    ".cursor/skills/trellis-check/SKILL.md",
+    ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md",
+    ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+    ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md",
     ".cursor/skills/trellis-meta/references/local-architecture/task-system.md",
-    ".trellis/agents/implement.md",
+    ".cursor/skills/trellis-meta/references/platform-files/agents.md",
+    ".trellis/agents/check.md",
     ".trellis/guru-team/extension.json",
     ".trellis/guru-team/handoff.json",
-    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
     ".trellis/spec/preset/installer.md",
     ".trellis/spec/preset/overlay-guidelines.md",
-    ".trellis/spec/workflow/companion-scripts.md",
-    ".trellis/spec/workflow/data-contracts.md",
-    ".trellis/spec/workflow/quality-guidelines.md",
-    ".trellis/spec/workflow/workflow-contract.md",
-    ".trellis/workflow.md",
-    "README.md",
-    "docs/requirements/guru-team-trellis-flow.md",
-    "docs/requirements/requirement-main.md",
     "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
-    "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
-    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/local-architecture/task-system.md",
+    "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
     "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
-    "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
-    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
-    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
-    "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
-    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
-    "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
-    "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+    "trellis/presets/guru-team/overlays/.codex/hooks/session-start.py",
+    "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+    "trellis/presets/guru-team/overlays/.cursor/hooks/session-start.py",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/local-architecture/task-system.md",
+    "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
     "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
     "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
     "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-    "trellis/workflows/guru-team/README.md",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    "trellis/workflows/guru-team/workflow.md",
-    ".trellis/tasks/07-08-052-explicit-planning-review/",
-    "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/",
-    "trellis/presets/guru-team/overlays/.codex/hooks/",
-    "trellis/presets/guru-team/overlays/.cursor/hooks/",
-    "trellis/presets/guru-team/overlays/.cursor/skills/"
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-before-dev/",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-brainstorm/",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-check/",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/customize-local/",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/local-architecture/context-injection.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/platform-files/",
+    "trellis/presets/guru-team/overlays/.cursor/hooks/inject-subagent-context.py",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-before-dev/",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-brainstorm/",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-check/",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/customize-local/",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/local-architecture/context-injection.md",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/platform-files/"
   ],
-  "checker": "trellis-check:019f3db5-0d00-77e0-855f-5c17cc094b07",
-  "check_summary": "阶段二检查代理已按 #52 task artifacts、spec、当前 diff、canonical/dogfood overlay、installer、throwaway install 与验证命令完成 Phase 2 检查；前一轮发现的 P2 fresh install stale PRD-only hook/meta 文案已由实现代理修复，并由同一检查代理复查闭环；当前无 P0/P1/P2/P3 findings。",
+  "checker": "019f3db5-0d00-77e0-855f-5c17cc094b07 阶段二检查代理",
+  "check_summary": "阶段二检查代理复查 Branch Review Gate blocker 修复后确认无未修复 findings；P1/P2 stale PRD-only / optional planning surfaces 已在 canonical overlays、dogfood installed copies、installer replacement、throwaway verification 与 docs/spec 中闭环，并自修复 trellis-before-dev、trellis-check、context-injection、check-agent、Cursor hook 等额外 stale surfaces。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-08-052-explicit-planning-review/prd.md",
@@ -92,13 +93,43 @@
       "modified_at": "2026-07-07T17:13:18.398660+00:00"
     },
     {
+      "path": ".trellis/tasks/07-08-052-explicit-planning-review/check.jsonl",
+      "sha256": "667e81f8058faade98fd969155b503c2ee1f1468f56714a8c302a3e8a134400d",
+      "size_bytes": 10090,
+      "modified_at": "2026-07-07T19:22:09.554098+00:00"
+    },
+    {
       "path": ".trellis/tasks/07-08-052-explicit-planning-review/agent-assignment.json",
-      "sha256": "19ba3e72029df727c99a7739993ca7ced9acad271c0c67621329ba54d3bfba0e",
-      "size_bytes": 8240,
-      "modified_at": "2026-07-07T18:26:45.961868+00:00"
+      "sha256": "630c62faa7b735f0db245dd4ce95b899ae50f06c9f2e346624fe9e96b63d45dd",
+      "size_bytes": 17107,
+      "modified_at": "2026-07-07T19:26:50.016421+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-052-explicit-planning-review/review.md",
+      "sha256": "72cb5ea1a2c84daf3bde953bfaf031bd8ce0fc29acbeec7ed5cb1d004a3721bc",
+      "size_bytes": 4901,
+      "modified_at": "2026-07-07T18:44:15.281061+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-052-explicit-planning-review/review-gate.json",
+      "sha256": "1575c4bec50401a73176c2a679e6c5417183116a181b5eca87cf6bb4594b8edb",
+      "size_bytes": 18351,
+      "modified_at": "2026-07-07T18:44:48.223835+00:00"
     }
   ],
   "checked_specs": [
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "f5fb68b573053f79e51045e73d4e8b457e0a8db115f4ff4e5cbd8290647c9253",
+      "size_bytes": 10032,
+      "modified_at": "2026-07-07T19:19:27.286489+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "efa3d71fe8592f98c37787bf22e8d65974fbdf6e3ec28bc7d265c5247c83a411",
+      "size_bytes": 9361,
+      "modified_at": "2026-07-07T19:19:27.287023+00:00"
+    },
     {
       "path": ".trellis/spec/workflow/workflow-contract.md",
       "sha256": "eb83a6b128fd212c9659934a43b9c7e98e48125591b44e3e8da783159b954c87",
@@ -106,40 +137,10 @@
       "modified_at": "2026-07-07T17:34:36.396054+00:00"
     },
     {
-      "path": ".trellis/spec/workflow/companion-scripts.md",
-      "sha256": "74530343dd2e5e75a06488f5ea0b268d4c8fe6356f44cbedf5c42524ac3f889f",
-      "size_bytes": 12339,
-      "modified_at": "2026-07-07T17:34:36.396810+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/data-contracts.md",
-      "sha256": "6a13445d53bcd15cdca267937981bd0a5bc61262989806c8f623553f7f9db84a",
-      "size_bytes": 19186,
-      "modified_at": "2026-07-07T17:46:32.944737+00:00"
-    },
-    {
       "path": ".trellis/spec/workflow/quality-guidelines.md",
       "sha256": "1f495cf83ebbe7873bf35d2ec684722cd4ce27e72e425405dc82e947f5c0b20a",
       "size_bytes": 5098,
       "modified_at": "2026-07-07T17:46:59.429293+00:00"
-    },
-    {
-      "path": ".trellis/spec/preset/installer.md",
-      "sha256": "03e540963edf4e4eae86214925b3862079af48645117678eaf30def99294c8d7",
-      "size_bytes": 9733,
-      "modified_at": "2026-07-07T18:09:10.104391+00:00"
-    },
-    {
-      "path": ".trellis/spec/preset/overlay-guidelines.md",
-      "sha256": "1f177d8e46e2b0b81c08be1b4bc328083c97d211ffa3ddf17850c7c95a541eda",
-      "size_bytes": 8276,
-      "modified_at": "2026-07-07T18:08:58.354012+00:00"
-    },
-    {
-      "path": ".trellis/spec/docs/public-docs.md",
-      "sha256": "3dcb9e138dc54489b539b7d2f579ef68bfcdfb3c293fad5a80ceafdf4c5cb64e",
-      "size_bytes": 4343,
-      "modified_at": "2026-07-07T17:08:53.743358+00:00"
     }
   ],
   "coverage": {
@@ -155,51 +156,47 @@
   "validation_commands": [
     {
       "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "result": "pass, 25 tests"
+      "result": "OK, 26 tests"
     },
     {
       "command": "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "result": "pass, 143 tests"
-    },
-    {
-      "command": "python3 .codex/hooks/test_inject_workflow_state.py",
-      "result": "pass, 7 tests"
-    },
-    {
-      "command": "python3 -m py_compile workflow helper, installed helper, preset installer, Codex/Cursor hooks",
-      "result": "pass"
-    },
-    {
-      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
-      "result": "pass"
-    },
-    {
-      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh --repo .",
-      "result": "pass"
-    },
-    {
-      "command": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "result": "pass"
-    },
-    {
-      "command": "manual throwaway grep for stale PRD-only / Lightweight task can / Missing optional artifacts / skipped for lightweight tasks",
-      "result": "pass, no stale matches in Codex/Cursor hooks or trellis-meta task-system surfaces"
-    },
-    {
-      "command": "./.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task .trellis/tasks/07-08-052-explicit-planning-review",
-      "result": "pass"
+      "result": "OK, 143 tests"
     },
     {
       "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-08-052-explicit-planning-review",
-      "result": "pass"
+      "result": "OK, implement.jsonl 24 entries and check.jsonl 57 entries"
     },
     {
-      "command": "python3 -m json.tool trellis/index.json",
-      "result": "pass"
+      "command": "rg stale planning phrases across .agents/.cursor/.codex/.claude/.trellis/agents and canonical overlays",
+      "result": "OK, no output"
     },
     {
-      "command": "git diff --check HEAD",
-      "result": "pass"
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms --json",
+      "result": "OK, overlays unchanged after sync, no .new/.bak"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh --repo .",
+      "result": "OK"
+    },
+    {
+      "command": "python3 -m py_compile workflow/preset scripts and Codex/Cursor hooks",
+      "result": "OK"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "OK"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json && git diff --check HEAD",
+      "result": "OK"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "result": "OK, fresh install replaced before-dev/brainstorm/check/meta/context/hook/check-agent surfaces"
+    },
+    {
+      "command": "find . -name '*.new' -o -name '*.bak' -o -name '*.pyc'",
+      "result": "OK, no output after cleanup"
     }
   ],
   "findings": [],

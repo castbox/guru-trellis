@@ -21,5 +21,37 @@
 {"file": "trellis/presets/guru-team/overlays/.codex/hooks/session-start.py", "reason": "检查 Codex SessionStart overlay 是否 canonical 且无 PRD-only wording。"}
 {"file": "trellis/presets/guru-team/overlays/.cursor/hooks/session-start.py", "reason": "检查 Cursor SessionStart overlay 是否 canonical 且无 PRD-only wording。"}
 {"file": "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/local-architecture/task-system.md", "reason": "检查 Cursor trellis-meta reference 是否 canonical 且无 PRD-only wording。"}
+{"file": "trellis/presets/guru-team/overlays/.agents/skills/trellis-brainstorm/SKILL.md", "reason": "检查 shared brainstorm overlay 是否要求三文档与 explicit post-planning confirmation。"}
+{"file": "trellis/presets/guru-team/overlays/.cursor/skills/trellis-brainstorm/SKILL.md", "reason": "检查 Cursor brainstorm overlay 是否与 shared/canonical 三文档门禁一致。"}
+{"file": "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/customize-local/change-workflow.md", "reason": "检查 shared change-workflow reference 是否不再保留 PRD-only start path。"}
+{"file": "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md", "reason": "检查 Cursor change-workflow reference 是否不再保留 PRD-only start path。"}
+{"file": "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/platform-files/agents.md", "reason": "检查 shared agents reference 是否不再把 design.md / implement.md 建模为 optional。"}
+{"file": "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/platform-files/agents.md", "reason": "检查 Cursor agents reference 是否不再把 design.md / implement.md 建模为 optional。"}
+{"file": "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/local-architecture/context-injection.md", "reason": "检查 shared context-injection reference 是否使用 required 三文档 context 顺序。"}
+{"file": "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/local-architecture/context-injection.md", "reason": "检查 Cursor context-injection reference 是否使用 required 三文档 context 顺序。"}
+{"file": "trellis/presets/guru-team/overlays/.cursor/hooks/inject-subagent-context.py", "reason": "检查 Cursor sub-agent context hook 是否不再注入 optional design/implement 文案。"}
+{"file": "trellis/presets/guru-team/overlays/.trellis/agents/check.md", "reason": "检查 channel check agent 是否使用 required 三文档检查上下文。"}
+{"file": "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml", "reason": "检查 Codex check agent 是否使用 required 三文档检查上下文。"}
+{"file": "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md", "reason": "检查 Claude check agent 是否不再提示 design.md / implement.md optional。"}
+{"file": "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md", "reason": "检查 Cursor check agent 是否不再提示 design.md / implement.md optional。"}
+{"file": "trellis/presets/guru-team/overlays/.agents/skills/trellis-before-dev/SKILL.md", "reason": "检查 shared before-dev skill 是否使用 required 三文档读取顺序。"}
+{"file": "trellis/presets/guru-team/overlays/.cursor/skills/trellis-before-dev/SKILL.md", "reason": "检查 Cursor before-dev skill 是否使用 required 三文档读取顺序。"}
+{"file": "trellis/presets/guru-team/overlays/.agents/skills/trellis-check/SKILL.md", "reason": "检查 shared check skill 是否使用 required 三文档读取顺序。"}
+{"file": "trellis/presets/guru-team/overlays/.cursor/skills/trellis-check/SKILL.md", "reason": "检查 Cursor check skill 是否使用 required 三文档读取顺序。"}
+{"file": "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/customize-local/change-context-loading.md", "reason": "检查 shared change-context-loading reference 是否不再把 design.md / implement.md 建模为 optional。"}
+{"file": "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/customize-local/change-context-loading.md", "reason": "检查 Cursor change-context-loading reference 是否不再把 design.md / implement.md 建模为 optional。"}
 {"file": ".codex/hooks/session-start.py", "reason": "检查 Codex SessionStart 不再提示 PRD-only start review。"}
 {"file": ".cursor/hooks/session-start.py", "reason": "检查 Cursor SessionStart 不再提示 PRD-only start review。"}
+{"file": ".cursor/hooks/inject-subagent-context.py", "reason": "检查 dogfood Cursor sub-agent context hook 与 canonical required 三文档语义一致。"}
+{"file": ".trellis/agents/check.md", "reason": "检查 dogfood channel check agent 与 canonical required 三文档语义一致。"}
+{"file": ".codex/agents/trellis-check.toml", "reason": "检查 dogfood Codex check agent 与 canonical required 三文档语义一致。"}
+{"file": ".claude/agents/trellis-check.md", "reason": "检查 dogfood Claude check agent 与 canonical required 三文档语义一致。"}
+{"file": ".cursor/agents/trellis-check.md", "reason": "检查 dogfood Cursor check agent 与 canonical required 三文档语义一致。"}
+{"file": ".agents/skills/trellis-before-dev/SKILL.md", "reason": "检查 dogfood shared before-dev skill 与 canonical required 三文档语义一致。"}
+{"file": ".cursor/skills/trellis-before-dev/SKILL.md", "reason": "检查 dogfood Cursor before-dev skill 与 canonical required 三文档语义一致。"}
+{"file": ".agents/skills/trellis-check/SKILL.md", "reason": "检查 dogfood shared check skill 与 canonical required 三文档语义一致。"}
+{"file": ".cursor/skills/trellis-check/SKILL.md", "reason": "检查 dogfood Cursor check skill 与 canonical required 三文档语义一致。"}
+{"file": ".agents/skills/trellis-meta/references/local-architecture/context-injection.md", "reason": "检查 dogfood shared context-injection reference 与 canonical required 三文档语义一致。"}
+{"file": ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md", "reason": "检查 dogfood Cursor context-injection reference 与 canonical required 三文档语义一致。"}
+{"file": ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md", "reason": "检查 dogfood shared change-context-loading reference 与 canonical required 三文档语义一致。"}
+{"file": ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md", "reason": "检查 dogfood Cursor change-context-loading reference 与 canonical required 三文档语义一致。"}

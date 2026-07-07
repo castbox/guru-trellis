@@ -412,6 +412,30 @@ def looks_like_trellis_generated_entry(relative: Path, target: Path) -> bool:
     if is_known_entry_path and has_trellis_generated_signal:
         return True
 
+    is_brainstorm_skill = rel in {
+        ".agents/skills/trellis-brainstorm/SKILL.md",
+        ".cursor/skills/trellis-brainstorm/SKILL.md",
+    }
+    if (
+        is_brainstorm_skill
+        and "# Trellis Brainstorm" in text
+        and ("PRD Convergence Pass" in text or "trellis-brainstorm" in lower)
+    ):
+        return True
+
+    is_check_or_before_dev_skill = rel in {
+        ".agents/skills/trellis-check/SKILL.md",
+        ".cursor/skills/trellis-check/SKILL.md",
+        ".agents/skills/trellis-before-dev/SKILL.md",
+        ".cursor/skills/trellis-before-dev/SKILL.md",
+    }
+    if (
+        is_check_or_before_dev_skill
+        and ("# Code Quality Check" in text or "Read the relevant development guidelines" in text)
+        and "prd.md" in text
+    ):
+        return True
+
     is_session_start_hook = rel in {
         ".codex/hooks/session-start.py",
         ".cursor/hooks/session-start.py",
@@ -424,14 +448,48 @@ def looks_like_trellis_generated_entry(relative: Path, target: Path) -> bool:
     ):
         return True
 
-    is_trellis_meta_task_system = rel in {
+    is_cursor_subagent_context_hook = rel == ".cursor/hooks/inject-subagent-context.py"
+    if (
+        is_cursor_subagent_context_hook
+        and "Multi-Platform Sub-Agent Context Injection Hook" in text
+        and "implement.jsonl" in text
+        and "check.jsonl" in text
+    ):
+        return True
+
+    is_trellis_meta_reference = rel in {
         ".agents/skills/trellis-meta/references/local-architecture/task-system.md",
         ".cursor/skills/trellis-meta/references/local-architecture/task-system.md",
+        ".agents/skills/trellis-meta/references/local-architecture/context-injection.md",
+        ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md",
+        ".agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+        ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+        ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md",
+        ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md",
+        ".agents/skills/trellis-meta/references/platform-files/agents.md",
+        ".cursor/skills/trellis-meta/references/platform-files/agents.md",
     }
+    has_trellis_meta_reference_signal = any(
+        signal in text
+        for signal in [
+            "# Local Task System",
+            "# Local Context Injection System",
+            "# Change Local Workflow",
+            "# Change Local Context Loading",
+            "# Change Context Loading",
+            "# Agents",
+        ]
+    ) and any(
+        signal in text
+        for signal in [
+            ".trellis/tasks/",
+            ".trellis/workflow.md",
+            "trellis-implement",
+        ]
+    )
     if (
-        is_trellis_meta_task_system
-        and "# Local Task System" in text
-        and ".trellis/tasks/" in text
+        is_trellis_meta_reference
+        and has_trellis_meta_reference_signal
     ):
         return True
 
