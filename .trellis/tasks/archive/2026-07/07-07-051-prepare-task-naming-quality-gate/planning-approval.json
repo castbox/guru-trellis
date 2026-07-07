@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T06:43:31Z",
+  "task_dir": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate",
+  "head": "7d877da12e4e009485b77b36e9043f3c0745905e",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已复核当前 prd.md、design.md、implement.md：规划仍完整承接 issue #51 和用户原始 prepare-task 命名门禁要求；Phase 2 后补充的 artifact 说明只澄清 Docs SSOT / 测试覆盖责任，不改变需求、设计边界或实现范围。",
+  "user_confirmation": {
+    "source": "workflow",
+    "message": "用户已明确要求走标准 Trellis 路径并继续推进；当前重录仅修复 planning approval artifact hash 与已复核规划文件现状不一致的问题，不扩大已批准实现范围。"
+  },
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/prd.md",
+      "sha256": "479f0dbf953817fae34ceee31780fda8812ca04501f26b896cedc04d1cee0d08",
+      "size_bytes": 3557,
+      "modified_at": "2026-07-07T05:38:20.058070+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/design.md",
+      "sha256": "25469e37a3b2b6fbf44fb908af4eeb87eed35052d962d124129c484fc2ad7660",
+      "size_bytes": 5043,
+      "modified_at": "2026-07-07T06:20:58.097027+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/implement.md",
+      "sha256": "83b68eba5b71464757a59ac78c89589c0643e5349b231f8b57bcf08a13701a6a",
+      "size_bytes": 2403,
+      "modified_at": "2026-07-07T05:38:20.058348+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

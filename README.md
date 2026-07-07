@@ -264,15 +264,25 @@ Guru Team issue intake 和 worktree preflight。对 issue-backed、task-like 或
 
 默认 `prepare-task.sh --json` 只是 intake/preflight planner：它可以读取明确提供的
 issue、搜索重复候选，并输出 proposed issue、base branch、branch name、workspace
-path 和 create-task command，但不会创建 GitHub issue、worktree、branch 或 Trellis
-task，也不会在未确认 source issue 时写 `.trellis/guru-team/handoff.json`。没有 source
-issue 的 freeform 请求必须先由 AI 展示 proposed issue title/body 和 duplicate
-evidence；stdout JSON 会标记 `handoff_written: false`。用户确认后才可用
+path、create-task command 和 `naming_quality`，但不会创建 GitHub issue、worktree、
+branch 或 Trellis task，也不会在未确认 source issue 时写
+`.trellis/guru-team/handoff.json`。没有 source issue 的 freeform 请求必须先由 AI 展示
+proposed issue title/body、duplicate evidence 和 naming quality；stdout JSON 会标记
+`handoff_written: false`。用户确认后才可用
 `--create-issue-confirmed --issue-title ... --issue-body-file ...` 执行 GitHub issue
 创建；`--create-worktree` / `--create-task` 同样只用于 handoff review 之后的显式执行。
 当 `workspace_mode: worktree` 时，执行环境和 task 创建应通过
 `prepare-task --create-worktree --create-task` 或等价 Guru Team 受控入口完成，不能把
 task creation consent 当成在 source checkout 直接运行 `task.py create` 的批准。
+AI 在读取 issue 后应生成语义英文 short-name，并用 `--short-name`、
+`--workspace-slug`、`--task-slug` 和 `--branch` 传给 prepare 脚本。推荐 worktree/task
+slug 格式是 `NNN-business-capability`，branch 格式是
+`codex/NNN-business-capability`，例如
+`052-resume-detail-inline-attachment-preview`。中文或非 ASCII 标题不依赖拼音
+transliteration 作为默认分支名；脚本不做智能翻译，只做确定性拼装、冲突检查和低信息命名
+门禁。低信息名称如 `issue-52`、`52-issue-52`、纯编号或仅包含 `bug` / `fix` /
+`task` / `work` / `update` / `change` 等通用词时，executor 路径会在创建 worktree、
+branch 或 Trellis task 前阻断。
 这些 executor 路径创建 worktree 前会先刷新所选 base branch，记录
 `preflight.base_freshness`，并在本地 base 落后时只做安全 fast-forward；如果本地 base
 与远端分叉或 freshness 无法确认，会阻塞而不是从过期 ref 创建任务分支。

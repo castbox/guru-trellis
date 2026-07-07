@@ -1,21 +1,65 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 40,
-    "url": "https://github.com/castbox/guru-trellis/issues/40",
-    "title": "扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail",
+    "number": 51,
+    "url": "https://github.com/castbox/guru-trellis/issues/51",
+    "title": "修正 prepare-task 命名质量门禁",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/40-workflow-state-completed-closeout-pr/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "workflow-state-completed-closeout-pr",
-  "task_slug": "40-workflow-state-completed-closeout-pr",
-  "task_title": "#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail",
-  "branch_name": "codex/40-workflow-state-completed-closeout-pr",
+  "slug": "051-prepare-task-naming-quality-gate",
+  "naming_quality": {
+    "ok": true,
+    "reason": "naming includes enough business tokens",
+    "requires_semantic_name": false,
+    "current_slug": "051-prepare-task-naming-quality-gate",
+    "current_surface": "workspace_slug",
+    "suggested_override_flags": [],
+    "checked_names": {
+      "task_slug": {
+        "ok": true,
+        "slug": "051-prepare-task-naming-quality-gate",
+        "reason": "ok",
+        "business_tokens": [
+          "prepare",
+          "naming",
+          "quality",
+          "gate"
+        ]
+      },
+      "workspace_slug": {
+        "ok": true,
+        "slug": "051-prepare-task-naming-quality-gate",
+        "reason": "ok",
+        "business_tokens": [
+          "prepare",
+          "naming",
+          "quality",
+          "gate"
+        ]
+      },
+      "branch_name": {
+        "ok": true,
+        "slug": "051-prepare-task-naming-quality-gate",
+        "reason": "ok",
+        "business_tokens": [
+          "prepare",
+          "naming",
+          "quality",
+          "gate"
+        ]
+      }
+    }
+  },
+  "task_slug": "051-prepare-task-naming-quality-gate",
+  "task_title": "#51 修正 prepare-task 命名质量门禁",
+  "branch_name": "codex/051-prepare-task-naming-quality-gate",
+  "workspace_slug": "051-prepare-task-naming-quality-gate",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/40-workflow-state-completed-closeout-pr",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -26,30 +70,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail",
+    "#51 修正 prepare-task 命名质量门禁",
     "--slug",
-    "40-workflow-state-completed-closeout-pr",
+    "051-prepare-task-naming-quality-gate",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-06-40-workflow-state-completed-closeout-pr",
+  "task_dir": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 40,
-      "url": "https://github.com/castbox/guru-trellis/issues/40",
-      "title": "扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail",
+      "number": 51,
+      "url": "https://github.com/castbox/guru-trellis/issues/51",
+      "title": "修正 prepare-task 命名质量门禁",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 40,
-        "url": "https://github.com/castbox/guru-trellis/issues/40",
-        "title": "扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail",
+        "number": 51,
+        "url": "https://github.com/castbox/guru-trellis/issues/51",
+        "title": "修正 prepare-task 命名质量门禁",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -64,7 +108,8 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           7aedeba [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           662bc47 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate            662bc47 [codex/051-prepare-task-naming-quality-gate]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
@@ -80,7 +125,7 @@
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/37-phase-2-check-evidence-review                4c780db [codex/37-phase-2-check-evidence-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/38-trellis-finish-work-pr-body                  3aa05be [codex/38-trellis-finish-work-pr-body]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/39-review-branch-findings-reviewer-only         723ebd4 [codex/39-review-branch-findings-reviewer-only]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/40-workflow-state-completed-closeout-pr         7aedeba [codex/40-workflow-state-completed-closeout-pr]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/40-workflow-state-completed-closeout-pr         8fc9d86 [codex/40-workflow-state-completed-closeout-pr]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/41-task-system-task-py-create                   e7770df [codex/41-task-system-task-py-create]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/43-trellis-subagent                             e7a4c3d [codex/43-trellis-subagent]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/44-branch-review-gate-finding-fresh             3bc50d1 [codex/44-branch-review-gate-finding-fresh]",
@@ -96,9 +141,9 @@
       "base_branch": "main",
       "base_ref": "main",
       "remote_ref": "origin/main",
-      "local_head_before": "7aedeba8d318208634e15549c609c92c218b9820",
-      "local_head_after": "7aedeba8d318208634e15549c609c92c218b9820",
-      "remote_head": "7aedeba8d318208634e15549c609c92c218b9820",
+      "local_head_before": "662bc4730999f81efd0b815ce5a9310ba2032e4c",
+      "local_head_after": "662bc4730999f81efd0b815ce5a9310ba2032e4c",
+      "remote_head": "662bc4730999f81efd0b815ce5a9310ba2032e4c",
       "fetch_performed": true,
       "fast_forwarded": false,
       "fresh": true,
@@ -107,9 +152,9 @@
     },
     "workspace_was_created_or_reused": true,
     "developer_identity": {
-      "status": "copied",
-      "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/40-workflow-state-completed-closeout-pr/.trellis/.developer",
+      "status": "exists",
+      "source": "workspace",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate/.trellis/.developer",
       "developer": "wumengye"
     }
   }

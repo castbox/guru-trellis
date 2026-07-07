@@ -21,13 +21,15 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
 - PRs：15 个，其中 14 个 merged，1 个 closed 未合并。
 - Comments / reviews：基本没有额外决策；issue #6 有 `closed by #9` 补充，PR review
   comments 为空。主要产品决策和验收信息来自 issue body 与 PR body。
+- 后续维护补充：active issue #51 已沉淀为 `prepare-task` 命名质量门禁能力，合并后应随
+  对应 PR 更新到历史索引。
 
 ## 扩展重要性分层
 
 | 层级 | 类别 | 历史来源 | 说明 |
 | --- | --- | --- | --- |
 | P0 | Workflow 主合同与日常入口 | #1, #2 | `guru-team` marketplace workflow 定义 Phase 0-3、auto-bootstrap 日常入口、知识门禁和 docs SSOT。 |
-| P0 | Intake / worktree / no_task 副作用边界 | #6, #15, #26 | 创建 issue、worktree、branch、task 或当前 checkout 直改前必须有 AI/human handoff 与用户授权。 |
+| P0 | Intake / worktree / no_task 副作用边界 | #6, #15, #26, #51 | 创建 issue、worktree、branch、task 或当前 checkout 直改前必须有 AI/human handoff、用户授权和语义命名门禁。 |
 | P0 | Planning / check / Branch Review Gate 证据链 | #5, #8, #20, #44 | planning、phase2 check、独立 review、review report digest、任意 finding 阻断、fresh 最终放行审查和 gate artifact 形成可审计链路。 |
 | P0 | Finish / publish / PR readiness | #7, #17, #18, #27 | PR 发布只能在 finish-work 后发生，且必须有 AI 审查过的 reviewer-facing body 与 readiness evidence。 |
 | P1 | Preset installer 与平台 overlay | #9, #11 | preset 安装 companion assets 与平台入口，支持 overlay 选择，并保持 canonical / dogfood 同步。 |
@@ -56,7 +58,7 @@ dogfood 副本当成唯一来源。
 | 中台知识门禁与 Docs SSOT | #1 | #4 |
 | Trellis auto-bootstrap 日常入口 | #2 | #3 |
 | AI review prompt 与 Branch Review Gate | #5, #20, #44 | #12, #22 |
-| prepare-task 无副作用 planner | #6 | #14 |
+| prepare-task 无副作用 planner 与命名质量门禁 | #6, #51 | #14；#51 对应 PR 待发布 |
 | PR readiness 与 PR body 质量 | #7, #17 | #23, #24 |
 | Planning / phase2 可审计证据 | #8 | #25 |
 | Dogfood overlay 同步 | #9 | #13 |

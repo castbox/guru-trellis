@@ -291,16 +291,31 @@ project, the first hop is Guru Team intake, not bare `task.py create`:
 an explicit issue and search duplicates, but it does not create a GitHub issue,
 worktree, branch, Trellis task, or `.trellis/guru-team/handoff.json`. Freeform
 requests without a source issue return `proposed_issue`, `requires_confirmation`,
-and `handoff_written: false` in stdout JSON; the AI must show the proposed
-title/body and duplicate evidence, then rerun with `--create-issue-confirmed
---issue-title ... --issue-body-file ...` only after approval. A confirmed source
-issue still remains stdout-only until the user approves `--create-worktree` or
-`--create-task`; those executor paths write the handoff inside the chosen
-workspace, not as a new-session side effect in the source checkout.
+`naming_quality`, and `handoff_written: false` in stdout JSON; the AI must show
+the proposed title/body and duplicate evidence, then rerun with
+`--create-issue-confirmed --issue-title ... --issue-body-file ...` only after
+approval. A confirmed source issue still remains stdout-only until the user
+approves `--create-worktree` or `--create-task`; those executor paths write the
+handoff inside the chosen workspace, not as a new-session side effect in the
+source checkout.
+
+The AI should read the issue and provide a semantic English short-name through
+`--short-name`, `--workspace-slug`, `--task-slug`, and `--branch` when the title
+is Chinese, non-ASCII, or too generic. Recommended worktree/task slug format is
+`NNN-business-capability`; recommended branch format is
+`codex/NNN-business-capability`, for example
+`052-resume-detail-inline-attachment-preview`. `prepare-task` does not perform
+Chinese transliteration or pinyin conversion; it deterministically assembles the
+name, checks conflicts, and blocks low-information names before executor side
+effects.
 When `workspace_mode: worktree`, create the execution workspace and task through
 `prepare-task --create-worktree --create-task` or an equivalent controlled Guru
 Team executor. Task creation consent is not approval to run bare
 `python3 ./.trellis/scripts/task.py create ...` in the source checkout.
+Executor paths also enforce `naming_quality` and fail closed before creating a
+worktree, branch, or Trellis task if the generated or overridden name is low
+information, such as `issue-52`, `52-issue-52`, a bare number, or only generic
+tokens like `bug`, `fix`, `task`, `work`, `update`, or `change`.
 
 When executor paths create or reuse a worktree, they first refresh the selected
 base branch with `git fetch`, record `preflight.base_freshness` in

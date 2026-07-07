@@ -59,11 +59,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-06T06:03:54Z",
+  "installed_at": "2026-07-07T06:11:01Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "main",
-    "commit": "1b9cb808975a6210225423fd750bb4f66dd5e311",
+    "ref": "codex/051-prepare-task-naming-quality-gate",
+    "commit": "662bc4730999f81efd0b815ce5a9310ba2032e4c",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -118,9 +118,7 @@
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"
     ],
     "new_copies": [],
-    "managed_backups": [
-      ".trellis/guru-team/scripts/python/guru_team_trellis.py.bak"
-    ],
+    "managed_backups": [],
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
   },

@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-07T06:46:03Z",
+  "task_dir": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate",
+  "base_branch": "main",
+  "head": "7d877da12e4e009485b77b36e9043f3c0745905e",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    "docs/requirements/README.md",
+    "docs/requirements/requirement-main.md",
+    ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/"
+  ],
+  "checker": "codex-main-session",
+  "check_summary": "已回到 Phase 2 修复独立审查提出的 P3 Docs SSOT finding：docs/requirements 已补充 issue #51 prepare-task 命名质量门禁能力、历史来源和索引；同时复跑核心单测、Python 编译、JSON 校验、dogfood overlay drift、task validate、public docs grep 与 git diff --check，确认需求、设计、代码、测试、spec/docs、跨层 payload 和部署影响仍一致。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/issue-scope-ledger.json",
+      "sha256": "aa497e34a18222241ece3471935bbcf92e3b16584f9ba81184dbd9257eeb6cbe",
+      "size_bytes": 1962,
+      "modified_at": "2026-07-07T06:22:41.732101+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/agent-assignment.json",
+      "sha256": "b39aea3cc579ffcdb60ee41989b57999094ca6dabb9a7f81a77c0f0f9375008f",
+      "size_bytes": 2484,
+      "modified_at": "2026-07-07T06:42:42.119938+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate/review.md",
+      "sha256": "4bde33d93d81ed31defe41b57e59fc6d55fbb6834ec287db92e6e3146b606c86",
+      "size_bytes": 2718,
+      "modified_at": "2026-07-07T06:42:33.036082+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "bdcae02a667579c6d51125a8d8ec5f04e50289a953b514d775d3bb30c4a5e115",
+      "size_bytes": 3604,
+      "modified_at": "2026-07-07T05:33:47.058936+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "a1437dff864e388183a51488de5daa5c3a599f179a79ee4dd8d390cdf23606bf",
+      "size_bytes": 12495,
+      "modified_at": "2026-07-07T05:33:47.061205+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "d3c3a05e7a69705209e7e088e661ab510e91d780f315f98d411a00ec03be14d1",
+      "size_bytes": 14540,
+      "modified_at": "2026-07-07T06:08:06.734252+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "6432e8cadb2c3059da1f5a5e24f2aaa988c07ec6ff80ff0cb264333427be77be",
+      "size_bytes": 4836,
+      "modified_at": "2026-07-07T05:33:47.060993+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/index.md",
+      "sha256": "aa45e5d0f245aae0b34677b121f7d083620308b4b87cda929bd134c77d1f61fd",
+      "size_bytes": 3680,
+      "modified_at": "2026-07-07T05:33:47.059585+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "passed: 123 tests OK"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m json.tool canonical/dogfood schema, handoff, task metadata, planning approval, agent assignment",
+      "result": "passed"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "passed: Dogfood overlay copies match canonical Guru Team overlays"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-07-051-prepare-task-naming-quality-gate",
+      "result": "passed"
+    },
+    {
+      "command": "rg public docs workflow keywords across README, workflow README, preset README, docs/requirements",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

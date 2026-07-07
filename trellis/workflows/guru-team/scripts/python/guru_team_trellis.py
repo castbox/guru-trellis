@@ -139,6 +139,26 @@ PR_BODY_PLACEHOLDER_VALUES = {
     "待补充",
     "待定",
 }
+LOW_INFORMATION_NAMING_WORDS = {
+    "bug",
+    "bugs",
+    "change",
+    "changes",
+    "cleanup",
+    "fix",
+    "fixes",
+    "issue",
+    "issues",
+    "misc",
+    "new",
+    "task",
+    "tasks",
+    "todo",
+    "update",
+    "updates",
+    "wip",
+    "work",
+}
 PR_CLOSE_KEYWORDS = ["Closes", "Fixes", "Resolves", "Close", "Fix", "Resolve"]
 REVIEWED_PR_BODY_SOURCE_PREFIXES = ("body-file:", "body-artifact:")
 DEPLOYMENT_ASSET_CATEGORIES: dict[str, list[str]] = {
@@ -386,6 +406,195 @@ def slugify(text: str, fallback: str) -> str:
     slug = "-".join(selected) if selected else fallback
     slug = re.sub(r"[^a-z0-9-]+", "-", slug).strip("-")
     return slug or fallback
+
+
+def normalize_slug_candidate(value: str) -> str:
+    raw = str(value or "").strip().lower()
+    if "/" in raw:
+        raw = raw.rsplit("/", 1)[1]
+    normalized = re.sub(r"[^a-z0-9]+", "-", raw).strip("-")
+    return re.sub(r"-+", "-", normalized)
+
+
+def slug_business_tokens(value: str) -> list[str]:
+    normalized = normalize_slug_candidate(value)
+    tokens = re.findall(r"[a-z0-9]+", normalized)
+    return [
+        token
+        for token in tokens
+        if not token.isdigit()
+        and token not in LOW_INFORMATION_NAMING_WORDS
+        and len(token) >= 3
+    ]
+
+
+def slug_has_issue_number_prefix(slug: str, issue_number: str) -> bool:
+    normalized = normalize_slug_candidate(slug)
+    first = normalized.split("-", 1)[0] if normalized else ""
+    if not first:
+        return False
+    if first == issue_number:
+        return True
+    if first.isdigit() and str(issue_number).isdigit():
+        return int(first) == int(issue_number)
+    return False
+
+
+def unique_prepare_prefix(issue_number: str, issue_slug: str, short_name: str | None) -> str:
+    if short_name and slug_has_issue_number_prefix(issue_slug, issue_number):
+        return issue_slug
+    return f"{issue_number}-{issue_slug}"
+
+
+def assess_slug_candidate(value: str) -> dict[str, Any]:
+    normalized = normalize_slug_candidate(value)
+    business_tokens = slug_business_tokens(normalized)
+    if not normalized:
+        reason = "name is empty after ASCII slug normalization"
+    elif re.fullmatch(r"\d+", normalized):
+        reason = "name contains only an issue number"
+    elif re.fullmatch(r"issue-\d+", normalized):
+        reason = "name only repeats issue and its number"
+    elif re.fullmatch(r"\d+-issue-\d+", normalized):
+        reason = "name only repeats issue and its number"
+    elif not business_tokens:
+        reason = "name contains only generic words or numbers"
+    elif len(normalized) < 8:
+        reason = "name is too short"
+    elif len(business_tokens) < 2:
+        reason = "name needs at least two business tokens"
+    else:
+        reason = "ok"
+    return {
+        "ok": reason == "ok",
+        "slug": normalized,
+        "reason": reason,
+        "business_tokens": business_tokens,
+    }
+
+
+def naming_override_flags(issue_number: str, branch_prefix: str) -> list[str]:
+    prefix = issue_number.zfill(3) if issue_number.isdigit() else "NNN"
+    suggested_slug = f"{prefix}-semantic-business-name"
+    return [
+        f"--short-name {suggested_slug}",
+        f"--workspace-slug {suggested_slug}",
+        f"--branch {branch_prefix}{suggested_slug}",
+        f"--task-slug {suggested_slug}",
+    ]
+
+
+def evaluate_naming_quality(
+    *,
+    issue_number: str,
+    source_text: str,
+    slug: str,
+    task_slug: str,
+    workspace_slug: str,
+    branch_name: str,
+    branch_prefix: str,
+    semantic_override_provided: bool,
+) -> dict[str, Any]:
+    checked_names = {
+        "slug": assess_slug_candidate(slug),
+        "task_slug": assess_slug_candidate(task_slug),
+        "workspace_slug": assess_slug_candidate(workspace_slug),
+        "branch_name": assess_slug_candidate(branch_name),
+    }
+    failures = {name: detail for name, detail in checked_names.items() if not detail["ok"]}
+    source_has_non_ascii = any(ord(ch) > 127 for ch in source_text)
+    if failures:
+        first_name, first_failure = next(iter(failures.items()))
+        detail = "; ".join(
+            f"{name}={failure['slug'] or '<empty>'} ({failure['reason']})"
+            for name, failure in failures.items()
+        )
+        reason = f"low-information prepare-task naming: {detail}"
+        if source_has_non_ascii:
+            reason += "; source title contains non-ASCII text, provide semantic English naming overrides instead of transliteration"
+        else:
+            reason += "; provide semantic English naming overrides"
+        return {
+            "ok": False,
+            "reason": reason,
+            "requires_semantic_name": True,
+            "current_slug": first_failure["slug"],
+            "current_surface": first_name,
+            "suggested_override_flags": naming_override_flags(issue_number, branch_prefix),
+            "checked_names": checked_names,
+        }
+    if source_has_non_ascii and not semantic_override_provided:
+        reason = (
+            "source title contains non-ASCII text; provide semantic English naming overrides "
+            "instead of relying on transliteration or partial ASCII extraction"
+        )
+        return {
+            "ok": False,
+            "reason": reason,
+            "requires_semantic_name": True,
+            "current_slug": checked_names["workspace_slug"]["slug"],
+            "current_surface": "workspace_slug",
+            "suggested_override_flags": naming_override_flags(issue_number, branch_prefix),
+            "checked_names": checked_names,
+        }
+    return {
+        "ok": True,
+        "reason": "naming includes enough business tokens",
+        "requires_semantic_name": False,
+        "current_slug": checked_names["workspace_slug"]["slug"],
+        "current_surface": "workspace_slug",
+        "suggested_override_flags": [],
+        "checked_names": checked_names,
+    }
+
+
+def prepare_naming_payload(
+    args: argparse.Namespace,
+    config: dict[str, Any],
+    issue_number: str,
+    source_text: str,
+) -> dict[str, Any]:
+    branch_prefix = str(config.get("branch_prefix") or "")
+    if args.short_name:
+        issue_slug = normalize_slug_candidate(args.short_name) or f"issue-{issue_number}"
+    else:
+        issue_slug = slugify(source_text, f"issue-{issue_number}")
+    unique_prefix = unique_prepare_prefix(issue_number, issue_slug, args.short_name)
+    task_slug = args.task_slug or unique_prefix
+    workspace_slug = args.workspace_slug or unique_prefix
+    branch_name = args.branch or f"{branch_prefix}{unique_prefix}"
+    semantic_override_provided = bool(
+        args.short_name
+        or (args.workspace_slug and args.task_slug and args.branch)
+    )
+    naming_quality = evaluate_naming_quality(
+        issue_number=issue_number,
+        source_text=source_text,
+        slug=issue_slug,
+        task_slug=task_slug,
+        workspace_slug=workspace_slug,
+        branch_name=branch_name,
+        branch_prefix=branch_prefix,
+        semantic_override_provided=semantic_override_provided,
+    )
+    return {
+        "slug": issue_slug,
+        "task_slug": task_slug,
+        "workspace_slug": workspace_slug,
+        "branch_name": branch_name,
+        "naming_quality": naming_quality,
+    }
+
+
+def ensure_naming_quality_for_create(payload: dict[str, Any]) -> None:
+    naming_quality = payload.get("naming_quality")
+    if isinstance(naming_quality, dict) and naming_quality.get("ok") is True:
+        return
+    raise WorkflowError(
+        "Low-information prepare-task naming blocked before create. Provide semantic English overrides with --short-name/--workspace-slug/--branch/--task-slug.",
+        exit_code=2,
+        payload=payload,
+    )
 
 
 def make_issue_title(requirement: str, short_name: str | None = None) -> str:
@@ -3229,6 +3438,9 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
                 "prepare requires --create-issue-confirmed before GitHub issue creation."
             )
         if args.create_issue_confirmed:
+            if args.create_worktree or args.create_task:
+                pre_create_naming = prepare_naming_payload(args, config, "NNN", proposed_title or requirement)
+                ensure_naming_quality_for_create({**pre_create_naming, "proposed_issue": proposed_issue})
             issue = create_issue(repo, proposed_title, proposed_body, root, list(config.get("created_issue_labels") or []))
             created_by_workflow = True
         else:
@@ -3256,15 +3468,18 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
             payload={"proposed_issue": proposed_issue, "requires_confirmation": confirmation_required},
         )
-    issue_slug = slugify(args.short_name or issue_title_for_planning or requirement, f"issue-{issue_number_for_slug}")
-    unique_prefix = f"{issue_number_for_slug}-{issue_slug}"
-    task_slug = args.task_slug or unique_prefix
-    workspace_slug = args.workspace_slug or unique_prefix
-    branch_name = args.branch or f"{config.get('branch_prefix') or ''}{unique_prefix}"
+    naming_payload = prepare_naming_payload(args, config, issue_number_for_slug, issue_title_for_planning or requirement)
+    issue_slug = str(naming_payload["slug"])
+    task_slug = str(naming_payload["task_slug"])
+    workspace_slug = str(naming_payload["workspace_slug"])
+    branch_name = str(naming_payload["branch_name"])
+    naming_quality = naming_payload["naming_quality"]
+    should_create_worktree = args.create_worktree or args.create_task
+    if should_create_worktree:
+        ensure_naming_quality_for_create(naming_payload)
     title_prefix = f"#{issue_number_for_slug}" if issue is not None else "[proposed-issue]"
     task_title = args.title or f"{title_prefix} {issue_title_for_planning}"
     base_ref, base_candidates = resolve_base_branch(root, config, args.base_branch)
-    should_create_worktree = args.create_worktree or args.create_task
     base_freshness = (
         ensure_base_freshness(root, base_ref)
         if should_create_worktree
@@ -3302,9 +3517,11 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
         "handoff_path": str(workspace_handoff_path(config, workspace_path)),
         "handoff_written": False,
         "slug": issue_slug,
+        "naming_quality": naming_quality,
         "task_slug": task_slug,
         "task_title": task_title,
         "branch_name": branch_name,
+        "workspace_slug": workspace_slug,
         "workspace_mode": workspace_mode,
         "workspace_path": str(workspace_path),
         "workspace_ready": workspace_ready,
