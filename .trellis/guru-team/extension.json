@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.1",
+    "version": "0.6.5-guru.2",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.5",
@@ -62,11 +62,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-08T09:36:34Z",
+  "installed_at": "2026-07-08T13:30:58Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/060-workspace-boundary-guard",
-    "commit": "a27b82c31db74be502d9a65807a200c1c0fc88eb",
+    "commit": "1e2e78ae1259165c61a5dfdb4826abd6edc730a5",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

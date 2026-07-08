@@ -754,7 +754,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.1")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.2")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.5")
         self.assertEqual(payload["guru_team_extension"]["trellis_cli_compatibility"], "0.6.5")

@@ -63,14 +63,14 @@ Chinese documentation contract.
 
 Stable workflow marketplace installs should pin the repo release tag that
 combines the target official Trellis CLI version and Guru Team revision, for
-example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.1`. That release targets
+example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`. That release targets
 official `@mindfoldhq/trellis` `0.6.5`. Unpinned `gh:castbox/guru-trellis/trellis`
 is a latest/canary source and should be reported as mutable provenance.
 
 ## Apply
 
 ```bash
-git clone --depth 1 --branch v0.6.5-guru.1 \
+git clone --depth 1 --branch v0.6.5-guru.2 \
   https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project \
@@ -114,7 +114,7 @@ asserts target `.trellis/spec/**`, workspace indexes, and
 `00-bootstrap-guidelines` do not retain known English documentation language
 requirements, and runs `check-env --json` plus `version.sh --json`. Trellis CLI accepts
 `gh:user/repo/path#ref` workflow marketplace sources; the script defaults to
-`TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#v0.6.5-guru.1` for stable
+`TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#v0.6.5-guru.2` for stable
 release verification. When the source is unpinned
 `gh:castbox/guru-trellis/trellis`, the script fails closed on non-`main` branches
 or dirty marketplace workflow files unless
@@ -234,7 +234,7 @@ Trellis workflow marketplace:
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.1 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.2 \
   --template guru-team
 ```
 
