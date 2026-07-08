@@ -2692,6 +2692,7 @@ class ReviewGateReportTest(unittest.TestCase):
     def write_agent_assignment(
         self,
         review_rounds: list[dict[str, object]] | None = None,
+        reuse_decisions: list[dict[str, object]] | None = None,
         status_events: list[dict[str, object]] | None = None,
     ) -> Path:
         assignment = self.task_dir / "agent-assignment.json"
@@ -2725,7 +2726,7 @@ class ReviewGateReportTest(unittest.TestCase):
                         }
                     ],
                     "review_rounds": rounds,
-                    "reuse_decisions": [],
+                    "reuse_decisions": reuse_decisions if reuse_decisions is not None else [],
                     "status_events": status_events if status_events is not None else [],
                 },
                 ensure_ascii=False,
@@ -3312,6 +3313,277 @@ class ReviewGateReportTest(unittest.TestCase):
 
         self.assertTrue(payload["conclusion"]["passed"])
         self.assertEqual(payload["verification_evidence"]["agent_assignment"]["review_rounds_count"], 3)
+
+    def test_review_branch_accepts_replacement_closure_when_original_review_agent_failed(self) -> None:
+        review_report = self.task_dir / "review.md"
+        rounds = [
+                {
+                    "round": 1,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "中断最终代理",
+                    "reviewed_head": "old123",
+                    "findings_count": 1,
+                    "reuse_policy": "fresh final reviewer 发现 P2 finding，但随后失败，不能自己闭环。",
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "platform_nickname": "替代闭环代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_policy": "替代中断 agent，仅闭环 round 1 finding，不作为最终放行。",
+                    "reuse_decision": "replace",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "platform_nickname": "最终代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_policy": "fresh final reviewer 必须完整审查当前 HEAD diff。",
+                    "reuse_decision": "new-agent",
+                },
+        ]
+        review_report.write_text(
+            self.review_rollup_text(
+                "round 1 的 finding 已由替代闭环代理完成，fresh final reviewer 当前 HEAD 0 findings。",
+                self.raw_report_names_for_rounds(rounds),
+            ),
+            encoding="utf-8",
+        )
+        assignment = self.write_agent_assignment(
+            rounds,
+            reuse_decisions=[
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "replace",
+                    "reason": "agent-a 已失败，无法继续同一技术 agent 闭环；agent-c 只闭环 round 1 finding。",
+                    "head": "abc123",
+                    "from_round": 1,
+                    "to_round": 2,
+                }
+            ],
+            status_events=[
+                {
+                    "event": "failed",
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "中断最终代理",
+                    "head": "old123",
+                    "observed_at": "2026-07-07T00:10:00Z",
+                    "last_observed_progress_at": "",
+                    "workspace_evidence": "raw report 已保留，连接中断后无法同 agent 继续。",
+                    "running_command_evidence": "review agent stream disconnected。",
+                    "decision": "mark-failed",
+                    "reason": "该 agent 已失败，不能作为 passing final，也不能继续闭环。",
+                    "supersedes_agent_id": "",
+                    "handoff_summary": "",
+                },
+                {
+                    "event": "replacement-started",
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "platform_nickname": "替代闭环代理",
+                    "head": "abc123",
+                    "observed_at": "2026-07-07T00:11:00Z",
+                    "last_observed_progress_at": "",
+                    "workspace_evidence": "替代 agent 读取前任 raw report、当前 diff 和 finding。",
+                    "running_command_evidence": "替代闭环审查已启动。",
+                    "decision": "start-replacement",
+                    "reason": "原 review agent 已失败，启动替代闭环代理只复核该 finding。",
+                    "supersedes_agent_id": "agent-a",
+                    "handoff_summary": "闭环目标：确认 round 1 finding 在当前 HEAD 已修复。",
+                },
+                {
+                    "event": "completed",
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "platform_nickname": "替代闭环代理",
+                    "head": "abc123",
+                    "observed_at": "2026-07-07T00:20:00Z",
+                    "last_observed_progress_at": "2026-07-07T00:19:00Z",
+                    "workspace_evidence": "替代闭环 raw report 已写入 task worktree。",
+                    "running_command_evidence": "闭环审查完成，findings_count=0。",
+                    "decision": "mark-completed",
+                    "reason": "替代闭环代理已确认 finding 闭环。",
+                    "supersedes_agent_id": "",
+                    "handoff_summary": "",
+                },
+            ],
+        )
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            def object_exists(_root: Path, ref: str) -> bool:
+                return ref in {"abc123", "old123"}
+
+            with mock.patch.object(gtt, "git_object_exists", side_effect=object_exists):
+                payload = gtt.cmd_review_branch(
+                    review_args(
+                        review_report=str(review_report),
+                        agent_assignment=str(assignment),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(payload["conclusion"]["passed"])
+        self.assertEqual(payload["verification_evidence"]["agent_assignment"]["reuse_decisions_count"], 1)
+        self.assertEqual(payload["verification_evidence"]["agent_assignment"]["status_events_count"], 3)
+
+    def test_review_branch_rejects_replacement_closure_without_recovery_evidence(self) -> None:
+        review_report = self.task_dir / "review.md"
+        rounds = [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "发现代理",
+                    "reviewed_head": "old123",
+                    "findings_count": 1,
+                    "reuse_policy": "发现问题后必须闭环。",
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "platform_nickname": "替代闭环代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_policy": "错误示例：只写 replace round，没有恢复链证据。",
+                    "reuse_decision": "replace",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "platform_nickname": "最终代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_policy": "fresh final reviewer 必须完整审查当前 HEAD diff。",
+                    "reuse_decision": "new-agent",
+                },
+        ]
+        review_report.write_text(
+            self.review_rollup_text(
+                "缺少 replacement-started / completed 恢复链时不能最终放行。",
+                self.raw_report_names_for_rounds(rounds),
+            ),
+            encoding="utf-8",
+        )
+        assignment = self.write_agent_assignment(
+            rounds,
+            reuse_decisions=[
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "replace",
+                    "reason": "缺少 status_events 恢复链的替代闭环不能通过。",
+                    "head": "abc123",
+                    "from_round": 1,
+                    "to_round": 2,
+                }
+            ],
+        )
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            def object_exists(_root: Path, ref: str) -> bool:
+                return ref in {"abc123", "old123"}
+
+            with mock.patch.object(gtt, "git_object_exists", side_effect=object_exists):
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    gtt.cmd_review_branch(
+                        review_args(
+                            review_report=str(review_report),
+                            agent_assignment=str(assignment),
+                        )
+                    )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertTrue(any("replacement-started" in error for error in raised.exception.payload["errors"]))
+
+    def test_final_review_round_errors_rejects_replacement_closure_agent_as_final(self) -> None:
+        payload = {
+            "review_rounds": [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "reviewed_head": "old123",
+                    "findings_count": 1,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_decision": "replace",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-c",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+            ],
+            "reuse_decisions": [
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "replace",
+                    "reason": "agent-a failed; agent-c closes only the finding.",
+                    "head": "abc123",
+                    "from_round": 1,
+                    "to_round": 2,
+                }
+            ],
+            "status_events": [
+                {
+                    "event": "failed",
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "head": "old123",
+                    "decision": "mark-failed",
+                },
+                {
+                    "event": "replacement-started",
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "head": "abc123",
+                    "decision": "start-replacement",
+                    "supersedes_agent_id": "agent-a",
+                    "handoff_summary": "agent-c closes round 1 finding only.",
+                },
+                {
+                    "event": "completed",
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "head": "abc123",
+                    "decision": "mark-completed",
+                },
+            ],
+        }
+
+        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
+
+        self.assertTrue(any("替代 finding closure" in error for error in errors))
 
     def test_review_branch_accepts_prior_head_closure_before_current_final(self) -> None:
         review_report = self.task_dir / "review.md"

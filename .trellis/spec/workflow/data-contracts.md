@@ -305,16 +305,23 @@ actually complete and whether failed agent output blocks the task.
 
 For Branch Review Gate, any review agent that recorded findings may be reused
 only as `问题闭环审查代理` for fix confirmation. This includes a previous
-`最终放行审查代理` round that found a new issue. Every finding owner must have a
+`最终放行审查代理` round that found a new issue. The normal closure path is a
 later same-agent closure round with `findings_count: 0` and
-`reuse_decision: reuse-for-closure` before a passing gate can be recorded. That
-closure confirms the agent's own finding is closed and does not need to be
-repeated for every later HEAD. The final passing review round must be the last
+`reuse_decision: reuse-for-closure`. If the finding owner objectively
+failed/interrupted and cannot continue, the workflow may record a replacement
+closure chain: predecessor failed/unfinished `status_events[]`,
+`replacement-started` with `supersedes_agent_id`, `reuse_decisions[]`
+`decision=replace` with `from_round` / `to_round`, then a replacement
+`问题闭环审查代理` round with `findings_count: 0` and
+`reuse_decision: replace`. Every finding owner must have one of those closure
+forms before a passing gate can be recorded. That closure confirms the finding
+is closed and does not need to be repeated for every later HEAD. The final
+passing review round must be the last
 `最终放行审查代理`, use a fresh technical `agent_id` that did not own an earlier
-finding round, set `findings_count` to 0, set `reuse_decision` to `new-agent`,
-record the reviewed code `HEAD` in `reviewed_head`, and have a unique,
-strictly increasing `round` value so no later record can make the final round
-ambiguous.
+finding round and did not act as replacement closure reviewer, set
+`findings_count` to 0, set `reuse_decision` to `new-agent`, record the reviewed
+code `HEAD` in `reviewed_head`, and have a unique, strictly increasing `round`
+value so no later record can make the final round ambiguous.
 
 Because `最终放行审查代理` is assigned after the task work commit,
 `agent-assignment.json` may receive a post-commit metadata update before Branch

@@ -212,16 +212,24 @@ not decide whether a `wait_agent` timeout means stale, whether a running agent
 should be stopped, or whether a failed agent's partial output is acceptable.
 
 When a review round has findings, including a previous final-review round that
-found a new issue, the same technical `agent_id` must later be recorded only as
-`问题闭环审查代理` to confirm its finding is closed. A passing gate
-must validate that every finding owner has such a later closure round with
-`findings_count: 0` and `reuse_decision: reuse-for-closure`, and then validate a
-fresh `最终放行审查代理` review round: `review_rounds[].round` values are unique
-and strictly increasing in recorded order, it is the unambiguous last round,
+found a new issue, the same technical `agent_id` normally must later be
+recorded only as `问题闭环审查代理` to confirm its finding is closed. If that
+finding owner objectively failed/interrupted and cannot continue, a replacement
+closure reviewer may close only that finding when `reuse_decisions[]` records
+`decision=replace` with `from_round` / `to_round` and `status_events[]` records
+the predecessor failed/unfinished event, `replacement-started` with
+`supersedes_agent_id`, and replacement `completed` evidence. A passing gate
+must validate that every finding owner has a later same-agent closure round with
+`findings_count: 0` and `reuse_decision: reuse-for-closure` or a complete
+replacement closure chain with a replacement `问题闭环审查代理` round carrying
+`findings_count: 0` and `reuse_decision: replace`, and then validate a fresh
+`最终放行审查代理` review round: `review_rounds[].round` values are unique and
+strictly increasing in recorded order, it is the unambiguous last round,
 `reviewed_head` equals the reviewed code HEAD, `findings_count` is 0,
 `reuse_decision` is `new-agent`, and the final reviewer did not own any earlier
-finding round. This is an objective metadata check only; the AI/human review
-still owns the judgment that the review covered the full diff.
+finding round or act as replacement closure reviewer. This is an objective
+metadata check only; the AI/human review still owns the judgment that the
+review covered the full diff.
 
 Independent review agents do not run Guru Team recorder/validator extension
 scripts as part of their review. They may inspect docs, code, tests, diffs, and

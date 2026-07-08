@@ -62,11 +62,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-08T13:30:58Z",
+  "installed_at": "2026-07-08T14:02:31Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/060-workspace-boundary-guard",
-    "commit": "1e2e78ae1259165c61a5dfdb4826abd6edc730a5",
+    "commit": "ff59c2db866d0414b7a736205a26ed9da004eecf",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

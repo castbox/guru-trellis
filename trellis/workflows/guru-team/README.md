@@ -284,7 +284,9 @@ stale、interrupt、unfinished termination、resume/replacement、completed、fa
 处理也记录在 `status_events[]`；脚本不决定 timeout 是否等于 stale，也不决定是否终止 agent。
 
 Branch Review Gate 必须先让所有发现过 finding 的 reviewer 作为同一 technical
-`问题闭环审查代理` 确认其 finding 已闭环并记录 0 findings，然后再由 fresh
+`问题闭环审查代理` 确认其 finding 已闭环并记录 0 findings；如果原 reviewer 失败/中断且无法继续，
+必须用 `status_events[]` + `reuse_decisions[] decision=replace` 记录替代闭环链，并由替代
+`问题闭环审查代理` 只闭环该 finding。之后再由 fresh
 `最终放行审查代理` 独立审查当前 HEAD 的完整 diff 并确认 0 findings，最后调用
 `review-branch.sh` 固化结论。任意 finding priority（P0/P1/P2/P3）都会阻断；
 `observation` 仅记录非阻断观察，`followup_candidate` 仅记录 scope 外后续候选。
@@ -297,9 +299,9 @@ Branch Review Gate 必须先让所有发现过 finding 的 reviewer 作为同一
 必须链接所有 raw reports。然后带中文 `--summary`、至少一条 `--evidence`，
 `--review-source independent-agent`、`--review-report .trellis/tasks/<task>/review.md`
 和 `--agent-assignment .trellis/tasks/<task>/agent-assignment.json`。Gate 会记录
-final `review.md` digest、raw `review_reports[]` digest、assignment digest、中文角色摘要和 status event count，并校验闭环先于 fresh final、
+final `review.md` digest、raw `review_reports[]` digest、assignment digest、中文角色摘要和 status event count，并校验同 agent 或替代闭环先于 fresh final、
 未完成终止的恢复/继任链已到达 `completed` 或 `failed`、最终放行代理不是 earlier
-finding owner。`--reviewer` 只记录身份，不能替代 review report digest；
+finding owner 或替代闭环 reviewer。`--reviewer` 只记录身份，不能替代 review report digest；
 `*-main-session` / `self-review` 不能通过 gate。
 Phase 2 的官方 `trellis-check` sub-agent 负责 commit 前质量检查并以
 `phase2-check.json` 留痕；Phase 3 Branch Review 必须由独立 review sub-agent 审查完整

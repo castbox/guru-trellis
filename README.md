@@ -371,7 +371,7 @@ Phase 2 check pass 或 Branch Review Gate pass 证据。
 完成的 AI/human review 结论，不替代真正的文档 + 代码 review。通过 gate 必须先写
 每轮 task-local `reviews/*.md` raw report，再写最终 `review.md` rollup；`review.md`
 必须汇总 review rounds、finding lifecycle、最终结论，并链接每个 raw report。该 report 必须来自所有 finding owner 完成同 agent
-`问题闭环审查代理` 确认其 finding 已闭环并记录 0 findings 之后，再由 fresh `最终放行审查代理` 对当前
+`问题闭环审查代理` 确认其 finding 已闭环并记录 0 findings，或在原 agent 失败/中断时完成带 `status_events[]` 与 `reuse_decisions[] decision=replace` 证据的替代闭环之后，再由 fresh `最终放行审查代理` 对当前
 HEAD 完整 diff 的独立审查并确认 0 findings；任意 finding priority（P0/P1/P2/P3）
 都会阻断。非阻断 `observation` 和 scope 外 `followup_candidate` 可记录，但不能替代
 当前 scope finding。独立 review sub-agent 只从 AI 角度审查文档、代码、测试、artifact
@@ -381,7 +381,7 @@ recorder/validator 扩展脚本；这些脚本由 main session 在 review 完成
 `--review-report .trellis/tasks/<task>/review.md` 和
 `--agent-assignment .trellis/tasks/<task>/agent-assignment.json` 让 `review-gate.json`
 记录来源、final `review.md` digest、raw `review_reports[]` digest、assignment digest、roles、review round 和 status event 摘要，并校验
-闭环先于 fresh final、未完成终止的恢复/继任链已到达 `completed` 或 `failed`、且最终放行代理不是 earlier finding owner。`--reviewer` 只记录身份，
+同 agent 或替代闭环先于 fresh final、未完成终止的恢复/继任链已到达 `completed` 或 `failed`、且最终放行代理不是 earlier finding owner 或替代闭环 reviewer。`--reviewer` 只记录身份，
 不能单独作为通过证据；`*-main-session` / `self-review` 不能通过 gate。
 `finish-work.sh` 和 `publish-pr.sh` 默认拒绝普通直接调用，避免
 `trellis-continue` 链式执行 closeout、提交 review metadata，或在未完成显式

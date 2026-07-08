@@ -2952,6 +2952,88 @@ def review_round_number(item: dict[str, Any]) -> int:
     return 0
 
 
+def finding_round_has_replacement_closure(
+    payload: dict[str, Any],
+    rounds: list[Any],
+    finding_round: dict[str, Any],
+    final_round_number: int,
+) -> bool:
+    finding_agent = str(finding_round.get("agent_id") or "").strip()
+    finding_round_number = review_round_number(finding_round)
+    if not finding_agent or finding_round_number <= 0:
+        return False
+    decisions = payload.get("reuse_decisions")
+    status_events = payload.get("status_events")
+    if not isinstance(decisions, list) or not isinstance(status_events, list):
+        return False
+    closure_candidates = [
+        item
+        for item in rounds
+        if isinstance(item, dict)
+        and review_round_number(item) > finding_round_number
+        and review_round_number(item) < final_round_number
+        and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+        and str(item.get("agent_id") or "").strip()
+        and str(item.get("agent_id") or "").strip() != finding_agent
+        and is_strict_int(item.get("findings_count"))
+        and item["findings_count"] == 0
+        and str(item.get("reuse_decision") or "").strip() == "replace"
+    ]
+    for closure in closure_candidates:
+        closure_agent = str(closure.get("agent_id") or "").strip()
+        closure_round_number = review_round_number(closure)
+        closure_head = str(closure.get("reviewed_head") or "").strip()
+        matching_decision = any(
+            isinstance(item, dict)
+            and str(item.get("decision") or "").strip() == "replace"
+            and item.get("from_round") == finding_round_number
+            and item.get("to_round") == closure_round_number
+            and str(item.get("agent_id") or "").strip() == closure_agent
+            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+            and str(item.get("head") or "").strip() == closure_head
+            and str(item.get("reason") or "").strip()
+            for item in decisions
+        )
+        predecessor_terminal_indexes = [
+            index
+            for index, item in enumerate(status_events)
+            if isinstance(item, dict)
+            and str(item.get("event") or "").strip() in {"failed", "terminated-unfinished"}
+            and str(item.get("agent_id") or "").strip() == finding_agent
+        ]
+        replacement_start_indexes = [
+            index
+            for index, item in enumerate(status_events)
+            if isinstance(item, dict)
+            and str(item.get("event") or "").strip() == "replacement-started"
+            and str(item.get("agent_id") or "").strip() == closure_agent
+            and str(item.get("supersedes_agent_id") or "").strip() == finding_agent
+            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+            and str(item.get("decision") or "").strip() == "start-replacement"
+            and str(item.get("head") or "").strip() == closure_head
+            and str(item.get("handoff_summary") or "").strip()
+        ]
+        completion_indexes = [
+            index
+            for index, item in enumerate(status_events)
+            if isinstance(item, dict)
+            and str(item.get("event") or "").strip() == "completed"
+            and str(item.get("agent_id") or "").strip() == closure_agent
+            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+            and str(item.get("decision") or "").strip() == "mark-completed"
+            and str(item.get("head") or "").strip() == closure_head
+        ]
+        matching_recovery_chain = any(
+            predecessor_index < replacement_index < completion_index
+            for predecessor_index in predecessor_terminal_indexes
+            for replacement_index in replacement_start_indexes
+            for completion_index in completion_indexes
+        )
+        if matching_decision and matching_recovery_chain:
+            return True
+    return False
+
+
 def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head: str | None = None) -> list[str]:
     rounds = payload.get("review_rounds")
     if not isinstance(rounds, list) or not rounds:
@@ -3012,6 +3094,15 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
         and item["findings_count"] > 0
         and str(item.get("agent_id") or "").strip()
     }
+    replacement_closure_agents = {
+        str(item.get("agent_id") or "").strip()
+        for item in rounds
+        if isinstance(item, dict)
+        and item is not final_round
+        and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+        and str(item.get("reuse_decision") or "").strip() == "replace"
+        and str(item.get("agent_id") or "").strip()
+    }
     missing_finding_owner_agent_rounds = [
         str(item.get("round") or index)
         for index, item in enumerate(rounds)
@@ -3051,13 +3142,16 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
             and item["findings_count"] == 0
             and str(item.get("reuse_decision") or "").strip() == "reuse-for-closure"
         ]
-        if not closure_candidates:
+        if not closure_candidates and not finding_round_has_replacement_closure(payload, rounds, finding_round, final_round_number):
             errors.append(
                 "发现过 finding 的 review agent 必须先以问题闭环审查代理复审并给出 0 findings，"
+                "或在原 agent 失败/中断时记录完整 replacement-started、replace reuse_decision 与 completed 替代闭环链，"
                 f"然后才能启动新的最终放行审查代理；缺少闭环轮次: round {finding_round.get('round') or finding_round_number} agent {finding_agent}。"
             )
     if final_agent and final_agent in finding_owner_agents:
         errors.append("发现过 finding 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
+    if final_agent and final_agent in replacement_closure_agents:
+        errors.append("替代 finding closure 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
     return errors
 
 

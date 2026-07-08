@@ -255,7 +255,7 @@ flowchart TD
   Audit["review-branch post-commit audit<br/>planning approval + phase2 dirty_paths"]:::script
   FindReview["问题发现审查代理<br/>完整 origin/base...HEAD diff"]:::codex
   Findings{"有 finding?"}:::guru
-  Closure["同一 technical agent<br/>问题闭环审查代理<br/>确认其 finding 已闭环"]:::codex
+  Closure["同一 technical agent 或替代闭环链<br/>问题闭环审查代理<br/>确认 finding 已闭环"]:::codex
   Final["fresh 最终放行审查代理<br/>重新审查当前 HEAD 完整 diff"]:::codex
   ReviewMd["reviews/*.md raw reports<br/>+ review.md rollup"]:::artifact
   GateJson["review-branch.sh --pass<br/>review-gate.json"]:::script
@@ -279,7 +279,7 @@ Gate 必须满足：
 | 完整 diff 范围 | 使用 intake/task 记录的 base branch，通常是 `origin/<base>...HEAD`，不能猜 GitHub default branch。 |
 | 独立 review | 主会话自审不能 pass；需要 independent agent 或等价 AI/human review。 |
 | `reviews/*.md` + `review.md` | 每轮中文 raw Markdown review report 保留在 task-local `reviews/`；顶层 `review.md` 是最终中文 rollup，建议使用 `审查轮次`、`问题生命周期`、`最终审查`、`证据`、`观察项`、`后续候选`、`结论`，并记录 diff range、reviewed HEAD、validation、部署/安全影响、Docs SSOT 判断、发现/观察/后续候选和最终结论，链接所有 raw reports。标准顶层 artifact 表默认仍列 `review.md`，raw reports 通过 rollup 和 gate digest 追溯；literal command/path/JSON/HEAD/API/code token 可保留英文。 |
-| `agent-assignment.json` | 记录中文 logical role、technical `agent_id`、review rounds、finding owner closure、fresh final reviewer，并在每轮 review round 上记录 raw report path/sha256/size/modified_at。 |
+| `agent-assignment.json` | 记录中文 logical role、technical `agent_id`、review rounds、同 agent 或替代 finding closure、fresh final reviewer，并在每轮 review round 上记录 raw report path/sha256/size/modified_at。 |
 | `status_events[]` | 记录 wait timeout / stale / terminated unfinished / resume / replacement / completed / failed；未完成终止的恢复链未到达 completed/failed 时 gate 不能 pass。 |
 | 任意 finding 阻断 | P0/P1/P2/P3 都阻断；`observation` 和 `followup_candidate` 不能替代当前 scope defect。 |
 | Recorder 不做判断 | `review-branch.sh` 只记录并校验已发生的 review，不是 reviewer。独立 review sub-agent 不运行 `review-branch.sh` / `check-review-gate.sh` / `record-*`。 |

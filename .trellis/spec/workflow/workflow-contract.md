@@ -238,9 +238,15 @@ Passing the gate requires:
   recorded order, so the final pass round is unambiguous
 - every review round with `findings_count > 0` must have a later same-agent
   `问题闭环审查代理` round with `findings_count: 0` and
-  `reuse_decision: reuse-for-closure` before any fresh final round can pass;
-  this closure proves that agent's own finding is closed and does not need to
-  be repeated for every later HEAD
+  `reuse_decision: reuse-for-closure`, or a replacement closure chain when the
+  finding owner objectively failed/interrupted and cannot continue; replacement
+  closure requires predecessor failed/unfinished `status_events[]`,
+  `replacement-started` with `supersedes_agent_id`, `reuse_decisions[]`
+  `decision=replace` with `from_round` / `to_round`, and a replacement
+  `问题闭环审查代理` round with `findings_count: 0` and
+  `reuse_decision: replace` before any fresh final round can pass. This closure
+  proves the finding is closed and does not need to be repeated for every later
+  HEAD
 - the final `最终放行审查代理` review round must be fresh and last: reviewed code
   HEAD, `findings_count: 0`, `reuse_decision: new-agent`, and a technical
   `agent_id` that did not own any earlier finding round
