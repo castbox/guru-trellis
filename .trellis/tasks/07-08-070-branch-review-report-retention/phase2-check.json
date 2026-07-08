@@ -1,0 +1,194 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-08T03:41:08Z",
+  "task_dir": ".trellis/tasks/07-08-070-branch-review-report-retention",
+  "base_branch": "main",
+  "head": "63936960e536a7bcfb415a1e9cfb3325aefb9a3c",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".agents/skills/trellis-finish-work/SKILL.md",
+    ".claude/commands/trellis/continue.md",
+    ".claude/commands/trellis/finish-work.md",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/prompts/trellis-finish-work.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".codex/skills/trellis-finish-work/SKILL.md",
+    ".cursor/commands/trellis-continue.md",
+    ".cursor/commands/trellis-finish-work.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-08-070-branch-review-report-retention/"
+  ],
+  "checker": "019f3fc7-a20a-7150-ba66-953f34f9c900 Release Agent",
+  "check_summary": "阶段二检查代理完成 issue #70 全范围检查并给出 pass：raw review reports retention、final review.md rollup、agent-assignment/review-gate digest、findings/pass paths、archive migration、metadata-tail、workflow/docs/overlay/durable docs、#61 展示边界均已覆盖；检查代理修复了 nested reviews/*.md 在 Phase 2 post-commit metadata-tail 中未被接受的遗漏。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-08-070-branch-review-report-retention/prd.md",
+      "sha256": "46e475e343e79d2b842c974383dbc59b45c4a08ee683cb065590632794267a69",
+      "size_bytes": 4426,
+      "modified_at": "2026-07-08T02:39:10.132787+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-070-branch-review-report-retention/design.md",
+      "sha256": "5e7b74ea9d45b7033194175436e98b9ad304d546ad74dba4576d7461d05d6fb8",
+      "size_bytes": 5355,
+      "modified_at": "2026-07-08T02:39:10.133045+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-070-branch-review-report-retention/implement.md",
+      "sha256": "3016cb2f05525f59b1027cbce9188f9abba87a0a9c66177a9ac3013bb31b4f7d",
+      "size_bytes": 2876,
+      "modified_at": "2026-07-08T02:39:10.133253+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-070-branch-review-report-retention/planning-approval.json",
+      "sha256": "9651baec916194eb79990bd19523bff61cbb89329a7b6ce8b1935e079ceff42a",
+      "size_bytes": 4481,
+      "modified_at": "2026-07-08T03:30:54.254574+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-070-branch-review-report-retention/issue-scope-ledger.json",
+      "sha256": "95feb7e0e219beaa308dedcd377b46144c210def80920c0be6f8a404032ce5c2",
+      "size_bytes": 2141,
+      "modified_at": "2026-07-08T03:40:14.676362+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-070-branch-review-report-retention/agent-assignment.json",
+      "sha256": "dfe7455989fd5ef7c4598eab2f15d09d6c0fe32084343c61fa4b1de81738db93",
+      "size_bytes": 10979,
+      "modified_at": "2026-07-08T03:39:20.910265+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-070-branch-review-report-retention/research/official-trellis-docs.md",
+      "sha256": "59bd884a321df962a0a295264b6174d062027889de0249b82b8a6d2899a0a7b4",
+      "size_bytes": 1110,
+      "modified_at": "2026-07-08T02:48:51.248020+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "6b282f475d4bd272b76ecc751f73a61df1cf52f9844eae4f9a1a81975cef7581",
+      "size_bytes": 15776,
+      "modified_at": "2026-07-08T02:34:03.199055+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "b0f93885927de88a15566cd4fd34600b6ad9f1ca1817cd6108dbf0b59b815035",
+      "size_bytes": 12681,
+      "modified_at": "2026-07-08T02:34:03.198496+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "19756848267b739d3eb27ecc5393575953e22f594a03f2800017e3c7ecc61160",
+      "size_bytes": 19529,
+      "modified_at": "2026-07-08T02:34:03.198611+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "1f495cf83ebbe7873bf35d2ec684722cd4ce27e72e425405dc82e947f5c0b20a",
+      "size_bytes": 5098,
+      "modified_at": "2026-07-08T02:34:03.198919+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "f5fb68b573053f79e51045e73d4e8b457e0a8db115f4ff4e5cbd8290647c9253",
+      "size_bytes": 10032,
+      "modified_at": "2026-07-08T02:34:03.198298+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "efa3d71fe8592f98c37787bf22e8d65974fbdf6e3ec28bc7d265c5247c83a411",
+      "size_bytes": 9361,
+      "modified_at": "2026-07-08T02:34:03.198390+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "3dcb9e138dc54489b539b7d2f579ef68bfcdfb3c293fad5a80ceafdf4c5cb64e",
+      "size_bytes": 4343,
+      "modified_at": "2026-07-08T02:34:03.197854+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m unittest trellis.workflows.guru-team.scripts.python.test_guru_team_trellis",
+      "result": "149 tests OK"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json",
+      "result": "pass"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh",
+      "result": "pass"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "pass"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-08-070-branch-review-report-retention",
+      "result": "pass"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase",
+      "result": "pass"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 3.5",
+      "result": "pass"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms",
+      "result": "pass; dogfood overlays and managed companion script synced; .bak removed"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    },
+    {
+      "command": "check-agent-assignment.sh --json",
+      "result": "pass"
+    },
+    {
+      "command": "cmp .trellis/workflow.md trellis/workflows/guru-team/workflow.md and cmp installed/canonical guru_team_trellis.py",
+      "result": "pass"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

@@ -1,0 +1,29 @@
+{
+  "primary_issue": {
+    "number": 70,
+    "url": "https://github.com/castbox/guru-trellis/issues/70",
+    "title": "保留多轮 Branch Review 原始报告并生成最终 review.md 汇总",
+    "reason": "intake/handoff 主 issue；本任务完整实现并验证后作为 close issue。",
+    "acceptance_evidence": [
+      "实现 raw Branch Review reports 保留合同：review_rounds[] 绑定 reviews/*.md digest，review-gate.json 记录 final review.md 与 raw review_reports[] digest。",
+      "workflow、README、preset README、overlay、dogfood installed copies 与 docs/requirements/guru-team-trellis-flow.md 已同步 raw report rollup 语义。",
+      "阶段二检查代理完成检查并修复 nested reviews/*.md Phase 2 metadata-tail 覆盖遗漏；149 个 unittest、bash -n、py_compile、json.tool、dogfood overlay drift、task validate、git diff --check 均通过。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 70,
+      "url": "https://github.com/castbox/guru-trellis/issues/70",
+      "title": "保留多轮 Branch Review 原始报告并生成最终 review.md 汇总",
+      "reason": "本任务完整承接 issue #70 的多轮 Branch Review raw report retention / rollup / digest contract，并已通过阶段二检查。",
+      "acceptance_evidence": [
+        "实现 raw Branch Review reports 保留合同：review_rounds[] 绑定 reviews/*.md digest，review-gate.json 记录 final review.md 与 raw review_reports[] digest。",
+        "findings path 和 pass path 均要求 independent source、task-local review.md、agent-assignment.json 与 raw review round evidence；archive migration 支持 nested reviews/*.md。",
+        "workflow、README、preset README、overlay、dogfood installed copies 与 docs/requirements/guru-team-trellis-flow.md 已同步 raw report rollup 语义。",
+        "阶段二检查代理完成检查并修复 nested reviews/*.md Phase 2 metadata-tail 覆盖遗漏；149 个 unittest、bash -n、py_compile、json.tool、dogfood overlay drift、task validate、git diff --check 均通过。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

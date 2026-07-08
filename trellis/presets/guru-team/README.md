@@ -286,7 +286,9 @@ way, gate decisions use `logical_role`, `agent_id`, HEAD, and digest evidence,
 not display names. The scripts record assignment, review round, reuse,
 replacement, and status handling decisions already made by AI/human; they do
 not decide which sub-agent should be used, whether a wait timeout means stale,
-or whether an agent should be terminated. `wait_agent` / `trellis channel wait`
+or whether an agent should be terminated. Each review round must pass
+`--review-round-report <task-local reviews/*.md>` so `agent-assignment.json`
+records flat raw report digest fields. `wait_agent` / `trellis channel wait`
 timeout is only a wait-window result. Unfinished termination must be followed by
 same-agent resume or replacement inheritance, then a later `completed` or
 explicit `failed` status event before Branch Review Gate can pass.
@@ -301,10 +303,11 @@ Passing gates require every finding owner to complete a later same-agent
 independent review can pass. The final review must cover the full current HEAD
 diff with zero findings of any priority, must not continue implementation or
 patch missing Phase 2 check work, and be recorded with task-local
-`review.md`, a Chinese summary, concrete evidence, `--review-source
+`reviews/*.md` raw reports, a final `review.md` rollup that links every raw
+report, a Chinese summary, concrete evidence, `--review-source
 independent-agent`, `--review-report <task-local review.md>`, and
 `--agent-assignment <task-local agent-assignment.json>`. The gate stores the
-assignment digest, Chinese roles summary, and status event count, and validates
+final review digest, raw `review_reports[]` digests, assignment digest, Chinese roles summary, and status event count, and validates
 closure-before-final, unfinished termination recovery-chain completeness, the
 last fresh final round, and that the final reviewer did not own an earlier
 finding round. Observations and follow-up candidates may be recorded separately,
@@ -319,7 +322,10 @@ only and cannot replace the review report digest; `*-main-session` /
 `trellis-continue` cannot chain closeout, commit review metadata, push, or
 create a PR before the explicit `trellis-finish-work` entrypoint. Normal PR
 publish is triggered only by `finish-work.sh --from-trellis-finish-work` after
-archive, journal, and remaining Trellis metadata-only commit succeed; direct
+archive, journal, and remaining Trellis metadata-only commit succeed. That
+metadata tail may include `review.md`, `reviews/*.md`, `review-gate.json`, and
+PR readiness files; `check-review-gate` / `finish-work` validate and migrate
+raw report digest paths after archive. Direct
 publish is reserved for explicit recovery/debug after finish-work already
 completed.
 

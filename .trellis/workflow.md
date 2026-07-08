@@ -126,7 +126,7 @@ tasks. The bare create command is only a Phase 1.0 controlled follow-up after
 `prepare-task` has returned or written the selected `workspace_path` and the
 shell/editor is already operating inside that workspace.
 
-Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, `design.md`, `implement.md`, `research/` when applicable, the task-level `issue-scope-ledger.json`, sub-agent/review assignment and status evidence (`agent-assignment.json`), the Branch Review Gate review report (`review.md`) and recorder artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms. Guru Team implementation tasks require `prd.md`, `design.md`, and `implement.md` before `task.py start`, implementation, and check; missing or stale planning documents fail the explicit post-planning approval gate.
+Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, `design.md`, `implement.md`, `research/` when applicable, the task-level `issue-scope-ledger.json`, sub-agent/review assignment and status evidence (`agent-assignment.json`), Branch Review Gate raw reports (`reviews/*.md`), the final review rollup (`review.md`), the recorder artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms. Guru Team implementation tasks require `prd.md`, `design.md`, and `implement.md` before `task.py start`, implementation, and check; missing or stale planning documents fail the explicit post-planning approval gate.
 
 ```bash
 python3 ./.trellis/scripts/task.py create "<title>" --slug <name>
@@ -187,7 +187,7 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
 - In default `sub-agent` mode, Guru Team has three mandatory execution boundaries:
   - implementation must be performed by `trellis-implement` or channel-runtime `implement` and produce an implementation handoff;
   - Phase 2 check must be performed by `trellis-check` or channel-runtime `check` and produce evidence that can be recorded in `phase2-check.json`;
-  - Branch Review must be performed by an independent review sub-agent after the task work commit and produce task-local `review.md` before the main session records Branch Review Gate.
+  - Branch Review must be performed by an independent review sub-agent after the task work commit and produce task-local raw `reviews/*.md` reports plus the final rollup `review.md` before the main session records Branch Review Gate.
 - The main session coordinates planning, dispatch, waiting, resume/replacement decisions, evidence recording, commit, recorder/validator calls, and finish preparation. It must not replace the three mandatory sub-agent boundaries with its own implementation, its own Phase 2 check, its own Branch Review, or script validation output.
 - Inline mode or self-exemption is valid only when explicit artifact evidence explains why the default `sub-agent` boundary does not apply. A sub-agent that is already running as `trellis-implement` / `trellis-check` must do its own role directly and return the required handoff/report; a main session in default `sub-agent` mode cannot claim that exemption for itself. Missing implement, check, or review sub-agent evidence fails closed.
 - `wait_agent`, `trellis channel wait`, or an equivalent wait command timing out only means this wait window ended without a final completion event. It is not evidence that the sub-agent is stuck, failed, should stop, or that its partial output is acceptable completion evidence.
@@ -227,7 +227,7 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
 - Phase 3 also performs a post-commit Phase 2 audit: `phase2-check.json` is recorded before commit with the then-current `dirty_paths`, and `review-branch.sh` later verifies that committed non-metadata task work after the recorded HEAD is covered by those paths. Do not re-record Phase 2 after the task work commit just to make HEAD match; return to Phase 2 only when new non-metadata changes appear or evidence is invalid.
 - In default `sub-agent` mode, dispatch `trellis-check` in an independent review role or a dedicated review sub-agent to perform the evidence-gathering review for Phase 3. The review sub-agent reviews docs, code, tests, artifacts, and diff evidence as an AI reviewer; it must not continue implementation, patch Phase 2 gaps, or run Guru Team recorder/validator extension scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*` as part of its review. On inline platforms, stop before a passing gate unless an independent Agent review report is available through an external/team process.
 - Codex defaults to `codex.dispatch_mode: sub-agent` in Guru Team projects. The main session's dispatch prompt must start with `Active task: <task path>`, and Codex sub-agents fall back to `task.py current --source` when that line is unavailable. Explicit `codex.dispatch_mode: inline` is a downgrade/debug mode.
-- The sub-agent does not own the gate. The gate is valid only after the independent AI/human review has run, written task-local `{TASK_DIR}/review.md`, and `review-branch.sh --review-source independent-agent --review-report {TASK_DIR}/review.md --agent-assignment {TASK_DIR}/agent-assignment.json` writes `{TASK_DIR}/review-gate.json` with summary, evidence, findings, reviewer identity, review source, review-report digest, agent-assignment digest, base/head, and current `HEAD`.
+- The sub-agent does not own the gate. The gate is valid only after the independent AI/human review has run, written task-local `{TASK_DIR}/reviews/*.md` raw reports and the `{TASK_DIR}/review.md` rollup, and `review-branch.sh --review-source independent-agent --review-report {TASK_DIR}/review.md --agent-assignment {TASK_DIR}/agent-assignment.json` writes `{TASK_DIR}/review-gate.json` with summary, evidence, findings, reviewer identity, review source, final review-report digest, raw review report digests, agent-assignment digest, base/head, and current `HEAD`.
 - `review-branch.sh` is a recorder / validator, not a reviewer. It must receive the prior review result through `--summary`, `--evidence`, `--finding` / `--findings-file`, optional `--observation` / `--followup-candidate`, `--review-source independent-agent`, and `--review-report`; `--reviewer` is identity metadata only and cannot satisfy passed gate evidence by itself. Reviewer identities such as `codex-main-session`, `claude-main-session`, `cursor-main-session`, `*-main-session`, or `self-review` are rejected for a passing gate.
 - Do not skip Phase 2 `trellis-check` just because Branch Review Gate exists; do not treat Phase 2 check success as permission to run `finish-work` without the Phase 3 artifact.
 
@@ -272,7 +272,9 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - `planning-approval.json` — start gate evidence that the main session displayed links to `prd.md`, `design.md`, and `implement.md`, then received explicit post-planning user confirmation; `task.py start` is only a status write.
 - `phase2-check.json` — Phase 2 `trellis-check` report for full task-scope quality coverage before commit and Branch Review Gate.
 - `issue-scope-ledger.json` — task-level close/ref/followup scope; do not overload `source_issue`.
-- `agent-assignment.json` — task-local sub-agent assignment ledger with Chinese logical roles, technical `agent_id`, display-only `platform_nickname`, HEAD evidence, review rounds, and reuse/replacement decisions.
+- `agent-assignment.json` — task-local sub-agent assignment ledger with Chinese logical roles, technical `agent_id`, display-only `platform_nickname`, HEAD evidence, review rounds, raw report digest fields, and reuse/replacement decisions.
+- `reviews/*.md` — per-round raw Branch Review reports retained as task metadata.
+- `review.md` — final human rollup for Branch Review rounds, findings lifecycle, final conclusion, and links to raw reports.
 - `review-gate.json` — Branch Review Gate result for the reviewed HEAD.
 - `implement.jsonl` / `check.jsonl` — spec and research manifests for sub-agent context. They do not replace `implement.md`.
 
@@ -283,7 +285,7 @@ Guru Team implementation tasks must have `prd.md`, `design.md`, and `implement.m
 For repositories that install and use the Guru Team workflow as a business project workflow, human-readable documentation is Chinese by default:
 
 - `.trellis/spec/**` project conventions and bootstrap outputs;
-- `.trellis/tasks/**` task artifacts, including `prd.md`, `design.md`, `implement.md`, `review.md`, and human-readable fields in JSON artifacts such as `planning-approval.json`, `phase2-check.json`, `agent-assignment.json`, and `review-gate.json`;
+- `.trellis/tasks/**` task artifacts, including `prd.md`, `design.md`, `implement.md`, `review.md`, `reviews/*.md`, and human-readable fields in JSON artifacts such as `planning-approval.json`, `phase2-check.json`, `agent-assignment.json`, and `review-gate.json`;
 - `docs/**` durable requirements, design, test, deploy, operations, and versioned docs;
 - docs SSOT files created or completed by `00-bootstrap-guidelines`;
 - workflow/helper artifact fields that are meant for humans to read, including summaries, evidence, findings, observations, follow-up candidates, PR titles, and PR bodies.
@@ -736,7 +738,7 @@ If the gate passed, create or review task-local PR readiness: `{TASK_DIR}/pr-bod
 Run a dry-run first:
 `.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work --body-file "{TASK_DIR}/pr-body.md" --dry-run`
 Review the dry-run output, then run the same command without `--dry-run`.
-Finish-work accepts only Trellis metadata tail such as `review.md`, `review-gate.json`, `pr-body.md`, and `pr-readiness.json`; any non-metadata dirty path or non-metadata committed drift must go back to `trellis-continue` / Phase 2-3.
+Finish-work accepts only Trellis metadata tail such as `review.md`, `reviews/*.md`, `review-gate.json`, `agent-assignment.json`, `pr-body.md`, and `pr-readiness.json`; any non-metadata dirty path or non-metadata committed drift must go back to `trellis-continue` / Phase 2-3.
 Do not call `publish-pr` directly; normal publish is only through the explicit `trellis-finish-work` closeout after archive and journal.
 [/workflow-state:completed]
 
@@ -776,7 +778,7 @@ The commit must include task work and relevant artifact updates through `prd.md`
 
 Run after the task work commit and before `finish-work`.
 
-`review-branch.sh` validates that planning approval evidence exists and that a Phase 2 check report exists for the work that was committed. It uses post-commit audit semantics: planning approval may point at the approved pre-implementation HEAD as long as the approved artifact hashes still match, and Phase 2 check may point at an ancestor when later non-metadata committed paths are covered by the recorded `phase2-check.json.dirty_paths` or when the later tail is Trellis metadata only. Branch Review Gate and publish readiness metadata may change after Phase 2 because final review and release readiness happen after the work commit; stale Phase 2 digest entries for task-local `issue-scope-ledger.json`, `pr-body.md`, `pr-readiness.json`, `agent-assignment.json`, `review.md`, and `review-gate.json` may be ignored only in this post-commit audit and are revalidated by the gate or publish validators before pass or publish. This exception must not apply to source, config, script, docs, schema, preset, overlay, or other non-metadata paths. If the commit contains non-metadata paths that were not recorded in Phase 2 dirty paths, or the current working tree has non-metadata dirty paths, return to Phase 2 instead of re-recording evidence after the fact. Do not use Branch Review Gate to bypass `trellis-check`; Phase 2 check and Phase 3 review gate are separate artifacts.
+`review-branch.sh` validates that planning approval evidence exists and that a Phase 2 check report exists for the work that was committed. It uses post-commit audit semantics: planning approval may point at the approved pre-implementation HEAD as long as the approved artifact hashes still match, and Phase 2 check may point at an ancestor when later non-metadata committed paths are covered by the recorded `phase2-check.json.dirty_paths` or when the later tail is Trellis metadata only. Branch Review Gate and publish readiness metadata may change after Phase 2 because final review and release readiness happen after the work commit; stale Phase 2 digest entries for task-local `issue-scope-ledger.json`, `pr-body.md`, `pr-readiness.json`, `agent-assignment.json`, `review.md`, `reviews/*.md`, and `review-gate.json` may be ignored only in this post-commit audit and are revalidated by the gate or publish validators before pass or publish. This exception must not apply to source, config, script, docs, schema, preset, overlay, or other non-metadata paths. If the commit contains non-metadata paths that were not recorded in Phase 2 dirty paths, or the current working tree has non-metadata dirty paths, return to Phase 2 instead of re-recording evidence after the fact. Do not use Branch Review Gate to bypass `trellis-check`; Phase 2 check and Phase 3 review gate are separate artifacts.
 
 ##### 3.5.1 AI Review Prompt
 
@@ -802,7 +804,7 @@ Before or immediately after dispatching the independent review, record the revie
 - follow-up review that verifies fixes may use `问题闭环审查代理`;
 - the pass/final release review uses `最终放行审查代理`.
 
-Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reuse_policy`, and `reuse_decision`; `round` values must be unique and strictly increasing in recorded order so the final round is unambiguous. If any review round finds a finding, including a previous `最终放行审查代理` round that discovered a new issue, that same technical `agent_id` must later be reused as `问题闭环审查代理` and record `findings_count: 0` with `reuse_decision: reuse-for-closure` to confirm its own finding is closed. Only after every finding owner has a later successful closure round may the workflow dispatch a fresh new `最终放行审查代理`. A finding owner must not become the `最终放行审查代理`. The final pass round must be the last review round, use a fresh new `最终放行审查代理`, set `reuse_decision: new-agent`, review the current HEAD's complete diff, and record `findings_count: 0`. If the same technical agent is reused for closure, record why reuse is limited to closure. If an agent is replaced or an unfinished review agent is interrupted, record the `status_events[]` reason, predecessor output/diff handoff, and later completion/failure chain. `platform_nickname` should be the Chinese UI nickname when the platform provides one; otherwise record the raw automatic nickname. It remains display-only either way.
+Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reuse_policy`, `reuse_decision`, and the raw review report digest fields. Each review round must have a task-local raw Markdown report under `{TASK_DIR}/reviews/*.md`; record it with `record-agent-assignment.sh --review-round ... --review-round-report "{TASK_DIR}/reviews/round-NNN-<purpose>.md"`. `round` values must be unique and strictly increasing in recorded order so the final round is unambiguous. If any review round finds a finding, including a previous `最终放行审查代理` round that discovered a new issue, that same technical `agent_id` must later be reused as `问题闭环审查代理` and record `findings_count: 0` with `reuse_decision: reuse-for-closure` to confirm its own finding is closed. Only after every finding owner has a later successful closure round may the workflow dispatch a fresh new `最终放行审查代理`. A finding owner must not become the `最终放行审查代理`. The final pass round must be the last review round, use a fresh new `最终放行审查代理`, set `reuse_decision: new-agent`, review the current HEAD's complete diff, and record `findings_count: 0`. If the same technical agent is reused for closure, record why reuse is limited to closure. If an agent is replaced or an unfinished review agent is interrupted, record the `status_events[]` reason, predecessor output/diff handoff, and later completion/failure chain. `platform_nickname` should be the Chinese UI nickname when the platform provides one; otherwise record the raw automatic nickname. It remains display-only either way.
 
 The AI/human review must cover:
 
@@ -827,14 +829,19 @@ Review results must distinguish:
 - `observation`: non-blocking review note that does not claim the current PR is defective.
 - `followup_candidate`: out-of-scope future work candidate that should become a follow-up issue or Issue Scope Ledger entry when appropriate, but is not a current PR finding.
 
-Persist the independent review result in the conversation and in the task-local
-artifact `{TASK_DIR}/review.md`. Independent review agents must review the
+Persist each independent review round in the conversation and in a task-local
+raw report under `{TASK_DIR}/reviews/*.md`. Keep `{TASK_DIR}/review.md` as the
+final human rollup: it summarizes review rounds, findings lifecycle, key
+evidence, final pass/fail conclusion, and links every raw report. The standard
+top-level artifact table still defaults to the human rollup `review.md`; raw
+reports are task metadata reached through `review.md` links and gate digest
+evidence, not separate default table rows. Independent review agents must review the
 branch diff and repository artifacts directly from an AI reviewer perspective;
 they do not execute Guru Team recorder/validator extension scripts such as
 `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or
 `record-*`. The main session runs those scripts only after the review result
-exists, to record and validate objective gate evidence. The review report must
-include concrete
+exists, to record and validate objective gate evidence. Each raw report and the
+final rollup must include concrete
 summary/evidence, checked diff range, validation notes, deployment impact
 judgment, Docs SSOT reconciliation, findings/observations/follow-up candidates
 even when each list is empty, and the Chinese logical review role plus whether
@@ -852,7 +859,7 @@ task worktree only.
 Only after every finding owner has completed a successful same-agent
 `问题闭环审查代理` closure round for its finding, then a fresh `最终放行审查代理` has completed an
 independent review of the current HEAD's full diff with zero findings and
-`{TASK_DIR}/review.md` exists, and `agent-assignment.json.status_events[]` has no unclosed `terminated-unfinished` chain, write the passing gate artifact. The pass path must include
+`{TASK_DIR}/review.md` exists and links every `{TASK_DIR}/reviews/*.md` raw report, and `agent-assignment.json.status_events[]` has no unclosed `terminated-unfinished` chain, write the passing gate artifact. The pass path must include
 `--review-source independent-agent` and `--review-report {TASK_DIR}/review.md`;
 `--reviewer` may additionally record the independent reviewer identity, but it
 cannot replace the review report. Always pass task-local `agent-assignment.json`
@@ -887,15 +894,18 @@ Use `--observation '中文观察|path/to/file'` for non-blocking observations an
 candidates. Do not downgrade an actual current-scope defect into an observation
 or follow-up candidate to pass the gate.
 
-The artifact records base/head, diff command, conclusion, reviewer identity metadata, review source, review-report digest, agent-assignment digest/roles summary, summary, concrete evidence lines, findings, observations, follow-up candidates, changed files, Issue Scope Ledger coverage, and validation evidence. It is written to `{TASK_DIR}/review-gate.json` by default.
+The artifact records base/head, diff command, conclusion, reviewer identity metadata, review source, final `review.md` digest, raw `verification_evidence.review_reports[]` digest summaries from `agent-assignment.json.review_rounds[]`, agent-assignment digest/roles summary, summary, concrete evidence lines, findings, observations, follow-up candidates, changed files, Issue Scope Ledger coverage, and validation evidence. It is written to `{TASK_DIR}/review-gate.json` by default.
 
-Passing the gate is not a blank assertion. `--pass` requires zero findings, `--review-source independent-agent`, a non-main-session `--reviewer`, a Chinese `--summary`, at least one concrete `--evidence` line from the actual review, `--review-report` pointing at the task-local `review.md`, and `--agent-assignment` pointing at the task-local `agent-assignment.json`. `review-gate.json` must record `review_source`, `review_report.path`, `sha256`, `size_bytes`, `modified_at`, `agent_assignment.path`, `sha256`, `size_bytes`, `modified_at`, `roles`, review round counts, and status event counts, so the recorder can validate closure-before-final, fresh final reviewer metadata, and unfinished sub-agent recovery-chain completeness. Use additional `--evidence` lines for important validation commands or review coverage notes. If the current platform/session cannot provide independent Agent review evidence, do not write a passing gate; stop with Branch Review Gate pending.
+Passing the gate is not a blank assertion. `--pass` requires zero findings, `--review-source independent-agent`, a non-main-session `--reviewer`, a Chinese `--summary`, at least one concrete `--evidence` line from the actual review, `--review-report` pointing at the task-local rollup `review.md`, and `--agent-assignment` pointing at the task-local `agent-assignment.json`. `review-gate.json` must record `review_source`, `review_report.path`, `sha256`, `size_bytes`, `modified_at`, `review_reports[].path`, `sha256`, `size_bytes`, `modified_at`, `round`, `logical_role`, `agent_id`, `reviewed_head`, `findings_count`, `agent_assignment.path`, `sha256`, `size_bytes`, `modified_at`, `roles`, review round counts, and status event counts, so the recorder can validate raw report retention, closure-before-final, fresh final reviewer metadata, and unfinished sub-agent recovery-chain completeness. Use additional `--evidence` lines for important validation commands or review coverage notes. If the current platform/session cannot provide independent Agent review evidence, do not write a passing gate; stop with Branch Review Gate pending.
 
 Findings artifacts are failed Branch Review Gate records, but they still record
 a prior independent review. The findings path must also include
-`--review-source independent-agent` and `--review-report` pointing at the
-task-local `review.md`; omitting either means the artifact is reviewer-only and
-must be rejected.
+`--review-source independent-agent`, `--review-report` pointing at the
+task-local `review.md`, and `--agent-assignment` pointing at task-local
+`agent-assignment.json`; omitting any of them means the artifact is reviewer-only
+or lacks raw report evidence and must be rejected. The current `HEAD` must have
+a matching `review_rounds[]` entry whose `findings_count` equals the findings
+being recorded.
 
 `--review-report` must be exactly the task-local `review.md`; do not pass `prd.md`, `design.md`, `phase2-check.json`, or any other task artifact as the review report.
 
@@ -912,8 +922,9 @@ Do not implement this gate as a non-blocking task lifecycle hook. The workflow p
 #### 3.6 Finish-work archive and journal `[required · once]`
 
 Start only after Branch Review Gate has passed for the current HEAD. If only
-Trellis metadata such as `review.md` / `review-gate.json` remains uncommitted
-after the reviewed code HEAD, finish-work may allow that metadata tail:
+Trellis metadata such as `review.md`, `reviews/*.md`, `review-gate.json`,
+`agent-assignment.json`, or PR readiness files remains uncommitted after the
+reviewed code HEAD, finish-work may allow that metadata tail:
 
 ```bash
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json --allow-metadata-after-gate
@@ -931,7 +942,7 @@ preview, then as the formal finish:
   --body-file "{TASK_DIR}/pr-body.md"
 ```
 
-The `--from-trellis-finish-work` marker is required proof that the explicit finish entrypoint was invoked; `trellis-continue` must not add or synthesize it. Ordinary direct `finish-work.sh` calls fail before gate, archive, journal, push, or PR side effects. The helper then runs the normal finish-work actions: it verifies the passed gate has `review_report` digest evidence, rejects uncommitted non-metadata changes, archives the active task with `task.py archive`, records the session journal with `add_session.py`, commits any remaining Trellis metadata-only changes, then invokes publish.
+The `--from-trellis-finish-work` marker is required proof that the explicit finish entrypoint was invoked; `trellis-continue` must not add or synthesize it. Ordinary direct `finish-work.sh` calls fail before gate, archive, journal, push, or PR side effects. The helper then runs the normal finish-work actions: it verifies the passed gate has final `review_report` digest evidence plus raw `review_reports[]` digest evidence, rejects uncommitted non-metadata changes, archives the active task with `task.py archive`, records the session journal with `add_session.py`, commits any remaining Trellis metadata-only changes, then invokes publish.
 
 When `--dry-run` is also passed with the explicit finish intent marker, the helper is a side-effect-free readiness preview: it validates the same gate, dirty-state, and PR body/readiness inputs, then prints the planned archive, journal, metadata commit, and publish actions without moving task files, writing journal entries, creating commits, pushing, or creating a PR.
 
