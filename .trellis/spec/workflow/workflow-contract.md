@@ -117,14 +117,16 @@ Gate:
   links to `prd.md`, `design.md`, and `implement.md`, then received explicit
   post-planning user confirmation before `task.py start`. It must use
   `user_confirmation.source=explicit-post-planning-review` and record matching
-  hash / size / modified-time metadata for all three planning documents, plus
-  the dirty paths present at approval time. At the same `HEAD`, validator
-  freshness requires the recorded dirty paths to match the current working
-  tree after excluding `planning-approval.json` and the reviewed planning
-  documents. In committed-head audit mode, metadata-only tail changes may
-  remain dirty, but any current non-metadata dirty path fails closed. Phase 0
-  handoff approval, generic workflow confirmation, or old `source=workflow`
-  artifacts fail closed. `task.py start` is not proof of planning review.
+  hash / size metadata for all three planning documents, plus modified-time,
+  HEAD, and dirty paths as audit context. Validator freshness is based on the
+  reviewed planning document digests, not current `HEAD` or working-tree dirty
+  paths: implementation commits, metadata tail, or unrelated dirty paths do not
+  invalidate approval while `prd.md`, `design.md`, and `implement.md` content
+  still matches the last explicit user review. If any of those three planning
+  documents changes, show the three links again and wait for fresh explicit
+  post-planning confirmation. Phase 0 handoff approval, generic workflow
+  confirmation, or old `source=workflow` artifacts fail closed. `task.py start`
+  is not proof of planning review.
 - `phase2-check.json` records complete `trellis-check` coverage before commit.
   Passing validation commands alone is not proof that requirements, design,
   implementation, tests, specs, docs, cross-layer flow, and deployment impact

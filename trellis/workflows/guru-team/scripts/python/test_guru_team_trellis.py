@@ -1200,7 +1200,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
 
         self.assertTrue(any("已过期" in error for error in raised.exception.payload["errors"]))
 
-    def test_check_planning_approval_rejects_modified_at_drift(self) -> None:
+    def test_check_planning_approval_allows_modified_at_drift_when_content_matches(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
@@ -1209,15 +1209,14 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             prd = self.task_dir / "prd.md"
             new_mtime = prd.stat().st_mtime + 10
             os.utime(prd, (new_mtime, new_mtime))
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_planning_approval(planning_args())
+            check = gtt.cmd_check_planning_approval(planning_args())
         finally:
             for patcher in reversed(patches):
                 patcher.stop()
 
-        self.assertTrue(any("modified_at" in error for error in raised.exception.payload["errors"]))
+        self.assertEqual(check["status"], "ok")
 
-    def test_check_planning_approval_allows_committed_head_only_when_explicit(self) -> None:
+    def test_check_planning_approval_allows_head_drift_when_artifacts_match(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
@@ -1228,21 +1227,11 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                 patcher.stop()
 
         with mock.patch.object(gtt, "current_head", return_value="def456"):
-            _path, _payload, strict_errors = gtt.validate_planning_approval(self.root, self.task_dir)
-        self.assertTrue(any("HEAD" in error for error in strict_errors))
+            _path, _payload, errors = gtt.validate_planning_approval(self.root, self.task_dir)
 
-        with (
-            mock.patch.object(gtt, "current_head", return_value="def456"),
-            mock.patch.object(gtt, "is_ancestor", return_value=True),
-        ):
-            _path, _payload, relaxed_errors = gtt.validate_planning_approval(
-                self.root,
-                self.task_dir,
-                allow_committed_head=True,
-            )
-        self.assertEqual(relaxed_errors, [])
+        self.assertEqual(errors, [])
 
-    def test_check_planning_approval_rejects_dirty_path_drift(self) -> None:
+    def test_check_planning_approval_allows_dirty_path_drift_when_artifacts_match(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
@@ -1258,9 +1247,9 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         ):
             _path, _payload, errors = gtt.validate_planning_approval(self.root, self.task_dir)
 
-        self.assertTrue(any("dirty_paths" in error for error in errors))
+        self.assertEqual(errors, [])
 
-    def test_check_planning_approval_rejects_non_metadata_dirty_after_committed_head(self) -> None:
+    def test_check_planning_approval_allows_non_metadata_dirty_after_head_drift_when_artifacts_match(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
@@ -1281,7 +1270,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                 allow_committed_head=True,
             )
 
-        self.assertTrue(any("非 Trellis metadata" in error for error in errors))
+        self.assertEqual(errors, [])
 
     def test_check_planning_approval_allows_metadata_dirty_after_committed_head(self) -> None:
         patches = self.patch_common()

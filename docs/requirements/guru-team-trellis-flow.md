@@ -173,13 +173,14 @@ task-local `issue-scope-ledger.json` 负责。
 | 7 | Middle-platform Knowledge Gate | Guru Team gate | 中台 SDK/framework 相关任务要检查 `guru-knowledge-center` MCP 可用性并留 citation 或 warning。 |
 | 8 | `implement.jsonl` / `check.jsonl` | Trellis + Guru context | sub-agent 模式下整理 spec/research manifest；inline 模式由 skill 拉取上下文。 |
 | 9 | Explicit post-planning review | Guru Team gate | 主会话展示 `prd.md`、`design.md`、`implement.md` 三个 task-local 链接，并说明用户确认前不会进入实现、不会派发 `trellis-implement`、不会记录 `phase2-check.json`。 |
-| 10 | `planning-approval.json` | Guru Team gate evidence | 用户在看到三份规划文档链接后明确确认，recorder 写入 `review_prompt_presented_at`、`approved_at`、三份 artifact hash/size/mtime、HEAD、dirty paths 和 `user_confirmation.source=explicit-post-planning-review`；validator 在同 HEAD 下比较当前 dirty paths，committed-head audit 只允许 metadata-only tail。 |
+| 10 | `planning-approval.json` | Guru Team gate evidence | 用户在看到三份规划文档链接后明确确认，recorder 写入 `review_prompt_presented_at`、`approved_at`、三份 artifact hash/size/mtime、HEAD、dirty paths 和 `user_confirmation.source=explicit-post-planning-review`；validator 以三份规划文档当前 hash/size 是否仍匹配为 freshness 判定，HEAD、mtime、dirty paths 只作为审批时审计上下文。 |
 | 11 | `task.py start` | 官方 Trellis | 只做状态迁移到 `in_progress`；不代表规划已经被审查。 |
 
 关键边界：用户同意创建 task，不等于同意进入实现；`task.py start` 之前必须先有
 `planning-approval.json` 且 `check-planning-approval.sh` 通过。Phase 0 handoff confirmation、旧
-`source=workflow` planning approval、或规划文档确认后发生 hash/size/mtime 变化，均必须 fail
-closed，并重新展示三份规划文档链接等待用户确认。
+`source=workflow` planning approval、或规划文档确认后发生内容 hash/size 变化，均必须 fail
+closed，并重新展示三份规划文档链接等待用户确认；实现提交导致的 HEAD 变化、metadata tail
+或无关 dirty paths 不应单独使 planning approval stale。
 
 ## 6. Phase 2：Execute / check
 

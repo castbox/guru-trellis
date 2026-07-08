@@ -585,9 +585,11 @@ The user's Phase 0 handoff approval to create a GitHub issue, worktree, branch,
 or Trellis task is not planning approval. Do not reuse a Phase 0 confirmation,
 generic "continue" consent, or historical `planning-approval.json` with
 `user_confirmation.source=workflow`. If `planning-approval.json` is missing,
-stale, has old schema/source, or no longer matches the current
-`prd.md`/`design.md`/`implement.md` digests, show the three links again and wait
-for a fresh explicit post-planning confirmation.
+has old schema/source, or the current `prd.md`/`design.md`/`implement.md`
+content digests no longer match the last explicit user-reviewed plan, show the
+three links again and wait for a fresh explicit post-planning confirmation.
+Current `HEAD` drift, metadata tail, or unrelated dirty paths alone are not a
+planning approval failure.
 
 #### 1.5 Activate task `[required · once]`
 
@@ -610,7 +612,9 @@ python3 ./.trellis/scripts/task.py start <task-dir>
 
 Do not start implementation until the user approves the displayed planning
 artifacts and `planning-approval.json` matches the current planning artifact
-hash, size, and modified-time metadata. `task.py start` is only a status
+hash and size metadata. Modified-time, approval `HEAD`, and `dirty_paths` are
+audit context; they do not by themselves require another user review while the
+three planning document contents still match. `task.py start` is only a status
 transition; it is not planning review evidence.
 
 #### 1.6 Completion criteria
@@ -638,7 +642,7 @@ transition; it is not planning review evidence.
 [workflow-state:in_progress]
 Flow: `trellis-implement` -> `trellis-check` -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and journal succeed.
-Before dispatching `trellis-implement` / channel `implement` or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing, stale, old-schema, or non-`explicit-post-planning-review` approval blocks Phase 2.
+Before dispatching `trellis-implement` / channel `implement` or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, or changed `prd.md`/`design.md`/`implement.md` content blocks Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
 Before commit, record and check `phase2-check.json`; it records completed `trellis-check` AI evidence, and validation commands or recorder success alone are not a complete check.
 Main-session default on dispatch platforms: dispatch `trellis-implement` / channel `implement`, wait for an implementation handoff, then dispatch `trellis-check` / channel `check`. Dispatch prompt starts with `Active task: <task path from task.py current>`. The main session may coordinate and record evidence, but it must not directly implement or directly check in default `sub-agent` mode.
 After dispatching an implement/check sub-agent, record `实现代理` or `阶段二检查代理` in `agent-assignment.json`; prefer the Chinese UI nickname configured by the agent file when available. If the platform does not expose `agent_id` or nickname, keep the field as an empty string and explain that fact in the Chinese reason. A wait timeout is only a wait-window result; do not terminate or summarize a still-progressing sub-agent because total runtime is long. Record `status_events[]` for wait timeout, progress observed, stale assessment, continue-waiting, resume/replacement, unfinished termination, completion, or explicit failure.
@@ -650,7 +654,7 @@ Read context: jsonl entries -> `prd.md` -> `design.md` -> `implement.md`.
 [workflow-state:in_progress-inline]
 Flow: `trellis-before-dev` -> edit -> `trellis-check` -> validation -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and journal succeed.
-Before editing or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing, stale, old-schema, or non-`explicit-post-planning-review` approval blocks inline Phase 2.
+Before editing or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, or changed `prd.md`/`design.md`/`implement.md` content blocks inline Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
 Before commit, record and check `phase2-check.json`; validation commands alone are not a complete `trellis-check`.
 Do not dispatch implement/check sub-agents in inline mode.
 Before edits, confirm knowledge gate and docs SSOT responsibilities from artifacts.

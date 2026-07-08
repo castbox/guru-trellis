@@ -269,8 +269,10 @@ after the main session displayed task-local links to `prd.md`, `design.md`, and
 `implement.md`. The artifact uses
 `user_confirmation.source=explicit-post-planning-review` and records hash /
 size / modified-time metadata for all three files; Phase 0 handoff approval or
-old `source=workflow` evidence must fail closed. `task.py start` remains only a
-status transition. `record-phase2-check.sh` records the full-scope `trellis-check`
+old `source=workflow` evidence must fail closed. Freshness is based on the three
+planning document content digests, not later HEAD drift, metadata tail, or
+unrelated dirty paths. `task.py start` remains only a status transition.
+`record-phase2-check.sh` records the full-scope `trellis-check`
 result before commit, including the pre-commit `dirty_paths`; validation
 commands are evidence inside that report, not a substitute for the check.
 `phase2-check.json` is a Guru Team artifact that freezes the completed

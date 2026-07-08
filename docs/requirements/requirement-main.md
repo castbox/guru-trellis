@@ -35,7 +35,7 @@ Canonical 资产：
 | 业务项目中文文档默认规则 | 业务项目 `.trellis/spec/**`、`.trellis/tasks/**`、`docs/**` durable docs、`00-bootstrap-guidelines` 生成或补齐的 docs SSOT，以及 workflow artifact human-readable 字段默认中文；literal token 可保留英文。 |
 | Phase 1 planning | Trellis task 创建后写中文 `prd.md` / `design.md` / `implement.md`，主会话必须显式展示三份 task-local 规划文档链接并等待用户 post-planning 确认；Phase 0 handoff 确认不能替代 planning approval。 |
 | Phase 2 execute/check | 默认 sub-agent mode 下实现由 `trellis-implement` / channel `implement` 完成并输出 handoff，随后 `trellis-check` / channel `check` 基于真实 diff、task artifacts、spec、docs/overlay/config/test 和验证命令完成完整检查；不用主会话自检或少量命令通过替代完整检查。 |
-| Phase 3 finish/publish | commit 后由独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出 `review.md`，再经过 Branch Review Gate；之后由 `trellis-finish-work` archive task、记录 journal、提交 metadata 并发布非 draft PR。 |
+| Phase 3 finish/publish | commit 后由独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff；每轮保留 task-local `reviews/*.md` raw report，最终 `review.md` 作为 rollup 汇总并链接 raw reports，再经过 Branch Review Gate；之后由 `trellis-finish-work` archive task、记录 journal、提交 metadata 并发布非 draft PR。 |
 | Auto-bootstrap 日常入口 | 用户日常直接描述任务、贴 issue URL 或说 issue number；`trellis-start` 是 fallback / explicit orientation，不是每个任务的必需入口。 |
 
 边界：
@@ -92,8 +92,12 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 - Issue #5 / PR #12：Branch Review Gate 前必须先执行 AI review prompt。
 - Issue #8 / PR #25：增加 planning approval 与 phase2 check 可审计证据。
 - Issue #52：`prd.md` / `design.md` / `implement.md` 生成后必须展示三份文档链接并等待用户显式 post-planning 确认；旧 `source=workflow` 或 Phase 0 handoff 确认 fail closed。
-- Issue #20 / PR #22：Branch Review Gate 每次必须产出 task-local `review.md`，并由
-  `review-gate.json` 记录 digest。
+- Issue #20 / PR #22：Branch Review Gate 建立 task-local final `review.md` 人类入口和
+  `review-gate.json` digest 基线。
+- Issue #70：多轮 Branch Review 每轮保留 task-local `reviews/*.md` raw report，最终
+  `review.md` 只做 rollup 并链接 raw reports；`agent-assignment.json.review_rounds[]` 和
+  `review-gate.json.verification_evidence.review_reports[]` 追溯 raw report digest。#61
+  顶层 artifact 表默认仍只列 final `review.md`。
 - PR #21：`#20` 的早期 closed 未合并实现，由 PR #22 替代。
 - Issue #62：sub-agent wait timeout / stale / unfinished termination 策略，避免把等待窗口
   timeout 或未闭环部分输出当作 pass evidence。
@@ -102,17 +106,17 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 
 | 能力 | Artifact / 脚本 | 说明 |
 | --- | --- | --- |
-| Planning start gate | `planning-approval.json`、`record-planning-approval.sh`、`check-planning-approval.sh` | 记录三份 planning artifact 的 hash / size / mtime、reviewer、`review_prompt_presented_at`、`approved_at`、HEAD 和 `user_confirmation.source=explicit-post-planning-review`；`task.py start` 只是状态写入，Phase 0 handoff 确认和旧 `source=workflow` 不能通过 gate。 |
+| Planning start gate | `planning-approval.json`、`record-planning-approval.sh`、`check-planning-approval.sh` | 记录三份 planning artifact 的 hash / size / mtime、reviewer、`review_prompt_presented_at`、`approved_at`、HEAD、dirty paths 和 `user_confirmation.source=explicit-post-planning-review`；validator 以三份规划文档内容 digest 是否仍匹配为 freshness 判定，HEAD / dirty paths drift 不单独阻塞；`task.py start` 只是状态写入，Phase 0 handoff 确认和旧 `source=workflow` 不能通过 gate。 |
 | Phase 2 check gate | `phase2-check.json`、`record-phase2-check.sh`、`check-phase2-check.sh` | commit 前记录完整 `trellis-check` AI check 覆盖范围、验证命令、findings 和当时的 `dirty_paths`；`phase2-check.json` 是 Guru Team evidence artifact，不是 Trellis 原生步骤本身，命令和脚本通过只是 evidence 的一部分。 |
 | AI review prompt | workflow / overlay 文案 | Branch Review Gate 前必须由独立 review sub-agent 审查 `origin/<base>...HEAD` 完整 diff；review sub-agent 不继续实现、不替 implement/check 代理补工作。 |
-| Review report 必填 | `review.md` | AI/human review 判断的主证据，必须 task-local。 |
+| Raw reports + rollup 必填 | `reviews/*.md`、`review.md` | 每轮 AI/human review 判断都必须写 task-local raw Markdown report；顶层 `review.md` 是最终 rollup，汇总 review rounds、findings lifecycle、关键证据、最终结论，并链接所有 raw reports。#61 顶层 artifact 表默认仍只列 final `review.md`，raw reports 通过 rollup 和 gate digest 追溯。 |
 | Finding 全阻断 | workflow、`review-branch.sh`、`review-gate.json` | Branch Review Gate 中任意 finding 都阻断，包括 P3；`observation` 与 `followup_candidate` 可记录但不是放行 finding 的替代品。 |
 | 闭环后 Fresh 最终放行审查 | `agent-assignment.json`、`review-branch --agent-assignment` | 任何发现过 findings 的 agent 必须先作为同一 `问题闭环审查代理` 确认其 finding 已闭环并记录 0 findings；之后最终 pass 必须由新的 fresh `最终放行审查代理` 完整审查当前 HEAD diff 并记录 0 findings。 |
 | Sub-agent status ledger | `agent-assignment.json.status_events[]`、`record-agent-assignment.sh`、`review-branch --agent-assignment` | 记录 wait timeout、progress observed、stale assessed、continue waiting、resume/replacement、terminated unfinished、completed、failed；`wait_agent` / `trellis channel wait` timeout 不是失败证据，未完成终止必须恢复同一 agent 或由 replacement 继承上下文并到达 completed/failed，否则 Phase 2 / Branch Review Gate 不得放行。 |
-| Review gate recorder | `review-branch.sh`、`check-review-gate.sh`、`review-gate.json` | 固化 review result、review report digest、base/head、evidence、findings、observations、follow-up candidates；脚本不是 reviewer，且独立 review sub-agent 不调用这些 recorder/validator 扩展脚本作为审查过程。 |
+| Review gate recorder | `review-branch.sh`、`check-review-gate.sh`、`review-gate.json` | 固化 review result、final `review.md` digest、raw `review_reports[]` digest、base/head、evidence、findings、observations、follow-up candidates；脚本不是 reviewer，且独立 review sub-agent 不调用这些 recorder/validator 扩展脚本作为审查过程。 |
 | Independent review source | `--review-source independent-agent` | 通过 gate 不能来自 `self-review` 或 `*-main-session`。 |
-| Sub-agent assignment ledger | `agent-assignment.json`、`record-agent-assignment.sh`、`check-agent-assignment.sh`、`review-branch --agent-assignment` | 记录中文 `logical_role`、技术 `agent_id`、展示用 `platform_nickname`、HEAD、review round 和复用/更换判断；脚本只做客观校验，不决定复用。UI 展示面优先使用中文 subagent 名称，平台只给随机/自动昵称时记录原始值。 |
-| 默认 sub-agent mode 执行边界 | workflow / overlay / agent definitions | 默认 mode 下必须有 `trellis-implement`、`trellis-check` 和 Branch Review review sub-agent 三段真实 sub-agent evidence；main session 只协调和记录，不能用主会话实现、自检、自审或 recorder/validator 成功替代。inline/self-exemption 必须有 artifact evidence，否则 fail closed。 |
+| Sub-agent assignment ledger | `agent-assignment.json`、`record-agent-assignment.sh`、`check-agent-assignment.sh`、`review-branch --agent-assignment` | 记录中文 `logical_role`、技术 `agent_id`、展示用 `platform_nickname`、HEAD、review round、raw report path/sha256/size/modified_at 和复用/更换判断；脚本只做客观校验，不决定复用。UI 展示面优先使用中文 subagent 名称，平台只给随机/自动昵称时记录原始值。 |
+| 默认 sub-agent mode 执行边界 | workflow / overlay / agent definitions | 默认 mode 下必须有 `trellis-implement`、`trellis-check` 和 Branch Review review sub-agent 三段真实 sub-agent evidence；review sub-agent 每轮输出 `reviews/*.md` raw report，最终形成 `review.md` rollup。main session 只协调和记录，不能用主会话实现、自检、自审或 recorder/validator 成功替代。inline/self-exemption 必须有 artifact evidence，否则 fail closed。 |
 | Post-commit audit / metadata tail 规则 | `review-branch.sh`、`finish-work.sh` / gate 校验 | Branch Review Gate 接受 Phase 2 后提交的非 metadata task paths，但这些 paths 必须已被 commit 前 `phase2-check.json.dirty_paths` 覆盖；review gate 通过后到 finish-work 之间仍只允许 Trellis metadata tail，新的非 metadata 变更会使 evidence stale。 |
 
 覆盖范围：
@@ -184,7 +188,7 @@ Canonical 资产：
 | 配置保护 | 已有 `.trellis/guru-team/config.yml` 不为补 key 被覆盖；`middle_platform_knowledge.mode` 缺失时按 `optional_warn`。 |
 | Codex dispatch 默认 | 物化 `.trellis/config.yaml` 的 `codex.dispatch_mode: sub-agent` 默认，显式 `inline` 保留。 |
 | Subagent UI 中文展示名 | 安装 `.trellis/agents`、`.codex/agents`、`.cursor/agents`、`.claude/agents`；保留 `trellis-implement` / `trellis-check` / `trellis-research` / `implement` / `check` 技术标识。Cursor / Claude / channel runtime 用中文 `description` 和标题作为展示名来源；Codex 当前限制 `nickname_candidates` 为 ASCII，因此只用中文 `description` 和 assignment 角色表达中文 UI 语义。 |
-| Subagent 执行边界 | workflow、continue overlay、agent definitions | 默认 sub-agent mode 下 main session 必须 dispatch implement/check/review sub-agent 并等待 evidence；`trellis-implement` 输出实现 handoff，`trellis-check` 输出 Phase 2 evidence，Branch Review sub-agent 输出可被 #44 gate 消费的 review report。 |
+| Subagent 执行边界 | workflow、continue overlay、agent definitions | 默认 sub-agent mode 下 main session 必须 dispatch implement/check/review sub-agent 并等待 evidence；`trellis-implement` 输出实现 handoff，`trellis-check` 输出 Phase 2 evidence，Branch Review sub-agent 输出可被 gate 消费的 `reviews/*.md` raw reports 与最终 `review.md` rollup。 |
 | 平台可选安装 | 默认安装 shared + Codex + Cursor；支持重复 `--platform codex|cursor|claude`；支持 `--all-platforms`。 |
 | 未选择平台不恢复 | 默认 Codex + Cursor 安装不创建 `.claude/`；重复 apply 不会恢复未选择平台目录。 |
 | Extension version/provenance | `trellis/guru-team-extension.json` 是 Guru Team extension canonical version；installer 写入 `.trellis/guru-team/extension.json` 记录安装版本、source ref/commit、source tree state 和 selected platforms。 |
@@ -274,7 +278,7 @@ Canonical 资产：
 | #15 | closed | #16 merged | `no_task` 当前 checkout 直改必须显式审批。 |
 | #17 | closed | #23 merged | PR body 自解释质量标准与低信息量摘要阻塞。 |
 | #18 | closed | #19 merged | PR publish 只能发生在 finish-work 后。 |
-| #20 | closed | #22 merged | Branch Review Gate 每次必须产出 `review.md` 并记录 digest；#21 为 closed 未合并尝试。 |
+| #20 | closed | #22 merged | Branch Review Gate 建立 task-local final `review.md` 人类入口和 gate digest 基线；#21 为 closed 未合并尝试，#70 在其上扩展 raw reports + rollup。 |
 | #26 | closed | #28 merged | worktree 创建后继承或初始化 Trellis developer identity。 |
 | #27 | closed | #29 merged | `finish-work --dry-run` 真正无副作用；Codex 默认 `sub-agent` dispatch。 |
 | #31 | closed | #32 merged | Guru Team extension canonical manifest、installed provenance、`check-env` / `version.sh` 可观测入口。 |
@@ -284,6 +288,7 @@ Canonical 资产：
 | #72 | open | 当前任务 | 默认 sub-agent mode 下强制 implement、Phase 2 check 和 Branch Review 均由 sub-agent 执行；main session 只协调，脚本只 recorder/validator。 |
 | #55 | open | 当前任务 | issue intake clarity / brainstorming、issue body/comment/new issue 留痕、任务中 scope-change gate。 |
 | #57 | open | 当前任务 | 业务项目 Trellis 文档语言默认中文；installer 归一化已知英文模板语言规则；bootstrap docs SSOT 中文规则。 |
+| #70 | open | 当前任务 | Branch Review 每轮保留 `reviews/*.md` raw report；最终 `review.md` 是 rollup 并链接 raw reports；`agent-assignment.json.review_rounds[]` 与 `review-gate.json.verification_evidence.review_reports[]` 记录 raw digest；#61 顶层 artifact 表默认仍只列 final `review.md`。 |
 
 ## 9. 当前扩展边界
 

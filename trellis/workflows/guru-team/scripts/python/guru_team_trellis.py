@@ -3108,29 +3108,11 @@ def validate_planning_approval(
             f"{PLANNING_APPROVAL_CONFIRMATION_SOURCE}；Phase 0 handoff/workflow confirmation 不能替代规划审核确认。"
         )
     recorded_head = str(payload.get("head") or "")
-    head = current_head(root)
-    accepted_committed_head = False
-    if recorded_head != head:
-        if allow_committed_head and recorded_head and is_ancestor(root, recorded_head, "HEAD"):
-            accepted_committed_head = True
-        else:
-            errors.append(f"planning-approval.json 记录的 HEAD {recorded_head or '(missing)'} 与当前 HEAD {head} 不一致。")
+    if not recorded_head:
+        errors.append("planning-approval.json 缺少 HEAD 记录。")
     recorded_dirty = payload.get("dirty_paths")
     if not isinstance(recorded_dirty, list):
         errors.append("planning-approval.json 缺少 dirty_paths 数组。")
-    elif accepted_committed_head:
-        has_non_metadata, non_metadata_paths = has_non_metadata_dirty_paths(root)
-        if has_non_metadata:
-            errors.append(
-                "planning-approval.json 记录的 HEAD 是当前 HEAD 的祖先，但工作区存在非 Trellis metadata 变更: "
-                + ", ".join(non_metadata_paths[:20])
-            )
-    else:
-        dirty_excluded = {repo_relative(root, planning_approval_path(task_dir))}
-        dirty_excluded.update(recorded_digest_paths(payload.get("reviewed_artifacts")))
-        dirty_now = dirty_paths_excluding(root, dirty_excluded)
-        if sorted(str(item) for item in recorded_dirty) != sorted(dirty_now):
-            errors.append("planning-approval.json 记录的 dirty_paths 与当前 working tree 不一致。")
     reviewed = payload.get("reviewed_artifacts")
     approved_alias = payload.get("approved_artifacts")
     if not isinstance(reviewed, list) or not reviewed:
@@ -3149,7 +3131,7 @@ def validate_planning_approval(
             if required_path not in reviewed_paths:
                 errors.append(f"planning-approval.json 未在 reviewed_artifacts 记录 {name}。")
         for item in normalized_reviewed:
-            errors.extend(digest_errors(root, item, "planning approval reviewed_artifacts", require_modified_at_match=True))
+            errors.extend(digest_errors(root, item, "planning approval reviewed_artifacts"))
     if isinstance(approved_alias, list) and approved_alias:
         normalized_alias = [
             normalized_digest_entry(root, task_dir, item)
@@ -3161,7 +3143,7 @@ def validate_planning_approval(
             if required_path not in alias_paths:
                 errors.append(f"planning-approval.json 未在 approved_artifacts alias 记录 {name}。")
         for item in normalized_alias:
-            errors.extend(digest_errors(root, item, "planning approval approved_artifacts", require_modified_at_match=True))
+            errors.extend(digest_errors(root, item, "planning approval approved_artifacts"))
     else:
         # Old artifacts with only approved_artifacts are intentionally blocked
         # by schema/source checks above; this branch keeps error output focused.
@@ -5048,7 +5030,11 @@ def build_parser() -> argparse.ArgumentParser:
     check_planning.add_argument("--root")
     check_planning.add_argument("--json", action="store_true")
     check_planning.add_argument("--task")
-    check_planning.add_argument("--allow-committed-head", action="store_true", help="Allow the approved planning HEAD to be an ancestor for post-commit gate audits.")
+    check_planning.add_argument(
+        "--allow-committed-head",
+        action="store_true",
+        help="Compatibility flag; planning freshness is based on reviewed planning artifact digests, not HEAD drift.",
+    )
 
     phase2 = sub.add_parser("record-phase2-check")
     phase2.add_argument("--root")

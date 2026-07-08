@@ -153,16 +153,18 @@ It records:
 - `approved_artifacts[]` as a compatibility alias for the same three entries
 - dirty paths at approval time
 
-The artifact is valid only while the recorded artifact hashes and `HEAD` match.
-`check-planning-approval.sh` must also verify all three planning docs are
-present, the digest / size / modified-time metadata still matches, and the
-confirmation source is `explicit-post-planning-review`. At the same `HEAD`,
-the recorded `dirty_paths` must match the current working tree after excluding
-the approval artifact and reviewed planning documents. In committed-head audit
-mode, the planning approval may point at an ancestor `HEAD`, but the current
-working tree must be metadata-only; a non-metadata dirty path makes the
-approval stale. `task.py start` is a status transition only and must not be
-treated as planning review evidence.
+The artifact is valid while the recorded `prd.md`, `design.md`, and
+`implement.md` hashes / sizes still match the current files. `HEAD`,
+`modified_at`, and `dirty_paths` are recorded as audit context for when the
+user approved the plan; they are not freshness keys. `check-planning-approval.sh`
+must verify all three planning docs are present, required digest metadata
+exists, sha256 / size still match, and the confirmation source is
+`explicit-post-planning-review`. Later implementation commits, metadata tail
+changes, or unrelated working-tree dirty paths must not invalidate planning
+approval by themselves. If any of the three planning document contents changes,
+the validator must fail closed so the workflow can show the three links again
+and wait for fresh explicit post-planning user confirmation. `task.py start` is
+a status transition only and must not be treated as planning review evidence.
 
 ## Phase 2 Check Artifact
 
