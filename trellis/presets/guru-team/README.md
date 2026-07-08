@@ -63,14 +63,14 @@ Chinese documentation contract.
 
 Stable workflow marketplace installs should pin the repo release tag that
 combines the target official Trellis CLI version and Guru Team revision, for
-example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.1`. That release targets
+example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`. That release targets
 official `@mindfoldhq/trellis` `0.6.5`. Unpinned `gh:castbox/guru-trellis/trellis`
 is a latest/canary source and should be reported as mutable provenance.
 
 ## Apply
 
 ```bash
-git clone --depth 1 --branch v0.6.5-guru.1 \
+git clone --depth 1 --branch v0.6.5-guru.2 \
   https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project \
@@ -114,7 +114,7 @@ asserts target `.trellis/spec/**`, workspace indexes, and
 `00-bootstrap-guidelines` do not retain known English documentation language
 requirements, and runs `check-env --json` plus `version.sh --json`. Trellis CLI accepts
 `gh:user/repo/path#ref` workflow marketplace sources; the script defaults to
-`TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#v0.6.5-guru.1` for stable
+`TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#v0.6.5-guru.2` for stable
 release verification. When the source is unpinned
 `gh:castbox/guru-trellis/trellis`, the script fails closed on non-`main` branches
 or dirty marketplace workflow files unless
@@ -158,6 +158,7 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/check-env.sh`
 - `.trellis/guru-team/scripts/bash/version.sh`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh`
+- `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh`
 - `.trellis/guru-team/scripts/bash/record-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/record-phase2-check.sh`
@@ -233,7 +234,7 @@ Trellis workflow marketplace:
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.1 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.2 \
   --template guru-team
 ```
 
@@ -301,8 +302,10 @@ dirty paths and that no non-metadata dirty paths remain in the working tree.
 Do not re-record Phase 2 after commit just to make HEAD match. `review-branch.sh`
 records and validates the prior AI/human review result; it is not the reviewer.
 Passing gates require every finding owner to complete a later same-agent
-`问题闭环审查代理` review with zero findings for its finding before a fresh `最终放行审查代理`
-independent review can pass. The final review must cover the full current HEAD
+`问题闭环审查代理` review with zero findings for its finding, or an explicitly
+recorded replacement closure chain when the finding owner failed/interrupted and
+cannot continue, before a fresh `最终放行审查代理` independent review can pass. The
+final review must cover the full current HEAD
 diff with zero findings of any priority, must not continue implementation or
 patch missing Phase 2 check work, and be recorded with task-local
 `reviews/*.md` raw reports, a final `review.md` rollup that links every raw
@@ -394,6 +397,23 @@ Executor paths also enforce `naming_quality` and fail closed before creating a
 worktree, branch, or Trellis task if the generated or overridden name is low
 information, such as `issue-52`, `52-issue-52`, a bare number, or only generic
 tokens like `bug`, `fix`, `task`, `work`, `update`, or `change`.
+
+After executor handoff is written, `handoff.workspace_path` is the machine
+boundary for task artifact writes in worktree mode. Before writing or validating
+`planning-approval.json`, `phase2-check.json`, `agent-assignment.json`,
+`reviews/*.md`, `review.md`, or `review-gate.json`, run:
+
+```bash
+.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
+```
+
+The helper reports expected workspace, actual repo root, source checkout
+status, task worktree status, and suspicious current-task artifacts or review
+metadata in the source checkout. It is a deterministic validator/fact snapshot,
+not stale judgment, cleanup, or patch migration. Editing tools without an
+explicit `workdir` must use absolute paths under the task worktree selected by
+handoff `workspace_path`. This fact layer is the prerequisite for later
+heartbeat / liveness policy work such as #76.
 
 When executor paths create or reuse a worktree, they refresh the selected base
 branch again with `git fetch`, record `preflight.base_freshness` in

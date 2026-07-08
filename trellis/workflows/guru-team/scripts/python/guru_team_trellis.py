@@ -63,6 +63,31 @@ AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 REVIEW_REPORT_ARTIFACT = "review.md"
 REVIEW_ROUND_REPORT_DIR = "reviews"
 GURU_TEAM_EXTENSION_MANIFEST = Path(".trellis/guru-team/extension.json")
+WORKSPACE_BOUNDARY_SUSPICIOUS_TASK_ARTIFACTS = [
+    "task.json",
+    "prd.md",
+    "design.md",
+    "implement.md",
+    "implement.jsonl",
+    "check.jsonl",
+    PLANNING_APPROVAL_ARTIFACT,
+    PHASE2_CHECK_ARTIFACT,
+    AGENT_ASSIGNMENT_ARTIFACT,
+    REVIEW_REPORT_ARTIFACT,
+    "review-gate.json",
+    "issue-scope-ledger.json",
+    "pr-body.md",
+    "pr-readiness.json",
+]
+WORKSPACE_BOUNDARY_REVIEW_METADATA = {
+    PLANNING_APPROVAL_ARTIFACT,
+    PHASE2_CHECK_ARTIFACT,
+    AGENT_ASSIGNMENT_ARTIFACT,
+    REVIEW_REPORT_ARTIFACT,
+    "review-gate.json",
+    "pr-body.md",
+    "pr-readiness.json",
+}
 DEFAULT_PLANNING_ARTIFACTS = ["prd.md", "design.md", "implement.md"]
 DEFAULT_PHASE2_TASK_ARTIFACTS = [
     "prd.md",
@@ -1677,6 +1702,275 @@ def resolve_task_dir(root: Path, task_arg: str | None, handoff: dict[str, Any] |
     raise WorkflowError("Could not resolve current Trellis task. Pass --task <task-dir>.")
 
 
+def path_within(parent: Path, path: Path) -> bool:
+    try:
+        path.resolve().relative_to(parent.resolve())
+        return True
+    except ValueError:
+        return False
+
+
+def optional_resolved_path(value: Any) -> Path | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    return Path(text).expanduser().resolve()
+
+
+def workspace_boundary_task_relative(root: Path, handoff: dict[str, Any], task_dir: Path) -> str:
+    handoff_task = str(handoff.get("task_dir") or "").strip().replace("\\", "/")
+    if handoff_task and not Path(handoff_task).expanduser().is_absolute():
+        return handoff_task.strip("/")
+    if path_within(root, task_dir):
+        return repo_relative(root, task_dir)
+    return f".trellis/tasks/{task_dir.name}"
+
+
+def handoff_matches_boundary_task(source_handoff: dict[str, Any] | None, handoff: dict[str, Any], task_dir: Path) -> bool:
+    if not source_handoff:
+        return False
+    source_task = str(source_handoff.get("task_dir") or "").strip()
+    current_task = str(handoff.get("task_dir") or "").strip()
+    if source_task and current_task and Path(source_task).name == Path(current_task).name:
+        return True
+    if source_task and Path(source_task).name == task_dir.name:
+        return True
+    for key in ["task_slug", "workspace_slug", "branch_name", "workspace_path"]:
+        source_value = str(source_handoff.get(key) or "").strip()
+        current_value = str(handoff.get(key) or "").strip()
+        if source_value and current_value and source_value == current_value:
+            return True
+    source_issue = source_handoff.get("source_issue") if isinstance(source_handoff.get("source_issue"), dict) else {}
+    current_issue = handoff.get("source_issue") if isinstance(handoff.get("source_issue"), dict) else {}
+    source_number = str(source_issue.get("number") or "").strip()
+    current_number = str(current_issue.get("number") or "").strip()
+    return bool(source_number and current_number and source_number == current_number)
+
+
+def safe_git_status_paths(root: Path | None) -> list[str]:
+    if root is None or not root.exists():
+        return []
+    try:
+        return git_status_paths(root)
+    except (OSError, subprocess.SubprocessError):
+        return []
+
+
+def workspace_boundary_context(
+    root: Path,
+    config: dict[str, Any],
+    handoff: dict[str, Any],
+    task_dir: Path,
+) -> dict[str, Any]:
+    preflight = handoff.get("preflight") if isinstance(handoff.get("preflight"), dict) else {}
+    workspace_mode = str(handoff.get("workspace_mode") or config.get("workspace_mode") or "").strip()
+    expected_workspace = optional_resolved_path(handoff.get("workspace_path"))
+    source_checkout = optional_resolved_path(preflight.get("current_checkout") or preflight.get("repo_root"))
+    task_relative = workspace_boundary_task_relative(root, handoff, task_dir)
+    handoff_path = configured_handoff_path(root, config)
+    return {
+        "workspace_mode": workspace_mode,
+        "expected_workspace": expected_workspace,
+        "actual_repo_root": root.resolve(),
+        "source_checkout": source_checkout,
+        "task_dir": task_dir.resolve(),
+        "task_dir_relative": task_relative,
+        "handoff_path": handoff_path.resolve(),
+        "handoff_present": bool(handoff),
+    }
+
+
+def collect_workspace_boundary_snapshot(
+    context: dict[str, Any],
+    config: dict[str, Any],
+    handoff: dict[str, Any],
+) -> dict[str, Any]:
+    actual_root = context["actual_repo_root"]
+    expected_workspace = context.get("expected_workspace")
+    source_checkout = context.get("source_checkout")
+    task_dir = context["task_dir"]
+    task_relative = str(context.get("task_dir_relative") or "").strip("/")
+    task_status_root = expected_workspace if isinstance(expected_workspace, Path) else actual_root
+    source_status = safe_git_status_paths(source_checkout if isinstance(source_checkout, Path) else None)
+    task_status = safe_git_status_paths(task_status_root if isinstance(task_status_root, Path) else None)
+    suspicious: list[dict[str, Any]] = []
+
+    source_handoff_payload: dict[str, Any] | None = None
+    source_handoff_matches = False
+    if isinstance(source_checkout, Path):
+        source_handoff_path = configured_handoff_path(source_checkout, config)
+        source_handoff_payload, source_handoff_error = read_optional_json(source_handoff_path)
+        source_handoff_matches = handoff_matches_boundary_task(source_handoff_payload, handoff, task_dir)
+        if source_handoff_path.exists():
+            suspicious.append(
+                {
+                    "kind": "source_handoff",
+                    "path": repo_relative(source_checkout, source_handoff_path),
+                    "absolute_path": str(source_handoff_path.resolve()),
+                    "matches_current_task": source_handoff_matches,
+                    "error": source_handoff_error,
+                }
+            )
+
+    if (
+        isinstance(source_checkout, Path)
+        and task_relative
+        and (
+            not isinstance(expected_workspace, Path)
+            or source_checkout.resolve() != expected_workspace.resolve()
+        )
+    ):
+        source_task_dir = (source_checkout / task_relative).resolve()
+        for name in WORKSPACE_BOUNDARY_SUSPICIOUS_TASK_ARTIFACTS:
+            artifact = source_task_dir / name
+            if artifact.exists():
+                suspicious.append(
+                    {
+                        "kind": "same_task_review_metadata" if name in WORKSPACE_BOUNDARY_REVIEW_METADATA else "same_task_artifact",
+                        "path": repo_relative(source_checkout, artifact),
+                        "absolute_path": str(artifact.resolve()),
+                    }
+                )
+        reviews_dir = source_task_dir / REVIEW_ROUND_REPORT_DIR
+        if reviews_dir.exists():
+            suspicious.append(
+                {
+                    "kind": "same_task_reviews_dir",
+                    "path": repo_relative(source_checkout, reviews_dir),
+                    "absolute_path": str(reviews_dir.resolve()),
+                }
+            )
+        handoff_relative = repo_relative(source_checkout, configured_handoff_path(source_checkout, config))
+        for dirty_path in source_status:
+            normalized = dirty_path.strip().replace("\\", "/")
+            if normalized.startswith(f"{task_relative}/") or (
+                source_handoff_matches and normalized == handoff_relative
+            ):
+                suspicious.append(
+                    {
+                        "kind": "same_task_dirty_path",
+                        "path": normalized,
+                        "absolute_path": str((source_checkout / normalized).resolve()),
+                    }
+                )
+
+    return {
+        "workspace_mode": context.get("workspace_mode"),
+        "expected_workspace": str(expected_workspace) if expected_workspace else None,
+        "actual_repo_root": str(actual_root),
+        "source_checkout": str(source_checkout) if source_checkout else None,
+        "task_dir": str(task_dir),
+        "task_dir_relative": task_relative,
+        "source_checkout_status": source_status,
+        "task_worktree_status": task_status,
+        "suspicious_source_artifacts": suspicious,
+    }
+
+
+def blocking_suspicious_source_artifacts(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+    blockers: list[dict[str, Any]] = []
+    for item in snapshot.get("suspicious_source_artifacts", []):
+        if not isinstance(item, dict):
+            continue
+        kind = str(item.get("kind") or "")
+        if kind == "source_handoff" and item.get("matches_current_task") is not True:
+            continue
+        blockers.append(item)
+    return blockers
+
+
+def workspace_boundary_errors(
+    context: dict[str, Any],
+    snapshot: dict[str, Any],
+    *,
+    allow_source_clean: bool = False,
+) -> list[str]:
+    errors: list[str] = []
+    handoff_present = bool(context.get("handoff_present"))
+    workspace_mode = str(context.get("workspace_mode") or "")
+    expected_workspace = context.get("expected_workspace")
+    actual_root = context["actual_repo_root"]
+    source_checkout = context.get("source_checkout")
+    task_dir = context["task_dir"]
+    blockers = blocking_suspicious_source_artifacts(snapshot)
+
+    if workspace_mode == "worktree" and not handoff_present:
+        errors.append(
+            "workspace boundary 缺少当前 checkout 的 handoff.json，无法确认 handoff.workspace_path；"
+            "请从 intake 选定的 task worktree 运行该命令。"
+        )
+    elif handoff_present and workspace_mode == "worktree":
+        if not isinstance(expected_workspace, Path):
+            errors.append("workspace boundary 缺少 handoff.workspace_path，无法确认 task worktree。")
+        elif actual_root.resolve() != expected_workspace.resolve():
+            allow_source = (
+                allow_source_clean
+                and isinstance(source_checkout, Path)
+                and actual_root.resolve() == source_checkout.resolve()
+                and not snapshot.get("source_checkout_status")
+                and not blockers
+            )
+            if not allow_source:
+                errors.append(
+                    "workspace boundary mismatch: expected workspace_path="
+                    f"{expected_workspace}, actual_repo_root={actual_root}, source_checkout={source_checkout or '(unknown)'}, task_dir={task_dir}."
+                )
+
+    if not path_within(tasks_root(actual_root), task_dir):
+        errors.append(
+            "workspace boundary mismatch: task_dir must be under the actual repo root .trellis/tasks; "
+            f"actual_repo_root={actual_root}, task_dir={task_dir}."
+        )
+
+    if blockers:
+        blocked_paths = [str(item.get("absolute_path") or item.get("path")) for item in blockers]
+        errors.append(
+            "workspace boundary blocked: source checkout contains current-task artifacts or review metadata: "
+            + ", ".join(blocked_paths[:20])
+        )
+    return errors
+
+
+def workspace_boundary_snapshot(
+    root: Path,
+    config: dict[str, Any],
+    handoff: dict[str, Any],
+    task_dir: Path,
+    *,
+    allow_source_clean: bool = False,
+) -> dict[str, Any]:
+    context = workspace_boundary_context(root, config, handoff, task_dir)
+    snapshot = collect_workspace_boundary_snapshot(context, config, handoff)
+    errors = workspace_boundary_errors(context, snapshot, allow_source_clean=allow_source_clean)
+    snapshot["status"] = "blocked" if errors else "ok"
+    snapshot["errors"] = errors
+    return snapshot
+
+
+def assert_workspace_boundary(
+    root: Path,
+    config: dict[str, Any],
+    handoff: dict[str, Any],
+    task_dir: Path,
+    *,
+    allow_source_clean: bool = False,
+) -> dict[str, Any]:
+    snapshot = workspace_boundary_snapshot(
+        root,
+        config,
+        handoff,
+        task_dir,
+        allow_source_clean=allow_source_clean,
+    )
+    if snapshot["errors"]:
+        raise WorkflowError(
+            "Workspace boundary validation failed.",
+            exit_code=2,
+            payload=snapshot,
+        )
+    return snapshot
+
+
 def task_json(task_dir: Path) -> dict[str, Any]:
     return read_json(task_dir / "task.json")
 
@@ -2658,6 +2952,88 @@ def review_round_number(item: dict[str, Any]) -> int:
     return 0
 
 
+def finding_round_has_replacement_closure(
+    payload: dict[str, Any],
+    rounds: list[Any],
+    finding_round: dict[str, Any],
+    final_round_number: int,
+) -> bool:
+    finding_agent = str(finding_round.get("agent_id") or "").strip()
+    finding_round_number = review_round_number(finding_round)
+    if not finding_agent or finding_round_number <= 0:
+        return False
+    decisions = payload.get("reuse_decisions")
+    status_events = payload.get("status_events")
+    if not isinstance(decisions, list) or not isinstance(status_events, list):
+        return False
+    closure_candidates = [
+        item
+        for item in rounds
+        if isinstance(item, dict)
+        and review_round_number(item) > finding_round_number
+        and review_round_number(item) < final_round_number
+        and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+        and str(item.get("agent_id") or "").strip()
+        and str(item.get("agent_id") or "").strip() != finding_agent
+        and is_strict_int(item.get("findings_count"))
+        and item["findings_count"] == 0
+        and str(item.get("reuse_decision") or "").strip() == "replace"
+    ]
+    for closure in closure_candidates:
+        closure_agent = str(closure.get("agent_id") or "").strip()
+        closure_round_number = review_round_number(closure)
+        closure_head = str(closure.get("reviewed_head") or "").strip()
+        matching_decision = any(
+            isinstance(item, dict)
+            and str(item.get("decision") or "").strip() == "replace"
+            and item.get("from_round") == finding_round_number
+            and item.get("to_round") == closure_round_number
+            and str(item.get("agent_id") or "").strip() == closure_agent
+            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+            and str(item.get("head") or "").strip() == closure_head
+            and str(item.get("reason") or "").strip()
+            for item in decisions
+        )
+        predecessor_terminal_indexes = [
+            index
+            for index, item in enumerate(status_events)
+            if isinstance(item, dict)
+            and str(item.get("event") or "").strip() in {"failed", "terminated-unfinished"}
+            and str(item.get("agent_id") or "").strip() == finding_agent
+        ]
+        replacement_start_indexes = [
+            index
+            for index, item in enumerate(status_events)
+            if isinstance(item, dict)
+            and str(item.get("event") or "").strip() == "replacement-started"
+            and str(item.get("agent_id") or "").strip() == closure_agent
+            and str(item.get("supersedes_agent_id") or "").strip() == finding_agent
+            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+            and str(item.get("decision") or "").strip() == "start-replacement"
+            and str(item.get("head") or "").strip() == closure_head
+            and str(item.get("handoff_summary") or "").strip()
+        ]
+        completion_indexes = [
+            index
+            for index, item in enumerate(status_events)
+            if isinstance(item, dict)
+            and str(item.get("event") or "").strip() == "completed"
+            and str(item.get("agent_id") or "").strip() == closure_agent
+            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+            and str(item.get("decision") or "").strip() == "mark-completed"
+            and str(item.get("head") or "").strip() == closure_head
+        ]
+        matching_recovery_chain = any(
+            predecessor_index < replacement_index < completion_index
+            for predecessor_index in predecessor_terminal_indexes
+            for replacement_index in replacement_start_indexes
+            for completion_index in completion_indexes
+        )
+        if matching_decision and matching_recovery_chain:
+            return True
+    return False
+
+
 def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head: str | None = None) -> list[str]:
     rounds = payload.get("review_rounds")
     if not isinstance(rounds, list) or not rounds:
@@ -2718,6 +3094,15 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
         and item["findings_count"] > 0
         and str(item.get("agent_id") or "").strip()
     }
+    replacement_closure_agents = {
+        str(item.get("agent_id") or "").strip()
+        for item in rounds
+        if isinstance(item, dict)
+        and item is not final_round
+        and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+        and str(item.get("reuse_decision") or "").strip() == "replace"
+        and str(item.get("agent_id") or "").strip()
+    }
     missing_finding_owner_agent_rounds = [
         str(item.get("round") or index)
         for index, item in enumerate(rounds)
@@ -2757,13 +3142,16 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
             and item["findings_count"] == 0
             and str(item.get("reuse_decision") or "").strip() == "reuse-for-closure"
         ]
-        if not closure_candidates:
+        if not closure_candidates and not finding_round_has_replacement_closure(payload, rounds, finding_round, final_round_number):
             errors.append(
                 "发现过 finding 的 review agent 必须先以问题闭环审查代理复审并给出 0 findings，"
+                "或在原 agent 失败/中断时记录完整 replacement-started、replace reuse_decision 与 completed 替代闭环链，"
                 f"然后才能启动新的最终放行审查代理；缺少闭环轮次: round {finding_round.get('round') or finding_round_number} agent {finding_agent}。"
             )
     if final_agent and final_agent in finding_owner_agents:
         errors.append("发现过 finding 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
+    if final_agent and final_agent in replacement_closure_agents:
+        errors.append("替代 finding closure 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
     return errors
 
 
@@ -4012,6 +4400,27 @@ def cmd_version(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def cmd_check_workspace_boundary(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    snapshot = workspace_boundary_snapshot(
+        root,
+        config,
+        handoff,
+        task_dir,
+        allow_source_clean=bool(getattr(args, "allow_source_clean", False)),
+    )
+    if snapshot["errors"]:
+        raise WorkflowError(
+            "Workspace boundary validation failed.",
+            exit_code=2,
+            payload=snapshot,
+        )
+    return snapshot
+
+
 def infer_assignee(root: Path, explicit: str | None) -> str | None:
     if explicit:
         return explicit
@@ -4288,6 +4697,7 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     config = load_config(root)
     handoff = load_handoff(root, config)
     task_dir = resolve_task_dir(root, args.task, handoff)
+    assert_workspace_boundary(root, config, handoff, task_dir)
     task = task_json(task_dir)
     base_branch = base_branch_from_sources(args, task, handoff)
     ensure_issue_scope_ledger(task_dir, handoff)
@@ -4437,6 +4847,7 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
     config = load_config(root)
     handoff = load_handoff(root, config)
     task_dir = resolve_task_dir(root, args.task, handoff)
+    assert_workspace_boundary(root, config, handoff, task_dir)
     payload = load_agent_assignment(root, task_dir)
     payload["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
     payload["task"] = repo_relative(root, task_dir)
@@ -4546,6 +4957,7 @@ def cmd_check_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
     config = load_config(root)
     handoff = load_handoff(root, config)
     task_dir = resolve_task_dir(root, args.task, handoff)
+    assert_workspace_boundary(root, config, handoff, task_dir)
     path, payload, errors, summary = validate_agent_assignment(
         root,
         task_dir,
@@ -4574,6 +4986,7 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
     config = load_config(root)
     handoff = load_handoff(root, config)
     task_dir = resolve_task_dir(root, args.task, handoff)
+    assert_workspace_boundary(root, config, handoff, task_dir)
     reviewer = str(args.reviewer or "").strip()
     summary = str(args.summary or "").strip()
     confirmation = str(args.user_confirmation or "").strip()
@@ -4606,6 +5019,7 @@ def cmd_check_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
     config = load_config(root)
     handoff = load_handoff(root, config)
     task_dir = resolve_task_dir(root, args.task, handoff)
+    assert_workspace_boundary(root, config, handoff, task_dir)
     path, payload, errors = validate_planning_approval(
         root,
         task_dir,
@@ -4631,6 +5045,7 @@ def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
     config = load_config(root)
     handoff = load_handoff(root, config)
     task_dir = resolve_task_dir(root, args.task, handoff)
+    assert_workspace_boundary(root, config, handoff, task_dir)
     task = task_json(task_dir)
     checker = str(args.checker or "").strip()
     summary = str(args.summary or "").strip()
@@ -4677,6 +5092,7 @@ def cmd_check_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
     config = load_config(root)
     handoff = load_handoff(root, config)
     task_dir = resolve_task_dir(root, args.task, handoff)
+    assert_workspace_boundary(root, config, handoff, task_dir)
     path, payload, errors = validate_phase2_check(root, task_dir)
     if errors:
         raise WorkflowError(
@@ -4698,6 +5114,7 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
     config = load_config(root)
     handoff = load_handoff(root, config)
     task_dir = resolve_task_dir(root, args.task, handoff)
+    assert_workspace_boundary(root, config, handoff, task_dir)
     path, gate, errors = validate_review_gate(root, task_dir, config, args.allow_metadata_after_gate)
     if errors:
         raise WorkflowError(
@@ -5071,6 +5488,16 @@ def build_parser() -> argparse.ArgumentParser:
     version.add_argument("--root")
     version.add_argument("--json", action="store_true")
 
+    boundary = sub.add_parser("check-workspace-boundary")
+    boundary.add_argument("--root")
+    boundary.add_argument("--json", action="store_true")
+    boundary.add_argument("--task")
+    boundary.add_argument(
+        "--allow-source-clean",
+        action="store_true",
+        help="Allow a clean source checkout probe to report facts without failing on expected workspace mismatch.",
+    )
+
     prepare = sub.add_parser("prepare")
     prepare.add_argument("--root")
     prepare.add_argument("--json", action="store_true")
@@ -5264,6 +5691,8 @@ def main() -> int:
             payload = check_env_payload(Path(args.root or os.getcwd()))
         elif args.command == "version":
             payload = cmd_version(args)
+        elif args.command == "check-workspace-boundary":
+            payload = cmd_check_workspace_boundary(args)
         elif args.command == "prepare":
             payload = cmd_prepare(args)
         elif args.command == "review-branch":

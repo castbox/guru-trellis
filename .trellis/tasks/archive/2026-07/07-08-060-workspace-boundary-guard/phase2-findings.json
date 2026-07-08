@@ -1,0 +1,16 @@
+{
+  "findings": [
+    {
+      "priority": "P1",
+      "status": "resolved",
+      "message": "workspace_mode=worktree 时，当前 checkout 缺少当前 task handoff.json 会导致无法确认 handoff.workspace_path，存在同名 source checkout task artifact 被 recorder/validator 误用风险；阶段二检查代理已补 fail-closed 与回归测试。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    },
+    {
+      "priority": "P2",
+      "status": "resolved",
+      "message": "Branch Review 第 001 轮发现新增 extension public API / managed asset 后仍使用已发布的 0.6.5-guru.1；已提升 Guru Team extension revision 到 0.6.5-guru.2，同步 stable tag 文档示例、throwaway 默认 source、dogfood installed manifest 与测试。",
+      "path": "trellis/guru-team-extension.json"
+    }
+  ]
+}

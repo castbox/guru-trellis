@@ -31,7 +31,9 @@ python3 ./.trellis/scripts/get_context.py --mode phase
 
 5. Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect. `--create-worktree` and `--create-task` are executor flags for after handoff review, not default intake commands, and they fail closed when naming quality requires semantic overrides. In `workspace_mode: worktree`, use `prepare-task --create-worktree --create-task` or an equivalent controlled Guru Team executor to create the execution worktree and task; do not run bare `python3 ./.trellis/scripts/task.py create ...` in the source checkout.
 
-6. Task creation consent is not current-checkout direct-edit consent. A
+6. After an executor path writes `.trellis/guru-team/handoff.json`, treat its `workspace_path` as the machine boundary for all task artifact writes. Before writing or validating `planning-approval.json`, `phase2-check.json`, `agent-assignment.json`, `reviews/*.md`, `review.md`, or `review-gate.json`, run `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>` from the target worktree. If an edit tool cannot receive an explicit `workdir`, use an absolute path under the task worktree, never a source-checkout relative task path.
+
+7. Task creation consent is not current-checkout direct-edit consent. A
    current-checkout direct-edit override is allowed only after explicit user
    approval. The approval must state that the user wants to skip creating or
    reusing a GitHub issue, Trellis task, worktree, and branch for this turn.
@@ -39,10 +41,10 @@ python3 ./.trellis/scripts/get_context.py --mode phase
    branch, dirty state, expected side effects, changed-file scope, and that
    commit/push/PR still require separate approval.
 
-7. In target business repositories, keep human-readable documentation in Chinese by default: `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**`, docs SSOT created or completed by `00-bootstrap-guidelines`, and workflow artifact fields such as summaries, evidence, findings, observations, follow-up candidates, PR titles, and PR bodies. Literal commands, paths, config keys, GitHub keywords, external API names, and code symbols may stay in English.
+8. In target business repositories, keep human-readable documentation in Chinese by default: `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**`, docs SSOT created or completed by `00-bootstrap-guidelines`, and workflow artifact fields such as summaries, evidence, findings, observations, follow-up candidates, PR titles, and PR bodies. Literal commands, paths, config keys, GitHub keywords, external API names, and code symbols may stay in English.
 
-8. During planning, follow `.trellis/workflow.md` for Middle-platform Knowledge Gate and Repo Docs SSOT discovery. MCP availability is checked from current AI tools/capabilities, not shell scripts.
+9. During planning, follow `.trellis/workflow.md` for Middle-platform Knowledge Gate and Repo Docs SSOT discovery. MCP availability is checked from current AI tools/capabilities, not shell scripts.
 
-9. Treat `.trellis/guru-team/handoff.json` as intake provenance only. Final close/ref/followup scope belongs in the task-level `issue-scope-ledger.json`; sub-agent assignment and reuse evidence belongs in task-local `agent-assignment.json`.
+10. Treat `.trellis/guru-team/handoff.json` as intake provenance only. Final close/ref/followup scope belongs in the task-level `issue-scope-ledger.json`; sub-agent assignment and reuse evidence belongs in task-local `agent-assignment.json`.
 
 Full contract lives in `.trellis/workflow.md`.

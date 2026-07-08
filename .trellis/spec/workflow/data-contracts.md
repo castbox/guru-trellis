@@ -47,12 +47,12 @@ team extension version. The canonical source is `trellis/guru-team-extension.jso
 
 Repository release tags for the Guru Team extension use repo-level tags that
 combine the target official Trellis CLI version and the Guru Team revision,
-such as `v0.6.5-guru.1`, not namespaced tags such as
+such as `v0.6.5-guru.2`, not namespaced tags such as
 `guru-team/v0.6.5`. The tag must correspond to
 `trellis/guru-team-extension.json.version`, and the manifest must expose
 `target_trellis_cli` so users can see which official `@mindfoldhq/trellis`
 release this Guru Team extension targets. Stable workflow marketplace examples
-should use `gh:castbox/guru-trellis/trellis#v0.6.5-guru.1`; unpinned
+should use `gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`; unpinned
 `gh:castbox/guru-trellis/trellis` means latest/canary and must be reported as a
 mutable source in install or upgrade evidence.
 
@@ -83,6 +83,10 @@ interoperate.
 Do not use `handoff.source_issue` as PR close scope. The task-level
 `issue-scope-ledger.json` owns `close_issues`, `related_issues`, and
 `followup_issues`.
+
+In `workspace_mode: worktree`, `handoff.workspace_path` is the machine boundary
+for task artifact writes. `handoff.preflight.current_checkout` records the
+source checkout used for intake and lets boundary validators compare both sides.
 
 Planner-only prepare paths must refresh or explicitly confirm the selected
 remote base before reporting `preflight.base_freshness`. The planner may run
@@ -131,6 +135,33 @@ equivalent target identity. If neither source identity nor explicit developer is
 available, fail closed with a recovery command instead of allowing journal or
 `task.py list --mine` to fail later. Record the objective result in
 `preflight.developer_identity`.
+
+## Workspace Boundary Snapshot
+
+`check-workspace-boundary --json` and recorder/validator boundary failures use
+an additive payload with these fields:
+
+- `status`: `ok` or `blocked`;
+- `workspace_mode`: normally `worktree` for Guru Team issue-backed tasks;
+- `expected_workspace`: resolved `handoff.workspace_path` when present;
+- `actual_repo_root`: repo root for the current command;
+- `source_checkout`: resolved `handoff.preflight.current_checkout` when present;
+- `task_dir`: resolved current task directory;
+- `task_dir_relative`: task path relative to the worktree, usually
+  `.trellis/tasks/<task>`;
+- `source_checkout_status`: normalized `git status --porcelain` paths from the
+  source checkout;
+- `task_worktree_status`: normalized `git status --porcelain` paths from the
+  expected workspace when known, otherwise the actual repo root;
+- `suspicious_source_artifacts[]`: objects with `kind`, `path`,
+  `absolute_path`, and optional `matches_current_task` / `error` for source
+  checkout handoff, same-task artifacts, review metadata, review directories, or
+  dirty paths;
+- `errors[]`: machine-verifiable boundary failures.
+
+The payload is audit evidence only. It must remain additive and must not embed
+AI judgments about stale state, cleanup, patch migration, issue closure, or
+review sufficiency.
 
 ## Planning Approval Artifact
 
@@ -274,16 +305,23 @@ actually complete and whether failed agent output blocks the task.
 
 For Branch Review Gate, any review agent that recorded findings may be reused
 only as `问题闭环审查代理` for fix confirmation. This includes a previous
-`最终放行审查代理` round that found a new issue. Every finding owner must have a
+`最终放行审查代理` round that found a new issue. The normal closure path is a
 later same-agent closure round with `findings_count: 0` and
-`reuse_decision: reuse-for-closure` before a passing gate can be recorded. That
-closure confirms the agent's own finding is closed and does not need to be
-repeated for every later HEAD. The final passing review round must be the last
+`reuse_decision: reuse-for-closure`. If the finding owner objectively
+failed/interrupted and cannot continue, the workflow may record a replacement
+closure chain: predecessor failed/unfinished `status_events[]`,
+`replacement-started` with `supersedes_agent_id`, `reuse_decisions[]`
+`decision=replace` with `from_round` / `to_round`, then a replacement
+`问题闭环审查代理` round with `findings_count: 0` and
+`reuse_decision: replace`. Every finding owner must have one of those closure
+forms before a passing gate can be recorded. That closure confirms the finding
+is closed and does not need to be repeated for every later HEAD. The final
+passing review round must be the last
 `最终放行审查代理`, use a fresh technical `agent_id` that did not own an earlier
-finding round, set `findings_count` to 0, set `reuse_decision` to `new-agent`,
-record the reviewed code `HEAD` in `reviewed_head`, and have a unique,
-strictly increasing `round` value so no later record can make the final round
-ambiguous.
+finding round and did not act as replacement closure reviewer, set
+`findings_count` to 0, set `reuse_decision` to `new-agent`, record the reviewed
+code `HEAD` in `reviewed_head`, and have a unique, strictly increasing `round`
+value so no later record can make the final round ambiguous.
 
 Because `最终放行审查代理` is assigned after the task work commit,
 `agent-assignment.json` may receive a post-commit metadata update before Branch

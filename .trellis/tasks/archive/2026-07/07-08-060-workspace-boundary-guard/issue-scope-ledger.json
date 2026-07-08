@@ -1,0 +1,36 @@
+{
+  "primary_issue": {
+    "number": 60,
+    "url": "https://github.com/castbox/guru-trellis/issues/60",
+    "title": "防止 task artifact 和 patch 误写到 source checkout",
+        "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+        "acceptance_evidence": [
+            "phase2-check.json 记录阶段二检查代理 019f420b-0fb8-7223-a269-7a8e28072e5f 对 workspace boundary guard、replacement closure validator、workflow/spec/docs/overlay/dogfood copy 和部署影响的完整检查，findings 为空。",
+            "review-gate.json 记录第 004 轮 fresh 最终放行审查代理 019f4212-acdc-7492-849c-f7c5efe7d72e 覆盖 origin/main...HEAD 完整 diff，reviewed_head=3af6ee1d99fcbae862ef993efa851111c9874a96，findings_count=0。",
+            "review.md 与 reviews/round-004-final.md 记录 #60 为 close scope、#76 为 follow-up only，并说明 tag-pinned throwaway install 需在 v0.6.5-guru.2 tag 创建后补充。"
+        ]
+  },
+  "close_issues": [
+    {
+      "number": 60,
+      "url": "https://github.com/castbox/guru-trellis/issues/60",
+      "title": "防止 task artifact 和 patch 误写到 source checkout",
+            "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+            "acceptance_evidence": [
+                "phase2-check.json 记录阶段二检查代理 019f420b-0fb8-7223-a269-7a8e28072e5f 对 workspace boundary guard、replacement closure validator、workflow/spec/docs/overlay/dogfood copy 和部署影响的完整检查，findings 为空。",
+                "review-gate.json 记录第 004 轮 fresh 最终放行审查代理 019f4212-acdc-7492-849c-f7c5efe7d72e 覆盖 origin/main...HEAD 完整 diff，reviewed_head=3af6ee1d99fcbae862ef993efa851111c9874a96，findings_count=0。",
+                "review.md 与 reviews/round-004-final.md 记录 #60 为 close scope、#76 为 follow-up only，并说明 tag-pinned throwaway install 需在 v0.6.5-guru.2 tag 创建后补充。"
+            ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": [
+    {
+      "number": 76,
+      "url": "https://github.com/castbox/guru-trellis/issues/76",
+      "title": "heartbeat / workspace-aware liveness follow-up",
+      "reason": "Issue #60 comments classify heartbeat / liveness policy as follow-up after workspace boundary facts are available; this task must not close #76.",
+      "acceptance_evidence": []
+    }
+  ]
+}

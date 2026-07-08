@@ -27,6 +27,7 @@ Look for the `<!-- trellis-hook-injected -->` marker in your input above.
 ## Context
 
 Before checking, read:
+- First run `pwd`, `git rev-parse --show-toplevel`, and `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>` for the resolved active task. Report expected workspace, actual repo root, source checkout status, task worktree status, and suspicious source artifacts before reading or writing task review artifacts. If the validator fails, report the block and stop; do not read or write task artifacts from the source checkout or another worktree. If an edit tool cannot receive an explicit working directory, use an absolute path under the handoff `workspace_path`.
 - `.trellis/spec/` - Development guidelines
 - Task `prd.md` - Requirements document
 - Task `design.md` - required Guru Team technical design

@@ -212,6 +212,12 @@ worktree selected by intake `workspace_path`. Manual edits must use a
 worktree-local absolute path when the editing tool cannot receive an explicit
 working directory. Relative task artifact paths are never relative to the source
 checkout or another worktree.
+The normal deterministic probe is
+`.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
+<task-path>`. It provides expected/actual workspace evidence, source checkout
+status, task worktree status, suspicious source artifact facts, and fail-closed
+errors. The probe does not determine stale status, clean up source checkout
+state, migrate misplaced changes, or replace AI/human review.
 
 Passing the gate requires:
 
@@ -232,9 +238,15 @@ Passing the gate requires:
   recorded order, so the final pass round is unambiguous
 - every review round with `findings_count > 0` must have a later same-agent
   `问题闭环审查代理` round with `findings_count: 0` and
-  `reuse_decision: reuse-for-closure` before any fresh final round can pass;
-  this closure proves that agent's own finding is closed and does not need to
-  be repeated for every later HEAD
+  `reuse_decision: reuse-for-closure`, or a replacement closure chain when the
+  finding owner objectively failed/interrupted and cannot continue; replacement
+  closure requires predecessor failed/unfinished `status_events[]`,
+  `replacement-started` with `supersedes_agent_id`, `reuse_decisions[]`
+  `decision=replace` with `from_round` / `to_round`, and a replacement
+  `问题闭环审查代理` round with `findings_count: 0` and
+  `reuse_decision: replace` before any fresh final round can pass. This closure
+  proves the finding is closed and does not need to be repeated for every later
+  HEAD
 - the final `最终放行审查代理` review round must be fresh and last: reviewed code
   HEAD, `findings_count: 0`, `reuse_decision: new-agent`, and a technical
   `agent_id` that did not own any earlier finding round

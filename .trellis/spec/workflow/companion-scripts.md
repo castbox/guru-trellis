@@ -137,6 +137,33 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   freshness, status event enum/evidence fields, and digest metadata; it must
   not judge semantic reuse quality or stale/termination correctness.
 
+Workspace boundary helpers are deterministic validators and fact snapshots:
+
+- `check-workspace-boundary.sh --json --task <task-path>` reports
+  `workspace_mode`, `expected_workspace`, `actual_repo_root`,
+  `source_checkout`, `task_dir`, `task_dir_relative`, source checkout status,
+  task worktree status, suspicious source artifacts, `status`, and `errors`.
+- In `workspace_mode: worktree`, recorder/validator commands that write or
+  validate task artifacts must confirm the actual repo root equals handoff
+  `workspace_path` before touching `planning-approval.json`,
+  `phase2-check.json`, `agent-assignment.json`, `review.md`, `reviews/*.md`,
+  `review-gate.json`, or equivalent task-local artifacts.
+- In `workspace_mode: worktree`, a missing current-checkout `handoff.json` is
+  also a boundary failure for these recorder/validator commands, because the
+  script cannot confirm the selected `workspace_path` and must not fall back to
+  a same-named task directory in the source checkout.
+- Task artifact arguments such as `--review-report`, `--agent-assignment`,
+  `--review-round-report`, and `--checked-artifact` must resolve inside the
+  current task directory under the selected task worktree. Absolute paths are
+  allowed only when they stay under that task directory.
+- Source checkout current-task artifacts, review metadata, or current-task dirty
+  paths are fail-closed boundary facts. The script must not decide whether a
+  sub-agent is stale, migrate a misplaced patch, or clean source checkout files;
+  AI/human workflow owns those decisions.
+- `--allow-source-clean` may be used only for a clean source checkout probe that
+  reports facts without treating a clean source checkout mismatch as a blocker;
+  it must not permit source checkout task artifacts or review metadata.
+
 `review-branch.sh --pass` must fail before writing Branch Review Gate when
 `phase2-check.json` is missing, stale, incomplete, or contains unresolved
 P0/P1/P2 findings. It must also fail when the Phase 3 review result contains
@@ -185,16 +212,24 @@ not decide whether a `wait_agent` timeout means stale, whether a running agent
 should be stopped, or whether a failed agent's partial output is acceptable.
 
 When a review round has findings, including a previous final-review round that
-found a new issue, the same technical `agent_id` must later be recorded only as
-`问题闭环审查代理` to confirm its finding is closed. A passing gate
-must validate that every finding owner has such a later closure round with
-`findings_count: 0` and `reuse_decision: reuse-for-closure`, and then validate a
-fresh `最终放行审查代理` review round: `review_rounds[].round` values are unique
-and strictly increasing in recorded order, it is the unambiguous last round,
+found a new issue, the same technical `agent_id` normally must later be
+recorded only as `问题闭环审查代理` to confirm its finding is closed. If that
+finding owner objectively failed/interrupted and cannot continue, a replacement
+closure reviewer may close only that finding when `reuse_decisions[]` records
+`decision=replace` with `from_round` / `to_round` and `status_events[]` records
+the predecessor failed/unfinished event, `replacement-started` with
+`supersedes_agent_id`, and replacement `completed` evidence. A passing gate
+must validate that every finding owner has a later same-agent closure round with
+`findings_count: 0` and `reuse_decision: reuse-for-closure` or a complete
+replacement closure chain with a replacement `问题闭环审查代理` round carrying
+`findings_count: 0` and `reuse_decision: replace`, and then validate a fresh
+`最终放行审查代理` review round: `review_rounds[].round` values are unique and
+strictly increasing in recorded order, it is the unambiguous last round,
 `reviewed_head` equals the reviewed code HEAD, `findings_count` is 0,
 `reuse_decision` is `new-agent`, and the final reviewer did not own any earlier
-finding round. This is an objective metadata check only; the AI/human review
-still owns the judgment that the review covered the full diff.
+finding round or act as replacement closure reviewer. This is an objective
+metadata check only; the AI/human review still owns the judgment that the
+review covered the full diff.
 
 Independent review agents do not run Guru Team recorder/validator extension
 scripts as part of their review. They may inspect docs, code, tests, diffs, and

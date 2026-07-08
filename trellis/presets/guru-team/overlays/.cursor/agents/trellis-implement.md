@@ -27,6 +27,7 @@ Look for the `<!-- trellis-hook-injected -->` marker in your input above.
 ## Context
 
 Before implementing, read:
+- First run `pwd`, `git rev-parse --show-toplevel`, and `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>` for the resolved active task. Report expected workspace, actual repo root, and whether they match before reading or writing task artifacts. If the validator fails, report `Implementation Blocked` and stop; do not edit from the source checkout or another worktree. If an edit tool cannot receive an explicit working directory, use an absolute path under the handoff `workspace_path`.
 - First run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-path>` for the resolved active task. If it fails because planning approval is missing, old-schema, not sourced from `explicit-post-planning-review`, or the reviewed `prd.md` / `design.md` / `implement.md` content digests no longer match, report `Implementation Blocked` and stop; current HEAD or dirty-path drift alone is not a planning approval failure. The main session must show `prd.md`, `design.md`, and `implement.md` links again and get fresh user confirmation.
 - `.trellis/workflow.md` - Project workflow
 - `.trellis/spec/` - Development guidelines

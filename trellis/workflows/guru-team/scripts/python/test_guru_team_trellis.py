@@ -218,6 +218,17 @@ def assignment_args(**overrides: object) -> argparse.Namespace:
     return argparse.Namespace(**values)
 
 
+def boundary_args(**overrides: object) -> argparse.Namespace:
+    values: dict[str, object] = {
+        "root": None,
+        "json": True,
+        "task": None,
+        "allow_source_clean": False,
+    }
+    values.update(overrides)
+    return argparse.Namespace(**values)
+
+
 class PrepareSideEffectBoundaryTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -270,6 +281,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertEqual(payload["preflight"]["workspace_was_created_or_reused"], False)
         self.assertFalse(payload["handoff_written"])
         self.assertFalse((self.root / "handoff.json").exists())
+        self.assertFalse((self.root / ".trellis/tasks").exists())
         self.assertEqual(payload["proposed_issue"]["title"], "Add default side-effect-free intake planning for freeform requests")
 
     def test_create_worktree_requires_confirmed_source_issue(self) -> None:
@@ -664,6 +676,26 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertEqual((workspace / ".trellis/.developer").read_text(encoding="utf-8"), "name=tester\ninitialized_at=2026-07-04T00:00:00\n")
         self.assertEqual(payload["preflight"]["developer_identity"]["status"], "copied")
 
+    def test_create_task_runs_task_py_in_workspace(self) -> None:
+        workspace = self.worktree_root / "42-resume-attachment-preview"
+        workspace.mkdir(parents=True)
+        (self.root / ".trellis/scripts").mkdir(parents=True)
+        (self.root / ".trellis/scripts/task.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+        payload = {
+            "workspace_path": str(workspace),
+            "task_title": "#42 Resume attachment preview",
+            "task_slug": "42-resume-attachment-preview",
+        }
+        proc = mock.Mock(returncode=0, stdout=".trellis/tasks/07-04-42-resume-attachment-preview\n", stderr="")
+
+        with mock.patch.object(gtt, "run", return_value=proc) as run:
+            task_dir = gtt.create_task(self.root, payload, prepare_args(requirement=["#42"], create_task=True))
+
+        self.assertEqual(task_dir, ".trellis/tasks/07-04-42-resume-attachment-preview")
+        run.assert_called_once()
+        self.assertEqual(run.call_args.kwargs["cwd"], workspace)
+        self.assertIn("./.trellis/scripts/task.py", run.call_args.args[0])
+
     def test_create_worktree_refreshes_base_before_workspace_creation(self) -> None:
         existing_issue = {
             "number": 42,
@@ -951,6 +983,144 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertIn("--issue-title", str(raised.exception))
 
 
+class WorkspaceBoundaryGuardTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        base = Path(self.tmp.name)
+        self.source = base / "source"
+        self.workspace = base / "worktrees/060-workspace-boundary-guard"
+        self.task_rel = ".trellis/tasks/07-08-060-workspace-boundary-guard"
+        self.task_dir = self.workspace / self.task_rel
+        self.source_task_dir = self.source / self.task_rel
+        for root in [self.source, self.workspace]:
+            (root / ".trellis/guru-team").mkdir(parents=True)
+            (root / ".trellis/tasks").mkdir(parents=True)
+        self.task_dir.mkdir(parents=True)
+        (self.task_dir / "task.json").write_text('{"title":"Boundary task","base_branch":"main"}\n', encoding="utf-8")
+        for name in ["prd.md", "design.md", "implement.md"]:
+            (self.task_dir / name).write_text(f"# {name}\n\n内容。\n", encoding="utf-8")
+        self.handoff = {
+            "workspace_mode": "worktree",
+            "workspace_path": str(self.workspace),
+            "task_dir": self.task_rel,
+            "task_slug": "060-workspace-boundary-guard",
+            "workspace_slug": "060-workspace-boundary-guard",
+            "branch_name": "codex/060-workspace-boundary-guard",
+            "base_branch": "main",
+            "source_issue": {"number": 60},
+            "preflight": {"current_checkout": str(self.source)},
+        }
+        self.write_handoff(self.workspace, self.handoff)
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def write_handoff(self, root: Path, payload: dict[str, object]) -> None:
+        path = root / ".trellis/guru-team/handoff.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    def test_check_workspace_boundary_reports_ok_snapshot(self) -> None:
+        payload = gtt.cmd_check_workspace_boundary(
+            boundary_args(root=str(self.workspace), task=self.task_rel)
+        )
+
+        self.assertEqual(payload["status"], "ok")
+        self.assertEqual(payload["expected_workspace"], str(self.workspace.resolve()))
+        self.assertEqual(payload["actual_repo_root"], str(self.workspace.resolve()))
+        self.assertEqual(payload["source_checkout"], str(self.source.resolve()))
+        self.assertEqual(payload["task_dir_relative"], self.task_rel)
+        self.assertEqual(payload["errors"], [])
+
+    def test_check_workspace_boundary_blocks_worktree_mode_without_handoff(self) -> None:
+        self.source_task_dir.mkdir(parents=True)
+        (self.source_task_dir / "task.json").write_text('{"title":"Wrong task copy"}\n', encoding="utf-8")
+
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.cmd_check_workspace_boundary(
+                boundary_args(root=str(self.source), task=self.task_rel)
+            )
+
+        payload = raised.exception.payload
+        self.assertEqual(payload["status"], "blocked")
+        self.assertTrue(any("缺少当前 checkout 的 handoff.json" in error for error in payload["errors"]))
+
+    def test_check_workspace_boundary_blocks_wrong_cwd(self) -> None:
+        self.write_handoff(self.source, self.handoff)
+
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.cmd_check_workspace_boundary(
+                boundary_args(root=str(self.source), task=str(self.task_dir))
+            )
+
+        payload = raised.exception.payload
+        self.assertEqual(payload["status"], "blocked")
+        self.assertEqual(payload["expected_workspace"], str(self.workspace.resolve()))
+        self.assertEqual(payload["actual_repo_root"], str(self.source.resolve()))
+        self.assertTrue(any("workspace boundary mismatch" in error for error in payload["errors"]))
+
+    def test_artifact_recorder_blocks_source_checkout_with_same_task_artifact(self) -> None:
+        self.write_handoff(self.source, self.handoff)
+        self.source_task_dir.mkdir(parents=True)
+        (self.source_task_dir / "task.json").write_text('{"title":"Wrong task copy"}\n', encoding="utf-8")
+        (self.source_task_dir / "review.md").write_text("# Review\n\n误写。\n", encoding="utf-8")
+
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.cmd_check_planning_approval(
+                planning_args(root=str(self.source), task=self.task_rel)
+            )
+
+        payload = raised.exception.payload
+        self.assertEqual(payload["status"], "blocked")
+        self.assertTrue(any("source checkout contains current-task artifacts" in error for error in payload["errors"]))
+        suspicious_paths = {item["path"] for item in payload["suspicious_source_artifacts"]}
+        self.assertIn(f"{self.task_rel}/review.md", suspicious_paths)
+
+    def test_wrong_task_artifact_arguments_are_rejected(self) -> None:
+        self.source_task_dir.mkdir(parents=True)
+        (self.source_task_dir / "prd.md").write_text("# PRD\n\n误写。\n", encoding="utf-8")
+        (self.source_task_dir / "review.md").write_text("# Review\n\n误写。\n", encoding="utf-8")
+        (self.source_task_dir / "agent-assignment.json").write_text("{}\n", encoding="utf-8")
+        (self.source_task_dir / "reviews").mkdir()
+        (self.source_task_dir / "reviews/round-001.md").write_text("# Round\n\n误写。\n", encoding="utf-8")
+
+        with self.assertRaises(gtt.WorkflowError) as review_error:
+            gtt.load_review_report(self.workspace, self.task_dir, str(self.source_task_dir / "review.md"))
+        self.assertIn("--review-report", str(review_error.exception))
+
+        with self.assertRaises(gtt.WorkflowError) as assignment_error:
+            gtt.validate_agent_assignment(
+                self.workspace,
+                self.task_dir,
+                str(self.source_task_dir / "agent-assignment.json"),
+            )
+        self.assertIn("Artifact path must stay inside", str(assignment_error.exception))
+
+        with self.assertRaises(gtt.WorkflowError) as round_error:
+            gtt.load_review_round_report(
+                self.workspace,
+                self.task_dir,
+                str(self.source_task_dir / "reviews/round-001.md"),
+            )
+        self.assertIn("Artifact path must stay inside", str(round_error.exception))
+
+        with self.assertRaises(gtt.WorkflowError) as checked_error:
+            gtt.build_phase2_check_payload(
+                root=self.workspace,
+                task_dir=self.task_dir,
+                handoff=self.handoff,
+                task={"base_branch": "main"},
+                checker="trellis-check",
+                check_summary="检查完成。",
+                checked_artifacts=[str(self.source_task_dir / "prd.md")],
+                checked_specs=[],
+                coverage_items=list(gtt.REQUIRED_PHASE2_COVERAGE),
+                validation_items=["unit|passed"],
+                findings=[],
+            )
+        self.assertIn("Artifact path must stay inside", str(checked_error.exception))
+
+
 class PlanningAndPhase2GateTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -976,7 +1146,13 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         return [
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_handoff", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "load_handoff", return_value={
+                "base_branch": "main",
+                "workspace_mode": "worktree",
+                "workspace_path": str(self.root),
+                "task_dir": ".trellis/tasks/07-04-gates",
+                "preflight": {"current_checkout": str(self.root)},
+            }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "current_head", return_value="abc123"),
             mock.patch.object(gtt, "git_status_paths", return_value=[]),
@@ -2270,7 +2446,13 @@ class PublishBoundaryTest(unittest.TestCase):
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_handoff", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "load_handoff", return_value={
+                "base_branch": "main",
+                "workspace_mode": "worktree",
+                "workspace_path": str(self.root),
+                "task_dir": ".trellis/tasks/07-04-review-gate",
+                "preflight": {"current_checkout": str(self.root)},
+            }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])),
             mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
@@ -2448,7 +2630,13 @@ class ReviewGateReportTest(unittest.TestCase):
         return [
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_handoff", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "load_handoff", return_value={
+                "base_branch": "main",
+                "workspace_mode": "worktree",
+                "workspace_path": str(self.root),
+                "task_dir": ".trellis/tasks/07-04-review-gate",
+                "preflight": {"current_checkout": str(self.root)},
+            }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "validate_planning_approval", return_value=(self.task_dir / "planning-approval.json", {}, [])),
             mock.patch.object(gtt, "validate_phase2_check", return_value=(self.task_dir / "phase2-check.json", {}, [])),
@@ -2504,6 +2692,7 @@ class ReviewGateReportTest(unittest.TestCase):
     def write_agent_assignment(
         self,
         review_rounds: list[dict[str, object]] | None = None,
+        reuse_decisions: list[dict[str, object]] | None = None,
         status_events: list[dict[str, object]] | None = None,
     ) -> Path:
         assignment = self.task_dir / "agent-assignment.json"
@@ -2537,7 +2726,7 @@ class ReviewGateReportTest(unittest.TestCase):
                         }
                     ],
                     "review_rounds": rounds,
-                    "reuse_decisions": [],
+                    "reuse_decisions": reuse_decisions if reuse_decisions is not None else [],
                     "status_events": status_events if status_events is not None else [],
                 },
                 ensure_ascii=False,
@@ -3124,6 +3313,277 @@ class ReviewGateReportTest(unittest.TestCase):
 
         self.assertTrue(payload["conclusion"]["passed"])
         self.assertEqual(payload["verification_evidence"]["agent_assignment"]["review_rounds_count"], 3)
+
+    def test_review_branch_accepts_replacement_closure_when_original_review_agent_failed(self) -> None:
+        review_report = self.task_dir / "review.md"
+        rounds = [
+                {
+                    "round": 1,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "中断最终代理",
+                    "reviewed_head": "old123",
+                    "findings_count": 1,
+                    "reuse_policy": "fresh final reviewer 发现 P2 finding，但随后失败，不能自己闭环。",
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "platform_nickname": "替代闭环代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_policy": "替代中断 agent，仅闭环 round 1 finding，不作为最终放行。",
+                    "reuse_decision": "replace",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "platform_nickname": "最终代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_policy": "fresh final reviewer 必须完整审查当前 HEAD diff。",
+                    "reuse_decision": "new-agent",
+                },
+        ]
+        review_report.write_text(
+            self.review_rollup_text(
+                "round 1 的 finding 已由替代闭环代理完成，fresh final reviewer 当前 HEAD 0 findings。",
+                self.raw_report_names_for_rounds(rounds),
+            ),
+            encoding="utf-8",
+        )
+        assignment = self.write_agent_assignment(
+            rounds,
+            reuse_decisions=[
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "replace",
+                    "reason": "agent-a 已失败，无法继续同一技术 agent 闭环；agent-c 只闭环 round 1 finding。",
+                    "head": "abc123",
+                    "from_round": 1,
+                    "to_round": 2,
+                }
+            ],
+            status_events=[
+                {
+                    "event": "failed",
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "中断最终代理",
+                    "head": "old123",
+                    "observed_at": "2026-07-07T00:10:00Z",
+                    "last_observed_progress_at": "",
+                    "workspace_evidence": "raw report 已保留，连接中断后无法同 agent 继续。",
+                    "running_command_evidence": "review agent stream disconnected。",
+                    "decision": "mark-failed",
+                    "reason": "该 agent 已失败，不能作为 passing final，也不能继续闭环。",
+                    "supersedes_agent_id": "",
+                    "handoff_summary": "",
+                },
+                {
+                    "event": "replacement-started",
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "platform_nickname": "替代闭环代理",
+                    "head": "abc123",
+                    "observed_at": "2026-07-07T00:11:00Z",
+                    "last_observed_progress_at": "",
+                    "workspace_evidence": "替代 agent 读取前任 raw report、当前 diff 和 finding。",
+                    "running_command_evidence": "替代闭环审查已启动。",
+                    "decision": "start-replacement",
+                    "reason": "原 review agent 已失败，启动替代闭环代理只复核该 finding。",
+                    "supersedes_agent_id": "agent-a",
+                    "handoff_summary": "闭环目标：确认 round 1 finding 在当前 HEAD 已修复。",
+                },
+                {
+                    "event": "completed",
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "platform_nickname": "替代闭环代理",
+                    "head": "abc123",
+                    "observed_at": "2026-07-07T00:20:00Z",
+                    "last_observed_progress_at": "2026-07-07T00:19:00Z",
+                    "workspace_evidence": "替代闭环 raw report 已写入 task worktree。",
+                    "running_command_evidence": "闭环审查完成，findings_count=0。",
+                    "decision": "mark-completed",
+                    "reason": "替代闭环代理已确认 finding 闭环。",
+                    "supersedes_agent_id": "",
+                    "handoff_summary": "",
+                },
+            ],
+        )
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            def object_exists(_root: Path, ref: str) -> bool:
+                return ref in {"abc123", "old123"}
+
+            with mock.patch.object(gtt, "git_object_exists", side_effect=object_exists):
+                payload = gtt.cmd_review_branch(
+                    review_args(
+                        review_report=str(review_report),
+                        agent_assignment=str(assignment),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(payload["conclusion"]["passed"])
+        self.assertEqual(payload["verification_evidence"]["agent_assignment"]["reuse_decisions_count"], 1)
+        self.assertEqual(payload["verification_evidence"]["agent_assignment"]["status_events_count"], 3)
+
+    def test_review_branch_rejects_replacement_closure_without_recovery_evidence(self) -> None:
+        review_report = self.task_dir / "review.md"
+        rounds = [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "发现代理",
+                    "reviewed_head": "old123",
+                    "findings_count": 1,
+                    "reuse_policy": "发现问题后必须闭环。",
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "platform_nickname": "替代闭环代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_policy": "错误示例：只写 replace round，没有恢复链证据。",
+                    "reuse_decision": "replace",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "platform_nickname": "最终代理",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_policy": "fresh final reviewer 必须完整审查当前 HEAD diff。",
+                    "reuse_decision": "new-agent",
+                },
+        ]
+        review_report.write_text(
+            self.review_rollup_text(
+                "缺少 replacement-started / completed 恢复链时不能最终放行。",
+                self.raw_report_names_for_rounds(rounds),
+            ),
+            encoding="utf-8",
+        )
+        assignment = self.write_agent_assignment(
+            rounds,
+            reuse_decisions=[
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "replace",
+                    "reason": "缺少 status_events 恢复链的替代闭环不能通过。",
+                    "head": "abc123",
+                    "from_round": 1,
+                    "to_round": 2,
+                }
+            ],
+        )
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            def object_exists(_root: Path, ref: str) -> bool:
+                return ref in {"abc123", "old123"}
+
+            with mock.patch.object(gtt, "git_object_exists", side_effect=object_exists):
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    gtt.cmd_review_branch(
+                        review_args(
+                            review_report=str(review_report),
+                            agent_assignment=str(assignment),
+                        )
+                    )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertTrue(any("replacement-started" in error for error in raised.exception.payload["errors"]))
+
+    def test_final_review_round_errors_rejects_replacement_closure_agent_as_final(self) -> None:
+        payload = {
+            "review_rounds": [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "reviewed_head": "old123",
+                    "findings_count": 1,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_decision": "replace",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-c",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+            ],
+            "reuse_decisions": [
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "replace",
+                    "reason": "agent-a failed; agent-c closes only the finding.",
+                    "head": "abc123",
+                    "from_round": 1,
+                    "to_round": 2,
+                }
+            ],
+            "status_events": [
+                {
+                    "event": "failed",
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "head": "old123",
+                    "decision": "mark-failed",
+                },
+                {
+                    "event": "replacement-started",
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "head": "abc123",
+                    "decision": "start-replacement",
+                    "supersedes_agent_id": "agent-a",
+                    "handoff_summary": "agent-c closes round 1 finding only.",
+                },
+                {
+                    "event": "completed",
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "head": "abc123",
+                    "decision": "mark-completed",
+                },
+            ],
+        }
+
+        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
+
+        self.assertTrue(any("替代 finding closure" in error for error in errors))
 
     def test_review_branch_accepts_prior_head_closure_before_current_final(self) -> None:
         review_report = self.task_dir / "review.md"
@@ -4374,7 +4834,12 @@ class AgentAssignmentArtifactTest(unittest.TestCase):
         return [
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_handoff", return_value={"task_dir": ".trellis/tasks/07-05-agent-assignment"}),
+            mock.patch.object(gtt, "load_handoff", return_value={
+                "workspace_mode": "worktree",
+                "workspace_path": str(self.root),
+                "task_dir": ".trellis/tasks/07-05-agent-assignment",
+                "preflight": {"current_checkout": str(self.root)},
+            }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "current_head", return_value="abc123"),
             mock.patch.object(gtt, "git_object_exists", return_value=True),
@@ -4788,7 +5253,7 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
             "schema_version": "1.0",
             "extension": {
                 "extension_id": "guru-team",
-                "version": "0.6.5-guru.1",
+                "version": "0.6.5-guru.2",
                 "workflow_template_id": "guru-team",
                 "target_trellis_cli": "0.6.5",
                 "requires": {"trellis_cli": "0.6.5"},
@@ -4818,7 +5283,7 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
         payload = gtt.guru_team_extension_payload(self.root)
 
         self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["version"], "0.6.5-guru.1")
+        self.assertEqual(payload["version"], "0.6.5-guru.2")
         self.assertEqual(payload["workflow_template_id"], "guru-team")
         self.assertEqual(payload["target_trellis_cli"], "0.6.5")
         self.assertEqual(payload["trellis_cli_compatibility"], "0.6.5")
@@ -4864,7 +5329,7 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
             payload = gtt.cmd_version(argparse.Namespace(root=str(self.root), json=True))
 
         self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5-guru.1")
+        self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5-guru.2")
         self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.5")
 
 

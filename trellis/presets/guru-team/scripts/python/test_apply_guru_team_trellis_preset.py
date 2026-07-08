@@ -231,6 +231,8 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
 
         self.assertEqual(payload["platforms"], ["codex", "cursor"])
         self.assertFalse(payload["all_platforms"])
+        self.assertIn(Path("scripts/bash/check-workspace-boundary.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh").is_file())
         self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
         self.assertTrue((self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").is_file())
         brainstorm = (self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").read_text(encoding="utf-8")
@@ -752,7 +754,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.1")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.2")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.5")
         self.assertEqual(payload["guru_team_extension"]["trellis_cli_compatibility"], "0.6.5")
