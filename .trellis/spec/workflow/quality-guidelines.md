@@ -49,6 +49,12 @@ git diff --check
 
 Add targeted script invocations when changing phase parsing, intake, review,
 finish, publish, installer behavior, or source-repo dogfood overlay sync.
+When changing Branch Review report generation or gate validation, add or update
+tests that reject obvious English template headings in task-local `review.md`
+and `reviews/*.md`, including `Review Rounds`, `Findings Lifecycle`,
+`Evidence Handoff`, `Deployment / safety impact`, and `Follow-up Candidates`.
+This validator is objective template-heading detection only; it must not judge
+whether the Chinese review narrative is semantically sufficient.
 When changing planning approval behavior, also run
 `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-dir>`
 against a current `schema_version=1.1` artifact and include at least one unit
@@ -88,6 +94,11 @@ cannot pass the gate. Include:
   files must be written under the task worktree selected by intake
   `workspace_path`; when a manual editing tool has no explicit working
   directory, use a worktree-local absolute path
+- Branch Review raw reports `reviews/*.md` and final rollup `review.md` must be
+  Chinese human-readable task artifacts: Chinese headings, Chinese labels,
+  Chinese findings/observations/follow-up candidates, Chinese deployment /
+  safety and Docs SSOT judgments, and Chinese conclusion, with literal tokens
+  kept as-is only where required.
 - deployment asset impact
 
 ## Anti-Patterns

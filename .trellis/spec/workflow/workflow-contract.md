@@ -73,6 +73,7 @@ for human-readable documentation and workflow evidence:
 
 - `.trellis/spec/**` project conventions and bootstrap outputs
 - `.trellis/tasks/**`, including `prd.md`, `design.md`, `implement.md`,
+  per-round Branch Review raw reports `reviews/*.md`, final rollup
   `review.md`, and human-readable JSON fields in `planning-approval.json`,
   `phase2-check.json`, `agent-assignment.json`, and `review-gate.json`
 - `docs/**` durable requirements, design, test, deploy, operations, and
@@ -84,6 +85,15 @@ for human-readable documentation and workflow evidence:
 Keep literal command names, file paths, GitHub keywords, configuration keys,
 external API names, code symbols, and other required tokens in English when
 needed, but write the surrounding explanation in Chinese.
+
+Branch Review `reviews/*.md` raw reports and the final `review.md` rollup are
+human-readable task artifacts. Their Markdown headings, field labels, summaries,
+evidence, findings, observations, follow-up candidates, deployment / safety
+impact judgments, Docs SSOT judgments, and final conclusions must be Chinese by
+default. Recommended `review.md` rollup sections include `审查轮次`,
+`问题生命周期`, `最终审查`, `证据`, `观察项`, `后续候选`, and `结论`. Literal
+commands, paths, JSON field names, HEAD values, GitHub keywords, code symbols,
+external API names, and technical platform identifiers may remain English.
 
 This source repository, `guru-trellis`, is a public extension repository rather
 than a target business project. Its public README, source comments, script help,
@@ -165,6 +175,13 @@ Gate:
   diff, normally `origin/<base>...HEAD`, and report findings/observations/
   follow-up candidates. They do not continue implementation, patch missing
   Phase 2 work, or run Guru Team recorder/validator scripts.
+- Branch Review raw reports and the final rollup must use Chinese Markdown
+  headings and Chinese field labels. Raw reports should record checked diff
+  range, reviewed HEAD, evidence, findings, observations, follow-up candidates,
+  deployment / safety impact, Docs SSOT judgment, sub-agent status/reuse
+  evidence, and conclusion in Chinese narrative. The final `review.md` rollup
+  should use sections such as `审查轮次`, `问题生命周期`, `最终审查`, `证据`,
+  `观察项`, `后续候选`, and `结论`, while linking every raw report.
 
 `review-branch.sh` must verify Phase 2 check evidence before writing
 `review-gate.json` so Branch Review Gate cannot bypass Phase 2. When

@@ -144,7 +144,13 @@ any finding, including P3. A passed gate must include zero findings,
 `--review-source independent-agent` and a reviewer identity that is not a
 main-session/self-review identity, and `--review-report` must point to the
 task-local file named `review.md`. The script validates those objective
-metadata fields; it still does not judge review quality.
+metadata fields; it still does not judge review quality. It may also validate
+objective review-report template traces: task-local `review.md` and every raw
+`reviews/*.md` report recorded through `review_reports[]` must not contain known
+English template headings such as `Review Rounds`, `Findings Lifecycle`,
+`Evidence Handoff`, `Deployment / safety impact`, or `Follow-up Candidates`.
+This is fixed-string/template-heading validation only and must not become a
+Chinese semantic sufficiency reviewer.
 Failed findings artifacts are also Branch Review Gate records. They must include
 `--review-source independent-agent` and a task-local `--review-report review.md`
 so the artifact records a prior independent review instead of only reviewer

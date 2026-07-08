@@ -2462,7 +2462,7 @@ class ReviewGateReportTest(unittest.TestCase):
         reports_dir = self.task_dir / "reviews"
         reports_dir.mkdir(parents=True, exist_ok=True)
         path = reports_dir / name
-        path.write_text(content or f"# Raw Review\n\n{name} raw evidence。\n", encoding="utf-8")
+        path.write_text(content or f"# 原始审查报告\n\n{name} 原始审查证据。\n", encoding="utf-8")
         return path
 
     def raw_report_name_for_round(self, round_item: dict[str, object], index: int) -> str:
@@ -2499,7 +2499,7 @@ class ReviewGateReportTest(unittest.TestCase):
     def review_rollup_text(self, body: str, report_names: list[str] | None = None) -> str:
         names = report_names or ["round-001-final-release.md"]
         links = "\n".join(f"- reviews/{name}" for name in names)
-        return f"# Review\n\n{body}\n\n## Raw Reports\n\n{links}\n"
+        return f"# 审查报告\n\n{body}\n\n## 原始报告链接\n\n{links}\n"
 
     def write_agent_assignment(
         self,
@@ -2592,6 +2592,89 @@ class ReviewGateReportTest(unittest.TestCase):
         self.assertEqual(raw_reports[0]["sha256"], gtt.hashlib.sha256((self.task_dir / "reviews/round-001-final-release.md").read_bytes()).hexdigest())
         self.assertTrue(recorded["modified_at"])
         self.assertTrue((self.task_dir / "review-gate.json").exists())
+
+    def test_review_branch_rejects_final_rollup_english_template_headings(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text(
+            "# Review Rounds\n\n"
+            "- reviews/round-001-final-release.md\n\n"
+            "## Findings Lifecycle\n\n无 finding。\n\n"
+            "## Deployment / safety impact\n\n未涉及部署资产。\n\n"
+            "## Follow-up Candidates\n\n无后续候选。\n",
+            encoding="utf-8",
+        )
+        assignment = self.write_agent_assignment()
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with (
+                mock.patch.object(gtt, "git_object_exists", return_value=True),
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.cmd_review_branch(
+                    review_args(
+                        review_report=str(review_report),
+                        agent_assignment=str(assignment),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        errors = raised.exception.payload["errors"]
+        self.assertTrue(any("Review Rounds" in error for error in errors))
+        self.assertTrue(any("Findings Lifecycle" in error for error in errors))
+        self.assertTrue(any("Deployment / safety impact" in error for error in errors))
+        self.assertTrue(any("Follow-up Candidates" in error for error in errors))
+
+    def test_review_branch_rejects_raw_report_english_template_heading(self) -> None:
+        raw_report = self.write_raw_review_report(
+            "round-001-final-release.md",
+            "# Evidence Handoff\n\nBranch Review raw evidence。\n",
+        )
+        digest = gtt.file_digest(self.root, raw_report)
+        review_report = self.task_dir / "review.md"
+        review_report.write_text(self.review_rollup_text("无 finding。"), encoding="utf-8")
+        assignment = self.write_agent_assignment(
+            [
+                {
+                    "round": 1,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "019f315a-f262-7521-acdf-78e4adc99a11",
+                    "platform_nickname": "Gibbs",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_policy": "最终放行审查代理必须是 fresh new agent，并完整审查当前 diff。",
+                    "reuse_decision": "new-agent",
+                    "review_report_path": digest["path"],
+                    "review_report_sha256": digest["sha256"],
+                    "review_report_size_bytes": digest["size_bytes"],
+                    "review_report_modified_at": digest["modified_at"],
+                }
+            ]
+        )
+        patches = self.patch_review_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with (
+                mock.patch.object(gtt, "git_object_exists", return_value=True),
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.cmd_review_branch(
+                    review_args(
+                        review_report=str(review_report),
+                        agent_assignment=str(assignment),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertTrue(any("Evidence Handoff" in error for error in raised.exception.payload["errors"]))
 
     def test_review_branch_pass_requires_rollup_to_link_raw_reports(self) -> None:
         review_report = self.task_dir / "review.md"
@@ -3977,6 +4060,30 @@ class ReviewGateReportTest(unittest.TestCase):
 
         self.assertTrue(any("review_report artifact 已过期" in error and "sha256" in error for error in errors))
         self.assertTrue(any("review_report artifact 已过期" in error and "size_bytes" in error for error in errors))
+
+    def test_validate_review_gate_rejects_final_rollup_english_template_heading(self) -> None:
+        review_report = self.task_dir / "review.md"
+        review_report.write_text(
+            "# Follow-up Candidates\n\n- reviews/round-001-final-release.md\n",
+            encoding="utf-8",
+        )
+        self.write_gate(review_report=gtt.file_digest(self.root, review_report))
+        gate = gtt.read_json(self.task_dir / "review-gate.json")
+        gate["findings"] = []
+        gate["conclusion"]["findings_count"] = 0
+        gate["conclusion"]["blocking_findings_count"] = 0
+        self.add_assignment_evidence_to_gate(gate)
+        (self.task_dir / "review-gate.json").write_text(
+            gtt.json.dumps(gate, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        with (
+            mock.patch.object(gtt, "current_head", return_value="abc123"),
+            mock.patch.object(gtt, "git_object_exists", return_value=True),
+        ):
+            _, _, errors = gtt.validate_review_gate(self.root, self.task_dir, gtt.DEFAULTS, False)
+
+        self.assertTrue(any("Follow-up Candidates" in error for error in errors))
 
     def test_validate_review_gate_accepts_agent_assignment_summary(self) -> None:
         self.write_gate(review_report=self.valid_report())

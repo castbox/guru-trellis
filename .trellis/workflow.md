@@ -292,6 +292,16 @@ For repositories that install and use the Guru Team workflow as a business proje
 
 Keep literal command names, file paths, GitHub keywords, configuration keys, external API names, code symbols, and other required tokens in English when needed, but write the surrounding explanation in Chinese.
 
+Branch Review raw reports (`{TASK_DIR}/reviews/*.md`) and the final rollup
+(`{TASK_DIR}/review.md`) are human-readable task artifacts. Their Markdown
+headings, section names, labels, summaries, evidence, findings, observations,
+follow-up candidates, deployment / safety impact judgments, Docs SSOT judgments,
+and final conclusion must be Chinese by default. Recommended final rollup
+sections include `审查轮次`, `问题生命周期`, `最终审查`, `证据`, `观察项`,
+`后续候选`, and `结论`. Literal tokens may remain English when they are commands,
+paths, JSON field names, HEAD values, GitHub keywords, code symbols, external
+API names, or fixed platform identifiers.
+
 The `guru-trellis` source repository itself is a public extension repository, not a target business project. Its public README/source comments/script help/marketplace metadata may remain English or bilingual when that is clearer for distribution, interoperability, or literal API compatibility. Do not use that exception to keep business-project `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**`, or bootstrap-generated docs SSOT in English.
 
 ### Middle-platform Knowledge Gate
@@ -834,22 +844,30 @@ Review results must distinguish:
 - `followup_candidate`: out-of-scope future work candidate that should become a follow-up issue or Issue Scope Ledger entry when appropriate, but is not a current PR finding.
 
 Persist each independent review round in the conversation and in a task-local
-raw report under `{TASK_DIR}/reviews/*.md`. Keep `{TASK_DIR}/review.md` as the
-final human rollup: it summarizes review rounds, findings lifecycle, key
-evidence, final pass/fail conclusion, and links every raw report. The standard
-top-level artifact table still defaults to the human rollup `review.md`; raw
-reports are task metadata reached through `review.md` links and gate digest
-evidence, not separate default table rows. Independent review agents must review the
-branch diff and repository artifacts directly from an AI reviewer perspective;
-they do not execute Guru Team recorder/validator extension scripts such as
+raw report under `{TASK_DIR}/reviews/*.md`. Raw reports are human-readable task
+artifacts: use Chinese Markdown headings, Chinese field labels, and Chinese
+review narrative for the checked diff range, reviewed HEAD, evidence, findings,
+observations, follow-up candidates, deployment / safety impact, Docs SSOT
+judgment, sub-agent status/reuse evidence, and conclusion. Keep
+`{TASK_DIR}/review.md` as the final human rollup: use a Chinese structure such
+as `审查轮次`, `问题生命周期`, `最终审查`, `证据`, `观察项`, `后续候选`, and
+`结论`; summarize each review round, finding closure lifecycle, key evidence,
+final pass/fail conclusion, and link every raw report. The standard top-level
+artifact table still defaults to the human rollup `review.md`; raw reports are
+task metadata reached through `review.md` links and gate digest evidence, not
+separate default table rows. Independent review agents must review the branch
+diff and repository artifacts directly from an AI reviewer perspective; they do
+not execute Guru Team recorder/validator extension scripts such as
 `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or
 `record-*`. The main session runs those scripts only after the review result
 exists, to record and validate objective gate evidence. Each raw report and the
-final rollup must include concrete
-summary/evidence, checked diff range, validation notes, deployment impact
-judgment, Docs SSOT reconciliation, findings/observations/follow-up candidates
-even when each list is empty, and the Chinese logical review role plus whether
-`agent-assignment.json` records reuse/replacement decisions and any wait timeout, stale, interruption, unfinished termination, resume/replacement, completion, or failure status events that affected sub-agent evidence.
+final rollup must include concrete Chinese summary/evidence, checked diff
+range, validation notes, deployment impact judgment, Docs SSOT reconciliation,
+findings/observations/follow-up candidates even when each list is empty, and
+the Chinese logical review role plus whether `agent-assignment.json` records
+reuse/replacement decisions and any wait timeout, stale, interruption,
+unfinished termination, resume/replacement, completion, or failure status events
+that affected sub-agent evidence.
 
 Before writing `review.md`, `review-gate.json`, or any task artifact, confirm the
 current working directory is the task's selected `workspace_path`, not the source
