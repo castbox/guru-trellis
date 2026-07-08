@@ -64,7 +64,9 @@ Continue entries must:
 - state that `planning-approval.json` must use
   `user_confirmation.source=explicit-post-planning-review`, include
   `review_prompt_presented_at`, `approved_at`, and matching hash / size /
-  modified-time metadata for `prd.md`, `design.md`, and `implement.md`
+  modified-time metadata for `prd.md`, `design.md`, and `implement.md`; state
+  that freshness is based on planning document content digests, while HEAD and
+  dirty-path drift alone do not require another user review
 - in `in_progress`, rerun `check-planning-approval.sh --json` before dispatching
   `trellis-implement` / channel `implement` or recording `phase2-check.json`
 - state that default `sub-agent` mode requires the main session to dispatch
@@ -140,8 +142,9 @@ Sub-agent overlay entries must:
 - keep recursion guards and task-context loading preludes intact;
 - require implement agents to run `check-planning-approval.sh --json --task
   <task-path>` before reading implementation context or editing, and to report
-  `Implementation Blocked` if the artifact is missing, stale, old-schema, or
-  not sourced from `explicit-post-planning-review`;
+  `Implementation Blocked` if the artifact is missing, old-schema, not sourced
+  from `explicit-post-planning-review`, or the reviewed planning document
+  content digests no longer match;
 - require implement agents to output a completion handoff with files changed,
   requirement/design carryover, verification state, remaining risks, completion
   status, and focus areas for `trellis-check`;

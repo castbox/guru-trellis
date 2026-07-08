@@ -61,6 +61,7 @@ PLANNING_APPROVAL_CONFIRMATION_SOURCE = "explicit-post-planning-review"
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 REVIEW_REPORT_ARTIFACT = "review.md"
+REVIEW_ROUND_REPORT_DIR = "reviews"
 GURU_TEAM_EXTENSION_MANIFEST = Path(".trellis/guru-team/extension.json")
 DEFAULT_PLANNING_ARTIFACTS = ["prd.md", "design.md", "implement.md"]
 DEFAULT_PHASE2_TASK_ARTIFACTS = [
@@ -125,6 +126,22 @@ PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS = {
     REVIEW_REPORT_ARTIFACT,
     "review-gate.json",
 }
+
+
+def is_phase2_post_commit_mutable_artifact_path(artifact_path: str) -> bool:
+    normalized = artifact_path.strip().replace("\\", "/")
+    if not normalized:
+        return False
+    if Path(normalized).name in PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS:
+        return True
+    parts = [part for part in normalized.split("/") if part]
+    return (
+        len(parts) >= 4
+        and parts[0] == ".trellis"
+        and parts[1] == "tasks"
+        and parts[-2] == REVIEW_ROUND_REPORT_DIR
+        and parts[-1].endswith(".md")
+    )
 PR_BODY_REQUIRED_SECTIONS = [
     "变更摘要",
     "影响范围",
@@ -1936,6 +1953,54 @@ def load_review_report(root: Path, task_dir: Path, report_arg: str | None) -> di
     }
 
 
+def raw_review_report_path_errors(root: Path, task_dir: Path, path: Path, label: str) -> list[str]:
+    errors: list[str] = []
+    resolved = path.resolve()
+    reviews_dir = (task_dir / REVIEW_ROUND_REPORT_DIR).resolve()
+    if reviews_dir not in [resolved, *resolved.parents] or resolved.parent != reviews_dir:
+        errors.append(f"{label} must point to a task-local {REVIEW_ROUND_REPORT_DIR}/*.md file.")
+    if resolved.suffix != ".md":
+        errors.append(f"{label} must point to a Markdown .md file.")
+    try:
+        resolved.relative_to(task_dir.resolve())
+    except ValueError:
+        errors.append(f"{label} must stay inside the current task directory.")
+    return errors
+
+
+def load_review_round_report(root: Path, task_dir: Path, report_arg: str | None) -> dict[str, Any]:
+    if not report_arg:
+        raise WorkflowError(
+            "record-agent-assignment --review-round requires --review-round-report pointing to task-local reviews/*.md.",
+            exit_code=2,
+        )
+    path = resolve_task_local_path(root, task_dir, report_arg)
+    errors = raw_review_report_path_errors(root, task_dir, path, "--review-round-report")
+    if errors:
+        raise WorkflowError(
+            "Invalid --review-round-report.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return file_digest(root, path)
+
+
+def review_round_report_digest_entry(item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "path": item.get("review_report_path"),
+        "sha256": item.get("review_report_sha256"),
+        "size_bytes": item.get("review_report_size_bytes"),
+        "modified_at": item.get("review_report_modified_at"),
+    }
+
+
+def add_review_round_report_digest_fields(event: dict[str, Any], digest: dict[str, Any]) -> None:
+    event["review_report_path"] = digest.get("path")
+    event["review_report_sha256"] = digest.get("sha256")
+    event["review_report_size_bytes"] = digest.get("size_bytes")
+    event["review_report_modified_at"] = digest.get("modified_at")
+
+
 def resolve_task_local_path(root: Path, task_dir: Path, value: str) -> Path:
     raw_path = Path(value).expanduser()
     if raw_path.is_absolute():
@@ -2087,6 +2152,7 @@ def append_agent_assignment_event(
 def append_agent_review_round(
     payload: dict[str, Any],
     root: Path,
+    task_dir: Path,
     logical_role: str,
     agent_id: str,
     platform_nickname: str,
@@ -2095,6 +2161,7 @@ def append_agent_review_round(
     reuse_policy: str,
     reuse_decision: str,
     reviewed_head: str | None,
+    review_round_report: str | None,
 ) -> dict[str, Any]:
     if round_value <= 0:
         raise WorkflowError("review round must be a positive integer.", exit_code=2)
@@ -2113,6 +2180,7 @@ def append_agent_review_round(
         "reuse_decision": validate_reuse_decision_value(reuse_decision),
         "recorded_at": now_iso(),
     }
+    add_review_round_report_digest_fields(event, load_review_round_report(root, task_dir, review_round_report))
     payload["review_rounds"].append(event)
     return event
 
@@ -2231,6 +2299,17 @@ def validate_timestamp_field(value: Any, label: str, errors: list[str], required
         errors.append(f"agent-assignment.json {label} 必须是 ISO-8601 时间: {text}。")
 
 
+def validate_review_round_report_digest(root: Path, task_dir: Path, item: dict[str, Any], label: str) -> list[str]:
+    entry = migrated_archive_digest_entry(root, task_dir, review_round_report_digest_entry(item)) or review_round_report_digest_entry(item)
+    errors: list[str] = []
+    path_value = str(entry.get("path") or "").strip()
+    if path_value:
+        path = resolve_repo_path(root, path_value)
+        errors.extend(raw_review_report_path_errors(root, task_dir, path, f"{label}.review_report_path"))
+    errors.extend(digest_errors(root, entry, f"{label} raw review report"))
+    return errors
+
+
 def validate_agent_assignment_payload(
     root: Path,
     task_dir: Path,
@@ -2301,6 +2380,14 @@ def validate_agent_assignment_payload(
             if "platform_nickname" not in item:
                 errors.append(f"agent-assignment.json review_rounds[{index}] 缺少 platform_nickname 字段。")
             validate_head_field(root, item.get("reviewed_head"), f"review_rounds[{index}].reviewed_head", errors)
+            errors.extend(
+                validate_review_round_report_digest(
+                    root,
+                    task_dir,
+                    item,
+                    f"agent-assignment.json review_rounds[{index}]",
+                )
+            )
 
     decisions = payload.get("reuse_decisions")
     if not isinstance(decisions, list):
@@ -2402,6 +2489,71 @@ def summarize_agent_assignment(root: Path, task_dir: Path, path: Path, payload: 
         "task": repo_relative(root, task_dir),
         "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。",
     }
+
+
+def review_reports_from_assignment(root: Path, task_dir: Path, payload: dict[str, Any]) -> list[dict[str, Any]]:
+    reports: list[dict[str, Any]] = []
+    rounds = payload.get("review_rounds")
+    if not isinstance(rounds, list):
+        return reports
+    for item in rounds:
+        if not isinstance(item, dict):
+            continue
+        digest = migrated_archive_digest_entry(root, task_dir, review_round_report_digest_entry(item)) or review_round_report_digest_entry(item)
+        reports.append(
+            {
+                "round": item.get("round"),
+                "logical_role": item.get("logical_role"),
+                "agent_id": item.get("agent_id"),
+                "reviewed_head": item.get("reviewed_head"),
+                "findings_count": item.get("findings_count"),
+                "path": digest.get("path"),
+                "sha256": digest.get("sha256"),
+                "size_bytes": digest.get("size_bytes"),
+                "modified_at": digest.get("modified_at"),
+            }
+        )
+    return reports
+
+
+def current_findings_review_round_errors(root: Path, payload: dict[str, Any], expected_findings_count: int) -> list[str]:
+    rounds = payload.get("review_rounds")
+    if not isinstance(rounds, list):
+        return ["agent-assignment.json review_rounds 必须是数组。"]
+    current = current_head(root)
+    for item in rounds:
+        if not isinstance(item, dict):
+            continue
+        if str(item.get("reviewed_head") or "").strip() == current and item.get("findings_count") == expected_findings_count:
+            return []
+    return [
+        "Branch Review Gate findings artifact 需要 agent-assignment.json 中存在一轮 reviewed_head="
+        f"{current} 且 findings_count={expected_findings_count} 的 review_rounds[] raw report evidence。"
+    ]
+
+
+def review_rollup_link_errors(root: Path, task_dir: Path, review_report: dict[str, Any], review_reports: list[dict[str, Any]]) -> list[str]:
+    path_value = str(review_report.get("path") or "").strip()
+    if not path_value:
+        return ["task-local review.md 缺少 path，无法校验 raw report 链接。"]
+    report_path = resolve_repo_path(root, path_value)
+    try:
+        content = report_path.read_text(encoding="utf-8")
+    except OSError as exc:
+        return [f"无法读取 task-local review.md 校验 raw report 链接: {exc}。"]
+    errors: list[str] = []
+    for item in review_reports:
+        raw_path_value = str(item.get("path") or "").strip()
+        if not raw_path_value:
+            continue
+        raw_path = resolve_repo_path(root, raw_path_value)
+        try:
+            task_relative = raw_path.resolve().relative_to(task_dir.resolve()).as_posix()
+        except ValueError:
+            task_relative = ""
+        if raw_path_value not in content and (not task_relative or task_relative not in content):
+            errors.append(f"task-local review.md 必须链接 raw review report: {task_relative or raw_path_value}。")
+    return errors
 
 
 def is_strict_int(value: Any) -> bool:
@@ -2668,8 +2820,12 @@ def migrated_archive_digest_entry(root: Path, task_dir: Path, entry: Any) -> dic
     if not path_value or not path_value.startswith(f"{active_task}/"):
         return None
     relative_name = path_value.removeprefix(f"{active_task}/")
-    if not relative_name or "/" in relative_name:
+    if not relative_name or relative_name.startswith("/") or ".." in relative_name.split("/"):
         return None
+    if "/" in relative_name:
+        parts = relative_name.split("/")
+        if not (len(parts) == 2 and parts[0] == REVIEW_ROUND_REPORT_DIR and parts[1].endswith(".md") and parts[1]):
+            return None
     archived_path = task_dir / relative_name
     if not archived_path.is_file():
         return None
@@ -2758,6 +2914,59 @@ def valid_agent_assignment_summary_fields(
     for key in ["agents_count", "review_rounds_count", "reuse_decisions_count", "status_events_count"]:
         if key in agent_assignment and (not isinstance(agent_assignment.get(key), int) or agent_assignment[key] < 0):
             errors.append(f"Branch Review Gate agent_assignment.{key} 必须是非负整数。")
+    return errors
+
+
+def valid_review_reports_summary_fields(
+    root: Path,
+    task_dir: Path,
+    review_reports: Any,
+    assignment_payload: dict[str, Any] | None = None,
+) -> list[str]:
+    if not isinstance(review_reports, list) or not review_reports:
+        return ["Branch Review Gate 缺少 verification_evidence.review_reports[] raw report digest 摘要。"]
+    errors: list[str] = []
+    for index, item in enumerate(review_reports):
+        if not isinstance(item, dict):
+            errors.append(f"Branch Review Gate review_reports[{index}] 必须是对象。")
+            continue
+        for key in ["round", "logical_role", "agent_id", "reviewed_head", "findings_count", "path", "sha256", "size_bytes", "modified_at"]:
+            if item.get(key) in (None, ""):
+                errors.append(f"Branch Review Gate review_reports[{index}] 缺少 {key}。")
+        if not is_strict_int(item.get("round")) or int(item.get("round") or 0) <= 0:
+            errors.append(f"Branch Review Gate review_reports[{index}].round 必须是正整数。")
+        findings_count = item.get("findings_count")
+        if not is_strict_int(findings_count) or findings_count < 0:
+            errors.append(f"Branch Review Gate review_reports[{index}].findings_count 必须是非负整数。")
+        role = str(item.get("logical_role") or "").strip()
+        if role and role not in ALLOWED_LOGICAL_ROLES:
+            errors.append(f"Branch Review Gate review_reports[{index}].logical_role 非法: {role}。")
+        normalized_item = migrated_archive_digest_entry(root, task_dir, item) or item
+        path_value = str(normalized_item.get("path") or "").strip()
+        if path_value:
+            path = resolve_repo_path(root, str(normalized_item.get("path") or ""))
+            errors.extend(raw_review_report_path_errors(root, task_dir, path, f"Branch Review Gate review_reports[{index}].path"))
+            errors.extend(digest_errors(root, normalized_item, f"Branch Review Gate review_reports[{index}]"))
+    if assignment_payload is not None and isinstance(assignment_payload.get("review_rounds"), list):
+        expected = review_reports_from_assignment(root, task_dir, assignment_payload)
+        actual_by_round = {
+            item.get("round"): migrated_archive_digest_entry(root, task_dir, item) or item
+            for item in review_reports
+            if isinstance(item, dict) and is_strict_int(item.get("round"))
+        }
+        if len(review_reports) != len(expected):
+            errors.append(
+                f"Branch Review Gate review_reports[] 数量 {len(review_reports)} 与 agent-assignment.json review_rounds[] 数量 {len(expected)} 不一致。"
+            )
+        for expected_item in expected:
+            round_value = expected_item.get("round")
+            actual = actual_by_round.get(round_value)
+            if actual is None:
+                errors.append(f"Branch Review Gate review_reports[] 缺少 round {round_value} 的 raw report 摘要。")
+                continue
+            for key in ["logical_role", "agent_id", "reviewed_head", "findings_count", "path", "sha256", "size_bytes", "modified_at"]:
+                if actual.get(key) != expected_item.get(key):
+                    errors.append(f"Branch Review Gate review_reports[] round {round_value} 的 {key} 与 agent-assignment.json 不一致。")
     return errors
 
 
@@ -2899,29 +3108,11 @@ def validate_planning_approval(
             f"{PLANNING_APPROVAL_CONFIRMATION_SOURCE}；Phase 0 handoff/workflow confirmation 不能替代规划审核确认。"
         )
     recorded_head = str(payload.get("head") or "")
-    head = current_head(root)
-    accepted_committed_head = False
-    if recorded_head != head:
-        if allow_committed_head and recorded_head and is_ancestor(root, recorded_head, "HEAD"):
-            accepted_committed_head = True
-        else:
-            errors.append(f"planning-approval.json 记录的 HEAD {recorded_head or '(missing)'} 与当前 HEAD {head} 不一致。")
+    if not recorded_head:
+        errors.append("planning-approval.json 缺少 HEAD 记录。")
     recorded_dirty = payload.get("dirty_paths")
     if not isinstance(recorded_dirty, list):
         errors.append("planning-approval.json 缺少 dirty_paths 数组。")
-    elif accepted_committed_head:
-        has_non_metadata, non_metadata_paths = has_non_metadata_dirty_paths(root)
-        if has_non_metadata:
-            errors.append(
-                "planning-approval.json 记录的 HEAD 是当前 HEAD 的祖先，但工作区存在非 Trellis metadata 变更: "
-                + ", ".join(non_metadata_paths[:20])
-            )
-    else:
-        dirty_excluded = {repo_relative(root, planning_approval_path(task_dir))}
-        dirty_excluded.update(recorded_digest_paths(payload.get("reviewed_artifacts")))
-        dirty_now = dirty_paths_excluding(root, dirty_excluded)
-        if sorted(str(item) for item in recorded_dirty) != sorted(dirty_now):
-            errors.append("planning-approval.json 记录的 dirty_paths 与当前 working tree 不一致。")
     reviewed = payload.get("reviewed_artifacts")
     approved_alias = payload.get("approved_artifacts")
     if not isinstance(reviewed, list) or not reviewed:
@@ -2940,7 +3131,7 @@ def validate_planning_approval(
             if required_path not in reviewed_paths:
                 errors.append(f"planning-approval.json 未在 reviewed_artifacts 记录 {name}。")
         for item in normalized_reviewed:
-            errors.extend(digest_errors(root, item, "planning approval reviewed_artifacts", require_modified_at_match=True))
+            errors.extend(digest_errors(root, item, "planning approval reviewed_artifacts"))
     if isinstance(approved_alias, list) and approved_alias:
         normalized_alias = [
             normalized_digest_entry(root, task_dir, item)
@@ -2952,7 +3143,7 @@ def validate_planning_approval(
             if required_path not in alias_paths:
                 errors.append(f"planning-approval.json 未在 approved_artifacts alias 记录 {name}。")
         for item in normalized_alias:
-            errors.extend(digest_errors(root, item, "planning approval approved_artifacts", require_modified_at_match=True))
+            errors.extend(digest_errors(root, item, "planning approval approved_artifacts"))
     else:
         # Old artifacts with only approved_artifacts are intentionally blocked
         # by schema/source checks above; this branch keeps error output focused.
@@ -3106,11 +3297,10 @@ def validate_phase2_check(
     else:
         for item in checked_artifacts:
             artifact_path = str(item.get("path") or "").strip() if isinstance(item, dict) else ""
-            artifact_name = Path(artifact_path).name if artifact_path else ""
             if (
                 allow_committed_head
                 and committed_head_audit_performed
-                and artifact_name in PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS
+                and is_phase2_post_commit_mutable_artifact_path(artifact_path)
             ):
                 continue
             errors.extend(digest_errors(root, item, "phase2 checked_artifacts"))
@@ -3145,6 +3335,7 @@ def build_review_gate_payload(
     review_source: str,
     review_report: dict[str, Any] | None,
     agent_assignment: dict[str, Any] | None,
+    review_reports: list[dict[str, Any]],
 ) -> dict[str, Any]:
     diff_spec = diff_range(root, base_branch)
     files = changed_files(root, diff_spec)
@@ -3203,6 +3394,7 @@ def build_review_gate_payload(
             "review_source": review_source,
             "review_report": review_report,
             "agent_assignment": agent_assignment,
+            "review_reports": review_reports,
             "evidence": evidence,
             "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。",
         },
@@ -3271,6 +3463,22 @@ def migrate_review_gate_for_archived_task(root: Path, task_dir: Path, config: di
                 result["updates"].append("verification_evidence.agent_assignment")
                 changed = True
 
+        review_reports = verification.get("review_reports")
+        if isinstance(review_reports, list):
+            migrated_reports: list[Any] = []
+            reports_changed = False
+            for item in review_reports:
+                migrated_item = migrated_archive_digest_entry(root, task_dir, item) if isinstance(item, dict) else None
+                if migrated_item is not None and migrated_item != item:
+                    migrated_reports.append(migrated_item)
+                    reports_changed = True
+                else:
+                    migrated_reports.append(item)
+            if reports_changed:
+                verification["review_reports"] = migrated_reports
+                result["updates"].append("verification_evidence.review_reports")
+                changed = True
+
     if changed:
         write_json(path, gate)
         result["migrated"] = True
@@ -3332,6 +3540,25 @@ def validate_review_gate(
     reviewed_head = str(gate.get("head") or "")
     agent_assignment = verification.get("agent_assignment")
     errors.extend(valid_agent_assignment_summary_fields(root, task_dir, agent_assignment, expected_head=reviewed_head))
+    assignment_payload_for_reports: dict[str, Any] | None = None
+    if isinstance(agent_assignment, dict):
+        migrated_assignment = migrated_archive_entry(root, task_dir, agent_assignment, AGENT_ASSIGNMENT_ARTIFACT) or agent_assignment
+        assignment_path_value = str(migrated_assignment.get("path") or "").strip()
+        if assignment_path_value:
+            assignment_path = resolve_repo_path(root, assignment_path_value).resolve()
+            if assignment_path.is_file() and task_dir.resolve() in [assignment_path, *assignment_path.parents]:
+                try:
+                    assignment_payload_for_reports = normalize_agent_assignment_for_task(root, task_dir, read_json(assignment_path))
+                except WorkflowError:
+                    assignment_payload_for_reports = None
+    errors.extend(
+        valid_review_reports_summary_fields(
+            root,
+            task_dir,
+            verification.get("review_reports"),
+            assignment_payload=assignment_payload_for_reports,
+        )
+    )
     head = current_head(root)
     gate_config = review_gate_config(config)
     require_head_match = bool(gate_config.get("require_head_match", True))
@@ -4023,30 +4250,41 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
             "--reviewer is identity metadata only and cannot satisfy independent review evidence.",
             exit_code=2,
         )
-    if args.pass_gate and not getattr(args, "agent_assignment", None):
+    if not getattr(args, "agent_assignment", None):
         raise WorkflowError(
-            "Branch Review Gate pass needs --agent-assignment pointing to task-local agent-assignment.json "
-            "so the fresh 最终放行审查代理 round can be validated.",
+            "Branch Review Gate pass/findings records need --agent-assignment pointing to task-local agent-assignment.json "
+            "so raw review round report evidence and fresh 最终放行审查代理 metadata can be validated.",
             exit_code=2,
         )
     agent_assignment_summary: dict[str, Any] | None = None
-    if getattr(args, "agent_assignment", None):
-        assignment_path, assignment_payload, assignment_errors, assignment_summary = validate_agent_assignment(
-            root,
-            task_dir,
-            args.agent_assignment,
-            require_current_head=False,
+    review_reports: list[dict[str, Any]] = []
+    assignment_path, assignment_payload, assignment_errors, assignment_summary = validate_agent_assignment(
+        root,
+        task_dir,
+        args.agent_assignment,
+        require_current_head=False,
+    )
+    if args.pass_gate and not assignment_errors:
+        assignment_errors.extend(final_review_round_errors(root, assignment_payload))
+        assignment_errors.extend(status_event_completion_errors(assignment_payload))
+    if not args.pass_gate and findings and not assignment_errors:
+        assignment_errors.extend(current_findings_review_round_errors(root, assignment_payload, len(findings)))
+    if assignment_errors:
+        raise WorkflowError(
+            "Branch Review Gate blocked because agent assignment evidence is invalid.",
+            exit_code=2,
+            payload={"artifact_path": str(assignment_path), "errors": assignment_errors},
         )
-        if args.pass_gate and not assignment_errors:
-            assignment_errors.extend(final_review_round_errors(root, assignment_payload))
-            assignment_errors.extend(status_event_completion_errors(assignment_payload))
-        if assignment_errors:
+    agent_assignment_summary = assignment_summary
+    review_reports = review_reports_from_assignment(root, task_dir, assignment_payload)
+    if args.pass_gate:
+        link_errors = review_rollup_link_errors(root, task_dir, review_report, review_reports)
+        if link_errors:
             raise WorkflowError(
-                "Branch Review Gate blocked because agent assignment evidence is invalid.",
+                "Branch Review Gate pass blocked because review.md does not link every raw review report.",
                 exit_code=2,
-                payload={"artifact_path": str(assignment_path), "errors": assignment_errors},
+                payload={"errors": link_errors},
             )
-        agent_assignment_summary = assignment_summary
     if not args.pass_gate and not findings:
         raise WorkflowError(
             "Branch Review Gate needs an explicit result. Use --pass after review found no findings, or provide --finding/--findings-file.",
@@ -4070,6 +4308,7 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         review_source=review_source,
         review_report=review_report,
         agent_assignment=agent_assignment_summary,
+        review_reports=review_reports,
     )
     if args.pass_gate and bool(review_gate_config(config).get("require_deployment_impact_evidence", True)):
         deployment_errors = deployment_evidence_errors(payload.get("deployment_impact", {}), evidence, findings)
@@ -4128,6 +4367,7 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
         recorded = append_agent_review_round(
             payload,
             root,
+            task_dir,
             logical_role,
             agent_id,
             platform_nickname,
@@ -4136,6 +4376,7 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
             clean_optional_text(args.reuse_policy),
             clean_optional_text(args.reuse_decision or "not-applicable"),
             clean_optional_text(args.reviewed_head) or None,
+            clean_optional_text(getattr(args, "review_round_report", None)) or None,
         )
     elif args.reuse_decision:
         recorded = append_agent_reuse_decision(
@@ -4789,7 +5030,11 @@ def build_parser() -> argparse.ArgumentParser:
     check_planning.add_argument("--root")
     check_planning.add_argument("--json", action="store_true")
     check_planning.add_argument("--task")
-    check_planning.add_argument("--allow-committed-head", action="store_true", help="Allow the approved planning HEAD to be an ancestor for post-commit gate audits.")
+    check_planning.add_argument(
+        "--allow-committed-head",
+        action="store_true",
+        help="Compatibility flag; planning freshness is based on reviewed planning artifact digests, not HEAD drift.",
+    )
 
     phase2 = sub.add_parser("record-phase2-check")
     phase2.add_argument("--root")
@@ -4820,6 +5065,7 @@ def build_parser() -> argparse.ArgumentParser:
     assignment.add_argument("--platform-nickname", default="", help="Display-only platform nickname; never used for gate decisions.")
     assignment.add_argument("--reason", help="Chinese AI/human assignment rationale for agents[].")
     assignment.add_argument("--review-round", type=int, help="Record a review_rounds[] entry instead of an agents[] entry.")
+    assignment.add_argument("--review-round-report", help="Task-local reviews/*.md raw report for this review round. Required with --review-round.")
     assignment.add_argument("--reviewed-head", help="Reviewed HEAD for a review round. Defaults to current HEAD.")
     assignment.add_argument("--findings-count", type=int, default=0)
     assignment.add_argument("--reuse-policy", help="Chinese review reuse policy used for this review round.")

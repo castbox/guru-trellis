@@ -27,7 +27,7 @@ Look for the `<!-- trellis-hook-injected -->` marker in your input above.
 ## Context
 
 Before implementing, read:
-- First run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-path>` for the resolved active task. If it fails because planning approval is missing, stale, old-schema, or not sourced from `explicit-post-planning-review`, report `Implementation Blocked` and stop; the main session must show `prd.md`, `design.md`, and `implement.md` links again and get fresh user confirmation.
+- First run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-path>` for the resolved active task. If it fails because planning approval is missing, old-schema, not sourced from `explicit-post-planning-review`, or the reviewed `prd.md` / `design.md` / `implement.md` content digests no longer match, report `Implementation Blocked` and stop; current HEAD or dirty-path drift alone is not a planning approval failure. The main session must show `prd.md`, `design.md`, and `implement.md` links again and get fresh user confirmation.
 - `.trellis/workflow.md` - Project workflow
 - `.trellis/spec/` - Development guidelines
 - Task `prd.md` - Requirements document

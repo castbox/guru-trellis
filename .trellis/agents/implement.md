@@ -21,9 +21,11 @@ post-planning approval evidence for the active task:
 .trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-path>
 ```
 
-If this command fails because `planning-approval.json` is missing, stale,
-old-schema, or not sourced from `explicit-post-planning-review`, stop and
-report `Implementation Blocked`. Do not implement, dispatch another agent, or
+If this command fails because `planning-approval.json` is missing, old-schema,
+not sourced from `explicit-post-planning-review`, or the reviewed
+`prd.md`/`design.md`/`implement.md` content digests no longer match, stop and
+report `Implementation Blocked`. Current HEAD or dirty-path drift alone is not a
+planning approval failure. Do not implement, dispatch another agent, or
 record/check `phase2-check.json`; the main session must show `prd.md`,
 `design.md`, and `implement.md` links again and get fresh user confirmation.
 

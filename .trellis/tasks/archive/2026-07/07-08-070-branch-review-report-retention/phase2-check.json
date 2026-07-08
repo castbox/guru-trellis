@@ -1,0 +1,173 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-08T04:36:59Z",
+  "task_dir": ".trellis/tasks/07-08-070-branch-review-report-retention",
+  "base_branch": "main",
+  "head": "fa7d0574230f6773dc319af604929f9cb17b2cfa",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".claude/agents/trellis-implement.md",
+    ".claude/commands/trellis/continue.md",
+    ".codex/agents/trellis-implement.toml",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".cursor/agents/trellis-implement.md",
+    ".cursor/commands/trellis-continue.md",
+    ".trellis/agents/implement.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/tasks/07-08-070-branch-review-report-retention/agent-assignment.json",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-08-070-branch-review-report-retention/review-gate.json",
+    ".trellis/tasks/07-08-070-branch-review-report-retention/review.md",
+    ".trellis/tasks/07-08-070-branch-review-report-retention/reviews/"
+  ],
+  "checker": "019f3ffc-f5e3-7192-b331-48521fa83437 / Release Agent the 2nd",
+  "check_summary": "阶段二检查代理完成当前未提交 diff 检查：planning approval freshness 已改为绑定 prd/design/implement 内容 digest，HEAD/dirty/mtime drift 不单独阻塞；规划文档内容变化仍 fail closed。同步检查了 companion script、测试、canonical/dogfood workflow、README、durable docs、spec、preset/installed overlay，以及 requirement-main.md 的 #70 raw reports/rollup/digest ledger 语义。0 findings；未改文件；未运行 recorder/gate 脚本。未重新跑完整 throwaway 新仓库安装或 upgrade-update 开箱验证，需在后续 release/Branch Review evidence 中明确。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-08-070-branch-review-report-retention/prd.md",
+      "sha256": "46e475e343e79d2b842c974383dbc59b45c4a08ee683cb065590632794267a69",
+      "size_bytes": 4426,
+      "modified_at": "2026-07-08T02:39:10.132787+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-070-branch-review-report-retention/design.md",
+      "sha256": "5e7b74ea9d45b7033194175436e98b9ad304d546ad74dba4576d7461d05d6fb8",
+      "size_bytes": 5355,
+      "modified_at": "2026-07-08T02:39:10.133045+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-070-branch-review-report-retention/implement.md",
+      "sha256": "3016cb2f05525f59b1027cbce9188f9abba87a0a9c66177a9ac3013bb31b4f7d",
+      "size_bytes": 2876,
+      "modified_at": "2026-07-08T02:39:10.133253+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-070-branch-review-report-retention/planning-approval.json",
+      "sha256": "9651baec916194eb79990bd19523bff61cbb89329a7b6ce8b1935e079ceff42a",
+      "size_bytes": 4481,
+      "modified_at": "2026-07-08T03:30:54.254574+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "eb56dde6bab8c7f9a52ebb52ec441c659a7b7b1180e194f770c733360126839b",
+      "size_bytes": 15907,
+      "modified_at": "2026-07-08T04:19:43.974000+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "be10ec5b465bbeeb055828dfb6c174644cad0a3e7aef8916096573a169576829",
+      "size_bytes": 12689,
+      "modified_at": "2026-07-08T04:19:55.161129+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "5971203df1738735f501d8aae19562ef29c22680662abe4bde29f264e44b02ad",
+      "size_bytes": 19708,
+      "modified_at": "2026-07-08T04:20:11.318800+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "073738c04087f52cef6b1122db811ce2964e300fac9903dc8eb805a5305d5887",
+      "size_bytes": 5246,
+      "modified_at": "2026-07-08T04:30:54.639629+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "f24d13b61ad6efc664b03fa58131c572bf3cc83aaa3a78d6a3244e78ac0fcaec",
+      "size_bytes": 9566,
+      "modified_at": "2026-07-08T04:25:58.261807+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "3dcb9e138dc54489b539b7d2f579ef68bfcdfb3c293fad5a80ceafdf4c5cb64e",
+      "size_bytes": 4343,
+      "modified_at": "2026-07-08T02:34:03.197854+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": ".trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task .trellis/tasks/07-08-070-branch-review-report-retention",
+      "result": "pass: current head fa7d057... accepted with approved head 6393696... because planning docs still match"
+    },
+    {
+      "command": "python3 -m unittest targeted planning approval tests",
+      "result": "pass: 5 tests OK"
+    },
+    {
+      "command": "python3 -m unittest trellis.workflows.guru-team.scripts.python.test_guru_team_trellis",
+      "result": "pass: 149 tests OK"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json",
+      "result": "pass"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "pass"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "pass"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-08-070-branch-review-report-retention",
+      "result": "pass"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase",
+      "result": "pass"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 3.5",
+      "result": "pass"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}
