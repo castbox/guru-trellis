@@ -1,0 +1,156 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-08T14:10:29Z",
+  "task_dir": ".trellis/tasks/07-08-060-workspace-boundary-guard",
+  "base_branch": "main",
+  "head": "ff59c2db866d0414b7a736205a26ed9da004eecf",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".codex/prompts/trellis-continue.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-08-060-workspace-boundary-guard/"
+  ],
+  "checker": "019f420b-0fb8-7223-a269-7a8e28072e5f Release Agent the 2nd",
+  "check_summary": "阶段二检查代理复核本轮 replacement closure chain validator 修复：检查需求、设计、实现、测试、spec sync、canonical/dogfood 一致性、Docs SSOT、workspace boundary 和部署影响，未发现 P0/P1/P2/P3 finding。脚本变更只校验客观元数据链，没有把是否应替换或审查是否充分的 AI 判断下沉到脚本。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-08-060-workspace-boundary-guard/prd.md",
+      "sha256": "be36c6056a0e42da079610b0fc6e52d88c253c918d3b5a5fc4c6dfa906dea6f5",
+      "size_bytes": 5163,
+      "modified_at": "2026-07-08T08:31:53.352946+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-060-workspace-boundary-guard/design.md",
+      "sha256": "ae51855f9035eea42902825acef4e736a3183f7574c03dcbc70a51e99217b906",
+      "size_bytes": 8910,
+      "modified_at": "2026-07-08T08:31:53.353049+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-060-workspace-boundary-guard/implement.md",
+      "sha256": "b908f5ea5b2305cdeb080966e774a02d224ef4a0754f09a0968fec1685f8dc01",
+      "size_bytes": 5193,
+      "modified_at": "2026-07-08T08:31:53.353161+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-060-workspace-boundary-guard/agent-assignment.json",
+      "sha256": "8608868a7da4a1648bb9df8c08505715316f9b3b5434a62ab1433b8e773cfffc",
+      "size_bytes": 25487,
+      "modified_at": "2026-07-08T14:09:58.695194+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "2a5b5707879afa06a389f9e1e2d1d1247e2243e74dfe80fbe9c5eef21f50c5b6",
+      "size_bytes": 17985,
+      "modified_at": "2026-07-08T13:59:56.835421+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "c25e8a3e8febcaee3960b823810fee87b2a605a8bda8cd5dd076fa99fe6ce1c6",
+      "size_bytes": 15510,
+      "modified_at": "2026-07-08T13:59:56.836090+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "8cdbca35143799b506508bd738ee05d297a9f0cfaa2d7caa02d19dd8d141ab7b",
+      "size_bytes": 22010,
+      "modified_at": "2026-07-08T13:59:56.835721+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "660205aab53cfb0b4a87e2360f2af321f1a76290bd5be67cb191b7f0d7508963",
+      "size_bytes": 6492,
+      "modified_at": "2026-07-08T09:42:17.066129+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "01c0e91a4b7acab6c3e7e001f9f8f7c84eb5ba8d85f4c782a8a135be52be9e4b",
+      "size_bytes": 10032,
+      "modified_at": "2026-07-08T13:21:11.532144+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "e7c2fa4b1c142f6615e77f6b522b85d500101e222675d0a423e8831f13c35b12",
+      "size_bytes": 10171,
+      "modified_at": "2026-07-08T08:25:12.273029+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "3dcb9e138dc54489b539b7d2f579ef68bfcdfb3c293fad5a80ceafdf4c5cb64e",
+      "size_bytes": 4343,
+      "modified_at": "2026-07-08T13:21:11.532433+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "check-workspace-boundary.sh --json --task .trellis/tasks/07-08-060-workspace-boundary-guard",
+      "result": "通过，actual_repo_root 为 task worktree，source_checkout_status 为空"
+    },
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "161 tests OK"
+    },
+    {
+      "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "27 tests OK"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "通过"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "通过"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json trellis/guru-team-extension.json .trellis/guru-team/extension.json intake-handoff.schema.json",
+      "result": "通过"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-08-060-workspace-boundary-guard",
+      "result": "通过，implement.jsonl 9 entries，check.jsonl 7 entries"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms",
+      "result": "通过，第二次 apply 无 installed/updated/replaced/backups"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "通过，dogfood overlay copies match canonical"
+    },
+    {
+      "command": "git diff --check && git diff --check origin/main...HEAD",
+      "result": "通过"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查 workspace boundary 是否符合 Guru Team workflow gate、sub-agent 和 artifact 写入合同。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查脚本是否只记录/校验客观事实，没有下沉 AI stale/reviewer/product 判断。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查新增 JSON 输出、handoff 读取、agent-assignment/status evidence 是否 backward-compatible。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查验证命令、dogfood drift、workspace artifact 写入位置和 regression test 覆盖。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查新增 managed assets / installed file list / executable bit / apply 行为一致。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 canonical overlay 与 dogfood 副本同步，且跨平台 start/continue/agent 文案一致。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查 durable docs 更新是否与 workflow canonical 行为一致且无敏感信息。"}

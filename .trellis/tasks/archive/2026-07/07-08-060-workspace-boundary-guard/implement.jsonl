@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "定义 Guru Team workflow、workspace/task artifact 写入边界、Branch Review Gate 与 sub-agent 证据合同。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "定义 companion scripts 只能做 executor / validator / recorder，适用于 workspace boundary helper 和 recorder 路径校验。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "定义 handoff、agent-assignment、phase2-check、review-gate 等 JSON artifact 字段与兼容性边界。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定义 workflow/preset/script 变更后的验证命令、dogfood drift 和 task artifact 写入位置检查。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "新增或调整 managed companion asset、overlay、dogfood apply 时需遵守 preset installer 合同。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "修改 trellis-start / trellis-continue / sub-agent overlay 时需保持跨平台一致与 canonical/dogfood 同步。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "更新 durable docs / README 行为描述时需遵守公开文档语言、SSOT 和安全规则。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "新增路径/状态 helper 前要求搜索并复用已有解析、digest、git status 工具。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "workspace boundary 涉及 workflow、scripts、overlays、docs、tests 多层合同，需要映射数据流和同步面。"}
