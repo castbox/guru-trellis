@@ -26,6 +26,7 @@ PLATFORM_OVERLAY_PREFIXES = {
 }
 ALL_PLATFORMS = tuple(PLATFORM_OVERLAY_PREFIXES)
 ALWAYS_OVERLAY_PREFIXES = (Path(".agents"), Path(".trellis/agents"))
+CODEX_ONLY_SHARED_OVERLAY_PREFIXES = (Path(".agents/skills/trellis-meta"),)
 CODEX_DISPATCH_HEADER = """#-------------------------------------------------------------------------------
 # Codex (dispatch behavior)
 #-------------------------------------------------------------------------------
@@ -238,6 +239,8 @@ def path_has_prefix(path: Path, prefix: Path) -> bool:
 
 
 def overlay_selected(relative: Path, platforms: set[str]) -> bool:
+    if any(path_has_prefix(relative, prefix) for prefix in CODEX_ONLY_SHARED_OVERLAY_PREFIXES):
+        return "codex" in platforms
     if any(path_has_prefix(relative, prefix) for prefix in ALWAYS_OVERLAY_PREFIXES):
         return True
     selected_prefixes = [
@@ -407,6 +410,87 @@ def looks_like_trellis_generated_entry(relative: Path, target: Path) -> bool:
         ]
     )
     if is_known_entry_path and has_trellis_generated_signal:
+        return True
+
+    is_brainstorm_skill = rel in {
+        ".agents/skills/trellis-brainstorm/SKILL.md",
+        ".cursor/skills/trellis-brainstorm/SKILL.md",
+    }
+    if (
+        is_brainstorm_skill
+        and "# Trellis Brainstorm" in text
+        and ("PRD Convergence Pass" in text or "trellis-brainstorm" in lower)
+    ):
+        return True
+
+    is_check_or_before_dev_skill = rel in {
+        ".agents/skills/trellis-check/SKILL.md",
+        ".cursor/skills/trellis-check/SKILL.md",
+        ".agents/skills/trellis-before-dev/SKILL.md",
+        ".cursor/skills/trellis-before-dev/SKILL.md",
+    }
+    if (
+        is_check_or_before_dev_skill
+        and ("# Code Quality Check" in text or "Read the relevant development guidelines" in text)
+        and "prd.md" in text
+    ):
+        return True
+
+    is_session_start_hook = rel in {
+        ".codex/hooks/session-start.py",
+        ".cursor/hooks/session-start.py",
+    }
+    if (
+        is_session_start_hook
+        and "session" in lower
+        and "trellis" in lower
+        and "_get_task_status" in text
+    ):
+        return True
+
+    is_cursor_subagent_context_hook = rel == ".cursor/hooks/inject-subagent-context.py"
+    if (
+        is_cursor_subagent_context_hook
+        and "Multi-Platform Sub-Agent Context Injection Hook" in text
+        and "implement.jsonl" in text
+        and "check.jsonl" in text
+    ):
+        return True
+
+    is_trellis_meta_reference = rel in {
+        ".agents/skills/trellis-meta/references/local-architecture/task-system.md",
+        ".cursor/skills/trellis-meta/references/local-architecture/task-system.md",
+        ".agents/skills/trellis-meta/references/local-architecture/context-injection.md",
+        ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md",
+        ".agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+        ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+        ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md",
+        ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md",
+        ".agents/skills/trellis-meta/references/platform-files/agents.md",
+        ".cursor/skills/trellis-meta/references/platform-files/agents.md",
+    }
+    has_trellis_meta_reference_signal = any(
+        signal in text
+        for signal in [
+            "# Local Task System",
+            "# Local Context Injection System",
+            "# Change Local Workflow",
+            "# Change Local Context Loading",
+            "# Change Context Loading",
+            "# Agents",
+        ]
+    ) and any(
+        signal in text
+        for signal in [
+            ".trellis/tasks/",
+            ".trellis/workflow.md",
+            "trellis-implement",
+        ]
+    )
+    if (
+        is_trellis_meta_reference
+        and has_trellis_meta_reference_signal
+    ):
         return True
 
     if is_start:
@@ -602,6 +686,8 @@ def install_overlays(repo: Path, guru_root: Path, platforms: set[str]) -> dict[s
             "managed_backups": managed_backups,
     }
     for source in sorted(path for path in overlay_root.rglob("*") if path.is_file()):
+        if "__pycache__" in source.parts or source.suffix == ".pyc":
+            continue
         relative = source.relative_to(overlay_root)
         if not overlay_selected(relative, platforms):
             continue

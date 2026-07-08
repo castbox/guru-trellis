@@ -9,6 +9,9 @@ duplicating the full workflow.
 Reference overlay groups:
 
 - `.agents/skills/trellis-start/SKILL.md`
+- `.agents/skills/trellis-brainstorm/SKILL.md`
+- `.agents/skills/trellis-before-dev/SKILL.md`
+- `.agents/skills/trellis-check/SKILL.md`
 - `.agents/skills/trellis-continue/SKILL.md`
 - `.agents/skills/trellis-finish-work/SKILL.md`
 - `.trellis/agents/implement.md`
@@ -16,13 +19,29 @@ Reference overlay groups:
 - `.codex/agents/trellis-implement.toml`
 - `.codex/agents/trellis-check.toml`
 - `.codex/agents/trellis-research.toml`
+- `.codex/hooks/session-start.py`
 - `.cursor/agents/trellis-implement.md`
 - `.cursor/agents/trellis-check.md`
 - `.cursor/agents/trellis-research.md`
+- `.cursor/hooks/session-start.py`
+- `.cursor/hooks/inject-subagent-context.py`
 - `.codex/prompts/trellis-start.md`
 - `.codex/skills/trellis-continue/SKILL.md`
 - `.claude/commands/trellis/continue.md`
 - `.cursor/commands/trellis-finish-work.md`
+- `.agents/skills/trellis-meta/references/local-architecture/task-system.md`
+- `.agents/skills/trellis-meta/references/local-architecture/context-injection.md`
+- `.agents/skills/trellis-meta/references/customize-local/change-context-loading.md`
+- `.agents/skills/trellis-meta/references/customize-local/change-workflow.md`
+- `.agents/skills/trellis-meta/references/platform-files/agents.md`
+- `.cursor/skills/trellis-brainstorm/SKILL.md`
+- `.cursor/skills/trellis-before-dev/SKILL.md`
+- `.cursor/skills/trellis-check/SKILL.md`
+- `.cursor/skills/trellis-meta/references/local-architecture/task-system.md`
+- `.cursor/skills/trellis-meta/references/local-architecture/context-injection.md`
+- `.cursor/skills/trellis-meta/references/customize-local/change-context-loading.md`
+- `.cursor/skills/trellis-meta/references/customize-local/change-workflow.md`
+- `.cursor/skills/trellis-meta/references/platform-files/agents.md`
 
 ## Required Content
 
@@ -38,6 +57,16 @@ Continue entries must:
 - run `python3 ./.trellis/scripts/get_context.py --mode phase`
 - route by task status
 - apply the business-project Chinese documentation default from `.trellis/workflow.md` across `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**`, `00-bootstrap-guidelines` docs SSOT, and human-readable workflow artifact fields
+- in `planning`, after `prd.md`, `design.md`, and `implement.md` exist, display
+  clickable or absolute links to all three task-local planning documents and
+  stop until the user explicitly confirms after seeing them; Phase 0 handoff
+  approval or old `source=workflow` planning approval cannot substitute
+- state that `planning-approval.json` must use
+  `user_confirmation.source=explicit-post-planning-review`, include
+  `review_prompt_presented_at`, `approved_at`, and matching hash / size /
+  modified-time metadata for `prd.md`, `design.md`, and `implement.md`
+- in `in_progress`, rerun `check-planning-approval.sh --json` before dispatching
+  `trellis-implement` / channel `implement` or recording `phase2-check.json`
 - state that default `sub-agent` mode requires the main session to dispatch
   `trellis-implement` / channel `implement`, then `trellis-check` / channel
   `check`, and later a Branch Review review sub-agent; the main session cannot
@@ -90,6 +119,18 @@ Start entries must:
   tasks unless explicitly requested
 - treat `handoff.json` as intake provenance only
 
+SessionStart, sub-agent context injection, brainstorm, and trellis-meta reference overlays must:
+
+- stay context-injection/documentation surfaces only; do not move AI planning
+  sufficiency judgment into Python hooks
+- avoid legacy `PRD-only`, lightweight-PRD-only, or optional design/implement
+  planning wording for Guru Team start gates; if they mention native Trellis
+  optional planning behavior, they must explicitly say it is not the Guru Team
+  start gate and that Guru Team requires `prd.md`, `design.md`, and
+  `implement.md` before implementation
+- point agents back to workflow-state / `.trellis/workflow.md` for the full
+  process instead of duplicating the workflow in hooks
+
 Sub-agent overlay entries must:
 
 - keep technical dispatch `name` values stable;
@@ -97,6 +138,10 @@ Sub-agent overlay entries must:
 - for Codex custom agents, keep `nickname_candidates` ASCII so Codex loads the
   agent file, and put the Chinese display role in `description`;
 - keep recursion guards and task-context loading preludes intact;
+- require implement agents to run `check-planning-approval.sh --json --task
+  <task-path>` before reading implementation context or editing, and to report
+  `Implementation Blocked` if the artifact is missing, stale, old-schema, or
+  not sourced from `explicit-post-planning-review`;
 - require implement agents to output a completion handoff with files changed,
   requirement/design carryover, verification state, remaining risks, completion
   status, and focus areas for `trellis-check`;
@@ -115,7 +160,7 @@ When changing one overlay, search all copies:
 
 ```bash
 find trellis/presets/guru-team/overlays -type f | sort
-rg "Branch Review Gate|finding|observation|followup-candidate|最终放行审查代理|finish-work|handoff.json|guru-team-overlay" trellis/presets/guru-team/overlays
+rg "Branch Review Gate|finding|observation|followup-candidate|最终放行审查代理|finish-work|handoff.json|PRD-only|guru-team-overlay" trellis/presets/guru-team/overlays
 ```
 
 After canonical overlay edits, re-apply the preset to this source repository and

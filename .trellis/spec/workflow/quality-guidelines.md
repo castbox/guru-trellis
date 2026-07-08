@@ -49,6 +49,10 @@ git diff --check
 
 Add targeted script invocations when changing phase parsing, intake, review,
 finish, publish, installer behavior, or source-repo dogfood overlay sync.
+When changing planning approval behavior, also run
+`.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-dir>`
+against a current `schema_version=1.1` artifact and include at least one unit
+test for stale or old-source approval failure.
 
 When changing PR publish behavior, include tests or dry-runs for both a blocked
 low-information body and an accepted reviewer-readable body. The accepted body

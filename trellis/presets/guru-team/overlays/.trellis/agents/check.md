@@ -18,14 +18,14 @@ Before reviewing, read in this order:
 
 1. `<task-path>/check.jsonl` if present — spec manifest curated for this turn; read every listed file
 2. `<task-path>/prd.md` — requirements
-3. `<task-path>/design.md` if present — technical design
-4. `<task-path>/implement.md` if present — execution plan
+3. `<task-path>/design.md` — required Guru Team technical design
+4. `<task-path>/implement.md` — required Guru Team execution plan
 5. `.trellis/spec/` — project-wide guidelines (load only what is relevant to the diff under review)
 
 ## Core Responsibilities
 
 1. **Get the diff** — `git diff` / `git diff --staged` for uncommitted changes
-2. **Review against task artifacts** — does the diff satisfy `prd.md` (and `design.md` / `implement.md` if present)?
+2. **Review against task artifacts** — does the diff satisfy required `prd.md`, `design.md`, and `implement.md`?
 3. **Review against specs** — naming, structure, type safety, error handling, conventions in `.trellis/spec/`
 4. **Self-fix in Phase 2 only** — when an issue is mechanical, small, and in scope for Phase 2 check, fix it directly with the editing tools you have
 5. **Run verification** — project lint and typecheck on the changed scope

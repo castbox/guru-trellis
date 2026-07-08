@@ -3,6 +3,8 @@ name: trellis-brainstorm
 description: "Guides collaborative requirements discovery before implementation. Creates task directory, seeds PRD, asks high-value questions one at a time, researches technical choices, and converges on MVP scope. Use when requirements are unclear, there are multiple valid approaches, or the user describes a new feature or complex task."
 ---
 
+<!-- guru-team-overlay: v1 -->
+
 # Trellis Brainstorm
 
 ## Non-Negotiable Interview Contract
@@ -139,7 +141,7 @@ For each component of the current plan:
 - risky files or rollback points
 - follow-up checks before `task.py start`
 
-Lightweight tasks may have only `prd.md`. Complex tasks must have `prd.md`, `design.md`, and `implement.md` before `task.py start`.
+Guru Team requires `prd.md`, `design.md`, and `implement.md` for every task before implementation. Some native Trellis workflows may allow a smaller planning set, but that is not the Guru Team start gate. After all three documents exist, display task-local links to all three, wait for explicit post-planning confirmation, record/check `planning-approval.json`, and only then run `task.py start`.
 
 `implement.md` is not a replacement for `implement.jsonl`. On sub-agent-dispatch workflows, `implement.jsonl` and `check.jsonl` must each contain at least one real spec/research entry before `task.py start`; the seed `_example` row does not count. Inline workflows skip this JSONL gate because Phase 2 loads context through `trellis-before-dev`.
 
@@ -166,8 +168,8 @@ Before declaring planning ready:
 - `prd.md` has passed the PRD convergence pass: no unresolved temporary brainstorm sections, no duplicate facts across sections, and no lost anchors, decisions, or acceptance mappings.
 - Repository-answerable questions have already been answered through inspection.
 - Remaining open questions are genuinely about user intent or scope.
-- Complex tasks have `design.md` and `implement.md`.
+- Guru Team tasks have `design.md` and `implement.md` before implementation.
 - Sub-agent-dispatch tasks have real curated entries in both `implement.jsonl` and `check.jsonl`; seed-only manifests are not ready.
-- The user has reviewed the final planning artifacts or explicitly approved proceeding.
+- The user has reviewed the final `prd.md`, `design.md`, and `implement.md` links and explicitly confirmed post-planning approval.
 
 Do not start implementation until the user approves or asks for implementation.

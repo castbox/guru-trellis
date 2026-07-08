@@ -56,6 +56,8 @@ DEFAULTS: dict[str, Any] = {
 VALID_PRIORITIES = {"P0", "P1", "P2", "P3"}
 BLOCKING_PRIORITIES = {"P0", "P1", "P2"}
 PLANNING_APPROVAL_ARTIFACT = "planning-approval.json"
+PLANNING_APPROVAL_SCHEMA_VERSION = "1.1"
+PLANNING_APPROVAL_CONFIRMATION_SOURCE = "explicit-post-planning-review"
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 REVIEW_REPORT_ARTIFACT = "review.md"
@@ -2579,7 +2581,7 @@ def validate_agent_assignment(
     return path, payload, errors, summary
 
 
-def digest_errors(root: Path, entry: Any, label: str) -> list[str]:
+def digest_errors(root: Path, entry: Any, label: str, require_modified_at_match: bool = False) -> list[str]:
     if not isinstance(entry, dict):
         return [f"{label} 中存在非对象 artifact entry。"]
     errors: list[str] = []
@@ -2590,11 +2592,19 @@ def digest_errors(root: Path, entry: Any, label: str) -> list[str]:
     if not path.exists() or not path.is_file():
         return [f"{label} artifact 不存在或不是文件: {path_value}。"]
     current = file_digest(root, path)
+    for key in ["sha256", "size_bytes", "modified_at"]:
+        value = entry.get(key)
+        if key not in entry or value is None or value == "":
+            errors.append(f"{label} artifact 缺少 {key}: {path_value}。")
     for key in ["sha256", "size_bytes"]:
         if entry.get(key) != current.get(key):
             errors.append(f"{label} artifact 已过期: {path_value} 的 {key} 不匹配。")
-    if not entry.get("modified_at"):
-        errors.append(f"{label} artifact 缺少 modified_at: {path_value}。")
+    if (
+        require_modified_at_match
+        and entry.get("modified_at")
+        and entry.get("modified_at") != current.get("modified_at")
+    ):
+        errors.append(f"{label} artifact 已过期: {path_value} 的 modified_at 不匹配。")
     return errors
 
 
@@ -2798,26 +2808,58 @@ def build_planning_approval_payload(
     approval_summary: str,
     user_confirmation: str,
     artifacts: list[str],
+    review_prompt_presented_at: str | None = None,
+    confirmation_source: str = PLANNING_APPROVAL_CONFIRMATION_SOURCE,
 ) -> dict[str, Any]:
-    artifact_paths = artifacts or default_existing_task_artifacts(task_dir, DEFAULT_PLANNING_ARTIFACTS)
-    if not artifact_paths:
-        raise WorkflowError("planning approval needs at least prd.md as an approved artifact.", exit_code=2)
-    approved = [file_digest(root, resolve_task_local_path(root, task_dir, item)) for item in artifact_paths]
-    artifact_repo_paths = {str(item["path"]) for item in approved}
+    normalized_source = str(confirmation_source or "").strip()
+    if normalized_source != PLANNING_APPROVAL_CONFIRMATION_SOURCE:
+        raise WorkflowError(
+            "record-planning-approval requires explicit post-planning review confirmation; "
+            f"--confirmation-source must be {PLANNING_APPROVAL_CONFIRMATION_SOURCE}.",
+            exit_code=2,
+            payload={"received_source": normalized_source or "(missing)"},
+        )
+    required_paths = [resolve_task_local_path(root, task_dir, name) for name in DEFAULT_PLANNING_ARTIFACTS]
+    if artifacts:
+        requested = [resolve_task_local_path(root, task_dir, item) for item in artifacts]
+        requested_paths = {path.resolve() for path in requested}
+        missing_required = [
+            name
+            for name, path in zip(DEFAULT_PLANNING_ARTIFACTS, required_paths)
+            if path.resolve() not in requested_paths
+        ]
+        if missing_required:
+            raise WorkflowError(
+                "record-planning-approval must record all three planning documents after the explicit review prompt: "
+                + ", ".join(missing_required),
+                exit_code=2,
+                payload={"missing_artifacts": missing_required},
+            )
+        artifact_paths = requested
+    else:
+        artifact_paths = required_paths
+    reviewed = [file_digest(root, path) for path in artifact_paths]
+    artifact_repo_paths = {str(item["path"]) for item in reviewed}
+    artifact_repo_paths.add(repo_relative(root, planning_approval_path(task_dir)))
     dirty_paths = dirty_paths_excluding(root, artifact_repo_paths)
+    presented_at = str(review_prompt_presented_at or "").strip() or now_iso()
+    approved_at = now_iso()
     return {
-        "schema_version": "1.0",
-        "generated_at": now_iso(),
+        "schema_version": PLANNING_APPROVAL_SCHEMA_VERSION,
+        "generated_at": approved_at,
+        "review_prompt_presented_at": presented_at,
+        "approved_at": approved_at,
         "task_dir": repo_relative(root, task_dir),
         "head": current_head(root),
         "dirty_paths": dirty_paths,
         "reviewer": reviewer,
         "approval_summary": approval_summary,
         "user_confirmation": {
-            "source": "workflow",
+            "source": PLANNING_APPROVAL_CONFIRMATION_SOURCE,
             "message": user_confirmation,
         },
-        "approved_artifacts": approved,
+        "reviewed_artifacts": reviewed,
+        "approved_artifacts": copy.deepcopy(reviewed),
         "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。",
     }
 
@@ -2832,32 +2874,89 @@ def validate_planning_approval(
         raise WorkflowError(f"Planning approval artifact not found: {path}", exit_code=2)
     payload = read_json(path)
     errors: list[str] = []
+    if payload.get("schema_version") != PLANNING_APPROVAL_SCHEMA_VERSION:
+        errors.append(
+            f"planning-approval.json schema_version 必须是 {PLANNING_APPROVAL_SCHEMA_VERSION}；旧 schema 不能作为当前 planning approval。"
+        )
+    if not str(payload.get("review_prompt_presented_at") or "").strip():
+        errors.append("planning-approval.json 缺少 review_prompt_presented_at。")
+    if not str(payload.get("approved_at") or "").strip():
+        errors.append("planning-approval.json 缺少 approved_at。")
     if not str(payload.get("approval_summary") or "").strip():
         errors.append("planning-approval.json 缺少 approval_summary。")
     if not str(payload.get("reviewer") or "").strip():
         errors.append("planning-approval.json 缺少 reviewer。")
-    if not isinstance(payload.get("user_confirmation"), dict) or not str(payload["user_confirmation"].get("message") or "").strip():
+    confirmation = payload.get("user_confirmation")
+    if not isinstance(confirmation, dict):
         errors.append("planning-approval.json 缺少用户确认摘要。")
+        confirmation = {}
+    elif not str(confirmation.get("message") or "").strip():
+        errors.append("planning-approval.json 缺少用户确认摘要。")
+    source = str(confirmation.get("source") or "").strip() if isinstance(confirmation, dict) else ""
+    if source != PLANNING_APPROVAL_CONFIRMATION_SOURCE:
+        errors.append(
+            "planning-approval.json user_confirmation.source 必须是 "
+            f"{PLANNING_APPROVAL_CONFIRMATION_SOURCE}；Phase 0 handoff/workflow confirmation 不能替代规划审核确认。"
+        )
     recorded_head = str(payload.get("head") or "")
     head = current_head(root)
+    accepted_committed_head = False
     if recorded_head != head:
         if allow_committed_head and recorded_head and is_ancestor(root, recorded_head, "HEAD"):
-            pass
+            accepted_committed_head = True
         else:
             errors.append(f"planning-approval.json 记录的 HEAD {recorded_head or '(missing)'} 与当前 HEAD {head} 不一致。")
-    approved = payload.get("approved_artifacts")
-    if not isinstance(approved, list) or not approved:
-        errors.append("planning-approval.json 缺少 approved_artifacts。")
+    recorded_dirty = payload.get("dirty_paths")
+    if not isinstance(recorded_dirty, list):
+        errors.append("planning-approval.json 缺少 dirty_paths 数组。")
+    elif accepted_committed_head:
+        has_non_metadata, non_metadata_paths = has_non_metadata_dirty_paths(root)
+        if has_non_metadata:
+            errors.append(
+                "planning-approval.json 记录的 HEAD 是当前 HEAD 的祖先，但工作区存在非 Trellis metadata 变更: "
+                + ", ".join(non_metadata_paths[:20])
+            )
     else:
-        normalized_approved = [
+        dirty_excluded = {repo_relative(root, planning_approval_path(task_dir))}
+        dirty_excluded.update(recorded_digest_paths(payload.get("reviewed_artifacts")))
+        dirty_now = dirty_paths_excluding(root, dirty_excluded)
+        if sorted(str(item) for item in recorded_dirty) != sorted(dirty_now):
+            errors.append("planning-approval.json 记录的 dirty_paths 与当前 working tree 不一致。")
+    reviewed = payload.get("reviewed_artifacts")
+    approved_alias = payload.get("approved_artifacts")
+    if not isinstance(reviewed, list) or not reviewed:
+        errors.append("planning-approval.json 缺少 reviewed_artifacts。")
+        reviewed = []
+    if not isinstance(approved_alias, list) or not approved_alias:
+        errors.append("planning-approval.json 缺少 approved_artifacts alias。")
+    if reviewed:
+        normalized_reviewed = [
             normalized_digest_entry(root, task_dir, item)
-            for item in approved
+            for item in reviewed
         ]
-        approved_paths = {str(item.get("path") or "") for item in normalized_approved if isinstance(item, dict)}
-        if repo_relative(root, task_dir / "prd.md") not in approved_paths:
-            errors.append("planning-approval.json 未记录 prd.md。")
-        for item in normalized_approved:
-            errors.extend(digest_errors(root, item, "planning approval"))
+        reviewed_paths = {str(item.get("path") or "") for item in normalized_reviewed if isinstance(item, dict)}
+        for name in DEFAULT_PLANNING_ARTIFACTS:
+            required_path = repo_relative(root, task_dir / name)
+            if required_path not in reviewed_paths:
+                errors.append(f"planning-approval.json 未在 reviewed_artifacts 记录 {name}。")
+        for item in normalized_reviewed:
+            errors.extend(digest_errors(root, item, "planning approval reviewed_artifacts", require_modified_at_match=True))
+    if isinstance(approved_alias, list) and approved_alias:
+        normalized_alias = [
+            normalized_digest_entry(root, task_dir, item)
+            for item in approved_alias
+        ]
+        alias_paths = {str(item.get("path") or "") for item in normalized_alias if isinstance(item, dict)}
+        for name in DEFAULT_PLANNING_ARTIFACTS:
+            required_path = repo_relative(root, task_dir / name)
+            if required_path not in alias_paths:
+                errors.append(f"planning-approval.json 未在 approved_artifacts alias 记录 {name}。")
+        for item in normalized_alias:
+            errors.extend(digest_errors(root, item, "planning approval approved_artifacts", require_modified_at_match=True))
+    else:
+        # Old artifacts with only approved_artifacts are intentionally blocked
+        # by schema/source checks above; this branch keeps error output focused.
+        pass
     return path, payload, errors
 
 
@@ -4144,6 +4243,8 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
         approval_summary=summary,
         user_confirmation=confirmation,
         artifacts=list(args.artifact or []),
+        review_prompt_presented_at=getattr(args, "review_prompt_presented_at", None),
+        confirmation_source=str(getattr(args, "confirmation_source", PLANNING_APPROVAL_CONFIRMATION_SOURCE) or ""),
     )
     path = planning_approval_path(task_dir)
     if not args.dry_run:
@@ -4672,6 +4773,15 @@ def build_parser() -> argparse.ArgumentParser:
     planning.add_argument("--reviewer", required=True, help="Reviewer name or AI/human review channel.")
     planning.add_argument("--summary", required=True, help="Chinese planning review conclusion.")
     planning.add_argument("--user-confirmation", required=True, help="Evidence summary for user approval to enter implementation.")
+    planning.add_argument(
+        "--review-prompt-presented-at",
+        help="ISO-8601 time when the AI presented prd.md/design.md/implement.md links for explicit post-planning review. Defaults to recorder time.",
+    )
+    planning.add_argument(
+        "--confirmation-source",
+        default=PLANNING_APPROVAL_CONFIRMATION_SOURCE,
+        help=f"Must be {PLANNING_APPROVAL_CONFIRMATION_SOURCE}; Phase 0 handoff/workflow confirmation is rejected.",
+    )
     planning.add_argument("--artifact", action="append", help="Task-local artifact path to approve. Defaults to existing prd/design/implement.")
     planning.add_argument("--dry-run", action="store_true")
 

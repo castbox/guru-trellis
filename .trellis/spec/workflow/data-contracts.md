@@ -134,18 +134,35 @@ available, fail closed with a recovery command instead of allowing journal or
 
 ## Planning Approval Artifact
 
-`planning-approval.json` is the start gate evidence for Phase 1.4. It records:
+`planning-approval.json` is the start gate evidence for Phase 1.4. New
+artifacts use `schema_version=1.1` and are valid only after the main session
+has displayed task-local links to all three planning documents and the user has
+explicitly confirmed after seeing them. Phase 0 handoff approval, generic
+workflow confirmation, old `schema_version=1.0`, or
+`user_confirmation.source=workflow` must fail closed.
+
+It records:
 
 - task directory and current `HEAD`
 - reviewer / AI process identity metadata
-- Chinese approval summary and user confirmation evidence
-- approved planning artifact digests for `prd.md`, `design.md`, and
-  `implement.md` when present
+- `review_prompt_presented_at` and `approved_at`
+- Chinese approval summary and user confirmation evidence with
+  `user_confirmation.source=explicit-post-planning-review`
+- `reviewed_artifacts[]` entries for `prd.md`, `design.md`, and
+  `implement.md`, each with path, sha256, size, and modified-time metadata
+- `approved_artifacts[]` as a compatibility alias for the same three entries
 - dirty paths at approval time
 
 The artifact is valid only while the recorded artifact hashes and `HEAD` match.
-`task.py start` is a status transition only and must not be treated as planning
-review evidence.
+`check-planning-approval.sh` must also verify all three planning docs are
+present, the digest / size / modified-time metadata still matches, and the
+confirmation source is `explicit-post-planning-review`. At the same `HEAD`,
+the recorded `dirty_paths` must match the current working tree after excluding
+the approval artifact and reviewed planning documents. In committed-head audit
+mode, the planning approval may point at an ancestor `HEAD`, but the current
+working tree must be metadata-only; a non-metadata dirty path makes the
+approval stale. `task.py start` is a status transition only and must not be
+treated as planning review evidence.
 
 ## Phase 2 Check Artifact
 

@@ -22,15 +22,15 @@ You are already the `trellis-check` sub-agent that the main session dispatched. 
 Look for the `<!-- trellis-hook-injected -->` marker in your input above.
 
 - **If the marker is present**: task artifacts, spec, and research files have already been auto-loaded for you above. Proceed with the check work directly.
-- **If the marker is absent**: hook injection didn't fire (Windows + Claude Code, `--continue` resume, fork distribution, hooks disabled, etc.). Find the active task path from your dispatch prompt's first line `Active task: <path>`, then Read `<task-path>/check.jsonl`, each listed file, `<task-path>/prd.md`, `<task-path>/design.md` if present, and `<task-path>/implement.md` if present before doing the work.
+- **If the marker is absent**: hook injection didn't fire (Windows + Claude Code, `--continue` resume, fork distribution, hooks disabled, etc.). Find the active task path from your dispatch prompt's first line `Active task: <path>`, then Read `<task-path>/check.jsonl`, each listed file, required `<task-path>/prd.md`, `<task-path>/design.md`, and `<task-path>/implement.md` before doing the work.
 
 ## Context
 
 Before checking, read:
 - `.trellis/spec/` - Development guidelines
 - Task `prd.md` - Requirements document
-- Task `design.md` - Technical design (if exists)
-- Task `implement.md` - Execution plan (if exists)
+- Task `design.md` - required Guru Team technical design
+- Task `implement.md` - required Guru Team execution plan
 - Pre-commit checklist for quality standards
 
 ## Role Modes
@@ -43,7 +43,7 @@ The main-session handoff decides which mode you are in:
 ## Core Responsibilities
 
 1. **Get code changes** - Use git diff to get uncommitted code
-2. **Review task artifacts** - Check changes against prd.md, design.md if present, and implement.md if present
+2. **Review task artifacts** - Check changes against prd.md, required design.md, and required implement.md
 3. **Check against specs** - Verify code follows guidelines
 4. **Self-fix in Phase 2 only** - Fix small in-scope Phase 2 issues yourself, not Branch Review findings
 5. **Run verification** - typecheck and lint
@@ -80,10 +80,10 @@ git diff origin/<base>...HEAD
 
 ### Step 2: Check Against Specs and Task Artifacts
 
-Read the task's prd.md, design.md if present, and implement.md if present, then read relevant specs in `.trellis/spec/` to check code:
+Read the task's prd.md, required design.md, and required implement.md, then read relevant specs in `.trellis/spec/` to check code:
 
 - Does it satisfy the task requirements
-- Does it follow the technical design and implementation plan when present
+- Does it follow the required technical design and implementation plan
 - Does it follow directory structure conventions
 - Does it follow naming conventions
 - Does it follow code patterns

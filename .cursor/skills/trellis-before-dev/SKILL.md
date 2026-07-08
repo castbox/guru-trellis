@@ -3,14 +3,16 @@ name: trellis-before-dev
 description: "Discovers and injects project-specific coding guidelines from .trellis/spec/ before implementation begins. Reads spec indexes, pre-development checklists, and shared thinking guides for the target package. Use when starting a new coding task, before writing any code, switching to a different package, or needing to refresh project conventions and standards."
 ---
 
+<!-- guru-team-overlay: v1 -->
+
 Read the relevant development guidelines before starting your task.
 
 Execute these steps:
 
 1. **Read current task artifacts**:
    - `prd.md` for requirements and acceptance criteria
-   - `design.md` if present for technical design
-   - `implement.md` if present for execution order and validation plan
+   - required `design.md` for technical design
+   - required `implement.md` for execution order and validation plan
 
 2. **Discover packages and their spec layers**:
    ```bash

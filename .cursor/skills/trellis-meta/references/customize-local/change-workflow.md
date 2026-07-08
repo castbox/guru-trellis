@@ -1,3 +1,5 @@
+<!-- guru-team-overlay: v1 -->
+
 # Change Local Workflow
 
 When the user wants to change Trellis phases, next-action hints, whether to create tasks, whether to use sub-agents, or when to check/wrap up, edit `.trellis/workflow.md` first.
@@ -50,13 +52,14 @@ If the user wants only one platform to avoid sub-agents, first confirm whether t
 | `status` | Artifact state | Resume at |
 | --- | --- | --- |
 | `planning` | `prd.md` missing | Phase 1.1 (load `trellis-brainstorm`) |
-| `planning` | lightweight task with `prd.md` complete | ask for start review, then run `task.py start` |
-| `planning` | complex task missing `design.md` or `implement.md` | complete missing planning artifacts |
-| `planning` | complex task has `prd.md`, `design.md`, and `implement.md` | ask for start review, then run `task.py start` |
+| `planning` | missing `design.md` or `implement.md` | complete the missing Guru Team planning artifacts |
+| `planning` | `prd.md`, `design.md`, and `implement.md` all present | display links to all three documents, wait for explicit post-planning confirmation, record/check `planning-approval.json`, then run `task.py start` |
 | `in_progress` | no implementation in conversation history | Phase 2.1 (`trellis-implement`) |
 | `in_progress` | implementation done, no `trellis-check` run | Phase 2.2 (`trellis-check`) |
 | `in_progress` | check passed | Phase 3.3 (spec update) → 3.4 (commit) |
 | `completed` | task is still in active tree | Phase 3.5 (run `/trellis:finish-work` to archive) |
+
+Some native Trellis workflows may treat `design.md` or `implement.md` as smaller-task optional artifacts. Guru Team does not: the start gate requires all three planning documents and an explicit post-planning user confirmation before `task.py start`.
 
 When you add a custom status (e.g. `in-review`), add a `[workflow-state:in-review]` block in `.trellis/workflow.md` for the per-turn breadcrumb AND extend this route table — usually by editing the `/trellis:continue` command file (`.{platform}/commands/trellis/continue.md` or equivalent) to add a row that decides where to resume from. Without the route entry, `/trellis:continue` will fall through to a default branch and the user will not land on the step you intended.
 

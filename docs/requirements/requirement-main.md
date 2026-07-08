@@ -33,7 +33,7 @@ Canonical 资产：
 | Phase 0 intake | 文件变更类任务先进入 issue intake、duplicate search、base branch 选择和 worktree preflight；默认 planner 不写 task artifact。 |
 | Intake clarity / scope evolution | AI 读取 issue body/comment 或自然语言请求后，必须判断是否需要 `trellis-brainstorm`；澄清结果应回写 issue comment/body 或 proposed issue body。任务中新增需求或引用其他 issue 时，先确认纳入当前 task、related，还是 follow-up/new issue，并同步 `issue-scope-ledger.json`。 |
 | 业务项目中文文档默认规则 | 业务项目 `.trellis/spec/**`、`.trellis/tasks/**`、`docs/**` durable docs、`00-bootstrap-guidelines` 生成或补齐的 docs SSOT，以及 workflow artifact human-readable 字段默认中文；literal token 可保留英文。 |
-| Phase 1 planning | Trellis task 创建后写中文 `prd.md` / `design.md` / `implement.md`，并要求规划审查证据后才能进入实现。 |
+| Phase 1 planning | Trellis task 创建后写中文 `prd.md` / `design.md` / `implement.md`，主会话必须显式展示三份 task-local 规划文档链接并等待用户 post-planning 确认；Phase 0 handoff 确认不能替代 planning approval。 |
 | Phase 2 execute/check | 默认 sub-agent mode 下实现由 `trellis-implement` / channel `implement` 完成并输出 handoff，随后 `trellis-check` / channel `check` 基于真实 diff、task artifacts、spec、docs/overlay/config/test 和验证命令完成完整检查；不用主会话自检或少量命令通过替代完整检查。 |
 | Phase 3 finish/publish | commit 后由独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出 `review.md`，再经过 Branch Review Gate；之后由 `trellis-finish-work` archive task、记录 journal、提交 metadata 并发布非 draft PR。 |
 | Auto-bootstrap 日常入口 | 用户日常直接描述任务、贴 issue URL 或说 issue number；`trellis-start` 是 fallback / explicit orientation，不是每个任务的必需入口。 |
@@ -91,6 +91,7 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 
 - Issue #5 / PR #12：Branch Review Gate 前必须先执行 AI review prompt。
 - Issue #8 / PR #25：增加 planning approval 与 phase2 check 可审计证据。
+- Issue #52：`prd.md` / `design.md` / `implement.md` 生成后必须展示三份文档链接并等待用户显式 post-planning 确认；旧 `source=workflow` 或 Phase 0 handoff 确认 fail closed。
 - Issue #20 / PR #22：Branch Review Gate 每次必须产出 task-local `review.md`，并由
   `review-gate.json` 记录 digest。
 - PR #21：`#20` 的早期 closed 未合并实现，由 PR #22 替代。
@@ -101,7 +102,7 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 
 | 能力 | Artifact / 脚本 | 说明 |
 | --- | --- | --- |
-| Planning start gate | `planning-approval.json`、`record-planning-approval.sh`、`check-planning-approval.sh` | 记录 planning artifact hash、reviewer、user confirmation、HEAD；`task.py start` 只是状态写入。 |
+| Planning start gate | `planning-approval.json`、`record-planning-approval.sh`、`check-planning-approval.sh` | 记录三份 planning artifact 的 hash / size / mtime、reviewer、`review_prompt_presented_at`、`approved_at`、HEAD 和 `user_confirmation.source=explicit-post-planning-review`；`task.py start` 只是状态写入，Phase 0 handoff 确认和旧 `source=workflow` 不能通过 gate。 |
 | Phase 2 check gate | `phase2-check.json`、`record-phase2-check.sh`、`check-phase2-check.sh` | commit 前记录完整 `trellis-check` AI check 覆盖范围、验证命令、findings 和当时的 `dirty_paths`；`phase2-check.json` 是 Guru Team evidence artifact，不是 Trellis 原生步骤本身，命令和脚本通过只是 evidence 的一部分。 |
 | AI review prompt | workflow / overlay 文案 | Branch Review Gate 前必须由独立 review sub-agent 审查 `origin/<base>...HEAD` 完整 diff；review sub-agent 不继续实现、不替 implement/check 代理补工作。 |
 | Review report 必填 | `review.md` | AI/human review 判断的主证据，必须 task-local。 |
@@ -278,6 +279,7 @@ Canonical 资产：
 | #27 | closed | #29 merged | `finish-work --dry-run` 真正无副作用；Codex 默认 `sub-agent` dispatch。 |
 | #31 | closed | #32 merged | Guru Team extension canonical manifest、installed provenance、`check-env` / `version.sh` 可观测入口。 |
 | #33 | open | 当前任务 | Guru Team extension version 对齐 `0.6.5`；repo release tag 使用 `v0.6.5`；稳定 marketplace source 使用 `#v0.6.5`。 |
+| #52 | open | 当前任务 | 显式 post-planning 审核门禁：三份规划文档链接展示后用户确认，`planning-approval.json` 使用 `explicit-post-planning-review` source，Phase 0 handoff 确认 fail closed。 |
 | #43 | open | 当前任务 | Trellis sub-agent 中文逻辑角色、UI 展示名中文化、`agent-assignment.json`、reviewer 复用/更换记录和 gate digest 集成。 |
 | #72 | open | 当前任务 | 默认 sub-agent mode 下强制 implement、Phase 2 check 和 Branch Review 均由 sub-agent 执行；main session 只协调，脚本只 recorder/validator。 |
 | #55 | open | 当前任务 | issue intake clarity / brainstorming、issue body/comment/new issue 留痕、任务中 scope-change gate。 |

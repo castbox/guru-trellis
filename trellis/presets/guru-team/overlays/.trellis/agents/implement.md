@@ -14,12 +14,25 @@ You are the `implement` agent spawned by `trellis channel spawn --agent implemen
 
 ## Context
 
+Before reading implementation context or editing files, validate the explicit
+post-planning approval evidence for the active task:
+
+```bash
+.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-path>
+```
+
+If this command fails because `planning-approval.json` is missing, stale,
+old-schema, or not sourced from `explicit-post-planning-review`, stop and
+report `Implementation Blocked`. Do not implement, dispatch another agent, or
+record/check `phase2-check.json`; the main session must show `prd.md`,
+`design.md`, and `implement.md` links again and get fresh user confirmation.
+
 Before implementing, read in this order:
 
 1. `<task-path>/implement.jsonl` if present — spec manifest curated for this turn; read every listed file
 2. `<task-path>/prd.md` — requirements
-3. `<task-path>/design.md` if present — technical design
-4. `<task-path>/implement.md` if present — execution plan
+3. `<task-path>/design.md` — technical design
+4. `<task-path>/implement.md` — execution plan
 5. `.trellis/spec/` — project-wide guidelines (load only what is relevant to the diff you are about to write)
 
 ## Core Responsibilities
@@ -49,7 +62,7 @@ The supervising main session owns commits. Report what changed; do not commit on
 ## Workflow
 
 1. Read relevant specs based on task type and the files in `implement.jsonl` if present
-2. Read the task's `prd.md`, `design.md` if present, and `implement.md` if present
+2. Read the task's `prd.md`, `design.md`, and `implement.md`
 3. Implement features following specs and existing patterns
 4. Run the project's lint and typecheck commands on the changed scope
 5. Report files touched, key decisions, verification results, remaining risks, and `trellis-check` focus areas back to the channel

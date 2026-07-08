@@ -126,7 +126,7 @@ tasks. The bare create command is only a Phase 1.0 controlled follow-up after
 `prepare-task` has returned or written the selected `workspace_path` and the
 shell/editor is already operating inside that workspace.
 
-Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, optional `design.md`, optional `implement.md`, optional `research/`, the task-level `issue-scope-ledger.json`, sub-agent/review assignment and status evidence (`agent-assignment.json`), the Branch Review Gate review report (`review.md`) and recorder artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms.
+Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, `design.md`, `implement.md`, `research/` when applicable, the task-level `issue-scope-ledger.json`, sub-agent/review assignment and status evidence (`agent-assignment.json`), the Branch Review Gate review report (`review.md`) and recorder artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms. Guru Team implementation tasks require `prd.md`, `design.md`, and `implement.md` before `task.py start`, implementation, and check; missing or stale planning documents fail the explicit post-planning approval gate.
 
 ```bash
 python3 ./.trellis/scripts/task.py create "<title>" --slug <name>
@@ -267,16 +267,16 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 ### Planning Artifacts
 
 - `prd.md` — requirements, constraints, acceptance criteria, out of scope.
-- `design.md` — technical design for complex tasks: boundaries, contracts, data flow, compatibility, tradeoffs, rollout / rollback.
-- `implement.md` — execution plan for complex tasks: ordered checklist, validation commands, review gates, rollback points.
-- `planning-approval.json` — start gate evidence for reviewed planning artifacts and user confirmation; `task.py start` is only a status write.
+- `design.md` — technical design before implementation: boundaries, contracts, data flow, compatibility, tradeoffs, rollout / rollback.
+- `implement.md` — execution plan before implementation: ordered checklist, validation commands, review gates, rollback points.
+- `planning-approval.json` — start gate evidence that the main session displayed links to `prd.md`, `design.md`, and `implement.md`, then received explicit post-planning user confirmation; `task.py start` is only a status write.
 - `phase2-check.json` — Phase 2 `trellis-check` report for full task-scope quality coverage before commit and Branch Review Gate.
 - `issue-scope-ledger.json` — task-level close/ref/followup scope; do not overload `source_issue`.
 - `agent-assignment.json` — task-local sub-agent assignment ledger with Chinese logical roles, technical `agent_id`, display-only `platform_nickname`, HEAD evidence, review rounds, and reuse/replacement decisions.
 - `review-gate.json` — Branch Review Gate result for the reviewed HEAD.
 - `implement.jsonl` / `check.jsonl` — spec and research manifests for sub-agent context. They do not replace `implement.md`.
 
-Lightweight tasks may be PRD-only. Complex tasks must have `prd.md`, `design.md`, and `implement.md` before `task.py start`.
+Guru Team implementation tasks must have `prd.md`, `design.md`, and `implement.md` before `task.py start`; a Phase 0 handoff approval never substitutes for this post-planning review.
 
 ### Business Project Documentation Language
 
@@ -444,15 +444,16 @@ does not approve commit, push, PR creation, or issue closure.
 - 1.1 Requirement exploration `[required · repeatable]`
 - 1.2 Research `[optional · repeatable]`
 - 1.3 Configure context `[required · once]` for sub-agent-dispatch platforms
-- 1.4 Activate task `[required · once]` (artifact review, then `task.py start`)
-- 1.5 Completion criteria
+- 1.4 Explicit planning review `[required · once]` (show links, wait for user confirmation)
+- 1.5 Activate task `[required · once]` (`planning-approval.json`, then `task.py start`)
+- 1.6 Completion criteria
 
 [workflow-state:planning]
 Load `trellis-brainstorm`; stay in planning.
 Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
-Lightweight: `prd.md` can be enough. Complex: finish `prd.md`, `design.md`, and `implement.md`; ask for review before `task.py start`.
-Before `task.py start`, record and check `planning-approval.json`; missing or stale approval blocks implementation.
+Finish `prd.md`, `design.md`, and `implement.md`; then visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
+Before `task.py start`, record and check `planning-approval.json` with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale approval blocks implementation and Phase 2 check recording.
 Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research manifests before start.
 [/workflow-state:planning]
 
@@ -460,8 +461,8 @@ Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research mani
 Load `trellis-brainstorm`; stay in planning.
 Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
-Lightweight: `prd.md` can be enough. Complex: finish `prd.md`, `design.md`, and `implement.md`; ask for review before `task.py start`.
-Before `task.py start`, record and check `planning-approval.json`; missing or stale approval blocks implementation.
+Finish `prd.md`, `design.md`, and `implement.md`; then visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
+Before `task.py start`, record and check `planning-approval.json` with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale approval blocks implementation and Phase 2 check recording.
 Inline mode: skip jsonl curation; Phase 2 reads artifacts/specs via `trellis-before-dev`.
 [/workflow-state:planning-inline]
 
@@ -505,7 +506,7 @@ Copy or materialize the Issue Scope Ledger seed from `.trellis/guru-team/handoff
 
 If the companion script has not created it yet, create it with `primary_issue`, `close_issues`, `related_issues`, and `followup_issues`. The default `primary_issue` is the intake issue; it is only a close candidate until acceptance evidence and review coverage are present.
 
-Run only `create` here. Save `start` for step 1.4.
+Run only `create` here. Save `start` for step 1.5.
 
 #### 1.1 Requirement exploration `[required · repeatable]`
 
@@ -544,7 +545,7 @@ Only add a newly discovered issue to `close_issues` when all conditions hold:
 
 - it belongs to the same delivery unit as the current task;
 - it does not materially expand design boundary, test scope, or risk level;
-- `prd.md`, `design.md`, and `implement.md` are updated when present;
+- `prd.md`, `design.md`, and `implement.md` are updated;
 - the user explicitly confirms this issue should be solved in the current task;
 - Branch Review Gate later records coverage for that issue.
 
@@ -562,15 +563,40 @@ For sub-agent-dispatch platforms, curate `implement.jsonl` and `check.jsonl` wit
 
 Inline Codex/Kilo/Antigravity/Devin workflows skip this step and load context through `trellis-before-dev`.
 
-#### 1.4 Activate task `[required · once]`
+#### 1.4 Explicit planning review `[required · once]`
 
-After artifact review and explicit user approval, write the task-local start gate evidence:
+After `prd.md`, `design.md`, and `implement.md` are complete, the main session
+must visibly present all three task-local planning documents to the user and
+then stop for an explicit post-planning confirmation. The message must include
+clickable or absolute links to:
+
+- `{TASK_DIR}/prd.md`
+- `{TASK_DIR}/design.md`
+- `{TASK_DIR}/implement.md`
+
+The same message must state that, until the user confirms after seeing those
+links, the workflow will not enter implementation, will not dispatch
+`trellis-implement` / channel `implement`, and will not record
+`phase2-check.json`.
+
+The user's Phase 0 handoff approval to create a GitHub issue, worktree, branch,
+or Trellis task is not planning approval. Do not reuse a Phase 0 confirmation,
+generic "continue" consent, or historical `planning-approval.json` with
+`user_confirmation.source=workflow`. If `planning-approval.json` is missing,
+stale, has old schema/source, or no longer matches the current
+`prd.md`/`design.md`/`implement.md` digests, show the three links again and wait
+for a fresh explicit post-planning confirmation.
+
+#### 1.5 Activate task `[required · once]`
+
+After the explicit post-planning confirmation, write the task-local start gate evidence:
 
 ```bash
 .trellis/guru-team/scripts/bash/record-planning-approval.sh --json \
   --reviewer "codex-main-session" \
   --summary "中文规划审查结论" \
-  --user-confirmation "用户确认进入实现的证据摘要"
+  --user-confirmation "用户在看到 prd.md、design.md、implement.md 三个链接后确认进入实现" \
+  --confirmation-source explicit-post-planning-review
 .trellis/guru-team/scripts/bash/check-planning-approval.sh --json
 ```
 
@@ -580,19 +606,23 @@ Only after the check passes:
 python3 ./.trellis/scripts/task.py start <task-dir>
 ```
 
-Do not start implementation until the user approves the planning artifacts and `planning-approval.json` matches the current planning artifact hashes. `task.py start` is only a status transition; it is not planning review evidence.
+Do not start implementation until the user approves the displayed planning
+artifacts and `planning-approval.json` matches the current planning artifact
+hash, size, and modified-time metadata. `task.py start` is only a status
+transition; it is not planning review evidence.
 
-#### 1.5 Completion criteria
+#### 1.6 Completion criteria
 
 | Condition | Required |
 | --- | :---: |
 | Guru Team handoff exists for durable tasks | yes |
 | `prd.md` exists | yes |
-| User confirms task should enter implementation | yes |
+| `design.md` exists | yes |
+| `implement.md` exists | yes |
+| Main session displayed links to `prd.md`, `design.md`, and `implement.md` after generating them | yes |
+| User confirms task should enter implementation after seeing the three planning links | yes |
 | `planning-approval.json` exists and `check-planning-approval` passes | yes |
 | `task.py start` has been run | yes |
-| `design.md` exists for complex tasks | yes |
-| `implement.md` exists for complex tasks | yes |
 | curated JSONL manifests exist for sub-agent dispatch | yes |
 | Middle-platform Knowledge Gate handled when relevant | yes |
 | Docs SSOT discovery recorded | yes |
@@ -606,26 +636,33 @@ Do not start implementation until the user approves the planning artifacts and `
 [workflow-state:in_progress]
 Flow: `trellis-implement` -> `trellis-check` -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and journal succeed.
+Before dispatching `trellis-implement` / channel `implement` or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing, stale, old-schema, or non-`explicit-post-planning-review` approval blocks Phase 2.
 Before commit, record and check `phase2-check.json`; it records completed `trellis-check` AI evidence, and validation commands or recorder success alone are not a complete check.
 Main-session default on dispatch platforms: dispatch `trellis-implement` / channel `implement`, wait for an implementation handoff, then dispatch `trellis-check` / channel `check`. Dispatch prompt starts with `Active task: <task path from task.py current>`. The main session may coordinate and record evidence, but it must not directly implement or directly check in default `sub-agent` mode.
 After dispatching an implement/check sub-agent, record `实现代理` or `阶段二检查代理` in `agent-assignment.json`; prefer the Chinese UI nickname configured by the agent file when available. If the platform does not expose `agent_id` or nickname, keep the field as an empty string and explain that fact in the Chinese reason. A wait timeout is only a wait-window result; do not terminate or summarize a still-progressing sub-agent because total runtime is long. Record `status_events[]` for wait timeout, progress observed, stale assessment, continue-waiting, resume/replacement, unfinished termination, completion, or explicit failure.
 Sub-agent self-exemption: if already running as `trellis-implement` or `trellis-check`, do the work directly, do not spawn another Trellis implement/check agent, and return the role-specific handoff/report as artifact evidence. Main-session inline/self-exemption needs explicit artifact evidence; otherwise missing sub-agent evidence fails closed.
 Before edits, confirm knowledge gate and docs SSOT responsibilities from artifacts.
-Read context: jsonl entries -> `prd.md` -> `design.md if present` -> `implement.md if present`.
+Read context: jsonl entries -> `prd.md` -> `design.md` -> `implement.md`.
 [/workflow-state:in_progress]
 
 [workflow-state:in_progress-inline]
 Flow: `trellis-before-dev` -> edit -> `trellis-check` -> validation -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and journal succeed.
+Before editing or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing, stale, old-schema, or non-`explicit-post-planning-review` approval blocks inline Phase 2.
 Before commit, record and check `phase2-check.json`; validation commands alone are not a complete `trellis-check`.
 Do not dispatch implement/check sub-agents in inline mode.
 Before edits, confirm knowledge gate and docs SSOT responsibilities from artifacts.
-Read context: `prd.md` -> `design.md if present` -> `implement.md if present`, plus relevant spec/research loaded by skills.
+Read context: `prd.md` -> `design.md` -> `implement.md`, plus relevant spec/research loaded by skills.
 [/workflow-state:in_progress-inline]
 
 #### 2.1 Implement `[required · repeatable]`
 
-Dispatch or inline-implement according to the platform mode. In default `sub-agent` mode, the main session must dispatch `trellis-implement` or channel-runtime `implement`; it may not directly edit files and later present that work as `实现代理` evidence. Keep changes focused on the reviewed task artifacts and the source issue scope.
+Dispatch or inline-implement according to the platform mode only after
+`check-planning-approval.sh --json` passes for the current task. In default
+`sub-agent` mode, the main session must dispatch `trellis-implement` or
+channel-runtime `implement`; it may not directly edit files and later present
+that work as `实现代理` evidence. Keep changes focused on the reviewed task
+artifacts and the source issue scope.
 
 On sub-agent-capable platforms, the main session records implementation assignment after dispatch:
 

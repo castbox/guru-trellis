@@ -207,10 +207,12 @@ matcher 判断是否进入 Guru Team issue intake 和 worktree preflight。
 仍保留为 fallback / explicit orientation 入口，用于无自动注入平台、hook 未启用或
 未审批、怀疑自动注入没有运行，或需要完整上下文报告和重新加载 Trellis 上下文的场景。
 
-Planning start gate 和 Phase 2 check gate 都需要 task-local evidence。进入实现前先由
-AI/human 审查 `prd.md` / `design.md` / `implement.md`，获得用户确认后调用
-`record-planning-approval.sh` 写入 `planning-approval.json`，再用
-`check-planning-approval.sh` 校验；`task.py start` 只是状态写入，不代表规划已审查。
+Planning start gate 和 Phase 2 check gate 都需要 task-local evidence。进入实现前主会话
+必须展示 `prd.md` / `design.md` / `implement.md` 三个 task-local 链接，用户看到后
+明确确认，才能调用 `record-planning-approval.sh` 写入
+`user_confirmation.source=explicit-post-planning-review` 的 `planning-approval.json`，再用
+`check-planning-approval.sh` 校验；Phase 0 handoff 确认或旧 `source=workflow` 不能
+通过 gate，`task.py start` 只是状态写入，不代表规划已审查。
 commit 前必须完成完整 `trellis-check`，再用 `record-phase2-check.sh` 写入
 `phase2-check.json` 并用 `check-phase2-check.sh` 校验；几个验证命令通过只是 check
 evidence 的一部分，不等于完整 `trellis-check` 覆盖。`phase2-check.json` 是 commit

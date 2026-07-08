@@ -15,6 +15,25 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import apply_guru_team_trellis_preset as preset
 
 
+STALE_PLANNING_HINTS = (
+    "Task `design.md` - Technical design (if exists)",
+    "Task `implement.md` - Execution plan (if exists)",
+    "design.md` if present",
+    "implement.md` if present",
+    "design.md if present",
+    "implement.md if present",
+    "optional `design.md` / `implement.md`",
+    "technical design and implementation plan when present",
+)
+
+
+def assert_required_planning_context(testcase: unittest.TestCase, text: str) -> None:
+    testcase.assertIn("Task `design.md` - required Guru Team technical design", text)
+    testcase.assertIn("Task `implement.md` - required Guru Team execution plan", text)
+    for stale_hint in STALE_PLANNING_HINTS:
+        testcase.assertNotIn(stale_hint, text)
+
+
 class CodexDispatchModeInstallerTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -213,17 +232,109 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertEqual(payload["platforms"], ["codex", "cursor"])
         self.assertFalse(payload["all_platforms"])
         self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").is_file())
+        brainstorm = (self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("explicit post-planning confirmation", brainstorm)
+        self.assertNotIn("Lightweight tasks may have only", brainstorm)
+        self.assertTrue((self.repo / ".agents/skills/trellis-before-dev/SKILL.md").is_file())
+        before_dev = (self.repo / ".agents/skills/trellis-before-dev/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("required `design.md`", before_dev)
+        self.assertNotIn("design.md` if present", before_dev)
+        self.assertTrue((self.repo / ".agents/skills/trellis-check/SKILL.md").is_file())
+        check_skill = (self.repo / ".agents/skills/trellis-check/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("required `design.md`", check_skill)
+        self.assertNotIn("design.md` if present", check_skill)
         self.assertTrue((self.repo / ".trellis/agents/implement.md").is_file())
         self.assertIn("实现代理", (self.repo / ".trellis/agents/implement.md").read_text(encoding="utf-8"))
         self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
         self.assertTrue((self.repo / ".codex/agents/trellis-implement.toml").is_file())
+        self.assertTrue((self.repo / ".codex/hooks/session-start.py").is_file())
         codex_implement = (self.repo / ".codex/agents/trellis-implement.toml").read_text(encoding="utf-8")
         self.assertIn("实现代理", codex_implement)
         self.assertIn('nickname_candidates = ["Implement Agent"', codex_implement)
         self.assertNotIn('nickname_candidates = ["实现代理"', codex_implement)
+        codex_hook = (self.repo / ".codex/hooks/session-start.py").read_text(encoding="utf-8")
+        self.assertIn("post-planning confirmation", codex_hook)
+        self.assertNotIn("PRD-only", codex_hook)
+        self.assertNotIn("Missing optional artifacts", codex_hook)
+        self.assertNotIn("design.md if present", codex_hook)
+        codex_meta = (
+            self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Guru Team requires this document before implementation", codex_meta)
+        self.assertNotIn("Lightweight tasks may be PRD-only", codex_meta)
+        codex_context = (
+            self.repo / ".agents/skills/trellis-meta/references/local-architecture/context-injection.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("required `design.md`", codex_context)
+        self.assertNotIn("design.md if present", codex_context)
+        codex_change_workflow = (
+            self.repo / ".agents/skills/trellis-meta/references/customize-local/change-workflow.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("explicit post-planning confirmation", codex_change_workflow)
+        self.assertNotIn("lightweight task with `prd.md` complete", codex_change_workflow)
+        codex_change_context = (
+            self.repo / ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("required `design.md`", codex_change_context)
+        self.assertNotIn("design.md` if present", codex_change_context)
+        codex_agents_doc = (
+            self.repo / ".agents/skills/trellis-meta/references/platform-files/agents.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("required `prd.md`, `design.md`, `implement.md`", codex_agents_doc)
+        self.assertNotIn("optional `design.md` / `implement.md`", codex_agents_doc)
         self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
         self.assertTrue((self.repo / ".cursor/agents/trellis-check.md").is_file())
-        self.assertIn("阶段二检查代理", (self.repo / ".cursor/agents/trellis-check.md").read_text(encoding="utf-8"))
+        cursor_check_agent = (self.repo / ".cursor/agents/trellis-check.md").read_text(encoding="utf-8")
+        self.assertIn("阶段二检查代理", cursor_check_agent)
+        assert_required_planning_context(self, cursor_check_agent)
+        self.assertTrue((self.repo / ".cursor/skills/trellis-brainstorm/SKILL.md").is_file())
+        cursor_brainstorm = (self.repo / ".cursor/skills/trellis-brainstorm/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("explicit post-planning confirmation", cursor_brainstorm)
+        self.assertNotIn("Lightweight tasks may have only", cursor_brainstorm)
+        self.assertTrue((self.repo / ".cursor/skills/trellis-before-dev/SKILL.md").is_file())
+        cursor_before_dev = (self.repo / ".cursor/skills/trellis-before-dev/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("required `design.md`", cursor_before_dev)
+        self.assertNotIn("design.md` if present", cursor_before_dev)
+        self.assertTrue((self.repo / ".cursor/skills/trellis-check/SKILL.md").is_file())
+        cursor_check_skill = (self.repo / ".cursor/skills/trellis-check/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("required `design.md`", cursor_check_skill)
+        self.assertNotIn("design.md` if present", cursor_check_skill)
+        self.assertTrue((self.repo / ".cursor/hooks/session-start.py").is_file())
+        cursor_hook = (self.repo / ".cursor/hooks/session-start.py").read_text(encoding="utf-8")
+        self.assertIn("post-planning confirmation", cursor_hook)
+        self.assertNotIn("PRD-only", cursor_hook)
+        self.assertNotIn("Missing optional artifacts", cursor_hook)
+        self.assertNotIn("design.md if present", cursor_hook)
+        self.assertTrue((self.repo / ".cursor/hooks/inject-subagent-context.py").is_file())
+        cursor_context_hook = (self.repo / ".cursor/hooks/inject-subagent-context.py").read_text(encoding="utf-8")
+        self.assertIn("required design.md", cursor_context_hook)
+        self.assertNotIn("design.md if present", cursor_context_hook)
+        cursor_meta = (
+            self.repo / ".cursor/skills/trellis-meta/references/local-architecture/task-system.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Guru Team requires this document before implementation", cursor_meta)
+        self.assertNotIn("Lightweight tasks may be PRD-only", cursor_meta)
+        cursor_context = (
+            self.repo / ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("required `design.md`", cursor_context)
+        self.assertNotIn("design.md if present", cursor_context)
+        cursor_change_workflow = (
+            self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("explicit post-planning confirmation", cursor_change_workflow)
+        self.assertNotIn("lightweight task with `prd.md` complete", cursor_change_workflow)
+        cursor_change_context = (
+            self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("required `design.md`", cursor_change_context)
+        self.assertNotIn("design.md` if present", cursor_change_context)
+        cursor_agents_doc = (
+            self.repo / ".cursor/skills/trellis-meta/references/platform-files/agents.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("required `prd.md`, `design.md`, `implement.md`", cursor_agents_doc)
+        self.assertNotIn("optional `design.md` / `implement.md`", cursor_agents_doc)
         self.assertFalse((self.repo / ".claude").exists())
 
     def test_repeated_default_apply_does_not_restore_unselected_claude_overlay(self) -> None:
@@ -241,9 +352,17 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertEqual(payload["platforms"], ["claude"])
         self.assertFalse(payload["all_platforms"])
         self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/trellis-before-dev/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/trellis-check/SKILL.md").is_file())
         self.assertTrue((self.repo / ".trellis/agents/check.md").is_file())
         self.assertTrue((self.repo / ".claude/commands/trellis/continue.md").is_file())
         self.assertTrue((self.repo / ".claude/agents/trellis-implement.md").is_file())
+        self.assertTrue((self.repo / ".claude/agents/trellis-check.md").is_file())
+        claude_check_agent = (self.repo / ".claude/agents/trellis-check.md").read_text(encoding="utf-8")
+        self.assertIn("阶段二检查代理", claude_check_agent)
+        assert_required_planning_context(self, claude_check_agent)
+        self.assertFalse((self.repo / ".agents/skills/trellis-meta").exists())
         self.assertFalse((self.repo / ".codex").exists())
         self.assertFalse((self.repo / ".cursor").exists())
 
@@ -254,13 +373,42 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertTrue(all_platforms)
         self.assertEqual(payload["platforms"], ["claude", "codex", "cursor"])
         self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/trellis-before-dev/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/trellis-check/SKILL.md").is_file())
         self.assertTrue((self.repo / ".trellis/agents/implement.md").is_file())
         self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
         self.assertTrue((self.repo / ".codex/agents/trellis-check.toml").is_file())
+        self.assertTrue((self.repo / ".codex/hooks/session-start.py").is_file())
+        self.assertTrue((self.repo / ".agents/skills/trellis-meta/references/customize-local/change-workflow.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/trellis-meta/references/local-architecture/context-injection.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/trellis-meta/references/platform-files/agents.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md").is_file())
         self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
         self.assertTrue((self.repo / ".cursor/agents/trellis-research.md").is_file())
+        self.assertTrue((self.repo / ".cursor/agents/trellis-check.md").is_file())
+        assert_required_planning_context(
+            self,
+            (self.repo / ".cursor/agents/trellis-check.md").read_text(encoding="utf-8"),
+        )
+        self.assertTrue((self.repo / ".cursor/hooks/session-start.py").is_file())
+        self.assertTrue((self.repo / ".cursor/hooks/inject-subagent-context.py").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/trellis-brainstorm/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/trellis-before-dev/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/trellis-check/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/trellis-meta/references/platform-files/agents.md").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/trellis-meta/references/local-architecture/task-system.md").is_file())
         self.assertTrue((self.repo / ".claude/commands/trellis/continue.md").is_file())
         self.assertTrue((self.repo / ".claude/agents/trellis-research.md").is_file())
+        self.assertTrue((self.repo / ".claude/agents/trellis-check.md").is_file())
+        assert_required_planning_context(
+            self,
+            (self.repo / ".claude/agents/trellis-check.md").read_text(encoding="utf-8"),
+        )
 
     def test_main_accepts_repeated_platform_arguments(self) -> None:
         with mock.patch(
@@ -281,8 +429,10 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
         self.assertTrue((self.repo / ".codex/agents/trellis-research.toml").is_file())
+        self.assertTrue((self.repo / ".codex/hooks/session-start.py").is_file())
         self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
         self.assertTrue((self.repo / ".cursor/agents/trellis-implement.md").is_file())
+        self.assertTrue((self.repo / ".cursor/hooks/session-start.py").is_file())
         self.assertFalse((self.repo / ".claude").exists())
 
     def test_known_trellis_agent_entries_are_replaced_with_chinese_overlays(self) -> None:
@@ -303,6 +453,33 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertIn('nickname_candidates = ["Check Agent"', text)
         self.assertNotIn('nickname_candidates = ["阶段二检查代理"', text)
 
+    def test_generated_markdown_check_agents_replace_optional_context_hints(self) -> None:
+        stale_agent = (
+            "---\n"
+            "name: trellis-check\n"
+            "---\n"
+            "# Trellis workflow check agent\n\n"
+            "Read check.jsonl, then task artifacts.\n\n"
+            "## Context\n"
+            "- Task `prd.md` - Requirements document\n"
+            "- Task `design.md` - Technical design (if exists)\n"
+            "- Task `implement.md` - Execution plan (if exists)\n\n"
+            "- Does it follow the technical design and implementation plan when present\n"
+        )
+        claude_check = self.repo / ".claude/agents/trellis-check.md"
+        cursor_check = self.repo / ".cursor/agents/trellis-check.md"
+        claude_check.parent.mkdir(parents=True)
+        cursor_check.parent.mkdir(parents=True)
+        claude_check.write_text(stale_agent, encoding="utf-8")
+        cursor_check.write_text(stale_agent, encoding="utf-8")
+
+        payload = self.install({"claude", "cursor"})
+
+        self.assertIn(".claude/agents/trellis-check.md", payload["replaced_overlays"])
+        self.assertIn(".cursor/agents/trellis-check.md", payload["replaced_overlays"])
+        assert_required_planning_context(self, claude_check.read_text(encoding="utf-8"))
+        assert_required_planning_context(self, cursor_check.read_text(encoding="utf-8"))
+
     def test_unknown_local_agent_edit_gets_new_copy(self) -> None:
         existing = self.repo / ".codex/agents/trellis-check.toml"
         existing.parent.mkdir(parents=True)
@@ -318,6 +495,185 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertIn(".codex/agents/trellis-check.toml.new", payload["new_copies"])
         self.assertIn("Local custom reviewer", existing.read_text(encoding="utf-8"))
         self.assertTrue((self.repo / ".codex/agents/trellis-check.toml.new").is_file())
+
+    def test_generated_session_start_hooks_are_replaced_with_planning_gate_overlays(self) -> None:
+        codex_hook = self.repo / ".codex/hooks/session-start.py"
+        cursor_hook = self.repo / ".cursor/hooks/session-start.py"
+        codex_hook.parent.mkdir(parents=True)
+        cursor_hook.parent.mkdir(parents=True)
+        stale_hook = (
+            "#!/usr/bin/env python3\n"
+            "\"\"\"Trellis Session Start Hook\"\"\"\n"
+            "def _get_task_status(trellis_dir, hook_input):\n"
+            "    return 'Lightweight task can ask for start review with PRD-only'\n"
+        )
+        codex_hook.write_text(stale_hook, encoding="utf-8")
+        cursor_hook.write_text(stale_hook, encoding="utf-8")
+
+        payload = self.install({"codex", "cursor"})
+
+        self.assertIn(".codex/hooks/session-start.py", payload["replaced_overlays"])
+        self.assertIn(".cursor/hooks/session-start.py", payload["replaced_overlays"])
+        self.assertIn("post-planning confirmation", codex_hook.read_text(encoding="utf-8"))
+        self.assertIn("post-planning confirmation", cursor_hook.read_text(encoding="utf-8"))
+        self.assertNotIn("PRD-only", codex_hook.read_text(encoding="utf-8"))
+        self.assertNotIn("PRD-only", cursor_hook.read_text(encoding="utf-8"))
+
+    def test_generated_trellis_meta_task_system_docs_are_replaced_with_guru_team_overlay(self) -> None:
+        shared_meta = self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md"
+        cursor_meta = self.repo / ".cursor/skills/trellis-meta/references/local-architecture/task-system.md"
+        stale_meta = (
+            "# Local Task System\n\n"
+            "The Trellis task system is stored under `.trellis/tasks/`.\n\n"
+            "| `prd.md` | Requirements. Lightweight tasks may be PRD-only. |\n"
+        )
+        shared_meta.parent.mkdir(parents=True)
+        cursor_meta.parent.mkdir(parents=True)
+        shared_meta.write_text(stale_meta, encoding="utf-8")
+        cursor_meta.write_text(stale_meta, encoding="utf-8")
+
+        payload = self.install({"codex", "cursor"})
+
+        self.assertIn(
+            ".agents/skills/trellis-meta/references/local-architecture/task-system.md",
+            payload["replaced_overlays"],
+        )
+        self.assertIn(
+            ".cursor/skills/trellis-meta/references/local-architecture/task-system.md",
+            payload["replaced_overlays"],
+        )
+        self.assertIn("Guru Team requires this document before implementation", shared_meta.read_text(encoding="utf-8"))
+        self.assertIn("Guru Team requires this document before implementation", cursor_meta.read_text(encoding="utf-8"))
+        self.assertNotIn("Lightweight tasks may be PRD-only", shared_meta.read_text(encoding="utf-8"))
+        self.assertNotIn("Lightweight tasks may be PRD-only", cursor_meta.read_text(encoding="utf-8"))
+
+    def test_generated_brainstorm_and_trellis_meta_reference_docs_are_replaced(self) -> None:
+        shared_brainstorm = self.repo / ".agents/skills/trellis-brainstorm/SKILL.md"
+        cursor_brainstorm = self.repo / ".cursor/skills/trellis-brainstorm/SKILL.md"
+        shared_before_dev = self.repo / ".agents/skills/trellis-before-dev/SKILL.md"
+        cursor_before_dev = self.repo / ".cursor/skills/trellis-before-dev/SKILL.md"
+        shared_check_skill = self.repo / ".agents/skills/trellis-check/SKILL.md"
+        cursor_check_skill = self.repo / ".cursor/skills/trellis-check/SKILL.md"
+        shared_change_workflow = self.repo / ".agents/skills/trellis-meta/references/customize-local/change-workflow.md"
+        cursor_change_workflow = self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md"
+        shared_change_context = self.repo / ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md"
+        cursor_change_context = self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md"
+        shared_context = self.repo / ".agents/skills/trellis-meta/references/local-architecture/context-injection.md"
+        cursor_context = self.repo / ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md"
+        shared_agents_doc = self.repo / ".agents/skills/trellis-meta/references/platform-files/agents.md"
+        cursor_agents_doc = self.repo / ".cursor/skills/trellis-meta/references/platform-files/agents.md"
+        cursor_context_hook = self.repo / ".cursor/hooks/inject-subagent-context.py"
+        stale_brainstorm = (
+            "# Trellis Brainstorm\n\n"
+            "## PRD Convergence Pass\n\n"
+            "Lightweight tasks may have only `prd.md`.\n"
+        )
+        stale_before_dev = (
+            "# Read the relevant development guidelines\n\n"
+            "Trellis before-dev reads task artifacts.\n"
+            "- `prd.md` for requirements and acceptance criteria\n"
+            "- `design.md` if present for technical design\n"
+            "- `implement.md` if present for execution order and validation plan\n"
+        )
+        stale_check_skill = (
+            "# Code Quality Check\n\n"
+            "Trellis check reads task artifacts.\n"
+            "- `prd.md`\n"
+            "- `design.md` if present\n"
+            "- `implement.md` if present\n"
+        )
+        stale_change_workflow = (
+            "# Change Local Workflow\n\n"
+            "Edit `.trellis/workflow.md`.\n\n"
+            "| `planning` | lightweight task with `prd.md` complete | ask for start review, then run `task.py start` |\n"
+        )
+        stale_change_context = (
+            "# Change Context Loading\n\n"
+            "Trellis context loading reads `.trellis/workflow.md` and `.trellis/tasks/`.\n\n"
+            "5. `design.md` if present\n6. `implement.md` if present\n"
+        )
+        stale_context = (
+            "# Local Context Injection System\n\n"
+            "Trellis context injection reads `.trellis/workflow.md` and `.trellis/tasks/`.\n\n"
+            "In both modes, JSONL files in the task directory are the manifest for spec/research context. "
+            "Task artifacts are read separately in this order: `prd.md` -> `design.md if present` -> `implement.md if present`.\n"
+        )
+        stale_agents_doc = (
+            "# Agents\n\n"
+            "| `trellis-implement` | Implement against `prd.md`, optional `design.md` / `implement.md`, `implement.jsonl`, and related spec/research. |\n"
+        )
+        stale_context_hook = (
+            "#!/usr/bin/env python3\n"
+            "\"\"\"Multi-Platform Sub-Agent Context Injection Hook\"\"\"\n"
+            "# Trellis active task resolver points to the current task directory.\n"
+            "implement_jsonl = 'implement.jsonl'\n"
+            "check_jsonl = 'check.jsonl'\n"
+            "READ_ORDER = 'design.md if present and implement.md if present'\n"
+        )
+        for path, text in [
+            (shared_brainstorm, stale_brainstorm),
+            (cursor_brainstorm, stale_brainstorm),
+            (shared_before_dev, stale_before_dev),
+            (cursor_before_dev, stale_before_dev),
+            (shared_check_skill, stale_check_skill),
+            (cursor_check_skill, stale_check_skill),
+            (shared_change_workflow, stale_change_workflow),
+            (cursor_change_workflow, stale_change_workflow),
+            (shared_change_context, stale_change_context),
+            (cursor_change_context, stale_change_context),
+            (shared_context, stale_context),
+            (cursor_context, stale_context),
+            (shared_agents_doc, stale_agents_doc),
+            (cursor_agents_doc, stale_agents_doc),
+            (cursor_context_hook, stale_context_hook),
+        ]:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+
+        payload = self.install({"codex", "cursor"})
+
+        for relative in [
+            ".agents/skills/trellis-brainstorm/SKILL.md",
+            ".cursor/skills/trellis-brainstorm/SKILL.md",
+            ".agents/skills/trellis-before-dev/SKILL.md",
+            ".cursor/skills/trellis-before-dev/SKILL.md",
+            ".agents/skills/trellis-check/SKILL.md",
+            ".cursor/skills/trellis-check/SKILL.md",
+            ".agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+            ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+            ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md",
+            ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md",
+            ".agents/skills/trellis-meta/references/local-architecture/context-injection.md",
+            ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md",
+            ".agents/skills/trellis-meta/references/platform-files/agents.md",
+            ".cursor/skills/trellis-meta/references/platform-files/agents.md",
+            ".cursor/hooks/inject-subagent-context.py",
+        ]:
+            self.assertIn(relative, payload["replaced_overlays"])
+
+        self.assertIn("explicit post-planning confirmation", shared_brainstorm.read_text(encoding="utf-8"))
+        self.assertIn("explicit post-planning confirmation", cursor_brainstorm.read_text(encoding="utf-8"))
+        self.assertIn("required `design.md`", shared_before_dev.read_text(encoding="utf-8"))
+        self.assertIn("required `design.md`", cursor_before_dev.read_text(encoding="utf-8"))
+        self.assertIn("required `design.md`", shared_check_skill.read_text(encoding="utf-8"))
+        self.assertIn("required `design.md`", cursor_check_skill.read_text(encoding="utf-8"))
+        self.assertIn("explicit post-planning confirmation", shared_change_workflow.read_text(encoding="utf-8"))
+        self.assertIn("explicit post-planning confirmation", cursor_change_workflow.read_text(encoding="utf-8"))
+        self.assertIn("required `design.md`", shared_change_context.read_text(encoding="utf-8"))
+        self.assertIn("required `design.md`", cursor_change_context.read_text(encoding="utf-8"))
+        self.assertIn("required `design.md`", shared_context.read_text(encoding="utf-8"))
+        self.assertIn("required `design.md`", cursor_context.read_text(encoding="utf-8"))
+        self.assertIn("required `prd.md`, `design.md`, `implement.md`", shared_agents_doc.read_text(encoding="utf-8"))
+        self.assertIn("required `prd.md`, `design.md`, `implement.md`", cursor_agents_doc.read_text(encoding="utf-8"))
+        self.assertIn("required design.md", cursor_context_hook.read_text(encoding="utf-8"))
+        self.assertNotIn("Lightweight tasks may have only", shared_brainstorm.read_text(encoding="utf-8"))
+        self.assertNotIn("design.md` if present", shared_before_dev.read_text(encoding="utf-8"))
+        self.assertNotIn("design.md` if present", shared_check_skill.read_text(encoding="utf-8"))
+        self.assertNotIn("lightweight task with `prd.md` complete", shared_change_workflow.read_text(encoding="utf-8"))
+        self.assertNotIn("design.md` if present", shared_change_context.read_text(encoding="utf-8"))
+        self.assertNotIn("design.md if present", shared_context.read_text(encoding="utf-8"))
+        self.assertNotIn("optional `design.md` / `implement.md`", shared_agents_doc.read_text(encoding="utf-8"))
+        self.assertNotIn("design.md if present", cursor_context_hook.read_text(encoding="utf-8"))
 
     def test_main_reports_explicit_all_platforms_only_for_all_platforms_flag(self) -> None:
         with mock.patch(
