@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-08T14:25:41Z",
-  "task_dir": ".trellis/tasks/07-08-060-workspace-boundary-guard",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-08-060-workspace-boundary-guard",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/060-workspace-boundary-guard",
@@ -148,7 +148,7 @@
     }
   ],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-08-060-workspace-boundary-guard/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-08-060-workspace-boundary-guard/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 60,
@@ -179,13 +179,13 @@
     "reviewer": "019f4212-acdc-7492-849c-f7c5efe7d72e",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-08-060-workspace-boundary-guard/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-08-060-workspace-boundary-guard/review.md",
       "sha256": "c0baefca5b9613c0bbe82c896e0c1bde357d4cd9cc02bed8bcaf0110c967cd6a",
       "size_bytes": 6783,
       "modified_at": "2026-07-08T14:20:48.842331+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-08-060-workspace-boundary-guard/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-08-060-workspace-boundary-guard/agent-assignment.json",
       "sha256": "23448aa83f7487554110ecce74954245ce542a4e7dadf5abb387e485c9758d7a",
       "size_bytes": 28026,
       "modified_at": "2026-07-08T14:23:25.651615+00:00",
@@ -201,7 +201,7 @@
       "review_rounds_count": 4,
       "reuse_decisions_count": 1,
       "status_events_count": 19,
-      "task": ".trellis/tasks/07-08-060-workspace-boundary-guard",
+      "task": ".trellis/tasks/archive/2026-07/07-08-060-workspace-boundary-guard",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "review_reports": [
@@ -211,7 +211,7 @@
         "agent_id": "019f4138-c274-7ce3-97d4-66ae456b8ccb",
         "reviewed_head": "1e2e78ae1259165c61a5dfdb4826abd6edc730a5",
         "findings_count": 1,
-        "path": ".trellis/tasks/07-08-060-workspace-boundary-guard/reviews/round-001-final.md",
+        "path": ".trellis/tasks/archive/2026-07/07-08-060-workspace-boundary-guard/reviews/round-001-final.md",
         "sha256": "45fb04540aed748a08cecc48de983f1035704ea5e4c0ca007d6fa3d503e92aa3",
         "size_bytes": 8596,
         "modified_at": "2026-07-08T13:19:46.766837+00:00"
@@ -222,7 +222,7 @@
         "agent_id": "019f41ee-a6ba-7d93-86a3-5f3afafed93a",
         "reviewed_head": "ff59c2db866d0414b7a736205a26ed9da004eecf",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-08-060-workspace-boundary-guard/reviews/round-002-closure.md",
+        "path": ".trellis/tasks/archive/2026-07/07-08-060-workspace-boundary-guard/reviews/round-002-closure.md",
         "sha256": "cd4f15f281da278877cfc98f6581368da552a16e31d29ce1ce39a45f2cd44282",
         "size_bytes": 5786,
         "modified_at": "2026-07-08T13:37:41.683771+00:00"
@@ -233,7 +233,7 @@
         "agent_id": "019f41f4-107f-70c1-8d79-69353bc8e586",
         "reviewed_head": "ff59c2db866d0414b7a736205a26ed9da004eecf",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-08-060-workspace-boundary-guard/reviews/round-003-final.md",
+        "path": ".trellis/tasks/archive/2026-07/07-08-060-workspace-boundary-guard/reviews/round-003-final.md",
         "sha256": "c3392a93c3b6df21b515ff5ae17939ff4ee3fcdf7b31d49210b84f3541f2832a",
         "size_bytes": 7982,
         "modified_at": "2026-07-08T13:47:18.929750+00:00"
@@ -244,7 +244,7 @@
         "agent_id": "019f4212-acdc-7492-849c-f7c5efe7d72e",
         "reviewed_head": "3af6ee1d99fcbae862ef993efa851111c9874a96",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-08-060-workspace-boundary-guard/reviews/round-004-final.md",
+        "path": ".trellis/tasks/archive/2026-07/07-08-060-workspace-boundary-guard/reviews/round-004-final.md",
         "sha256": "cc46dfcb9d8eb7479a396495f89bdd0c9d59367c79a40c971e8a3e34ce936e46",
         "size_bytes": 10436,
         "modified_at": "2026-07-08T14:21:31.896285+00:00"
