@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查实现是否符合 Branch Review Gate、artifact language 和 sub-agent boundary 合同。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查验证命令、dogfood drift、diff check 和 workflow 变更 review focus 是否完成。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 canonical overlay 与 dogfood 安装副本是否同步，平台入口文案是否一致。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查新增 validator 是否保持 executor/validator/recorder 边界，不做语义 review。"}
+{"file": ".trellis/tasks/07-08-078-review-report-chinese-language/research/official-trellis-docs.md", "reason": "检查实现是否遵循官方 Trellis 扩展面，不修改 upstream/npm/node_modules。"}
