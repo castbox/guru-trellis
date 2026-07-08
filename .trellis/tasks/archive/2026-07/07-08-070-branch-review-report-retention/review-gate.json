@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-08T04:55:41Z",
-  "task_dir": ".trellis/tasks/07-08-070-branch-review-report-retention",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-08-070-branch-review-report-retention",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/070-branch-review-report-retention",
@@ -119,7 +119,7 @@
   "observations": [],
   "followup_candidates": [],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-08-070-branch-review-report-retention/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-08-070-branch-review-report-retention/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 70,
@@ -143,13 +143,13 @@
     "reviewer": "019f400a-be61-7a12-8907-bf5708d1f89b",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-08-070-branch-review-report-retention/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-08-070-branch-review-report-retention/review.md",
       "sha256": "29f72a7352503a7c789529091f13b9bebfa6e25f32b65a8c3ea146afb30778ef",
       "size_bytes": 4382,
       "modified_at": "2026-07-08T04:55:05.143524+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-08-070-branch-review-report-retention/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-08-070-branch-review-report-retention/agent-assignment.json",
       "sha256": "a7ad524b72ba2a840bbc83a2533ac08675568eced8763c6b96662ed3a6b75299",
       "size_bytes": 24244,
       "modified_at": "2026-07-08T04:54:05.064732+00:00",
@@ -165,7 +165,7 @@
       "review_rounds_count": 3,
       "reuse_decisions_count": 0,
       "status_events_count": 17,
-      "task": ".trellis/tasks/07-08-070-branch-review-report-retention",
+      "task": ".trellis/tasks/archive/2026-07/07-08-070-branch-review-report-retention",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "review_reports": [
@@ -175,7 +175,7 @@
         "agent_id": "019f3fd7-da1e-7b81-96df-ca19846d3797",
         "reviewed_head": "fa7d0574230f6773dc319af604929f9cb17b2cfa",
         "findings_count": 1,
-        "path": ".trellis/tasks/07-08-070-branch-review-report-retention/reviews/round-001-final-release.md",
+        "path": ".trellis/tasks/archive/2026-07/07-08-070-branch-review-report-retention/reviews/round-001-final-release.md",
         "sha256": "d92e843946ca149c5933206547a91363c9b96252bbd297d8974d9c58f0c7fb31",
         "size_bytes": 8085,
         "modified_at": "2026-07-08T04:04:31.041584+00:00"
@@ -186,7 +186,7 @@
         "agent_id": "019f3fd7-da1e-7b81-96df-ca19846d3797",
         "reviewed_head": "294e79b847869622bab481b4da0030fcacc56197",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-08-070-branch-review-report-retention/reviews/round-002-closure.md",
+        "path": ".trellis/tasks/archive/2026-07/07-08-070-branch-review-report-retention/reviews/round-002-closure.md",
         "sha256": "ef336d639c2734cd9bb4fb198f7cdfcdca29342af9853e83eac124dc9541d4a1",
         "size_bytes": 4762,
         "modified_at": "2026-07-08T04:42:39.357662+00:00"
@@ -197,7 +197,7 @@
         "agent_id": "019f400a-be61-7a12-8907-bf5708d1f89b",
         "reviewed_head": "294e79b847869622bab481b4da0030fcacc56197",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-08-070-branch-review-report-retention/reviews/round-003-final-release.md",
+        "path": ".trellis/tasks/archive/2026-07/07-08-070-branch-review-report-retention/reviews/round-003-final-release.md",
         "sha256": "c61c9f5f7acc2b73d8dff58b1b1b4caa0a70cc6f595f1079d8b33e977f71f485",
         "size_bytes": 7926,
         "modified_at": "2026-07-08T04:53:14.920958+00:00"
