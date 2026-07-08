@@ -1,76 +1,76 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 70,
-    "url": "https://github.com/castbox/guru-trellis/issues/70",
-    "title": "保留多轮 Branch Review 原始报告并生成最终 review.md 汇总",
+    "number": 78,
+    "url": "https://github.com/castbox/guru-trellis/issues/78",
+    "title": "Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/070-branch-review-report-retention/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/078-review-report-chinese-language/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "070-branch-review-report-retention",
+  "slug": "078-review-report-chinese-language",
   "naming_quality": {
     "ok": true,
     "reason": "naming includes enough business tokens",
     "requires_semantic_name": false,
-    "current_slug": "070-branch-review-report-retention",
+    "current_slug": "078-review-report-chinese-language",
     "current_surface": "workspace_slug",
     "suggested_override_flags": [],
     "checked_names": {
       "slug": {
         "ok": true,
-        "slug": "070-branch-review-report-retention",
+        "slug": "078-review-report-chinese-language",
         "reason": "ok",
         "business_tokens": [
-          "branch",
           "review",
           "report",
-          "retention"
+          "chinese",
+          "language"
         ]
       },
       "task_slug": {
         "ok": true,
-        "slug": "070-branch-review-report-retention",
+        "slug": "078-review-report-chinese-language",
         "reason": "ok",
         "business_tokens": [
-          "branch",
           "review",
           "report",
-          "retention"
+          "chinese",
+          "language"
         ]
       },
       "workspace_slug": {
         "ok": true,
-        "slug": "070-branch-review-report-retention",
+        "slug": "078-review-report-chinese-language",
         "reason": "ok",
         "business_tokens": [
-          "branch",
           "review",
           "report",
-          "retention"
+          "chinese",
+          "language"
         ]
       },
       "branch_name": {
         "ok": true,
-        "slug": "070-branch-review-report-retention",
+        "slug": "078-review-report-chinese-language",
         "reason": "ok",
         "business_tokens": [
-          "branch",
           "review",
           "report",
-          "retention"
+          "chinese",
+          "language"
         ]
       }
     }
   },
-  "task_slug": "070-branch-review-report-retention",
-  "task_title": "#70 保留多轮 Branch Review 原始报告并生成最终 review.md 汇总",
-  "branch_name": "codex/070-branch-review-report-retention",
-  "workspace_slug": "070-branch-review-report-retention",
+  "task_slug": "078-review-report-chinese-language",
+  "task_title": "#78 Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则",
+  "branch_name": "codex/078-review-report-chinese-language",
+  "workspace_slug": "078-review-report-chinese-language",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/070-branch-review-report-retention",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/078-review-report-chinese-language",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -81,30 +81,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#70 保留多轮 Branch Review 原始报告并生成最终 review.md 汇总",
+    "#78 Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则",
     "--slug",
-    "070-branch-review-report-retention",
+    "078-review-report-chinese-language",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-08-070-branch-review-report-retention",
+  "task_dir": ".trellis/tasks/07-08-078-review-report-chinese-language",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 70,
-      "url": "https://github.com/castbox/guru-trellis/issues/70",
-      "title": "保留多轮 Branch Review 原始报告并生成最终 review.md 汇总",
+      "number": 78,
+      "url": "https://github.com/castbox/guru-trellis/issues/78",
+      "title": "Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 70,
-        "url": "https://github.com/castbox/guru-trellis/issues/70",
-        "title": "保留多轮 Branch Review 原始报告并生成最终 review.md 汇总",
+        "number": 78,
+        "url": "https://github.com/castbox/guru-trellis/issues/78",
+        "title": "Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -119,15 +119,16 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           6393696 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           e88a630 [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate            44254bb [codex/051-prepare-task-naming-quality-gate]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/052-explicit-planning-review                    bf0c0cf [codex/052-explicit-planning-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution                      a366142 [codex/055-intake-scope-evolution]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/057-chinese-doc-language                        378748d [codex/057-chinese-doc-language]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness                      bbf68e0 [codex/059-refresh-base-freshness]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/062-subagent-timeout-stale-policy               71ec9d8 [codex/062-subagent-timeout-stale-policy]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/070-branch-review-report-retention              6393696 [codex/070-branch-review-report-retention]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/070-branch-review-report-retention              d75a4b7 [codex/070-branch-review-report-retention]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/072-subagent-execution-boundaries               7481a7a [codex/072-subagent-execution-boundaries]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/078-review-report-chinese-language              e88a630 [codex/078-review-report-chinese-language]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
@@ -159,9 +160,9 @@
       "base_branch": "main",
       "base_ref": "main",
       "remote_ref": "origin/main",
-      "local_head_before": "c1007f6283fbc04494a03f6ef7dc2a45c7984b10",
-      "local_head_after": "63936960e536a7bcfb415a1e9cfb3325aefb9a3c",
-      "remote_head": "63936960e536a7bcfb415a1e9cfb3325aefb9a3c",
+      "local_head_before": "63936960e536a7bcfb415a1e9cfb3325aefb9a3c",
+      "local_head_after": "e88a63028e2213b10f55fddcc2d3b5157717dcac",
+      "remote_head": "e88a63028e2213b10f55fddcc2d3b5157717dcac",
       "fetch_performed": true,
       "fast_forwarded": true,
       "fresh": true,
@@ -172,7 +173,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/070-branch-review-report-retention/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/078-review-report-chinese-language/.trellis/.developer",
       "developer": "wumengye"
     }
   }
