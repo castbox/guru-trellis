@@ -1,0 +1,188 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-08T07:31:00Z",
+  "task_dir": ".trellis/tasks/07-08-078-review-report-chinese-language",
+  "base_branch": "main",
+  "head": "e88a63028e2213b10f55fddcc2d3b5157717dcac",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".agents/skills/trellis-finish-work/SKILL.md",
+    ".claude/agents/trellis-check.md",
+    ".claude/commands/trellis/continue.md",
+    ".claude/commands/trellis/finish-work.md",
+    ".codex/agents/trellis-check.toml",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/prompts/trellis-finish-work.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".codex/skills/trellis-finish-work/SKILL.md",
+    ".cursor/agents/trellis-check.md",
+    ".cursor/commands/trellis-continue.md",
+    ".cursor/commands/trellis-finish-work.md",
+    ".trellis/agents/check.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/workflow.md",
+    "docs/requirements/README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+    "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-08-078-review-report-chinese-language/"
+  ],
+  "checker": "019f406b-ac42-7a72-9677-daf241dd240c",
+  "check_summary": "阶段二检查通过：已覆盖 issue #78 的需求、设计、实现、测试、spec/docs 同步、overlay dogfood 同步和部署影响判断；检查代理无未解决 finding。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-08-078-review-report-chinese-language/prd.md",
+      "sha256": "59faf54abb059316da8c9399d96b10562452e6e78c799bd46617cddc04ec6bed",
+      "size_bytes": 6131,
+      "modified_at": "2026-07-08T05:57:19.372414+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-078-review-report-chinese-language/design.md",
+      "sha256": "363e1a733effced5b8220e0a3e8cb78ddd52de158bc206a5be17119ce2806377",
+      "size_bytes": 7363,
+      "modified_at": "2026-07-08T05:57:19.373128+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-078-review-report-chinese-language/implement.md",
+      "sha256": "97cfa95eb339fb2020a0b640892cf20acc5bceaa6c3d6a165f5dfe8a9cffd478",
+      "size_bytes": 3954,
+      "modified_at": "2026-07-08T05:57:19.373295+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-078-review-report-chinese-language/planning-approval.json",
+      "sha256": "8b80a9020d88936287f4c842a03c5f6991a125156f11a2d78adfd7c80fbc7c22",
+      "size_bytes": 2637,
+      "modified_at": "2026-07-08T05:59:05.372969+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-078-review-report-chinese-language/agent-assignment.json",
+      "sha256": "2bf000b85adadb85a6ad531848c097f4444f4e3921ee713e25f949fff9390b15",
+      "size_bytes": 8468,
+      "modified_at": "2026-07-08T07:27:41.193174+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-078-review-report-chinese-language/issue-scope-ledger.json",
+      "sha256": "638814d59dae1b3d587f8062896ed3655382a1193e37230eb8e0ed7748bf6cc2",
+      "size_bytes": 709,
+      "modified_at": "2026-07-08T05:51:41.732090+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-078-review-report-chinese-language/check.jsonl",
+      "sha256": "583e90f7279f54c2f955455303ef2d6d4092f8f382cce016862cc9d66c6f0794",
+      "size_bytes": 869,
+      "modified_at": "2026-07-08T05:57:19.373813+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-08-078-review-report-chinese-language/implement.jsonl",
+      "sha256": "5736ba8188122fcc12c826dbfc968f1b12419095c0b9aa9ba8207d6202c1d285",
+      "size_bytes": 820,
+      "modified_at": "2026-07-08T05:57:19.373682+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "ada88f727383b006e4f7121a128d0256e7d755782b11fc09ea19f28ccc24df14",
+      "size_bytes": 17169,
+      "modified_at": "2026-07-08T06:15:23.456608+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "62d834a0f32373971c53cc8cfa3f0c18b03a897c9b98489073e81e580546e989",
+      "size_bytes": 6037,
+      "modified_at": "2026-07-08T06:15:39.876987+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "476bff286d83efcc5b1db6f94baa56cb72b14c84fcf886790a877d43ff792bb6",
+      "size_bytes": 13134,
+      "modified_at": "2026-07-08T06:16:04.910556+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "9372ee102281dfd67a89c25c4d4ccbf943fd7e524a8d5fd5d7c1f622f0b4a76f",
+      "size_bytes": 19966,
+      "modified_at": "2026-07-08T06:16:14.560274+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "e7c2fa4b1c142f6615e77f6b522b85d500101e222675d0a423e8831f13c35b12",
+      "size_bytes": 10171,
+      "modified_at": "2026-07-08T06:15:54.263682+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": ".trellis/guru-team/scripts/bash/check-planning-approval.sh --json",
+      "result": "通过，planning-approval 与当前 planning artifact digest 匹配"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json",
+      "result": "通过，marketplace index JSON 有效且 guru-team workflow path/type 正确"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh",
+      "result": "通过，workflow/preset shell scripts 语法有效"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "通过，Python 入口可编译"
+    },
+    {
+      "command": "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "通过，152 个单测通过，覆盖 review report 英文模板痕迹拦截"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-08-078-review-report-chinese-language",
+      "result": "通过，implement/check context 文件有效"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "通过，dogfood overlay copies 与 canonical overlays 无漂移"
+    },
+    {
+      "command": "git diff --check",
+      "result": "通过，无 whitespace error"
+    },
+    {
+      "command": "find . -name '*.bak' -o -name '*.new'",
+      "result": "通过，无未处理 .bak/.new 冲突文件"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

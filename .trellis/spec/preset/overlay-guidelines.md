@@ -74,9 +74,10 @@ Continue entries must:
   `check`, and later a Branch Review review sub-agent; the main session cannot
   replace those boundaries with its own implementation, check, self-review, or
   script validation output
-- write task-local `review.md`, run Branch Review Gate with
-  `--review-source independent-agent` and
-  `--review-report <task-local review.md>`, then stop before finish-work
+- write task-local Chinese `reviews/*.md` raw reports and a Chinese
+  `review.md` rollup, run Branch Review Gate with `--review-source
+  independent-agent` and `--review-report <task-local review.md>`, then stop
+  before finish-work
 - state that any finding priority blocks Branch Review Gate, while
   `observation` and `followup_candidate` are separate non-blocking records
 - state that a review agent with findings may only perform closure review and
@@ -110,7 +111,9 @@ Finish entries must:
 - explain that finish-work may commit Trellis metadata-only changes after the
   reviewed HEAD, but rejects non-metadata changes
 - explain that the gate must already contain task-local `review.md`
-  `review_report` digest evidence
+  `review_report` digest evidence and raw `review_reports[]` digest evidence,
+  and that those Markdown reports are already Chinese human-readable task
+  artifacts except for literal command/path/JSON/HEAD/API/code tokens
 - state that only `close_issues` may use close keywords
 
 Start entries must:
@@ -152,6 +155,11 @@ Sub-agent overlay entries must:
   may self-fix small in-scope mechanical issues and must output evidence that
   can support `phase2-check.json`; Branch Review is review-only over the full
   committed diff and must report, not patch, missing implementation/check work;
+- require check agents in Branch Review mode to use Chinese report templates for
+  raw `{TASK_DIR}/reviews/*.md` reports and final `{TASK_DIR}/review.md`
+  rollup content: Chinese headings, Chinese labels, Chinese review narrative,
+  Chinese deployment / safety and Docs SSOT judgment, Chinese observations and
+  follow-up candidates, and Chinese conclusion;
 - require unfinished handoff reporting when interrupted/replaced before
   completion, including current diff, remaining work, validation state, and gate
   blockers for same-agent resume or replacement;

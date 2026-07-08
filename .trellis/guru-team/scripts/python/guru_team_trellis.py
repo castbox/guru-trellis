@@ -82,6 +82,18 @@ REQUIRED_PHASE2_COVERAGE = [
 ]
 RESOLVED_FINDING_STATUSES = {"resolved", "fixed", "closed"}
 INDEPENDENT_REVIEW_SOURCE = "independent-agent"
+FORBIDDEN_REVIEW_REPORT_ENGLISH_TEMPLATE_HEADINGS = [
+    "Review Rounds",
+    "Findings Lifecycle",
+    "Evidence Handoff",
+    "Deployment / safety impact",
+    "Follow-up Candidates",
+    "Files Checked",
+    "Issues Found and Fixed",
+    "Issues Not Fixed",
+    "Verification Results",
+    "Summary",
+]
 AGENT_ASSIGNMENT_SCHEMA_VERSION = "1.0"
 ALLOWED_LOGICAL_ROLES = [
     "实现代理",
@@ -2556,6 +2568,85 @@ def review_rollup_link_errors(root: Path, task_dir: Path, review_report: dict[st
     return errors
 
 
+def normalized_review_report_template_line(line: str) -> str:
+    value = line.strip()
+    value = re.sub(r"^>+\s*", "", value)
+    value = re.sub(r"^#{1,6}\s*", "", value)
+    value = re.sub(r"^(?:[-*+]\s+|\d+[.)]\s+)", "", value)
+    value = value.strip().strip("#").strip()
+    value = value.strip("`*_ ")
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def forbidden_review_report_heading_match(line: str) -> str | None:
+    normalized = normalized_review_report_template_line(line)
+    if not normalized:
+        return None
+    folded = normalized.casefold()
+    for heading in FORBIDDEN_REVIEW_REPORT_ENGLISH_TEMPLATE_HEADINGS:
+        needle = heading.casefold()
+        if folded == needle:
+            return heading
+        if folded.startswith((f"{needle}:", f"{needle} -", f"{needle} --", f"{needle} —", f"{needle} –")):
+            return heading
+    return None
+
+
+def review_report_template_heading_errors_for_path(root: Path, path: Path, label: str) -> list[str]:
+    try:
+        content = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        return [f"{label} 无法读取以校验中文模板标题: {exc}。"]
+    errors: list[str] = []
+    in_fence = False
+    for line_number, line in enumerate(content.splitlines(), start=1):
+        stripped = line.strip()
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        heading = forbidden_review_report_heading_match(line)
+        if heading:
+            errors.append(
+                f"{label} {repo_relative(root, path)} 第 {line_number} 行包含英文模板标题 `{heading}`；"
+                "`review.md` / `reviews/*.md` 的 human-readable 标题和字段名必须中文。"
+            )
+    return errors
+
+
+def review_report_language_template_errors(
+    root: Path,
+    task_dir: Path,
+    review_report: Any,
+    review_reports: Any,
+) -> list[str]:
+    entries: list[tuple[str, Path]] = []
+    if isinstance(review_report, dict):
+        normalized_report = migrated_archive_entry(root, task_dir, review_report, REVIEW_REPORT_ARTIFACT) or review_report
+        path_value = str(normalized_report.get("path") or "").strip()
+        if path_value:
+            entries.append(("Branch Review Gate review_report", resolve_repo_path(root, path_value)))
+    if isinstance(review_reports, list):
+        for index, item in enumerate(review_reports):
+            if not isinstance(item, dict):
+                continue
+            normalized_item = migrated_archive_digest_entry(root, task_dir, item) or item
+            path_value = str(normalized_item.get("path") or "").strip()
+            if path_value:
+                entries.append((f"Branch Review Gate review_reports[{index}]", resolve_repo_path(root, path_value)))
+
+    errors: list[str] = []
+    seen: set[Path] = set()
+    for label, path in entries:
+        resolved = path.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        errors.extend(review_report_template_heading_errors_for_path(root, resolved, label))
+    return errors
+
+
 def is_strict_int(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
@@ -3559,6 +3650,14 @@ def validate_review_gate(
             assignment_payload=assignment_payload_for_reports,
         )
     )
+    errors.extend(
+        review_report_language_template_errors(
+            root,
+            task_dir,
+            review_report,
+            verification.get("review_reports"),
+        )
+    )
     head = current_head(root)
     gate_config = review_gate_config(config)
     require_head_match = bool(gate_config.get("require_head_match", True))
@@ -4277,6 +4376,13 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         )
     agent_assignment_summary = assignment_summary
     review_reports = review_reports_from_assignment(root, task_dir, assignment_payload)
+    template_errors = review_report_language_template_errors(root, task_dir, review_report, review_reports)
+    if template_errors:
+        raise WorkflowError(
+            "Branch Review Gate blocked because review reports contain English template headings.",
+            exit_code=2,
+            payload={"errors": template_errors},
+        )
     if args.pass_gate:
         link_errors = review_rollup_link_errors(root, task_dir, review_report, review_reports)
         if link_errors:

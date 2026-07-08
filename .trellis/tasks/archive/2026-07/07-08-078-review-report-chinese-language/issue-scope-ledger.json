@@ -1,0 +1,29 @@
+{
+  "primary_issue": {
+    "number": 78,
+    "url": "https://github.com/castbox/guru-trellis/issues/78",
+    "title": "Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "提交 f6b09f3 将 Branch Review reviews/*.md 与 review.md 明确纳入中文 human-readable artifact 规则，覆盖 canonical workflow、dogfood workflow、preset overlays、dogfood installed copies、.trellis/spec/** 与 docs/requirements/**。",
+      "新增 validator/test 拦截 Review Rounds、Findings Lifecycle、Evidence Handoff、Deployment / safety impact、Follow-up Candidates 等固定英文模板标题进入 review.md 或 reviews/*.md。",
+      "Phase 2 check 与 Branch Review Gate 均通过；最终放行审查代理 019f40a5-66e0-76c3-bb6b-4dacb2640f2a 审查 origin/main...HEAD，findings_count=0。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 78,
+      "url": "https://github.com/castbox/guru-trellis/issues/78",
+      "title": "Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则",
+      "reason": "本任务完整解决 issue #78：生成链路、校验链路、canonical/dogfood 同步和 durable docs/spec 均已覆盖 Branch Review review artifact 中文规则。",
+      "acceptance_evidence": [
+        "提交 f6b09f3 将 Branch Review reviews/*.md 与 review.md 明确纳入中文 human-readable artifact 规则，覆盖 canonical workflow、dogfood workflow、preset overlays、dogfood installed copies、.trellis/spec/** 与 docs/requirements/**。",
+        "新增 validator/test 拦截 Review Rounds、Findings Lifecycle、Evidence Handoff、Deployment / safety impact、Follow-up Candidates 等固定英文模板标题进入 review.md 或 reviews/*.md。",
+        "验证通过：json.tool、bash -n、py_compile、test_guru_team_trellis.py 152 tests passed、task.py validate、check-dogfood-overlay-drift.sh、git diff --check、无 .new/.bak。",
+        "Branch Review Gate 通过；最终放行审查代理 019f40a5-66e0-76c3-bb6b-4dacb2640f2a 覆盖 origin/main...HEAD 完整 diff，findings_count=0。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

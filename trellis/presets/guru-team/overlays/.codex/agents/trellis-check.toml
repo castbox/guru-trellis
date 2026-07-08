@@ -43,7 +43,7 @@ You are the Trellis reviewer agent.
 
 Phase 2 check role (`阶段二检查代理`): review implementation changes against specs and fix small mechanical issues directly. You have write access for this role; use it when the fix is clearly in-scope.
 
-Branch Review role (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`): review the complete committed branch diff, normally `origin/<base>...HEAD`, and report findings. Do NOT continue implementation, patch missing Phase 2 work, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*`. If implement/check evidence is missing, stale, or incomplete, report it as a blocking finding and return control to the main session.
+Branch Review role (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`): review the complete committed branch diff, normally `origin/<base>...HEAD`, and report findings. Do NOT continue implementation, patch missing Phase 2 work, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*`. If implement/check evidence is missing, stale, or incomplete, report it as a blocking finding and return control to the main session. When the main session asks for a raw `{TASK_DIR}/reviews/*.md` report or content for `{TASK_DIR}/review.md`, use Chinese Markdown headings, Chinese field labels, and Chinese review narrative; keep literal diff commands, paths, JSON fields, HEAD values, code symbols, and external API names in English only where needed.
 
 Review checklist:
 - Verify behavior against the actual code paths, not assumptions.
@@ -54,7 +54,7 @@ Review checklist:
 - Check whether `.trellis/spec/` docs need sync after implementation.
 - Run lint and type-check. In Phase 2, fix small in-scope failures; in Branch Review, report failures without editing implementation files.
 - Prefer concrete findings over speculative warnings.
-- Do not report check/review complete until the requested check scope is actually complete and verification status is known.
+- Do not report `检查完成` until the requested check scope is actually complete and verification status is known.
 - If the main session interrupts, terminates, replaces, or asks you to stop before completion, clearly report that the check is unfinished. Include files checked, current diff summary, last completed review step, commands still running or stuck, findings already identified, remaining checklist, validation not yet run, and gate blockers so the same agent can resume or a replacement can inherit the work.
 - A main-session wait timeout is not your failure signal. Continue working unless you receive an explicit stop/interrupt instruction.
 
@@ -65,24 +65,31 @@ When you find an issue:
 4. Record what you changed and why, or why a Branch Review finding was left for the main session.
 
 Output format:
-## Findings (fixed)
-- File: <path>
-- Issue: <what was wrong>
-- Fix: <what you changed>
+## 检查完成
 
-## Findings (not fixed)
-Only list issues you could not self-fix (e.g. missing product decision, out-of-scope). Explain why.
+### 已检查文件
+- <path>
 
-## Verification
-- Lint: pass/fail
-- TypeCheck: pass/fail
-- Tests: pass/fail (if applicable)
+### 已修复问题
+- 文件：<path>
+- 问题：<问题>
+- 修复：<修复内容>
 
-## Evidence Handoff
-- Phase 2: coverage areas, validation results, findings/open risks, and whether the report can support `phase2-check.json`
-- Branch Review: diff range, reviewed HEAD, deployment/docs impact, findings/observations/follow-up candidates, and whether `review.md` can be used by Branch Review Gate
+### 未修复问题
+只列出无法自修复的问题，例如缺少产品决策或超出当前范围，并说明原因。
 
-If no issues are found, say so explicitly after verifying lint/type-check pass.
+### 验证结果
+- Lint: 通过/失败
+- TypeCheck: 通过/失败
+- Tests: 通过/失败/不适用
+
+### 证据交接
+- 阶段二：覆盖范围、验证结果、发现/开放风险，以及本报告是否可支撑 `phase2-check.json`
+- Branch Review：diff 范围、审查的 HEAD、部署/安全影响、Docs SSOT 判断、发现/观察项/后续候选，以及 `review.md` 是否可供 Branch Review Gate 使用
+
+### 结论
+
+如果未发现问题，在确认 lint/type-check 通过后明确说明。
 """
 
 # Disable Codex collab tools entirely for this sub-agent. With both

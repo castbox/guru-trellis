@@ -38,7 +38,7 @@ Before checking, read:
 The main-session handoff decides which mode you are in:
 
 - **Phase 2 check (`阶段二检查代理`)**: review the real uncommitted implementation diff against task artifacts, specs, durable docs responsibilities, overlays/config/schema/test impact, and validation commands. Fix small in-scope mechanical issues directly. Output evidence that can support `phase2-check.json`; script success or a few validation commands alone are not a complete check.
-- **Branch Review (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`)**: review the complete committed branch diff, normally `origin/<base>...HEAD`. Do not continue implementation, patch missing Phase 2 check work, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*`. If implement/check evidence is missing, stale, or incomplete, report it as a blocking finding.
+- **Branch Review (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`)**: review the complete committed branch diff, normally `origin/<base>...HEAD`. Do not continue implementation, patch missing Phase 2 check work, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*`. If implement/check evidence is missing, stale, or incomplete, report it as a blocking finding. When the main session asks for a raw `{TASK_DIR}/reviews/*.md` report or content for `{TASK_DIR}/review.md`, use Chinese Markdown headings, Chinese field labels, and Chinese review narrative; keep literal diff commands, paths, JSON fields, HEAD values, code symbols, and external API names in English only where needed.
 
 ## Core Responsibilities
 
@@ -56,8 +56,8 @@ In Branch Review mode, do not modify code or task artifacts except for the revie
 
 ## Progress And Handoff
 
-- Do not report `Self-Check Complete` until the requested check/review scope is actually complete and verification status is known.
-- If the main session interrupts, terminates, replaces, or asks you to stop before completion, explicitly report `Self-Check Unfinished` instead. Include files checked, current diff summary, last completed review step, commands still running or stuck, findings already identified, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
+- Do not report `检查完成` until the requested check/review scope is actually complete and verification status is known.
+- If the main session interrupts, terminates, replaces, or asks you to stop before completion, explicitly report `检查未完成` instead. Include files checked, current diff summary, last completed review step, commands still running or stuck, findings already identified, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
 - A main-session wait timeout is not your failure signal. Continue working unless you receive an explicit stop/interrupt instruction.
 
 ---
@@ -95,7 +95,7 @@ Read the task's prd.md, required design.md, and required implement.md, then read
 After finding issues in Phase 2 check:
 
 1. Fix the issue directly (use edit tool)
-2. Record what was fixed
+2. 记录修复内容
 3. Continue checking other issues
 
 After finding issues in Branch Review, report them without editing.
@@ -111,33 +111,33 @@ If verification fails in Phase 2, fix small in-scope issues and re-run. In Branc
 ## Report Format
 
 ```markdown
-## Self-Check Complete
+## 检查完成
 
-### Files Checked
+### 已检查文件
 
 - src/components/Feature.tsx
 - src/hooks/useFeature.ts
 
-### Issues Found and Fixed
+### 已修复问题
 
-1. `<file>:<line>` - <what was fixed>
-2. `<file>:<line>` - <what was fixed>
+1. `<file>:<line>` - <已修复内容>
+2. `<file>:<line>` - <已修复内容>
 
-### Issues Not Fixed
+### 未修复问题
 
-(If there are issues that cannot be self-fixed, list them here with reasons)
+（如存在无法自修复的问题，在这里列出并说明原因）
 
-### Verification Results
+### 验证结果
 
-- TypeCheck: Passed
-- Lint: Passed
+- TypeCheck: 通过
+- Lint: 通过
 
-### Evidence Handoff
+### 证据交接
 
-- Phase 2: coverage areas, validation results, findings/open risks, and whether this report can support `phase2-check.json`
-- Branch Review: diff range, reviewed HEAD, deployment/docs impact, findings/observations/follow-up candidates, and whether the report can be written to task-local `review.md`
+- 阶段二：覆盖范围、验证结果、发现/开放风险，以及本报告是否可支撑 `phase2-check.json`
+- Branch Review：diff 范围、审查的 HEAD、部署/安全影响、Docs SSOT 判断、发现/观察项/后续候选，以及本报告是否可写入任务本地 `review.md`
 
-### Summary
+### 结论
 
-Checked X files, found Y issues, all fixed.
+已检查 X 个文件，发现 Y 个问题，均已修复。
 ```

@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 31
+- **Total Sessions**: 32
 - **Last Active**: 2026-07-08
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1033 | Active |
+| `journal-1.md` | ~1066 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 32 | 2026-07-08 | 完成：#78 Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则 | `f6b09f3d2257e9e53c7e59fb8d6d322b36773127` | `codex/078-review-report-chinese-language` |
 | 31 | 2026-07-08 | 完成：#70 保留多轮 Branch Review 原始报告并生成最终 review.md 汇总 | `294e79b847869622bab481b4da0030fcacc56197` | `codex/070-branch-review-report-retention` |
 | 30 | 2026-07-08 | 完成：#52 prd/design/implement 文档需要显式用户审核 | `16c240ba890e6997f7ea131ecaa528db84607705` | `codex/052-explicit-planning-review` |
 | 29 | 2026-07-08 | 完成：#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行 | `80ef050bd27f6556b3896b23a59447957225baab` | `codex/072-subagent-execution-boundaries` |

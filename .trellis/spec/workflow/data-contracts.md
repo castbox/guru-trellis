@@ -336,6 +336,10 @@ The artifact records:
 - validation evidence
 - required `agent_assignment` digest summary from task-local
   `agent-assignment.json`
+- objective language-template validation evidence: `review.md` and raw
+  `reviews/*.md` reports are Chinese human-readable task artifacts, so
+  validators may reject fixed English template headings while leaving semantic
+  sufficiency to the AI/human review
 
 The gate is valid only for the reviewed `HEAD`, except that `finish-work` may
 allow metadata-only commits after the gate. A passed gate is invalid if it lacks

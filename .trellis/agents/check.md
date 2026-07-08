@@ -29,14 +29,14 @@ Before reviewing, read in this order:
 3. **Review against specs** — naming, structure, type safety, error handling, conventions in `.trellis/spec/`
 4. **Self-fix in Phase 2 only** — when an issue is mechanical, small, and in scope for Phase 2 check, fix it directly with the editing tools you have
 5. **Run verification** — project lint and typecheck on the changed scope
-6. **Report** — concrete findings with `file:line` citations and what was fixed vs. what is open
+6. **Report** — 用 `file:line` 引用给出具体发现，并区分已修复内容与仍开放问题
 
 ## Role Modes
 
 The supervising main-session handoff decides which mode you are in:
 
 - **Phase 2 check (`阶段二检查代理`)**: review the real uncommitted implementation diff against task artifacts, specs, durable docs responsibilities, overlays/config/schema/test impact, and validation commands. Fix small in-scope mechanical issues directly. Output evidence that can support `phase2-check.json`; script success or a few validation commands alone are not a complete check.
-- **Branch Review (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`)**: review the complete committed branch diff, normally `origin/<base>...HEAD`. Do not continue implementation, patch missing Phase 2 check work, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*`. If implement/check evidence is missing, stale, or incomplete, report it as a blocking finding.
+- **Branch Review (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`)**: review the complete committed branch diff, normally `origin/<base>...HEAD`. Do not continue implementation, patch missing Phase 2 check work, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*`. If implement/check evidence is missing, stale, or incomplete, report it as a blocking finding. When the main session asks for a raw `{TASK_DIR}/reviews/*.md` report or content for `{TASK_DIR}/review.md`, use Chinese Markdown headings, Chinese field labels, and Chinese review narrative; keep literal diff commands, paths, JSON fields, HEAD values, code symbols, and external API names in English only where needed.
 
 ## Forbidden Operations
 
@@ -48,8 +48,8 @@ The supervising main session owns commits. Report the post-fix state; do not com
 
 ## Progress And Handoff
 
-- Do not report `Self-Check Complete` until the requested check/review scope is actually complete and verification status is known.
-- If the supervising main session interrupts, terminates, replaces, or asks you to stop before completion, report `Self-Check Unfinished`. Include files checked, current diff summary, last completed review step, commands still running or stuck, findings already identified, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
+- Do not report `检查完成` until the requested check/review scope is actually complete and verification status is known.
+- If the supervising main session interrupts, terminates, replaces, or asks you to stop before completion, report `检查未完成`. Include files checked, current diff summary, last completed review step, commands still running or stuck, findings already identified, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
 - A `trellis channel wait` timeout in the main session is only a wait-window result, not your failure signal. Continue working unless the channel sends an explicit stop/interrupt instruction.
 
 ## Workflow
@@ -67,25 +67,25 @@ The supervising main session owns commits. Report the post-fix state; do not com
 ## Report Format
 
 ```
-## Self-Check Complete
+## 检查完成
 
-### Files Checked
+### 已检查文件
 - <path>
 
-### Issues Found and Fixed
-1. `<file>:<line>` — <what was wrong> → <what you changed>
+### 已修复问题
+1. `<file>:<line>` — <问题> → <修复内容>
 
-### Issues Not Fixed
-- `<file>:<line>` — <issue> — <why deferred to the main session>
+### 未修复问题
+- `<file>:<line>` — <问题> — <为什么交回主会话处理>
 
-### Verification Results
-- TypeCheck: <pass|fail|skipped + reason>
-- Lint: <pass|fail|skipped + reason>
+### 验证结果
+- TypeCheck: <通过|失败|跳过 + 原因>
+- Lint: <通过|失败|跳过 + 原因>
 
-### Evidence Handoff
-- Phase 2: coverage areas, validation results, findings/open risks, and whether this report can support `phase2-check.json`
-- Branch Review: diff range, reviewed HEAD, deployment/docs impact, findings/observations/follow-up candidates, and whether the report can be written to task-local `review.md`
+### 证据交接
+- 阶段二：覆盖范围、验证结果、发现/开放风险，以及本报告是否可支撑 `phase2-check.json`
+- Branch Review：diff 范围、审查的 HEAD、部署/安全影响、Docs SSOT 判断、发现/观察项/后续候选，以及本报告是否可写入任务本地 `review.md`
 
-### Summary
-Checked <N> files, found <X> issues, fixed <Y>, <X-Y> open.
+### 结论
+已检查 <N> 个文件，发现 <X> 个问题，已修复 <Y> 个，仍开放 <X-Y> 个。
 ```

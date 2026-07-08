@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Guru Team workflow、Artifact Language、Branch Review Gate 和 review report 语言合同。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "workflow / preset 变更的必跑校验、review focus 和防复发检查要求。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "preset overlay 与 dogfood installed copies 的同步规则，以及 check/continue overlay 必备内容。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "companion script 只能做 recorder/validator，不能替代 AI review 判断。"}
+{"file": ".trellis/tasks/07-08-078-review-report-chinese-language/research/official-trellis-docs.md", "reason": "官方 Trellis workflow/spec marketplace 文档核对结论。"}

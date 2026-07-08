@@ -261,7 +261,7 @@ Gate 必须满足：
 | --- | --- |
 | 完整 diff 范围 | 使用 intake/task 记录的 base branch，通常是 `origin/<base>...HEAD`，不能猜 GitHub default branch。 |
 | 独立 review | 主会话自审不能 pass；需要 independent agent 或等价 AI/human review。 |
-| `reviews/*.md` + `review.md` | 每轮 raw Markdown review report 保留在 task-local `reviews/`；顶层 `review.md` 是最终 rollup，包含 summary/evidence、diff range、validation、deployment、Docs SSOT、findings lifecycle、observations/followups，并链接所有 raw reports。标准顶层 artifact 表默认仍列 `review.md`，raw reports 通过 rollup 和 gate digest 追溯。 |
+| `reviews/*.md` + `review.md` | 每轮中文 raw Markdown review report 保留在 task-local `reviews/`；顶层 `review.md` 是最终中文 rollup，建议使用 `审查轮次`、`问题生命周期`、`最终审查`、`证据`、`观察项`、`后续候选`、`结论`，并记录 diff range、reviewed HEAD、validation、部署/安全影响、Docs SSOT 判断、发现/观察/后续候选和最终结论，链接所有 raw reports。标准顶层 artifact 表默认仍列 `review.md`，raw reports 通过 rollup 和 gate digest 追溯；literal command/path/JSON/HEAD/API/code token 可保留英文。 |
 | `agent-assignment.json` | 记录中文 logical role、technical `agent_id`、review rounds、finding owner closure、fresh final reviewer，并在每轮 review round 上记录 raw report path/sha256/size/modified_at。 |
 | `status_events[]` | 记录 wait timeout / stale / terminated unfinished / resume / replacement / completed / failed；未完成终止的恢复链未到达 completed/failed 时 gate 不能 pass。 |
 | 任意 finding 阻断 | P0/P1/P2/P3 都阻断；`observation` 和 `followup_candidate` 不能替代当前 scope defect。 |
@@ -318,8 +318,8 @@ PR readiness 要求：
 | `implement.jsonl` / `check.jsonl` | Phase 1.3 | Trellis sub-agent context manifest | `trellis-implement` / `trellis-check`。 |
 | `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity/status ledger | review closure/fresh final reviewer 和 unfinished termination recovery-chain 校验。 |
 | `phase2-check.json` | Phase 2.2 | Guru Team check evidence | 固化 `trellis-check` AI check 的覆盖范围、验证结果、findings 和 dirty paths；commit 前 gate、Branch Review Gate post-commit audit。 |
-| `reviews/*.md` | Phase 3.5 | Per-round raw review reports | `agent-assignment.json.review_rounds[]` flat digest fields、`review-gate.json.verification_evidence.review_reports[]`、archive path migration。 |
-| `review.md` | Phase 3.5 | Independent review rollup | 最终人类入口，链接每轮 raw report；`review-branch.sh` final digest、finish-work readiness。 |
+| `reviews/*.md` | Phase 3.5 | Per-round raw review reports | 中文 human-readable artifact；`agent-assignment.json.review_rounds[]` flat digest fields、`review-gate.json.verification_evidence.review_reports[]`、archive path migration。 |
+| `review.md` | Phase 3.5 | Independent review rollup | 中文最终人类入口，链接每轮 raw report；`review-branch.sh` final digest、finish-work readiness。 |
 | `review-gate.json` | Phase 3.5 | Branch Review Gate artifact | `check-review-gate.sh`、finish-work；记录 final `review.md` digest 和 raw `review_reports[]` digest。 |
 | `pr-body.md` / `pr-readiness.json` | Phase 3.6 前 | PR readiness artifact | finish-work archive 后 publish。 |
 | workspace journal | finish-work | 官方 Trellis workspace memory | 后续 session / history。 |
@@ -332,8 +332,8 @@ PR readiness 要求：
 2. Guru Team 没有 fork Trellis，而是通过 official marketplace workflow 安装 `guru-team`。
 3. 我们把“任务还没创建之前”的风险收进 Phase 0：issue、duplicate、base branch、worktree、命名和副作用授权都先审查。
 4. `task.py create/start/archive` 仍是官方 Trellis lifecycle，但 Guru Team 在 start 前要求展示 `prd.md` / `design.md` / `implement.md` 三个链接并得到 explicit post-planning confirmation，Phase 0 handoff 确认不能替代。
-5. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出 `reviews/*.md` raw reports 与最终 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
-6. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，commit 后必须有独立 review raw reports、最终 `review.md` rollup 和 recorder 生成的 `review-gate.json`；主会话自检、自审或脚本校验通过不能替代这些证据。
+5. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出中文 `reviews/*.md` raw reports 与最终中文 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
+6. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，commit 后必须有独立中文 review raw reports、最终中文 `review.md` rollup 和 recorder 生成的 `review-gate.json`；主会话自检、自审或脚本校验通过不能替代这些证据。
 7. 任意 finding 都阻断；发现过问题的 reviewer 只能闭环自己的 finding，最终放行必须是 fresh reviewer。
 8. `trellis-continue` 到 Branch Review Gate 就停；`trellis-finish-work` 才能 archive、journal、提交 metadata 并自动 publish PR。
 9. PR body 是给 GitHub reviewer 的发布材料，不是内部 task 摘要；关闭 issue 的语义由 `issue-scope-ledger.json` 控制。
