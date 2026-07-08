@@ -82,9 +82,9 @@
       "reuse_decision": "new-agent",
       "recorded_at": "2026-07-08T04:06:47Z",
       "review_report_path": ".trellis/tasks/07-08-070-branch-review-report-retention/reviews/round-001-final-release.md",
-      "review_report_sha256": "d92e843946ca149c5933206547a91363c9b96252bbd297d8974d9c58f0c7fb31",
-      "review_report_size_bytes": 8085,
-      "review_report_modified_at": "2026-07-08T04:04:31.041584+00:00"
+      "review_report_sha256": "5cee209605947708d31409ce068faee2c164d6fab6d6825acf3bb6d2263749b3",
+      "review_report_size_bytes": 8184,
+      "review_report_modified_at": "2026-07-08T05:24:34.814155+00:00"
     },
     {
       "round": 2,
@@ -97,9 +97,9 @@
       "reuse_decision": "reuse-for-closure",
       "recorded_at": "2026-07-08T04:43:32Z",
       "review_report_path": ".trellis/tasks/07-08-070-branch-review-report-retention/reviews/round-002-closure.md",
-      "review_report_sha256": "ef336d639c2734cd9bb4fb198f7cdfcdca29342af9853e83eac124dc9541d4a1",
-      "review_report_size_bytes": 4762,
-      "review_report_modified_at": "2026-07-08T04:42:39.357662+00:00"
+      "review_report_sha256": "03c33296c0e36b7398444d8c38dcc96125ad2658fb7d3b0e922fea38db0e9513",
+      "review_report_size_bytes": 4813,
+      "review_report_modified_at": "2026-07-08T05:25:23.661151+00:00"
     },
     {
       "round": 3,
@@ -112,9 +112,9 @@
       "reuse_decision": "new-agent",
       "recorded_at": "2026-07-08T04:54:04Z",
       "review_report_path": ".trellis/tasks/07-08-070-branch-review-report-retention/reviews/round-003-final-release.md",
-      "review_report_sha256": "c61c9f5f7acc2b73d8dff58b1b1b4caa0a70cc6f595f1079d8b33e977f71f485",
-      "review_report_size_bytes": 7926,
-      "review_report_modified_at": "2026-07-08T04:53:14.920958+00:00"
+      "review_report_sha256": "3b38b552517de32baabdc09a2f7203829fad303ec057d686bfdefd14a5a36a7f",
+      "review_report_size_bytes": 7985,
+      "review_report_modified_at": "2026-07-08T05:24:34.814983+00:00"
     }
   ],
   "reuse_decisions": [],
