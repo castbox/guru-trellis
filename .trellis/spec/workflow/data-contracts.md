@@ -84,6 +84,10 @@ Do not use `handoff.source_issue` as PR close scope. The task-level
 `issue-scope-ledger.json` owns `close_issues`, `related_issues`, and
 `followup_issues`.
 
+In `workspace_mode: worktree`, `handoff.workspace_path` is the machine boundary
+for task artifact writes. `handoff.preflight.current_checkout` records the
+source checkout used for intake and lets boundary validators compare both sides.
+
 Planner-only prepare paths must refresh or explicitly confirm the selected
 remote base before reporting `preflight.base_freshness`. The planner may run
 `git fetch <remote> <base>` and update the remote-tracking ref, but it must not
@@ -131,6 +135,33 @@ equivalent target identity. If neither source identity nor explicit developer is
 available, fail closed with a recovery command instead of allowing journal or
 `task.py list --mine` to fail later. Record the objective result in
 `preflight.developer_identity`.
+
+## Workspace Boundary Snapshot
+
+`check-workspace-boundary --json` and recorder/validator boundary failures use
+an additive payload with these fields:
+
+- `status`: `ok` or `blocked`;
+- `workspace_mode`: normally `worktree` for Guru Team issue-backed tasks;
+- `expected_workspace`: resolved `handoff.workspace_path` when present;
+- `actual_repo_root`: repo root for the current command;
+- `source_checkout`: resolved `handoff.preflight.current_checkout` when present;
+- `task_dir`: resolved current task directory;
+- `task_dir_relative`: task path relative to the worktree, usually
+  `.trellis/tasks/<task>`;
+- `source_checkout_status`: normalized `git status --porcelain` paths from the
+  source checkout;
+- `task_worktree_status`: normalized `git status --porcelain` paths from the
+  expected workspace when known, otherwise the actual repo root;
+- `suspicious_source_artifacts[]`: objects with `kind`, `path`,
+  `absolute_path`, and optional `matches_current_task` / `error` for source
+  checkout handoff, same-task artifacts, review metadata, review directories, or
+  dirty paths;
+- `errors[]`: machine-verifiable boundary failures.
+
+The payload is audit evidence only. It must remain additive and must not embed
+AI judgments about stale state, cleanup, patch migration, issue closure, or
+review sufficiency.
 
 ## Planning Approval Artifact
 

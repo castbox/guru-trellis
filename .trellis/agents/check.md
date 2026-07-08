@@ -14,6 +14,21 @@ You are the `check` agent spawned by `trellis channel spawn --agent check` insid
 
 ## Context
 
+Before reviewing, report workspace boundary facts for the active task:
+
+```bash
+pwd
+git rev-parse --show-toplevel
+.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
+```
+
+If the workspace boundary validator fails, stop and report the block with
+expected workspace, actual repo root, source checkout status, task worktree
+status, and suspicious source artifacts. Do not read or write task review
+artifacts from the source checkout or another worktree. When an editing tool
+cannot receive an explicit working directory, use an absolute path under the
+handoff `workspace_path`.
+
 Before reviewing, read in this order:
 
 1. `<task-path>/check.jsonl` if present — spec manifest curated for this turn; read every listed file

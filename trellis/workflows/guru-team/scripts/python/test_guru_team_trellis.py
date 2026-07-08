@@ -218,6 +218,17 @@ def assignment_args(**overrides: object) -> argparse.Namespace:
     return argparse.Namespace(**values)
 
 
+def boundary_args(**overrides: object) -> argparse.Namespace:
+    values: dict[str, object] = {
+        "root": None,
+        "json": True,
+        "task": None,
+        "allow_source_clean": False,
+    }
+    values.update(overrides)
+    return argparse.Namespace(**values)
+
+
 class PrepareSideEffectBoundaryTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -270,6 +281,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertEqual(payload["preflight"]["workspace_was_created_or_reused"], False)
         self.assertFalse(payload["handoff_written"])
         self.assertFalse((self.root / "handoff.json").exists())
+        self.assertFalse((self.root / ".trellis/tasks").exists())
         self.assertEqual(payload["proposed_issue"]["title"], "Add default side-effect-free intake planning for freeform requests")
 
     def test_create_worktree_requires_confirmed_source_issue(self) -> None:
@@ -664,6 +676,26 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertEqual((workspace / ".trellis/.developer").read_text(encoding="utf-8"), "name=tester\ninitialized_at=2026-07-04T00:00:00\n")
         self.assertEqual(payload["preflight"]["developer_identity"]["status"], "copied")
 
+    def test_create_task_runs_task_py_in_workspace(self) -> None:
+        workspace = self.worktree_root / "42-resume-attachment-preview"
+        workspace.mkdir(parents=True)
+        (self.root / ".trellis/scripts").mkdir(parents=True)
+        (self.root / ".trellis/scripts/task.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+        payload = {
+            "workspace_path": str(workspace),
+            "task_title": "#42 Resume attachment preview",
+            "task_slug": "42-resume-attachment-preview",
+        }
+        proc = mock.Mock(returncode=0, stdout=".trellis/tasks/07-04-42-resume-attachment-preview\n", stderr="")
+
+        with mock.patch.object(gtt, "run", return_value=proc) as run:
+            task_dir = gtt.create_task(self.root, payload, prepare_args(requirement=["#42"], create_task=True))
+
+        self.assertEqual(task_dir, ".trellis/tasks/07-04-42-resume-attachment-preview")
+        run.assert_called_once()
+        self.assertEqual(run.call_args.kwargs["cwd"], workspace)
+        self.assertIn("./.trellis/scripts/task.py", run.call_args.args[0])
+
     def test_create_worktree_refreshes_base_before_workspace_creation(self) -> None:
         existing_issue = {
             "number": 42,
@@ -951,6 +983,144 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertIn("--issue-title", str(raised.exception))
 
 
+class WorkspaceBoundaryGuardTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        base = Path(self.tmp.name)
+        self.source = base / "source"
+        self.workspace = base / "worktrees/060-workspace-boundary-guard"
+        self.task_rel = ".trellis/tasks/07-08-060-workspace-boundary-guard"
+        self.task_dir = self.workspace / self.task_rel
+        self.source_task_dir = self.source / self.task_rel
+        for root in [self.source, self.workspace]:
+            (root / ".trellis/guru-team").mkdir(parents=True)
+            (root / ".trellis/tasks").mkdir(parents=True)
+        self.task_dir.mkdir(parents=True)
+        (self.task_dir / "task.json").write_text('{"title":"Boundary task","base_branch":"main"}\n', encoding="utf-8")
+        for name in ["prd.md", "design.md", "implement.md"]:
+            (self.task_dir / name).write_text(f"# {name}\n\n内容。\n", encoding="utf-8")
+        self.handoff = {
+            "workspace_mode": "worktree",
+            "workspace_path": str(self.workspace),
+            "task_dir": self.task_rel,
+            "task_slug": "060-workspace-boundary-guard",
+            "workspace_slug": "060-workspace-boundary-guard",
+            "branch_name": "codex/060-workspace-boundary-guard",
+            "base_branch": "main",
+            "source_issue": {"number": 60},
+            "preflight": {"current_checkout": str(self.source)},
+        }
+        self.write_handoff(self.workspace, self.handoff)
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def write_handoff(self, root: Path, payload: dict[str, object]) -> None:
+        path = root / ".trellis/guru-team/handoff.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    def test_check_workspace_boundary_reports_ok_snapshot(self) -> None:
+        payload = gtt.cmd_check_workspace_boundary(
+            boundary_args(root=str(self.workspace), task=self.task_rel)
+        )
+
+        self.assertEqual(payload["status"], "ok")
+        self.assertEqual(payload["expected_workspace"], str(self.workspace.resolve()))
+        self.assertEqual(payload["actual_repo_root"], str(self.workspace.resolve()))
+        self.assertEqual(payload["source_checkout"], str(self.source.resolve()))
+        self.assertEqual(payload["task_dir_relative"], self.task_rel)
+        self.assertEqual(payload["errors"], [])
+
+    def test_check_workspace_boundary_blocks_worktree_mode_without_handoff(self) -> None:
+        self.source_task_dir.mkdir(parents=True)
+        (self.source_task_dir / "task.json").write_text('{"title":"Wrong task copy"}\n', encoding="utf-8")
+
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.cmd_check_workspace_boundary(
+                boundary_args(root=str(self.source), task=self.task_rel)
+            )
+
+        payload = raised.exception.payload
+        self.assertEqual(payload["status"], "blocked")
+        self.assertTrue(any("缺少当前 checkout 的 handoff.json" in error for error in payload["errors"]))
+
+    def test_check_workspace_boundary_blocks_wrong_cwd(self) -> None:
+        self.write_handoff(self.source, self.handoff)
+
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.cmd_check_workspace_boundary(
+                boundary_args(root=str(self.source), task=str(self.task_dir))
+            )
+
+        payload = raised.exception.payload
+        self.assertEqual(payload["status"], "blocked")
+        self.assertEqual(payload["expected_workspace"], str(self.workspace.resolve()))
+        self.assertEqual(payload["actual_repo_root"], str(self.source.resolve()))
+        self.assertTrue(any("workspace boundary mismatch" in error for error in payload["errors"]))
+
+    def test_artifact_recorder_blocks_source_checkout_with_same_task_artifact(self) -> None:
+        self.write_handoff(self.source, self.handoff)
+        self.source_task_dir.mkdir(parents=True)
+        (self.source_task_dir / "task.json").write_text('{"title":"Wrong task copy"}\n', encoding="utf-8")
+        (self.source_task_dir / "review.md").write_text("# Review\n\n误写。\n", encoding="utf-8")
+
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.cmd_check_planning_approval(
+                planning_args(root=str(self.source), task=self.task_rel)
+            )
+
+        payload = raised.exception.payload
+        self.assertEqual(payload["status"], "blocked")
+        self.assertTrue(any("source checkout contains current-task artifacts" in error for error in payload["errors"]))
+        suspicious_paths = {item["path"] for item in payload["suspicious_source_artifacts"]}
+        self.assertIn(f"{self.task_rel}/review.md", suspicious_paths)
+
+    def test_wrong_task_artifact_arguments_are_rejected(self) -> None:
+        self.source_task_dir.mkdir(parents=True)
+        (self.source_task_dir / "prd.md").write_text("# PRD\n\n误写。\n", encoding="utf-8")
+        (self.source_task_dir / "review.md").write_text("# Review\n\n误写。\n", encoding="utf-8")
+        (self.source_task_dir / "agent-assignment.json").write_text("{}\n", encoding="utf-8")
+        (self.source_task_dir / "reviews").mkdir()
+        (self.source_task_dir / "reviews/round-001.md").write_text("# Round\n\n误写。\n", encoding="utf-8")
+
+        with self.assertRaises(gtt.WorkflowError) as review_error:
+            gtt.load_review_report(self.workspace, self.task_dir, str(self.source_task_dir / "review.md"))
+        self.assertIn("--review-report", str(review_error.exception))
+
+        with self.assertRaises(gtt.WorkflowError) as assignment_error:
+            gtt.validate_agent_assignment(
+                self.workspace,
+                self.task_dir,
+                str(self.source_task_dir / "agent-assignment.json"),
+            )
+        self.assertIn("Artifact path must stay inside", str(assignment_error.exception))
+
+        with self.assertRaises(gtt.WorkflowError) as round_error:
+            gtt.load_review_round_report(
+                self.workspace,
+                self.task_dir,
+                str(self.source_task_dir / "reviews/round-001.md"),
+            )
+        self.assertIn("Artifact path must stay inside", str(round_error.exception))
+
+        with self.assertRaises(gtt.WorkflowError) as checked_error:
+            gtt.build_phase2_check_payload(
+                root=self.workspace,
+                task_dir=self.task_dir,
+                handoff=self.handoff,
+                task={"base_branch": "main"},
+                checker="trellis-check",
+                check_summary="检查完成。",
+                checked_artifacts=[str(self.source_task_dir / "prd.md")],
+                checked_specs=[],
+                coverage_items=list(gtt.REQUIRED_PHASE2_COVERAGE),
+                validation_items=["unit|passed"],
+                findings=[],
+            )
+        self.assertIn("Artifact path must stay inside", str(checked_error.exception))
+
+
 class PlanningAndPhase2GateTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -976,7 +1146,13 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         return [
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_handoff", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "load_handoff", return_value={
+                "base_branch": "main",
+                "workspace_mode": "worktree",
+                "workspace_path": str(self.root),
+                "task_dir": ".trellis/tasks/07-04-gates",
+                "preflight": {"current_checkout": str(self.root)},
+            }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "current_head", return_value="abc123"),
             mock.patch.object(gtt, "git_status_paths", return_value=[]),
@@ -2270,7 +2446,13 @@ class PublishBoundaryTest(unittest.TestCase):
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_handoff", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "load_handoff", return_value={
+                "base_branch": "main",
+                "workspace_mode": "worktree",
+                "workspace_path": str(self.root),
+                "task_dir": ".trellis/tasks/07-04-review-gate",
+                "preflight": {"current_checkout": str(self.root)},
+            }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])),
             mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
@@ -2448,7 +2630,13 @@ class ReviewGateReportTest(unittest.TestCase):
         return [
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_handoff", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "load_handoff", return_value={
+                "base_branch": "main",
+                "workspace_mode": "worktree",
+                "workspace_path": str(self.root),
+                "task_dir": ".trellis/tasks/07-04-review-gate",
+                "preflight": {"current_checkout": str(self.root)},
+            }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "validate_planning_approval", return_value=(self.task_dir / "planning-approval.json", {}, [])),
             mock.patch.object(gtt, "validate_phase2_check", return_value=(self.task_dir / "phase2-check.json", {}, [])),
@@ -4374,7 +4562,12 @@ class AgentAssignmentArtifactTest(unittest.TestCase):
         return [
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_handoff", return_value={"task_dir": ".trellis/tasks/07-05-agent-assignment"}),
+            mock.patch.object(gtt, "load_handoff", return_value={
+                "workspace_mode": "worktree",
+                "workspace_path": str(self.root),
+                "task_dir": ".trellis/tasks/07-05-agent-assignment",
+                "preflight": {"current_checkout": str(self.root)},
+            }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "current_head", return_value="abc123"),
             mock.patch.object(gtt, "git_object_exists", return_value=True),

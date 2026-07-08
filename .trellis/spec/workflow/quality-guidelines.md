@@ -61,6 +61,12 @@ against a current `schema_version=1.1` artifact and include at least one unit
 test for stale or old-source approval failure, plus a regression where current
 HEAD / dirty-path drift does not block while `prd.md`, `design.md`, and
 `implement.md` content digests still match.
+When changing workspace boundary behavior, also run
+`.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
+<task-dir>` from the selected task worktree and add regression tests for wrong
+cwd, worktree mode without current handoff, source checkout same-task artifacts, wrong `--review-report`,
+`--agent-assignment`, `--review-round-report`, `--checked-artifact`,
+planner-only prepare no-write behavior, and controlled `create_task` cwd.
 
 When changing PR publish behavior, include tests or dry-runs for both a blocked
 low-information body and an accepted reviewer-readable body. The accepted body

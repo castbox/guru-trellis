@@ -137,6 +137,33 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   freshness, status event enum/evidence fields, and digest metadata; it must
   not judge semantic reuse quality or stale/termination correctness.
 
+Workspace boundary helpers are deterministic validators and fact snapshots:
+
+- `check-workspace-boundary.sh --json --task <task-path>` reports
+  `workspace_mode`, `expected_workspace`, `actual_repo_root`,
+  `source_checkout`, `task_dir`, `task_dir_relative`, source checkout status,
+  task worktree status, suspicious source artifacts, `status`, and `errors`.
+- In `workspace_mode: worktree`, recorder/validator commands that write or
+  validate task artifacts must confirm the actual repo root equals handoff
+  `workspace_path` before touching `planning-approval.json`,
+  `phase2-check.json`, `agent-assignment.json`, `review.md`, `reviews/*.md`,
+  `review-gate.json`, or equivalent task-local artifacts.
+- In `workspace_mode: worktree`, a missing current-checkout `handoff.json` is
+  also a boundary failure for these recorder/validator commands, because the
+  script cannot confirm the selected `workspace_path` and must not fall back to
+  a same-named task directory in the source checkout.
+- Task artifact arguments such as `--review-report`, `--agent-assignment`,
+  `--review-round-report`, and `--checked-artifact` must resolve inside the
+  current task directory under the selected task worktree. Absolute paths are
+  allowed only when they stay under that task directory.
+- Source checkout current-task artifacts, review metadata, or current-task dirty
+  paths are fail-closed boundary facts. The script must not decide whether a
+  sub-agent is stale, migrate a misplaced patch, or clean source checkout files;
+  AI/human workflow owns those decisions.
+- `--allow-source-clean` may be used only for a clean source checkout probe that
+  reports facts without treating a clean source checkout mismatch as a blocker;
+  it must not permit source checkout task artifacts or review metadata.
+
 `review-branch.sh --pass` must fail before writing Branch Review Gate when
 `phase2-check.json` is missing, stale, incomplete, or contains unresolved
 P0/P1/P2 findings. It must also fail when the Phase 3 review result contains

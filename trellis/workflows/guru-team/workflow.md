@@ -89,6 +89,37 @@ Planner output, including output with a confirmed `source_issue`, sets `handoff_
 - preflight evidence
 - exact `task.py create` command
 
+### Workspace Boundary
+
+When `workspace_mode: worktree`, the written handoff's `workspace_path` is the
+machine source of truth for task artifact writes. Before writing or reading
+task-local recorder/validator inputs such as `planning-approval.json`,
+`phase2-check.json`, `agent-assignment.json`, `reviews/*.md`, `review.md`, or
+`review-gate.json`, confirm that the shell/editor repo root is exactly that
+`workspace_path`:
+
+```bash
+.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
+```
+
+The validator reports expected workspace, actual repo root, source checkout,
+task dir, source-checkout status, task-worktree status, and suspicious
+source-checkout copies of the current task artifacts. It is a fact collector and
+fail-closed validator only; it does not decide stale state, migrate mistaken
+patches, clean source checkout files, or replace AI/human review. If it reports
+source checkout current-task artifacts or review metadata, treat that as a
+`workspace-boundary violation with progress` fact for the main session to
+review, not as automatic stale/failure evidence.
+
+All relative task artifact paths are relative to the task worktree. Manual edit
+tools that cannot receive an explicit `workdir` must use an absolute path inside
+the task worktree selected by handoff `workspace_path`; do not use a source
+checkout relative path for task artifacts or patches. `--review-report`,
+`--agent-assignment`, `--review-round-report`, and `--checked-artifact` inputs
+must resolve inside the current task directory in that worktree. In worktree
+mode, do not run recorder/validator helpers from the source checkout or another
+worktree.
+
 ---
 
 ## Trellis System
@@ -190,6 +221,7 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
   - Branch Review must be performed by an independent review sub-agent after the task work commit and produce task-local raw `reviews/*.md` reports plus the final rollup `review.md` before the main session records Branch Review Gate.
 - The main session coordinates planning, dispatch, waiting, resume/replacement decisions, evidence recording, commit, recorder/validator calls, and finish preparation. It must not replace the three mandatory sub-agent boundaries with its own implementation, its own Phase 2 check, its own Branch Review, or script validation output.
 - Inline mode or self-exemption is valid only when explicit artifact evidence explains why the default `sub-agent` boundary does not apply. A sub-agent that is already running as `trellis-implement` / `trellis-check` must do its own role directly and return the required handoff/report; a main session in default `sub-agent` mode cannot claim that exemption for itself. Missing implement, check, or review sub-agent evidence fails closed.
+- Sub-agent dispatch prompts must include expected `workspace_path` evidence when the task was created through Phase 0. At startup, sub-agents should report `pwd`, `git rev-parse --show-toplevel`, and whether the actual repo root matches the expected workspace before reading or writing task artifacts. When an agent file, platform, or editor tool cannot set an explicit working directory, any manual patch/edit path must be an absolute path under the task worktree.
 - `wait_agent`, `trellis channel wait`, or an equivalent wait command timing out only means this wait window ended without a final completion event. It is not evidence that the sub-agent is stuck, failed, should stop, or that its partial output is acceptable completion evidence.
 - Distinguish long total runtime from stale state. A sub-agent may run for more than an hour. If it is still producing output, changing the worktree in-scope, running validations, emitting channel events, or otherwise showing meaningful progress, continue waiting and record that observation when needed. Stale assessment must be based on no observable progress for a recent window, default at least 5 minutes, not on total runtime.
 - When a main session dispatches or reuses a sub-agent, record the AI/human decision in `{TASK_DIR}/agent-assignment.json`. The recorder can be:
@@ -219,6 +251,7 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
   --running-command-evidence "验证命令仍在运行。"
 ```
 
+- Before recording wait timeout, progress observation, stale assessment, soft interrupt, hard stop, or unfinished termination, run `check-workspace-boundary.sh --json` or an equivalent dual-side status check and include expected workspace, actual repo root, source checkout status, task worktree status, and suspicious source artifact evidence in the task-local status record. If source checkout contains current-task dirty paths or artifacts, record the fact explicitly; do not treat a wait timeout alone as stale.
 - Before soft interrupt, hard stop, or terminating an unfinished sub-agent, record the latest output/change time, worktree/channel/diff evidence, running command evidence, decision, reason, and handoff summary. If an unfinished agent is interrupted or terminated, recover the same technical `agent_id` or start a replacement agent with the predecessor output/channel log summary, current diff, task artifacts, remaining checklist, and blocking gate. Continue until a later `completed` or explicit `failed` status event closes that recovery chain.
 - Unfinished, interrupted, terminated, or unclosed replacement output is intermediate evidence only. It must not be treated as implementation completion, Phase 2 check pass evidence, or Branch Review Gate pass evidence. `review-branch.sh --pass` validates objective ledger completeness and fails closed when `status_events[]` contains an unclosed `terminated-unfinished` chain.
 - Phase 2 `trellis-check` is the implementation quality check step. It reviews the current task against specs, runs lint/typecheck/tests when appropriate, and may self-fix before commit. `phase2-check.json` is the Guru Team artifact that records the completed `trellis-check` AI judgment, coverage, validations, findings, and dirty-path evidence; it is not the Trellis-native step itself and recorder/validator scripts cannot substitute for that AI check.
@@ -674,7 +707,8 @@ Read context: `prd.md` -> `design.md` -> `implement.md`, plus relevant spec/rese
 #### 2.1 Implement `[required · repeatable]`
 
 Dispatch or inline-implement according to the platform mode only after
-`check-planning-approval.sh --json` passes for the current task. In default
+`check-workspace-boundary.sh --json --task <task-path>` and
+`check-planning-approval.sh --json` pass for the current task. In default
 `sub-agent` mode, the main session must dispatch `trellis-implement` or
 channel-runtime `implement`; it may not directly edit files and later present
 that work as `实现代理` evidence. Keep changes focused on the reviewed task
@@ -871,10 +905,12 @@ that affected sub-agent evidence.
 
 Before writing `review.md`, `review-gate.json`, or any task artifact, confirm the
 current working directory is the task's selected `workspace_path`, not the source
-checkout or another worktree. Use the worktree-local absolute path for manual
-file edits when the editing tool does not take an explicit working directory.
-Relative task artifact paths such as `{TASK_DIR}/review.md` are relative to the
-task worktree only.
+checkout or another worktree by running
+`.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
+<task-path>`. Use the worktree-local absolute path for manual file edits when
+the editing tool does not take an explicit working directory. Relative task
+artifact paths such as `{TASK_DIR}/review.md` are relative to the task worktree
+only.
 
 ##### 3.5.2 Gate Artifact Recorder
 

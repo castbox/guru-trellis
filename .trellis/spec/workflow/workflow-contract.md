@@ -212,6 +212,12 @@ worktree selected by intake `workspace_path`. Manual edits must use a
 worktree-local absolute path when the editing tool cannot receive an explicit
 working directory. Relative task artifact paths are never relative to the source
 checkout or another worktree.
+The normal deterministic probe is
+`.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
+<task-path>`. It provides expected/actual workspace evidence, source checkout
+status, task worktree status, suspicious source artifact facts, and fail-closed
+errors. The probe does not determine stale status, clean up source checkout
+state, migrate misplaced changes, or replace AI/human review.
 
 Passing the gate requires:
 

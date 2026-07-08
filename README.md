@@ -290,6 +290,21 @@ branch 或 Trellis task 前阻断。
 `preflight.base_freshness`，并在本地 base 落后时只做安全 fast-forward；如果本地 base
 与远端分叉或 freshness 无法确认，会阻塞而不是从过期 ref 创建任务分支。
 
+executor handoff 写入后，`workspace_mode: worktree` 下的
+`handoff.workspace_path` 是 task artifact 写入边界。AI 或 main session 在写入/校验
+`planning-approval.json`、`phase2-check.json`、`agent-assignment.json`、`reviews/*.md`、
+`review.md`、`review-gate.json` 等 task-local artifact 前，应从目标 worktree 运行：
+
+```bash
+.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
+```
+
+该 helper 只报告 expected workspace、actual repo root、source checkout status、task
+worktree status 和 source checkout 中可疑同名 task artifact/review metadata；它不判断
+sub-agent 是否 stale，不迁移误写 patch，也不清理 source checkout。若编辑工具不能显式传入
+`workdir`，task artifact 或 patch 路径必须使用 handoff `workspace_path` 下的绝对路径。
+这层 workspace boundary 是后续 heartbeat / liveness 工作（#76）的前置事实层。
+
 `no_task` 下不是绝对禁止当前 checkout 直接修改，但这只能作为用户显式批准的 override：
 用户必须明确表示本轮跳过创建或复用 GitHub issue、Trellis task、worktree 和 branch。
 AI 在改文件前要说明将跳过哪些 artifact、当前 checkout / branch / dirty state、预期
@@ -304,7 +319,7 @@ AI 在改文件前要说明将跳过哪些 artifact、当前 checkout / branch /
 session/startup 注入、hook 未启用或未审批、怀疑自动注入没有运行，或用户需要完整
 上下文报告和重新加载 Trellis 上下文的场景。
 
-`record-planning-approval`、`check-planning-approval`、`record-phase2-check`、
+`check-workspace-boundary`、`record-planning-approval`、`check-planning-approval`、`record-phase2-check`、
 `check-phase2-check`、`record-agent-assignment`、`check-agent-assignment`、
 `review-branch`、`check-review-gate`、`publish-pr` 是 workflow
 内部 companion script，不是需要用户日常手动记忆的新主流程。

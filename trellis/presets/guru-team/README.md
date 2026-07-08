@@ -158,6 +158,7 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/check-env.sh`
 - `.trellis/guru-team/scripts/bash/version.sh`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh`
+- `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh`
 - `.trellis/guru-team/scripts/bash/record-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/record-phase2-check.sh`
@@ -394,6 +395,23 @@ Executor paths also enforce `naming_quality` and fail closed before creating a
 worktree, branch, or Trellis task if the generated or overridden name is low
 information, such as `issue-52`, `52-issue-52`, a bare number, or only generic
 tokens like `bug`, `fix`, `task`, `work`, `update`, or `change`.
+
+After executor handoff is written, `handoff.workspace_path` is the machine
+boundary for task artifact writes in worktree mode. Before writing or validating
+`planning-approval.json`, `phase2-check.json`, `agent-assignment.json`,
+`reviews/*.md`, `review.md`, or `review-gate.json`, run:
+
+```bash
+.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
+```
+
+The helper reports expected workspace, actual repo root, source checkout
+status, task worktree status, and suspicious current-task artifacts or review
+metadata in the source checkout. It is a deterministic validator/fact snapshot,
+not stale judgment, cleanup, or patch migration. Editing tools without an
+explicit `workdir` must use absolute paths under the task worktree selected by
+handoff `workspace_path`. This fact layer is the prerequisite for later
+heartbeat / liveness policy work such as #76.
 
 When executor paths create or reuse a worktree, they refresh the selected base
 branch again with `git fetch`, record `preflight.base_freshness` in
