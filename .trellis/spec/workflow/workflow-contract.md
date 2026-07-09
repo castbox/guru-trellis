@@ -20,7 +20,7 @@ Reference files:
 The workflow has four durable phases:
 
 - Phase 0: issue intake, Git base branch selection, and worktree preflight.
-- Phase 1: Trellis task creation, planning artifacts, explicit post-planning user review, and start gate evidence.
+- Phase 1: Trellis task creation, planning artifacts, `Docs SSOT Plan`, explicit post-planning user review, and start gate evidence.
 - Phase 2: implementation and quality check.
 - Phase 3: spec decision, commit, Branch Review Gate, finish-work, and automatic publish.
 
@@ -197,6 +197,48 @@ entries for task-local `issue-scope-ledger.json`, `pr-body.md`,
 the current files before pass or publish. Source, config, script, schema, docs,
 preset, overlay, and non-gate task artifact drift still blocks the gate. Do not
 re-record Phase 2 after the task work commit just to make HEAD match.
+
+## Docs SSOT Plan
+
+Phase 1 planning must create or update one locatable `Docs SSOT Plan`.
+Prefer `design.md` as the authoritative section. `prd.md` records docs state
+and requirement impact; `implement.md` records the checklist, merge checkpoint,
+repair boundary, or no-update checkpoint. Do not require the full plan to be
+duplicated across all three planning documents.
+
+The plan records one docs state:
+
+- `complete_docs`
+- `partial_docs`
+- `stale_docs`
+- `no_docs`
+
+The plan records one synchronization strategy:
+
+- `ssot_first`
+- `delta_first`
+- `bootstrap_or_repair_docs`
+- `no_docs_update_needed`
+
+Required fields are docs state and evidence paths, strategy and reason,
+affected durable docs or checked durable docs, task artifact deltas to merge
+back, the `delta_first` merge checkpoint when applicable, the
+`bootstrap_or_repair_docs` minimum repair scope or follow-up limit when
+applicable, and the concrete `no_docs_update_needed` reason when applicable.
+
+Broad and clear requirement, design, workflow, API, data, deploy, operations,
+or test contract changes should prefer `ssot_first`. Small local fixes or early
+exploration may use `delta_first`, but the plan must name the merge checkpoint.
+`no_docs`, `partial_docs`, and `stale_docs` must choose
+`bootstrap_or_repair_docs` or otherwise explain a bounded follow-up; task
+artifacts must not silently become a long-term substitute for durable docs.
+
+This is an AI planning judgment expressed in Markdown workflow / planning
+artifacts. Companion scripts may record paths, hashes, or approval evidence,
+but must not decide whether durable docs are semantically complete, stale, or
+adequately repaired.
+
+## Branch Review Gate Coverage
 
 The gate must cover docs, code, tests, Trellis artifacts, config, scripts,
 schemas, CI/CD, container files, Kubernetes/Kustomize/Helm assets, database

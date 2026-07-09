@@ -327,6 +327,7 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - `prd.md` — requirements, constraints, acceptance criteria, out of scope.
 - `design.md` — technical design before implementation: boundaries, contracts, data flow, compatibility, tradeoffs, rollout / rollback.
 - `implement.md` — execution plan before implementation: ordered checklist, validation commands, review gates, rollback points.
+- `Docs SSOT Plan` — required Phase 1 planning contract, preferably a section in `design.md`; `prd.md` records docs status and requirement impact, and `implement.md` records the checklist/checkpoint. Do not duplicate the full plan across all three files.
 - `planning-approval.json` — start gate evidence that the main session displayed links to `prd.md`, `design.md`, and `implement.md`, then received explicit post-planning user confirmation; `task.py start` is only a status write.
 - `phase2-check.json` — Phase 2 `trellis-check` report for full task-scope quality coverage before commit and Branch Review Gate.
 - `issue-scope-ledger.json` — task-level close/ref/followup scope; do not overload `source_issue`.
@@ -337,7 +338,7 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - `review-gate.json` — Branch Review Gate result for the reviewed HEAD.
 - `implement.jsonl` / `check.jsonl` — spec and research manifests for sub-agent context. They do not replace `implement.md`.
 
-Guru Team implementation tasks must have `prd.md`, `design.md`, and `implement.md` before `task.py start`; a Phase 0 handoff approval never substitutes for this post-planning review.
+Guru Team implementation tasks must have `prd.md`, `design.md`, `implement.md`, and one locatable `Docs SSOT Plan` before `task.py start`; a Phase 0 handoff approval never substitutes for this post-planning review.
 
 ### Business Project Documentation Language
 
@@ -387,7 +388,33 @@ If the gate is not relevant to the task, record that it is not applicable in the
 
 Trellis task artifacts are task-scoped planning and evidence. They must cooperate with the repo's durable documentation source of truth instead of silently becoming a parallel long-term source.
 
-During planning, inspect whether the target repo has a durable docs library, typically under `docs/`. Look for complete or partial categories such as:
+During planning, create or update one `Docs SSOT Plan`. The recommended authority is `design.md`; `prd.md` should record the docs state and requirement impact, and `implement.md` should record the execution checklist and checkpoint. The plan must stay repo-neutral and may point to any durable docs structure the repo actually uses, not only `docs/`.
+
+The plan must record one docs state:
+
+- `complete_docs` — durable docs exist and are usable for the task's affected product, architecture, API, data, deploy, operations, or test contracts.
+- `partial_docs` — some durable docs exist, but relevant categories or current-scope contracts are missing.
+- `stale_docs` — durable docs exist but conflict with current code, behavior, issues, or intended changes.
+- `no_docs` — no durable docs SSOT or equivalent long-lived documentation exists for the current task scope.
+
+It must record one task strategy:
+
+- `ssot_first` — update durable docs / specs / workflow contracts first, then keep task artifacts as deltas and evidence. Prefer this for broad, clear requirements, design, workflow, API, data, deploy, operations, or test contract changes.
+- `delta_first` — keep early exploration or a narrow local change in task artifacts first, but name the merge checkpoint when durable docs will be updated or explicitly re-evaluated.
+- `bootstrap_or_repair_docs` — create minimal durable docs, repair stale docs, or define a bounded follow-up when docs are absent, partial, or stale.
+- `no_docs_update_needed` — no durable docs update is needed; the plan must state the concrete reason and the docs checked.
+
+At minimum the `Docs SSOT Plan` records:
+
+- docs state and evidence paths;
+- strategy and reason;
+- affected durable docs files, or the checked paths when none are affected;
+- task artifact deltas that must be merged back into durable docs;
+- for `delta_first`, the merge checkpoint;
+- for `bootstrap_or_repair_docs`, the minimum repair scope or follow-up limit;
+- for `no_docs_update_needed`, the concrete reason.
+
+When inspecting durable docs, look for complete, partial, or stale categories such as:
 
 - `docs/requirements/`;
 - `docs/designs/`;
@@ -395,7 +422,7 @@ During planning, inspect whether the target repo has a durable docs library, typ
 - deploy or operations guides;
 - versioned design docs.
 
-If complete or partial durable docs exist, `prd.md`, `design.md`, and `implement.md` should describe task-scoped deltas, decisions, evidence, and links to relevant durable docs. They should also list which durable docs need updates in this task, or why no durable docs update is needed.
+Task artifacts should describe task-scoped deltas, decisions, evidence, and links to relevant durable docs. They must not become the long-term substitute for durable docs when the plan chose `ssot_first`, `delta_first`, or `bootstrap_or_repair_docs`.
 
 Any durable docs created or updated through this workflow, including docs SSOT files created or completed by `00-bootstrap-guidelines`, must follow the business-project Chinese documentation default above.
 
@@ -407,11 +434,11 @@ Before commit, Branch Review Gate, finish-work, and publish, run Docs SSOT recon
 - Which content remains task history only?
 - If durable docs were not updated, why is that acceptable, and does it require user confirmation?
 
-Repos with no complete docs system must still record one explicit outcome:
+Repos with `no_docs`, `partial_docs`, or `stale_docs` must still record one explicit outcome:
 
 - create new durable docs;
-- append/update existing partial docs;
-- or confirm that this repo intentionally has no durable docs SSOT yet and the task artifact remains archived evidence only.
+- append/update or repair existing partial/stale docs;
+- or bound the follow-up and explain why the current task artifact remains archived evidence only.
 
 <!-- Per-turn breadcrumb: shown when there is no active task (before Phase 1) -->
 
@@ -523,6 +550,7 @@ does not approve commit, push, PR creation, or issue closure.
 Load `trellis-brainstorm`; stay in planning.
 Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
+Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
 Finish `prd.md`, `design.md`, and `implement.md`; then visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
 Before that planning stop reply, run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表`; only link existing Markdown files and do not list JSON artifacts.
 Before `task.py start`, record and check `planning-approval.json` with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale approval blocks implementation and Phase 2 check recording.
@@ -533,6 +561,7 @@ Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research mani
 Load `trellis-brainstorm`; stay in planning.
 Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
+Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
 Finish `prd.md`, `design.md`, and `implement.md`; then visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
 Before that planning stop reply, run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表`; only link existing Markdown files and do not list JSON artifacts.
 Before `task.py start`, record and check `planning-approval.json` with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale approval blocks implementation and Phase 2 check recording.
@@ -595,11 +624,19 @@ When intake evidence is incomplete, use `trellis-brainstorm` before implementati
 
 Do not let task artifacts become the only record of changed requirements when a GitHub issue anchors the work. The issue or a related issue must carry enough public evidence for a later session to understand why the task scope changed.
 
-Discover the repo's durable docs SSOT before planning converges. Inspect `docs/` or equivalent long-lived documentation directories and record one of these in `prd.md`, `design.md`, or `implement.md`:
+Create or update the `Docs SSOT Plan` before planning converges. The plan should be easy to locate, with `design.md` as the recommended authority. `prd.md` records docs state and requirements impact; `implement.md` records the execution checklist, any `delta_first` merge checkpoint, and any `bootstrap_or_repair_docs` repair/follow-up boundary.
 
-- complete docs exist and the task's affected durable docs are listed;
-- partial docs exist and the task's update/follow-up responsibility is listed;
-- no durable docs SSOT exists and task artifacts are temporary task evidence only unless this task creates docs.
+The plan must record:
+
+- docs state: `complete_docs`, `partial_docs`, `stale_docs`, or `no_docs`;
+- evidence paths inspected for that state;
+- strategy: `ssot_first`, `delta_first`, `bootstrap_or_repair_docs`, or `no_docs_update_needed`;
+- strategy reason;
+- affected durable docs, or checked durable docs when no update is needed;
+- task artifact deltas that must be merged to durable docs;
+- `delta_first` merge checkpoint when that strategy is chosen;
+- `bootstrap_or_repair_docs` minimum repair scope or follow-up limit when that strategy is chosen;
+- `no_docs_update_needed` reason when that strategy is chosen.
 
 Run the Middle-platform Knowledge Gate when the task may involve Guru Team middle-platform SDKs or frameworks. Persist citations or the unavailable-MCP warning before design and implementation artifacts are considered ready.
 
@@ -638,7 +675,8 @@ Inline Codex/Kilo/Antigravity/Devin workflows skip this step and load context th
 
 #### 1.4 Explicit planning review `[required · once]`
 
-After `prd.md`, `design.md`, and `implement.md` are complete, the main session
+After `prd.md`, `design.md`, and `implement.md` are complete, including a
+locatable `Docs SSOT Plan`, the main session
 must run the Markdown artifact resolver, render a `Markdown 产物 review 表`,
 visibly present all three task-local planning documents to the user, and then
 stop for an explicit post-planning confirmation.
@@ -712,7 +750,7 @@ transition; it is not planning review evidence.
 | `task.py start` has been run | yes |
 | curated JSONL manifests exist for sub-agent dispatch | yes |
 | Middle-platform Knowledge Gate handled when relevant | yes |
-| Docs SSOT discovery recorded | yes |
+| `Docs SSOT Plan` records docs state, evidence paths, strategy, affected durable docs or no-update reason, and any required merge/repair/follow-up checkpoint | yes |
 
 ### Phase 2: Execute
 

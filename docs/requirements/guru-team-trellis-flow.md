@@ -54,7 +54,7 @@ flowchart TD
   WB["check-workspace-boundary.sh<br/>expected workspace / actual repo root / source checkout snapshot"]:::script
 
   TCreate["task.py create<br/>Trellis task: planning"]:::trellis
-  P1["Phase 1: Plan<br/>prd/design/implement + docs SSOT + knowledge gate"]:::guru
+  P1["Phase 1: Plan<br/>prd/design/implement + Docs SSOT Plan + knowledge gate"]:::guru
   PA["record-planning-approval.sh<br/>check-planning-approval.sh"]:::script
   TStart["task.py start<br/>Trellis task: in_progress"]:::trellis
 
@@ -181,7 +181,7 @@ source checkout 出现新 `HEAD` / dirty status / diff stat / mtime 变化时是
 | 3 | `design.md` | Guru Team artifact | 进入实现前记录边界、契约、数据流、兼容性、部署影响、取舍。 |
 | 4 | `implement.md` | Guru Team artifact | 记录实现计划、验证命令、回滚点、review gate。 |
 | 5 | Scope-change gate | Guru Team gate | planning 或执行中新增需求、引用其他 issue 或发现新 bug 时，先确认当前 close scope、related，还是 follow-up/new issue；结论同步到 GitHub issue 证据和 `issue-scope-ledger.json`。 |
-| 6 | Docs SSOT discovery | Guru Team gate | 检查 `docs/` durable docs 是否需要更新；task artifact 不能替代长期文档。 |
+| 6 | `Docs SSOT Plan` | Guru Team planning contract | 检查 durable docs 是否需要更新，并记录 docs 状态、同步策略、影响文件、task artifact delta 和 merge/repair/no-update 责任；task artifact 不能替代长期文档。 |
 | 7 | Middle-platform Knowledge Gate | Guru Team gate | 中台 SDK/framework 相关任务要检查 `guru-knowledge-center` MCP 可用性并留 citation 或 warning。 |
 | 8 | `implement.jsonl` / `check.jsonl` | Trellis + Guru context | sub-agent 模式下整理 spec/research manifest；inline 模式由 skill 拉取上下文。 |
 | 9 | Explicit post-planning review | Guru Team gate | 主会话展示 `prd.md`、`design.md`、`implement.md` 三个 task-local 链接，并说明用户确认前不会进入实现、不会派发 `trellis-implement`、不会记录 `phase2-check.json`。 |
@@ -194,6 +194,33 @@ source checkout 出现新 `HEAD` / dirty status / diff stat / mtime 变化时是
 `source=workflow` planning approval、或规划文档确认后发生内容 hash/size 变化，均必须 fail
 closed，并重新展示三份规划文档链接等待用户确认；实现提交导致的 HEAD 变化、metadata tail
 或无关 dirty paths 不应单独使 planning approval stale。
+
+`Docs SSOT Plan` 是 Phase 1 planning 合同，推荐由 `design.md` 承载权威计划；`prd.md`
+记录 docs 状态与需求影响，`implement.md` 记录执行 checklist、`delta_first` merge checkpoint
+或 `bootstrap_or_repair_docs` 修复 / follow-up 边界，不要求三份文件重复整段计划。
+
+计划必须记录一个 docs 状态：
+
+| 状态 | 含义 |
+| --- | --- |
+| `complete_docs` | durable docs 对当前任务涉及的产品、架构、API、数据、部署、运营或测试合同可用。 |
+| `partial_docs` | 已有部分 durable docs，但当前范围所需类别或合同缺失。 |
+| `stale_docs` | durable docs 与当前代码、行为、issue 证据或计划变更冲突。 |
+| `no_docs` | 当前任务范围没有 durable docs SSOT 或等价长期文档。 |
+
+计划必须记录一个同步策略：
+
+| 策略 | 适用规则 |
+| --- | --- |
+| `ssot_first` | 大范围、边界清楚的需求 / 设计 / workflow / API / 数据 / 部署 / 运营 / 测试合同变更优先更新 durable docs / spec / workflow，再让 task artifact 保留 delta 与证据。 |
+| `delta_first` | 小范围或早期探索可先把增量留在 task artifact，但必须写明何时 merge 回 durable docs 或重新判断。 |
+| `bootstrap_or_repair_docs` | 适用于 `no_docs`、`partial_docs`、`stale_docs`，必须写最小修复范围或受限 follow-up，不能让 task artifact 长期冒充 durable docs。 |
+| `no_docs_update_needed` | 仅限纯局部 bugfix / 内部重构等没有长期合同变化的任务，必须写具体理由和已检查 docs 路径。 |
+
+最低字段包括：docs 状态与证据路径、策略与理由、当前 task 影响或检查过的 durable docs、
+需要 merge 回 durable docs 的 task artifact delta、`delta_first` merge checkpoint、
+`bootstrap_or_repair_docs` 的最小修复或 follow-up 限制，以及 `no_docs_update_needed`
+的具体理由。该合同保持 repo-neutral，可以指向 `docs/` 以外的长期文档结构。
 
 ## 6. Phase 2：Execute / check
 
@@ -339,6 +366,7 @@ PR readiness 要求：
 | `prd.md` | Phase 1 | Guru Team planning artifact | Implement/check/review/publish。 |
 | `design.md` | Phase 1 | Guru Team planning artifact | Implement/check/review。 |
 | `implement.md` | Phase 1 | Guru Team planning artifact | Implement/check/review。 |
+| `Docs SSOT Plan` | Phase 1 | Guru Team planning contract, recommended in `design.md` | Phase 1 planning approval、Phase 2 durable docs responsibility、后续 Docs SSOT reconciliation。 |
 | `planning-approval.json` | Phase 1.4/1.5 | Guru Team gate evidence | 记录三文档链接展示后的显式用户确认；`task.py start`、Phase 2 dispatch 和 Branch Review Gate audit 前校验。 |
 | `implement.jsonl` / `check.jsonl` | Phase 1.3 | Trellis sub-agent context manifest | `trellis-implement` / `trellis-check`。 |
 | `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity/status ledger | review closure/fresh final reviewer 和 unfinished termination recovery-chain 校验。 |
@@ -357,13 +385,14 @@ PR readiness 要求：
 2. Guru Team 没有 fork Trellis，而是通过 official marketplace workflow 安装 `guru-team`。
 3. 我们把“任务还没创建之前”的风险收进 Phase 0：issue、duplicate、base branch、worktree、命名和副作用授权都先审查。
 4. `workspace_path` 是 worktree mode 下的机器写入边界；`check-workspace-boundary` 只输出事实并 fail closed，不替 AI 判断 stale、迁移 patch 或清理 source checkout；#76 liveness checker 在此基础上把 source checkout 新变化视为 workspace boundary progress。
-5. `task.py create/start/archive` 仍是官方 Trellis lifecycle，但 Guru Team 在 start 前要求展示 `prd.md` / `design.md` / `implement.md` 三个链接并得到 explicit post-planning confirmation，Phase 0 handoff 确认不能替代。
+5. `task.py create/start/archive` 仍是官方 Trellis lifecycle，但 Guru Team 在 start 前要求 `prd.md` / `design.md` / `implement.md` 定位同一个 `Docs SSOT Plan`，展示三份文档链接并得到 explicit post-planning confirmation，Phase 0 handoff 确认不能替代。
 6. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出中文 `reviews/*.md` raw reports 与最终中文 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
 7. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，commit 后必须有独立中文 review raw reports、最终中文 `review.md` rollup 和 recorder 生成的 `review-gate.json`；主会话自检、自审或脚本校验通过不能替代这些证据。
 8. 任意 finding 都阻断；发现过问题的 reviewer 只能闭环自己的 finding，最终放行必须是 fresh reviewer。
 9. `trellis-continue` 到 Branch Review Gate 就停；`trellis-finish-work` 才能 archive、journal、提交 metadata 并自动 publish PR。
 10. PR body 是给 GitHub reviewer 的发布材料，不是内部 task 摘要；关闭 issue 的语义由 `issue-scope-ledger.json` 控制。
-11. 所有脚本都是 executor / validator / recorder，不做 planner / reviewer / product owner 判断。
+11. `Docs SSOT Plan` 在 planning 阶段先决定 durable docs 状态与同步策略，后续实现、检查和 review 只消费这份计划；脚本不判断 docs 语义是否充分。
+12. 所有脚本都是 executor / validator / recorder，不做 planner / reviewer / product owner 判断。
 
 ## 11. 证据来源
 

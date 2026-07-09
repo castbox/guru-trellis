@@ -1,0 +1,238 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-09T08:45:23Z",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract",
+  "base_branch": "main",
+  "base_ref": "origin/main",
+  "head_branch": "codex/064-docs-ssot-plan-contract",
+  "head": "51045439b5c6fea8aacd61d10446932e9de3c80e",
+  "diff_range": "origin/main...HEAD",
+  "changed_files": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".claude/commands/trellis/continue.md",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".cursor/commands/trellis-continue.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/tasks/07-09-064-docs-ssot-plan-contract/agent-assignment.json",
+    ".trellis/tasks/07-09-064-docs-ssot-plan-contract/check.jsonl",
+    ".trellis/tasks/07-09-064-docs-ssot-plan-contract/design.md",
+    ".trellis/tasks/07-09-064-docs-ssot-plan-contract/implement.jsonl",
+    ".trellis/tasks/07-09-064-docs-ssot-plan-contract/implement.md",
+    ".trellis/tasks/07-09-064-docs-ssot-plan-contract/issue-scope-ledger.json",
+    ".trellis/tasks/07-09-064-docs-ssot-plan-contract/phase2-check.json",
+    ".trellis/tasks/07-09-064-docs-ssot-plan-contract/planning-approval.json",
+    ".trellis/tasks/07-09-064-docs-ssot-plan-contract/prd.md",
+    ".trellis/tasks/07-09-064-docs-ssot-plan-contract/task.json",
+    ".trellis/workflow.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "review_scope": [
+    "文档",
+    "代码",
+    "测试",
+    "Trellis artifacts",
+    "配置",
+    "脚本",
+    "schema",
+    "CI/CD workflow 与发布自动化",
+    "Dockerfile / Docker Compose / 容器启动脚本",
+    "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
+    "数据库 schema / migration / seed / backfill 脚本",
+    "各目录下本次变更涉及的 Makefile",
+    "preset installer"
+  ],
+  "command": [
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/064-docs-ssot-plan-contract/.trellis/guru-team/scripts/bash/../python/guru_team_trellis.py",
+    "review-branch",
+    "--json",
+    "--pass",
+    "--review-source",
+    "independent-agent",
+    "--reviewer",
+    "trellis-check-agent:019f4601-5551-7651-a903-6631725f1ab6",
+    "--review-report",
+    ".trellis/tasks/07-09-064-docs-ssot-plan-contract/review.md",
+    "--agent-assignment",
+    ".trellis/tasks/07-09-064-docs-ssot-plan-contract/agent-assignment.json",
+    "--summary",
+    "最终放行审查代理已按 origin/main...HEAD 覆盖当前 HEAD 51045439b5c6fea8aacd61d10446932e9de3c80e，本轮未发现 P0/P1/P2/P3 问题，Branch Review Gate 可通过。",
+    "--evidence",
+    "最终放行审查代理 019f4601-5551-7651-a903-6631725f1ab6 审查了 origin/main...HEAD 的完整 diff，覆盖 trellis/workflows/guru-team/workflow.md、dogfood .trellis/workflow.md、docs/requirements、.trellis/spec/workflow、.trellis/spec/preset、canonical/dogfood continue overlays 与任务 artifact。",
+    "--evidence",
+    "验证命令已通过：python3 -m json.tool trellis/index.json；bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh；python3 -m py_compile 相关 python 脚本；task.py validate；get_context.py --mode phase/--step 1.1/2.1/3.5；check-dogfood-overlay-drift.sh；git diff --check；find . -name '*.new' -o -name '*.bak'。",
+    "--evidence",
+    "Docs SSOT 已按 ssot_first 策略落到 durable docs/spec/workflow/overlay 文档，task artifact 仅保留任务证据；本次未新增脚本/schema，也未实现 #65/#66。",
+    "--evidence",
+    "本次 diff 不改变 Dockerfile、Docker Compose、GitHub Actions、Kubernetes/Kustomize、数据库 migration、Makefile 或运行时配置；部署影响为无，安全影响为无新增 secret/credential/敏感数据输出。"
+  ],
+  "conclusion": {
+    "passed": true,
+    "summary": "最终放行审查代理已按 origin/main...HEAD 覆盖当前 HEAD 51045439b5c6fea8aacd61d10446932e9de3c80e，本轮未发现 P0/P1/P2/P3 问题，Branch Review Gate 可通过。",
+    "block_priorities": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "blocking_findings_count": 0,
+    "findings_count": 0,
+    "observations_count": 0,
+    "followup_candidates_count": 0
+  },
+  "findings": [],
+  "observations": [],
+  "followup_candidates": [],
+  "issue_scope": {
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract/issue-scope-ledger.json",
+    "close_issues_reviewed": [
+      {
+        "number": 64,
+        "url": "https://github.com/castbox/guru-trellis/issues/64",
+        "title": "Docs SSOT planning contract：Phase 1 必须选择同步策略",
+        "reason": "本任务明确承诺并完整解决 #64：Phase 1 必须创建或更新可定位的 Docs SSOT Plan，后续 #65/#66 只消费该计划。",
+        "acceptance_evidence": [
+          "Docs 状态枚举 complete_docs / partial_docs / stale_docs / no_docs 已进入 canonical workflow、dogfood workflow、durable docs 和 specs。",
+          "同步策略 ssot_first / delta_first / bootstrap_or_repair_docs / no_docs_update_needed 及 evidence paths、strategy reason、affected durable docs、artifact delta merge、checkpoint、repair/follow-up/no-update reason 已进入长期 docs/workflow surfaces。",
+          "Phase 2 check PASS，验证命令包括 json tool、bash -n、py_compile、task validate、get_context phase reads、dogfood overlay drift、git diff --check 和 .new/.bak 检查。"
+        ]
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "verification_evidence": {
+    "base_head": "origin/main...51045439b5c6fea8aacd61d10446932e9de3c80e",
+    "changed_file_count": 30,
+    "reviewer": "trellis-check-agent:019f4601-5551-7651-a903-6631725f1ab6",
+    "review_source": "independent-agent",
+    "review_report": {
+      "path": ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract/review.md",
+      "sha256": "1748fe30885f8dbd26eb3804c4f12f781ffed6e2c5356598878e382716511bdf",
+      "size_bytes": 2736,
+      "modified_at": "2026-07-09T08:41:30.705305+00:00"
+    },
+    "agent_assignment": {
+      "path": ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract/agent-assignment.json",
+      "sha256": "d2ed286e8b9ffb89227dab1df727f5bacf82ac55522e44cac731161694888ca1",
+      "size_bytes": 33424,
+      "modified_at": "2026-07-09T08:43:41.826657+00:00",
+      "schema_version": "1.1",
+      "artifact_head": "51045439b5c6fea8aacd61d10446932e9de3c80e",
+      "roles": [
+        "实现代理",
+        "最终放行审查代理",
+        "阶段二检查代理"
+      ],
+      "agents_count": 6,
+      "review_rounds_count": 1,
+      "reuse_decisions_count": 0,
+      "status_events_count": 23,
+      "task": ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract",
+      "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
+    },
+    "review_reports": [
+      {
+        "round": 1,
+        "logical_role": "最终放行审查代理",
+        "agent_id": "019f4601-5551-7651-a903-6631725f1ab6",
+        "reviewed_head": "51045439b5c6fea8aacd61d10446932e9de3c80e",
+        "findings_count": 0,
+        "path": ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract/reviews/round-001-final-release-review.md",
+        "sha256": "66ac376f6e667f35acb64ede52ace681dae1cd519d5645566ac5ae0fa5588371",
+        "size_bytes": 5334,
+        "modified_at": "2026-07-09T08:42:34.498580+00:00"
+      }
+    ],
+    "evidence": [
+      "最终放行审查代理 019f4601-5551-7651-a903-6631725f1ab6 审查了 origin/main...HEAD 的完整 diff，覆盖 trellis/workflows/guru-team/workflow.md、dogfood .trellis/workflow.md、docs/requirements、.trellis/spec/workflow、.trellis/spec/preset、canonical/dogfood continue overlays 与任务 artifact。",
+      "验证命令已通过：python3 -m json.tool trellis/index.json；bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh；python3 -m py_compile 相关 python 脚本；task.py validate；get_context.py --mode phase/--step 1.1/2.1/3.5；check-dogfood-overlay-drift.sh；git diff --check；find . -name '*.new' -o -name '*.bak'。",
+      "Docs SSOT 已按 ssot_first 策略落到 durable docs/spec/workflow/overlay 文档，task artifact 仅保留任务证据；本次未新增脚本/schema，也未实现 #65/#66。",
+      "本次 diff 不改变 Dockerfile、Docker Compose、GitHub Actions、Kubernetes/Kustomize、数据库 migration、Makefile 或运行时配置；部署影响为无，安全影响为无新增 secret/credential/敏感数据输出。"
+    ],
+    "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
+  },
+  "deployment_impact": {
+    "changed_file_categories": {
+      "docs": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".claude/commands/trellis/continue.md",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".cursor/commands/trellis-continue.md",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/design.md",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/implement.md",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/prd.md",
+        ".trellis/workflow.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "trellis_artifacts": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/agent-assignment.json",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/check.jsonl",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/design.md",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/implement.jsonl",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/implement.md",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/issue-scope-ledger.json",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/phase2-check.json",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/planning-approval.json",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/prd.md",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/task.json",
+        ".trellis/workflow.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "config": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/agent-assignment.json",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/issue-scope-ledger.json",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/phase2-check.json",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/planning-approval.json",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/task.json"
+      ]
+    },
+    "deployment_asset_categories": {},
+    "changed_deployment_assets": [],
+    "probable_runtime_changes_without_deployment_asset_change": [
+      ".claude/commands/trellis/continue.md",
+      ".cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md"
+    ],
+    "needs_deployment_impact_review": true,
+    "review_instruction": "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；如果不需要，必须给出不需要的理由。"
+  }
+}

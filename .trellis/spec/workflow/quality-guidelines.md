@@ -101,6 +101,9 @@ cannot pass the gate. Include:
 
 - marketplace index and docs
 - workflow and dogfood copy
+- Phase 1 `Docs SSOT Plan` contract: docs state, evidence paths, strategy,
+  affected durable docs or checked no-update paths, task artifact deltas, and
+  merge/repair/follow-up checkpoint when required
 - companion scripts
 - schemas and config templates
 - preset installer and overlays
@@ -118,6 +121,11 @@ cannot pass the gate. Include:
   safety and Docs SSOT judgments, and Chinese conclusion, with literal tokens
   kept as-is only where required.
 - deployment asset impact
+
+For `Docs SSOT Plan` changes, check that the contract is expressed in
+Markdown workflow / docs / specs / overlays and remains repo-neutral. Do not
+move semantic docs sufficiency, stale-docs, or strategy selection judgment into
+Python or shell.
 
 ## Anti-Patterns
 

@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Check that Phase 1 contract wording stays aligned with canonical workflow behavior."}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Check required validation commands and review focus for workflow/preset changes."}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "Check canonical overlays and dogfood copies remain consistent."}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "Check README and requirements docs do not contradict canonical workflow."}
+{"file": "docs/requirements/guru-team-trellis-flow.md", "reason": "Check durable Docs SSOT Plan coverage and repo-neutral wording."}
