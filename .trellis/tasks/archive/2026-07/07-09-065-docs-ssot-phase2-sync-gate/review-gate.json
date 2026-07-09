@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-09T10:12:21Z",
-  "task_dir": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-09-065-docs-ssot-phase2-sync-gate",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/065-docs-ssot-phase2-sync-gate",
@@ -141,7 +141,7 @@
     }
   ],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-09-065-docs-ssot-phase2-sync-gate/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 65,
@@ -160,13 +160,13 @@
     "reviewer": "019f4652-6ce4-7772-8fb7-39feca8796d0",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-09-065-docs-ssot-phase2-sync-gate/review.md",
       "sha256": "8bb4adbd8bb293c36deded2c1f445978d0fab8869c6e378c6dfe50c57de7503f",
       "size_bytes": 2786,
       "modified_at": "2026-07-09T10:09:01.675146+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-09-065-docs-ssot-phase2-sync-gate/agent-assignment.json",
       "sha256": "2f2a866cb460c1c8c12bdfe92567a86b9f59ddf039b84b267742f134395c1bf7",
       "size_bytes": 38440,
       "modified_at": "2026-07-09T10:11:40.777961+00:00",
@@ -181,7 +181,7 @@
       "review_rounds_count": 1,
       "reuse_decisions_count": 0,
       "status_events_count": 27,
-      "task": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate",
+      "task": ".trellis/tasks/archive/2026-07/07-09-065-docs-ssot-phase2-sync-gate",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "review_reports": [
@@ -191,7 +191,7 @@
         "agent_id": "019f4652-6ce4-7772-8fb7-39feca8796d0",
         "reviewed_head": "6c3497204c8ab02453d2383c69fbca04c167e63f",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/reviews/round-001-final-pass.md",
+        "path": ".trellis/tasks/archive/2026-07/07-09-065-docs-ssot-phase2-sync-gate/reviews/round-001-final-pass.md",
         "sha256": "1e299004656ea6082d4bab185662635415ae52ae7cce6c19674ccd3e6fe4c46e",
         "size_bytes": 3850,
         "modified_at": "2026-07-09T10:10:47.318994+00:00"
