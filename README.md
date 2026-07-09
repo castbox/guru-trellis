@@ -321,7 +321,7 @@ AI 在改文件前要说明将跳过哪些 artifact、当前 checkout / branch /
 session/startup 注入、hook 未启用或未审批、怀疑自动注入没有运行，或用户需要完整
 上下文报告和重新加载 Trellis 上下文的场景。
 
-`check-workspace-boundary`、`record-planning-approval`、`check-planning-approval`、`record-phase2-check`、
+`check-workspace-boundary`、`resolve-human-artifacts`、`record-planning-approval`、`check-planning-approval`、`record-phase2-check`、
 `check-phase2-check`、`record-agent-assignment`、`record-subagent-liveness-event`、`check-subagent-liveness`、`check-agent-assignment`、
 `review-branch`、`check-review-gate`、`publish-pr` 是 workflow
 内部 companion script，不是需要用户日常手动记忆的新主流程。
@@ -331,6 +331,12 @@ task-local 链接，并在用户看到后获得 `explicit-post-planning-review` 
 Phase 0 handoff 确认或旧 `source=workflow` 不能通过 gate。校验 freshness 绑定三份
 规划文档内容 digest；实现提交后的 HEAD drift、metadata tail 或无关 dirty paths 不会单独
 使 approval stale。`task.py start` 只写状态，不代表规划已审查。
+`resolve-human-artifacts.sh` 为阶段回复提供确定性路径事实：规划停止、Phase 2 完成、
+Branch Review Gate 结果、finish-work dry-run 和最终 archive/publish 回复都应先运行它，
+然后输出 `Markdown 产物 review 表`。标准表只列 `prd.md`、`design.md`、
+`implement.md`、`review.md`、`pr-body.md` 五个 Markdown；缺失文件不生成 Markdown
+链接，`phase2-check.json`、`review-gate.json`、`agent-assignment.json` 等 JSON
+证据不进入默认表。
 `record-phase2-check.sh` / `check-phase2-check.sh` 在 commit 前记录并校验完整
 `trellis-check` 证据；验证命令只是 report 中的一部分，不等于完整 check 覆盖。
 Codex 项目默认使用 `codex.dispatch_mode: sub-agent`，由 main session 调度
@@ -400,6 +406,9 @@ Trellis metadata（包括 `review.md`、`reviews/*.md`、`review-gate.json`、PR
 `finish-work.sh --dry-run --from-trellis-finish-work` 是无副作用 readiness preview：
 只校验 gate、dirty state 和 PR body/readiness，并输出将要 archive、journal、
 metadata commit 与 publish 的计划；不会移动 task、写 journal、创建 commit、push 或创建 PR。
+dry-run 回复使用 active task 路径表；正式 finish archive 后，AI 必须重新运行
+`resolve-human-artifacts.sh` 解析 archive 后 task 路径，并在最终回复输出 archive-path
+`Markdown 产物 review 表`，不能复用 archive 前的 active task 链接。
 
 发布前 AI 必须生成或审查 PR body readiness。PR body 面向不了解 Trellis task 的
 GitHub reviewer，而不是 Trellis session 内部摘要；应包含具体的 `变更摘要`、

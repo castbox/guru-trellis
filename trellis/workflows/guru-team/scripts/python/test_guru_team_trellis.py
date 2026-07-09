@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -223,6 +224,16 @@ def boundary_args(**overrides: object) -> argparse.Namespace:
         "json": True,
         "task": None,
         "allow_source_clean": False,
+    }
+    values.update(overrides)
+    return argparse.Namespace(**values)
+
+
+def resolve_human_artifacts_args(**overrides: object) -> argparse.Namespace:
+    values: dict[str, object] = {
+        "root": None,
+        "json": True,
+        "task": None,
     }
     values.update(overrides)
     return argparse.Namespace(**values)
@@ -1021,6 +1032,96 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
 
         create_issue.assert_not_called()
         self.assertIn("--issue-title", str(raised.exception))
+
+
+class HumanMarkdownArtifactResolverTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        (self.root / ".trellis/tasks").mkdir(parents=True)
+        self.task_name = "07-09-061-task-markdown-review-table"
+        self.task_rel = f".trellis/tasks/{self.task_name}"
+        self.task_dir = self.root / self.task_rel
+        self.task_dir.mkdir(parents=True)
+        (self.task_dir / "task.json").write_text('{"title":"Human artifacts"}\n', encoding="utf-8")
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def write_artifacts(self, task_dir: Path, names: list[str]) -> None:
+        for name in names:
+            task_dir.mkdir(parents=True, exist_ok=True)
+            (task_dir / name).write_text(f"# {name}\n\n内容。\n", encoding="utf-8")
+
+    def artifact_by_filename(self, payload: dict[str, object]) -> dict[str, dict[str, object]]:
+        artifacts = payload["markdown_artifacts"]
+        self.assertIsInstance(artifacts, list)
+        return {str(item["filename"]): item for item in artifacts}  # type: ignore[index]
+
+    def test_resolve_active_task_returns_five_markdown_artifacts_only(self) -> None:
+        self.write_artifacts(self.task_dir, ["prd.md", "design.md", "implement.md", "review.md", "pr-body.md"])
+        for json_artifact in ["phase2-check.json", "review-gate.json", "pr-readiness.json", "agent-assignment.json"]:
+            (self.task_dir / json_artifact).write_text("{}\n", encoding="utf-8")
+
+        payload = gtt.cmd_resolve_human_artifacts(
+            resolve_human_artifacts_args(root=str(self.root), task=self.task_rel)
+        )
+
+        self.assertEqual(payload["status"], "ok")
+        self.assertFalse(payload["archived"])
+        self.assertEqual(payload["task_dir_relative"], self.task_rel)
+        artifacts = self.artifact_by_filename(payload)
+        self.assertEqual(
+            list(artifacts),
+            ["prd.md", "design.md", "implement.md", "review.md", "pr-body.md"],
+        )
+        for filename, artifact in artifacts.items():
+            self.assertTrue(artifact["exists"], filename)
+            self.assertEqual(artifact["status"], "已生成")
+            self.assertEqual(artifact["path"], f"{self.task_rel}/{filename}")
+            self.assertEqual(artifact["link"], str((self.task_dir / filename).resolve()))
+        artifact_text = json.dumps(payload, ensure_ascii=False)
+        self.assertNotIn("phase2-check.json", artifact_text)
+        self.assertNotIn("review-gate.json", artifact_text)
+        self.assertNotIn("pr-readiness.json", artifact_text)
+        self.assertNotIn("agent-assignment.json", artifact_text)
+
+    def test_missing_artifacts_have_no_dead_links(self) -> None:
+        self.write_artifacts(self.task_dir, ["prd.md"])
+
+        payload = gtt.cmd_resolve_human_artifacts(
+            resolve_human_artifacts_args(root=str(self.root), task=self.task_name)
+        )
+
+        artifacts = self.artifact_by_filename(payload)
+        self.assertTrue(artifacts["prd.md"]["exists"])
+        self.assertEqual(artifacts["prd.md"]["link"], str((self.task_dir / "prd.md").resolve()))
+        self.assertFalse(artifacts["design.md"]["exists"])
+        self.assertEqual(artifacts["design.md"]["status"], "未生成")
+        self.assertEqual(artifacts["design.md"]["link"], "")
+        self.assertFalse(artifacts["review.md"]["exists"])
+        self.assertEqual(artifacts["review.md"]["status"], "未执行")
+        self.assertEqual(artifacts["review.md"]["link"], "")
+
+    def test_resolve_archive_task_when_active_task_is_missing(self) -> None:
+        shutil.rmtree(self.task_dir)
+        archived = self.root / f".trellis/tasks/archive/2026-07/{self.task_name}"
+        archived.mkdir(parents=True)
+        (archived / "task.json").write_text('{"title":"Archived human artifacts"}\n', encoding="utf-8")
+        self.write_artifacts(archived, ["prd.md", "design.md", "implement.md", "review.md"])
+
+        payload = gtt.cmd_resolve_human_artifacts(
+            resolve_human_artifacts_args(root=str(self.root), task=self.task_name)
+        )
+
+        archived_rel = f".trellis/tasks/archive/2026-07/{self.task_name}"
+        self.assertTrue(payload["archived"])
+        self.assertEqual(payload["task_dir_relative"], archived_rel)
+        artifacts = self.artifact_by_filename(payload)
+        self.assertEqual(artifacts["review.md"]["path"], f"{archived_rel}/review.md")
+        self.assertEqual(artifacts["review.md"]["link"], str((archived / "review.md").resolve()))
+        self.assertFalse(artifacts["pr-body.md"]["exists"])
+        self.assertEqual(artifacts["pr-body.md"]["link"], "")
 
 
 class WorkspaceBoundaryGuardTest(unittest.TestCase):
@@ -5783,6 +5884,76 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
                     [],
                     f"{relpath} must not show bare finish-work command lines",
                 )
+
+
+class HumanArtifactReviewTableContractTest(unittest.TestCase):
+    REPO_ROOT = Path(__file__).resolve().parents[5]
+    CONTINUE_ENTRYPOINT_FILES = [
+        "trellis/workflows/guru-team/workflow.md",
+        ".trellis/workflow.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    ]
+    FINISH_ENTRYPOINT_FILES = [
+        "trellis/workflows/guru-team/workflow.md",
+        ".trellis/workflow.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+    ]
+
+    def assert_file_contains(self, relpath: str, snippets: list[str]) -> None:
+        content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
+        for snippet in snippets:
+            self.assertIn(snippet, content, f"{relpath} must mention {snippet!r}")
+
+    def test_continue_entrypoints_require_markdown_artifact_review_table(self) -> None:
+        snippets = [
+            "resolve-human-artifacts.sh",
+            "Markdown 产物 review 表",
+            "`prd.md`",
+            "`design.md`",
+            "`implement.md`",
+            "`review.md`",
+            "`pr-body.md`",
+        ]
+        for relpath in self.CONTINUE_ENTRYPOINT_FILES:
+            with self.subTest(path=relpath):
+                self.assert_file_contains(relpath, snippets)
+
+    def test_finish_entrypoints_resolve_active_then_archive_paths(self) -> None:
+        snippets = [
+            "resolve-human-artifacts.sh",
+            "Markdown 产物 review 表",
+            "active",
+            "archive",
+            "`prd.md`",
+            "`design.md`",
+            "`implement.md`",
+            "`review.md`",
+            "`pr-body.md`",
+        ]
+        for relpath in self.FINISH_ENTRYPOINT_FILES:
+            with self.subTest(path=relpath):
+                self.assert_file_contains(relpath, snippets)
+
+    def test_user_facing_docs_use_pr_body_as_default_body_artifact(self) -> None:
+        forbidden = "reviewed-" + "pr-body.md"
+        for relpath in [
+            "trellis/workflows/guru-team/workflow.md",
+            ".trellis/workflow.md",
+            "README.md",
+            "trellis/workflows/guru-team/README.md",
+            "trellis/presets/guru-team/README.md",
+        ]:
+            with self.subTest(path=relpath):
+                content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
+                self.assertNotIn(forbidden, content)
 
 
 class IntakeScopeEvolutionContractTest(unittest.TestCase):

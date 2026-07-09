@@ -16,6 +16,7 @@ Keep argument parsing and workflow logic in
 is a shell-specific reason to handle it in Bash. Existing examples:
 
 - `trellis/workflows/guru-team/scripts/bash/prepare-task.sh`
+- `trellis/workflows/guru-team/scripts/bash/resolve-human-artifacts.sh`
 - `trellis/workflows/guru-team/scripts/bash/review-branch.sh`
 - `trellis/presets/guru-team/scripts/bash/apply.sh`
 
@@ -177,6 +178,13 @@ Workspace boundary helpers are deterministic validators and fact snapshots:
 - `--allow-source-clean` may be used only for a clean source checkout probe that
   reports facts without treating a clean source checkout mismatch as a blocker;
   it must not permit source checkout task artifacts or review metadata.
+
+`resolve-human-artifacts.sh --json --task <task-path-or-name>` is a
+deterministic resolver for user-facing Markdown task artifacts. It may resolve
+the active task directory or archived task directory and report path/existence
+facts for only `prd.md`, `design.md`, `implement.md`, `review.md`, and
+`pr-body.md`. It must not read planning/check/review gate JSON artifacts, must
+not decide phase sufficiency, and must not create links for missing files.
 
 `review-branch.sh --pass` must fail before writing Branch Review Gate when
 `phase2-check.json` is missing, stale, incomplete, or contains unresolved

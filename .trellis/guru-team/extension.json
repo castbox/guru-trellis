@@ -42,6 +42,7 @@
         "issue-scope-ledger.json",
         "reviews/*.md",
         "review.md",
+        "pr-body.md",
         "review-gate.json",
         "pr-readiness.json"
       ],
@@ -50,6 +51,7 @@
         "version",
         "prepare-task",
         "check-workspace-boundary",
+        "resolve-human-artifacts",
         "record-planning-approval",
         "check-planning-approval",
         "record-phase2-check",
@@ -66,11 +68,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-09T05:15:49Z",
+  "installed_at": "2026-07-09T06:36:28Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/076-subagent-liveness-state-machine",
-    "commit": "a0f48765b12cda6305d85c20eeb20643044f3fb9",
+    "ref": "codex/061-task-markdown-review-table",
+    "commit": "b481344409ce9096207f954cf085a724b75bf093",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -142,12 +144,15 @@
       ".trellis/guru-team/scripts/bash/record-phase2-check.sh",
       ".trellis/guru-team/scripts/bash/record-planning-approval.sh",
       ".trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh",
+      ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh",
       ".trellis/guru-team/scripts/bash/review-branch.sh",
       ".trellis/guru-team/scripts/bash/version.sh",
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"
     ],
     "new_copies": [],
-    "managed_backups": [],
+    "managed_backups": [
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py.bak"
+    ],
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
   },

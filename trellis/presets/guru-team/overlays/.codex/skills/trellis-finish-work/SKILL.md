@@ -38,4 +38,18 @@ Only after reviewing the dry-run output, run the formal finish:
   --body-file "{TASK_DIR}/pr-body.md"
 ```
 
+After dry-run, run `resolve-human-artifacts.sh` against the active task and
+include an active-task `Markdown 产物 review 表`:
+
+```bash
+.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
+```
+
+After the formal finish archives the task, run the resolver again against the
+archived task name or archive path and include the archive-path
+`Markdown 产物 review 表` in the final reply. The table lists only `prd.md`,
+`design.md`, `implement.md`, `review.md`, and `pr-body.md`; missing files must
+not be rendered as Markdown links, and JSON artifacts stay out of the standard
+table.
+
 The `--from-trellis-finish-work` marker is required proof that this explicit finish entrypoint was invoked; do not add it to `trellis-continue`. The helper verifies the passed Branch Review Gate, allowing only Trellis metadata such as `review.md`, `reviews/*.md`, `agent-assignment.json`, `review-gate.json`, and PR readiness files after the reviewed HEAD; rejects uncommitted non-metadata changes; archives the active task; records the session journal; commits any remaining Trellis metadata-only changes; then internally calls `publish-pr` to push and create a non-draft PR with a Chinese title and body. Direct `publish-pr` is not the normal path and is reserved for explicit recovery/debug after finish-work. The helper does not perform review itself; the gate must already record task-local `review.md` as `review_report` digest evidence and raw `review_reports[]` digest evidence for every review round, and those Markdown reports must already be Chinese human-readable task artifacts except for literal command/path/JSON/HEAD/API/code tokens; when sub-agents were used it should already record `agent-assignment.json` digest/roles evidence. Docs SSOT reconciliation and any required Middle-platform Knowledge Gate evidence must also be present.

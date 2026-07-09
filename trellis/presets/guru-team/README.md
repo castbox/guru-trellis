@@ -159,6 +159,7 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/version.sh`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh`
 - `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh`
+- `.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh`
 - `.trellis/guru-team/scripts/bash/record-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/record-phase2-check.sh`
@@ -275,6 +276,14 @@ size / modified-time metadata for all three files; Phase 0 handoff approval or
 old `source=workflow` evidence must fail closed. Freshness is based on the three
 planning document content digests, not later HEAD drift, metadata tail, or
 unrelated dirty paths. `task.py start` remains only a status transition.
+`resolve-human-artifacts.sh` is the deterministic fact layer for phase replies:
+before a planning stop, Phase 2 completion, Branch Review Gate result,
+finish-work dry-run reply, or final archive/publish reply, the AI runs it and
+renders a `Markdown 产物 review 表` with only `prd.md`, `design.md`,
+`implement.md`, `review.md`, and `pr-body.md`. Missing files are shown without
+Markdown links, and JSON evidence such as `phase2-check.json`,
+`review-gate.json`, or `agent-assignment.json` is not part of the standard
+table.
 `record-phase2-check.sh` records the full-scope `trellis-check`
 result before commit, including the pre-commit `dirty_paths`; validation
 commands are evidence inside that report, not a substitute for the check.
@@ -350,6 +359,9 @@ readiness preview. It validates the gate, dirty state, and PR body/readiness,
 then prints the planned archive, journal, metadata commit, and publish actions
 without moving task files, writing journal entries, creating commits, pushing,
 or creating a PR.
+After dry-run, the AI should render the active-task `Markdown 产物 review 表`;
+after formal archive, it must rerun the resolver and render the archive-path
+table because active task links are no longer the final review entry points.
 
 Before finish-work publishes, the AI must generate or review a PR body for
 GitHub reviewers who do not know the Trellis task. The body should use concrete

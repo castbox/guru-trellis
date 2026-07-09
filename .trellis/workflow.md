@@ -200,6 +200,21 @@ finish:
   --body-file "{TASK_DIR}/pr-body.md"
 ```
 
+Before any phase stop or phase completion reply, resolve the human-facing
+Markdown artifacts and include a `Markdown 产物 review 表` in the response:
+
+```bash
+.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
+```
+
+The standard table lists only the resolver's five Markdown files: `prd.md`,
+`design.md`, `implement.md`, `review.md`, and `pr-body.md`. It must not include
+machine JSON artifacts such as `planning-approval.json`, `phase2-check.json`,
+`agent-assignment.json`, `review-gate.json`, `pr-readiness.json`, or
+`issue-scope-ledger.json` by default. Render existing files as links using the
+resolver path/link fields; when `exists=false`, show the filename and status
+without a Markdown link so the response does not create a dead link.
+
 These are internal workflow helpers. `review-branch.sh` records and validates a
 review that already happened; it is not the reviewer. `publish-pr.sh` is
 intentionally omitted from the normal helper sequence because ordinary direct
@@ -318,6 +333,7 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - `agent-assignment.json` — task-local sub-agent assignment ledger with Chinese logical roles, technical `agent_id`, display-only `platform_nickname`, HEAD evidence, review rounds, raw report digest fields, and reuse/replacement decisions.
 - `reviews/*.md` — per-round raw Branch Review reports retained as task metadata.
 - `review.md` — final human rollup for Branch Review rounds, findings lifecycle, final conclusion, and links to raw reports.
+- `pr-body.md` — reviewed Markdown PR body for GitHub reviewers.
 - `review-gate.json` — Branch Review Gate result for the reviewed HEAD.
 - `implement.jsonl` / `check.jsonl` — spec and research manifests for sub-agent context. They do not replace `implement.md`.
 
@@ -508,6 +524,7 @@ Load `trellis-brainstorm`; stay in planning.
 Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Finish `prd.md`, `design.md`, and `implement.md`; then visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
+Before that planning stop reply, run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表`; only link existing Markdown files and do not list JSON artifacts.
 Before `task.py start`, record and check `planning-approval.json` with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale approval blocks implementation and Phase 2 check recording.
 Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research manifests before start.
 [/workflow-state:planning]
@@ -517,6 +534,7 @@ Load `trellis-brainstorm`; stay in planning.
 Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Finish `prd.md`, `design.md`, and `implement.md`; then visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
+Before that planning stop reply, run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表`; only link existing Markdown files and do not list JSON artifacts.
 Before `task.py start`, record and check `planning-approval.json` with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale approval blocks implementation and Phase 2 check recording.
 Inline mode: skip jsonl curation; Phase 2 reads artifacts/specs via `trellis-before-dev`.
 [/workflow-state:planning-inline]
@@ -621,9 +639,19 @@ Inline Codex/Kilo/Antigravity/Devin workflows skip this step and load context th
 #### 1.4 Explicit planning review `[required · once]`
 
 After `prd.md`, `design.md`, and `implement.md` are complete, the main session
-must visibly present all three task-local planning documents to the user and
-then stop for an explicit post-planning confirmation. The message must include
-clickable or absolute links to:
+must run the Markdown artifact resolver, render a `Markdown 产物 review 表`,
+visibly present all three task-local planning documents to the user, and then
+stop for an explicit post-planning confirmation.
+
+```bash
+.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
+```
+
+The table must list only `prd.md`, `design.md`, `implement.md`, `review.md`,
+and `pr-body.md`. For this planning stop, `review.md` and `pr-body.md` normally
+show missing statuses; do not link them when the resolver reports
+`exists=false`. The planning message must include clickable or absolute links
+to:
 
 - `{TASK_DIR}/prd.md`
 - `{TASK_DIR}/design.md`
@@ -702,6 +730,7 @@ After dispatching an implement/check sub-agent, record `assigned` for `实现代
 Sub-agent self-exemption: if already running as `trellis-implement` or `trellis-check`, do the work directly, do not spawn another Trellis implement/check agent, and return the role-specific handoff/report as artifact evidence. Main-session inline/self-exemption needs explicit artifact evidence; otherwise missing sub-agent evidence fails closed.
 Before edits, confirm knowledge gate and docs SSOT responsibilities from artifacts.
 Read context: jsonl entries -> `prd.md` -> `design.md` -> `implement.md`.
+Every Phase 2 or Phase 3 stop/completion reply must first run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表` with only `prd.md`, `design.md`, `implement.md`, `review.md`, and `pr-body.md`.
 [/workflow-state:in_progress]
 
 [workflow-state:in_progress-inline]
@@ -712,6 +741,7 @@ Before commit, record and check `phase2-check.json`; validation commands alone a
 Do not dispatch implement/check sub-agents in inline mode.
 Before edits, confirm knowledge gate and docs SSOT responsibilities from artifacts.
 Read context: `prd.md` -> `design.md` -> `implement.md`, plus relevant spec/research loaded by skills.
+Every Phase 2 or Phase 3 stop/completion reply must first run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表` with only `prd.md`, `design.md`, `implement.md`, `review.md`, and `pr-body.md`.
 [/workflow-state:in_progress-inline]
 
 #### 2.1 Implement `[required · repeatable]`
@@ -780,6 +810,19 @@ After the `trellis-check` AI check has completed, record the task-local check re
 
 Use `--finding 'P2|中文问题说明|path/to/file'` or `--findings-file findings.json` when check finds issues. P0/P1/P2 findings must be resolved before `--pass`. `record-phase2-check` is a recorder / validator; validation commands and script success are evidence inside the report, not a substitute for complete `trellis-check` coverage.
 
+Before the Phase 2 stop/completion reply, run:
+
+```bash
+.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
+```
+
+Include a `Markdown 产物 review 表` so the user can open the current human
+task artifacts from the latest reply. The table lists only `prd.md`,
+`design.md`, `implement.md`, `review.md`, and `pr-body.md`; missing files stay
+plain text with their resolver status and no Markdown link. Do not add
+`phase2-check.json`, `agent-assignment.json`, or other JSON evidence to the
+standard table.
+
 #### 2.3 Rollback `[on demand]`
 
 If implementation reveals a requirement defect, return to Phase 1 and update artifacts before continuing.
@@ -799,7 +842,8 @@ If `review-gate.json` is missing, failed, stale for the current HEAD, or reviewe
 If the gate passed, create or review task-local PR readiness: `{TASK_DIR}/pr-body.md` via `--body-file "{TASK_DIR}/pr-body.md"` or a task-local `--body-artifact`.
 Run a dry-run first:
 `.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work --body-file "{TASK_DIR}/pr-body.md" --dry-run`
-Review the dry-run output, then run the same command without `--dry-run`.
+After dry-run, run `resolve-human-artifacts.sh --json --task <task-path>` and include an active-task `Markdown 产物 review 表`; then review the dry-run output and run the same command without `--dry-run`.
+After the formal finish archives the task, run `resolve-human-artifacts.sh --json --task <task-name-or-archive-path>` again and include the archive-path `Markdown 产物 review 表` in the final reply.
 Finish-work accepts only Trellis metadata tail such as `review.md`, `reviews/*.md`, `review-gate.json`, `agent-assignment.json`, `pr-body.md`, and `pr-readiness.json`; any non-metadata dirty path or non-metadata committed drift must go back to `trellis-continue` / Phase 2-3.
 Do not call `publish-pr` directly; normal publish is only through the explicit `trellis-finish-work` closeout after archive and journal.
 [/workflow-state:completed]
@@ -903,7 +947,22 @@ as `审查轮次`, `问题生命周期`, `最终审查`, `证据`, `观察项`, 
 final pass/fail conclusion, and link every raw report. The standard top-level
 artifact table still defaults to the human rollup `review.md`; raw reports are
 task metadata reached through `review.md` links and gate digest evidence, not
-separate default table rows. Independent review agents must review the branch
+separate default table rows.
+
+Before any Branch Review Gate pass/fail stop reply, run:
+
+```bash
+.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
+```
+
+Render a `Markdown 产物 review 表` with only the five Markdown artifacts. The
+`review.md` row must be present and its purpose is the AI/human review report.
+If `review.md` was not generated because the gate could not proceed, show its
+missing status without a link. Do not add `review-gate.json`,
+`phase2-check.json`, or `agent-assignment.json` to the standard table; mention
+those machine artifacts only in a separate evidence section when needed.
+
+Independent review agents must review the branch
 diff and repository artifacts directly from an AI reviewer perspective; they do
 not execute Guru Team recorder/validator extension scripts such as
 `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or
@@ -1018,11 +1077,28 @@ The `--from-trellis-finish-work` marker is required proof that the explicit fini
 
 When `--dry-run` is also passed with the explicit finish intent marker, the helper is a side-effect-free readiness preview: it validates the same gate, dirty-state, and PR body/readiness inputs, then prints the planned archive, journal, metadata commit, and publish actions without moving task files, writing journal entries, creating commits, pushing, or creating a PR.
 
+After the dry-run returns, run the human artifact resolver against the active
+task and include the active-task `Markdown 产物 review 表` in the preview reply:
+
+```bash
+.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
+```
+
+After the formal finish archives the task, run the resolver again against the
+archived task name or archived task path and include the archive-path
+`Markdown 产物 review 表` in the final reply. This second resolve is required
+because old active task links are not expected to remain valid after
+`task.py archive`; do not create symlinks, pointer dirs, or old-path stubs.
+
 `finish-work` may create Trellis metadata commits for archive and journal. These metadata commits do not invalidate the earlier code review gate; the helper only accepts Trellis metadata after the reviewed HEAD and blocks any code, config, script, schema, CI/CD, deployment, or preset change that appears after the gate.
 
 #### 3.7 Publish PR `[automatic after finish-work]`
 
 After archive and journal succeed, automatically publish the PR. This is not a new user-facing phase or command. The normal path is through the explicit `trellis-finish-work` entrypoint, which calls `finish-work.sh --from-trellis-finish-work`; `publish-pr.sh` is an internal helper and rejects ordinary direct calls. Direct `publish-pr.sh` is allowed only when `finish-work` calls it with its internal marker, or when an operator uses the explicit recovery/debug flag after `finish-work` already completed archive and journal but publish must be retried.
+
+The final publish/finish response must use the archive-after-finish resolver
+result from Phase 3.6 for its `Markdown 产物 review 表`; do not reuse active
+task links captured before archive.
 
 Before invoking finish-work, the AI must generate or review the PR body for a
 GitHub reviewer who has no Trellis session context. The body is not a task
@@ -1030,7 +1106,7 @@ artifact summary. It must explain what behavior changed, which modules or
 workflow surfaces are affected, how the change was validated, what Review Gate
 covered, which issues are closed vs only referenced, and the real safety /
 deployment impact. For non-draft publish, pass the reviewed body through
-`--body-file <reviewed-pr-body.md>` or a readiness artifact passed as
+`--body-file <pr-body.md>` or a readiness artifact passed as
 `--body-artifact <pr-readiness.json>`; `generated` bodies are preview-only and
 are not publish readiness evidence. The reviewed body/readiness files are task
 metadata, should normally live under the current task directory before
