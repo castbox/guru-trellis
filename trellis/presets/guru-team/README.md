@@ -67,6 +67,29 @@ example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.3`. That release targets
 official `@mindfoldhq/trellis` `0.6.5`. Unpinned `gh:castbox/guru-trellis/trellis`
 is a latest/canary source and should be reported as mutable provenance.
 
+## Commit Message Helpers
+
+The preset installs objective helpers for the Guru Team Chinese Conventional
+Commits contract:
+
+```bash
+.trellis/guru-team/scripts/bash/check-commit-messages.sh --json --task <task-path>
+.trellis/guru-team/scripts/bash/format-merge-commit.sh --json \
+  --task <task-path> \
+  --pull-request <pr-number> \
+  --summary "中文 PR 摘要"
+```
+
+The helpers validate subject/body shape and format merge commit payloads only.
+They do not decide whether implementation, Phase 2 check, Branch Review Gate, or
+PR readiness is sufficient. Work commits use
+`{type}({scope}): #{primary_issue} 中文描述` with fixed body sections and
+`Refs #<primary_issue>`; commit messages must not use close keywords such as
+`Closes`, `Fixes`, `Resolves`, `Close`, `Fix`, or `Resolve`; Trellis metadata commits use an empty body; publish
+payloads provide `chore(merge): #{pull_request} 合并 #{primary_issue} 中文 PR 摘要`
+plus the fixed merge body and explicit `gh pr merge ... --subject ... --body-file ...`
+command.
+
 ## Apply
 
 ```bash
@@ -168,6 +191,8 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/check-agent-assignment.sh`
 - `.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh`
 - `.trellis/guru-team/scripts/bash/check-subagent-liveness.sh`
+- `.trellis/guru-team/scripts/bash/check-commit-messages.sh`
+- `.trellis/guru-team/scripts/bash/format-merge-commit.sh`
 - `.trellis/guru-team/scripts/bash/review-branch.sh`
 - `.trellis/guru-team/scripts/bash/check-review-gate.sh`
 - `.trellis/guru-team/scripts/bash/publish-pr.sh`

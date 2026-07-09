@@ -1,0 +1,12 @@
+{"file": ".trellis/tasks/07-10-092-conventional-commits/prd.md", "reason": "检查需求和验收标准是否覆盖 issue #92。"}
+{"file": ".trellis/tasks/07-10-092-conventional-commits/design.md", "reason": "检查 Docs SSOT Plan、script/workflow 分层和兼容性。"}
+{"file": ".trellis/tasks/07-10-092-conventional-commits/implement.md", "reason": "检查执行步骤、验证命令和 commit message 计划。"}
+{"file": ".trellis/tasks/07-10-092-conventional-commits/research/official-trellis-docs.md", "reason": "检查官方 Trellis 扩展面依据。"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查 workflow 合同、commit message 规则和 review gate 要求。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查脚本未承担 AI 判断流程。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查新增 payload 与既有 artifact 兼容。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查验证命令、dogfood drift、开箱验证和 review focus。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查 managed assets、executable bit、preset README 和 dogfood copy。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查公共文档与 canonical workflow 一致。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查 validator/helper 没有重复实现已有解析逻辑。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查 workflow、scripts、docs、tests、installed copy 多层一致。"}

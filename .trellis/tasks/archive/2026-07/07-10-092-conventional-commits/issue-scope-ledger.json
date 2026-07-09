@@ -1,0 +1,30 @@
+{
+  "primary_issue": {
+    "number": 92,
+    "url": "https://github.com/castbox/guru-trellis/issues/92",
+    "title": "强制 guru-team workflow 使用中文 Conventional Commits 提交规范",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "Phase 2 check 已确认 workflow、README、spec、companion scripts、preset installer 与测试覆盖 issue #92 的中文 Conventional Commits 合同。",
+      "验证已通过：`python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py`，共 242 tests。",
+      "验证已通过：`check-commit-messages.sh --task .trellis/tasks/07-10-092-conventional-commits --json` 与 `format-merge-commit.sh --task .trellis/tasks/07-10-092-conventional-commits --pull-request 91 ... --json`。",
+      "验证已通过：dogfood overlay drift、Python compile、bash syntax、`git diff --check`、task validate 与 public main throwaway install sample；当前分支 marketplace install 需 push 或 tag 后复验。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 92,
+      "url": "https://github.com/castbox/guru-trellis/issues/92",
+      "title": "强制 guru-team workflow 使用中文 Conventional Commits 提交规范",
+      "reason": "默认 close 候选；workflow/docs/spec/script/test/preset 变更已覆盖 issue #92 验收范围。",
+      "acceptance_evidence": [
+        "Phase 2 check 已确认 workflow、README、spec、companion scripts、preset installer 与测试覆盖 issue #92 的中文 Conventional Commits 合同。",
+        "验证已通过：`python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py`，共 242 tests。",
+        "验证已通过：`check-commit-messages.sh --task .trellis/tasks/07-10-092-conventional-commits --json` 与 `format-merge-commit.sh --task .trellis/tasks/07-10-092-conventional-commits --pull-request 91 ... --json`。",
+        "验证已通过：dogfood overlay drift、Python compile、bash syntax、`git diff --check`、task validate 与 public main throwaway install sample；当前分支 marketplace install 需 push 或 tag 后复验。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

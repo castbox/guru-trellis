@@ -1,72 +1,68 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 93,
-    "url": "https://github.com/castbox/guru-trellis/issues/93",
-    "title": "将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
+    "number": 92,
+    "url": "https://github.com/castbox/guru-trellis/issues/92",
+    "title": "强制 guru-team workflow 使用中文 Conventional Commits 提交规范",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/093-planning-ambiguity-scanner/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/092-conventional-commits/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "planning-ambiguity-scanner",
+  "slug": "092-conventional-commits",
   "naming_quality": {
     "ok": true,
     "reason": "naming includes enough business tokens",
     "requires_semantic_name": false,
-    "current_slug": "093-planning-ambiguity-scanner",
+    "current_slug": "092-conventional-commits",
     "current_surface": "workspace_slug",
     "suggested_override_flags": [],
     "checked_names": {
       "slug": {
         "ok": true,
-        "slug": "planning-ambiguity-scanner",
+        "slug": "092-conventional-commits",
         "reason": "ok",
         "business_tokens": [
-          "planning",
-          "ambiguity",
-          "scanner"
+          "conventional",
+          "commits"
         ]
       },
       "task_slug": {
         "ok": true,
-        "slug": "093-planning-ambiguity-scanner",
+        "slug": "092-conventional-commits",
         "reason": "ok",
         "business_tokens": [
-          "planning",
-          "ambiguity",
-          "scanner"
+          "conventional",
+          "commits"
         ]
       },
       "workspace_slug": {
         "ok": true,
-        "slug": "093-planning-ambiguity-scanner",
+        "slug": "092-conventional-commits",
         "reason": "ok",
         "business_tokens": [
-          "planning",
-          "ambiguity",
-          "scanner"
+          "conventional",
+          "commits"
         ]
       },
       "branch_name": {
         "ok": true,
-        "slug": "093-planning-ambiguity-scanner",
+        "slug": "092-conventional-commits",
         "reason": "ok",
         "business_tokens": [
-          "planning",
-          "ambiguity",
-          "scanner"
+          "conventional",
+          "commits"
         ]
       }
     }
   },
-  "task_slug": "093-planning-ambiguity-scanner",
-  "task_title": "#93 将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
-  "branch_name": "fix/093-planning-ambiguity-scanner",
-  "workspace_slug": "093-planning-ambiguity-scanner",
+  "task_slug": "092-conventional-commits",
+  "task_title": "#92 强制 guru-team workflow 使用中文 Conventional Commits 提交规范",
+  "branch_name": "codex/092-conventional-commits",
+  "workspace_slug": "092-conventional-commits",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/093-planning-ambiguity-scanner",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/092-conventional-commits",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -77,30 +73,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#93 将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
+    "#92 强制 guru-team workflow 使用中文 Conventional Commits 提交规范",
     "--slug",
-    "093-planning-ambiguity-scanner",
+    "092-conventional-commits",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-10-093-planning-ambiguity-scanner",
+  "task_dir": ".trellis/tasks/07-10-092-conventional-commits",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 93,
-      "url": "https://github.com/castbox/guru-trellis/issues/93",
-      "title": "将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
+      "number": 92,
+      "url": "https://github.com/castbox/guru-trellis/issues/92",
+      "title": "强制 guru-team workflow 使用中文 Conventional Commits 提交规范",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 93,
-        "url": "https://github.com/castbox/guru-trellis/issues/93",
-        "title": "将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
+        "number": 92,
+        "url": "https://github.com/castbox/guru-trellis/issues/92",
+        "title": "强制 guru-team workflow 使用中文 Conventional Commits 提交规范",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -115,7 +111,7 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           86b4b3b [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           e94f4ab [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate            44254bb [codex/051-prepare-task-naming-quality-gate]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/052-explicit-planning-review                    bf0c0cf [codex/052-explicit-planning-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution                      a366142 [codex/055-intake-scope-evolution]",
@@ -132,7 +128,8 @@
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/076-subagent-liveness-state-machine             ab07b69 [codex/076-subagent-liveness-state-machine]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/078-review-report-chinese-language              1365827 [codex/078-review-report-chinese-language]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/083-planning-ambiguity-review                   8a9f9a3 [codex/083-planning-ambiguity-review]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/093-planning-ambiguity-scanner                  86b4b3b [fix/093-planning-ambiguity-scanner]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/092-conventional-commits                        e94f4ab [codex/092-conventional-commits]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/093-planning-ambiguity-scanner                  e94f4ab (detached HEAD)",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
@@ -165,10 +162,10 @@
       "base_ref": "main",
       "remote_ref": "origin/main",
       "local_head_before": "86b4b3b9f6054db8167b4af1da99dc070ebb9c0a",
-      "local_head_after": "86b4b3b9f6054db8167b4af1da99dc070ebb9c0a",
-      "remote_head": "86b4b3b9f6054db8167b4af1da99dc070ebb9c0a",
+      "local_head_after": "e94f4ab68d5e805d8b298936da52832c5caf16cc",
+      "remote_head": "e94f4ab68d5e805d8b298936da52832c5caf16cc",
       "fetch_performed": true,
-      "fast_forwarded": false,
+      "fast_forwarded": true,
       "fresh": true,
       "status": "fresh",
       "base_ref_for_worktree": "main"
@@ -177,7 +174,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/093-planning-ambiguity-scanner/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/092-conventional-commits/.trellis/.developer",
       "developer": "wumengye"
     }
   }
