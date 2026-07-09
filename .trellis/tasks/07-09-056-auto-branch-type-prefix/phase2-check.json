@@ -1,25 +1,18 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-09T16:14:32Z",
+  "generated_at": "2026-07-09T16:42:15Z",
   "task_dir": ".trellis/tasks/07-09-056-auto-branch-type-prefix",
   "base_branch": "main",
-  "head": "afbecdd288101a86b04309cbe248d3c9fe976854",
+  "head": "137135763fe8f6765d638af639f80bf186e02478",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".trellis/guru-team/handoff.json",
-    ".trellis/workflow.md",
-    "README.md",
-    "docs/requirements/requirement-main.md",
-    "trellis/presets/guru-team/README.md",
-    "trellis/workflows/guru-team/README.md",
-    "trellis/workflows/guru-team/config-template.yml",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    "trellis/workflows/guru-team/workflow.md",
-    ".trellis/tasks/07-09-056-auto-branch-type-prefix/"
+    ".trellis/guru-team/config-template.yml",
+    ".trellis/guru-team/config.yml",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/"
   ],
-  "checker": "trellis-check:019f479b-fd7a-7753-b41b-65438351e941",
-  "check_summary": "阶段二检查通过：requirements、design、code、tests、spec sync、cross-layer docs consistency、Docs SSOT 与 deployment impact 均已覆盖；检查代理修复 workflow 误判 ci 与 issue body 类型清单/boilerplate 污染两个推断风险，主会话复跑验证矩阵通过。",
+  "checker": "trellis-check:019f47b9-1558-7cb0-bcd6-bd120cf1265d",
+  "check_summary": "F-001 修复后的 Phase 2 re-check 通过：canonical 与 dogfood installed prepare-task helper/config 已同步，active prepare-task runtime 使用 installed helper 且行为探针输出 fix/<slug> 与 chore fallback；Issue Scope Ledger 已补充 F-001 closure evidence；requirements、design、code、tests、spec sync、cross-layer、Docs SSOT 与 deployment impact 均已覆盖，无当前范围 findings。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/prd.md",
@@ -47,15 +40,27 @@
     },
     {
       "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/agent-assignment.json",
-      "sha256": "0a65cc2f8c1ace1fc0028ed0072915fb27b75de76cc8f94097ddf4f5e953ca1b",
-      "size_bytes": 7251,
-      "modified_at": "2026-07-09T16:12:44.962155+00:00"
+      "sha256": "3255aad584ae98ec69f6349c40a92d1f6e80f8f41c53d7916216c20a8ac12b7c",
+      "size_bytes": 17341,
+      "modified_at": "2026-07-09T16:39:37.129256+00:00"
     },
     {
       "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/issue-scope-ledger.json",
-      "sha256": "504a82668ccb6376f8634e99bfb390c1cb86cf8335cbdc0e9c1b5c7efadbffb1",
-      "size_bytes": 1565,
-      "modified_at": "2026-07-09T16:13:05.492395+00:00"
+      "sha256": "f7f548fdd6c5b836dcf5fd8121c18f2d038ab2a3986b9864e77713662b199752",
+      "size_bytes": 1929,
+      "modified_at": "2026-07-09T16:41:43.803779+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/review.md",
+      "sha256": "9032be7cf301ce1e51ce1c64a84fbb9add03a1cec9064df15c2d275d3df0ac51",
+      "size_bytes": 1638,
+      "modified_at": "2026-07-09T16:24:24.116548+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-1-final-review.md",
+      "sha256": "7b3f9c3b9008b9c6bcea22700b061648c59ce4d511d76e527fb52ee24d54b44b",
+      "size_bytes": 7946,
+      "modified_at": "2026-07-09T16:24:24.116102+00:00"
     }
   ],
   "checked_specs": [
@@ -116,11 +121,11 @@
       "result": "passed"
     },
     {
-      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh",
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
       "result": "passed"
     },
     {
-      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py .trellis/guru-team/scripts/python/guru_team_trellis.py",
       "result": "passed"
     },
     {
@@ -142,6 +147,14 @@
     {
       "command": "git diff --check",
       "result": "passed"
+    },
+    {
+      "command": "cmp canonical/dogfood helper, config template, workflow",
+      "result": "passed"
+    },
+    {
+      "command": "python behavior probe for canonical and dogfood helpers",
+      "result": "passed: fix/<slug> and chore fallback"
     }
   ],
   "findings": [],

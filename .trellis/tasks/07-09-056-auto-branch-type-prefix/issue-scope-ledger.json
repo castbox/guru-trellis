@@ -7,7 +7,8 @@
     "acceptance_evidence": [
       "实现将 prepare-task 默认分支从固定 codex/<slug> 改为确定性 <branch-type>/<slug>。",
       "回归测试覆盖 11 个合法 branch type、unknown -> chore、显式 --branch 覆盖、legacy branch_prefix 不驱动默认分支、suggested_override_flags 不再建议 codex/。",
-      "Phase 2 检查代理确认 requirements/design/code/tests/docs/deployment impact 已覆盖，且无剩余当前范围 blocker。"
+      "Phase 2 检查代理确认 requirements/design/code/tests/docs/deployment impact 已覆盖，且无剩余当前范围 blocker。",
+      "Branch Review 发现的 F-001 已通过 dogfood installed helper/config 同步闭环；canonical 与 dogfood runtime 行为探针均输出 fix/<slug> 和 chore fallback。"
     ]
   },
   "close_issues": [
@@ -19,7 +20,8 @@
       "acceptance_evidence": [
         "实现将 prepare-task 默认分支从固定 codex/<slug> 改为确定性 <branch-type>/<slug>。",
         "回归测试覆盖 11 个合法 branch type、unknown -> chore、显式 --branch 覆盖、legacy branch_prefix 不驱动默认分支、suggested_override_flags 不再建议 codex/。",
-        "Phase 2 检查代理确认 requirements/design/code/tests/docs/deployment impact 已覆盖，且无剩余当前范围 blocker。"
+        "Phase 2 检查代理确认 requirements/design/code/tests/docs/deployment impact 已覆盖，且无剩余当前范围 blocker。",
+        "Branch Review 发现的 F-001 已通过 dogfood installed helper/config 同步闭环；canonical 与 dogfood runtime 行为探针均输出 fix/<slug> 和 chore fallback。"
       ]
     }
   ],

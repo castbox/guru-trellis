@@ -23,8 +23,15 @@ duplicate_candidate_limit: 5
 # Allowed values: confirm, block
 duplicate_high_similarity_action: confirm
 
-# Prefix for feature branches.
-branch_prefix: "codex/"
+# Legacy compatibility field. Older installs may still define branch_prefix,
+# but automatic prepare-task branches now use <branch-type>/<slug>. Explicit
+# --branch remains the override for special cases.
+branch_prefix: ""
+
+# Fallback branch type when deterministic inference does not match a supported
+# type. Allowed values: feat, fix, refactor, perf, test, docs, style, build, ci,
+# chore, revert.
+branch_type_default: chore
 
 # Preferred base branch candidates, in order. The workflow selects the first local
 # or origin branch that exists. If the current branch is not the selected base,
