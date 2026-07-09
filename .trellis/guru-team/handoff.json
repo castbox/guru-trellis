@@ -1,80 +1,76 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 65,
-    "url": "https://github.com/castbox/guru-trellis/issues/65",
-    "title": "Docs SSOT implementation/check gate：把同步纳入 Phase 2",
+    "number": 66,
+    "url": "https://github.com/castbox/guru-trellis/issues/66",
+    "title": "Docs SSOT Branch Review/finish-work enforcement：final review 只验证不补救",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/065-docs-ssot-phase2-sync-gate/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/066-docs-ssot-phase3-enforcement/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "065-docs-ssot-phase2-sync-gate",
+  "slug": "066-docs-ssot-phase3-enforcement",
   "naming_quality": {
     "ok": true,
     "reason": "naming includes enough business tokens",
     "requires_semantic_name": false,
-    "current_slug": "065-docs-ssot-phase2-sync-gate",
+    "current_slug": "066-docs-ssot-phase3-enforcement",
     "current_surface": "workspace_slug",
     "suggested_override_flags": [],
     "checked_names": {
       "slug": {
         "ok": true,
-        "slug": "065-docs-ssot-phase2-sync-gate",
+        "slug": "066-docs-ssot-phase3-enforcement",
         "reason": "ok",
         "business_tokens": [
           "docs",
           "ssot",
-          "phase2",
-          "sync",
-          "gate"
+          "phase3",
+          "enforcement"
         ]
       },
       "task_slug": {
         "ok": true,
-        "slug": "065-docs-ssot-phase2-sync-gate",
+        "slug": "066-docs-ssot-phase3-enforcement",
         "reason": "ok",
         "business_tokens": [
           "docs",
           "ssot",
-          "phase2",
-          "sync",
-          "gate"
+          "phase3",
+          "enforcement"
         ]
       },
       "workspace_slug": {
         "ok": true,
-        "slug": "065-docs-ssot-phase2-sync-gate",
+        "slug": "066-docs-ssot-phase3-enforcement",
         "reason": "ok",
         "business_tokens": [
           "docs",
           "ssot",
-          "phase2",
-          "sync",
-          "gate"
+          "phase3",
+          "enforcement"
         ]
       },
       "branch_name": {
         "ok": true,
-        "slug": "065-docs-ssot-phase2-sync-gate",
+        "slug": "066-docs-ssot-phase3-enforcement",
         "reason": "ok",
         "business_tokens": [
           "docs",
           "ssot",
-          "phase2",
-          "sync",
-          "gate"
+          "phase3",
+          "enforcement"
         ]
       }
     }
   },
-  "task_slug": "065-docs-ssot-phase2-sync-gate",
-  "task_title": "#65 Docs SSOT implementation/check gate：把同步纳入 Phase 2",
-  "branch_name": "codex/065-docs-ssot-phase2-sync-gate",
-  "workspace_slug": "065-docs-ssot-phase2-sync-gate",
+  "task_slug": "066-docs-ssot-phase3-enforcement",
+  "task_title": "#66 Docs SSOT Branch Review/finish-work enforcement：final review 只验证不补救",
+  "branch_name": "codex/066-docs-ssot-phase3-enforcement",
+  "workspace_slug": "066-docs-ssot-phase3-enforcement",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/065-docs-ssot-phase2-sync-gate",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/066-docs-ssot-phase3-enforcement",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -85,30 +81,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#65 Docs SSOT implementation/check gate：把同步纳入 Phase 2",
+    "#66 Docs SSOT Branch Review/finish-work enforcement：final review 只验证不补救",
     "--slug",
-    "065-docs-ssot-phase2-sync-gate",
+    "066-docs-ssot-phase3-enforcement",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate",
+  "task_dir": ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 65,
-      "url": "https://github.com/castbox/guru-trellis/issues/65",
-      "title": "Docs SSOT implementation/check gate：把同步纳入 Phase 2",
+      "number": 66,
+      "url": "https://github.com/castbox/guru-trellis/issues/66",
+      "title": "Docs SSOT Branch Review/finish-work enforcement：final review 只验证不补救",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 65,
-        "url": "https://github.com/castbox/guru-trellis/issues/65",
-        "title": "Docs SSOT implementation/check gate：把同步纳入 Phase 2",
+        "number": 66,
+        "url": "https://github.com/castbox/guru-trellis/issues/66",
+        "title": "Docs SSOT Branch Review/finish-work enforcement：final review 只验证不补救",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -123,7 +119,7 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           d1dda00 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           aa0c409 [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate            44254bb [codex/051-prepare-task-naming-quality-gate]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/052-explicit-planning-review                    bf0c0cf [codex/052-explicit-planning-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution                      a366142 [codex/055-intake-scope-evolution]",
@@ -133,7 +129,7 @@
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/061-task-markdown-review-table                  d1ff9d1 [codex/061-task-markdown-review-table]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/062-subagent-timeout-stale-policy               71ec9d8 [codex/062-subagent-timeout-stale-policy]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/064-docs-ssot-plan-contract                     995ed80 [codex/064-docs-ssot-plan-contract]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/065-docs-ssot-phase2-sync-gate                  d1dda00 [codex/065-docs-ssot-phase2-sync-gate]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/066-docs-ssot-phase3-enforcement                aa0c409 [codex/066-docs-ssot-phase3-enforcement]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/070-branch-review-report-retention              d75a4b7 [codex/070-branch-review-report-retention]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/072-subagent-execution-boundaries               7481a7a [codex/072-subagent-execution-boundaries]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/076-subagent-liveness-state-machine             ab07b69 [codex/076-subagent-liveness-state-machine]",
@@ -169,11 +165,11 @@
       "base_branch": "main",
       "base_ref": "main",
       "remote_ref": "origin/main",
-      "local_head_before": "c600bfe7a47f6dfa5f5983694d4fd5e50d0e7053",
-      "local_head_after": "d1dda000a07d1194d7d722400bcea3f7433edf34",
-      "remote_head": "d1dda000a07d1194d7d722400bcea3f7433edf34",
+      "local_head_before": "aa0c4092615da731323a4a8af12468a4110b6177",
+      "local_head_after": "aa0c4092615da731323a4a8af12468a4110b6177",
+      "remote_head": "aa0c4092615da731323a4a8af12468a4110b6177",
       "fetch_performed": true,
-      "fast_forwarded": true,
+      "fast_forwarded": false,
       "fresh": true,
       "status": "fresh",
       "base_ref_for_worktree": "main"
@@ -182,7 +178,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/065-docs-ssot-phase2-sync-gate/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/066-docs-ssot-phase3-enforcement/.trellis/.developer",
       "developer": "wumengye"
     }
   }

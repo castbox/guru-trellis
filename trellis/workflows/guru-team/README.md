@@ -340,6 +340,11 @@ Branch Review Gate 必须先让所有发现过 finding 的 reviewer 作为同一
 `最终放行审查代理` 独立审查当前 HEAD 的完整 diff 并确认 0 findings，最后调用
 `review-branch.sh` 固化结论。任意 finding priority（P0/P1/P2/P3）都会阻断；
 `observation` 仅记录非阻断观察，`followup_candidate` 仅记录 scope 外后续候选。
+最终放行审查还必须验证 Docs SSOT reconciliation 已经在 Phase 2 完成：读取 approved
+`Docs SSOT Plan`、实现 handoff、`phase2-check.json`、durable docs、task artifacts
+和完整 diff，确认 `ssot_first` / `delta_first` / `bootstrap_or_repair_docs` /
+`no_docs_update_needed` 对应条件已经满足。当前 scope 的 Docs SSOT 不一致必须是 finding；
+final reviewer 不首次 merge durable docs，也不替 implement/check 代理补 Phase 2 docs 工作。
 独立 review sub-agent 只从 AI 角度审查文档、代码、测试、artifact 和 diff evidence，
 不继续实现、不替 implement/check 代理补工作，也不运行 `review-branch.sh`、
 `check-review-gate.sh` 或 `record-*` 这类 Guru Team recorder/validator 扩展脚本；
@@ -368,6 +373,10 @@ digest、raw `review_reports[]` digest，并在 task archive 后迁移 active ta
 archive path。裸 `finish-work.sh` 和 `publish-pr.sh` 默认拒绝普通直接调用；
 只有 `finish-work.sh` 的显式 finish entrypoint 调用或 finish-work 已完成后的显式
 recovery/debug flag 可以进入 publish 检查。
+Gate 后到 finish-work/archive 只允许 Trellis metadata tail；durable docs、`.trellis/spec/`、
+source、tests、schema、config、scripts、preset、overlay、CI/CD、deployment、migration、
+Makefile 等 non-metadata drift 必须回到 Phase 2/3。finish-work dry-run 和正式 finish 都不做
+首次 Docs SSOT merge。
 
 `finish-work.sh --dry-run --from-trellis-finish-work` 是无副作用 readiness preview：
 它只校验 gate、dirty state 和 PR body/readiness，并输出将要 archive、journal、
@@ -381,7 +390,9 @@ PR body 是给 GitHub reviewer 看的发布材料，不是 Trellis task artifact
 AI 在调用 finish helper 前必须生成或审查 body readiness，确认 `变更摘要` 具体、
 `影响范围` 明确、`验证结果` 是实际命令与结果、`Review Gate` 写明 reviewed HEAD /
 diff range / findings 状态、`Issue 关闭范围` 只关闭 ledger 中的 `close_issues`，并且
-`安全说明` / 部署影响与本次 diff 相符。non-draft publish 必须把审阅后的 Markdown
+`安全说明` / 部署影响与本次 diff 相符。Body 还必须包含 `Docs SSOT` / `文档同步`
+section，说明策略、durable docs 更新或 no-update 理由、已 merge 的 task delta、仅保留
+task history 的内容，以及 follow-up / 当前 PR limitation。non-draft publish 必须把审阅后的 Markdown
 body 存成 task-local 文件并传给 helper，或传入 task-local readiness artifact：
 
 ```bash

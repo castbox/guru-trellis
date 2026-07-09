@@ -343,6 +343,12 @@ not run Guru Team recorder/validator extension scripts such as
 those scripts only after the review result exists. `--reviewer` is identity metadata
 only and cannot replace the review report digest; `*-main-session` /
 `self-review` cannot pass the gate.
+Branch Review also verifies Docs SSOT execution instead of performing it for the
+first time. The final reviewer must read the approved `Docs SSOT Plan`,
+implementation handoff, `phase2-check.json`, durable docs, task artifacts, and
+the full diff, then report any current-scope Docs SSOT inconsistency as a
+finding. The reviewer does not merge durable docs or patch missing Phase 2 docs
+work.
 `finish-work.sh` and `publish-pr.sh` reject ordinary direct calls so
 `trellis-continue` cannot chain closeout, commit review metadata, push, or
 create a PR before the explicit `trellis-finish-work` entrypoint. Normal PR
@@ -353,6 +359,10 @@ PR readiness files; `check-review-gate` / `finish-work` validate and migrate
 raw report digest paths after archive. Direct
 publish is reserved for explicit recovery/debug after finish-work already
 completed.
+After a passed gate, finish-work accepts only Trellis metadata tail. Durable
+docs, `.trellis/spec/`, source, tests, schema, config, scripts, preset, overlay,
+CI/CD, deployment, migration, or Makefile drift after the gate must return to
+Phase 2/3; dry-run and formal finish do not perform a first Docs SSOT merge.
 
 `finish-work.sh --dry-run --from-trellis-finish-work` is a side-effect-free
 readiness preview. It validates the gate, dirty state, and PR body/readiness,
@@ -366,15 +376,18 @@ table because active task links are no longer the final review entry points.
 Before finish-work publishes, the AI must generate or review a PR body for
 GitHub reviewers who do not know the Trellis task. The body should use concrete
 Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gate`,
-`Issue 关闭范围`, and `安全说明`. Low-information summaries such as
+`Issue 关闭范围`, `安全说明`, and `Docs SSOT` / `文档同步`. The Docs SSOT section
+states the plan strategy, durable docs updates or no-update reason, task deltas
+merged back, task-history-only content, and any follow-up or current PR
+limitation. Low-information summaries such as
 `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact` are blocked for
 non-draft publish. Non-draft publish requires reviewed Markdown with
 `--body-file <path>` or a JSON readiness artifact with `--body-artifact <path>`;
 generated fallback bodies are preview/draft-only. These readiness/body files
 belong to task metadata and are read from the archived task artifact after
 finish-work archives the task. The script validates objective structure,
-reviewed source presence, and close/ref semantics but does not replace AI
-release judgment.
+reviewed source presence, Docs SSOT section/key presence, and close/ref
+semantics but does not replace AI release judgment.
 
 ## Workflow Guardrails
 

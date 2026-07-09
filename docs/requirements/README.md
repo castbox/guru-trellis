@@ -31,10 +31,10 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
 
 | 层级 | 类别 | 历史来源 | 说明 |
 | --- | --- | --- | --- |
-| P0 | Workflow 主合同与日常入口 | #1, #2, #57, #78 | `guru-team` marketplace workflow 定义 Phase 0-3、auto-bootstrap 日常入口、业务项目中文文档默认规则、知识门禁和 docs SSOT；Branch Review `reviews/*.md` / `review.md` 也继承中文 human-readable artifact 规则。 |
+| P0 | Workflow 主合同与日常入口 | #1, #2, #57, #64, #65, #66, #78 | `guru-team` marketplace workflow 定义 Phase 0-3、auto-bootstrap 日常入口、业务项目中文文档默认规则、知识门禁和 Docs SSOT；Phase 1 规划策略、Phase 2 执行/检查、Phase 3 final review 只验证不补救、finish-work 不首次 merge docs；Branch Review `reviews/*.md` / `review.md` 也继承中文 human-readable artifact 规则。 |
 | P0 | Intake / worktree / no_task / workspace boundary 副作用边界 | #6, #15, #26, #51, #60 | 创建 issue、worktree、branch、task 或当前 checkout 直改前必须有 AI/human handoff、用户授权和语义命名门禁；worktree mode 下 task artifact / review artifact 写入前必须校验 actual repo root 与 handoff `workspace_path` 一致。 |
 | P0 | Planning / check / Branch Review Gate 证据链 | #5, #8, #20, #44, #62, #72, #76, #78 | planning、phase2 check、独立 review、中文 raw/rollup review report、review report digest、任意 finding 阻断、fresh 最终放行审查、sub-agent liveness / status request / stale cutover / completed-only recovery chain 和 gate artifact 形成可审计链路；默认 sub-agent mode 下 implement、check、Branch Review 都必须有真实 sub-agent evidence。 |
-| P0 | Finish / publish / PR readiness | #7, #17, #18, #27 | PR 发布只能在 finish-work 后发生，且必须有 AI 审查过的 reviewer-facing body 与 readiness evidence。 |
+| P0 | Finish / publish / PR readiness | #7, #17, #18, #27, #66 | PR 发布只能在 finish-work 后发生，且必须有 AI 审查过的 reviewer-facing body 与 readiness evidence；PR body 必须说明 Docs SSOT / 文档同步处理结果。 |
 | P1 | Preset installer 与平台 overlay | #9, #11 | preset 安装 companion assets 与平台入口，支持 overlay 选择，并保持 canonical / dogfood 同步。 |
 | P1 | 安装、升级、开箱验证 | #10, #27 | README 非交互安装、throwaway install、dry-run readiness 和 Codex 默认 sub-agent 让新项目可开箱使用。 |
 | P2 | Docs / spec / knowledge 协同 | #1, #9, #10, #57 | task artifact、durable docs、`.trellis/spec/`、中台知识引用、业务项目中文语言规则和公开安装文档协同。 |
@@ -58,7 +58,7 @@ dogfood 副本当成唯一来源。
 
 | 主题 | Issues | Merged PRs |
 | --- | --- | --- |
-| 中台知识门禁与 Docs SSOT | #1 | #4 |
+| 中台知识门禁与 Docs SSOT | #1, #64, #65, #66 | #4；#64/#65/#66 对应 hardening PR |
 | Trellis auto-bootstrap 日常入口 | #2 | #3 |
 | AI review prompt 与 Branch Review Gate | #5, #20, #44 | #12, #22 |
 | prepare-task 无副作用 planner 与命名质量门禁 | #6, #51 | #14；#51 对应 PR 待发布 |

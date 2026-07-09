@@ -1,0 +1,30 @@
+{
+  "primary_issue": {
+    "number": 66,
+    "url": "https://github.com/castbox/guru-trellis/issues/66",
+    "title": "Docs SSOT Branch Review/finish-work enforcement：final review 只验证不补救",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "Phase 2 check recorded in phase2-check.json: requirements/design/code/tests/spec_sync/cross_layer/docs_ssot/deployment coverage all true; no P0/P1/P2 finding.",
+      "Branch Review Gate recorded in review-gate.json for origin/main...HEAD at 8cd0b774b788fb965fd07e4843107e6eccc59d7c; findings_count=0 and blocking_findings_count=0.",
+      "PR body reviewed in pr-body.md: Closes #66 only, Refs #1 only, includes Docs SSOT strategy, durable docs, task delta, task history, and validation limitation."
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 66,
+      "url": "https://github.com/castbox/guru-trellis/issues/66",
+      "title": "Docs SSOT Branch Review/finish-work enforcement：final review 只验证不补救",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "Phase 2 check recorded in phase2-check.json: requirements/design/code/tests/spec_sync/cross_layer/docs_ssot/deployment coverage all true; no P0/P1/P2 finding.",
+        "Branch Review Gate recorded in review-gate.json for origin/main...HEAD at 8cd0b774b788fb965fd07e4843107e6eccc59d7c; independent final reviewer findings_count=0 and blocking_findings_count=0.",
+        "Validation evidence recorded in phase2-check.json includes unit tests, script syntax/compile checks, task/context validation, dogfood overlay drift check, canonical/dogfood cmp checks, apply.sh --repo . --all-platforms --json with no .new/.bak, and git diff --check.",
+        "Issue close semantics reviewed in pr-body.md: Closes #66 only; #1 is referenced but not closed.",
+        "Known limitation is explicitly disclosed in review.md and pr-body.md: no full throwaway public remote marketplace install or trellis update compatibility replay was run."
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

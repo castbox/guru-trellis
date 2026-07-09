@@ -267,6 +267,7 @@ PR_BODY_REQUIRED_SECTIONS = [
     "Review Gate",
     "Issue 关闭范围",
     "安全说明",
+    "Docs SSOT",
 ]
 PR_BODY_SECTION_ALIASES = {
     "变更摘要": ["变更摘要", "更新摘要"],
@@ -275,6 +276,14 @@ PR_BODY_SECTION_ALIASES = {
     "Review Gate": ["Review Gate", "ReviewGate"],
     "Issue 关闭范围": ["Issue 关闭范围", "议题关闭范围", "关联议题"],
     "安全说明": ["安全说明", "安全与部署影响", "安全/部署影响", "安全和部署影响"],
+    "Docs SSOT": ["Docs SSOT", "文档同步", "文档同步结果"],
+}
+PR_BODY_DOCS_SSOT_KEY_ALIASES = {
+    "strategy": ["strategy", "策略", "ssot_first", "delta_first", "bootstrap_or_repair_docs", "no_docs_update_needed"],
+    "durable_docs": ["durable docs", "长期文档", "durable 文档", "文档更新", "no-update", "无需更新"],
+    "merged_delta": ["merged delta", "task delta", "task artifact delta", "任务文档差异", "任务差异", "任务增量", "同步", "回写", "写回", "合并", "merge"],
+    "task_history": ["task history", "task-history-only", "任务历史", "仅保留"],
+    "followup_or_limitation": ["follow-up", "followup", "后续", "限制", "limitation"],
 }
 PR_BODY_LOW_INFORMATION_PHRASES = [
     "当前 Trellis task",
@@ -5068,6 +5077,15 @@ def section_has_substantive_text(section: str) -> bool:
     return any("详见" not in line for line in meaningful)
 
 
+def missing_docs_ssot_keys(section: str) -> list[str]:
+    lowered = section.lower()
+    missing: list[str] = []
+    for key, aliases in PR_BODY_DOCS_SSOT_KEY_ALIASES.items():
+        if not any(alias.lower() in lowered for alias in aliases):
+            missing.append(key)
+    return missing
+
+
 def issue_number_set(items: Any) -> set[int]:
     return set(issue_numbers(items))
 
@@ -5181,6 +5199,11 @@ def validate_pr_body_quality(body: str, ledger: dict[str, Any], draft: bool) -> 
         value = sections.get(section, "")
         if value and not section_has_substantive_text(value):
             errors.append(f"PR body `{section}` 缺少具体内容。")
+    docs_ssot = sections.get("Docs SSOT", "")
+    if docs_ssot:
+        missing = missing_docs_ssot_keys(docs_ssot)
+        if missing:
+            errors.append("PR body `Docs SSOT` section 缺少客观键：{}。".format(", ".join(missing)))
 
     close_allowed = issue_number_set(ledger.get("close_issues"))
     related_numbers = issue_number_set(ledger.get("related_issues"))
@@ -5244,6 +5267,14 @@ def build_pr_body(ledger: dict[str, Any], gate: dict[str, Any], validations: lis
 - 结论：{gate_summary}
 - Reviewed HEAD：`{gate_head}`
 - Diff 范围：`{gate_range}`
+
+## Docs SSOT
+
+- 策略：需要 AI 在 reviewed body file 中补充 `Docs SSOT Plan` strategy。
+- durable docs / 文档更新：需要说明更新清单或 no-update 理由。
+- task delta merge：需要说明 task artifact delta 是否已 merge。
+- task history：需要说明哪些内容仅保留为任务历史。
+- follow-up / limitation：需要说明后续或当前 PR 限制。
 
 ## Issue 关闭范围
 

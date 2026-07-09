@@ -175,6 +175,12 @@ Gate:
   diff, normally `origin/<base>...HEAD`, and report findings/observations/
   follow-up candidates. They do not continue implementation, patch missing
   Phase 2 work, or run Guru Team recorder/validator scripts.
+- Branch Review sub-agents verify Docs SSOT reconciliation that Phase 2 already
+  completed. They read the approved `Docs SSOT Plan`, implementation handoff,
+  `phase2-check.json` Docs SSOT coverage, durable docs, task artifacts, code,
+  tests, scripts, schemas, presets, and overlays; they do not perform the first
+  durable docs merge or patch missing Phase 2 docs work. Any current-scope Docs
+  SSOT inconsistency is a blocking finding, not an observation or follow-up.
 - Branch Review raw reports and the final rollup must use Chinese Markdown
   headings and Chinese field labels. Raw reports should record checked diff
   range, reviewed HEAD, evidence, findings, observations, follow-up candidates,
@@ -271,6 +277,17 @@ no-task current-checkout direct-edit override, the review must verify explicit
 user approval evidence; otherwise it must verify Phase 0 handoff/preflight
 evidence for file-changing work.
 
+For Docs SSOT, the gate must verify the full strategy chain without becoming
+the merge step: the approved plan exists, the implementation handoff records
+strategy execution and durable-docs versus task-delta inputs, and
+`phase2-check.json` covers docs consistency. For `ssot_first`, durable docs /
+specs / workflow contracts are the primary implementation input; for
+`delta_first`, task deltas are merged back before final Phase 2 check; for
+`bootstrap_or_repair_docs`, the minimum repair is complete or current PR
+limitations and follow-up are bounded; for `no_docs_update_needed`, the reason
+still holds for the final diff. Missing or inconsistent current-scope docs
+sync blocks the gate.
+
 Before writing `review.md`, `review-gate.json`, or any task artifact during the
 gate, the AI must verify the shell/editor working directory is the task
 worktree selected by intake `workspace_path`. Manual edits must use a
@@ -329,6 +346,12 @@ metadata after the reviewed HEAD, rejects uncommitted non-metadata changes,
 archives the active task, records the journal, commits remaining Trellis
 metadata, and then invokes publish.
 
+Finish-work and archive must not execute the first Docs SSOT merge. If durable
+docs, `.trellis/spec/`, source, tests, schema, config, scripts, preset, overlay,
+CI/CD, deployment, migration, Makefile, or other non-metadata assets drift after
+the gate, dry-run and formal finish fail closed and the task returns to Phase
+2/3 for check and review.
+
 `trellis-continue` must stop at Branch Review Gate and must not push, create a
 PR, invoke `publish-pr`, or invoke `finish-work`. The finish and publish helpers
 are fail-closed: ordinary direct `finish-work.sh` calls are rejected before
@@ -345,7 +368,10 @@ The generated PR must be non-draft by default, target the intake/task
 Before publish, the AI must generate or review a PR body that is readable to a
 GitHub reviewer without Trellis session context. The body must include concrete
 Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gate`,
-`Issue 关闭范围`, and `安全说明`. Non-draft publish must receive an AI-reviewed
+`Issue 关闭范围`, `安全说明`, and `Docs SSOT` / `文档同步`. The Docs SSOT section
+must state the strategy, durable docs updated or no-update reason, task delta
+merged back, task-history-only content, and follow-up or current PR limitation.
+Non-draft publish must receive an AI-reviewed
 `--body-file` or `--body-artifact`; script-generated `generated` bodies are
 preview/draft-only and never count as publish readiness evidence. Reviewed
 body/readiness files are task metadata: they may be written in the active task
@@ -353,9 +379,9 @@ directory before `finish-work`, then `finish-work` archives the task and publish
 reads the final body from the archived task artifact. If a readiness artifact
 references a relative `body_file`, resolve it relative to the artifact's own
 directory. `publish-pr` validates objective structure, forbidden
-low-information phrases, reviewed source presence, archive-path resolution, and
-close/ref issue semantics, but it must not decide whether the business
-explanation is true or sufficient.
+low-information phrases, reviewed source presence, Docs SSOT section/key
+presence, archive-path resolution, and close/ref issue semantics, but it must
+not decide whether the business explanation is true or sufficient.
 
 Do not treat `.trellis/guru-team/handoff.json` as final close scope. It is
 intake provenance only.

@@ -282,6 +282,7 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
 - Phase 2 `trellis-check` is the implementation quality check step. It reviews the current task against specs, runs lint/typecheck/tests when appropriate, and may self-fix before commit. `phase2-check.json` is the Guru Team artifact that records the completed `trellis-check` AI judgment, coverage, validations, findings, and dirty-path evidence; it is not the Trellis-native step itself and recorder/validator scripts cannot substitute for that AI check.
 - Phase 3 Branch Review Gate is a post-commit release gate. First, an AI/human review must inspect the complete branch diff from the intake base branch to `HEAD`, including docs, code, tests, Trellis artifacts, config, scripts, schemas, CI/CD workflows, Docker/Compose files, Kubernetes YAML, Kustomize overlays, database migrations, Makefiles, preset installer, Issue Scope Ledger, and publish readiness.
 - Passing Phase 3 Branch Review Gate requires independent Agent review evidence. The main session may coordinate the review, inspect the report, and run the recorder, but the main session's own self-review must not pass the gate.
+- Phase 3 is the final verification of the approved `Docs SSOT Plan` and the Phase 2 implementation/check result. The final reviewer verifies that reconciliation already happened according to the recorded strategy; the reviewer must not first merge durable docs, patch missing Phase 2 docs work, or treat a missing/current-scope docs inconsistency as an observation.
 - Phase 3 also performs a post-commit Phase 2 audit: `phase2-check.json` is recorded before commit with the then-current `dirty_paths`, and `review-branch.sh` later verifies that committed non-metadata task work after the recorded HEAD is covered by those paths. Do not re-record Phase 2 after the task work commit just to make HEAD match; return to Phase 2 only when new non-metadata changes appear or evidence is invalid.
 - In default `sub-agent` mode, dispatch `trellis-check` in an independent review role or a dedicated review sub-agent to perform the evidence-gathering review for Phase 3. The review sub-agent reviews docs, code, tests, artifacts, and diff evidence as an AI reviewer; it must not continue implementation, patch Phase 2 gaps, or run Guru Team recorder/validator extension scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*` as part of its review. On inline platforms, stop before a passing gate unless an independent Agent review report is available through an external/team process.
 - Codex defaults to `codex.dispatch_mode: sub-agent` in Guru Team projects. The main session's dispatch prompt must start with `Active task: <task path>`, and Codex sub-agents fall back to `task.py current --source` when that line is unavailable. Explicit `codex.dispatch_mode: inline` is a downgrade/debug mode.
@@ -903,6 +904,7 @@ Run a dry-run first:
 After dry-run, run `resolve-human-artifacts.sh --json --task <task-path>` and include an active-task `Markdown 产物 review 表`; then review the dry-run output and run the same command without `--dry-run`.
 After the formal finish archives the task, run `resolve-human-artifacts.sh --json --task <task-name-or-archive-path>` again and include the archive-path `Markdown 产物 review 表` in the final reply.
 Finish-work accepts only Trellis metadata tail such as `review.md`, `reviews/*.md`, `review-gate.json`, `agent-assignment.json`, `pr-body.md`, and `pr-readiness.json`; any non-metadata dirty path or non-metadata committed drift must go back to `trellis-continue` / Phase 2-3.
+Finish-work and archive do not perform the first Docs SSOT merge. If durable docs, `.trellis/spec/`, source, tests, schema, config, scripts, preset, overlay, CI/CD, deployment, migration, or Makefile assets changed after the gate, return to Phase 2/3 instead of treating the change as metadata tail.
 Do not call `publish-pr` directly; normal publish is only through the explicit `trellis-finish-work` closeout after archive and journal.
 [/workflow-state:completed]
 
@@ -972,6 +974,10 @@ Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reu
 
 The AI/human review must cover:
 
+- the approved `Docs SSOT Plan`, the Phase 2 implementation handoff, and
+  `phase2-check.json` Docs SSOT coverage, verifying that `ssot_first`,
+  `delta_first`, `bootstrap_or_repair_docs`, or `no_docs_update_needed` has
+  already been completed as the plan requires;
 - docs and Trellis artifacts;
 - durable docs SSOT reconciliation result and any `docs/` files that should have changed;
 - code and tests;
@@ -992,6 +998,16 @@ Review results must distinguish:
 - `finding`: current diff has a known issue. Any finding priority `P0`, `P1`, `P2`, or `P3` blocks Branch Review Gate and `finish-work`.
 - `observation`: non-blocking review note that does not claim the current PR is defective.
 - `followup_candidate`: out-of-scope future work candidate that should become a follow-up issue or Issue Scope Ledger entry when appropriate, but is not a current PR finding.
+
+Current-scope Docs SSOT inconsistency is always a finding. Examples include a
+missing Phase 2 docs merge, durable docs / task artifacts / code / tests that
+contradict each other for the approved scope, a `delta_first` task delta that
+was not merged before final Phase 2 check, an `ssot_first` implementation that
+did not use the revised durable docs/spec/workflow contract as primary input,
+an unbounded `bootstrap_or_repair_docs` limitation, or a
+`no_docs_update_needed` reason that no longer matches the final diff. Only
+scope-outside docs improvements or explicitly bounded follow-up work may be
+recorded as `followup_candidate`.
 
 Persist each independent review round in the conversation and in a task-local
 raw report under `{TASK_DIR}/reviews/*.md`. Raw reports are human-readable task
@@ -1149,6 +1165,11 @@ because old active task links are not expected to remain valid after
 `task.py archive`; do not create symlinks, pointer dirs, or old-path stubs.
 
 `finish-work` may create Trellis metadata commits for archive and journal. These metadata commits do not invalidate the earlier code review gate; the helper only accepts Trellis metadata after the reviewed HEAD and blocks any code, config, script, schema, CI/CD, deployment, or preset change that appears after the gate.
+It also blocks durable docs, `.trellis/spec/`, tests, overlay, migration, and
+Makefile drift after the gate. Dry-run and formal finish both fail closed for
+that drift. Finish-work/archive must not be used to first execute Docs SSOT
+reconciliation; missing docs sync sends the task back to `trellis-continue` so
+Phase 2 check and Branch Review can run again.
 
 #### 3.7 Publish PR `[automatic after finish-work]`
 
@@ -1177,6 +1198,7 @@ Publish behavior:
 - target the intake/task `base_branch`, not the GitHub default branch;
 - write the PR title, headings, and body in Chinese;
 - include Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gate`, `Issue 关闭范围`, and `安全说明`;
+- include a reviewer-readable `Docs SSOT` or `文档同步` section that states the plan strategy, durable docs updated or the no-update reason, task artifact deltas merged to durable docs, content retained only as task history, and any follow-up or current PR limitation;
 - require an AI-reviewed `--body-file` / `--body-artifact` for non-draft publish; generated fallback bodies are allowed only for draft/preview paths and must still pass reviewer-readability checks;
 - block non-draft publish if `变更摘要`, `影响范围`, `验证结果`, or `安全说明` are missing, empty, or low-information;
 - never use phrases such as `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact` as the main PR summary;
@@ -1186,8 +1208,8 @@ Publish behavior:
 
 The PR body quality judgment belongs to the AI readiness review. `publish-pr`
 only validates objective structure, forbidden low-information phrases,
-reviewed body-file/artifact presence, close/ref issue semantics, archive-path
-resolution, and then executes the GitHub operation. It must not invent
+reviewed body-file/artifact presence, Docs SSOT section/key presence, close/ref
+issue semantics, archive-path resolution, and then executes the GitHub operation. It must not invent
 reviewer-facing justification or replace the AI's release judgment with a
 script-generated claim.
 
