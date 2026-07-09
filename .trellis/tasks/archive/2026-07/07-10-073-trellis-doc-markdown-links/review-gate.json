@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-09T18:30:14Z",
-  "task_dir": ".trellis/tasks/07-10-073-trellis-doc-markdown-links",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/073-trellis-doc-markdown-links",
@@ -73,7 +73,7 @@
   "observations": [],
   "followup_candidates": [],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 73,
@@ -96,13 +96,13 @@
     "reviewer": "最终放行审查代理:019f481b-ebac-7d53-98a6-a829c685c88e",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links/review.md",
       "sha256": "26814375ad4ac83cf98c58f51da87bfe42edf0bae99323b682ed23555ee64e52",
       "size_bytes": 3043,
       "modified_at": "2026-07-09T18:26:43.774203+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links/agent-assignment.json",
       "sha256": "8868703d11b2408cdf1f12ca7feec1cc4d3b7709d9c41dc3c05da74307f3d0eb",
       "size_bytes": 16249,
       "modified_at": "2026-07-09T18:29:46.234534+00:00",
@@ -117,7 +117,7 @@
       "review_rounds_count": 1,
       "reuse_decisions_count": 0,
       "status_events_count": 9,
-      "task": ".trellis/tasks/07-10-073-trellis-doc-markdown-links",
+      "task": ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "review_reports": [
@@ -127,7 +127,7 @@
         "agent_id": "019f481b-ebac-7d53-98a6-a829c685c88e",
         "reviewed_head": "04741e2b3fe6ef945cab933e642b7d8c167d6d6e",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/reviews/round-1-final-review.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links/reviews/round-1-final-review.md",
         "sha256": "75d7c73a2607e9f57e2e1758b06a9a2616a2d5823e430639ff83d73205106c4f",
         "size_bytes": 6298,
         "modified_at": "2026-07-09T18:26:43.773896+00:00"
