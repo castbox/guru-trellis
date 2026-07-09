@@ -1,72 +1,76 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 61,
-    "url": "https://github.com/castbox/guru-trellis/issues/61",
-    "title": "阶段回复必须提供 Markdown task 产物 review 表",
+    "number": 64,
+    "url": "https://github.com/castbox/guru-trellis/issues/64",
+    "title": "Docs SSOT planning contract：Phase 1 必须选择同步策略",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/061-task-markdown-review-table/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/064-docs-ssot-plan-contract/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "061-task-markdown-review-table",
+  "slug": "064-docs-ssot-plan-contract",
   "naming_quality": {
     "ok": true,
     "reason": "naming includes enough business tokens",
     "requires_semantic_name": false,
-    "current_slug": "061-task-markdown-review-table",
+    "current_slug": "064-docs-ssot-plan-contract",
     "current_surface": "workspace_slug",
     "suggested_override_flags": [],
     "checked_names": {
       "slug": {
         "ok": true,
-        "slug": "061-task-markdown-review-table",
+        "slug": "064-docs-ssot-plan-contract",
         "reason": "ok",
         "business_tokens": [
-          "markdown",
-          "review",
-          "table"
+          "docs",
+          "ssot",
+          "plan",
+          "contract"
         ]
       },
       "task_slug": {
         "ok": true,
-        "slug": "061-task-markdown-review-table",
+        "slug": "064-docs-ssot-plan-contract",
         "reason": "ok",
         "business_tokens": [
-          "markdown",
-          "review",
-          "table"
+          "docs",
+          "ssot",
+          "plan",
+          "contract"
         ]
       },
       "workspace_slug": {
         "ok": true,
-        "slug": "061-task-markdown-review-table",
+        "slug": "064-docs-ssot-plan-contract",
         "reason": "ok",
         "business_tokens": [
-          "markdown",
-          "review",
-          "table"
+          "docs",
+          "ssot",
+          "plan",
+          "contract"
         ]
       },
       "branch_name": {
         "ok": true,
-        "slug": "061-task-markdown-review-table",
+        "slug": "064-docs-ssot-plan-contract",
         "reason": "ok",
         "business_tokens": [
-          "markdown",
-          "review",
-          "table"
+          "docs",
+          "ssot",
+          "plan",
+          "contract"
         ]
       }
     }
   },
-  "task_slug": "061-task-markdown-review-table",
-  "task_title": "#61 阶段回复必须提供 Markdown task 产物 review 表",
-  "branch_name": "codex/061-task-markdown-review-table",
-  "workspace_slug": "061-task-markdown-review-table",
+  "task_slug": "064-docs-ssot-plan-contract",
+  "task_title": "#64 Docs SSOT planning contract：Phase 1 必须选择同步策略",
+  "branch_name": "codex/064-docs-ssot-plan-contract",
+  "workspace_slug": "064-docs-ssot-plan-contract",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/061-task-markdown-review-table",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/064-docs-ssot-plan-contract",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -77,30 +81,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#61 阶段回复必须提供 Markdown task 产物 review 表",
+    "#64 Docs SSOT planning contract：Phase 1 必须选择同步策略",
     "--slug",
-    "061-task-markdown-review-table",
+    "064-docs-ssot-plan-contract",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-09-061-task-markdown-review-table",
+  "task_dir": ".trellis/tasks/07-09-064-docs-ssot-plan-contract",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 61,
-      "url": "https://github.com/castbox/guru-trellis/issues/61",
-      "title": "阶段回复必须提供 Markdown task 产物 review 表",
+      "number": 64,
+      "url": "https://github.com/castbox/guru-trellis/issues/64",
+      "title": "Docs SSOT planning contract：Phase 1 必须选择同步策略",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 61,
-        "url": "https://github.com/castbox/guru-trellis/issues/61",
-        "title": "阶段回复必须提供 Markdown task 产物 review 表",
+        "number": 64,
+        "url": "https://github.com/castbox/guru-trellis/issues/64",
+        "title": "Docs SSOT planning contract：Phase 1 必须选择同步策略",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -115,15 +119,16 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           b481344 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           c600bfe [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate            44254bb [codex/051-prepare-task-naming-quality-gate]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/052-explicit-planning-review                    bf0c0cf [codex/052-explicit-planning-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution                      a366142 [codex/055-intake-scope-evolution]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/057-chinese-doc-language                        378748d [codex/057-chinese-doc-language]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness                      bbf68e0 [codex/059-refresh-base-freshness]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/060-workspace-boundary-guard                    64a90de [codex/060-workspace-boundary-guard]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/061-task-markdown-review-table                  b481344 [codex/061-task-markdown-review-table]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/061-task-markdown-review-table                  d1ff9d1 [codex/061-task-markdown-review-table]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/062-subagent-timeout-stale-policy               71ec9d8 [codex/062-subagent-timeout-stale-policy]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/064-docs-ssot-plan-contract                     c600bfe [codex/064-docs-ssot-plan-contract]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/070-branch-review-report-retention              d75a4b7 [codex/070-branch-review-report-retention]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/072-subagent-execution-boundaries               7481a7a [codex/072-subagent-execution-boundaries]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/076-subagent-liveness-state-machine             ab07b69 [codex/076-subagent-liveness-state-machine]",
@@ -159,9 +164,9 @@
       "base_branch": "main",
       "base_ref": "main",
       "remote_ref": "origin/main",
-      "local_head_before": "c2d4b0395c78f8af6b1a21fc99a6bb31e04f1d6f",
-      "local_head_after": "b481344409ce9096207f954cf085a724b75bf093",
-      "remote_head": "b481344409ce9096207f954cf085a724b75bf093",
+      "local_head_before": "b481344409ce9096207f954cf085a724b75bf093",
+      "local_head_after": "c600bfe7a47f6dfa5f5983694d4fd5e50d0e7053",
+      "remote_head": "c600bfe7a47f6dfa5f5983694d4fd5e50d0e7053",
       "fetch_performed": true,
       "fast_forwarded": true,
       "fresh": true,
@@ -172,7 +177,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/061-task-markdown-review-table/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/064-docs-ssot-plan-contract/.trellis/.developer",
       "developer": "wumengye"
     }
   }
