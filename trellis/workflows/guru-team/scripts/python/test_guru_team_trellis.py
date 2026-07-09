@@ -293,6 +293,70 @@ def liveness_check_args(**overrides: object) -> argparse.Namespace:
     return argparse.Namespace(**values)
 
 
+class ConventionalCommitContractTest(unittest.TestCase):
+    def test_issue_92_rejects_invalid_commit_subjects(self) -> None:
+        invalid_subjects = [
+            "Merge pull request #91 from castbox/codex/073-trellis-doc-markdown-links",
+            "完成：#73 将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址 (#91)",
+            "#73 docs(agents): 将 Trellis 官方文档链接改为 Markdown 端点",
+            "docs(#73): 将 Trellis 官方文档链接改为 Markdown 端点",
+            "docs(agents): 合并 Trellis 官方文档链接 Markdown 化",
+            "Update Guru Team extension public API metadata",
+        ]
+
+        for subject in invalid_subjects:
+            with self.subTest(subject=subject):
+                self.assertTrue(gtt.validate_commit_subject(subject, primary_issue=73))
+
+    def test_issue_92_accepts_valid_commit_subjects(self) -> None:
+        valid_subjects = [
+            "docs(agents): #73 将 Trellis 官方文档链接改为 Markdown 端点",
+            "chore(trellis): #73 归档任务元数据",
+            "chore(merge): #91 合并 #73 Trellis 官方文档链接 Markdown 化",
+        ]
+
+        for subject in valid_subjects:
+            with self.subTest(subject=subject):
+                self.assertEqual([], gtt.validate_commit_subject(subject, primary_issue=73))
+
+    def test_work_commit_body_requires_fixed_sections_refs_and_no_closes(self) -> None:
+        body = """背景：
+issue #92 要求统一提交规范。
+
+变更：
+- 增加 subject/body 校验。
+
+边界：
+不自动执行 GitHub PR merge。
+
+验证：
+- `python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py`
+
+Refs #92
+"""
+
+        self.assertEqual([], gtt.validate_work_commit_body(body, primary_issue=92))
+        self.assertTrue(gtt.validate_work_commit_body(body.replace("Refs #92", "Closes #92"), primary_issue=92))
+        self.assertTrue(gtt.validate_work_commit_body(body.replace("边界：", "验证：", 1), primary_issue=92))
+
+    def test_metadata_commit_body_must_be_empty(self) -> None:
+        self.assertEqual([], gtt.validate_metadata_commit_body(""))
+        self.assertTrue(gtt.validate_metadata_commit_body("记录归档动作。"))
+
+    def test_merge_commit_body_requires_fixed_sections_pr_and_refs(self) -> None:
+        body = gtt.format_merge_commit_body(
+            91,
+            73,
+            "Trellis 官方文档链接 Markdown 化",
+            "codex/073-trellis-doc-markdown-links",
+            "main",
+        )
+
+        self.assertEqual([], gtt.validate_merge_commit_body(body, primary_issue=73, pull_request=91))
+        self.assertTrue(gtt.validate_merge_commit_body(body.replace("PR: #91", "PR: #90"), primary_issue=73, pull_request=91))
+        self.assertTrue(gtt.validate_merge_commit_body(body.replace("Refs #73", "Closes #73"), primary_issue=73, pull_request=91))
+
+
 class PrepareSideEffectBoundaryTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -2654,6 +2718,52 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertTrue(payload["reviewed_source_required"])
         self.assertFalse(payload["reviewed_source_ok"])
         self.assertIn("generated PR body is preview-only", payload["reviewed_source_errors"][0])
+        self.assertFalse(payload["merge_commit"]["ready"])
+        self.assertEqual(
+            payload["merge_commit"]["subject"],
+            "chore(merge): #<pull_request> 合并 #18 完成 Publish boundary",
+        )
+        self.assertIn("PR: #<pull_request>", payload["merge_commit"]["body"])
+        self.assertIn("Refs #18", payload["merge_commit"]["body"])
+        self.assertEqual(payload["merge_commit"]["command"][0:4], ["gh", "pr", "merge", "<pull_request>"])
+
+    def test_publish_pr_formal_payload_uses_created_pr_number_in_merge_commit(self) -> None:
+        body_path = self.root / "reviewed-pr-body.md"
+        body_path.write_text(valid_pr_body("publish 正式路径输出 merge commit 指令。"), encoding="utf-8")
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with (
+                mock.patch.object(gtt, "require_gh_auth"),
+                mock.patch.object(gtt, "run_stdout"),
+                mock.patch.object(gtt, "run") as run,
+            ):
+                run.return_value = mock.Mock(
+                    returncode=0,
+                    stdout="https://github.com/owner/repo/pull/91\n",
+                    stderr="",
+                )
+                payload = gtt.cmd_publish_pr(
+                    publish_args(
+                        recovery_after_finish_work=True,
+                        dry_run=False,
+                        body_file=str(body_path),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(payload["pr_url"], "https://github.com/owner/repo/pull/91")
+        self.assertTrue(payload["merge_commit"]["ready"])
+        self.assertEqual(
+            payload["merge_commit"]["subject"],
+            "chore(merge): #91 合并 #18 完成 Publish boundary",
+        )
+        self.assertIn("PR: #91", payload["merge_commit"]["body"])
+        self.assertIn("Refs #18", payload["merge_commit"]["body"])
+        self.assertIn("--subject", payload["merge_commit"]["command"])
 
     def test_publish_pr_non_draft_rejects_generated_body_before_push(self) -> None:
         patches = self.patch_publish_success_path()
@@ -3339,6 +3449,11 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(payload["plan"]["publish"]["repo"], "owner/repo")
         self.assertEqual(payload["plan"]["publish"]["base_branch"], "main")
         self.assertEqual(payload["plan"]["publish"]["head_branch"], "codex/27-finish-work-dry-run-readiness")
+        self.assertEqual(payload["plan"]["metadata_commit"]["message"], "chore(trellis): #18 固化任务收尾元数据")
+        self.assertEqual(
+            payload["plan"]["publish"]["merge_commit"]["subject"],
+            "chore(merge): #<pull_request> 合并 #18 完成 Publish boundary",
+        )
         self.assertIn("body-file:", payload["checks"]["pr_readiness"]["body_source"])
         self.assertTrue(payload["checks"]["pr_readiness"]["body_quality_ok"])
         self.assertTrue(payload["checks"]["pr_readiness"]["reviewed_source_ok"])

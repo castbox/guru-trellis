@@ -415,6 +415,22 @@ BRANCH_TYPE_KEYWORD_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 PR_CLOSE_KEYWORDS = ["Closes", "Fixes", "Resolves", "Close", "Fix", "Resolve"]
 REVIEWED_PR_BODY_SOURCE_PREFIXES = ("body-file:", "body-artifact:")
+CONVENTIONAL_COMMIT_TYPES = set(VALID_BRANCH_TYPES)
+CONVENTIONAL_COMMIT_SCOPE_PATTERN = r"[a-z0-9._/-]+"
+CONVENTIONAL_COMMIT_SUBJECT_RE = re.compile(
+    r"^(?P<type>{})\((?P<scope>{})\): #(?P<issue>\d+) (?P<description>.+)$".format(
+        "|".join(sorted(CONVENTIONAL_COMMIT_TYPES)),
+        CONVENTIONAL_COMMIT_SCOPE_PATTERN,
+    )
+)
+MERGE_COMMIT_SUBJECT_RE = re.compile(
+    r"^chore\(merge\): #(?P<pull_request>\d+|<pull_request>) 合并 #(?P<primary_issue>\d+) (?P<summary>.+)$"
+)
+CHINESE_TEXT_RE = re.compile(r"[\u4e00-\u9fff]")
+WORK_COMMIT_BODY_SECTIONS = ["背景：", "变更：", "边界：", "验证："]
+MERGE_COMMIT_BODY_SECTIONS = ["合并：", "范围：", "审计："]
+METADATA_COMMIT_SCOPES = {"task", "trellis"}
+MERGE_COMMIT_BODY_FILE_HINT = "<merge-body-file>"
 DEPLOYMENT_ASSET_CATEGORIES: dict[str, list[str]] = {
     "ci_cd": [
         ".github/workflows/",
@@ -5588,6 +5604,350 @@ def close_keyword_pattern() -> re.Pattern[str]:
     return re.compile(r"(?i)\b(" + "|".join(re.escape(keyword) for keyword in PR_CLOSE_KEYWORDS) + r")\s+#(\d+)\b")
 
 
+def contains_chinese_text(value: str) -> bool:
+    return CHINESE_TEXT_RE.search(value) is not None
+
+
+def parse_commit_subject(subject: str) -> dict[str, Any] | None:
+    value = subject.strip()
+    merge_match = MERGE_COMMIT_SUBJECT_RE.match(value)
+    if merge_match:
+        return {"kind": "merge", **merge_match.groupdict()}
+    match = CONVENTIONAL_COMMIT_SUBJECT_RE.match(value)
+    if not match:
+        return None
+    parsed = {"kind": "conventional", **match.groupdict()}
+    parsed["issue"] = int(parsed["issue"])
+    return parsed
+
+
+def validate_commit_subject(
+    subject: str,
+    primary_issue: int | None = None,
+    pull_request: int | str | None = None,
+) -> list[str]:
+    errors: list[str] = []
+    value = subject.strip()
+    if not value:
+        return ["commit subject 不能为空。"]
+    if value.startswith("Merge pull request"):
+        errors.append("commit subject 不得使用 GitHub 自动生成的 `Merge pull request ...`。")
+    if value.startswith("完成："):
+        errors.append("commit subject 不得直接使用中文 PR title / squash title。")
+    if re.match(r"^#\d+\s+", value):
+        errors.append("issue id 必须放在 Conventional Commits 前缀之后。")
+    if re.match(rf"^[a-z]+\(#[0-9]+\):", value):
+        errors.append("issue id 不得放在 scope 中。")
+
+    parsed = parse_commit_subject(value)
+    if parsed is None:
+        errors.append("commit subject 必须匹配 `{type}({scope}): #{primary_issue} 中文描述` 或 `chore(merge): #{pull_request} 合并 #{primary_issue} 中文 PR 摘要`。")
+        return errors
+
+    if parsed["kind"] == "merge":
+        if primary_issue is not None and int(parsed["primary_issue"]) != int(primary_issue):
+            errors.append(f"merge commit subject primary issue 必须是 #{primary_issue}。")
+        if pull_request is not None and str(parsed["pull_request"]) != str(pull_request):
+            errors.append(f"merge commit subject pull request 必须是 #{pull_request}。")
+        if not contains_chinese_text(str(parsed["summary"])):
+            errors.append("merge commit subject 的 PR 摘要必须包含中文。")
+        return errors
+
+    if primary_issue is not None and int(parsed["issue"]) != int(primary_issue):
+        errors.append(f"commit subject primary issue 必须是 #{primary_issue}。")
+    description = str(parsed["description"]).strip()
+    if not contains_chinese_text(description):
+        errors.append("commit subject 描述必须包含中文。")
+    if description.startswith("合并"):
+        errors.append("工作提交不得使用 merge 语义 subject；merge commit 必须使用 `chore(merge)`。")
+    return errors
+
+
+def subject_kind(subject: str) -> str:
+    parsed = parse_commit_subject(subject)
+    if not parsed:
+        return "invalid"
+    if parsed["kind"] == "merge":
+        return "merge"
+    if parsed["type"] == "chore" and parsed["scope"] in METADATA_COMMIT_SCOPES:
+        return "metadata"
+    return "work"
+
+
+def section_line_positions(body: str, required_sections: list[str]) -> tuple[dict[str, int], list[str]]:
+    lines = body.splitlines()
+    positions: dict[str, int] = {}
+    errors: list[str] = []
+    for section in required_sections:
+        matches = [idx for idx, line in enumerate(lines) if line.strip() == section]
+        if not matches:
+            errors.append(f"commit body 缺少 `{section}` 小节。")
+            continue
+        if len(matches) > 1:
+            errors.append(f"commit body `{section}` 小节重复。")
+        positions[section] = matches[0]
+    ordered_positions = [positions[section] for section in required_sections if section in positions]
+    if ordered_positions != sorted(ordered_positions):
+        errors.append("commit body 固定小节顺序不正确。")
+    return positions, errors
+
+
+def section_has_content(lines: list[str], start: int, end: int) -> bool:
+    return any(line.strip() for line in lines[start + 1 : end])
+
+
+def footer_line_index(body: str, pattern: re.Pattern[str]) -> tuple[int | None, re.Match[str] | None]:
+    for idx, line in enumerate(body.splitlines()):
+        match = pattern.match(line.strip())
+        if match:
+            return idx, match
+    return None, None
+
+
+def validate_work_commit_body(body: str, primary_issue: int | None = None) -> list[str]:
+    value = body.strip()
+    if not value:
+        return ["工作提交必须包含 commit body。"]
+    errors: list[str] = []
+    if close_keyword_pattern().search(value):
+        errors.append("commit body 不得使用 Closes/Fixes/Resolves；issue 关闭语义只能放在 PR body。")
+    lines = value.splitlines()
+    positions, section_errors = section_line_positions(value, WORK_COMMIT_BODY_SECTIONS)
+    errors.extend(section_errors)
+    footer_pattern = re.compile(r"^Refs #(?P<issue>\d+)$")
+    footer_idx, footer_match = footer_line_index(value, footer_pattern)
+    if footer_idx is None or footer_match is None:
+        errors.append("工作提交 body footer 必须包含 `Refs #<primary_issue>`。")
+    else:
+        if primary_issue is not None and int(footer_match.group("issue")) != int(primary_issue):
+            errors.append(f"工作提交 body footer 必须引用 `Refs #{primary_issue}`。")
+        last_section_idx = positions.get(WORK_COMMIT_BODY_SECTIONS[-1])
+        if last_section_idx is not None and footer_idx <= last_section_idx:
+            errors.append("`Refs #<primary_issue>` footer 必须位于固定小节之后。")
+
+    for idx, section in enumerate(WORK_COMMIT_BODY_SECTIONS):
+        if section not in positions:
+            continue
+        next_candidates = [
+            positions[next_section]
+            for next_section in WORK_COMMIT_BODY_SECTIONS[idx + 1 :]
+            if next_section in positions
+        ]
+        if footer_idx is not None:
+            next_candidates.append(footer_idx)
+        end = min(next_candidates) if next_candidates else len(lines)
+        if not section_has_content(lines, positions[section], end):
+            errors.append(f"commit body `{section}` 小节缺少实质内容。")
+    return errors
+
+
+def validate_metadata_commit_body(body: str) -> list[str]:
+    if body.strip():
+        return ["Trellis metadata 提交必须不写 body；subject 必须完整表达 metadata 动作。"]
+    return []
+
+
+def validate_merge_commit_body(
+    body: str,
+    primary_issue: int | None = None,
+    pull_request: int | str | None = None,
+) -> list[str]:
+    value = body.strip()
+    if not value:
+        return ["merge commit 必须包含 body。"]
+    errors: list[str] = []
+    if close_keyword_pattern().search(value):
+        errors.append("merge commit body 不得使用 Closes/Fixes/Resolves；issue 关闭语义只能放在 PR body。")
+    lines = value.splitlines()
+    positions, section_errors = section_line_positions(value, MERGE_COMMIT_BODY_SECTIONS)
+    errors.extend(section_errors)
+    pr_pattern = re.compile(r"^PR: #(?P<pull_request>\d+|<pull_request>)$")
+    refs_pattern = re.compile(r"^Refs #(?P<primary_issue>\d+)$")
+    pr_idx, pr_match = footer_line_index(value, pr_pattern)
+    refs_idx, refs_match = footer_line_index(value, refs_pattern)
+    if pr_idx is None or pr_match is None:
+        errors.append("merge commit body 必须包含 `PR: #<pull_request>`。")
+    elif pull_request is not None and str(pr_match.group("pull_request")) != str(pull_request):
+        errors.append(f"merge commit body PR footer 必须引用 `PR: #{pull_request}`。")
+    if refs_idx is None or refs_match is None:
+        errors.append("merge commit body 必须包含 `Refs #<primary_issue>`。")
+    elif primary_issue is not None and int(refs_match.group("primary_issue")) != int(primary_issue):
+        errors.append(f"merge commit body Refs footer 必须引用 `Refs #{primary_issue}`。")
+    footer_indexes = [idx for idx in [pr_idx, refs_idx] if idx is not None]
+    first_footer_idx = min(footer_indexes) if footer_indexes else None
+    last_section_idx = positions.get(MERGE_COMMIT_BODY_SECTIONS[-1])
+    if first_footer_idx is not None and last_section_idx is not None and first_footer_idx <= last_section_idx:
+        errors.append("merge commit body footer 必须位于固定小节之后。")
+
+    for idx, section in enumerate(MERGE_COMMIT_BODY_SECTIONS):
+        if section not in positions:
+            continue
+        next_candidates = [
+            positions[next_section]
+            for next_section in MERGE_COMMIT_BODY_SECTIONS[idx + 1 :]
+            if next_section in positions
+        ]
+        if first_footer_idx is not None:
+            next_candidates.append(first_footer_idx)
+        end = min(next_candidates) if next_candidates else len(lines)
+        if not section_has_content(lines, positions[section], end):
+            errors.append(f"merge commit body `{section}` 小节缺少实质内容。")
+    return errors
+
+
+def validate_commit_message(subject: str, body: str, primary_issue: int | None = None) -> tuple[str, list[str]]:
+    errors = validate_commit_subject(subject, primary_issue=primary_issue)
+    kind = subject_kind(subject)
+    if kind == "merge":
+        parsed = parse_commit_subject(subject) or {}
+        errors.extend(
+            validate_merge_commit_body(
+                body,
+                primary_issue=primary_issue,
+                pull_request=parsed.get("pull_request"),
+            )
+        )
+    elif kind == "metadata":
+        errors.extend(validate_metadata_commit_body(body))
+    elif kind == "work":
+        errors.extend(validate_work_commit_body(body, primary_issue=primary_issue))
+    return kind, errors
+
+
+def format_metadata_commit_subject(primary_issue: int, action: str = "固化任务收尾元数据") -> str:
+    return f"chore(trellis): #{int(primary_issue)} {action.strip()}"
+
+
+def format_merge_commit_subject(pull_request: int | str, primary_issue: int, summary: str) -> str:
+    return f"chore(merge): #{pull_request} 合并 #{int(primary_issue)} {summary.strip()}"
+
+
+def format_merge_commit_body(
+    pull_request: int | str,
+    primary_issue: int,
+    summary: str,
+    head_branch: str,
+    base_branch: str,
+) -> str:
+    return (
+        "合并：\n"
+        f"合入 `{head_branch}` 到 `{base_branch}`，保留 PR 内部提交历史。\n\n"
+        "范围：\n"
+        f"本次 PR 完成 #{int(primary_issue)}：{summary.strip()}。\n\n"
+        "审计：\n"
+        "Trellis task archive、review gate 和 journal 提交保留在 PR 分支历史中，用于审计任务过程。\n\n"
+        f"PR: #{pull_request}\n"
+        f"Refs #{int(primary_issue)}\n"
+    )
+
+
+def primary_issue_number_from_ledger(ledger: dict[str, Any]) -> int:
+    primary = ledger.get("primary_issue")
+    if isinstance(primary, dict):
+        try:
+            return int(primary.get("number"))
+        except (TypeError, ValueError):
+            pass
+    close_issues = ledger.get("close_issues")
+    if isinstance(close_issues, list):
+        for issue in close_issues:
+            if not isinstance(issue, dict):
+                continue
+            try:
+                return int(issue.get("number"))
+            except (TypeError, ValueError):
+                continue
+    raise WorkflowError("Could not resolve primary issue from issue-scope-ledger.json.", exit_code=2)
+
+
+def merge_summary_from_title(title: str, primary_issue: int, ledger: dict[str, Any]) -> str:
+    summary = title.strip()
+    if summary.startswith("完成："):
+        summary = summary.removeprefix("完成：").strip()
+    summary = re.sub(rf"^#{int(primary_issue)}\s*", "", summary).strip()
+    if contains_chinese_text(summary):
+        return summary
+    close_issues = ledger.get("close_issues")
+    if isinstance(close_issues, list):
+        for issue in close_issues:
+            if not isinstance(issue, dict):
+                continue
+            try:
+                number = int(issue.get("number"))
+            except (TypeError, ValueError):
+                continue
+            title_value = str(issue.get("title") or "").strip()
+            if number == int(primary_issue) and contains_chinese_text(title_value):
+                return title_value
+    return f"完成 {summary}" if summary else f"完成 #{int(primary_issue)}"
+
+
+def build_merge_commit_payload(
+    *,
+    primary_issue: int,
+    summary: str,
+    head_branch: str,
+    base_branch: str,
+    pull_request: int | str | None,
+    body_file_hint: str = MERGE_COMMIT_BODY_FILE_HINT,
+) -> dict[str, Any]:
+    pull_request_value: int | str = pull_request if pull_request is not None else "<pull_request>"
+    ready = pull_request is not None and str(pull_request).isdigit()
+    subject = format_merge_commit_subject(pull_request_value, primary_issue, summary)
+    body = format_merge_commit_body(pull_request_value, primary_issue, summary, head_branch, base_branch)
+    errors = validate_commit_subject(subject, primary_issue=primary_issue, pull_request=pull_request_value)
+    errors.extend(validate_merge_commit_body(body, primary_issue=primary_issue, pull_request=pull_request_value))
+    command_pr = str(pull_request_value)
+    return {
+        "ready": ready,
+        "subject": subject,
+        "body": body,
+        "body_file_hint": body_file_hint,
+        "command": [
+            "gh",
+            "pr",
+            "merge",
+            command_pr,
+            "--merge",
+            "--subject",
+            subject,
+            "--body-file",
+            body_file_hint,
+        ],
+        "errors": errors,
+    }
+
+
+def parse_pull_request_number(value: str) -> int | None:
+    match = re.search(r"/pull/(\d+)(?:\b|$)", value.strip())
+    if match:
+        return int(match.group(1))
+    match = re.search(r"#(\d+)\b", value.strip())
+    if match:
+        return int(match.group(1))
+    return None
+
+
+def git_commit_messages(root: Path, range_spec: str) -> list[dict[str, str]]:
+    proc = run(["git", "log", "--reverse", "--format=%x1e%H%x1f%s%x1f%b", range_spec], cwd=root, check=False)
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Unable to read git commit messages.",
+            exit_code=2,
+            payload={"range": range_spec, "stderr": proc.stderr.strip()},
+        )
+    commits: list[dict[str, str]] = []
+    for record in proc.stdout.split("\x1e"):
+        record = record.strip("\n")
+        if not record:
+            continue
+        parts = record.split("\x1f", 2)
+        if len(parts) != 3:
+            continue
+        commits.append({"hash": parts[0].strip(), "subject": parts[1].strip(), "body": parts[2].strip()})
+    return commits
+
+
 def is_reviewed_pr_body_source(body_source: str) -> bool:
     return body_source.startswith(REVIEWED_PR_BODY_SOURCE_PREFIXES)
 
@@ -6740,6 +7100,89 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def cmd_check_commit_messages(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff) if getattr(args, "task", None) else None
+    task = task_json(task_dir) if task_dir else {}
+    ledger = load_issue_scope_ledger(task_dir, handoff) if task_dir else {}
+    primary_issue = int(args.primary_issue) if getattr(args, "primary_issue", None) else primary_issue_number_from_ledger(ledger)
+    if getattr(args, "range", None):
+        range_spec = str(args.range)
+        base_ref = range_spec.split("..", 1)[0] if ".." in range_spec else ""
+    else:
+        base_branch = str(args.base_ref or base_branch_from_sources(args, task, handoff))
+        base_ref = diff_base_ref(root, base_branch)
+        range_spec = f"{base_ref}..HEAD"
+    commits = git_commit_messages(root, range_spec)
+    checked: list[dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
+    for commit in commits:
+        kind, commit_errors = validate_commit_message(
+            commit["subject"],
+            commit.get("body", ""),
+            primary_issue=primary_issue,
+        )
+        entry = {
+            "hash": commit["hash"],
+            "subject": commit["subject"],
+            "kind": kind,
+            "errors": commit_errors,
+        }
+        checked.append(entry)
+        if commit_errors:
+            errors.append(entry)
+    payload = {
+        "status": "ok" if not errors else "blocked",
+        "base_ref": base_ref,
+        "head": current_head(root),
+        "range": range_spec,
+        "primary_issue": primary_issue,
+        "checked_commits": checked,
+        "errors": errors,
+    }
+    if errors:
+        raise WorkflowError("Commit message validation failed.", exit_code=2, payload=payload)
+    return payload
+
+
+def cmd_format_merge_commit(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff) if getattr(args, "task", None) else None
+    task = task_json(task_dir) if task_dir else {}
+    ledger = load_issue_scope_ledger(task_dir, handoff) if task_dir else {}
+    primary_issue = int(args.primary_issue) if getattr(args, "primary_issue", None) else primary_issue_number_from_ledger(ledger)
+    base_branch = str(args.base_branch or base_branch_from_sources(args, task, handoff))
+    base_branch_name = normalize_ref(base_branch).removeprefix("origin/")
+    head_branch = str(args.head_branch or current_branch(root))
+    title = str(args.summary or pr_title_from_task(task, args)).strip()
+    summary = merge_summary_from_title(title, primary_issue, ledger)
+    payload = build_merge_commit_payload(
+        primary_issue=primary_issue,
+        summary=summary,
+        head_branch=head_branch,
+        base_branch=base_branch_name,
+        pull_request=args.pull_request,
+        body_file_hint=str(args.body_file_hint or MERGE_COMMIT_BODY_FILE_HINT),
+    )
+    payload.update(
+        {
+            "status": "ok" if not payload["errors"] else "blocked",
+            "primary_issue": primary_issue,
+            "pull_request": args.pull_request or "<pull_request>",
+            "base_branch": base_branch_name,
+            "head_branch": head_branch,
+            "summary": summary,
+        }
+    )
+    if payload["errors"]:
+        raise WorkflowError("Merge commit payload validation failed.", exit_code=2, payload=payload)
+    return payload
+
+
 def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
     validate_publish_invocation(args)
     root = repo_root(Path(args.root or os.getcwd()))
@@ -6784,6 +7227,17 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
     title = pr_title_from_task(task, args)
     validations = list(args.validation or [])
     body, body_source = resolve_pr_body(root, args, ledger, gate, validations, config)
+    primary_issue = primary_issue_number_from_ledger(ledger)
+    merge_summary = merge_summary_from_title(title, primary_issue, ledger)
+    base_branch_name = normalize_ref(base_branch).removeprefix("origin/")
+    merge_commit = build_merge_commit_payload(
+        primary_issue=primary_issue,
+        summary=merge_summary,
+        head_branch=branch,
+        base_branch=base_branch_name,
+        pull_request=None,
+    )
+    metadata_commit_subject = format_metadata_commit_subject(primary_issue)
     body_errors = validate_pr_body_quality(body, ledger, draft)
     reviewed_source_errors = validate_reviewed_body_source_for_publish(body_source, draft)
     if body_errors:
@@ -6809,12 +7263,12 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
     if not args.dry_run:
         archive_migration = migrate_review_gate_for_archived_task(root, task_dir, config)
         if archive_migration.get("migrated"):
-            metadata_commit = commit_if_metadata_dirty(root, "chore(trellis): finalize task metadata")
+            metadata_commit = commit_if_metadata_dirty(root, metadata_commit_subject)
 
     payload: dict[str, Any] = {
         "status": "dry-run" if args.dry_run else "ok",
         "repo": repo,
-        "base_branch": normalize_ref(base_branch).removeprefix("origin/"),
+        "base_branch": base_branch_name,
         "head_branch": branch,
         "remote": remote,
         "draft": draft,
@@ -6828,6 +7282,7 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
         "issue_scope_ledger": str(issue_scope_ledger_path(task_dir)),
         "archive_migration": archive_migration,
         "metadata_commit": metadata_commit,
+        "merge_commit": merge_commit,
     }
     if args.dry_run:
         return payload
@@ -6858,6 +7313,20 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
         if proc.returncode != 0:
             raise WorkflowError(f"gh pr create failed:\n{proc.stderr.strip()}")
         payload["pr_url"] = proc.stdout.strip()
+        pull_request = parse_pull_request_number(payload["pr_url"])
+        if pull_request is None:
+            raise WorkflowError(
+                "Could not parse pull request number from gh pr create output.",
+                exit_code=2,
+                payload={"pr_url": payload["pr_url"]},
+            )
+        payload["merge_commit"] = build_merge_commit_payload(
+            primary_issue=primary_issue,
+            summary=merge_summary,
+            head_branch=branch,
+            base_branch=base_branch_name,
+            pull_request=pull_request,
+        )
     finally:
         Path(body_file).unlink(missing_ok=True)
     return payload
@@ -6880,6 +7349,7 @@ def build_finish_work_dry_run_plan(
     body_source: str,
     body_errors: list[str],
     reviewed_source_errors: list[str],
+    ledger: dict[str, Any],
 ) -> dict[str, Any]:
     publish = publish_config(config)
     task = task_json(task_dir)
@@ -6890,6 +7360,9 @@ def build_finish_work_dry_run_plan(
     pr_title = pr_title_from_task(task, args)
     archive_would_run = not args.skip_archive
     journal_would_run = not args.skip_journal
+    primary_issue = primary_issue_number_from_ledger(ledger)
+    merge_summary = merge_summary_from_title(pr_title, primary_issue, ledger)
+    base_branch_name = normalize_ref(base_branch).removeprefix("origin/")
     return {
         "status": "dry-run",
         "task_dir": str(task_dir),
@@ -6934,12 +7407,12 @@ def build_finish_work_dry_run_plan(
             },
             "metadata_commit": {
                 "would_run": True,
-                "message": "chore(trellis): finalize task metadata",
+                "message": format_metadata_commit_subject(primary_issue),
             },
             "publish": {
                 "would_run": True,
                 "repo": repo,
-                "base_branch": normalize_ref(base_branch).removeprefix("origin/"),
+                "base_branch": base_branch_name,
                 "head_branch": head_branch,
                 "remote": remote,
                 "draft": draft,
@@ -6947,6 +7420,13 @@ def build_finish_work_dry_run_plan(
                 "body_source": body_source,
                 "allow_metadata_after_gate": True,
                 "from_finish_work": True,
+                "merge_commit": build_merge_commit_payload(
+                    primary_issue=primary_issue,
+                    summary=merge_summary,
+                    head_branch=head_branch,
+                    base_branch=base_branch_name,
+                    pull_request=None,
+                ),
             },
         },
     }
@@ -7017,6 +7497,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             body_source,
             body_errors,
             reviewed_source_errors,
+            ledger,
         )
 
     if not args.skip_archive:
@@ -7045,7 +7526,9 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         if proc.returncode != 0:
             raise WorkflowError(f"add_session.py failed:\n{proc.stderr.strip()}", payload={"stdout": proc.stdout.strip()})
 
-    metadata_commit = commit_if_metadata_dirty(root, "chore(trellis): finalize task metadata")
+    primary_issue = primary_issue_number_from_ledger(ledger)
+    metadata_commit_subject = format_metadata_commit_subject(primary_issue)
+    metadata_commit = commit_if_metadata_dirty(root, metadata_commit_subject)
     archived_task_dir = resolve_existing_task_dir(root, task_name)
     publish_task = str(archived_task_dir) if archived_task_dir else (args.task or str(task_dir))
     publish_body_file = args.body_file
@@ -7053,7 +7536,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     archive_migration: dict[str, Any] | None = None
     if archived_task_dir:
         archive_migration = migrate_review_gate_for_archived_task(root, archived_task_dir, config)
-        metadata_commit = commit_if_metadata_dirty(root, "chore(trellis): finalize task metadata")
+        metadata_commit = commit_if_metadata_dirty(root, metadata_commit_subject)
         publish_body_file = rewrite_active_task_artifact_path(root, task_dir, archived_task_dir, publish_body_file)
         publish_body_artifact = rewrite_active_task_artifact_path(root, task_dir, archived_task_dir, publish_body_artifact)
     publish_args = argparse.Namespace(
@@ -7287,6 +7770,26 @@ def build_parser() -> argparse.ArgumentParser:
     check_gate.add_argument("--task")
     check_gate.add_argument("--allow-metadata-after-gate", action="store_true")
 
+    check_commits = sub.add_parser("check-commit-messages")
+    check_commits.add_argument("--root")
+    check_commits.add_argument("--json", action="store_true")
+    check_commits.add_argument("--task")
+    check_commits.add_argument("--primary-issue", type=int)
+    check_commits.add_argument("--base-ref", help="Git ref used as the start of the checked range. Defaults to the task base branch.")
+    check_commits.add_argument("--range", help="Explicit git log range, for example origin/main..HEAD.")
+
+    merge_commit = sub.add_parser("format-merge-commit")
+    merge_commit.add_argument("--root")
+    merge_commit.add_argument("--json", action="store_true")
+    merge_commit.add_argument("--task")
+    merge_commit.add_argument("--primary-issue", type=int)
+    merge_commit.add_argument("--pull-request", help="Pull request number. Omit to produce a dry-run placeholder payload.")
+    merge_commit.add_argument("--summary", help="Chinese PR summary used in the merge commit subject/body.")
+    merge_commit.add_argument("--head-branch")
+    merge_commit.add_argument("--base-branch")
+    merge_commit.add_argument("--title", help=argparse.SUPPRESS)
+    merge_commit.add_argument("--body-file-hint", default=MERGE_COMMIT_BODY_FILE_HINT)
+
     publish = sub.add_parser("publish-pr")
     publish.add_argument("--root")
     publish.add_argument("--json", action="store_true")
@@ -7374,6 +7877,10 @@ def main() -> int:
             payload = cmd_check_subagent_liveness(args)
         elif args.command == "check-review-gate":
             payload = cmd_check_review_gate(args)
+        elif args.command == "check-commit-messages":
+            payload = cmd_check_commit_messages(args)
+        elif args.command == "format-merge-commit":
+            payload = cmd_format_merge_commit(args)
         elif args.command == "publish-pr":
             payload = cmd_publish_pr(args)
         elif args.command == "finish-work":

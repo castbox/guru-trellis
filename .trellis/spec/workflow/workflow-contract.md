@@ -102,6 +102,40 @@ when that is clearer for distribution or interoperability. Do not apply that
 exception to business-project `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**`,
 or bootstrap-generated docs SSOT.
 
+## Commit Message Contract
+
+The reusable `guru-team` workflow requires Chinese Conventional Commits for all
+commits entering a PR branch or `main`:
+
+- work commit and Trellis metadata commit subject:
+  `{type}({scope}): #{primary_issue} 中文描述`;
+- merge commit subject:
+  `chore(merge): #{pull_request} 合并 #{primary_issue} 中文 PR 摘要`;
+- `type` is one of `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`,
+  `build`, `ci`, `chore`, or `revert`;
+- `scope` matches `[a-z0-9._/-]+`;
+- issue id appears after the Conventional Commits prefix and before the Chinese
+  description, never before the prefix or inside scope;
+- work commit body uses fixed sections `背景：`, `变更：`, `边界：`, `验证：`
+  followed by `Refs #<primary_issue>`;
+- Trellis metadata commits use an empty body and a Chinese metadata action such
+  as `chore(trellis): #73 固化任务收尾元数据`;
+- merge commit body uses fixed sections `合并：`, `范围：`, `审计：`, followed by
+  `PR: #<pull_request>` and `Refs #<primary_issue>`.
+
+Commit messages never use `Closes`, `Fixes`, or `Resolves`. Closing semantics
+belong only in the PR body and only for issues listed under
+`issue-scope-ledger.json.close_issues`; commit messages use `Refs` for issue
+links. `publish-pr` must output the merge commit subject/body/command payload so
+maintainers do not rely on GitHub's default `Merge pull request #xx from ...`
+subject or a Chinese PR title such as `完成：#xx ... (#yy)`.
+
+Phase 2 check must verify planned work/metadata/merge commit message coverage.
+Phase 3.4 runs `check-commit-messages.sh` before commit planning proceeds.
+Branch Review Gate reviews committed messages and publish readiness payloads.
+Finish-work metadata commits and publish merge payloads must be generated from
+the same objective formatter/validator contract.
+
 ## Branch Review Gate
 
 Branch Review Gate is a post-commit release gate. An independent Agent review

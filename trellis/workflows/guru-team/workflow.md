@@ -16,6 +16,7 @@
 10. **Capture learnings** — after each task, review whether `.trellis/spec/` needs updates.
 11. **Knowledge before framework changes** — when a task may touch Guru Team middle-platform SDKs or frameworks, retrieve and cite current framework knowledge before design or implementation.
 12. **Task artifacts do not replace durable docs** — reconcile Trellis task artifacts with the repo's long-lived `docs/` source of truth before finish.
+13. **Chinese Conventional Commits** — work commits, Trellis metadata commits, and merge commits must use Conventional Commits prefixes with Chinese descriptions and explicit `Refs` / `Closes` separation.
 
 ---
 
@@ -119,6 +120,88 @@ checkout relative path for task artifacts or patches. `--review-report`,
 must resolve inside the current task directory in that worktree. In worktree
 mode, do not run recorder/validator helpers from the source checkout or another
 worktree.
+
+---
+
+## Commit Message Contract
+
+All commits that enter a PR branch or `main` must use Chinese Conventional
+Commits. This contract covers work commits, Trellis metadata commits generated
+by finish/publish helpers, and the final merge commit that lands the PR.
+
+Work commit and Trellis metadata commit subjects must use:
+
+```text
+{type}({scope}): #{primary_issue} 中文描述
+```
+
+Rules:
+
+- `type` must be one of `feat`, `fix`, `docs`, `style`, `refactor`, `perf`,
+  `test`, `build`, `ci`, `chore`, or `revert`.
+- `scope` must be an English lowercase token matching `[a-z0-9._/-]+`.
+- the primary issue id appears after the Conventional Commits prefix and before
+  the Chinese description, for example
+  `docs(agents): #73 将 Trellis 官方文档链接改为 Markdown 端点`;
+- issue ids must not appear before the prefix or inside scope, so
+  `#73 docs(agents): ...` and `docs(#73): ...` are invalid;
+- work commits must not use merge semantics in the subject; final merge commits
+  use `chore(merge)` only;
+- Trellis metadata commits use the same subject shape and an empty body, for
+  example `chore(trellis): #73 固化任务收尾元数据`.
+
+Work commit body must include these fixed sections in this exact order, with
+substantive content in each section and `Refs #<primary_issue>` as the footer:
+
+```text
+背景：
+写明为什么要改、问题在哪里、当前行为有什么风险。
+
+变更：
+- 写明关键改动。
+
+边界：
+写明未改范围、兼容性、部署、升级影响。
+
+验证：
+- `command`
+
+Refs #73
+```
+
+Commit messages must not use `Closes`, `Fixes`, or `Resolves`. Issue closing
+semantics belong only in the PR body and only for issues listed in
+`issue-scope-ledger.json.close_issues`. Commit messages use `Refs #xx` for the
+primary issue and additional related issue references.
+
+The repository keeps merge commits. The merge commit subject must use:
+
+```text
+chore(merge): #{pull_request} 合并 #{primary_issue} 中文 PR 摘要
+```
+
+The merge commit body must use:
+
+```text
+合并：
+合入 `{head_branch}` 到 `{base_branch}`，保留 PR 内部提交历史。
+
+范围：
+本次 PR 完成 #{primary_issue}：中文 PR 摘要。
+
+审计：
+Trellis task archive、review gate 和 journal 提交保留在 PR 分支历史中，用于审计任务过程。
+
+PR: #{pull_request}
+Refs #{primary_issue}
+```
+
+Do not accept GitHub's default `Merge pull request #xx from ...` subject, and do
+not use a Chinese PR title such as `完成：#73 ... (#91)` directly as a commit
+subject. `publish-pr` outputs a `merge_commit` payload with the subject, body,
+and explicit `gh pr merge ... --subject ... --body-file ...` command; maintainers
+must use that payload when merging instead of relying on GitHub-generated merge
+text.
 
 ---
 
@@ -829,7 +912,7 @@ transition; it is not planning review evidence.
 Flow: `trellis-implement` -> `trellis-check` -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and journal succeed.
 Before dispatching `trellis-implement` / channel `implement` or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, missing or non-passed `ambiguity_review`, or changed `prd.md`/`design.md`/`implement.md` content blocks Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
-Before commit, record and check `phase2-check.json`; it records completed `trellis-check` AI evidence, and validation commands or recorder success alone are not a complete check.
+Before commit, record and check `phase2-check.json`; it records completed `trellis-check` AI evidence, and validation commands or recorder success alone are not a complete check. The check must cover the Commit Message Contract for planned work commits, Trellis metadata commits, and merge commit payloads.
 Main-session default on dispatch platforms: dispatch `trellis-implement` / channel `implement`, wait for an implementation handoff, then dispatch `trellis-check` / channel `check`. Dispatch prompt starts with `Active task: <task path from task.py current>`. The main session may coordinate and record evidence, but it must not directly implement or directly check in default `sub-agent` mode.
 After dispatching an implement/check sub-agent, record `assigned` for `实现代理` or `阶段二检查代理` with `record-subagent-liveness-event.sh` so `agent-assignment.json` contains `agents[]`, `status_events[]`, and `liveness[agent_id]` baseline. Then run `check-subagent-liveness.sh` at `progress_scan_interval=120s` or the checker-provided `next_wait_ms`. A wait timeout is only a wait-window result; record visible progress first, let checker return the single decision, and follow `status_request_required` / `continue_waiting_no_repeat_ping` / `stale_allowed` / progress decisions exactly. Old `record-agent-assignment.sh --status-event` status paths are deprecated and fail closed.
 Sub-agent self-exemption: if already running as `trellis-implement` or `trellis-check`, do the work directly, do not spawn another Trellis implement/check agent, and return the role-specific handoff/report as artifact evidence. Main-session inline/self-exemption needs explicit artifact evidence; otherwise missing sub-agent evidence fails closed.
@@ -842,7 +925,7 @@ Every Phase 2 or Phase 3 stop/completion reply must first run `resolve-human-art
 Flow: `trellis-before-dev` -> edit -> `trellis-check` -> validation -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and journal succeed.
 Before editing or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, missing or non-passed `ambiguity_review`, or changed `prd.md`/`design.md`/`implement.md` content blocks inline Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
-Before commit, record and check `phase2-check.json`; validation commands alone are not a complete `trellis-check`.
+Before commit, record and check `phase2-check.json`; validation commands alone are not a complete `trellis-check`. The check must cover the Commit Message Contract for planned work commits, Trellis metadata commits, and merge commit payloads.
 Do not dispatch implement/check sub-agents in inline mode.
 Before edits, confirm knowledge gate and the `Docs SSOT Plan` from artifacts. Inline Phase 2 still consumes the plan: implementation records strategy execution and docs sync handoff, and the later check verifies durable docs, task artifacts, code/API/schema/config/deploy/test, and validation evidence against that strategy.
 Read context: `prd.md` -> `design.md` -> `implement.md`, plus relevant spec/research loaded by skills.
@@ -909,6 +992,14 @@ Phase 2 check must consume the approved `Docs SSOT Plan` and verify the implemen
 - `ssot_first` implementation used the revised durable docs / specs / workflow contracts as the primary input;
 - `bootstrap_or_repair_docs` completed the minimum repair, or records a bounded follow-up and current PR limitation;
 - `no_docs_update_needed` still has a concrete reason after reviewing the final diff.
+
+Phase 2 check must also review the Commit Message Contract. Before a passing
+check is recorded, the checker must confirm the planned work commit subject/body
+uses `{type}({scope}): #{primary_issue} 中文描述`, fixed body sections, and
+`Refs #<primary_issue>` without `Closes`; Trellis metadata commits use
+`chore(trellis): #{primary_issue} 中文动作` with an empty body; and publish/merge
+readiness will produce `chore(merge): #{pull_request} 合并 #{primary_issue} 中文
+PR 摘要` plus the fixed merge body.
 
 If the check finds scope drift or a missing docs merge, return to implementation or Phase 1 planning as appropriate, update the plan/artifacts, and rerun Phase 2 check. Do not let Branch Review Gate or finish-work become the first semantic docs consistency check.
 
@@ -999,13 +1090,19 @@ Before staging or committing, run:
 
 ```bash
 .trellis/guru-team/scripts/bash/check-phase2-check.sh --json
+.trellis/guru-team/scripts/bash/check-commit-messages.sh --json --task <task-path>
 ```
 
 If the report is missing, stale, lacks full coverage, lacks validation evidence, or contains unresolved P0/P1/P2 findings, return to Phase 2.2 and run the full check again.
+If commit message validation fails for any commit already in the checked range,
+or if the planned task work commit message does not follow the Commit Message
+Contract, fix the commit plan before staging. This validator only checks
+objective subject/body shape; it does not decide whether implementation or
+review coverage is sufficient.
 
 Inspect dirty state, separate this task's changes from unrelated changes, draft a commit plan, and wait for user confirmation before committing.
 
-The commit must include task work and relevant artifact updates through `prd.md`, `design.md`, `implement.md`, `issue-scope-ledger.json`, code, tests, config, scripts, schema, or preset installer changes. Do not include unrelated parallel work.
+The commit must include task work and relevant artifact updates through `prd.md`, `design.md`, `implement.md`, `issue-scope-ledger.json`, code, tests, config, scripts, schema, or preset installer changes. Do not include unrelated parallel work. The work commit subject/body must follow the Commit Message Contract and use `Refs #<primary_issue>` instead of `Closes #<issue>`.
 
 #### 3.5 Branch Review Gate `[required · repeatable]`
 
@@ -1030,6 +1127,12 @@ origin/<base>...HEAD
 ```
 
 Use the handoff/task `base_branch`; do not guess from GitHub default branch.
+The review must include the branch's commit messages and publish readiness
+payloads: work commits must pass the subject/body contract, Trellis metadata
+commits must use the issue-bearing Chinese `chore(trellis)` subject with an
+empty body, PR body close keywords must match `issue-scope-ledger.json`, and the
+planned merge commit must use the `publish-pr` / `format-merge-commit` payload
+instead of GitHub's default `Merge pull request ...` subject.
 
 Before or immediately after dispatching the independent review, record the reviewer logical role in `agent-assignment.json`:
 
@@ -1214,9 +1317,9 @@ preview, then as the formal finish:
   --body-file "{TASK_DIR}/pr-body.md"
 ```
 
-The `--from-trellis-finish-work` marker is required proof that the explicit finish entrypoint was invoked; `trellis-continue` must not add or synthesize it. Ordinary direct `finish-work.sh` calls fail before gate, archive, journal, push, or PR side effects. The helper then runs the normal finish-work actions: it verifies the passed gate has final `review_report` digest evidence plus raw `review_reports[]` digest evidence, rejects uncommitted non-metadata changes, archives the active task with `task.py archive`, records the session journal with `add_session.py`, commits any remaining Trellis metadata-only changes, then invokes publish.
+The `--from-trellis-finish-work` marker is required proof that the explicit finish entrypoint was invoked; `trellis-continue` must not add or synthesize it. Ordinary direct `finish-work.sh` calls fail before gate, archive, journal, push, or PR side effects. The helper then runs the normal finish-work actions: it verifies the passed gate has final `review_report` digest evidence plus raw `review_reports[]` digest evidence, rejects uncommitted non-metadata changes, archives the active task with `task.py archive`, records the session journal with `add_session.py`, commits any remaining Trellis metadata-only changes, then invokes publish. Metadata commits created here must use the empty-body Conventional Commits subject `chore(trellis): #<primary_issue> 固化任务收尾元数据`, not `chore(trellis): finalize task metadata`.
 
-When `--dry-run` is also passed with the explicit finish intent marker, the helper is a side-effect-free readiness preview: it validates the same gate, dirty-state, and PR body/readiness inputs, then prints the planned archive, journal, metadata commit, and publish actions without moving task files, writing journal entries, creating commits, pushing, or creating a PR.
+When `--dry-run` is also passed with the explicit finish intent marker, the helper is a side-effect-free readiness preview: it validates the same gate, dirty-state, and PR body/readiness inputs, then prints the planned archive, journal, metadata commit subject, publish actions, and merge commit payload without moving task files, writing journal entries, creating commits, pushing, or creating a PR.
 
 After the dry-run returns, run the human artifact resolver against the active
 task and include the active-task `Markdown 产物 review 表` in the preview reply:
@@ -1272,11 +1375,12 @@ Publish behavior:
 - use `Closes #xx` only for `close_issues` in `issue-scope-ledger.json`;
 - use only `Refs #xx` or `Related #xx` semantics for `related_issues`;
 - never close `followup_issues`.
+- output a `merge_commit` payload during dry-run and formal publish. Dry-run may use `<pull_request>` as a placeholder and `ready=false`; formal publish must parse the created PR number and output `ready=true`, `chore(merge): #<pull_request> 合并 #<primary_issue> 中文 PR 摘要`, the fixed merge body, and a `gh pr merge <pull_request> --merge --subject ... --body-file ...` command. Maintainers must use this payload for the final merge and must not rely on GitHub's default merge commit subject.
 
 The PR body quality judgment belongs to the AI readiness review. `publish-pr`
 only validates objective structure, forbidden low-information phrases,
 reviewed body-file/artifact presence, Docs SSOT section/key presence, close/ref
-issue semantics, archive-path resolution, and then executes the GitHub operation. It must not invent
+issue semantics, commit-message payload shape, archive-path resolution, and then executes the GitHub operation. It must not invent
 reviewer-facing justification or replace the AI's release judgment with a
 script-generated claim.
 

@@ -44,6 +44,7 @@ python3 -m json.tool trellis/index.json
 bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh
 python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
 python3 ./.trellis/scripts/task.py validate <task-dir>
+trellis/workflows/guru-team/scripts/bash/check-commit-messages.sh --json --task <task-dir>
 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 git diff --check
 ```
@@ -82,6 +83,13 @@ owns whether the strategy, durable docs update/no-update reason, merged delta,
 task-history-only content, and follow-up/limitation are true and sufficient.
 The blocked case should cover phrases such as `当前 Trellis task`,
 `已提交实现与文档更新`, or `详见 artifact`, plus a missing Docs SSOT section.
+When changing commit, finish, publish, or merge behavior, add tests for the
+Chinese Conventional Commits contract: reject GitHub default merge subjects,
+Chinese PR-title-as-subject squash messages, issue ids before the prefix or in
+scope, missing issue ids, and English `Update ...` subjects; accept issue-bearing
+work/metadata subjects and `chore(merge)` subjects; verify work body fixed
+sections plus `Refs`, empty metadata body, fixed merge body, finish metadata
+subject, and publish dry-run/formal `merge_commit` payloads.
 
 When changing user-facing workflow command examples, especially closeout or
 publish examples, add regression coverage or explicit grep checks for both the
@@ -124,6 +132,9 @@ cannot pass the gate. Include:
 - companion scripts
 - schemas and config templates
 - preset installer and overlays
+- commit message contract: work commit subject/body, Trellis metadata commit
+  subject with empty body, `Refs` in commit messages, PR body-only `Closes`, and
+  publish/merge payload command that avoids GitHub's default merge subject
 - Trellis task artifacts
 - generated or installed-copy expectations
 - Phase 0 handoff/preflight evidence, or explicit no-task direct-edit override
