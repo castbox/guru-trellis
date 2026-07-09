@@ -1,0 +1,24 @@
+{
+  "primary_issue": {
+    "number": 93,
+    "url": "https://github.com/castbox/guru-trellis/issues/93",
+    "title": "将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 93,
+      "url": "https://github.com/castbox/guru-trellis/issues/93",
+      "title": "将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
+      "reason": "当前 task 完整解决 #93：实现 v2 受控词表、固定 planning artifact scanner、hits[] / unchecked_normative_hits[] 记录与阻塞，并完成 Phase 2 check 和 Branch Review。",
+      "acceptance_evidence": [
+        "planning-approval.json 已用新版 scanner 记录 65 条 hits，unchecked_normative_hits[] 为空，并通过 check-planning-approval.sh。",
+        "phase2-check.json 记录阶段二检查代理 019f4885-521a-7090-86fe-a7bef2141553 PASS、无 findings，覆盖 requirements/design/code/tests/spec_sync/cross_layer/docs_ssot/deployment。",
+        "reviews/round-001-final-release.md 记录最终放行审查代理 019f488e-0591-70a3-9257-9d08bd1cb33c 审查 origin/main...HEAD 到 a70374094f869637561cdc677efbff8af3c1368f，结论 pass，Findings 无。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}
