@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-09T22:39:34Z",
-  "task_dir": ".trellis/tasks/07-10-092-conventional-commits",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-10-092-conventional-commits",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/092-conventional-commits",
@@ -102,7 +102,7 @@
     }
   ],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-10-092-conventional-commits/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-10-092-conventional-commits/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 92,
@@ -126,13 +126,13 @@
     "reviewer": "019f48fc-06cd-7983-8577-f8e1040dacff",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-10-092-conventional-commits/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-10-092-conventional-commits/review.md",
       "sha256": "04f9bdc4748fed676b5cd11fb865c86f6ab60012890314f31f63930839a9e2b0",
       "size_bytes": 5278,
       "modified_at": "2026-07-09T22:36:48.143019+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-10-092-conventional-commits/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-10-092-conventional-commits/agent-assignment.json",
       "sha256": "c6ab7abbe40293eee1ca36e120aa81fddc431199a0447859b553ff63685fc45d",
       "size_bytes": 23676,
       "modified_at": "2026-07-09T22:38:55.293891+00:00",
@@ -148,7 +148,7 @@
       "review_rounds_count": 3,
       "reuse_decisions_count": 1,
       "status_events_count": 11,
-      "task": ".trellis/tasks/07-10-092-conventional-commits",
+      "task": ".trellis/tasks/archive/2026-07/07-10-092-conventional-commits",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "review_reports": [
@@ -158,7 +158,7 @@
         "agent_id": "019f48dc-2e18-7db1-b50a-d794018502b1",
         "reviewed_head": "1b42776abbc037d152fb350528c96b6e93ccbef2",
         "findings_count": 1,
-        "path": ".trellis/tasks/07-10-092-conventional-commits/reviews/round-001-final-release.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-092-conventional-commits/reviews/round-001-final-release.md",
         "sha256": "dfb595222e62eac267c2fe55f5f8f6c72e25c2d817ddd0356e33b9e92b90ac46",
         "size_bytes": 5597,
         "modified_at": "2026-07-09T21:59:00.489969+00:00"
@@ -169,7 +169,7 @@
         "agent_id": "019f48dc-2e18-7db1-b50a-d794018502b1",
         "reviewed_head": "73a4985d07e4d2876c39a8ff53130cbdb1eb119e",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-10-092-conventional-commits/reviews/round-002-closure.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-092-conventional-commits/reviews/round-002-closure.md",
         "sha256": "f38146e1f9a15881f6fdb4b6017d3514585a961d15b4645227e346e3f589187d",
         "size_bytes": 3359,
         "modified_at": "2026-07-09T22:24:01.776831+00:00"
@@ -180,7 +180,7 @@
         "agent_id": "019f48fc-06cd-7983-8577-f8e1040dacff",
         "reviewed_head": "73a4985d07e4d2876c39a8ff53130cbdb1eb119e",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-10-092-conventional-commits/reviews/round-003-final-release.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-092-conventional-commits/reviews/round-003-final-release.md",
         "sha256": "3a2d0d0f452a0749f9909a7da0ed15ef70904f85b10126da6deeb1324061312e",
         "size_bytes": 5052,
         "modified_at": "2026-07-09T22:35:42.836377+00:00"
