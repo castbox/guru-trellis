@@ -8,9 +8,9 @@
 
 必须优先参考：
 
-- Trellis 官方文档首页：https://docs.trytrellis.app/
-- 自定义 workflow：https://docs.trytrellis.app/advanced/custom-workflow
-- 自定义 spec template marketplace：https://docs.trytrellis.app/advanced/custom-spec-template-marketplace
+- Trellis 官方文档首页：https://docs.trytrellis.app/index.md
+- 自定义 workflow：https://docs.trytrellis.app/advanced/custom-workflow.md
+- 自定义 spec template marketplace：https://docs.trytrellis.app/advanced/custom-spec-template-marketplace.md
 
 本仓库扩展必须遵从 Trellis 官方最佳实践：
 
