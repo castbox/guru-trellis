@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-09T08:45:23Z",
-  "task_dir": ".trellis/tasks/07-09-064-docs-ssot-plan-contract",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/064-docs-ssot-plan-contract",
@@ -96,7 +96,7 @@
   "observations": [],
   "followup_candidates": [],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-09-064-docs-ssot-plan-contract/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 64,
@@ -119,13 +119,13 @@
     "reviewer": "trellis-check-agent:019f4601-5551-7651-a903-6631725f1ab6",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-09-064-docs-ssot-plan-contract/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract/review.md",
       "sha256": "1748fe30885f8dbd26eb3804c4f12f781ffed6e2c5356598878e382716511bdf",
       "size_bytes": 2736,
       "modified_at": "2026-07-09T08:41:30.705305+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-09-064-docs-ssot-plan-contract/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract/agent-assignment.json",
       "sha256": "d2ed286e8b9ffb89227dab1df727f5bacf82ac55522e44cac731161694888ca1",
       "size_bytes": 33424,
       "modified_at": "2026-07-09T08:43:41.826657+00:00",
@@ -140,7 +140,7 @@
       "review_rounds_count": 1,
       "reuse_decisions_count": 0,
       "status_events_count": 23,
-      "task": ".trellis/tasks/07-09-064-docs-ssot-plan-contract",
+      "task": ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "review_reports": [
@@ -150,7 +150,7 @@
         "agent_id": "019f4601-5551-7651-a903-6631725f1ab6",
         "reviewed_head": "51045439b5c6fea8aacd61d10446932e9de3c80e",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-09-064-docs-ssot-plan-contract/reviews/round-001-final-release-review.md",
+        "path": ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract/reviews/round-001-final-release-review.md",
         "sha256": "66ac376f6e667f35acb64ede52ace681dae1cd519d5645566ac5ae0fa5588371",
         "size_bytes": 5334,
         "modified_at": "2026-07-09T08:42:34.498580+00:00"
