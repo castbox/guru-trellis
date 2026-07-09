@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Check that Phase 2 contract remains in Markdown workflow/specs and does not move semantic judgment into scripts."}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Check required validation and review focus for workflow/preset changes."}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "Check cross-platform overlay and agent definition consistency."}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "Check durable docs and public docs SSOT language/safety requirements."}
+{"file": "docs/requirements/guru-team-trellis-flow.md", "reason": "Check durable flow doc matches workflow and overlay behavior."}
+{"file": "docs/requirements/requirement-main.md", "reason": "Check extension overview captures #65 without contradicting #64/#66 boundaries."}
+{"file": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/research/official-trellis-docs.md", "reason": "Check official Trellis extension boundary evidence is retained."}
+{"file": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/research/subagent-inline-exemption.md", "reason": "Check that inline implementation fallback is explicit and does not replace trellis-check evidence."}

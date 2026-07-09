@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 36
+- **Total Sessions**: 37
 - **Last Active**: 2026-07-09
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1198 | Active |
+| `journal-1.md` | ~1231 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 37 | 2026-07-09 | 完成：#65 Docs SSOT implementation/check gate：把同步纳入 Phase 2 | `6c3497204c8ab02453d2383c69fbca04c167e63f` | `codex/065-docs-ssot-phase2-sync-gate` |
 | 36 | 2026-07-09 | 完成：#64 Docs SSOT planning contract：Phase 1 必须选择同步策略 | `51045439b5c6fea8aacd61d10446932e9de3c80e` | `codex/064-docs-ssot-plan-contract` |
 | 35 | 2026-07-09 | 完成：#61 阶段回复必须提供 Markdown task 产物 review 表 | `936b5bdb869ed8b799c33988a5ae11dfbf89f920` | `codex/061-task-markdown-review-table` |
 | 34 | 2026-07-09 | 完成：#76 subagent liveness、progress/stale 判定与 replacement cutover 状态机 | `e0ee89401bef4739bf416ab4b29538ea407bc17a` | `codex/076-subagent-liveness-state-machine` |

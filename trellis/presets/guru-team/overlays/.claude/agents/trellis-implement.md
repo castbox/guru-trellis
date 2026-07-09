@@ -34,6 +34,7 @@ Before implementing, read:
 - Task `prd.md` - Requirements document
 - Task `design.md` - Technical design
 - Task `implement.md` - Execution plan
+- The task `Docs SSOT Plan` in `design.md` / `implement.md` - Phase 2 docs strategy to execute
 
 ## Core Responsibilities
 
@@ -41,7 +42,8 @@ Before implementing, read:
 2. **Understand task artifacts** - Read prd.md, design.md, and implement.md
 3. **Implement features** - Write code following specs and task artifacts
 4. **Self-check** - Ensure code quality
-5. **Report implementation handoff** - Report completion status, changed files, verification, remaining risks, and focus areas for `trellis-check`
+5. **Execute Docs SSOT Plan** - Update, merge, repair, or preserve durable docs according to the approved strategy
+6. **Report implementation handoff** - Report completion status, changed files, docs sync result, verification, remaining risks, and focus areas for `trellis-check`
 
 ## Forbidden Operations
 
@@ -58,7 +60,8 @@ Before implementing, read:
 - A main-session wait timeout is not your failure signal. Continue working unless you receive an explicit stop/interrupt instruction.
 - Do not emit periodic heartbeat messages and do not write `agent-assignment.json` or any liveness artifact yourself. If the main session sends an explicit status request, reply in platform-visible output with the current step, last concrete progress, active command/tool if any, changed files or review scope, remaining work, and blockers; the main session records that response as liveness evidence.
 - Do not run `trellis-check`, record `phase2-check.json`, or perform Branch Review Gate work. You own the implementation boundary; later check/review phases need your handoff, not a substitute check.
-- Your completion handoff must include requirement/design carryover, durable docs/spec/overlay responsibilities handled, verification run or deferred, remaining risks, and concrete `trellis-check` focus areas.
+- Your completion handoff must include requirement/design carryover, `Docs SSOT Plan` strategy, durable docs/spec/overlay responsibilities handled, docs sync result, task delta merged to durable docs, task-history-only content, verification run or deferred, remaining risks, and concrete `trellis-check` focus areas.
+- If the plan is `no_docs_update_needed`, include the concrete reason and checked durable docs paths. If it is `bootstrap_or_repair_docs`, include the minimum repair completed or the bounded follow-up and current PR limitation. If it is `delta_first`, complete the durable docs merge before final Phase 2 check. If it is `ssot_first`, state which revised durable docs/spec/workflow contracts were primary implementation inputs.
 
 ---
 
@@ -78,6 +81,7 @@ Read the task's prd.md, design.md, and implement.md:
 - What are the core requirements
 - Key points of technical design
 - Implementation order, validation commands, and rollback points
+- Docs state, strategy, durable docs paths, task delta merge checkpoint, and repair/no-update/follow-up limits from the `Docs SSOT Plan`
 
 ### 3. Implement Features
 
@@ -105,6 +109,16 @@ Run project's lint and typecheck commands to verify changes.
 
 1. Created Feature component...
 2. Added useFeature hook...
+
+### Docs SSOT Handoff
+
+- Strategy: `<ssot_first|delta_first|bootstrap_or_repair_docs|no_docs_update_needed>`
+- Durable docs updated or checked:
+- Task artifact delta merged back to durable docs:
+- Task-history-only content:
+- No-update reason or follow-up / current PR limitation:
+- Implementation inputs from durable docs:
+- Implementation inputs from confirmed task delta:
 
 ### Verification Results
 

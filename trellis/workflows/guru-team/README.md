@@ -296,6 +296,15 @@ AI check 的入口；commit 后 Branch Review Gate 会审计后续提交
 匹配当前 HEAD 而在 task work commit 后重录 Phase 2，除非提交后又出现新的非 metadata
 改动或 evidence 已失效。
 
+Phase 2 必须消费 planning 阶段的 `Docs SSOT Plan`。实现代理需要在 handoff 中说明
+plan strategy、durable docs 同步结果、task delta merge、task-history-only 内容、
+`no_docs_update_needed` 理由或 `bootstrap_or_repair_docs` follow-up / PR 限制，以及哪些实现输入
+来自 durable docs、哪些来自已确认 task delta。`trellis-check` 需要按同一策略复核 durable docs、
+task artifacts、code/schema/config/deploy/test 和验证/测试覆盖是否一致；`delta_first` 必须在最终
+Phase 2 check 前完成 durable docs merge，`ssot_first` 必须以修订后的 durable docs 为主要输入。
+如果实现发现长期合同变化超出 plan，必须先更新 planning artifacts 和 `Docs SSOT Plan`，必要时重新
+planning approval，再重新 Phase 2 check。
+
 Codex 项目默认使用 `codex.dispatch_mode: sub-agent`，由 main session 调度
 `trellis-implement` / `trellis-check`。默认 sub-agent mode 下，main session 只负责
 规划、调度、等待/恢复/替换、记录 evidence、commit 和运行 recorder/validator；实现必须由

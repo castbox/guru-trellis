@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Phase 2 workflow contract and Docs SSOT Plan ownership rules."}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Required validation and review focus for workflow/preset changes."}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "Platform overlay and implement/check agent consistency rules."}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "Public docs language, install/upgrade, and SSOT consistency rules."}
+{"file": "docs/requirements/guru-team-trellis-flow.md", "reason": "Durable flow requirements doc that must receive Phase 2 Docs SSOT plan consumption."}
+{"file": "docs/requirements/requirement-main.md", "reason": "Durable extension overview that tracks implemented workflow capabilities."}
+{"file": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/research/official-trellis-docs.md", "reason": "Official Trellis documentation check for extension boundaries."}
+{"file": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/research/subagent-inline-exemption.md", "reason": "Documents why main-session inline implementation was used after repeated stale implement agents; not a substitute for trellis-check."}

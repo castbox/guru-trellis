@@ -1,0 +1,28 @@
+{
+  "primary_issue": {
+    "number": 65,
+    "url": "https://github.com/castbox/guru-trellis/issues/65",
+    "title": "Docs SSOT implementation/check gate：把同步纳入 Phase 2",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "实现提交 6c3497204c8ab02453d2383c69fbca04c167e63f 已把 Docs SSOT Plan 的 Phase 2 consumption 合同同步到 canonical workflow、preset overlays、dogfood installed copies、docs 和 specs。",
+      "phase2-check.json 覆盖 requirements/design/code/tests/spec_sync/cross_layer/docs_ssot/deployment，记录 findings_count=0。",
+      "review-gate.json 记录 independent-agent Branch Review pass，reviewed_head=6c3497204c8ab02453d2383c69fbca04c167e63f，findings_count=0。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 65,
+      "url": "https://github.com/castbox/guru-trellis/issues/65",
+      "title": "Docs SSOT implementation/check gate：把同步纳入 Phase 2",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "实现提交 6c3497204c8ab02453d2383c69fbca04c167e63f 已把 Docs SSOT Plan 的 Phase 2 consumption 合同同步到 canonical workflow、preset overlays、dogfood installed copies、docs 和 specs。",
+        "phase2-check.json 覆盖 requirements/design/code/tests/spec_sync/cross_layer/docs_ssot/deployment，记录 findings_count=0。",
+        "review-gate.json 记录 independent-agent Branch Review pass，reviewed_head=6c3497204c8ab02453d2383c69fbca04c167e63f，findings_count=0。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

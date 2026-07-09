@@ -79,6 +79,10 @@ Continue entries must:
   dirty-path drift alone do not require another user review
 - in `in_progress`, rerun `check-planning-approval.sh --json` before dispatching
   `trellis-implement` / channel `implement` or recording `phase2-check.json`
+- in `in_progress`, tell the AI to consume the approved `Docs SSOT Plan` during
+  Phase 2: implementation handoff records strategy execution and docs sync
+  outcome, while `trellis-check` verifies durable docs / task artifacts /
+  code/API/schema/config/deploy/test consistency by strategy
 - state that default `sub-agent` mode requires the main session to dispatch
   `trellis-implement` / channel `implement`, then `trellis-check` / channel
   `check`, and later a Branch Review review sub-agent; the main session cannot
@@ -179,10 +183,20 @@ Sub-agent overlay entries must:
 - require implement agents to output a completion handoff with files changed,
   requirement/design carryover, verification state, remaining risks, completion
   status, and focus areas for `trellis-check`;
+- require implement agents to read the task `Docs SSOT Plan`, execute
+  `ssot_first` / `delta_first` / `bootstrap_or_repair_docs` /
+  `no_docs_update_needed`, and include strategy, durable docs sync result, task
+  delta merge, task-history-only content, no-update reason or follow-up / PR
+  limitation, and durable-docs versus task-delta implementation inputs in the
+  handoff;
 - require check agents to distinguish Phase 2 check from Branch Review: Phase 2
   may self-fix small in-scope mechanical issues and must output evidence that
   can support `phase2-check.json`; Branch Review is review-only over the full
   committed diff and must report, not patch, missing implementation/check work;
+- require check agents in Phase 2 mode to verify durable docs, task artifacts,
+  code/schema/config/deploy/test, and validation/test coverage against the
+  approved `Docs SSOT Plan`, including final checks for `delta_first`,
+  `ssot_first`, `bootstrap_or_repair_docs`, and `no_docs_update_needed`;
 - require check agents in Branch Review mode to use Chinese report templates for
   raw `{TASK_DIR}/reviews/*.md` reports and final `{TASK_DIR}/review.md`
   rollup content: Chinese headings, Chinese labels, Chinese review narrative,

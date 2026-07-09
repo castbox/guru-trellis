@@ -238,6 +238,29 @@ artifacts. Companion scripts may record paths, hashes, or approval evidence,
 but must not decide whether durable docs are semantically complete, stale, or
 adequately repaired.
 
+Phase 2 consumes the approved plan. Implementation must execute the recorded
+strategy and include in its handoff: strategy, durable docs sync result, task
+artifact deltas merged back into durable docs, task-history-only content,
+`no_docs_update_needed` reason when applicable, `bootstrap_or_repair_docs`
+minimum repair / follow-up / current PR limitation when applicable, and which
+implementation inputs came from durable docs versus confirmed temporary task
+deltas. Phase 2 check must verify durable docs, `prd.md` / `design.md` /
+`implement.md`, code/API/schema/config/deploy/test, and validation/test
+coverage against the same plan. `delta_first` cannot pass final Phase 2 check
+until durable docs merge is complete; `ssot_first` must use revised durable
+docs / specs / workflow contracts as primary implementation input;
+`bootstrap_or_repair_docs` must complete minimum repair or explicitly bound
+follow-up / PR limitations; `no_docs_update_needed` must be rechecked against
+the final diff.
+
+If implementation or check discovers a long-term product, architecture, API,
+data, deployment, operations, test, or workflow contract change that the plan
+does not cover, update planning artifacts and the `Docs SSOT Plan`; when
+`prd.md`, `design.md`, or `implement.md` content changes, obtain fresh
+explicit post-planning approval before continuing and rerun Phase 2 check. Do
+not defer the first semantic docs consistency judgment to Branch Review Gate or
+finish-work.
+
 ## Branch Review Gate Coverage
 
 The gate must cover docs, code, tests, Trellis artifacts, config, scripts,

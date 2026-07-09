@@ -483,3 +483,15 @@ deltas to merge back, and any required merge checkpoint, minimum repair scope,
 follow-up limit, or no-update reason. Finish and Branch Review Gate evidence
 must later record the reconciliation outcome, but the strategy choice belongs
 in Phase 1 planning.
+
+Installed implement/check agents consume that plan during Phase 2. The
+implementation handoff names the strategy, durable docs sync result, task
+delta merged back, task-history-only content, no-update or follow-up / PR
+limits, and whether implementation inputs came from durable docs or an
+approved temporary task delta. The Phase 2 check agent then verifies durable
+docs, task artifacts, code/schema/config/deploy/test, and validation/test
+coverage against the same strategy. `delta_first` must merge durable docs
+before final Phase 2 check; `ssot_first` uses revised durable docs as primary
+input; `bootstrap_or_repair_docs` must complete the minimum repair or name a
+bounded follow-up and PR limitation; `no_docs_update_needed` must still have a
+concrete reason after the final diff is reviewed.

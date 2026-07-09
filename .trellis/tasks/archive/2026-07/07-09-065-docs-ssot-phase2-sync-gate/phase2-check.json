@@ -1,0 +1,190 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-09T09:55:13Z",
+  "task_dir": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate",
+  "base_branch": "main",
+  "head": "d1dda000a07d1194d7d722400bcea3f7433edf34",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".claude/agents/trellis-check.md",
+    ".claude/agents/trellis-implement.md",
+    ".claude/commands/trellis/continue.md",
+    ".codex/agents/trellis-check.toml",
+    ".codex/agents/trellis-implement.toml",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".cursor/agents/trellis-check.md",
+    ".cursor/agents/trellis-implement.md",
+    ".cursor/commands/trellis-continue.md",
+    ".trellis/agents/check.md",
+    ".trellis/agents/implement.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/workflow.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+    "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+    "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+    "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+    "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/"
+  ],
+  "checker": "019f4643-e7e9-7191-a917-41d05410a945",
+  "check_summary": "replacement 阶段二检查代理完成 issue #65 Phase 2 检查：确认 Docs SSOT Plan 已纳入 implementation/check，canonical workflow、dogfood workflow、durable docs、spec、canonical overlays 与 dogfood installed copies 一致；未修改 Python/shell/schema，未重复实现 phase2-check coverage 或 dirty-path audit，未提前实现 #66；无剩余 P0/P1/P2/P3 finding。完整 throwaway install / upgrade-update replay 未覆盖，最终报告需保留该限制。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/prd.md",
+      "sha256": "b12b7afdf1e8b245fafab23282c3bcc2f2b3c7c435c3690916c1b4c381ea5f09",
+      "size_bytes": 6926,
+      "modified_at": "2026-07-09T08:58:21.770299+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/design.md",
+      "sha256": "e84c55d213d9d4a146a157e4ca35de509dd09ab9674489195bc3a1e6974fffc0",
+      "size_bytes": 8274,
+      "modified_at": "2026-07-09T08:58:21.770583+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/implement.md",
+      "sha256": "c508e85954c1fb55e7e8ae84d96ac9893523402e9f544409f356c8b705f47cda",
+      "size_bytes": 5393,
+      "modified_at": "2026-07-09T08:58:21.770775+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/implement.jsonl",
+      "sha256": "9ec0cfe69ffe3591af88b3cd58e37197925d90fd5615a13fe3cac923ae94773f",
+      "size_bytes": 1235,
+      "modified_at": "2026-07-09T09:18:56.510112+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/check.jsonl",
+      "sha256": "f624f35e8ce355272cfbfed11752181cc70329d3c591390d72436b20c452fd8a",
+      "size_bytes": 1247,
+      "modified_at": "2026-07-09T09:18:56.510482+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/planning-approval.json",
+      "sha256": "a45b0bd4c152df2827fa1f99a11be98154cf74f0e545b0ef3e8918b302fb2bb0",
+      "size_bytes": 2725,
+      "modified_at": "2026-07-09T08:59:44.475571+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/agent-assignment.json",
+      "sha256": "deeeee94354c1d41c6017bdbece8d22fe35fa0a1ca6e8cda4b7b3a714b87f320",
+      "size_bytes": 34167,
+      "modified_at": "2026-07-09T09:53:27.599886+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "4f6444d0c032db2b53a6875bace73eac3a21afaaada18f6f14b9f8787c563bea",
+      "size_bytes": 21261,
+      "modified_at": "2026-07-09T09:27:16.540108+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "02839977bd376f00c76abb1cf0ddf37c4dbd4e7eba60154429d9f703bac11b4c",
+      "size_bytes": 8132,
+      "modified_at": "2026-07-09T09:27:16.540533+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "54fd63343294ee468c00bda649094dc918c6c23eb86db493fba106295d976826",
+      "size_bytes": 13388,
+      "modified_at": "2026-07-09T09:51:04.612513+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "3dcb9e138dc54489b539b7d2f579ef68bfcdfb3c293fad5a80ceafdf4c5cb64e",
+      "size_bytes": 4343,
+      "modified_at": "2026-07-09T08:52:33.214242+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "replacement trellis-check 019f4643-e7e9-7191-a917-41d05410a945",
+      "result": "Phase 2 check completed, no remaining findings, no Branch Review recorder used"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json",
+      "result": "pass"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh",
+      "result": "pass"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "pass"
+    },
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "pass, 186 tests"
+    },
+    {
+      "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "pass, 27 tests"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate",
+      "result": "pass"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 1.1",
+      "result": "pass"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 2.1",
+      "result": "pass"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 3.5",
+      "result": "pass"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms",
+      "result": "pass, no .new/.bak"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    },
+    {
+      "command": "check-agent-assignment.sh --json",
+      "result": "pass, replacement check chain completed"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}
