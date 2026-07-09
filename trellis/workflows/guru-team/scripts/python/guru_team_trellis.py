@@ -5638,6 +5638,8 @@ def validate_commit_subject(
         errors.append("issue id 必须放在 Conventional Commits 前缀之后。")
     if re.match(rf"^[a-z]+\(#[0-9]+\):", value):
         errors.append("issue id 不得放在 scope 中。")
+    if close_keyword_pattern().search(value):
+        errors.append("commit subject 不得使用 Closes/Fixes/Resolves/Close/Fix/Resolve；issue 关闭语义只能放在 PR body。")
 
     parsed = parse_commit_subject(value)
     if parsed is None:

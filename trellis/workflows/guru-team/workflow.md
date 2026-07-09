@@ -169,8 +169,9 @@ substantive content in each section and `Refs #<primary_issue>` as the footer:
 Refs #73
 ```
 
-Commit messages must not use `Closes`, `Fixes`, or `Resolves`. Issue closing
-semantics belong only in the PR body and only for issues listed in
+Commit messages must not use close keywords such as `Closes`, `Fixes`,
+`Resolves`, `Close`, `Fix`, or `Resolve`. Issue closing semantics belong only
+in the PR body and only for issues listed in
 `issue-scope-ledger.json.close_issues`. Commit messages use `Refs #xx` for the
 primary issue and additional related issue references.
 
@@ -996,7 +997,7 @@ Phase 2 check must consume the approved `Docs SSOT Plan` and verify the implemen
 Phase 2 check must also review the Commit Message Contract. Before a passing
 check is recorded, the checker must confirm the planned work commit subject/body
 uses `{type}({scope}): #{primary_issue} 中文描述`, fixed body sections, and
-`Refs #<primary_issue>` without `Closes`; Trellis metadata commits use
+`Refs #<primary_issue>` without close keywords; Trellis metadata commits use
 `chore(trellis): #{primary_issue} 中文动作` with an empty body; and publish/merge
 readiness will produce `chore(merge): #{pull_request} 合并 #{primary_issue} 中文
 PR 摘要` plus the fixed merge body.
@@ -1102,7 +1103,7 @@ review coverage is sufficient.
 
 Inspect dirty state, separate this task's changes from unrelated changes, draft a commit plan, and wait for user confirmation before committing.
 
-The commit must include task work and relevant artifact updates through `prd.md`, `design.md`, `implement.md`, `issue-scope-ledger.json`, code, tests, config, scripts, schema, or preset installer changes. Do not include unrelated parallel work. The work commit subject/body must follow the Commit Message Contract and use `Refs #<primary_issue>` instead of `Closes #<issue>`.
+The commit must include task work and relevant artifact updates through `prd.md`, `design.md`, `implement.md`, `issue-scope-ledger.json`, code, tests, config, scripts, schema, or preset installer changes. Do not include unrelated parallel work. The work commit subject/body must follow the Commit Message Contract and use `Refs #<primary_issue>` instead of close keywords such as `Closes #<issue>`.
 
 #### 3.5 Branch Review Gate `[required · repeatable]`
 

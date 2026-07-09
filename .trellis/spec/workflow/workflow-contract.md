@@ -123,8 +123,9 @@ commits entering a PR branch or `main`:
 - merge commit body uses fixed sections `合并：`, `范围：`, `审计：`, followed by
   `PR: #<pull_request>` and `Refs #<primary_issue>`.
 
-Commit messages never use `Closes`, `Fixes`, or `Resolves`. Closing semantics
-belong only in the PR body and only for issues listed under
+Commit messages never use close keywords such as `Closes`, `Fixes`,
+`Resolves`, `Close`, `Fix`, or `Resolve`. Closing semantics belong only in the
+PR body and only for issues listed under
 `issue-scope-ledger.json.close_issues`; commit messages use `Refs` for issue
 links. `publish-pr` must output the merge commit subject/body/command payload so
 maintainers do not rely on GitHub's default `Merge pull request #xx from ...`

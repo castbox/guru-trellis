@@ -319,6 +319,22 @@ class ConventionalCommitContractTest(unittest.TestCase):
             with self.subTest(subject=subject):
                 self.assertEqual([], gtt.validate_commit_subject(subject, primary_issue=73))
 
+    def test_issue_92_rejects_close_keywords_in_commit_subjects(self) -> None:
+        close_keywords = ["Closes", "Fixes", "Resolves", "Close", "Fix", "Resolve"]
+        invalid_subjects = [
+            f"docs(workflow): #92 {keyword} #92 提交规范"
+            for keyword in close_keywords
+        ] + [
+            f"chore(merge): #91 合并 #92 {keyword} #92 提交规范"
+            for keyword in close_keywords
+        ]
+
+        for subject in invalid_subjects:
+            with self.subTest(subject=subject):
+                self.assertTrue(gtt.validate_commit_subject(subject, primary_issue=92))
+
+        self.assertEqual([], gtt.validate_commit_subject("docs(workflow): #92 提交规范保持 Refs 分工", primary_issue=92))
+
     def test_work_commit_body_requires_fixed_sections_refs_and_no_closes(self) -> None:
         body = """背景：
 issue #92 要求统一提交规范。

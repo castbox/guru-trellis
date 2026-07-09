@@ -424,7 +424,8 @@ Guru Team workflow 强制中文 Conventional Commits。工作提交和 Trellis m
 `背景：`、`变更：`、`边界：`、`验证：` 固定小节并用 `Refs #<primary_issue>` footer；
 metadata 提交 body 必须为空，finish/publish 生成的 metadata subject 为
 `chore(trellis): #<primary_issue> 固化任务收尾元数据`。commit message 不使用
-`Closes` / `Fixes` / `Resolves`；issue close 语义只在 PR body 中根据
+close keywords（`Closes` / `Fixes` / `Resolves` / `Close` / `Fix` / `Resolve`）；
+issue close 语义只在 PR body 中根据
 `issue-scope-ledger.json.close_issues` 表达。可用
 `.trellis/guru-team/scripts/bash/check-commit-messages.sh --json --task <task-path>`
 执行 objective subject/body 校验。

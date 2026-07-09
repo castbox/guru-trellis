@@ -84,7 +84,8 @@ The helpers validate subject/body shape and format merge commit payloads only.
 They do not decide whether implementation, Phase 2 check, Branch Review Gate, or
 PR readiness is sufficient. Work commits use
 `{type}({scope}): #{primary_issue} 中文描述` with fixed body sections and
-`Refs #<primary_issue>`; Trellis metadata commits use an empty body; publish
+`Refs #<primary_issue>`; commit messages must not use close keywords such as
+`Closes`, `Fixes`, `Resolves`, `Close`, `Fix`, or `Resolve`; Trellis metadata commits use an empty body; publish
 payloads provide `chore(merge): #{pull_request} 合并 #{primary_issue} 中文 PR 摘要`
 plus the fixed merge body and explicit `gh pr merge ... --subject ... --body-file ...`
 command.

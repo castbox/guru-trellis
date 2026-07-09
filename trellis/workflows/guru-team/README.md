@@ -82,8 +82,8 @@ Commits。工作提交和 Trellis metadata 提交 subject 格式为：
 ```
 
 工作提交 body 必须按 `背景：`、`变更：`、`边界：`、`验证：` 固定顺序编写，并用
-`Refs #<primary_issue>` 作为 footer；不得在 commit message 中使用 `Closes` /
-`Fixes` / `Resolves`。Issue 关闭语义只放在 PR body 的
+`Refs #<primary_issue>` 作为 footer；不得在 commit message 中使用 close keywords
+（`Closes` / `Fixes` / `Resolves` / `Close` / `Fix` / `Resolve`）。Issue 关闭语义只放在 PR body 的
 `issue-scope-ledger.json.close_issues` 范围内。Trellis metadata 提交必须为空 body，
 例如 `chore(trellis): #73 固化任务收尾元数据`。
 

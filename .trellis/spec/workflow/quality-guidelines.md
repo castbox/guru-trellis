@@ -133,7 +133,7 @@ cannot pass the gate. Include:
 - schemas and config templates
 - preset installer and overlays
 - commit message contract: work commit subject/body, Trellis metadata commit
-  subject with empty body, `Refs` in commit messages, PR body-only `Closes`, and
+  subject with empty body, `Refs` in commit messages, PR body-only close keywords, and
   publish/merge payload command that avoids GitHub's default merge subject
 - Trellis task artifacts
 - generated or installed-copy expectations
