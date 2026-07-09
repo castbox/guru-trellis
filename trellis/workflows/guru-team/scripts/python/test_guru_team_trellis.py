@@ -5882,7 +5882,7 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
             "schema_version": "1.0",
             "extension": {
                 "extension_id": "guru-team",
-                "version": "0.6.5-guru.2",
+                "version": "0.6.5-guru.3",
                 "workflow_template_id": "guru-team",
                 "target_trellis_cli": "0.6.5",
                 "requires": {"trellis_cli": "0.6.5"},
@@ -5912,7 +5912,7 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
         payload = gtt.guru_team_extension_payload(self.root)
 
         self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["version"], "0.6.5-guru.2")
+        self.assertEqual(payload["version"], "0.6.5-guru.3")
         self.assertEqual(payload["workflow_template_id"], "guru-team")
         self.assertEqual(payload["target_trellis_cli"], "0.6.5")
         self.assertEqual(payload["trellis_cli_compatibility"], "0.6.5")
@@ -5958,7 +5958,7 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
             payload = gtt.cmd_version(argparse.Namespace(root=str(self.root), json=True))
 
         self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5-guru.2")
+        self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5-guru.3")
         self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.5")
 
 

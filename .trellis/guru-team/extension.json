@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.2",
+    "version": "0.6.5-guru.3",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.5",
@@ -38,7 +38,9 @@
         ".trellis/guru-team/extension.json",
         "planning-approval.json",
         "phase2-check.json",
+        "agent-assignment.json",
         "issue-scope-ledger.json",
+        "reviews/*.md",
         "review.md",
         "review-gate.json",
         "pr-readiness.json"
@@ -53,6 +55,8 @@
         "record-phase2-check",
         "check-phase2-check",
         "record-agent-assignment",
+        "record-subagent-liveness-event",
+        "check-subagent-liveness",
         "check-agent-assignment",
         "review-branch",
         "check-review-gate",
@@ -62,11 +66,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-08T22:10:14Z",
+  "installed_at": "2026-07-09T05:15:49Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/076-subagent-liveness-state-machine",
-    "commit": "c2d4b0395c78f8af6b1a21fc99a6bb31e04f1d6f",
+    "commit": "a0f48765b12cda6305d85c20eeb20643044f3fb9",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

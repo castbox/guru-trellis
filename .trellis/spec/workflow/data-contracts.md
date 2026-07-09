@@ -47,12 +47,12 @@ team extension version. The canonical source is `trellis/guru-team-extension.jso
 
 Repository release tags for the Guru Team extension use repo-level tags that
 combine the target official Trellis CLI version and the Guru Team revision,
-such as `v0.6.5-guru.2`, not namespaced tags such as
+such as `v0.6.5-guru.3`, not namespaced tags such as
 `guru-team/v0.6.5`. The tag must correspond to
 `trellis/guru-team-extension.json.version`, and the manifest must expose
 `target_trellis_cli` so users can see which official `@mindfoldhq/trellis`
 release this Guru Team extension targets. Stable workflow marketplace examples
-should use `gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`; unpinned
+should use `gh:castbox/guru-trellis/trellis#v0.6.5-guru.3`; unpinned
 `gh:castbox/guru-trellis/trellis` means latest/canary and must be reported as a
 mutable source in install or upgrade evidence.
 
