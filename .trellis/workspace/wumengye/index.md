@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 41
+- **Total Sessions**: 42
 - **Last Active**: 2026-07-10
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1363 | Active |
+| `journal-1.md` | ~1396 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 42 | 2026-07-10 | 完成：#93 将 planning artifact 弱约束词改为受控词表并阻塞未分类命中 | `a70374094f869637561cdc677efbff8af3c1368f` | `fix/093-planning-ambiguity-scanner` |
 | 41 | 2026-07-10 | 完成：#73 将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址 | `04741e2b3fe6ef945cab933e642b7d8c167d6d6e` | `codex/073-trellis-doc-markdown-links` |
 | 40 | 2026-07-10 | 完成：#56 branch type 的前缀不要固定 codex，应该自动判定 | `65d053a7592dd6bfc6c5407c2c20acf8ece853a5` | `fix/056-auto-branch-type-prefix` |
 | 39 | 2026-07-09 | 完成：#83 禁止 Trellis task planning artifacts 使用无约束模糊表达 | `50ffafb6eef69a22082c8048555e2a7570ef34f6` | `codex/083-planning-ambiguity-review` |
