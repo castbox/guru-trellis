@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "实现需要遵守 Guru Team workflow canonical source、Branch Review Gate、finish/publish 和 artifact 语言合同。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "新增 resolver 和 wrapper 属于 companion script deterministic fact layer，必须遵守脚本边界。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "实现需要同步 preset overlay 和 dogfood installed copies，避免平台入口漂移。"}
+{"file": ".trellis/tasks/07-09-061-task-markdown-review-table/research/official-trellis-docs.md", "reason": "官方 Trellis 文档核对结论决定 workflow/overlay 优先而非 hook/upstream 修改。"}
