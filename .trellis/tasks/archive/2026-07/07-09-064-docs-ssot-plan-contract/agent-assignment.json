@@ -1,9 +1,9 @@
 {
   "schema_version": "1.1",
   "generated_at": "2026-07-09T07:43:58Z",
-  "updated_at": "2026-07-09T08:27:10Z",
+  "updated_at": "2026-07-09T08:41:49Z",
   "task": ".trellis/tasks/07-09-064-docs-ssot-plan-contract",
-  "head": "c600bfe7a47f6dfa5f5983694d4fd5e50d0e7053",
+  "head": "51045439b5c6fea8aacd61d10446932e9de3c80e",
   "agents": [
     {
       "logical_role": "实现代理",
@@ -49,6 +49,15 @@
       "assigned_head": "c600bfe7a47f6dfa5f5983694d4fd5e50d0e7053",
       "reason": "第三位 replacement 阶段二检查代理出现 stale/terminated 后，主会话分派最终 replacement 阶段二检查代理，从当前 worktree 状态独立完成 Phase 2 check 并闭合 replacement chain。",
       "event_id": "evt-0020-d90e02849b"
+    },
+    {
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f4601-5551-7651-a903-6631725f1ab6",
+      "platform_nickname": "Release Agent the 2nd",
+      "assigned_at": "2026-07-09T08:32:11Z",
+      "assigned_head": "51045439b5c6fea8aacd61d10446932e9de3c80e",
+      "reason": "task work commit 51045439b5c6fea8aacd61d10446932e9de3c80e 后，主会话分派独立最终放行审查代理审查完整 origin/main...HEAD diff；审查代理为 review-only，不允许修改文件或运行 recorder/validator 写入类脚本。",
+      "event_id": "evt-0023-38ac5f7297"
     }
   ],
   "liveness": {
@@ -151,9 +160,45 @@
       "pending_status_request_at": null,
       "last_checked_at": "",
       "last_decision": ""
+    },
+    "019f4601-5551-7651-a903-6631725f1ab6": {
+      "progress_anchor_at": "2026-07-09T08:32:11Z",
+      "last_scan_snapshot": {
+        "captured_at": "2026-07-09T08:32:11Z",
+        "task_head": "51045439b5c6fea8aacd61d10446932e9de3c80e",
+        "task_content_status_digest": "5046126d03c72c673e2fff411e003a0e022b238e64d7b0dbab0233d56155348a",
+        "task_content_diff_stat_digest": "575ba14662441d0258ad7ca0a393bc0070ed40b6c16a16b3c4a968ae6431b616",
+        "task_content_max_mtime": "2026-07-09T08:30:07Z",
+        "source_head": "c600bfe7a47f6dfa5f5983694d4fd5e50d0e7053",
+        "source_status_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_diff_stat_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_max_mtime": "2026-07-09T07:31:08Z",
+        "progress_events_count": 0,
+        "progress_events_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "progress_events_newest_event_id": ""
+      },
+      "pending_status_request_at": null,
+      "last_checked_at": "",
+      "last_decision": ""
     }
   },
-  "review_rounds": [],
+  "review_rounds": [
+    {
+      "round": 1,
+      "logical_role": "最终放行审查代理",
+      "agent_id": "019f4601-5551-7651-a903-6631725f1ab6",
+      "platform_nickname": "Release Agent the 2nd",
+      "reviewed_head": "51045439b5c6fea8aacd61d10446932e9de3c80e",
+      "findings_count": 0,
+      "reuse_policy": "最终放行审查必须使用未拥有早前 finding 的新独立 Agent，审查完整 origin/main...HEAD diff。",
+      "reuse_decision": "new-agent",
+      "recorded_at": "2026-07-09T08:41:49Z",
+      "review_report_path": ".trellis/tasks/07-09-064-docs-ssot-plan-contract/reviews/round-001-final-release-review.md",
+      "review_report_sha256": "66ac376f6e667f35acb64ede52ace681dae1cd519d5645566ac5ae0fa5588371",
+      "review_report_size_bytes": 5334,
+      "review_report_modified_at": "2026-07-09T08:42:34.498580+00:00"
+    }
+  ],
   "reuse_decisions": [],
   "status_events": [
     {
@@ -545,6 +590,24 @@
       "head": "c600bfe7a47f6dfa5f5983694d4fd5e50d0e7053",
       "source": "main-session",
       "evidence": "最终 replacement 阶段二检查代理返回完整 completed PASS report：验证 workspace/planning gate、json/shell/python/task/context/dogfood drift/diff/new-bak 检查均通过；覆盖 #64 Docs SSOT Plan 合同、canonical/dogfood workflow、durable docs、spec、README、continue overlays、未新增脚本/schema、未提前实现 #65/#66；无阻断 finding；未覆盖 throwaway install/upgrade/full test suite。",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0023-38ac5f7297",
+      "event": "assigned",
+      "agent_id": "019f4601-5551-7651-a903-6631725f1ab6",
+      "logical_role": "最终放行审查代理",
+      "platform_nickname": "Release Agent the 2nd",
+      "observed_at": "2026-07-09T08:32:11Z",
+      "recorded_at": "2026-07-09T08:32:11Z",
+      "head": "51045439b5c6fea8aacd61d10446932e9de3c80e",
+      "source": "main-session",
+      "evidence": "task work commit 51045439b5c6fea8aacd61d10446932e9de3c80e 后，主会话分派独立最终放行审查代理审查完整 origin/main...HEAD diff；审查代理为 review-only，不允许修改文件或运行 recorder/validator 写入类脚本。",
       "predecessor_agent_id": "",
       "predecessor_event_id": "",
       "termination_reason": "",
