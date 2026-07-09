@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Check implementation against canonical Guru Team workflow behavior and gate requirements."}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "Check that scripts remain deterministic executors/validators/recorders and do not make AI judgments."}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "Check compatibility for config and handoff payload fields."}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Check required validation commands and review focus for workflow/preset changes."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Check branch type inference uses one shared helper and avoids duplicated parsing."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Check docs, script, tests, and dogfood workflow copies remain aligned."}

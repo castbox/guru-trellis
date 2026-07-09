@@ -1,0 +1,28 @@
+{
+  "primary_issue": {
+    "number": 56,
+    "url": "https://github.com/castbox/guru-trellis/issues/56",
+    "title": "branch type 的前缀不要固定 codex，应该自动判定",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "实现将 prepare-task 默认分支从固定 codex/<slug> 改为确定性 <branch-type>/<slug>。",
+      "回归测试覆盖 11 个合法 branch type、unknown -> chore、显式 --branch 覆盖、legacy branch_prefix 不驱动默认分支、suggested_override_flags 不再建议 codex/。",
+      "Phase 2 检查代理确认 requirements/design/code/tests/docs/deployment impact 已覆盖，且无剩余当前范围 blocker。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 56,
+      "url": "https://github.com/castbox/guru-trellis/issues/56",
+      "title": "branch type 的前缀不要固定 codex，应该自动判定",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "实现将 prepare-task 默认分支从固定 codex/<slug> 改为确定性 <branch-type>/<slug>。",
+        "回归测试覆盖 11 个合法 branch type、unknown -> chore、显式 --branch 覆盖、legacy branch_prefix 不驱动默认分支、suggested_override_flags 不再建议 codex/。",
+        "Phase 2 检查代理确认 requirements/design/code/tests/docs/deployment impact 已覆盖，且无剩余当前范围 blocker。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

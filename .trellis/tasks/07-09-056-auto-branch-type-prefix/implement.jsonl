@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Defines canonical workflow, planning approval, branch review gate, Docs SSOT, and companion script ownership boundaries."}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "Defines deterministic companion script boundaries and prepare-task side-effect rules."}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "Defines config, handoff, naming_quality, and planning approval data contracts."}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Defines required validation for workflow and companion script changes."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Requires search-before-edit and shared helper design for repeated naming logic."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Covers consistency across workflow docs, scripts, tests, and dogfood copies."}

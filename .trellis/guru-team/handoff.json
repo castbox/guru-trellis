@@ -1,72 +1,76 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 83,
-    "url": "https://github.com/castbox/guru-trellis/issues/83",
-    "title": "禁止 Trellis task planning artifacts 使用无约束模糊表达",
+    "number": 56,
+    "url": "https://github.com/castbox/guru-trellis/issues/56",
+    "title": "branch type 的前缀不要固定 codex，应该自动判定",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/083-planning-ambiguity-review/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/056-auto-branch-type-prefix/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "083-planning-ambiguity-review",
+  "slug": "auto-branch-type-prefix",
   "naming_quality": {
     "ok": true,
     "reason": "naming includes enough business tokens",
     "requires_semantic_name": false,
-    "current_slug": "083-planning-ambiguity-review",
+    "current_slug": "056-auto-branch-type-prefix",
     "current_surface": "workspace_slug",
     "suggested_override_flags": [],
     "checked_names": {
       "slug": {
         "ok": true,
-        "slug": "083-planning-ambiguity-review",
+        "slug": "auto-branch-type-prefix",
         "reason": "ok",
         "business_tokens": [
-          "planning",
-          "ambiguity",
-          "review"
+          "auto",
+          "branch",
+          "type",
+          "prefix"
         ]
       },
       "task_slug": {
         "ok": true,
-        "slug": "083-planning-ambiguity-review",
+        "slug": "056-auto-branch-type-prefix",
         "reason": "ok",
         "business_tokens": [
-          "planning",
-          "ambiguity",
-          "review"
+          "auto",
+          "branch",
+          "type",
+          "prefix"
         ]
       },
       "workspace_slug": {
         "ok": true,
-        "slug": "083-planning-ambiguity-review",
+        "slug": "056-auto-branch-type-prefix",
         "reason": "ok",
         "business_tokens": [
-          "planning",
-          "ambiguity",
-          "review"
+          "auto",
+          "branch",
+          "type",
+          "prefix"
         ]
       },
       "branch_name": {
         "ok": true,
-        "slug": "083-planning-ambiguity-review",
+        "slug": "056-auto-branch-type-prefix",
         "reason": "ok",
         "business_tokens": [
-          "planning",
-          "ambiguity",
-          "review"
+          "auto",
+          "branch",
+          "type",
+          "prefix"
         ]
       }
     }
   },
-  "task_slug": "083-planning-ambiguity-review",
-  "task_title": "#83 禁止 Trellis task planning artifacts 使用无约束模糊表达",
-  "branch_name": "codex/083-planning-ambiguity-review",
-  "workspace_slug": "083-planning-ambiguity-review",
+  "task_slug": "056-auto-branch-type-prefix",
+  "task_title": "#56 branch type 的前缀不要固定 codex，应该自动判定",
+  "branch_name": "fix/056-auto-branch-type-prefix",
+  "workspace_slug": "056-auto-branch-type-prefix",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/083-planning-ambiguity-review",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/056-auto-branch-type-prefix",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -77,30 +81,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#83 禁止 Trellis task planning artifacts 使用无约束模糊表达",
+    "#56 branch type 的前缀不要固定 codex，应该自动判定",
     "--slug",
-    "083-planning-ambiguity-review",
+    "056-auto-branch-type-prefix",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-09-083-planning-ambiguity-review",
+  "task_dir": ".trellis/tasks/07-09-056-auto-branch-type-prefix",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 83,
-      "url": "https://github.com/castbox/guru-trellis/issues/83",
-      "title": "禁止 Trellis task planning artifacts 使用无约束模糊表达",
+      "number": 56,
+      "url": "https://github.com/castbox/guru-trellis/issues/56",
+      "title": "branch type 的前缀不要固定 codex，应该自动判定",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 83,
-        "url": "https://github.com/castbox/guru-trellis/issues/83",
-        "title": "禁止 Trellis task planning artifacts 使用无约束模糊表达",
+        "number": 56,
+        "url": "https://github.com/castbox/guru-trellis/issues/56",
+        "title": "branch type 的前缀不要固定 codex，应该自动判定",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -115,10 +119,11 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           bc5c399 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           afbecdd [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate            44254bb [codex/051-prepare-task-naming-quality-gate]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/052-explicit-planning-review                    bf0c0cf [codex/052-explicit-planning-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution                      a366142 [codex/055-intake-scope-evolution]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/056-auto-branch-type-prefix                     afbecdd [fix/056-auto-branch-type-prefix]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/057-chinese-doc-language                        378748d [codex/057-chinese-doc-language]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/059-refresh-base-freshness                      bbf68e0 [codex/059-refresh-base-freshness]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/060-workspace-boundary-guard                    64a90de [codex/060-workspace-boundary-guard]",
@@ -129,7 +134,7 @@
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/072-subagent-execution-boundaries               7481a7a [codex/072-subagent-execution-boundaries]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/076-subagent-liveness-state-machine             ab07b69 [codex/076-subagent-liveness-state-machine]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/078-review-report-chinese-language              1365827 [codex/078-review-report-chinese-language]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/083-planning-ambiguity-review                   bc5c399 [codex/083-planning-ambiguity-review]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/083-planning-ambiguity-review                   8a9f9a3 [codex/083-planning-ambiguity-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
@@ -162,10 +167,10 @@
       "base_ref": "main",
       "remote_ref": "origin/main",
       "local_head_before": "bc5c3998fa034ea6f5e279dc1b183919dac3483d",
-      "local_head_after": "bc5c3998fa034ea6f5e279dc1b183919dac3483d",
-      "remote_head": "bc5c3998fa034ea6f5e279dc1b183919dac3483d",
+      "local_head_after": "afbecdd288101a86b04309cbe248d3c9fe976854",
+      "remote_head": "afbecdd288101a86b04309cbe248d3c9fe976854",
       "fetch_performed": true,
-      "fast_forwarded": false,
+      "fast_forwarded": true,
       "fresh": true,
       "status": "fresh",
       "base_ref_for_worktree": "main"
@@ -174,7 +179,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/083-planning-ambiguity-review/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/056-auto-branch-type-prefix/.trellis/.developer",
       "developer": "wumengye"
     }
   }

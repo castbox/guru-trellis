@@ -370,7 +370,126 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertFalse(payload["naming_quality"]["requires_semantic_name"])
         self.assertEqual(payload["task_slug"], "52-resume-detail-inline-attachment-preview")
         self.assertEqual(payload["workspace_slug"], "52-resume-detail-inline-attachment-preview")
-        self.assertEqual(payload["branch_name"], "codex/52-resume-detail-inline-attachment-preview")
+        self.assertEqual(payload["branch_name"], "feat/52-resume-detail-inline-attachment-preview")
+
+    def test_prepare_infers_all_supported_branch_types(self) -> None:
+        cases = {
+            "feat": "feat: support semantic branch type inference",
+            "fix": "Fix broken prepare task naming failure",
+            "refactor": "Refactor prepare naming helper structure",
+            "perf": "Optimize prepare task performance",
+            "test": "Add tests for prepare task branch inference",
+            "docs": "[docs] update README documentation",
+            "style": "Format lint output for scripts",
+            "build": "Update package dependency build metadata",
+            "ci": "type=ci update GitHub Actions workflow",
+            "chore": "Maintenance housekeeping for intake scripts",
+            "revert": "Rollback previous branch naming change",
+        }
+        args = prepare_args(short_name="052-semantic-business-name")
+
+        for expected_type, source_text in cases.items():
+            with self.subTest(expected_type=expected_type):
+                payload = gtt.prepare_naming_payload(args, gtt.DEFAULTS, "52", source_text)
+                self.assertEqual(payload["branch_name"], f"{expected_type}/052-semantic-business-name")
+
+    def test_prepare_unknown_branch_type_falls_back_to_chore(self) -> None:
+        payload = gtt.prepare_naming_payload(
+            prepare_args(short_name="052-semantic-business-name"),
+            gtt.DEFAULTS,
+            "52",
+            "Synchronize semantic business capability",
+        )
+
+        self.assertEqual(payload["branch_name"], "chore/052-semantic-business-name")
+
+    def test_prepare_legacy_branch_prefix_does_not_affect_automatic_branch(self) -> None:
+        payload = gtt.prepare_naming_payload(
+            prepare_args(short_name="052-semantic-business-name"),
+            {**gtt.DEFAULTS, "branch_prefix": "codex/"},
+            "52",
+            "Fix broken prepare task naming",
+        )
+
+        self.assertEqual(payload["branch_name"], "fix/052-semantic-business-name")
+
+    def test_prepare_issue_body_participates_in_branch_type_inference(self) -> None:
+        existing_issue = {
+            "number": 52,
+            "url": "https://github.com/owner/repo/issues/52",
+            "title": "Update Guru Team workflow behavior",
+            "body": "Docs: update README and workflow documentation.",
+        }
+        with mock.patch.object(gtt, "issue_view", return_value=existing_issue):
+            payload = gtt.cmd_prepare(prepare_args(requirement=["#52"]))
+
+        self.assertEqual(payload["branch_name"], "docs/52-update-guru-team-workflow-behavior")
+
+    def test_prepare_branch_type_catalog_in_issue_body_does_not_pollute_inference(self) -> None:
+        branch_type_catalog = (
+            "合法分支类型为 feat, fix, refactor, perf, test, docs, style, build, ci, chore, revert."
+        )
+        payload = gtt.prepare_naming_payload(
+            prepare_args(short_name="052-semantic-business-name"),
+            gtt.DEFAULTS,
+            "52",
+            "Synchronize semantic business capability",
+            f"Synchronize semantic business capability\n{branch_type_catalog}",
+        )
+
+        self.assertEqual(payload["branch_name"], "chore/052-semantic-business-name")
+
+    def test_prepare_generated_issue_body_duplicate_list_does_not_pollute_inference(self) -> None:
+        generated_body = gtt.issue_body(
+            "Synchronize semantic business capability",
+            [
+                {
+                    "number": 7,
+                    "title": "Fix broken workflow bug",
+                    "similarity": "low",
+                    "url": "https://github.com/owner/repo/issues/7",
+                }
+            ],
+        )
+        payload = gtt.prepare_naming_payload(
+            prepare_args(short_name="052-semantic-business-name"),
+            gtt.DEFAULTS,
+            "52",
+            "Synchronize semantic business capability",
+            f"Synchronize semantic business capability\n{generated_body}",
+        )
+
+        self.assertEqual(payload["branch_name"], "chore/052-semantic-business-name")
+
+    def test_prepare_workflow_keyword_alone_does_not_infer_ci(self) -> None:
+        payload = gtt.prepare_naming_payload(
+            prepare_args(short_name="052-semantic-business-name"),
+            gtt.DEFAULTS,
+            "52",
+            "Update Guru Team workflow contract",
+        )
+
+        self.assertEqual(payload["branch_name"], "chore/052-semantic-business-name")
+
+    def test_prepare_github_workflows_path_infers_ci(self) -> None:
+        payload = gtt.prepare_naming_payload(
+            prepare_args(short_name="052-semantic-business-name"),
+            gtt.DEFAULTS,
+            "52",
+            "Update .github/workflows release automation",
+        )
+
+        self.assertEqual(payload["branch_name"], "ci/052-semantic-business-name")
+
+    def test_prepare_explicit_branch_preserves_custom_value(self) -> None:
+        payload = gtt.prepare_naming_payload(
+            prepare_args(branch="custom/slug"),
+            gtt.DEFAULTS,
+            "52",
+            "Fix broken prepare task naming",
+        )
+
+        self.assertEqual(payload["branch_name"], "custom/slug")
 
     def test_prepare_planner_refreshes_base_without_executor_fast_forward(self) -> None:
         existing_issue = {
@@ -427,7 +546,10 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertFalse(payload["naming_quality"]["ok"])
         self.assertTrue(payload["naming_quality"]["requires_semantic_name"])
         self.assertEqual(payload["naming_quality"]["current_slug"], "issue-52")
-        self.assertIn("--short-name", " ".join(payload["naming_quality"]["suggested_override_flags"]))
+        suggested_flags = " ".join(payload["naming_quality"]["suggested_override_flags"])
+        self.assertIn("--short-name", suggested_flags)
+        self.assertIn("--branch chore/052-semantic-business-name", suggested_flags)
+        self.assertNotIn("--branch codex/", suggested_flags)
         self.assertEqual(payload["task_slug"], "52-issue-52")
         self.assertFalse(payload["workspace_ready"])
 
@@ -533,11 +655,11 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertTrue(payload["naming_quality"]["ok"])
         self.assertEqual(payload["task_slug"], "052-resume-detail-inline-attachment-preview")
         self.assertEqual(payload["workspace_slug"], "052-resume-detail-inline-attachment-preview")
-        self.assertEqual(payload["branch_name"], "codex/052-resume-detail-inline-attachment-preview")
+        self.assertEqual(payload["branch_name"], "chore/052-resume-detail-inline-attachment-preview")
         prepare_workspace.assert_called_once_with(
             self.root,
             mock.ANY,
-            "codex/052-resume-detail-inline-attachment-preview",
+            "chore/052-resume-detail-inline-attachment-preview",
             "052-resume-detail-inline-attachment-preview",
             "main",
             False,
@@ -579,7 +701,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
                     short_name="052-resume-detail-inline-attachment-preview",
                     workspace_slug="052-resume-detail-inline-attachment-preview",
                     task_slug="052-resume-detail-inline-attachment-preview",
-                    branch="codex/052-resume-detail-inline-attachment-preview",
+                    branch="custom/052-resume-detail-inline-attachment-preview",
                     create_worktree=True,
                 )
             )
@@ -588,7 +710,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertEqual(payload["slug"], "052-resume-detail-inline-attachment-preview")
         self.assertEqual(payload["task_slug"], "052-resume-detail-inline-attachment-preview")
         self.assertEqual(payload["workspace_slug"], "052-resume-detail-inline-attachment-preview")
-        self.assertEqual(payload["branch_name"], "codex/052-resume-detail-inline-attachment-preview")
+        self.assertEqual(payload["branch_name"], "custom/052-resume-detail-inline-attachment-preview")
 
     def test_prepare_blocks_when_short_name_missing_even_if_other_surfaces_are_semantic(self) -> None:
         existing_issue = {
@@ -607,7 +729,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
                     requirement=["#52"],
                     workspace_slug="052-resume-detail-inline-attachment-preview",
                     task_slug="052-resume-detail-inline-attachment-preview",
-                    branch="codex/052-resume-detail-inline-attachment-preview",
+                    branch="custom/052-resume-detail-inline-attachment-preview",
                     create_worktree=True,
                 )
             )
@@ -1157,7 +1279,7 @@ class WorkspaceBoundaryGuardTest(unittest.TestCase):
             "task_dir": self.task_rel,
             "task_slug": "060-workspace-boundary-guard",
             "workspace_slug": "060-workspace-boundary-guard",
-            "branch_name": "codex/060-workspace-boundary-guard",
+            "branch_name": "chore/060-workspace-boundary-guard",
             "base_branch": "main",
             "source_issue": {"number": 60},
             "preflight": {"current_checkout": str(self.source)},
