@@ -47,13 +47,19 @@ Before implementing, read in this order:
 4. `<task-path>/implement.md` — execution plan
 5. `.trellis/spec/` — project-wide guidelines (load only what is relevant to the diff you are about to write)
 
+Locate the task's `Docs SSOT Plan` while reading `design.md` / `implement.md`.
+Implementation must consume the approved plan instead of re-deciding docs
+strategy late in the task. Execute `ssot_first`, `delta_first`,
+`bootstrap_or_repair_docs`, or `no_docs_update_needed` exactly as recorded.
+
 ## Core Responsibilities
 
 1. **Understand specs** — read relevant spec files in `.trellis/spec/`
 2. **Understand task artifacts** — read the artifacts listed above
 3. **Implement features** — write code that follows specs and existing patterns
 4. **Self-check** — run lint and typecheck on the changed scope before reporting
-5. **Report implementation handoff** — report files touched, requirement/design carryover, verification, remaining risks, and focus areas for `trellis-check`
+5. **Execute Docs SSOT Plan** — update, merge, repair, or preserve durable docs according to the approved strategy
+6. **Report implementation handoff** — report files touched, requirement/design carryover, docs sync result, verification, remaining risks, and focus areas for `trellis-check`
 
 ## Forbidden Operations
 
@@ -70,15 +76,16 @@ The supervising main session owns commits. Report what changed; do not commit on
 - A `trellis channel wait` timeout in the main session is only a wait-window result, not your failure signal. Continue working unless the channel sends an explicit stop/interrupt instruction.
 - Do not emit periodic heartbeat messages and do not write `agent-assignment.json` or any liveness artifact yourself. If the main session sends an explicit status request, reply in platform-visible output with the current step, last concrete progress, active command/tool if any, changed files or review scope, remaining work, and blockers; the main session records that response as liveness evidence.
 - Do not run `trellis-check`, record `phase2-check.json`, or perform Branch Review Gate work. You own the implementation boundary; later check/review phases need your handoff, not a substitute check.
-- Your completion handoff must include requirement/design carryover, durable docs/spec/overlay responsibilities handled, verification run or deferred, remaining risks, and concrete `trellis-check` focus areas.
+- Your completion handoff must include requirement/design carryover, `Docs SSOT Plan` strategy, durable docs/spec/overlay responsibilities handled, docs sync result, task delta merged to durable docs, task-history-only content, verification run or deferred, remaining risks, and concrete `trellis-check` focus areas.
+- If the plan is `no_docs_update_needed`, include the concrete reason and checked durable docs paths. If it is `bootstrap_or_repair_docs`, include the minimum repair completed or the bounded follow-up and current PR limitation. If it is `delta_first`, complete the durable docs merge before handing off for final Phase 2 check. If it is `ssot_first`, state which revised durable docs/spec/workflow contracts were primary implementation inputs.
 
 ## Workflow
 
 1. Read relevant specs based on task type and the files in `implement.jsonl` if present
 2. Read the task's `prd.md`, `design.md`, and `implement.md`
-3. Implement features following specs and existing patterns
+3. Implement features following specs, existing patterns, and the `Docs SSOT Plan`
 4. Run the project's lint and typecheck commands on the changed scope
-5. Report files touched, key decisions, verification results, remaining risks, and `trellis-check` focus areas back to the channel
+5. Report files touched, key decisions, docs sync result, verification results, remaining risks, and `trellis-check` focus areas back to the channel
 
 ## Code Standards
 
@@ -98,6 +105,15 @@ The supervising main session owns commits. Report what changed; do not commit on
 ### Implementation Summary
 1. <step>
 2. <step>
+
+### Docs SSOT Handoff
+- Strategy: `<ssot_first|delta_first|bootstrap_or_repair_docs|no_docs_update_needed>`
+- Durable docs updated or checked:
+- Task artifact delta merged back to durable docs:
+- Task-history-only content:
+- No-update reason or follow-up / current PR limitation:
+- Implementation inputs from durable docs:
+- Implementation inputs from confirmed task delta:
 
 ### Verification Results
 - Lint: <pass|fail|skipped + reason>

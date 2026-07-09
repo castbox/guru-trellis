@@ -37,6 +37,10 @@ Before reviewing, read in this order:
 4. `<task-path>/implement.md` — required Guru Team execution plan
 5. `.trellis/spec/` — project-wide guidelines (load only what is relevant to the diff under review)
 
+Locate the approved `Docs SSOT Plan` in the task artifacts. In Phase 2 mode,
+consume that plan as check input; do not invent a new docs strategy during
+check, Branch Review, or finish-work.
+
 ## Core Responsibilities
 
 1. **Get the diff** — `git diff` / `git diff --staged` for uncommitted changes
@@ -50,7 +54,7 @@ Before reviewing, read in this order:
 
 The supervising main-session handoff decides which mode you are in:
 
-- **Phase 2 check (`阶段二检查代理`)**: review the real uncommitted implementation diff against task artifacts, specs, durable docs responsibilities, overlays/config/schema/test impact, and validation commands. Fix small in-scope mechanical issues directly. Output evidence that can support `phase2-check.json`; script success or a few validation commands alone are not a complete check.
+- **Phase 2 check (`阶段二检查代理`)**: review the real uncommitted implementation diff against task artifacts, specs, the approved `Docs SSOT Plan`, overlays/config/schema/test impact, and validation commands. Fix small in-scope mechanical issues directly. Verify durable docs, task artifacts, code/API/schema/config/deploy/test, and test/validation coverage are consistent with the plan strategy. Output evidence that can support `phase2-check.json`; script success or a few validation commands alone are not a complete check.
 - **Branch Review (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`)**: review the complete committed branch diff, normally `origin/<base>...HEAD`. Do not continue implementation, patch missing Phase 2 check work, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*`. If implement/check evidence is missing, stale, or incomplete, report it as a blocking finding. When the main session asks for a raw `{TASK_DIR}/reviews/*.md` report or content for `{TASK_DIR}/review.md`, use Chinese Markdown headings, Chinese field labels, and Chinese review narrative; keep literal diff commands, paths, JSON fields, HEAD values, code symbols, and external API names in English only where needed.
 
 ## Forbidden Operations
@@ -72,13 +76,18 @@ The supervising main session owns commits. Report the post-fix state; do not com
 
 1. Run `git diff --name-only` and `git diff` to scope the changes
    - For Branch Review mode, inspect the complete committed diff from intake base to `HEAD`, normally `git diff origin/<base>...HEAD`
-2. Read the task artifacts and relevant spec files
+2. Read the task artifacts, `Docs SSOT Plan`, and relevant spec files
 3. For each issue:
    - If this is Phase 2 and the issue is mechanical (lint nit, missing type, wrong import, dead branch) → fix in-place
    - If this is Branch Review → record and report, do not edit files
    - If a design/judgment issue → record and report, do not silently rewrite
-4. Run the project's lint and typecheck on the changed scope after self-fixes
-5. Report
+4. For Phase 2, verify the strategy-specific docs checks:
+   - `delta_first` durable docs merge is complete before final check
+   - `ssot_first` used revised durable docs/spec/workflow contracts as primary inputs
+   - `bootstrap_or_repair_docs` completed minimum repair or records bounded follow-up and PR limitation
+   - `no_docs_update_needed` reason still holds for the final diff
+5. Run the project's lint and typecheck on the changed scope after self-fixes
+6. Report
 
 ## Report Format
 
@@ -100,6 +109,7 @@ The supervising main session owns commits. Report the post-fix state; do not com
 
 ### 证据交接
 - 阶段二：覆盖范围、验证结果、发现/开放风险，以及本报告是否可支撑 `phase2-check.json`
+- Docs SSOT：plan strategy、durable docs / task artifacts / code / test 一致性、task delta merge 或 follow-up / no-update 复核结论
 - Branch Review：diff 范围、审查的 HEAD、部署/安全影响、Docs SSOT 判断、发现/观察项/后续候选，以及本报告是否可写入任务本地 `review.md`
 
 ### 结论

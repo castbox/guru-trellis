@@ -104,6 +104,10 @@ cannot pass the gate. Include:
 - Phase 1 `Docs SSOT Plan` contract: docs state, evidence paths, strategy,
   affected durable docs or checked no-update paths, task artifact deltas, and
   merge/repair/follow-up checkpoint when required
+- Phase 2 consumption of that plan: implementation handoff records strategy,
+  docs sync result, task delta merge / task-history-only content, no-update or
+  follow-up limits, and durable-docs versus task-delta inputs; `trellis-check`
+  verifies durable docs / task artifacts / code / test consistency by strategy
 - companion scripts
 - schemas and config templates
 - preset installer and overlays

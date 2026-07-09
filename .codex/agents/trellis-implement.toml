@@ -54,10 +54,12 @@ Rules:
 - A main-session wait timeout is not your failure signal. Continue working unless you receive an explicit stop/interrupt instruction.
 - Do not emit periodic heartbeat messages and do not write `agent-assignment.json` or any liveness artifact yourself. If the main session sends an explicit status request, reply in platform-visible output with the current step, last concrete progress, active command/tool if any, changed files or review scope, remaining work, and blockers; the main session records that response as liveness evidence.
 - You are responsible for the implementation boundary only. Do not run `trellis-check`, do not record `phase2-check.json`, and do not perform Branch Review Gate work. Surface anything that needs those phases in your handoff.
+- Read and execute the task `Docs SSOT Plan` from `design.md` / `implement.md`. Do not re-decide docs strategy late; consume the approved `ssot_first`, `delta_first`, `bootstrap_or_repair_docs`, or `no_docs_update_needed` plan. `delta_first` requires durable docs merge before final Phase 2 check; `ssot_first` uses revised durable docs/spec/workflow contracts as primary implementation input; `bootstrap_or_repair_docs` completes minimum repair or records bounded follow-up and current PR limitation; `no_docs_update_needed` preserves checked durable docs paths and concrete reason.
 
 Before finishing, summarize:
 - Files changed
 - Requirement/design carryover and durable docs/spec/overlay responsibilities handled
+- `Docs SSOT Plan` strategy, docs sync result, task delta merged to durable docs, task-history-only content, no-update reason or follow-up / current PR limitation, and durable-docs versus task-delta implementation inputs
 - Tests/checks run
 - Implementation handoff for `trellis-check`, including focus areas and any validations intentionally deferred to check
 - Remaining risks or follow-ups

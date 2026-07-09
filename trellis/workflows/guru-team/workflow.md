@@ -766,7 +766,7 @@ Before commit, record and check `phase2-check.json`; it records completed `trell
 Main-session default on dispatch platforms: dispatch `trellis-implement` / channel `implement`, wait for an implementation handoff, then dispatch `trellis-check` / channel `check`. Dispatch prompt starts with `Active task: <task path from task.py current>`. The main session may coordinate and record evidence, but it must not directly implement or directly check in default `sub-agent` mode.
 After dispatching an implement/check sub-agent, record `assigned` for `实现代理` or `阶段二检查代理` with `record-subagent-liveness-event.sh` so `agent-assignment.json` contains `agents[]`, `status_events[]`, and `liveness[agent_id]` baseline. Then run `check-subagent-liveness.sh` at `progress_scan_interval=120s` or the checker-provided `next_wait_ms`. A wait timeout is only a wait-window result; record visible progress first, let checker return the single decision, and follow `status_request_required` / `continue_waiting_no_repeat_ping` / `stale_allowed` / progress decisions exactly. Old `record-agent-assignment.sh --status-event` status paths are deprecated and fail closed.
 Sub-agent self-exemption: if already running as `trellis-implement` or `trellis-check`, do the work directly, do not spawn another Trellis implement/check agent, and return the role-specific handoff/report as artifact evidence. Main-session inline/self-exemption needs explicit artifact evidence; otherwise missing sub-agent evidence fails closed.
-Before edits, confirm knowledge gate and docs SSOT responsibilities from artifacts.
+Before edits, confirm knowledge gate and the `Docs SSOT Plan` from artifacts. Phase 2 implementation/check must consume that plan, not re-decide it late at Branch Review or finish-work. The implementation handoff must name the plan strategy, docs sync result, task delta merged to durable docs, task-history-only content, no-update or follow-up limits, and which inputs came from durable docs versus confirmed task deltas. The Phase 2 check report must verify durable docs, task artifacts, code/API/schema/config/deploy/test, and validation evidence against the plan strategy.
 Read context: jsonl entries -> `prd.md` -> `design.md` -> `implement.md`.
 Every Phase 2 or Phase 3 stop/completion reply must first run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表` with only `prd.md`, `design.md`, `implement.md`, `review.md`, and `pr-body.md`.
 [/workflow-state:in_progress]
@@ -777,7 +777,7 @@ Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` 
 Before editing or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, or changed `prd.md`/`design.md`/`implement.md` content blocks inline Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
 Before commit, record and check `phase2-check.json`; validation commands alone are not a complete `trellis-check`.
 Do not dispatch implement/check sub-agents in inline mode.
-Before edits, confirm knowledge gate and docs SSOT responsibilities from artifacts.
+Before edits, confirm knowledge gate and the `Docs SSOT Plan` from artifacts. Inline Phase 2 still consumes the plan: implementation records strategy execution and docs sync handoff, and the later check verifies durable docs, task artifacts, code/API/schema/config/deploy/test, and validation evidence against that strategy.
 Read context: `prd.md` -> `design.md` -> `implement.md`, plus relevant spec/research loaded by skills.
 Every Phase 2 or Phase 3 stop/completion reply must first run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表` with only `prd.md`, `design.md`, `implement.md`, `review.md`, and `pr-body.md`.
 [/workflow-state:in_progress-inline]
@@ -808,7 +808,7 @@ On sub-agent-capable platforms, the main session records implementation assignme
 
 The assignment artifact is evidence of an AI/human decision already made by the workflow. The companion script must not choose the agent or infer whether reuse is appropriate.
 
-The implementation handoff must include files changed, key requirement/design carryover points, verification already run or explicitly deferred to Phase 2, remaining risks or a no-known-risk statement, completion status, and concrete focus areas for the later `trellis-check`. Do not report implementation completion until the requested scope is actually complete and verification status is known.
+The implementation handoff must include files changed, key requirement/design carryover points, verification already run or explicitly deferred to Phase 2, remaining risks or a no-known-risk statement, completion status, and concrete focus areas for the later `trellis-check`. It must also include the `Docs SSOT Plan` strategy, durable docs updated or deliberately not updated, task artifact deltas merged back into durable docs, content retained only as task history, any `no_docs_update_needed` reason, any `bootstrap_or_repair_docs` minimum repair / follow-up / current PR limitation, and which code/test work used durable docs as primary input versus a confirmed task delta as temporary input. Do not report implementation completion until the requested scope is actually complete, docs strategy execution is accounted for, and verification status is known.
 
 When a dispatched implementation agent reaches a wait timeout, do not infer failure. Record any public non-machine-readable progress with `record-subagent-liveness-event.sh`, then run `check-subagent-liveness.sh`. If checker reports progress, keep waiting. If checker reports `status_request_required`, send one status request, record `status-requested`, immediately rerun checker, and use the new `next_wait_ms`. If checker reports `continue_waiting_no_repeat_ping`, keep waiting without another ping. If checker reports `stale_allowed`, record `stale-assessed` only after confirming no newer public progress appeared, then perform the required stale cutover to replacement in the same liveness handling turn. If a terminal failure or manual/platform unfinished termination occurs, record `failed` or `terminated-unfinished termination_reason=manual_or_platform_terminated_unfinished`, then recover through same-agent resume or replacement until a later `completed` closes the chain. Failed, unfinished, stale, or replacement partial output must not be used as Phase 2 or Branch Review pass evidence.
 
@@ -818,11 +818,31 @@ Before writing code or generated assets, confirm the Middle-platform Knowledge G
 - `optional_warn`: use persisted citations when present; if unavailable, continue only after the user-visible warning is recorded.
 - `required`: do not implement until retrieval evidence or an approved equivalent source is persisted.
 
-Also follow the planning artifact's durable docs responsibilities. If implementation reveals that a long-term product, architecture, API, data, deployment, operational, or test contract changes, update the durable docs or return to Phase 1 to record why the task scope changed.
+Also follow the planning artifact's `Docs SSOT Plan` responsibilities before writing implementation changes. Execute the strategy explicitly:
+
+- `ssot_first`: use the revised durable docs / specs / workflow contracts as the primary implementation input, and keep task artifacts as deltas and evidence.
+- `delta_first`: keep the task delta temporary only until the named merge checkpoint; merge the durable docs before the final Phase 2 check.
+- `bootstrap_or_repair_docs`: create or repair the minimum durable docs promised by the plan, or record the bounded follow-up and current PR limitation before check.
+- `no_docs_update_needed`: preserve the checked durable docs paths and concrete reason so Phase 2 check can re-evaluate whether the reason still holds.
+
+If implementation reveals that a long-term product, architecture, API, data, deployment, operational, test, or workflow contract changes beyond the approved plan, update `prd.md`, `design.md`, `implement.md`, and the `Docs SSOT Plan`; when the planning documents' reviewed content changes, return to Phase 1 for fresh planning approval before continuing and rerun Phase 2 check afterward. Do not defer first discovery of this scope drift to Branch Review Gate or finish-work.
 
 #### 2.2 Quality check `[required · repeatable]`
 
 Run `trellis-check` or dispatch the check agent. In default `sub-agent` mode, the main session must dispatch `trellis-check` or channel-runtime `check`; it may not directly run a few validations or inspect the diff and then present that as `阶段二检查代理` evidence. The final check before commit must cover the full task scope, not only the latest implementation chunk.
+
+Phase 2 check must consume the approved `Docs SSOT Plan` and verify the implementation handoff against it:
+
+- durable docs were updated, repaired, or deliberately left unchanged according to the recorded strategy;
+- `prd.md`, `design.md`, and `implement.md` do not conflict with the durable docs or the confirmed temporary task delta;
+- code/API/schema/config/deploy/test changes match durable docs or the approved task delta;
+- validation commands, test plans, or test cases cover the docs/code changes in scope;
+- `delta_first` completed durable docs merge before the final Phase 2 check;
+- `ssot_first` implementation used the revised durable docs / specs / workflow contracts as the primary input;
+- `bootstrap_or_repair_docs` completed the minimum repair, or records a bounded follow-up and current PR limitation;
+- `no_docs_update_needed` still has a concrete reason after reviewing the final diff.
+
+If the check finds scope drift or a missing docs merge, return to implementation or Phase 1 planning as appropriate, update the plan/artifacts, and rerun Phase 2 check. Do not let Branch Review Gate or finish-work become the first semantic docs consistency check.
 
 When dispatching a Phase 2 check agent, record `阶段二检查代理` in `agent-assignment.json` before or immediately after the check handoff. This is separate from `phase2-check.json`: assignment records who took the logical role; `phase2-check.json` records the check judgment and evidence.
 

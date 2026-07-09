@@ -32,19 +32,20 @@ Before checking, read:
 - Task `prd.md` - Requirements document
 - Task `design.md` - required Guru Team technical design
 - Task `implement.md` - required Guru Team execution plan
+- The approved task `Docs SSOT Plan` - Phase 2 docs strategy and merge/repair/no-update checkpoint
 - Pre-commit checklist for quality standards
 
 ## Role Modes
 
 The main-session handoff decides which mode you are in:
 
-- **Phase 2 check (`阶段二检查代理`)**: review the real uncommitted implementation diff against task artifacts, specs, durable docs responsibilities, overlays/config/schema/test impact, and validation commands. Fix small in-scope mechanical issues directly. Output evidence that can support `phase2-check.json`; script success or a few validation commands alone are not a complete check.
+- **Phase 2 check (`阶段二检查代理`)**: review the real uncommitted implementation diff against task artifacts, specs, the approved `Docs SSOT Plan`, overlays/config/schema/test impact, and validation commands. Fix small in-scope mechanical issues directly. Verify durable docs, task artifacts, code/API/schema/config/deploy/test, and test/validation coverage are consistent with the plan strategy. Output evidence that can support `phase2-check.json`; script success or a few validation commands alone are not a complete check.
 - **Branch Review (`问题发现审查代理`, `问题闭环审查代理`, `最终放行审查代理`)**: review the complete committed branch diff, normally `origin/<base>...HEAD`. Do not continue implementation, patch missing Phase 2 check work, or run Guru Team recorder/validator scripts such as `review-branch.sh`, `check-review-gate.sh`, `record-agent-assignment.sh`, or `record-*`. If implement/check evidence is missing, stale, or incomplete, report it as a blocking finding. When the main session asks for a raw `{TASK_DIR}/reviews/*.md` report or content for `{TASK_DIR}/review.md`, use Chinese Markdown headings, Chinese field labels, and Chinese review narrative; keep literal diff commands, paths, JSON fields, HEAD values, code symbols, and external API names in English only where needed.
 
 ## Core Responsibilities
 
 1. **Get code changes** - Use git diff to get uncommitted code
-2. **Review task artifacts** - Check changes against prd.md, required design.md, and required implement.md
+2. **Review task artifacts** - Check changes against prd.md, required design.md, required implement.md, and the `Docs SSOT Plan`
 3. **Check against specs** - Verify code follows guidelines
 4. **Self-fix in Phase 2 only** - Fix small in-scope Phase 2 issues yourself, not Branch Review findings
 5. **Run verification** - typecheck and lint
@@ -91,6 +92,8 @@ Read the task's prd.md, required design.md, and required implement.md, then read
 - Does it follow code patterns
 - Are there missing types
 - Are there potential bugs
+- Does the implementation handoff account for plan strategy, docs sync result, task delta merge, task-history-only content, no-update reason, or follow-up / current PR limitation
+- Does `delta_first` finish durable docs merge before final Phase 2 check; does `ssot_first` use revised durable docs as primary input; does `bootstrap_or_repair_docs` complete minimum repair or bound follow-up; does `no_docs_update_needed` still hold
 
 ### Step 3: Self-Fix
 
@@ -137,6 +140,7 @@ If verification fails in Phase 2, fix small in-scope issues and re-run. In Branc
 ### 证据交接
 
 - 阶段二：覆盖范围、验证结果、发现/开放风险，以及本报告是否可支撑 `phase2-check.json`
+- Docs SSOT：plan strategy、durable docs / task artifacts / code / test 一致性、task delta merge 或 follow-up / no-update 复核结论
 - Branch Review：diff 范围、审查的 HEAD、部署/安全影响、Docs SSOT 判断、发现/观察项/后续候选，以及本报告是否可写入任务本地 `review.md`
 
 ### 结论

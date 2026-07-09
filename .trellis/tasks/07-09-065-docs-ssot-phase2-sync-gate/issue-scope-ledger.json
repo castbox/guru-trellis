@@ -1,0 +1,20 @@
+{
+  "primary_issue": {
+    "number": 65,
+    "url": "https://github.com/castbox/guru-trellis/issues/65",
+    "title": "Docs SSOT implementation/check gate：把同步纳入 Phase 2",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 65,
+      "url": "https://github.com/castbox/guru-trellis/issues/65",
+      "title": "Docs SSOT implementation/check gate：把同步纳入 Phase 2",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

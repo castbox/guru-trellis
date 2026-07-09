@@ -232,6 +232,14 @@ Codex 在 Guru Team 项目中默认 `codex.dispatch_mode: sub-agent`。主会话
 不得派发实现代理，也不得记录 `phase2-check.json`。Sub-agent 启动时应报告 `pwd`、
 `git rev-parse --show-toplevel`、expected `workspace_path` 和 actual repo root 是否匹配。
 
+实现代理还必须读取 Phase 1 的 `Docs SSOT Plan` 并按策略执行。`ssot_first` 以修订后的
+durable docs / spec / workflow 合同作为主要实现输入；`delta_first` 可先用已确认 task delta，
+但 final Phase 2 check 前必须完成 durable docs merge；`bootstrap_or_repair_docs` 必须完成计划
+承诺的最小文档创建/修复，或写清 follow-up 和当前 PR 声明限制；`no_docs_update_needed` 必须保留
+已检查 durable docs 路径和具体理由，供检查代理复核。实现 handoff 不仅说明改了哪些文件，还要说明
+plan strategy、durable docs 同步结果、哪些 task delta 已 merge 回 durable docs、哪些内容仅保留为
+task history、哪些实现输入来自 durable docs、哪些来自临时 task delta。
+
 ```mermaid
 flowchart LR
   Main["Codex main session<br/>协调 / 记录 / commit / finish"]:::codex
@@ -252,6 +260,14 @@ flowchart LR
 ```
 
 Phase 2 的核心证据是 `phase2-check.json`：
+
+Phase 2 check 必须消费同一 `Docs SSOT Plan`，检查 durable docs、`prd.md` / `design.md` /
+`implement.md`、代码/API/schema/config/deploy/test、验证命令和测试计划是否一致。检查代理需要复核：
+`delta_first` 是否已在最终检查前完成 durable docs merge；`ssot_first` 是否确实以修订后的 durable docs
+为主要输入；`bootstrap_or_repair_docs` 是否完成最小修复或明确 follow-up / PR 限制；
+`no_docs_update_needed` 的理由在最终 diff 下是否仍成立。若实现中发现长期合同变化但计划未覆盖，
+必须回到 planning artifacts 和 `Docs SSOT Plan`，必要时重新 planning approval，并重新跑 Phase 2 check；
+不能把首次语义判断推迟到 Branch Review Gate 或 finish-work。
 
 Sub-agent liveness 策略由 workflow 判断，脚本只记录/校验 objective state。`wait_agent` /
 `trellis channel wait` timeout 只表示等待窗口结束，不代表 agent 失败或应该收口。派发后主会话
@@ -366,7 +382,7 @@ PR readiness 要求：
 | `prd.md` | Phase 1 | Guru Team planning artifact | Implement/check/review/publish。 |
 | `design.md` | Phase 1 | Guru Team planning artifact | Implement/check/review。 |
 | `implement.md` | Phase 1 | Guru Team planning artifact | Implement/check/review。 |
-| `Docs SSOT Plan` | Phase 1 | Guru Team planning contract, recommended in `design.md` | Phase 1 planning approval、Phase 2 durable docs responsibility、后续 Docs SSOT reconciliation。 |
+| `Docs SSOT Plan` | Phase 1 | Guru Team planning contract, recommended in `design.md` | Phase 1 planning approval、Phase 2 implementation/check 策略消费、后续 Docs SSOT reconciliation。 |
 | `planning-approval.json` | Phase 1.4/1.5 | Guru Team gate evidence | 记录三文档链接展示后的显式用户确认；`task.py start`、Phase 2 dispatch 和 Branch Review Gate audit 前校验。 |
 | `implement.jsonl` / `check.jsonl` | Phase 1.3 | Trellis sub-agent context manifest | `trellis-implement` / `trellis-check`。 |
 | `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity/status ledger | review closure/fresh final reviewer 和 unfinished termination recovery-chain 校验。 |
@@ -391,7 +407,7 @@ PR readiness 要求：
 8. 任意 finding 都阻断；发现过问题的 reviewer 只能闭环自己的 finding，最终放行必须是 fresh reviewer。
 9. `trellis-continue` 到 Branch Review Gate 就停；`trellis-finish-work` 才能 archive、journal、提交 metadata 并自动 publish PR。
 10. PR body 是给 GitHub reviewer 的发布材料，不是内部 task 摘要；关闭 issue 的语义由 `issue-scope-ledger.json` 控制。
-11. `Docs SSOT Plan` 在 planning 阶段先决定 durable docs 状态与同步策略，后续实现、检查和 review 只消费这份计划；脚本不判断 docs 语义是否充分。
+11. `Docs SSOT Plan` 在 planning 阶段先决定 durable docs 状态与同步策略，Phase 2 implementation 必须按策略执行并在 handoff 说明同步结果，Phase 2 check 必须按策略复核 durable docs / task artifacts / code / test 一致性；脚本不判断 docs 语义是否充分。
 12. 所有脚本都是 executor / validator / recorder，不做 planner / reviewer / product owner 判断。
 
 ## 11. 证据来源
