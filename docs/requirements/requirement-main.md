@@ -76,7 +76,7 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 | Worktree executor boundary | `--create-worktree` / `--create-task` 只在 handoff review 和用户确认后使用，并把 handoff 写入选定 workspace。 |
 | Workspace boundary guard | worktree mode 下 `handoff.workspace_path` 是 task artifact 写入边界；`check-workspace-boundary.sh --json --task <task>` 输出 expected workspace、actual repo root、source checkout status、task worktree status 和 source checkout 可疑同名 artifact/review metadata，并让 recorder/validator 在错误 cwd 或错误 artifact path 下 fail closed。 |
 | Base freshness | executor 路径创建 worktree 前刷新 base branch，只允许安全 fast-forward，本地 base 分叉或 freshness 不明时 fail closed。 |
-| Naming quality gate | planner 输出 `naming_quality`；中文、非 ASCII 或低信息自动 slug（如 `issue-52`、`52-issue-52`、纯编号、仅通用词）不得静默进入 create 路径，agent 必须在读完 issue 后显式传入语义英文 `--short-name` / `--workspace-slug` / `--task-slug` / `--branch`。 |
+| Naming quality gate | planner 输出 `naming_quality`；中文、非 ASCII 或低信息自动 slug（如 `issue-52`、`52-issue-52`、纯编号、仅通用词）不得静默进入 create 路径，agent 必须在读完 issue 后显式传入语义英文 `--short-name` / `--workspace-slug` / `--task-slug`，需要特殊分支名时才传 `--branch`。未显式传 `--branch` 时，branch 格式为 `<branch-type>/<slug>`，类型只能是 `feat` / `fix` / `refactor` / `perf` / `test` / `docs` / `style` / `build` / `ci` / `chore` / `revert`，未知语义 fallback 为 `chore`。 |
 | Developer identity | 新 worktree 优先复制 source checkout 的 gitignored `.trellis/.developer`；缺失但有 `--assignee` 时初始化；两者都没有则阻塞并给恢复命令。 |
 | no_task direct edit override | 当前 checkout 直改必须由用户明确批准跳过 issue、Trellis task、worktree 和 branch；批准不包含 commit、push、PR 或 issue close。 |
 | Scope-change gate | task 进行中新增需求、引用其他 issue 或发现新 bug 时，AI 先询问/确认是当前 close scope、related context，还是 follow-up/new issue；结论同步到 GitHub issue 证据和 `issue-scope-ledger.json`。 |

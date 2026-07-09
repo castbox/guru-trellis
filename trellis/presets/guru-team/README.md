@@ -419,14 +419,15 @@ handoff inside the chosen workspace, not as a new-session side effect in the
 source checkout.
 
 The AI should read the issue and provide a semantic English short-name through
-`--short-name`, `--workspace-slug`, `--task-slug`, and `--branch` when the title
-is Chinese, non-ASCII, or too generic. Recommended worktree/task slug format is
-`NNN-business-capability`; recommended branch format is
-`codex/NNN-business-capability`, for example
-`052-resume-detail-inline-attachment-preview`. `prepare-task` does not perform
-Chinese transliteration or pinyin conversion; it deterministically assembles the
-name, checks conflicts, and blocks low-information names before executor side
-effects.
+`--short-name`, `--workspace-slug`, and `--task-slug` when the title is Chinese,
+non-ASCII, or too generic; use `--branch` only when a special explicit branch
+name is needed. Recommended worktree/task slug format is
+`NNN-business-capability`; when `--branch` is omitted, recommended branch format
+is `<branch-type>/NNN-business-capability`, for example
+`feat/052-resume-detail-inline-attachment-preview`. `prepare-task` does not
+perform Chinese transliteration or pinyin conversion; it deterministically
+infers a supported branch type, assembles the name, checks conflicts, and blocks
+low-information names before executor side effects.
 When `workspace_mode: worktree`, create the execution workspace and task through
 `prepare-task --create-worktree --create-task` or an equivalent controlled Guru
 Team executor. Task creation consent is not approval to run bare

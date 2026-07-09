@@ -1,0 +1,162 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-09T16:42:15Z",
+  "task_dir": ".trellis/tasks/07-09-056-auto-branch-type-prefix",
+  "base_branch": "main",
+  "head": "137135763fe8f6765d638af639f80bf186e02478",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/config-template.yml",
+    ".trellis/guru-team/config.yml",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/"
+  ],
+  "checker": "trellis-check:019f47b9-1558-7cb0-bcd6-bd120cf1265d",
+  "check_summary": "F-001 修复后的 Phase 2 re-check 通过：canonical 与 dogfood installed prepare-task helper/config 已同步，active prepare-task runtime 使用 installed helper 且行为探针输出 fix/<slug> 与 chore fallback；Issue Scope Ledger 已补充 F-001 closure evidence；requirements、design、code、tests、spec sync、cross-layer、Docs SSOT 与 deployment impact 均已覆盖，无当前范围 findings。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/prd.md",
+      "sha256": "9886c4a2b59f33589f7c698350bb19711e54ec3d0e4f29a983a1a51e2906f068",
+      "size_bytes": 3466,
+      "modified_at": "2026-07-09T15:39:53.214226+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/design.md",
+      "sha256": "d8d72b147fea81e1d326afe932228329a7bbac5069eefd75acf198e2e76447ac",
+      "size_bytes": 3871,
+      "modified_at": "2026-07-09T15:40:29.256974+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/implement.md",
+      "sha256": "faf3fca6e99031bc214158899714480af6ea55820af25c7d44ec9515a76bc81a",
+      "size_bytes": 2488,
+      "modified_at": "2026-07-09T15:41:01.386596+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/planning-approval.json",
+      "sha256": "7082aabc55b0c2dad5d62a4b51eb84a5d92cfd700760d8581ef4af776c44b20b",
+      "size_bytes": 3390,
+      "modified_at": "2026-07-09T15:42:29.354037+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/agent-assignment.json",
+      "sha256": "3255aad584ae98ec69f6349c40a92d1f6e80f8f41c53d7916216c20a8ac12b7c",
+      "size_bytes": 17341,
+      "modified_at": "2026-07-09T16:39:37.129256+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/issue-scope-ledger.json",
+      "sha256": "f7f548fdd6c5b836dcf5fd8121c18f2d038ab2a3986b9864e77713662b199752",
+      "size_bytes": 1929,
+      "modified_at": "2026-07-09T16:41:43.803779+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/review.md",
+      "sha256": "9032be7cf301ce1e51ce1c64a84fbb9add03a1cec9064df15c2d275d3df0ac51",
+      "size_bytes": 1638,
+      "modified_at": "2026-07-09T16:24:24.116548+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-1-final-review.md",
+      "sha256": "7b3f9c3b9008b9c6bcea22700b061648c59ce4d511d76e527fb52ee24d54b44b",
+      "size_bytes": 7946,
+      "modified_at": "2026-07-09T16:24:24.116102+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "e3f95c03ba44b44e950309a2658c57f5847badf65050133f824cc123687b9278",
+      "size_bytes": 23225,
+      "modified_at": "2026-07-09T15:34:12.028317+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "3fc438d9e80d19c961dfa7e9f229ac9651c5ab3d6fc677080dc7b66901c2aead",
+      "size_bytes": 18222,
+      "modified_at": "2026-07-09T15:34:12.027948+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "d9f0df0d7634384b4c1c7098b90f56bf98d4d82614a73260103456a8021bf006",
+      "size_bytes": 26295,
+      "modified_at": "2026-07-09T15:34:12.028059+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "be222723ae65c716779d9b4f5dde3a16ef324729e52a529bd5f6fab38b73bc50",
+      "size_bytes": 9142,
+      "modified_at": "2026-07-09T15:34:12.028232+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/code-reuse-thinking-guide.md",
+      "sha256": "86fd10dc10916c00309714aa2275234f01b0ad40d21a485d43b3422e7ca79397",
+      "size_bytes": 7381,
+      "modified_at": "2026-07-09T15:34:12.027301+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/cross-layer-thinking-guide.md",
+      "sha256": "cb66957f7fad60eec4c5bd737a4d910b162a093142b1fad1d0ab48d4784c5ce3",
+      "size_bytes": 14981,
+      "modified_at": "2026-07-09T15:34:12.027437+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "passed: 203 tests OK"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json",
+      "result": "passed"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py .trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-09-056-auto-branch-type-prefix",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 0.4",
+      "result": "passed"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "passed: Dogfood overlay copies match canonical Guru Team overlays"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "cmp canonical/dogfood helper, config template, workflow",
+      "result": "passed"
+    },
+    {
+      "command": "python behavior probe for canonical and dogfood helpers",
+      "result": "passed: fix/<slug> and chore fallback"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

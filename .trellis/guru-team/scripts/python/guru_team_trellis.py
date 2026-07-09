@@ -31,7 +31,8 @@ DEFAULTS: dict[str, Any] = {
     "duplicate_search_required": True,
     "duplicate_candidate_limit": 5,
     "duplicate_high_similarity_action": "confirm",
-    "branch_prefix": "codex/",
+    "branch_prefix": "",
+    "branch_type_default": "chore",
     "base_branch_candidates": ["dev", "develop", "main", "master"],
     "workspace_mode": "worktree",
     "worktree_root": "",
@@ -337,6 +338,32 @@ LOW_INFORMATION_NAMING_WORDS = {
     "wip",
     "work",
 }
+VALID_BRANCH_TYPES = (
+    "feat",
+    "fix",
+    "refactor",
+    "perf",
+    "test",
+    "docs",
+    "style",
+    "build",
+    "ci",
+    "chore",
+    "revert",
+)
+BRANCH_TYPE_KEYWORD_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("revert", ("revert", "rollback", "回滚")),
+    ("fix", ("fix", "bug", "error", "failure", "broken", "修复", "缺陷", "错误", "失败")),
+    ("docs", ("docs", "doc", "readme", "documentation", "文档", "说明")),
+    ("test", ("test", "tests", "testing", "测试")),
+    ("ci", ("ci", "ci/cd", "github actions", ".github/workflows", "持续集成")),
+    ("build", ("build", "dependency", "dependencies", "package", "构建", "依赖")),
+    ("refactor", ("refactor", "cleanup", "restructure", "重构")),
+    ("perf", ("perf", "performance", "optimize", "optimization", "优化", "性能")),
+    ("style", ("style", "format", "formatting", "lint", "格式")),
+    ("chore", ("chore", "maintenance", "housekeeping", "维护")),
+    ("feat", ("feat", "feature", "add", "support", "enable", "新增", "支持")),
+)
 PR_CLOSE_KEYWORDS = ["Closes", "Fixes", "Resolves", "Close", "Fix", "Resolve"]
 REVIEWED_PR_BODY_SOURCE_PREFIXES = ("body-file:", "body-artifact:")
 DEPLOYMENT_ASSET_CATEGORIES: dict[str, list[str]] = {
@@ -624,6 +651,100 @@ def unique_prepare_prefix(issue_number: str, issue_slug: str, short_name: str | 
     return f"{issue_number}-{issue_slug}"
 
 
+def normalized_branch_type_default(value: Any) -> str:
+    branch_type = str(value or "").strip().lower()
+    return branch_type if branch_type in VALID_BRANCH_TYPES else "chore"
+
+
+def text_contains_branch_keyword(text: str, keyword: str) -> bool:
+    if re.search(r"[\u4e00-\u9fff]", keyword):
+        return keyword in text
+    escaped = re.escape(keyword).replace(r"\ ", r"\s+")
+    return re.search(rf"(?<![a-z0-9]){escaped}(?![a-z0-9])", text) is not None
+
+
+def generated_issue_intent_text(text: str) -> str | None:
+    if "This issue body was drafted by the Guru Team Trellis intake workflow" not in text:
+        return None
+    prefix = text.split("## Background", 1)[0].strip()
+    match = re.search(r"(?ims)^## Problem or Gap\s*(.*?)(?=^## |\Z)", text)
+    problem = match.group(1).strip() if match else ""
+    return "\n".join(part for part in [prefix, problem] if part)
+
+
+def branch_type_catalog_line(text: str) -> bool:
+    normalized = text.lower()
+    catalog_markers = (
+        "allowed",
+        "valid",
+        "supported",
+        "branch type",
+        "branch-type",
+        "types",
+        "type list",
+        "合法",
+        "允许",
+        "支持",
+        "分支类型",
+        "类型",
+    )
+    mentioned = {
+        branch_type
+        for branch_type in VALID_BRANCH_TYPES
+        if text_contains_branch_keyword(normalized, branch_type)
+    }
+    return len(mentioned) >= 4 and any(marker in normalized for marker in catalog_markers)
+
+
+def sanitize_branch_type_inference_text(text: str) -> str:
+    raw = str(text or "")
+    generated_intent = generated_issue_intent_text(raw)
+    if generated_intent is not None:
+        raw = generated_intent
+    raw = re.sub(r"```.*?```", "\n", raw, flags=re.DOTALL)
+    raw = re.sub(r"`[^`]+`", " ", raw)
+    lines = []
+    for line in raw.splitlines():
+        stripped = line.strip()
+        if stripped and not branch_type_catalog_line(stripped):
+            lines.append(stripped)
+    return "\n".join(lines)
+
+
+def explicit_branch_type_marker(text: str) -> str | None:
+    branch_type_alternation = "|".join(VALID_BRANCH_TYPES)
+    patterns = [
+        rf"(?<![a-z0-9_-])({branch_type_alternation})\s*[:：]",
+        rf"\[({branch_type_alternation})\]",
+        rf"\btype\s*[:=：]\s*({branch_type_alternation})\b",
+        rf"\bbranch[\s_-]*type\s*[:=：]\s*({branch_type_alternation})\b",
+        rf"\bbranch[\s_-]*type\s+(?:is\s+)?({branch_type_alternation})\b",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            return match.group(1).lower()
+    return None
+
+
+def infer_branch_type(text: str, default_branch_type: Any = "chore") -> str:
+    default = normalized_branch_type_default(default_branch_type)
+    normalized_text = re.sub(
+        r"\s+",
+        " ",
+        sanitize_branch_type_inference_text(str(text or "")).lower(),
+    ).strip()
+    if not normalized_text:
+        return default
+    explicit = explicit_branch_type_marker(normalized_text)
+    if explicit:
+        return explicit
+    for branch_type, keywords in BRANCH_TYPE_KEYWORD_RULES:
+        if any(text_contains_branch_keyword(normalized_text, keyword) for keyword in keywords):
+            return branch_type
+    return default
+
+
 def assess_slug_candidate(value: str) -> dict[str, Any]:
     normalized = normalize_slug_candidate(value)
     business_tokens = slug_business_tokens(normalized)
@@ -651,13 +772,14 @@ def assess_slug_candidate(value: str) -> dict[str, Any]:
     }
 
 
-def naming_override_flags(issue_number: str, branch_prefix: str) -> list[str]:
+def naming_override_flags(issue_number: str, branch_type: str) -> list[str]:
     prefix = issue_number.zfill(3) if issue_number.isdigit() else "NNN"
     suggested_slug = f"{prefix}-semantic-business-name"
+    suggested_branch_type = normalized_branch_type_default(branch_type)
     return [
         f"--short-name {suggested_slug}",
         f"--workspace-slug {suggested_slug}",
-        f"--branch {branch_prefix}{suggested_slug}",
+        f"--branch {suggested_branch_type}/{suggested_slug}",
         f"--task-slug {suggested_slug}",
     ]
 
@@ -670,7 +792,7 @@ def evaluate_naming_quality(
     task_slug: str,
     workspace_slug: str,
     branch_name: str,
-    branch_prefix: str,
+    branch_type: str,
     semantic_override_provided: bool,
 ) -> dict[str, Any]:
     checked_names = {
@@ -698,7 +820,7 @@ def evaluate_naming_quality(
             "requires_semantic_name": True,
             "current_slug": first_failure["slug"],
             "current_surface": first_name,
-            "suggested_override_flags": naming_override_flags(issue_number, branch_prefix),
+            "suggested_override_flags": naming_override_flags(issue_number, branch_type),
             "checked_names": checked_names,
         }
     if source_has_non_ascii and not semantic_override_provided:
@@ -712,7 +834,7 @@ def evaluate_naming_quality(
             "requires_semantic_name": True,
             "current_slug": checked_names["workspace_slug"]["slug"],
             "current_surface": "workspace_slug",
-            "suggested_override_flags": naming_override_flags(issue_number, branch_prefix),
+            "suggested_override_flags": naming_override_flags(issue_number, branch_type),
             "checked_names": checked_names,
         }
     return {
@@ -731,8 +853,12 @@ def prepare_naming_payload(
     config: dict[str, Any],
     issue_number: str,
     source_text: str,
+    branch_type_source_text: str | None = None,
 ) -> dict[str, Any]:
-    branch_prefix = str(config.get("branch_prefix") or "")
+    branch_type = infer_branch_type(
+        branch_type_source_text if branch_type_source_text is not None else source_text,
+        config.get("branch_type_default", DEFAULTS["branch_type_default"]),
+    )
     if args.short_name:
         issue_slug = normalize_slug_candidate(args.short_name) or f"issue-{issue_number}"
     else:
@@ -740,7 +866,7 @@ def prepare_naming_payload(
     unique_prefix = unique_prepare_prefix(issue_number, issue_slug, args.short_name)
     task_slug = args.task_slug or unique_prefix
     workspace_slug = args.workspace_slug or unique_prefix
-    branch_name = args.branch or f"{branch_prefix}{unique_prefix}"
+    branch_name = args.branch or f"{branch_type}/{unique_prefix}"
     semantic_override_provided = bool(
         args.short_name
         or (args.workspace_slug and args.task_slug and args.branch)
@@ -752,7 +878,7 @@ def prepare_naming_payload(
         task_slug=task_slug,
         workspace_slug=workspace_slug,
         branch_name=branch_name,
-        branch_prefix=branch_prefix,
+        branch_type=branch_type,
         semantic_override_provided=semantic_override_provided,
     )
     return {
@@ -5534,6 +5660,7 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
     issue: dict[str, Any] | None = None
     proposed_issue: dict[str, Any] | None = None
     issue_title_for_planning = ""
+    issue_body_for_branch_type = ""
     issue_number_for_slug = "new"
     source_issue: dict[str, Any] | None = None
     confirmation_required: dict[str, Any] | None = None
@@ -5594,7 +5721,13 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
             )
         if args.create_issue_confirmed:
             if args.create_worktree or args.create_task:
-                pre_create_naming = prepare_naming_payload(args, config, "NNN", proposed_title or requirement)
+                pre_create_naming = prepare_naming_payload(
+                    args,
+                    config,
+                    "NNN",
+                    proposed_title or requirement,
+                    f"{proposed_title}\n{proposed_body}",
+                )
                 ensure_naming_quality_for_create({**pre_create_naming, "proposed_issue": proposed_issue})
             issue = create_issue(repo, proposed_title, proposed_body, root, list(config.get("created_issue_labels") or []))
             created_by_workflow = True
@@ -5608,6 +5741,7 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
     if issue is not None:
         issue_number = int(issue["number"])
         issue_title_for_planning = str(issue.get("title") or make_issue_title(requirement, args.short_name))
+        issue_body_for_branch_type = str(issue.get("body") or "")
         issue_number_for_slug = str(issue_number)
         source_issue = {
             "number": issue_number,
@@ -5617,13 +5751,23 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
         }
     else:
         issue_title_for_planning = str(proposed_issue.get("title") if proposed_issue else make_issue_title(requirement, args.short_name))
+        issue_body_for_branch_type = requirement
     if (args.create_worktree or args.create_task) and source_issue is None:
         raise WorkflowError(
             "--create-worktree and --create-task require a confirmed source issue. Review proposed_issue, create/bind the GitHub issue, then rerun prepare.",
             exit_code=2,
             payload={"proposed_issue": proposed_issue, "requires_confirmation": confirmation_required},
         )
-    naming_payload = prepare_naming_payload(args, config, issue_number_for_slug, issue_title_for_planning or requirement)
+    branch_type_source_text = "\n".join(
+        part for part in [issue_title_for_planning, issue_body_for_branch_type] if part
+    )
+    naming_payload = prepare_naming_payload(
+        args,
+        config,
+        issue_number_for_slug,
+        issue_title_for_planning or requirement,
+        branch_type_source_text or requirement,
+    )
     issue_slug = str(naming_payload["slug"])
     task_slug = str(naming_payload["task_slug"])
     workspace_slug = str(naming_payload["workspace_slug"])

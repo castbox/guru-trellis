@@ -120,11 +120,14 @@ branch name、workspace path、`create_task_command`、`naming_quality`、
 
 `naming_quality` 是 slug / branch / worktree / task 命名质量门禁。AI 读完 issue 后
 应生成语义英文 short-name，并通过 `--short-name`、`--workspace-slug`、`--task-slug`
-和 `--branch` 显式传给脚本。推荐 worktree/task slug 格式为
-`NNN-business-capability`，branch 格式为 `codex/NNN-business-capability`，例如
-`052-resume-detail-inline-attachment-preview`。中文或非 ASCII issue 标题不依赖拼音
-transliteration 作为默认分支名；脚本不会智能翻译，只会做确定性拼装、冲突检查和低信息命名
-阻断。
+传给脚本；需要特殊分支名时再显式传 `--branch`。推荐 worktree/task slug 格式为
+`NNN-business-capability`。未显式传 `--branch` 时，branch 格式为
+`<branch-type>/NNN-business-capability`，其中 `branch-type` 只能是 `feat`、`fix`、
+`refactor`、`perf`、`test`、`docs`、`style`、`build`、`ci`、`chore`、`revert`，
+未知语义 fallback 为 `chore`，例如
+`feat/052-resume-detail-inline-attachment-preview`。中文或非 ASCII issue 标题不依赖拼音
+transliteration 作为默认分支名；脚本不会智能翻译，只会做确定性类型判定、拼装、冲突检查和
+低信息命名阻断。
 
 GitHub issue 创建必须在 AI/human review proposed title/body 之后显式执行：
 

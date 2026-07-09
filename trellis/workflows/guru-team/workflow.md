@@ -73,8 +73,8 @@ The companion scripts live under `.trellis/guru-team/` and are installed by the 
 - Report current checkout path, current branch, base branch, worktree path, branch name, dirty state, and existing worktrees.
 - Slugs, branch names, worktree names, and task names must include an issue number or another unique id plus semantic English business tokens. Do not rely on Trellis date prefixes or auto-increment-like names for parallel work.
 - If an issue title is Chinese, non-ASCII, or too generic to produce business tokens, the agent must read the issue and explicitly pass a semantic English short-name. `prepare-task` must not translate Chinese, convert titles to pinyin, or pretend it inferred business meaning from non-ASCII text.
-- Recommended worktree/task slug format is `NNN-business-capability`; recommended branch format is `codex/NNN-business-capability`. Example: `052-resume-detail-inline-attachment-preview`.
-- Use `--short-name`, `--workspace-slug`, `--task-slug`, and `--branch` as the deterministic interface from the agent's semantic judgment into the companion script. Explicit overrides still go through the same low-information naming gate.
+- Recommended worktree/task slug format is `NNN-business-capability`. When `--branch` is omitted, `prepare-task` deterministically infers a branch type and uses `<branch-type>/NNN-business-capability`; valid branch types are `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `style`, `build`, `ci`, `chore`, and `revert`, with `chore` as the fallback. Example: `feat/052-resume-detail-inline-attachment-preview`.
+- Use `--short-name`, `--workspace-slug`, and `--task-slug` as the deterministic interface from the agent's semantic judgment into the companion script; use `--branch` only when a special explicit branch name is needed. Explicit overrides still go through the same low-information naming gate.
 
 ### Handoff
 

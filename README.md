@@ -278,12 +278,14 @@ proposed issue title/body、duplicate evidence 和 naming quality；stdout JSON 
 `prepare-task --create-worktree --create-task` 或等价 Guru Team 受控入口完成，不能把
 task creation consent 当成在 source checkout 直接运行 `task.py create` 的批准。
 AI 在读取 issue 后应生成语义英文 short-name，并用 `--short-name`、
-`--workspace-slug`、`--task-slug` 和 `--branch` 传给 prepare 脚本。推荐 worktree/task
-slug 格式是 `NNN-business-capability`，branch 格式是
-`codex/NNN-business-capability`，例如
-`052-resume-detail-inline-attachment-preview`。中文或非 ASCII 标题不依赖拼音
-transliteration 作为默认分支名；脚本不做智能翻译，只做确定性拼装、冲突检查和低信息命名
-门禁。低信息名称如 `issue-52`、`52-issue-52`、纯编号或仅包含 `bug` / `fix` /
+`--workspace-slug`、`--task-slug`，必要时用 `--branch` 覆盖 prepare 脚本。推荐
+worktree/task slug 格式是 `NNN-business-capability`；未显式传 `--branch` 时，branch
+格式是 `<branch-type>/NNN-business-capability`，其中 `branch-type` 只能是 `feat`、
+`fix`、`refactor`、`perf`、`test`、`docs`、`style`、`build`、`ci`、`chore`、
+`revert`，未知语义 fallback 为 `chore`，例如
+`feat/052-resume-detail-inline-attachment-preview`。中文或非 ASCII 标题不依赖拼音
+transliteration 作为默认分支名；脚本不做智能翻译，只做确定性类型判定、拼装、冲突检查和
+低信息命名门禁。低信息名称如 `issue-52`、`52-issue-52`、纯编号或仅包含 `bug` / `fix` /
 `task` / `work` / `update` / `change` 等通用词时，executor 路径会在创建 worktree、
 branch 或 Trellis task 前阻断。
 这些 executor 路径创建 worktree 前会先刷新所选 base branch，记录
