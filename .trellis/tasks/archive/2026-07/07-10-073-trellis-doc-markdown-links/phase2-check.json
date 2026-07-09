@@ -1,0 +1,131 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-09T18:14:02Z",
+  "task_dir": ".trellis/tasks/07-10-073-trellis-doc-markdown-links",
+  "base_branch": "main",
+  "head": "c1f6fc979e5d5f81291221569577bedc5e2ceb7c",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    "AGENTS.md",
+    ".trellis/tasks/07-10-073-trellis-doc-markdown-links/"
+  ],
+  "checker": "阶段二检查代理:019f480f-8468-7153-b3d0-0afb36d8fc3f",
+  "check_summary": "阶段二检查代理已按 task artifacts、Docs SSOT Plan 和 docs specs 复核当前未提交 diff：AGENTS.md 只替换 3 个 Trellis 官方文档 URL 为 .md 端点；docs/requirements 既有 .md 链接未误改；task-level issue-scope-ledger 已补齐 #73 close acceptance evidence；无 workflow/preset/overlay/script 行为变更；requirements、design、code/docs、tests、spec sync、cross-layer、Docs SSOT、deployment 均覆盖，findings_count=0。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/prd.md",
+      "sha256": "0ffd8008220c094cc1e88f0b95dec7fae0cee9c0de73b9adcf3bb12ffd4d059f",
+      "size_bytes": 3835,
+      "modified_at": "2026-07-09T18:00:10.284806+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/design.md",
+      "sha256": "bf1a13c03bec60ae2743cdd50947d24df9abf2d32c534bab0b20c7ce917acc21",
+      "size_bytes": 3562,
+      "modified_at": "2026-07-09T18:00:10.285018+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/implement.md",
+      "sha256": "99a3180f9118fac8d337bf0f7a6be0f24d4c9bf48038f65903df646235987b10",
+      "size_bytes": 2670,
+      "modified_at": "2026-07-09T18:00:10.285180+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/planning-approval.json",
+      "sha256": "b744ca29d091f470fbc17d51556650953a400f509a6fb6e6f078e5974235121f",
+      "size_bytes": 3573,
+      "modified_at": "2026-07-09T18:01:52.115179+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/issue-scope-ledger.json",
+      "sha256": "f664acb9508bb307fe4144a91bc79b1959ef76a9a99375d8c4b2fe0efdb47f32",
+      "size_bytes": 1468,
+      "modified_at": "2026-07-09T18:13:26.680193+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/agent-assignment.json",
+      "sha256": "02140e1ade2fc84c989e570f0cc341999f3a931061cfffec8447a7eeb4577a1d",
+      "size_bytes": 7328,
+      "modified_at": "2026-07-09T18:10:59.853601+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/docs/index.md",
+      "sha256": "94fcfb6a6d2ff77f8f11535a9ca02501a41e043b812866e0af5ed8783db7f2a3",
+      "size_bytes": 797,
+      "modified_at": "2026-07-09T17:57:09.081754+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "3dcb9e138dc54489b539b7d2f579ef68bfcdfb3c293fad5a80ceafdf4c5cb64e",
+      "size_bytes": 4343,
+      "modified_at": "2026-07-09T17:57:09.081858+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/index.md",
+      "sha256": "aa45e5d0f245aae0b34677b121f7d083620308b4b87cda929bd134c77d1f61fd",
+      "size_bytes": 3680,
+      "modified_at": "2026-07-09T17:57:09.082772+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/code-reuse-thinking-guide.md",
+      "sha256": "86fd10dc10916c00309714aa2275234f01b0ad40d21a485d43b3422e7ca79397",
+      "size_bytes": 7381,
+      "modified_at": "2026-07-09T17:57:09.082247+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/cross-layer-thinking-guide.md",
+      "sha256": "cb66957f7fad60eec4c5bd737a4d910b162a093142b1fad1d0ab48d4784c5ce3",
+      "size_bytes": 14981,
+      "modified_at": "2026-07-09T17:57:09.082598+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "check-planning-approval.sh",
+      "result": "passed: planning approval schema 1.2 matches reviewed prd/design/implement digests"
+    },
+    {
+      "command": "rg docs.trytrellis scan",
+      "result": "passed: all visible Trellis docs links are .md endpoints"
+    },
+    {
+      "command": "AGENTS.md HTML-form Trellis docs link grep",
+      "result": "passed: no output"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "curl markdown URL headers",
+      "result": "passed: index.md, advanced/custom-workflow.md, and advanced/custom-spec-template-marketplace.md return HTTP 200 text/markdown"
+    },
+    {
+      "command": "git diff protected workflow/preset/overlay/script paths",
+      "result": "passed: no output"
+    },
+    {
+      "command": "task.py validate .trellis/tasks/07-10-073-trellis-doc-markdown-links",
+      "result": "passed"
+    },
+    {
+      "command": "json.tool planning-approval agent-assignment issue-scope-ledger phase2-check",
+      "result": "passed"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}
