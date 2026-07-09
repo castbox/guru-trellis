@@ -141,7 +141,7 @@ For each component of the current plan:
 - risky files or rollback points
 - follow-up checks before `task.py start`
 
-Guru Team requires `prd.md`, `design.md`, and `implement.md` for every task before implementation. Some native Trellis workflows may allow a smaller planning set, but that is not the Guru Team start gate. After all three documents exist, perform the planning artifact ambiguity review required by `.trellis/workflow.md`, then display task-local links to all three, wait for explicit post-planning confirmation, record/check schema 1.2 `planning-approval.json` with passed `ambiguity_review` evidence, and only then run `task.py start`.
+Guru Team requires `prd.md`, `design.md`, and `implement.md` for every task before implementation. Some native Trellis workflows may allow a smaller planning set, but that is not the Guru Team start gate. After all three documents exist, perform the planning artifact ambiguity review required by `.trellis/workflow.md`, then display task-local links to all three, wait for explicit post-planning confirmation, record/check schema 1.2 `planning-approval.json` with passed `ambiguity_review` evidence, fixed-scope scanner `hits[]`, empty `unchecked_normative_hits[]`, and only then run `task.py start`.
 
 Planning artifact normative language must be deterministic. For requirements,
 design contracts, gates, acceptance criteria, implementation steps, and

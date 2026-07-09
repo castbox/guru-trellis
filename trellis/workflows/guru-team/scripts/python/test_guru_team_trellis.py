@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -170,6 +171,7 @@ def planning_args(**overrides: object) -> argparse.Namespace:
         "user_confirmation": "用户确认进入实现。",
         "review_prompt_presented_at": None,
         "confirmation_source": gtt.PLANNING_APPROVAL_CONFIRMATION_SOURCE,
+        "normative_hit": None,
         "artifact": None,
         "dry_run": False,
     }
@@ -1432,6 +1434,15 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             mock.patch.object(gtt, "git_status_paths", return_value=[]),
         ]
 
+    def write_normative_prd_hit(self, term: str) -> None:
+        (self.task_dir / "prd.md").write_text(
+            f"# PRD\n\n这里{term}固定合同。\n",
+            encoding="utf-8",
+        )
+
+    def normative_hit_arg(self, term: str, classification: str, reason: str = "AI 已分类该命中。") -> str:
+        return f"prd.md|3|{term}|{classification}|{reason}"
+
     def test_check_planning_approval_rejects_missing_artifact(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
@@ -1445,6 +1456,53 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
 
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn("Planning approval artifact not found", str(raised.exception))
+
+    def test_planning_ambiguity_v2_terms_are_scanned(self) -> None:
+        expected_terms = [
+            "可以",
+            "允许",
+            "建议",
+            "推荐",
+            "可选",
+            "尽量",
+            "尽可能",
+            "最好",
+            "应该",
+            "应当",
+            "原则上",
+            "一般",
+            "通常",
+            "视情况",
+            "根据情况",
+            "根据需要",
+            "按需",
+            "必要时",
+            "如有需要",
+            "需要时",
+            "适当",
+            "适当时",
+            "合理",
+            "合理时",
+            "类似",
+            "相关",
+            "相应",
+            "等",
+            "等等",
+            "之类",
+            "一些",
+            "若干",
+            "部分",
+            "至少",
+            "默认",
+        ]
+        self.assertEqual(gtt.PLANNING_AMBIGUITY_CONTROLLED_TERMS, expected_terms)
+        self.assertEqual(gtt.PLANNING_AMBIGUITY_SCAN_SCOPE, ["prd.md", "design.md", "implement.md"])
+
+        for term in expected_terms:
+            with self.subTest(term=term):
+                self.write_normative_prd_hit(term)
+                hits = gtt.scan_planning_normative_language(self.root, self.task_dir)
+                self.assertIn(term, {str(hit["term"]) for hit in hits})
 
     def test_record_and_check_planning_approval(self) -> None:
         patches = self.patch_common()
@@ -1470,6 +1528,11 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             payload["ambiguity_review"]["normative_language"]["controlled_terms"],
             gtt.PLANNING_AMBIGUITY_CONTROLLED_TERMS,
         )
+        self.assertEqual(
+            payload["ambiguity_review"]["normative_language"]["scan_scope"],
+            gtt.PLANNING_AMBIGUITY_SCAN_SCOPE,
+        )
+        self.assertEqual(payload["ambiguity_review"]["normative_language"]["hits"], [])
         self.assertEqual(payload["ambiguity_review"]["normative_language"]["unchecked_normative_hits"], [])
         self.assertEqual(
             set(payload["ambiguity_review"]["checked_dimensions"]),
@@ -1478,6 +1541,121 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertTrue(all(payload["ambiguity_review"]["checked_dimensions"].values()))
         self.assertEqual(len(payload["reviewed_artifacts"]), 3)
         self.assertEqual(len(payload["approved_artifacts"]), 3)
+
+    def test_record_planning_approval_blocks_unclassified_normative_hits(self) -> None:
+        for term in ["推荐", "可选", "至少", "默认"]:
+            with self.subTest(term=term):
+                self.write_normative_prd_hit(term)
+                planning_artifact = self.task_dir / "planning-approval.json"
+                if planning_artifact.exists():
+                    planning_artifact.unlink()
+                patches = self.patch_common()
+                for patcher in patches:
+                    patcher.start()
+                try:
+                    with self.assertRaises(gtt.WorkflowError) as raised:
+                        gtt.cmd_record_planning_approval(planning_args())
+                finally:
+                    for patcher in reversed(patches):
+                        patcher.stop()
+
+                self.assertEqual(raised.exception.exit_code, 2)
+                normative = raised.exception.payload["normative_language"]
+                self.assertTrue(any(hit["term"] == term for hit in normative["hits"]))
+                self.assertTrue(any(hit["term"] == term for hit in normative["unchecked_normative_hits"]))
+                self.assertFalse(planning_artifact.exists())
+
+    def test_record_planning_approval_accepts_allowed_normative_classifications(self) -> None:
+        cases = [
+            ("推荐", "quoted_source_non_contract"),
+            ("默认", "term_definition"),
+            ("可选", "literal_identifier"),
+            ("相关", "historical_record_non_contract"),
+            ("至少", "deterministic_threshold"),
+            ("默认", "deterministic_default"),
+            ("可选", "deterministic_option"),
+            ("相关", "deterministic_reference"),
+        ]
+        for term, classification in cases:
+            with self.subTest(classification=classification):
+                self.write_normative_prd_hit(term)
+                patches = self.patch_common()
+                for patcher in patches:
+                    patcher.start()
+                try:
+                    payload = gtt.cmd_record_planning_approval(
+                        planning_args(normative_hit=[self.normative_hit_arg(term, classification)])
+                    )
+                    check = gtt.cmd_check_planning_approval(planning_args())
+                finally:
+                    for patcher in reversed(patches):
+                        patcher.stop()
+
+                normative = payload["ambiguity_review"]["normative_language"]
+                self.assertEqual(check["status"], "ok")
+                self.assertEqual(normative["unchecked_normative_hits"], [])
+                self.assertEqual(normative["hits"][0]["classification"], classification)
+                self.assertEqual(normative["hits"][0]["reason"], "AI 已分类该命中。")
+
+    def test_record_planning_approval_blocks_contract_violation_classifications(self) -> None:
+        for term in ["至少", "默认", "可选", "相关"]:
+            with self.subTest(term=term):
+                self.write_normative_prd_hit(term)
+                planning_artifact = self.task_dir / "planning-approval.json"
+                if planning_artifact.exists():
+                    planning_artifact.unlink()
+                patches = self.patch_common()
+                for patcher in patches:
+                    patcher.start()
+                try:
+                    with self.assertRaises(gtt.WorkflowError) as raised:
+                        gtt.cmd_record_planning_approval(
+                            planning_args(
+                                normative_hit=[
+                                    self.normative_hit_arg(
+                                        term,
+                                        "contract_violation",
+                                        "缺少 issue #93 要求的确定性信息。",
+                                    )
+                                ]
+                            )
+                        )
+                finally:
+                    for patcher in reversed(patches):
+                        patcher.stop()
+
+                normative = raised.exception.payload["normative_language"]
+                self.assertTrue(
+                    any(
+                        hit["term"] == term and hit["classification"] == "contract_violation"
+                        for hit in normative["unchecked_normative_hits"]
+                    )
+                )
+                self.assertFalse(planning_artifact.exists())
+
+    def test_check_planning_approval_rejects_normative_scan_mismatch(self) -> None:
+        self.write_normative_prd_hit("推荐")
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_record_planning_approval(
+                planning_args(normative_hit=[self.normative_hit_arg("推荐", "term_definition")])
+            )
+            payload["ambiguity_review"]["normative_language"]["hits"][0]["text"] = "artifact 手工篡改。"
+            payload.pop("artifact_path", None)
+            payload.pop("dry_run", None)
+            (self.task_dir / "planning-approval.json").write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(any("扫描结果不一致" in error for error in raised.exception.payload["errors"]))
 
     def test_record_planning_approval_requires_ambiguity_summary(self) -> None:
         patches = self.patch_common()
@@ -2354,6 +2532,31 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
 
         self.assertTrue(matches)
         self.assertEqual(uncovered, [])
+
+
+class PlanningApprovalDogfoodSyncTest(unittest.TestCase):
+    REPO_ROOT = Path(__file__).resolve().parents[5]
+
+    def load_dogfood_module(self) -> Any:
+        path = self.REPO_ROOT / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        self.assertTrue(path.exists(), f"Dogfood helper missing: {path}")
+        spec = importlib.util.spec_from_file_location("dogfood_guru_team_trellis_for_test", path)
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_planning_ambiguity_constants_match_dogfood_helper(self) -> None:
+        dogfood = self.load_dogfood_module()
+        for name in [
+            "PLANNING_AMBIGUITY_CONTROLLED_TERMS",
+            "PLANNING_AMBIGUITY_SCAN_SCOPE",
+            "PLANNING_AMBIGUITY_CLASSIFICATIONS",
+            "PLANNING_AMBIGUITY_BLOCKING_CLASSIFICATIONS",
+        ]:
+            with self.subTest(name=name):
+                self.assertEqual(getattr(dogfood, name), getattr(gtt, name))
 
 
 class PublishBoundaryTest(unittest.TestCase):

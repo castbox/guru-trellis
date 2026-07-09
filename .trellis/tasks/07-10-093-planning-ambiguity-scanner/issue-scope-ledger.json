@@ -1,0 +1,20 @@
+{
+  "primary_issue": {
+    "number": 93,
+    "url": "https://github.com/castbox/guru-trellis/issues/93",
+    "title": "将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 93,
+      "url": "https://github.com/castbox/guru-trellis/issues/93",
+      "title": "将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

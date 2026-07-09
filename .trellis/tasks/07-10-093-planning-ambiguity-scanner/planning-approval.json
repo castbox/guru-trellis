@@ -1,0 +1,697 @@
+{
+  "schema_version": "1.2",
+  "generated_at": "2026-07-09T20:02:19Z",
+  "review_prompt_presented_at": "2026-07-09T19:44:18Z",
+  "approved_at": "2026-07-09T20:02:19Z",
+  "task_dir": ".trellis/tasks/07-10-093-planning-ambiguity-scanner",
+  "head": "86b4b3b9f6054db8167b4af1da99dc070ebb9c0a",
+  "dirty_paths": [
+    ".agents/skills/trellis-before-dev/SKILL.md",
+    ".agents/skills/trellis-brainstorm/SKILL.md",
+    ".agents/skills/trellis-check/SKILL.md",
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+    ".claude/agents/trellis-check.md",
+    ".claude/agents/trellis-implement.md",
+    ".claude/commands/trellis/continue.md",
+    ".codex/agents/trellis-check.toml",
+    ".codex/agents/trellis-implement.toml",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".cursor/agents/trellis-check.md",
+    ".cursor/agents/trellis-implement.md",
+    ".cursor/commands/trellis-continue.md",
+    ".cursor/skills/trellis-before-dev/SKILL.md",
+    ".cursor/skills/trellis-brainstorm/SKILL.md",
+    ".cursor/skills/trellis-check/SKILL.md",
+    ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+    ".trellis/agents/check.md",
+    ".trellis/agents/implement.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/workflow.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-before-dev/SKILL.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-brainstorm/SKILL.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-check/SKILL.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+    "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+    "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+    "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+    "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-before-dev/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-brainstorm/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-check/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+    "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+    "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-10-093-planning-ambiguity-scanner/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "已复核 #93 三份 planning artifacts 内容未较用户确认版本变化；使用新版 scanner 重新记录 planning approval evidence，全部命中均已分类且无 contract_violation。",
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "codex-main-session",
+    "summary": "planning artifact ambiguity review 通过：受控词命中均来自词表定义、固定测试 token、分类数据合同、最低验证集合或子串误命中；执行合同仍使用必须、不得、固定范围、失败并阻塞等确定性语义。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "推荐",
+        "可选",
+        "尽量",
+        "尽可能",
+        "最好",
+        "应该",
+        "应当",
+        "原则上",
+        "一般",
+        "通常",
+        "视情况",
+        "根据情况",
+        "根据需要",
+        "按需",
+        "必要时",
+        "如有需要",
+        "需要时",
+        "适当",
+        "适当时",
+        "合理",
+        "合理时",
+        "类似",
+        "相关",
+        "相应",
+        "等",
+        "等等",
+        "之类",
+        "一些",
+        "若干",
+        "部分",
+        "至少",
+        "默认"
+      ],
+      "scan_scope": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ],
+      "hits": [
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 25,
+          "term": "可以",
+          "text": "可以",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 26,
+          "term": "允许",
+          "text": "允许",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 27,
+          "term": "建议",
+          "text": "建议",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 28,
+          "term": "推荐",
+          "text": "推荐",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 29,
+          "term": "可选",
+          "text": "可选",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 30,
+          "term": "尽量",
+          "text": "尽量",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 31,
+          "term": "尽可能",
+          "text": "尽可能",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 32,
+          "term": "最好",
+          "text": "最好",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 33,
+          "term": "应该",
+          "text": "应该",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 34,
+          "term": "应当",
+          "text": "应当",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 35,
+          "term": "原则上",
+          "text": "原则上",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 36,
+          "term": "一般",
+          "text": "一般",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 37,
+          "term": "通常",
+          "text": "通常",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 38,
+          "term": "视情况",
+          "text": "视情况",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 39,
+          "term": "根据情况",
+          "text": "根据情况",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 40,
+          "term": "根据需要",
+          "text": "根据需要",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 41,
+          "term": "按需",
+          "text": "按需",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 42,
+          "term": "必要时",
+          "text": "必要时",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 43,
+          "term": "如有需要",
+          "text": "如有需要",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 44,
+          "term": "需要时",
+          "text": "需要时",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 45,
+          "term": "适当",
+          "text": "适当",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 46,
+          "term": "适当",
+          "text": "适当时",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 46,
+          "term": "适当时",
+          "text": "适当时",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 47,
+          "term": "合理",
+          "text": "合理",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 48,
+          "term": "合理",
+          "text": "合理时",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 48,
+          "term": "合理时",
+          "text": "合理时",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 49,
+          "term": "类似",
+          "text": "类似",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 50,
+          "term": "相关",
+          "text": "相关",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 51,
+          "term": "相应",
+          "text": "相应",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 52,
+          "term": "等",
+          "text": "等",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 53,
+          "term": "等",
+          "text": "等等",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 53,
+          "term": "等等",
+          "text": "等等",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 54,
+          "term": "之类",
+          "text": "之类",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 55,
+          "term": "一些",
+          "text": "一些",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 56,
+          "term": "若干",
+          "text": "若干",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 57,
+          "term": "部分",
+          "text": "部分",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 58,
+          "term": "至少",
+          "text": "至少",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 59,
+          "term": "默认",
+          "text": "默认",
+          "classification": "term_definition",
+          "reason": "该命中位于 #93 v2 受控词表定义区，作为扫描词条本身记录，不是执行合同弱化。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 100,
+          "term": "允许",
+          "text": "8. 允许分类命中不得进入 `unchecked_normative_hits[]`，且必须包含非空 `classification` 与 `reason`。",
+          "classification": "deterministic_option",
+          "reason": "该命中描述允许分类的确定性处理规则，分类集合固定且理由字段必填。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 130,
+          "term": "允许",
+          "text": "- [ ] 允许分类命中不写入 `unchecked_normative_hits[]`，且包含非空分类和理由。",
+          "classification": "deterministic_option",
+          "reason": "该命中描述允许分类的确定性处理规则，分类集合固定且理由字段必填。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 132,
+          "term": "推荐",
+          "text": "- [ ] 单测覆盖 `推荐`、`可选`、`至少`、`默认` 的阻塞路径。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于验收测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 132,
+          "term": "可选",
+          "text": "- [ ] 单测覆盖 `推荐`、`可选`、`至少`、`默认` 的阻塞路径。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于验收测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 132,
+          "term": "至少",
+          "text": "- [ ] 单测覆盖 `推荐`、`可选`、`至少`、`默认` 的阻塞路径。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于验收测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 132,
+          "term": "默认",
+          "text": "- [ ] 单测覆盖 `推荐`、`可选`、`至少`、`默认` 的阻塞路径。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于验收测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 133,
+          "term": "允许",
+          "text": "- [ ] 单测覆盖八类允许分类。",
+          "classification": "deterministic_option",
+          "reason": "该命中描述允许分类的确定性处理规则，分类集合固定且理由字段必填。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 134,
+          "term": "可选",
+          "text": "- [ ] 单测覆盖 `至少`、`默认`、`可选`、`相关` 缺少 issue #93 要求的确定性信息时的阻塞路径。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于验收测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 134,
+          "term": "相关",
+          "text": "- [ ] 单测覆盖 `至少`、`默认`、`可选`、`相关` 缺少 issue #93 要求的确定性信息时的阻塞路径。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于验收测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 134,
+          "term": "至少",
+          "text": "- [ ] 单测覆盖 `至少`、`默认`、`可选`、`相关` 缺少 issue #93 要求的确定性信息时的阻塞路径。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于验收测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 134,
+          "term": "默认",
+          "text": "- [ ] 单测覆盖 `至少`、`默认`、`可选`、`相关` 缺少 issue #93 要求的确定性信息时的阻塞路径。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于验收测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          "line": 138,
+          "term": "至少",
+          "text": "- [ ] 至少执行 targeted Python unit tests、Python compile、Bash syntax、JSON validation、task validate、diff check。",
+          "classification": "deterministic_threshold",
+          "reason": "该命中定义最低验证命令集合，属于确定性下限要求。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/design.md",
+          "line": 5,
+          "term": "允许",
+          "text": "在不把语义 review 下沉到脚本的前提下，给 planning approval 增加可审计正文扫描链路。脚本只负责扫描固定词表、接收 AI 已分类命中、校验结构和一致性；AI 仍负责判断命中是否已经改写为确定性合同，或是否属于可允许分类。",
+          "classification": "deterministic_option",
+          "reason": "该命中描述允许分类和 reason 的确定性数据合同，不是可选执行路径。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/design.md",
+          "line": 40,
+          "term": "推荐",
+          "text": "      \"term\": \"推荐\",",
+          "classification": "literal_identifier",
+          "reason": "该命中位于 JSON 示例的 term 字段值，是固定示例 token。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/design.md",
+          "line": 52,
+          "term": "等",
+          "text": "- `controlled_terms` 等于 v2 词表。",
+          "classification": "deterministic_reference",
+          "reason": "该命中来自“等于”表达式，表示 controlled_terms 必须与 v2 词表相等。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/design.md",
+          "line": 56,
+          "term": "允许",
+          "text": "- 允许分类命中必须包含非空 `reason`。",
+          "classification": "deterministic_option",
+          "reason": "该命中描述允许分类和 reason 的确定性数据合同，不是可选执行路径。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/design.md",
+          "line": 74,
+          "term": "允许",
+          "text": "- `reason` 对允许分类必须非空。",
+          "classification": "deterministic_option",
+          "reason": "该命中描述允许分类和 reason 的确定性数据合同，不是可选执行路径。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+          "line": 33,
+          "term": "推荐",
+          "text": "   - `推荐`、`可选`、`至少`、`默认` 阻塞路径。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于实现计划测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+          "line": 33,
+          "term": "可选",
+          "text": "   - `推荐`、`可选`、`至少`、`默认` 阻塞路径。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于实现计划测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+          "line": 33,
+          "term": "至少",
+          "text": "   - `推荐`、`可选`、`至少`、`默认` 阻塞路径。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于实现计划测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+          "line": 33,
+          "term": "默认",
+          "text": "   - `推荐`、`可选`、`至少`、`默认` 阻塞路径。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于实现计划测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+          "line": 34,
+          "term": "允许",
+          "text": "   - 八类允许分类通过路径。",
+          "classification": "deterministic_option",
+          "reason": "该命中描述允许分类通过路径，是固定分类集合的测试项。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+          "line": 35,
+          "term": "可选",
+          "text": "   - `至少`、`默认`、`可选`、`相关` 缺少确定性信息时作为 `contract_violation` 阻塞。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于实现计划测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+          "line": 35,
+          "term": "相关",
+          "text": "   - `至少`、`默认`、`可选`、`相关` 缺少确定性信息时作为 `contract_violation` 阻塞。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于实现计划测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+          "line": 35,
+          "term": "至少",
+          "text": "   - `至少`、`默认`、`可选`、`相关` 缺少确定性信息时作为 `contract_violation` 阻塞。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于实现计划测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+          "line": 35,
+          "term": "默认",
+          "text": "   - `至少`、`默认`、`可选`、`相关` 缺少确定性信息时作为 `contract_violation` 阻塞。",
+          "classification": "deterministic_reference",
+          "reason": "该命中位于实现计划测试矩阵，引用固定受控词 token 作为测试样例。"
+        },
+        {
+          "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+          "line": 60,
+          "term": "等",
+          "text": "   - 若 planning artifacts 变化，重新展示三份链接并等待 fresh confirmation。",
+          "classification": "literal_identifier",
+          "reason": "该命中是“等待”中的子串，不表达受控弱约束词。"
+        }
+      ],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "user_confirmation": {
+    "source": "explicit-post-planning-review",
+    "message": "用户已在看到 prd.md、design.md、implement.md 三份规划文档链接后明确确认进入实现；本次三份规划文档内容 hash 未变化，仅按 #93 新 scanner 合同刷新 evidence。"
+  },
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+      "sha256": "0b2c30fad87c62cf05d58d18f8c0bf9d94e42a50ffc20fe5853b2fda22d230f8",
+      "size_bytes": 7102,
+      "modified_at": "2026-07-09T19:43:04.265813+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/design.md",
+      "sha256": "dd74d8f8d885341250895f977e7bb110ca2f0267cd0d10676405fe5f7fab521c",
+      "size_bytes": 7182,
+      "modified_at": "2026-07-09T19:43:04.265921+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+      "sha256": "fa90f6583bff453fe315c86e93f2e2f582026987a65df7b8f182026dce4a87c4",
+      "size_bytes": 5267,
+      "modified_at": "2026-07-09T19:43:04.266009+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+      "sha256": "0b2c30fad87c62cf05d58d18f8c0bf9d94e42a50ffc20fe5853b2fda22d230f8",
+      "size_bytes": 7102,
+      "modified_at": "2026-07-09T19:43:04.265813+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/design.md",
+      "sha256": "dd74d8f8d885341250895f977e7bb110ca2f0267cd0d10676405fe5f7fab521c",
+      "size_bytes": 7182,
+      "modified_at": "2026-07-09T19:43:04.265921+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+      "sha256": "fa90f6583bff453fe315c86e93f2e2f582026987a65df7b8f182026dce4a87c4",
+      "size_bytes": 5267,
+      "modified_at": "2026-07-09T19:43:04.266009+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

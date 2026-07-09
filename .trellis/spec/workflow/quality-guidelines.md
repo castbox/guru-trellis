@@ -59,7 +59,10 @@ whether the Chinese review narrative is semantically sufficient.
 When changing planning approval behavior, also run
 `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-dir>`
 against a current `schema_version=1.2` artifact with passed
-`ambiguity_review` evidence. Include unit tests for missing/non-passed
+`ambiguity_review` evidence. Include unit tests for the v2 controlled-term
+list, fixed `scan_scope`, `hits[]`, `unchecked_normative_hits[]`,
+unclassified-hit blocking, `contract_violation` blocking, allowed
+classification reasons, rescanning mismatch failures, missing/non-passed
 ambiguity review, stale or old-source approval failure, old `schema_version=1.1`
 failure, and a regression where current HEAD / dirty-path drift does not block
 while `prd.md`, `design.md`, and `implement.md` content digests still match.

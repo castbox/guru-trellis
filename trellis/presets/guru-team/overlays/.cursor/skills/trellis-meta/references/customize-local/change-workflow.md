@@ -53,7 +53,7 @@ If the user wants only one platform to avoid sub-agents, first confirm whether t
 | --- | --- | --- |
 | `planning` | `prd.md` missing | Phase 1.1 (load `trellis-brainstorm`) |
 | `planning` | missing `design.md` or `implement.md` | complete the missing Guru Team planning artifacts |
-| `planning` | `prd.md`, `design.md`, and `implement.md` all present | perform planning artifact ambiguity review, display links to all three documents, wait for explicit post-planning confirmation, record/check schema 1.2 `planning-approval.json` with passed `ambiguity_review`, then run `task.py start` |
+| `planning` | `prd.md`, `design.md`, and `implement.md` all present | perform planning artifact ambiguity review, display links to all three documents, wait for explicit post-planning confirmation, record/check schema 1.2 `planning-approval.json` with passed `ambiguity_review`, fixed-scope scanner `hits[]`, and empty `unchecked_normative_hits[]`, then run `task.py start` |
 | `in_progress` | no implementation in conversation history | Phase 2.1 (`trellis-implement`) |
 | `in_progress` | implementation done, no `trellis-check` run | Phase 2.2 (`trellis-check`) |
 | `in_progress` | check passed | Phase 3.3 (spec update) → 3.4 (commit) |

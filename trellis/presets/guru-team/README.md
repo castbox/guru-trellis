@@ -272,12 +272,14 @@ subcommands used by the workflow; they are not daily user-facing entries.
 after the main session completed planning artifact ambiguity review and
 displayed task-local links to `prd.md`, `design.md`, and `implement.md`. The
 artifact uses schema 1.2, passed `ambiguity_review` evidence,
+fixed-scope scanner evidence for `prd.md`, `design.md`, and `implement.md`,
 `user_confirmation.source=explicit-post-planning-review`, and hash / size /
 modified-time metadata for all three files; Phase 0 handoff approval, old
-schema/source evidence, or missing/non-passed ambiguity evidence must fail
-closed. Freshness is based on the three planning document content digests, not
-later HEAD drift, metadata tail, or unrelated dirty paths. `task.py start`
-remains only a status transition.
+schema/source evidence, missing/non-passed ambiguity evidence, unclassified
+controlled-term hits, or `contract_violation` hits must fail closed.
+Freshness is based on the three planning document content digests and the
+rescanned hit set, not later HEAD drift, metadata tail, or unrelated dirty
+paths. `task.py start` remains only a status transition.
 `resolve-human-artifacts.sh` is the deterministic fact layer for phase replies:
 before a planning stop, Phase 2 completion, Branch Review Gate result,
 finish-work dry-run reply, or final archive/publish reply, the AI runs it and

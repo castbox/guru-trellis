@@ -60,7 +60,56 @@ PLANNING_APPROVAL_ARTIFACT = "planning-approval.json"
 PLANNING_APPROVAL_SCHEMA_VERSION = "1.2"
 PLANNING_APPROVAL_CONFIRMATION_SOURCE = "explicit-post-planning-review"
 PLANNING_AMBIGUITY_STATUS_PASSED = "passed"
-PLANNING_AMBIGUITY_CONTROLLED_TERMS = ["可以", "允许", "建议", "尽量", "视情况", "类似", "相关", "等"]
+PLANNING_AMBIGUITY_CONTROLLED_TERMS = [
+    "可以",
+    "允许",
+    "建议",
+    "推荐",
+    "可选",
+    "尽量",
+    "尽可能",
+    "最好",
+    "应该",
+    "应当",
+    "原则上",
+    "一般",
+    "通常",
+    "视情况",
+    "根据情况",
+    "根据需要",
+    "按需",
+    "必要时",
+    "如有需要",
+    "需要时",
+    "适当",
+    "适当时",
+    "合理",
+    "合理时",
+    "类似",
+    "相关",
+    "相应",
+    "等",
+    "等等",
+    "之类",
+    "一些",
+    "若干",
+    "部分",
+    "至少",
+    "默认",
+]
+PLANNING_AMBIGUITY_SCAN_SCOPE = ["prd.md", "design.md", "implement.md"]
+PLANNING_AMBIGUITY_CLASSIFICATIONS = [
+    "contract_violation",
+    "quoted_source_non_contract",
+    "term_definition",
+    "literal_identifier",
+    "historical_record_non_contract",
+    "deterministic_threshold",
+    "deterministic_default",
+    "deterministic_option",
+    "deterministic_reference",
+]
+PLANNING_AMBIGUITY_BLOCKING_CLASSIFICATIONS = {"contract_violation"}
 PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS = [
     "no_requirement_weakening",
     "source_issue_semantics_preserved",
@@ -4542,10 +4591,241 @@ def unresolved_blocking_findings(findings: list[dict[str, Any]]) -> list[dict[st
     return blockers
 
 
+def planning_ambiguity_scan_paths(task_dir: Path) -> list[Path]:
+    return [task_dir / name for name in PLANNING_AMBIGUITY_SCAN_SCOPE]
+
+
+def planning_normative_hit_key(hit: dict[str, Any]) -> tuple[str, int, str]:
+    return (str(hit.get("path") or ""), int(hit.get("line") or 0), str(hit.get("term") or ""))
+
+
+def scan_planning_normative_language(root: Path, task_dir: Path) -> list[dict[str, Any]]:
+    hits: list[dict[str, Any]] = []
+    for path in planning_ambiguity_scan_paths(task_dir):
+        if not path.exists() or not path.is_file():
+            raise WorkflowError(f"Required planning artifact not found for ambiguity scan: {path}", exit_code=2)
+        repo_path = repo_relative(root, path)
+        for line_number, text in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            for term in PLANNING_AMBIGUITY_CONTROLLED_TERMS:
+                if term in text:
+                    hits.append(
+                        {
+                            "path": repo_path,
+                            "line": line_number,
+                            "term": term,
+                            "text": text,
+                        }
+                    )
+    return hits
+
+
+def parse_planning_normative_hit_arg(root: Path, task_dir: Path, value: str) -> dict[str, Any]:
+    parts = str(value or "").split("|", 4)
+    if len(parts) != 5:
+        raise WorkflowError(
+            'Invalid --normative-hit. Expected "path|line|term|classification|reason".',
+            exit_code=2,
+            payload={"normative_hit": value},
+        )
+    raw_path, raw_line, raw_term, raw_classification, raw_reason = [part.strip() for part in parts]
+    path = resolve_task_local_path(root, task_dir, raw_path)
+    scope_paths = {path.resolve(): name for name, path in zip(PLANNING_AMBIGUITY_SCAN_SCOPE, planning_ambiguity_scan_paths(task_dir))}
+    if path.resolve() not in scope_paths:
+        raise WorkflowError(
+            "record-planning-approval --normative-hit path must be one of: "
+            + ", ".join(PLANNING_AMBIGUITY_SCAN_SCOPE),
+            exit_code=2,
+            payload={"path": raw_path},
+        )
+    if not re.fullmatch(r"[1-9][0-9]*", raw_line):
+        raise WorkflowError("record-planning-approval --normative-hit line must be a positive integer.", exit_code=2)
+    term = raw_term
+    if term not in PLANNING_AMBIGUITY_CONTROLLED_TERMS:
+        raise WorkflowError(
+            "record-planning-approval --normative-hit term is not in the controlled planning ambiguity vocabulary.",
+            exit_code=2,
+            payload={"term": term},
+        )
+    classification = raw_classification
+    if classification and classification not in PLANNING_AMBIGUITY_CLASSIFICATIONS:
+        raise WorkflowError(
+            "record-planning-approval --normative-hit classification is not allowed.",
+            exit_code=2,
+            payload={"classification": classification},
+        )
+    reason = raw_reason
+    if classification and not reason:
+        raise WorkflowError(
+            "record-planning-approval --normative-hit reason is required for classified hits.",
+            exit_code=2,
+            payload={"path": raw_path, "line": int(raw_line), "term": term},
+        )
+    return {
+        "path": repo_relative(root, path),
+        "line": int(raw_line),
+        "term": term,
+        "classification": classification,
+        "reason": reason,
+    }
+
+
+def parse_planning_normative_hit_args(root: Path, task_dir: Path, values: list[str] | None) -> dict[tuple[str, int, str], dict[str, str]]:
+    parsed: dict[tuple[str, int, str], dict[str, str]] = {}
+    for value in values or []:
+        item = parse_planning_normative_hit_arg(root, task_dir, value)
+        key = planning_normative_hit_key(item)
+        if key in parsed:
+            raise WorkflowError(
+                "record-planning-approval received duplicate --normative-hit classification input.",
+                exit_code=2,
+                payload={"path": key[0], "line": key[1], "term": key[2]},
+            )
+        parsed[key] = {
+            "classification": str(item.get("classification") or ""),
+            "reason": str(item.get("reason") or ""),
+        }
+    return parsed
+
+
+def planning_normative_language_payload(
+    root: Path,
+    task_dir: Path,
+    normative_hit_inputs: list[str] | None,
+) -> dict[str, Any]:
+    scanned_hits = scan_planning_normative_language(root, task_dir)
+    scanned_keys = {planning_normative_hit_key(hit) for hit in scanned_hits}
+    classifications = parse_planning_normative_hit_args(root, task_dir, normative_hit_inputs)
+    unused_keys = [key for key in classifications if key not in scanned_keys]
+    if unused_keys:
+        first = unused_keys[0]
+        raise WorkflowError(
+            "record-planning-approval --normative-hit does not match a current scan hit.",
+            exit_code=2,
+            payload={"path": first[0], "line": first[1], "term": first[2]},
+        )
+
+    hits: list[dict[str, Any]] = []
+    unchecked_hits: list[dict[str, Any]] = []
+    for scanned in scanned_hits:
+        key = planning_normative_hit_key(scanned)
+        classification = classifications.get(key, {}).get("classification", "")
+        reason = classifications.get(key, {}).get("reason", "")
+        hit = {
+            **scanned,
+            "classification": classification,
+            "reason": reason,
+        }
+        hits.append(hit)
+        if not classification or classification in PLANNING_AMBIGUITY_BLOCKING_CLASSIFICATIONS:
+            unchecked_hits.append(copy.deepcopy(hit))
+
+    return {
+        "controlled_terms": list(PLANNING_AMBIGUITY_CONTROLLED_TERMS),
+        "scan_scope": list(PLANNING_AMBIGUITY_SCAN_SCOPE),
+        "hits": hits,
+        "unchecked_normative_hits": unchecked_hits,
+    }
+
+
+def planning_normative_hit_entry_errors(item: Any, label: str) -> list[str]:
+    if not isinstance(item, dict):
+        return [f"{label} 中存在非对象 hit。"]
+    errors: list[str] = []
+    for key in ["path", "term", "text", "classification", "reason"]:
+        if key not in item or not isinstance(item.get(key), str):
+            errors.append(f"{label} hit 缺少字符串字段 {key}。")
+    if not is_strict_int(item.get("line")) or int(item.get("line") or 0) <= 0:
+        errors.append(f"{label} hit.line 必须是正整数。")
+    term = str(item.get("term") or "")
+    if term and term not in PLANNING_AMBIGUITY_CONTROLLED_TERMS:
+        errors.append(f"{label} hit.term 不在受控词表中: {term}。")
+    classification = str(item.get("classification") or "")
+    reason = str(item.get("reason") or "")
+    if classification and classification not in PLANNING_AMBIGUITY_CLASSIFICATIONS:
+        errors.append(f"{label} hit.classification 不在允许分类集合中: {classification}。")
+    if classification and not reason:
+        errors.append(f"{label} hit.reason 不能为空。")
+    return errors
+
+
+def planning_normative_language_errors(root: Path, task_dir: Path, normative: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    controlled_terms = normative.get("controlled_terms")
+    if not isinstance(controlled_terms, list):
+        errors.append("planning-approval.json ambiguity_review.normative_language.controlled_terms 必须是数组。")
+    elif controlled_terms != PLANNING_AMBIGUITY_CONTROLLED_TERMS:
+        errors.append("planning-approval.json ambiguity_review.controlled_terms 必须与当前受控弱约束词表完全一致。")
+
+    scan_scope = normative.get("scan_scope")
+    if not isinstance(scan_scope, list):
+        errors.append("planning-approval.json ambiguity_review.normative_language.scan_scope 必须是数组。")
+    elif scan_scope != PLANNING_AMBIGUITY_SCAN_SCOPE:
+        errors.append("planning-approval.json ambiguity_review.scan_scope 必须固定为 prd.md, design.md, implement.md。")
+
+    hits = normative.get("hits")
+    if not isinstance(hits, list):
+        errors.append("planning-approval.json ambiguity_review.normative_language.hits 必须是数组。")
+        hits = []
+    else:
+        seen_keys: set[tuple[str, int, str]] = set()
+        for index, item in enumerate(hits):
+            errors.extend(planning_normative_hit_entry_errors(item, f"planning-approval.json hits[{index}]"))
+            if isinstance(item, dict) and is_strict_int(item.get("line")):
+                key = planning_normative_hit_key(item)
+                if key in seen_keys:
+                    errors.append(f"planning-approval.json ambiguity_review.normative_language.hits 存在重复命中: {key[0]}:{key[1]} {key[2]}。")
+                seen_keys.add(key)
+
+    unchecked_hits = normative.get("unchecked_normative_hits")
+    if not isinstance(unchecked_hits, list):
+        errors.append("planning-approval.json ambiguity_review.normative_language.unchecked_normative_hits 必须是数组。")
+        unchecked_hits = []
+    else:
+        for index, item in enumerate(unchecked_hits):
+            errors.extend(planning_normative_hit_entry_errors(item, f"planning-approval.json unchecked_normative_hits[{index}]"))
+
+    try:
+        current_hits = scan_planning_normative_language(root, task_dir)
+    except WorkflowError as exc:
+        errors.append(str(exc))
+        current_hits = []
+
+    recorded_scan_facts = [
+        {
+            "path": item.get("path"),
+            "line": item.get("line"),
+            "term": item.get("term"),
+            "text": item.get("text"),
+        }
+        for item in hits
+        if isinstance(item, dict)
+    ]
+    if recorded_scan_facts != current_hits:
+        errors.append("planning-approval.json ambiguity_review.normative_language.hits 与当前 prd.md/design.md/implement.md 扫描结果不一致。")
+
+    expected_unchecked = [
+        copy.deepcopy(item)
+        for item in hits
+        if isinstance(item, dict)
+        and (
+            not str(item.get("classification") or "").strip()
+            or str(item.get("classification") or "").strip() in PLANNING_AMBIGUITY_BLOCKING_CLASSIFICATIONS
+        )
+    ]
+    if unchecked_hits != expected_unchecked:
+        errors.append("planning-approval.json ambiguity_review.unchecked_normative_hits 与 hits[] 中未分类或 contract_violation 命中不一致。")
+    if unchecked_hits:
+        errors.append("planning-approval.json ambiguity_review.unchecked_normative_hits 必须为空；非空表示仍有未处理规范性弱约束命中。")
+    return errors
+
+
 def build_planning_ambiguity_review_payload(
     reviewer: str,
     summary: str,
     status: str,
+    root: Path,
+    task_dir: Path,
+    normative_hit_inputs: list[str] | None,
 ) -> dict[str, Any]:
     normalized_status = str(status or "").strip()
     normalized_reviewer = str(reviewer or "").strip()
@@ -4560,21 +4840,25 @@ def build_planning_ambiguity_review_payload(
         raise WorkflowError("record-planning-approval requires --ambiguity-reviewer identity metadata.", exit_code=2)
     if not normalized_summary:
         raise WorkflowError("record-planning-approval requires --ambiguity-summary with the AI ambiguity review conclusion.", exit_code=2)
+    normative_language = planning_normative_language_payload(root, task_dir, normative_hit_inputs)
+    if normative_language["unchecked_normative_hits"]:
+        raise WorkflowError(
+            "record-planning-approval blocked by unchecked normative planning artifact hits.",
+            exit_code=2,
+            payload={"normative_language": normative_language},
+        )
     return {
         "status": PLANNING_AMBIGUITY_STATUS_PASSED,
         "reviewer": normalized_reviewer,
         "summary": normalized_summary,
-        "normative_language": {
-            "controlled_terms": list(PLANNING_AMBIGUITY_CONTROLLED_TERMS),
-            "unchecked_normative_hits": [],
-        },
+        "normative_language": normative_language,
         "checked_dimensions": {
             dimension: True for dimension in PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS
         },
     }
 
 
-def planning_ambiguity_review_errors(review: Any) -> list[str]:
+def planning_ambiguity_review_errors(root: Path, task_dir: Path, review: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(review, dict):
         return ["planning-approval.json 缺少 ambiguity_review 结构化证据。"]
@@ -4589,19 +4873,7 @@ def planning_ambiguity_review_errors(review: Any) -> list[str]:
     if not isinstance(normative, dict):
         errors.append("planning-approval.json ambiguity_review 缺少 normative_language。")
         normative = {}
-    controlled_terms = normative.get("controlled_terms")
-    if not isinstance(controlled_terms, list):
-        errors.append("planning-approval.json ambiguity_review.normative_language.controlled_terms 必须是数组。")
-    else:
-        controlled_values = {str(item) for item in controlled_terms}
-        missing_terms = [term for term in PLANNING_AMBIGUITY_CONTROLLED_TERMS if term not in controlled_values]
-        if missing_terms:
-            errors.append("planning-approval.json ambiguity_review.controlled_terms 缺少受控弱约束词: " + ", ".join(missing_terms) + "。")
-    unchecked_hits = normative.get("unchecked_normative_hits")
-    if not isinstance(unchecked_hits, list):
-        errors.append("planning-approval.json ambiguity_review.normative_language.unchecked_normative_hits 必须是数组。")
-    elif unchecked_hits:
-        errors.append("planning-approval.json ambiguity_review.unchecked_normative_hits 必须为空；非空表示仍有未处理规范性弱约束命中。")
+    errors.extend(planning_normative_language_errors(root, task_dir, normative))
 
     dimensions = review.get("checked_dimensions")
     if not isinstance(dimensions, dict):
@@ -4623,6 +4895,7 @@ def build_planning_approval_payload(
     ambiguity_reviewer: str,
     ambiguity_summary: str,
     ambiguity_status: str,
+    normative_hit_inputs: list[str] | None = None,
     review_prompt_presented_at: str | None = None,
     confirmation_source: str = PLANNING_APPROVAL_CONFIRMATION_SOURCE,
 ) -> dict[str, Any]:
@@ -4657,6 +4930,9 @@ def build_planning_approval_payload(
         ambiguity_reviewer,
         ambiguity_summary,
         ambiguity_status,
+        root,
+        task_dir,
+        normative_hit_inputs,
     )
     reviewed = [file_digest(root, path) for path in artifact_paths]
     artifact_repo_paths = {str(item["path"]) for item in reviewed}
@@ -4707,7 +4983,7 @@ def validate_planning_approval(
         errors.append("planning-approval.json 缺少 approval_summary。")
     if not str(payload.get("reviewer") or "").strip():
         errors.append("planning-approval.json 缺少 reviewer。")
-    errors.extend(planning_ambiguity_review_errors(payload.get("ambiguity_review")))
+    errors.extend(planning_ambiguity_review_errors(root, task_dir, payload.get("ambiguity_review")))
     confirmation = payload.get("user_confirmation")
     if not isinstance(confirmation, dict):
         errors.append("planning-approval.json 缺少用户确认摘要。")
@@ -6327,6 +6603,7 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
         ambiguity_reviewer=ambiguity_reviewer,
         ambiguity_summary=ambiguity_summary,
         ambiguity_status=ambiguity_status,
+        normative_hit_inputs=list(getattr(args, "normative_hit", None) or []),
         review_prompt_presented_at=getattr(args, "review_prompt_presented_at", None),
         confirmation_source=str(getattr(args, "confirmation_source", PLANNING_APPROVAL_CONFIRMATION_SOURCE) or ""),
     )
@@ -6899,6 +7176,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--confirmation-source",
         default=PLANNING_APPROVAL_CONFIRMATION_SOURCE,
         help=f"Must be {PLANNING_APPROVAL_CONFIRMATION_SOURCE}; Phase 0 handoff/workflow confirmation is rejected.",
+    )
+    planning.add_argument(
+        "--normative-hit",
+        action="append",
+        help='AI-classified scan hit as "path|line|term|classification|reason". Unclassified hits and contract_violation block approval.',
     )
     planning.add_argument("--artifact", action="append", help="Task-local artifact path to approve. Defaults to existing prd/design/implement.")
     planning.add_argument("--dry-run", action="store_true")

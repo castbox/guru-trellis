@@ -343,13 +343,18 @@ Guru Team implementation tasks must have `prd.md`, `design.md`, `implement.md`, 
 
 Planning artifact normative language must be deterministic. Requirements,
 design contracts, event/state-machine rules, gate clauses, acceptance criteria,
-implementation steps, and validation steps must not use the controlled weak
-constraint terms `可以`, `允许`, `建议`, `尽量`, `视情况`, `类似`, `相关`, or
-`等` as unconditional execution contract wording. If external quotes,
-historical evidence, issue text, or risk notes contain those terms, label the
-source and state that the quoted wording is not itself the execution contract.
-Rewrite normative clauses with deterministic language such as `必须`, `不得`,
-`只能`, `当且仅当`, `失败并阻塞`, or `记录结构化字段`.
+implementation steps, and validation steps must not use controlled weak
+constraint terms as unconditional execution contract wording. The controlled
+term list is `可以`, `允许`, `建议`, `推荐`, `可选`, `尽量`, `尽可能`, `最好`,
+`应该`, `应当`, `原则上`, `一般`, `通常`, `视情况`, `根据情况`, `根据需要`,
+`按需`, `必要时`, `如有需要`, `需要时`, `适当`, `适当时`, `合理`, `合理时`,
+`类似`, `相关`, `相应`, `等`, `等等`, `之类`, `一些`, `若干`, `部分`, `至少`,
+and `默认`. These terms are review triggers, not absolute forbidden words. If
+external quotes, historical evidence, issue text, term definitions, literal
+identifiers, or risk notes contain those terms, label the source and state that
+the quoted wording is not itself the execution contract. Rewrite normative
+clauses with deterministic language such as `必须`, `不得`, `只能`, `当且仅当`,
+`失败并阻塞`, or `记录结构化字段`.
 
 ### Business Project Documentation Language
 
@@ -705,10 +710,26 @@ The ambiguity review must check all of these dimensions:
 - external quotes, historical notes, or risk notes with weak terms are labeled as non-contract.
 
 If a normative clause uses a controlled weak constraint term without a trigger
-condition or source label, rewrite the clause before the planning stop. The
-controlled terms are `可以`, `允许`, `建议`, `尽量`, `视情况`, `类似`, `相关`,
-and `等`. Script scans may provide auxiliary facts, but they are not the
-ambiguity review conclusion.
+condition, deterministic value, explicit reference object, or source label,
+rewrite the clause before the planning stop. The controlled terms are `可以`,
+`允许`, `建议`, `推荐`, `可选`, `尽量`, `尽可能`, `最好`, `应该`, `应当`,
+`原则上`, `一般`, `通常`, `视情况`, `根据情况`, `根据需要`, `按需`, `必要时`,
+`如有需要`, `需要时`, `适当`, `适当时`, `合理`, `合理时`, `类似`, `相关`,
+`相应`, `等`, `等等`, `之类`, `一些`, `若干`, `部分`, `至少`, and `默认`.
+
+`record-planning-approval` and `check-planning-approval` must scan the fixed
+scope `prd.md`, `design.md`, and `implement.md`. The scan is deterministic
+evidence only: it records every term hit under
+`ambiguity_review.normative_language.hits[]` with `path`, `line`, `term`,
+`text`, `classification`, and `reason`. The only allowed classifications are
+`contract_violation`, `quoted_source_non_contract`, `term_definition`,
+`literal_identifier`, `historical_record_non_contract`,
+`deterministic_threshold`, `deterministic_default`, `deterministic_option`, and
+`deterministic_reference`. Unclassified hits and `contract_violation` hits must
+also appear in `unchecked_normative_hits[]` and block planning approval.
+Allowed classifications do not block, but they must include a non-empty
+machine-auditable reason. Script scans and classification structure do not
+replace the AI ambiguity review conclusion.
 
 After ambiguity review passes, the main session must run the Markdown artifact
 resolver, render a `Markdown 产物 review 表`, visibly present all three
@@ -756,10 +777,17 @@ After the explicit post-planning confirmation, write the task-local start gate e
   --ambiguity-reviewer "codex-main-session" \
   --ambiguity-summary "中文 ambiguity review 结论" \
   --ambiguity-status passed \
+  --normative-hit "path|line|term|classification|reason" \
   --user-confirmation "用户在看到 prd.md、design.md、implement.md 三个链接后确认进入实现" \
   --confirmation-source explicit-post-planning-review
 .trellis/guru-team/scripts/bash/check-planning-approval.sh --json
 ```
+
+Pass one `--normative-hit` for each scanner hit that remains in the planning
+documents after the AI review. Omit the flag only when the scanner finds no
+controlled terms. The recorder must fail closed when any hit is unclassified,
+uses an unknown classification, has an empty reason for an allowed
+classification, or is classified as `contract_violation`.
 
 Only after the check passes:
 
@@ -785,7 +813,7 @@ transition; it is not planning review evidence.
 | Main session completed planning artifact ambiguity review before displaying planning links | yes |
 | Main session displayed links to `prd.md`, `design.md`, and `implement.md` after generating them | yes |
 | User confirms task should enter implementation after seeing the three planning links | yes |
-| `planning-approval.json` schema 1.2 exists with passed `ambiguity_review` evidence and `check-planning-approval` passes | yes |
+| `planning-approval.json` schema 1.2 exists with passed `ambiguity_review` evidence, fixed-scope scanner results, no unchecked hits, and `check-planning-approval` passes | yes |
 | `task.py start` has been run | yes |
 | curated JSONL manifests exist for sub-agent dispatch | yes |
 | Middle-platform Knowledge Gate handled when relevant | yes |

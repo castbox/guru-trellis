@@ -36,7 +36,8 @@ In Phase 2 check mode, also run:
 ```
 
 Stop if planning approval is missing, old-schema, lacks passed
-`ambiguity_review` evidence, is not sourced from
+`ambiguity_review` evidence, lacks fixed-scope scanner evidence, has unchecked
+normative hits, is not sourced from
 `explicit-post-planning-review`, or the reviewed planning document content
 digests no longer match. In Branch Review mode, verify the recorded planning
 approval evidence as part of the review scope instead of running Guru Team

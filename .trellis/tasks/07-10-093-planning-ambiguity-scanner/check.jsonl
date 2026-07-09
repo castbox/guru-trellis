@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查实现是否符合 Guru Team workflow gate 与 planning approval 主合同。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查 scanner 没有下沉 AI 语义判断，且 recorder/validator fail-closed。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查 planning-approval.json 扩展字段、兼容性和 digest freshness。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查测试、验证命令、dogfood drift 和 Branch Review Gate 范围。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 canonical overlay 与 dogfood installed copies 是否一致。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查 README、durable docs 与 public docs 文案是否反映 scanner 行为。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查新增 helper 是否复用现有模式，没有重复或分叉实现。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查词表和分类合同在 workflow、script、docs、overlay、tests 中无漂移。"}

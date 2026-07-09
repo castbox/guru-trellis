@@ -184,10 +184,10 @@ source checkout 出现新 `HEAD` / dirty status / diff stat / mtime 变化时是
 | 6 | `Docs SSOT Plan` | Guru Team planning contract | 检查 durable docs 是否需要更新，并记录 docs 状态、同步策略、影响文件、task artifact delta 和 merge/repair/no-update 责任；task artifact 不能替代长期文档。 |
 | 7 | Middle-platform Knowledge Gate | Guru Team gate | 中台 SDK/framework 相关任务要检查 `guru-knowledge-center` MCP 可用性并留 citation 或 warning。 |
 | 8 | `implement.jsonl` / `check.jsonl` | Trellis + Guru context | sub-agent 模式下整理 spec/research manifest；inline 模式由 skill 拉取上下文。 |
-| 9 | Planning artifact ambiguity review | Guru Team AI gate | 主会话在展示三份 planning docs 前审查需求是否弱化、issue 语义是否保留、条件路径是否有触发条件、是否存在并行实现路径、gate 是否有机器可验证条件、验收语义是否确定、引用文本是否标注非合同；受控弱约束词表只作为检查对象，脚本不替 AI 判断。 |
+| 9 | Planning artifact ambiguity review | Guru Team AI gate + deterministic scanner | 主会话在展示三份 planning docs 前审查需求是否弱化、issue 语义是否保留、条件路径是否有触发条件、是否存在并行实现路径、gate 是否有机器可验证条件、验收语义是否确定、引用文本是否标注非合同；脚本只按 v2 受控词表扫描 `prd.md` / `design.md` / `implement.md`，记录 `hits[]` / `unchecked_normative_hits[]` 并阻塞未分类或 `contract_violation` 命中，不替 AI 判断语义充分性。 |
 | 10 | Explicit post-planning review | Guru Team gate | ambiguity review 通过后，主会话展示 `prd.md`、`design.md`、`implement.md` 三个 task-local 链接，并说明用户确认前不会进入实现、不会派发 `trellis-implement`、不会记录 `phase2-check.json`。 |
 | 11 | Workspace boundary check | Guru Team deterministic validator | 写 `planning-approval.json` 前确认 actual repo root 等于 handoff `workspace_path`，source checkout 没有当前 task 的可疑 artifact / review metadata；手工编辑无显式 `workdir` 时必须使用 worktree 绝对路径。 |
-| 12 | `planning-approval.json` | Guru Team gate evidence | 用户在看到三份规划文档链接后明确确认，recorder 写入 `schema_version=1.2`、passed `ambiguity_review`、`review_prompt_presented_at`、`approved_at`、三份 artifact hash/size/mtime、HEAD、dirty paths 和 `user_confirmation.source=explicit-post-planning-review`；validator 以三份规划文档当前 hash/size 是否仍匹配为 freshness 判定，HEAD、mtime、dirty paths 只作为审批时审计上下文。 |
+| 12 | `planning-approval.json` | Guru Team gate evidence | 用户在看到三份规划文档链接后明确确认，recorder 写入 `schema_version=1.2`、passed `ambiguity_review`、固定 `scan_scope`、全部正文扫描 `hits[]`、空 `unchecked_normative_hits[]`、`review_prompt_presented_at`、`approved_at`、三份 artifact hash/size/mtime、HEAD、dirty paths 和 `user_confirmation.source=explicit-post-planning-review`；validator 重新扫描三份规划文档并以 hash/size 与 scanner evidence 是否仍匹配为 freshness 判定，HEAD、mtime、dirty paths 只作为审批时审计上下文。 |
 | 13 | `task.py start` | 官方 Trellis | 只做状态迁移到 `in_progress`；不代表规划已经被审查。 |
 
 关键边界：用户同意创建 task，不等于同意进入实现；`task.py start` 之前必须先有
@@ -385,7 +385,7 @@ PR readiness 要求：
 | `design.md` | Phase 1 | Guru Team planning artifact | Implement/check/review。 |
 | `implement.md` | Phase 1 | Guru Team planning artifact | Implement/check/review。 |
 | `Docs SSOT Plan` | Phase 1 | Guru Team planning contract, recommended in `design.md` | Phase 1 planning approval、Phase 2 implementation/check 策略消费、后续 Docs SSOT reconciliation。 |
-| `planning-approval.json` | Phase 1.4/1.5 | Guru Team gate evidence | 记录三文档展示前的 ambiguity review、三文档链接展示后的显式用户确认；`task.py start`、Phase 2 dispatch 和 Branch Review Gate audit 前校验。 |
+| `planning-approval.json` | Phase 1.4/1.5 | Guru Team gate evidence | 记录三文档展示前的 ambiguity review、固定范围受控词扫描 `hits[]`、三文档链接展示后的显式用户确认；`task.py start`、Phase 2 dispatch 和 Branch Review Gate audit 前校验。 |
 | `implement.jsonl` / `check.jsonl` | Phase 1.3 | Trellis sub-agent context manifest | `trellis-implement` / `trellis-check`。 |
 | `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity/status ledger | review closure/fresh final reviewer 和 unfinished termination recovery-chain 校验。 |
 | `phase2-check.json` | Phase 2.2 | Guru Team check evidence | 固化 `trellis-check` AI check 的覆盖范围、验证结果、findings 和 dirty paths；commit 前 gate、Branch Review Gate post-commit audit。 |

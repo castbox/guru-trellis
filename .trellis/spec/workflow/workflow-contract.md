@@ -128,8 +128,9 @@ Gate:
   `prd.md`, `design.md`, and `implement.md`, then received explicit
   post-planning user confirmation before `task.py start`. It must use
   `schema_version=1.2`, include passed structured `ambiguity_review` evidence,
-  use `user_confirmation.source=explicit-post-planning-review`, and record
-  matching hash / size metadata for all three planning documents, plus
+  including fixed-scope controlled-term scanner results, use
+  `user_confirmation.source=explicit-post-planning-review`, and record matching
+  hash / size metadata for all three planning documents, plus
   modified-time, HEAD, and dirty paths as audit context. Validator freshness is
   based on the reviewed planning document digests, not current `HEAD` or
   working-tree dirty paths: implementation commits, metadata tail, or unrelated
@@ -138,7 +139,8 @@ Gate:
   those three planning documents changes, show the three links again and wait
   for fresh explicit post-planning confirmation. Phase 0 handoff approval,
   generic workflow confirmation, old `source=workflow`, old schema, missing
-  `ambiguity_review`, or non-passed ambiguity evidence fails closed. `task.py
+  `ambiguity_review`, non-passed ambiguity evidence, unclassified scanner hits,
+  `contract_violation` hits, or stale scanner evidence fails closed. `task.py
   start` is not proof of planning review.
 - `phase2-check.json` records complete `trellis-check` coverage before commit.
   Passing validation commands alone is not proof that requirements, design,

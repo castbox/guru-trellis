@@ -27,7 +27,8 @@ For Guru Team implementation tasks, run:
 ```
 
 Stop if planning approval is missing, old schema, lacks passed
-`ambiguity_review` evidence, is not sourced from
+`ambiguity_review` evidence, lacks fixed-scope scanner evidence, has
+unchecked normative hits, is not sourced from
 `explicit-post-planning-review`, or the reviewed planning document content
 digests no longer match. Current HEAD or dirty-path drift alone is not a
 planning approval failure.
