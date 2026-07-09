@@ -1,0 +1,30 @@
+{
+  "primary_issue": {
+    "number": 76,
+    "url": "https://github.com/castbox/guru-trellis/issues/76",
+    "title": "subagent liveness、progress/stale 判定与 replacement cutover 状态机",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "Phase 2 check: .trellis/tasks/07-09-076-subagent-liveness-state-machine/phase2-check.json 记录 Release Agent the 2nd 对 issue #76 完整 scope 与 manifest public API/version 修复 delta 的复核，findings=[]。",
+      "Branch Review: reviews/final-release-review-03.md fresh 最终放行审查代理覆盖 origin/main...HEAD，findings_count: 0。",
+      "Validation: 180 workflow script tests、27 preset installer tests、JSON/Bash/py_compile、dogfood overlay drift、task/context、agent-assignment validator、version 0.6.5-guru.3、旧 0.6.5-guru.2 residual scan、.new/.bak scan 和 git diff --check 均通过。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 76,
+      "url": "https://github.com/castbox/guru-trellis/issues/76",
+      "title": "subagent liveness、progress/stale 判定与 replacement cutover 状态机",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "需求/设计承接：prd.md、design.md、implement.md 完整承接 issue #76 的 artifact schema、status_events[] 事件合同、recorder/checker 职责、CLI、decision 状态机、时间语义、progress source、Gate fail-closed、acceptance criteria 和非目标，并已获用户确认。",
+        "实现承接：canonical/dogfood guru_team_trellis.py、record-subagent-liveness-event.sh、check-subagent-liveness.sh、workflow/preset/overlay/docs/spec 实现单一 agent-assignment.json 1.1 liveness ledger；未新增 agent-progress.jsonl，未实现 heartbeat/daemon/sidecar/long-command wrapper/background liveness。",
+        "Phase 2 check: .trellis/tasks/07-09-076-subagent-liveness-state-machine/phase2-check.json 记录 Release Agent the 2nd 对完整 scope 与 Round 1 manifest public API/version 修复 delta 的复核，findings=[]。",
+        "Review lifecycle: reviews/final-release-review-01.md 发现 P2 manifest finding；reviews/closure-review-02.md 同一 reviewer 确认 P2 关闭；reviews/final-release-review-03.md fresh final reviewer 覆盖当前 origin/main...HEAD，findings_count: 0。",
+        "Validation: test_guru_team_trellis.py 180 tests OK；test_apply_guru_team_trellis_preset.py 27 tests OK；JSON/Bash/py_compile、dogfood overlay drift、task validate、get_context phase、check-agent-assignment、version 0.6.5-guru.3、旧 stable ref residual scan、.new/.bak scan、git diff --check 均通过。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

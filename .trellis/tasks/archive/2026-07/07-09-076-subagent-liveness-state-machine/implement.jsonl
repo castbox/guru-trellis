@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Guru Team workflow phase、sub-agent liveness、Phase 2/Branch Review Gate pass evidence 边界。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "agent-assignment.json、status_events[]、review-gate 和 issue-scope-ledger 数据合同。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "recorder/checker/validator 脚本边界、Bash wrapper 和 Python helper 约束。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "managed assets、script executable、preset installer 更新与验证规则。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "continue/agent/platform overlay 同步、dogfood drift 和 sub-agent prompt 规则。"}
+{"file": "docs/requirements/requirement-main.md", "reason": "Guru Team durable requirements SSOT，需要纳入 #76 liveness 状态机能力。"}
