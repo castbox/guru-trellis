@@ -61,6 +61,9 @@ Continue entries must:
   clickable or absolute links to all three task-local planning documents and
   stop until the user explicitly confirms after seeing them; Phase 0 handoff
   approval or old `source=workflow` planning approval cannot substitute
+- in `planning`, remind the AI to create or update the `Docs SSOT Plan`
+  required by `.trellis/workflow.md`; do not paste the full enum/strategy
+  contract into every overlay
 - before any planning, Phase 2, or Branch Review stop/completion reply, run
   `.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task
   <task-path>` and output a `Markdown 产物 review 表` with only `prd.md`,

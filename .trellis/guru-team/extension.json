@@ -68,11 +68,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-09T06:36:28Z",
+  "installed_at": "2026-07-09T07:52:11Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/061-task-markdown-review-table",
-    "commit": "b481344409ce9096207f954cf085a724b75bf093",
+    "ref": "codex/064-docs-ssot-plan-contract",
+    "commit": "c600bfe7a47f6dfa5f5983694d4fd5e50d0e7053",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -150,9 +150,7 @@
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"
     ],
     "new_copies": [],
-    "managed_backups": [
-      ".trellis/guru-team/scripts/python/guru_team_trellis.py.bak"
-    ],
+    "managed_backups": [],
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
   },

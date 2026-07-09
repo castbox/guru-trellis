@@ -468,8 +468,18 @@ MCP is available, the AI queries `project_domain=middle-platform` and persists
 citations in task artifacts. If the MCP is unavailable, the default
 `optional_warn` mode warns and continues.
 
-The workflow also requires Repo Docs SSOT reconciliation. Task artifacts should
-record task-scoped deltas and links, while durable `docs/` requirements,
-designs, test plans, deploy / operations guides, or versioned docs remain the
-long-term source when they exist. Finish and Branch Review Gate evidence must
-record the reconciliation outcome.
+The workflow also requires a Phase 1 `Docs SSOT Plan`. Task artifacts should
+record task-scoped deltas and links, while durable requirements, designs, test
+plans, deploy / operations guides, versioned docs, or equivalent repo docs
+remain the long-term source when they exist. The plan is preferably authored in
+`design.md`; `prd.md` records docs state and requirements impact, and
+`implement.md` records the checklist / checkpoint.
+
+The plan records docs state (`complete_docs`, `partial_docs`, `stale_docs`, or
+`no_docs`) and strategy (`ssot_first`, `delta_first`,
+`bootstrap_or_repair_docs`, or `no_docs_update_needed`). It also records
+evidence paths, affected durable docs or checked no-update paths, task artifact
+deltas to merge back, and any required merge checkpoint, minimum repair scope,
+follow-up limit, or no-update reason. Finish and Branch Review Gate evidence
+must later record the reconciliation outcome, but the strategy choice belongs
+in Phase 1 planning.

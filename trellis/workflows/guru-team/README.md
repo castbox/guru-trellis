@@ -80,11 +80,18 @@ opt-in，`off` 只作 opt-out。
 `design.md`、`implement.md` 或 `{TASK_DIR}/research/middle-platform-knowledge.md`。
 MCP 不可用时，默认 `optional_warn` 只告警并继续；配置为 `required` 时才阻塞。
 
-Trellis task artifact 不是长期 repo docs 的替代品。Planning 阶段要识别 `docs/`
-下 requirements、designs、testplans、deploy / operations、versioned design docs
-等 durable docs SSOT；finish 前要记录哪些 docs 已更新、哪些 task artifact 内容已
-合并回 durable docs、哪些只保留为 task history。无完整 docs 系统的 repo 也要明确
-记录“创建 docs / 补 partial docs / 暂不设 durable docs SSOT”的结果。
+Trellis task artifact 不是长期 repo docs 的替代品。Planning 阶段必须创建或更新
+同一个 `Docs SSOT Plan`，推荐由 `design.md` 承载权威计划；`prd.md` 记录 docs 状态
+和需求影响，`implement.md` 记录 checklist / checkpoint。计划需要记录 docs 状态：
+`complete_docs`、`partial_docs`、`stale_docs`、`no_docs`；以及同步策略：
+`ssot_first`、`delta_first`、`bootstrap_or_repair_docs`、`no_docs_update_needed`。
+
+`Docs SSOT Plan` 还要列出证据路径、策略理由、当前 task 影响或检查过的 durable docs、
+需要 merge 回 durable docs 的 task artifact delta。`delta_first` 必须写 merge checkpoint；
+`bootstrap_or_repair_docs` 必须写最小修复范围或受限 follow-up；`no_docs_update_needed`
+必须写具体理由。大范围、边界清楚的需求 / 设计 / workflow / API / 数据 / 部署 /
+运营 / 测试合同变更应优先 `ssot_first`。无完整 docs 系统的 repo 也要明确记录创建
+docs、补 partial / stale docs，或受限 follow-up 的结果。
 
 业务项目内人类可读文档默认使用中文，覆盖 `.trellis/spec/**` 项目规范、
 `.trellis/tasks/**` task artifact、`docs/**` durable docs、`00-bootstrap-guidelines`
@@ -266,8 +273,8 @@ matcher 判断是否进入 Guru Team issue intake 和 worktree preflight。
 未审批、怀疑自动注入没有运行，或需要完整上下文报告和重新加载 Trellis 上下文的场景。
 
 Planning start gate 和 Phase 2 check gate 都需要 task-local evidence。进入实现前主会话
-必须展示 `prd.md` / `design.md` / `implement.md` 三个 task-local 链接，用户看到后
-明确确认，才能调用 `record-planning-approval.sh` 写入
+必须完成可定位的 `Docs SSOT Plan`，再展示 `prd.md` / `design.md` / `implement.md`
+三个 task-local 链接，用户看到后明确确认，才能调用 `record-planning-approval.sh` 写入
 `user_confirmation.source=explicit-post-planning-review` 的 `planning-approval.json`，再用
 `check-planning-approval.sh` 校验；Phase 0 handoff 确认或旧 `source=workflow` 不能
 通过 gate。校验 freshness 绑定三份规划文档内容 digest；实现提交后的 HEAD drift、

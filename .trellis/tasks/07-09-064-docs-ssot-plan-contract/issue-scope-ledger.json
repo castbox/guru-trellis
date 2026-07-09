@@ -1,0 +1,28 @@
+{
+  "primary_issue": {
+    "number": 64,
+    "url": "https://github.com/castbox/guru-trellis/issues/64",
+    "title": "Docs SSOT planning contract：Phase 1 必须选择同步策略",
+    "reason": "intake/handoff 主 issue，本任务完整实现 Phase 1 Docs SSOT Plan planning 合同。",
+    "acceptance_evidence": [
+      "trellis/workflows/guru-team/workflow.md 与 .trellis/workflow.md 已加入 Docs SSOT Plan 状态、策略、必填字段和 planning 完成条件。",
+      "docs/requirements/guru-team-trellis-flow.md、docs/requirements/requirement-main.md、workflow/preset specs、README 与 continue overlays 已同步说明该合同。",
+      "phase2-check.json 记录 trellis-check-agent:019f45f8-29dc-71c0-a2a2-765874bd64b5 PASS：覆盖 #64 acceptance criteria、dogfood overlay drift、未新增脚本/schema、未提前实现 #65/#66。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 64,
+      "url": "https://github.com/castbox/guru-trellis/issues/64",
+      "title": "Docs SSOT planning contract：Phase 1 必须选择同步策略",
+      "reason": "本任务明确承诺并完整解决 #64：Phase 1 必须创建或更新可定位的 Docs SSOT Plan，后续 #65/#66 只消费该计划。",
+      "acceptance_evidence": [
+        "Docs 状态枚举 complete_docs / partial_docs / stale_docs / no_docs 已进入 canonical workflow、dogfood workflow、durable docs 和 specs。",
+        "同步策略 ssot_first / delta_first / bootstrap_or_repair_docs / no_docs_update_needed 及 evidence paths、strategy reason、affected durable docs、artifact delta merge、checkpoint、repair/follow-up/no-update reason 已进入长期 docs/workflow surfaces。",
+        "Phase 2 check PASS，验证命令包括 json tool、bash -n、py_compile、task validate、get_context phase reads、dogfood overlay drift、git diff --check 和 .new/.bak 检查。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

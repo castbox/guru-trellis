@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Workflow behavior contract for Phase 1 planning artifacts and Docs SSOT Plan ownership."}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Validation and review rules for workflow / preset / overlay changes."}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "Cross-platform overlay consistency rules for continue entry planning reminders."}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "Public docs SSOT rules for workflow and preset README updates."}
+{"file": "docs/requirements/guru-team-trellis-flow.md", "reason": "Durable requirements flow doc that must receive the Phase 1 Docs SSOT Plan contract."}
