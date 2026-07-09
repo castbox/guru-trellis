@@ -164,6 +164,9 @@ def planning_args(**overrides: object) -> argparse.Namespace:
         "task": None,
         "reviewer": "codex-main-session",
         "summary": "规划 artifact 已审阅，可以进入实现。",
+        "ambiguity_reviewer": "codex-main-session",
+        "ambiguity_summary": "已完成 planning artifact ambiguity review，规范性条款无未处理弱约束表达。",
+        "ambiguity_status": gtt.PLANNING_AMBIGUITY_STATUS_PASSED,
         "user_confirmation": "用户确认进入实现。",
         "review_prompt_presented_at": None,
         "confirmation_source": gtt.PLANNING_APPROVAL_CONFIRMATION_SOURCE,
@@ -1339,8 +1342,126 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertEqual(payload["user_confirmation"]["source"], gtt.PLANNING_APPROVAL_CONFIRMATION_SOURCE)
         self.assertEqual(payload["head"], "abc123")
         self.assertEqual(check["status"], "ok")
+        self.assertEqual(payload["ambiguity_review"]["status"], gtt.PLANNING_AMBIGUITY_STATUS_PASSED)
+        self.assertEqual(payload["ambiguity_review"]["reviewer"], "codex-main-session")
+        self.assertEqual(
+            payload["ambiguity_review"]["normative_language"]["controlled_terms"],
+            gtt.PLANNING_AMBIGUITY_CONTROLLED_TERMS,
+        )
+        self.assertEqual(payload["ambiguity_review"]["normative_language"]["unchecked_normative_hits"], [])
+        self.assertEqual(
+            set(payload["ambiguity_review"]["checked_dimensions"]),
+            set(gtt.PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS),
+        )
+        self.assertTrue(all(payload["ambiguity_review"]["checked_dimensions"].values()))
         self.assertEqual(len(payload["reviewed_artifacts"]), 3)
         self.assertEqual(len(payload["approved_artifacts"]), 3)
+
+    def test_record_planning_approval_requires_ambiguity_summary(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_record_planning_approval(planning_args(ambiguity_summary=""))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("--ambiguity-summary", str(raised.exception))
+
+    def test_record_planning_approval_rejects_non_passed_ambiguity_status(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_record_planning_approval(planning_args(ambiguity_status="failed"))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("--ambiguity-status", str(raised.exception))
+
+    def test_check_planning_approval_rejects_missing_ambiguity_review(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_record_planning_approval(planning_args())
+            payload.pop("ambiguity_review")
+            payload.pop("artifact_path", None)
+            payload.pop("dry_run", None)
+            (self.task_dir / "planning-approval.json").write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(any("ambiguity_review" in error for error in raised.exception.payload["errors"]))
+
+    def test_check_planning_approval_rejects_schema_1_1_without_ambiguity_review(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_record_planning_approval(planning_args())
+            payload["schema_version"] = "1.1"
+            payload.pop("ambiguity_review")
+            payload.pop("artifact_path", None)
+            payload.pop("dry_run", None)
+            (self.task_dir / "planning-approval.json").write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        errors = raised.exception.payload["errors"]
+        self.assertTrue(any("schema_version" in error for error in errors))
+        self.assertTrue(any("ambiguity_review" in error for error in errors))
+
+    def test_check_planning_approval_rejects_incomplete_ambiguity_review(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            payload = gtt.cmd_record_planning_approval(planning_args())
+            review = payload["ambiguity_review"]
+            review["status"] = "failed"
+            review["reviewer"] = ""
+            review["summary"] = ""
+            review["normative_language"]["controlled_terms"] = ["可以"]
+            review["normative_language"]["unchecked_normative_hits"] = ["design.md:12 建议"]
+            review["checked_dimensions"].pop("acceptance_criteria_are_deterministic")
+            payload.pop("artifact_path", None)
+            payload.pop("dry_run", None)
+            (self.task_dir / "planning-approval.json").write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_planning_approval(planning_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        errors = raised.exception.payload["errors"]
+        self.assertTrue(any("ambiguity_review.status" in error for error in errors))
+        self.assertTrue(any("缺少 reviewer" in error for error in errors))
+        self.assertTrue(any("缺少 summary" in error for error in errors))
+        self.assertTrue(any("controlled_terms" in error for error in errors))
+        self.assertTrue(any("unchecked_normative_hits" in error for error in errors))
+        self.assertTrue(any("acceptance_criteria_are_deterministic" in error for error in errors))
 
     def test_validate_planning_approval_accepts_archived_task_with_active_artifact_paths(self) -> None:
         patches = self.patch_common()

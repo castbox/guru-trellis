@@ -329,7 +329,7 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - `design.md` — technical design before implementation: boundaries, contracts, data flow, compatibility, tradeoffs, rollout / rollback.
 - `implement.md` — execution plan before implementation: ordered checklist, validation commands, review gates, rollback points.
 - `Docs SSOT Plan` — required Phase 1 planning contract, preferably a section in `design.md`; `prd.md` records docs status and requirement impact, and `implement.md` records the checklist/checkpoint. Do not duplicate the full plan across all three files.
-- `planning-approval.json` — start gate evidence that the main session displayed links to `prd.md`, `design.md`, and `implement.md`, then received explicit post-planning user confirmation; `task.py start` is only a status write.
+- `planning-approval.json` — start gate evidence that the main session completed planning artifact ambiguity review, displayed links to `prd.md`, `design.md`, and `implement.md`, then received explicit post-planning user confirmation; `task.py start` is only a status write.
 - `phase2-check.json` — Phase 2 `trellis-check` report for full task-scope quality coverage before commit and Branch Review Gate.
 - `issue-scope-ledger.json` — task-level close/ref/followup scope; do not overload `source_issue`.
 - `agent-assignment.json` — task-local sub-agent assignment ledger with Chinese logical roles, technical `agent_id`, display-only `platform_nickname`, HEAD evidence, review rounds, raw report digest fields, and reuse/replacement decisions.
@@ -340,6 +340,16 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - `implement.jsonl` / `check.jsonl` — spec and research manifests for sub-agent context. They do not replace `implement.md`.
 
 Guru Team implementation tasks must have `prd.md`, `design.md`, `implement.md`, and one locatable `Docs SSOT Plan` before `task.py start`; a Phase 0 handoff approval never substitutes for this post-planning review.
+
+Planning artifact normative language must be deterministic. Requirements,
+design contracts, event/state-machine rules, gate clauses, acceptance criteria,
+implementation steps, and validation steps must not use the controlled weak
+constraint terms `可以`, `允许`, `建议`, `尽量`, `视情况`, `类似`, `相关`, or
+`等` as unconditional execution contract wording. If external quotes,
+historical evidence, issue text, or risk notes contain those terms, label the
+source and state that the quoted wording is not itself the execution contract.
+Rewrite normative clauses with deterministic language such as `必须`, `不得`,
+`只能`, `当且仅当`, `失败并阻塞`, or `记录结构化字段`.
 
 ### Business Project Documentation Language
 
@@ -552,9 +562,10 @@ Load `trellis-brainstorm`; stay in planning.
 Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
-Finish `prd.md`, `design.md`, and `implement.md`; then visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
+Finish `prd.md`, `design.md`, and `implement.md`; then perform planning artifact ambiguity review before displaying them. Verify no requirement weakening, source issue semantics preserved, conditional paths have trigger conditions, no parallel implementation paths, gates have machine-verifiable conditions, acceptance criteria are deterministic, and external quotes are labeled non-contract.
+After ambiguity review passes, visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
 Before that planning stop reply, run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表`; only link existing Markdown files and do not list JSON artifacts.
-Before `task.py start`, record and check `planning-approval.json` with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale approval blocks implementation and Phase 2 check recording.
+Before `task.py start`, record and check `planning-approval.json` schema 1.2 with `ambiguity_review` evidence and `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale approval blocks implementation and Phase 2 check recording.
 Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research manifests before start.
 [/workflow-state:planning]
 
@@ -563,9 +574,10 @@ Load `trellis-brainstorm`; stay in planning.
 Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
-Finish `prd.md`, `design.md`, and `implement.md`; then visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
+Finish `prd.md`, `design.md`, and `implement.md`; then perform planning artifact ambiguity review before displaying them. Verify no requirement weakening, source issue semantics preserved, conditional paths have trigger conditions, no parallel implementation paths, gates have machine-verifiable conditions, acceptance criteria are deterministic, and external quotes are labeled non-contract.
+After ambiguity review passes, visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
 Before that planning stop reply, run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表`; only link existing Markdown files and do not list JSON artifacts.
-Before `task.py start`, record and check `planning-approval.json` with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale approval blocks implementation and Phase 2 check recording.
+Before `task.py start`, record and check `planning-approval.json` schema 1.2 with `ambiguity_review` evidence and `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale approval blocks implementation and Phase 2 check recording.
 Inline mode: skip jsonl curation; Phase 2 reads artifacts/specs via `trellis-before-dev`.
 [/workflow-state:planning-inline]
 
@@ -677,10 +689,31 @@ Inline Codex/Kilo/Antigravity/Devin workflows skip this step and load context th
 #### 1.4 Explicit planning review `[required · once]`
 
 After `prd.md`, `design.md`, and `implement.md` are complete, including a
-locatable `Docs SSOT Plan`, the main session
-must run the Markdown artifact resolver, render a `Markdown 产物 review 表`,
-visibly present all three task-local planning documents to the user, and then
-stop for an explicit post-planning confirmation.
+locatable `Docs SSOT Plan`, the main session must complete planning artifact
+ambiguity review before presenting them to the user. This is an AI semantic
+review in Markdown workflow space; hook, shell, and Python helpers may record
+or validate structured evidence only.
+
+The ambiguity review must check all of these dimensions:
+
+- no requirement weakening;
+- source issue semantics preserved;
+- conditional paths have explicit trigger conditions;
+- no parallel implementation paths for the same purpose;
+- gates have machine-verifiable conditions instead of only natural-language fallback;
+- acceptance criteria have deterministic pass/fail semantics;
+- external quotes, historical notes, or risk notes with weak terms are labeled as non-contract.
+
+If a normative clause uses a controlled weak constraint term without a trigger
+condition or source label, rewrite the clause before the planning stop. The
+controlled terms are `可以`, `允许`, `建议`, `尽量`, `视情况`, `类似`, `相关`,
+and `等`. Script scans may provide auxiliary facts, but they are not the
+ambiguity review conclusion.
+
+After ambiguity review passes, the main session must run the Markdown artifact
+resolver, render a `Markdown 产物 review 表`, visibly present all three
+task-local planning documents to the user, and then stop for an explicit
+post-planning confirmation.
 
 ```bash
 .trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
@@ -705,9 +738,10 @@ The user's Phase 0 handoff approval to create a GitHub issue, worktree, branch,
 or Trellis task is not planning approval. Do not reuse a Phase 0 confirmation,
 generic "continue" consent, or historical `planning-approval.json` with
 `user_confirmation.source=workflow`. If `planning-approval.json` is missing,
-has old schema/source, or the current `prd.md`/`design.md`/`implement.md`
-content digests no longer match the last explicit user-reviewed plan, show the
-three links again and wait for a fresh explicit post-planning confirmation.
+has old schema/source, lacks passed `ambiguity_review` evidence, or the current
+`prd.md`/`design.md`/`implement.md` content digests no longer match the last
+explicit user-reviewed plan, show the three links again and wait for a fresh
+explicit post-planning confirmation.
 Current `HEAD` drift, metadata tail, or unrelated dirty paths alone are not a
 planning approval failure.
 
@@ -719,6 +753,9 @@ After the explicit post-planning confirmation, write the task-local start gate e
 .trellis/guru-team/scripts/bash/record-planning-approval.sh --json \
   --reviewer "codex-main-session" \
   --summary "中文规划审查结论" \
+  --ambiguity-reviewer "codex-main-session" \
+  --ambiguity-summary "中文 ambiguity review 结论" \
+  --ambiguity-status passed \
   --user-confirmation "用户在看到 prd.md、design.md、implement.md 三个链接后确认进入实现" \
   --confirmation-source explicit-post-planning-review
 .trellis/guru-team/scripts/bash/check-planning-approval.sh --json
@@ -745,9 +782,10 @@ transition; it is not planning review evidence.
 | `prd.md` exists | yes |
 | `design.md` exists | yes |
 | `implement.md` exists | yes |
+| Main session completed planning artifact ambiguity review before displaying planning links | yes |
 | Main session displayed links to `prd.md`, `design.md`, and `implement.md` after generating them | yes |
 | User confirms task should enter implementation after seeing the three planning links | yes |
-| `planning-approval.json` exists and `check-planning-approval` passes | yes |
+| `planning-approval.json` schema 1.2 exists with passed `ambiguity_review` evidence and `check-planning-approval` passes | yes |
 | `task.py start` has been run | yes |
 | curated JSONL manifests exist for sub-agent dispatch | yes |
 | Middle-platform Knowledge Gate handled when relevant | yes |
@@ -762,7 +800,7 @@ transition; it is not planning review evidence.
 [workflow-state:in_progress]
 Flow: `trellis-implement` -> `trellis-check` -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and journal succeed.
-Before dispatching `trellis-implement` / channel `implement` or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, or changed `prd.md`/`design.md`/`implement.md` content blocks Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
+Before dispatching `trellis-implement` / channel `implement` or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, missing or non-passed `ambiguity_review`, or changed `prd.md`/`design.md`/`implement.md` content blocks Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
 Before commit, record and check `phase2-check.json`; it records completed `trellis-check` AI evidence, and validation commands or recorder success alone are not a complete check.
 Main-session default on dispatch platforms: dispatch `trellis-implement` / channel `implement`, wait for an implementation handoff, then dispatch `trellis-check` / channel `check`. Dispatch prompt starts with `Active task: <task path from task.py current>`. The main session may coordinate and record evidence, but it must not directly implement or directly check in default `sub-agent` mode.
 After dispatching an implement/check sub-agent, record `assigned` for `实现代理` or `阶段二检查代理` with `record-subagent-liveness-event.sh` so `agent-assignment.json` contains `agents[]`, `status_events[]`, and `liveness[agent_id]` baseline. Then run `check-subagent-liveness.sh` at `progress_scan_interval=120s` or the checker-provided `next_wait_ms`. A wait timeout is only a wait-window result; record visible progress first, let checker return the single decision, and follow `status_request_required` / `continue_waiting_no_repeat_ping` / `stale_allowed` / progress decisions exactly. Old `record-agent-assignment.sh --status-event` status paths are deprecated and fail closed.
@@ -775,7 +813,7 @@ Every Phase 2 or Phase 3 stop/completion reply must first run `resolve-human-art
 [workflow-state:in_progress-inline]
 Flow: `trellis-before-dev` -> edit -> `trellis-check` -> validation -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and journal succeed.
-Before editing or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, or changed `prd.md`/`design.md`/`implement.md` content blocks inline Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
+Before editing or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, missing or non-passed `ambiguity_review`, or changed `prd.md`/`design.md`/`implement.md` content blocks inline Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
 Before commit, record and check `phase2-check.json`; validation commands alone are not a complete `trellis-check`.
 Do not dispatch implement/check sub-agents in inline mode.
 Before edits, confirm knowledge gate and the `Docs SSOT Plan` from artifacts. Inline Phase 2 still consumes the plan: implementation records strategy execution and docs sync handoff, and the later check verifies durable docs, task artifacts, code/API/schema/config/deploy/test, and validation evidence against that strategy.
@@ -787,7 +825,8 @@ Every Phase 2 or Phase 3 stop/completion reply must first run `resolve-human-art
 
 Dispatch or inline-implement according to the platform mode only after
 `check-workspace-boundary.sh --json --task <task-path>` and
-`check-planning-approval.sh --json` pass for the current task. In default
+`check-planning-approval.sh --json` pass for the current task, including
+schema 1.2 `ambiguity_review` evidence. In default
 `sub-agent` mode, the main session must dispatch `trellis-implement` or
 channel-runtime `implement`; it may not directly edit files and later present
 that work as `实现代理` evidence. Keep changes focused on the reviewed task

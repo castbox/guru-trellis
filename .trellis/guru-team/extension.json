@@ -68,11 +68,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-09T11:14:00Z",
+  "installed_at": "2026-07-09T13:50:49Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/066-docs-ssot-phase3-enforcement",
-    "commit": "aa0c4092615da731323a4a8af12468a4110b6177",
+    "ref": "codex/083-planning-ambiguity-review",
+    "commit": "bc5c3998fa034ea6f5e279dc1b183919dac3483d",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

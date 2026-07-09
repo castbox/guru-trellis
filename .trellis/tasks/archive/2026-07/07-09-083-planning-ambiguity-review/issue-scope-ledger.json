@@ -1,0 +1,30 @@
+{
+  "primary_issue": {
+    "number": 83,
+    "url": "https://github.com/castbox/guru-trellis/issues/83",
+    "title": "禁止 Trellis task planning artifacts 使用无约束模糊表达",
+    "reason": "intake/handoff 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "trellis/workflows/guru-team/workflow.md 与 .trellis/workflow.md 已加入 Phase 1 planning artifact ambiguity review gate。",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py 与 dogfood .trellis/guru-team/scripts/python/guru_team_trellis.py 已将 planning-approval.json 升级到 schema 1.2，并要求 ambiguity_review 结构化 evidence。",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 已覆盖通过路径、旧 schema、缺失 ambiguity_review、incomplete ambiguity_review 的 fail-closed 行为。",
+      ".trellis/tasks/07-09-083-planning-ambiguity-review/phase2-check.json 记录阶段二检查代理已覆盖 workflow、overlay、docs、script、tests 和 Docs SSOT。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 83,
+      "url": "https://github.com/castbox/guru-trellis/issues/83",
+    "title": "禁止 Trellis task planning artifacts 使用无约束模糊表达",
+    "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+    "acceptance_evidence": [
+      "trellis/workflows/guru-team/workflow.md 与 .trellis/workflow.md 已加入 Phase 1 planning artifact ambiguity review gate。",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py 与 dogfood .trellis/guru-team/scripts/python/guru_team_trellis.py 已将 planning-approval.json 升级到 schema 1.2，并要求 ambiguity_review 结构化 evidence。",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py 已覆盖通过路径、旧 schema、缺失 ambiguity_review、incomplete ambiguity_review 的 fail-closed 行为。",
+      ".trellis/tasks/07-09-083-planning-ambiguity-review/phase2-check.json 记录阶段二检查代理已覆盖 workflow、overlay、docs、script、tests 和 Docs SSOT。"
+    ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

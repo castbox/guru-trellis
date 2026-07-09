@@ -60,7 +60,12 @@ Continue entries must:
 - in `planning`, after `prd.md`, `design.md`, and `implement.md` exist, display
   clickable or absolute links to all three task-local planning documents and
   stop until the user explicitly confirms after seeing them; Phase 0 handoff
-  approval or old `source=workflow` planning approval cannot substitute
+  approval, old schema/source, or missing/non-passed `ambiguity_review`
+  evidence cannot substitute
+- in `planning`, before displaying the three task-local planning documents,
+  require the main session to perform the planning artifact ambiguity review
+  defined by `.trellis/workflow.md`; overlays should point to the workflow
+  rather than duplicate the full checklist
 - in `planning`, remind the AI to create or update the `Docs SSOT Plan`
   required by `.trellis/workflow.md`; do not paste the full enum/strategy
   contract into every overlay
@@ -71,8 +76,9 @@ Continue entries must:
   `exists=false` must not be rendered as Markdown links, `review.md` is the
   AI/human review report after Branch Review, raw `reviews/*.md` are reached
   through `review.md`, and JSON artifacts stay out of the standard table
-- state that `planning-approval.json` must use
-  `user_confirmation.source=explicit-post-planning-review`, include
+- state that `planning-approval.json` must use schema 1.2, include passed
+  `ambiguity_review` evidence,
+  `user_confirmation.source=explicit-post-planning-review`,
   `review_prompt_presented_at`, `approved_at`, and matching hash / size /
   modified-time metadata for `prd.md`, `design.md`, and `implement.md`; state
   that freshness is based on planning document content digests, while HEAD and
@@ -190,9 +196,10 @@ Sub-agent overlay entries must:
 - keep recursion guards and task-context loading preludes intact;
 - require implement agents to run `check-planning-approval.sh --json --task
   <task-path>` before reading implementation context or editing, and to report
-  `Implementation Blocked` if the artifact is missing, old-schema, not sourced
-  from `explicit-post-planning-review`, or the reviewed planning document
-  content digests no longer match;
+  `Implementation Blocked` if the artifact is missing, old-schema, lacks passed
+  `ambiguity_review` evidence, not sourced from
+  `explicit-post-planning-review`, or the reviewed planning document content
+  digests no longer match;
 - require implement agents to output a completion handoff with files changed,
   requirement/design carryover, verification state, remaining risks, completion
   status, and focus areas for `trellis-check`;
@@ -206,6 +213,11 @@ Sub-agent overlay entries must:
   may self-fix small in-scope mechanical issues and must output evidence that
   can support `phase2-check.json`; Branch Review is review-only over the full
   committed diff and must report, not patch, missing implementation/check work;
+- require check agents in Phase 2 mode to run
+  `check-planning-approval.sh --json --task <task-path>` before reviewing the
+  implementation diff, and to treat missing/old/non-passed `ambiguity_review`
+  evidence as a start-gate blocker; Branch Review mode verifies recorded gate
+  evidence without running Guru Team recorder/validator scripts;
 - require check agents in Phase 2 mode to verify durable docs, task artifacts,
   code/schema/config/deploy/test, and validation/test coverage against the
   approved `Docs SSOT Plan`, including final checks for `delta_first`,

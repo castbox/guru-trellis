@@ -109,22 +109,30 @@ before publish. This is archive metadata migration, not review judgment.
 Planning and Phase 2 helpers follow the same recorder / validator boundary:
 
 - `record-planning-approval.sh` records prior AI/human planning review and the
-  user's explicit post-planning confirmation after the main session displayed
-  task-local links to `prd.md`, `design.md`, and `implement.md`; it must not
-  decide whether planning is sufficient. New artifacts use
-  `schema_version=1.1`, `review_prompt_presented_at`, `approved_at`,
-  `reviewed_artifacts[]`, the `approved_artifacts` alias, and
-  `user_confirmation.source=explicit-post-planning-review`.
+  user's explicit post-planning confirmation after the main session completed
+  planning artifact ambiguity review and displayed task-local links to
+  `prd.md`, `design.md`, and `implement.md`; it must not decide whether
+  planning is sufficient or whether natural-language ambiguity was actually
+  resolved. New artifacts use `schema_version=1.2`,
+  `review_prompt_presented_at`, `approved_at`, `reviewed_artifacts[]`, the
+  `approved_artifacts` alias,
+  `user_confirmation.source=explicit-post-planning-review`, and structured
+  `ambiguity_review` evidence. The recorder may build default controlled-term
+  and checked-dimension fields from fixed constants after receiving
+  AI-provided `--ambiguity-reviewer`, `--ambiguity-summary`, and passed status.
 - `check-planning-approval.sh` validates all three planning artifact entries,
-  hash / size metadata, confirmation source, and required audit fields before
-  `task.py start`, before implementation dispatch, and before
-  `phase2-check.json` can be recorded. Recorded HEAD, modified-time, and
-  `dirty_paths` remain audit context, but validator freshness is tied to
-  `prd.md`, `design.md`, and `implement.md` content digests. A later
-  implementation commit, metadata tail, or unrelated working-tree dirty path
-  must not block planning approval while those three reviewed planning documents
-  still match. Old `source=workflow`, Phase 0 handoff confirmation, missing
-  docs, or changed planning document content fail closed.
+  hash / size metadata, confirmation source, structured `ambiguity_review`
+  fields, and required audit fields before `task.py start`, before
+  implementation dispatch, and before `phase2-check.json` can be recorded. It
+  must fail closed on old schema, missing or non-passed `ambiguity_review`,
+  missing reviewer/summary, incomplete controlled terms, non-empty
+  `unchecked_normative_hits`, missing checked dimensions, old source, Phase 0
+  handoff confirmation, missing docs, or changed planning document content.
+  Recorded HEAD, modified-time, and `dirty_paths` remain audit context, but
+  validator freshness is tied to `prd.md`, `design.md`, and `implement.md`
+  content digests. A later implementation commit, metadata tail, or unrelated
+  working-tree dirty path must not block planning approval while those three
+  reviewed planning documents still match.
 - `record-phase2-check.sh` records prior full-scope `trellis-check` evidence;
   it must not replace check judgment with command exit codes.
 - `check-phase2-check.sh` validates coverage, validation evidence, findings,

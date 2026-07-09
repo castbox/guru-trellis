@@ -123,20 +123,23 @@ review result exists, to persist objective gate evidence.
 Phase 1.4 and Phase 2.2 have their own evidence gates before the Branch Review
 Gate:
 
-- `planning-approval.json` records that the main session displayed task-local
-  links to `prd.md`, `design.md`, and `implement.md`, then received explicit
+- `planning-approval.json` records that the main session completed planning
+  artifact ambiguity review before display, displayed task-local links to
+  `prd.md`, `design.md`, and `implement.md`, then received explicit
   post-planning user confirmation before `task.py start`. It must use
-  `user_confirmation.source=explicit-post-planning-review` and record matching
-  hash / size metadata for all three planning documents, plus modified-time,
-  HEAD, and dirty paths as audit context. Validator freshness is based on the
-  reviewed planning document digests, not current `HEAD` or working-tree dirty
-  paths: implementation commits, metadata tail, or unrelated dirty paths do not
-  invalidate approval while `prd.md`, `design.md`, and `implement.md` content
-  still matches the last explicit user review. If any of those three planning
-  documents changes, show the three links again and wait for fresh explicit
-  post-planning confirmation. Phase 0 handoff approval, generic workflow
-  confirmation, or old `source=workflow` artifacts fail closed. `task.py start`
-  is not proof of planning review.
+  `schema_version=1.2`, include passed structured `ambiguity_review` evidence,
+  use `user_confirmation.source=explicit-post-planning-review`, and record
+  matching hash / size metadata for all three planning documents, plus
+  modified-time, HEAD, and dirty paths as audit context. Validator freshness is
+  based on the reviewed planning document digests, not current `HEAD` or
+  working-tree dirty paths: implementation commits, metadata tail, or unrelated
+  dirty paths do not invalidate approval while `prd.md`, `design.md`, and
+  `implement.md` content still matches the last explicit user review. If any of
+  those three planning documents changes, show the three links again and wait
+  for fresh explicit post-planning confirmation. Phase 0 handoff approval,
+  generic workflow confirmation, old `source=workflow`, old schema, missing
+  `ambiguity_review`, or non-passed ambiguity evidence fails closed. `task.py
+  start` is not proof of planning review.
 - `phase2-check.json` records complete `trellis-check` coverage before commit.
   Passing validation commands alone is not proof that requirements, design,
   implementation, tests, specs, docs, cross-layer flow, and deployment impact
