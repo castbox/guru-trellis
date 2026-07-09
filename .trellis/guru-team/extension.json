@@ -68,11 +68,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-09T13:50:49Z",
+  "installed_at": "2026-07-09T20:00:27Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/083-planning-ambiguity-review",
-    "commit": "bc5c3998fa034ea6f5e279dc1b183919dac3483d",
+    "ref": "fix/093-planning-ambiguity-scanner",
+    "commit": "86b4b3b9f6054db8167b4af1da99dc070ebb9c0a",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

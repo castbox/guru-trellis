@@ -14,7 +14,8 @@ Execute these steps:
    .trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-path>
    ```
    Stop if the artifact is missing, old schema, lacks passed
-   `ambiguity_review` evidence, does not use
+   `ambiguity_review` evidence, lacks fixed-scope scanner evidence, has
+   unchecked normative hits, does not use
    `user_confirmation.source=explicit-post-planning-review`, or no longer
    matches the current `prd.md`, `design.md`, and `implement.md` content
    digests. Current HEAD or dirty-path drift alone is not a planning approval

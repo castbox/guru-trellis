@@ -181,8 +181,9 @@ It records:
 - `review_prompt_presented_at` and `approved_at`
 - Chinese approval summary and user confirmation evidence with
   `user_confirmation.source=explicit-post-planning-review`
-- `ambiguity_review` object with `status=passed`, non-empty `reviewer`, non-empty
-  `summary`, `normative_language.controlled_terms`, empty
+- `ambiguity_review` object with `status=passed`, non-empty `reviewer`,
+  non-empty `summary`, `normative_language.controlled_terms`,
+  `normative_language.scan_scope`, `normative_language.hits`,
   `normative_language.unchecked_normative_hits`, and all required
   `checked_dimensions` set to true
 - `reviewed_artifacts[]` entries for `prd.md`, `design.md`, and
@@ -203,18 +204,35 @@ the validator must fail closed so the workflow can show the three links again
 and wait for fresh explicit post-planning user confirmation. `task.py start` is
 a status transition only and must not be treated as planning review evidence.
 
-`ambiguity_review.normative_language.controlled_terms` must contain the full
-controlled weak-constraint term list: `可以`, `允许`, `建议`, `尽量`,
-`视情况`, `类似`, `相关`, and `等`. `unchecked_normative_hits` is an auxiliary
-fact array only; it must be empty for passed approval. `checked_dimensions`
+`ambiguity_review.normative_language.controlled_terms` must equal the full
+controlled weak-constraint v2 term list: `可以`, `允许`, `建议`, `推荐`,
+`可选`, `尽量`, `尽可能`, `最好`, `应该`, `应当`, `原则上`, `一般`,
+`通常`, `视情况`, `根据情况`, `根据需要`, `按需`, `必要时`, `如有需要`,
+`需要时`, `适当`, `适当时`, `合理`, `合理时`, `类似`, `相关`, `相应`,
+`等`, `等等`, `之类`, `一些`, `若干`, `部分`, `至少`, and `默认`.
+`scan_scope` must equal `["prd.md", "design.md", "implement.md"]`.
+`hits[]` must contain every controlled-term hit found in those three planning
+documents with `path`, `line`, `term`, `text`, `classification`, and `reason`.
+`unchecked_normative_hits[]` must contain only unclassified hits and
+`classification=contract_violation` hits; it must be empty for passed approval.
+Allowed non-blocking classifications are `quoted_source_non_contract`,
+`term_definition`, `literal_identifier`, `historical_record_non_contract`,
+`deterministic_threshold`, `deterministic_default`, `deterministic_option`, and
+`deterministic_reference`, each with a non-empty reason. `checked_dimensions`
 must contain `no_requirement_weakening`,
 `source_issue_semantics_preserved`, `conditional_paths_have_conditions`,
 `no_parallel_implementation_paths`,
 `gates_have_machine_verifiable_conditions`,
 `acceptance_criteria_are_deterministic`, and
-`external_quotes_are_labeled_non_contract`, all set to true. The companion
-validator checks this objective structure and digest freshness only; AI semantic
-review remains in Markdown workflow / planning artifacts.
+`external_quotes_are_labeled_non_contract`, all set to true.
+
+The companion validator must rescan the same three planning documents and fail
+closed if the current scan no longer matches recorded `hits[]`, if
+`scan_scope` or `controlled_terms` drift, if a hit uses an unknown
+classification, if an allowed classification lacks a reason, or if
+`unchecked_normative_hits[]` is non-empty. The scanner is deterministic fact
+collection and classification structure validation only; AI semantic review
+remains in Markdown workflow / planning artifacts.
 
 ## Phase 2 Check Artifact
 

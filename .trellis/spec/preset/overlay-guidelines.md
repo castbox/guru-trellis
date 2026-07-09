@@ -77,7 +77,9 @@ Continue entries must:
   AI/human review report after Branch Review, raw `reviews/*.md` are reached
   through `review.md`, and JSON artifacts stay out of the standard table
 - state that `planning-approval.json` must use schema 1.2, include passed
-  `ambiguity_review` evidence,
+  `ambiguity_review` evidence, fixed `prd.md` / `design.md` / `implement.md`
+  scanner scope, all controlled-term `hits[]`, and empty
+  `unchecked_normative_hits[]`,
   `user_confirmation.source=explicit-post-planning-review`,
   `review_prompt_presented_at`, `approved_at`, and matching hash / size /
   modified-time metadata for `prd.md`, `design.md`, and `implement.md`; state

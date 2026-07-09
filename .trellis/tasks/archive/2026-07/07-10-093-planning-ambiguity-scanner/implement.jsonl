@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "定义 Guru Team workflow、planning approval、Phase 2、Branch Review Gate 的主合同。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "定义 companion scripts 只能做 executor / validator / recorder，适用于 scanner 和 planning approval recorder。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "定义 planning-approval.json、phase2-check.json、review-gate.json 等 JSON artifact 字段与兼容性边界。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定义 workflow/preset/script 变更后的验证命令、dogfood drift 和 review 范围。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "修改 preset overlays 后必须同步 dogfood 副本并检查 drift。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "更新 README 与 durable docs 时遵守公开文档、安全和 SSOT 规则。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "新增 scanner/helper 前复用现有 digest、路径解析、JSON 校验模式。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "确保 workflow、script、docs、overlay、tests 对同一 data contract 保持一致。"}

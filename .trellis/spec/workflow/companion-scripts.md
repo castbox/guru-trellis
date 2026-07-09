@@ -117,17 +117,25 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   `review_prompt_presented_at`, `approved_at`, `reviewed_artifacts[]`, the
   `approved_artifacts` alias,
   `user_confirmation.source=explicit-post-planning-review`, and structured
-  `ambiguity_review` evidence. The recorder may build default controlled-term
-  and checked-dimension fields from fixed constants after receiving
-  AI-provided `--ambiguity-reviewer`, `--ambiguity-summary`, and passed status.
+  `ambiguity_review` evidence. The recorder builds controlled-term,
+  scan-scope, hit, unchecked-hit, and checked-dimension fields from fixed
+  constants and deterministic scans after receiving AI-provided
+  `--ambiguity-reviewer`, `--ambiguity-summary`, passed status, and one
+  classification record for each retained controlled-term hit. It must fail
+  closed before writing when any hit is unclassified or classified as
+  `contract_violation`.
 - `check-planning-approval.sh` validates all three planning artifact entries,
   hash / size metadata, confirmation source, structured `ambiguity_review`
   fields, and required audit fields before `task.py start`, before
   implementation dispatch, and before `phase2-check.json` can be recorded. It
   must fail closed on old schema, missing or non-passed `ambiguity_review`,
-  missing reviewer/summary, incomplete controlled terms, non-empty
+  missing reviewer/summary, incomplete controlled terms, wrong fixed
+  `scan_scope`, missing or stale `hits`, non-empty
   `unchecked_normative_hits`, missing checked dimensions, old source, Phase 0
   handoff confirmation, missing docs, or changed planning document content.
+  It must rescan `prd.md`, `design.md`, and `implement.md` and compare the
+  current scan to the recorded scanner evidence instead of trusting the stored
+  array blindly.
   Recorded HEAD, modified-time, and `dirty_paths` remain audit context, but
   validator freshness is tied to `prd.md`, `design.md`, and `implement.md`
   content digests. A later implementation commit, metadata tail, or unrelated

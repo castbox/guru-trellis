@@ -1,76 +1,72 @@
 {
   "schema_version": "1.1",
   "source_issue": {
-    "number": 73,
-    "url": "https://github.com/castbox/guru-trellis/issues/73",
-    "title": "将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址",
+    "number": 93,
+    "url": "https://github.com/castbox/guru-trellis/issues/93",
+    "title": "将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
     "created_by_workflow": false
   },
   "proposed_issue": null,
   "requires_confirmation": null,
-  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/073-trellis-doc-markdown-links/.trellis/guru-team/handoff.json",
+  "handoff_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/093-planning-ambiguity-scanner/.trellis/guru-team/handoff.json",
   "handoff_written": true,
-  "slug": "073-trellis-doc-markdown-links",
+  "slug": "planning-ambiguity-scanner",
   "naming_quality": {
     "ok": true,
     "reason": "naming includes enough business tokens",
     "requires_semantic_name": false,
-    "current_slug": "073-trellis-doc-markdown-links",
+    "current_slug": "093-planning-ambiguity-scanner",
     "current_surface": "workspace_slug",
     "suggested_override_flags": [],
     "checked_names": {
       "slug": {
         "ok": true,
-        "slug": "073-trellis-doc-markdown-links",
+        "slug": "planning-ambiguity-scanner",
         "reason": "ok",
         "business_tokens": [
-          "trellis",
-          "doc",
-          "markdown",
-          "links"
+          "planning",
+          "ambiguity",
+          "scanner"
         ]
       },
       "task_slug": {
         "ok": true,
-        "slug": "073-trellis-doc-markdown-links",
+        "slug": "093-planning-ambiguity-scanner",
         "reason": "ok",
         "business_tokens": [
-          "trellis",
-          "doc",
-          "markdown",
-          "links"
+          "planning",
+          "ambiguity",
+          "scanner"
         ]
       },
       "workspace_slug": {
         "ok": true,
-        "slug": "073-trellis-doc-markdown-links",
+        "slug": "093-planning-ambiguity-scanner",
         "reason": "ok",
         "business_tokens": [
-          "trellis",
-          "doc",
-          "markdown",
-          "links"
+          "planning",
+          "ambiguity",
+          "scanner"
         ]
       },
       "branch_name": {
         "ok": true,
-        "slug": "073-trellis-doc-markdown-links",
+        "slug": "093-planning-ambiguity-scanner",
         "reason": "ok",
         "business_tokens": [
-          "trellis",
-          "doc",
-          "markdown",
-          "links"
+          "planning",
+          "ambiguity",
+          "scanner"
         ]
       }
     }
   },
-  "task_slug": "073-trellis-doc-markdown-links",
-  "task_title": "#73 将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址",
-  "branch_name": "codex/073-trellis-doc-markdown-links",
-  "workspace_slug": "073-trellis-doc-markdown-links",
+  "task_slug": "093-planning-ambiguity-scanner",
+  "task_title": "#93 将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
+  "branch_name": "fix/093-planning-ambiguity-scanner",
+  "workspace_slug": "093-planning-ambiguity-scanner",
   "workspace_mode": "worktree",
-  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/073-trellis-doc-markdown-links",
+  "workspace_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/093-planning-ambiguity-scanner",
   "workspace_ready": true,
   "base_branch": "main",
   "base_branch_candidates": [
@@ -81,30 +77,30 @@
     "python3",
     "./.trellis/scripts/task.py",
     "create",
-    "#73 将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址",
+    "#93 将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
     "--slug",
-    "073-trellis-doc-markdown-links",
+    "093-planning-ambiguity-scanner",
     "--assignee",
     "wumengye"
   ],
-  "task_dir": ".trellis/tasks/07-10-073-trellis-doc-markdown-links",
+  "task_dir": ".trellis/tasks/07-10-093-planning-ambiguity-scanner",
   "duplicate_search": {
     "performed": false,
     "candidates": []
   },
   "issue_scope_ledger": {
     "primary_issue": {
-      "number": 73,
-      "url": "https://github.com/castbox/guru-trellis/issues/73",
-      "title": "将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址",
+      "number": 93,
+      "url": "https://github.com/castbox/guru-trellis/issues/93",
+      "title": "将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
       "reason": "intake/handoff 主 issue，默认进入 close 候选。",
       "acceptance_evidence": []
     },
     "close_issues": [
       {
-        "number": 73,
-        "url": "https://github.com/castbox/guru-trellis/issues/73",
-        "title": "将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址",
+        "number": 93,
+        "url": "https://github.com/castbox/guru-trellis/issues/93",
+        "title": "将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
         "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
         "acceptance_evidence": []
       }
@@ -119,7 +115,7 @@
     "dirty": false,
     "worktree_root": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees",
     "existing_worktrees": [
-      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           c1f6fc9 [main]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis                                                           86b4b3b [main]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/051-prepare-task-naming-quality-gate            44254bb [codex/051-prepare-task-naming-quality-gate]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/052-explicit-planning-review                    bf0c0cf [codex/052-explicit-planning-review]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/055-intake-scope-evolution                      a366142 [codex/055-intake-scope-evolution]",
@@ -132,10 +128,11 @@
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/064-docs-ssot-plan-contract                     995ed80 [codex/064-docs-ssot-plan-contract]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/070-branch-review-report-retention              d75a4b7 [codex/070-branch-review-report-retention]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/072-subagent-execution-boundaries               7481a7a [codex/072-subagent-execution-boundaries]",
-      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/073-trellis-doc-markdown-links                  c1f6fc9 [codex/073-trellis-doc-markdown-links]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/073-trellis-doc-markdown-links                  43089c8 [codex/073-trellis-doc-markdown-links]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/076-subagent-liveness-state-machine             ab07b69 [codex/076-subagent-liveness-state-machine]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/078-review-report-chinese-language              1365827 [codex/078-review-report-chinese-language]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/083-planning-ambiguity-review                   8a9f9a3 [codex/083-planning-ambiguity-review]",
+      "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/093-planning-ambiguity-scanner                  86b4b3b [fix/093-planning-ambiguity-scanner]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/1-enhance-guru-team-workflow-middle             ed4a824 [codex/1-enhance-guru-team-workflow-middle]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/11-let-preset-installer-apply-only              80062ea [codex/11-let-preset-installer-apply-only]",
       "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/15-require-explicit-approval-no-task            230cc8d [codex/15-require-explicit-approval-no-task]",
@@ -167,11 +164,11 @@
       "base_branch": "main",
       "base_ref": "main",
       "remote_ref": "origin/main",
-      "local_head_before": "afbecdd288101a86b04309cbe248d3c9fe976854",
-      "local_head_after": "c1f6fc979e5d5f81291221569577bedc5e2ceb7c",
-      "remote_head": "c1f6fc979e5d5f81291221569577bedc5e2ceb7c",
+      "local_head_before": "86b4b3b9f6054db8167b4af1da99dc070ebb9c0a",
+      "local_head_after": "86b4b3b9f6054db8167b4af1da99dc070ebb9c0a",
+      "remote_head": "86b4b3b9f6054db8167b4af1da99dc070ebb9c0a",
       "fetch_performed": true,
-      "fast_forwarded": true,
+      "fast_forwarded": false,
       "fresh": true,
       "status": "fresh",
       "base_ref_for_worktree": "main"
@@ -180,7 +177,7 @@
     "developer_identity": {
       "status": "copied",
       "source": "/Users/wumengye/Documents/GoProjects/guru-trellis/.trellis/.developer",
-      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/073-trellis-doc-markdown-links/.trellis/.developer",
+      "path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/093-planning-ambiguity-scanner/.trellis/.developer",
       "developer": "wumengye"
     }
   }
