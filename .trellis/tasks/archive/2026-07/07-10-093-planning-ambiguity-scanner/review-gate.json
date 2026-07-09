@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-09T20:41:23Z",
-  "task_dir": ".trellis/tasks/07-10-093-planning-ambiguity-scanner",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-10-093-planning-ambiguity-scanner",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "fix/093-planning-ambiguity-scanner",
@@ -162,7 +162,7 @@
     }
   ],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-10-093-planning-ambiguity-scanner/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 93,
@@ -185,13 +185,13 @@
     "reviewer": "019f488e-0591-70a3-9257-9d08bd1cb33c",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-10-093-planning-ambiguity-scanner/review.md",
       "sha256": "df452c5a701aa5d4e2055595cecfdc5364964f6f9920b2264186de9ebf7f54ad",
       "size_bytes": 3679,
       "modified_at": "2026-07-09T20:39:56.272931+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-10-093-planning-ambiguity-scanner/agent-assignment.json",
       "sha256": "734a8ce90f67e7b3b0ba9ea66ca0d918ca69454aaf6e85496b33ff7a1e31ae6f",
       "size_bytes": 27677,
       "modified_at": "2026-07-09T20:40:50.207079+00:00",
@@ -206,7 +206,7 @@
       "review_rounds_count": 1,
       "reuse_decisions_count": 0,
       "status_events_count": 18,
-      "task": ".trellis/tasks/07-10-093-planning-ambiguity-scanner",
+      "task": ".trellis/tasks/archive/2026-07/07-10-093-planning-ambiguity-scanner",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "review_reports": [
@@ -216,7 +216,7 @@
         "agent_id": "019f488e-0591-70a3-9257-9d08bd1cb33c",
         "reviewed_head": "a70374094f869637561cdc677efbff8af3c1368f",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-10-093-planning-ambiguity-scanner/reviews/round-001-final-release.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-093-planning-ambiguity-scanner/reviews/round-001-final-release.md",
         "sha256": "3498f0e3e0b2a33a585de92cb1eba6ece6655c74428019f442f73d5cde236b4a",
         "size_bytes": 3623,
         "modified_at": "2026-07-09T20:39:56.272687+00:00"
