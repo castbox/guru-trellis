@@ -1,0 +1,278 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-09T17:00:52Z",
+  "task_dir": ".trellis/tasks/07-09-056-auto-branch-type-prefix",
+  "base_branch": "main",
+  "base_ref": "origin/main",
+  "head_branch": "fix/056-auto-branch-type-prefix",
+  "head": "65d053a7592dd6bfc6c5407c2c20acf8ece853a5",
+  "diff_range": "origin/main...HEAD",
+  "changed_files": [
+    ".trellis/guru-team/config-template.yml",
+    ".trellis/guru-team/config.yml",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/agent-assignment.json",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/check.jsonl",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/design.md",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/implement.jsonl",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/implement.md",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/issue-scope-ledger.json",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/phase2-check.json",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/planning-approval.json",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/prd.md",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/review.md",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-1-final-review.md",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/task.json",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/config-template.yml",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "review_scope": [
+    "文档",
+    "代码",
+    "测试",
+    "Trellis artifacts",
+    "配置",
+    "脚本",
+    "schema",
+    "CI/CD workflow 与发布自动化",
+    "Dockerfile / Docker Compose / 容器启动脚本",
+    "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
+    "数据库 schema / migration / seed / backfill 脚本",
+    "各目录下本次变更涉及的 Makefile",
+    "preset installer"
+  ],
+  "command": [
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/056-auto-branch-type-prefix/.trellis/guru-team/scripts/bash/../python/guru_team_trellis.py",
+    "review-branch",
+    "--json",
+    "--task",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix",
+    "--pass",
+    "--review-source",
+    "independent-agent",
+    "--reviewer",
+    "trellis-check:019f47c9-333d-74d2-86ef-afbfcdec605e",
+    "--review-report",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/review.md",
+    "--agent-assignment",
+    ".trellis/tasks/07-09-056-auto-branch-type-prefix/agent-assignment.json",
+    "--summary",
+    "第 3 轮 fresh final Branch Review 通过：F-001 已由同一 finding owner 在第 2 轮闭环，当前 origin/main...HEAD 完整 diff 无 P0/P1/P2/P3 finding，可放行。",
+    "--evidence",
+    "已审查 reviewed head 65d053a7592dd6bfc6c5407c2c20acf8ece853a5 的 origin/main...HEAD 完整 diff，覆盖 canonical/dogfood helper/config/workflow/docs/tests/task artifacts。",
+    "--evidence",
+    "Phase 2 re-check 已覆盖 F-001 修复后的 dirty paths：.trellis/guru-team/config-template.yml、.trellis/guru-team/config.yml、.trellis/guru-team/scripts/python/guru_team_trellis.py 和 review evidence。",
+    "--evidence",
+    "验证通过：203 个 companion 单测、git diff --check、Python compile、bash syntax、JSON 校验、canonical/dogfood cmp、branch behavior probe。",
+    "--evidence",
+    "Docs SSOT 已按 ssot_first 执行；README、workflow README、preset README、requirements、canonical/dogfood workflow/config、代码和测试一致。",
+    "--evidence",
+    "部署影响已判断：无 CI/CD、Docker/Compose、K8s/Kustomize/Helm、DB migration、Makefile 同步需求；仅影响 prepare-task companion runtime 且已同步测试。",
+    "--observation",
+    "当前 HEAD 的公开 gh ref throwaway install 未验证，原因是分支尚未 push；发布前或 PR readiness 可补跑当前 ref 的 verify-throwaway-install。|.trellis/tasks/07-09-056-auto-branch-type-prefix/review.md",
+    "--followup-candidate",
+    "分支 push 后或 release tag 前，用指向当前 ref 的 TRELLIS_WORKFLOW_SOURCE 补跑 verify-throwaway-install.sh。|trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+  ],
+  "conclusion": {
+    "passed": true,
+    "summary": "第 3 轮 fresh final Branch Review 通过：F-001 已由同一 finding owner 在第 2 轮闭环，当前 origin/main...HEAD 完整 diff 无 P0/P1/P2/P3 finding，可放行。",
+    "block_priorities": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "blocking_findings_count": 0,
+    "findings_count": 0,
+    "observations_count": 1,
+    "followup_candidates_count": 1
+  },
+  "findings": [],
+  "observations": [
+    {
+      "kind": "observation",
+      "message": "当前 HEAD 的公开 gh ref throwaway install 未验证，原因是分支尚未 push；发布前或 PR readiness 可补跑当前 ref 的 verify-throwaway-install。",
+      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/review.md"
+    }
+  ],
+  "followup_candidates": [
+    {
+      "kind": "followup_candidate",
+      "message": "分支 push 后或 release tag 前，用指向当前 ref 的 TRELLIS_WORKFLOW_SOURCE 补跑 verify-throwaway-install.sh。",
+      "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+    }
+  ],
+  "issue_scope": {
+    "ledger_path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/issue-scope-ledger.json",
+    "close_issues_reviewed": [
+      {
+        "number": 56,
+        "url": "https://github.com/castbox/guru-trellis/issues/56",
+        "title": "branch type 的前缀不要固定 codex，应该自动判定",
+        "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+        "acceptance_evidence": [
+          "实现将 prepare-task 默认分支从固定 codex/<slug> 改为确定性 <branch-type>/<slug>。",
+          "回归测试覆盖 11 个合法 branch type、unknown -> chore、显式 --branch 覆盖、legacy branch_prefix 不驱动默认分支、suggested_override_flags 不再建议 codex/。",
+          "Phase 2 检查代理确认 requirements/design/code/tests/docs/deployment impact 已覆盖，且无剩余当前范围 blocker。",
+          "Branch Review 发现的 F-001 已通过 dogfood installed helper/config 同步闭环；canonical 与 dogfood runtime 行为探针均输出 fix/<slug> 和 chore fallback。"
+        ]
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "verification_evidence": {
+    "base_head": "origin/main...65d053a7592dd6bfc6c5407c2c20acf8ece853a5",
+    "changed_file_count": 25,
+    "reviewer": "trellis-check:019f47c9-333d-74d2-86ef-afbfcdec605e",
+    "review_source": "independent-agent",
+    "review_report": {
+      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/review.md",
+      "sha256": "a4b287303a25beb4caf7ddcb675edaede7984c14279fc2367ec49a1b967ae564",
+      "size_bytes": 4094,
+      "modified_at": "2026-07-09T16:58:38.991359+00:00"
+    },
+    "agent_assignment": {
+      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/agent-assignment.json",
+      "sha256": "80c99bf8ef5ef00fa1fb35ca0ccce7d78fb67bdd7f2b2287e8d6ee8075c9be7f",
+      "size_bytes": 23060,
+      "modified_at": "2026-07-09T17:00:12.181603+00:00",
+      "schema_version": "1.1",
+      "artifact_head": "65d053a7592dd6bfc6c5407c2c20acf8ece853a5",
+      "roles": [
+        "实现代理",
+        "最终放行审查代理",
+        "问题闭环审查代理",
+        "阶段二检查代理"
+      ],
+      "agents_count": 6,
+      "review_rounds_count": 3,
+      "reuse_decisions_count": 0,
+      "status_events_count": 12,
+      "task": ".trellis/tasks/07-09-056-auto-branch-type-prefix",
+      "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
+    },
+    "review_reports": [
+      {
+        "round": 1,
+        "logical_role": "最终放行审查代理",
+        "agent_id": "019f47aa-94ea-7551-9c1b-520cc0bf5e00",
+        "reviewed_head": "137135763fe8f6765d638af639f80bf186e02478",
+        "findings_count": 1,
+        "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-1-final-review.md",
+        "sha256": "7b3f9c3b9008b9c6bcea22700b061648c59ce4d511d76e527fb52ee24d54b44b",
+        "size_bytes": 7946,
+        "modified_at": "2026-07-09T16:24:24.116102+00:00"
+      },
+      {
+        "round": 2,
+        "logical_role": "问题闭环审查代理",
+        "agent_id": "019f47aa-94ea-7551-9c1b-520cc0bf5e00",
+        "reviewed_head": "65d053a7592dd6bfc6c5407c2c20acf8ece853a5",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-2-f001-closure.md",
+        "sha256": "9d1f5b6333eaff96fb1c273d9958195d51e9e4985761189e4ca5f810f146354b",
+        "size_bytes": 3852,
+        "modified_at": "2026-07-09T16:46:53.010447+00:00"
+      },
+      {
+        "round": 3,
+        "logical_role": "最终放行审查代理",
+        "agent_id": "019f47c9-333d-74d2-86ef-afbfcdec605e",
+        "reviewed_head": "65d053a7592dd6bfc6c5407c2c20acf8ece853a5",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-3-final-pass.md",
+        "sha256": "a075d3790abe9e73e58363058838ec20fc4c832a45b370af37e1f34daa7d9f1b",
+        "size_bytes": 9719,
+        "modified_at": "2026-07-09T16:58:38.990946+00:00"
+      }
+    ],
+    "evidence": [
+      "已审查 reviewed head 65d053a7592dd6bfc6c5407c2c20acf8ece853a5 的 origin/main...HEAD 完整 diff，覆盖 canonical/dogfood helper/config/workflow/docs/tests/task artifacts。",
+      "Phase 2 re-check 已覆盖 F-001 修复后的 dirty paths：.trellis/guru-team/config-template.yml、.trellis/guru-team/config.yml、.trellis/guru-team/scripts/python/guru_team_trellis.py 和 review evidence。",
+      "验证通过：203 个 companion 单测、git diff --check、Python compile、bash syntax、JSON 校验、canonical/dogfood cmp、branch behavior probe。",
+      "Docs SSOT 已按 ssot_first 执行；README、workflow README、preset README、requirements、canonical/dogfood workflow/config、代码和测试一致。",
+      "部署影响已判断：无 CI/CD、Docker/Compose、K8s/Kustomize/Helm、DB migration、Makefile 同步需求；仅影响 prepare-task companion runtime 且已同步测试。"
+    ],
+    "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
+  },
+  "deployment_impact": {
+    "changed_file_categories": {
+      "docs": [
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/design.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/implement.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/prd.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/review.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-1-final-review.md",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "tests": [
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "trellis_artifacts": [
+        ".trellis/guru-team/config-template.yml",
+        ".trellis/guru-team/config.yml",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/agent-assignment.json",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/check.jsonl",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/design.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/implement.jsonl",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/implement.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/issue-scope-ledger.json",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/phase2-check.json",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/planning-approval.json",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/prd.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/review.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-1-final-review.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/task.json",
+        ".trellis/workflow.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/config-template.yml",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "config": [
+        ".trellis/guru-team/config-template.yml",
+        ".trellis/guru-team/config.yml",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/agent-assignment.json",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/issue-scope-ledger.json",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/phase2-check.json",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/planning-approval.json",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/task.json",
+        "trellis/workflows/guru-team/config-template.yml"
+      ],
+      "scripts": [
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "code": [
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ]
+    },
+    "deployment_asset_categories": {},
+    "changed_deployment_assets": [],
+    "probable_runtime_changes_without_deployment_asset_change": [],
+    "needs_deployment_impact_review": false,
+    "review_instruction": "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；如果不需要，必须给出不需要的理由。"
+  }
+}
