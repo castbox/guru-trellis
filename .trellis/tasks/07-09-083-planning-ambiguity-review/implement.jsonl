@@ -1,0 +1,12 @@
+{"file": ".trellis/spec/workflow/index.md", "reason": "workflow 改动范围、必读规格和验证命令入口"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Phase 1 planning approval、Branch Review Gate、Docs SSOT 的长期合同"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "planning-approval.json 数据合同与 validator freshness 规则"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "recorder / validator 边界和 Python companion script 约束"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "workflow / preset 改动的验证要求"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "platform overlay 同步原则与 continue / agent entry 要求"}
+{"file": ".trellis/spec/guides/index.md", "reason": "跨层与复用思考触发器"}
+{"file": "docs/requirements/guru-team-trellis-flow.md", "reason": "durable requirement SSOT 中的 Guru Team 全流程说明"}
+{"file": "docs/requirements/requirement-main.md", "reason": "durable requirement capability matrix 与 issue #83 历史沉淀"}
+{"file": "README.md", "reason": "公开入口文档中的 planning approval gate 说明"}
+{"file": "trellis/workflows/guru-team/README.md", "reason": "workflow marketplace 文档中的 planning start gate 说明"}
+{"file": "trellis/presets/guru-team/README.md", "reason": "preset installer 文档中的 helper / gate 说明"}

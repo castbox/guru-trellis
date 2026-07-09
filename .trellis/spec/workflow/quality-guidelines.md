@@ -58,10 +58,11 @@ This validator is objective template-heading detection only; it must not judge
 whether the Chinese review narrative is semantically sufficient.
 When changing planning approval behavior, also run
 `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-dir>`
-against a current `schema_version=1.1` artifact and include at least one unit
-test for stale or old-source approval failure, plus a regression where current
-HEAD / dirty-path drift does not block while `prd.md`, `design.md`, and
-`implement.md` content digests still match.
+against a current `schema_version=1.2` artifact with passed
+`ambiguity_review` evidence. Include unit tests for missing/non-passed
+ambiguity review, stale or old-source approval failure, old `schema_version=1.1`
+failure, and a regression where current HEAD / dirty-path drift does not block
+while `prd.md`, `design.md`, and `implement.md` content digests still match.
 When changing workspace boundary behavior, also run
 `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
 <task-dir>` from the selected task worktree and add regression tests for wrong

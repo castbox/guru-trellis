@@ -166,11 +166,13 @@ review sufficiency.
 ## Planning Approval Artifact
 
 `planning-approval.json` is the start gate evidence for Phase 1.4. New
-artifacts use `schema_version=1.1` and are valid only after the main session
-has displayed task-local links to all three planning documents and the user has
-explicitly confirmed after seeing them. Phase 0 handoff approval, generic
-workflow confirmation, old `schema_version=1.0`, or
-`user_confirmation.source=workflow` must fail closed.
+artifacts use `schema_version=1.2` and are valid only after the main session
+has completed planning artifact ambiguity review, displayed task-local links to
+all three planning documents, and the user has explicitly confirmed after
+seeing them. Phase 0 handoff approval, generic workflow confirmation, old
+`schema_version=1.0` / `schema_version=1.1`, missing `ambiguity_review`,
+non-passed ambiguity review, or `user_confirmation.source=workflow` must fail
+closed.
 
 It records:
 
@@ -179,6 +181,10 @@ It records:
 - `review_prompt_presented_at` and `approved_at`
 - Chinese approval summary and user confirmation evidence with
   `user_confirmation.source=explicit-post-planning-review`
+- `ambiguity_review` object with `status=passed`, non-empty `reviewer`, non-empty
+  `summary`, `normative_language.controlled_terms`, empty
+  `normative_language.unchecked_normative_hits`, and all required
+  `checked_dimensions` set to true
 - `reviewed_artifacts[]` entries for `prd.md`, `design.md`, and
   `implement.md`, each with path, sha256, size, and modified-time metadata
 - `approved_artifacts[]` as a compatibility alias for the same three entries
@@ -196,6 +202,19 @@ approval by themselves. If any of the three planning document contents changes,
 the validator must fail closed so the workflow can show the three links again
 and wait for fresh explicit post-planning user confirmation. `task.py start` is
 a status transition only and must not be treated as planning review evidence.
+
+`ambiguity_review.normative_language.controlled_terms` must contain the full
+controlled weak-constraint term list: `可以`, `允许`, `建议`, `尽量`,
+`视情况`, `类似`, `相关`, and `等`. `unchecked_normative_hits` is an auxiliary
+fact array only; it must be empty for passed approval. `checked_dimensions`
+must contain `no_requirement_weakening`,
+`source_issue_semantics_preserved`, `conditional_paths_have_conditions`,
+`no_parallel_implementation_paths`,
+`gates_have_machine_verifiable_conditions`,
+`acceptance_criteria_are_deterministic`, and
+`external_quotes_are_labeled_non_contract`, all set to true. The companion
+validator checks this objective structure and digest freshness only; AI semantic
+review remains in Markdown workflow / planning artifacts.
 
 ## Phase 2 Check Artifact
 

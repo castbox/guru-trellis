@@ -273,13 +273,14 @@ matcher 判断是否进入 Guru Team issue intake 和 worktree preflight。
 未审批、怀疑自动注入没有运行，或需要完整上下文报告和重新加载 Trellis 上下文的场景。
 
 Planning start gate 和 Phase 2 check gate 都需要 task-local evidence。进入实现前主会话
-必须完成可定位的 `Docs SSOT Plan`，再展示 `prd.md` / `design.md` / `implement.md`
-三个 task-local 链接，用户看到后明确确认，才能调用 `record-planning-approval.sh` 写入
-`user_confirmation.source=explicit-post-planning-review` 的 `planning-approval.json`，再用
-`check-planning-approval.sh` 校验；Phase 0 handoff 确认或旧 `source=workflow` 不能
-通过 gate。校验 freshness 绑定三份规划文档内容 digest；实现提交后的 HEAD drift、
-metadata tail 或无关 dirty paths 不会单独使 approval stale。`task.py start` 只是状态写入，
-不代表规划已审查。
+必须完成可定位的 `Docs SSOT Plan` 和 planning artifact ambiguity review，再展示
+`prd.md` / `design.md` / `implement.md` 三个 task-local 链接，用户看到后明确确认，
+才能调用 `record-planning-approval.sh` 写入 schema 1.2、passed
+`ambiguity_review` 和 `user_confirmation.source=explicit-post-planning-review`
+的 `planning-approval.json`，再用 `check-planning-approval.sh` 校验；Phase 0 handoff
+确认、旧 schema/source 或缺失/non-passed ambiguity evidence 不能通过 gate。校验
+freshness 绑定三份规划文档内容 digest；实现提交后的 HEAD drift、metadata tail 或无关
+dirty paths 不会单独使 approval stale。`task.py start` 只是状态写入，不代表规划已审查。
 阶段停止点和阶段完成回复还必须给用户一个最新的 task Markdown 入口表。AI 先运行
 `resolve-human-artifacts.sh --json --task <task-path>`，再输出
 `Markdown 产物 review 表`；标准表只列 `prd.md`、`design.md`、`implement.md`、

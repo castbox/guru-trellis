@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验证命令、dogfood drift、review focus"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Phase 1 / Phase 2 / Branch Review Gate 合同一致性"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "planning-approval.json 1.2 contract 检查依据"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "recorder / validator 边界与 planning approval script 职责"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "preset overlay 与 dogfood 副本一致性检查"}
+{"file": "docs/requirements/guru-team-trellis-flow.md", "reason": "durable docs 与 workflow/script/overlay 改动一致性"}
+{"file": "docs/requirements/requirement-main.md", "reason": "durable requirement capability matrix 与 issue #83 历史沉淀"}
+{"file": "README.md", "reason": "公开入口文档中的 planning approval gate 说明"}
+{"file": "trellis/workflows/guru-team/README.md", "reason": "workflow marketplace 文档中的 planning start gate 说明"}
+{"file": "trellis/presets/guru-team/README.md", "reason": "preset installer 文档中的 helper / gate 说明"}

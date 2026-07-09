@@ -1,0 +1,220 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-09T13:46:08Z",
+  "task_dir": ".trellis/tasks/07-09-083-planning-ambiguity-review",
+  "base_branch": "main",
+  "head": "bc5c3998fa034ea6f5e279dc1b183919dac3483d",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/trellis-before-dev/SKILL.md",
+    ".agents/skills/trellis-brainstorm/SKILL.md",
+    ".agents/skills/trellis-check/SKILL.md",
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+    ".claude/agents/trellis-check.md",
+    ".claude/agents/trellis-implement.md",
+    ".claude/commands/trellis/continue.md",
+    ".codex/agents/trellis-check.toml",
+    ".codex/agents/trellis-implement.toml",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".cursor/agents/trellis-check.md",
+    ".cursor/agents/trellis-implement.md",
+    ".cursor/commands/trellis-continue.md",
+    ".cursor/skills/trellis-before-dev/SKILL.md",
+    ".cursor/skills/trellis-brainstorm/SKILL.md",
+    ".cursor/skills/trellis-check/SKILL.md",
+    ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+    ".trellis/agents/check.md",
+    ".trellis/agents/implement.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-before-dev/SKILL.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-brainstorm/SKILL.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-check/SKILL.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+    "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+    "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+    "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+    "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-before-dev/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-brainstorm/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-check/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+    "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+    "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-09-083-planning-ambiguity-review/"
+  ],
+  "checker": "阶段二检查代理:019f4717-1a8d-7230-8aa7-c05d124dc950",
+  "check_summary": "阶段二检查代理已审查 issue #83 当前 uncommitted diff，覆盖 planning ambiguity review gate、planning-approval schema 1.2、workflow/dogfood workflow、platform overlays、durable docs/specs、README、script boundary 与 tests；未发现 current-scope blocking finding。Docs SSOT strategy=ssot_first 已执行，task delta 已合并到 durable docs/specs；Issue Scope Ledger 已补齐 #83 close acceptance evidence。未运行完整 throwaway install，不能据此声称当前未提交分支已完成开箱即用验证。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-09-083-planning-ambiguity-review/prd.md",
+      "sha256": "fd5b670e9d4cf32fc04f63dca3c5d29ede4ecd0a3cefb094d0e6770a367e0d67",
+      "size_bytes": 6366,
+      "modified_at": "2026-07-09T12:57:12.075709+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-083-planning-ambiguity-review/design.md",
+      "sha256": "1e3509942276490728d715f259982f4ce73a3fd25274ead3f393190161dabbb3",
+      "size_bytes": 6685,
+      "modified_at": "2026-07-09T12:57:41.109594+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-083-planning-ambiguity-review/implement.md",
+      "sha256": "649fa3a2e8fc1561de9d6e04a927727824e79be8bf9db7173872709cc5b5e3d9",
+      "size_bytes": 3871,
+      "modified_at": "2026-07-09T12:57:12.076230+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-083-planning-ambiguity-review/planning-approval.json",
+      "sha256": "cf9c8637a9a44cf733244ffa222125166e22552edfb5efa6be078c550781bcd1",
+      "size_bytes": 7248,
+      "modified_at": "2026-07-09T13:28:47.741559+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-083-planning-ambiguity-review/agent-assignment.json",
+      "sha256": "3207a186c4afab94886ff1a4e35b68cd9238717d0f4ac003a83545a9170b934e",
+      "size_bytes": 9324,
+      "modified_at": "2026-07-09T13:44:34.532925+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-083-planning-ambiguity-review/issue-scope-ledger.json",
+      "sha256": "ab3e1e859e9fc252cb723c9198ebbc9a20c4984318f1abf52d252e0aa997d630",
+      "size_bytes": 2183,
+      "modified_at": "2026-07-09T13:45:43.009603+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "e3f95c03ba44b44e950309a2658c57f5847badf65050133f824cc123687b9278",
+      "size_bytes": 23225,
+      "modified_at": "2026-07-09T13:18:32.172686+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "d9f0df0d7634384b4c1c7098b90f56bf98d4d82614a73260103456a8021bf006",
+      "size_bytes": 26295,
+      "modified_at": "2026-07-09T13:18:57.856429+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "3fc438d9e80d19c961dfa7e9f229ac9651c5ab3d6fc677080dc7b66901c2aead",
+      "size_bytes": 18222,
+      "modified_at": "2026-07-09T13:19:42.000325+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "be222723ae65c716779d9b4f5dde3a16ef324729e52a529bd5f6fab38b73bc50",
+      "size_bytes": 9142,
+      "modified_at": "2026-07-09T13:19:55.526578+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "0c6c232b9903b60c8cd7f2666a5f5a45f7e9201708ed9b35cad794758fa28dcf",
+      "size_bytes": 15054,
+      "modified_at": "2026-07-09T13:23:28.172239+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "check-workspace-boundary.sh --json --task .trellis/tasks/07-09-083-planning-ambiguity-review",
+      "result": "通过，expected/actual workspace 匹配"
+    },
+    {
+      "command": "check-planning-approval.sh --json --task .trellis/tasks/07-09-083-planning-ambiguity-review",
+      "result": "通过，schema 1.2 + ambiguity_review evidence 有效"
+    },
+    {
+      "command": "check-agent-assignment.sh --json --task .trellis/tasks/07-09-083-planning-ambiguity-review",
+      "result": "通过，2 agents、6 status events"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms",
+      "result": "通过，dogfood 平台范围 claude/codex/cursor"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "通过"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json",
+      "result": "通过"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh",
+      "result": "通过"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "通过"
+    },
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "通过，194 tests OK"
+    },
+    {
+      "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "通过，27 tests OK"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-09-083-planning-ambiguity-review",
+      "result": "通过"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 1.4",
+      "result": "通过，能读取新增 ambiguity review gate"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 1.5",
+      "result": "通过，能读取 1.2 recorder 命令"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 2.1",
+      "result": "通过"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 3.5",
+      "result": "通过"
+    },
+    {
+      "command": "git diff --check",
+      "result": "通过"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

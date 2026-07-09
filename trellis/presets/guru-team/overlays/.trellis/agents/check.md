@@ -29,6 +29,19 @@ artifacts from the source checkout or another worktree. When an editing tool
 cannot receive an explicit working directory, use an absolute path under the
 handoff `workspace_path`.
 
+In Phase 2 check mode, also run:
+
+```bash
+.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-path>
+```
+
+Stop if planning approval is missing, old-schema, lacks passed
+`ambiguity_review` evidence, is not sourced from
+`explicit-post-planning-review`, or the reviewed planning document content
+digests no longer match. In Branch Review mode, verify the recorded planning
+approval evidence as part of the review scope instead of running Guru Team
+recorder/validator scripts.
+
 Before reviewing, read in this order:
 
 1. `<task-path>/check.jsonl` if present — spec manifest curated for this turn; read every listed file

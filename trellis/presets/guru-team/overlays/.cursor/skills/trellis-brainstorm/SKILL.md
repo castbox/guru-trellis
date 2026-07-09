@@ -141,7 +141,15 @@ For each component of the current plan:
 - risky files or rollback points
 - follow-up checks before `task.py start`
 
-Guru Team requires `prd.md`, `design.md`, and `implement.md` for every task before implementation. Some native Trellis workflows may allow a smaller planning set, but that is not the Guru Team start gate. After all three documents exist, display task-local links to all three, wait for explicit post-planning confirmation, record/check `planning-approval.json`, and only then run `task.py start`.
+Guru Team requires `prd.md`, `design.md`, and `implement.md` for every task before implementation. Some native Trellis workflows may allow a smaller planning set, but that is not the Guru Team start gate. After all three documents exist, perform the planning artifact ambiguity review required by `.trellis/workflow.md`, then display task-local links to all three, wait for explicit post-planning confirmation, record/check schema 1.2 `planning-approval.json` with passed `ambiguity_review` evidence, and only then run `task.py start`.
+
+Planning artifact normative language must be deterministic. For requirements,
+design contracts, gates, acceptance criteria, implementation steps, and
+validation steps, rewrite unconditional weak wording into explicit trigger
+conditions or deterministic requirements. Treat the controlled weak constraint
+terms in `.trellis/workflow.md` as review inputs, not as execution contract
+language. External quotes or history may keep their original wording only when
+the source is labeled and the quote is not treated as the task contract.
 
 `implement.md` is not a replacement for `implement.jsonl`. On sub-agent-dispatch workflows, `implement.jsonl` and `check.jsonl` must each contain at least one real spec/research entry before `task.py start`; the seed `_example` row does not count. Inline workflows skip this JSONL gate because Phase 2 loads context through `trellis-before-dev`.
 
@@ -169,6 +177,7 @@ Before declaring planning ready:
 - Repository-answerable questions have already been answered through inspection.
 - Remaining open questions are genuinely about user intent or scope.
 - Guru Team tasks have `design.md` and `implement.md` before implementation.
+- Planning artifact ambiguity review has passed before links are displayed for post-planning approval.
 - Sub-agent-dispatch tasks have real curated entries in both `implement.jsonl` and `check.jsonl`; seed-only manifests are not ready.
 - The user has reviewed the final `prd.md`, `design.md`, and `implement.md` links and explicitly confirmed post-planning approval.
 

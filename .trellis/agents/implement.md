@@ -29,7 +29,7 @@ Report the expected workspace, actual repo root, and whether they match before
 reading or writing task artifacts. If the workspace boundary validator fails,
 stop and report `Implementation Blocked`; do not edit from the source checkout
 or another worktree. If planning approval fails because `planning-approval.json`
-is missing, old-schema,
+is missing, old-schema, lacks passed `ambiguity_review` evidence,
 not sourced from `explicit-post-planning-review`, or the reviewed
 `prd.md`/`design.md`/`implement.md` content digests no longer match, stop and
 report `Implementation Blocked`. Current HEAD or dirty-path drift alone is not a

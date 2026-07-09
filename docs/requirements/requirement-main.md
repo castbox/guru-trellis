@@ -99,6 +99,7 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 - Issue #5 / PR #12：Branch Review Gate 前必须先执行 AI review prompt。
 - Issue #8 / PR #25：增加 planning approval 与 phase2 check 可审计证据。
 - Issue #52：`prd.md` / `design.md` / `implement.md` 生成后必须展示三份文档链接并等待用户显式 post-planning 确认；旧 `source=workflow` 或 Phase 0 handoff 确认 fail closed。
+- Issue #83：展示三份规划文档前必须完成 planning artifact ambiguity review，并在 `planning-approval.json` schema 1.2 记录结构化 `ambiguity_review` evidence；脚本只做 recorder / validator，不替 AI 判断语义充分性。
 - Issue #20 / PR #22：Branch Review Gate 建立 task-local final `review.md` 人类入口和
   `review-gate.json` digest 基线。
 - Issue #70：多轮 Branch Review 每轮保留 task-local `reviews/*.md` raw report，最终
@@ -116,7 +117,7 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 
 | 能力 | Artifact / 脚本 | 说明 |
 | --- | --- | --- |
-| Planning start gate | `planning-approval.json`、`record-planning-approval.sh`、`check-planning-approval.sh` | 记录三份 planning artifact 的 hash / size / mtime、reviewer、`review_prompt_presented_at`、`approved_at`、HEAD、dirty paths 和 `user_confirmation.source=explicit-post-planning-review`；validator 以三份规划文档内容 digest 是否仍匹配为 freshness 判定，HEAD / dirty paths drift 不单独阻塞；`task.py start` 只是状态写入，Phase 0 handoff 确认和旧 `source=workflow` 不能通过 gate。 |
+| Planning start gate | `planning-approval.json`、`record-planning-approval.sh`、`check-planning-approval.sh` | 记录三份 planning artifact 的 hash / size / mtime、reviewer、`review_prompt_presented_at`、`approved_at`、HEAD、dirty paths、`user_confirmation.source=explicit-post-planning-review` 和 schema 1.2 `ambiguity_review` evidence；validator 以三份规划文档内容 digest 是否仍匹配为 freshness 判定，并校验 `ambiguity_review` 状态、reviewer/summary、受控词表、未处理命中和七个审查维度；HEAD / dirty paths drift 不单独阻塞；`task.py start` 只是状态写入，Phase 0 handoff 确认、旧 schema、旧 `source=workflow` 和缺失 ambiguity evidence 不能通过 gate。 |
 | Phase 2 check gate | `phase2-check.json`、`record-phase2-check.sh`、`check-phase2-check.sh` | commit 前记录完整 `trellis-check` AI check 覆盖范围、验证命令、findings 和当时的 `dirty_paths`；`trellis-check` 必须按 `Docs SSOT Plan` 策略复核 durable docs、task artifacts、code/schema/config/deploy/test 和测试覆盖一致性，确认 `delta_first` 已 merge、`ssot_first` 以 durable docs 为主输入、`bootstrap_or_repair_docs` 有最小修复或 follow-up / PR 限制、`no_docs_update_needed` 理由仍成立；`phase2-check.json` 是 Guru Team evidence artifact，不是 Trellis 原生步骤本身，命令和脚本通过只是 evidence 的一部分。 |
 | AI review prompt | workflow / overlay 文案 | Branch Review Gate 前必须由独立 review sub-agent 审查 `origin/<base>...HEAD` 完整 diff；review sub-agent 不继续实现、不替 implement/check 代理补工作。 |
 | Raw reports + rollup 必填 | `reviews/*.md`、`review.md` | 每轮 AI/human review 判断都必须写 task-local 中文 raw Markdown report；顶层 `review.md` 是最终中文 rollup，建议使用 `审查轮次`、`问题生命周期`、`最终审查`、`证据`、`观察项`、`后续候选`、`结论` 等小节，汇总审查轮次、问题闭环生命周期、关键证据、最终结论，并链接所有 raw reports。#61 顶层 artifact 表默认仍只列 final `review.md`，raw reports 通过 rollup 和 gate digest 追溯；literal command/path/JSON/HEAD/API/code token 可保留英文。 |
@@ -304,6 +305,7 @@ Canonical 资产：
 | #76 | open | 当前任务 | sub-agent liveness、progress/stale 判定与 replacement cutover 状态机：单一 `agent-assignment.json` 1.1 artifact、required recorder/checker、status request 前置审计、stale cutover 结构化 termination/replacement cause、completed-only recovery gate；不新增 heartbeat 文件、daemon、sidecar、long-command wrapper 或后台 liveness 进程。 |
 | #70 | open | 当前任务 | Branch Review 每轮保留 `reviews/*.md` raw report；最终 `review.md` 是 rollup 并链接 raw reports；`agent-assignment.json.review_rounds[]` 与 `review-gate.json.verification_evidence.review_reports[]` 记录 raw digest；#61 顶层 artifact 表默认仍只列 final `review.md`。 |
 | #78 | open | 当前任务 | Branch Review raw reports / `review.md` 继承 #57 中文 artifact 规则；workflow / overlay / docs / spec / validator 防止英文模板标题复发。 |
+| #83 | open | 当前任务 | Planning artifact ambiguity review gate：展示三份 planning docs 前完成 AI 语义审查，`planning-approval.json` schema 1.2 记录 passed `ambiguity_review`、受控弱约束词表和七个审查维度；recorder/validator 只校验结构化 evidence。 |
 
 ## 9. 当前扩展边界
 

@@ -56,8 +56,19 @@ DEFAULTS: dict[str, Any] = {
 VALID_PRIORITIES = {"P0", "P1", "P2", "P3"}
 BLOCKING_PRIORITIES = {"P0", "P1", "P2"}
 PLANNING_APPROVAL_ARTIFACT = "planning-approval.json"
-PLANNING_APPROVAL_SCHEMA_VERSION = "1.1"
+PLANNING_APPROVAL_SCHEMA_VERSION = "1.2"
 PLANNING_APPROVAL_CONFIRMATION_SOURCE = "explicit-post-planning-review"
+PLANNING_AMBIGUITY_STATUS_PASSED = "passed"
+PLANNING_AMBIGUITY_CONTROLLED_TERMS = ["可以", "允许", "建议", "尽量", "视情况", "类似", "相关", "等"]
+PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS = [
+    "no_requirement_weakening",
+    "source_issue_semantics_preserved",
+    "conditional_paths_have_conditions",
+    "no_parallel_implementation_paths",
+    "gates_have_machine_verifiable_conditions",
+    "acceptance_criteria_are_deterministic",
+    "external_quotes_are_labeled_non_contract",
+]
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 REVIEW_REPORT_ARTIFACT = "review.md"
@@ -4405,6 +4416,77 @@ def unresolved_blocking_findings(findings: list[dict[str, Any]]) -> list[dict[st
     return blockers
 
 
+def build_planning_ambiguity_review_payload(
+    reviewer: str,
+    summary: str,
+    status: str,
+) -> dict[str, Any]:
+    normalized_status = str(status or "").strip()
+    normalized_reviewer = str(reviewer or "").strip()
+    normalized_summary = str(summary or "").strip()
+    if normalized_status != PLANNING_AMBIGUITY_STATUS_PASSED:
+        raise WorkflowError(
+            f"record-planning-approval requires --ambiguity-status {PLANNING_AMBIGUITY_STATUS_PASSED}.",
+            exit_code=2,
+            payload={"received_status": normalized_status or "(missing)"},
+        )
+    if not normalized_reviewer:
+        raise WorkflowError("record-planning-approval requires --ambiguity-reviewer identity metadata.", exit_code=2)
+    if not normalized_summary:
+        raise WorkflowError("record-planning-approval requires --ambiguity-summary with the AI ambiguity review conclusion.", exit_code=2)
+    return {
+        "status": PLANNING_AMBIGUITY_STATUS_PASSED,
+        "reviewer": normalized_reviewer,
+        "summary": normalized_summary,
+        "normative_language": {
+            "controlled_terms": list(PLANNING_AMBIGUITY_CONTROLLED_TERMS),
+            "unchecked_normative_hits": [],
+        },
+        "checked_dimensions": {
+            dimension: True for dimension in PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS
+        },
+    }
+
+
+def planning_ambiguity_review_errors(review: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(review, dict):
+        return ["planning-approval.json 缺少 ambiguity_review 结构化证据。"]
+    if str(review.get("status") or "").strip() != PLANNING_AMBIGUITY_STATUS_PASSED:
+        errors.append(f"planning-approval.json ambiguity_review.status 必须是 {PLANNING_AMBIGUITY_STATUS_PASSED}。")
+    if not str(review.get("reviewer") or "").strip():
+        errors.append("planning-approval.json ambiguity_review 缺少 reviewer。")
+    if not str(review.get("summary") or "").strip():
+        errors.append("planning-approval.json ambiguity_review 缺少 summary。")
+
+    normative = review.get("normative_language")
+    if not isinstance(normative, dict):
+        errors.append("planning-approval.json ambiguity_review 缺少 normative_language。")
+        normative = {}
+    controlled_terms = normative.get("controlled_terms")
+    if not isinstance(controlled_terms, list):
+        errors.append("planning-approval.json ambiguity_review.normative_language.controlled_terms 必须是数组。")
+    else:
+        controlled_values = {str(item) for item in controlled_terms}
+        missing_terms = [term for term in PLANNING_AMBIGUITY_CONTROLLED_TERMS if term not in controlled_values]
+        if missing_terms:
+            errors.append("planning-approval.json ambiguity_review.controlled_terms 缺少受控弱约束词: " + ", ".join(missing_terms) + "。")
+    unchecked_hits = normative.get("unchecked_normative_hits")
+    if not isinstance(unchecked_hits, list):
+        errors.append("planning-approval.json ambiguity_review.normative_language.unchecked_normative_hits 必须是数组。")
+    elif unchecked_hits:
+        errors.append("planning-approval.json ambiguity_review.unchecked_normative_hits 必须为空；非空表示仍有未处理规范性弱约束命中。")
+
+    dimensions = review.get("checked_dimensions")
+    if not isinstance(dimensions, dict):
+        errors.append("planning-approval.json ambiguity_review 缺少 checked_dimensions。")
+        dimensions = {}
+    for dimension in PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS:
+        if dimensions.get(dimension) is not True:
+            errors.append(f"planning-approval.json ambiguity_review.checked_dimensions.{dimension} 必须为 true。")
+    return errors
+
+
 def build_planning_approval_payload(
     root: Path,
     task_dir: Path,
@@ -4412,6 +4494,9 @@ def build_planning_approval_payload(
     approval_summary: str,
     user_confirmation: str,
     artifacts: list[str],
+    ambiguity_reviewer: str,
+    ambiguity_summary: str,
+    ambiguity_status: str,
     review_prompt_presented_at: str | None = None,
     confirmation_source: str = PLANNING_APPROVAL_CONFIRMATION_SOURCE,
 ) -> dict[str, Any]:
@@ -4442,6 +4527,11 @@ def build_planning_approval_payload(
         artifact_paths = requested
     else:
         artifact_paths = required_paths
+    ambiguity_review = build_planning_ambiguity_review_payload(
+        ambiguity_reviewer,
+        ambiguity_summary,
+        ambiguity_status,
+    )
     reviewed = [file_digest(root, path) for path in artifact_paths]
     artifact_repo_paths = {str(item["path"]) for item in reviewed}
     artifact_repo_paths.add(repo_relative(root, planning_approval_path(task_dir)))
@@ -4458,6 +4548,7 @@ def build_planning_approval_payload(
         "dirty_paths": dirty_paths,
         "reviewer": reviewer,
         "approval_summary": approval_summary,
+        "ambiguity_review": ambiguity_review,
         "user_confirmation": {
             "source": PLANNING_APPROVAL_CONFIRMATION_SOURCE,
             "message": user_confirmation,
@@ -4490,6 +4581,7 @@ def validate_planning_approval(
         errors.append("planning-approval.json 缺少 approval_summary。")
     if not str(payload.get("reviewer") or "").strip():
         errors.append("planning-approval.json 缺少 reviewer。")
+    errors.extend(planning_ambiguity_review_errors(payload.get("ambiguity_review")))
     confirmation = payload.get("user_confirmation")
     if not isinstance(confirmation, dict):
         errors.append("planning-approval.json 缺少用户确认摘要。")
@@ -6068,12 +6160,19 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
     reviewer = str(args.reviewer or "").strip()
     summary = str(args.summary or "").strip()
     confirmation = str(args.user_confirmation or "").strip()
+    ambiguity_reviewer = str(getattr(args, "ambiguity_reviewer", "") or "").strip()
+    ambiguity_summary = str(getattr(args, "ambiguity_summary", "") or "").strip()
+    ambiguity_status = str(getattr(args, "ambiguity_status", PLANNING_AMBIGUITY_STATUS_PASSED) or "").strip()
     if not reviewer:
         raise WorkflowError("record-planning-approval requires --reviewer identity metadata.", exit_code=2)
     if not summary:
         raise WorkflowError("record-planning-approval requires --summary with the planning review conclusion.", exit_code=2)
     if not confirmation:
         raise WorkflowError("record-planning-approval requires --user-confirmation evidence.", exit_code=2)
+    if not ambiguity_reviewer:
+        raise WorkflowError("record-planning-approval requires --ambiguity-reviewer identity metadata.", exit_code=2)
+    if not ambiguity_summary:
+        raise WorkflowError("record-planning-approval requires --ambiguity-summary with the AI ambiguity review conclusion.", exit_code=2)
     payload = build_planning_approval_payload(
         root=root,
         task_dir=task_dir,
@@ -6081,6 +6180,9 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
         approval_summary=summary,
         user_confirmation=confirmation,
         artifacts=list(args.artifact or []),
+        ambiguity_reviewer=ambiguity_reviewer,
+        ambiguity_summary=ambiguity_summary,
+        ambiguity_status=ambiguity_status,
         review_prompt_presented_at=getattr(args, "review_prompt_presented_at", None),
         confirmation_source=str(getattr(args, "confirmation_source", PLANNING_APPROVAL_CONFIRMATION_SOURCE) or ""),
     )
@@ -6637,6 +6739,13 @@ def build_parser() -> argparse.ArgumentParser:
     planning.add_argument("--task")
     planning.add_argument("--reviewer", required=True, help="Reviewer name or AI/human review channel.")
     planning.add_argument("--summary", required=True, help="Chinese planning review conclusion.")
+    planning.add_argument("--ambiguity-reviewer", required=True, help="AI reviewer that completed planning artifact ambiguity review.")
+    planning.add_argument("--ambiguity-summary", required=True, help="Chinese ambiguity review conclusion before planning docs are shown for confirmation.")
+    planning.add_argument(
+        "--ambiguity-status",
+        default=PLANNING_AMBIGUITY_STATUS_PASSED,
+        help=f"Must be {PLANNING_AMBIGUITY_STATUS_PASSED}; non-passed ambiguity review cannot record planning approval.",
+    )
     planning.add_argument("--user-confirmation", required=True, help="Evidence summary for user approval to enter implementation.")
     planning.add_argument(
         "--review-prompt-presented-at",
