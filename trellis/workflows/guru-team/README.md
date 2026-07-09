@@ -174,11 +174,21 @@ current checkout / branch / dirty state、side effects 和 changed-file scope。
 Branch Review Gate、agent assignment recorder 与 publish helper 是内部子命令：
 
 ```bash
-.trellis/guru-team/scripts/bash/record-agent-assignment.sh --json \
+.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh --json \
+  --task ".trellis/tasks/<task>" \
+  --source-repo "<source-checkout-path>" \
   --logical-role "实现代理" \
   --agent-id "<technical-agent-id-or-empty>" \
   --platform-nickname "<display-name-or-empty>" \
-  --reason "中文分配原因"
+  --event assigned \
+  --observed-at "2026-07-07T00:00:00Z" \
+  --evidence "中文分配原因"
+.trellis/guru-team/scripts/bash/check-subagent-liveness.sh --json \
+  --task ".trellis/tasks/<task>" \
+  --agent-id "<technical-agent-id>" \
+  --source-repo "<source-checkout-path>" \
+  --progress-scan-interval 120 \
+  --max-progress-silence 180
 .trellis/guru-team/scripts/bash/record-agent-assignment.sh --json \
   --logical-role "最终放行审查代理" \
   --agent-id "<technical-review-agent-id>" \
@@ -209,25 +219,43 @@ Sub-agent wait / stale / termination policy is part of the workflow contract,
 not a hidden script decision. `wait_agent`, `trellis channel wait`, or
 equivalent timeout only means the current wait window ended without a final
 completion event. It does not prove the agent is stuck, failed, or ready to
-stop. The main session must distinguish long total runtime from no recent
-observable progress: ongoing output, in-scope worktree changes, validation
-progress, or channel events mean continue waiting. Stale assessment is based on
-no observable progress for a recent window, default at least 5 minutes.
+stop. The main session must use `record-subagent-liveness-event.sh` and
+`check-subagent-liveness.sh` as the active status/liveness path.
 
-`agent-assignment.json.status_events[]` records wait timeout, progress observed,
-stale assessed, continue waiting, same-agent resume, replacement start,
-unfinished termination, completion, and explicit failure decisions already made
-by AI/human. The recorder validates objective fields only. If an unfinished
-agent is interrupted or terminated, the same `agent_id` must resume or a
-replacement must inherit predecessor output, current diff, task artifacts,
-remaining checklist, and gate blockers; Branch Review Gate pass is blocked
-until that recovery chain has a later `completed` or `failed` event.
-Before recording timeout/progress/stale/interruption/termination decisions, the
-main session should include a `check-workspace-boundary` snapshot or equivalent
-dual-side workspace evidence. If source checkout contains current-task dirty
-paths or artifacts, record it as workspace-boundary violation/progress evidence,
-not as automatic stale proof. Heartbeat / liveness windows are follow-up work
-tracked outside this workspace boundary fact layer.
+`agent-assignment.json` schema 1.1 is the single task-local assignment,
+status/liveness, and review ledger. It contains `agents[]`, `status_events[]`,
+`liveness[agent_id].last_scan_snapshot`, review rounds, and reuse decisions.
+Non-machine-readable progress such as explicit messages, tool activity,
+command output, platform progress events, or status responses must be recorded
+to `status_events[]` before checker can use it as evidence. The checker is a
+short-lived, single-sample command; it reads task/source checkout snapshots and
+progress event digest, returns one decision, and exits. It does not read
+platform UI, send status requests, terminate agents, or judge implementation
+quality.
+
+Default timing: `progress_scan_interval=120s` controls scan cadence.
+`max_progress_silence=180s` is measured from `progress_anchor_at`.
+`status-requested` does not refresh that anchor or extend
+`max_progress_silence_deadline_at`. Only `status_request_required` authorizes
+one status request; after recording `status-requested`, immediately rerun
+checker and do not repeat the ping while pending. Only `stale_allowed`
+authorizes `stale-assessed`. If the deadline has already passed but no pending
+status request exists, checker still returns `status_request_required` first.
+
+Source checkout dirty paths or task artifacts are workspace-boundary progress
+facts. Source checkout `HEAD`, dirty status, diff stat, or mtime changes make
+checker return `workspace_boundary_violation_progress`, not stale evidence.
+Stale cutover requires `stale-assessed`, then
+`terminated-unfinished termination_reason=stale_cutover
+termination_source_event_id=<stale-assessed.event_id>`, then replacement
+`assigned` and `replacement-started replacement_reason=max_progress_silence_exceeded`.
+Manual/platform unfinished termination uses
+`termination_reason=manual_or_platform_terminated_unfinished`. Failed, stale,
+unfinished, or replacement partial output cannot be used as Phase 2 check pass
+or Branch Review Gate pass evidence until a same-agent resume or replacement
+chain reaches `completed`; replacement `failed` requires further recovery. The
+old `record-agent-assignment.sh --status-event` path fails closed and points
+callers to `record-subagent-liveness-event.sh`.
 
 用户日常可以直接描述任务、贴 issue URL，或说“处理 issue #123”。AI 依赖
 Trellis 自动注入的 startup context、workflow-state、hook breadcrumb 或 skill

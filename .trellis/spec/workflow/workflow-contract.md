@@ -239,11 +239,12 @@ Passing the gate requires:
 - every review round with `findings_count > 0` must have a later same-agent
   `问题闭环审查代理` round with `findings_count: 0` and
   `reuse_decision: reuse-for-closure`, or a replacement closure chain when the
-  finding owner objectively failed/interrupted and cannot continue; replacement
-  closure requires predecessor failed/unfinished `status_events[]`,
-  `replacement-started` with `supersedes_agent_id`, `reuse_decisions[]`
-  `decision=replace` with `from_round` / `to_round`, and a replacement
-  `问题闭环审查代理` round with `findings_count: 0` and
+  finding owner objectively failed, was interrupted, or became stale and cannot
+  continue; replacement closure requires predecessor liveness evidence in
+  `status_events[]`, `replacement-started` with `predecessor_agent_id`,
+  `predecessor_event_id`, `replacement_reason`, and `handoff_summary`,
+  `reuse_decisions[]` `decision=replace` with `from_round` / `to_round`, and a
+  replacement `问题闭环审查代理` round with `findings_count: 0` and
   `reuse_decision: replace` before any fresh final round can pass. This closure
   proves the finding is closed and does not need to be repeated for every later
   HEAD

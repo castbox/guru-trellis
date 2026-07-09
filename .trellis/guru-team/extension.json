@@ -62,11 +62,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-08T14:02:31Z",
+  "installed_at": "2026-07-08T22:10:14Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/060-workspace-boundary-guard",
-    "commit": "ff59c2db866d0414b7a736205a26ed9da004eecf",
+    "ref": "codex/076-subagent-liveness-state-machine",
+    "commit": "c2d4b0395c78f8af6b1a21fc99a6bb31e04f1d6f",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -129,6 +129,7 @@
       ".trellis/guru-team/scripts/bash/check-phase2-check.sh",
       ".trellis/guru-team/scripts/bash/check-planning-approval.sh",
       ".trellis/guru-team/scripts/bash/check-review-gate.sh",
+      ".trellis/guru-team/scripts/bash/check-subagent-liveness.sh",
       ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
       ".trellis/guru-team/scripts/bash/finish-work.sh",
       ".trellis/guru-team/scripts/bash/prepare-task.sh",
@@ -136,6 +137,7 @@
       ".trellis/guru-team/scripts/bash/record-agent-assignment.sh",
       ".trellis/guru-team/scripts/bash/record-phase2-check.sh",
       ".trellis/guru-team/scripts/bash/record-planning-approval.sh",
+      ".trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh",
       ".trellis/guru-team/scripts/bash/review-branch.sh",
       ".trellis/guru-team/scripts/bash/version.sh",
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"

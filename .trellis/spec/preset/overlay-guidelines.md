@@ -90,10 +90,24 @@ Continue entries must:
 - state that passing Branch Review Gate requires task-local
   `--agent-assignment`
 - state that `wait_agent`, `trellis channel wait`, or equivalent timeout is only
-  a wait-window result, not failure or partial-completion evidence; unfinished
-  termination must be recorded in `agent-assignment.json.status_events[]` and
-  must have same-agent resume or replacement plus later `completed` / `failed`
-  before gate pass
+  a wait-window result, not failure or partial-completion evidence
+- state the #76 liveness loop: after dispatch the main session records
+  `assigned` through `record-subagent-liveness-event.sh`, runs
+  `check-subagent-liveness.sh` at `progress_scan_interval=120s` or
+  `next_wait_ms`, writes non-machine-readable progress to `status_events[]`
+  before checker evidence, sends status request only after
+  `status_request_required`, records `status-requested` then immediately
+  rechecks, does not repeat a pending ping, records `stale-assessed` only after
+  `stale_allowed`, and performs stale cutover with
+  `terminated-unfinished termination_reason=stale_cutover` plus
+  `replacement-started replacement_reason=max_progress_silence_exceeded`
+- state that `max_progress_silence=180s` is measured from
+  `progress_anchor_at`; `status-requested` does not refresh that anchor or
+  extend `max_progress_silence_deadline_at`
+- state that failed, stale, unfinished, or replacement partial output must not
+  become Phase 2 / Branch Review pass evidence until same-agent resume or
+  replacement recovery reaches `completed`; replacement `failed` requires
+  further recovery
 - state that main-session self-review cannot pass Branch Review Gate; if
   independent Agent review is unavailable, continue must stop with the gate
   pending
@@ -163,6 +177,11 @@ Sub-agent overlay entries must:
 - require unfinished handoff reporting when interrupted/replaced before
   completion, including current diff, remaining work, validation state, and gate
   blockers for same-agent resume or replacement;
+- require agents to respond to explicit main-session status requests with
+  platform-visible current step, last concrete progress, active command/tool,
+  changed files or review scope, remaining work, and blockers; agents must not
+  emit periodic heartbeat messages and must not write `agent-assignment.json` or
+  any liveness artifact themselves;
 - avoid turning agent files into workflow judgment rules.
 
 ## Cross-Platform Consistency

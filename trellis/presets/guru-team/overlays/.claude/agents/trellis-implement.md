@@ -56,6 +56,7 @@ Before implementing, read:
 - Do not report `Implementation Complete` until the requested scope is actually complete and verification status is known.
 - If the main session interrupts, terminates, replaces, or asks you to stop before completion, explicitly report `Implementation Unfinished` instead. Include files changed, current diff summary, last completed step, commands still running or stuck, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
 - A main-session wait timeout is not your failure signal. Continue working unless you receive an explicit stop/interrupt instruction.
+- Do not emit periodic heartbeat messages and do not write `agent-assignment.json` or any liveness artifact yourself. If the main session sends an explicit status request, reply in platform-visible output with the current step, last concrete progress, active command/tool if any, changed files or review scope, remaining work, and blockers; the main session records that response as liveness evidence.
 - Do not run `trellis-check`, record `phase2-check.json`, or perform Branch Review Gate work. You own the implementation boundary; later check/review phases need your handoff, not a substitute check.
 - Your completion handoff must include requirement/design carryover, durable docs/spec/overlay responsibilities handled, verification run or deferred, remaining risks, and concrete `trellis-check` focus areas.
 

@@ -19,7 +19,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -119,7 +119,7 @@ FORBIDDEN_REVIEW_REPORT_ENGLISH_TEMPLATE_HEADINGS = [
     "Verification Results",
     "Summary",
 ]
-AGENT_ASSIGNMENT_SCHEMA_VERSION = "1.0"
+AGENT_ASSIGNMENT_SCHEMA_VERSION = "1.1"
 ALLOWED_LOGICAL_ROLES = [
     "实现代理",
     "阶段二检查代理",
@@ -128,27 +128,76 @@ ALLOWED_LOGICAL_ROLES = [
     "最终放行审查代理",
 ]
 ALLOWED_REUSE_DECISIONS = {"reuse", "replace", "reuse-for-closure", "new-agent", "not-applicable"}
-ALLOWED_AGENT_STATUS_EVENTS = {
-    "wait-timeout",
-    "progress-observed",
+AGENT_PROGRESS_EVENTS = {
+    "explicit-message-observed",
+    "tool-activity-observed",
+    "command-output-observed",
+    "platform-progress-observed",
+    "status-response-observed",
+}
+AGENT_TERMINAL_EVENTS = {"completed", "failed"}
+AGENT_CONTROL_EVENTS = {
+    "assigned",
+    "status-requested",
+    "status-request-failed",
     "stale-assessed",
-    "continue-waiting",
     "resume-same-agent",
     "replacement-started",
     "terminated-unfinished",
-    "completed",
-    "failed",
 }
-ALLOWED_AGENT_STATUS_DECISIONS = {
-    "continue-waiting",
-    "resume-same-agent",
-    "start-replacement",
-    "terminate-unfinished",
-    "mark-completed",
-    "mark-failed",
+AGENT_WORKSPACE_AUDIT_EVENTS = {"workspace-boundary-violation"}
+ALLOWED_AGENT_STATUS_EVENTS = (
+    AGENT_PROGRESS_EVENTS
+    | AGENT_TERMINAL_EVENTS
+    | AGENT_CONTROL_EVENTS
+    | AGENT_WORKSPACE_AUDIT_EVENTS
+)
+AGENT_LIVENESS_DECISIONS = {
+    "workspace_boundary_violation_progress",
+    "progress_observed",
+    "status_request_required",
+    "continue_waiting_no_repeat_ping",
+    "stale_allowed",
+    "blocked_missing_evidence",
 }
-AGENT_STATUS_EVENTS_REQUIRE_PROGRESS_EVIDENCE = {"stale-assessed", "terminated-unfinished"}
-AGENT_STATUS_EVENTS_REQUIRE_HANDOFF = {"replacement-started", "terminated-unfinished"}
+AGENT_REPLACEMENT_REASONS = {
+    "max_progress_silence_exceeded",
+    "terminal_failed_incomplete",
+    "manual_or_platform_terminated_unfinished",
+}
+AGENT_TERMINATION_REASONS = {
+    "stale_cutover",
+    "manual_or_platform_terminated_unfinished",
+}
+AGENT_STATUS_EVENT_SOURCES = {"main-session", "recorder", "checker"}
+AGENT_PROGRESS_SOURCE_KINDS = {
+    "task_head",
+    "task_status",
+    "task_diff_stat",
+    "task_mtime",
+    "source_head",
+    "source_status",
+    "source_diff_stat",
+    "source_mtime",
+    "status_event",
+}
+AGENT_LIVENESS_SNAPSHOT_FIELDS = [
+    "task_head",
+    "task_content_status_digest",
+    "task_content_diff_stat_digest",
+    "task_content_max_mtime",
+    "source_head",
+    "source_status_digest",
+    "source_diff_stat_digest",
+    "source_max_mtime",
+    "progress_events_count",
+    "progress_events_digest",
+    "progress_events_newest_event_id",
+]
+AGENT_LIVENESS_BLOCKED_DECISION = "blocked_missing_evidence"
+AGENT_LIVENESS_DEFAULT_SCAN_INTERVAL_SECONDS = 120
+AGENT_LIVENESS_DEFAULT_MAX_SILENCE_SECONDS = 180
+PLACEHOLDER_EVIDENCE_VALUES = {"", "n/a", "na", "none", "unknown", "placeholder", "todo", "tbd"}
 SELF_REVIEWER_PATTERNS = [
     re.compile(r"(^|[-_./\s])main[-_./\s]*session($|[-_./\s])", re.IGNORECASE),
     re.compile(r"(^|[-_./\s])self[-_./\s]*review($|[-_./\s])", re.IGNORECASE),
@@ -1579,7 +1628,15 @@ def read_json(path: Path) -> dict[str, Any]:
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    content = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    fd, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent))
+    tmp_path = Path(tmp_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(content)
+        tmp_path.replace(path)
+    finally:
+        tmp_path.unlink(missing_ok=True)
 
 
 def read_optional_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
@@ -2363,6 +2420,7 @@ def default_agent_assignment_payload(root: Path, task_dir: Path) -> dict[str, An
         "task": repo_relative(root, task_dir),
         "head": current_head(root),
         "agents": [],
+        "liveness": {},
         "review_rounds": [],
         "reuse_decisions": [],
         "status_events": [],
@@ -2377,13 +2435,15 @@ def load_agent_assignment(root: Path, task_dir: Path) -> dict[str, Any]:
     payload = read_json(path)
     if not isinstance(payload.get("agents"), list):
         payload["agents"] = []
+    if not isinstance(payload.get("liveness"), dict):
+        payload["liveness"] = {}
     if not isinstance(payload.get("review_rounds"), list):
         payload["review_rounds"] = []
     if not isinstance(payload.get("reuse_decisions"), list):
         payload["reuse_decisions"] = []
     if not isinstance(payload.get("status_events"), list):
         payload["status_events"] = []
-    payload.setdefault("schema_version", AGENT_ASSIGNMENT_SCHEMA_VERSION)
+    payload["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
     payload.setdefault("task", repo_relative(root, task_dir))
     payload.setdefault("head", current_head(root))
     return payload
@@ -2423,35 +2483,272 @@ def validate_agent_status_event_value(value: str) -> str:
     return event
 
 
-def validate_agent_status_decision_value(value: str) -> str:
-    decision = value.strip()
-    if decision not in ALLOWED_AGENT_STATUS_DECISIONS:
-        raise WorkflowError(
-            f"Invalid agent status decision: {decision or '(empty)'}. Valid decisions: {', '.join(sorted(ALLOWED_AGENT_STATUS_DECISIONS))}",
-            exit_code=2,
-        )
-    return decision
+def parse_iso_datetime(value: Any, label: str = "timestamp") -> datetime:
+    text = str(value or "").strip()
+    if not text:
+        raise WorkflowError(f"{label} is required.", exit_code=2)
+    normalized = text.removesuffix("Z") + "+00:00" if text.endswith("Z") else text
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as exc:
+        raise WorkflowError(f"{label} must be ISO-8601: {text}", exit_code=2) from exc
+    if parsed.tzinfo is None:
+        raise WorkflowError(f"{label} must include a UTC offset: {text}", exit_code=2)
+    return parsed.astimezone(timezone.utc)
+
+
+def parse_utc_iso_datetime(value: Any, label: str = "timestamp") -> datetime:
+    text = str(value or "").strip()
+    if not text:
+        raise WorkflowError(f"{label} is required.", exit_code=2)
+    normalized = text.removesuffix("Z") + "+00:00" if text.endswith("Z") else text
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as exc:
+        raise WorkflowError(f"{label} must be ISO-8601 UTC: {text}", exit_code=2) from exc
+    if parsed.tzinfo is None:
+        raise WorkflowError(f"{label} must include a UTC offset: {text}", exit_code=2)
+    if parsed.utcoffset() != timedelta(0):
+        raise WorkflowError(f"{label} must be UTC, not a non-zero offset: {text}", exit_code=2)
+    return parsed.astimezone(timezone.utc)
+
+
+def iso_from_datetime(value: datetime) -> str:
+    return value.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def normalize_utc_iso(value: Any, label: str = "timestamp") -> str:
+    return iso_from_datetime(parse_utc_iso_datetime(value, label))
+
+
+def max_iso(left: str, right: str) -> str:
+    if not left:
+        return right
+    if not right:
+        return left
+    return iso_from_datetime(max(parse_iso_datetime(left), parse_iso_datetime(right)))
+
+
+def evidence_is_placeholder(value: str) -> bool:
+    normalized = re.sub(r"\s+", " ", value.strip()).casefold()
+    return normalized in PLACEHOLDER_EVIDENCE_VALUES
+
+
+def validate_event_evidence(value: str) -> str:
+    evidence = value.strip()
+    if evidence_is_placeholder(evidence):
+        raise WorkflowError("liveness event requires non-placeholder --evidence.", exit_code=2)
+    return evidence
+
+
+def digest_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def digest_lines(lines: list[str]) -> str:
+    return digest_text("\n".join(lines))
+
+
+def relative_to_repo_for_git(root: Path, path: Path) -> str:
+    try:
+        return path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return path.name
+
+
+def filtered_git_lines(root: Path, cmd: list[str], excluded_paths: set[str]) -> list[str]:
+    proc = run(cmd, cwd=root, check=False)
+    text = (proc.stdout or "") if proc.returncode == 0 else (proc.stdout or "") + "\n" + (proc.stderr or "")
+    excluded = {path.strip("/") for path in excluded_paths if path.strip("/")}
+    lines: list[str] = []
+    for raw in text.splitlines():
+        line = raw.rstrip()
+        if not line:
+            continue
+        if any(path and path in line for path in excluded):
+            continue
+        lines.append(line)
+    return sorted(lines)
+
+
+def max_file_mtime_iso(root: Path, excluded_paths: set[str]) -> str:
+    excluded = {(root / path).resolve() for path in excluded_paths if path}
+    max_mtime = 0.0
+    for current, dirs, files in os.walk(root):
+        current_path = Path(current)
+        dirs[:] = [name for name in dirs if name != ".git"]
+        for name in files:
+            path = (current_path / name).resolve()
+            if path in excluded:
+                continue
+            if any(parent.name == ".git" for parent in path.parents):
+                continue
+            try:
+                mtime = path.stat().st_mtime
+            except OSError:
+                continue
+            if mtime > max_mtime:
+                max_mtime = mtime
+    if max_mtime <= 0:
+        return ""
+    return datetime.fromtimestamp(max_mtime, timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def progress_events_for_agent(payload: dict[str, Any], agent_id: str) -> list[dict[str, Any]]:
+    events = payload.get("status_events")
+    if not isinstance(events, list):
+        return []
+    return [
+        item
+        for item in events
+        if isinstance(item, dict)
+        and str(item.get("agent_id") or "").strip() == agent_id
+        and str(item.get("event") or "").strip() in AGENT_PROGRESS_EVENTS
+    ]
+
+
+def progress_events_digest(payload: dict[str, Any], agent_id: str) -> dict[str, Any]:
+    events = progress_events_for_agent(payload, agent_id)
+    normalized = [
+        {
+            "event_id": str(item.get("event_id") or ""),
+            "event": str(item.get("event") or ""),
+            "observed_at": str(item.get("observed_at") or ""),
+            "evidence": str(item.get("evidence") or ""),
+        }
+        for item in events
+    ]
+    newest = ""
+    if events:
+        newest_item = max(events, key=lambda item: parse_iso_datetime(item.get("observed_at"), "progress observed_at"))
+        newest = str(newest_item.get("event_id") or "")
+    return {
+        "progress_events_count": len(events),
+        "progress_events_digest": digest_text(json.dumps(normalized, ensure_ascii=False, sort_keys=True)),
+        "progress_events_newest_event_id": newest,
+    }
+
+
+def resolve_source_repo(source_repo: str | None) -> Path:
+    value = clean_optional_text(source_repo)
+    if not value:
+        raise WorkflowError("subagent liveness recorder/checker requires --source-repo.", exit_code=2)
+    path = Path(value).expanduser()
+    if not path.exists():
+        raise WorkflowError(f"source repo does not exist: {path}", exit_code=2)
+    return repo_root(path)
+
+
+def collect_liveness_snapshot(root: Path, task_dir: Path, source_repo: Path, payload: dict[str, Any], agent_id: str, captured_at: str | None = None) -> dict[str, Any]:
+    captured = captured_at or now_iso()
+    artifact_relative = relative_to_repo_for_git(root, agent_assignment_path(task_dir))
+    task_status_lines = filtered_git_lines(root, ["git", "status", "--porcelain"], {artifact_relative})
+    task_diff_lines = filtered_git_lines(root, ["git", "diff", "--stat"], {artifact_relative})
+    task_diff_lines.extend(filtered_git_lines(root, ["git", "diff", "--cached", "--stat"], {artifact_relative}))
+    source_status_lines = filtered_git_lines(source_repo, ["git", "status", "--porcelain"], set())
+    source_diff_lines = filtered_git_lines(source_repo, ["git", "diff", "--stat"], set())
+    source_diff_lines.extend(filtered_git_lines(source_repo, ["git", "diff", "--cached", "--stat"], set()))
+    return {
+        "captured_at": captured,
+        "task_head": current_head(root),
+        "task_content_status_digest": digest_lines(task_status_lines),
+        "task_content_diff_stat_digest": digest_lines(sorted(task_diff_lines)),
+        "task_content_max_mtime": max_file_mtime_iso(root, {artifact_relative}),
+        "source_head": current_head(source_repo),
+        "source_status_digest": digest_lines(source_status_lines),
+        "source_diff_stat_digest": digest_lines(sorted(source_diff_lines)),
+        "source_max_mtime": max_file_mtime_iso(source_repo, set()),
+        **progress_events_digest(payload, agent_id),
+    }
+
+
+def source_repo_from_handoff(root: Path, handoff: dict[str, Any]) -> Path:
+    source = handoff.get("preflight", {}).get("current_checkout") if isinstance(handoff.get("preflight"), dict) else ""
+    if not source:
+        source = handoff.get("source_checkout") or str(root)
+    return repo_root(Path(str(source)).expanduser())
+
+
+def agent_record(payload: dict[str, Any], agent_id: str) -> dict[str, Any] | None:
+    agents = payload.get("agents")
+    if not isinstance(agents, list):
+        return None
+    for item in agents:
+        if isinstance(item, dict) and str(item.get("agent_id") or "").strip() == agent_id:
+            return item
+    return None
+
+
+def next_event_id(payload: dict[str, Any], event: str, agent_id: str) -> str:
+    events = payload.get("status_events")
+    count = len(events) + 1 if isinstance(events, list) else 1
+    seed = f"{event}|{agent_id}|{now_iso()}|{count}"
+    return f"evt-{count:04d}-{hashlib.sha1(seed.encode('utf-8')).hexdigest()[:10]}"
+
+
+def ensure_liveness_entry(payload: dict[str, Any], agent_id: str) -> dict[str, Any]:
+    liveness = payload.setdefault("liveness", {})
+    if not isinstance(liveness, dict):
+        raise WorkflowError("agent-assignment.json liveness must be an object.", exit_code=2)
+    entry = liveness.setdefault(agent_id, {})
+    if not isinstance(entry, dict):
+        raise WorkflowError(f"agent-assignment.json liveness[{agent_id}] must be an object.", exit_code=2)
+    return entry
 
 
 def append_agent_assignment_event(
     payload: dict[str, Any],
     root: Path,
+    task_dir: Path,
     logical_role: str,
     agent_id: str,
     platform_nickname: str,
     reason: str,
+    source_repo: Path | None = None,
+    observed_at: str | None = None,
 ) -> dict[str, Any]:
     if not reason:
         raise WorkflowError("record-agent-assignment requires --reason explaining the AI/human assignment decision.", exit_code=2)
+    if not agent_id:
+        raise WorkflowError("assigned liveness event requires --agent-id.", exit_code=2)
+    if agent_record(payload, agent_id):
+        raise WorkflowError(f"agent already assigned: {agent_id}", exit_code=2)
+    observed = normalize_utc_iso(observed_at or now_iso(), "assigned.observed_at")
+    role = validate_logical_role(logical_role)
     event = {
-        "logical_role": validate_logical_role(logical_role),
+        "logical_role": role,
         "agent_id": agent_id,
         "platform_nickname": platform_nickname,
-        "assigned_at": now_iso(),
+        "assigned_at": observed,
         "assigned_head": current_head(root),
         "reason": reason,
     }
     payload["agents"].append(event)
+    status_event = build_liveness_event(
+        payload=payload,
+        root=root,
+        logical_role=role,
+        agent_id=agent_id,
+        platform_nickname=platform_nickname,
+        event_name="assigned",
+        observed_at=observed,
+        evidence=reason,
+        source="main-session",
+    )
+    event["event_id"] = status_event["event_id"]
+    payload.setdefault("status_events", []).append(status_event)
+    source = source_repo or root
+    snapshot = collect_liveness_snapshot(root, task_dir, source, payload, agent_id, captured_at=observed)
+    liveness = ensure_liveness_entry(payload, agent_id)
+    liveness.update(
+        {
+            "progress_anchor_at": observed,
+            "last_scan_snapshot": snapshot,
+            "pending_status_request_at": None,
+            "last_checked_at": "",
+            "last_decision": "",
+        }
+    )
     return event
 
 
@@ -2524,54 +2821,429 @@ def append_agent_reuse_decision(
     return event
 
 
-def append_agent_status_event(
+def build_liveness_event(
+    *,
     payload: dict[str, Any],
     root: Path,
     logical_role: str,
     agent_id: str,
     platform_nickname: str,
-    status_event: str,
-    decision: str,
-    reason: str,
+    event_name: str,
     observed_at: str,
-    last_observed_progress_at: str,
-    workspace_evidence: str,
-    running_command_evidence: str,
-    supersedes_agent_id: str,
-    handoff_summary: str,
+    evidence: str,
+    source: str,
+    predecessor_agent_id: str = "",
+    predecessor_event_id: str = "",
+    termination_reason: str = "",
+    termination_source_event_id: str = "",
+    replacement_reason: str = "",
+    handoff_summary: str = "",
 ) -> dict[str, Any]:
-    event_name = validate_agent_status_event_value(status_event)
-    decision_name = validate_agent_status_decision_value(decision)
-    if not reason:
-        raise WorkflowError("status event requires --reason with the AI/human status handling rationale.", exit_code=2)
-    if event_name in AGENT_STATUS_EVENTS_REQUIRE_PROGRESS_EVIDENCE:
-        if not last_observed_progress_at:
-            raise WorkflowError(f"{event_name} requires --last-observed-progress-at.", exit_code=2)
-        if not workspace_evidence:
-            raise WorkflowError(f"{event_name} requires --workspace-evidence.", exit_code=2)
-        if not running_command_evidence:
-            raise WorkflowError(f"{event_name} requires --running-command-evidence.", exit_code=2)
-    if event_name == "replacement-started" and not supersedes_agent_id:
-        raise WorkflowError("replacement-started requires --supersedes-agent-id.", exit_code=2)
-    if event_name in AGENT_STATUS_EVENTS_REQUIRE_HANDOFF and not handoff_summary:
-        raise WorkflowError(f"{event_name} requires --handoff-summary.", exit_code=2)
-    event = {
-        "event": event_name,
-        "logical_role": validate_logical_role(logical_role),
+    event = validate_agent_status_event_value(event_name)
+    if source not in AGENT_STATUS_EVENT_SOURCES:
+        raise WorkflowError(f"Invalid liveness event source: {source}", exit_code=2)
+    observed = normalize_utc_iso(observed_at or now_iso(), "observed_at")
+    return {
+        "event_id": next_event_id(payload, event, agent_id),
+        "event": event,
         "agent_id": agent_id,
+        "logical_role": validate_logical_role(logical_role),
         "platform_nickname": platform_nickname,
+        "observed_at": observed,
+        "recorded_at": now_iso(),
         "head": current_head(root),
-        "observed_at": observed_at or now_iso(),
-        "last_observed_progress_at": last_observed_progress_at,
-        "workspace_evidence": workspace_evidence,
-        "running_command_evidence": running_command_evidence,
-        "decision": decision_name,
-        "reason": reason,
-        "supersedes_agent_id": supersedes_agent_id,
+        "source": source,
+        "evidence": validate_event_evidence(evidence),
+        "predecessor_agent_id": predecessor_agent_id,
+        "predecessor_event_id": predecessor_event_id,
+        "termination_reason": termination_reason,
+        "termination_source_event_id": termination_source_event_id,
+        "replacement_reason": replacement_reason,
         "handoff_summary": handoff_summary,
     }
-    payload.setdefault("status_events", []).append(event)
-    return event
+
+
+def event_by_id(payload: dict[str, Any], event_id: str) -> dict[str, Any] | None:
+    if not event_id:
+        return None
+    events = payload.get("status_events")
+    if not isinstance(events, list):
+        return None
+    for item in events:
+        if isinstance(item, dict) and str(item.get("event_id") or "").strip() == event_id:
+            return item
+    return None
+
+
+def latest_progress_observed_at(payload: dict[str, Any], agent_id: str) -> str:
+    events = progress_events_for_agent(payload, agent_id)
+    if not events:
+        return ""
+    newest = max(events, key=lambda item: parse_iso_datetime(item.get("observed_at"), "progress observed_at"))
+    return str(newest.get("observed_at") or "")
+
+
+def validate_resume_reference(payload: dict[str, Any], agent_id: str, predecessor_event_id: str) -> None:
+    predecessor = event_by_id(payload, predecessor_event_id)
+    if not predecessor or str(predecessor.get("agent_id") or "") != agent_id:
+        raise WorkflowError("resume-same-agent requires --predecessor-event-id referencing the same agent.", exit_code=2)
+    predecessor_event = str(predecessor.get("event") or "")
+    predecessor_reason = str(predecessor.get("termination_reason") or "")
+    if predecessor_event == "failed":
+        return
+    if predecessor_event == "terminated-unfinished" and predecessor_reason == "manual_or_platform_terminated_unfinished":
+        return
+    raise WorkflowError("resume-same-agent may reference only failed or manual_or_platform_terminated_unfinished evidence, never stale evidence.", exit_code=2)
+
+
+def validate_replacement_reference(
+    payload: dict[str, Any],
+    agent_id: str,
+    predecessor_agent_id: str,
+    predecessor_event_id: str,
+    replacement_reason: str,
+) -> None:
+    if agent_id == predecessor_agent_id:
+        raise WorkflowError("replacement-started requires a different replacement agent; use resume-same-agent for same-agent recovery.", exit_code=2)
+    if not agent_record(payload, agent_id):
+        raise WorkflowError("replacement-started requires the replacement agent to be assigned first.", exit_code=2)
+    predecessor = event_by_id(payload, predecessor_event_id)
+    if not predecessor or str(predecessor.get("agent_id") or "") != predecessor_agent_id:
+        raise WorkflowError("replacement-started predecessor_event_id must reference predecessor_agent_id.", exit_code=2)
+    predecessor_event = str(predecessor.get("event") or "")
+    predecessor_termination_reason = str(predecessor.get("termination_reason") or "")
+    expected = ""
+    if predecessor_event == "stale-assessed":
+        expected = "max_progress_silence_exceeded"
+        has_cutover = any(
+            isinstance(item, dict)
+            and str(item.get("event") or "") == "terminated-unfinished"
+            and str(item.get("agent_id") or "") == predecessor_agent_id
+            and str(item.get("termination_reason") or "") == "stale_cutover"
+            and str(item.get("termination_source_event_id") or "") == predecessor_event_id
+            for item in payload.get("status_events", [])
+        )
+        if not has_cutover:
+            raise WorkflowError("stale replacement-started requires prior terminated-unfinished termination_reason=stale_cutover.", exit_code=2)
+    elif predecessor_event == "failed":
+        expected = "terminal_failed_incomplete"
+    elif predecessor_event == "terminated-unfinished" and predecessor_termination_reason == "manual_or_platform_terminated_unfinished":
+        expected = "manual_or_platform_terminated_unfinished"
+    elif predecessor_event == "terminated-unfinished" and predecessor_termination_reason == "stale_cutover":
+        raise WorkflowError("stale cutover replacement-started must reference stale-assessed, not terminated-unfinished.", exit_code=2)
+    else:
+        raise WorkflowError("replacement-started predecessor_event_id must reference failed, stale-assessed, or terminated-unfinished evidence.", exit_code=2)
+    if replacement_reason != expected:
+        raise WorkflowError(
+            f"replacement-started replacement_reason must be {expected} for predecessor event {predecessor_event}.",
+            exit_code=2,
+        )
+
+
+def validate_termination_reference(payload: dict[str, Any], agent_id: str, termination_reason: str, termination_source_event_id: str) -> None:
+    if termination_reason not in AGENT_TERMINATION_REASONS:
+        raise WorkflowError(f"Invalid termination_reason: {termination_reason or '(empty)'}", exit_code=2)
+    if termination_reason == "stale_cutover":
+        source_event = event_by_id(payload, termination_source_event_id)
+        if not source_event or str(source_event.get("agent_id") or "") != agent_id or str(source_event.get("event") or "") != "stale-assessed":
+            raise WorkflowError("stale_cutover requires termination_source_event_id referencing same-agent stale-assessed.", exit_code=2)
+    elif termination_source_event_id:
+        raise WorkflowError("manual_or_platform_terminated_unfinished must not set termination_source_event_id.", exit_code=2)
+
+
+def require_status_request_decision(payload: dict[str, Any], agent_id: str, event: str) -> None:
+    liveness = payload.get("liveness") if isinstance(payload.get("liveness"), dict) else {}
+    entry = liveness.get(agent_id) if isinstance(liveness, dict) else None
+    if not isinstance(entry, dict):
+        raise WorkflowError(f"{event} requires liveness entry for agent.", exit_code=2)
+    if str(entry.get("last_decision") or "") != "status_request_required":
+        raise WorkflowError(
+            f"{event} requires last_decision == status_request_required; run check-subagent-liveness and send status request only after that decision.",
+            exit_code=2,
+        )
+
+
+def verify_stale_assessed_freshness(root: Path, task_dir: Path, source_repo: Path, payload: dict[str, Any], agent_id: str) -> None:
+    liveness = payload.get("liveness") if isinstance(payload.get("liveness"), dict) else {}
+    entry = liveness.get(agent_id) if isinstance(liveness, dict) else None
+    if not isinstance(entry, dict):
+        raise WorkflowError("stale-assessed requires liveness entry for agent.", exit_code=2)
+    if str(entry.get("last_decision") or "") != "stale_allowed":
+        raise WorkflowError("stale-assessed requires last_decision == stale_allowed; rerun check-subagent-liveness first.", exit_code=2)
+    previous = entry.get("last_scan_snapshot")
+    if not isinstance(previous, dict):
+        raise WorkflowError("stale-assessed requires last_scan_snapshot evidence.", exit_code=2)
+    current = collect_liveness_snapshot(root, task_dir, source_repo, payload, agent_id, captured_at=str(previous.get("captured_at") or now_iso()))
+    changed = [
+        field
+        for field in AGENT_LIVENESS_SNAPSHOT_FIELDS
+        if str(current.get(field) or "") != str(previous.get(field) or "")
+    ]
+    if changed:
+        raise WorkflowError(
+            "stale-assessed refused because new progress or snapshot drift appeared; rerun check-subagent-liveness.",
+            exit_code=2,
+            payload={"changed_snapshot_fields": changed},
+        )
+
+
+def append_subagent_liveness_event(
+    payload: dict[str, Any],
+    root: Path,
+    task_dir: Path,
+    source_repo: Path,
+    *,
+    agent_id: str,
+    event_name: str,
+    observed_at: str,
+    evidence: str,
+    logical_role: str = "",
+    platform_nickname: str = "",
+    source: str = "main-session",
+    predecessor_agent_id: str = "",
+    predecessor_event_id: str = "",
+    termination_reason: str = "",
+    termination_source_event_id: str = "",
+    replacement_reason: str = "",
+    handoff_summary: str = "",
+) -> dict[str, Any]:
+    event = validate_agent_status_event_value(event_name)
+    if event == "assigned":
+        return append_agent_assignment_event(
+            payload,
+            root,
+            task_dir,
+            logical_role,
+            agent_id,
+            platform_nickname,
+            validate_event_evidence(evidence),
+            source_repo=source_repo,
+            observed_at=observed_at,
+        )
+    assigned_agent = agent_record(payload, agent_id)
+    if not assigned_agent:
+        raise WorkflowError(f"liveness event requires existing assigned agent: {agent_id}", exit_code=2)
+    role = str(assigned_agent.get("logical_role") or "")
+    nickname = str(assigned_agent.get("platform_nickname") or "")
+    if event == "resume-same-agent":
+        if not predecessor_event_id or not handoff_summary:
+            raise WorkflowError("resume-same-agent requires --predecessor-event-id and --handoff-summary.", exit_code=2)
+        validate_resume_reference(payload, agent_id, predecessor_event_id)
+    elif event == "replacement-started":
+        if not predecessor_agent_id or not predecessor_event_id or not replacement_reason or not handoff_summary:
+            raise WorkflowError("replacement-started requires --predecessor-agent-id, --predecessor-event-id, --replacement-reason, and --handoff-summary.", exit_code=2)
+        if replacement_reason not in AGENT_REPLACEMENT_REASONS:
+            raise WorkflowError(f"Invalid replacement_reason: {replacement_reason}", exit_code=2)
+        validate_replacement_reference(payload, agent_id, predecessor_agent_id, predecessor_event_id, replacement_reason)
+    elif event == "terminated-unfinished":
+        if not termination_reason or not handoff_summary:
+            raise WorkflowError("terminated-unfinished requires --termination-reason and --handoff-summary.", exit_code=2)
+        validate_termination_reference(payload, agent_id, termination_reason, termination_source_event_id)
+    elif event == "stale-assessed":
+        verify_stale_assessed_freshness(root, task_dir, source_repo, payload, agent_id)
+    elif event in {"status-requested", "status-request-failed"}:
+        require_status_request_decision(payload, agent_id, event)
+    else:
+        forbidden_values = {
+            "predecessor_agent_id": predecessor_agent_id,
+            "predecessor_event_id": predecessor_event_id,
+            "termination_reason": termination_reason,
+            "termination_source_event_id": termination_source_event_id,
+            "replacement_reason": replacement_reason,
+            "handoff_summary": handoff_summary,
+        }
+        present = [name for name, value in forbidden_values.items() if value]
+        if present:
+            raise WorkflowError(f"{event} does not accept fields: {', '.join(present)}", exit_code=2)
+
+    status_event = build_liveness_event(
+        payload=payload,
+        root=root,
+        logical_role=role,
+        agent_id=agent_id,
+        platform_nickname=nickname,
+        event_name=event,
+        observed_at=observed_at or now_iso(),
+        evidence=evidence,
+        source=source,
+        predecessor_agent_id=predecessor_agent_id,
+        predecessor_event_id=predecessor_event_id,
+        termination_reason=termination_reason,
+        termination_source_event_id=termination_source_event_id,
+        replacement_reason=replacement_reason,
+        handoff_summary=handoff_summary,
+    )
+    payload.setdefault("status_events", []).append(status_event)
+    liveness = ensure_liveness_entry(payload, agent_id)
+    if event == "status-requested":
+        if liveness.get("pending_status_request_at"):
+            raise WorkflowError("status-requested already pending; run checker and do not repeat ping.", exit_code=2)
+        liveness["pending_status_request_at"] = status_event["observed_at"]
+    elif event in AGENT_TERMINAL_EVENTS or event == "terminated-unfinished":
+        liveness["pending_status_request_at"] = None
+    return status_event
+
+
+def changed_snapshot_sources(previous: dict[str, Any], current: dict[str, Any], prefix: str) -> list[dict[str, Any]]:
+    mapping = {
+        "task": [
+            ("task_head", "task_head"),
+            ("task_content_status_digest", "task_status"),
+            ("task_content_diff_stat_digest", "task_diff_stat"),
+            ("task_content_max_mtime", "task_mtime"),
+        ],
+        "source": [
+            ("source_head", "source_head"),
+            ("source_status_digest", "source_status"),
+            ("source_diff_stat_digest", "source_diff_stat"),
+            ("source_max_mtime", "source_mtime"),
+        ],
+    }[prefix]
+    sources: list[dict[str, Any]] = []
+    for field, source_kind in mapping:
+        if str(previous.get(field) or "") != str(current.get(field) or ""):
+            sources.append(
+                {
+                    "source": source_kind,
+                    "observed_at": current.get("captured_at"),
+                    "evidence": f"{field} changed",
+                }
+            )
+    return sources
+
+
+def new_progress_event_sources(payload: dict[str, Any], agent_id: str, previous: dict[str, Any], current: dict[str, Any]) -> list[dict[str, Any]]:
+    if (
+        previous.get("progress_events_count") == current.get("progress_events_count")
+        and previous.get("progress_events_digest") == current.get("progress_events_digest")
+        and previous.get("progress_events_newest_event_id") == current.get("progress_events_newest_event_id")
+    ):
+        return []
+    # last_scan_snapshot stores digest/count/newest rather than the full id set;
+    # report the newest current progress event as the auditable trigger.
+    events = progress_events_for_agent(payload, agent_id)
+    if not events:
+        return []
+    newest = max(events, key=lambda item: parse_iso_datetime(item.get("observed_at"), "progress observed_at"))
+    return [
+        {
+            "source": "status_event",
+            "event_id": newest.get("event_id"),
+            "event": newest.get("event"),
+            "observed_at": newest.get("observed_at"),
+            "evidence": newest.get("evidence"),
+        }
+    ]
+
+
+def deadline_for_anchor(progress_anchor_at: str, max_progress_silence: int) -> str:
+    anchor = parse_iso_datetime(progress_anchor_at, "progress_anchor_at")
+    return iso_from_datetime(anchor + timedelta(seconds=max_progress_silence))
+
+
+def calculate_next_wait_ms(checked_at: str, deadline_at: str, progress_scan_interval: int, immediate: bool = False) -> int:
+    if immediate:
+        return 0
+    checked = parse_iso_datetime(checked_at, "checked_at")
+    deadline = parse_iso_datetime(deadline_at, "max_progress_silence_deadline_at")
+    remaining_ms = int((deadline - checked).total_seconds() * 1000)
+    if remaining_ms <= 0:
+        return 0
+    return min(progress_scan_interval * 1000, remaining_ms)
+
+
+def latest_progress_anchor(payload: dict[str, Any], agent_id: str, current_anchor: str, source_decision: str, snapshot: dict[str, Any], progress_sources: list[dict[str, Any]]) -> str:
+    anchor = current_anchor
+    if source_decision == "workspace_boundary_violation_progress":
+        return max_iso(anchor, str(snapshot.get("captured_at") or ""))
+    task_machine_sources = {"task_head", "task_status", "task_diff_stat", "task_mtime"}
+    if any(source.get("source") in task_machine_sources for source in progress_sources):
+        anchor = max_iso(anchor, str(snapshot.get("captured_at") or ""))
+    progress_times = [
+        str(source.get("observed_at") or "")
+        for source in progress_sources
+        if source.get("source") == "status_event" and source.get("observed_at")
+    ]
+    for observed_at in progress_times:
+        anchor = max_iso(anchor, observed_at)
+    return anchor
+
+
+def evaluate_subagent_liveness(
+    root: Path,
+    task_dir: Path,
+    source_repo: Path,
+    payload: dict[str, Any],
+    agent_id: str,
+    progress_scan_interval: int,
+    max_progress_silence: int,
+    checked_at: str | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if progress_scan_interval <= 0 or max_progress_silence <= progress_scan_interval:
+        raise WorkflowError("max-progress-silence must be greater than progress-scan-interval.", exit_code=2)
+    if not agent_record(payload, agent_id):
+        raise WorkflowError(f"agent is not assigned: {agent_id}", exit_code=2)
+    liveness = ensure_liveness_entry(payload, agent_id)
+    previous = liveness.get("last_scan_snapshot")
+    if not isinstance(previous, dict):
+        raise WorkflowError("liveness last_scan_snapshot is missing; record assigned baseline first.", exit_code=2)
+    checked = normalize_utc_iso(checked_at or now_iso(), "checked_at")
+    snapshot = collect_liveness_snapshot(root, task_dir, source_repo, payload, agent_id, captured_at=checked)
+    source_progress = changed_snapshot_sources(previous, snapshot, "source")
+    task_progress = changed_snapshot_sources(previous, snapshot, "task")
+    event_progress = new_progress_event_sources(payload, agent_id, previous, snapshot)
+    progress_sources = source_progress + task_progress + event_progress
+    current_anchor = str(liveness.get("progress_anchor_at") or "")
+    if not current_anchor:
+        assigned = agent_record(payload, agent_id) or {}
+        current_anchor = str(assigned.get("assigned_at") or checked)
+    decision = ""
+    reason = ""
+    if source_progress:
+        decision = "workspace_boundary_violation_progress"
+        reason = "source checkout snapshot changed; treat as workspace boundary progress."
+    elif task_progress or event_progress:
+        decision = "progress_observed"
+        reason = "task snapshot or recorded progress event changed."
+    if decision:
+        anchor = latest_progress_anchor(payload, agent_id, current_anchor, decision, snapshot, progress_sources)
+        liveness["progress_anchor_at"] = anchor
+        liveness["pending_status_request_at"] = None
+        deadline = deadline_for_anchor(anchor, max_progress_silence)
+        next_wait_ms = calculate_next_wait_ms(checked, deadline, progress_scan_interval)
+    else:
+        anchor = current_anchor
+        deadline = deadline_for_anchor(anchor, max_progress_silence)
+        pending = clean_optional_text(liveness.get("pending_status_request_at"))
+        if not pending:
+            decision = "status_request_required"
+            reason = "no new progress and no pending status request."
+            next_wait_ms = 0
+        elif parse_iso_datetime(checked, "checked_at") >= parse_iso_datetime(deadline, "max_progress_silence_deadline_at"):
+            decision = "stale_allowed"
+            reason = "pending status request exists, no progress response appeared, and max progress silence deadline has passed."
+            next_wait_ms = 0
+        else:
+            decision = "continue_waiting_no_repeat_ping"
+            reason = "pending status request exists and deadline has not passed."
+            next_wait_ms = calculate_next_wait_ms(checked, deadline, progress_scan_interval)
+    liveness["last_scan_snapshot"] = snapshot
+    liveness["last_checked_at"] = checked
+    liveness["last_decision"] = decision
+    payload["updated_at"] = now_iso()
+    result = {
+        "decision": decision,
+        "agent_id": agent_id,
+        "checked_at": checked,
+        "progress_anchor_at": liveness.get("progress_anchor_at") or anchor,
+        "pending_status_request_at": liveness.get("pending_status_request_at"),
+        "max_progress_silence_deadline_at": deadline,
+        "next_wait_ms": next_wait_ms,
+        "progress_sources": progress_sources,
+        "artifact": str(agent_assignment_path(task_dir)),
+        "reason": reason,
+    }
+    return result, snapshot
 
 
 def git_object_exists(root: Path, ref: str) -> bool:
@@ -2616,11 +3288,126 @@ def validate_review_round_report_digest(root: Path, task_dir: Path, item: dict[s
     return errors
 
 
+def validate_liveness_payload_errors(root: Path, payload: dict[str, Any], enforce_recovery_chains: bool = True) -> list[str]:
+    errors: list[str] = []
+    liveness = payload.get("liveness")
+    if not isinstance(liveness, dict):
+        errors.append("agent-assignment.json liveness 必须是对象。")
+    agents_by_id = {
+        str(item.get("agent_id") or "").strip(): item
+        for item in payload.get("agents", [])
+        if isinstance(item, dict) and str(item.get("agent_id") or "").strip()
+    }
+    status_events = payload.get("status_events")
+    if not isinstance(status_events, list):
+        return ["agent-assignment.json status_events 必须是数组。"]
+    seen_event_ids: set[str] = set()
+    for index, item in enumerate(status_events):
+        if not isinstance(item, dict):
+            errors.append(f"agent-assignment.json status_events[{index}] 必须是对象。")
+            continue
+        event_name = str(item.get("event") or "").strip()
+        event_id = str(item.get("event_id") or "").strip()
+        agent_id = str(item.get("agent_id") or "").strip()
+        if not event_id:
+            errors.append(f"agent-assignment.json status_events[{index}] 缺少 event_id。")
+        elif event_id in seen_event_ids:
+            errors.append(f"agent-assignment.json status_events[{index}].event_id 重复: {event_id}。")
+        seen_event_ids.add(event_id)
+        if event_name not in ALLOWED_AGENT_STATUS_EVENTS:
+            errors.append(f"agent-assignment.json status_events[{index}].event 非法: {event_name or '(missing)'}。")
+        role = str(item.get("logical_role") or "").strip()
+        if role not in ALLOWED_LOGICAL_ROLES:
+            errors.append(f"agent-assignment.json status_events[{index}].logical_role 非法: {role or '(missing)'}。")
+        if not agent_id:
+            errors.append(f"agent-assignment.json status_events[{index}] 缺少 agent_id 字段。")
+        elif event_name != "assigned" and agent_id not in agents_by_id:
+            errors.append(f"agent-assignment.json status_events[{index}].agent_id 未在 agents[] 中登记: {agent_id}。")
+        if "platform_nickname" not in item:
+            errors.append(f"agent-assignment.json status_events[{index}] 缺少 platform_nickname 字段。")
+        validate_head_field(root, item.get("head"), f"status_events[{index}].head", errors)
+        validate_timestamp_field(item.get("observed_at"), f"status_events[{index}].observed_at", errors)
+        validate_timestamp_field(item.get("recorded_at"), f"status_events[{index}].recorded_at", errors)
+        source = str(item.get("source") or "").strip()
+        if source not in AGENT_STATUS_EVENT_SOURCES:
+            errors.append(f"agent-assignment.json status_events[{index}].source 非法。")
+        if evidence_is_placeholder(str(item.get("evidence") or "")):
+            errors.append(f"agent-assignment.json status_events[{index}] 缺少非占位 evidence。")
+        predecessor_agent_id = str(item.get("predecessor_agent_id") or "").strip()
+        predecessor_event_id = str(item.get("predecessor_event_id") or "").strip()
+        termination_reason = str(item.get("termination_reason") or "").strip()
+        termination_source_event_id = str(item.get("termination_source_event_id") or "").strip()
+        replacement_reason = str(item.get("replacement_reason") or "").strip()
+        handoff_summary = str(item.get("handoff_summary") or "").strip()
+        try:
+            if event_name == "resume-same-agent":
+                if not predecessor_event_id or not handoff_summary:
+                    errors.append(f"agent-assignment.json status_events[{index}] resume-same-agent 缺少 predecessor_event_id 或 handoff_summary。")
+                else:
+                    validate_resume_reference(payload, agent_id, predecessor_event_id)
+                if predecessor_agent_id or termination_reason or termination_source_event_id or replacement_reason:
+                    errors.append(f"agent-assignment.json status_events[{index}] resume-same-agent 包含不应出现的结构化字段。")
+            elif event_name == "replacement-started":
+                if not predecessor_agent_id or not predecessor_event_id or not replacement_reason or not handoff_summary:
+                    errors.append(f"agent-assignment.json status_events[{index}] replacement-started 缺少 predecessor/reason/handoff 字段。")
+                else:
+                    validate_replacement_reference(payload, agent_id, predecessor_agent_id, predecessor_event_id, replacement_reason)
+                if termination_reason or termination_source_event_id:
+                    errors.append(f"agent-assignment.json status_events[{index}] replacement-started 不得包含 termination 字段。")
+            elif event_name == "terminated-unfinished":
+                if not termination_reason or not handoff_summary:
+                    errors.append(f"agent-assignment.json status_events[{index}] terminated-unfinished 缺少 termination_reason 或 handoff_summary。")
+                else:
+                    validate_termination_reference(payload, agent_id, termination_reason, termination_source_event_id)
+                if predecessor_agent_id or predecessor_event_id or replacement_reason:
+                    errors.append(f"agent-assignment.json status_events[{index}] terminated-unfinished 包含不应出现的 predecessor/replacement 字段。")
+            elif event_name and event_name not in {"replacement-started", "resume-same-agent", "terminated-unfinished"}:
+                unexpected = [
+                    predecessor_agent_id,
+                    predecessor_event_id,
+                    termination_reason,
+                    termination_source_event_id,
+                    replacement_reason,
+                    handoff_summary,
+                ]
+                if any(unexpected):
+                    errors.append(f"agent-assignment.json status_events[{index}] {event_name} 包含不应出现的结构化字段。")
+        except WorkflowError as exc:
+            errors.append(f"agent-assignment.json status_events[{index}] {exc}")
+
+    if enforce_recovery_chains:
+        errors.extend(status_event_completion_errors(payload))
+    if isinstance(liveness, dict):
+        for agent_id, entry in liveness.items():
+            if not isinstance(entry, dict):
+                errors.append(f"agent-assignment.json liveness[{agent_id}] 必须是对象。")
+                continue
+            snapshot = entry.get("last_scan_snapshot")
+            if snapshot is not None and not isinstance(snapshot, dict):
+                errors.append(f"agent-assignment.json liveness[{agent_id}].last_scan_snapshot 必须是对象。")
+                continue
+            if isinstance(snapshot, dict):
+                missing = [field for field in AGENT_LIVENESS_SNAPSHOT_FIELDS if field not in snapshot]
+                if missing:
+                    errors.append(f"agent-assignment.json liveness[{agent_id}].last_scan_snapshot 缺少字段: {', '.join(missing)}。")
+            decision = str(entry.get("last_decision") or "")
+            if decision and decision not in AGENT_LIVENESS_DECISIONS:
+                errors.append(f"agent-assignment.json liveness[{agent_id}].last_decision 非法: {decision}。")
+            if entry.get("progress_anchor_at"):
+                validate_timestamp_field(entry.get("progress_anchor_at"), f"liveness[{agent_id}].progress_anchor_at", errors)
+            if entry.get("last_checked_at"):
+                validate_timestamp_field(entry.get("last_checked_at"), f"liveness[{agent_id}].last_checked_at", errors)
+            if entry.get("pending_status_request_at"):
+                validate_timestamp_field(entry.get("pending_status_request_at"), f"liveness[{agent_id}].pending_status_request_at", errors)
+    return errors
+
+
 def validate_agent_assignment_payload(
     root: Path,
     task_dir: Path,
     payload: dict[str, Any],
     require_current_head: bool = False,
+    enforce_recovery_chains: bool = True,
 ) -> list[str]:
     errors: list[str] = []
     if payload.get("schema_version") != AGENT_ASSIGNMENT_SCHEMA_VERSION:
@@ -2711,51 +3498,24 @@ def validate_agent_assignment_payload(
             if not str(item.get("reason") or "").strip():
                 errors.append(f"agent-assignment.json reuse_decisions[{index}] 缺少 reason。")
             validate_head_field(root, item.get("head"), f"reuse_decisions[{index}].head", errors)
-    status_events = payload.get("status_events")
-    if not isinstance(status_events, list):
-        errors.append("agent-assignment.json status_events 必须是数组。")
-    else:
-        for index, item in enumerate(status_events):
-            if not isinstance(item, dict):
-                errors.append(f"agent-assignment.json status_events[{index}] 必须是对象。")
-                continue
-            event_name = str(item.get("event") or "").strip()
-            if event_name not in ALLOWED_AGENT_STATUS_EVENTS:
-                errors.append(f"agent-assignment.json status_events[{index}].event 非法: {event_name or '(missing)'}。")
-            role = str(item.get("logical_role") or "").strip()
-            if role not in ALLOWED_LOGICAL_ROLES:
-                errors.append(f"agent-assignment.json status_events[{index}].logical_role 非法: {role or '(missing)'}。")
-            if "agent_id" not in item:
-                errors.append(f"agent-assignment.json status_events[{index}] 缺少 agent_id 字段。")
-            if "platform_nickname" not in item:
-                errors.append(f"agent-assignment.json status_events[{index}] 缺少 platform_nickname 字段。")
-            validate_head_field(root, item.get("head"), f"status_events[{index}].head", errors)
-            validate_timestamp_field(item.get("observed_at"), f"status_events[{index}].observed_at", errors)
-            validate_timestamp_field(
-                item.get("last_observed_progress_at"),
-                f"status_events[{index}].last_observed_progress_at",
-                errors,
-                required=event_name in AGENT_STATUS_EVENTS_REQUIRE_PROGRESS_EVIDENCE,
-            )
-            if str(item.get("decision") or "").strip() not in ALLOWED_AGENT_STATUS_DECISIONS:
-                errors.append(f"agent-assignment.json status_events[{index}].decision 非法。")
-            if not str(item.get("reason") or "").strip():
-                errors.append(f"agent-assignment.json status_events[{index}] 缺少 reason。")
-            if event_name in AGENT_STATUS_EVENTS_REQUIRE_PROGRESS_EVIDENCE:
-                if not str(item.get("workspace_evidence") or "").strip():
-                    errors.append(f"agent-assignment.json status_events[{index}] 缺少 workspace_evidence。")
-                if not str(item.get("running_command_evidence") or "").strip():
-                    errors.append(f"agent-assignment.json status_events[{index}] 缺少 running_command_evidence。")
-            if event_name == "replacement-started" and not str(item.get("supersedes_agent_id") or "").strip():
-                errors.append(f"agent-assignment.json status_events[{index}] 缺少 supersedes_agent_id。")
-            if event_name in AGENT_STATUS_EVENTS_REQUIRE_HANDOFF and not str(item.get("handoff_summary") or "").strip():
-                errors.append(f"agent-assignment.json status_events[{index}] 缺少 handoff_summary。")
+    errors.extend(validate_liveness_payload_errors(root, payload, enforce_recovery_chains=enforce_recovery_chains))
     return errors
 
 
 def normalize_agent_assignment_for_task(root: Path, task_dir: Path, payload: dict[str, Any]) -> dict[str, Any]:
     normalized = dict(payload)
+    normalized["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
     normalized["task"] = normalized_archive_task_value(root, task_dir, normalized.get("task"))
+    if not isinstance(normalized.get("agents"), list):
+        normalized["agents"] = []
+    if not isinstance(normalized.get("liveness"), dict):
+        normalized["liveness"] = {}
+    if not isinstance(normalized.get("review_rounds"), list):
+        normalized["review_rounds"] = []
+    if not isinstance(normalized.get("reuse_decisions"), list):
+        normalized["reuse_decisions"] = []
+    if not isinstance(normalized.get("status_events"), list):
+        normalized["status_events"] = []
     return normalized
 
 
@@ -2966,6 +3726,11 @@ def finding_round_has_replacement_closure(
     status_events = payload.get("status_events")
     if not isinstance(decisions, list) or not isinstance(status_events, list):
         return False
+    events_by_id = {
+        str(item.get("event_id") or "").strip(): item
+        for item in status_events
+        if isinstance(item, dict) and str(item.get("event_id") or "").strip()
+    }
     closure_candidates = [
         item
         for item in rounds
@@ -2994,23 +3759,22 @@ def finding_round_has_replacement_closure(
             and str(item.get("reason") or "").strip()
             for item in decisions
         )
-        predecessor_terminal_indexes = [
-            index
+        status_event_indexes_by_id = {
+            str(item.get("event_id") or "").strip(): index
             for index, item in enumerate(status_events)
-            if isinstance(item, dict)
-            and str(item.get("event") or "").strip() in {"failed", "terminated-unfinished"}
-            and str(item.get("agent_id") or "").strip() == finding_agent
-        ]
-        replacement_start_indexes = [
-            index
+            if isinstance(item, dict) and str(item.get("event_id") or "").strip()
+        }
+        replacement_start_entries = [
+            (index, item)
             for index, item in enumerate(status_events)
             if isinstance(item, dict)
             and str(item.get("event") or "").strip() == "replacement-started"
             and str(item.get("agent_id") or "").strip() == closure_agent
-            and str(item.get("supersedes_agent_id") or "").strip() == finding_agent
+            and str(item.get("predecessor_agent_id") or "").strip() == finding_agent
+            and str(item.get("predecessor_event_id") or "").strip()
             and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
-            and str(item.get("decision") or "").strip() == "start-replacement"
             and str(item.get("head") or "").strip() == closure_head
+            and str(item.get("replacement_reason") or "").strip() in AGENT_REPLACEMENT_REASONS
             and str(item.get("handoff_summary") or "").strip()
         ]
         completion_indexes = [
@@ -3020,15 +3784,22 @@ def finding_round_has_replacement_closure(
             and str(item.get("event") or "").strip() == "completed"
             and str(item.get("agent_id") or "").strip() == closure_agent
             and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
-            and str(item.get("decision") or "").strip() == "mark-completed"
             and str(item.get("head") or "").strip() == closure_head
         ]
-        matching_recovery_chain = any(
-            predecessor_index < replacement_index < completion_index
-            for predecessor_index in predecessor_terminal_indexes
-            for replacement_index in replacement_start_indexes
-            for completion_index in completion_indexes
-        )
+        matching_recovery_chain = False
+        for replacement_index, replacement_start in replacement_start_entries:
+            predecessor_event_id = str(replacement_start.get("predecessor_event_id") or "").strip()
+            predecessor_index = status_event_indexes_by_id.get(predecessor_event_id)
+            predecessor_event = events_by_id.get(predecessor_event_id)
+            if predecessor_index is None or not isinstance(predecessor_event, dict):
+                continue
+            if str(predecessor_event.get("agent_id") or "").strip() != finding_agent:
+                continue
+            if str(predecessor_event.get("event") or "").strip() not in {"failed", "stale-assessed", "terminated-unfinished"}:
+                continue
+            if any(predecessor_index < replacement_index < completion_index for completion_index in completion_indexes):
+                matching_recovery_chain = True
+                break
         if matching_decision and matching_recovery_chain:
             return True
     return False
@@ -3160,40 +3931,115 @@ def status_event_completion_errors(payload: dict[str, Any]) -> list[str]:
     if not isinstance(status_events, list):
         return ["agent-assignment.json status_events 必须是数组。"]
     errors: list[str] = []
+    events_by_id = {
+        str(item.get("event_id") or ""): item
+        for item in status_events
+        if isinstance(item, dict) and str(item.get("event_id") or "")
+    }
+
+    def recovery_completed_from(index: int, original_agent: str, predecessor_event_id: str, allow_resume: bool) -> bool:
+        visited: set[tuple[int, str, str, bool]] = set()
+
+        def active_agent_completes_or_recovers(start_index: int, active_agent: str) -> bool:
+            for later_index, later in enumerate(status_events[start_index + 1:], start=start_index + 1):
+                if not isinstance(later, dict):
+                    continue
+                later_event = str(later.get("event") or "").strip()
+                later_agent = str(later.get("agent_id") or "").strip()
+                later_event_id = str(later.get("event_id") or "").strip()
+                if later_agent != active_agent:
+                    continue
+                if later_event == "completed":
+                    return True
+                if later_event == "failed":
+                    return recover_from_event(later_index, active_agent, later_event_id, allow_same_agent_resume=True)
+                if later_event == "terminated-unfinished":
+                    reason = str(later.get("termination_reason") or "").strip()
+                    if reason == "manual_or_platform_terminated_unfinished":
+                        return recover_from_event(later_index, active_agent, later_event_id, allow_same_agent_resume=True)
+                    # stale_cutover is recovered through its source stale-assessed event.
+                    continue
+                if later_event == "stale-assessed":
+                    return recover_from_event(later_index, active_agent, later_event_id, allow_same_agent_resume=False)
+            return False
+
+        def recover_from_event(start_index: int, source_agent: str, source_event_id: str, allow_same_agent_resume: bool) -> bool:
+            if not source_agent or not source_event_id:
+                return False
+            key = (start_index, source_agent, source_event_id, allow_same_agent_resume)
+            if key in visited:
+                return False
+            visited.add(key)
+            for later_index, later in enumerate(status_events[start_index + 1:], start=start_index + 1):
+                if not isinstance(later, dict):
+                    continue
+                later_event = str(later.get("event") or "").strip()
+                later_agent = str(later.get("agent_id") or "").strip()
+                if (
+                    allow_same_agent_resume
+                    and later_event == "resume-same-agent"
+                    and later_agent == source_agent
+                    and str(later.get("predecessor_event_id") or "").strip() == source_event_id
+                ):
+                    if active_agent_completes_or_recovers(later_index, later_agent):
+                        return True
+                if (
+                    later_event == "replacement-started"
+                    and str(later.get("predecessor_agent_id") or "").strip() == source_agent
+                    and str(later.get("predecessor_event_id") or "").strip() == source_event_id
+                    and later_agent
+                ):
+                    if active_agent_completes_or_recovers(later_index, later_agent):
+                        return True
+            return False
+
+        return recover_from_event(index, original_agent, predecessor_event_id, allow_resume)
+
     for index, item in enumerate(status_events):
         if not isinstance(item, dict):
             continue
-        if str(item.get("event") or "").strip() != "terminated-unfinished":
-            continue
-        original_agent = str(item.get("agent_id") or "").strip()
-        if not original_agent:
-            errors.append(f"status_events[{index}] terminated-unfinished 缺少 agent_id，无法证明后续恢复或继任。")
-            continue
-        chain_agents = {original_agent}
-        recovery_seen = False
-        terminal_seen = False
-        for later in status_events[index + 1:]:
-            if not isinstance(later, dict):
+        event_name = str(item.get("event") or "").strip()
+        agent_id = str(item.get("agent_id") or "").strip()
+        event_id = str(item.get("event_id") or "").strip()
+        if event_name == "stale-assessed":
+            stale_cutover = [
+                later
+                for later in status_events[index + 1:]
+                if isinstance(later, dict)
+                and str(later.get("event") or "") == "terminated-unfinished"
+                and str(later.get("agent_id") or "") == agent_id
+                and str(later.get("termination_reason") or "") == "stale_cutover"
+                and str(later.get("termination_source_event_id") or "") == event_id
+            ]
+            if not stale_cutover:
+                errors.append(f"status_events[{index}] stale-assessed 后缺少 terminated-unfinished stale_cutover。")
+            stale_resume = [
+                later
+                for later in status_events[index + 1:]
+                if isinstance(later, dict)
+                and str(later.get("event") or "") == "resume-same-agent"
+                and str(later.get("agent_id") or "") == agent_id
+            ]
+            if stale_resume:
+                errors.append(f"status_events[{index}] stale-assessed 后不得 resume-same-agent。")
+            if not recovery_completed_from(index, agent_id, event_id, allow_resume=False):
+                errors.append(f"status_events[{index}] stale-assessed 的 replacement chain 缺少后续 replacement completed。")
+        if event_name == "terminated-unfinished":
+            reason = str(item.get("termination_reason") or "").strip()
+            if reason == "stale_cutover":
+                source_id = str(item.get("termination_source_event_id") or "").strip()
+                if source_id not in events_by_id:
+                    errors.append(f"status_events[{index}] stale_cutover termination_source_event_id 未引用已有 stale-assessed。")
                 continue
-            later_event = str(later.get("event") or "").strip()
-            later_agent = str(later.get("agent_id") or "").strip()
-            supersedes = str(later.get("supersedes_agent_id") or "").strip()
-            if later_event == "resume-same-agent" and later_agent in chain_agents:
-                recovery_seen = True
-            if later_event == "replacement-started" and supersedes in chain_agents and later_agent:
-                chain_agents.add(later_agent)
-                recovery_seen = True
-            if later_event in {"completed", "failed"} and later_agent in chain_agents:
-                terminal_seen = True
-                break
-        if not recovery_seen:
-            errors.append(
-                f"status_events[{index}] terminated-unfinished 后缺少 resume-same-agent 或 replacement-started 继任证据。"
-            )
-        if not terminal_seen:
-            errors.append(
-                f"status_events[{index}] terminated-unfinished 的恢复/继任链缺少后续 completed 或 failed 终态事件。"
-            )
+            if not recovery_completed_from(index, agent_id, event_id, allow_resume=True):
+                errors.append(
+                    f"status_events[{index}] terminated-unfinished 后缺少 same-agent resume 或 replacement 且后续 completed 的完整恢复链。"
+                )
+        if event_name == "failed":
+            if not recovery_completed_from(index, agent_id, event_id, allow_resume=True):
+                errors.append(
+                    f"status_events[{index}] failed 后缺少 same-agent resume 或 replacement 且后续 completed 的完整恢复链。"
+                )
     return errors
 
 
@@ -3705,6 +4551,29 @@ def build_phase2_check_payload(
     }
 
 
+def phase2_agent_assignment_errors(root: Path, task_dir: Path) -> list[str]:
+    path = agent_assignment_path(task_dir)
+    if not path.exists():
+        return []
+    try:
+        raw_payload = read_json(path)
+    except WorkflowError as exc:
+        return [str(exc)]
+    status_events = raw_payload.get("status_events")
+    liveness = raw_payload.get("liveness")
+    if not status_events and not liveness:
+        return []
+    payload = normalize_agent_assignment_for_task(root, task_dir, raw_payload)
+    errors = validate_liveness_payload_errors(root, payload, enforce_recovery_chains=True)
+    if errors:
+        return [
+            "phase2-check.json 不能在 agent-assignment.json 存在未闭环 sub-agent liveness/recovery evidence 时通过: "
+            + error
+            for error in errors
+        ]
+    return []
+
+
 def validate_phase2_check(
     root: Path,
     task_dir: Path,
@@ -3794,6 +4663,7 @@ def validate_phase2_check(
         blockers = unresolved_blocking_findings([item for item in findings if isinstance(item, dict)])
         if blockers:
             errors.append("phase2-check.json 存在未 resolved 的 P0/P1/P2 finding。")
+    errors.extend(phase2_agent_assignment_errors(root, task_dir))
     return path, payload, errors
 
 
@@ -4864,21 +5734,10 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
     if status_event and getattr(args, "reuse_decision", None):
         raise WorkflowError("--status-event cannot be combined with --reuse-decision.", exit_code=2)
     if status_event:
-        recorded = append_agent_status_event(
-            payload,
-            root,
-            logical_role,
-            agent_id,
-            platform_nickname,
-            status_event,
-            clean_optional_text(getattr(args, "decision", None)),
-            clean_optional_text(args.reason),
-            clean_optional_text(getattr(args, "observed_at", None)),
-            clean_optional_text(getattr(args, "last_observed_progress_at", None)),
-            clean_optional_text(getattr(args, "workspace_evidence", None)),
-            clean_optional_text(getattr(args, "running_command_evidence", None)),
-            clean_optional_text(getattr(args, "supersedes_agent_id", None)),
-            clean_optional_text(getattr(args, "handoff_summary", None)),
+        raise WorkflowError(
+            "record-agent-assignment.sh --status-event is deprecated and fails closed. "
+            "Use record-subagent-liveness-event.sh for assigned/progress/status/stale/resume/replacement/terminal events.",
+            exit_code=2,
         )
     elif args.review_round is not None:
         recorded = append_agent_review_round(
@@ -4908,16 +5767,19 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
             clean_optional_text(args.decision_head) or None,
         )
     else:
+        source_repo = source_repo_from_handoff(root, handoff)
         recorded = append_agent_assignment_event(
             payload,
             root,
+            task_dir,
             logical_role,
             agent_id,
             platform_nickname,
             clean_optional_text(args.reason),
+            source_repo=source_repo,
         )
 
-    errors = validate_agent_assignment_payload(root, task_dir, payload, require_current_head=True)
+    errors = validate_agent_assignment_payload(root, task_dir, payload, require_current_head=True, enforce_recovery_chains=False)
     if errors:
         raise WorkflowError(
             "agent-assignment.json validation failed before write.",
@@ -4950,6 +5812,122 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
         "summary": summary,
         "notes": "record-agent-assignment 只记录 AI/human 已做出的分配、复用或状态处理判断，不决定应使用哪个 sub-agent、是否 stale 或是否应终止。",
     }
+
+
+def cmd_record_subagent_liveness_event(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    assert_workspace_boundary(root, config, handoff, task_dir)
+    source_repo = resolve_source_repo(args.source_repo)
+    payload = load_agent_assignment(root, task_dir)
+    payload["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
+    payload["task"] = repo_relative(root, task_dir)
+    payload["head"] = current_head(root)
+    payload["updated_at"] = now_iso()
+    if clean_optional_text(args.event) == "assigned" and getattr(args, "platform_nickname", None) is None:
+        raise WorkflowError("assigned requires --platform-nickname; pass an empty string explicitly when the platform has no nickname.", exit_code=2)
+    recorded = append_subagent_liveness_event(
+        payload,
+        root,
+        task_dir,
+        source_repo,
+        agent_id=clean_optional_text(args.agent_id),
+        event_name=clean_optional_text(args.event),
+        observed_at=clean_optional_text(args.observed_at) or now_iso(),
+        evidence=clean_optional_text(args.evidence),
+        logical_role=clean_optional_text(getattr(args, "logical_role", "")),
+        platform_nickname=clean_optional_text(getattr(args, "platform_nickname", "")),
+        source=clean_optional_text(getattr(args, "source", "")) or "main-session",
+        predecessor_agent_id=clean_optional_text(getattr(args, "predecessor_agent_id", "")),
+        predecessor_event_id=clean_optional_text(getattr(args, "predecessor_event_id", "")),
+        termination_reason=clean_optional_text(getattr(args, "termination_reason", "")),
+        termination_source_event_id=clean_optional_text(getattr(args, "termination_source_event_id", "")),
+        replacement_reason=clean_optional_text(getattr(args, "replacement_reason", "")),
+        handoff_summary=clean_optional_text(getattr(args, "handoff_summary", "")),
+    )
+    errors = validate_agent_assignment_payload(root, task_dir, payload, require_current_head=True, enforce_recovery_chains=False)
+    if errors:
+        raise WorkflowError(
+            "agent-assignment.json validation failed before write.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    path = agent_assignment_path(task_dir)
+    if not args.dry_run:
+        write_json(path, payload)
+    event_id = recorded.get("event_id") if isinstance(recorded, dict) else ""
+    return {
+        "recorded": True,
+        "event_id": event_id,
+        "event": clean_optional_text(args.event),
+        "agent_id": clean_optional_text(args.agent_id),
+        "artifact": str(path),
+        "head": current_head(root),
+        "updated_liveness": True,
+        "dry_run": bool(args.dry_run),
+    }
+
+
+def cmd_check_subagent_liveness(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    assert_workspace_boundary(root, config, handoff, task_dir)
+    path = agent_assignment_path(task_dir)
+    if not path.exists():
+        return {
+            "decision": AGENT_LIVENESS_BLOCKED_DECISION,
+            "agent_id": clean_optional_text(args.agent_id),
+            "checked_at": clean_optional_text(getattr(args, "checked_at", "")) or now_iso(),
+            "progress_anchor_at": "",
+            "pending_status_request_at": None,
+            "max_progress_silence_deadline_at": "",
+            "next_wait_ms": 0,
+            "progress_sources": [],
+            "artifact": str(path),
+            "reason": "agent-assignment.json missing",
+        }
+    try:
+        source_repo = resolve_source_repo(args.source_repo)
+        payload = load_agent_assignment(root, task_dir)
+        decision, _snapshot = evaluate_subagent_liveness(
+            root,
+            task_dir,
+            source_repo,
+            payload,
+            clean_optional_text(args.agent_id),
+            int(args.progress_scan_interval),
+            int(args.max_progress_silence),
+            checked_at=clean_optional_text(getattr(args, "checked_at", "")) or None,
+        )
+        errors = validate_agent_assignment_payload(root, task_dir, payload, require_current_head=False, enforce_recovery_chains=False)
+        if errors:
+            raise WorkflowError("agent-assignment.json validation failed after liveness check.", exit_code=2, payload={"errors": errors})
+        if not args.dry_run:
+            write_json(path, payload)
+        decision["dry_run"] = bool(args.dry_run)
+        return decision
+    except WorkflowError as exc:
+        if exc.exit_code != 2:
+            raise
+        checked = clean_optional_text(getattr(args, "checked_at", "")) or now_iso()
+        return {
+            "decision": AGENT_LIVENESS_BLOCKED_DECISION,
+            "agent_id": clean_optional_text(args.agent_id),
+            "checked_at": checked,
+            "progress_anchor_at": "",
+            "pending_status_request_at": None,
+            "max_progress_silence_deadline_at": "",
+            "next_wait_ms": 0,
+            "progress_sources": [],
+            "artifact": str(path),
+            "reason": str(exc),
+            "errors": exc.payload.get("errors", []) if isinstance(exc.payload, dict) else [],
+            "dry_run": bool(args.dry_run),
+        }
 
 
 def cmd_check_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
@@ -5079,6 +6057,14 @@ def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
         )
     if args.pass_check and not payload["validation_commands"]:
         raise WorkflowError("record-phase2-check --pass requires at least one --validation evidence line.", exit_code=2)
+    if args.pass_check:
+        assignment_errors = phase2_agent_assignment_errors(root, task_dir)
+        if assignment_errors:
+            raise WorkflowError(
+                "record-phase2-check --pass blocked because agent assignment evidence is invalid.",
+                exit_code=2,
+                payload={"artifact_path": str(agent_assignment_path(task_dir)), "errors": assignment_errors},
+            )
     path = phase2_check_path(task_dir)
     if not args.dry_run:
         write_json(path, payload)
@@ -5607,14 +6593,14 @@ def build_parser() -> argparse.ArgumentParser:
     assignment.add_argument("--from-round", type=int)
     assignment.add_argument("--to-round", type=int)
     assignment.add_argument("--decision-head", help="HEAD for reuse_decisions[]. Defaults to current HEAD.")
-    assignment.add_argument("--status-event", choices=sorted(ALLOWED_AGENT_STATUS_EVENTS), help="Record status_events[] observation/handling event.")
-    assignment.add_argument("--decision", choices=sorted(ALLOWED_AGENT_STATUS_DECISIONS), help="Decision recorded with --status-event.")
-    assignment.add_argument("--observed-at", help="ISO-8601 observation time for --status-event. Defaults to now.")
-    assignment.add_argument("--last-observed-progress-at", help="ISO-8601 time of the latest observable agent progress.")
-    assignment.add_argument("--workspace-evidence", help="Chinese workspace/diff/channel/output evidence for --status-event.")
-    assignment.add_argument("--running-command-evidence", help="Chinese running or stuck command evidence for --status-event.")
-    assignment.add_argument("--supersedes-agent-id", help="Predecessor technical agent id when --status-event replacement-started.")
-    assignment.add_argument("--handoff-summary", help="Chinese handoff summary for terminated/replacement status events.")
+    assignment.add_argument("--status-event", help="Deprecated. Fails closed; use record-subagent-liveness-event.sh.")
+    assignment.add_argument("--decision", help="Deprecated with --status-event.")
+    assignment.add_argument("--observed-at", help="Deprecated with --status-event.")
+    assignment.add_argument("--last-observed-progress-at", help="Deprecated with --status-event.")
+    assignment.add_argument("--workspace-evidence", help="Deprecated with --status-event.")
+    assignment.add_argument("--running-command-evidence", help="Deprecated with --status-event.")
+    assignment.add_argument("--supersedes-agent-id", help="Deprecated with --status-event.")
+    assignment.add_argument("--handoff-summary", help="Deprecated with --status-event.")
     assignment.add_argument("--dry-run", action="store_true")
 
     check_assignment = sub.add_parser("check-agent-assignment")
@@ -5623,6 +6609,37 @@ def build_parser() -> argparse.ArgumentParser:
     check_assignment.add_argument("--task")
     check_assignment.add_argument("--agent-assignment", help="Task-local assignment artifact path. Defaults to agent-assignment.json.")
     check_assignment.add_argument("--require-current-head", action="store_true")
+
+    liveness_record = sub.add_parser("record-subagent-liveness-event")
+    liveness_record.add_argument("--root")
+    liveness_record.add_argument("--json", action="store_true")
+    liveness_record.add_argument("--task")
+    liveness_record.add_argument("--source-repo", required=True)
+    liveness_record.add_argument("--agent-id", required=True)
+    liveness_record.add_argument("--event", required=True, choices=sorted(ALLOWED_AGENT_STATUS_EVENTS))
+    liveness_record.add_argument("--observed-at", help="UTC ISO-8601 observation time. Defaults to now.")
+    liveness_record.add_argument("--evidence", required=True)
+    liveness_record.add_argument("--logical-role", choices=ALLOWED_LOGICAL_ROLES, help="Required for assigned.")
+    liveness_record.add_argument("--platform-nickname", help="Required for assigned; empty string is accepted when the platform has no nickname.")
+    liveness_record.add_argument("--source", default="main-session", choices=sorted(AGENT_STATUS_EVENT_SOURCES))
+    liveness_record.add_argument("--predecessor-agent-id")
+    liveness_record.add_argument("--predecessor-event-id")
+    liveness_record.add_argument("--termination-reason", choices=sorted(AGENT_TERMINATION_REASONS))
+    liveness_record.add_argument("--termination-source-event-id")
+    liveness_record.add_argument("--replacement-reason", choices=sorted(AGENT_REPLACEMENT_REASONS))
+    liveness_record.add_argument("--handoff-summary")
+    liveness_record.add_argument("--dry-run", action="store_true")
+
+    liveness_check = sub.add_parser("check-subagent-liveness")
+    liveness_check.add_argument("--root")
+    liveness_check.add_argument("--json", action="store_true")
+    liveness_check.add_argument("--task")
+    liveness_check.add_argument("--source-repo", required=True)
+    liveness_check.add_argument("--agent-id", required=True)
+    liveness_check.add_argument("--progress-scan-interval", type=int, default=AGENT_LIVENESS_DEFAULT_SCAN_INTERVAL_SECONDS)
+    liveness_check.add_argument("--max-progress-silence", type=int, default=AGENT_LIVENESS_DEFAULT_MAX_SILENCE_SECONDS)
+    liveness_check.add_argument("--checked-at", help=argparse.SUPPRESS)
+    liveness_check.add_argument("--dry-run", action="store_true")
 
     check_gate = sub.add_parser("check-review-gate")
     check_gate.add_argument("--root")
@@ -5709,6 +6726,10 @@ def main() -> int:
             payload = cmd_record_agent_assignment(args)
         elif args.command == "check-agent-assignment":
             payload = cmd_check_agent_assignment(args)
+        elif args.command == "record-subagent-liveness-event":
+            payload = cmd_record_subagent_liveness_event(args)
+        elif args.command == "check-subagent-liveness":
+            payload = cmd_check_subagent_liveness(args)
         elif args.command == "check-review-gate":
             payload = cmd_check_review_gate(args)
         elif args.command == "publish-pr":

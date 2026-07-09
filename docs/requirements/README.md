@@ -23,8 +23,9 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
 - Comments / reviews：基本没有额外决策；issue #6 有 `closed by #9` 补充，PR review
   comments 为空。主要产品决策和验收信息来自 issue body 与 PR body。
 - 后续维护补充：active issue #51 已沉淀为 `prepare-task` 命名质量门禁能力，#60
-  已沉淀为 workspace boundary 事实层与 task artifact 写入边界；合并后应随对应 PR
-  更新到历史索引。#76 heartbeat / liveness 属于后续能力，不由 #60 关闭。
+  已沉淀为 workspace boundary 事实层与 task artifact 写入边界；#76 正在沉淀为
+  sub-agent liveness、status request、stale cutover 与 completed-only recovery
+  gate。合并后应随对应 PR 更新到历史索引。
 
 ## 扩展重要性分层
 
@@ -32,7 +33,7 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
 | --- | --- | --- | --- |
 | P0 | Workflow 主合同与日常入口 | #1, #2, #57, #78 | `guru-team` marketplace workflow 定义 Phase 0-3、auto-bootstrap 日常入口、业务项目中文文档默认规则、知识门禁和 docs SSOT；Branch Review `reviews/*.md` / `review.md` 也继承中文 human-readable artifact 规则。 |
 | P0 | Intake / worktree / no_task / workspace boundary 副作用边界 | #6, #15, #26, #51, #60 | 创建 issue、worktree、branch、task 或当前 checkout 直改前必须有 AI/human handoff、用户授权和语义命名门禁；worktree mode 下 task artifact / review artifact 写入前必须校验 actual repo root 与 handoff `workspace_path` 一致。 |
-| P0 | Planning / check / Branch Review Gate 证据链 | #5, #8, #20, #44, #62, #72, #78 | planning、phase2 check、独立 review、中文 raw/rollup review report、review report digest、任意 finding 阻断、fresh 最终放行审查、sub-agent wait/termination 恢复链和 gate artifact 形成可审计链路；默认 sub-agent mode 下 implement、check、Branch Review 都必须有真实 sub-agent evidence。 |
+| P0 | Planning / check / Branch Review Gate 证据链 | #5, #8, #20, #44, #62, #72, #76, #78 | planning、phase2 check、独立 review、中文 raw/rollup review report、review report digest、任意 finding 阻断、fresh 最终放行审查、sub-agent liveness / status request / stale cutover / completed-only recovery chain 和 gate artifact 形成可审计链路；默认 sub-agent mode 下 implement、check、Branch Review 都必须有真实 sub-agent evidence。 |
 | P0 | Finish / publish / PR readiness | #7, #17, #18, #27 | PR 发布只能在 finish-work 后发生，且必须有 AI 审查过的 reviewer-facing body 与 readiness evidence。 |
 | P1 | Preset installer 与平台 overlay | #9, #11 | preset 安装 companion assets 与平台入口，支持 overlay 选择，并保持 canonical / dogfood 同步。 |
 | P1 | 安装、升级、开箱验证 | #10, #27 | README 非交互安装、throwaway install、dry-run readiness 和 Codex 默认 sub-agent 让新项目可开箱使用。 |
@@ -61,7 +62,8 @@ dogfood 副本当成唯一来源。
 | Trellis auto-bootstrap 日常入口 | #2 | #3 |
 | AI review prompt 与 Branch Review Gate | #5, #20, #44 | #12, #22 |
 | prepare-task 无副作用 planner 与命名质量门禁 | #6, #51 | #14；#51 对应 PR 待发布 |
-| Workspace boundary 与 source checkout 误写防护 | #60 | 当前 PR 待发布；#76 heartbeat / liveness 为后续 |
+| Workspace boundary 与 source checkout 误写防护 | #60 | 当前 PR 待发布；为 #76 liveness checker 提供 source/task 双侧事实层 |
+| Sub-agent liveness / stale cutover 状态机 | #76 | 当前 PR 待发布 |
 | PR readiness 与 PR body 质量 | #7, #17 | #23, #24 |
 | Planning / phase2 可审计证据 | #8 | #25 |
 | Dogfood overlay 同步 | #9 | #13 |

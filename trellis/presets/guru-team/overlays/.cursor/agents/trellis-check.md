@@ -60,6 +60,7 @@ In Branch Review mode, do not modify code or task artifacts except for the revie
 - Do not report `检查完成` until the requested check/review scope is actually complete and verification status is known.
 - If the main session interrupts, terminates, replaces, or asks you to stop before completion, explicitly report `检查未完成` instead. Include files checked, current diff summary, last completed review step, commands still running or stuck, findings already identified, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
 - A main-session wait timeout is not your failure signal. Continue working unless you receive an explicit stop/interrupt instruction.
+- Do not emit periodic heartbeat messages and do not write `agent-assignment.json` or any liveness artifact yourself. If the main session sends an explicit status request, reply in platform-visible output with the current step, last concrete progress, active command/tool if any, changed files or review scope, remaining work, and blockers; the main session records that response as liveness evidence.
 
 ---
 

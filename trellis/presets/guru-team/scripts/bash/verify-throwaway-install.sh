@@ -103,6 +103,8 @@ test -f "$TARGET/.trellis/workflow.md"
 grep -q "Guru Team Development Workflow" "$TARGET/.trellis/workflow.md"
 grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 grep -q 'required `prd.md`, `design.md`, and `implement.md`' "$TARGET/.trellis/workflow.md"
+grep -q "record-subagent-liveness-event.sh" "$TARGET/.trellis/workflow.md"
+grep -q "check-subagent-liveness.sh" "$TARGET/.trellis/workflow.md"
 grep -q "dispatch_mode: sub-agent" "$TARGET/.trellis/config.yaml"
 fail_if_english_language_rule ".trellis/spec" "$TARGET/.trellis/spec"
 WORKSPACE_LANGUAGE_FILES=()
@@ -118,6 +120,8 @@ if [[ -d "$TARGET/.trellis/tasks/00-bootstrap-guidelines" ]]; then
 fi
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-env.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/version.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-subagent-liveness.sh"
 test -f "$TARGET/.trellis/guru-team/extension.json"
 python3 -c 'import json, sys; payload = json.load(open(sys.argv[1], encoding="utf-8")); assert payload["extension"]["extension_id"] == "guru-team"; assert payload["extension"]["version"]; assert payload["extension"]["target_trellis_cli"] == "0.6.5"' "$TARGET/.trellis/guru-team/extension.json"
 test -d "$TARGET/.agents/skills"

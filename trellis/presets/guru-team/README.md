@@ -165,6 +165,8 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/check-phase2-check.sh`
 - `.trellis/guru-team/scripts/bash/record-agent-assignment.sh`
 - `.trellis/guru-team/scripts/bash/check-agent-assignment.sh`
+- `.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh`
+- `.trellis/guru-team/scripts/bash/check-subagent-liveness.sh`
 - `.trellis/guru-team/scripts/bash/review-branch.sh`
 - `.trellis/guru-team/scripts/bash/check-review-gate.sh`
 - `.trellis/guru-team/scripts/bash/publish-pr.sh`
@@ -280,21 +282,30 @@ commands are evidence inside that report, not a substitute for the check.
 `trellis-check` AI judgment, coverage, validation results, findings, and dirty
 paths; it is not the Trellis-native step itself and script recorder/validator
 success cannot replace `trellis-check`.
-`record-agent-assignment.sh` / `check-agent-assignment.sh` manage task-local
-`agent-assignment.json`: Chinese `logical_role` is the Trellis process identity,
-`agent_id` is the technical platform id, and `platform_nickname` is display-only.
-When the platform exposes a configured Chinese UI nickname, record that value;
-when it exposes only an automatic/random nickname, record the raw value. Either
-way, gate decisions use `logical_role`, `agent_id`, HEAD, and digest evidence,
-not display names. The scripts record assignment, review round, reuse,
-replacement, and status handling decisions already made by AI/human; they do
-not decide which sub-agent should be used, whether a wait timeout means stale,
-or whether an agent should be terminated. Each review round must pass
-`--review-round-report <task-local reviews/*.md>` so `agent-assignment.json`
-records flat raw report digest fields. `wait_agent` / `trellis channel wait`
-timeout is only a wait-window result. Unfinished termination must be followed by
-same-agent resume or replacement inheritance, then a later `completed` or
-explicit `failed` status event before Branch Review Gate can pass.
+`record-subagent-liveness-event.sh` / `check-subagent-liveness.sh` /
+`check-agent-assignment.sh` manage task-local `agent-assignment.json` liveness:
+Chinese `logical_role` is the Trellis process identity, `agent_id` is the
+technical platform id, and `platform_nickname` is display-only. `agent-assignment.json`
+schema 1.1 is the single assignment/status/liveness/review ledger with
+`agents[]`, `status_events[]`, `liveness[agent_id].last_scan_snapshot`, review
+rounds, and reuse decisions. The liveness recorder writes assignment, progress,
+status request, stale, resume/replacement, terminal, and workspace-boundary
+audit events already observed by AI/human. The checker is short-lived and
+single-sample: it reads task/source checkout snapshots plus recorded progress
+event digests, returns one decision, and exits. It never reads platform UI,
+sends status requests, terminates agents, or judges implementation quality.
+`progress_scan_interval=120s` is scan cadence; `max_progress_silence=180s`
+starts at `progress_anchor_at`. Only `status_request_required` authorizes one
+status request, and only `stale_allowed` authorizes `stale-assessed`.
+`status-requested` does not refresh anchor or extend deadline. Stale cutover
+must record `termination_reason=stale_cutover`, `termination_source_event_id`,
+and `replacement_reason=max_progress_silence_exceeded`; manual/platform
+unfinished termination uses
+`termination_reason=manual_or_platform_terminated_unfinished`. Failed, stale,
+unfinished, or replacement partial output cannot pass Phase 2 / Branch Review
+until a recovery chain reaches `completed`. `record-agent-assignment.sh` remains
+for review rounds and reuse decisions; its old `--status-event` path fails
+closed.
 
 After the task work commit, `review-branch.sh` audits that committed
 non-metadata task paths after the Phase 2 recorded HEAD are covered by those
@@ -412,8 +423,9 @@ status, task worktree status, and suspicious current-task artifacts or review
 metadata in the source checkout. It is a deterministic validator/fact snapshot,
 not stale judgment, cleanup, or patch migration. Editing tools without an
 explicit `workdir` must use absolute paths under the task worktree selected by
-handoff `workspace_path`. This fact layer is the prerequisite for later
-heartbeat / liveness policy work such as #76.
+handoff `workspace_path`. The #76 liveness checker uses this source/task fact
+layer: source checkout `HEAD`, dirty status, diff stat, or mtime changes are
+`workspace_boundary_violation_progress`, not stale evidence.
 
 When executor paths create or reuse a worktree, they refresh the selected base
 branch again with `git fetch`, record `preflight.base_freshness` in

@@ -66,6 +66,7 @@ The supervising main session owns commits. Report the post-fix state; do not com
 - Do not report `检查完成` until the requested check/review scope is actually complete and verification status is known.
 - If the supervising main session interrupts, terminates, replaces, or asks you to stop before completion, report `检查未完成`. Include files checked, current diff summary, last completed review step, commands still running or stuck, findings already identified, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
 - A `trellis channel wait` timeout in the main session is only a wait-window result, not your failure signal. Continue working unless the channel sends an explicit stop/interrupt instruction.
+- Do not emit periodic heartbeat messages and do not write `agent-assignment.json` or any liveness artifact yourself. If the main session sends an explicit status request, reply in platform-visible output with the current step, last concrete progress, active command/tool if any, changed files or review scope, remaining work, and blockers; the main session records that response as liveness evidence.
 
 ## Workflow
 

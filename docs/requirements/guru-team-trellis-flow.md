@@ -59,7 +59,8 @@ flowchart TD
   TStart["task.py start<br/>Trellis task: in_progress"]:::trellis
 
   P2["Phase 2: Execute<br/>implement -> trellis-check"]:::guru
-  IA["record-agent-assignment.sh<br/>实现代理 / 阶段二检查代理"]:::script
+  IA["record-subagent-liveness-event.sh<br/>assigned + liveness baseline"]:::script
+  LC["check-subagent-liveness.sh<br/>single-sample decision"]:::script
   Sub["trellis-implement / trellis-check<br/>Codex default sub-agent mode"]:::codex
   PC["record-phase2-check.sh<br/>check-phase2-check.sh"]:::script
   CMT["Commit task work<br/>只提交本任务范围内非 metadata 变更"]:::guru
@@ -89,7 +90,7 @@ flowchart TD
   HR -->|"用户明确批准 current checkout 直改 override"| Direct["当前 checkout 直接编辑<br/>跳过 issue/task/worktree/branch 仅限本轮"]:::guru
 
   P1 --> PA --> TStart --> P2
-  P2 --> IA --> Sub --> PC --> CMT --> P3
+  P2 --> IA --> Sub --> LC --> PC --> CMT --> P3
   P3 --> Rev --> Rpt --> Gate --> GP
   GP -->|"否：finding / stale / reviewer-only"| Fix["返回 Phase 2/3 修复并复审"]:::guru
   Fix --> P2
@@ -165,7 +166,9 @@ task-local `issue-scope-ledger.json` 负责。
 应从目标 worktree 运行 `check-workspace-boundary.sh --json --task <task-path>`。该命令只输出
 expected workspace、actual repo root、source checkout status、task worktree status 和
 source checkout 中可疑同名 task artifact / review metadata；它不判断 stale、不迁移误写 patch、
-不清理 source checkout。#76 heartbeat / liveness 策略建立在这层事实快照之上，不由本层关闭。
+不清理 source checkout。#76 liveness checker 在这层事实快照之上比较 source/task 双侧变化；
+source checkout 出现新 `HEAD` / dirty status / diff stat / mtime 变化时是
+`workspace_boundary_violation_progress`，不是 stale 证据。
 
 ## 5. Phase 1：Plan
 
@@ -205,10 +208,10 @@ Codex 在 Guru Team 项目中默认 `codex.dispatch_mode: sub-agent`。主会话
 ```mermaid
 flowchart LR
   Main["Codex main session<br/>协调 / 记录 / commit / finish"]:::codex
-  Assign1["record-agent-assignment<br/>logical_role=实现代理"]:::script
+  Assign1["record-subagent-liveness-event<br/>assigned: 实现代理"]:::script
   Impl["trellis-implement<br/>读取 Active task + JSONL + artifacts"]:::codex
-  Status["status_events[]<br/>timeout / progress / stale / resume / replacement"]:::artifact
-  Assign2["record-agent-assignment<br/>logical_role=阶段二检查代理"]:::script
+  Status["check-subagent-liveness<br/>progress / status_request / stale_allowed"]:::script
+  Assign2["record-subagent-liveness-event<br/>assigned: 阶段二检查代理"]:::script
   Check["trellis-check<br/>完整任务范围质量检查"]:::codex
   Phase2["phase2-check.json<br/>coverage + validations + dirty_paths"]:::artifact
   Commit["Phase 3.4 commit<br/>提交 task work"]:::guru
@@ -223,18 +226,21 @@ flowchart LR
 
 Phase 2 的核心证据是 `phase2-check.json`：
 
-Sub-agent 等待和终止策略由 workflow 判断，脚本只记录/校验。`wait_agent` /
-`trellis channel wait` timeout 只表示等待窗口结束，不代表 agent 失败或应该收口。
-只要仍有输出、工作区合理变化、验证进展或 channel event，就继续等待；stale 默认至少基于
-5 分钟无可观察进展。若未完成 agent 被中断或终止，必须在
-`agent-assignment.json.status_events[]` 记录证据，并恢复同一 `agent_id` 或启动
-replacement agent 继承前任输出、当前 diff、task artifacts、剩余工作和 gate 阻塞点，直到
-后续 `completed` 或明确 `failed`。未闭环的部分输出不能作为 Phase 2 pass evidence。
-在记录 wait timeout、progress observed、stale assessed、interruption 或 terminated unfinished
-之前，主会话应把 workspace boundary snapshot 或等价双侧 evidence 写入 status 记录：expected
-workspace、actual repo root、source checkout status、task worktree status 和 suspicious source
-artifacts。source checkout 中存在当前 task 相关 dirty paths 是 boundary violation/progress
-事实，不是自动 stale 结论。
+Sub-agent liveness 策略由 workflow 判断，脚本只记录/校验 objective state。`wait_agent` /
+`trellis channel wait` timeout 只表示等待窗口结束，不代表 agent 失败或应该收口。派发后主会话
+必须用 `record-subagent-liveness-event.sh` 记录 `assigned`，并按 checker 输出的
+`next_wait_ms` 调用短生命周期 `check-subagent-liveness.sh`。默认
+`progress_scan_interval=120s` 只是扫描间隔；`max_progress_silence=180s` 从
+`progress_anchor_at` 起算。非机器可读 progress 必须先写入 `status_events[]`，才能成为
+checker evidence。只有 `status_request_required` 授权发送一次 status request；成功后记录
+`status-requested` 并立即重跑 checker，且该事件不刷新 anchor、不延长 deadline。只有
+`stale_allowed` 授权记录 `stale-assessed`。stale cutover 后必须结构化记录
+`terminated-unfinished termination_reason=stale_cutover
+termination_source_event_id=<stale-assessed.event_id>`，再记录 replacement `assigned` 和
+`replacement-started replacement_reason=max_progress_silence_exceeded`。人工/平台 unfinished
+termination 使用 `termination_reason=manual_or_platform_terminated_unfinished`。failed、stale、
+unfinished 或 replacement partial output 未恢复到后续 `completed` 前，不能作为 Phase 2 pass
+evidence。
 
 | 字段/内容 | 目的 |
 | --- | --- |
@@ -280,7 +286,7 @@ Gate 必须满足：
 | 独立 review | 主会话自审不能 pass；需要 independent agent 或等价 AI/human review。 |
 | `reviews/*.md` + `review.md` | 每轮中文 raw Markdown review report 保留在 task-local `reviews/`；顶层 `review.md` 是最终中文 rollup，建议使用 `审查轮次`、`问题生命周期`、`最终审查`、`证据`、`观察项`、`后续候选`、`结论`，并记录 diff range、reviewed HEAD、validation、部署/安全影响、Docs SSOT 判断、发现/观察/后续候选和最终结论，链接所有 raw reports。标准顶层 artifact 表默认仍列 `review.md`，raw reports 通过 rollup 和 gate digest 追溯；literal command/path/JSON/HEAD/API/code token 可保留英文。 |
 | `agent-assignment.json` | 记录中文 logical role、technical `agent_id`、review rounds、同 agent 或替代 finding closure、fresh final reviewer，并在每轮 review round 上记录 raw report path/sha256/size/modified_at。 |
-| `status_events[]` | 记录 wait timeout / stale / terminated unfinished / resume / replacement / completed / failed；未完成终止的恢复链未到达 completed/failed 时 gate 不能 pass。 |
+| `agent-assignment.json.status_events[]` + `liveness[agent_id]` | 记录 assigned、公开 progress、status request/response、stale assessed、structured termination/replacement/resume、completed/failed 和 `last_scan_snapshot`；failed、stale、unfinished 或 replacement partial output 的恢复链未到达 `completed` 时 gate 不能 pass。 |
 | 任意 finding 阻断 | P0/P1/P2/P3 都阻断；`observation` 和 `followup_candidate` 不能替代当前 scope defect。 |
 | Recorder 不做判断 | `review-branch.sh` 只记录并校验已发生的 review，不是 reviewer。独立 review sub-agent 不运行 `review-branch.sh` / `check-review-gate.sh` / `record-*`。 |
 | Metadata tail 规则 | Gate 后到 finish-work 前只允许 `review.md`、`reviews/*.md`、`agent-assignment.json`、`review-gate.json`、`pr-body.md` 等 Trellis metadata；新的 source/config/script/docs/schema/preset 变更必须回到 Phase 2/3。 |
@@ -327,7 +333,8 @@ PR readiness 要求：
 | Artifact | 产生阶段 | 责任归属 | 后续消费者 |
 | --- | --- | --- | --- |
 | `.trellis/guru-team/handoff.json` | Phase 0 executor | Guru Team intake provenance | Phase 1 task seed、debug、issue/worktree provenance。 |
-| workspace boundary snapshot | Phase 1/2/3 recorder 前 | Guru Team deterministic fact layer | `check-workspace-boundary.sh` 输出 expected workspace、actual repo root、source checkout/task worktree status、suspicious source artifacts；recorder/validator fail-closed；#76 heartbeat/liveness 的前置事实层。 |
+| workspace boundary snapshot | Phase 1/2/3 recorder 前 | Guru Team deterministic fact layer | `check-workspace-boundary.sh` 输出 expected workspace、actual repo root、source checkout/task worktree status、suspicious source artifacts；recorder/validator fail-closed；#76 liveness checker 复用 source/task 双侧事实层，source checkout 新变化是 progress/boundary violation，不是 stale 证据。 |
+| `agent-assignment.json` liveness ledger | Phase 2/3 sub-agent wait loop | Guru Team recorder/checker evidence | 单一 task-local ledger，包含 `agents[]`、`status_events[]`、`liveness[agent_id].last_scan_snapshot`、review rounds 和 reuse decisions；`record-subagent-liveness-event.sh` 写事件，`check-subagent-liveness.sh` 单次采样并返回 decision，旧 `record-agent-assignment.sh --status-event` fail closed。 |
 | `issue-scope-ledger.json` | Phase 1 起持续维护 | Guru Team issue close/ref/followup SSOT | Branch Review Gate、PR body、publish close keyword validator。 |
 | `prd.md` | Phase 1 | Guru Team planning artifact | Implement/check/review/publish。 |
 | `design.md` | Phase 1 | Guru Team planning artifact | Implement/check/review。 |
@@ -349,7 +356,7 @@ PR readiness 要求：
 1. 官方 Trellis 的核心优势是把流程放在 `.trellis/workflow.md`，hooks 只负责注入上下文。
 2. Guru Team 没有 fork Trellis，而是通过 official marketplace workflow 安装 `guru-team`。
 3. 我们把“任务还没创建之前”的风险收进 Phase 0：issue、duplicate、base branch、worktree、命名和副作用授权都先审查。
-4. `workspace_path` 是 worktree mode 下的机器写入边界；`check-workspace-boundary` 只输出事实并 fail closed，不替 AI 判断 stale、迁移 patch 或清理 source checkout，#76 heartbeat/liveness 是后续策略层。
+4. `workspace_path` 是 worktree mode 下的机器写入边界；`check-workspace-boundary` 只输出事实并 fail closed，不替 AI 判断 stale、迁移 patch 或清理 source checkout；#76 liveness checker 在此基础上把 source checkout 新变化视为 workspace boundary progress。
 5. `task.py create/start/archive` 仍是官方 Trellis lifecycle，但 Guru Team 在 start 前要求展示 `prd.md` / `design.md` / `implement.md` 三个链接并得到 explicit post-planning confirmation，Phase 0 handoff 确认不能替代。
 6. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出中文 `reviews/*.md` raw reports 与最终中文 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
 7. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，commit 后必须有独立中文 review raw reports、最终中文 `review.md` rollup 和 recorder 生成的 `review-gate.json`；主会话自检、自审或脚本校验通过不能替代这些证据。

@@ -32,6 +32,7 @@ Search before editing a phrase, command, marker, or config key:
 
 ```bash
 rg "review-branch|finding|observation|followup-candidate|最终放行审查代理|finish-work|publish-pr|issue-scope-ledger|middle_platform_knowledge|guru-team-overlay"
+rg "wait-timeout|progress-observed|continue-waiting|supersedes_agent_id|default at least 5 minutes|stale_after_unanswered_status_request|agent-progress.jsonl|long-command wrapper|periodic heartbeat"
 ```
 
 ## Required Checks
@@ -79,6 +80,17 @@ publish examples, add regression coverage or explicit grep checks for both the
 runtime entrypoints and public docs (`README.md`, workflow README, preset README,
 and durable requirement docs when present). A command example can be correct in
 overlays but still mislead users if a README keeps the older copy.
+
+When changing sub-agent liveness, assignment, status request, stale assessment,
+or replacement behavior, add tests or explicit grep checks that new active
+surfaces use `record-subagent-liveness-event.sh`,
+`check-subagent-liveness.sh`, `progress_scan_interval=120s`,
+`max_progress_silence=180s`, structured `predecessor_event_id`,
+`replacement_reason`, `termination_reason`, and completed-only recovery gates.
+The old `record-agent-assignment.sh --status-event`, `wait-timeout`,
+`progress-observed`, `continue-waiting`, `supersedes_agent_id`,
+periodic heartbeat, daemon/sidecar/long-command wrapper, and
+`agent-progress.jsonl` contracts must not appear as active workflow paths.
 
 ## Review Focus
 
