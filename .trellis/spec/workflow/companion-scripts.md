@@ -89,9 +89,10 @@ to the GitHub default branch when the task has an explicit base.
 
 For PR body publishing, companion scripts may validate objective Markdown
 structure, required sections, forbidden low-information phrases, non-empty
-validation / impact / safety content, and Issue Scope Ledger close/ref
-semantics. They must not decide whether the release explanation is true or
-sufficient; that judgment belongs to the AI readiness review before
+validation / impact / safety content, Docs SSOT section/key presence, and Issue
+Scope Ledger close/ref semantics. They must not decide whether the release
+explanation or Docs SSOT rationale is true or sufficient; that judgment belongs
+to the AI readiness review before
 `trellis-finish-work`. Non-draft publish must require `--body-file` or
 `--body-artifact` inputs that were already reviewed by AI/human; `generated`
 bodies are limited to draft/preview paths. `--body-artifact` must carry
@@ -268,6 +269,12 @@ artifact evidence; they are not review work.
 `followup_candidates[]` in `review-gate.json`. They are not findings and do not
 block by themselves, but the AI/human reviewer must not downgrade an actual
 current-scope defect into either category to make the gate pass.
+
+For Docs SSOT, reviewer judgment stays outside the script: `review-branch.sh`
+may record evidence/finding strings supplied by the reviewer, but it must not
+decide whether `ssot_first`, `delta_first`, `bootstrap_or_repair_docs`, or
+`no_docs_update_needed` was semantically sufficient. The companion boundary is
+objective evidence shape and stale/non-metadata drift validation only.
 
 ## Security Rules
 

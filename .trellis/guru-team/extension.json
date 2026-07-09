@@ -68,11 +68,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-09T09:51:13Z",
+  "installed_at": "2026-07-09T11:14:00Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/065-docs-ssot-phase2-sync-gate",
-    "commit": "d1dda000a07d1194d7d722400bcea3f7433edf34",
+    "ref": "codex/066-docs-ssot-phase3-enforcement",
+    "commit": "aa0c4092615da731323a4a8af12468a4110b6177",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

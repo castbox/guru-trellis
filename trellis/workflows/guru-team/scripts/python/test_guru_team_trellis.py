@@ -114,6 +114,14 @@ def valid_pr_body(summary: str = "增加 publish-pr 的 reviewed body source 门
 - 结论：发布边界检查通过。
 - Reviewed HEAD：`abc123`
 
+## Docs SSOT
+
+- 策略：ssot_first。
+- durable docs：已更新 `trellis/workflows/guru-team/workflow.md`。
+- task delta merge：任务 artifact delta 已 merge 到 durable docs。
+- task history：调试过程仅保留为 task history。
+- follow-up / limitation：无 follow-up 或当前 PR limitation。
+
 ## Issue 关闭范围
 
 - Closes #18
@@ -2311,6 +2319,73 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertTrue(any("低信息量" in error for error in raised.exception.payload["errors"]))
 
+    def test_publish_pr_rejects_missing_docs_ssot_section(self) -> None:
+        body_path = self.root / "pr-body.md"
+        body_path.write_text(
+            valid_pr_body("验证缺失 Docs SSOT section 会被阻断。").replace(
+                """## Docs SSOT
+
+- 策略：ssot_first。
+- durable docs：已更新 `trellis/workflows/guru-team/workflow.md`。
+- task delta merge：任务 artifact delta 已 merge 到 durable docs。
+- task history：调试过程仅保留为 task history。
+- follow-up / limitation：无 follow-up 或当前 PR limitation。
+
+""",
+                "",
+            ),
+            encoding="utf-8",
+        )
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_publish_pr(
+                    publish_args(
+                        recovery_after_finish_work=True,
+                        body_file=str(body_path),
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertTrue(any("Docs SSOT" in error for error in raised.exception.payload["errors"]))
+
+    def test_pr_body_quality_rejects_incomplete_docs_ssot_keys(self) -> None:
+        body = valid_pr_body("验证 Docs SSOT section 固定键 presence。").replace(
+            "- follow-up / limitation：无 follow-up 或当前 PR limitation。\n",
+            "",
+        )
+        errors = gtt.validate_pr_body_quality(body, {"close_issues": [{"number": 18}]}, draft=False)
+
+        self.assertTrue(any("followup_or_limitation" in error for error in errors))
+
+    def test_pr_body_quality_accepts_reviewer_readable_chinese_docs_sync(self) -> None:
+        body = valid_pr_body("验证合理中文文档同步正文不会被 key presence 误伤。").replace(
+            """## Docs SSOT
+
+- 策略：ssot_first。
+- durable docs：已更新 `trellis/workflows/guru-team/workflow.md`。
+- task delta merge：任务 artifact delta 已 merge 到 durable docs。
+- task history：调试过程仅保留为 task history。
+- follow-up / limitation：无 follow-up 或当前 PR limitation。
+""",
+            """## 文档同步
+
+- 本次采用 ssot_first。
+- 长期文档已更新 workflow、spec 与 README。
+- 任务文档差异已同步回长期文档。
+- 调试记录仅保留在任务历史中。
+- 无后续事项或当前 PR 限制。
+""",
+        )
+        errors = gtt.validate_pr_body_quality(body, {"close_issues": [{"number": 18}]}, draft=False)
+
+        self.assertEqual([], errors)
+
     def test_publish_pr_prefers_reviewed_body_file(self) -> None:
         body_path = self.root / "pr-body.md"
         body_path.write_text(
@@ -2331,6 +2406,14 @@ class PublishBoundaryTest(unittest.TestCase):
 
 - 结论：发布边界检查通过。
 - Reviewed HEAD：`abc123`
+
+## 文档同步
+
+- 策略：ssot_first。
+- durable docs：已更新 workflow 文档。
+- task delta merge：task delta 已 merge。
+- task history：无仅保留任务历史内容。
+- follow-up / limitation：无后续限制。
 
 ## 🔗 Issue 关闭范围
 
@@ -2387,6 +2470,14 @@ class PublishBoundaryTest(unittest.TestCase):
 
 - 结论：发布边界检查通过。
 
+## Docs SSOT
+
+- strategy：ssot_first。
+- durable docs：已更新 workflow 文档。
+- task delta merge：task delta 已 merge。
+- task history：无仅保留任务历史内容。
+- follow-up / limitation：无。
+
 ## Issue 关闭范围
 
 - Closes #19
@@ -2432,6 +2523,14 @@ class PublishBoundaryTest(unittest.TestCase):
 ## Review Gate
 
 - 结论：发布边界检查通过。
+
+## Docs SSOT
+
+- strategy：ssot_first。
+- durable docs：已更新 workflow 文档。
+- task delta merge：task delta 已 merge。
+- task history：无仅保留任务历史内容。
+- follow-up / limitation：无。
 
 ## Issue 关闭范围
 
@@ -2561,6 +2660,14 @@ class PublishBoundaryTest(unittest.TestCase):
 
 - 结论：发布边界检查通过。
 
+## Docs SSOT
+
+- strategy：ssot_first。
+- durable docs：已更新 workflow 文档。
+- task delta merge：task delta 已 merge。
+- task history：无仅保留任务历史内容。
+- follow-up / limitation：无。
+
 ## Issue 关闭范围
 
 - Closes #18
@@ -2591,6 +2698,14 @@ class PublishBoundaryTest(unittest.TestCase):
 ## Review Gate
 
 - 结论：发布边界检查通过。
+
+## Docs SSOT
+
+- strategy：ssot_first。
+- durable docs：已更新 workflow 文档。
+- task delta merge：task delta 已 merge。
+- task history：无仅保留任务历史内容。
+- follow-up / limitation：无。
 
 ## Issue 关闭范围
 

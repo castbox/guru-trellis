@@ -6,8 +6,11 @@ Finish-work archives the task, records the journal, then automatically publishes
 Before running the helper, generate or review the PR body for GitHub reviewers
 who do not know the Trellis task. The body must be Chinese and self-explanatory:
 `变更摘要`, `影响范围`, `验证结果`, `Review Gate`, `Issue 关闭范围`, and
-`安全说明` must contain concrete content. Do not use low-information summaries
-such as `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact`.
+`安全说明` must contain concrete content. It must also include a `Docs SSOT` /
+`文档同步` result with the plan strategy, durable docs updates or no-update
+reason, task delta merged back, task-history-only content, and any follow-up or
+current PR limitation. Do not use low-information summaries such as
+`当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact`.
 Write the reviewed Markdown body to the task-local file
 `{TASK_DIR}/pr-body.md` and pass it with `--body-file "{TASK_DIR}/pr-body.md"`.
 A task-local JSON readiness artifact passed with `--body-artifact <path>` is
@@ -46,6 +49,6 @@ archived task name or archive path and include the archive-path
 not be rendered as Markdown links, and JSON artifacts stay out of the standard
 table.
 
-The `--from-trellis-finish-work` marker is required proof that this explicit finish entrypoint was invoked; do not add it to `/trellis:continue`. The helper verifies the passed Branch Review Gate, allowing only Trellis metadata such as `review.md`, `reviews/*.md`, `agent-assignment.json`, `review-gate.json`, and PR readiness files after the reviewed HEAD; rejects uncommitted non-metadata changes; runs the normal Trellis archive and journal commands; commits any remaining Trellis metadata-only changes; then internally pushes and creates the PR. Direct `publish-pr` is not the normal path and is reserved for explicit recovery/debug after finish-work. It does not perform review itself; the gate must already record task-local `review.md` as `review_report` digest evidence and raw `review_reports[]` digest evidence for every review round, and those Markdown reports must already be Chinese human-readable task artifacts except for literal command/path/JSON/HEAD/API/code tokens; when sub-agents were used it should already record `agent-assignment.json` digest/roles evidence. Docs SSOT reconciliation and any required Middle-platform Knowledge Gate evidence must also be present.
+The `--from-trellis-finish-work` marker is required proof that this explicit finish entrypoint was invoked; do not add it to `/trellis:continue`. The helper verifies the passed Branch Review Gate, allowing only Trellis metadata such as `review.md`, `reviews/*.md`, `agent-assignment.json`, `review-gate.json`, and PR readiness files after the reviewed HEAD; rejects uncommitted non-metadata changes; runs the normal Trellis archive and journal commands; commits any remaining Trellis metadata-only changes; then internally pushes and creates the PR. Durable docs, `.trellis/spec/`, source, tests, schema, config, scripts, preset, overlay, CI/CD, deployment, migration, or Makefile drift after the gate must return to Phase 2/3; finish-work/archive must not first merge durable docs or patch missing Docs SSOT work. Direct `publish-pr` is not the normal path and is reserved for explicit recovery/debug after finish-work. It does not perform review itself; the gate must already record task-local `review.md` as `review_report` digest evidence and raw `review_reports[]` digest evidence for every review round, and those Markdown reports must already be Chinese human-readable task artifacts except for literal command/path/JSON/HEAD/API/code tokens; when sub-agents were used it should already record `agent-assignment.json` digest/roles evidence. Docs SSOT reconciliation and any required Middle-platform Knowledge Gate evidence must also be present.
 
 PR title, section headings, and body must be Chinese. Only `close_issues` from `issue-scope-ledger.json` may use `Closes #xx`.

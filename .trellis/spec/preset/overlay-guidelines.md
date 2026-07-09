@@ -92,6 +92,12 @@ Continue entries must:
   `review.md` rollup, run Branch Review Gate with `--review-source
   independent-agent` and `--review-report <task-local review.md>`, then stop
   before finish-work
+- state that Branch Review is the final verification of Phase 2 Docs SSOT
+  reconciliation: it reads the approved `Docs SSOT Plan`, implementation
+  handoff, `phase2-check.json`, durable docs, task artifacts, and the full diff;
+  it must not first merge durable docs or patch missing Phase 2 docs work
+- state that current-scope Docs SSOT inconsistency is a blocking finding and
+  may not be downgraded to `observation` or `followup_candidate`
 - state that any finding priority blocks Branch Review Gate, while
   `observation` and `followup_candidate` are separate non-blocking records
 - state that a review agent with findings may only perform closure review and
@@ -142,6 +148,13 @@ Finish entries must:
   again against the archive path/name and output the archive-path table
 - explain that finish-work may commit Trellis metadata-only changes after the
   reviewed HEAD, but rejects non-metadata changes
+- explain that finish-work/archive never performs the first Docs SSOT merge;
+  durable docs, `.trellis/spec/`, source, tests, schema, config, scripts,
+  preset, overlay, CI/CD, deployment, migration, and Makefile drift after the
+  gate must return to Phase 2/3
+- require the reviewed PR body to include a `Docs SSOT` / `文档同步` result with
+  strategy, durable docs update or no-update reason, merged task delta,
+  task-history-only content, and follow-up/current PR limitation
 - explain that the gate must already contain task-local `review.md`
   `review_report` digest evidence and raw `review_reports[]` digest evidence,
   and that those Markdown reports are already Chinese human-readable task

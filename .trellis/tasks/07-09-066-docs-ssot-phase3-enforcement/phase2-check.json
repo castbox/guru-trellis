@@ -1,0 +1,202 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-09T11:16:52Z",
+  "task_dir": ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement",
+  "base_branch": "main",
+  "head": "aa0c4092615da731323a4a8af12468a4110b6177",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".agents/skills/trellis-finish-work/SKILL.md",
+    ".claude/agents/trellis-check.md",
+    ".claude/commands/trellis/continue.md",
+    ".claude/commands/trellis/finish-work.md",
+    ".codex/agents/trellis-check.toml",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/prompts/trellis-finish-work.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".codex/skills/trellis-finish-work/SKILL.md",
+    ".cursor/agents/trellis-check.md",
+    ".cursor/commands/trellis-continue.md",
+    ".cursor/commands/trellis-finish-work.md",
+    ".trellis/agents/check.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+    "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/"
+  ],
+  "checker": "trellis-check:019f468e-0e19-7be3-994d-7111acf5e3fa",
+  "check_summary": "阶段二检查通过：已覆盖 #66 需求、设计、实现、测试、spec sync、cross-layer overlay/installed-copy 一致性、Docs SSOT strategy=ssot_first 和部署影响；检查代理修复了 PR body Docs SSOT key presence 对合理中文正文过严的问题，修复后验证通过，无 P0/P1/P2 finding。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/prd.md",
+      "sha256": "e032aef9c1e915c9c001931b9af1e8fc5127a72356adefbc342d18db3bee5b98",
+      "size_bytes": 5237,
+      "modified_at": "2026-07-09T10:27:48.462787+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/design.md",
+      "sha256": "50bd7f3fe429af66d27c5979ff4cc8a639abcba860d292ce174739b063de824b",
+      "size_bytes": 6329,
+      "modified_at": "2026-07-09T10:27:48.463225+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/implement.md",
+      "sha256": "3db121f76f8e16cd3b33049ccbd35b8ac138fc74e866ba7b8e4cbec61bc0d2ff",
+      "size_bytes": 5430,
+      "modified_at": "2026-07-09T10:27:48.463527+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/planning-approval.json",
+      "sha256": "b5d2fe4205e0400253a7665ce30a88b5ba714f65638d8fe49dea2d781747cc2d",
+      "size_bytes": 2567,
+      "modified_at": "2026-07-09T10:29:14.379102+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/agent-assignment.json",
+      "sha256": "cd263125693cedd2d2f245a4e620862e0da794574cc880befef88d35be0c6d83",
+      "size_bytes": 16173,
+      "modified_at": "2026-07-09T11:16:03.606950+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/issue-scope-ledger.json",
+      "sha256": "5d00c589ced3e85a17dfe3ccb9973603dba122c00e09fe8a1a9f806d2678de0d",
+      "size_bytes": 717,
+      "modified_at": "2026-07-09T10:20:37.295657+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "6b6acc98dd8ba383521636b29def9f6014450a415d753f791091c9adde437161",
+      "size_bytes": 23014,
+      "modified_at": "2026-07-09T10:41:41.909824+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "d0a1d35e9bab62fb33094e79a6a4a010c0bf5c8a93a4c6320e82682c22065bae",
+      "size_bytes": 9047,
+      "modified_at": "2026-07-09T10:41:57.104748+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "f36c1290d46961644c75c02be11300b0da4e4be8f714fb4a4aaac58f48cf62e7",
+      "size_bytes": 17653,
+      "modified_at": "2026-07-09T10:42:24.702027+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "5020d53059338bcfed8ffff5b14097ef5b969b7011d1d2795f8912d268af65d7",
+      "size_bytes": 14315,
+      "modified_at": "2026-07-09T10:42:10.654822+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "3dcb9e138dc54489b539b7d2f579ef68bfcdfb3c293fad5a80ceafdf4c5cb64e",
+      "size_bytes": 4343,
+      "modified_at": "2026-07-09T10:20:36.965874+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m json.tool trellis/index.json",
+      "result": "通过"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh",
+      "result": "通过"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "通过"
+    },
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "通过，189 tests OK"
+    },
+    {
+      "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "通过，27 tests OK"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-09-066-docs-ssot-phase3-enforcement",
+      "result": "通过"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase",
+      "result": "通过"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 1.1",
+      "result": "通过"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 2.1",
+      "result": "通过"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 3.5",
+      "result": "通过"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms --json",
+      "result": "通过，无 .new/.bak"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "通过"
+    },
+    {
+      "command": "cmp -s trellis/workflows/guru-team/workflow.md .trellis/workflow.md",
+      "result": "通过"
+    },
+    {
+      "command": "cmp -s trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "result": "通过"
+    },
+    {
+      "command": "git diff --check",
+      "result": "通过"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

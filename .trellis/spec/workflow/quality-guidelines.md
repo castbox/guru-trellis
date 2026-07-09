@@ -72,8 +72,12 @@ planner-only prepare no-write behavior, and controlled `create_task` cwd.
 When changing PR publish behavior, include tests or dry-runs for both a blocked
 low-information body and an accepted reviewer-readable body. The accepted body
 must contain concrete `变更摘要`, `影响范围`, `验证结果`, `Review Gate`,
-`Issue 关闭范围`, and `安全说明` sections. The blocked case should cover phrases
-such as `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact`.
+`Issue 关闭范围`, `安全说明`, and `Docs SSOT` / `文档同步` sections. The Docs
+SSOT check remains objective section/key presence only; the AI readiness review
+owns whether the strategy, durable docs update/no-update reason, merged delta,
+task-history-only content, and follow-up/limitation are true and sufficient.
+The blocked case should cover phrases such as `当前 Trellis task`,
+`已提交实现与文档更新`, or `详见 artifact`, plus a missing Docs SSOT section.
 
 When changing user-facing workflow command examples, especially closeout or
 publish examples, add regression coverage or explicit grep checks for both the
@@ -108,6 +112,11 @@ cannot pass the gate. Include:
   docs sync result, task delta merge / task-history-only content, no-update or
   follow-up limits, and durable-docs versus task-delta inputs; `trellis-check`
   verifies durable docs / task artifacts / code / test consistency by strategy
+- Phase 3 verification of that plan: final review checks the approved plan,
+  implementation handoff, `phase2-check.json`, durable docs, task artifacts,
+  code/test/schema/config/script/preset/overlay changes, and confirms Docs SSOT
+  reconciliation already happened; it must record any current-scope
+  inconsistency as a finding and must not perform the first docs merge
 - companion scripts
 - schemas and config templates
 - preset installer and overlays
@@ -124,6 +133,9 @@ cannot pass the gate. Include:
   Chinese findings/observations/follow-up candidates, Chinese deployment /
   safety and Docs SSOT judgments, and Chinese conclusion, with literal tokens
   kept as-is only where required.
+- PR body readiness must include reviewer-readable Docs SSOT / 文档同步 result
+  text: plan strategy, durable docs updated or no-update reason, merged task
+  deltas, task-history-only content, and follow-up/current PR limitation.
 - deployment asset impact
 
 For `Docs SSOT Plan` changes, check that the contract is expressed in
