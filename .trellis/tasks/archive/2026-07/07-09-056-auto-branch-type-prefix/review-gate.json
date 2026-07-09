@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-09T17:00:52Z",
-  "task_dir": ".trellis/tasks/07-09-056-auto-branch-type-prefix",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-09-056-auto-branch-type-prefix",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "fix/056-auto-branch-type-prefix",
@@ -111,7 +111,7 @@
     }
   ],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-09-056-auto-branch-type-prefix/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 56,
@@ -135,13 +135,13 @@
     "reviewer": "trellis-check:019f47c9-333d-74d2-86ef-afbfcdec605e",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-09-056-auto-branch-type-prefix/review.md",
       "sha256": "a4b287303a25beb4caf7ddcb675edaede7984c14279fc2367ec49a1b967ae564",
       "size_bytes": 4094,
       "modified_at": "2026-07-09T16:58:38.991359+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-09-056-auto-branch-type-prefix/agent-assignment.json",
       "sha256": "80c99bf8ef5ef00fa1fb35ca0ccce7d78fb67bdd7f2b2287e8d6ee8075c9be7f",
       "size_bytes": 23060,
       "modified_at": "2026-07-09T17:00:12.181603+00:00",
@@ -157,7 +157,7 @@
       "review_rounds_count": 3,
       "reuse_decisions_count": 0,
       "status_events_count": 12,
-      "task": ".trellis/tasks/07-09-056-auto-branch-type-prefix",
+      "task": ".trellis/tasks/archive/2026-07/07-09-056-auto-branch-type-prefix",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "review_reports": [
@@ -167,7 +167,7 @@
         "agent_id": "019f47aa-94ea-7551-9c1b-520cc0bf5e00",
         "reviewed_head": "137135763fe8f6765d638af639f80bf186e02478",
         "findings_count": 1,
-        "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-1-final-review.md",
+        "path": ".trellis/tasks/archive/2026-07/07-09-056-auto-branch-type-prefix/reviews/round-1-final-review.md",
         "sha256": "7b3f9c3b9008b9c6bcea22700b061648c59ce4d511d76e527fb52ee24d54b44b",
         "size_bytes": 7946,
         "modified_at": "2026-07-09T16:24:24.116102+00:00"
@@ -178,7 +178,7 @@
         "agent_id": "019f47aa-94ea-7551-9c1b-520cc0bf5e00",
         "reviewed_head": "65d053a7592dd6bfc6c5407c2c20acf8ece853a5",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-2-f001-closure.md",
+        "path": ".trellis/tasks/archive/2026-07/07-09-056-auto-branch-type-prefix/reviews/round-2-f001-closure.md",
         "sha256": "9d1f5b6333eaff96fb1c273d9958195d51e9e4985761189e4ca5f810f146354b",
         "size_bytes": 3852,
         "modified_at": "2026-07-09T16:46:53.010447+00:00"
@@ -189,7 +189,7 @@
         "agent_id": "019f47c9-333d-74d2-86ef-afbfcdec605e",
         "reviewed_head": "65d053a7592dd6bfc6c5407c2c20acf8ece853a5",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-3-final-pass.md",
+        "path": ".trellis/tasks/archive/2026-07/07-09-056-auto-branch-type-prefix/reviews/round-3-final-pass.md",
         "sha256": "a075d3790abe9e73e58363058838ec20fc4c832a45b370af37e1f34daa7d9f1b",
         "size_bytes": 9719,
         "modified_at": "2026-07-09T16:58:38.990946+00:00"
