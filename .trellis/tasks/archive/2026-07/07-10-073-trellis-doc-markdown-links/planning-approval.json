@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.2",
+  "generated_at": "2026-07-09T18:01:52Z",
+  "review_prompt_presented_at": "2026-07-09T18:01:52Z",
+  "approved_at": "2026-07-09T18:01:52Z",
+  "task_dir": ".trellis/tasks/07-10-073-trellis-doc-markdown-links",
+  "head": "c1f6fc979e5d5f81291221569577bedc5e2ceb7c",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-10-073-trellis-doc-markdown-links/"
+  ],
+  "reviewer": "main-session",
+  "approval_summary": "已审查 prd.md、design.md、implement.md；三份规划文档覆盖 issue #73 的链接替换范围、Docs SSOT 方案、实施步骤和验证命令，范围明确且足以进入实现。",
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "main-session",
+    "summary": "规划文档明确只修改 AGENTS.md 中 3 个 Trellis 官方 HTML 文档链接，目标 URL 与验证方式具体，排除 workflow/preset/overlay/script 行为变更，无需补充澄清。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "尽量",
+        "视情况",
+        "类似",
+        "相关",
+        "等"
+      ],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "user_confirmation": {
+    "source": "explicit-post-planning-review",
+    "message": "用户在看到 prd.md、design.md、implement.md 链接和规划摘要后回复“确认”，批准进入实现。"
+  },
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/prd.md",
+      "sha256": "0ffd8008220c094cc1e88f0b95dec7fae0cee9c0de73b9adcf3bb12ffd4d059f",
+      "size_bytes": 3835,
+      "modified_at": "2026-07-09T18:00:10.284806+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/design.md",
+      "sha256": "bf1a13c03bec60ae2743cdd50947d24df9abf2d32c534bab0b20c7ce917acc21",
+      "size_bytes": 3562,
+      "modified_at": "2026-07-09T18:00:10.285018+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/implement.md",
+      "sha256": "99a3180f9118fac8d337bf0f7a6be0f24d4c9bf48038f65903df646235987b10",
+      "size_bytes": 2670,
+      "modified_at": "2026-07-09T18:00:10.285180+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/prd.md",
+      "sha256": "0ffd8008220c094cc1e88f0b95dec7fae0cee9c0de73b9adcf3bb12ffd4d059f",
+      "size_bytes": 3835,
+      "modified_at": "2026-07-09T18:00:10.284806+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/design.md",
+      "sha256": "bf1a13c03bec60ae2743cdd50947d24df9abf2d32c534bab0b20c7ce917acc21",
+      "size_bytes": 3562,
+      "modified_at": "2026-07-09T18:00:10.285018+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-073-trellis-doc-markdown-links/implement.md",
+      "sha256": "99a3180f9118fac8d337bf0f7a6be0f24d4c9bf48038f65903df646235987b10",
+      "size_bytes": 2670,
+      "modified_at": "2026-07-09T18:00:10.285180+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

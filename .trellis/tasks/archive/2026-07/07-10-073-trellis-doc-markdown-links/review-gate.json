@@ -1,0 +1,157 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-09T18:30:14Z",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links",
+  "base_branch": "main",
+  "base_ref": "origin/main",
+  "head_branch": "codex/073-trellis-doc-markdown-links",
+  "head": "04741e2b3fe6ef945cab933e642b7d8c167d6d6e",
+  "diff_range": "origin/main...HEAD",
+  "changed_files": [
+    "AGENTS.md"
+  ],
+  "review_scope": [
+    "文档",
+    "代码",
+    "测试",
+    "Trellis artifacts",
+    "配置",
+    "脚本",
+    "schema",
+    "CI/CD workflow 与发布自动化",
+    "Dockerfile / Docker Compose / 容器启动脚本",
+    "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
+    "数据库 schema / migration / seed / backfill 脚本",
+    "各目录下本次变更涉及的 Makefile",
+    "preset installer"
+  ],
+  "command": [
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/073-trellis-doc-markdown-links/.trellis/guru-team/scripts/bash/../python/guru_team_trellis.py",
+    "review-branch",
+    "--json",
+    "--task",
+    ".trellis/tasks/07-10-073-trellis-doc-markdown-links",
+    "--base-branch",
+    "main",
+    "--pass",
+    "--review-source",
+    "independent-agent",
+    "--reviewer",
+    "最终放行审查代理:019f481b-ebac-7d53-98a6-a829c685c88e",
+    "--review-report",
+    ".trellis/tasks/07-10-073-trellis-doc-markdown-links/review.md",
+    "--agent-assignment",
+    ".trellis/tasks/07-10-073-trellis-doc-markdown-links/agent-assignment.json",
+    "--summary",
+    "最终放行审查代理已审查 origin/main...HEAD 完整 diff，当前 HEAD 04741e2b3fe6ef945cab933e642b7d8c167d6d6e 仅包含 AGENTS.md 三条 Trellis 官方文档 URL 改为 .md 端点；Phase 2 evidence 覆盖提交前 AGENTS.md dirty path，Docs SSOT、部署与安全影响均通过，findings_count=0。",
+    "--evidence",
+    "review.md 汇总并链接 reviews/round-1-final-review.md；raw report 记录 reviewed_head=04741e2b3fe6ef945cab933e642b7d8c167d6d6e、findings_count=0。",
+    "--evidence",
+    "git diff --name-only origin/main...HEAD 仅为 AGENTS.md；diff 只包含 3 个 URL 字面量替换。",
+    "--evidence",
+    "phase2-check.json 记录阶段二检查代理覆盖 requirements、design、code/docs、tests、spec_sync、cross_layer、docs_ssot、deployment，findings 为空。",
+    "--evidence",
+    "链接验证确认 index.md、advanced/custom-workflow.md、advanced/custom-spec-template-marketplace.md 均返回 HTTP 200 text/markdown。",
+    "--evidence",
+    "未修改 workflow、preset、overlay、companion scripts、schema、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile；无部署影响或安全敏感数据。"
+  ],
+  "conclusion": {
+    "passed": true,
+    "summary": "最终放行审查代理已审查 origin/main...HEAD 完整 diff，当前 HEAD 04741e2b3fe6ef945cab933e642b7d8c167d6d6e 仅包含 AGENTS.md 三条 Trellis 官方文档 URL 改为 .md 端点；Phase 2 evidence 覆盖提交前 AGENTS.md dirty path，Docs SSOT、部署与安全影响均通过，findings_count=0。",
+    "block_priorities": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "blocking_findings_count": 0,
+    "findings_count": 0,
+    "observations_count": 0,
+    "followup_candidates_count": 0
+  },
+  "findings": [],
+  "observations": [],
+  "followup_candidates": [],
+  "issue_scope": {
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links/issue-scope-ledger.json",
+    "close_issues_reviewed": [
+      {
+        "number": 73,
+        "url": "https://github.com/castbox/guru-trellis/issues/73",
+        "title": "将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址",
+        "reason": "AGENTS.md 中 Trellis 官方文档入口已全部改为 markdown 端点，验收证据已由 Phase 2 check 覆盖。",
+        "acceptance_evidence": [
+          "AGENTS.md 已将 3 条 Trellis 官方 HTML 文档链接替换为对应 .md 端点。",
+          "阶段二检查代理确认 AGENTS.md diff 仅包含 3 个 URL 字面量变化，findings_count=0。",
+          "phase2-check.json 记录 rg 扫描、HTML 形式链接检查、git diff --check、curl text/markdown header 验证均通过。"
+        ]
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "verification_evidence": {
+    "base_head": "origin/main...04741e2b3fe6ef945cab933e642b7d8c167d6d6e",
+    "changed_file_count": 1,
+    "reviewer": "最终放行审查代理:019f481b-ebac-7d53-98a6-a829c685c88e",
+    "review_source": "independent-agent",
+    "review_report": {
+      "path": ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links/review.md",
+      "sha256": "26814375ad4ac83cf98c58f51da87bfe42edf0bae99323b682ed23555ee64e52",
+      "size_bytes": 3043,
+      "modified_at": "2026-07-09T18:26:43.774203+00:00"
+    },
+    "agent_assignment": {
+      "path": ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links/agent-assignment.json",
+      "sha256": "8868703d11b2408cdf1f12ca7feec1cc4d3b7709d9c41dc3c05da74307f3d0eb",
+      "size_bytes": 16249,
+      "modified_at": "2026-07-09T18:29:46.234534+00:00",
+      "schema_version": "1.1",
+      "artifact_head": "04741e2b3fe6ef945cab933e642b7d8c167d6d6e",
+      "roles": [
+        "实现代理",
+        "最终放行审查代理",
+        "阶段二检查代理"
+      ],
+      "agents_count": 4,
+      "review_rounds_count": 1,
+      "reuse_decisions_count": 0,
+      "status_events_count": 9,
+      "task": ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links",
+      "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
+    },
+    "review_reports": [
+      {
+        "round": 1,
+        "logical_role": "最终放行审查代理",
+        "agent_id": "019f481b-ebac-7d53-98a6-a829c685c88e",
+        "reviewed_head": "04741e2b3fe6ef945cab933e642b7d8c167d6d6e",
+        "findings_count": 0,
+        "path": ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links/reviews/round-1-final-review.md",
+        "sha256": "75d7c73a2607e9f57e2e1758b06a9a2616a2d5823e430639ff83d73205106c4f",
+        "size_bytes": 6298,
+        "modified_at": "2026-07-09T18:26:43.773896+00:00"
+      }
+    ],
+    "evidence": [
+      "review.md 汇总并链接 reviews/round-1-final-review.md；raw report 记录 reviewed_head=04741e2b3fe6ef945cab933e642b7d8c167d6d6e、findings_count=0。",
+      "git diff --name-only origin/main...HEAD 仅为 AGENTS.md；diff 只包含 3 个 URL 字面量替换。",
+      "phase2-check.json 记录阶段二检查代理覆盖 requirements、design、code/docs、tests、spec_sync、cross_layer、docs_ssot、deployment，findings 为空。",
+      "链接验证确认 index.md、advanced/custom-workflow.md、advanced/custom-spec-template-marketplace.md 均返回 HTTP 200 text/markdown。",
+      "未修改 workflow、preset、overlay、companion scripts、schema、CI/CD、容器、K8s/Kustomize、数据库 migration、Makefile；无部署影响或安全敏感数据。"
+    ],
+    "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
+  },
+  "deployment_impact": {
+    "changed_file_categories": {
+      "docs": [
+        "AGENTS.md"
+      ]
+    },
+    "deployment_asset_categories": {},
+    "changed_deployment_assets": [],
+    "probable_runtime_changes_without_deployment_asset_change": [],
+    "needs_deployment_impact_review": false,
+    "review_instruction": "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；如果不需要，必须给出不需要的理由。"
+  }
+}

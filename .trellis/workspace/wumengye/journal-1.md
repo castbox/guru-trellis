@@ -1328,3 +1328,36 @@ fresh 最终放行审查代理 Round 3 覆盖当前 origin/main...HEAD 完整 di
 ### Next Steps
 
 - None - task complete
+
+
+## Session 41: 完成：#73 将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址
+
+**Date**: 2026-07-10
+**Task**: 完成：#73 将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址
+**Branch**: `codex/073-trellis-doc-markdown-links`
+
+### Summary
+
+最终放行审查代理已审查 origin/main...HEAD 完整 diff，当前 HEAD 04741e2b3fe6ef945cab933e642b7d8c167d6d6e 仅包含 AGENTS.md 三条 Trellis 官方文档 URL 改为 .md 端点；Phase 2 evidence 覆盖提交前 AGENTS.md dirty path，Docs SSOT、部署与安全影响均通过，findings_count=0。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `04741e2b3fe6ef945cab933e642b7d8c167d6d6e` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
