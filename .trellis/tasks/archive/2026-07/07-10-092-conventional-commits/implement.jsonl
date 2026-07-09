@@ -1,0 +1,13 @@
+{"file": ".trellis/tasks/07-10-092-conventional-commits/prd.md", "reason": "需求、范围、验收标准和 issue #92 close 候选边界。"}
+{"file": ".trellis/tasks/07-10-092-conventional-commits/design.md", "reason": "技术设计、Docs SSOT Plan、script/workflow 分层和兼容性。"}
+{"file": ".trellis/tasks/07-10-092-conventional-commits/implement.md", "reason": "执行顺序、验证命令、回滚点和提交 message 计划。"}
+{"file": ".trellis/tasks/07-10-092-conventional-commits/research/official-trellis-docs.md", "reason": "官方 Trellis workflow / spec marketplace 扩展面依据。"}
+{"file": ".trellis/spec/workflow/index.md", "reason": "workflow 修改入口和必读规范。"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "workflow、finish、publish、review gate 和 commit message 长期合同。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "companion script 只能做 executor / validator / recorder。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "新增 commit check / merge payload 数据合同和兼容性。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验证命令、dogfood 同步、review focus 和提交前检查。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "新增 managed companion wrapper 后的 installer 同步规则。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "README / workflow README / preset README 同步规则。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "新增 validator 前复用现有 Git helper、body parser、PR body parser。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "commit message 合同跨 workflow、scripts、README、tests、dogfood copy。"}

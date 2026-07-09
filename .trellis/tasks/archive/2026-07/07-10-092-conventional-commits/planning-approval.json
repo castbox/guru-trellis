@@ -1,0 +1,119 @@
+{
+  "schema_version": "1.2",
+  "generated_at": "2026-07-09T20:59:21Z",
+  "review_prompt_presented_at": "2026-07-09T20:59:21Z",
+  "approved_at": "2026-07-09T20:59:21Z",
+  "task_dir": ".trellis/tasks/07-10-092-conventional-commits",
+  "head": "e94f4ab68d5e805d8b298936da52832c5caf16cc",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/tasks/07-10-092-conventional-commits/"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "用户已在查看 prd.md、design.md、implement.md 链接后确认进入实现；规划覆盖 issue #92 的 workflow、companion script、dogfood 同步、验证和开箱门禁。",
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "codex-main-session",
+    "summary": "已检查 prd.md、design.md、implement.md：需求未弱化 issue #92，提交规范、merge 指令、Docs SSOT、验证门禁均有确定性条件；受控弱约束扫描无命中。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "推荐",
+        "可选",
+        "尽量",
+        "尽可能",
+        "最好",
+        "应该",
+        "应当",
+        "原则上",
+        "一般",
+        "通常",
+        "视情况",
+        "根据情况",
+        "根据需要",
+        "按需",
+        "必要时",
+        "如有需要",
+        "需要时",
+        "适当",
+        "适当时",
+        "合理",
+        "合理时",
+        "类似",
+        "相关",
+        "相应",
+        "等",
+        "等等",
+        "之类",
+        "一些",
+        "若干",
+        "部分",
+        "至少",
+        "默认"
+      ],
+      "scan_scope": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ],
+      "hits": [],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "user_confirmation": {
+    "source": "explicit-post-planning-review",
+    "message": "用户回复：确认"
+  },
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/prd.md",
+      "sha256": "a0c5f06b3639925036aee182f7c9d663a521385d02fdba9a218760ebd1b36afc",
+      "size_bytes": 5153,
+      "modified_at": "2026-07-09T20:58:00.316940+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/design.md",
+      "sha256": "e85425497faac47b59aad55a1b48c8c5e96a729ffa5606366413d792ed471f2c",
+      "size_bytes": 5447,
+      "modified_at": "2026-07-09T20:58:00.317158+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/implement.md",
+      "sha256": "56978020e02b6ec0335f3e9f5ca3a76e4f4e3d7b0d37a226d3b33d5beedac977",
+      "size_bytes": 4776,
+      "modified_at": "2026-07-09T20:58:00.317283+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/prd.md",
+      "sha256": "a0c5f06b3639925036aee182f7c9d663a521385d02fdba9a218760ebd1b36afc",
+      "size_bytes": 5153,
+      "modified_at": "2026-07-09T20:58:00.316940+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/design.md",
+      "sha256": "e85425497faac47b59aad55a1b48c8c5e96a729ffa5606366413d792ed471f2c",
+      "size_bytes": 5447,
+      "modified_at": "2026-07-09T20:58:00.317158+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/implement.md",
+      "sha256": "56978020e02b6ec0335f3e9f5ca3a76e4f4e3d7b0d37a226d3b33d5beedac977",
+      "size_bytes": 4776,
+      "modified_at": "2026-07-09T20:58:00.317283+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。"
+}

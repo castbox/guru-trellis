@@ -1,0 +1,163 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-09T22:16:31Z",
+  "task_dir": ".trellis/tasks/07-10-092-conventional-commits",
+  "base_branch": "main",
+  "head": "1b42776abbc037d152fb350528c96b6e93ccbef2",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/handoff.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/workflow.md",
+    "README.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-10-092-conventional-commits/"
+  ],
+  "checker": "阶段二检查代理 019f48ea-7edb-7e60-84c3-d6921a62ed45",
+  "check_summary": "Branch Review Round 001 P2 修复后的 Phase 2 check 已完成：commit subject validator 禁止 Closes/Fixes/Resolves/Close/Fix/Resolve #xx，work/merge subject 反例和合法 Refs 分工测试已覆盖；workflow/spec/README 与 validator 合同一致；canonical/dogfood Python helper 与 workflow 一致；当前分支 marketplace install 仍需 push/tag 后复验。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/prd.md",
+      "sha256": "a0c5f06b3639925036aee182f7c9d663a521385d02fdba9a218760ebd1b36afc",
+      "size_bytes": 5153,
+      "modified_at": "2026-07-09T20:58:00.316940+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/design.md",
+      "sha256": "e85425497faac47b59aad55a1b48c8c5e96a729ffa5606366413d792ed471f2c",
+      "size_bytes": 5447,
+      "modified_at": "2026-07-09T20:58:00.317158+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/implement.md",
+      "sha256": "56978020e02b6ec0335f3e9f5ca3a76e4f4e3d7b0d37a226d3b33d5beedac977",
+      "size_bytes": 4776,
+      "modified_at": "2026-07-09T20:58:00.317283+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/check.jsonl",
+      "sha256": "ab1e10418003cdfef38f7321623a07f63c47ad9e940005dc672a5e8f5481c818",
+      "size_bytes": 1604,
+      "modified_at": "2026-07-09T20:58:00.317829+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/planning-approval.json",
+      "sha256": "7af64183ca26088946458af6c0fdce4061bf543982341455fb8738973dca39a8",
+      "size_bytes": 4059,
+      "modified_at": "2026-07-09T20:59:21.181853+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/issue-scope-ledger.json",
+      "sha256": "19b13d8b628b6cad1f6cdb983584f7d6706b78a84654e490a3c507a41f5344c7",
+      "size_bytes": 2401,
+      "modified_at": "2026-07-09T21:44:53.850872+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/agent-assignment.json",
+      "sha256": "18eb6f32225d677623ac6cf493d9dcd4bbf502e884556cd36e4e86a420108dfb",
+      "size_bytes": 17872,
+      "modified_at": "2026-07-09T22:15:18.305947+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-092-conventional-commits/reviews/round-001-final-release.md",
+      "sha256": "dfb595222e62eac267c2fe55f5f8f6c72e25c2d817ddd0356e33b9e92b90ac46",
+      "size_bytes": 5597,
+      "modified_at": "2026-07-09T21:59:00.489969+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "46d5c9a394817f76cbb5e27727c4d5e89e546a496efb588773fd0c9e35bb4b32",
+      "size_bytes": 25263,
+      "modified_at": "2026-07-09T22:12:07.010200+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "6e389e9319837d1b7c622df0bf79bf3c2675cf5010c29b35bca663c78da52246",
+      "size_bytes": 18668,
+      "modified_at": "2026-07-09T20:51:38.558854+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "08e462758a159b60bba15c206d79f92ec0ccf37d35c678540639661a4a49e545",
+      "size_bytes": 29125,
+      "modified_at": "2026-07-09T22:12:07.010673+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "fd31b6de197151652004a9ae657597d20d5d58079db8055948ba982575e02d1c",
+      "size_bytes": 10208,
+      "modified_at": "2026-07-09T22:12:07.010885+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "0a1c2776400d34f455363fad7f91d9aa5d460f87b3de38b00d92b80bde70bdd3",
+      "size_bytes": 10032,
+      "modified_at": "2026-07-09T20:51:38.558559+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "3dcb9e138dc54489b539b7d2f579ef68bfcdfb3c293fad5a80ceafdf4c5cb64e",
+      "size_bytes": 4343,
+      "modified_at": "2026-07-09T20:51:38.557421+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "passed, 243 tests"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "passed"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "passed"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-10-092-conventional-commits",
+      "result": "passed"
+    },
+    {
+      "command": ".trellis/guru-team/scripts/bash/check-commit-messages.sh --task .trellis/tasks/07-10-092-conventional-commits --json",
+      "result": "passed, existing work commit message valid"
+    },
+    {
+      "command": "direct validate_commit_subject probes for Closes/Fixes/Resolves/Close/Fix/Resolve in work and merge subjects",
+      "result": "passed; invalid subjects rejected and legal Refs subject accepted"
+    },
+    {
+      "command": ".trellis/guru-team/scripts/bash/format-merge-commit.sh --task .trellis/tasks/07-10-092-conventional-commits --pull-request 91 --summary 中文 Conventional Commits 提交规范 --head-branch codex/092-conventional-commits --base-branch main --json",
+      "result": "passed; generated chore(merge) payload"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}
