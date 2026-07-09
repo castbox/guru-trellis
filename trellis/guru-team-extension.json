@@ -38,6 +38,7 @@
       "issue-scope-ledger.json",
       "reviews/*.md",
       "review.md",
+      "pr-body.md",
       "review-gate.json",
       "pr-readiness.json"
     ],
@@ -46,6 +47,7 @@
       "version",
       "prepare-task",
       "check-workspace-boundary",
+      "resolve-human-artifacts",
       "record-planning-approval",
       "check-planning-approval",
       "record-phase2-check",

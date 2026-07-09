@@ -1,0 +1,185 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-09T07:03:44Z",
+  "task_dir": ".trellis/tasks/07-09-061-task-markdown-review-table",
+  "base_branch": "main",
+  "head": "b481344409ce9096207f954cf085a724b75bf093",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".agents/skills/trellis-finish-work/SKILL.md",
+    ".claude/commands/trellis/continue.md",
+    ".claude/commands/trellis/finish-work.md",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/prompts/trellis-finish-work.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".codex/skills/trellis-finish-work/SKILL.md",
+    ".cursor/commands/trellis-continue.md",
+    ".cursor/commands/trellis-finish-work.md",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/handoff.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/workflow.md",
+    "README.md",
+    "trellis/guru-team-extension.json",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh",
+    ".trellis/tasks/07-09-061-task-markdown-review-table/",
+    "trellis/workflows/guru-team/scripts/bash/resolve-human-artifacts.sh"
+  ],
+  "checker": "trellis-check:019f45a3-7db1-72a0-8cef-338dfd1b9a76",
+  "check_summary": "阶段二检查代理已覆盖 issue #61 的需求、设计、代码、测试、spec 同步、跨层一致性、Docs SSOT 与部署影响；发现的 pr-body.md 示例命名残留已自修复；当前无开放 P0/P1/P2 finding。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-09-061-task-markdown-review-table/prd.md",
+      "sha256": "d0804b3f5fa6487313197fc3c39d02fe209ab779da19561a3cd1174d20f0ee28",
+      "size_bytes": 4838,
+      "modified_at": "2026-07-09T06:11:06.803245+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-061-task-markdown-review-table/design.md",
+      "sha256": "48565e9cbe00f9f95d583130757e6e15b788a532c87d4d700821d1a5df31a2f7",
+      "size_bytes": 5403,
+      "modified_at": "2026-07-09T06:11:06.803346+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-061-task-markdown-review-table/implement.md",
+      "sha256": "c6dace93f254834d0a2456476e4a475c445b446ecfea0f0b935f4696f973cf9d",
+      "size_bytes": 3469,
+      "modified_at": "2026-07-09T06:11:06.803429+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-09-061-task-markdown-review-table/planning-approval.json",
+      "sha256": "f99b8c17f55a47dcd03742dfc0c244dacda80e36a5871dd985bcf15873dbe7a0",
+      "size_bytes": 2595,
+      "modified_at": "2026-07-09T06:14:50.963102+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "5e7535c431bf40623316644d82959248e09a37a5a758a9c5311bc54ccaa2eb8b",
+      "size_bytes": 18082,
+      "modified_at": "2026-07-09T06:03:23.815060+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "b37f619b3d148eee6724c2350d263d3edcb060652a28f8341848bac1ef565100",
+      "size_bytes": 17216,
+      "modified_at": "2026-07-09T06:32:58.465014+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "12e7f74af9f12de2413d4e0dc40afb040c3f58ea7e24e478f8e6726a7d7cd41b",
+      "size_bytes": 25155,
+      "modified_at": "2026-07-09T06:03:23.814645+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "488d71d9f7be7b9bbc3491b52dc1f49186d1b81ed9b59372f51a3e10ae9d0bdc",
+      "size_bytes": 7370,
+      "modified_at": "2026-07-09T06:03:23.814962+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "0a1c2776400d34f455363fad7f91d9aa5d460f87b3de38b00d92b80bde70bdd3",
+      "size_bytes": 10032,
+      "modified_at": "2026-07-09T06:03:23.814294+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "d6217c8973e77acb3d3d2bfdf970d9c56127cf14c76ed40ca901475b39015666",
+      "size_bytes": 12246,
+      "modified_at": "2026-07-09T06:32:44.586512+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "3dcb9e138dc54489b539b7d2f579ef68bfcdfb3c293fad5a80ceafdf4c5cb64e",
+      "size_bytes": 4343,
+      "modified_at": "2026-07-09T06:03:23.813251+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/index.md",
+      "sha256": "aa45e5d0f245aae0b34677b121f7d083620308b4b87cda929bd134c77d1f61fd",
+      "size_bytes": 3680,
+      "modified_at": "2026-07-09T06:03:23.814047+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "passed: 186 tests OK"
+    },
+    {
+      "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "passed: 27 tests OK"
+    },
+    {
+      "command": "python3 -m json.tool trellis/index.json; python3 -m json.tool trellis/guru-team-extension.json; python3 -m json.tool .trellis/guru-team/extension.json",
+      "result": "passed"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh .trellis/guru-team/scripts/bash/*.sh",
+      "result": "passed"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py .trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "result": "passed"
+    },
+    {
+      "command": ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task .trellis/tasks/07-09-061-task-markdown-review-table; trellis/workflows/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task .trellis/tasks/07-09-061-task-markdown-review-table",
+      "result": "passed: active task smoke returns five Markdown artifacts and missing review/pr-body links are empty"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/get_context.py --mode phase --step 1.4/2.2/3.5/3.6/3.7",
+      "result": "passed: resolver/table rules visible in phase context"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-09-061-task-markdown-review-table",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "find . -name *.new -o -name *.bak -o -name __pycache__",
+      "result": "passed: no residual output after cleanup"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

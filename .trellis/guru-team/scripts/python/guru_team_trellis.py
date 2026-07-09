@@ -62,6 +62,38 @@ PHASE2_CHECK_ARTIFACT = "phase2-check.json"
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 REVIEW_REPORT_ARTIFACT = "review.md"
 REVIEW_ROUND_REPORT_DIR = "reviews"
+HUMAN_MARKDOWN_ARTIFACTS = [
+    {
+        "label": "PRD",
+        "filename": "prd.md",
+        "purpose": "需求、范围、验收标准",
+        "missing_status": "未生成",
+    },
+    {
+        "label": "Design",
+        "filename": "design.md",
+        "purpose": "技术设计与取舍",
+        "missing_status": "未生成",
+    },
+    {
+        "label": "Implement Plan",
+        "filename": "implement.md",
+        "purpose": "执行计划与验证计划",
+        "missing_status": "未生成",
+    },
+    {
+        "label": "Review Report",
+        "filename": REVIEW_REPORT_ARTIFACT,
+        "purpose": "AI/human review 报告",
+        "missing_status": "未执行",
+    },
+    {
+        "label": "PR Body",
+        "filename": "pr-body.md",
+        "purpose": "给 GitHub reviewer 的 PR 说明",
+        "missing_status": "未生成",
+    },
+]
 GURU_TEAM_EXTENSION_MANIFEST = Path(".trellis/guru-team/extension.json")
 WORKSPACE_BOUNDARY_SUSPICIOUS_TASK_ARTIFACTS = [
     "task.json",
@@ -1757,6 +1789,35 @@ def resolve_task_dir(root: Path, task_arg: str | None, handoff: dict[str, Any] |
     if current:
         return current
     raise WorkflowError("Could not resolve current Trellis task. Pass --task <task-dir>.")
+
+
+def resolve_human_markdown_artifacts(root: Path, task_dir: Path) -> dict[str, Any]:
+    task_relative = repo_relative(root, task_dir)
+    archived = task_relative.startswith(".trellis/tasks/archive/")
+    artifacts: list[dict[str, Any]] = []
+    for spec in HUMAN_MARKDOWN_ARTIFACTS:
+        filename = str(spec["filename"])
+        path = task_dir / filename
+        exists = path.is_file()
+        artifacts.append(
+            {
+                "label": spec["label"],
+                "filename": filename,
+                "purpose": spec["purpose"],
+                "exists": exists,
+                "status": "已生成" if exists else spec["missing_status"],
+                "path": repo_relative(root, path),
+                "absolute_path": str(path.resolve()),
+                "link": str(path.resolve()) if exists else "",
+            }
+        )
+    return {
+        "status": "ok",
+        "task_dir": str(task_dir.resolve()),
+        "task_dir_relative": task_relative,
+        "archived": archived,
+        "markdown_artifacts": artifacts,
+    }
 
 
 def path_within(parent: Path, path: Path) -> bool:
@@ -5291,6 +5352,14 @@ def cmd_check_workspace_boundary(args: argparse.Namespace) -> dict[str, Any]:
     return snapshot
 
 
+def cmd_resolve_human_artifacts(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    handoff = load_handoff(root, config)
+    task_dir = resolve_task_dir(root, args.task, handoff)
+    return resolve_human_markdown_artifacts(root, task_dir)
+
+
 def infer_assignee(root: Path, explicit: str | None) -> str | None:
     if explicit:
         return explicit
@@ -6484,6 +6553,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allow a clean source checkout probe to report facts without failing on expected workspace mismatch.",
     )
 
+    human_artifacts = sub.add_parser("resolve-human-artifacts")
+    human_artifacts.add_argument("--root")
+    human_artifacts.add_argument("--json", action="store_true")
+    human_artifacts.add_argument("--task")
+
     prepare = sub.add_parser("prepare")
     prepare.add_argument("--root")
     prepare.add_argument("--json", action="store_true")
@@ -6710,6 +6784,8 @@ def main() -> int:
             payload = cmd_version(args)
         elif args.command == "check-workspace-boundary":
             payload = cmd_check_workspace_boundary(args)
+        elif args.command == "resolve-human-artifacts":
+            payload = cmd_resolve_human_artifacts(args)
         elif args.command == "prepare":
             payload = cmd_prepare(args)
         elif args.command == "review-branch":

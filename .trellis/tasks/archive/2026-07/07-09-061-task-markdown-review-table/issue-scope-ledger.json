@@ -1,0 +1,30 @@
+{
+  "primary_issue": {
+    "number": 61,
+    "url": "https://github.com/castbox/guru-trellis/issues/61",
+    "title": "阶段回复必须提供 Markdown task 产物 review 表",
+    "reason": "intake/handoff 主 issue；本任务按 #61 验收标准实现 Markdown task 产物 review 表。",
+    "acceptance_evidence": [
+      "新增 resolve-human-artifacts companion helper，只返回 prd.md、design.md、implement.md、review.md、pr-body.md 五个 Markdown artifact；缺失项 link 为空，JSON artifact 不进入默认表。",
+      "canonical workflow、dogfood workflow、shared/Codex/Claude/Cursor continue 与 finish-work overlay 均要求阶段停止点/完成回复运行 resolver 并输出 Markdown 产物 review 表；finish-work dry-run 使用 active path，正式 archive 后重新 resolve archive path。",
+      "Phase 2 check 由 trellis-check:019f45a3-7db1-72a0-8cef-338dfd1b9a76 完成并通过；unit tests、json.tool、bash -n、py_compile、context phase、resolver smoke、dogfood overlay drift、task validate、git diff --check 均通过。",
+      "完整当前分支 throwaway install 未覆盖；该限制已作为未覆盖风险记录，后续 PR/最终报告不得声称已完成完整开箱即用验证。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 61,
+      "url": "https://github.com/castbox/guru-trellis/issues/61",
+      "title": "阶段回复必须提供 Markdown task 产物 review 表",
+      "reason": "本任务完整承接 #61 的标准阶段产物表需求，PR 可使用 Closes #61；完整当前分支 throwaway install 未覆盖需在 PR 说明中披露。",
+      "acceptance_evidence": [
+        "新增 resolve-human-artifacts companion helper，只返回 prd.md、design.md、implement.md、review.md、pr-body.md 五个 Markdown artifact；缺失项 link 为空，JSON artifact 不进入默认表。",
+        "canonical workflow、dogfood workflow、shared/Codex/Claude/Cursor continue 与 finish-work overlay 均要求阶段停止点/完成回复运行 resolver 并输出 Markdown 产物 review 表；finish-work dry-run 使用 active path，正式 archive 后重新 resolve archive path。",
+        "Phase 2 check 由 trellis-check:019f45a3-7db1-72a0-8cef-338dfd1b9a76 完成并通过；unit tests、json.tool、bash -n、py_compile、context phase、resolver smoke、dogfood overlay drift、task validate、git diff --check 均通过。",
+        "完整当前分支 throwaway install 未覆盖；该限制已作为未覆盖风险记录，后续 PR/最终报告不得声称已完成完整开箱即用验证。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

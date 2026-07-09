@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查阶段需要覆盖 workflow/preset/script/docs 的 required checks、dogfood drift 和 review focus。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查 resolver payload、manifest additive 更新、JSON 输出和 archive path 语义。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查新 managed asset、executable permission、installed files 和 apply 行为。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查公开 README / workflow README / preset README 是否与 workflow 行为一致。"}

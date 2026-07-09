@@ -14,6 +14,19 @@ Route by task status:
 - in_progress: confirm knowledge-gate and docs responsibilities from artifacts; first rerun `check-workspace-boundary.sh --json --task <task-path>` and `check-planning-approval.sh --json`, and stop if either fails; in default sub-agent mode dispatch `trellis-implement` / channel `implement` and wait for its implementation handoff, then dispatch `trellis-check` / channel `check`; record `assigned`, progress/status-request, terminal, resume/replacement, and completed evidence for both roles through `record-subagent-liveness-event.sh` / `check-subagent-liveness.sh`; before every recorder/validator call, confirm all task artifact paths are task-worktree local; record/check `phase2-check.json` only after the completed `trellis-check` AI report, with the current pre-commit `dirty_paths`; reconcile specs/docs; then commit. The main session coordinates this path and must not directly implement, directly check, or treat validation command output as sub-agent evidence.
 - after commit: in default sub-agent mode dispatch an independent review sub-agent over the full diff, record review role/reuse/status decisions in `agent-assignment.json`, write task-local `{TASK_DIR}/reviews/*.md` raw reports plus final `{TASK_DIR}/review.md` rollup that links them. Before writing these artifacts or running `review-branch.sh`, rerun `check-workspace-boundary.sh --json --task <task-path>`. Both are human-readable task artifacts: use Chinese Markdown headings, Chinese field labels, and Chinese review narrative, with literal command/path/JSON/HEAD/API/code tokens left as-is when needed. Then run Branch Review Gate before `/trellis:finish-work`, including Docs SSOT reconciliation evidence. The review sub-agent must not continue implementation or patch missing Phase 2 check work. Do not pass the gate from main-session self-review.
 
+Before any planning, Phase 2, or Branch Review stop/completion reply, run:
+
+```bash
+.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
+```
+
+Render a `Markdown 产物 review 表` with only `prd.md`, `design.md`,
+`implement.md`, `review.md`, and `pr-body.md`. Link only resolver rows with
+`exists=true`; for missing files show the status without a Markdown link.
+After Branch Review, the `review.md` row is the AI/human review report; raw
+`reviews/*.md` reports are reached through `review.md`, not listed as default
+table rows. Do not list JSON artifacts in the standard table.
+
 If a user adds requirements, references another issue, or discovers new scope during the task, pause and follow `.trellis/workflow.md` Scope Change Gate before continuing implementation: recommend whether the change belongs in current `close_issues`, `related_issues`, or `followup_issues` / new issue, get user confirmation when classification is not explicit, update planning artifacts and `issue-scope-ledger.json`, and leave GitHub-visible issue evidence.
 
 ```bash

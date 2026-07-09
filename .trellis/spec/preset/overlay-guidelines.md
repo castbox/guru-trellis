@@ -61,6 +61,13 @@ Continue entries must:
   clickable or absolute links to all three task-local planning documents and
   stop until the user explicitly confirms after seeing them; Phase 0 handoff
   approval or old `source=workflow` planning approval cannot substitute
+- before any planning, Phase 2, or Branch Review stop/completion reply, run
+  `.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task
+  <task-path>` and output a `Markdown 产物 review 表` with only `prd.md`,
+  `design.md`, `implement.md`, `review.md`, and `pr-body.md`; rows with
+  `exists=false` must not be rendered as Markdown links, `review.md` is the
+  AI/human review report after Branch Review, raw `reviews/*.md` are reached
+  through `review.md`, and JSON artifacts stay out of the standard table
 - state that `planning-approval.json` must use
   `user_confirmation.source=explicit-post-planning-review`, include
   `review_prompt_presented_at`, `approved_at`, and matching hash / size /
@@ -122,6 +129,10 @@ Finish entries must:
   finish entries and must not be copied into continue entries
 - explain that finish-work archives the task, records journal metadata, and
   publishes a non-draft PR
+- explain that after finish-work dry-run the AI must run
+  `resolve-human-artifacts.sh` against the active task and output the active
+  `Markdown 产物 review 表`, and after formal archive it must run the resolver
+  again against the archive path/name and output the archive-path table
 - explain that finish-work may commit Trellis metadata-only changes after the
   reviewed HEAD, but rejects non-metadata changes
 - explain that the gate must already contain task-local `review.md`
