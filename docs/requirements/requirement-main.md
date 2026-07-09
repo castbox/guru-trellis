@@ -58,7 +58,8 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 - Issue #26 / PR #28：worktree 创建后继承或初始化 Trellis developer identity。
 - Issue #51：`prepare-task` slug / branch / worktree / task 命名质量门禁。
 - Issue #60：workspace boundary 机器事实层，阻断 task artifact、review metadata 和
-  recorder/validator 路径误写 source checkout；#76 heartbeat / liveness 留作后续。
+  recorder/validator 路径误写 source checkout；#76 在该事实层上实现 sub-agent liveness
+  与 source checkout progress/boundary violation 判定。
 - Issue #55：intake clarity / brainstorming、issue evidence update、任务中 scope change 留痕。
 
 已实现能力：
@@ -118,7 +119,7 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 | Raw reports + rollup 必填 | `reviews/*.md`、`review.md` | 每轮 AI/human review 判断都必须写 task-local 中文 raw Markdown report；顶层 `review.md` 是最终中文 rollup，建议使用 `审查轮次`、`问题生命周期`、`最终审查`、`证据`、`观察项`、`后续候选`、`结论` 等小节，汇总审查轮次、问题闭环生命周期、关键证据、最终结论，并链接所有 raw reports。#61 顶层 artifact 表默认仍只列 final `review.md`，raw reports 通过 rollup 和 gate digest 追溯；literal command/path/JSON/HEAD/API/code token 可保留英文。 |
 | Finding 全阻断 | workflow、`review-branch.sh`、`review-gate.json` | Branch Review Gate 中任意 finding 都阻断，包括 P3；`observation` 与 `followup_candidate` 可记录但不是放行 finding 的替代品。 |
 | 闭环后 Fresh 最终放行审查 | `agent-assignment.json`、`review-branch --agent-assignment` | 任何发现过 findings 的 agent 必须先作为同一 `问题闭环审查代理` 确认其 finding 已闭环并记录 0 findings；若原 agent 失败/中断且无法继续，必须记录 predecessor failed/unfinished、`replacement-started`、`reuse_decisions[] decision=replace from_round/to_round` 和替代闭环 round。之后最终 pass 必须由新的 fresh `最终放行审查代理` 完整审查当前 HEAD diff 并记录 0 findings，且 final agent 不能是 finding owner 或替代闭环 reviewer。 |
-| Sub-agent status ledger | `agent-assignment.json.status_events[]`、`record-agent-assignment.sh`、`review-branch --agent-assignment` | 记录 wait timeout、progress observed、stale assessed、continue waiting、resume/replacement、terminated unfinished、completed、failed；`wait_agent` / `trellis channel wait` timeout 不是失败证据，未完成终止必须恢复同一 agent 或由 replacement 继承上下文并到达 completed/failed，否则 Phase 2 / Branch Review Gate 不得放行。 |
+| Sub-agent liveness 状态机 | `agent-assignment.json`、`record-subagent-liveness-event.sh`、`check-subagent-liveness.sh`、`check-agent-assignment.sh`、`review-branch --agent-assignment` | `agent-assignment.json` 是唯一 task-local assignment/status/liveness/review ledger，schema 1.1 包含 `agents[]`、`status_events[]` 和 `liveness[agent_id].last_scan_snapshot`；checker 每次按需单次采样 task/source checkout 与 progress event digest，输出 `progress_observed`、`workspace_boundary_violation_progress`、`status_request_required`、`continue_waiting_no_repeat_ping`、`stale_allowed` 或 `blocked_missing_evidence`。`progress_scan_interval=120s` 是扫描间隔，`max_progress_silence=180s` 从 `progress_anchor_at` 起算；`status-requested` 不刷新 anchor 或延长 deadline。stale cutover 必须结构化记录 `terminated-unfinished termination_reason=stale_cutover termination_source_event_id=<stale-assessed.event_id>` 和 `replacement-started replacement_reason=max_progress_silence_exceeded`，failed/stale/unfinished/replacement partial output 只有在恢复链到达 `completed` 后才能进入 Phase 2 / Branch Review pass evidence。旧 `record-agent-assignment.sh --status-event` 路径 fail closed。 |
 | Workspace boundary snapshot | `check-workspace-boundary.sh`、recorder/validator boundary helper | 在记录 planning、phase2、assignment、review gate 或 sub-agent status evidence 前确认 actual repo root 等于 handoff `workspace_path`，并拒绝 source checkout / 非当前 task worktree 的 `--review-report`、`--agent-assignment`、`--review-round-report`、`--checked-artifact` 等路径；脚本只输出事实，不判断 stale、不迁移 patch、不清理 source checkout。 |
 | Review gate recorder | `review-branch.sh`、`check-review-gate.sh`、`review-gate.json` | 固化 review result、final `review.md` digest、raw `review_reports[]` digest、base/head、evidence、findings、observations、follow-up candidates；脚本不是 reviewer，且独立 review sub-agent 不调用这些 recorder/validator 扩展脚本作为审查过程。脚本可客观拦截 `Review Rounds`、`Findings Lifecycle`、`Evidence Handoff`、`Deployment / safety impact`、`Follow-up Candidates` 等英文模板标题痕迹，但不判断中文审查语义充分性。 |
 | Independent review source | `--review-source independent-agent` | 通过 gate 不能来自 `self-review` 或 `*-main-session`。 |
@@ -295,7 +296,8 @@ Canonical 资产：
 | #72 | open | 当前任务 | 默认 sub-agent mode 下强制 implement、Phase 2 check 和 Branch Review 均由 sub-agent 执行；main session 只协调，脚本只 recorder/validator。 |
 | #55 | open | 当前任务 | issue intake clarity / brainstorming、issue body/comment/new issue 留痕、任务中 scope-change gate。 |
 | #57 | open | 当前任务 | 业务项目 Trellis 文档语言默认中文；installer 归一化已知英文模板语言规则；bootstrap docs SSOT 中文规则。 |
-| #60 | open | 当前任务 | workspace boundary guard：新增 `check-workspace-boundary` 事实快照、recorder/validator cwd 与 task-local path fail-closed 校验、source checkout 可疑 task artifact 检测、workflow/overlay/docs 绝对 worktree 路径规则；不关闭 #76 heartbeat / liveness。 |
+| #60 | open | 当前任务 | workspace boundary guard：新增 `check-workspace-boundary` 事实快照、recorder/validator cwd 与 task-local path fail-closed 校验、source checkout 可疑 task artifact 检测、workflow/overlay/docs 绝对 worktree 路径规则；为 #76 的 source/task 双侧 liveness checker 提供事实层。 |
+| #76 | open | 当前任务 | sub-agent liveness、progress/stale 判定与 replacement cutover 状态机：单一 `agent-assignment.json` 1.1 artifact、required recorder/checker、status request 前置审计、stale cutover 结构化 termination/replacement cause、completed-only recovery gate；不新增 heartbeat 文件、daemon、sidecar、long-command wrapper 或后台 liveness 进程。 |
 | #70 | open | 当前任务 | Branch Review 每轮保留 `reviews/*.md` raw report；最终 `review.md` 是 rollup 并链接 raw reports；`agent-assignment.json.review_rounds[]` 与 `review-gate.json.verification_evidence.review_reports[]` 记录 raw digest；#61 顶层 artifact 表默认仍只列 final `review.md`。 |
 | #78 | open | 当前任务 | Branch Review raw reports / `review.md` 继承 #57 中文 artifact 规则；workflow / overlay / docs / spec / validator 防止英文模板标题复发。 |
 

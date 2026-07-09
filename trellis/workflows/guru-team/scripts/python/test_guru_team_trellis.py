@@ -210,7 +210,6 @@ def assignment_args(**overrides: object) -> argparse.Namespace:
         "last_observed_progress_at": None,
         "workspace_evidence": None,
         "running_command_evidence": None,
-        "supersedes_agent_id": None,
         "handoff_summary": None,
         "dry_run": False,
     }
@@ -224,6 +223,47 @@ def boundary_args(**overrides: object) -> argparse.Namespace:
         "json": True,
         "task": None,
         "allow_source_clean": False,
+    }
+    values.update(overrides)
+    return argparse.Namespace(**values)
+
+
+def liveness_event_args(**overrides: object) -> argparse.Namespace:
+    values: dict[str, object] = {
+        "root": None,
+        "json": True,
+        "task": None,
+        "source_repo": None,
+        "agent_id": "agent-a",
+        "event": "assigned",
+        "observed_at": "2026-07-07T00:00:00Z",
+        "evidence": "分配实现代理。",
+        "logical_role": "实现代理",
+        "platform_nickname": "Implement A",
+        "source": "main-session",
+        "predecessor_agent_id": None,
+        "predecessor_event_id": None,
+        "termination_reason": None,
+        "termination_source_event_id": None,
+        "replacement_reason": None,
+        "handoff_summary": None,
+        "dry_run": False,
+    }
+    values.update(overrides)
+    return argparse.Namespace(**values)
+
+
+def liveness_check_args(**overrides: object) -> argparse.Namespace:
+    values: dict[str, object] = {
+        "root": None,
+        "json": True,
+        "task": None,
+        "source_repo": None,
+        "agent_id": "agent-a",
+        "progress_scan_interval": 120,
+        "max_progress_silence": 180,
+        "checked_at": "2026-07-07T00:00:00Z",
+        "dry_run": False,
     }
     values.update(overrides)
     return argparse.Namespace(**values)
@@ -1511,6 +1551,69 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertEqual(check["status"], "ok")
         self.assertTrue(all(payload["coverage"].values()))
 
+    def test_phase2_pass_rejects_unclosed_agent_assignment_recovery_chain(self) -> None:
+        assignment = self.task_dir / "agent-assignment.json"
+        unclosed_assignment = {
+            "schema_version": "1.1",
+            "task": ".trellis/tasks/07-04-gates",
+            "head": "abc123",
+            "agents": [
+                {
+                    "logical_role": "实现代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "Implement A",
+                    "assigned_at": "2026-07-07T00:00:00Z",
+                    "assigned_head": "abc123",
+                    "reason": "分配实现代理。",
+                }
+            ],
+            "liveness": {},
+            "review_rounds": [],
+            "reuse_decisions": [],
+            "status_events": [
+                {
+                    "event_id": "evt-0001",
+                    "event": "terminated-unfinished",
+                    "agent_id": "agent-a",
+                    "logical_role": "实现代理",
+                    "platform_nickname": "Implement A",
+                    "observed_at": "2026-07-07T00:01:00Z",
+                    "recorded_at": "2026-07-07T00:01:00Z",
+                    "head": "abc123",
+                    "source": "main-session",
+                    "evidence": "实现代理被平台中断且未完成。",
+                    "predecessor_agent_id": "",
+                    "predecessor_event_id": "",
+                    "termination_reason": "manual_or_platform_terminated_unfinished",
+                    "termination_source_event_id": "",
+                    "replacement_reason": "",
+                    "handoff_summary": "predecessor output、当前 diff、剩余工作和 gate blockers。",
+                }
+            ],
+        }
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        git_object_patch = mock.patch.object(gtt, "git_object_exists", return_value=True)
+        git_object_patch.start()
+        try:
+            gtt.cmd_record_planning_approval(planning_args())
+            assignment.write_text(json.dumps(unclosed_assignment, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            with self.assertRaises(gtt.WorkflowError) as record_raised:
+                gtt.cmd_record_phase2_check(phase2_args())
+            assignment.unlink()
+            gtt.cmd_record_phase2_check(phase2_args())
+            assignment.write_text(json.dumps(unclosed_assignment, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            with self.assertRaises(gtt.WorkflowError) as check_raised:
+                gtt.cmd_check_phase2_check(phase2_args())
+        finally:
+            git_object_patch.stop()
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertTrue(any("terminated-unfinished" in error for error in record_raised.exception.payload["errors"]))
+        self.assertTrue(any("terminated-unfinished" in error for error in check_raised.exception.payload["errors"]))
+
     def test_check_phase2_ignores_recorded_task_artifact_dirty_paths(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
@@ -2709,25 +2812,79 @@ class ReviewGateReportTest(unittest.TestCase):
             }
         ]
         rounds = [self.add_raw_report_fields(item, index) for index, item in enumerate(rounds)]
+        normalized_status_events: list[dict[str, object]] = []
+        last_terminal_by_agent: dict[str, dict[str, object]] = {}
+        for index, raw in enumerate(status_events or []):
+            item = dict(raw)
+            item.setdefault("event_id", f"evt-{index + 1:04d}")
+            item.setdefault("recorded_at", item.get("observed_at", "2026-07-07T00:00:00Z"))
+            item.setdefault("source", "main-session")
+            item.setdefault("evidence", item.get("reason") or item.get("workspace_evidence") or "测试 fixture evidence")
+            event_name = str(item.get("event") or "")
+            agent_id = str(item.get("agent_id") or "")
+            if event_name == "terminated-unfinished":
+                item.setdefault("termination_reason", "manual_or_platform_terminated_unfinished")
+                item.setdefault("termination_source_event_id", "")
+                last_terminal_by_agent[agent_id] = item
+            elif event_name == "failed":
+                last_terminal_by_agent[agent_id] = item
+            elif event_name == "replacement-started":
+                predecessor = str(item.get("predecessor_agent_id") or "")
+                terminal = last_terminal_by_agent.get(predecessor, {})
+                predecessor_event = str(terminal.get("event") or "")
+                predecessor_reason = str(terminal.get("termination_reason") or "")
+                item.setdefault("predecessor_agent_id", predecessor)
+                item.setdefault("predecessor_event_id", terminal.get("event_id", ""))
+                if predecessor_event == "failed":
+                    item.setdefault("replacement_reason", "terminal_failed_incomplete")
+                elif predecessor_reason == "manual_or_platform_terminated_unfinished":
+                    item.setdefault("replacement_reason", "manual_or_platform_terminated_unfinished")
+                else:
+                    item.setdefault("replacement_reason", "max_progress_silence_exceeded")
+            item.setdefault("predecessor_agent_id", "")
+            item.setdefault("predecessor_event_id", "")
+            item.setdefault("termination_reason", "")
+            item.setdefault("termination_source_event_id", "")
+            item.setdefault("replacement_reason", "")
+            item.setdefault("handoff_summary", item.get("handoff_summary", ""))
+            normalized_status_events.append(item)
+        agents = [
+            {
+                "logical_role": "实现代理",
+                "agent_id": "019f315a-f262-7521-acdf-78e4adc99a11",
+                "platform_nickname": "Gibbs",
+                "assigned_at": "2026-07-05T00:00:00Z",
+                "assigned_head": "abc123",
+                "reason": "Codex sub-agent 模式下分配实现代理。",
+            }
+        ]
+        known_agents = {str(agents[0]["agent_id"])}
+        for item in normalized_status_events:
+            agent_id = str(item.get("agent_id") or "")
+            if not agent_id or agent_id in known_agents:
+                continue
+            agents.append(
+                {
+                    "logical_role": item.get("logical_role") or "实现代理",
+                    "agent_id": agent_id,
+                    "platform_nickname": item.get("platform_nickname") or agent_id,
+                    "assigned_at": item.get("observed_at") or "2026-07-05T00:00:00Z",
+                    "assigned_head": item.get("head") or "abc123",
+                    "reason": "测试 fixture 中的 status event agent 已按新 liveness 合同登记。",
+                }
+            )
+            known_agents.add(agent_id)
         assignment.write_text(
             gtt.json.dumps(
                 {
-                    "schema_version": "1.0",
+                    "schema_version": "1.1",
                     "task": ".trellis/tasks/07-04-review-gate",
                     "head": "abc123",
-                    "agents": [
-                        {
-                            "logical_role": "实现代理",
-                            "agent_id": "019f315a-f262-7521-acdf-78e4adc99a11",
-                            "platform_nickname": "Gibbs",
-                            "assigned_at": "2026-07-05T00:00:00Z",
-                            "assigned_head": "abc123",
-                            "reason": "Codex sub-agent 模式下分配实现代理。",
-                        }
-                    ],
+                    "agents": agents,
+                    "liveness": {},
                     "review_rounds": rounds,
                     "reuse_decisions": reuse_decisions if reuse_decisions is not None else [],
-                    "status_events": status_events if status_events is not None else [],
+                    "status_events": normalized_status_events,
                 },
                 ensure_ascii=False,
                 indent=2,
@@ -3103,7 +3260,6 @@ class ReviewGateReportTest(unittest.TestCase):
                     "running_command_evidence": "验证命令无输出。",
                     "decision": "terminate-unfinished",
                     "reason": "AI 已判断当前 agent 无进展并中断。",
-                    "supersedes_agent_id": "",
                     "handoff_summary": "前任输出、当前 diff、剩余任务已整理，等待恢复或继任。",
                 }
             ]
@@ -3126,7 +3282,7 @@ class ReviewGateReportTest(unittest.TestCase):
 
         errors = raised.exception.payload["errors"]
         self.assertTrue(any("terminated-unfinished" in error for error in errors))
-        self.assertTrue(any("completed 或 failed" in error for error in errors))
+        self.assertTrue(any("completed" in error for error in errors))
 
     def test_review_branch_pass_accepts_replacement_status_event_chain(self) -> None:
         review_report = self.task_dir / "review.md"
@@ -3145,7 +3301,6 @@ class ReviewGateReportTest(unittest.TestCase):
                     "running_command_evidence": "验证命令无输出。",
                     "decision": "terminate-unfinished",
                     "reason": "AI 已判断当前 agent 无进展并中断。",
-                    "supersedes_agent_id": "",
                     "handoff_summary": "前任输出、当前 diff、剩余任务已整理。",
                 },
                 {
@@ -3160,7 +3315,7 @@ class ReviewGateReportTest(unittest.TestCase):
                     "running_command_evidence": "",
                     "decision": "start-replacement",
                     "reason": "同一会话无法恢复，启动继任 agent 继续剩余实现。",
-                    "supersedes_agent_id": "implement-agent-a",
+                    "predecessor_agent_id": "implement-agent-a",
                     "handoff_summary": "继任已接收 task artifacts、当前 diff、剩余 checklist 和 gate 阻塞点。",
                 },
                 {
@@ -3175,7 +3330,6 @@ class ReviewGateReportTest(unittest.TestCase):
                     "running_command_evidence": "验证命令已结束。",
                     "decision": "mark-completed",
                     "reason": "继任 agent 已完成剩余工作。",
-                    "supersedes_agent_id": "",
                     "handoff_summary": "",
                 },
             ]
@@ -3381,7 +3535,6 @@ class ReviewGateReportTest(unittest.TestCase):
                     "running_command_evidence": "review agent stream disconnected。",
                     "decision": "mark-failed",
                     "reason": "该 agent 已失败，不能作为 passing final，也不能继续闭环。",
-                    "supersedes_agent_id": "",
                     "handoff_summary": "",
                 },
                 {
@@ -3396,7 +3549,7 @@ class ReviewGateReportTest(unittest.TestCase):
                     "running_command_evidence": "替代闭环审查已启动。",
                     "decision": "start-replacement",
                     "reason": "原 review agent 已失败，启动替代闭环代理只复核该 finding。",
-                    "supersedes_agent_id": "agent-a",
+                    "predecessor_agent_id": "agent-a",
                     "handoff_summary": "闭环目标：确认 round 1 finding 在当前 HEAD 已修复。",
                 },
                 {
@@ -3411,7 +3564,6 @@ class ReviewGateReportTest(unittest.TestCase):
                     "running_command_evidence": "闭环审查完成，findings_count=0。",
                     "decision": "mark-completed",
                     "reason": "替代闭环代理已确认 finding 闭环。",
-                    "supersedes_agent_id": "",
                     "handoff_summary": "",
                 },
             ],
@@ -3568,7 +3720,7 @@ class ReviewGateReportTest(unittest.TestCase):
                     "agent_id": "agent-c",
                     "head": "abc123",
                     "decision": "start-replacement",
-                    "supersedes_agent_id": "agent-a",
+                    "predecessor_agent_id": "agent-a",
                     "handoff_summary": "agent-c closes round 1 finding only.",
                 },
                 {
@@ -4921,29 +5073,29 @@ class AgentAssignmentArtifactTest(unittest.TestCase):
 
         self.assertIn("--review-round-report", str(raised.exception))
 
-    def test_record_agent_assignment_writes_status_event(self) -> None:
+    def test_record_agent_assignment_status_event_fails_closed(self) -> None:
         patches = self.patch_assignment_command()
         for patcher in patches:
             patcher.start()
         try:
-            payload = gtt.cmd_record_agent_assignment(
-                assignment_args(
-                    status_event="wait-timeout",
-                    decision="continue-waiting",
-                    reason="等待窗口 timeout，但最近仍有输出和工作区变化，继续等待。",
-                    last_observed_progress_at="2026-07-07T00:00:00Z",
-                    workspace_evidence="git diff 仍在变化。",
-                    running_command_evidence="验证命令仍在运行。",
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_record_agent_assignment(
+                    assignment_args(
+                        status_event="wait-timeout",
+                        decision="continue-waiting",
+                        reason="等待窗口 timeout，但最近仍有输出和工作区变化，继续等待。",
+                        last_observed_progress_at="2026-07-07T00:00:00Z",
+                        workspace_evidence="git diff 仍在变化。",
+                        running_command_evidence="验证命令仍在运行。",
+                    )
                 )
-            )
         finally:
             for patcher in reversed(patches):
                 patcher.stop()
 
-        recorded = gtt.read_json(self.task_dir / "agent-assignment.json")
-        self.assertEqual(payload["recorded"]["event"], "wait-timeout")
-        self.assertEqual(recorded["status_events"][0]["decision"], "continue-waiting")
-        self.assertEqual(payload["summary"]["status_events_count"], 1)
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("record-subagent-liveness-event.sh", str(raised.exception))
+        self.assertFalse((self.task_dir / "agent-assignment.json").exists())
 
     def test_record_agent_assignment_rejects_terminated_unfinished_without_evidence(self) -> None:
         patches = self.patch_assignment_command()
@@ -4963,7 +5115,7 @@ class AgentAssignmentArtifactTest(unittest.TestCase):
                 patcher.stop()
 
         self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("--last-observed-progress-at", str(raised.exception))
+        self.assertIn("record-subagent-liveness-event.sh", str(raised.exception))
 
     def test_check_agent_assignment_rejects_invalid_status_event_enum(self) -> None:
         artifact = self.task_dir / "agent-assignment.json"
@@ -4989,7 +5141,6 @@ class AgentAssignmentArtifactTest(unittest.TestCase):
                             "running_command_evidence": "",
                             "decision": "continue-waiting",
                             "reason": "非法事件枚举。",
-                            "supersedes_agent_id": "",
                             "handoff_summary": "",
                         }
                     ],
@@ -5083,6 +5234,484 @@ class AgentAssignmentArtifactTest(unittest.TestCase):
 
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn("JSON root must be an object", str(raised.exception))
+
+
+class SubagentLivenessStateMachineTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.source = self.root / "source-checkout"
+        self.source.mkdir()
+        self.task_dir = self.root / ".trellis/tasks/07-05-agent-assignment"
+        self.task_dir.mkdir(parents=True)
+        (self.root / ".trellis/guru-team").mkdir(parents=True)
+        (self.root / ".git").mkdir()
+        (self.source / ".git").mkdir()
+        (self.task_dir / "task.json").write_text('{"title":"Liveness","base_branch":"main"}\n', encoding="utf-8")
+        self.machine_state = {
+            "task_head": "abc123",
+            "task_content_status_digest": "task-status-a",
+            "task_content_diff_stat_digest": "task-diff-a",
+            "task_content_max_mtime": "2026-07-07T00:00:00Z",
+            "source_head": "source123",
+            "source_status_digest": "source-status-a",
+            "source_diff_stat_digest": "source-diff-a",
+            "source_max_mtime": "2026-07-07T00:00:00Z",
+        }
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def patch_liveness_command(self) -> list[mock._patch]:
+        return [
+            mock.patch.object(gtt, "repo_root", side_effect=lambda path: self.source if str(path).endswith("source-checkout") else self.root),
+            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
+            mock.patch.object(gtt, "load_handoff", return_value={
+                "workspace_mode": "worktree",
+                "workspace_path": str(self.root),
+                "task_dir": ".trellis/tasks/07-05-agent-assignment",
+                "preflight": {"current_checkout": str(self.source)},
+            }),
+            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "current_head", side_effect=lambda root: "source123" if root == self.source else "abc123"),
+            mock.patch.object(gtt, "git_object_exists", return_value=True),
+            mock.patch.object(gtt, "collect_liveness_snapshot", side_effect=self.snapshot),
+        ]
+
+    def snapshot(self, root: Path, task_dir: Path, source_repo: Path, payload: dict[str, object], agent_id: str, captured_at: str | None = None) -> dict[str, object]:
+        return {
+            "captured_at": captured_at or "2026-07-07T00:00:00Z",
+            **self.machine_state,
+            **gtt.progress_events_digest(payload, agent_id),
+        }
+
+    def run_with_patches(self, callback):
+        patches = self.patch_liveness_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            return callback()
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+    def record(self, **overrides: object) -> dict[str, object]:
+        args = liveness_event_args(source_repo=str(self.source), **overrides)
+        return gtt.cmd_record_subagent_liveness_event(args)
+
+    def check(self, **overrides: object) -> dict[str, object]:
+        args = liveness_check_args(source_repo=str(self.source), **overrides)
+        return gtt.cmd_check_subagent_liveness(args)
+
+    def assign(self) -> None:
+        self.record(event="assigned", observed_at="2026-07-07T00:00:00Z", evidence="分配实现代理。")
+
+    def reset_assignment_artifact(self) -> None:
+        artifact = self.task_dir / "agent-assignment.json"
+        if artifact.exists():
+            artifact.unlink()
+        self.machine_state = {
+            "task_head": "abc123",
+            "task_content_status_digest": "task-status-a",
+            "task_content_diff_stat_digest": "task-diff-a",
+            "task_content_max_mtime": "2026-07-07T00:00:00Z",
+            "source_head": "source123",
+            "source_status_digest": "source-status-a",
+            "source_diff_stat_digest": "source-diff-a",
+            "source_max_mtime": "2026-07-07T00:00:00Z",
+        }
+
+    def test_assigned_initializes_agents_liveness_and_status_event(self) -> None:
+        def scenario() -> dict[str, object]:
+            return self.record(event="assigned", observed_at="2026-07-07T00:00:00Z", evidence="分配实现代理。")
+
+        payload = self.run_with_patches(scenario)
+        recorded = gtt.read_json(self.task_dir / "agent-assignment.json")
+        self.assertTrue(str(payload["event_id"]).startswith("evt-"))
+        self.assertEqual(recorded["schema_version"], "1.1")
+        self.assertEqual(recorded["agents"][0]["assigned_at"], "2026-07-07T00:00:00Z")
+        self.assertEqual(recorded["agents"][0]["assigned_head"], "abc123")
+        self.assertEqual(recorded["agents"][0]["reason"], "分配实现代理。")
+        self.assertEqual(recorded["status_events"][0]["event"], "assigned")
+        self.assertIn("agent-a", recorded["liveness"])
+        self.assertEqual(recorded["liveness"]["agent-a"]["progress_anchor_at"], "2026-07-07T00:00:00Z")
+
+    def test_deadline_passed_without_pending_still_requires_status_request_then_allows_stale(self) -> None:
+        def scenario() -> tuple[dict[str, object], dict[str, object]]:
+            self.assign()
+            first = self.check(checked_at="2026-07-07T00:03:01Z")
+            self.record(
+                event="status-requested",
+                observed_at="2026-07-07T00:03:02Z",
+                evidence="主会话已发送显式 status request。",
+                logical_role=None,
+                platform_nickname=None,
+            )
+            second = self.check(checked_at="2026-07-07T00:03:02Z")
+            return first, second
+
+        first, second = self.run_with_patches(scenario)
+        self.assertEqual(first["decision"], "status_request_required")
+        self.assertEqual(first["next_wait_ms"], 0)
+        self.assertEqual(first["max_progress_silence_deadline_at"], "2026-07-07T00:03:00Z")
+        self.assertEqual(second["decision"], "stale_allowed")
+        self.assertEqual(second["max_progress_silence_deadline_at"], "2026-07-07T00:03:00Z")
+
+    def test_pending_status_request_before_deadline_waits_without_repeat_ping(self) -> None:
+        def scenario() -> dict[str, object]:
+            self.assign()
+            first = self.check(checked_at="2026-07-07T00:01:59Z")
+            self.assertEqual(first["decision"], "status_request_required")
+            self.record(
+                event="status-requested",
+                observed_at="2026-07-07T00:02:00Z",
+                evidence="主会话已发送显式 status request。",
+                logical_role=None,
+                platform_nickname=None,
+            )
+            return self.check(checked_at="2026-07-07T00:02:01Z")
+
+        payload = self.run_with_patches(scenario)
+        self.assertEqual(payload["decision"], "continue_waiting_no_repeat_ping")
+        self.assertLessEqual(payload["next_wait_ms"], 59000)
+
+    def test_recorded_progress_refreshes_anchor_and_clears_pending_request(self) -> None:
+        def scenario() -> dict[str, object]:
+            self.assign()
+            first = self.check(checked_at="2026-07-07T00:00:19Z")
+            self.assertEqual(first["decision"], "status_request_required")
+            self.record(
+                event="status-requested",
+                observed_at="2026-07-07T00:00:20Z",
+                evidence="主会话已发送显式 status request。",
+                logical_role=None,
+                platform_nickname=None,
+            )
+            self.record(
+                event="explicit-message-observed",
+                observed_at="2026-07-07T00:01:00Z",
+                evidence="实现代理回复正在迁移改动到 task worktree。",
+                logical_role=None,
+                platform_nickname=None,
+            )
+            return self.check(checked_at="2026-07-07T00:01:01Z")
+
+        payload = self.run_with_patches(scenario)
+        recorded = gtt.read_json(self.task_dir / "agent-assignment.json")
+        self.assertEqual(payload["decision"], "progress_observed")
+        self.assertEqual(payload["progress_anchor_at"], "2026-07-07T00:01:00Z")
+        self.assertIsNone(recorded["liveness"]["agent-a"]["pending_status_request_at"])
+        self.assertEqual(payload["progress_sources"][0]["source"], "status_event")
+
+    def test_source_snapshot_change_outputs_workspace_boundary_progress(self) -> None:
+        def scenario() -> dict[str, object]:
+            self.assign()
+            self.machine_state["source_status_digest"] = "source-status-b"
+            return self.check(checked_at="2026-07-07T00:01:00Z")
+
+        payload = self.run_with_patches(scenario)
+        self.assertEqual(payload["decision"], "workspace_boundary_violation_progress")
+        self.assertEqual(payload["progress_sources"][0]["source"], "source_status")
+
+    def test_task_machine_snapshot_changes_are_progress_observed(self) -> None:
+        cases = [
+            ("task_head", "task456", "task_head"),
+            ("task_content_status_digest", "task-status-b", "task_status"),
+            ("task_content_diff_stat_digest", "task-diff-b", "task_diff_stat"),
+            ("task_content_max_mtime", "2026-07-07T00:00:30Z", "task_mtime"),
+        ]
+        for field, value, source_kind in cases:
+            with self.subTest(field=field):
+                def scenario() -> dict[str, object]:
+                    self.reset_assignment_artifact()
+                    self.assign()
+                    self.machine_state[field] = value
+                    return self.check(checked_at="2026-07-07T00:01:00Z")
+
+                payload = self.run_with_patches(scenario)
+                self.assertEqual(payload["decision"], "progress_observed")
+                self.assertEqual(payload["progress_anchor_at"], "2026-07-07T00:01:00Z")
+                self.assertEqual(payload["progress_sources"][0]["source"], source_kind)
+
+    def test_source_machine_snapshot_changes_are_workspace_boundary_progress(self) -> None:
+        cases = [
+            ("source_head", "source456", "source_head"),
+            ("source_status_digest", "source-status-b", "source_status"),
+            ("source_diff_stat_digest", "source-diff-b", "source_diff_stat"),
+            ("source_max_mtime", "2026-07-07T00:00:30Z", "source_mtime"),
+        ]
+        for field, value, source_kind in cases:
+            with self.subTest(field=field):
+                def scenario() -> dict[str, object]:
+                    self.reset_assignment_artifact()
+                    self.assign()
+                    self.machine_state[field] = value
+                    return self.check(checked_at="2026-07-07T00:01:00Z")
+
+                payload = self.run_with_patches(scenario)
+                self.assertEqual(payload["decision"], "workspace_boundary_violation_progress")
+                self.assertEqual(payload["progress_anchor_at"], "2026-07-07T00:01:00Z")
+                self.assertEqual(payload["progress_sources"][0]["source"], source_kind)
+
+    def test_recorded_progress_event_types_are_progress_observed(self) -> None:
+        for event_name in sorted(gtt.AGENT_PROGRESS_EVENTS):
+            with self.subTest(event=event_name):
+                def scenario() -> dict[str, object]:
+                    self.reset_assignment_artifact()
+                    self.assign()
+                    self.record(
+                        event=event_name,
+                        observed_at="2026-07-07T00:01:00Z",
+                        evidence=f"{event_name} 公开进展。",
+                        logical_role=None,
+                        platform_nickname=None,
+                    )
+                    return self.check(checked_at="2026-07-07T00:01:01Z")
+
+                payload = self.run_with_patches(scenario)
+                self.assertEqual(payload["decision"], "progress_observed")
+                self.assertEqual(payload["progress_anchor_at"], "2026-07-07T00:01:00Z")
+                self.assertEqual(payload["progress_sources"][0]["source"], "status_event")
+                self.assertEqual(payload["progress_sources"][0]["event"], event_name)
+
+    def test_stale_assessed_rejects_new_progress_after_stale_allowed(self) -> None:
+        def scenario() -> None:
+            self.assign()
+            first = self.check(checked_at="2026-07-07T00:00:09Z")
+            self.assertEqual(first["decision"], "status_request_required")
+            self.record(event="status-requested", observed_at="2026-07-07T00:00:10Z", evidence="已发送 status request。", logical_role=None, platform_nickname=None)
+            self.check(checked_at="2026-07-07T00:03:01Z")
+            self.record(event="tool-activity-observed", observed_at="2026-07-07T00:03:02Z", evidence="stale 写入前观察到 tool activity。", logical_role=None, platform_nickname=None)
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                self.record(event="stale-assessed", observed_at="2026-07-07T00:03:03Z", evidence="尝试基于旧 stale_allowed 写入 stale。", logical_role=None, platform_nickname=None)
+            self.assertIn("rerun check-subagent-liveness", str(raised.exception))
+
+        self.run_with_patches(scenario)
+
+    def test_stale_assessed_rejects_task_or_source_snapshot_drift_after_stale_allowed(self) -> None:
+        cases = [
+            ("task_content_status_digest", "task-status-b"),
+            ("source_status_digest", "source-status-b"),
+        ]
+        for field, value in cases:
+            with self.subTest(field=field):
+                def scenario() -> None:
+                    self.reset_assignment_artifact()
+                    self.assign()
+                    first = self.check(checked_at="2026-07-07T00:00:09Z")
+                    self.assertEqual(first["decision"], "status_request_required")
+                    self.record(event="status-requested", observed_at="2026-07-07T00:00:10Z", evidence="已发送 status request。", logical_role=None, platform_nickname=None)
+                    self.check(checked_at="2026-07-07T00:03:01Z")
+                    self.machine_state[field] = value
+                    with self.assertRaises(gtt.WorkflowError) as raised:
+                        self.record(event="stale-assessed", observed_at="2026-07-07T00:03:03Z", evidence="尝试基于旧 stale_allowed 写入 stale。", logical_role=None, platform_nickname=None)
+                    self.assertIn("rerun check-subagent-liveness", str(raised.exception))
+
+                self.run_with_patches(scenario)
+
+    def test_stale_cutover_requires_replacement_completion_and_rejects_resume(self) -> None:
+        def scenario() -> list[str]:
+            self.assign()
+            first = self.check(checked_at="2026-07-07T00:00:09Z")
+            self.assertEqual(first["decision"], "status_request_required")
+            self.record(event="status-requested", observed_at="2026-07-07T00:00:10Z", evidence="已发送 status request。", logical_role=None, platform_nickname=None)
+            self.check(checked_at="2026-07-07T00:03:01Z")
+            stale = self.record(event="stale-assessed", observed_at="2026-07-07T00:03:02Z", evidence="checker 已输出 stale_allowed。", logical_role=None, platform_nickname=None)
+            with self.assertRaises(gtt.WorkflowError):
+                self.record(event="resume-same-agent", observed_at="2026-07-07T00:03:03Z", evidence="错误尝试恢复 stale agent。", predecessor_event_id=stale["event_id"], handoff_summary="继续范围、已知输出、剩余工作和 gate blockers。", logical_role=None, platform_nickname=None)
+            self.record(
+                event="terminated-unfinished",
+                observed_at="2026-07-07T00:03:04Z",
+                evidence="stale cutover 停止接受 predecessor 输出。",
+                termination_reason="stale_cutover",
+                termination_source_event_id=stale["event_id"],
+                handoff_summary="predecessor output、当前 diff、剩余工作和 gate blockers。",
+                logical_role=None,
+                platform_nickname=None,
+            )
+            self.record(event="assigned", agent_id="agent-b", observed_at="2026-07-07T00:03:05Z", evidence="分配 replacement。", logical_role="实现代理", platform_nickname="Implement B")
+            self.record(
+                event="replacement-started",
+                agent_id="agent-b",
+                observed_at="2026-07-07T00:03:06Z",
+                evidence="replacement 已接收 handoff。",
+                predecessor_agent_id="agent-a",
+                predecessor_event_id=stale["event_id"],
+                replacement_reason="max_progress_silence_exceeded",
+                handoff_summary="predecessor output、当前 diff、task artifacts、剩余工作和 gate blockers。",
+                logical_role=None,
+                platform_nickname=None,
+            )
+            incomplete = gtt.validate_agent_assignment(self.root, self.task_dir)[2]
+            self.record(event="completed", agent_id="agent-b", observed_at="2026-07-07T00:10:00Z", evidence="replacement 完成实现。", logical_role=None, platform_nickname=None)
+            complete = gtt.validate_agent_assignment(self.root, self.task_dir)[2]
+            return incomplete, complete
+
+        incomplete, complete = self.run_with_patches(scenario)
+        self.assertTrue(any("replacement chain" in error or "completed" in error for error in incomplete))
+        self.assertEqual(complete, [])
+
+    def test_status_request_failed_does_not_set_pending_or_allow_stale(self) -> None:
+        def scenario() -> tuple[dict[str, object], dict[str, object]]:
+            self.assign()
+            decision = self.check(checked_at="2026-07-07T00:03:00Z")
+            self.assertEqual(decision["decision"], "status_request_required")
+            self.record(event="status-request-failed", observed_at="2026-07-07T00:03:01Z", evidence="平台 status request 发送失败。", logical_role=None, platform_nickname=None)
+            first = self.check(checked_at="2026-07-07T00:03:02Z")
+            second = self.check(checked_at="2026-07-07T00:04:00Z")
+            return first, second
+
+        first, second = self.run_with_patches(scenario)
+        self.assertEqual(first["decision"], "status_request_required")
+        self.assertEqual(second["decision"], "status_request_required")
+
+    def test_status_request_events_require_checker_authorization(self) -> None:
+        def scenario() -> None:
+            self.assign()
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                self.record(event="status-requested", observed_at="2026-07-07T00:00:10Z", evidence="未先运行 checker 就记录 status request。", logical_role=None, platform_nickname=None)
+            self.assertIn("status_request_required", str(raised.exception))
+
+        self.run_with_patches(scenario)
+
+    def test_liveness_timestamps_are_normalized_to_utc_z_and_non_utc_is_rejected(self) -> None:
+        def scenario() -> None:
+            self.record(event="assigned", observed_at="2026-07-07T00:00:00+00:00", evidence="分配实现代理。")
+            recorded = gtt.read_json(self.task_dir / "agent-assignment.json")
+            self.assertEqual(recorded["agents"][0]["assigned_at"], "2026-07-07T00:00:00Z")
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                self.record(event="explicit-message-observed", observed_at="2026-07-07T08:00:01+08:00", evidence="非 UTC 时间不应被接受。", logical_role=None, platform_nickname=None)
+            self.assertIn("must be UTC", str(raised.exception))
+
+        self.run_with_patches(scenario)
+
+    def test_non_handoff_events_reject_handoff_summary(self) -> None:
+        def scenario() -> None:
+            self.assign()
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                self.record(
+                    event="explicit-message-observed",
+                    observed_at="2026-07-07T00:00:10Z",
+                    evidence="实现代理公开回复。",
+                    handoff_summary="progress event 不应携带 handoff summary。",
+                    logical_role=None,
+                    platform_nickname=None,
+                )
+            self.assertIn("handoff_summary", str(raised.exception))
+
+        self.run_with_patches(scenario)
+
+    def test_terminated_unfinished_requires_structured_reason(self) -> None:
+        def scenario() -> None:
+            self.assign()
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                self.record(
+                    event="terminated-unfinished",
+                    observed_at="2026-07-07T00:01:00Z",
+                    evidence="缺少结构化终止原因。",
+                    handoff_summary="predecessor output、当前 diff、剩余工作和 gate blockers。",
+                    logical_role=None,
+                    platform_nickname=None,
+                )
+            self.assertIn("--termination-reason", str(raised.exception))
+
+        self.run_with_patches(scenario)
+
+    def test_replacement_started_requires_predecessor_event_and_matching_reason(self) -> None:
+        def scenario() -> None:
+            self.assign()
+            failed = self.record(event="failed", observed_at="2026-07-07T00:01:00Z", evidence="实现代理失败且未完成。", logical_role=None, platform_nickname=None)
+            with self.assertRaises(gtt.WorkflowError) as same_agent:
+                self.record(
+                    event="replacement-started",
+                    observed_at="2026-07-07T00:01:01Z",
+                    evidence="错误地把同一 agent 记录为 replacement。",
+                    predecessor_agent_id="agent-a",
+                    predecessor_event_id=failed["event_id"],
+                    replacement_reason="terminal_failed_incomplete",
+                    handoff_summary="predecessor output、当前 diff、task artifacts、剩余工作和 gate blockers。",
+                    logical_role=None,
+                    platform_nickname=None,
+                )
+            self.assertIn("different replacement agent", str(same_agent.exception))
+            self.record(event="assigned", agent_id="agent-b", observed_at="2026-07-07T00:01:01Z", evidence="分配 replacement。", logical_role="实现代理", platform_nickname="Implement B")
+            with self.assertRaises(gtt.WorkflowError) as missing:
+                self.record(
+                    event="replacement-started",
+                    agent_id="agent-b",
+                    observed_at="2026-07-07T00:01:02Z",
+                    evidence="replacement 缺少 predecessor_event_id。",
+                    predecessor_agent_id="agent-a",
+                    replacement_reason="terminal_failed_incomplete",
+                    handoff_summary="predecessor output、当前 diff、task artifacts、剩余工作和 gate blockers。",
+                    logical_role=None,
+                    platform_nickname=None,
+                )
+            self.assertIn("--predecessor-event-id", str(missing.exception))
+            with self.assertRaises(gtt.WorkflowError) as mismatch:
+                self.record(
+                    event="replacement-started",
+                    agent_id="agent-b",
+                    observed_at="2026-07-07T00:01:03Z",
+                    evidence="replacement reason 与 failed 证据不匹配。",
+                    predecessor_agent_id="agent-a",
+                    predecessor_event_id=failed["event_id"],
+                    replacement_reason="max_progress_silence_exceeded",
+                    handoff_summary="predecessor output、当前 diff、task artifacts、剩余工作和 gate blockers。",
+                    logical_role=None,
+                    platform_nickname=None,
+                )
+            self.assertIn("terminal_failed_incomplete", str(mismatch.exception))
+
+        self.run_with_patches(scenario)
+
+    def test_replacement_failure_requires_additional_recovery_before_pass(self) -> None:
+        def scenario() -> tuple[list[str], list[str]]:
+            self.assign()
+            unfinished = self.record(
+                event="terminated-unfinished",
+                observed_at="2026-07-07T00:01:00Z",
+                evidence="平台手动终止未完成实现代理。",
+                termination_reason="manual_or_platform_terminated_unfinished",
+                handoff_summary="predecessor output、当前 diff、剩余工作和 gate blockers。",
+                logical_role=None,
+                platform_nickname=None,
+            )
+            self.record(event="assigned", agent_id="agent-b", observed_at="2026-07-07T00:01:01Z", evidence="分配第一任 replacement。", logical_role="实现代理", platform_nickname="Implement B")
+            self.record(
+                event="replacement-started",
+                agent_id="agent-b",
+                observed_at="2026-07-07T00:01:02Z",
+                evidence="第一任 replacement 已接收 handoff。",
+                predecessor_agent_id="agent-a",
+                predecessor_event_id=unfinished["event_id"],
+                replacement_reason="manual_or_platform_terminated_unfinished",
+                handoff_summary="predecessor output、当前 diff、task artifacts、剩余工作和 gate blockers。",
+                logical_role=None,
+                platform_nickname=None,
+            )
+            failed = self.record(event="failed", agent_id="agent-b", observed_at="2026-07-07T00:02:00Z", evidence="第一任 replacement 失败且未完成。", logical_role=None, platform_nickname=None)
+            incomplete = gtt.validate_agent_assignment(self.root, self.task_dir)[2]
+            self.record(event="assigned", agent_id="agent-c", observed_at="2026-07-07T00:02:01Z", evidence="分配第二任 replacement。", logical_role="实现代理", platform_nickname="Implement C")
+            self.record(
+                event="replacement-started",
+                agent_id="agent-c",
+                observed_at="2026-07-07T00:02:02Z",
+                evidence="第二任 replacement 已接收 handoff。",
+                predecessor_agent_id="agent-b",
+                predecessor_event_id=failed["event_id"],
+                replacement_reason="terminal_failed_incomplete",
+                handoff_summary="predecessor output、当前 diff、task artifacts、剩余工作和 gate blockers。",
+                logical_role=None,
+                platform_nickname=None,
+            )
+            self.record(event="completed", agent_id="agent-c", observed_at="2026-07-07T00:03:00Z", evidence="第二任 replacement 完成实现。", logical_role=None, platform_nickname=None)
+            complete = gtt.validate_agent_assignment(self.root, self.task_dir)[2]
+            return incomplete, complete
+
+        incomplete, complete = self.run_with_patches(scenario)
+        self.assertTrue(any("failed 后缺少" in error for error in incomplete))
+        self.assertEqual(complete, [])
 
 
 class FinishWorkEntrypointContractTest(unittest.TestCase):
@@ -5253,7 +5882,7 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
             "schema_version": "1.0",
             "extension": {
                 "extension_id": "guru-team",
-                "version": "0.6.5-guru.2",
+                "version": "0.6.5-guru.3",
                 "workflow_template_id": "guru-team",
                 "target_trellis_cli": "0.6.5",
                 "requires": {"trellis_cli": "0.6.5"},
@@ -5283,7 +5912,7 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
         payload = gtt.guru_team_extension_payload(self.root)
 
         self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["version"], "0.6.5-guru.2")
+        self.assertEqual(payload["version"], "0.6.5-guru.3")
         self.assertEqual(payload["workflow_template_id"], "guru-team")
         self.assertEqual(payload["target_trellis_cli"], "0.6.5")
         self.assertEqual(payload["trellis_cli_compatibility"], "0.6.5")
@@ -5329,7 +5958,7 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
             payload = gtt.cmd_version(argparse.Namespace(root=str(self.root), json=True))
 
         self.assertEqual(payload["status"], "ok")
-        self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5-guru.2")
+        self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5-guru.3")
         self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.5")
 
 

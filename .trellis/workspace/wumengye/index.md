@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 33
-- **Last Active**: 2026-07-08
+- **Total Sessions**: 34
+- **Last Active**: 2026-07-09
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1099 | Active |
+| `journal-1.md` | ~1132 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 34 | 2026-07-09 | 完成：#76 subagent liveness、progress/stale 判定与 replacement cutover 状态机 | `e0ee89401bef4739bf416ab4b29538ea407bc17a` | `codex/076-subagent-liveness-state-machine` |
 | 33 | 2026-07-08 | 完成：#60 防止 task artifact 和 patch 误写到 source checkout | `3af6ee1d99fcbae862ef993efa851111c9874a96` | `codex/060-workspace-boundary-guard` |
 | 32 | 2026-07-08 | 完成：#78 Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则 | `f6b09f3d2257e9e53c7e59fb8d6d322b36773127` | `codex/078-review-report-chinese-language` |
 | 31 | 2026-07-08 | 完成：#70 保留多轮 Branch Review 原始报告并生成最终 review.md 汇总 | `294e79b847869622bab481b4da0030fcacc56197` | `codex/070-branch-review-report-retention` |

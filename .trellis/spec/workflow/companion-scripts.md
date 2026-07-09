@@ -127,15 +127,29 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   it must not replace check judgment with command exit codes.
 - `check-phase2-check.sh` validates coverage, validation evidence, findings,
   hashes, and stale state before commit.
-- `record-agent-assignment.sh` records prior AI/human sub-agent assignment,
-  review round, reuse, replacement, or status handling decisions in task-local
-  `agent-assignment.json`; it must not decide which sub-agent to use, whether
-  an agent is stale, whether to interrupt/terminate it, or whether to start a
-  replacement.
+- `record-subagent-liveness-event.sh` records prior AI/human sub-agent
+  assignment, public progress observation, status request outcome, stale
+  assessment, resume/replacement, unfinished termination, completion, or failure
+  decisions in task-local `agent-assignment.json`; it must not decide which
+  sub-agent to use, whether implementation is sufficient, whether to send a
+  status request, or whether to start a replacement. It must fail closed unless
+  `status-requested` / `status-request-failed` follows checker decision
+  `status_request_required`, and unless `stale-assessed` follows checker
+  decision `stale_allowed` with unchanged snapshot/progress evidence.
+- `check-subagent-liveness.sh` is an on-demand, single-sample, immediate-exit
+  checker. It reads task/source git snapshots and recorded progress event
+  digests, writes liveness bookkeeping, returns one decision JSON, and never
+  watches, sleeps, reads platform UI, sends status requests, terminates agents,
+  or judges implementation quality.
+- `record-agent-assignment.sh` remains for non-liveness review round and reuse
+  decision evidence. Its old `--status-event` path must fail closed and point
+  callers to `record-subagent-liveness-event.sh`; it must not maintain a second
+  active status event enum.
 - `check-agent-assignment.sh` validates JSON structure, Chinese logical-role
   enum values, required fields, HEAD resolvability, optional current-HEAD
-  freshness, status event enum/evidence fields, and digest metadata; it must
-  not judge semantic reuse quality or stale/termination correctness.
+  freshness, liveness snapshot fields, status event enum/evidence fields,
+  recovery-chain completeness, and digest metadata; it must not judge semantic
+  reuse quality or review sufficiency.
 
 Workspace boundary helpers are deterministic validators and fact snapshots:
 
@@ -203,22 +217,26 @@ roles, assignment count, review round count, and reuse decision count under
 evidence blocks a passed gate because the recorder cannot verify closure-before-
 final or fresh final reviewer metadata.
 
-When `agent-assignment.json.status_events[]` contains
-`terminated-unfinished`, `review-branch.sh --pass` must fail closed unless the
-ledger has later objective evidence that the same technical agent resumed or a
-replacement started, and that recovery chain later reached `completed` or
-explicit `failed`. This is only ledger-completeness validation. The script must
-not decide whether a `wait_agent` timeout means stale, whether a running agent
-should be stopped, or whether a failed agent's partial output is acceptable.
+When `agent-assignment.json.status_events[]` contains `failed`,
+`stale-assessed`, or `terminated-unfinished`, `review-branch.sh --pass` must
+fail closed unless the ledger has later objective evidence that the same
+technical agent resumed or a replacement started, and that active recovery chain
+later reached `completed`. A replacement `failed` requires further recovery and
+cannot close the chain. This is only ledger-completeness validation. The script
+must not decide whether a `wait_agent` timeout means stale, whether a running
+agent should be stopped, or whether a failed/stale/unfinished partial output is
+acceptable.
 
 When a review round has findings, including a previous final-review round that
 found a new issue, the same technical `agent_id` normally must later be
 recorded only as `问题闭环审查代理` to confirm its finding is closed. If that
-finding owner objectively failed/interrupted and cannot continue, a replacement
-closure reviewer may close only that finding when `reuse_decisions[]` records
-`decision=replace` with `from_round` / `to_round` and `status_events[]` records
-the predecessor failed/unfinished event, `replacement-started` with
-`supersedes_agent_id`, and replacement `completed` evidence. A passing gate
+finding owner objectively failed, was interrupted, or became stale and cannot
+continue, a replacement closure reviewer may close only that finding when
+`reuse_decisions[]` records `decision=replace` with `from_round` / `to_round`
+and `status_events[]` records the predecessor evidence plus
+`replacement-started` with `predecessor_agent_id`, `predecessor_event_id`,
+`replacement_reason`, `handoff_summary`, and replacement `completed` evidence.
+A passing gate
 must validate that every finding owner has a later same-agent closure round with
 `findings_count: 0` and `reuse_decision: reuse-for-closure` or a complete
 replacement closure chain with a replacement `问题闭环审查代理` round carrying

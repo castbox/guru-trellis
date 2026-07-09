@@ -5,7 +5,7 @@ USER_NAME="${TRELLIS_USER:-throwaway}"
 WORK_DIR="${1:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#v0.6.5-guru.2}"
+WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#v0.6.5-guru.3}"
 ALLOW_PUBLIC_SAMPLE="${TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE:-0}"
 ENGLISH_LANGUAGE_RULE_PATTERN='All documentation (must|should) be written in .*English'
 STALE_PLANNING_HINT_PATTERN='PRD-only|Lightweight tasks may be PRD-only|Lightweight tasks may have only|Lightweight task can (ask|request)|lightweight task with `?prd\.md`? complete|Missing optional artifacts|skipped for lightweight tasks|optional `?design\.md`? / `?implement\.md`?|optional `?design\.md`?|optional `?implement\.md`?|ask for start review, then run `?task\.py start`?|design\.md if present|implement\.md if present|`?design\.md`?[^[:cntrl:]]*(\(if exists\)|if exists|if present)|`?implement\.md`?[^[:cntrl:]]*(\(if exists\)|if exists|if present)|technical design if present|execution plan if present|technical design \(if exists\)|execution plan \(if exists\)|design\.md / implement\.md if present|when present, design\.md / implement\.md|when those files are present|technical design and implementation plan when present'
@@ -74,7 +74,7 @@ payload = {
   "current_branch": "$CURRENT_BRANCH",
   "dirty_marketplace_paths": [line for line in """$CURRENT_DIRTY""".splitlines() if line.strip()],
   "next_steps": [
-    "push the branch or create the release tag, then rerun with TRELLIS_WORKFLOW_SOURCE pointing at a supported gh: source with #ref, for example gh:castbox/guru-trellis/trellis#v0.6.5-guru.2",
+    "push the branch or create the release tag, then rerun with TRELLIS_WORKFLOW_SOURCE pointing at a supported gh: source with #ref, for example gh:castbox/guru-trellis/trellis#v0.6.5-guru.3",
     "or rerun with TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 and report that current-branch marketplace install was not verified",
   ],
 }
@@ -103,6 +103,8 @@ test -f "$TARGET/.trellis/workflow.md"
 grep -q "Guru Team Development Workflow" "$TARGET/.trellis/workflow.md"
 grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 grep -q 'required `prd.md`, `design.md`, and `implement.md`' "$TARGET/.trellis/workflow.md"
+grep -q "record-subagent-liveness-event.sh" "$TARGET/.trellis/workflow.md"
+grep -q "check-subagent-liveness.sh" "$TARGET/.trellis/workflow.md"
 grep -q "dispatch_mode: sub-agent" "$TARGET/.trellis/config.yaml"
 fail_if_english_language_rule ".trellis/spec" "$TARGET/.trellis/spec"
 WORKSPACE_LANGUAGE_FILES=()
@@ -118,8 +120,10 @@ if [[ -d "$TARGET/.trellis/tasks/00-bootstrap-guidelines" ]]; then
 fi
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-env.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/version.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-subagent-liveness.sh"
 test -f "$TARGET/.trellis/guru-team/extension.json"
-python3 -c 'import json, sys; payload = json.load(open(sys.argv[1], encoding="utf-8")); assert payload["extension"]["extension_id"] == "guru-team"; assert payload["extension"]["version"]; assert payload["extension"]["target_trellis_cli"] == "0.6.5"' "$TARGET/.trellis/guru-team/extension.json"
+python3 -c 'import json, sys; payload = json.load(open(sys.argv[1], encoding="utf-8")); extension = payload["extension"]; api = extension["public_api"]; assert extension["extension_id"] == "guru-team"; assert extension["version"]; assert extension["target_trellis_cli"] == "0.6.5"; assert "agent-assignment.json" in api["artifact_contracts"]; assert "record-subagent-liveness-event" in api["companion_scripts"]; assert "check-subagent-liveness" in api["companion_scripts"]' "$TARGET/.trellis/guru-team/extension.json"
 test -d "$TARGET/.agents/skills"
 test -d "$TARGET/.codex"
 test -d "$TARGET/.cursor"

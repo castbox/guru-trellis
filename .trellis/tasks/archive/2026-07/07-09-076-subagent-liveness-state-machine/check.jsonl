@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查 workflow gate、sub-agent evidence、Phase 2/Branch Review pass 边界是否承接 #76。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查 artifact schema、事件枚举、decision 枚举、recovery chain 和 backward compatibility。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查 recorder/checker 脚本没有替代 AI 判断且保持 fail-closed。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查测试覆盖与 review gate 质量要求。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查 managed assets、安装、upgrade/update 和 executable 权限。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查所有 platform overlay 不保留旧 heartbeat/stale 文案并保持 cross-platform 一致。"}
+{"file": "docs/requirements/requirement-main.md", "reason": "检查 durable requirements 已同步长期 liveness 能力。"}

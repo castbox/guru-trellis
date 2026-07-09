@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.2",
+    "version": "0.6.5-guru.3",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.5",
@@ -38,7 +38,9 @@
         ".trellis/guru-team/extension.json",
         "planning-approval.json",
         "phase2-check.json",
+        "agent-assignment.json",
         "issue-scope-ledger.json",
+        "reviews/*.md",
         "review.md",
         "review-gate.json",
         "pr-readiness.json"
@@ -53,6 +55,8 @@
         "record-phase2-check",
         "check-phase2-check",
         "record-agent-assignment",
+        "record-subagent-liveness-event",
+        "check-subagent-liveness",
         "check-agent-assignment",
         "review-branch",
         "check-review-gate",
@@ -62,11 +66,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-08T14:02:31Z",
+  "installed_at": "2026-07-09T05:15:49Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/060-workspace-boundary-guard",
-    "commit": "ff59c2db866d0414b7a736205a26ed9da004eecf",
+    "ref": "codex/076-subagent-liveness-state-machine",
+    "commit": "a0f48765b12cda6305d85c20eeb20643044f3fb9",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -129,6 +133,7 @@
       ".trellis/guru-team/scripts/bash/check-phase2-check.sh",
       ".trellis/guru-team/scripts/bash/check-planning-approval.sh",
       ".trellis/guru-team/scripts/bash/check-review-gate.sh",
+      ".trellis/guru-team/scripts/bash/check-subagent-liveness.sh",
       ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
       ".trellis/guru-team/scripts/bash/finish-work.sh",
       ".trellis/guru-team/scripts/bash/prepare-task.sh",
@@ -136,6 +141,7 @@
       ".trellis/guru-team/scripts/bash/record-agent-assignment.sh",
       ".trellis/guru-team/scripts/bash/record-phase2-check.sh",
       ".trellis/guru-team/scripts/bash/record-planning-approval.sh",
+      ".trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh",
       ".trellis/guru-team/scripts/bash/review-branch.sh",
       ".trellis/guru-team/scripts/bash/version.sh",
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"

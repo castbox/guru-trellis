@@ -223,37 +223,47 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
 - Inline mode or self-exemption is valid only when explicit artifact evidence explains why the default `sub-agent` boundary does not apply. A sub-agent that is already running as `trellis-implement` / `trellis-check` must do its own role directly and return the required handoff/report; a main session in default `sub-agent` mode cannot claim that exemption for itself. Missing implement, check, or review sub-agent evidence fails closed.
 - Sub-agent dispatch prompts must include expected `workspace_path` evidence when the task was created through Phase 0. At startup, sub-agents should report `pwd`, `git rev-parse --show-toplevel`, and whether the actual repo root matches the expected workspace before reading or writing task artifacts. When an agent file, platform, or editor tool cannot set an explicit working directory, any manual patch/edit path must be an absolute path under the task worktree.
 - `wait_agent`, `trellis channel wait`, or an equivalent wait command timing out only means this wait window ended without a final completion event. It is not evidence that the sub-agent is stuck, failed, should stop, or that its partial output is acceptable completion evidence.
-- Distinguish long total runtime from stale state. A sub-agent may run for more than an hour. If it is still producing output, changing the worktree in-scope, running validations, emitting channel events, or otherwise showing meaningful progress, continue waiting and record that observation when needed. Stale assessment must be based on no observable progress for a recent window, default at least 5 minutes, not on total runtime.
-- When a main session dispatches or reuses a sub-agent, record the AI/human decision in `{TASK_DIR}/agent-assignment.json`. The recorder can be:
+- Distinguish long total runtime from stale state. A sub-agent may run for more than an hour. The main session must run the short-lived liveness checker at `progress_scan_interval=120s` or sooner according to checker `next_wait_ms`; this scan interval is not a stale threshold. `max_progress_silence=180s` is measured from `progress_anchor_at`, and stale eligibility exists only when checker has already observed no new progress, a pending `status-requested` exists, that request produced no progress response, and `checked_at >= max_progress_silence_deadline_at`.
+- `{TASK_DIR}/agent-assignment.json` is the single task-local assignment, liveness, status, and review ledger. Do not create `{TASK_DIR}/agent-progress.jsonl` or any task-local heartbeat file. Do not require sub-agents to write periodic heartbeat messages, and do not add daemon, sidecar, long-command wrapper, watch loop, or background liveness process. The checker is an on-demand, single-sample command that updates objective snapshot fields and exits.
+- When a main session dispatches or reuses a sub-agent, record the AI/human decision with the liveness recorder so it creates `agents[]`, an `assigned` status event, and `liveness[agent_id]` baseline in the same artifact:
 
 ```bash
-.trellis/guru-team/scripts/bash/record-agent-assignment.sh --json \
+.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh --json \
+  --task ".trellis/tasks/<task>" \
+  --source-repo "<source-checkout-path>" \
   --logical-role "实现代理" \
   --agent-id "019f..." \
   --platform-nickname "Gibbs" \
-  --reason "中文分配原因"
+  --event assigned \
+  --observed-at "2026-07-07T00:00:00Z" \
+  --evidence "中文分配原因"
 .trellis/guru-team/scripts/bash/check-agent-assignment.sh --json
 ```
 
 - When review rounds reuse or replace a reviewer, record the review round and reuse decision. The script validates objective fields only; it does not decide whether reuse is semantically correct.
-- When a wait timeout, stale assessment, interruption, unfinished termination, same-agent resume, replacement start, completion, or explicit failure happens, record `status_events[]` in the same task-local `agent-assignment.json`. The companion script records objective fields only; the AI/human workflow decides whether the agent is stale, should continue, should be interrupted, or should be replaced:
+- Before each liveness decision, the main session must first record platform-visible but non-machine-readable progress in `status_events[]` using `record-subagent-liveness-event.sh`: `explicit-message-observed`, `tool-activity-observed`, `command-output-observed`, `platform-progress-observed`, or `status-response-observed`. UI-only observations that are not written to `status_events[]` are not checker evidence.
+- Then run `check-subagent-liveness.sh`; the checker performs one snapshot of task worktree and source checkout `HEAD` / dirty status / diff stat / max file mtime plus progress event digest, compares that snapshot with `last_scan_snapshot`, writes the updated liveness state, returns one decision, and exits. Only changes relative to the previous scan count as progress. Existing dirty diff, old status events, control/bookkeeping events, and `agent-assignment.json`'s own mtime/diff do not refresh `progress_anchor_at`.
 
 ```bash
-.trellis/guru-team/scripts/bash/record-agent-assignment.sh --json \
-  --logical-role "实现代理" \
-  --agent-id "<technical-agent-id-or-empty>" \
-  --platform-nickname "<display-name-or-empty>" \
-  --status-event wait-timeout \
-  --decision continue-waiting \
-  --reason "等待窗口 timeout，但最近仍有输出和工作区变化，继续等待。" \
-  --last-observed-progress-at "2026-07-07T00:00:00Z" \
-  --workspace-evidence "git diff 仍在变化。" \
-  --running-command-evidence "验证命令仍在运行。"
+.trellis/guru-team/scripts/bash/check-subagent-liveness.sh --json \
+  --task ".trellis/tasks/<task>" \
+  --agent-id "<technical-agent-id>" \
+  --source-repo "<source-checkout-path>" \
+  --progress-scan-interval 120 \
+  --max-progress-silence 180
 ```
 
-- Before recording wait timeout, progress observation, stale assessment, soft interrupt, hard stop, or unfinished termination, run `check-workspace-boundary.sh --json` or an equivalent dual-side status check and include expected workspace, actual repo root, source checkout status, task worktree status, and suspicious source artifact evidence in the task-local status record. If source checkout contains current-task dirty paths or artifacts, record the fact explicitly; do not treat a wait timeout alone as stale.
-- Before soft interrupt, hard stop, or terminating an unfinished sub-agent, record the latest output/change time, worktree/channel/diff evidence, running command evidence, decision, reason, and handoff summary. If an unfinished agent is interrupted or terminated, recover the same technical `agent_id` or start a replacement agent with the predecessor output/channel log summary, current diff, task artifacts, remaining checklist, and blocking gate. Continue until a later `completed` or explicit `failed` status event closes that recovery chain.
-- Unfinished, interrupted, terminated, or unclosed replacement output is intermediate evidence only. It must not be treated as implementation completion, Phase 2 check pass evidence, or Branch Review Gate pass evidence. `review-branch.sh --pass` validates objective ledger completeness and fails closed when `status_events[]` contains an unclosed `terminated-unfinished` chain.
+- Checker decisions are binding for the next main-session action:
+  - `workspace_boundary_violation_progress`: source checkout changed since the previous scan. Record `workspace-boundary-violation`, treat it as progress, correct the workspace boundary, and do not stale the agent.
+  - `progress_observed`: task worktree machine evidence or recorded progress event changed. Continue waiting for the same agent.
+  - `status_request_required`: no new progress and no pending status request. Only this decision authorizes a status request. After the request is successfully sent, record `status-requested` and immediately run the checker again; the record does not refresh `progress_anchor_at` or extend `max_progress_silence_deadline_at`. If the request could not be sent, record `status-request-failed`; do not set pending status, stale, terminate, or replace.
+  - `continue_waiting_no_repeat_ping`: no new progress, a pending status request exists, and the deadline has not passed. Continue waiting for `next_wait_ms`; do not send a repeated status request.
+  - `stale_allowed`: no new progress, a pending status request exists, no status response/progress arrived, and the deadline has passed. Only this decision authorizes `stale-assessed`.
+  - `blocked_missing_evidence`: artifact, schema, source repo, path, snapshot, or time evidence is missing or invalid. Fix evidence; do not stale, terminate, replace, record Phase 2 pass, or pass Branch Review Gate.
+- If the deadline has already passed but no pending `status-requested` exists, checker must still return `status_request_required`. The subsequent `status-requested` only completes the stale precondition audit; it must not move `max_progress_silence_deadline_at`. When checker returns `stale_allowed`, the main session must first record any newly observed public progress and rerun checker if such progress exists.
+- After `stale-assessed` is successfully recorded, do not wait for or resume that predecessor. In the same liveness handling turn, record `terminated-unfinished termination_reason=stale_cutover termination_source_event_id=<stale-assessed.event_id>`, dispatch and record the replacement `assigned`, then record `replacement-started predecessor_agent_id=<stale predecessor> predecessor_event_id=<stale-assessed.event_id> replacement_reason=max_progress_silence_exceeded` with a handoff summary covering predecessor output, current diff, task artifacts, remaining work, and gate blockers.
+- Manual/platform unfinished termination must use `termination_reason=manual_or_platform_terminated_unfinished` with an empty `termination_source_event_id`. Failed or manually terminated unfinished agents may be resumed with `resume-same-agent` or replaced with `replacement-started`; stale cutover may only be replaced. Every recovery chain must later reach `completed`; a replacement `failed` requires further resume/replacement before pass gates can use the output.
+- `completed` means the sub-agent execution chain ended; it is not Phase 2 check pass evidence or Branch Review Gate pass evidence. `failed`, unfinished, stale, or replacement partial output is intermediate evidence only. `record-phase2-check.sh`, `check-phase2-check.sh`, and `review-branch.sh --pass` must fail closed when `agent-assignment.json.status_events[]` has unclosed failed/unfinished/stale recovery chains or when Phase 2/Branch Review tries to use partial output as pass evidence.
 - Phase 2 `trellis-check` is the implementation quality check step. It reviews the current task against specs, runs lint/typecheck/tests when appropriate, and may self-fix before commit. `phase2-check.json` is the Guru Team artifact that records the completed `trellis-check` AI judgment, coverage, validations, findings, and dirty-path evidence; it is not the Trellis-native step itself and recorder/validator scripts cannot substitute for that AI check.
 - Phase 3 Branch Review Gate is a post-commit release gate. First, an AI/human review must inspect the complete branch diff from the intake base branch to `HEAD`, including docs, code, tests, Trellis artifacts, config, scripts, schemas, CI/CD workflows, Docker/Compose files, Kubernetes YAML, Kustomize overlays, database migrations, Makefiles, preset installer, Issue Scope Ledger, and publish readiness.
 - Passing Phase 3 Branch Review Gate requires independent Agent review evidence. The main session may coordinate the review, inspect the report, and run the recorder, but the main session's own self-review must not pass the gate.
@@ -688,7 +698,7 @@ Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` 
 Before dispatching `trellis-implement` / channel `implement` or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, or changed `prd.md`/`design.md`/`implement.md` content blocks Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
 Before commit, record and check `phase2-check.json`; it records completed `trellis-check` AI evidence, and validation commands or recorder success alone are not a complete check.
 Main-session default on dispatch platforms: dispatch `trellis-implement` / channel `implement`, wait for an implementation handoff, then dispatch `trellis-check` / channel `check`. Dispatch prompt starts with `Active task: <task path from task.py current>`. The main session may coordinate and record evidence, but it must not directly implement or directly check in default `sub-agent` mode.
-After dispatching an implement/check sub-agent, record `实现代理` or `阶段二检查代理` in `agent-assignment.json`; prefer the Chinese UI nickname configured by the agent file when available. If the platform does not expose `agent_id` or nickname, keep the field as an empty string and explain that fact in the Chinese reason. A wait timeout is only a wait-window result; do not terminate or summarize a still-progressing sub-agent because total runtime is long. Record `status_events[]` for wait timeout, progress observed, stale assessment, continue-waiting, resume/replacement, unfinished termination, completion, or explicit failure.
+After dispatching an implement/check sub-agent, record `assigned` for `实现代理` or `阶段二检查代理` with `record-subagent-liveness-event.sh` so `agent-assignment.json` contains `agents[]`, `status_events[]`, and `liveness[agent_id]` baseline. Then run `check-subagent-liveness.sh` at `progress_scan_interval=120s` or the checker-provided `next_wait_ms`. A wait timeout is only a wait-window result; record visible progress first, let checker return the single decision, and follow `status_request_required` / `continue_waiting_no_repeat_ping` / `stale_allowed` / progress decisions exactly. Old `record-agent-assignment.sh --status-event` status paths are deprecated and fail closed.
 Sub-agent self-exemption: if already running as `trellis-implement` or `trellis-check`, do the work directly, do not spawn another Trellis implement/check agent, and return the role-specific handoff/report as artifact evidence. Main-session inline/self-exemption needs explicit artifact evidence; otherwise missing sub-agent evidence fails closed.
 Before edits, confirm knowledge gate and docs SSOT responsibilities from artifacts.
 Read context: jsonl entries -> `prd.md` -> `design.md` -> `implement.md`.
@@ -717,18 +727,22 @@ artifacts and the source issue scope.
 On sub-agent-capable platforms, the main session records implementation assignment after dispatch:
 
 ```bash
-.trellis/guru-team/scripts/bash/record-agent-assignment.sh --json \
+.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh --json \
+  --task ".trellis/tasks/<task>" \
+  --source-repo "<source-checkout-path>" \
   --logical-role "实现代理" \
   --agent-id "<technical-agent-id-or-empty>" \
   --platform-nickname "<display-name-or-empty>" \
-  --reason "中文说明为什么本轮实现由该 agent 承担"
+  --event assigned \
+  --observed-at "2026-07-07T00:00:00Z" \
+  --evidence "中文说明为什么本轮实现由该 agent 承担"
 ```
 
 The assignment artifact is evidence of an AI/human decision already made by the workflow. The companion script must not choose the agent or infer whether reuse is appropriate.
 
 The implementation handoff must include files changed, key requirement/design carryover points, verification already run or explicitly deferred to Phase 2, remaining risks or a no-known-risk statement, completion status, and concrete focus areas for the later `trellis-check`. Do not report implementation completion until the requested scope is actually complete and verification status is known.
 
-When a dispatched implementation agent hits a wait timeout, first inspect recent output, worktree changes, validation progress, and channel events. If progress exists, keep waiting and optionally record `--status-event wait-timeout --decision continue-waiting` or `--status-event progress-observed`. Only after at least the stale window with no observable progress should the AI/human workflow assess stale state and record `--status-event stale-assessed`; interruption or unfinished termination must be followed by `resume-same-agent` or `replacement-started`, then a later `completed` or `failed` event for the same recovery chain.
+When a dispatched implementation agent reaches a wait timeout, do not infer failure. Record any public non-machine-readable progress with `record-subagent-liveness-event.sh`, then run `check-subagent-liveness.sh`. If checker reports progress, keep waiting. If checker reports `status_request_required`, send one status request, record `status-requested`, immediately rerun checker, and use the new `next_wait_ms`. If checker reports `continue_waiting_no_repeat_ping`, keep waiting without another ping. If checker reports `stale_allowed`, record `stale-assessed` only after confirming no newer public progress appeared, then perform the required stale cutover to replacement in the same liveness handling turn. If a terminal failure or manual/platform unfinished termination occurs, record `failed` or `terminated-unfinished termination_reason=manual_or_platform_terminated_unfinished`, then recover through same-agent resume or replacement until a later `completed` closes the chain. Failed, unfinished, stale, or replacement partial output must not be used as Phase 2 or Branch Review pass evidence.
 
 Before writing code or generated assets, confirm the Middle-platform Knowledge Gate result for any middle-platform-relevant work:
 
@@ -744,7 +758,7 @@ Run `trellis-check` or dispatch the check agent. In default `sub-agent` mode, th
 
 When dispatching a Phase 2 check agent, record `阶段二检查代理` in `agent-assignment.json` before or immediately after the check handoff. This is separate from `phase2-check.json`: assignment records who took the logical role; `phase2-check.json` records the check judgment and evidence.
 
-Before recording a passing Phase 2 check, confirm the check did not rely on a terminated-unfinished implementation/check sub-agent's partial output. If `agent-assignment.json.status_events[]` contains unfinished termination, the same agent or a replacement must have continued the work and reached `completed` or explicit `failed`; otherwise return to implementation/check handoff instead of passing Phase 2.
+Before recording a passing Phase 2 check, confirm the check did not rely on unfinished, failed, stale, or replacement partial output. If `agent-assignment.json.status_events[]` contains `failed`, `stale-assessed`, or `terminated-unfinished`, the same agent or a replacement must have continued the work and the active recovery chain must have reached `completed`; otherwise return to implementation/check handoff instead of recording a pass. A replacement `failed` is not a closed chain and requires further recovery.
 
 After the `trellis-check` AI check has completed, record the task-local check report:
 
@@ -852,7 +866,7 @@ Before or immediately after dispatching the independent review, record the revie
 - follow-up review that verifies fixes may use `问题闭环审查代理`;
 - the pass/final release review uses `最终放行审查代理`.
 
-Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reuse_policy`, `reuse_decision`, and the raw review report digest fields. Each review round must have a task-local raw Markdown report under `{TASK_DIR}/reviews/*.md`; record it with `record-agent-assignment.sh --review-round ... --review-round-report "{TASK_DIR}/reviews/round-NNN-<purpose>.md"`. `round` values must be unique and strictly increasing in recorded order so the final round is unambiguous. If any review round finds a finding, including a previous `最终放行审查代理` round that discovered a new issue, the normal path is for that same technical `agent_id` to return as `问题闭环审查代理` and record `findings_count: 0` with `reuse_decision: reuse-for-closure` to confirm its own finding is closed. If that finding owner objectively failed or was interrupted and cannot continue, an AI/human may start a replacement `问题闭环审查代理`; record the predecessor failed/unfinished `status_events[]`, `replacement-started` with `supersedes_agent_id`, `reuse_decisions[]` with `decision=replace`, `from_round`, and `to_round`, then the replacement closure review round with `findings_count: 0` and `reuse_decision: replace`. Only after every finding owner has a later successful same-agent closure or a complete replacement closure chain may the workflow dispatch a fresh new `最终放行审查代理`. A finding owner or replacement closure reviewer must not become the `最终放行审查代理`. The final pass round must be the last review round, use a fresh new `最终放行审查代理`, set `reuse_decision: new-agent`, review the current HEAD's complete diff, and record `findings_count: 0`. If the same technical agent is reused for closure, record why reuse is limited to closure. If an agent is replaced or an unfinished review agent is interrupted, record the `status_events[]` reason, predecessor output/diff handoff, and later completion/failure chain. `platform_nickname` should be the Chinese UI nickname when the platform provides one; otherwise record the raw automatic nickname. It remains display-only either way.
+Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reuse_policy`, `reuse_decision`, and the raw review report digest fields. Each review round must have a task-local raw Markdown report under `{TASK_DIR}/reviews/*.md`; record it with `record-agent-assignment.sh --review-round ... --review-round-report "{TASK_DIR}/reviews/round-NNN-<purpose>.md"`. `round` values must be unique and strictly increasing in recorded order so the final round is unambiguous. If any review round finds a finding, including a previous `最终放行审查代理` round that discovered a new issue, the normal path is for that same technical `agent_id` to return as `问题闭环审查代理` and record `findings_count: 0` with `reuse_decision: reuse-for-closure` to confirm its own finding is closed. If that finding owner objectively failed, was interrupted, or became stale and cannot continue, an AI/human may start a replacement `问题闭环审查代理`; record the predecessor liveness evidence in `status_events[]`, then record `replacement-started` with `predecessor_agent_id`, `predecessor_event_id`, `replacement_reason`, and `handoff_summary`, record `reuse_decisions[]` with `decision=replace`, `from_round`, and `to_round`, then record the replacement closure review round with `findings_count: 0` and `reuse_decision: replace`. Only after every finding owner has a later successful same-agent closure or a complete replacement closure chain may the workflow dispatch a fresh new `最终放行审查代理`. A finding owner or replacement closure reviewer must not become the `最终放行审查代理`. The final pass round must be the last review round, use a fresh new `最终放行审查代理`, set `reuse_decision: new-agent`, review the current HEAD's complete diff, and record `findings_count: 0`. If the same technical agent is reused for closure, record why reuse is limited to closure. If an agent is replaced or an unfinished review agent is interrupted, record the structured `status_events[]` reason, predecessor output/diff/task artifact handoff, and later completion/failure chain. `platform_nickname` should be the Chinese UI nickname when the platform provides one; otherwise record the raw automatic nickname. It remains display-only either way.
 
 The AI/human review must cover:
 

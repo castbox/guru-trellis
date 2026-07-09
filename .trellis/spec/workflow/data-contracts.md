@@ -47,12 +47,12 @@ team extension version. The canonical source is `trellis/guru-team-extension.jso
 
 Repository release tags for the Guru Team extension use repo-level tags that
 combine the target official Trellis CLI version and the Guru Team revision,
-such as `v0.6.5-guru.2`, not namespaced tags such as
+such as `v0.6.5-guru.3`, not namespaced tags such as
 `guru-team/v0.6.5`. The tag must correspond to
 `trellis/guru-team-extension.json.version`, and the manifest must expose
 `target_trellis_cli` so users can see which official `@mindfoldhq/trellis`
 release this Guru Team extension targets. Stable workflow marketplace examples
-should use `gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`; unpinned
+should use `gh:castbox/guru-trellis/trellis#v0.6.5-guru.3`; unpinned
 `gh:castbox/guru-trellis/trellis` means latest/canary and must be reported as a
 mutable source in install or upgrade evidence.
 
@@ -246,9 +246,12 @@ that already happened in the workflow:
   findings count, reuse policy, and reuse decision
 - `reuse_decisions[]` entries for explicit reuse/replacement decisions across
   rounds
-- `status_events[]` entries for wait-window timeout, progress observation,
-  stale assessment, continue-waiting, same-agent resume, replacement start,
-  unfinished termination, completion, and explicit failure handling
+- `liveness[agent_id]` entries with `progress_anchor_at`,
+  `pending_status_request_at`, `last_checked_at`, `last_decision`, and
+  `last_scan_snapshot`
+- `status_events[]` entries for assignment, public progress, status request,
+  stale assessment, same-agent resume, replacement start, unfinished
+  termination, completion, and explicit failure handling
 
 Allowed logical roles are:
 
@@ -260,68 +263,138 @@ Allowed logical roles are:
 
 The companion recorder/validator may check JSON structure, required fields,
 role enum values, HEAD resolvability, current-HEAD freshness when requested,
-file digest metadata, status event enum values, required evidence fields, and
-objective recovery-chain completeness for Branch Review Gate pass. It must not
-decide which sub-agent should be used, whether an agent is stale, whether an
-agent should be terminated, whether reviewer reuse is semantically acceptable,
-or whether a final release review is sufficient.
+file digest metadata, liveness snapshot fields, status event enum values,
+required evidence fields, and objective recovery-chain completeness for Phase 2
+check / Branch Review Gate pass. It must not decide which sub-agent should be
+used, whether implementation is sufficient, whether reviewer reuse is
+semantically acceptable, or whether a final release review is sufficient.
 
-`status_events[]` is additive and older artifacts that omit it are normalized
-to an empty array by the loader. Each status event records:
+`agent-assignment.json` schema version `1.1` is additive over the prior review
+round ledger. It keeps `agents[]`, `review_rounds[]`, and
+`reuse_decisions[]`, adds `liveness[agent_id]`, and replaces active coarse
+status events with the #76 liveness contract. Older artifacts that omit
+`liveness` or `status_events[]` are normalized for reading, but old
+`wait-timeout`, `continue-waiting`, coarse `progress-observed`, and
+unstructured stale/replacement records are not active progress, stale, or pass
+evidence.
 
-- `event`: one of `wait-timeout`, `progress-observed`, `stale-assessed`,
-  `continue-waiting`, `resume-same-agent`, `replacement-started`,
-  `terminated-unfinished`, `completed`, or `failed`;
-- `logical_role`: one of the allowed Chinese roles listed above;
-- `agent_id`: technical platform identity, empty only when the platform cannot
-  expose it and the human-readable reason explains that fact;
-- `platform_nickname`: display-only UI nickname;
-- `head`: current Git commit when the status was recorded;
-- `observed_at`: ISO-8601 observation time;
-- `last_observed_progress_at`: ISO-8601 time of the last observable progress
-  when available, required for stale/unfinished termination events;
-- `workspace_evidence`: Chinese summary of output, worktree, diff, validation,
-  or channel-event evidence;
-- `running_command_evidence`: Chinese summary of running, stuck, completed, or
-  non-applicable command state;
-- `decision`: one of `continue-waiting`, `resume-same-agent`,
-  `start-replacement`, `terminate-unfinished`, `mark-completed`, or
-  `mark-failed`;
-- `reason`: Chinese AI/human rationale for the status handling decision;
-- `supersedes_agent_id`: predecessor technical id for `replacement-started`;
-- `handoff_summary`: predecessor output, current diff, remaining work, and gate
-  blockers for `replacement-started` and `terminated-unfinished`.
+`liveness[agent_id].last_scan_snapshot` records:
+
+- task worktree `HEAD`, content status digest, content diff stat digest, and
+  content max mtime, excluding `agent-assignment.json` bookkeeping writes;
+- source checkout `HEAD`, status digest, diff stat digest, and max mtime;
+- `progress_events_count`, `progress_events_digest`, and
+  `progress_events_newest_event_id`, counting only progress events.
+
+Allowed progress events are:
+
+- `explicit-message-observed`
+- `tool-activity-observed`
+- `command-output-observed`
+- `platform-progress-observed`
+- `status-response-observed`
+
+Allowed control / terminal / audit events are:
+
+- `assigned`
+- `status-requested`
+- `status-request-failed`
+- `stale-assessed`
+- `resume-same-agent`
+- `replacement-started`
+- `terminated-unfinished`
+- `completed`
+- `failed`
+- `workspace-boundary-violation`
+
+Every status event records `event_id`, `event`, `agent_id`, `logical_role`,
+`platform_nickname`, `observed_at` as UTC ISO-8601, `recorded_at`, `head`,
+`source`, and non-placeholder `evidence`. `replacement-started` additionally
+requires `predecessor_agent_id`, `predecessor_event_id`,
+`replacement_reason`, and `handoff_summary`. `resume-same-agent` requires
+`predecessor_event_id` and `handoff_summary`. `terminated-unfinished` requires
+`termination_reason` and `handoff_summary`; `termination_reason=stale_cutover`
+requires `termination_source_event_id` pointing to the same agent's
+`stale-assessed`, while
+`termination_reason=manual_or_platform_terminated_unfinished` requires an
+empty `termination_source_event_id`.
+
+The liveness checker is a short-lived, on-demand, single-sample command:
+
+```bash
+.trellis/guru-team/scripts/bash/check-subagent-liveness.sh --json \
+  --task ".trellis/tasks/<task>" \
+  --agent-id "<technical-agent-id>" \
+  --source-repo "<source-checkout-path>" \
+  --progress-scan-interval 120 \
+  --max-progress-silence 180
+```
+
+It returns exactly one decision:
+`workspace_boundary_violation_progress`, `progress_observed`,
+`status_request_required`, `continue_waiting_no_repeat_ping`,
+`stale_allowed`, or `blocked_missing_evidence`. `progress_scan_interval=120s`
+controls scan cadence. `max_progress_silence=180s` is measured from
+`progress_anchor_at`; `status-requested` does not refresh that anchor and does
+not extend `max_progress_silence_deadline_at`. If the deadline has already
+passed but there is no pending status request, checker must still return
+`status_request_required`; only after a successful `status-requested` and an
+immediate recheck can `stale_allowed` be returned when no progress appeared.
+
+Source checkout snapshot changes are
+`workspace_boundary_violation_progress`, not stale evidence. Task worktree
+snapshot changes and recorded progress events are `progress_observed`. Only new
+changes relative to `last_scan_snapshot` refresh `progress_anchor_at`. Existing
+dirty diffs, old progress events, control/bookkeeping events, and
+`agent-assignment.json` writes do not refresh liveness.
+
+`record-subagent-liveness-event.sh` is the active status/liveness writer.
+`record-agent-assignment.sh` remains for review rounds and reuse decisions, and
+its old `--status-event` path must fail closed. `status-requested` and
+`status-request-failed` may be recorded only after checker decision
+`status_request_required`. `stale-assessed` may be recorded only after checker
+decision `stale_allowed`, and recorder must verify current task/source
+snapshot plus progress event digest still match `last_scan_snapshot`; otherwise
+it fails closed and requires a recheck.
+
+After `stale-assessed`, the workflow must not resume or continue waiting for
+that predecessor. The same liveness handling turn must record
+`terminated-unfinished termination_reason=stale_cutover
+termination_source_event_id=<stale-assessed.event_id>`, then replacement
+`assigned`, then `replacement-started` with
+`replacement_reason=max_progress_silence_exceeded`. Manual/platform unfinished
+termination is structurally separate through
+`termination_reason=manual_or_platform_terminated_unfinished`.
 
 `wait_agent`, `trellis channel wait`, or equivalent wait command timeout means
 only that the current wait window ended without final completion. It is not a
-failure signal and must not be used as pass evidence. A stale assessment is
-based on no observable progress for a recent window, default at least 5
-minutes, not on total runtime. If `status_events[]` contains
-`terminated-unfinished`, a passing Branch Review Gate must fail closed unless
-later events show same-agent resume or replacement start and a later
-`completed` or `failed` event for that recovery chain. This is an objective
-ledger-completeness check; the AI/human review still owns whether the work is
-actually complete and whether failed agent output blocks the task.
+failure signal and must not be used as pass evidence. `completed` means the
+agent execution chain ended, not that Phase 2 or Branch Review passed. `failed`,
+unfinished, stale, or replacement partial output must not support a passing
+Phase 2 check or Branch Review Gate until a same-agent resume or replacement
+chain later reaches `completed`. A replacement `failed` requires further
+resume/replacement and cannot close the chain.
 
 For Branch Review Gate, any review agent that recorded findings may be reused
 only as `问题闭环审查代理` for fix confirmation. This includes a previous
 `最终放行审查代理` round that found a new issue. The normal closure path is a
 later same-agent closure round with `findings_count: 0` and
-`reuse_decision: reuse-for-closure`. If the finding owner objectively
-failed/interrupted and cannot continue, the workflow may record a replacement
-closure chain: predecessor failed/unfinished `status_events[]`,
-`replacement-started` with `supersedes_agent_id`, `reuse_decisions[]`
+`reuse_decision: reuse-for-closure`. If the finding owner objectively failed,
+was interrupted, or became stale and cannot continue, the workflow may record a
+replacement closure chain: predecessor liveness evidence in `status_events[]`,
+`replacement-started` with `predecessor_agent_id`, `predecessor_event_id`,
+`replacement_reason`, and `handoff_summary`, `reuse_decisions[]`
 `decision=replace` with `from_round` / `to_round`, then a replacement
 `问题闭环审查代理` round with `findings_count: 0` and
 `reuse_decision: replace`. Every finding owner must have one of those closure
 forms before a passing gate can be recorded. That closure confirms the finding
 is closed and does not need to be repeated for every later HEAD. The final
-passing review round must be the last
-`最终放行审查代理`, use a fresh technical `agent_id` that did not own an earlier
-finding round and did not act as replacement closure reviewer, set
-`findings_count` to 0, set `reuse_decision` to `new-agent`, record the reviewed
-code `HEAD` in `reviewed_head`, and have a unique, strictly increasing `round`
-value so no later record can make the final round ambiguous.
+passing review round must be the last `最终放行审查代理`, use a fresh technical
+`agent_id` that did not own an earlier finding round and did not act as
+replacement closure reviewer, set `findings_count` to 0, set
+`reuse_decision` to `new-agent`, record the reviewed code `HEAD` in
+`reviewed_head`, and have a unique, strictly increasing `round` value so no
+later record can make the final round ambiguous.
 
 Because `最终放行审查代理` is assigned after the task work commit,
 `agent-assignment.json` may receive a post-commit metadata update before Branch
