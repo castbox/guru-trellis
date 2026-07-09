@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-09T07:17:31Z",
-  "task_dir": ".trellis/tasks/07-09-061-task-markdown-review-table",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-09-061-task-markdown-review-table",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/061-task-markdown-review-table",
@@ -113,7 +113,7 @@
   ],
   "followup_candidates": [],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-09-061-task-markdown-review-table/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-09-061-task-markdown-review-table/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 61,
@@ -137,13 +137,13 @@
     "reviewer": "019f45b3-f6cd-7e73-a7f2-a439a826c304",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-09-061-task-markdown-review-table/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-09-061-task-markdown-review-table/review.md",
       "sha256": "ab145579367b80872f865ef35e12adb1eb00fbc6af2356b48499210e3c19620e",
       "size_bytes": 2170,
       "modified_at": "2026-07-09T07:16:45.365407+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-09-061-task-markdown-review-table/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-09-061-task-markdown-review-table/agent-assignment.json",
       "sha256": "128409dbafa06ea984d77152bf4c201b423318f714f2fa5fa08b27a15e7e8d97",
       "size_bytes": 13441,
       "modified_at": "2026-07-09T07:17:02.841643+00:00",
@@ -158,7 +158,7 @@
       "review_rounds_count": 1,
       "reuse_decisions_count": 0,
       "status_events_count": 8,
-      "task": ".trellis/tasks/07-09-061-task-markdown-review-table",
+      "task": ".trellis/tasks/archive/2026-07/07-09-061-task-markdown-review-table",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "review_reports": [
@@ -168,7 +168,7 @@
         "agent_id": "019f45b3-f6cd-7e73-a7f2-a439a826c304",
         "reviewed_head": "936b5bdb869ed8b799c33988a5ae11dfbf89f920",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-09-061-task-markdown-review-table/reviews/round-001-final-release-review.md",
+        "path": ".trellis/tasks/archive/2026-07/07-09-061-task-markdown-review-table/reviews/round-001-final-release-review.md",
         "sha256": "e5621b573bfb45dab7b5dfd1fc530bb7a4ddf9d5d000a658f1e631c0804928a0",
         "size_bytes": 3624,
         "modified_at": "2026-07-09T07:16:45.365258+00:00"
