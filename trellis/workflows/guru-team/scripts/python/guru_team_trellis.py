@@ -38,6 +38,7 @@ DEFAULTS: dict[str, Any] = {
     "worktree_root": "",
     "task_start_context_artifact": "task-start-context.json",
     "runtime_root": ".trellis/.runtime/guru-team",
+    "marketplace_verification_artifact": "marketplace-verification.json",
     "artifact_language": "zh-CN",
     "review_gate": {
         "artifact_path": "review-gate.json",
@@ -123,6 +124,7 @@ PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS = [
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 REVIEW_REPORT_ARTIFACT = "review.md"
+MARKETPLACE_VERIFICATION_ARTIFACT = "marketplace-verification.json"
 REVIEW_ROUND_REPORT_DIR = "reviews"
 HUMAN_MARKDOWN_ARTIFACTS = [
     {
@@ -305,6 +307,7 @@ PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS = {
     AGENT_ASSIGNMENT_ARTIFACT,
     REVIEW_REPORT_ARTIFACT,
     "review-gate.json",
+    MARKETPLACE_VERIFICATION_ARTIFACT,
 }
 
 
@@ -1334,6 +1337,7 @@ def ensure_base_freshness(root: Path, base_ref: str, remote: str = "origin") -> 
 
     local_head_after = ref_head(root, base)
     fresh = local_head_after == remote_head if local_head_after else True
+    status = "fresh" if local_head_after and fresh else "remote_only"
     return {
         "remote": remote,
         "base_branch": base,
@@ -1345,7 +1349,7 @@ def ensure_base_freshness(root: Path, base_ref: str, remote: str = "origin") -> 
         "fetch_performed": True,
         "fast_forwarded": fast_forwarded,
         "fresh": fresh,
-        "status": "fresh" if fresh else "remote_only",
+        "status": status,
         "base_ref_for_worktree": base if fresh and local_head_after else remote_ref,
     }
 
@@ -6283,6 +6287,15 @@ def create_task(root: Path, payload: dict[str, Any], args: argparse.Namespace) -
 def build_task_start_context(root: Path, payload: dict[str, Any], task_dir: Path, assignee: str | None) -> dict[str, Any]:
     freshness = payload.get("base_freshness") if isinstance(payload.get("base_freshness"), dict) else {}
     source_issue = payload.get("source_issue") if isinstance(payload.get("source_issue"), dict) else {}
+    base_head_sha = str(freshness.get("local_head_after") or "")
+    remote_head_sha = str(freshness.get("remote_head") or "")
+    freshness_status = str(freshness.get("status") or "")
+    if freshness_status == "fresh" and (not base_head_sha or not remote_head_sha or base_head_sha != remote_head_sha):
+        raise WorkflowError("fresh base context requires matching local_head_after and remote_head SHA.", exit_code=2)
+    if freshness_status == "remote_only" and (base_head_sha or not remote_head_sha):
+        raise WorkflowError("remote_only base context requires empty local SHA and non-empty remote_head SHA.", exit_code=2)
+    if freshness_status not in {"fetch_failed", "remote_ref_missing", "unknown"} and not remote_head_sha:
+        raise WorkflowError(f"base context status {freshness_status or '(missing)'} requires remote_head SHA.", exit_code=2)
     context = {
         "schema_version": "1.0", "source_issue": source_issue,
         "source_repo": {"repo": payload.get("source_repo", ""), "url": source_issue.get("url", "")},
@@ -6290,7 +6303,8 @@ def build_task_start_context(root: Path, payload: dict[str, Any], task_dir: Path
         "task_artifact_dir": repo_relative(Path(payload["workspace_path"]), task_dir),
         "branch_name": payload["branch_name"], "base_branch": payload["base_branch"],
         "base_ref": freshness.get("base_ref") or payload["base_branch"],
-        "base_head_sha": freshness.get("local_sha") or "", "remote_head_sha": freshness.get("remote_sha") or "",
+        "base_head_sha": base_head_sha,
+        "remote_head_sha": remote_head_sha,
         "workspace_slug": payload["workspace_slug"], "task_workspace_id": payload["workspace_slug"],
         "assignee": assignee or "", "actor": {"login": assignee or ""},
         "issue_scope_ledger_seed": payload.get("issue_scope_ledger") or {},
@@ -7256,6 +7270,230 @@ def cmd_format_merge_commit(args: argparse.Namespace) -> dict[str, Any]:
     return payload
 
 
+def marketplace_verification_path(task_dir: Path, config: dict[str, Any] | None = None) -> Path:
+    name = str((config or {}).get("marketplace_verification_artifact") or MARKETPLACE_VERIFICATION_ARTIFACT)
+    return task_dir / name
+
+
+MARKETPLACE_VERIFICATION_PREFIXES = (
+    "trellis/index.json",
+    "trellis/guru-team-extension.json",
+    "trellis/workflows/",
+    "trellis/presets/",
+)
+
+
+def marketplace_verification_required(gate: dict[str, Any]) -> bool:
+    files = gate.get("changed_files") if isinstance(gate.get("changed_files"), list) else []
+    return any(str(path).startswith(MARKETPLACE_VERIFICATION_PREFIXES) for path in files)
+
+
+def commit_marketplace_verification_artifact(root: Path, artifact_path: Path, message: str) -> dict[str, Any]:
+    artifact_relative = repo_relative(root, artifact_path)
+    dirty_paths = git_status_paths(root)
+    unexpected = [path for path in dirty_paths if path != artifact_relative]
+    if unexpected:
+        raise WorkflowError(
+            "Marketplace verification metadata tail contains unexpected dirty paths.",
+            exit_code=2,
+            payload={"artifact_path": artifact_relative, "unexpected_dirty_paths": unexpected},
+        )
+    if artifact_relative not in dirty_paths:
+        raise WorkflowError("Marketplace verification did not produce its required task artifact.", exit_code=2)
+    run_stdout(["git", "add", "--", artifact_relative], cwd=root)
+    if run(["git", "diff", "--cached", "--quiet"], cwd=root, check=False).returncode == 0:
+        raise WorkflowError("Marketplace verification artifact has no staged content to commit.", exit_code=2)
+    run_stdout(["git", "commit", "-m", message], cwd=root)
+    return {"committed": True, "paths": [artifact_relative], "commit": current_head(root)}
+
+
+def command_evidence(command: list[str], proc: subprocess.CompletedProcess[str], display_command: list[str] | None = None) -> dict[str, Any]:
+    stdout = proc.stdout.strip()
+    stderr = proc.stderr.strip()
+    return {
+        "command": display_command or command,
+        "exit_code": proc.returncode,
+        "stdout_sha256": digest_text(stdout),
+        "stderr_sha256": digest_text(stderr),
+        "stdout_size_bytes": len(stdout.encode("utf-8")),
+        "stderr_size_bytes": len(stderr.encode("utf-8")),
+        "passed": proc.returncode == 0,
+    }
+
+
+def execute_marketplace_verification(
+    root: Path,
+    task_dir: Path,
+    repo: str,
+    remote: str,
+    branch: str,
+    expected_head: str,
+    config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    remote_proc = run(["git", "ls-remote", "--heads", remote, branch], cwd=root, check=False)
+    remote_lines = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
+    remote_head = remote_lines[0][0] if remote_lines and remote_lines[0] else ""
+    remote_evidence = command_evidence(["git", "ls-remote", "--heads", remote, branch], remote_proc)
+    remote_evidence["remote_head"] = remote_head
+    remote_evidence["expected_head"] = expected_head
+    remote_evidence["passed"] = remote_proc.returncode == 0 and remote_head == expected_head
+    source = f"gh:{repo}/trellis#{branch}"
+    steps: list[dict[str, Any]] = [remote_evidence]
+    with tempfile.TemporaryDirectory(prefix="guru-marketplace-verify-") as tmp:
+        temp_root = Path(tmp)
+        remote_url_proc = run(["git", "remote", "get-url", remote], cwd=root, check=False)
+        remote_url = remote_url_proc.stdout.strip()
+        remote_url_evidence = command_evidence(["git", "remote", "get-url", remote], remote_url_proc)
+        remote_url_evidence["passed"] = remote_url_proc.returncode == 0 and bool(remote_url)
+        steps.append(remote_url_evidence)
+        source_checkout = temp_root / "source"
+        project = temp_root / "project"
+        project.mkdir()
+        clone_command = ["git", "clone", "--depth", "1", "--branch", branch, remote_url, str(source_checkout)]
+        clone_proc = run(clone_command, cwd=temp_root, check=False)
+        steps.append(command_evidence(clone_command, clone_proc, ["git", "clone", "--depth", "1", "--branch", branch, "<remote-url>", "<temp-source>"]))
+        if clone_proc.returncode == 0:
+            run(["git", "init", "-q"], cwd=project, check=False)
+        commands = [
+            (["trellis", "init", "-y", "-u", "marketplace-verifier", "--codex", "--cursor", "--workflow", "guru-team", "--workflow-source", source], None),
+            (["trellis", "workflow", "--marketplace", source, "--template", "guru-team", "--create-new"], None),
+            (["trellis", "workflow", "--marketplace", source, "--template", "guru-team", "--force"], None),
+            ([str(source_checkout / "trellis/presets/guru-team/scripts/bash/apply.sh"), "--repo", str(project), "--all-platforms", "--json"], ["<temp-source>/trellis/presets/guru-team/scripts/bash/apply.sh", "--repo", "<temp-project>", "--all-platforms", "--json"]),
+        ]
+        for command, display_command in commands:
+            if not all(step.get("passed") is True for step in steps):
+                break
+            proc = run(command, cwd=project, check=False)
+            steps.append(command_evidence(command, proc, display_command))
+            if proc.returncode != 0:
+                break
+        workflow_path = project / ".trellis/workflow.md"
+        preview_path = project / ".trellis/workflow.md.new"
+        installed_schema = project / ".trellis/guru-team/schemas/task-start-context.schema.json"
+        canonical_workflow = source_checkout / "trellis/workflows/guru-team/workflow.md"
+        canonical_schema = source_checkout / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
+        assets = {
+            "workflow_sha256": digest_text(workflow_path.read_text(encoding="utf-8")) if workflow_path.exists() else "",
+            "preview_sha256": digest_text(preview_path.read_text(encoding="utf-8")) if preview_path.exists() else "",
+            "task_start_context_schema_sha256": hashlib.sha256(installed_schema.read_bytes()).hexdigest() if installed_schema.exists() else "",
+            "runtime_gitignore_present": ".trellis/.runtime/" in (project / ".gitignore").read_text(encoding="utf-8") if (project / ".gitignore").exists() else False,
+            "legacy_handoff_absent": not (project / ".trellis/guru-team/handoff.json").exists(),
+            "legacy_intake_schema_absent": not (project / ".trellis/guru-team/schemas/intake-handoff.schema.json").exists(),
+        }
+        expected_workflow_sha = digest_text(canonical_workflow.read_text(encoding="utf-8")) if canonical_workflow.exists() else ""
+        expected_schema_sha = hashlib.sha256(canonical_schema.read_bytes()).hexdigest() if canonical_schema.exists() else ""
+    passed = all(step.get("passed") is True for step in steps) and all([
+        expected_workflow_sha,
+        expected_schema_sha,
+        assets["workflow_sha256"] == expected_workflow_sha,
+        assets["preview_sha256"] == expected_workflow_sha,
+        assets["task_start_context_schema_sha256"] == expected_schema_sha,
+        assets["runtime_gitignore_present"],
+        assets["legacy_handoff_absent"],
+        assets["legacy_intake_schema_absent"],
+    ])
+    payload = {
+        "schema_version": "1.0",
+        "generated_at": now_iso(),
+        "status": "passed" if passed else "failed",
+        "repo": repo,
+        "remote": remote,
+        "branch": branch,
+        "marketplace_source": source,
+        "verified_head": expected_head,
+        "remote_head": remote_head,
+        "task_dir": repo_relative(root, task_dir),
+        "steps": steps,
+        "assets": assets,
+    }
+    write_json(marketplace_verification_path(task_dir, config), payload)
+    if not passed:
+        raise WorkflowError("Remote marketplace verification failed after push.", exit_code=2, payload=payload)
+    return payload
+
+
+def validate_marketplace_verification(root: Path, task_dir: Path, current_publish_head: str, repo: str, remote: str, branch: str, config: dict[str, Any] | None = None) -> tuple[Path, dict[str, Any], list[str]]:
+    path = marketplace_verification_path(task_dir, config)
+    payload, read_error = read_optional_json(path)
+    errors: list[str] = []
+    if payload is None:
+        return path, {}, [f"marketplace verification artifact {read_error or 'missing'}: {path}"]
+    required_keys = {
+        "schema_version", "generated_at", "status", "repo", "remote", "branch",
+        "marketplace_source", "verified_head", "remote_head", "task_dir", "steps", "assets",
+    }
+    if set(payload) != required_keys:
+        errors.append("marketplace verification keys do not match schema 1.0.")
+    if payload.get("schema_version") != "1.0":
+        errors.append("marketplace verification schema_version must be 1.0.")
+    expected_repo = repo.strip()
+    expected_source = f"gh:{expected_repo}/trellis#{branch}" if expected_repo else ""
+    if expected_repo and payload.get("repo") != expected_repo:
+        errors.append("marketplace verification repo does not match the current repository.")
+    if payload.get("remote") != remote or payload.get("branch") != branch:
+        errors.append("marketplace verification remote/branch identity does not match publish inputs.")
+    if expected_source and payload.get("marketplace_source") != expected_source:
+        errors.append("marketplace verification source does not match the current repository branch.")
+    if payload.get("task_dir") != repo_relative(root, task_dir):
+        errors.append("marketplace verification task_dir does not match the current task.")
+    sha_pattern = re.compile(r"^[0-9a-f]{40}$")
+    digest_pattern = re.compile(r"^[0-9a-f]{64}$")
+    if not sha_pattern.fullmatch(str(payload.get("verified_head") or "")):
+        errors.append("marketplace verification verified_head must be a 40-character lowercase SHA.")
+    if not sha_pattern.fullmatch(str(payload.get("remote_head") or "")):
+        errors.append("marketplace verification remote_head must be a 40-character lowercase SHA.")
+    if payload.get("status") != "passed":
+        errors.append("marketplace verification status must be passed.")
+    verified_head = str(payload.get("verified_head") or "")
+    if not verified_head or payload.get("remote_head") != verified_head:
+        errors.append("marketplace verification lacks a matching verified/remote content HEAD.")
+    elif verified_head != current_publish_head:
+        diff_proc = run(["git", "diff", "--name-only", f"{verified_head}..{current_publish_head}"], cwd=root, check=False)
+        allowed = {repo_relative(root, path)}
+        changed = {line.strip() for line in diff_proc.stdout.splitlines() if line.strip()}
+        if diff_proc.returncode != 0 or changed != allowed:
+            errors.append("marketplace verification is stale; current HEAD contains changes beyond its artifact metadata tail.")
+    remote_proc = run(["git", "ls-remote", "--heads", remote, branch], cwd=root, check=False)
+    remote_lines = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
+    current_remote_head = remote_lines[0][0] if remote_lines and remote_lines[0] else ""
+    if remote_proc.returncode != 0 or current_remote_head != current_publish_head:
+        errors.append("remote branch does not contain the current publish HEAD including verification artifact.")
+    steps = payload.get("steps")
+    if not isinstance(steps, list) or len(steps) < 7 or any(not isinstance(step, dict) or step.get("passed") is not True for step in steps):
+        errors.append("marketplace verification must record passed remote/ref clone/init/preview/switch/preset steps.")
+    assets = payload.get("assets") if isinstance(payload.get("assets"), dict) else {}
+    for key in ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256"]:
+        if not digest_pattern.fullmatch(str(assets.get(key) or "")):
+            errors.append(f"marketplace verification missing asset digest: {key}.")
+    canonical_workflow = root / "trellis/workflows/guru-team/workflow.md"
+    canonical_schema = root / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
+    expected_workflow_sha = digest_text(canonical_workflow.read_text(encoding="utf-8")) if canonical_workflow.exists() else ""
+    expected_schema_sha = hashlib.sha256(canonical_schema.read_bytes()).hexdigest() if canonical_schema.exists() else ""
+    if assets.get("workflow_sha256") != expected_workflow_sha or assets.get("preview_sha256") != expected_workflow_sha:
+        errors.append("marketplace installed/preview workflow digests do not match the current canonical workflow.")
+    if assets.get("task_start_context_schema_sha256") != expected_schema_sha:
+        errors.append("marketplace installed task-start-context schema digest does not match current canonical schema.")
+    if assets.get("runtime_gitignore_present") is not True:
+        errors.append("marketplace verification did not confirm runtime gitignore contract.")
+    if assets.get("legacy_handoff_absent") is not True or assets.get("legacy_intake_schema_absent") is not True:
+        errors.append("marketplace verification did not confirm obsolete handoff artifacts are absent.")
+    return path, payload, errors
+
+
+def cmd_verify_marketplace(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
+    repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
+    if not repo:
+        raise WorkflowError("Could not resolve GitHub repo for marketplace verification.")
+    branch = str(args.branch or current_branch(root))
+    remote = str(args.remote or publish_config(config).get("remote") or "origin")
+    return execute_marketplace_verification(root, task_dir, repo, remote, branch, current_head(root), config)
+
+
 def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
     validate_publish_invocation(args)
     root = repo_root(Path(args.root or os.getcwd()))
@@ -7363,6 +7601,28 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
 
     require_gh_auth(root)
     run_stdout(["git", "push", "-u", remote, branch], cwd=root)
+    verified_content_head = current_head(root)
+    if marketplace_verification_required(gate):
+        marketplace_verification = execute_marketplace_verification(root, task_dir, repo, remote, branch, verified_content_head, config)
+        verification_commit = commit_marketplace_verification_artifact(
+            root, marketplace_verification_path(task_dir, config), metadata_commit_subject
+        )
+        run_stdout(["git", "push", remote, branch], cwd=root)
+        publish_head = current_head(root)
+        verification_path, _verification_payload, verification_errors = validate_marketplace_verification(
+            root, task_dir, publish_head, repo, remote, branch, config
+        )
+        if verification_errors:
+            raise WorkflowError(
+                "Publish blocked because remote marketplace verification artifact is missing, failed, or stale.",
+                exit_code=2,
+                payload={"artifact_path": str(verification_path), "errors": verification_errors},
+            )
+        payload["marketplace_verification"] = marketplace_verification
+        payload["marketplace_verification_commit"] = verification_commit
+        payload["publish_head"] = publish_head
+    else:
+        payload["marketplace_verification"] = {"status": "not-required", "reason": "review gate changed_files do not touch marketplace/preset public extension assets"}
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False) as tmp:
         tmp.write(body)
         body_file = tmp.name
@@ -7670,6 +7930,14 @@ def build_parser() -> argparse.ArgumentParser:
     human_artifacts.add_argument("--json", action="store_true")
     human_artifacts.add_argument("--task")
 
+    verify_marketplace = sub.add_parser("verify-marketplace")
+    verify_marketplace.add_argument("--root")
+    verify_marketplace.add_argument("--json", action="store_true")
+    verify_marketplace.add_argument("--task")
+    verify_marketplace.add_argument("--repo")
+    verify_marketplace.add_argument("--remote")
+    verify_marketplace.add_argument("--branch")
+
     prepare = sub.add_parser("prepare")
     prepare.add_argument("--root")
     prepare.add_argument("--json", action="store_true")
@@ -7930,6 +8198,8 @@ def main() -> int:
             payload = cmd_check_workspace_boundary(args)
         elif args.command == "resolve-human-artifacts":
             payload = cmd_resolve_human_artifacts(args)
+        elif args.command == "verify-marketplace":
+            payload = cmd_verify_marketplace(args)
         elif args.command == "prepare":
             payload = cmd_prepare(args)
         elif args.command == "review-branch":

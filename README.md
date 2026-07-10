@@ -471,3 +471,8 @@ trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 ```
 
 如果 preset 产生 `.new` 或 `.bak`，必须逐个检查原因并处理，不能静默提交。
+
+
+## Push 后远端 Marketplace 门禁
+
+修改 marketplace/preset/overlay/schema/public API 的发布路径会在 branch push 后、`gh pr create` 前执行远端分支 `init`、preview、switch 和 preset reapply，记录 task-local `marketplace-verification.json`。缺失、失败、HEAD 不匹配或 stale artifact 会阻止创建 PR；该门禁不创建 tag，AI 仍负责 PR readiness 判断。

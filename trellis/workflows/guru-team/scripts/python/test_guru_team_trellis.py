@@ -2738,6 +2738,10 @@ class PublishBoundaryTest(unittest.TestCase):
             with (
                 mock.patch.object(gtt, "require_gh_auth"),
                 mock.patch.object(gtt, "run_stdout"),
+                mock.patch.object(gtt, "current_head", side_effect=["abc123", "def456", "def456"]),
+                mock.patch.object(gtt, "execute_marketplace_verification", return_value={"status": "passed", "verified_head": "abc123"}),
+                mock.patch.object(gtt, "commit_marketplace_verification_artifact", return_value={"committed": True}),
+                mock.patch.object(gtt, "validate_marketplace_verification", return_value=(self.task_dir / "marketplace-verification.json", {}, [])),
                 mock.patch.object(gtt, "run") as run,
             ):
                 run.return_value = mock.Mock(
@@ -2765,6 +2769,70 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertIn("PR: #91", payload["merge_commit"]["body"])
         self.assertIn("Refs #18", payload["merge_commit"]["body"])
         self.assertIn("--subject", payload["merge_commit"]["command"])
+        self.assertEqual(payload["marketplace_verification"]["status"], "passed")
+
+    def test_publish_pr_verifier_failure_blocks_before_gh_pr_create(self) -> None:
+        body_path = self.root / "reviewed-pr-body.md"
+        body_path.write_text(valid_pr_body("marketplace verifier 失败必须阻断 PR。"), encoding="utf-8")
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with (
+                mock.patch.object(gtt, "require_gh_auth"),
+                mock.patch.object(gtt, "run_stdout"),
+                mock.patch.object(gtt, "current_head", return_value="abc123"),
+                mock.patch.object(gtt, "execute_marketplace_verification", side_effect=gtt.WorkflowError("verify failed", exit_code=2)),
+                mock.patch.object(gtt, "run") as run,
+                self.assertRaises(gtt.WorkflowError),
+            ):
+                gtt.cmd_publish_pr(publish_args(recovery_after_finish_work=True, dry_run=False, body_file=str(body_path)))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        run.assert_not_called()
+
+    def test_validate_marketplace_verification_rejects_stale_non_metadata_tail(self) -> None:
+        artifact = self.task_dir / "marketplace-verification.json"
+        gtt.write_json(artifact, {
+            "schema_version": "1.0", "generated_at": "2026-07-10T00:00:00Z",
+            "status": "passed", "repo": "owner/repo", "remote": "origin",
+            "branch": "codex/18-publish-boundary", "marketplace_source": "gh:owner/repo/trellis#codex/18-publish-boundary",
+            "verified_head": "abc123", "remote_head": "abc123",
+            "task_dir": ".trellis/tasks/07-04-publish-boundary",
+            "steps": [{"passed": True}] * 7,
+            "assets": {"workflow_sha256": "a", "preview_sha256": "b", "task_start_context_schema_sha256": "c", "runtime_gitignore_present": True},
+        })
+        with mock.patch.object(gtt, "run") as run:
+            run.side_effect = [
+                mock.Mock(returncode=0, stdout="src/app.py\n", stderr=""),
+                mock.Mock(returncode=0, stdout="def456\trefs/heads/codex/18-publish-boundary\n", stderr=""),
+            ]
+            _path, _payload, errors = gtt.validate_marketplace_verification(
+                self.root, self.task_dir, "def456", "owner/repo", "origin", "codex/18-publish-boundary"
+            )
+        self.assertTrue(any("stale" in error for error in errors))
+
+    def test_validate_marketplace_verification_rejects_tampered_identity(self) -> None:
+        artifact = self.task_dir / "marketplace-verification.json"
+        gtt.write_json(artifact, {
+            "schema_version": "1.0", "generated_at": "2026-07-10T00:00:00Z",
+            "status": "passed", "repo": "attacker/repo", "remote": "upstream",
+            "branch": "wrong-branch", "marketplace_source": "gh:attacker/repo/trellis#wrong-branch",
+            "verified_head": "a" * 40, "remote_head": "a" * 40,
+            "task_dir": ".trellis/tasks/wrong-task",
+            "steps": [{"passed": True}] * 7,
+            "assets": {"workflow_sha256": "a", "preview_sha256": "b", "task_start_context_schema_sha256": "c", "runtime_gitignore_present": True},
+        })
+        with (
+            mock.patch.object(gtt, "run", return_value=mock.Mock(returncode=0, stdout=f"{'a' * 40}\trefs/heads/codex/18-publish-boundary\n", stderr="")),
+        ):
+            _path, _payload, errors = gtt.validate_marketplace_verification(
+                self.root, self.task_dir, "a" * 40, "owner/repo", "origin", "codex/18-publish-boundary"
+            )
+        self.assertTrue(any("repo does not match" in error for error in errors))
+        self.assertTrue(any("remote/branch identity" in error for error in errors))
+        self.assertTrue(any("task_dir" in error for error in errors))
 
     def test_publish_pr_non_draft_rejects_generated_body_before_push(self) -> None:
         patches = self.patch_publish_success_path()
@@ -6816,6 +6884,42 @@ if __name__ == "__main__":
     unittest.main()
 
 class TaskRuntimeBoundaryContractTest(unittest.TestCase):
+    def build_context(self, freshness: dict[str, object]) -> dict[str, object]:
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp)
+            task_dir = workspace / ".trellis/tasks/07-10-096-task-runtime-boundary"
+            task_dir.mkdir(parents=True)
+            return gtt.build_task_start_context(workspace, {
+                "workspace_path": str(workspace), "source_repo": "owner/repo",
+                "source_issue": {"number": 96, "url": "https://github.com/owner/repo/issues/96", "title": "Task", "created_by_workflow": False},
+                "task_slug": "096-task-runtime-boundary", "task_title": "Task",
+                "branch_name": "chore/096-task-runtime-boundary", "base_branch": "main",
+                "workspace_slug": "096-task-runtime-boundary", "issue_scope_ledger": {},
+                "duplicate_search": {"performed": False}, "naming_quality": {},
+                "base_freshness": freshness,
+            }, task_dir, "tester")
+
+    def test_task_start_context_copies_fresh_base_shas(self) -> None:
+        sha = "a" * 40
+        context = self.build_context({"status": "fresh", "base_ref": "main", "local_head_after": sha, "remote_head": sha})
+        self.assertEqual(context["base_head_sha"], sha)
+        self.assertEqual(context["remote_head_sha"], sha)
+
+    def test_task_start_context_rejects_fresh_mismatched_shas(self) -> None:
+        with self.assertRaises(gtt.WorkflowError):
+            self.build_context({"status": "fresh", "base_ref": "main", "local_head_after": "a" * 40, "remote_head": "b" * 40})
+
+    def test_task_start_context_remote_only_allows_empty_local_sha(self) -> None:
+        remote = "b" * 40
+        context = self.build_context({"status": "remote_only", "base_ref": "main", "local_head_after": None, "remote_head": remote})
+        self.assertEqual(context["base_head_sha"], "")
+        self.assertEqual(context["remote_head_sha"], remote)
+
+    def test_task_start_context_fetch_failed_allows_empty_shas(self) -> None:
+        context = self.build_context({"status": "fetch_failed", "base_ref": "main", "local_head_after": None, "remote_head": None})
+        self.assertEqual(context["base_head_sha"], "")
+        self.assertEqual(context["remote_head_sha"], "")
+
     def test_task_start_context_rejects_forbidden_absolute_path(self) -> None:
         payload = {
             "schema_version": "1.0", "source_issue": {}, "source_repo": {},
@@ -6840,3 +6944,84 @@ class TaskRuntimeBoundaryContractTest(unittest.TestCase):
             self.assertNotEqual(gtt.task_start_context_path(first_task, gtt.DEFAULTS), gtt.task_start_context_path(second_task, gtt.DEFAULTS))
             self.assertNotEqual(gtt.runtime_task_path(root, gtt.DEFAULTS, "096-first"), gtt.runtime_task_path(root, gtt.DEFAULTS, "097-second"))
             self.assertNotEqual(gtt.runtime_workspace_path(root, gtt.DEFAULTS, "096-first"), gtt.runtime_workspace_path(root, gtt.DEFAULTS, "097-second"))
+
+
+class MarketplaceVerificationContractTest(unittest.TestCase):
+    def test_marketplace_metadata_commit_rejects_unexpected_metadata_tail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / ".trellis/tasks/task/marketplace-verification.json"
+            with (
+                mock.patch.object(gtt, "git_status_paths", return_value=[
+                    ".trellis/tasks/task/marketplace-verification.json",
+                    ".trellis/tasks/task/agent-assignment.json",
+                ]),
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.commit_marketplace_verification_artifact(root, artifact, "chore(meta): test")
+            self.assertIn(".trellis/tasks/task/agent-assignment.json", raised.exception.payload["unexpected_dirty_paths"])
+
+    def test_execute_marketplace_verification_records_order_and_digests(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            task_dir = root / ".trellis/tasks/07-10-096-task-runtime-boundary"
+            task_dir.mkdir(parents=True)
+            apply_script = root / "trellis/presets/guru-team/scripts/bash/apply.sh"
+            apply_script.parent.mkdir(parents=True)
+            apply_script.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+            expected = "a" * 40
+            commands: list[list[str]] = []
+
+            def fake_run(command: list[str], cwd: Path, check: bool = True) -> mock.Mock:
+                commands.append(command)
+                if command[:4] == ["git", "ls-remote", "--heads", "origin"]:
+                    return mock.Mock(returncode=0, stdout=f"{expected}\trefs/heads/codex/096-task-runtime-boundary\n", stderr="")
+                if command[:4] == ["git", "remote", "get-url", "origin"]:
+                    return mock.Mock(returncode=0, stdout="https://github.com/owner/repo.git\n", stderr="")
+                if command[:2] == ["git", "clone"]:
+                    source_checkout = Path(command[-1])
+                    script = source_checkout / "trellis/presets/guru-team/scripts/bash/apply.sh"
+                    script.parent.mkdir(parents=True)
+                    script.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+                    workflow = source_checkout / "trellis/workflows/guru-team/workflow.md"
+                    schema = source_checkout / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
+                    workflow.parent.mkdir(parents=True, exist_ok=True)
+                    schema.parent.mkdir(parents=True, exist_ok=True)
+                    workflow.write_text("workflow", encoding="utf-8")
+                    schema.write_text("{}", encoding="utf-8")
+                    return mock.Mock(returncode=0, stdout="", stderr="")
+                if command[:2] == ["git", "init"]:
+                    return mock.Mock(returncode=0, stdout="", stderr="")
+                project = cwd
+                (project / ".trellis/guru-team/schemas").mkdir(parents=True, exist_ok=True)
+                if command[:2] == ["trellis", "init"]:
+                    (project / ".trellis/workflow.md").write_text("workflow", encoding="utf-8")
+                elif "--create-new" in command:
+                    (project / ".trellis/workflow.md.new").write_text("workflow", encoding="utf-8")
+                elif command[:2] == ["trellis", "workflow"]:
+                    (project / ".trellis/workflow.md").write_text("workflow", encoding="utf-8")
+                elif command[0].endswith("trellis/presets/guru-team/scripts/bash/apply.sh"):
+                    (project / ".trellis/guru-team/schemas/task-start-context.schema.json").write_text("{}", encoding="utf-8")
+                    (project / ".gitignore").write_text(".trellis/.runtime/\n", encoding="utf-8")
+                return mock.Mock(returncode=0, stdout="ok", stderr="")
+
+            with mock.patch.object(gtt, "run", side_effect=fake_run):
+                payload = gtt.execute_marketplace_verification(root, task_dir, "owner/repo", "origin", "codex/096-task-runtime-boundary", expected)
+
+            self.assertEqual(payload["status"], "passed")
+            self.assertEqual(payload["remote_head"], expected)
+            self.assertEqual([step["passed"] for step in payload["steps"]], [True] * 7)
+            self.assertEqual(commands[2][0:2], ["git", "clone"])
+            self.assertEqual(commands[4][0:2], ["trellis", "init"])
+            self.assertIn("--create-new", commands[5])
+            self.assertIn("--force", commands[6])
+            self.assertTrue(commands[7][0].endswith("trellis/presets/guru-team/scripts/bash/apply.sh"))
+            self.assertEqual(payload["steps"][-1]["command"][0], "<temp-source>/trellis/presets/guru-team/scripts/bash/apply.sh")
+            self.assertTrue(payload["assets"]["workflow_sha256"])
+            self.assertTrue(payload["assets"]["legacy_handoff_absent"])
+            self.assertTrue(payload["assets"]["legacy_intake_schema_absent"])
+            self.assertTrue((task_dir / "marketplace-verification.json").exists())
+
+    def test_marketplace_verification_required_for_public_extension_paths(self) -> None:
+        self.assertTrue(gtt.marketplace_verification_required({"changed_files": ["trellis/workflows/guru-team/workflow.md"]}))
+        self.assertFalse(gtt.marketplace_verification_required({"changed_files": ["docs/internal-note.md"]}))

@@ -44,7 +44,8 @@
         "review.md",
         "pr-body.md",
         "review-gate.json",
-        "pr-readiness.json"
+        "pr-readiness.json",
+        "marketplace-verification.json"
       ],
       "companion_scripts": [
         "check-env",
@@ -64,17 +65,18 @@
         "format-merge-commit",
         "review-branch",
         "check-review-gate",
+        "verify-marketplace",
         "finish-work",
         "publish-pr"
       ]
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-10T10:14:04Z",
+  "installed_at": "2026-07-10T10:55:51Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/096-task-runtime-boundary",
-    "commit": "59d6c0caf404c4c927fe8aada92811d1ced907d5",
+    "commit": "a84e5720d0ea18482b46b165062930e50cf54b34",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -131,6 +133,7 @@
       ".trellis/agents/implement.md",
       ".trellis/guru-team/config-template.yml",
       ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/schemas/marketplace-verification.schema.json",
       ".trellis/guru-team/schemas/task-start-context.schema.json",
       ".trellis/guru-team/scripts/bash/check-agent-assignment.sh",
       ".trellis/guru-team/scripts/bash/check-commit-messages.sh",
@@ -150,6 +153,7 @@
       ".trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh",
       ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh",
       ".trellis/guru-team/scripts/bash/review-branch.sh",
+      ".trellis/guru-team/scripts/bash/verify-marketplace.sh",
       ".trellis/guru-team/scripts/bash/version.sh",
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"
     ],

@@ -326,3 +326,8 @@ Canonical 资产：
 - 每个 platform overlay 的逐文件行为差异。
 - Throwaway install 在不同 Trellis CLI 版本上的兼容性矩阵。
 - 完整 upgrade/update 漂移测试记录。
+
+
+## Push 后远端 Marketplace 门禁
+
+修改 marketplace/preset/overlay/schema/public API 的发布路径会在 branch push 后、`gh pr create` 前执行远端分支 `init`、preview、switch 和 preset reapply，记录 task-local `marketplace-verification.json`。缺失、失败、HEAD 不匹配或 stale artifact 会阻止创建 PR；该门禁不创建 tag，AI 仍负责 PR readiness 判断。

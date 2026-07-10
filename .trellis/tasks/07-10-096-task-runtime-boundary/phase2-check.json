@@ -1,49 +1,53 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-10T10:17:44Z",
+  "generated_at": "2026-07-10T10:57:20Z",
   "task_dir": ".trellis/tasks/07-10-096-task-runtime-boundary",
   "base_branch": "main",
-  "head": "59d6c0caf404c4c927fe8aada92811d1ced907d5",
+  "head": "a84e5720d0ea18482b46b165062930e50cf54b34",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".agents/skills/trellis-start/SKILL.md",
-    ".codex/prompts/trellis-start.md",
-    ".codex/skills/trellis-start/SKILL.md",
-    ".gitignore",
+    ".agents/skills/trellis-finish-work/SKILL.md",
+    ".claude/commands/trellis/finish-work.md",
+    ".codex/prompts/trellis-finish-work.md",
+    ".codex/skills/trellis-finish-work/SKILL.md",
+    ".cursor/commands/trellis-finish-work.md",
     ".trellis/guru-team/config-template.yml",
     ".trellis/guru-team/config.yml",
     ".trellis/guru-team/extension.json",
-    ".trellis/guru-team/handoff.json",
-    ".trellis/guru-team/schemas/intake-handoff.schema.json",
     ".trellis/guru-team/scripts/python/guru_team_trellis.py",
     ".trellis/spec/workflow/companion-scripts.md",
     ".trellis/spec/workflow/data-contracts.md",
-    ".trellis/spec/workflow/index.md",
     ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/tasks/07-10-096-task-runtime-boundary/agent-assignment.json",
+    ".trellis/tasks/07-10-096-task-runtime-boundary/implementation-handoff.md",
+    ".trellis/tasks/07-10-096-task-runtime-boundary/issue-scope-ledger.json",
     ".trellis/workflow.md",
-    "AGENTS.md",
     "README.md",
     "docs/requirements/guru-team-trellis-flow.md",
     "docs/requirements/requirement-main.md",
     "trellis/guru-team-extension.json",
     "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
-    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
-    "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
     "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
     "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
     "trellis/workflows/guru-team/README.md",
     "trellis/workflows/guru-team/config-template.yml",
-    "trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
     "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
     "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
     "trellis/workflows/guru-team/workflow.md",
-    ".trellis/guru-team/schemas/task-start-context.schema.json",
-    ".trellis/tasks/07-10-096-task-runtime-boundary/",
-    "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
+    ".trellis/guru-team/schemas/marketplace-verification.schema.json",
+    ".trellis/guru-team/scripts/bash/verify-marketplace.sh",
+    ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/",
+    "trellis/presets/guru-team/scripts/python/fixtures/",
+    "trellis/workflows/guru-team/schemas/marketplace-verification.schema.json",
+    "trellis/workflows/guru-team/scripts/bash/verify-marketplace.sh"
   ],
   "checker": "trellis-check 019f4b77-7bd7-7a11-a320-9f621dfac9a5 + Codex 主会话复验",
-  "check_summary": "Phase 2 完整覆盖 Issue #96 的需求、设计、task context/runtime 数据合同、workspace/finish/publish 调用链、schema/config/manifest、installer obsolete cleanup、canonical/dogfood/docs/overlay 与测试。四项 finding 已修复。远端当前分支 marketplace 验证因 Trellis 0.6.5 不支持本地 source 且尚无远端 ref，当前无法执行；该项不是实现缺陷，已登记为 commit+push 后、PR 前硬门禁，失败必须阻止 publish 并返回修复。",
+  "check_summary": "Round 1 四项 P1 已闭环，增量 Phase 2 额外加固 fresh SHA equality、metadata-only verifier tail 和 canonical asset digest/obsolete absence 校验。230+30 tests、apply/drift、schema/shell/compile/task/boundary 通过。远端 verifier 尚未真实 push 执行，artifact 当前缺失符合预期；publish 路径必须在 push 后生成 passed/current artifact，任一条件失败阻止 gh pr create。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-10-096-task-runtime-boundary/prd.md",
@@ -84,11 +88,15 @@
   "validation_commands": [
     {
       "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "result": "220 tests passed"
+      "result": "230 tests passed"
     },
     {
       "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "result": "30 tests passed"
+      "result": "30 tests passed in current tree without git show HEAD fixture dependency"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh",
+      "result": "passed"
     },
     {
       "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
@@ -99,24 +107,20 @@
       "result": "9 implement + 10 check entries passed"
     },
     {
-      "command": ".trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task .trellis/tasks/07-10-096-task-runtime-boundary",
+      "command": ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task .trellis/tasks/07-10-096-task-runtime-boundary",
       "result": "passed"
     },
     {
-      "command": ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task .trellis/tasks/07-10-096-task-runtime-boundary",
-      "result": "passed; no suspicious source artifacts"
+      "command": "trellis/presets/guru-team/scripts/bash/apply.sh --repo . --all-platforms",
+      "result": "passed"
     },
     {
       "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
       "result": "passed"
     },
     {
-      "command": "trellis update --migrate in local throwaway + preset reapply",
-      "result": "passed"
-    },
-    {
-      "command": "remote branch marketplace init/preview/switch",
-      "result": "deferred hard gate after commit+push and before PR because Trellis 0.6.5 rejects local/file sources"
+      "command": "marketplace-verification.json",
+      "result": "not generated before real push; publish verifier/validator tests passed and missing/stale/extra-metadata/digest-mismatch block PR creation"
     },
     {
       "command": "git diff --check",
@@ -127,30 +131,44 @@
     {
       "priority": "P1",
       "status": "resolved",
-      "message": "runtime cache 删除后未通过 git worktree list 重建。",
+      "message": "任务启动上下文 SHA producer keys 映射错误。",
       "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-      "resolution": "新增 worktree_records 与 rebuild_runtime_mappings，并补真实 cache-miss 回归测试。"
+      "resolution": "改用 local_head_after/remote_head，fresh 要求相等，remote_only/fetch_failed 状态约束和测试已补齐。"
     },
     {
       "priority": "P1",
       "status": "resolved",
-      "message": "publish-pr 与 finish-work 在关键副作用前未执行 workspace boundary。",
+      "message": "obsolete schema test 依赖 git show HEAD:path，committed tree 不可复现。",
+      "path": "trellis/presets/guru-team/scripts/python/fixtures/intake-handoff.schema.json",
+      "resolution": "固化独立 fixture 并与 installer hash allowlist 对齐，30 tests 在当前 tree 通过。"
+    },
+    {
+      "priority": "P1",
+      "status": "resolved",
+      "message": "push 后 remote marketplace hard gate 没有可执行点。",
       "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-      "resolution": "两个入口加载 task context 后立即 fail closed 校验，并补执行顺序测试。"
+      "resolution": "新增 verifier schema/script/artifact；reviewed content push 后执行 init/preview/switch/preset，metadata-only tail push 后 validator 才允许 gh pr create。"
+    },
+    {
+      "priority": "P1",
+      "status": "resolved",
+      "message": "Issue #96 acceptance_evidence 为空。",
+      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/issue-scope-ledger.json",
+      "resolution": "补齐 AC1-AC10 真实文件/命令/结果；AC9 明确未 push，不伪造 passed，发布时由 verifier artifact 补齐。"
     },
     {
       "priority": "P2",
       "status": "resolved",
-      "message": "公开文案残留旧 handoff artifact/public API 术语。",
-      "path": "README.md",
-      "resolution": "canonical workflow、spec index 与 README 已改为 planner output、intake plan review、task-start context。"
+      "message": "verifier metadata tail 可能夹带其他 metadata。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "resolution": "专用 commit helper 只允许 marketplace-verification.json dirty path，否则 fail closed。"
     },
     {
-      "priority": "P1",
+      "priority": "P2",
       "status": "resolved",
-      "message": "Docs SSOT 实现交接证据缺失。",
-      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/implementation-handoff.md",
-      "resolution": "主会话依据真实实现代理原始报告补齐 ssot_first、durable sync、task delta、history-only 与 limitation，并填充 implement/check JSONL。"
+      "message": "verifier 未证明远端资产与 canonical 一致。",
+      "path": "trellis/workflows/guru-team/schemas/marketplace-verification.schema.json",
+      "resolution": "校验 identity、digest、workflow/schema canonical equality、runtime ignore、obsolete absence、remote/current HEAD。"
     }
   ],
   "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"

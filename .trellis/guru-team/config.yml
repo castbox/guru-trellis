@@ -52,6 +52,7 @@ worktree_root: ""
 # Task-local portable context artifact and gitignored local runtime namespace.
 task_start_context_artifact: "task-start-context.json"
 runtime_root: ".trellis/.runtime/guru-team"
+marketplace_verification_artifact: "marketplace-verification.json"
 
 # Language used for Trellis task planning artifacts and human-readable review fields.
 artifact_language: zh-CN

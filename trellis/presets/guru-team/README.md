@@ -538,3 +538,8 @@ before final Phase 2 check; `ssot_first` uses revised durable docs as primary
 input; `bootstrap_or_repair_docs` must complete the minimum repair or name a
 bounded follow-up and PR limitation; `no_docs_update_needed` must still have a
 concrete reason after the final diff is reviewed.
+
+
+## Push 后远端 Marketplace 门禁
+
+修改 marketplace/preset/overlay/schema/public API 的发布路径会在 branch push 后、`gh pr create` 前执行远端分支 `init`、preview、switch 和 preset reapply，记录 task-local `marketplace-verification.json`。缺失、失败、HEAD 不匹配或 stale artifact 会阻止创建 PR；该门禁不创建 tag，AI 仍负责 PR readiness 判断。

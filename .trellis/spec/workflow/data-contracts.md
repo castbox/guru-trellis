@@ -175,7 +175,7 @@ Branch Review Gate and publish readiness metadata may legitimately change after
 Phase 2 because independent final review and release readiness happen after the
 task work commit. In post-commit audit mode, the validator may ignore stale
 Phase 2 digest entries for task-local `issue-scope-ledger.json`, `pr-body.md`,
-`pr-readiness.json`, `agent-assignment.json`, `review.md`, and
+`pr-readiness.json`, `marketplace-verification.json`, `agent-assignment.json`, `review.md`, and
 `review-gate.json`; those files are instead revalidated by Branch Review Gate
 or publish-specific validators before pass or publish. This exception does not
 allow source, config, script, docs, schema, preset, overlay, or other

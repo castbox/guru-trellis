@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-import subprocess
 import os
 import tempfile
 import unittest
@@ -800,11 +799,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
     def test_install_removes_unmodified_obsolete_schema(self) -> None:
         obsolete = self.install_dst / "schemas/intake-handoff.schema.json"
         obsolete.parent.mkdir(parents=True)
-        content = subprocess.run(
-            ["git", "show", "HEAD:trellis/workflows/guru-team/schemas/intake-handoff.schema.json"],
-            cwd=self.guru_root, text=True, stdout=subprocess.PIPE, check=True,
-        ).stdout
-        obsolete.write_text(content, encoding="utf-8")
+        fixture = Path(__file__).resolve().parent / "fixtures/intake-handoff.schema.json"
+        obsolete.write_bytes(fixture.read_bytes())
 
         payload = preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex"})
 

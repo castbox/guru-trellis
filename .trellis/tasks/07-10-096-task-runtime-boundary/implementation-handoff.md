@@ -27,8 +27,8 @@
 
 ## 实现期验证
 
-- canonical unit tests：218 项通过。
-- preset installer tests：30 项通过。
+- canonical unit tests：227 项通过（含 Round 1 SHA/verifier 回归）。
+- preset installer tests：30 项通过；obsolete clean fixture 不依赖 Git history。
 - JSON、shell syntax、Python compile、task validation、phase context、workspace boundary、dogfood drift、`git diff --check` 通过。
 - throwaway preset 安装通过，新安装含 runtime ignore、不含旧 handoff/schema、包含新 schema。
 - 无遗留 `.new` / `.bak`。
@@ -41,3 +41,16 @@
 - 普通 task 写入 allowlist 与并行 task 隔离。
 - obsolete cleanup 的未修改删除和用户修改 fail-safe 双路径。
 - canonical/dogfood/docs/overlay 一致性及 marketplace 当前分支验证限制。
+
+## Branch Review Round 1 修复
+
+- Finding 1：`build_task_start_context()` 改读 producer 的 `local_head_after` / `remote_head`；writer 对 `fresh`、`remote_only`、`fetch_failed` 状态执行 fail-closed SHA 约束，并新增三类数据流测试。
+- Finding 2：obsolete schema 内容固化为 `trellis/presets/guru-team/scripts/python/fixtures/intake-handoff.schema.json`，测试不再读取 `git show HEAD:`，clean clone 当前 commit 可独立复现。
+- Finding 3：新增 `verify-marketplace` companion command、`marketplace-verification.schema.json` 与 publish fail-closed 数据流。公共 marketplace/preset 变更发布时执行：push reviewed content HEAD → remote branch init → preview → switch → clone 已 push 的 remote branch → 从该 clone 执行 canonical preset reapply → 记录命令结果与 digest → metadata-only commit/push verification artifact → 校验 artifact/current HEAD/remote HEAD → `gh pr create`。任何步骤失败、artifact 缺失或 stale 都在创建 PR 前阻断；不创建 tag。AI 继续负责 PR readiness 判断，脚本只执行/记录/校验确定性事实。
+- Finding 4：`issue-scope-ledger.json` 已按 Issue #96 十项验收写入真实文件/命令/结果。远端 marketplace 项明确要求由真实 push 后 `marketplace-verification.json` 补齐并由 publish validator 校验，当前未写 passed。
+
+## Round 1 后验证计划
+
+- core/preset unit tests、JSON/schema、shell syntax、Python compile。
+- `apply.sh --repo . --all-platforms`、dogfood drift、`.new/.bak`、task validation、workspace boundary、`git diff --check`。
+- 不执行真实 push；远端 verifier 的真实执行点保留在 formal `finish-work` / `publish-pr`，届时缺失或失败会阻止 PR 创建。

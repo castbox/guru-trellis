@@ -441,3 +441,9 @@ intake provenance only.
   small, instead of running Phase 0 or obtaining explicit direct-edit override
   approval.
 - Recording project-private business rules in the reusable marketplace workflow.
+
+### Remote Marketplace Verification Gate
+
+For tasks that change the workflow marketplace, preset, overlays, installer, schema, or public extension contract, publish is fail-closed after the branch push and before `gh pr create`. The deterministic `verify-marketplace` companion command records task-local `marketplace-verification.json` with repository, remote, branch/ref, verified content HEAD, remote HEAD, command exit codes, stdout/stderr digests and sizes, and installed workflow/preview/schema digests. It executes remote branch `trellis init`, workflow preview, workflow switch, canonical preset reapply, and runtime-ignore checks in a clean temporary repository. It does not decide PR readiness.
+
+`publish-pr` pushes the reviewed content HEAD, runs the verifier, commits only the verification artifact as metadata, pushes that metadata tail, then validates that the artifact passed, refers to the verified content HEAD, the current publish HEAD differs only by the artifact, and the remote branch equals the current publish HEAD. Missing, failed, stale, or mismatched evidence blocks before `gh pr create`. The AI remains responsible for judging whether the recorded evidence is sufficient and truthful in PR readiness and Branch Review; scripts only execute, record, and validate deterministic facts. No release tag is created by this gate.
