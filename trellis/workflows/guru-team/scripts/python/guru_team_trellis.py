@@ -176,8 +176,8 @@ FINISH_SUMMARY_PROTECTED_PATH_FILTER_CONTRACT = {
 }
 FINISH_SUMMARY_PATH_SNAPSHOT_UNAVAILABLE_CONTRACT = {
     "contract": "finish-summary git path snapshot unavailable",
-    "before": "Git path snapshot was unavailable.",
-    "after": "完成摘要未记录 path 字段；其它合同与检索字段保持可验证。",
+    "before": "Git 变更路径快照未成功完成。",
+    "after": "完成摘要已使用空路径集合，未写入未验证路径。",
     "source_artifact": "",
 }
 PR_READINESS_ARTIFACT = "pr-readiness.json"

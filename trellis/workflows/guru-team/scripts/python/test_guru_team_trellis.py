@@ -8900,6 +8900,66 @@ class FinishSummaryContractTests(unittest.TestCase):
             for index in range(count)
         ]
 
+    def expected_snapshot_unavailable_contract(self) -> dict[str, str]:
+        return {
+            "contract": "finish-summary git path snapshot unavailable",
+            "before": "Git 变更路径快照未成功完成。",
+            "after": "完成摘要已使用空路径集合，未写入未验证路径。",
+            "source_artifact": "",
+        }
+
+    def assert_snapshot_unavailable_summary(
+        self,
+        summary: dict[str, object],
+        *,
+        undisclosed_values: list[str],
+    ) -> None:
+        expected_contract = self.expected_snapshot_unavailable_contract()
+        self.assertEqual(
+            gtt.FINISH_SUMMARY_PATH_SNAPSHOT_UNAVAILABLE_CONTRACT,
+            expected_contract,
+        )
+        self.assertEqual(summary["git"]["changed_paths"], [])  # type: ignore[index]
+        self.assertEqual(summary["index"]["search_terms"]["paths"], [])  # type: ignore[index]
+        contracts = summary["index"]["contract_changes"]  # type: ignore[index]
+        unavailable_contracts = [
+            item
+            for item in contracts
+            if item.get("contract") == expected_contract["contract"]
+        ]
+        self.assertEqual(unavailable_contracts, [expected_contract])
+        self.assertFalse(any(
+            item.get("contract") == "finish-summary protected path filtering"
+            for item in contracts
+        ))
+        self.assertEqual(
+            summary["index"]["retrieval_text"],  # type: ignore[index]
+            gtt.finish_summary_retrieval_text(
+                summary["task"]["title"],  # type: ignore[index]
+                summary["index"],  # type: ignore[index]
+            ),
+        )
+        serialized = json.dumps(summary, ensure_ascii=False)
+        for value in undisclosed_values:
+            self.assertNotIn(value, serialized)
+
+        protected_path_payload = json.loads(serialized)
+        protected_path_payload["git"]["changed_paths"] = [
+            ".trellis/workspace/private-journal.md"
+        ]
+        protected_path_payload["index"]["search_terms"]["paths"] = [
+            ".trellis/workspace/private-journal.md"
+        ]
+        path_errors = gtt.finish_summary_errors(protected_path_payload)
+        self.assertTrue(any(
+            "git.changed_paths[] must not point to workspace or runtime state" in error
+            for error in path_errors
+        ))
+        self.assertTrue(any(
+            "index.search_terms.paths[0] must not point to workspace or runtime state" in error
+            for error in path_errors
+        ))
+
     def test_valid_normal_summary_passes_strict_validator(self) -> None:
         self.assertEqual(gtt.finish_summary_errors(self.valid_summary()), [])
 
@@ -9406,55 +9466,65 @@ class FinishSummaryContractTests(unittest.TestCase):
                 gtt.finish_summary_retrieval_text(updated["task"]["title"], updated["index"]),
             )
 
-    def test_initial_summary_unavailable_snapshot_uses_empty_paths_and_fixed_fact(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            task_dir = root / ".trellis/tasks/archive/2026-07/task"
-            task_dir.mkdir(parents=True)
-            (task_dir / "task.json").write_text(
-                '{"name":"task","title":"完成摘要","base_branch":"main"}\n',
-                encoding="utf-8",
-            )
-            (task_dir / "design.md").write_text("# Design\n", encoding="utf-8")
-            with (
-                mock.patch.object(
-                    gtt,
-                    "run",
-                    return_value=mock.Mock(returncode=0, stdout=f"{'a' * 40}\n", stderr=""),
-                ),
-                mock.patch.object(
-                    gtt,
-                    "finish_summary_git_path_snapshot",
-                    return_value=([], False, True),
-                ),
-            ):
+    def test_initial_snapshot_failures_use_empty_paths_and_exact_fixed_fact(self) -> None:
+        cases = {
+            "git_diff": (
+                [
+                    mock.Mock(returncode=0, stdout=f"{'a' * 40}\n", stderr=""),
+                    mock.Mock(
+                        returncode=128,
+                        stdout="README.md\0.trellis/workspace/private-journal.md\0",
+                        stderr="fatal: bad revision secret/ref",
+                    ),
+                ],
+                ["README.md", "private-journal.md", "fatal: bad revision", "secret/ref"],
+            ),
+            "git_ls_files_others": (
+                [
+                    mock.Mock(returncode=0, stdout=f"{'a' * 40}\n", stderr=""),
+                    mock.Mock(returncode=0, stdout="README.md\0", stderr=""),
+                    mock.Mock(
+                        returncode=1,
+                        stdout="private-untracked.md\0",
+                        stderr="untracked enumeration denied",
+                    ),
+                ],
+                ["README.md", "private-untracked.md", "untracked enumeration denied"],
+            ),
+        }
+
+        for failure_case, (responses, undisclosed_values) in cases.items():
+            with self.subTest(failure_case=failure_case), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                task_dir = root / ".trellis/tasks/archive/2026-07/task"
+                task_dir.mkdir(parents=True)
+                (task_dir / "task.json").write_text(
+                    '{"name":"task","title":"完成摘要","base_branch":"main"}\n',
+                    encoding="utf-8",
+                )
+                (task_dir / "design.md").write_text("# Design\n", encoding="utf-8")
                 index_payload = self.valid_ai_index()
                 index_payload["index"]["contract_changes"] = self.contract_changes(19)  # type: ignore[index]
-                summary = gtt.build_finish_summary(
-                    root,
-                    task_dir,
-                    {
-                        "base_branch": "main",
-                        "base_ref": "main",
-                        "branch_name": "topic",
-                        "task_artifact_dir": ".trellis/tasks/task",
-                    },
-                    {"primary_issue": {"number": 97}, "close_issues": [], "related_issues": [], "followup_issues": []},
-                    index_payload,
-                    "a" * 40,
-                )
+                with mock.patch.object(gtt, "run", side_effect=responses):
+                    summary = gtt.build_finish_summary(
+                        root,
+                        task_dir,
+                        {
+                            "base_branch": "main",
+                            "base_ref": "secret/ref" if failure_case == "git_diff" else "main",
+                            "branch_name": "topic",
+                            "task_artifact_dir": ".trellis/tasks/task",
+                        },
+                        {"primary_issue": {"number": 97}, "close_issues": [], "related_issues": [], "followup_issues": []},
+                        index_payload,
+                        "a" * 40,
+                    )
 
-        self.assertEqual(summary["git"]["changed_paths"], [])
-        self.assertEqual(summary["index"]["search_terms"]["paths"], [])
-        contracts = summary["index"]["contract_changes"]
-        self.assertEqual(len(contracts), 20)
-        self.assertEqual(sum(item.get("contract") == "finish-summary git path snapshot unavailable" for item in contracts), 1)
-        self.assertFalse(any(item.get("contract") == "finish-summary protected path filtering" for item in contracts))
-        self.assertNotIn("stderr", summary["index"]["retrieval_text"])
-        self.assertEqual(
-            summary["index"]["retrieval_text"],
-            gtt.finish_summary_retrieval_text(summary["task"]["title"], summary["index"]),
-        )
+                self.assertEqual(len(summary["index"]["contract_changes"]), 20)  # type: ignore[index]
+                self.assert_snapshot_unavailable_summary(
+                    summary,
+                    undisclosed_values=undisclosed_values,
+                )
 
     def test_pr_rewrite_unavailable_snapshot_replaces_filter_fact_and_rederives_text(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -9471,26 +9541,27 @@ class FinishSummaryContractTests(unittest.TestCase):
                 summary["task"]["title"], summary["index"]  # type: ignore[index]
             )
             gtt.write_json(task_dir / gtt.FINISH_SUMMARY_ARTIFACT, summary)
-            with mock.patch.object(
-                gtt,
-                "finish_summary_git_path_snapshot",
-                return_value=([], False, True),
-            ):
+            failed = mock.Mock(
+                returncode=1,
+                stdout="README.md\0.trellis/workspace/private-journal.md\0",
+                stderr="final diff denied for secret/ref",
+            )
+            with mock.patch.object(gtt, "run", return_value=failed):
                 _path, updated = gtt.update_finish_summary_for_pr(
                     root,
                     task_dir,
-                    {"base_branch": "main", "base_ref": "main"},
+                    {"base_branch": "main", "base_ref": "secret/ref"},
                     "https://github.com/castbox/guru-trellis/pull/123",
                 )
 
-        self.assertEqual(updated["git"]["changed_paths"], [])
-        self.assertEqual(updated["index"]["search_terms"]["paths"], [])
-        contracts = updated["index"]["contract_changes"]
-        self.assertEqual(sum(item.get("contract") == "finish-summary git path snapshot unavailable" for item in contracts), 1)
-        self.assertFalse(any(item.get("contract") == "finish-summary protected path filtering" for item in contracts))
-        self.assertEqual(
-            updated["index"]["retrieval_text"],
-            gtt.finish_summary_retrieval_text(updated["task"]["title"], updated["index"]),
+        self.assert_snapshot_unavailable_summary(
+            updated,
+            undisclosed_values=[
+                "README.md",
+                "private-journal.md",
+                "final diff denied",
+                "secret/ref",
+            ],
         )
 
     def test_summary_rejects_lengths_counts_enum_and_normalized_duplicates(self) -> None:
