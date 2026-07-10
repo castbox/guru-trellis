@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 43
+- **Total Sessions**: 44
 - **Last Active**: 2026-07-10
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1429 | Active |
+| `journal-1.md` | ~1462 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 44 | 2026-07-10 | 完成：#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界 | `be3e27b6a09ede95819aca36d52319a9cde199be` | `codex/096-task-runtime-boundary` |
 | 43 | 2026-07-10 | 完成：#92 强制 guru-team workflow 使用中文 Conventional Commits 提交规范 | `73a4985d07e4d2876c39a8ff53130cbdb1eb119e` | `codex/092-conventional-commits` |
 | 42 | 2026-07-10 | 完成：#93 将 planning artifact 弱约束词改为受控词表并阻塞未分类命中 | `a70374094f869637561cdc677efbff8af3c1368f` | `fix/093-planning-ambiguity-scanner` |
 | 41 | 2026-07-10 | 完成：#73 将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址 | `04741e2b3fe6ef945cab933e642b7d8c167d6d6e` | `codex/073-trellis-doc-markdown-links` |
