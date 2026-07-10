@@ -38,7 +38,7 @@ planning approval failure. Do not implement, dispatch another agent, or
 record/check `phase2-check.json`; the main session must show `prd.md`,
 `design.md`, and `implement.md` links again and get fresh user confirmation.
 When an editing tool cannot receive an explicit working directory, use an
-absolute path under the handoff `workspace_path`.
+absolute path under the task worktree resolved from the current checkout, `.trellis/.runtime/guru-team/**`, and `git worktree list`.
 
 Before implementing, read in this order:
 

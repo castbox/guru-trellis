@@ -27,7 +27,7 @@ expected workspace, actual repo root, source checkout status, task worktree
 status, and suspicious source artifacts. Do not read or write task review
 artifacts from the source checkout or another worktree. When an editing tool
 cannot receive an explicit working directory, use an absolute path under the
-handoff `workspace_path`.
+the task worktree resolved from local runtime and Git worktree facts.
 
 In Phase 2 check mode, also run:
 

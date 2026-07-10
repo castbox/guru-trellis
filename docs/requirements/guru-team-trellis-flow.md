@@ -229,7 +229,9 @@ Codex 在 Guru Team 项目中默认 `codex.dispatch_mode: sub-agent`。主会话
 `check-workspace-boundary.sh --json --task <task-path>` 和 `check-planning-approval.sh --json`。
 缺少有效 workspace boundary、schema 1.2 `ambiguity_review` evidence 或 `explicit-post-planning-review` evidence 时，不得实现、
 不得派发实现代理，也不得记录 `phase2-check.json`。Sub-agent 启动时应报告 `pwd`、
-`git rev-parse --show-toplevel`、expected `workspace_path` 和 actual repo root 是否匹配。
+`git rev-parse --show-toplevel`、由当前 checkout / local runtime / `git worktree list`
+推导的 `expected_workspace` 和 actual repo root 是否匹配；不得从 committed task context
+读取 absolute workspace path。
 
 实现代理还必须读取 Phase 1 的 `Docs SSOT Plan` 并按策略执行。`ssot_first` 以修订后的
 durable docs / spec / workflow 合同作为主要实现输入；`delta_first` 可先用已确认 task delta，
@@ -402,7 +404,7 @@ PR readiness 要求：
 1. 官方 Trellis 的核心优势是把流程放在 `.trellis/workflow.md`，hooks 只负责注入上下文。
 2. Guru Team 没有 fork Trellis，而是通过 official marketplace workflow 安装 `guru-team`。
 3. 我们把“任务还没创建之前”的风险收进 Phase 0：issue、duplicate、base branch、worktree、命名和副作用授权都先审查。
-4. `workspace_path` 是 worktree mode 下的机器写入边界；`check-workspace-boundary` 只输出事实并 fail closed，不替 AI 判断 stale、迁移 patch 或清理 source checkout；#76 liveness checker 在此基础上把 source checkout 新变化视为 workspace boundary progress。
+4. tracked `task-start-context.json` 只保存 portable workspace/task identifiers；worktree mode 下的机器写入边界由当前 checkout、`.trellis/.runtime/guru-team/**`、`git worktree list` 推导为 `expected_workspace`，并由 `check-workspace-boundary --task` fail closed 校验。该 helper 不替 AI 判断 stale、迁移 patch 或清理 source checkout；#76 liveness checker 在此基础上把 source checkout 新变化视为 workspace boundary progress。
 5. `task.py create/start/archive` 仍是官方 Trellis lifecycle，但 Guru Team 在 start 前要求 `prd.md` / `design.md` / `implement.md` 定位同一个 `Docs SSOT Plan`，展示三份文档链接并得到 explicit post-planning confirmation，Phase 0 handoff 确认不能替代。
 6. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出中文 `reviews/*.md` raw reports 与最终中文 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
 7. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，commit 后必须有独立中文 review raw reports、最终中文 `review.md` rollup 和 recorder 生成的 `review-gate.json`；主会话自检、自审或脚本校验通过不能替代这些证据。

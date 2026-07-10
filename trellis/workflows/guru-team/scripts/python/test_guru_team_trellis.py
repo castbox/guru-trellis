@@ -6995,6 +6995,52 @@ class TaskRuntimeBoundaryContractTest(unittest.TestCase):
             self.assertNotEqual(gtt.runtime_workspace_path(root, gtt.DEFAULTS, "096-first"), gtt.runtime_workspace_path(root, gtt.DEFAULTS, "097-second"))
 
 
+class ActivePublicReferenceContractTest(unittest.TestCase):
+    REPO_ROOT = Path(__file__).resolve().parents[5]
+    FORBIDDEN_REFERENCES = (
+        "handoff.workspace_path",
+        "handoff `workspace_path`",
+        "task-start-context.workspace_path",
+        "task_start_context.workspace_path",
+        ".trellis/guru-team/handoff.json",
+    )
+
+    def active_public_files(self) -> list[Path]:
+        files = [
+            self.REPO_ROOT / "README.md",
+            self.REPO_ROOT / "trellis/workflows/guru-team/workflow.md",
+            self.REPO_ROOT / "trellis/workflows/guru-team/README.md",
+            self.REPO_ROOT / "trellis/presets/guru-team/README.md",
+            self.REPO_ROOT / ".trellis/workflow.md",
+        ]
+        for root in [
+            self.REPO_ROOT / "docs/requirements",
+            self.REPO_ROOT / "trellis/presets/guru-team/overlays",
+            self.REPO_ROOT / ".trellis/spec",
+            self.REPO_ROOT / ".agents/skills/trellis-start",
+            self.REPO_ROOT / ".agents/skills/trellis-continue",
+            self.REPO_ROOT / ".agents/skills/trellis-finish-work",
+            self.REPO_ROOT / ".codex/prompts",
+            self.REPO_ROOT / ".codex/skills/trellis-start",
+            self.REPO_ROOT / ".codex/skills/trellis-continue",
+            self.REPO_ROOT / ".codex/skills/trellis-finish-work",
+            self.REPO_ROOT / ".claude/commands/trellis",
+            self.REPO_ROOT / ".cursor/commands",
+            self.REPO_ROOT / ".trellis/agents",
+        ]:
+            files.extend(path for path in root.rglob("*") if path.is_file())
+        return sorted(set(files))
+
+    def test_active_public_surfaces_do_not_restore_legacy_workspace_api(self) -> None:
+        violations: list[str] = []
+        for path in self.active_public_files():
+            text = path.read_text(encoding="utf-8")
+            for reference in self.FORBIDDEN_REFERENCES:
+                if reference in text:
+                    violations.append(f"{path.relative_to(self.REPO_ROOT)}: {reference}")
+        self.assertEqual(violations, [])
+
+
 class MarketplaceVerificationContractTest(unittest.TestCase):
     MARKETPLACE_SCHEMA = gtt.read_json(Path(__file__).resolve().parents[2] / "schemas/marketplace-verification.schema.json")
 

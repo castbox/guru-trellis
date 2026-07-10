@@ -292,8 +292,10 @@ branch 或 Trellis task 前阻断。
 `preflight.base_freshness`，并在本地 base 落后时只做安全 fast-forward；如果本地 base
 与远端分叉或 freshness 无法确认，会阻塞而不是从过期 ref 创建任务分支。
 
-executor handoff 写入后，`workspace_mode: worktree` 下的
-`handoff.workspace_path` 是 task artifact 写入边界。AI 或 main session 在写入/校验
+executor 完成后，tracked `task-start-context.json` 只提供 portable
+`workspace_slug`、`task_workspace_id` 和 `task_artifact_dir`，不得包含或读取 absolute
+`workspace_path`。`workspace_mode: worktree` 下的 task artifact 写入边界由当前 checkout、
+`.trellis/.runtime/guru-team/**`、`git worktree list` 和 boundary helper 共同推导/校验。AI 或 main session 在写入/校验
 `planning-approval.json`、`phase2-check.json`、`agent-assignment.json`、`reviews/*.md`、
 `review.md`、`review-gate.json` 等 task-local artifact 前，应从目标 worktree 运行：
 
@@ -304,7 +306,8 @@ executor handoff 写入后，`workspace_mode: worktree` 下的
 该 helper 只报告 expected workspace、actual repo root、source checkout status、task
 worktree status 和 source checkout 中可疑同名 task artifact/review metadata；它不判断
 sub-agent 是否 stale，不迁移误写 patch，也不清理 source checkout。若编辑工具不能显式传入
-`workdir`，task artifact 或 patch 路径必须使用 handoff `workspace_path` 下的绝对路径。
+`workdir`，必须使用 boundary helper 已确认的当前 task worktree 下的绝对路径，不能从
+committed task context 拼出本机路径。
 这层 workspace boundary 是 #76 liveness checker 的 source/task 双侧事实层；source
 checkout 出现新的 `HEAD`、dirty status、diff stat 或 mtime 变化时，checker 输出
 `workspace_boundary_violation_progress`，不把它当作 stale 证据。

@@ -3,6 +3,8 @@
 
 Finish-work archives the task, records the journal, then automatically publishes a non-draft PR. There is no separate user-facing publish command.
 
+Before reading or writing task-local closeout artifacts, treat `task-start-context.json` as portable identifiers only (`workspace_slug`, `task_workspace_id`, and repo-relative `task_artifact_dir`). Resolve the machine-local task worktree from the current checkout, `.trellis/.runtime/guru-team/**`, and `git worktree list`, then require `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>` to confirm it. Never read an absolute `workspace_path` from committed task context.
+
 Before running the helper, generate or review the PR body for GitHub reviewers
 who do not know the Trellis task. The body must be Chinese and self-explanatory:
 `变更摘要`, `影响范围`, `验证结果`, `Review Gate`, `Issue 关闭范围`, and

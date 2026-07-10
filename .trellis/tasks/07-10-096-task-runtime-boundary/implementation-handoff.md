@@ -27,7 +27,7 @@
 
 ## 实现期验证
 
-- canonical unit tests：239 项通过（含 Round 1 SHA 回归及 Round 2 ledger/verifier/schema/metadata-tail 回归）。
+- canonical unit tests：240 项通过（含 Round 1 SHA、Round 2 ledger/verifier/schema/metadata-tail 及 Round 4 active-reference 回归）。
 - preset installer tests：30 项通过；obsolete clean fixture 不依赖 Git history。
 - JSON、shell syntax、Python compile、task validation、phase context、workspace boundary、dogfood drift、`git diff --check` 通过。
 - throwaway preset 安装通过，新安装含 runtime ignore、不含旧 handoff/schema、包含新 schema。
@@ -63,3 +63,11 @@
 - Finding 2：公开 `marketplace-verification.schema.json` 允许 `failed` payload 保留空 asset digest/false flags，同时要求每个 step 具备 command、exit code、stdout/stderr digest 与 size、passed 字段；运行时 exact-contract validator 在 artifact 写盘前执行。early failure、partial failure、passed 三类 payload 均有回归测试，失败证据不会因 schema 不合法而丢失审计能力。
 - Canonical/dogfood：workflow、README、workflow specs、finish-work skills/commands/prompts、managed helper/schema 已通过 `apply.sh --repo . --all-platforms` 同步；`.bak` 已逐个处理，dogfood overlay drift 通过。
 - 本轮未生成 `marketplace-verification.json`，未把 pending 伪造成 passed；真实远端证据只会在后续显式 finish/publish 的真实 push 后生成并回写。
+
+## Final Review Round 4 P1 修复
+
+- Active workspace contract：canonical workflow、start/continue/finish skills、Codex prompts/skills、Claude/Cursor commands、implement/check agent overlays、README、requirements 和 workflow specs 已统一：tracked `task-start-context.json` 只提供 portable `workspace_slug`、`task_workspace_id` 与 repo-relative `task_artifact_dir`，不包含且不得读取 absolute `workspace_path`。
+- Local runtime boundary：本机 task worktree 必须通过当前 checkout、`.trellis/.runtime/guru-team/**`、`git worktree list` 推导，并由 `check-workspace-boundary.sh --json --task <task-path>` 校验；编辑工具无显式 `workdir` 时只能使用该 helper 已确认 worktree 下的绝对路径。
+- Active-reference classification：活跃公共 API 中已清除 `handoff.workspace_path`、`task-start-context.workspace_path`、`task_start_context.workspace_path` 和旧 fixed `.trellis/guru-team/handoff.json`。旧字符串只保留在 obsolete installer fixture/cleanup、verifier absence check、forbidden-key 测试，以及 task-local planning/research/review/history/agent handoff 自然语言中。
+- Regression：新增 `ActivePublicReferenceContractTest`，只扫描 canonical workflow/README/requirements/spec/overlays 与 dogfood start/continue/finish/agent copies，不扫描 `.trellis/tasks/**` 历史报告；任一旧 public workspace 引用回流即失败。core suite 当前为 240 项。
+- Sync：已运行 `apply.sh --repo . --all-platforms --json` 同步 Claude/Codex/Cursor 与 `.trellis/agents` dogfood copies；无 `.new` / `.bak`。

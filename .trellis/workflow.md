@@ -92,12 +92,14 @@ Planner output, including output with a confirmed `source_issue`, sets `no task 
 
 ### Workspace Boundary
 
-When `workspace_mode: worktree`, the task-start-context and local runtime mapping's `workspace_path` is the
-machine source of truth for task artifact writes. Before writing or reading
+When `workspace_mode: worktree`, tracked task-start-context contributes only portable
+workspace/task identifiers. The machine-local write boundary is the `expected_workspace`
+derived from the current checkout, `.trellis/.runtime/guru-team/**`, and `git worktree list`.
+Before writing or reading
 task-local recorder/validator inputs such as `planning-approval.json`,
 `phase2-check.json`, `agent-assignment.json`, `reviews/*.md`, `review.md`, or
 `review-gate.json`, confirm that the shell/editor repo root is exactly that
-`workspace_path`:
+derived `expected_workspace`:
 
 ```bash
 .trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
@@ -238,8 +240,8 @@ workflows, durable, issue-backed, task-like, or file-changing work enters
 through Phase 0 `check-env` + `prepare-task` first. Do not use the bare
 `task.py create` command below from the source checkout for Guru Team worktree
 tasks. The bare create command is only a Phase 1.0 controlled follow-up after
-`prepare-task` has returned or written the selected `workspace_path` and the
-shell/editor is already operating inside that workspace.
+`prepare-task` has selected or reused a worktree and local runtime/Git facts
+confirm the shell/editor is already operating inside that worktree.
 
 Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, `design.md`, `implement.md`, `research/` when applicable, the task-level `issue-scope-ledger.json`, sub-agent/review assignment and status evidence (`agent-assignment.json`), Branch Review Gate raw reports (`reviews/*.md`), the final review rollup (`review.md`), the recorder artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms. Guru Team implementation tasks require `prd.md`, `design.md`, and `implement.md` before `task.py start`, implementation, and check; missing or stale planning documents fail the explicit post-planning approval gate.
 
@@ -320,7 +322,7 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
   - Branch Review must be performed by an independent review sub-agent after the task work commit and produce task-local raw `reviews/*.md` reports plus the final rollup `review.md` before the main session records Branch Review Gate.
 - The main session coordinates planning, dispatch, waiting, resume/replacement decisions, evidence recording, commit, recorder/validator calls, and finish preparation. It must not replace the three mandatory sub-agent boundaries with its own implementation, its own Phase 2 check, its own Branch Review, or script validation output.
 - Inline mode or self-exemption is valid only when explicit artifact evidence explains why the default `sub-agent` boundary does not apply. A sub-agent that is already running as `trellis-implement` / `trellis-check` must do its own role directly and return the required handoff/report; a main session in default `sub-agent` mode cannot claim that exemption for itself. Missing implement, check, or review sub-agent evidence fails closed.
-- Sub-agent dispatch prompts must include expected `workspace_path` evidence when the task was created through Phase 0. At startup, sub-agents should report `pwd`, `git rev-parse --show-toplevel`, and whether the actual repo root matches the expected workspace before reading or writing task artifacts. When an agent file, platform, or editor tool cannot set an explicit working directory, any manual patch/edit path must be an absolute path under the task worktree.
+- Sub-agent dispatch prompts must include locally derived `expected_workspace` evidence when the task was created through Phase 0; it must not be read from committed task context. At startup, sub-agents should report `pwd`, `git rev-parse --show-toplevel`, and whether the actual repo root matches the expected workspace before reading or writing task artifacts. When an agent file, platform, or editor tool cannot set an explicit working directory, any manual patch/edit path must be an absolute path under the task worktree confirmed by `check-workspace-boundary.sh --task`.
 - `wait_agent`, `trellis channel wait`, or an equivalent wait command timing out only means this wait window ended without a final completion event. It is not evidence that the sub-agent is stuck, failed, should stop, or that its partial output is acceptable completion evidence.
 - Distinguish long total runtime from stale state. A sub-agent may run for more than an hour. The main session must run the short-lived liveness checker at `progress_scan_interval=120s` or sooner according to checker `next_wait_ms`; this scan interval is not a stale threshold. `max_progress_silence=180s` is measured from `progress_anchor_at`, and stale eligibility exists only when checker has already observed no new progress, a pending `status-requested` exists, that request produced no progress response, and `checked_at >= max_progress_silence_deadline_at`.
 - `{TASK_DIR}/agent-assignment.json` is the single task-local assignment, liveness, status, and review ledger. Do not create `{TASK_DIR}/agent-progress.jsonl` or any task-local heartbeat file. Do not require sub-agents to write periodic heartbeat messages, and do not add daemon, sidecar, long-command wrapper, watch loop, or background liveness process. The checker is an on-demand, single-sample command that updates objective snapshot fields and exits.
@@ -687,6 +689,11 @@ When `workspace_mode: worktree`, prefer the single controlled executor path:
 
 This creates or reuses the chosen workspace, creates the branch and Trellis task
 there, and writes `.trellis/tasks/<task-slug>/task-start-context.json` inside that workspace.
+The tracked context stores only portable `workspace_slug`, `task_workspace_id`, and
+repo-relative `task_artifact_dir`. It never stores or supplies an absolute
+`workspace_path`; resolve the local task worktree from the current checkout,
+`.trellis/.runtime/guru-team/**`, and `git worktree list`, and validate it with
+`check-workspace-boundary.sh --json --task <task-path>` before task-local writes.
 
 - Use `--create-worktree` to create or reuse the chosen workspace and write only `.trellis/.runtime/guru-team/workspaces/<workspace-slug>.json`.
 - Use `--create-task` only when the user approved task creation as part of the executor step; it creates or reuses the chosen workspace, creates the Trellis task, writes task-local `task-start-context.json` and Issue Scope Ledger seed, then writes the task runtime mapping.
@@ -697,7 +704,7 @@ python3 ./.trellis/scripts/task.py create "<task title>" --slug <issue-or-unique
 
 The bare `task.py create` command above is only a follow-up for controlled
 cases where `prepare-task --create-worktree` has already written the handoff and
-the shell/editor is operating inside the returned `workspace_path`. Do not run
+the shell/editor is operating inside the executor-selected worktree reported for the current command and recoverable from local runtime/Git facts. Do not run
 it from the source checkout for issue-backed or file-changing Guru Team tasks.
 
 Use `task.py set-branch`, `set-base-branch`, and `set-scope` to record handoff details only when the prepare script has not already done that.
@@ -1222,7 +1229,7 @@ unfinished termination, resume/replacement, completion, or failure status events
 that affected sub-agent evidence.
 
 Before writing `review.md`, `review-gate.json`, or any task artifact, confirm the
-current working directory is the task's selected `workspace_path`, not the source
+current working directory is the task worktree resolved from the current checkout, local runtime mappings, and `git worktree list`, not the source
 checkout or another worktree by running
 `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
 <task-path>`. Use the worktree-local absolute path for manual file edits when

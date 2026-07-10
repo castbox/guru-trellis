@@ -176,13 +176,17 @@ Workspace boundary helpers are deterministic validators and fact snapshots:
   `source_checkout`, `task_dir`, `task_dir_relative`, source checkout status,
   task worktree status, suspicious source artifacts, `status`, and `errors`.
 - In `workspace_mode: worktree`, recorder/validator commands that write or
-  validate task artifacts must confirm the actual repo root equals handoff
-  `workspace_path` before touching `planning-approval.json`,
+  validate task artifacts must validate portable `workspace_slug`,
+  `task_workspace_id`, and `task_artifact_dir`, derive the machine-local task
+  worktree from the current checkout, `.trellis/.runtime/guru-team/**`, and
+  `git worktree list`, then confirm the actual repo root equals that derived
+  worktree before touching `planning-approval.json`,
   `phase2-check.json`, `agent-assignment.json`, `review.md`, `reviews/*.md`,
   `review-gate.json`, or equivalent task-local artifacts.
 - In `workspace_mode: worktree`, a missing task-local `task-start-context.json` is
   also a boundary failure for these recorder/validator commands, because the
-  script cannot confirm the selected `workspace_path` and must not fall back to
+  script cannot validate portable identifiers before local runtime/Git worktree
+  resolution and must not fall back to
   a same-named task directory in the source checkout.
 - Task artifact arguments such as `--review-report`, `--agent-assignment`,
   `--review-round-report`, and `--checked-artifact` must resolve inside the

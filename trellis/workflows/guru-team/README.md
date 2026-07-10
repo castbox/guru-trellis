@@ -185,7 +185,10 @@ GitHub issue 创建必须在 AI/human review proposed title/body 之后显式执
 并提示调用方传入语义命名覆盖。task creation consent 不是在 source checkout 直接运行裸
 `task.py create` 的批准。
 
-`workspace_mode: worktree` 下，local runtime workspace mapping 是 task artifact 写入边界。
+`task-start-context.json` 只提供 portable `workspace_slug`、`task_workspace_id` 和
+repo-relative `task_artifact_dir`，不得提供 absolute `workspace_path`。`workspace_mode:
+worktree` 下，task artifact 写入边界由当前 checkout、`.trellis/.runtime/guru-team/**`、
+`git worktree list` 和 `check-workspace-boundary.sh --task` 推导/校验。
 在写入或校验 `planning-approval.json`、`phase2-check.json`、`agent-assignment.json`、
 `reviews/*.md`、`review.md` 或 `review-gate.json` 前，从目标 worktree 运行：
 
@@ -197,7 +200,7 @@ GitHub issue 创建必须在 AI/human review proposed title/body 之后显式执
 status、task worktree status、source checkout 中可疑同名 task artifact / review
 metadata，以及 fail-closed 错误。它不判断 sub-agent 是否 stale，不迁移误写 patch，也不
 清理 source checkout；这些仍由 AI/human workflow 决定。手工编辑工具不能接收显式
-working directory 时，必须使用 local runtime workspace mapping 下的绝对路径。
+working directory 时，必须使用 boundary helper 已确认的当前 task worktree 下的绝对路径。
 
 executor 路径创建 worktree 前会再次刷新所选 base branch：执行 `git fetch`、记录
 `preflight.base_freshness`、仅在安全时 fast-forward 本地 base，并在本地 base 与远端

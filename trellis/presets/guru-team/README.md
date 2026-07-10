@@ -464,8 +464,11 @@ worktree, branch, or Trellis task if the generated or overridden name is low
 information, such as `issue-52`, `52-issue-52`, a bare number, or only generic
 tokens like `bug`, `fix`, `task`, `work`, `update`, or `change`.
 
-After executor handoff is written, `local runtime workspace mapping` is the machine
-boundary for task artifact writes in worktree mode. Before writing or validating
+The tracked `task-start-context.json` provides only portable `workspace_slug`,
+`task_workspace_id`, and repo-relative `task_artifact_dir`; it never provides an
+absolute `workspace_path`. In worktree mode, derive and validate the machine-local
+task worktree from the current checkout, `.trellis/.runtime/guru-team/**`,
+`git worktree list`, and `check-workspace-boundary.sh --task`. Before writing or validating
 `planning-approval.json`, `phase2-check.json`, `agent-assignment.json`,
 `reviews/*.md`, `review.md`, or `review-gate.json`, run:
 
@@ -477,8 +480,8 @@ The helper reports expected workspace, actual repo root, source checkout
 status, task worktree status, and suspicious current-task artifacts or review
 metadata in the source checkout. It is a deterministic validator/fact snapshot,
 not stale judgment, cleanup, or patch migration. Editing tools without an
-explicit `workdir` must use absolute paths under the task worktree selected by
-local runtime workspace mapping. The #76 liveness checker uses this source/task fact
+explicit `workdir` must use absolute paths under the task worktree confirmed by the
+boundary helper. The #76 liveness checker uses this source/task fact
 layer: source checkout `HEAD`, dirty status, diff stat, or mtime changes are
 `workspace_boundary_violation_progress`, not stale evidence.
 

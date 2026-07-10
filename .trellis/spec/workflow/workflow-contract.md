@@ -25,7 +25,7 @@ The workflow has four durable phases:
 - Phase 3: spec decision, commit, Branch Review Gate, finish-work, and automatic publish.
 
 Do not move Phase 0 side effects into `task.py create`: `prepare-task.sh` must
-resolve the source issue, base branch, branch name, workspace path, and handoff
+resolve the source issue, base branch, branch name, executor-selected local worktree, and intake plan
 before `.trellis/tasks/` artifacts are written.
 
 `prepare-task.sh --json` is the default planner path. It may read GitHub issues,
@@ -331,7 +331,7 @@ sync blocks the gate.
 
 Before writing `review.md`, `review-gate.json`, or any task artifact during the
 gate, the AI must verify the shell/editor working directory is the task
-worktree selected by intake `workspace_path`. Manual edits must use a
+worktree selected by local runtime and Git worktree facts. Manual edits must use a
 worktree-local absolute path when the editing tool cannot receive an explicit
 working directory. Relative task artifact paths are never relative to the source
 checkout or another worktree.
