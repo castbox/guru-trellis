@@ -29,11 +29,11 @@ Before creating a Trellis task or writing task artifacts, run the Guru Team inta
 .trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request, issue number, or issue URL>"
 ```
 
-The default prepare command is side-effect-free intake/preflight planning for GitHub and filesystem writes: it may read an explicit issue and open duplicate candidates, then outputs source/proposed issue, base branch, branch name, workspace path, `create_task_command`, and `naming_quality`. Planner output is JSON only and does not write `.trellis/guru-team/handoff.json`, create a GitHub issue, worktree, branch, or Trellis task.
+The default prepare command is side-effect-free intake/preflight planning for GitHub and filesystem writes: it may read an explicit issue and open duplicate candidates, then outputs source/proposed issue, base branch, branch name, workspace path, `create_task_command`, and `naming_quality`. Planner output is JSON only and does not write `.trellis/tasks/<task-slug>/task-start-context.json`, create a GitHub issue, worktree, branch, or Trellis task.
 
 If no source issue was supplied, prepare writes `proposed_issue` and `requires_confirmation`. The AI must show the duplicate-search result, proposed issue title/body, base branch, branch name, and workspace path to the user. Only after confirmation may it rerun prepare with `--create-issue-confirmed --issue-title "<reviewed title>" --issue-body-file <reviewed-body-file>`.
 
-After a confirmed source issue exists and the handoff plan has been reviewed, use `--create-worktree` or `--create-task` only with explicit user approval. Those executor paths create or reuse the chosen workspace and then write `.trellis/guru-team/handoff.json` inside that workspace. They must not be used as a shortcut around planning review. They also enforce `naming_quality`: if the generated or overridden slug, branch, workspace slug, or task slug is low-information, the executor fails before creating a worktree or Trellis task and asks the agent to pass semantic overrides.
+After a confirmed source issue exists and the intake plan has been reviewed, use `--create-worktree` or `--create-task` only with explicit user approval. `--create-worktree` creates or reuses the chosen workspace and writes only gitignored local runtime mapping. `--create-task` additionally creates the Trellis task and writes `.trellis/tasks/<task-slug>/task-start-context.json` inside that workspace. They must not be used as a shortcut around planning review. They also enforce `naming_quality`: if the generated or overridden slug, branch, workspace slug, or task slug is low-information, the executor fails before creating a worktree or Trellis task and asks the agent to pass semantic overrides.
 
 When there is no active task and the current turn requires file changes, do not
 silently edit the current checkout. First run Phase 0 intake/preflight, or ask
@@ -55,7 +55,7 @@ The companion scripts live under `.trellis/guru-team/` and are installed by the 
 
 - If the user supplies a GitHub issue number or URL, read that issue body and comments before planning.
 - If no issue is supplied, decide whether the request is clear enough for an intake issue.
-- After reading the request, issue body, and comments, perform an intake clarity check before handoff review. If the problem statement, acceptance criteria, close scope, risk boundary, or implementation target is still ambiguous, load `trellis-brainstorm`, inspect repository evidence before asking user questions, and clarify the scope before creating or starting the Trellis task.
+- After reading the request, issue body, and comments, perform an intake clarity check before intake plan review. If the problem statement, acceptance criteria, close scope, risk boundary, or implementation target is still ambiguous, load `trellis-brainstorm`, inspect repository evidence before asking user questions, and clarify the scope before creating or starting the Trellis task.
 - For an existing source issue, decide whether clarified requirements should be captured as a new issue comment or by asking the user to update the original issue body. Use comments for additive clarifications, scope decisions, and user confirmations; use body edits only when the original body would mislead future intake and the edit has been reviewed.
 - For a no-issue natural-language request, proposed issue title/body must incorporate the clarified scope before `--create-issue-confirmed`; do not create a generic placeholder issue and expect `prd.md` to repair the source issue later.
 - Before creating an issue, search open issues for likely duplicates and show the result to the user.
@@ -77,12 +77,12 @@ The companion scripts live under `.trellis/guru-team/` and are installed by the 
 - Recommended worktree/task slug format is `NNN-business-capability`. When `--branch` is omitted, `prepare-task` deterministically infers a branch type and uses `<branch-type>/NNN-business-capability`; valid branch types are `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `style`, `build`, `ci`, `chore`, and `revert`, with `chore` as the fallback. Example: `feat/052-resume-detail-inline-attachment-preview`.
 - Use `--short-name`, `--workspace-slug`, and `--task-slug` as the deterministic interface from the agent's semantic judgment into the companion script; use `--branch` only when a special explicit branch name is needed. Explicit overrides still go through the same low-information naming gate.
 
-### Handoff
+### Task Runtime Boundary
 
-Planner output, including output with a confirmed `source_issue`, sets `handoff_written: false` and remains stdout-only. After explicit approval for `--create-worktree` or `--create-task`, the executor writes `.trellis/guru-team/handoff.json` inside the chosen workspace. It must not dirty the source checkout merely because a new AI session or intake preflight ran. A written handoff contains:
+Planner output, including output with a confirmed `source_issue`, sets `no task context/runtime write` and remains stdout-only. After explicit approval, `--create-worktree` writes only local runtime mapping; `--create-task` writes the task-local tracked `.trellis/tasks/<task-slug>/task-start-context.json` after task creation. It must not dirty the source checkout merely because a new AI session or intake preflight ran. A task-start-context and local runtime mapping contains:
 
 - confirmed source issue number, URL, title, and creation flag; `source_issue` is intake provenance, not the final close scope
-- handoff path and `handoff_written` state
+- task context path and runtime mapping state
 - slug, task slug, task title, branch, base branch, workspace path
 - `naming_quality` with `ok`, `reason`, `requires_semantic_name`, `current_slug`, and `suggested_override_flags`
 - an Issue Scope Ledger seed that the task copies to `{TASK_DIR}/issue-scope-ledger.json`
@@ -92,12 +92,14 @@ Planner output, including output with a confirmed `source_issue`, sets `handoff_
 
 ### Workspace Boundary
 
-When `workspace_mode: worktree`, the written handoff's `workspace_path` is the
-machine source of truth for task artifact writes. Before writing or reading
+When `workspace_mode: worktree`, tracked task-start-context contributes only portable
+workspace/task identifiers. The machine-local write boundary is the `expected_workspace`
+derived from the current checkout, `.trellis/.runtime/guru-team/**`, and `git worktree list`.
+Before writing or reading
 task-local recorder/validator inputs such as `planning-approval.json`,
 `phase2-check.json`, `agent-assignment.json`, `reviews/*.md`, `review.md`, or
 `review-gate.json`, confirm that the shell/editor repo root is exactly that
-`workspace_path`:
+derived `expected_workspace`:
 
 ```bash
 .trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
@@ -114,7 +116,7 @@ review, not as automatic stale/failure evidence.
 
 All relative task artifact paths are relative to the task worktree. Manual edit
 tools that cannot receive an explicit `workdir` must use an absolute path inside
-the task worktree selected by handoff `workspace_path`; do not use a source
+the task worktree selected by local runtime workspace mapping; do not use a source
 checkout relative path for task artifacts or patches. `--review-report`,
 `--agent-assignment`, `--review-round-report`, and `--checked-artifact` inputs
 must resolve inside the current task directory in that worktree. In worktree
@@ -238,8 +240,8 @@ workflows, durable, issue-backed, task-like, or file-changing work enters
 through Phase 0 `check-env` + `prepare-task` first. Do not use the bare
 `task.py create` command below from the source checkout for Guru Team worktree
 tasks. The bare create command is only a Phase 1.0 controlled follow-up after
-`prepare-task` has returned or written the selected `workspace_path` and the
-shell/editor is already operating inside that workspace.
+`prepare-task` has selected or reused a worktree and local runtime/Git facts
+confirm the shell/editor is already operating inside that worktree.
 
 Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, `design.md`, `implement.md`, `research/` when applicable, the task-level `issue-scope-ledger.json`, sub-agent/review assignment and status evidence (`agent-assignment.json`), Branch Review Gate raw reports (`reviews/*.md`), the final review rollup (`review.md`), the recorder artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms. Guru Team implementation tasks require `prd.md`, `design.md`, and `implement.md` before `task.py start`, implementation, and check; missing or stale planning documents fail the explicit post-planning approval gate.
 
@@ -294,7 +296,7 @@ Markdown artifacts and include a `Markdown 产物 review 表` in the response:
 The standard table lists only the resolver's five Markdown files: `prd.md`,
 `design.md`, `implement.md`, `review.md`, and `pr-body.md`. It must not include
 machine JSON artifacts such as `planning-approval.json`, `phase2-check.json`,
-`agent-assignment.json`, `review-gate.json`, `pr-readiness.json`, or
+`agent-assignment.json`, `review-gate.json`, `pr-readiness.json`, `marketplace-verification.json`, or
 `issue-scope-ledger.json` by default. Render existing files as links using the
 resolver path/link fields; when `exists=false`, show the filename and status
 without a Markdown link so the response does not create a dead link.
@@ -312,7 +314,7 @@ and journal succeed. They are not new user-facing primary commands.
 Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-agents on agent-capable platforms. Guru Team keeps that official model:
 
 - Guru Team workflow identity uses Chinese logical roles recorded in task artifacts, not platform UI names. Allowed roles are `实现代理`, `阶段二检查代理`, `问题发现审查代理`, `问题闭环审查代理`, and `最终放行审查代理`.
-- `logical_role` is the Trellis process identity used in task artifacts, review reports, review gates, and final handoff. `agent_id` is the technical platform identity used for continuing or reusing an agent. `platform_nickname` is display-only and must not participate in gate decisions.
+- `logical_role` is the Trellis process identity used in task artifacts, review reports, review gates, and final implementation report. `agent_id` is the technical platform identity used for continuing or reusing an agent. `platform_nickname` is display-only and must not participate in gate decisions.
 - Platform agent dispatch identifiers such as `trellis-implement`, `trellis-check`, `trellis-research`, channel-runtime `implement`, and channel-runtime `check` are technical API ids and must stay stable. User-facing agent labels should be Chinese where the platform supports it. Markdown-based agent files use Chinese headings and descriptions. Codex custom agents use Chinese `description`, but `nickname_candidates` must stay ASCII in current Codex releases or Codex ignores the agent file. If a platform still emits an automatic/random nickname, record that raw value in `platform_nickname` only and continue to use `logical_role` for workflow judgment.
 - In default `sub-agent` mode, Guru Team has three mandatory execution boundaries:
   - implementation must be performed by `trellis-implement` or channel-runtime `implement` and produce an implementation handoff;
@@ -320,7 +322,7 @@ Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-a
   - Branch Review must be performed by an independent review sub-agent after the task work commit and produce task-local raw `reviews/*.md` reports plus the final rollup `review.md` before the main session records Branch Review Gate.
 - The main session coordinates planning, dispatch, waiting, resume/replacement decisions, evidence recording, commit, recorder/validator calls, and finish preparation. It must not replace the three mandatory sub-agent boundaries with its own implementation, its own Phase 2 check, its own Branch Review, or script validation output.
 - Inline mode or self-exemption is valid only when explicit artifact evidence explains why the default `sub-agent` boundary does not apply. A sub-agent that is already running as `trellis-implement` / `trellis-check` must do its own role directly and return the required handoff/report; a main session in default `sub-agent` mode cannot claim that exemption for itself. Missing implement, check, or review sub-agent evidence fails closed.
-- Sub-agent dispatch prompts must include expected `workspace_path` evidence when the task was created through Phase 0. At startup, sub-agents should report `pwd`, `git rev-parse --show-toplevel`, and whether the actual repo root matches the expected workspace before reading or writing task artifacts. When an agent file, platform, or editor tool cannot set an explicit working directory, any manual patch/edit path must be an absolute path under the task worktree.
+- Sub-agent dispatch prompts must include locally derived `expected_workspace` evidence when the task was created through Phase 0; it must not be read from committed task context. At startup, sub-agents should report `pwd`, `git rev-parse --show-toplevel`, and whether the actual repo root matches the expected workspace before reading or writing task artifacts. When an agent file, platform, or editor tool cannot set an explicit working directory, any manual patch/edit path must be an absolute path under the task worktree confirmed by `check-workspace-boundary.sh --task`.
 - `wait_agent`, `trellis channel wait`, or an equivalent wait command timing out only means this wait window ended without a final completion event. It is not evidence that the sub-agent is stuck, failed, should stop, or that its partial output is acceptable completion evidence.
 - Distinguish long total runtime from stale state. A sub-agent may run for more than an hour. The main session must run the short-lived liveness checker at `progress_scan_interval=120s` or sooner according to checker `next_wait_ms`; this scan interval is not a stale threshold. `max_progress_silence=180s` is measured from `progress_anchor_at`, and stale eligibility exists only when checker has already observed no new progress, a pending `status-requested` exists, that request produced no progress response, and `checked_at >= max_progress_silence_deadline_at`.
 - `{TASK_DIR}/agent-assignment.json` is the single task-local assignment, liveness, status, and review ledger. Do not create `{TASK_DIR}/agent-progress.jsonl` or any task-local heartbeat file. Do not require sub-agents to write periodic heartbeat messages, and do not add daemon, sidecar, long-command wrapper, watch loop, or background liveness process. The checker is an on-demand, single-sample command that updates objective snapshot fields and exits.
@@ -423,7 +425,7 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - `review-gate.json` — Branch Review Gate result for the reviewed HEAD.
 - `implement.jsonl` / `check.jsonl` — spec and research manifests for sub-agent context. They do not replace `implement.md`.
 
-Guru Team implementation tasks must have `prd.md`, `design.md`, `implement.md`, and one locatable `Docs SSOT Plan` before `task.py start`; a Phase 0 handoff approval never substitutes for this post-planning review.
+Guru Team implementation tasks must have `prd.md`, `design.md`, `implement.md`, and one locatable `Docs SSOT Plan` before `task.py start`; a Phase 0 intake approval never substitutes for this post-planning review.
 
 Planning artifact normative language must be deterministic. Requirements,
 design contracts, event/state-machine rules, gate clauses, acceptance criteria,
@@ -547,7 +549,7 @@ No active task. First classify the user's natural-language request; do not requi
 If the request includes an issue URL, issue number, clear development task, or file change, the first priority is Guru Team Phase 0 intake, not bare `task.py create`:
 `.trellis/guru-team/scripts/bash/check-env.sh --json`
 `.trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request, issue number, or issue URL>"`
-Default `prepare-task` is planner-only. After handoff review and user approval in `workspace_mode: worktree`, create the execution environment with `prepare-task --create-worktree --create-task` or an equivalent controlled Guru Team executor.
+Default `prepare-task` is planner-only. After intake plan review and user approval in `workspace_mode: worktree`, create the execution environment with `prepare-task --create-worktree --create-task` or an equivalent controlled Guru Team executor.
 Do not silently edit the current checkout. Direct edits require explicit user approval to skip GitHub issue, Trellis task, worktree, and branch for this turn.
 Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect.
 Task creation consent is not current-checkout direct-edit consent. Do not write `.trellis/tasks/` artifacts until consent is clear and preflight has a clear workspace.
@@ -648,7 +650,7 @@ does not approve commit, push, PR creation, or issue closure.
 
 [workflow-state:planning]
 Load `trellis-brainstorm`; stay in planning.
-Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
+Confirm the Guru Team task-start context exists in the chosen workspace for durable tasks: `.trellis/tasks/<task-slug>/task-start-context.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
 Finish `prd.md`, `design.md`, and `implement.md`; then perform planning artifact ambiguity review before displaying them. Verify no requirement weakening, source issue semantics preserved, conditional paths have trigger conditions, no parallel implementation paths, gates have machine-verifiable conditions, acceptance criteria are deterministic, and external quotes are labeled non-contract.
@@ -660,7 +662,7 @@ Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research mani
 
 [workflow-state:planning-inline]
 Load `trellis-brainstorm`; stay in planning.
-Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
+Confirm the Guru Team task-start context exists in the chosen workspace for durable tasks: `.trellis/tasks/<task-slug>/task-start-context.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
 Finish `prd.md`, `design.md`, and `implement.md`; then perform planning artifact ambiguity review before displaying them. Verify no requirement weakening, source issue semantics preserved, conditional paths have trigger conditions, no parallel implementation paths, gates have machine-verifiable conditions, acceptance criteria are deterministic, and external quotes are labeled non-contract.
@@ -686,10 +688,15 @@ When `workspace_mode: worktree`, prefer the single controlled executor path:
 ```
 
 This creates or reuses the chosen workspace, creates the branch and Trellis task
-there, and writes `.trellis/guru-team/handoff.json` inside that workspace.
+there, and writes `.trellis/tasks/<task-slug>/task-start-context.json` inside that workspace.
+The tracked context stores only portable `workspace_slug`, `task_workspace_id`, and
+repo-relative `task_artifact_dir`. It never stores or supplies an absolute
+`workspace_path`; resolve the local task worktree from the current checkout,
+`.trellis/.runtime/guru-team/**`, and `git worktree list`, and validate it with
+`check-workspace-boundary.sh --json --task <task-path>` before task-local writes.
 
-- Use `--create-worktree` to create or reuse the chosen workspace and write `.trellis/guru-team/handoff.json`; then run the `create_task_command` from that workspace handoff in `workspace_path`.
-- Use `--create-task` only when the user approved task creation as part of the executor step; it creates or reuses the chosen workspace, creates the Trellis task, and writes the workspace handoff.
+- Use `--create-worktree` to create or reuse the chosen workspace and write only `.trellis/.runtime/guru-team/workspaces/<workspace-slug>.json`.
+- Use `--create-task` only when the user approved task creation as part of the executor step; it creates or reuses the chosen workspace, creates the Trellis task, writes task-local `task-start-context.json` and Issue Scope Ledger seed, then writes the task runtime mapping.
 
 ```bash
 python3 ./.trellis/scripts/task.py create "<task title>" --slug <issue-or-unique-slug>
@@ -697,12 +704,12 @@ python3 ./.trellis/scripts/task.py create "<task title>" --slug <issue-or-unique
 
 The bare `task.py create` command above is only a follow-up for controlled
 cases where `prepare-task --create-worktree` has already written the handoff and
-the shell/editor is operating inside the returned `workspace_path`. Do not run
+the shell/editor is operating inside the executor-selected worktree reported for the current command and recoverable from local runtime/Git facts. Do not run
 it from the source checkout for issue-backed or file-changing Guru Team tasks.
 
 Use `task.py set-branch`, `set-base-branch`, and `set-scope` to record handoff details only when the prepare script has not already done that.
 
-Copy or materialize the Issue Scope Ledger seed from `.trellis/guru-team/handoff.json` into:
+Copy or materialize the Issue Scope Ledger seed from `.trellis/tasks/<task-slug>/task-start-context.json` into:
 
 ```text
 {TASK_DIR}/issue-scope-ledger.json
@@ -744,7 +751,7 @@ Run the Middle-platform Knowledge Gate when the task may involve Guru Team middl
 
 Scope Change Gate: when scope changes, first stop and ask the user how to classify the new requirement or referenced issue unless the user already made that classification explicit. Then update `issue-scope-ledger.json` immediately:
 
-- `primary_issue`: the intake/handoff issue that anchors the task.
+- `primary_issue`: the intake issue that anchors the task.
 - `close_issues`: issues this task explicitly promises to complete and close.
 - `related_issues`: context, reusable mechanism, partial overlap, or references only.
 - `followup_issues`: new scope, new bug, or expansion that should become a new Trellis task.
@@ -839,7 +846,7 @@ links, the workflow will not enter implementation, will not dispatch
 `trellis-implement` / channel `implement`, and will not record
 `phase2-check.json`.
 
-The user's Phase 0 handoff approval to create a GitHub issue, worktree, branch,
+The user's Phase 0 intake approval to create a GitHub issue, worktree, branch,
 or Trellis task is not planning approval. Do not reuse a Phase 0 confirmation,
 generic "continue" consent, or historical `planning-approval.json` with
 `user_confirmation.source=workflow`. If `planning-approval.json` is missing,
@@ -890,7 +897,7 @@ transition; it is not planning review evidence.
 
 | Condition | Required |
 | --- | :---: |
-| Guru Team handoff exists for durable tasks | yes |
+| Guru Team task-start context exists for durable tasks | yes |
 | `prd.md` exists | yes |
 | `design.md` exists | yes |
 | `implement.md` exists | yes |
@@ -1062,7 +1069,7 @@ Run a dry-run first:
 `.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work --body-file "{TASK_DIR}/pr-body.md" --dry-run`
 After dry-run, run `resolve-human-artifacts.sh --json --task <task-path>` and include an active-task `Markdown 产物 review 表`; then review the dry-run output and run the same command without `--dry-run`.
 After the formal finish archives the task, run `resolve-human-artifacts.sh --json --task <task-name-or-archive-path>` again and include the archive-path `Markdown 产物 review 表` in the final reply.
-Finish-work accepts only Trellis metadata tail such as `review.md`, `reviews/*.md`, `review-gate.json`, `agent-assignment.json`, `pr-body.md`, and `pr-readiness.json`; any non-metadata dirty path or non-metadata committed drift must go back to `trellis-continue` / Phase 2-3.
+Finish-work accepts only Trellis metadata tail such as `review.md`, `reviews/*.md`, `review-gate.json`, `agent-assignment.json`, `pr-body.md`, and `pr-readiness.json`, `marketplace-verification.json`; any non-metadata dirty path or non-metadata committed drift must go back to `trellis-continue` / Phase 2-3.
 Finish-work and archive do not perform the first Docs SSOT merge. If durable docs, `.trellis/spec/`, source, tests, schema, config, scripts, preset, overlay, CI/CD, deployment, migration, or Makefile assets changed after the gate, return to Phase 2/3 instead of treating the change as metadata tail.
 Do not call `publish-pr` directly; normal publish is only through the explicit `trellis-finish-work` closeout after archive and journal.
 [/workflow-state:completed]
@@ -1109,7 +1116,7 @@ The commit must include task work and relevant artifact updates through `prd.md`
 
 Run after the task work commit and before `finish-work`.
 
-`review-branch.sh` validates that planning approval evidence exists and that a Phase 2 check report exists for the work that was committed. It uses post-commit audit semantics: planning approval may point at the approved pre-implementation HEAD as long as the approved artifact hashes still match, and Phase 2 check may point at an ancestor when later non-metadata committed paths are covered by the recorded `phase2-check.json.dirty_paths` or when the later tail is Trellis metadata only. Branch Review Gate and publish readiness metadata may change after Phase 2 because final review and release readiness happen after the work commit; stale Phase 2 digest entries for task-local `issue-scope-ledger.json`, `pr-body.md`, `pr-readiness.json`, `agent-assignment.json`, `review.md`, `reviews/*.md`, and `review-gate.json` may be ignored only in this post-commit audit and are revalidated by the gate or publish validators before pass or publish. This exception must not apply to source, config, script, docs, schema, preset, overlay, or other non-metadata paths. If the commit contains non-metadata paths that were not recorded in Phase 2 dirty paths, or the current working tree has non-metadata dirty paths, return to Phase 2 instead of re-recording evidence after the fact. Do not use Branch Review Gate to bypass `trellis-check`; Phase 2 check and Phase 3 review gate are separate artifacts.
+`review-branch.sh` validates that planning approval evidence exists and that a Phase 2 check report exists for the work that was committed. It uses post-commit audit semantics: planning approval may point at the approved pre-implementation HEAD as long as the approved artifact hashes still match, and Phase 2 check may point at an ancestor when later non-metadata committed paths are covered by the recorded `phase2-check.json.dirty_paths` or when the later tail is Trellis metadata only. Branch Review Gate and publish readiness metadata may change after Phase 2 because final review and release readiness happen after the work commit; stale Phase 2 digest entries for task-local `issue-scope-ledger.json`, `pr-body.md`, `pr-readiness.json`, `marketplace-verification.json`, `agent-assignment.json`, `review.md`, `reviews/*.md`, and `review-gate.json` may be ignored only in this post-commit audit and are revalidated by the gate or publish validators before pass or publish. This exception must not apply to source, config, script, docs, schema, preset, overlay, or other non-metadata paths. If the commit contains non-metadata paths that were not recorded in Phase 2 dirty paths, or the current working tree has non-metadata dirty paths, return to Phase 2 instead of re-recording evidence after the fact. Do not use Branch Review Gate to bypass `trellis-check`; Phase 2 check and Phase 3 review gate are separate artifacts.
 
 ##### 3.5.1 AI Review Prompt
 
@@ -1141,7 +1148,7 @@ Before or immediately after dispatching the independent review, record the revie
 - follow-up review that verifies fixes may use `问题闭环审查代理`;
 - the pass/final release review uses `最终放行审查代理`.
 
-Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reuse_policy`, `reuse_decision`, and the raw review report digest fields. Each review round must have a task-local raw Markdown report under `{TASK_DIR}/reviews/*.md`; record it with `record-agent-assignment.sh --review-round ... --review-round-report "{TASK_DIR}/reviews/round-NNN-<purpose>.md"`. `round` values must be unique and strictly increasing in recorded order so the final round is unambiguous. If any review round finds a finding, including a previous `最终放行审查代理` round that discovered a new issue, the normal path is for that same technical `agent_id` to return as `问题闭环审查代理` and record `findings_count: 0` with `reuse_decision: reuse-for-closure` to confirm its own finding is closed. If that finding owner objectively failed, was interrupted, or became stale and cannot continue, an AI/human may start a replacement `问题闭环审查代理`; record the predecessor liveness evidence in `status_events[]`, then record `replacement-started` with `predecessor_agent_id`, `predecessor_event_id`, `replacement_reason`, and `handoff_summary`, record `reuse_decisions[]` with `decision=replace`, `from_round`, and `to_round`, then record the replacement closure review round with `findings_count: 0` and `reuse_decision: replace`. Only after every finding owner has a later successful same-agent closure or a complete replacement closure chain may the workflow dispatch a fresh new `最终放行审查代理`. A finding owner or replacement closure reviewer must not become the `最终放行审查代理`. The final pass round must be the last review round, use a fresh new `最终放行审查代理`, set `reuse_decision: new-agent`, review the current HEAD's complete diff, and record `findings_count: 0`. If the same technical agent is reused for closure, record why reuse is limited to closure. If an agent is replaced or an unfinished review agent is interrupted, record the structured `status_events[]` reason, predecessor output/diff/task artifact handoff, and later completion/failure chain. `platform_nickname` should be the Chinese UI nickname when the platform provides one; otherwise record the raw automatic nickname. It remains display-only either way.
+Use `review_rounds[]` to record `round`, `reviewed_head`, `findings_count`, `reuse_policy`, `reuse_decision`, and the raw review report digest fields. Each review round must have a task-local raw Markdown report under `{TASK_DIR}/reviews/*.md`; record it with `record-agent-assignment.sh --review-round ... --review-round-report "{TASK_DIR}/reviews/round-NNN-<purpose>.md"`. `round` values must be unique and strictly increasing in recorded order so the final round is unambiguous. If any review round finds a finding, including a previous `最终放行审查代理` round that discovered a new issue, close it through one explicit form: the same technical `agent_id` returns as `问题闭环审查代理` and records `findings_count: 0` with `reuse_decision: reuse-for-closure`; a different fresh closure `agent_id` that has not appeared in any earlier `review_rounds[]` records `reuse_decision: new-agent` and a matching `reuse_decisions[] decision=new-agent` relation with strict-integer `from_round` / `to_round`, matching closure agent/role/reviewed HEAD, and non-empty reason; or, if the finding owner objectively failed, was interrupted, or became stale and cannot continue, a replacement `问题闭环审查代理` records the complete predecessor liveness and replacement chain. A closure round that still has findings becomes a new finding owner and must itself be closed. Only after every finding owner is explicitly closed may the workflow dispatch a final reviewer whose technical `agent_id` has not appeared in any earlier `review_rounds[]`. No finding owner or closure reviewer may become the `最终放行审查代理`. The final pass round must be last, use `reuse_decision: new-agent`, review the current HEAD's complete diff, and record `findings_count: 0`. If the same technical agent is reused for closure, record why reuse is limited to closure. If an agent is replaced or an unfinished review agent is interrupted, record the structured `status_events[]` reason, predecessor output/diff/task artifact handoff, and later completion/failure chain. `platform_nickname` should be the Chinese UI nickname when the platform provides one; otherwise record the raw automatic nickname. It remains display-only either way.
 
 The AI/human review must cover:
 
@@ -1222,7 +1229,7 @@ unfinished termination, resume/replacement, completion, or failure status events
 that affected sub-agent evidence.
 
 Before writing `review.md`, `review-gate.json`, or any task artifact, confirm the
-current working directory is the task's selected `workspace_path`, not the source
+current working directory is the task worktree resolved from the current checkout, local runtime mappings, and `git worktree list`, not the source
 checkout or another worktree by running
 `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
 <task-path>`. Use the worktree-local absolute path for manual file edits when
@@ -1232,16 +1239,27 @@ only.
 
 ##### 3.5.2 Gate Artifact Recorder
 
-Only after every finding owner has completed a successful same-agent
-`问题闭环审查代理` closure round for its finding, or an objectively documented replacement closure chain for a failed/interrupted finding owner, then a fresh `最终放行审查代理` has completed an
+Only after every finding owner has one of these explicit closure forms: a
+successful same-agent `问题闭环审查代理` round with
+`reuse_decision: reuse-for-closure`; a different fresh `问题闭环审查代理` whose technical `agent_id` has not appeared in any earlier `review_rounds[]`
+whose `reuse_decisions[]` entry records `decision: new-agent` plus exact
+`from_round`, `to_round`, closure `agent_id`, reviewed `head`, and non-empty
+`reason`; or an objectively documented replacement closure chain for a
+failed/interrupted finding owner. A closure round that still reports findings
+becomes a new finding owner and must itself have a later explicit closure before
+the gate can pass. Then a fresh `最终放行审查代理` must complete an
 independent review of the current HEAD's full diff with zero findings and
 `{TASK_DIR}/review.md` exists and links every `{TASK_DIR}/reviews/*.md` raw report, and `agent-assignment.json.status_events[]` has no unclosed `terminated-unfinished` chain, write the passing gate artifact. The pass path must include
 `--review-source independent-agent` and `--review-report {TASK_DIR}/review.md`;
 `--reviewer` may additionally record the independent reviewer identity, but it
 cannot replace the review report. Always pass task-local `agent-assignment.json`
-so the recorder validates that every finding owner has a later same-agent closure round or complete replacement closure chain, every unfinished terminated agent has same-agent resume or replacement plus later `completed`/`failed` status evidence, and
-the final review round is fresh, last, has `findings_count: 0`, reviewed the
-current HEAD, and is not an agent that found findings in an earlier round:
+so the recorder validates that every finding owner has a later same-agent
+closure round, an explicitly related different fresh closure round, or a
+complete replacement closure chain; every unfinished terminated agent has
+same-agent resume or replacement plus later `completed`/`failed` status
+evidence; and the final review round uses an `agent_id` absent from every earlier `review_rounds[]`, uses `reuse_decision: new-agent`,
+is last, has `findings_count: 0`, reviewed the current HEAD, and is not any
+finding owner or closure agent:
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \
@@ -1415,11 +1433,11 @@ If any `close_issues` entry lacks acceptance/verification evidence, or the revie
 
 ### Issue Scope Ledger Rules
 
-`handoff.source_issue` only records intake provenance. It is not the final set of issues that the PR closes.
+`task-start-context.source_issue` only records intake provenance. It is not the final set of issues that the PR closes.
 
 Task-level `issue-scope-ledger.json` owns close/ref/followup semantics:
 
-- `primary_issue`: the intake/handoff issue, default close candidate.
+- `primary_issue`: the intake issue, default close candidate.
 - `close_issues`: issues this task explicitly commits to fully resolving; PR body may use `Closes/Fixes/Resolves` only for these.
 - `related_issues`: context, reuse, partial overlap, or non-closing references; PR body may use `Refs` or `Related`, never close keywords.
 - `followup_issues`: expanded scope, newly found bug, or later work; never close from the current PR.
@@ -1427,3 +1445,9 @@ Task-level `issue-scope-ledger.json` owns close/ref/followup semantics:
 Default best practice for new issues, new bugs, or expanded requirements is to create a new Trellis task. Add a new issue to current `close_issues` only when it is the same delivery unit, does not materially expand boundary/risk/test scope, the planning artifacts are updated, the user explicitly confirms inclusion, GitHub-visible evidence records the decision, and Branch Review Gate records coverage.
 
 If a user changes requirements during an active task, the AI must preserve the decision trail before continuing implementation: summarize the new request, recommend `close_issues` / `related_issues` / `followup_issues`, get confirmation when classification is not explicit, update planning artifacts when the current task scope changes, and add issue comment/body/new issue evidence as appropriate. Do not close a referenced issue merely because it was discussed during the task.
+
+### Remote Marketplace Verification Gate
+
+For tasks that change the workflow marketplace, preset, overlays, installer, schema, or public extension contract, publish is fail-closed after the branch push and before `gh pr create`. The deterministic `verify-marketplace` companion command records task-local `marketplace-verification.json` with repository, remote, branch/ref, verified content HEAD, remote HEAD, command exit codes, stdout/stderr digests and sizes, and installed workflow/preview/schema digests. It executes remote branch `trellis init`, workflow preview, workflow switch, canonical preset reapply, and runtime-ignore checks in a clean temporary repository. It does not decide PR readiness.
+
+`issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` evidence object in the primary issue and every close issue. Before the verifier it is `status=pending`, `required=true`, points to `marketplace-verification.json`, and explicitly does not satisfy final publish. `publish-pr` pushes the reviewed content HEAD, runs the verifier, replaces only those structured entries with real `status=passed` facts (artifact path and SHA-256, verified content HEAD, verifier remote HEAD, publish content HEAD, and all-command result), then commits exactly the verifier artifact plus the ledger as the only allowed metadata tail and pushes it. After that push it reloads and cross-validates the ledger and artifact, requires the current HEAD to differ from the verified content HEAD by exactly those two paths, requires the remote branch to equal the metadata HEAD, revalidates Branch Review Gate metadata tolerance, and only then permits `gh pr create`. Missing, pending, failed, stale, tampered, or mismatched evidence blocks. The AI remains responsible for deciding close scope and whether evidence is sufficient and truthful; scripts only execute, record, and validate deterministic verifier facts. No release tag is created by this gate.

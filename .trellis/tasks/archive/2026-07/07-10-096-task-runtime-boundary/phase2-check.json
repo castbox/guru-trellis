@@ -1,0 +1,135 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-10T13:19:24Z",
+  "task_dir": ".trellis/tasks/07-10-096-task-runtime-boundary",
+  "base_branch": "main",
+  "head": "4bbac759ab67e5975b56bc63f96c9e373282a6d5",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".claude/commands/trellis/continue.md",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".cursor/commands/trellis-continue.md",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/tasks/07-10-096-task-runtime-boundary/review.md",
+    ".trellis/workflow.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-6.md",
+    ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-7.md"
+  ],
+  "checker": "Euclid the 2nd (019f4c29-69e3-7630-9560-084413e81e6e)",
+  "check_summary": "Round 8 两个 P1 修复后的 Phase 2 通过：closure/final 技术身份必须全新；new-agent round/relation decision 一致；from/to strict positive int；agent/role/head/reason 精确；三类合法闭环保持，零 findings。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/prd.md",
+      "sha256": "69a22a6d9b3018e042ef88c1af6bdf189fb0eb1a7c2699671a302009b050709d",
+      "size_bytes": 8817,
+      "modified_at": "2026-07-10T09:36:44.767130+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/design.md",
+      "sha256": "c63bb27e2ee0ca580d975ae423f9416b9793ead293e893210235a6942f52e3fd",
+      "size_bytes": 9231,
+      "modified_at": "2026-07-10T09:36:44.767511+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/implement.md",
+      "sha256": "ee01678c2f6a8a90f2a81d546718211d7858f2fdb13282c5ae5ed8f988a1b6e5",
+      "size_bytes": 7438,
+      "modified_at": "2026-07-10T09:36:44.767847+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/planning-approval.json",
+      "sha256": "5f19fb1637624fd842ef3b19434e7cd8802a40d4c710b0787531f4023875e429",
+      "size_bytes": 4285,
+      "modified_at": "2026-07-10T09:37:00.058082+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/implementation-handoff.md",
+      "sha256": "536352f1092525a48d33a19fa6a0bf6c5f905f856f374d9109948a9e93e8306a",
+      "size_bytes": 14838,
+      "modified_at": "2026-07-10T13:18:37.958240+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/issue-scope-ledger.json",
+      "sha256": "75f187ed5176dae70eb27fdccce50f61a718c85b8c6bdeabd6837f885f616aa0",
+      "size_bytes": 6607,
+      "modified_at": "2026-07-10T11:19:21.483256+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/agent-assignment.json",
+      "sha256": "547031541e4c687aaab627324418fc09732fe56ec35153aebd35db6d03e34e9d",
+      "size_bytes": 45714,
+      "modified_at": "2026-07-10T13:19:24.729595+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-8.md",
+      "sha256": "1fdf7f7221baf5dbff1be697ddb81ed5a2886a31e9e8912bf9a1b84b38abc102",
+      "size_bytes": 10486,
+      "modified_at": "2026-07-10T13:05:35.922129+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "c12ffc7b87bfaa11975ebbc2f6389b503d03dbcf60f7c85c4b59afd2822e2ac4",
+      "size_bytes": 26946,
+      "modified_at": "2026-07-10T13:09:47.614510+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "0e7966f4c2a09da4068bc59b5a867ff3c59b899f8e786f951d7dfece966a7df1",
+      "size_bytes": 21240,
+      "modified_at": "2026-07-10T13:09:47.614702+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "closure targeted tests",
+      "result": "10 passed"
+    },
+    {
+      "command": "closure compatibility tests",
+      "result": "3 passed"
+    },
+    {
+      "command": "core unittest suite",
+      "result": "251 passed"
+    },
+    {
+      "command": "preset unittest suite",
+      "result": "30 passed"
+    },
+    {
+      "command": "compile + shell + JSON + byte equality + drift + boundary/task/assignment + mutation + diff-check",
+      "result": "passed"
+    },
+    {
+      "command": "temporary initialized repository all-platform preset install",
+      "result": "passed; no .new/.bak"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

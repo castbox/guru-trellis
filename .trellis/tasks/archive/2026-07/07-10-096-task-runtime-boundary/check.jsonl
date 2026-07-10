@@ -1,0 +1,10 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"复核 Phase 0~3 调用链和 canonical/dogfood 合同。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"复核脚本未替代 AI 判断且 workspace boundary fail closed。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"复核 task context/runtime/shared config 三层数据归属。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"执行完整 Phase 2 验证矩阵。"}
+{"file":".trellis/spec/preset/installer.md","reason":"复核 obsolete cleanup、runtime ignore 和 upgrade 行为。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"复核 canonical overlay 和 dogfood 一致性。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"复核 README 安装命令和公开文案。"}
+{"file":".trellis/tasks/07-10-096-task-runtime-boundary/research/code-test-impact.md","reason":"逐项覆盖代码、测试和下游命令风险。"}
+{"file":".trellis/tasks/07-10-096-task-runtime-boundary/research/workflow-preset-docs-upgrade-update-ssot.md","reason":"逐项覆盖 throwaway 和 upgrade/update 风险。"}
+{"file":".trellis/tasks/07-10-096-task-runtime-boundary/implementation-handoff.md","reason":"核对实现代理真实 Docs SSOT 承接、验证和未完成风险。"}

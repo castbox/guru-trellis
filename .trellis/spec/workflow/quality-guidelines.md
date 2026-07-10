@@ -140,8 +140,10 @@ cannot pass the gate. Include:
 - Phase 0 handoff/preflight evidence, or explicit no-task direct-edit override
   evidence when the branch intentionally skipped issue/task/worktree/branch
 - task artifact write location: `review.md`, `review-gate.json`, and similar
-  files must be written under the task worktree selected by intake
-  `workspace_path`; when a manual editing tool has no explicit working
+  files must be written under the task worktree derived from the current
+  checkout, `.trellis/.runtime/guru-team/**`, `git worktree list`, and portable
+  task-start-context identifiers; the committed context must not provide or be
+  treated as an absolute `workspace_path`. When a manual editing tool has no explicit working
   directory, use a worktree-local absolute path
 - Branch Review raw reports `reviews/*.md` and final rollup `review.md` must be
   Chinese human-readable task artifacts: Chinese headings, Chinese labels,

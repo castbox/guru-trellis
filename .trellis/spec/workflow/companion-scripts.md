@@ -62,10 +62,10 @@ Do not assume the GitHub CLI is configured just because `gh` exists.
 Default `prepare` must be side-effect-free for GitHub and filesystem writes
 until the corresponding explicit confirmed/executor flag is present. It may call
 `gh issue view/list` for explicit issues and duplicate search, but planner
-output must stay on stdout and must not write `.trellis/guru-team/handoff.json`.
+output must stay on stdout and must not write `.trellis/tasks/<task-slug>/task-start-context.json`.
 It must not call `gh issue create`, `git worktree add`, or `task.py create`
 unless the corresponding explicit confirmed/executor flag is present and the
-workflow has already required AI/human handoff review. Confirming or creating a
+workflow has already required AI/human intake plan review. Confirming or creating a
 source issue alone still must not write handoff; handoff is written only by
 `--create-worktree` or `--create-task` in the chosen workspace.
 
@@ -176,13 +176,17 @@ Workspace boundary helpers are deterministic validators and fact snapshots:
   `source_checkout`, `task_dir`, `task_dir_relative`, source checkout status,
   task worktree status, suspicious source artifacts, `status`, and `errors`.
 - In `workspace_mode: worktree`, recorder/validator commands that write or
-  validate task artifacts must confirm the actual repo root equals handoff
-  `workspace_path` before touching `planning-approval.json`,
+  validate task artifacts must validate portable `workspace_slug`,
+  `task_workspace_id`, and `task_artifact_dir`, derive the machine-local task
+  worktree from the current checkout, `.trellis/.runtime/guru-team/**`, and
+  `git worktree list`, then confirm the actual repo root equals that derived
+  worktree before touching `planning-approval.json`,
   `phase2-check.json`, `agent-assignment.json`, `review.md`, `reviews/*.md`,
   `review-gate.json`, or equivalent task-local artifacts.
-- In `workspace_mode: worktree`, a missing current-checkout `handoff.json` is
+- In `workspace_mode: worktree`, a missing task-local `task-start-context.json` is
   also a boundary failure for these recorder/validator commands, because the
-  script cannot confirm the selected `workspace_path` and must not fall back to
+  script cannot validate portable identifiers before local runtime/Git worktree
+  resolution and must not fall back to
   a same-named task directory in the source checkout.
 - Task artifact arguments such as `--review-report`, `--agent-assignment`,
   `--review-round-report`, and `--checked-artifact` must resolve inside the
@@ -229,7 +233,7 @@ metadata only. The validator may ignore stale Phase 2 digest metadata for
 task-local Branch Review Gate / publish readiness metadata during this
 post-commit audit because final review and release readiness are produced after
 the work commit. The allowed mutable task-local digest entries are
-`issue-scope-ledger.json`, `pr-body.md`, `pr-readiness.json`,
+`issue-scope-ledger.json`, `pr-body.md`, `pr-readiness.json`, `marketplace-verification.json`,
 `agent-assignment.json`, `review.md`, and `review-gate.json`; Branch Review
 Gate or publish validators must revalidate the current files before passing.
 Any uncovered non-metadata committed path or current non-metadata dirty path
@@ -253,24 +257,28 @@ agent should be stopped, or whether a failed/stale/unfinished partial output is
 acceptable.
 
 When a review round has findings, including a previous final-review round that
-found a new issue, the same technical `agent_id` normally must later be
-recorded only as `问题闭环审查代理` to confirm its finding is closed. If that
-finding owner objectively failed, was interrupted, or became stale and cannot
-continue, a replacement closure reviewer may close only that finding when
+found a new issue, it must later be closed by one of three explicit forms: the
+same technical `agent_id` recorded as `问题闭环审查代理` with
+`findings_count: 0` and `reuse_decision: reuse-for-closure`; a different fresh
+`问题闭环审查代理` whose technical `agent_id` has not appeared in any earlier
+`review_rounds[]` and whose `reuse_decisions[]` entry records
+`decision=new-agent` with exact `from_round`, `to_round`, closure `agent_id`,
+reviewed `head`, and non-empty `reason`; or, when the finding owner objectively
+failed, was interrupted, or became stale and cannot continue, a replacement
+closure reviewer that may close only that finding when
 `reuse_decisions[]` records `decision=replace` with `from_round` / `to_round`
 and `status_events[]` records the predecessor evidence plus
 `replacement-started` with `predecessor_agent_id`, `predecessor_event_id`,
 `replacement_reason`, `handoff_summary`, and replacement `completed` evidence.
-A passing gate
-must validate that every finding owner has a later same-agent closure round with
-`findings_count: 0` and `reuse_decision: reuse-for-closure` or a complete
-replacement closure chain with a replacement `问题闭环审查代理` round carrying
-`findings_count: 0` and `reuse_decision: replace`, and then validate a fresh
+A passing gate must validate that every finding owner has one of those three
+closure forms. A closure round that still reports findings becomes a new
+finding owner and must itself have a later explicit closure before the gate can
+pass. The gate then validates a fresh
 `最终放行审查代理` review round: `review_rounds[].round` values are unique and
 strictly increasing in recorded order, it is the unambiguous last round,
 `reviewed_head` equals the reviewed code HEAD, `findings_count` is 0,
-`reuse_decision` is `new-agent`, and the final reviewer did not own any earlier
-finding round or act as replacement closure reviewer. This is an objective
+`reuse_decision` is `new-agent`, and the final reviewer technical `agent_id` has
+not appeared in any earlier `review_rounds[]`. This is an objective
 metadata check only; the AI/human review still owns the judgment that the
 review covered the full diff.
 
@@ -315,3 +323,9 @@ python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trell
 
 When changing `review-branch`, `finish-work`, or `publish-pr`, also run dry-run
 or representative script paths in a disposable worktree whenever practical.
+
+### Remote Marketplace Verification Gate
+
+For tasks that change the workflow marketplace, preset, overlays, installer, schema, or public extension contract, publish is fail-closed after the branch push and before `gh pr create`. The deterministic `verify-marketplace` companion command records task-local `marketplace-verification.json` with repository, remote, branch/ref, verified content HEAD, remote HEAD, command exit codes, stdout/stderr digests and sizes, and installed workflow/preview/schema digests. It executes remote branch `trellis init`, workflow preview, workflow switch, canonical preset reapply, and runtime-ignore checks in a clean temporary repository. It does not decide PR readiness.
+
+`issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` evidence object in the primary issue and every close issue. Before the verifier it is `status=pending`, `required=true`, points to `marketplace-verification.json`, and explicitly does not satisfy final publish. `publish-pr` pushes the reviewed content HEAD, runs the verifier, replaces only those structured entries with real `status=passed` facts (artifact path and SHA-256, verified content HEAD, verifier remote HEAD, publish content HEAD, and all-command result), then commits exactly the verifier artifact plus the ledger as the only allowed metadata tail and pushes it. After that push it reloads and cross-validates the ledger and artifact, requires the current HEAD to differ from the verified content HEAD by exactly those two paths, requires the remote branch to equal the metadata HEAD, revalidates Branch Review Gate metadata tolerance, and only then permits `gh pr create`. Missing, pending, failed, stale, tampered, or mismatched evidence blocks. The AI remains responsible for deciding close scope and whether evidence is sufficient and truthful; scripts only execute, record, and validate deterministic verifier facts. No release tag is created by this gate.

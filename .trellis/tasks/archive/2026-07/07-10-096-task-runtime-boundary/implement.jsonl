@@ -1,0 +1,9 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"Phase ownership、canonical workflow 与 dogfood 同步合同。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Executor、validator、recorder 边界与脚本安全规则。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"任务启动上下文、本机运行态和共享配置数据合同。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"实现期验证和提交前质量门禁。"}
+{"file":".trellis/spec/preset/installer.md","reason":"Preset managed asset、备份、冲突和升级语义。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"Canonical overlay 到平台 dogfood 副本同步规则。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"公开 README 与 requirements docs 的 SSOT 和可执行命令要求。"}
+{"file":".trellis/tasks/07-10-096-task-runtime-boundary/research/code-test-impact.md","reason":"旧 handoff 数据流、下游调用点和测试影响面。"}
+{"file":".trellis/tasks/07-10-096-task-runtime-boundary/research/workflow-preset-docs-upgrade-update-ssot.md","reason":"Workflow/preset/docs/upgrade-update SSOT 与 obsolete artifact 风险。"}

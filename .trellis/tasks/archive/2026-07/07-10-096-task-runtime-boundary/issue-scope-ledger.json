@@ -1,0 +1,99 @@
+{
+  "primary_issue": {
+    "number": 96,
+    "url": "https://github.com/castbox/guru-trellis/issues/96",
+    "title": "拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界",
+    "reason": "本任务 primary issue；完成任务启动上下文与本机运行态边界验收后关闭。",
+    "acceptance_evidence": [
+      "AC1 固定字段白名单：`trellis/workflows/guru-team/schemas/task-start-context.schema.json` 使用 `additionalProperties: false`；`TaskRuntimeBoundaryContractTest` 覆盖 fresh/remote-only/fetch-failed SHA 映射，core tests 通过。",
+      "AC2 portable context 禁止本机路径：`validate_task_start_context()` 扫描 absolute path、runtime/preflight/worktree/developer/command forbidden keys；当前 `.trellis/tasks/07-10-096-task-runtime-boundary/task-start-context.json` 通过 JSON 与 boundary 校验。",
+      "AC3 local runtime：`.trellis/.runtime/guru-team/workspaces|tasks/*.json`、`.gitignore` 和 preset `ensure_runtime_gitignore()` 已实现；cache-miss/worktree reconstruction core tests 通过。",
+      "AC4 workspace boundary：`check-workspace-boundary.sh --json --task .trellis/tasks/07-10-096-task-runtime-boundary` 返回 status=ok，expected workspace 与 actual repo root 一致。",
+      "AC5 shared config/read-only 与普通 task allowlist：prepare planner-only/create-worktree/create-task 分层测试、publish/finish boundary tests 与 parallel task path tests 通过。",
+      "AC6 并行 task 隔离：`TaskRuntimeBoundaryContractTest.test_parallel_tasks_use_distinct_runtime_and_tracked_paths` 通过，各 task 使用独立 task context/runtime key。",
+      "AC7 删除 handoff public API：canonical/dogfood 删除 `.trellis/guru-team/handoff.json`、`schemas/intake-handoff.schema.json`、`handoff_path`；active reference audit 仅保留 obsolete cleanup fixture/forbidden-key 保护。",
+      "AC8 canonical/dogfood：`apply.sh --repo . --all-platforms`、`check-dogfood-overlay-drift.sh`、`.new/.bak` 扫描和 `git diff --check` 通过。",
+      "AC10 issue scope：仅 #96 位于 close_issues；#53 为 related，#97/#98/#99/#100 为 followup，不使用 close keyword。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/marketplace-verification.json",
+        "artifact_sha256": "3b3ea7529db3c06ab45764ad78d3707b179471f79842799cd1ffd03afdd3aa45",
+        "verified_content_head": "b327198063c44327544580a0ce3f461fc905ed6e",
+        "remote_head": "b327198063c44327544580a0ce3f461fc905ed6e",
+        "publish_head": "b327198063c44327544580a0ce3f461fc905ed6e",
+        "commands_passed": true
+      }
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 96,
+      "url": "https://github.com/castbox/guru-trellis/issues/96",
+      "title": "拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界",
+      "reason": "本任务完整实现并通过 Phase 2 check、Branch Review Gate、throwaway install 与 upgrade/update 验证后关闭。",
+      "acceptance_evidence": [
+        "AC1 固定字段白名单：`trellis/workflows/guru-team/schemas/task-start-context.schema.json` 使用 `additionalProperties: false`；`TaskRuntimeBoundaryContractTest` 覆盖 fresh/remote-only/fetch-failed SHA 映射，core tests 通过。",
+        "AC2 portable context 禁止本机路径：`validate_task_start_context()` 扫描 absolute path、runtime/preflight/worktree/developer/command forbidden keys；当前 `.trellis/tasks/07-10-096-task-runtime-boundary/task-start-context.json` 通过 JSON 与 boundary 校验。",
+        "AC3 local runtime：`.trellis/.runtime/guru-team/workspaces|tasks/*.json`、`.gitignore` 和 preset `ensure_runtime_gitignore()` 已实现；cache-miss/worktree reconstruction core tests 通过。",
+        "AC4 workspace boundary：`check-workspace-boundary.sh --json --task .trellis/tasks/07-10-096-task-runtime-boundary` 返回 status=ok，expected workspace 与 actual repo root 一致。",
+        "AC5 shared config/read-only 与普通 task allowlist：prepare planner-only/create-worktree/create-task 分层测试、publish/finish boundary tests 与 parallel task path tests 通过。",
+        "AC6 并行 task 隔离：`TaskRuntimeBoundaryContractTest.test_parallel_tasks_use_distinct_runtime_and_tracked_paths` 通过，各 task 使用独立 task context/runtime key。",
+        "AC7 删除 handoff public API：canonical/dogfood 删除 `.trellis/guru-team/handoff.json`、`schemas/intake-handoff.schema.json`、`handoff_path`；active reference audit 仅保留 obsolete cleanup fixture/forbidden-key 保护。",
+        "AC8 canonical/dogfood：`apply.sh --repo . --all-platforms`、`check-dogfood-overlay-drift.sh`、`.new/.bak` 扫描和 `git diff --check` 通过。",
+        "AC10 issue scope：仅 #96 位于 close_issues；#53 为 related，#97/#98/#99/#100 为 followup，不使用 close keyword。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/marketplace-verification.json",
+          "artifact_sha256": "3b3ea7529db3c06ab45764ad78d3707b179471f79842799cd1ffd03afdd3aa45",
+          "verified_content_head": "b327198063c44327544580a0ce3f461fc905ed6e",
+          "remote_head": "b327198063c44327544580a0ce3f461fc905ed6e",
+          "publish_head": "b327198063c44327544580a0ce3f461fc905ed6e",
+          "commands_passed": true
+        }
+      ]
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 53,
+      "url": "https://github.com/castbox/guru-trellis/issues/53",
+      "title": "并行 Trellis task 的 tracked artifact 冲突治理",
+      "reason": "umbrella issue；本任务只回填原 handoff 冲突面结论，不关闭。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 97,
+      "url": "https://github.com/castbox/guru-trellis/issues/97",
+      "title": "用 task-local finish-summary 替代 workspace journal/add_session",
+      "reason": "承接 finish-work workspace 冲突，不属于 #96。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 98,
+      "url": "https://github.com/castbox/guru-trellis/issues/98",
+      "title": "基于 finish-summary 的历史上下文发现",
+      "reason": "承接历史上下文分级发现，不属于 #96。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 99,
+      "url": "https://github.com/castbox/guru-trellis/issues/99",
+      "title": "取消 Guru Team 对 developer identity 的前置依赖",
+      "reason": "承接剩余 developer identity 前置移除，不属于 #96。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 100,
+      "url": "https://github.com/castbox/guru-trellis/issues/100",
+      "title": "为 archived tasks 回填 finish-summary 历史索引",
+      "reason": "承接历史回填，不属于 #96。",
+      "acceptance_evidence": []
+    }
+  ]
+}

@@ -36,7 +36,9 @@ DEFAULTS: dict[str, Any] = {
     "base_branch_candidates": ["dev", "develop", "main", "master"],
     "workspace_mode": "worktree",
     "worktree_root": "",
-    "handoff_path": ".trellis/guru-team/handoff.json",
+    "task_start_context_artifact": "task-start-context.json",
+    "runtime_root": ".trellis/.runtime/guru-team",
+    "marketplace_verification_artifact": "marketplace-verification.json",
     "artifact_language": "zh-CN",
     "review_gate": {
         "artifact_path": "review-gate.json",
@@ -122,6 +124,7 @@ PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS = [
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 REVIEW_REPORT_ARTIFACT = "review.md"
+MARKETPLACE_VERIFICATION_ARTIFACT = "marketplace-verification.json"
 REVIEW_ROUND_REPORT_DIR = "reviews"
 HUMAN_MARKDOWN_ARTIFACTS = [
     {
@@ -296,7 +299,7 @@ SELF_REVIEWER_PATTERNS = [
     re.compile(r"(^|[-_./\s])self[-_./\s]*review($|[-_./\s])", re.IGNORECASE),
 ]
 METADATA_ONLY_PREFIXES = (".trellis/tasks/", ".trellis/workspace/", ".trellis/.runtime/")
-METADATA_ONLY_FILES = {".trellis/guru-team/handoff.json"}
+METADATA_ONLY_FILES: set[str] = set()
 PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS = {
     "issue-scope-ledger.json",
     "pr-body.md",
@@ -304,6 +307,7 @@ PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS = {
     AGENT_ASSIGNMENT_ARTIFACT,
     REVIEW_REPORT_ARTIFACT,
     "review-gate.json",
+    MARKETPLACE_VERIFICATION_ARTIFACT,
 }
 
 
@@ -1333,6 +1337,7 @@ def ensure_base_freshness(root: Path, base_ref: str, remote: str = "origin") -> 
 
     local_head_after = ref_head(root, base)
     fresh = local_head_after == remote_head if local_head_after else True
+    status = "fresh" if local_head_after and fresh else "remote_only"
     return {
         "remote": remote,
         "base_branch": base,
@@ -1344,7 +1349,7 @@ def ensure_base_freshness(root: Path, base_ref: str, remote: str = "origin") -> 
         "fetch_performed": True,
         "fast_forwarded": fast_forwarded,
         "fresh": fresh,
-        "status": "fresh" if fresh else "remote_only",
+        "status": status,
         "base_ref_for_worktree": base if fresh and local_head_after else remote_ref,
     }
 
@@ -1684,6 +1689,21 @@ def worktree_lines(root: Path) -> list[str]:
     return [line for line in proc.stdout.splitlines() if line.strip()]
 
 
+def worktree_records(root: Path) -> list[dict[str, str]]:
+    proc = run(["git", "worktree", "list", "--porcelain"], cwd=root, check=False)
+    records: list[dict[str, str]] = []
+    current: dict[str, str] = {}
+    for line in [*proc.stdout.splitlines(), ""]:
+        if not line.strip():
+            if current.get("worktree"):
+                records.append(current)
+            current = {}
+            continue
+        key, _, value = line.partition(" ")
+        current[key] = value
+    return records
+
+
 def default_worktree_root(root: Path) -> Path:
     return root.parent / f"{root.name}-worktrees"
 
@@ -1823,34 +1843,83 @@ def ensure_workspace_developer_identity(source_root: Path, workspace_path: Path,
     )
 
 
-def configured_handoff_path(root: Path, config: dict[str, Any]) -> Path:
-    rel = Path(str(config.get("handoff_path") or DEFAULTS["handoff_path"]))
+def task_start_context_path(task_dir: Path, config: dict[str, Any]) -> Path:
+    return task_dir / str(config.get("task_start_context_artifact") or DEFAULTS["task_start_context_artifact"])
+
+
+def runtime_root(root: Path, config: dict[str, Any]) -> Path:
+    rel = Path(str(config.get("runtime_root") or DEFAULTS["runtime_root"]))
     return rel if rel.is_absolute() else root / rel
 
 
-def workspace_handoff_path(config: dict[str, Any], workspace_path: Path) -> Path:
-    rel = Path(str(config.get("handoff_path") or DEFAULTS["handoff_path"]))
-    return rel if rel.is_absolute() else workspace_path / rel
+def runtime_workspace_path(root: Path, config: dict[str, Any], workspace_slug: str) -> Path:
+    return runtime_root(root, config) / "workspaces" / f"{workspace_slug}.json"
 
 
-def write_handoff(
-    root: Path,
-    config: dict[str, Any],
-    payload: dict[str, Any],
-    workspace_path: Path,
-    mirror_to_source: bool = False,
-) -> Path:
-    path = workspace_handoff_path(config, workspace_path)
-    payload["handoff_path"] = str(path)
-    content = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
+def runtime_task_path(root: Path, config: dict[str, Any], task_slug: str) -> Path:
+    return runtime_root(root, config) / "tasks" / f"{task_slug}.json"
 
-    if mirror_to_source and workspace_path != root:
-        source_handoff = configured_handoff_path(root, config)
-        source_handoff.parent.mkdir(parents=True, exist_ok=True)
-        source_handoff.write_text(content, encoding="utf-8")
-    return path
+
+def write_runtime_mappings(root: Path, config: dict[str, Any], payload: dict[str, Any], workspace_path: Path) -> None:
+    workspace_slug = str(payload["workspace_slug"])
+    roots = {root.resolve(), workspace_path.resolve()}
+    workspace_payload = {
+        "schema_version": "1.0", "workspace_slug": workspace_slug,
+        "workspace_path": str(workspace_path.resolve()), "source_checkout": str(root.resolve()),
+        "branch_name": payload["branch_name"], "updated_at": now_iso(),
+    }
+    for runtime_repo in roots:
+        write_json(runtime_workspace_path(runtime_repo, config, workspace_slug), workspace_payload)
+    task_slug = str(payload.get("task_slug") or "")
+    task_dir = str(payload.get("task_dir") or "")
+    if task_slug and task_dir:
+        task_payload = {
+            "schema_version": "1.0", "task_slug": task_slug, "workspace_slug": workspace_slug,
+            "workspace_path": str(workspace_path.resolve()), "task_artifact_dir": task_dir,
+            "updated_at": now_iso(),
+        }
+        for runtime_repo in roots:
+            write_json(runtime_task_path(runtime_repo, config, task_slug), task_payload)
+
+
+def rebuild_runtime_mappings(root: Path, config: dict[str, Any], context: dict[str, Any]) -> dict[str, Any] | None:
+    workspace_slug = str(context.get("workspace_slug") or "").strip()
+    task_slug = str(context.get("task_slug") or "").strip()
+    task_dir = str(context.get("task_artifact_dir") or "").strip()
+    branch_name = str(context.get("branch_name") or "").strip()
+    if not all([workspace_slug, task_slug, task_dir, branch_name]):
+        return None
+
+    records = worktree_records(root)
+    expected_branch = f"refs/heads/{branch_name}"
+    matches = [
+        Path(record["worktree"]).resolve()
+        for record in records
+        if record.get("branch") == expected_branch
+        and (Path(record["worktree"]) / task_dir / "task-start-context.json").is_file()
+    ]
+    if len(matches) != 1:
+        return None
+
+    workspace_path = matches[0]
+    base_branch = str(context.get("base_branch") or "").strip()
+    base_ref = f"refs/heads/{base_branch}" if base_branch else ""
+    source_candidates = [
+        Path(record["worktree"]).resolve()
+        for record in records
+        if Path(record["worktree"]).resolve() != workspace_path
+        and (not base_ref or record.get("branch") == base_ref)
+    ]
+    source_checkout = source_candidates[0] if source_candidates else root.resolve()
+    payload = {
+        "workspace_slug": workspace_slug,
+        "task_slug": task_slug,
+        "task_dir": task_dir,
+        "branch_name": branch_name,
+    }
+    write_runtime_mappings(source_checkout, config, payload, workspace_path)
+    cache, _ = read_optional_json(runtime_workspace_path(workspace_path, config, workspace_slug))
+    return cache
 
 
 def now_iso() -> str:
@@ -1933,12 +2002,15 @@ def guru_team_extension_payload(root: Path) -> dict[str, Any]:
     }
 
 
-def load_handoff(root: Path, config: dict[str, Any]) -> dict[str, Any]:
-    path = configured_handoff_path(root, config)
+def load_task_start_context(task_dir: Path, config: dict[str, Any]) -> dict[str, Any]:
+    path = task_start_context_path(task_dir, config)
     if not path.exists():
         return {}
     payload = read_json(path)
-    payload.setdefault("handoff_path", str(path))
+    validate_task_start_context(payload)
+    payload.setdefault("_path", str(path))
+    payload.setdefault("task_dir", payload.get("task_artifact_dir"))
+    payload.setdefault("issue_scope_ledger", payload.get("issue_scope_ledger_seed") or {})
     return payload
 
 
@@ -1982,17 +2054,17 @@ def current_task_dir(root: Path) -> Path | None:
     return None
 
 
-def resolve_task_dir(root: Path, task_arg: str | None, handoff: dict[str, Any] | None = None) -> Path:
+def resolve_task_dir(root: Path, task_arg: str | None, context: dict[str, Any] | None = None) -> Path:
     if task_arg:
         resolved = resolve_existing_task_dir(root, task_arg)
         if resolved:
             return resolved
         raise WorkflowError(f"Could not resolve task directory: {task_arg}")
 
-    if handoff:
-        handoff_task = str(handoff.get("task_dir") or "").strip()
-        if handoff_task:
-            resolved = resolve_existing_task_dir(root, handoff_task)
+    if context:
+        context_task = str(context.get("task_artifact_dir") or "").strip()
+        if context_task:
+            resolved = resolve_existing_task_dir(root, context_task)
             if resolved:
                 return resolved
 
@@ -2046,36 +2118,6 @@ def optional_resolved_path(value: Any) -> Path | None:
     return Path(text).expanduser().resolve()
 
 
-def workspace_boundary_task_relative(root: Path, handoff: dict[str, Any], task_dir: Path) -> str:
-    handoff_task = str(handoff.get("task_dir") or "").strip().replace("\\", "/")
-    if handoff_task and not Path(handoff_task).expanduser().is_absolute():
-        return handoff_task.strip("/")
-    if path_within(root, task_dir):
-        return repo_relative(root, task_dir)
-    return f".trellis/tasks/{task_dir.name}"
-
-
-def handoff_matches_boundary_task(source_handoff: dict[str, Any] | None, handoff: dict[str, Any], task_dir: Path) -> bool:
-    if not source_handoff:
-        return False
-    source_task = str(source_handoff.get("task_dir") or "").strip()
-    current_task = str(handoff.get("task_dir") or "").strip()
-    if source_task and current_task and Path(source_task).name == Path(current_task).name:
-        return True
-    if source_task and Path(source_task).name == task_dir.name:
-        return True
-    for key in ["task_slug", "workspace_slug", "branch_name", "workspace_path"]:
-        source_value = str(source_handoff.get(key) or "").strip()
-        current_value = str(handoff.get(key) or "").strip()
-        if source_value and current_value and source_value == current_value:
-            return True
-    source_issue = source_handoff.get("source_issue") if isinstance(source_handoff.get("source_issue"), dict) else {}
-    current_issue = handoff.get("source_issue") if isinstance(handoff.get("source_issue"), dict) else {}
-    source_number = str(source_issue.get("number") or "").strip()
-    current_number = str(current_issue.get("number") or "").strip()
-    return bool(source_number and current_number and source_number == current_number)
-
-
 def safe_git_status_paths(root: Path | None) -> list[str]:
     if root is None or not root.exists():
         return []
@@ -2088,15 +2130,22 @@ def safe_git_status_paths(root: Path | None) -> list[str]:
 def workspace_boundary_context(
     root: Path,
     config: dict[str, Any],
-    handoff: dict[str, Any],
+    context: dict[str, Any],
     task_dir: Path,
 ) -> dict[str, Any]:
-    preflight = handoff.get("preflight") if isinstance(handoff.get("preflight"), dict) else {}
-    workspace_mode = str(handoff.get("workspace_mode") or config.get("workspace_mode") or "").strip()
-    expected_workspace = optional_resolved_path(handoff.get("workspace_path"))
-    source_checkout = optional_resolved_path(preflight.get("current_checkout") or preflight.get("repo_root"))
-    task_relative = workspace_boundary_task_relative(root, handoff, task_dir)
-    handoff_path = configured_handoff_path(root, config)
+    workspace_mode = str(config.get("workspace_mode") or "").strip()
+    task_relative = str(context.get("task_artifact_dir") or repo_relative(root, task_dir)).strip("/")
+    expected_workspace = root.resolve()
+    source_checkout = None
+    workspace_slug = str(context.get("workspace_slug") or "").strip()
+    if workspace_slug:
+        cache, _ = read_optional_json(runtime_workspace_path(root, config, workspace_slug))
+        if not cache:
+            cache = rebuild_runtime_mappings(root, config, context)
+        cached_path = optional_resolved_path((cache or {}).get("workspace_path"))
+        if cached_path and cached_path.exists():
+            expected_workspace = cached_path
+            source_checkout = optional_resolved_path((cache or {}).get("source_checkout"))
     return {
         "workspace_mode": workspace_mode,
         "expected_workspace": expected_workspace,
@@ -2104,15 +2153,14 @@ def workspace_boundary_context(
         "source_checkout": source_checkout,
         "task_dir": task_dir.resolve(),
         "task_dir_relative": task_relative,
-        "handoff_path": handoff_path.resolve(),
-        "handoff_present": bool(handoff),
+        "task_context_present": bool(context),
     }
 
 
 def collect_workspace_boundary_snapshot(
     context: dict[str, Any],
     config: dict[str, Any],
-    handoff: dict[str, Any],
+    task_context: dict[str, Any],
 ) -> dict[str, Any]:
     actual_root = context["actual_repo_root"]
     expected_workspace = context.get("expected_workspace")
@@ -2123,23 +2171,6 @@ def collect_workspace_boundary_snapshot(
     source_status = safe_git_status_paths(source_checkout if isinstance(source_checkout, Path) else None)
     task_status = safe_git_status_paths(task_status_root if isinstance(task_status_root, Path) else None)
     suspicious: list[dict[str, Any]] = []
-
-    source_handoff_payload: dict[str, Any] | None = None
-    source_handoff_matches = False
-    if isinstance(source_checkout, Path):
-        source_handoff_path = configured_handoff_path(source_checkout, config)
-        source_handoff_payload, source_handoff_error = read_optional_json(source_handoff_path)
-        source_handoff_matches = handoff_matches_boundary_task(source_handoff_payload, handoff, task_dir)
-        if source_handoff_path.exists():
-            suspicious.append(
-                {
-                    "kind": "source_handoff",
-                    "path": repo_relative(source_checkout, source_handoff_path),
-                    "absolute_path": str(source_handoff_path.resolve()),
-                    "matches_current_task": source_handoff_matches,
-                    "error": source_handoff_error,
-                }
-            )
 
     if (
         isinstance(source_checkout, Path)
@@ -2169,12 +2200,9 @@ def collect_workspace_boundary_snapshot(
                     "absolute_path": str(reviews_dir.resolve()),
                 }
             )
-        handoff_relative = repo_relative(source_checkout, configured_handoff_path(source_checkout, config))
         for dirty_path in source_status:
             normalized = dirty_path.strip().replace("\\", "/")
-            if normalized.startswith(f"{task_relative}/") or (
-                source_handoff_matches and normalized == handoff_relative
-            ):
+            if normalized.startswith(f"{task_relative}/"):
                 suspicious.append(
                     {
                         "kind": "same_task_dirty_path",
@@ -2197,15 +2225,7 @@ def collect_workspace_boundary_snapshot(
 
 
 def blocking_suspicious_source_artifacts(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
-    blockers: list[dict[str, Any]] = []
-    for item in snapshot.get("suspicious_source_artifacts", []):
-        if not isinstance(item, dict):
-            continue
-        kind = str(item.get("kind") or "")
-        if kind == "source_handoff" and item.get("matches_current_task") is not True:
-            continue
-        blockers.append(item)
-    return blockers
+    return [item for item in snapshot.get("suspicious_source_artifacts", []) if isinstance(item, dict)]
 
 
 def workspace_boundary_errors(
@@ -2215,7 +2235,7 @@ def workspace_boundary_errors(
     allow_source_clean: bool = False,
 ) -> list[str]:
     errors: list[str] = []
-    handoff_present = bool(context.get("handoff_present"))
+    task_context_present = bool(context.get("task_context_present"))
     workspace_mode = str(context.get("workspace_mode") or "")
     expected_workspace = context.get("expected_workspace")
     actual_root = context["actual_repo_root"]
@@ -2223,15 +2243,9 @@ def workspace_boundary_errors(
     task_dir = context["task_dir"]
     blockers = blocking_suspicious_source_artifacts(snapshot)
 
-    if workspace_mode == "worktree" and not handoff_present:
-        errors.append(
-            "workspace boundary 缺少当前 checkout 的 handoff.json，无法确认 handoff.workspace_path；"
-            "请从 intake 选定的 task worktree 运行该命令。"
-        )
-    elif handoff_present and workspace_mode == "worktree":
-        if not isinstance(expected_workspace, Path):
-            errors.append("workspace boundary 缺少 handoff.workspace_path，无法确认 task worktree。")
-        elif actual_root.resolve() != expected_workspace.resolve():
+    if workspace_mode == "worktree" and not task_context_present:
+        errors.append("workspace boundary 缺少 task-start-context.json，无法确认 task-local portable context。")
+    elif workspace_mode == "worktree" and isinstance(expected_workspace, Path) and actual_root.resolve() != expected_workspace.resolve():
             allow_source = (
                 allow_source_clean
                 and isinstance(source_checkout, Path)
@@ -2241,7 +2255,7 @@ def workspace_boundary_errors(
             )
             if not allow_source:
                 errors.append(
-                    "workspace boundary mismatch: expected workspace_path="
+                    "workspace boundary mismatch: expected runtime workspace="
                     f"{expected_workspace}, actual_repo_root={actual_root}, source_checkout={source_checkout or '(unknown)'}, task_dir={task_dir}."
                 )
 
@@ -2263,13 +2277,13 @@ def workspace_boundary_errors(
 def workspace_boundary_snapshot(
     root: Path,
     config: dict[str, Any],
-    handoff: dict[str, Any],
+    task_context: dict[str, Any],
     task_dir: Path,
     *,
     allow_source_clean: bool = False,
 ) -> dict[str, Any]:
-    context = workspace_boundary_context(root, config, handoff, task_dir)
-    snapshot = collect_workspace_boundary_snapshot(context, config, handoff)
+    context = workspace_boundary_context(root, config, task_context, task_dir)
+    snapshot = collect_workspace_boundary_snapshot(context, config, task_context)
     errors = workspace_boundary_errors(context, snapshot, allow_source_clean=allow_source_clean)
     snapshot["status"] = "blocked" if errors else "ok"
     snapshot["errors"] = errors
@@ -2279,7 +2293,7 @@ def workspace_boundary_snapshot(
 def assert_workspace_boundary(
     root: Path,
     config: dict[str, Any],
-    handoff: dict[str, Any],
+    task_context: dict[str, Any],
     task_dir: Path,
     *,
     allow_source_clean: bool = False,
@@ -2287,7 +2301,7 @@ def assert_workspace_boundary(
     snapshot = workspace_boundary_snapshot(
         root,
         config,
-        handoff,
+        task_context,
         task_dir,
         allow_source_clean=allow_source_clean,
     )
@@ -2318,13 +2332,13 @@ def issue_entry(number: Any, url: str = "", title: str = "", reason: str = "", e
     }
 
 
-def default_issue_scope_ledger(handoff: dict[str, Any]) -> dict[str, Any]:
-    source = handoff.get("source_issue") if isinstance(handoff.get("source_issue"), dict) else {}
+def default_issue_scope_ledger(task_context: dict[str, Any]) -> dict[str, Any]:
+    source = task_context.get("source_issue") if isinstance(task_context.get("source_issue"), dict) else {}
     primary = issue_entry(
         source.get("number"),
         str(source.get("url") or ""),
         str(source.get("title") or ""),
-        "intake/handoff 主 issue，默认进入 close 候选；publish 前必须补齐验收证据。",
+        "intake 主 issue，默认进入 close 候选；publish 前必须补齐验收证据。",
     )
     return {
         "schema_version": "1.0",
@@ -2345,24 +2359,24 @@ def issue_scope_ledger_path(task_dir: Path) -> Path:
     return task_dir / "issue-scope-ledger.json"
 
 
-def ensure_issue_scope_ledger(task_dir: Path, handoff: dict[str, Any]) -> Path:
+def ensure_issue_scope_ledger(task_dir: Path, task_context: dict[str, Any]) -> Path:
     path = issue_scope_ledger_path(task_dir)
     if not path.exists():
-        ledger = handoff.get("issue_scope_ledger")
+        ledger = task_context.get("issue_scope_ledger")
         if not isinstance(ledger, dict):
-            ledger = default_issue_scope_ledger(handoff)
+            ledger = default_issue_scope_ledger(task_context)
         write_json(path, ledger)
     return path
 
 
-def load_issue_scope_ledger(task_dir: Path, handoff: dict[str, Any]) -> dict[str, Any]:
+def load_issue_scope_ledger(task_dir: Path, task_context: dict[str, Any]) -> dict[str, Any]:
     path = issue_scope_ledger_path(task_dir)
     if path.exists():
         return read_json(path)
-    ledger = handoff.get("issue_scope_ledger")
+    ledger = task_context.get("issue_scope_ledger")
     if isinstance(ledger, dict):
         return ledger
-    return default_issue_scope_ledger(handoff)
+    return default_issue_scope_ledger(task_context)
 
 
 def issue_numbers(items: Any) -> list[int]:
@@ -2382,14 +2396,65 @@ def issue_numbers(items: Any) -> list[int]:
 def issue_has_evidence(issue: dict[str, Any]) -> bool:
     for key in ("acceptance_evidence", "verification", "evidence"):
         value = issue.get(key)
-        if isinstance(value, list) and any(str(item).strip() for item in value):
+        if isinstance(value, list) and any(
+            (isinstance(item, str) and item.strip())
+            or (isinstance(item, dict) and item.get("status") == "passed")
+            for item in value
+        ):
             return True
         if isinstance(value, str) and value.strip():
             return True
     return False
 
 
-def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any]) -> list[str]:
+REMOTE_MARKETPLACE_EVIDENCE_TYPE = "remote_marketplace_verification"
+
+
+def remote_marketplace_evidence(issue: dict[str, Any]) -> dict[str, Any] | None:
+    evidence = issue.get("acceptance_evidence")
+    if not isinstance(evidence, list):
+        return None
+    matches = [item for item in evidence if isinstance(item, dict) and item.get("type") == REMOTE_MARKETPLACE_EVIDENCE_TYPE]
+    return matches[0] if len(matches) == 1 else None
+
+
+def remote_marketplace_evidence_errors(issue: dict[str, Any], *, allow_pending: bool) -> list[str]:
+    item = remote_marketplace_evidence(issue)
+    if item is None:
+        return ["缺少唯一 remote_marketplace_verification 结构化 evidence。"]
+    status = item.get("status")
+    if status == "pending" and allow_pending:
+        if item != {
+            "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
+            "status": "pending",
+            "required": True,
+            "artifact_path": "marketplace-verification.json",
+            "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。",
+        }:
+            return ["pending remote marketplace evidence 不符合固定合同。"]
+        return []
+    if status != "passed":
+        return ["required remote marketplace evidence 必须是 passed；pending/文字说明不能发布。"]
+    required = {
+        "type", "status", "required", "artifact_path", "artifact_sha256",
+        "verified_content_head", "remote_head", "publish_head", "commands_passed",
+    }
+    if set(item) != required:
+        return ["passed remote marketplace evidence 字段不符合固定合同。"]
+    errors: list[str] = []
+    if item.get("required") is not True:
+        errors.append("remote marketplace evidence required 必须为 true。")
+    if not re.fullmatch(r"[0-9a-f]{64}", str(item.get("artifact_sha256") or "")):
+        errors.append("remote marketplace evidence artifact_sha256 无效。")
+    for key in ["verified_content_head", "remote_head", "publish_head"]:
+        if not re.fullmatch(r"[0-9a-f]{40}", str(item.get(key) or "")):
+            errors.append(f"remote marketplace evidence {key} 无效。")
+    if item.get("commands_passed") is not True:
+        errors.append("remote marketplace evidence commands_passed 必须为 true。")
+    return errors
+
+
+def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any], *, allow_pending_remote_marketplace: bool = False) -> list[str]:
     errors: list[str] = []
     close_issues = ledger.get("close_issues")
     if not isinstance(close_issues, list):
@@ -2411,6 +2476,11 @@ def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any]) ->
             errors.append(f"issue #{number} 同时出现在 close_issues 与 related/followup 中。")
         if not issue_has_evidence(issue):
             errors.append(f"close_issues 中 issue #{number} 缺少验收或验证证据。")
+        if marketplace_verification_required(gate):
+            errors.extend(
+                f"close_issues 中 issue #{number}：{error}"
+                for error in remote_marketplace_evidence_errors(issue, allow_pending=allow_pending_remote_marketplace)
+            )
         if number not in gate_reviewed:
             errors.append(f"Branch Review Gate 未记录对 close issue #{number} 的覆盖结论。")
     return errors
@@ -2934,10 +3004,8 @@ def collect_liveness_snapshot(root: Path, task_dir: Path, source_repo: Path, pay
     }
 
 
-def source_repo_from_handoff(root: Path, handoff: dict[str, Any]) -> Path:
-    source = handoff.get("preflight", {}).get("current_checkout") if isinstance(handoff.get("preflight"), dict) else ""
-    if not source:
-        source = handoff.get("source_checkout") or str(root)
+def source_repo_from_task_context(root: Path, task_context: dict[str, Any]) -> Path:
+    source = task_context.get("source_repo_path") or str(root)
     return repo_root(Path(str(source)).expanduser())
 
 
@@ -3769,6 +3837,11 @@ def validate_agent_assignment_payload(
                 errors.append(f"agent-assignment.json reuse_decisions[{index}].decision 非法。")
             if not str(item.get("reason") or "").strip():
                 errors.append(f"agent-assignment.json reuse_decisions[{index}] 缺少 reason。")
+            for round_field in ["from_round", "to_round"]:
+                if round_field in item and (not is_strict_int(item.get(round_field)) or item[round_field] <= 0):
+                    errors.append(
+                        f"agent-assignment.json reuse_decisions[{index}].{round_field} 必须是正 strict int。"
+                    )
             validate_head_field(root, item.get("head"), f"reuse_decisions[{index}].head", errors)
     errors.extend(validate_liveness_payload_errors(root, payload, enforce_recovery_chains=enforce_recovery_chains))
     return errors
@@ -4023,8 +4096,10 @@ def finding_round_has_replacement_closure(
         matching_decision = any(
             isinstance(item, dict)
             and str(item.get("decision") or "").strip() == "replace"
-            and item.get("from_round") == finding_round_number
-            and item.get("to_round") == closure_round_number
+            and is_strict_int(item.get("from_round"))
+            and item["from_round"] == finding_round_number
+            and is_strict_int(item.get("to_round"))
+            and item["to_round"] == closure_round_number
             and str(item.get("agent_id") or "").strip() == closure_agent
             and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
             and str(item.get("head") or "").strip() == closure_head
@@ -4073,6 +4148,60 @@ def finding_round_has_replacement_closure(
                 matching_recovery_chain = True
                 break
         if matching_decision and matching_recovery_chain:
+            return True
+    return False
+
+
+def finding_round_has_new_agent_closure(
+    payload: dict[str, Any],
+    rounds: list[Any],
+    finding_round: dict[str, Any],
+    final_round_number: int,
+) -> bool:
+    finding_agent = str(finding_round.get("agent_id") or "").strip()
+    finding_round_number = review_round_number(finding_round)
+    if not finding_agent or finding_round_number <= 0:
+        return False
+    decisions = payload.get("reuse_decisions")
+    if not isinstance(decisions, list):
+        return False
+    closure_candidates = [
+        item
+        for item in rounds
+        if isinstance(item, dict)
+        and review_round_number(item) > finding_round_number
+        and review_round_number(item) < final_round_number
+        and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+        and str(item.get("agent_id") or "").strip()
+        and str(item.get("agent_id") or "").strip() != finding_agent
+        and is_strict_int(item.get("findings_count"))
+        and item["findings_count"] >= 0
+        and str(item.get("reuse_decision") or "").strip() == "new-agent"
+    ]
+    for closure in closure_candidates:
+        closure_agent = str(closure.get("agent_id") or "").strip()
+        closure_round_number = review_round_number(closure)
+        closure_head = str(closure.get("reviewed_head") or "").strip()
+        if any(
+            isinstance(item, dict)
+            and review_round_number(item) < closure_round_number
+            and str(item.get("agent_id") or "").strip() == closure_agent
+            for item in rounds
+        ):
+            continue
+        if any(
+            isinstance(item, dict)
+            and str(item.get("decision") or "").strip() == "new-agent"
+            and is_strict_int(item.get("from_round"))
+            and item["from_round"] == finding_round_number
+            and is_strict_int(item.get("to_round"))
+            and item["to_round"] == closure_round_number
+            and str(item.get("agent_id") or "").strip() == closure_agent
+            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+            and str(item.get("head") or "").strip() == closure_head
+            and str(item.get("reason") or "").strip()
+            for item in decisions
+        ):
             return True
     return False
 
@@ -4128,6 +4257,13 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
         errors.append("最终放行审查代理 reuse_decision 必须是 new-agent，不能复用问题发现/闭环审查代理。")
     if not final_agent:
         errors.append("最终放行审查代理缺少 agent_id。")
+    earlier_review_agents = {
+        str(item.get("agent_id") or "").strip()
+        for item in rounds
+        if isinstance(item, dict)
+        and review_round_number(item) < final_round_number
+        and str(item.get("agent_id") or "").strip()
+    }
     finding_owner_agents = {
         str(item.get("agent_id") or "").strip()
         for item in rounds
@@ -4144,6 +4280,14 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
         and item is not final_round
         and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
         and str(item.get("reuse_decision") or "").strip() == "replace"
+        and str(item.get("agent_id") or "").strip()
+    }
+    closure_agents = {
+        str(item.get("agent_id") or "").strip()
+        for item in rounds
+        if isinstance(item, dict)
+        and item is not final_round
+        and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
         and str(item.get("agent_id") or "").strip()
     }
     missing_finding_owner_agent_rounds = [
@@ -4185,9 +4329,20 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
             and item["findings_count"] == 0
             and str(item.get("reuse_decision") or "").strip() == "reuse-for-closure"
         ]
-        if not closure_candidates and not finding_round_has_replacement_closure(payload, rounds, finding_round, final_round_number):
+        has_explicit_new_agent_closure = finding_round_has_new_agent_closure(
+            payload,
+            rounds,
+            finding_round,
+            final_round_number,
+        )
+        if (
+            not closure_candidates
+            and not has_explicit_new_agent_closure
+            and not finding_round_has_replacement_closure(payload, rounds, finding_round, final_round_number)
+        ):
             errors.append(
                 "发现过 finding 的 review agent 必须先以问题闭环审查代理复审并给出 0 findings，"
+                "或由不同的新问题闭环审查代理通过 new-agent reuse_decision 的明确 from_round/to_round 关系闭环，"
                 "或在原 agent 失败/中断时记录完整 replacement-started、replace reuse_decision 与 completed 替代闭环链，"
                 f"然后才能启动新的最终放行审查代理；缺少闭环轮次: round {finding_round.get('round') or finding_round_number} agent {finding_agent}。"
             )
@@ -4195,6 +4350,10 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
         errors.append("发现过 finding 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
     if final_agent and final_agent in replacement_closure_agents:
         errors.append("替代 finding closure 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
+    elif final_agent and final_agent in closure_agents:
+        errors.append("finding closure 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
+    if final_agent and final_agent in earlier_review_agents:
+        errors.append("最终放行审查代理必须使用未在任何更早 review_rounds[] 出现过的 fresh agent_id。")
     return errors
 
 
@@ -5093,7 +5252,7 @@ def parse_validation_arg(value: str) -> dict[str, Any]:
 def build_phase2_check_payload(
     root: Path,
     task_dir: Path,
-    handoff: dict[str, Any],
+    task_context: dict[str, Any],
     task: dict[str, Any],
     checker: str,
     check_summary: str,
@@ -5103,7 +5262,7 @@ def build_phase2_check_payload(
     validation_items: list[str],
     findings: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, handoff)
+    base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, task_context)
     task_artifact_names = checked_artifacts or default_existing_task_artifacts(task_dir, DEFAULT_PHASE2_TASK_ARTIFACTS)
     task_artifacts = [file_digest(root, resolve_task_local_path(root, task_dir, item)) for item in task_artifact_names]
     specs = [file_digest(root, resolve_checked_spec_path(root, item)) for item in checked_specs]
@@ -5251,7 +5410,7 @@ def build_review_gate_payload(
     root: Path,
     task_dir: Path,
     config: dict[str, Any],
-    handoff: dict[str, Any],
+    task_context: dict[str, Any],
     base_branch: str,
     pass_gate: bool,
     findings: list[dict[str, Any]],
@@ -5270,7 +5429,7 @@ def build_review_gate_payload(
     files = changed_files(root, diff_spec)
     deployment_impact = detect_deployment_impact(files)
     blockers = review_gate_blocking_findings(findings)
-    ledger = load_issue_scope_ledger(task_dir, handoff)
+    ledger = load_issue_scope_ledger(task_dir, task_context)
     close_issues = ledger.get("close_issues") if isinstance(ledger.get("close_issues"), list) else []
     return {
         "schema_version": "1.0",
@@ -5514,15 +5673,15 @@ def validate_review_gate(
     return path, gate, errors
 
 
-def base_branch_from_sources(args: argparse.Namespace, task: dict[str, Any], handoff: dict[str, Any]) -> str:
+def base_branch_from_sources(args: argparse.Namespace, task: dict[str, Any], task_context: dict[str, Any]) -> str:
     for value in [
         getattr(args, "base_branch", None),
-        handoff.get("base_branch"),
+        task_context.get("base_branch"),
         task.get("base_branch"),
     ]:
         if value:
             return str(value)
-    raise WorkflowError("Could not resolve base_branch from args, handoff, or task.json.")
+    raise WorkflowError("Could not resolve base_branch from args, task-start-context, or task.json.")
 
 
 def pr_issue_line(keyword: str, issue: dict[str, Any], mode: str) -> str:
@@ -6221,12 +6380,12 @@ def cmd_version(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_check_workspace_boundary(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
     snapshot = workspace_boundary_snapshot(
         root,
         config,
-        handoff,
+        task_context,
         task_dir,
         allow_source_clean=bool(getattr(args, "allow_source_clean", False)),
     )
@@ -6242,8 +6401,8 @@ def cmd_check_workspace_boundary(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_resolve_human_artifacts(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
     return resolve_human_markdown_artifacts(root, task_dir)
 
 
@@ -6270,6 +6429,78 @@ def create_task(root: Path, payload: dict[str, Any], args: argparse.Namespace) -
     if proc.returncode != 0:
         raise WorkflowError(f"task.py create failed:\n{proc.stderr.strip()}")
     return proc.stdout.strip()
+
+
+def build_task_start_context(root: Path, payload: dict[str, Any], task_dir: Path, assignee: str | None) -> dict[str, Any]:
+    freshness = payload.get("base_freshness") if isinstance(payload.get("base_freshness"), dict) else {}
+    source_issue = payload.get("source_issue") if isinstance(payload.get("source_issue"), dict) else {}
+    base_head_sha = str(freshness.get("local_head_after") or "")
+    remote_head_sha = str(freshness.get("remote_head") or "")
+    freshness_status = str(freshness.get("status") or "")
+    if freshness_status == "fresh" and (not base_head_sha or not remote_head_sha or base_head_sha != remote_head_sha):
+        raise WorkflowError("fresh base context requires matching local_head_after and remote_head SHA.", exit_code=2)
+    if freshness_status == "remote_only" and (base_head_sha or not remote_head_sha):
+        raise WorkflowError("remote_only base context requires empty local SHA and non-empty remote_head SHA.", exit_code=2)
+    if freshness_status not in {"fetch_failed", "remote_ref_missing", "unknown"} and not remote_head_sha:
+        raise WorkflowError(f"base context status {freshness_status or '(missing)'} requires remote_head SHA.", exit_code=2)
+    context = {
+        "schema_version": "1.0", "source_issue": source_issue,
+        "source_repo": {"repo": payload.get("source_repo", ""), "url": source_issue.get("url", "")},
+        "task_slug": payload["task_slug"], "task_title": payload["task_title"],
+        "task_artifact_dir": repo_relative(Path(payload["workspace_path"]), task_dir),
+        "branch_name": payload["branch_name"], "base_branch": payload["base_branch"],
+        "base_ref": freshness.get("base_ref") or payload["base_branch"],
+        "base_head_sha": base_head_sha,
+        "remote_head_sha": remote_head_sha,
+        "workspace_slug": payload["workspace_slug"], "task_workspace_id": payload["workspace_slug"],
+        "assignee": assignee or "", "actor": {"login": assignee or ""},
+        "issue_scope_ledger_seed": payload.get("issue_scope_ledger") or {},
+        "intake_summary": {
+            "duplicate_decision": {"search_performed": payload.get("duplicate_search", {}).get("performed", False), "selected_issue": source_issue.get("number")},
+            "naming_quality": payload.get("naming_quality") or {},
+            "confirmation": {"source_issue_confirmed": bool(source_issue), "created_by_workflow": source_issue.get("created_by_workflow", False)},
+        },
+    }
+    validate_task_start_context(context)
+    return context
+
+
+TASK_START_CONTEXT_FORBIDDEN_KEYS = {
+    "workspace_path", "runtime_root", "preflight", "existing_worktrees",
+    "developer_identity", "current_checkout", "repo_root", "worktree_root",
+    "create_task_command", "handoff_path", "handoff_written",
+}
+
+
+def validate_task_start_context(payload: dict[str, Any]) -> None:
+    required = {
+        "schema_version", "source_issue", "source_repo", "task_slug", "task_title",
+        "task_artifact_dir", "branch_name", "base_branch", "base_ref", "base_head_sha",
+        "remote_head_sha", "workspace_slug", "task_workspace_id", "assignee", "actor",
+        "issue_scope_ledger_seed", "intake_summary",
+    }
+    extra = set(payload) - required
+    missing = required - set(payload)
+    if missing or extra:
+        raise WorkflowError(f"Invalid task-start-context keys: missing={sorted(missing)}, extra={sorted(extra)}", exit_code=2)
+    task_dir = str(payload.get("task_artifact_dir") or "")
+    if Path(task_dir).is_absolute() or not re.fullmatch(r"\.trellis/tasks/[^/]+", task_dir):
+        raise WorkflowError("task-start-context task_artifact_dir must be a repo-relative active task directory.", exit_code=2)
+
+    def scan(value: Any, path: str = "$") -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if key in TASK_START_CONTEXT_FORBIDDEN_KEYS:
+                    raise WorkflowError(f"task-start-context forbidden key at {path}.{key}", exit_code=2)
+                scan(child, f"{path}.{key}")
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                scan(child, f"{path}[{index}]")
+        elif isinstance(value, str):
+            if value.startswith(".trellis/.runtime/") or Path(value).expanduser().is_absolute():
+                raise WorkflowError(f"task-start-context contains local-only path at {path}", exit_code=2)
+
+    scan(payload)
 
 
 def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
@@ -6447,12 +6678,11 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
         create_cmd.extend(["--description", args.description])
 
     payload: dict[str, Any] = {
-        "schema_version": "1.1",
+        "schema_version": "1.2",
+        "source_repo": repo,
         "source_issue": source_issue,
         "proposed_issue": proposed_issue,
         "requires_confirmation": confirmation_required,
-        "handoff_path": str(workspace_handoff_path(config, workspace_path)),
-        "handoff_written": False,
         "slug": issue_slug,
         "naming_quality": naming_quality,
         "task_slug": task_slug,
@@ -6464,6 +6694,7 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
         "workspace_ready": workspace_ready,
         "base_branch": base_ref,
         "base_branch_candidates": base_candidates,
+        "base_freshness": base_freshness,
         "create_task_command": create_cmd,
         "task_dir": None,
         "duplicate_search": {
@@ -6490,7 +6721,7 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
                 source_issue["number"],
                 source_issue["url"],
                 source_issue.get("title", ""),
-                "intake/handoff 主 issue，默认进入 close 候选。",
+                "intake 主 issue，默认进入 close 候选。",
             ),
             "close_issues": [
                 issue_entry(
@@ -6526,25 +6757,26 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
         run(["python3", "./.trellis/scripts/task.py", "set-branch", payload["task_dir"], branch_name], cwd=workspace_path, check=False)
         run(["python3", "./.trellis/scripts/task.py", "set-base-branch", payload["task_dir"], base_ref], cwd=workspace_path, check=False)
         run(["python3", "./.trellis/scripts/task.py", "set-scope", payload["task_dir"], f"GitHub issue: {source_issue['url']}"], cwd=workspace_path, check=False)
-        task_dir = resolve_task_dir(workspace_path, payload["task_dir"], payload)
+        task_dir = resolve_task_dir(workspace_path, payload["task_dir"])
         ensure_issue_scope_ledger(task_dir, payload)
+        context = build_task_start_context(root, payload, task_dir, assignee)
+        write_json(task_start_context_path(task_dir, config), context)
+        payload["task_start_context"] = repo_relative(workspace_path, task_start_context_path(task_dir, config))
 
     if source_issue is not None and should_create_worktree:
-        payload["handoff_written"] = True
-        handoff = write_handoff(root, config, payload, workspace_path)
-        payload["handoff_path"] = str(handoff)
+        write_runtime_mappings(root, config, payload, workspace_path)
     return payload
 
 
 def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     task = task_json(task_dir)
-    base_branch = base_branch_from_sources(args, task, handoff)
-    ensure_issue_scope_ledger(task_dir, handoff)
+    base_branch = base_branch_from_sources(args, task, task_context)
+    ensure_issue_scope_ledger(task_dir, task_context)
     planning_path, _planning_payload, planning_errors = validate_planning_approval(
         root,
         task_dir,
@@ -6655,7 +6887,7 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         root=root,
         task_dir=task_dir,
         config=config,
-        handoff=handoff,
+        task_context=task_context,
         base_branch=base_branch,
         pass_gate=bool(args.pass_gate),
         findings=findings,
@@ -6689,9 +6921,9 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     payload = load_agent_assignment(root, task_dir)
     payload["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
     payload["task"] = repo_relative(root, task_dir)
@@ -6741,7 +6973,7 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
             clean_optional_text(args.decision_head) or None,
         )
     else:
-        source_repo = source_repo_from_handoff(root, handoff)
+        source_repo = source_repo_from_task_context(root, task_context)
         recorded = append_agent_assignment_event(
             payload,
             root,
@@ -6791,9 +7023,9 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_record_subagent_liveness_event(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     source_repo = resolve_source_repo(args.source_repo)
     payload = load_agent_assignment(root, task_dir)
     payload["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
@@ -6847,9 +7079,9 @@ def cmd_record_subagent_liveness_event(args: argparse.Namespace) -> dict[str, An
 def cmd_check_subagent_liveness(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     path = agent_assignment_path(task_dir)
     if not path.exists():
         return {
@@ -6907,9 +7139,9 @@ def cmd_check_subagent_liveness(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_check_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     path, payload, errors, summary = validate_agent_assignment(
         root,
         task_dir,
@@ -6936,9 +7168,9 @@ def cmd_check_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     reviewer = str(args.reviewer or "").strip()
     summary = str(args.summary or "").strip()
     confirmation = str(args.user_confirmation or "").strip()
@@ -6980,9 +7212,9 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_check_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     path, payload, errors = validate_planning_approval(
         root,
         task_dir,
@@ -7006,9 +7238,9 @@ def cmd_check_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     task = task_json(task_dir)
     checker = str(args.checker or "").strip()
     summary = str(args.summary or "").strip()
@@ -7020,7 +7252,7 @@ def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
     payload = build_phase2_check_payload(
         root=root,
         task_dir=task_dir,
-        handoff=handoff,
+        task_context=task_context,
         task=task,
         checker=checker,
         check_summary=summary,
@@ -7061,9 +7293,9 @@ def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_check_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     path, payload, errors = validate_phase2_check(root, task_dir)
     if errors:
         raise WorkflowError(
@@ -7083,9 +7315,9 @@ def cmd_check_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     path, gate, errors = validate_review_gate(root, task_dir, config, args.allow_metadata_after_gate)
     if errors:
         raise WorkflowError(
@@ -7105,16 +7337,16 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_check_commit_messages(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff) if getattr(args, "task", None) else None
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config) if getattr(args, "task", None) else None
     task = task_json(task_dir) if task_dir else {}
-    ledger = load_issue_scope_ledger(task_dir, handoff) if task_dir else {}
+    ledger = load_issue_scope_ledger(task_dir, task_context) if task_dir else {}
     primary_issue = int(args.primary_issue) if getattr(args, "primary_issue", None) else primary_issue_number_from_ledger(ledger)
     if getattr(args, "range", None):
         range_spec = str(args.range)
         base_ref = range_spec.split("..", 1)[0] if ".." in range_spec else ""
     else:
-        base_branch = str(args.base_ref or base_branch_from_sources(args, task, handoff))
+        base_branch = str(args.base_ref or base_branch_from_sources(args, task, task_context))
         base_ref = diff_base_ref(root, base_branch)
         range_spec = f"{base_ref}..HEAD"
     commits = git_commit_messages(root, range_spec)
@@ -7152,12 +7384,12 @@ def cmd_check_commit_messages(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_format_merge_commit(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff) if getattr(args, "task", None) else None
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config) if getattr(args, "task", None) else None
     task = task_json(task_dir) if task_dir else {}
-    ledger = load_issue_scope_ledger(task_dir, handoff) if task_dir else {}
+    ledger = load_issue_scope_ledger(task_dir, task_context) if task_dir else {}
     primary_issue = int(args.primary_issue) if getattr(args, "primary_issue", None) else primary_issue_number_from_ledger(ledger)
-    base_branch = str(args.base_branch or base_branch_from_sources(args, task, handoff))
+    base_branch = str(args.base_branch or base_branch_from_sources(args, task, task_context))
     base_branch_name = normalize_ref(base_branch).removeprefix("origin/")
     head_branch = str(args.head_branch or current_branch(root))
     title = str(args.summary or pr_title_from_task(task, args)).strip()
@@ -7185,15 +7417,406 @@ def cmd_format_merge_commit(args: argparse.Namespace) -> dict[str, Any]:
     return payload
 
 
+def marketplace_verification_path(task_dir: Path, config: dict[str, Any] | None = None) -> Path:
+    name = str((config or {}).get("marketplace_verification_artifact") or MARKETPLACE_VERIFICATION_ARTIFACT)
+    return task_dir / name
+
+
+MARKETPLACE_VERIFICATION_PREFIXES = (
+    "trellis/index.json",
+    "trellis/guru-team-extension.json",
+    "trellis/workflows/",
+    "trellis/presets/",
+)
+
+
+def marketplace_verification_required(gate: dict[str, Any]) -> bool:
+    files = gate.get("changed_files") if isinstance(gate.get("changed_files"), list) else []
+    return any(str(path).startswith(MARKETPLACE_VERIFICATION_PREFIXES) for path in files)
+
+
+def write_remote_marketplace_evidence(
+    root: Path,
+    task_dir: Path,
+    ledger: dict[str, Any],
+    verification_path: Path,
+    verification: dict[str, Any],
+) -> Path:
+    contract_errors = marketplace_verification_contract_errors(verification)
+    if verification.get("status") != "passed" or contract_errors:
+        raise WorkflowError(
+            "Cannot record remote marketplace evidence from a failed or invalid verifier payload.",
+            exit_code=2,
+            payload={"errors": contract_errors, "status": verification.get("status")},
+        )
+    artifact_relative = repo_relative(root, verification_path)
+    artifact_sha = hashlib.sha256(verification_path.read_bytes()).hexdigest()
+    passed = {
+        "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
+        "status": "passed",
+        "required": True,
+        "artifact_path": artifact_relative,
+        "artifact_sha256": artifact_sha,
+        "verified_content_head": verification["verified_head"],
+        "remote_head": verification["remote_head"],
+        "publish_head": verification["verified_head"],
+        "commands_passed": all(step.get("passed") is True for step in verification.get("steps", [])),
+    }
+    targets: list[dict[str, Any]] = []
+    primary = ledger.get("primary_issue")
+    if isinstance(primary, dict):
+        targets.append(primary)
+    close_issues = ledger.get("close_issues")
+    if isinstance(close_issues, list):
+        targets.extend(item for item in close_issues if isinstance(item, dict))
+    for issue in targets:
+        evidence = issue.setdefault("acceptance_evidence", [])
+        if not isinstance(evidence, list):
+            raise WorkflowError("Issue Scope Ledger acceptance_evidence must be an array.", exit_code=2)
+        evidence[:] = [item for item in evidence if not (isinstance(item, dict) and item.get("type") == REMOTE_MARKETPLACE_EVIDENCE_TYPE)]
+        evidence.append(dict(passed))
+    path = issue_scope_ledger_path(task_dir)
+    write_json(path, ledger)
+    return path
+
+
+def commit_marketplace_verification_metadata(
+    root: Path,
+    artifact_path: Path,
+    ledger_path: Path,
+    message: str,
+) -> dict[str, Any]:
+    artifact_relative = repo_relative(root, artifact_path)
+    ledger_relative = repo_relative(root, ledger_path)
+    allowed = {artifact_relative, ledger_relative}
+    dirty_paths = git_status_paths(root)
+    unexpected = [path for path in dirty_paths if path not in allowed]
+    if unexpected:
+        raise WorkflowError(
+            "Marketplace verification metadata tail contains unexpected dirty paths.",
+            exit_code=2,
+            payload={"allowed_paths": sorted(allowed), "unexpected_dirty_paths": unexpected},
+        )
+    missing = sorted(allowed - set(dirty_paths))
+    if missing:
+        raise WorkflowError("Marketplace verification did not produce required artifact and ledger metadata.", exit_code=2, payload={"missing_paths": missing})
+    run_stdout(["git", "add", "--", artifact_relative, ledger_relative], cwd=root)
+    if run(["git", "diff", "--cached", "--quiet"], cwd=root, check=False).returncode == 0:
+        raise WorkflowError("Marketplace verification artifact has no staged content to commit.", exit_code=2)
+    run_stdout(["git", "commit", "-m", message], cwd=root)
+    return {"committed": True, "paths": sorted(allowed), "commit": current_head(root)}
+
+
+def command_evidence(command: list[str], proc: subprocess.CompletedProcess[str], display_command: list[str] | None = None) -> dict[str, Any]:
+    stdout = proc.stdout.strip()
+    stderr = proc.stderr.strip()
+    return {
+        "command": display_command or command,
+        "exit_code": proc.returncode,
+        "stdout_sha256": digest_text(stdout),
+        "stderr_sha256": digest_text(stderr),
+        "stdout_size_bytes": len(stdout.encode("utf-8")),
+        "stderr_size_bytes": len(stderr.encode("utf-8")),
+        "passed": proc.returncode == 0,
+    }
+
+
+MARKETPLACE_VERIFICATION_KEYS = {
+    "schema_version", "generated_at", "status", "repo", "remote", "branch",
+    "marketplace_source", "verified_head", "remote_head", "task_dir", "steps", "assets",
+}
+MARKETPLACE_ASSET_KEYS = {
+    "workflow_sha256", "preview_sha256", "task_start_context_schema_sha256",
+    "runtime_gitignore_present", "legacy_handoff_absent", "legacy_intake_schema_absent",
+}
+
+
+def marketplace_verification_contract_errors(payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if set(payload) != MARKETPLACE_VERIFICATION_KEYS:
+        errors.append("marketplace verification keys do not match schema 1.0.")
+    if payload.get("schema_version") != "1.0" or payload.get("status") not in {"passed", "failed"}:
+        errors.append("marketplace verification schema_version/status is invalid.")
+    for key in ["generated_at", "repo", "remote", "branch", "marketplace_source", "task_dir"]:
+        if not isinstance(payload.get(key), str) or not payload.get(key):
+            errors.append(f"marketplace verification {key} must be a non-empty string.")
+    if not re.fullmatch(r"[0-9a-f]{40}", str(payload.get("verified_head") or "")):
+        errors.append("marketplace verification verified_head must be a 40-character lowercase SHA.")
+    remote_head = str(payload.get("remote_head") or "")
+    if remote_head and not re.fullmatch(r"[0-9a-f]{40}", remote_head):
+        errors.append("marketplace verification remote_head must be empty or a 40-character lowercase SHA.")
+    steps = payload.get("steps")
+    if not isinstance(steps, list) or not steps or any(not isinstance(step, dict) for step in steps):
+        errors.append("marketplace verification steps must be a non-empty object array.")
+    else:
+        required_step_keys = {
+            "command", "exit_code", "stdout_sha256", "stderr_sha256",
+            "stdout_size_bytes", "stderr_size_bytes", "passed",
+        }
+        for index, step in enumerate(steps):
+            if not required_step_keys.issubset(step):
+                errors.append(f"marketplace verification step {index} is missing required audit fields.")
+                continue
+            command = step.get("command")
+            if not isinstance(command, list) or not command or any(not isinstance(part, str) for part in command):
+                errors.append(f"marketplace verification step {index} command is invalid.")
+            if not isinstance(step.get("exit_code"), int):
+                errors.append(f"marketplace verification step {index} exit_code is invalid.")
+            for key in ["stdout_sha256", "stderr_sha256"]:
+                if not re.fullmatch(r"[0-9a-f]{64}", str(step.get(key) or "")):
+                    errors.append(f"marketplace verification step {index} {key} is invalid.")
+            for key in ["stdout_size_bytes", "stderr_size_bytes"]:
+                if not isinstance(step.get(key), int) or step.get(key) < 0:
+                    errors.append(f"marketplace verification step {index} {key} is invalid.")
+            if not isinstance(step.get("passed"), bool):
+                errors.append(f"marketplace verification step {index} passed is invalid.")
+    assets = payload.get("assets")
+    if not isinstance(assets, dict) or set(assets) != MARKETPLACE_ASSET_KEYS:
+        errors.append("marketplace verification assets keys do not match schema 1.0.")
+        assets = {}
+    digest_pattern = re.compile(r"^[0-9a-f]{64}$")
+    for key in ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256"]:
+        value = str(assets.get(key) or "")
+        if payload.get("status") == "passed" and not digest_pattern.fullmatch(value):
+            errors.append(f"passed marketplace verification requires asset digest: {key}.")
+        elif payload.get("status") == "failed" and value and not digest_pattern.fullmatch(value):
+            errors.append(f"failed marketplace verification asset digest must be empty or valid: {key}.")
+    for key in ["runtime_gitignore_present", "legacy_handoff_absent", "legacy_intake_schema_absent"]:
+        if not isinstance(assets.get(key), bool):
+            errors.append(f"marketplace verification asset flag must be boolean: {key}.")
+        elif payload.get("status") == "passed" and assets.get(key) is not True:
+            errors.append(f"passed marketplace verification requires true asset flag: {key}.")
+    return errors
+
+
+def execute_marketplace_verification(
+    root: Path,
+    task_dir: Path,
+    repo: str,
+    remote: str,
+    branch: str,
+    expected_head: str,
+    config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    remote_proc = run(["git", "ls-remote", "--heads", remote, branch], cwd=root, check=False)
+    remote_lines = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
+    remote_head = remote_lines[0][0] if remote_lines and remote_lines[0] else ""
+    remote_evidence = command_evidence(["git", "ls-remote", "--heads", remote, branch], remote_proc)
+    remote_evidence["remote_head"] = remote_head
+    remote_evidence["expected_head"] = expected_head
+    remote_evidence["passed"] = remote_proc.returncode == 0 and remote_head == expected_head
+    source = f"gh:{repo}/trellis#{branch}"
+    steps: list[dict[str, Any]] = [remote_evidence]
+    with tempfile.TemporaryDirectory(prefix="guru-marketplace-verify-") as tmp:
+        temp_root = Path(tmp)
+        remote_url_proc = run(["git", "remote", "get-url", remote], cwd=root, check=False)
+        remote_url = remote_url_proc.stdout.strip()
+        remote_url_evidence = command_evidence(["git", "remote", "get-url", remote], remote_url_proc)
+        remote_url_evidence["passed"] = remote_url_proc.returncode == 0 and bool(remote_url)
+        steps.append(remote_url_evidence)
+        source_checkout = temp_root / "source"
+        project = temp_root / "project"
+        project.mkdir()
+        clone_command = ["git", "clone", "--depth", "1", "--branch", branch, remote_url, str(source_checkout)]
+        clone_proc = run(clone_command, cwd=temp_root, check=False)
+        steps.append(command_evidence(clone_command, clone_proc, ["git", "clone", "--depth", "1", "--branch", branch, "<remote-url>", "<temp-source>"]))
+        if clone_proc.returncode == 0:
+            run(["git", "init", "-q"], cwd=project, check=False)
+        commands = [
+            (["trellis", "init", "-y", "-u", "marketplace-verifier", "--codex", "--cursor", "--workflow", "guru-team", "--workflow-source", source], None),
+            (["trellis", "workflow", "--marketplace", source, "--template", "guru-team", "--create-new"], None),
+            (["trellis", "workflow", "--marketplace", source, "--template", "guru-team", "--force"], None),
+            ([str(source_checkout / "trellis/presets/guru-team/scripts/bash/apply.sh"), "--repo", str(project), "--all-platforms", "--json"], ["<temp-source>/trellis/presets/guru-team/scripts/bash/apply.sh", "--repo", "<temp-project>", "--all-platforms", "--json"]),
+        ]
+        for command, display_command in commands:
+            if not all(step.get("passed") is True for step in steps):
+                break
+            proc = run(command, cwd=project, check=False)
+            steps.append(command_evidence(command, proc, display_command))
+            if proc.returncode != 0:
+                break
+        workflow_path = project / ".trellis/workflow.md"
+        preview_path = project / ".trellis/workflow.md.new"
+        installed_schema = project / ".trellis/guru-team/schemas/task-start-context.schema.json"
+        canonical_workflow = source_checkout / "trellis/workflows/guru-team/workflow.md"
+        canonical_schema = source_checkout / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
+        assets = {
+            "workflow_sha256": digest_text(workflow_path.read_text(encoding="utf-8")) if workflow_path.exists() else "",
+            "preview_sha256": digest_text(preview_path.read_text(encoding="utf-8")) if preview_path.exists() else "",
+            "task_start_context_schema_sha256": hashlib.sha256(installed_schema.read_bytes()).hexdigest() if installed_schema.exists() else "",
+            "runtime_gitignore_present": ".trellis/.runtime/" in (project / ".gitignore").read_text(encoding="utf-8") if (project / ".gitignore").exists() else False,
+            "legacy_handoff_absent": not (project / ".trellis/guru-team/handoff.json").exists(),
+            "legacy_intake_schema_absent": not (project / ".trellis/guru-team/schemas/intake-handoff.schema.json").exists(),
+        }
+        expected_workflow_sha = digest_text(canonical_workflow.read_text(encoding="utf-8")) if canonical_workflow.exists() else ""
+        expected_schema_sha = hashlib.sha256(canonical_schema.read_bytes()).hexdigest() if canonical_schema.exists() else ""
+    passed = all(step.get("passed") is True for step in steps) and all([
+        expected_workflow_sha,
+        expected_schema_sha,
+        assets["workflow_sha256"] == expected_workflow_sha,
+        assets["preview_sha256"] == expected_workflow_sha,
+        assets["task_start_context_schema_sha256"] == expected_schema_sha,
+        assets["runtime_gitignore_present"],
+        assets["legacy_handoff_absent"],
+        assets["legacy_intake_schema_absent"],
+    ])
+    payload = {
+        "schema_version": "1.0",
+        "generated_at": now_iso(),
+        "status": "passed" if passed else "failed",
+        "repo": repo,
+        "remote": remote,
+        "branch": branch,
+        "marketplace_source": source,
+        "verified_head": expected_head,
+        "remote_head": remote_head,
+        "task_dir": repo_relative(root, task_dir),
+        "steps": steps,
+        "assets": assets,
+    }
+    contract_errors = marketplace_verification_contract_errors(payload)
+    if contract_errors:
+        payload["status"] = "failed"
+        payload["assets"] = {
+            "workflow_sha256": assets.get("workflow_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("workflow_sha256") or "")) else "",
+            "preview_sha256": assets.get("preview_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("preview_sha256") or "")) else "",
+            "task_start_context_schema_sha256": assets.get("task_start_context_schema_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("task_start_context_schema_sha256") or "")) else "",
+            "runtime_gitignore_present": bool(assets.get("runtime_gitignore_present")),
+            "legacy_handoff_absent": bool(assets.get("legacy_handoff_absent")),
+            "legacy_intake_schema_absent": bool(assets.get("legacy_intake_schema_absent")),
+        }
+        contract_errors = marketplace_verification_contract_errors(payload)
+        if contract_errors:
+            raise WorkflowError("Internal marketplace verification payload contract failure.", exit_code=2, payload={"errors": contract_errors})
+    write_json(marketplace_verification_path(task_dir, config), payload)
+    if not passed:
+        raise WorkflowError("Remote marketplace verification failed after push.", exit_code=2, payload=payload)
+    return payload
+
+
+def validate_marketplace_verification(
+    root: Path,
+    task_dir: Path,
+    current_publish_head: str,
+    repo: str,
+    remote: str,
+    branch: str,
+    config: dict[str, Any] | None = None,
+    ledger: dict[str, Any] | None = None,
+) -> tuple[Path, dict[str, Any], list[str]]:
+    path = marketplace_verification_path(task_dir, config)
+    payload, read_error = read_optional_json(path)
+    errors: list[str] = []
+    if payload is None:
+        return path, {}, [f"marketplace verification artifact {read_error or 'missing'}: {path}"]
+    errors.extend(marketplace_verification_contract_errors(payload))
+    expected_repo = repo.strip()
+    expected_source = f"gh:{expected_repo}/trellis#{branch}" if expected_repo else ""
+    if expected_repo and payload.get("repo") != expected_repo:
+        errors.append("marketplace verification repo does not match the current repository.")
+    if payload.get("remote") != remote or payload.get("branch") != branch:
+        errors.append("marketplace verification remote/branch identity does not match publish inputs.")
+    if expected_source and payload.get("marketplace_source") != expected_source:
+        errors.append("marketplace verification source does not match the current repository branch.")
+    if payload.get("task_dir") != repo_relative(root, task_dir):
+        errors.append("marketplace verification task_dir does not match the current task.")
+    sha_pattern = re.compile(r"^[0-9a-f]{40}$")
+    digest_pattern = re.compile(r"^[0-9a-f]{64}$")
+    if not sha_pattern.fullmatch(str(payload.get("verified_head") or "")):
+        errors.append("marketplace verification verified_head must be a 40-character lowercase SHA.")
+    if not sha_pattern.fullmatch(str(payload.get("remote_head") or "")):
+        errors.append("marketplace verification remote_head must be a 40-character lowercase SHA.")
+    if payload.get("status") != "passed":
+        errors.append("marketplace verification status must be passed.")
+    verified_head = str(payload.get("verified_head") or "")
+    if not verified_head or payload.get("remote_head") != verified_head:
+        errors.append("marketplace verification lacks a matching verified/remote content HEAD.")
+    elif verified_head != current_publish_head:
+        diff_proc = run(["git", "diff", "--name-only", f"{verified_head}..{current_publish_head}"], cwd=root, check=False)
+        allowed = {
+            repo_relative(root, path),
+            repo_relative(root, issue_scope_ledger_path(task_dir)),
+        }
+        changed = {line.strip() for line in diff_proc.stdout.splitlines() if line.strip()}
+        if diff_proc.returncode != 0 or changed != allowed:
+            errors.append("marketplace verification is stale; current HEAD is not the exact artifact + ledger metadata tail.")
+    remote_proc = run(["git", "ls-remote", "--heads", remote, branch], cwd=root, check=False)
+    remote_lines = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
+    current_remote_head = remote_lines[0][0] if remote_lines and remote_lines[0] else ""
+    if remote_proc.returncode != 0 or current_remote_head != current_publish_head:
+        errors.append("remote branch does not contain the current publish HEAD including verification artifact.")
+    steps = payload.get("steps")
+    if not isinstance(steps, list) or len(steps) < 7 or any(not isinstance(step, dict) or step.get("passed") is not True for step in steps):
+        errors.append("marketplace verification must record passed remote/ref clone/init/preview/switch/preset steps.")
+    assets = payload.get("assets") if isinstance(payload.get("assets"), dict) else {}
+    for key in ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256"]:
+        if not digest_pattern.fullmatch(str(assets.get(key) or "")):
+            errors.append(f"marketplace verification missing asset digest: {key}.")
+    canonical_workflow = root / "trellis/workflows/guru-team/workflow.md"
+    canonical_schema = root / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
+    expected_workflow_sha = digest_text(canonical_workflow.read_text(encoding="utf-8")) if canonical_workflow.exists() else ""
+    expected_schema_sha = hashlib.sha256(canonical_schema.read_bytes()).hexdigest() if canonical_schema.exists() else ""
+    if assets.get("workflow_sha256") != expected_workflow_sha or assets.get("preview_sha256") != expected_workflow_sha:
+        errors.append("marketplace installed/preview workflow digests do not match the current canonical workflow.")
+    if assets.get("task_start_context_schema_sha256") != expected_schema_sha:
+        errors.append("marketplace installed task-start-context schema digest does not match current canonical schema.")
+    if assets.get("runtime_gitignore_present") is not True:
+        errors.append("marketplace verification did not confirm runtime gitignore contract.")
+    if assets.get("legacy_handoff_absent") is not True or assets.get("legacy_intake_schema_absent") is not True:
+        errors.append("marketplace verification did not confirm obsolete handoff artifacts are absent.")
+    if ledger is not None:
+        artifact_sha = hashlib.sha256(path.read_bytes()).hexdigest()
+        targets: list[tuple[str, dict[str, Any]]] = []
+        primary = ledger.get("primary_issue")
+        if isinstance(primary, dict):
+            targets.append(("primary_issue", primary))
+        close_issues = ledger.get("close_issues")
+        if isinstance(close_issues, list):
+            targets.extend((f"close_issues issue #{issue.get('number')}", issue) for issue in close_issues if isinstance(issue, dict))
+        expected_evidence = {
+            "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
+            "status": "passed",
+            "required": True,
+            "artifact_path": repo_relative(root, path),
+            "artifact_sha256": artifact_sha,
+            "verified_content_head": verified_head,
+            "remote_head": str(payload.get("remote_head") or ""),
+            "publish_head": verified_head,
+            "commands_passed": isinstance(steps, list) and bool(steps) and all(
+                isinstance(step, dict) and step.get("passed") is True for step in steps
+            ),
+        }
+        for label, issue in targets:
+            evidence = remote_marketplace_evidence(issue)
+            if evidence != expected_evidence:
+                errors.append(f"{label} remote marketplace evidence does not match the verified artifact facts.")
+    return path, payload, errors
+
+
+def cmd_verify_marketplace(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    config = load_config(root)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
+    repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
+    if not repo:
+        raise WorkflowError("Could not resolve GitHub repo for marketplace verification.")
+    branch = str(args.branch or current_branch(root))
+    remote = str(args.remote or publish_config(config).get("remote") or "origin")
+    return execute_marketplace_verification(root, task_dir, repo, remote, branch, current_head(root), config)
+
+
 def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
     validate_publish_invocation(args)
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     publish = publish_config(config)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     task = task_json(task_dir)
-    base_branch = base_branch_from_sources(args, task, handoff)
+    base_branch = base_branch_from_sources(args, task, task_context)
     repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
     if not repo:
         raise WorkflowError("Could not resolve GitHub repo. Configure github_repo or pass --repo owner/repo.")
@@ -7214,8 +7837,13 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
             payload={"artifact_path": str(gate_path), "errors": gate_errors},
         )
 
-    ledger = load_issue_scope_ledger(task_dir, handoff)
-    ledger_errors = validate_ledger_for_publish(ledger, gate)
+    ledger = load_issue_scope_ledger(task_dir, task_context)
+    requires_marketplace_verification = marketplace_verification_required(gate)
+    ledger_errors = validate_ledger_for_publish(
+        ledger,
+        gate,
+        allow_pending_remote_marketplace=requires_marketplace_verification,
+    )
     if ledger_errors:
         raise WorkflowError(
             "Publish blocked because Issue Scope Ledger is incomplete.",
@@ -7291,6 +7919,47 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
 
     require_gh_auth(root)
     run_stdout(["git", "push", "-u", remote, branch], cwd=root)
+    verified_content_head = current_head(root)
+    if requires_marketplace_verification:
+        marketplace_verification = execute_marketplace_verification(root, task_dir, repo, remote, branch, verified_content_head, config)
+        verification_artifact_path = marketplace_verification_path(task_dir, config)
+        updated_ledger_path = write_remote_marketplace_evidence(
+            root, task_dir, ledger, verification_artifact_path, marketplace_verification
+        )
+        verification_commit = commit_marketplace_verification_metadata(
+            root, verification_artifact_path, updated_ledger_path, metadata_commit_subject
+        )
+        run_stdout(["git", "push", remote, branch], cwd=root)
+        publish_head = current_head(root)
+        ledger = load_issue_scope_ledger(task_dir, task_context)
+        verification_path, _verification_payload, verification_errors = validate_marketplace_verification(
+            root, task_dir, publish_head, repo, remote, branch, config, ledger
+        )
+        if verification_errors:
+            raise WorkflowError(
+                "Publish blocked because remote marketplace verification artifact is missing, failed, or stale.",
+                exit_code=2,
+                payload={"artifact_path": str(verification_path), "errors": verification_errors},
+            )
+        final_ledger_errors = validate_ledger_for_publish(ledger, gate)
+        if final_ledger_errors:
+            raise WorkflowError(
+                "Publish blocked because post-verifier Issue Scope Ledger evidence is incomplete or invalid.",
+                exit_code=2,
+                payload={"ledger_path": str(issue_scope_ledger_path(task_dir)), "errors": final_ledger_errors},
+            )
+        _gate_path, _gate, post_metadata_gate_errors = validate_review_gate(root, task_dir, config, True)
+        if post_metadata_gate_errors:
+            raise WorkflowError(
+                "Publish blocked because Branch Review Gate became invalid after marketplace metadata tail.",
+                exit_code=2,
+                payload={"artifact_path": str(_gate_path), "errors": post_metadata_gate_errors},
+            )
+        payload["marketplace_verification"] = marketplace_verification
+        payload["marketplace_verification_commit"] = verification_commit
+        payload["publish_head"] = publish_head
+    else:
+        payload["marketplace_verification"] = {"status": "not-required", "reason": "review gate changed_files do not touch marketplace/preset public extension assets"}
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False) as tmp:
         tmp.write(body)
         body_file = tmp.name
@@ -7338,7 +8007,7 @@ def build_finish_work_dry_run_plan(
     root: Path,
     args: argparse.Namespace,
     config: dict[str, Any],
-    handoff: dict[str, Any],
+    task_context: dict[str, Any],
     task_dir: Path,
     task_name: str,
     gate_path: Path,
@@ -7355,7 +8024,7 @@ def build_finish_work_dry_run_plan(
 ) -> dict[str, Any]:
     publish = publish_config(config)
     task = task_json(task_dir)
-    base_branch = base_branch_from_sources(args, task, handoff)
+    base_branch = base_branch_from_sources(args, task, task_context)
     repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
     remote = str(args.remote or publish.get("remote") or "origin")
     head_branch = current_branch(root)
@@ -7438,8 +8107,9 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     validate_finish_work_invocation(args)
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, True)
     if gate_errors:
         raise WorkflowError(
@@ -7463,7 +8133,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     commits = args.commit or ",".join(recent_work_commits(root, reviewed_head))
     draft = bool(args.draft) if args.draft is not None else bool(publish_config(config).get("draft", False))
 
-    ledger = load_issue_scope_ledger(task_dir, handoff)
+    ledger = load_issue_scope_ledger(task_dir, task_context)
     validations = list(args.validation or [])
     body, body_source = resolve_pr_body(root, args, ledger, gate, validations, config)
     body_errors = validate_pr_body_quality(body, ledger, draft)
@@ -7486,7 +8156,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             root,
             args,
             config,
-            handoff,
+            task_context,
             task_dir,
             task_name,
             gate_path,
@@ -7596,6 +8266,14 @@ def build_parser() -> argparse.ArgumentParser:
     human_artifacts.add_argument("--root")
     human_artifacts.add_argument("--json", action="store_true")
     human_artifacts.add_argument("--task")
+
+    verify_marketplace = sub.add_parser("verify-marketplace")
+    verify_marketplace.add_argument("--root")
+    verify_marketplace.add_argument("--json", action="store_true")
+    verify_marketplace.add_argument("--task")
+    verify_marketplace.add_argument("--repo")
+    verify_marketplace.add_argument("--remote")
+    verify_marketplace.add_argument("--branch")
 
     prepare = sub.add_parser("prepare")
     prepare.add_argument("--root")
@@ -7857,6 +8535,8 @@ def main() -> int:
             payload = cmd_check_workspace_boundary(args)
         elif args.command == "resolve-human-artifacts":
             payload = cmd_resolve_human_artifacts(args)
+        elif args.command == "verify-marketplace":
+            payload = cmd_verify_marketplace(args)
         elif args.command == "prepare":
             payload = cmd_prepare(args)
         elif args.command == "review-branch":

@@ -25,19 +25,20 @@ The workflow has four durable phases:
 - Phase 3: spec decision, commit, Branch Review Gate, finish-work, and automatic publish.
 
 Do not move Phase 0 side effects into `task.py create`: `prepare-task.sh` must
-resolve the source issue, base branch, branch name, workspace path, and handoff
+resolve the source issue, base branch, branch name, executor-selected local worktree, and intake plan
 before `.trellis/tasks/` artifacts are written.
 
 `prepare-task.sh --json` is the default planner path. It may read GitHub issues,
 search duplicates, and compute source/proposed issue data. Planner output,
 including output with a confirmed `source_issue`, must be stdout-only and must
-not write `.trellis/guru-team/handoff.json`, create a GitHub issue, worktree,
+not write `.trellis/tasks/<task-slug>/task-start-context.json`, create a GitHub issue, worktree,
 branch, or Trellis task. GitHub issue creation requires an explicit confirmed
 executor flag such as `--create-issue-confirmed` plus reviewed title/body input.
-`--create-worktree` and `--create-task` are executor flags for after AI handoff
-review and user approval; only these workspace executor paths may write the
-handoff artifact, and they write it inside the chosen workspace instead of
-dirtying the source checkout during new-session intake.
+`--create-worktree` and `--create-task` are executor flags for after AI intake
+plan review and user approval. `--create-worktree` may write only the gitignored
+local runtime workspace mapping; `--create-task` additionally writes tracked
+task-local `task-start-context.json` after task creation. Ordinary intake does
+not dirty the source checkout.
 
 When there is no active task and the current turn requires file changes,
 current-checkout direct edits are an explicit override, not a silent shortcut.
@@ -172,7 +173,7 @@ Gate:
   dirty paths do not invalidate approval while `prd.md`, `design.md`, and
   `implement.md` content still matches the last explicit user review. If any of
   those three planning documents changes, show the three links again and wait
-  for fresh explicit post-planning confirmation. Phase 0 handoff approval,
+  for fresh explicit post-planning confirmation. Phase 0 intake approval,
   generic workflow confirmation, old `source=workflow`, old schema, missing
   `ambiguity_review`, non-passed ambiguity evidence, unclassified scanner hits,
   `contract_violation` hits, or stale scanner evidence fails closed. `task.py
@@ -330,7 +331,7 @@ sync blocks the gate.
 
 Before writing `review.md`, `review-gate.json`, or any task artifact during the
 gate, the AI must verify the shell/editor working directory is the task
-worktree selected by intake `workspace_path`. Manual edits must use a
+worktree selected by local runtime and Git worktree facts. Manual edits must use a
 worktree-local absolute path when the editing tool cannot receive an explicit
 working directory. Relative task artifact paths are never relative to the source
 checkout or another worktree.
@@ -423,7 +424,7 @@ low-information phrases, reviewed source presence, Docs SSOT section/key
 presence, archive-path resolution, and close/ref issue semantics, but it must
 not decide whether the business explanation is true or sufficient.
 
-Do not treat `.trellis/guru-team/handoff.json` as final close scope. It is
+Do not treat `.trellis/tasks/<task-slug>/task-start-context.json` as final close scope. It is
 intake provenance only.
 
 ## Common Mistakes
@@ -440,3 +441,9 @@ intake provenance only.
   small, instead of running Phase 0 or obtaining explicit direct-edit override
   approval.
 - Recording project-private business rules in the reusable marketplace workflow.
+
+### Remote Marketplace Verification Gate
+
+For tasks that change the workflow marketplace, preset, overlays, installer, schema, or public extension contract, publish is fail-closed after the branch push and before `gh pr create`. The deterministic `verify-marketplace` companion command records task-local `marketplace-verification.json` with repository, remote, branch/ref, verified content HEAD, remote HEAD, command exit codes, stdout/stderr digests and sizes, and installed workflow/preview/schema digests. It executes remote branch `trellis init`, workflow preview, workflow switch, canonical preset reapply, and runtime-ignore checks in a clean temporary repository. It does not decide PR readiness.
+
+`issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` evidence object in the primary issue and every close issue. Before the verifier it is `status=pending`, `required=true`, points to `marketplace-verification.json`, and explicitly does not satisfy final publish. `publish-pr` pushes the reviewed content HEAD, runs the verifier, replaces only those structured entries with real `status=passed` facts (artifact path and SHA-256, verified content HEAD, verifier remote HEAD, publish content HEAD, and all-command result), then commits exactly the verifier artifact plus the ledger as the only allowed metadata tail and pushes it. After that push it reloads and cross-validates the ledger and artifact, requires the current HEAD to differ from the verified content HEAD by exactly those two paths, requires the remote branch to equal the metadata HEAD, revalidates Branch Review Gate metadata tolerance, and only then permits `gh pr create`. Missing, pending, failed, stale, tampered, or mismatched evidence blocks. The AI remains responsible for deciding close scope and whether evidence is sufficient and truthful; scripts only execute, record, and validate deterministic verifier facts. No release tag is created by this gate.

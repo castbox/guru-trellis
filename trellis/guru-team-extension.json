@@ -10,7 +10,9 @@
     "trellis_cli": "0.6.5"
   },
   "tested": {
-    "trellis_cli": ["0.6.5"]
+    "trellis_cli": [
+      "0.6.5"
+    ]
   },
   "public_api": {
     "workflow_template_id": "guru-team",
@@ -30,7 +32,7 @@
       ".trellis/config.yaml"
     ],
     "artifact_contracts": [
-      ".trellis/guru-team/handoff.json",
+      "task-start-context.json",
       ".trellis/guru-team/extension.json",
       "planning-approval.json",
       "phase2-check.json",
@@ -40,7 +42,8 @@
       "review.md",
       "pr-body.md",
       "review-gate.json",
-      "pr-readiness.json"
+      "pr-readiness.json",
+      "marketplace-verification.json"
     ],
     "companion_scripts": [
       "check-env",
@@ -60,6 +63,7 @@
       "format-merge-commit",
       "review-branch",
       "check-review-gate",
+      "verify-marketplace",
       "finish-work",
       "publish-pr"
     ]

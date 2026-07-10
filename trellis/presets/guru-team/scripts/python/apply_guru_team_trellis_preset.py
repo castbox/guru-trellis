@@ -41,12 +41,14 @@ CODEX_DISPATCH_HEADER = """#----------------------------------------------------
 MANAGED_CONFIG = Path("config-template.yml")
 MANAGED_ASSET_PATHS = [
     Path("config-template.yml"),
-    Path("schemas/intake-handoff.schema.json"),
+    Path("schemas/task-start-context.schema.json"),
+    Path("schemas/marketplace-verification.schema.json"),
     Path("scripts/bash/check-env.sh"),
     Path("scripts/bash/version.sh"),
     Path("scripts/bash/prepare-task.sh"),
     Path("scripts/bash/check-workspace-boundary.sh"),
     Path("scripts/bash/resolve-human-artifacts.sh"),
+    Path("scripts/bash/verify-marketplace.sh"),
     Path("scripts/bash/record-planning-approval.sh"),
     Path("scripts/bash/check-planning-approval.sh"),
     Path("scripts/bash/record-phase2-check.sh"),
@@ -63,6 +65,12 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/finish-work.sh"),
     Path("scripts/python/guru_team_trellis.py"),
 ]
+OBSOLETE_MANAGED_ASSETS = {
+    Path("handoff.json"): set(),
+    Path("schemas/intake-handoff.schema.json"): {
+        "6d9484b82ea7e71b4661035f370d8b21240aa1af844dfa131c1131bba1c3dcfc"
+    },
+}
 ENGLISH_LANGUAGE_RULES = (
     "**Language**: All documentation must be written in **English**.",
     "**Language**: All documentation should be written in **English**.",
@@ -71,6 +79,8 @@ CHINESE_LANGUAGE_RULE = (
     "**Language**: 业务项目人类可读文档默认使用**中文**；"
     "命令、路径、代码符号、配置键、GitHub keyword 等 literal token 可保留英文。"
 )
+RUNTIME_GITIGNORE_MARKER = "# Guru Team local runtime cache"
+RUNTIME_GITIGNORE_RULE = ".trellis/.runtime/"
 
 
 def now_iso() -> str:
@@ -238,6 +248,17 @@ def write_installed_extension_manifest(dst: Path, payload: dict[str, Any]) -> st
 
 def ensure_executable(path: Path) -> None:
     path.chmod(path.stat().st_mode | 0o755)
+
+
+def ensure_runtime_gitignore(repo: Path) -> dict[str, str]:
+    path = repo / ".gitignore"
+    original = path.read_text(encoding="utf-8") if path.exists() else ""
+    lines = original.splitlines()
+    if RUNTIME_GITIGNORE_RULE in {line.strip() for line in lines}:
+        return {"action": "unchanged", "path": ".gitignore", "rule": RUNTIME_GITIGNORE_RULE}
+    separator = "" if not original or original.endswith("\n\n") else ("\n" if original.endswith("\n") else "\n\n")
+    path.write_text(f"{original}{separator}{RUNTIME_GITIGNORE_MARKER}\n{RUNTIME_GITIGNORE_RULE}\n", encoding="utf-8")
+    return {"action": "updated" if original else "installed", "path": ".gitignore", "rule": RUNTIME_GITIGNORE_RULE}
 
 
 def path_has_prefix(path: Path, prefix: Path) -> bool:
@@ -603,6 +624,24 @@ def install_assets(
     replaced_overlays: list[str] = []
     updated_managed: list[str] = []
     managed_backups: list[str] = []
+    removed_obsolete: list[str] = []
+    obsolete_conflicts: list[str] = []
+    for relative, managed_hashes in OBSOLETE_MANAGED_ASSETS.items():
+        target = dst / relative
+        repo_relative_path = target.relative_to(repo).as_posix()
+        if not target.exists():
+            continue
+        digest = __import__("hashlib").sha256(target.read_bytes()).hexdigest()
+        tracked_clean = False
+        if not managed_hashes:
+            tracked = run_git(["ls-files", "--error-unmatch", repo_relative_path], repo)
+            changed = run_git(["diff", "--quiet", "HEAD", "--", repo_relative_path], repo)
+            tracked_clean = tracked.returncode == 0 and changed.returncode == 0
+        if digest in managed_hashes or tracked_clean:
+            target.unlink()
+            removed_obsolete.append(repo_relative_path)
+        else:
+            obsolete_conflicts.append(repo_relative_path)
     for relative in MANAGED_ASSET_PATHS:
         result = copy_managed(src / relative, dst / relative)
         rel_path = Path(result["path"]).relative_to(repo).as_posix()
@@ -627,6 +666,7 @@ def install_assets(
         dst / "scripts/bash/prepare-task.sh",
         dst / "scripts/bash/check-workspace-boundary.sh",
         dst / "scripts/bash/resolve-human-artifacts.sh",
+        dst / "scripts/bash/verify-marketplace.sh",
         dst / "scripts/bash/record-planning-approval.sh",
         dst / "scripts/bash/check-planning-approval.sh",
         dst / "scripts/bash/record-phase2-check.sh",
@@ -655,6 +695,7 @@ def install_assets(
     updated_managed.extend(overlays["updated_managed"])
     managed_backups.extend(overlays["managed_backups"])
     codex_dispatch = ensure_codex_dispatch_mode(repo)
+    runtime_gitignore = ensure_runtime_gitignore(repo)
     language_guidance = normalize_business_doc_language_guidance(repo)
 
     result = {
@@ -664,7 +705,10 @@ def install_assets(
         "replaced_overlays": replaced_overlays,
         "updated_managed": updated_managed,
         "managed_backups": managed_backups,
+        "removed_obsolete": removed_obsolete,
+        "obsolete_conflicts": obsolete_conflicts,
         "codex_dispatch": codex_dispatch,
+        "runtime_gitignore": runtime_gitignore,
         "language_guidance": language_guidance,
         "platforms": sorted(selected),
         "all_platforms": all_platforms,

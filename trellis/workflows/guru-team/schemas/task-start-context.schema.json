@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://castbox.github.io/guru-trellis/schemas/task-start-context.schema.json",
+  "title": "Guru Team Task Start Context",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source_issue", "source_repo", "task_slug", "task_title", "task_artifact_dir", "branch_name", "base_branch", "base_ref", "base_head_sha", "remote_head_sha", "workspace_slug", "task_workspace_id", "assignee", "actor", "issue_scope_ledger_seed", "intake_summary"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "source_issue": {"type": "object", "additionalProperties": false, "required": ["number", "url", "title", "created_by_workflow"], "properties": {"number": {"type": "integer", "minimum": 1}, "url": {"type": "string"}, "title": {"type": "string"}, "created_by_workflow": {"type": "boolean"}}},
+    "source_repo": {"type": "object", "additionalProperties": false, "required": ["repo", "url"], "properties": {"repo": {"type": "string", "pattern": "^[^/\\s]+/[^/\\s]+$"}, "url": {"type": "string"}}},
+    "task_slug": {"$ref": "#/$defs/slug"},
+    "task_title": {"type": "string", "minLength": 1},
+    "task_artifact_dir": {"type": "string", "pattern": "^\\.trellis/tasks/(?!archive/)[^/]+$"},
+    "branch_name": {"type": "string", "minLength": 1},
+    "base_branch": {"type": "string", "minLength": 1},
+    "base_ref": {"type": "string", "minLength": 1},
+    "base_head_sha": {"type": "string", "pattern": "^([0-9a-f]{40})?$"},
+    "remote_head_sha": {"type": "string", "pattern": "^([0-9a-f]{40})?$"},
+    "workspace_slug": {"$ref": "#/$defs/slug"},
+    "task_workspace_id": {"$ref": "#/$defs/slug"},
+    "assignee": {"type": "string"},
+    "actor": {"type": "object", "additionalProperties": false, "required": ["login"], "properties": {"login": {"type": "string"}}},
+    "issue_scope_ledger_seed": {"type": "object", "additionalProperties": true},
+    "intake_summary": {"type": "object", "additionalProperties": false, "required": ["duplicate_decision", "naming_quality", "confirmation"], "properties": {"duplicate_decision": {"type": "object", "additionalProperties": true}, "naming_quality": {"type": "object", "additionalProperties": true}, "confirmation": {"type": "object", "additionalProperties": true}}}
+  },
+  "$defs": {"slug": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}}
+}

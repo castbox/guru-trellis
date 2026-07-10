@@ -177,7 +177,7 @@ platform selection:
 
 - `.trellis/guru-team/config.yml`
 - `.trellis/guru-team/extension.json`
-- `.trellis/guru-team/schemas/intake-handoff.schema.json`
+- `.trellis/guru-team/schemas/task-start-context.schema.json`
 - `.trellis/guru-team/scripts/bash/check-env.sh`
 - `.trellis/guru-team/scripts/bash/version.sh`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh`
@@ -299,7 +299,7 @@ displayed task-local links to `prd.md`, `design.md`, and `implement.md`. The
 artifact uses schema 1.2, passed `ambiguity_review` evidence,
 fixed-scope scanner evidence for `prd.md`, `design.md`, and `implement.md`,
 `user_confirmation.source=explicit-post-planning-review`, and hash / size /
-modified-time metadata for all three files; Phase 0 handoff approval, old
+modified-time metadata for all three files; Phase 0 intake approval, old
 schema/source evidence, missing/non-passed ambiguity evidence, unclassified
 controlled-term hits, or `contract_violation` hits must fail closed.
 Freshness is based on the three planning document content digests and the
@@ -350,10 +350,14 @@ non-metadata task paths after the Phase 2 recorded HEAD are covered by those
 dirty paths and that no non-metadata dirty paths remain in the working tree.
 Do not re-record Phase 2 after commit just to make HEAD match. `review-branch.sh`
 records and validates the prior AI/human review result; it is not the reviewer.
-Passing gates require every finding owner to complete a later same-agent
-`问题闭环审查代理` review with zero findings for its finding, or an explicitly
-recorded replacement closure chain when the finding owner failed/interrupted and
-cannot continue, before a fresh `最终放行审查代理` independent review can pass. The
+Passing gates require every finding owner to have one explicit closure form: a
+later same-agent `问题闭环审查代理` review with zero findings and
+`reuse-for-closure`; a different fresh closure agent whose technical identity has not appeared in any earlier review round and is linked by
+`reuse_decisions[] decision=new-agent` with exact `from_round`, `to_round`,
+closure agent, reviewed HEAD, and reason; or a replacement closure chain when
+the finding owner failed/interrupted and cannot continue. A closure round that
+still has findings becomes a new finding owner and must be closed before a fresh
+`最终放行审查代理` independent review can pass. The
 final review must cover the full current HEAD
 diff with zero findings of any priority, must not continue implementation or
 patch missing Phase 2 check work, and be recorded with task-local
@@ -430,9 +434,9 @@ project, the first hop is Guru Team intake, not bare `task.py create`:
 
 `prepare-task.sh --json` is an intake/preflight planner by default. It may read
 an explicit issue and search duplicates, but it does not create a GitHub issue,
-worktree, branch, Trellis task, or `.trellis/guru-team/handoff.json`. Freeform
+worktree, branch, Trellis task, or `.trellis/tasks/<task-slug>/task-start-context.json`. Freeform
 requests without a source issue return `proposed_issue`, `requires_confirmation`,
-`naming_quality`, `preflight.base_freshness`, and `handoff_written: false` in
+`naming_quality`, `preflight.base_freshness`, and `no task context/runtime write` in
 stdout JSON. Planner output fetches or explicitly confirms the selected remote
 base before reporting freshness; `fetch_performed: false` must not be treated as
 `fresh: true` evidence. When local base is behind remote, planner output reports
@@ -464,8 +468,11 @@ worktree, branch, or Trellis task if the generated or overridden name is low
 information, such as `issue-52`, `52-issue-52`, a bare number, or only generic
 tokens like `bug`, `fix`, `task`, `work`, `update`, or `change`.
 
-After executor handoff is written, `handoff.workspace_path` is the machine
-boundary for task artifact writes in worktree mode. Before writing or validating
+The tracked `task-start-context.json` provides only portable `workspace_slug`,
+`task_workspace_id`, and repo-relative `task_artifact_dir`; it never provides an
+absolute `workspace_path`. In worktree mode, derive and validate the machine-local
+task worktree from the current checkout, `.trellis/.runtime/guru-team/**`,
+`git worktree list`, and `check-workspace-boundary.sh --task`. Before writing or validating
 `planning-approval.json`, `phase2-check.json`, `agent-assignment.json`,
 `reviews/*.md`, `review.md`, or `review-gate.json`, run:
 
@@ -477,20 +484,20 @@ The helper reports expected workspace, actual repo root, source checkout
 status, task worktree status, and suspicious current-task artifacts or review
 metadata in the source checkout. It is a deterministic validator/fact snapshot,
 not stale judgment, cleanup, or patch migration. Editing tools without an
-explicit `workdir` must use absolute paths under the task worktree selected by
-handoff `workspace_path`. The #76 liveness checker uses this source/task fact
+explicit `workdir` must use absolute paths under the task worktree confirmed by the
+boundary helper. The #76 liveness checker uses this source/task fact
 layer: source checkout `HEAD`, dirty status, diff stat, or mtime changes are
 `workspace_boundary_violation_progress`, not stale evidence.
 
 When executor paths create or reuse a worktree, they refresh the selected base
-branch again with `git fetch`, record `preflight.base_freshness` in
-`handoff.json`, fast-forward the local base only when safe, and fail closed when
+branch again with `git fetch`, keep `preflight.base_freshness` in the current
+planner/executor result only, fast-forward the local base only when safe, and fail closed when
 the local base diverges from the remote. Planner refresh evidence does not
 replace the executor's create-time guard; this prevents new task branches from
 silently starting from a stale local base.
 
 After the worktree exists, the executor ensures the target workspace has
-Trellis developer identity before writing handoff or creating a task. It copies
+Trellis developer identity before writing task context or creating a task. It copies
 the gitignored source checkout `.trellis/.developer` when available, initializes
 an equivalent target identity from an explicit `--assignee` when the source file
 is missing, and otherwise fails closed with the recovery command
@@ -538,3 +545,8 @@ before final Phase 2 check; `ssot_first` uses revised durable docs as primary
 input; `bootstrap_or_repair_docs` must complete the minimum repair or name a
 bounded follow-up and PR limitation; `no_docs_update_needed` must still have a
 concrete reason after the final diff is reviewed.
+
+
+## Push 后远端 Marketplace 门禁
+
+修改 marketplace/preset/overlay/schema/public API 的发布路径要求 primary/close issue ledger 先保存精确的 `remote_marketplace_verification: pending` 结构，pending 或普通文字不能通过最终 publish。branch push 后、`gh pr create` 前会执行远端分支 `init`、preview、switch 和 preset reapply，生成 schema-valid 的 task-local `marketplace-verification.json`；成功后脚本把真实 artifact path/SHA-256、verified content HEAD、remote HEAD、publish content HEAD 与命令结果回写 ledger，仅允许 artifact + ledger 两个路径形成 metadata tail。metadata push 后重新校验 artifact、ledger、双路径 diff、remote metadata HEAD 与 review gate，缺失、pending、失败、篡改、HEAD 不匹配或 stale 均阻止创建 PR；该门禁不创建 tag，AI 仍负责 close scope 与 PR readiness 判断。
