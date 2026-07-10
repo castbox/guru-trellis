@@ -174,6 +174,25 @@ FINISH_SUMMARY_PROTECTED_PATH_FILTER_CONTRACT = {
     "after": "完成摘要已过滤受保护运行态路径，过滤项未写入 path 字段。",
     "source_artifact": "",
 }
+FINISH_SUMMARY_PATH_SNAPSHOT_UNAVAILABLE_CONTRACT = {
+    "contract": "finish-summary git path snapshot unavailable",
+    "before": "Git path snapshot was unavailable.",
+    "after": "完成摘要未记录 path 字段；其它合同与检索字段保持可验证。",
+    "source_artifact": "",
+}
+PR_READINESS_ARTIFACT = "pr-readiness.json"
+PR_BODY_ARTIFACT = "pr-body.md"
+PR_READINESS_PUBLISH_INPUT_KEYS = {
+    "repo",
+    "base_branch",
+    "head_branch",
+    "reviewed_head_sha",
+    "title",
+    "body_source",
+    "body_sha256",
+    "draft",
+    "reviewed_source",
+}
 REVIEW_ROUND_REPORT_DIR = "reviews"
 HUMAN_MARKDOWN_ARTIFACTS = [
     {
@@ -484,6 +503,34 @@ def apply_finish_summary_path_filter_contract(index: dict[str, Any], protected_p
     index["contract_changes"] = filtered_contracts
 
 
+def apply_finish_summary_path_snapshot_contract(
+    index: dict[str, Any],
+    *,
+    protected_paths_filtered: bool,
+    snapshot_unavailable: bool,
+) -> None:
+    contracts = index.get("contract_changes")
+    existing = contracts if isinstance(contracts, list) else []
+    index["contract_changes"] = [
+        item
+        for item in existing
+        if not (
+            isinstance(item, dict)
+            and item.get("contract")
+            in {
+                FINISH_SUMMARY_PROTECTED_PATH_FILTER_CONTRACT["contract"],
+                FINISH_SUMMARY_PATH_SNAPSHOT_UNAVAILABLE_CONTRACT["contract"],
+            }
+        )
+    ]
+    if snapshot_unavailable:
+        index["contract_changes"].append(
+            copy.deepcopy(FINISH_SUMMARY_PATH_SNAPSHOT_UNAVAILABLE_CONTRACT)
+        )
+    else:
+        apply_finish_summary_path_filter_contract(index, protected_paths_filtered)
+
+
 def finish_summary_string_array_errors(
     values: Any,
     label: str,
@@ -710,11 +757,16 @@ def finish_summary_git_output_paths(output: str) -> set[str]:
     return {value for value in values if value}
 
 
-def finish_summary_git_path_snapshot(root: Path, base_ref: str, *, include_worktree: bool) -> tuple[list[str], bool]:
+def finish_summary_git_path_snapshot(
+    root: Path,
+    base_ref: str,
+    *,
+    include_worktree: bool,
+) -> tuple[list[str], bool, bool]:
     range_spec = base_ref if include_worktree else f"{base_ref}...HEAD"
     proc = run(["git", "diff", "--name-only", "-z", range_spec], cwd=root, check=False)
     if proc.returncode != 0:
-        raise WorkflowError("Could not calculate finish-summary changed paths.", exit_code=2, payload={"base_ref": base_ref})
+        return [], False, True
     paths = finish_summary_git_output_paths(proc.stdout)
     if include_worktree:
         untracked_proc = run(
@@ -723,16 +775,14 @@ def finish_summary_git_path_snapshot(root: Path, base_ref: str, *, include_workt
             check=False,
         )
         if untracked_proc.returncode != 0:
-            raise WorkflowError(
-                "Could not calculate finish-summary untracked task metadata paths.",
-                exit_code=2,
-            )
+            return [], False, True
         paths.update(finish_summary_git_output_paths(untracked_proc.stdout))
-    return sanitize_finish_summary_git_paths(paths)
+    safe_paths, protected_paths_filtered = sanitize_finish_summary_git_paths(paths)
+    return safe_paths, protected_paths_filtered, False
 
 
 def finish_summary_git_paths(root: Path, base_ref: str, *, include_worktree: bool) -> list[str]:
-    paths, _protected_paths_filtered = finish_summary_git_path_snapshot(
+    paths, _protected_paths_filtered, _snapshot_unavailable = finish_summary_git_path_snapshot(
         root, base_ref, include_worktree=include_worktree
     )
     return paths
@@ -757,11 +807,12 @@ def build_finish_summary(
         raise WorkflowError("Could not calculate finish-summary task commits.", exit_code=2)
     commits = [line.strip() for line in commits_proc.stdout.splitlines() if line.strip()]
     if changed_paths is None:
-        changed_paths, protected_paths_filtered = finish_summary_git_path_snapshot(
+        changed_paths, protected_paths_filtered, snapshot_unavailable = finish_summary_git_path_snapshot(
             root, base_ref, include_worktree=True
         )
     else:
         changed_paths, protected_paths_filtered = sanitize_finish_summary_git_paths(changed_paths)
+        snapshot_unavailable = False
     github = {
         key: finish_summary_issue_numbers(ledger, key)
         for key in ["source_issues", "close_issues", "related_issues", "followup_issues"]
@@ -769,7 +820,11 @@ def build_finish_summary(
     github["pr_url"] = pr_url
     artifacts = finish_summary_artifacts(task_dir)
     index = copy.deepcopy(index_payload["index"])
-    apply_finish_summary_path_filter_contract(index, protected_paths_filtered)
+    apply_finish_summary_path_snapshot_contract(
+        index,
+        protected_paths_filtered=protected_paths_filtered,
+        snapshot_unavailable=snapshot_unavailable,
+    )
     issue_numbers = sorted({number for key in ["source_issues", "close_issues", "related_issues", "followup_issues"] for number in github[key]})
     pr_match = re.search(r"/pull/([1-9][0-9]*)$", pr_url)
     index["search_terms"] = {
@@ -6644,7 +6699,7 @@ def format_merge_commit_body(
         "范围：\n"
         f"本次 PR 完成 #{int(primary_issue)}：{summary.strip()}。\n\n"
         "审计：\n"
-        "Trellis task archive、review gate 和 journal 提交保留在 PR 分支历史中，用于审计任务过程。\n\n"
+        "Trellis task archive、review gate、finish-summary 和 readiness 提交保留在 PR 分支历史中，用于审计任务过程。\n\n"
         f"PR: #{pull_request}\n"
         f"Refs #{int(primary_issue)}\n"
     )
@@ -6801,6 +6856,176 @@ def load_pr_body_artifact(root: Path, artifact_arg: str | None) -> tuple[str | N
         exit_code=2,
         payload={"artifact_path": str(path)},
     )
+
+
+def canonical_json_sha256(payload: dict[str, Any]) -> str:
+    encoded = json.dumps(
+        payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def task_local_pr_readiness_path(root: Path, task_dir: Path, artifact_arg: str | None) -> Path:
+    if not artifact_arg:
+        raise WorkflowError(
+            "Publish recovery requires the task-local pr-readiness.json snapshot.",
+            exit_code=2,
+        )
+    raw = Path(artifact_arg).expanduser()
+    path = raw if raw.is_absolute() else root / raw
+    resolved = path.resolve()
+    expected = (task_dir / PR_READINESS_ARTIFACT).resolve()
+    if resolved != expected:
+        raise WorkflowError(
+            "Publish recovery readiness artifact must be the task-local pr-readiness.json.",
+            exit_code=2,
+            payload={"artifact_path": str(resolved), "expected_path": str(expected)},
+        )
+    return resolved
+
+
+def build_pr_readiness_snapshot(
+    root: Path,
+    task_dir: Path,
+    *,
+    repo: str,
+    base_branch: str,
+    head_branch: str,
+    reviewed_head_sha: str,
+    title: str,
+    draft: bool,
+) -> tuple[Path, dict[str, Any]]:
+    body_path = (task_dir / PR_BODY_ARTIFACT).resolve()
+    if not body_path.is_file():
+        raise WorkflowError(
+            "PR readiness requires task-local pr-body.md.",
+            exit_code=2,
+            payload={"body_path": str(body_path)},
+        )
+    publish_inputs = {
+        "repo": repo,
+        "base_branch": normalize_ref(base_branch).removeprefix("origin/"),
+        "head_branch": head_branch,
+        "reviewed_head_sha": reviewed_head_sha,
+        "title": title,
+        "body_source": PR_BODY_ARTIFACT,
+        "body_sha256": hashlib.sha256(body_path.read_bytes()).hexdigest(),
+        "draft": draft,
+        "reviewed_source": f"body-artifact:{PR_READINESS_ARTIFACT}",
+    }
+    artifact = {
+        "ready": True,
+        "body_file": PR_BODY_ARTIFACT,
+        "publish_inputs": publish_inputs,
+        "publish_inputs_sha256": canonical_json_sha256(publish_inputs),
+    }
+    return task_dir / PR_READINESS_ARTIFACT, artifact
+
+
+def write_pr_readiness_snapshot(
+    root: Path,
+    task_dir: Path,
+    **kwargs: Any,
+) -> tuple[Path, dict[str, Any]]:
+    path, artifact = build_pr_readiness_snapshot(root, task_dir, **kwargs)
+    write_json(path, artifact)
+    return path, artifact
+
+
+def read_pr_readiness_publish_inputs(
+    root: Path,
+    task_dir: Path,
+    artifact_arg: str | None,
+    gate: dict[str, Any],
+    *,
+    require_committed: bool,
+) -> tuple[Path, dict[str, Any], str]:
+    path = task_local_pr_readiness_path(root, task_dir, artifact_arg)
+    artifact = read_json(path)
+    if set(artifact) != {"ready", "body_file", "publish_inputs", "publish_inputs_sha256"}:
+        raise WorkflowError("pr-readiness.json keys are invalid.", exit_code=2)
+    if artifact.get("ready") is not True or artifact.get("body_file") != PR_BODY_ARTIFACT:
+        raise WorkflowError("pr-readiness.json must bind ready=true to task-local pr-body.md.", exit_code=2)
+    publish_inputs = artifact.get("publish_inputs")
+    if not isinstance(publish_inputs, dict) or set(publish_inputs) != PR_READINESS_PUBLISH_INPUT_KEYS:
+        raise WorkflowError("pr-readiness.json publish_inputs keys are invalid.", exit_code=2)
+    digest = str(artifact.get("publish_inputs_sha256") or "")
+    if not re.fullmatch(r"[0-9a-f]{64}", digest) or digest != canonical_json_sha256(publish_inputs):
+        raise WorkflowError("pr-readiness.json publish_inputs digest does not match canonical content.", exit_code=2)
+    if publish_inputs.get("body_source") != PR_BODY_ARTIFACT:
+        raise WorkflowError("pr-readiness.json body_source must equal pr-body.md.", exit_code=2)
+    if publish_inputs.get("reviewed_source") != f"body-artifact:{PR_READINESS_ARTIFACT}":
+        raise WorkflowError("pr-readiness.json reviewed_source is invalid.", exit_code=2)
+    for key in ["repo", "base_branch", "head_branch", "reviewed_head_sha", "title", "body_sha256"]:
+        if not isinstance(publish_inputs.get(key), str) or not str(publish_inputs[key]).strip():
+            raise WorkflowError(f"pr-readiness.json publish_inputs.{key} is invalid.", exit_code=2)
+    if not re.fullmatch(r"[0-9a-f]{40}", str(publish_inputs["reviewed_head_sha"])):
+        raise WorkflowError("pr-readiness.json reviewed_head_sha is invalid.", exit_code=2)
+    if not re.fullmatch(r"[0-9a-f]{64}", str(publish_inputs["body_sha256"])):
+        raise WorkflowError("pr-readiness.json body_sha256 is invalid.", exit_code=2)
+    if not isinstance(publish_inputs.get("draft"), bool):
+        raise WorkflowError("pr-readiness.json draft must be boolean.", exit_code=2)
+
+    body_path = task_dir / PR_BODY_ARTIFACT
+    if not body_path.is_file():
+        raise WorkflowError("pr-readiness.json bound pr-body.md is missing.", exit_code=2)
+    body_bytes = body_path.read_bytes()
+    if hashlib.sha256(body_bytes).hexdigest() != publish_inputs["body_sha256"]:
+        raise WorkflowError("pr-readiness.json body digest does not match pr-body.md.", exit_code=2)
+    body = body_bytes.decode("utf-8").strip()
+    if not body:
+        raise WorkflowError("pr-readiness.json bound pr-body.md is empty.", exit_code=2)
+
+    reviewed_head = str(gate.get("head") or "")
+    if reviewed_head != publish_inputs["reviewed_head_sha"]:
+        raise WorkflowError("pr-readiness.json reviewed HEAD does not match Branch Review Gate.", exit_code=2)
+
+    if require_committed:
+        relative_paths = [repo_relative(root, path), repo_relative(root, body_path)]
+        dirty_paths = set(git_status_paths(root))
+        dirty_bound = sorted(dirty_paths.intersection(relative_paths))
+        if dirty_bound:
+            raise WorkflowError(
+                "PR readiness artifact or body has dirty/staged changes.",
+                exit_code=2,
+                payload={"dirty_paths": dirty_bound},
+            )
+        for bound_path, relative in [(path, relative_paths[0]), (body_path, relative_paths[1])]:
+            blob = subprocess.run(
+                ["git", "show", f"HEAD:{relative}"],
+                cwd=str(root),
+                capture_output=True,
+                check=False,
+            )
+            if blob.returncode != 0 or blob.stdout != bound_path.read_bytes():
+                raise WorkflowError(
+                    "PR readiness artifact or body does not match its current HEAD Git blob.",
+                    exit_code=2,
+                    payload={"path": relative},
+                )
+        history = run(
+            ["git", "log", "--format=%H", "--", relative_paths[0]],
+            cwd=root,
+            check=False,
+        )
+        commits = [line for line in history.stdout.splitlines() if line.strip()]
+        if history.returncode != 0 or len(commits) != 1:
+            raise WorkflowError(
+                "pr-readiness.json must be immutable after its initial metadata commit.",
+                exit_code=2,
+                payload={"artifact_commit_count": len(commits)},
+            )
+        ancestor = run(
+            ["git", "merge-base", "--is-ancestor", str(publish_inputs["reviewed_head_sha"]), "HEAD"],
+            cwd=root,
+            check=False,
+        )
+        if ancestor.returncode != 0:
+            raise WorkflowError("PR readiness reviewed HEAD is not an ancestor of current HEAD.", exit_code=2)
+    return path, publish_inputs, body + "\n"
 
 
 def read_pr_body_file(root: Path, body_file: str | None) -> str | None:
@@ -8527,29 +8752,17 @@ def cmd_verify_marketplace(args: argparse.Namespace) -> dict[str, Any]:
 def publish_recovery_command(
     root: Path,
     task_dir: Path,
-    args: argparse.Namespace,
+    readiness_path: Path,
     repo: str,
-    base_branch: str,
     remote: str,
 ) -> list[str]:
     command = [
         ".trellis/guru-team/scripts/bash/publish-pr.sh", "--json",
         "--recovery-after-finish-work", "--allow-metadata-after-gate",
         "--task", repo_relative(root, task_dir),
-        "--repo", repo, "--base-branch", base_branch, "--remote", remote,
+        "--repo", repo, "--remote", remote,
+        "--body-artifact", str(readiness_path),
     ]
-    if getattr(args, "title", None):
-        command.extend(["--title", str(args.title)])
-    if getattr(args, "body_file", None):
-        command.extend(["--body-file", str(args.body_file)])
-    elif getattr(args, "body_artifact", None):
-        command.extend(["--body-artifact", str(args.body_artifact)])
-    if getattr(args, "draft", None) is True:
-        command.append("--draft")
-    elif getattr(args, "draft", None) is False:
-        command.append("--no-draft")
-    for validation in getattr(args, "validation", None) or []:
-        command.extend(["--validation", str(validation)])
     return command
 
 
@@ -8731,7 +8944,7 @@ def update_finish_summary_for_pr(
     validate_finish_summary(payload, task_dir=task_dir)
     base_branch = str(task_context.get("base_branch") or payload.get("git", {}).get("base_branch") or "")
     base_ref = str(task_context.get("base_ref") or diff_base_ref(root, base_branch))
-    changed_paths, protected_paths_filtered = finish_summary_git_path_snapshot(
+    changed_paths, protected_paths_filtered, snapshot_unavailable = finish_summary_git_path_snapshot(
         root, base_ref, include_worktree=False
     )
     updated = copy.deepcopy(payload)
@@ -8743,7 +8956,11 @@ def update_finish_summary_for_pr(
         raise WorkflowError("Cannot update finish-summary from a non-canonical PR URL.", exit_code=2)
     updated["index"]["search_terms"]["pr_refs"] = [f"PR #{pr_match.group(1)}"]
     updated["index"]["search_terms"]["paths"] = changed_paths
-    apply_finish_summary_path_filter_contract(updated["index"], protected_paths_filtered)
+    apply_finish_summary_path_snapshot_contract(
+        updated["index"],
+        protected_paths_filtered=protected_paths_filtered,
+        snapshot_unavailable=snapshot_unavailable,
+    )
     updated["index"]["retrieval_text"] = finish_summary_retrieval_text(
         str(updated.get("task", {}).get("title") or ""), updated["index"]
     )
@@ -8871,6 +9088,37 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
     title = pr_title_from_task(task, args)
     validations = list(args.validation or [])
     body, body_source = resolve_pr_body(root, args, ledger, gate, validations, config)
+    readiness_path: Path | None = None
+    publish_inputs: dict[str, Any] | None = None
+    if not args.dry_run:
+        if args.recovery_after_finish_work and getattr(args, "body_artifact", None) and any([
+            getattr(args, "title", None),
+            getattr(args, "body_file", None),
+            getattr(args, "draft", None) is not None,
+            validations,
+            getattr(args, "base_branch", None),
+        ]):
+            raise WorkflowError(
+                "Publish recovery forbids title/body/draft/base/validation overrides; use only pr-readiness.json.",
+                exit_code=2,
+            )
+        readiness_path, publish_inputs, body = read_pr_readiness_publish_inputs(
+            root,
+            task_dir,
+            getattr(args, "body_artifact", None),
+            gate,
+            require_committed=True,
+        )
+        configured_repo = repo
+        repo = str(publish_inputs["repo"])
+        if configured_repo.casefold() != repo.casefold():
+            raise WorkflowError("Publish repo does not match immutable pr-readiness.json.", exit_code=2)
+        base_branch = str(publish_inputs["base_branch"])
+        if branch != publish_inputs["head_branch"]:
+            raise WorkflowError("Current branch does not match immutable pr-readiness.json.", exit_code=2)
+        title = str(publish_inputs["title"])
+        draft = bool(publish_inputs["draft"])
+        body_source = str(publish_inputs["reviewed_source"])
     primary_issue = primary_issue_number_from_ledger(ledger)
     merge_summary = merge_summary_from_title(title, primary_issue, ledger)
     base_branch_name = normalize_ref(base_branch).removeprefix("origin/")
@@ -8932,17 +9180,12 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
         return payload
 
     require_gh_auth(root)
-    recovery_command = publish_recovery_command(root, task_dir, args, repo, base_branch_name, remote)
+    if readiness_path is None or publish_inputs is None:
+        raise WorkflowError("Formal publish requires immutable pr-readiness.json inputs.", exit_code=2)
+    recovery_command = publish_recovery_command(root, task_dir, readiness_path, repo, remote)
     payload["recovery_command"] = recovery_command
     payload["recovery_command_shell"] = shlex.join(recovery_command)
-    publish_inputs = {
-        "repo": repo,
-        "base_branch": base_branch_name,
-        "head_branch": branch,
-        "title": title,
-        "body": body,
-        "draft": draft,
-    }
+    payload["publish_inputs_sha256"] = canonical_json_sha256(publish_inputs)
     try:
         run_stdout(["git", "push", "-u", remote, branch], cwd=root)
     except WorkflowError as exc:
@@ -9311,8 +9554,32 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             },
         )
 
+    task_body_path = task_dir / PR_BODY_ARTIFACT
+    task_body = read_pr_body_file(root, str(task_body_path))
+    if task_body != body:
+        raise WorkflowError(
+            "finish-work PR readiness must bind the reviewed task-local pr-body.md bytes.",
+            exit_code=2,
+        )
+    task = task_json(task_dir)
+    readiness_repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
+    if not readiness_repo:
+        raise WorkflowError("Could not resolve GitHub repo for pr-readiness.json.", exit_code=2)
+    readiness_base = base_branch_from_sources(args, task, task_context)
+    readiness_title = pr_title_from_task(task, args)
+    readiness_path, readiness_snapshot = build_pr_readiness_snapshot(
+        root,
+        task_dir,
+        repo=readiness_repo,
+        base_branch=readiness_base,
+        head_branch=current_branch(root),
+        reviewed_head_sha=reviewed_head,
+        title=readiness_title,
+        draft=draft,
+    )
+
     if args.dry_run:
-        return build_finish_work_dry_run_plan(
+        plan = build_finish_work_dry_run_plan(
             root,
             args,
             config,
@@ -9329,6 +9596,14 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             reviewed_source_errors,
             ledger,
         )
+        plan["pr_readiness_snapshot"] = {
+            "artifact": str(readiness_path),
+            "publish_inputs_sha256": readiness_snapshot["publish_inputs_sha256"],
+            "would_write": False,
+        }
+        return plan
+
+    write_json(readiness_path, readiness_snapshot)
 
     if not args.skip_archive:
         archive_script = root / ".trellis/scripts/task.py"
@@ -9359,11 +9634,9 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     write_json(finish_summary_path, finish_summary)
     validate_finish_summary(read_json(finish_summary_path), task_dir=archived_task_dir)
     publish_task = str(archived_task_dir)
-    publish_body_file = args.body_file
-    publish_body_artifact = args.body_artifact
+    publish_body_artifact = str(readiness_path)
     archive_migration = migrate_review_gate_for_archived_task(root, archived_task_dir, config)
     metadata_commit = commit_if_metadata_dirty(root, metadata_commit_subject)
-    publish_body_file = rewrite_active_task_artifact_path(root, task_dir, archived_task_dir, publish_body_file)
     publish_body_artifact = rewrite_active_task_artifact_path(root, task_dir, archived_task_dir, publish_body_artifact)
     publish_args = argparse.Namespace(
         root=str(root),
@@ -9371,11 +9644,11 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         repo=args.repo,
         base_branch=args.base_branch,
         remote=args.remote,
-        title=args.title,
-        validation=args.validation,
-        body_file=publish_body_file,
+        title=None,
+        validation=[],
+        body_file=None,
         body_artifact=publish_body_artifact,
-        draft=args.draft,
+        draft=None,
         allow_metadata_after_gate=True,
         dry_run=args.dry_run,
         from_finish_work=True,

@@ -180,6 +180,8 @@ Finish entries must:
 Start entries must:
 
 - identify themselves as fallback/explicit orientation
+- load only phase, packages, current-task, and Git facts; never run bare
+  `get_context.py` or open/enumerate `.trellis/workspace/**`
 - support natural-language issue-backed intake when no active task exists
 - ask for consent before creating GitHub issues, worktrees, branches, or Trellis
   tasks unless explicitly requested
@@ -196,6 +198,9 @@ SessionStart, sub-agent context injection, brainstorm, and trellis-meta referenc
   `implement.md` before implementation
 - point agents back to workflow-state / `.trellis/workflow.md` for the full
   process instead of duplicating the workflow in hooks
+- keep Codex/Cursor SessionStart free of journal helper imports/calls and prove
+  with a fresh-install access-guard sentinel that workspace journal path,
+  basename, content, and line count are neither read nor output
 
 Sub-agent overlay entries must:
 

@@ -2680,6 +2680,10 @@ class PublishBoundaryTest(unittest.TestCase):
             "related_issues": [],
             "followup_issues": [],
         })
+        self.body_path = self.task_dir / "pr-body.md"
+        self.body_path.write_text(valid_pr_body("不可变 publish readiness fixture。"), encoding="utf-8")
+        self.readiness_path = self.task_dir / "pr-readiness.json"
+        gtt.write_json(self.readiness_path, {"ready": True, "body_file": "pr-body.md"})
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
@@ -2717,6 +2721,11 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
             mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])),
             mock.patch.object(gtt, "current_branch", return_value="codex/18-publish-boundary"),
+            mock.patch.object(
+                gtt,
+                "read_pr_readiness_publish_inputs",
+                side_effect=self.fake_readiness_publish_inputs,
+            ),
             mock.patch.object(gtt, "validate_publish_identity_and_remote_head", return_value={
                 "repo": "owner/repo",
                 "base_branch": "main",
@@ -2725,6 +2734,139 @@ class PublishBoundaryTest(unittest.TestCase):
                 "remote_head": "a" * 40,
             }),
         ]
+
+    def fake_readiness_publish_inputs(
+        self,
+        root: Path,
+        task_dir: Path,
+        artifact_arg: str | None,
+        gate: dict[str, object],
+        *,
+        require_committed: bool,
+    ) -> tuple[Path, dict[str, object], str]:
+        del require_committed
+        artifact_path = Path(artifact_arg) if artifact_arg else self.readiness_path
+        if not artifact_path.is_absolute():
+            artifact_path = root / artifact_path
+        body, _source = gtt.load_pr_body_artifact(root, str(artifact_path))
+        assert body is not None
+        return artifact_path, {
+            "repo": "owner/repo",
+            "base_branch": "main",
+            "head_branch": "codex/18-publish-boundary",
+            "reviewed_head_sha": str(gate.get("head") or "abc123"),
+            "title": "完成：#18 Publish boundary",
+            "body_source": "pr-body.md",
+            "body_sha256": "a" * 64,
+            "draft": False,
+            "reviewed_source": "body-artifact:pr-readiness.json",
+        }, body
+
+    def create_committed_readiness_fixture(self, root: Path) -> tuple[Path, Path, dict[str, object]]:
+        subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.name", "Test"], cwd=root, check=True)
+        (root / "README.md").write_text("fixture\n", encoding="utf-8")
+        subprocess.run(["git", "add", "README.md"], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-qm", "fixture"], cwd=root, check=True)
+        reviewed_head = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True, capture_output=True, check=True
+        ).stdout.strip()
+
+        task_dir = root / ".trellis/tasks/archive/2026-07/task"
+        task_dir.mkdir(parents=True)
+        (task_dir / "pr-body.md").write_text(valid_pr_body("不可变快照 mutation fixture。"), encoding="utf-8")
+        readiness_path, artifact = gtt.write_pr_readiness_snapshot(
+            root,
+            task_dir,
+            repo="owner/repo",
+            base_branch="main",
+            head_branch="topic",
+            reviewed_head_sha=reviewed_head,
+            title="完成：#18 不可变发布输入",
+            draft=False,
+        )
+        subprocess.run(["git", "add", ".trellis/tasks"], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-qm", "metadata"], cwd=root, check=True)
+        return task_dir, readiness_path, {"head": reviewed_head}
+
+    def test_pr_readiness_mutations_fail_closed_before_publish_resolution(self) -> None:
+        mutations = {
+            "title": lambda payload: payload["publish_inputs"].__setitem__("title", "changed"),
+            "draft": lambda payload: payload["publish_inputs"].__setitem__("draft", True),
+            "repo": lambda payload: payload["publish_inputs"].__setitem__("repo", "other/repo"),
+            "base": lambda payload: payload["publish_inputs"].__setitem__("base_branch", "release"),
+            "head": lambda payload: payload["publish_inputs"].__setitem__("head_branch", "other"),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                task_dir, readiness_path, gate = self.create_committed_readiness_fixture(root)
+                payload = gtt.read_json(readiness_path)
+                mutate(payload)
+                payload["publish_inputs_sha256"] = gtt.canonical_json_sha256(payload["publish_inputs"])
+                gtt.write_json(readiness_path, payload)
+
+                with (
+                    mock.patch.object(gtt, "resolve_open_pull_request_for_recovery") as resolve_pr,
+                    self.assertRaises(gtt.WorkflowError) as raised,
+                ):
+                    gtt.read_pr_readiness_publish_inputs(
+                        root, task_dir, str(readiness_path), gate, require_committed=True
+                    )
+                resolve_pr.assert_not_called()
+                self.assertIn("dirty/staged", str(raised.exception))
+
+    def test_pr_readiness_body_head_source_and_digest_mutations_fail_closed(self) -> None:
+        cases = ["body", "reviewed_head", "reviewed_source", "snapshot_digest"]
+        for name in cases:
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                task_dir, readiness_path, gate = self.create_committed_readiness_fixture(root)
+                payload = gtt.read_json(readiness_path)
+                if name == "body":
+                    (task_dir / "pr-body.md").write_text("changed body\n", encoding="utf-8")
+                elif name == "reviewed_head":
+                    payload["publish_inputs"]["reviewed_head_sha"] = "f" * 40
+                    payload["publish_inputs_sha256"] = gtt.canonical_json_sha256(payload["publish_inputs"])
+                    gtt.write_json(readiness_path, payload)
+                elif name == "reviewed_source":
+                    payload["publish_inputs"]["reviewed_source"] = "body-file:pr-body.md"
+                    payload["publish_inputs_sha256"] = gtt.canonical_json_sha256(payload["publish_inputs"])
+                    gtt.write_json(readiness_path, payload)
+                else:
+                    payload["publish_inputs_sha256"] = "0" * 64
+                    gtt.write_json(readiness_path, payload)
+
+                with (
+                    mock.patch.object(gtt, "resolve_open_pull_request_for_recovery") as resolve_pr,
+                    self.assertRaises(gtt.WorkflowError),
+                ):
+                    gtt.read_pr_readiness_publish_inputs(
+                        root, task_dir, str(readiness_path), gate, require_committed=True
+                    )
+                resolve_pr.assert_not_called()
+
+    def test_pr_readiness_rejects_committed_rewrite_history(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            task_dir, readiness_path, gate = self.create_committed_readiness_fixture(root)
+            payload = gtt.read_json(readiness_path)
+            payload["publish_inputs"]["title"] = "changed after initial metadata commit"
+            payload["publish_inputs_sha256"] = gtt.canonical_json_sha256(payload["publish_inputs"])
+            gtt.write_json(readiness_path, payload)
+            subprocess.run(["git", "add", str(readiness_path)], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "rewrite metadata"], cwd=root, check=True)
+
+            with (
+                mock.patch.object(gtt, "resolve_open_pull_request_for_recovery") as resolve_pr,
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.read_pr_readiness_publish_inputs(
+                    root, task_dir, str(readiness_path), gate, require_committed=True
+                )
+            resolve_pr.assert_not_called()
+            self.assertIn("immutable after its initial metadata commit", str(raised.exception))
 
     def record_passed_marketplace_evidence(
         self,
@@ -3034,6 +3176,36 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(raised.exception.payload["failed_stage"], "recovery-marketplace-evidence")
         self.assertEqual(raised.exception.payload["publish_inputs"]["repo"], "owner/repo")
         self.assertIn("--recovery-after-finish-work", raised.exception.payload["recovery_command"])
+        recovery_command = raised.exception.payload["recovery_command"]
+        self.assertIn("--body-artifact", recovery_command)
+        self.assertNotIn("--body-file", recovery_command)
+        self.assertNotIn("--title", recovery_command)
+        self.assertNotIn("--draft", recovery_command)
+        self.assertNotIn("--no-draft", recovery_command)
+        self.assertNotIn("--base-branch", recovery_command)
+        self.assertNotIn("--validation", recovery_command)
+
+    def test_publish_recovery_rejects_cli_overrides_before_pr_query(self) -> None:
+        patches = self.patch_publish_success_path()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with (
+                mock.patch.object(gtt, "resolve_open_pull_request_for_recovery") as resolve_pr,
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.cmd_publish_pr(publish_args(
+                    recovery_after_finish_work=True,
+                    dry_run=False,
+                    body_artifact=str(self.readiness_path),
+                    title="changed",
+                ))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        resolve_pr.assert_not_called()
+        self.assertIn("forbids title/body/draft/base/validation overrides", str(raised.exception))
 
     def test_publish_pr_recovery_push_failure_preserves_inputs_before_pr_query(self) -> None:
         body_path = self.root / "reviewed-pr-body.md"
@@ -3060,7 +3232,8 @@ class PublishBoundaryTest(unittest.TestCase):
 
         resolve_pr.assert_not_called()
         self.assertEqual(raised.exception.payload["failed_stage"], "recovery-content-push")
-        self.assertEqual(raised.exception.payload["publish_inputs"]["body"], body_path.read_text(encoding="utf-8"))
+        self.assertEqual(raised.exception.payload["publish_inputs"]["body_source"], "pr-body.md")
+        self.assertNotIn("body", raised.exception.payload["publish_inputs"])
         self.assertIn("--recovery-after-finish-work", raised.exception.payload["recovery_command"])
 
     def test_publish_pr_recovery_identity_failure_preserves_inputs_before_pr_query(self) -> None:
@@ -3171,6 +3344,11 @@ class PublishBoundaryTest(unittest.TestCase):
             patcher.start()
         try:
             with (
+                mock.patch.object(
+                    gtt,
+                    "read_pr_readiness_publish_inputs",
+                    side_effect=gtt.WorkflowError("immutable pr-readiness.json is required", exit_code=2),
+                ),
                 mock.patch.object(gtt, "require_gh_auth") as require_auth,
                 mock.patch.object(gtt, "run_stdout") as run_stdout,
                 self.assertRaises(gtt.WorkflowError) as raised,
@@ -3189,8 +3367,7 @@ class PublishBoundaryTest(unittest.TestCase):
         require_auth.assert_not_called()
         run_stdout.assert_not_called()
         self.assertEqual(raised.exception.exit_code, 2)
-        self.assertEqual(raised.exception.payload["body_source"], "generated")
-        self.assertFalse(raised.exception.payload["reviewed_source_ok"])
+        self.assertIn("pr-readiness.json", str(raised.exception))
 
     def test_publish_pr_draft_allows_generated_body_preview(self) -> None:
         patches = self.patch_publish_success_path()
@@ -3774,7 +3951,7 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "cmd_publish_pr", return_value={"status": "dry-run"}) as publish,
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
-            payload = gtt.cmd_finish_work(finish_args(body_file=str(body_path), dry_run=False))
+            payload = gtt.cmd_finish_work(finish_args(body_file=str(self.body_path), dry_run=False))
 
         publish.assert_called_once()
         publish_args_obj = publish.call_args.args[0]
@@ -3782,8 +3959,8 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertFalse(publish_args_obj.recovery_after_finish_work)
         self.assertTrue(publish_args_obj.allow_metadata_after_gate)
         self.assertEqual(publish_args_obj.task, str(archived_task_dir))
-        self.assertEqual(publish_args_obj.body_file, str(archived_task_dir / "reviewed-pr-body.md"))
-        self.assertIsNone(publish_args_obj.body_artifact)
+        self.assertIsNone(publish_args_obj.body_file)
+        self.assertEqual(publish_args_obj.body_artifact, str(archived_task_dir / "pr-readiness.json"))
         build_summary.assert_called_once()
         validate_summary.assert_called_once()
         self.assertEqual(gtt.read_json(archived_task_dir / "finish-summary.json"), {"schema_version": 1})
@@ -3819,7 +3996,7 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "cmd_publish_pr", return_value={"status": "dry-run"}) as publish,
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
-            payload = gtt.cmd_finish_work(finish_args(body_file=str(body_path), dry_run=False))
+            payload = gtt.cmd_finish_work(finish_args(body_file=str(self.body_path), dry_run=False))
 
         migrate.assert_called_once_with(self.root, archived_task_dir, {**gtt.DEFAULTS, "github_repo": "owner/repo"})
         self.assertEqual(commit_metadata.call_count, 1)
@@ -3848,7 +4025,7 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "commit_if_metadata_dirty") as commit_metadata,
             mock.patch.object(gtt, "cmd_publish_pr") as publish,
         ):
-            payload = gtt.cmd_finish_work(finish_args(body_file=str(body_path)))
+            payload = gtt.cmd_finish_work(finish_args(body_file=str(self.body_path)))
 
         run_commands = [call.args[0] for call in run.call_args_list]
         self.assertNotIn(["python3", "./.trellis/scripts/task.py", "archive", self.task_dir.name], run_commands)
@@ -3898,7 +4075,7 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "cmd_publish_pr", return_value={"status": "dry-run"}),
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
-            gtt.cmd_finish_work(finish_args(body_file=str(body_path), dry_run=False))
+            gtt.cmd_finish_work(finish_args(body_file=str(self.body_path), dry_run=False))
 
         self.assertTrue(validate_gate.call_args.args[3])
 
@@ -4052,14 +4229,15 @@ class PublishBoundaryTest(unittest.TestCase):
                 patcher.stop()
         self.assertEqual(raised.exception.payload["failed_stage"], "gh-pr-create")
         self.assertEqual(raised.exception.payload["pr_url"], "")
-        self.assertEqual(raised.exception.payload["publish_inputs"], {
-            "repo": "owner/repo",
-            "base_branch": "main",
-            "head_branch": "codex/18-publish-boundary",
-            "title": "完成：Publish boundary",
-            "body": body_path.read_text(encoding="utf-8"),
-            "draft": False,
-        })
+        self.assertEqual(
+            set(raised.exception.payload["publish_inputs"]),
+            gtt.PR_READINESS_PUBLISH_INPUT_KEYS,
+        )
+        self.assertEqual(raised.exception.payload["publish_inputs"]["body_source"], "pr-body.md")
+        self.assertEqual(
+            raised.exception.payload["publish_inputs"]["reviewed_source"],
+            "body-artifact:pr-readiness.json",
+        )
         self.assertIn("--recovery-after-finish-work", raised.exception.payload["recovery_command"])
 
     def test_publish_pr_recovery_reuses_one_open_pr_without_create(self) -> None:
@@ -4160,7 +4338,7 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(create_pr.call_args.args[1:5], (
             "owner/repo", "main", "codex/18-publish-boundary", "完成：#18 Publish boundary"
         ))
-        self.assertEqual(create_pr.call_args.args[5], body_path.read_text(encoding="utf-8"))
+        self.assertEqual(create_pr.call_args.args[5], self.body_path.read_text(encoding="utf-8"))
         self.assertFalse(create_pr.call_args.args[6])
         self.assertFalse(payload["pr_recovery"]["reused_existing_open_pr"])
         self.assertTrue(payload["pr_recovery"]["created_after_zero_open_pr"])
@@ -8189,7 +8367,11 @@ class ActivePublicReferenceContractTest(unittest.TestCase):
         overlay_root = repo_root / "trellis/presets/guru-team/overlays"
         files: list[Path] = []
         for source in overlay_root.rglob("*"):
-            if not source.is_file():
+            if (
+                not source.is_file()
+                or "__pycache__" in source.parts
+                or source.suffix in {".pyc", ".pyo"}
+            ):
                 continue
             files.append(source)
             files.append(repo_root / source.relative_to(overlay_root))
@@ -9027,7 +9209,7 @@ class FinishSummaryContractTests(unittest.TestCase):
         ]
 
         with mock.patch.object(gtt, "run", side_effect=responses) as run:
-            paths, filtered = gtt.finish_summary_git_path_snapshot(
+            paths, filtered, unavailable = gtt.finish_summary_git_path_snapshot(
                 Path("/repo"), "main", include_worktree=True
             )
 
@@ -9037,10 +9219,48 @@ class FinishSummaryContractTests(unittest.TestCase):
             "safe.txt",
         ])
         self.assertTrue(filtered)
+        self.assertFalse(unavailable)
         self.assertEqual(
             run.call_args_list[1].args[0],
             ["git", "ls-files", "--others", "--exclude-standard", "-z"],
         )
+
+    def test_initial_diff_failure_returns_empty_unavailable_snapshot_without_disclosure(self) -> None:
+        failed = mock.Mock(
+            returncode=128,
+            stdout=".trellis/workspace/private-journal.md\0README.md\0",
+            stderr="fatal: bad revision secret/ref",
+        )
+        with mock.patch.object(gtt, "run", return_value=failed) as run:
+            snapshot = gtt.finish_summary_git_path_snapshot(
+                Path("/repo"), "secret/ref", include_worktree=True
+            )
+
+        self.assertEqual(snapshot, ([], False, True))
+        self.assertEqual(run.call_count, 1)
+        self.assertNotIn("secret/ref", json.dumps(snapshot))
+
+    def test_initial_untracked_failure_discards_partial_diff_snapshot(self) -> None:
+        responses = [
+            mock.Mock(returncode=0, stdout="README.md\0", stderr=""),
+            mock.Mock(returncode=1, stdout="private-untracked.md\0", stderr="denied"),
+        ]
+        with mock.patch.object(gtt, "run", side_effect=responses):
+            snapshot = gtt.finish_summary_git_path_snapshot(
+                Path("/repo"), "main", include_worktree=True
+            )
+
+        self.assertEqual(snapshot, ([], False, True))
+
+    def test_final_diff_failure_returns_empty_unavailable_snapshot(self) -> None:
+        failed = mock.Mock(returncode=1, stdout="README.md\0", stderr="denied")
+        with mock.patch.object(gtt, "run", return_value=failed) as run:
+            snapshot = gtt.finish_summary_git_path_snapshot(
+                Path("/repo"), "main", include_worktree=False
+            )
+
+        self.assertEqual(snapshot, ([], False, True))
+        self.assertEqual(run.call_count, 1)
 
     def test_protected_path_filter_contract_is_exact_idempotent_and_removable(self) -> None:
         index = self.valid_summary()["index"]
@@ -9098,7 +9318,7 @@ class FinishSummaryContractTests(unittest.TestCase):
                 mock.patch.object(
                     gtt,
                     "finish_summary_git_path_snapshot",
-                    return_value=(["README.md"], True),
+                    return_value=(["README.md"], True, False),
                 ),
             ):
                 index_payload = self.valid_ai_index()
@@ -9146,7 +9366,7 @@ class FinishSummaryContractTests(unittest.TestCase):
             self.assertNotIn("marketplace_verification", summary["artifacts"])
             gtt.write_json(task_dir / gtt.FINISH_SUMMARY_ARTIFACT, summary)
             (task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT).write_text("{}\n", encoding="utf-8")
-            snapshot = (["README.md"], True)
+            snapshot = (["README.md"], True, False)
 
             first_updated = None
             with mock.patch.object(gtt, "finish_summary_git_path_snapshot", return_value=snapshot):
@@ -9185,6 +9405,93 @@ class FinishSummaryContractTests(unittest.TestCase):
                 updated["index"]["retrieval_text"],
                 gtt.finish_summary_retrieval_text(updated["task"]["title"], updated["index"]),
             )
+
+    def test_initial_summary_unavailable_snapshot_uses_empty_paths_and_fixed_fact(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            task_dir = root / ".trellis/tasks/archive/2026-07/task"
+            task_dir.mkdir(parents=True)
+            (task_dir / "task.json").write_text(
+                '{"name":"task","title":"完成摘要","base_branch":"main"}\n',
+                encoding="utf-8",
+            )
+            (task_dir / "design.md").write_text("# Design\n", encoding="utf-8")
+            with (
+                mock.patch.object(
+                    gtt,
+                    "run",
+                    return_value=mock.Mock(returncode=0, stdout=f"{'a' * 40}\n", stderr=""),
+                ),
+                mock.patch.object(
+                    gtt,
+                    "finish_summary_git_path_snapshot",
+                    return_value=([], False, True),
+                ),
+            ):
+                index_payload = self.valid_ai_index()
+                index_payload["index"]["contract_changes"] = self.contract_changes(19)  # type: ignore[index]
+                summary = gtt.build_finish_summary(
+                    root,
+                    task_dir,
+                    {
+                        "base_branch": "main",
+                        "base_ref": "main",
+                        "branch_name": "topic",
+                        "task_artifact_dir": ".trellis/tasks/task",
+                    },
+                    {"primary_issue": {"number": 97}, "close_issues": [], "related_issues": [], "followup_issues": []},
+                    index_payload,
+                    "a" * 40,
+                )
+
+        self.assertEqual(summary["git"]["changed_paths"], [])
+        self.assertEqual(summary["index"]["search_terms"]["paths"], [])
+        contracts = summary["index"]["contract_changes"]
+        self.assertEqual(len(contracts), 20)
+        self.assertEqual(sum(item.get("contract") == "finish-summary git path snapshot unavailable" for item in contracts), 1)
+        self.assertFalse(any(item.get("contract") == "finish-summary protected path filtering" for item in contracts))
+        self.assertNotIn("stderr", summary["index"]["retrieval_text"])
+        self.assertEqual(
+            summary["index"]["retrieval_text"],
+            gtt.finish_summary_retrieval_text(summary["task"]["title"], summary["index"]),
+        )
+
+    def test_pr_rewrite_unavailable_snapshot_replaces_filter_fact_and_rederives_text(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            task_dir = root / ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session"
+            task_dir.mkdir(parents=True)
+            (task_dir / "design.md").write_text("# Design\n", encoding="utf-8")
+            summary = self.valid_summary()
+            summary["task"]["archive_dir"] = task_dir.relative_to(root).as_posix()  # type: ignore[index]
+            summary["index"]["contract_changes"].append(  # type: ignore[index]
+                dict(gtt.FINISH_SUMMARY_PROTECTED_PATH_FILTER_CONTRACT)
+            )
+            summary["index"]["retrieval_text"] = gtt.finish_summary_retrieval_text(  # type: ignore[index]
+                summary["task"]["title"], summary["index"]  # type: ignore[index]
+            )
+            gtt.write_json(task_dir / gtt.FINISH_SUMMARY_ARTIFACT, summary)
+            with mock.patch.object(
+                gtt,
+                "finish_summary_git_path_snapshot",
+                return_value=([], False, True),
+            ):
+                _path, updated = gtt.update_finish_summary_for_pr(
+                    root,
+                    task_dir,
+                    {"base_branch": "main", "base_ref": "main"},
+                    "https://github.com/castbox/guru-trellis/pull/123",
+                )
+
+        self.assertEqual(updated["git"]["changed_paths"], [])
+        self.assertEqual(updated["index"]["search_terms"]["paths"], [])
+        contracts = updated["index"]["contract_changes"]
+        self.assertEqual(sum(item.get("contract") == "finish-summary git path snapshot unavailable" for item in contracts), 1)
+        self.assertFalse(any(item.get("contract") == "finish-summary protected path filtering" for item in contracts))
+        self.assertEqual(
+            updated["index"]["retrieval_text"],
+            gtt.finish_summary_retrieval_text(updated["task"]["title"], updated["index"]),
+        )
 
     def test_summary_rejects_lengths_counts_enum_and_normalized_duplicates(self) -> None:
         payload = self.valid_summary()

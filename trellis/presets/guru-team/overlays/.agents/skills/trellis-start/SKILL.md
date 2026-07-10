@@ -11,12 +11,19 @@ Use this entry as fallback / explicit orientation. In normal auto-bootstrap plat
 
 Run this start entry when the platform has no automatic session/startup injection, hooks are disabled or unapproved, bootstrap appears not to have run, or the user asks for a full context report / reload.
 
-1. Run:
+1. Load only the fixed Guru Team no-workspace context set:
 
 ```bash
-python3 ./.trellis/scripts/get_context.py
 python3 ./.trellis/scripts/get_context.py --mode phase
+python3 ./.trellis/scripts/get_context.py --mode packages
+python3 ./.trellis/scripts/task.py current --source
+git branch --show-current
+git status --short --branch
 ```
+
+Do not run bare `get_context.py` in this entry. Do not open, enumerate, read,
+count, summarize, or output `.trellis/workspace/**`; workspace journals are not
+Guru Team startup or context evidence.
 
 2. If there is no active task and the user's natural-language request is issue-backed, task-like, or requires file changes, the first priority is Guru Team Phase 0 intake, not bare `task.py create` in the current checkout. Do not silently edit the current checkout. Run:
 

@@ -15,7 +15,7 @@ Guru Team 没有 fork Trellis 上游，也没有改全局 npm 包或 `node_modul
 | 官方 Trellis 原生层 | Trellis | `.trellis/workflow.md`、`.trellis/tasks/`、`.trellis/spec/`、`.trellis/workspace/`、`task.py`、hooks / sub-agent 机制 | 提供 Markdown workflow、task lifecycle、spec 注入、workspace journal、平台 hooks 和 sub-agent 扩展点。 |
 | Guru Team workflow 层 | Guru Team | `trellis/workflows/guru-team/workflow.md`、`trellis/index.json` | 用官方 marketplace workflow 机制定义 Phase 0-3、gate、handoff、review、finish/publish 规则。 |
 | Guru Team preset / overlay 层 | Guru Team | `trellis/presets/guru-team/`、`trellis/presets/guru-team/overlays/` | 安装 companion scripts、schema、config、Codex/Cursor/Claude 入口和 sub-agent prompt overlay。 |
-| Guru Team companion script 层 | Guru Team | `.trellis/guru-team/scripts/bash/*`、`.trellis/guru-team/scripts/python/guru_team_trellis.py` | 只做 executor / validator / recorder：检查环境、创建 worktree、记录 gate evidence、archive/journal/publish，不替代 AI 判断。 |
+| Guru Team companion script 层 | Guru Team | `.trellis/guru-team/scripts/bash/*`、`.trellis/guru-team/scripts/python/guru_team_trellis.py` | 只做 executor / validator / recorder：检查环境、创建 worktree、记录 gate evidence、archive/finish-summary/readiness/publish，不替代 AI 判断。 |
 
 颜色约定：
 
@@ -44,7 +44,7 @@ flowchart TD
   B["注入上下文<br/>trellis-bootstrap / codex-mode / workflow-state"]:::codex
 
   R{"AI 判断入口"}:::guru
-  S0["trellis-start fallback<br/>get_context.py + get_context.py --mode phase"]:::guru
+  S0["trellis-start fallback<br/>phase + packages + current task + Git facts"]:::guru
   P0["Phase 0: Pre-task intake<br/>不直接 task.py create"]:::guru
   CE["check-env.sh --json<br/>GitHub CLI / auth / repo 环境"]:::script
   PT["prepare-task.sh --json<br/>side-effect-free planner"]:::script
@@ -72,10 +72,10 @@ flowchart TD
   GP{"Gate passed?<br/>0 findings + fresh final reviewer"}:::guru
 
   FWEntry["trellis-finish-work<br/>唯一用户可见 closeout 入口"]:::guru
-  PRBody["AI-reviewed pr-body.md<br/>面向 GitHub reviewer"]:::artifact
+  PRBody["AI-reviewed pr-body.md<br/>+ finish-summary-index.json"]:::artifact
   Dry["finish-work.sh --dry-run<br/>--from-trellis-finish-work"]:::script
-  FW["finish-work.sh<br/>archive task + journal + metadata commit"]:::script
-  Pub["publish-pr.sh<br/>internal publish: push + non-draft PR"]:::script
+  FW["finish-work.sh<br/>archive + initial summary + immutable readiness"]:::script
+  Pub["publish-pr.sh<br/>verifier + 0/1/&gt;1 recovery + URL tail"]:::script
 
   U --> H --> W --> B --> R
   R -->|"bootstrap 缺失或显式要求"| S0
@@ -348,14 +348,24 @@ flowchart TD
   CheckGate["check-review-gate.sh<br/>--allow-metadata-after-gate"]:::script
   Body["AI-reviewed pr-body.md<br/>中文且 reviewer-facing"]:::artifact
   Dry["finish-work.sh --dry-run<br/>readiness preview"]:::script
+  Index["AI-reviewed finish-summary-index.json<br/>只含语义判断"]:::artifact
+  Readiness["pr-readiness.json.publish_inputs<br/>repo/base/head/title/body digest/draft"]:::artifact
   Formal["finish-work.sh<br/>--from-trellis-finish-work"]:::script
   Archive["task.py archive<br/>官方 Trellis task archive"]:::trellis
-  Journal["add_session.py<br/>workspace journal"]:::trellis
-  MetaCommit["metadata-only commit<br/>archive / journal / PR readiness"]:::script
-  Publish["publish-pr.sh internal<br/>push branch + non-draft PR"]:::script
+  Initial["finish-summary.json<br/>initial empty PR URL/refs"]:::artifact
+  MetaCommit["metadata-only commit<br/>archive / initial summary / readiness"]:::script
+  Verify["remote marketplace verifier<br/>required surfaces only"]:::script
+  Resolve{"open PR 数量"}:::guru
+  Reuse["1: 复用 canonical URL"]:::script
+  Create["0: immutable inputs<br/>只 create 一次"]:::script
+  Block["&gt;1: fail closed"]:::artifact
+  Tail["PR URL + PR ref + safe paths<br/>finish-summary metadata tail"]:::artifact
   PR["GitHub PR<br/>target intake base branch"]:::artifact
 
-  Start --> CheckGate --> Body --> Dry --> Formal --> Archive --> Journal --> MetaCommit --> Publish --> PR
+  Start --> CheckGate --> Body --> Index --> Dry --> Readiness --> Formal --> Archive --> Initial --> MetaCommit --> Verify --> Resolve
+  Resolve -->|"1"| Reuse --> Tail --> PR
+  Resolve -->|"0"| Create --> Tail
+  Resolve -->|"&gt;1"| Block
 
   classDef trellis fill:#E8F5E9,stroke:#2E7D32,color:#0B3D1E;
   classDef guru fill:#FFF3E0,stroke:#EF6C00,color:#4A2600;
@@ -367,12 +377,15 @@ PR readiness 要求：
 
 | 要求 | 说明 |
 | --- | --- |
-| AI-reviewed body | non-draft publish 必须使用 `--body-file` 或 `--body-artifact`；script-generated `generated` body 只能 preview/draft。 |
+| AI-reviewed body | non-draft publish 必须使用 task-local `pr-body.md`；script-generated `generated` body 只能 preview/draft。 |
+| Immutable readiness | `pr-readiness.json.publish_inputs` 固定 repo/base/head、reviewed HEAD、title、body SHA-256、draft、reviewed source 与 canonical digest，并在首次 create 前提交。 |
+| Recovery preflight | 在 PR query/create 前校验 artifact/body clean/staged、HEAD Git blob、artifact 单次提交历史、snapshot/body digest、review gate、repo/base/head 与 current/remote HEAD；禁止 title/body/draft/base override。 |
+| Git path failure | initial diff、initial untracked 或 final/recovery diff 失败时两个 path 数组都为 `[]`，只记录固定 unavailable fact，且不记录 stderr/ref/partial path 或 filtering fact。 |
 | 中文且具体 | 必须包含具体的 `变更摘要`、`影响范围`、`验证结果`、`Review Gate`、`Issue 关闭范围`、`安全说明`。 |
 | Docs SSOT / 文档同步 | 必须说明本次 Docs SSOT 策略、更新的 durable docs 或 no-update 理由、已 merge 的 task delta、仅保留 task history 的内容，以及 follow-up / 当前 PR limitation。 |
 | 低信息阻断 | 禁止把“当前 Trellis task”“已提交实现与文档更新”“详见 artifact”作为主要摘要。 |
 | close/ref 语义 | `Closes #xx` 只能来自 `issue-scope-ledger.json.close_issues`；`related_issues` 只能 refs/related；`followup_issues` 不能关闭。 |
-| dry-run 无副作用 | `finish-work --dry-run --from-trellis-finish-work` 只验证并展示计划，不 archive、不 journal、不 commit、不 push、不 PR。 |
+| dry-run 无副作用 | `finish-work --dry-run --from-trellis-finish-work` 只验证并展示 index/readiness/initial summary/publish 计划，不 archive、不写文件、不 commit、不 push、不 PR。 |
 | direct publish 受限 | 普通直接 `publish-pr.sh` 被阻塞；只有 finish-work 内部调用或已完成 finish-work 后的显式 recovery/debug 才能进入 publish。 |
 
 ## 9. Artifact 责任图
@@ -394,8 +407,11 @@ PR readiness 要求：
 | `reviews/*.md` | Phase 3.5 | Per-round raw review reports | 中文 human-readable artifact；`agent-assignment.json.review_rounds[]` flat digest fields、`review-gate.json.verification_evidence.review_reports[]`、archive path migration。 |
 | `review.md` | Phase 3.5 | Independent review rollup | 中文最终人类入口，链接每轮 raw report；`review-branch.sh` final digest、finish-work readiness。 |
 | `review-gate.json` | Phase 3.5 | Branch Review Gate artifact | `check-review-gate.sh`、finish-work；记录 final `review.md` digest 和 raw `review_reports[]` digest。 |
-| `pr-body.md` / `pr-readiness.json` | Phase 3.6 前 | PR readiness artifact | finish-work archive 后 publish；必须包含 Docs SSOT / 文档同步结果。 |
-| workspace journal | finish-work | 官方 Trellis workspace memory | 后续 session / history。 |
+| `finish-summary-index.json` | Phase 3.6 前 | AI-reviewed semantic input | recorder 只从该文件读取 problem/outcome/behavior/surface/contract/search terms 判断。 |
+| `finish-summary.json` | finish-work archive 与 publish tail | archived task-local 完成摘要 | #98 历史检索；initial URL/refs 为空，publish 后回写 canonical PR URL/ref 与安全 paths。 |
+| `pr-body.md` | Phase 3.6 前 | AI-reviewed PR body | immutable readiness 的 body source；包含 Docs SSOT / 文档同步结果。 |
+| `pr-readiness.json` | formal finish archive 前 | immutable publish input snapshot | 首次 create 和 recovery 的唯一 title/body/draft/repo/base/head 输入。 |
+| `marketplace-verification.json` | push 后、PR create 前 | deterministic remote verifier evidence | required marketplace/preset/overlay/schema/public API 发布门禁；recovery 只复用 passed evidence。 |
 
 ## 10. 演示时的讲解主线
 
@@ -409,10 +425,12 @@ PR readiness 要求：
 6. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出中文 `reviews/*.md` raw reports 与最终中文 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
 7. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，commit 后必须有独立中文 review raw reports、最终中文 `review.md` rollup 和 recorder 生成的 `review-gate.json`；主会话自检、自审或脚本校验通过不能替代这些证据。
 8. 任意 finding 都阻断；发现过问题的 reviewer 只能闭环自己的 finding，最终放行必须是 fresh reviewer。
-9. `trellis-continue` 到 Branch Review Gate 就停；`trellis-finish-work` 才能 archive、journal、提交 metadata 并自动 publish PR。
-10. PR body 是给 GitHub reviewer 的发布材料，不是内部 task 摘要；必须包含 Docs SSOT / 文档同步处理结果，关闭 issue 的语义由 `issue-scope-ledger.json` 控制。
-11. `Docs SSOT Plan` 在 planning 阶段先决定 durable docs 状态与同步策略，Phase 2 implementation 必须按策略执行并在 handoff 说明同步结果，Phase 2 check 必须按策略复核 durable docs / task artifacts / code / test 一致性；Phase 3 final reviewer 只验证这些结果，不首次 merge docs 或补 Phase 2 缺口。
-12. 所有脚本都是 executor / validator / recorder，不做 planner / reviewer / product owner 判断；PR body validator 只做 Docs SSOT section/key presence 等客观结构检查。
+9. `trellis-continue` 到 Branch Review Gate 就停；`trellis-finish-work` 才能 archive、写 initial finish-summary、提交 immutable readiness 并自动 publish PR，Guru Team 不调用 `add_session.py`。
+10. shared start 和 Codex/Cursor SessionStart 只组合 phase/packages/task/Git facts，不打开、枚举、读取或输出 workspace journal。
+11. PR create/recovery 只消费已提交的 `pr-readiness.json.publish_inputs`；0/1/>1 open PR 状态机分别 create once、reuse、fail closed，成功后只回写 task-local finish-summary metadata tail。
+12. PR body 是给 GitHub reviewer 的发布材料，不是内部 task 摘要；必须包含 Docs SSOT / 文档同步处理结果，关闭 issue 的语义由 `issue-scope-ledger.json` 控制。
+13. `Docs SSOT Plan` 在 planning 阶段先决定 durable docs 状态与同步策略，Phase 2 implementation 必须按策略执行并在 handoff 说明同步结果，Phase 2 check 必须按策略复核 durable docs / task artifacts / code / test 一致性；Phase 3 final reviewer 只验证这些结果，不首次 merge docs 或补 Phase 2 缺口。
+14. 所有脚本都是 executor / validator / recorder，不做 planner / reviewer / product owner 判断；PR body validator 只做 Docs SSOT section/key presence 等客观结构检查。
 
 ## 11. 证据来源
 

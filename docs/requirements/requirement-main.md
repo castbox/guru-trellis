@@ -208,7 +208,7 @@ Canonical 资产：
 | Release tag contract | Guru Team extension release tag 使用 repo 级 `vX.Y.Z`，并与 `trellis/guru-team-extension.json.version` 一致；tag-pinned stable marketplace source 使用 `gh:castbox/guru-trellis/trellis#vX.Y.Z`。 |
 | Dogfood drift check | canonical overlay 与本仓库安装副本可通过 `check-dogfood-overlay-drift.sh` 比对。 |
 | 业务项目语言归一化 | preset installer 确定性替换 `.trellis/spec/**` 和 `00-bootstrap-guidelines` 中已知 Trellis 英文文档语言规则，不扫描 `.trellis/workspace/**`、普通 task 历史或翻译业务 `docs/**`。 |
-| Finish summary 合同 | `finish-summary.schema.json` 是正常 finish 与 #100 backfill 的共同 SSOT；Guru Team 不调用 `add_session.py`，不把 `.trellis/workspace/**` 作为 finish/readiness/context 证据，preset 写入 `session_auto_commit: false` 与 workspace ignore。recorder 对 raw base-to-HEAD paths 排序去重后过滤 workspace/runtime 受保护前缀，安全集合同时写入两个 path 字段；过滤发生时追加固定且不披露路径、basename 或数量的 contract fact，schema/validator 的全部 path 字段不设置受保护前缀例外。 |
+| Finish summary 合同 | `finish-summary.schema.json` 是正常 finish 与 #100 backfill 的共同 SSOT；Guru Team 不调用 `add_session.py`，shared/Codex/Cursor context 不打开、枚举或输出 `.trellis/workspace/**`，preset 写入 `session_auto_commit: false` 与 workspace ignore。recorder 对 raw paths 排序去重并过滤受保护前缀；任一必需 Git path snapshot 命令失败时两个 path 数组清空，只记录固定 unavailable fact。`pr-readiness.json.publish_inputs` 在首次 PR create 前提交并绑定 repo/base/head/title/body digest/draft/reviewed source，recovery 在 query/create 前验证 Git blob、snapshot/body digest、gate 与 current/remote HEAD。 |
 
 平台 overlay 当前覆盖：
 

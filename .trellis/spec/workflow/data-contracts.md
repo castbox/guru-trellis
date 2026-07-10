@@ -103,7 +103,11 @@ after archive and before the metadata commit, its path snapshot combines a
 NUL-delimited base-to-working-tree diff with NUL-delimited untracked file
 enumeration; archived task metadata is recorded as individual files, never as
 an untracked directory placeholder. The protected-prefix filter and fixed fact
-rules apply to this initial snapshot. After PR creation,
+rules apply to this initial snapshot. If initial diff, initial untracked
+enumeration, or final/recovery diff fails, both path arrays are `[]`, the
+filtering fact is removed, and exactly one fixed non-disclosing
+`finish-summary git path snapshot unavailable` fact is recorded before
+`retrieval_text` is re-derived. After PR creation,
 publish sorts and deduplicates raw base-to-HEAD paths, filters workspace/runtime
 protected prefixes, and writes the safe set to both `git.changed_paths` and
 search `paths`. A non-empty filtered set deterministically adds one fixed
@@ -113,10 +117,13 @@ validation reject protected prefixes in every path field without a deletion
 exception. Publish then writes URL/PR ref, validates the full summary, and
 refreshes the artifact whitelist from the current archived task before
 committing exactly that archived-task file. This metadata tail does not
-rerun Branch Review Gate. Every recovery-capable failure payload preserves the
-PR URL, recovery command, and one `publish_inputs` snapshot containing the same
-repo, base branch, head branch, title, reviewed body, and draft mode.
-Recovery revalidates repo/base/head, reviewed body/readiness, gate, and
+rerun Branch Review Gate. Before the first create, finish-work records and
+commits task-local `pr-readiness.json.publish_inputs` with repo, base/head,
+reviewed HEAD, exact title, `pr-body.md`, body SHA-256, draft, reviewed source,
+and canonical snapshot SHA-256. Recovery accepts only that archived artifact,
+checks clean/staged state, HEAD blobs, one-commit artifact history, digests,
+gate ancestry, and repo/base/head/current/remote identity, and rejects CLI
+title/body/draft/base overrides. Recovery revalidates the gate and
 current/remote HEAD before querying the current repo/head/base. One open PR is
 reused; zero triggers exactly one same-title/body/draft create retry; multiple
 fail closed without create. A failed retry preserves initial empty URL/refs and

@@ -143,7 +143,9 @@ or dirty marketplace workflow files unless
 `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1` is set. This prevents public remote
 sampling from being reported as current-branch marketplace verification. When
 it does run, it also exercises the existing-project `trellis workflow
---create-new` preview and forced switch paths. It intentionally lives in this
+--create-new` preview, deletes the validated expected preview `.new`, then runs
+forced switch, `trellis update --force`, workflow reapply, and preset reapply.
+A final recursive scan must find no `.new` or `.bak` sidecars. It intentionally lives in this
 source repository and is not copied into target business repos as a managed
 companion asset.
 
@@ -387,7 +389,8 @@ work.
 `trellis-continue` cannot chain closeout, commit review metadata, push, or
 create a PR before the explicit `trellis-finish-work` entrypoint. Normal PR
 publish is triggered only by `finish-work.sh --from-trellis-finish-work` after
-archive, task-local finish-summary recording, and remaining Trellis metadata-only commit succeed. That
+archive, task-local initial finish-summary, immutable readiness recording, and
+remaining Trellis metadata-only commit succeed. That
 metadata tail may include `review.md`, `reviews/*.md`, `review-gate.json`, and
 PR readiness files; `check-review-gate` / `finish-work` validate and migrate
 raw report digest paths after archive. Direct
@@ -417,10 +420,13 @@ merged back, task-history-only content, and any follow-up or current PR
 limitation. Low-information summaries such as
 `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact` are blocked for
 non-draft publish. Non-draft publish requires reviewed Markdown with
-`--body-file <path>` or a JSON readiness artifact with `--body-artifact <path>`;
-generated fallback bodies are preview/draft-only. These readiness/body files
-belong to task metadata and are read from the archived task artifact after
-finish-work archives the task. The script validates objective structure,
+task-local `--body-file <path>`; formal finish builds
+`pr-readiness.json.publish_inputs` with repo/base/head/reviewed HEAD/title/body
+SHA-256/draft/reviewed source and canonical snapshot SHA-256. Generated fallback
+bodies are preview/draft-only. The readiness/body files are committed before
+the first PR create and read from the archived task artifact. Recovery rejects
+title/body/draft/base overrides and validates Git blob/history and digests before
+PR resolution. The script validates objective structure,
 reviewed source presence, Docs SSOT section/key presence, and close/ref
 semantics but does not replace AI release judgment.
 
@@ -510,7 +516,10 @@ Guru Team finish does not call `add_session.py`.
 The installer manages `schemas/finish-summary.schema.json`, writes top-level
 `session_auto_commit: false` into `.trellis/config.yaml`, adds
 `.trellis/workspace/` to `.gitignore`, and never creates or rewrites workspace
-journal/index files. PR URL recovery validates repo/base/head, review/readiness,
+journal/index files. Shared start and installed Codex/Cursor SessionStart hooks
+do not open, enumerate, read, count, or output workspace journals. PR URL
+recovery validates committed readiness Git blob/history, snapshot/body digest,
+repo/base/head, review gate,
 current/remote HEAD, and any existing passed marketplace evidence before querying
 the current repo/head/base. It reuses one open PR, retries create exactly once
 with the same title/body/draft when none exists, and fails closed without create

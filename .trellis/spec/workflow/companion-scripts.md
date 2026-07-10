@@ -131,9 +131,12 @@ explanation or Docs SSOT rationale is true or sufficient; that judgment belongs
 to the AI readiness review before
 `trellis-finish-work`. Non-draft publish must require `--body-file` or
 `--body-artifact` inputs that were already reviewed by AI/human; `generated`
-bodies are limited to draft/preview paths. `--body-artifact` must carry
-`ready: true` and a non-empty `body` or `body_file`. Resolve relative
-`body_file` values from the artifact directory, not the repository root.
+bodies are limited to draft/preview paths. Formal finish binds the reviewed
+task-local `pr-body.md` into `pr-readiness.json.publish_inputs`, including the
+exact repo/base/head/title/body digest/draft/reviewed source and canonical
+snapshot digest. Recovery consumes only the archived task-local readiness
+artifact and validates its committed Git blob/history before any PR query or
+create; command-line title/body/draft/base overrides fail closed.
 When `finish-work` archives the active task before publish, rewrite active task
 artifact paths to the archived task path and read the final PR body from that
 archived artifact. If the archived `review-gate.json` still contains

@@ -120,6 +120,12 @@ canonical workflow has a stricter post-planning approval gate.
 
 Do not overwrite unknown platform command, prompt, skill, or agent edits. The
 target repo owner must inspect `.new` when local customization exists.
+Throwaway verification must remove the expected workflow preview `.new` after
+content validation, run the initial switch, execute `trellis update --force`,
+then reapply the marketplace workflow before preset reapply. The second workflow
+switch is required because official update may restore the upstream default
+workflow. Successful completion requires a final recursive `.new`/`.bak` scan
+with no remaining sidecars.
 
 ## Platform Overlay Selection
 

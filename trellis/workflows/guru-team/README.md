@@ -456,10 +456,13 @@ AI-authored `finish-summary-index.json` accepts at most 19 `contract_changes`;
 the final schema accepts 20 so the recorder can append the fixed filtering fact.
 
 Guru Team 不调用 `.trellis/scripts/add_session.py`，不读写 `.trellis/workspace/**`。
+shared `trellis-start` 只读取 phase/packages/current-task/Git facts，Codex/Cursor
+SessionStart overlay 不导入或调用 journal helper，也不打开、枚举、读取或输出 journal。
 初始 archived summary 使用空 `github.pr_url` / `pr_refs`；PR 创建后 `publish-pr` 回写 URL、
 PR ref 与安全 changed paths。recorder 对 raw base-to-HEAD paths 排序去重后过滤 workspace/runtime
 受保护前缀，过滤发生时追加一条不含 path、basename 或数量的固定 contract fact；未发生过滤时
-不追加。schema/validator 对所有 path 字段继续拒绝受保护前缀。回写严格校验并只提交当前
+不追加。initial diff、initial untracked 或 final/recovery diff 失败时两个 path 数组都为空，
+只追加固定 snapshot-unavailable fact，并重新派生 retrieval text。schema/validator 对所有 path 字段继续拒绝受保护前缀。回写严格校验并只提交当前
 archived task 的 `finish-summary.json`。
 回写失败时保留 PR URL 和可执行 recovery 命令。recovery 在 PR query/create 前重验
 repo/base/head、review/readiness、current/remote HEAD；marketplace-required 路径只校验并复用既有
@@ -469,9 +472,13 @@ initial summary 保持空 URL/ref，并返回同一 recovery 命令。
 marketplace normal publish 会执行远端 verifier；PR 已存在的 recovery 只校验并复用既有 passed
 artifact、ledger evidence、remote HEAD 与 review gate，不在 dirty/staged summary tail 上重跑 verifier。
 
-`publish-pr` 也支持 `--body-artifact .trellis/tasks/<task>/pr-readiness.json`
-读取 readiness artifact。readiness/body 文件属于 Trellis task metadata，`finish-work`
-会在 archive 后从 `.trellis/tasks/archive/YYYY-MM/<task>/...` 读取最终 PR body。
+`finish-work` 在首次 PR create 前写入并提交 task-local
+`pr-readiness.json.publish_inputs`，固定 repo/base/head、reviewed HEAD、exact title、
+`pr-body.md` SHA-256、draft、reviewed source 与 canonical snapshot SHA-256。
+Recovery command 只引用 archived readiness artifact 与 task/repo/remote locator；任何
+title/body/draft/base override 都会在 PR query/create 前失败。readiness/body 文件属于
+Trellis task metadata，`finish-work` 会在 archive 后从
+`.trellis/tasks/archive/YYYY-MM/<task>/...` 读取最终 PR body。
 脚本只做客观结构校验、低信息量短语阻塞、close/ref 语义校验和 reviewed source 门禁；
 不能用脚本生成的空泛摘要或 `generated` body 替代 AI 发布判断。
 

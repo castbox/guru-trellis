@@ -68,6 +68,13 @@ recovery first validates publish identity/evidence and queries the current
 repo/head/base. One open PR is reused, zero triggers one same-input create
 retry, and multiple fail closed without create; a failed retry preserves the
 initial empty URL/refs and the same recovery command.
+Shared `trellis-start` and canonical Codex/Cursor SessionStart overlays load
+phase/packages/task/Git facts without journal helper imports or workspace
+enumeration. Formal finish commits `pr-readiness.json.publish_inputs` before
+the first PR create; recovery accepts only that archived immutable snapshot and
+validates its Git blob/history, body/snapshot digests, gate, and branch identity
+before the 0/1/>1 PR state machine. Git path snapshot command failure produces
+empty path arrays and one fixed non-disclosing unavailable fact.
 
 Reference files:
 
