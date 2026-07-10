@@ -7005,40 +7005,60 @@ class ActivePublicReferenceContractTest(unittest.TestCase):
         ".trellis/guru-team/handoff.json",
     )
 
-    def active_public_files(self) -> list[Path]:
-        files = [
-            self.REPO_ROOT / "README.md",
-            self.REPO_ROOT / "trellis/workflows/guru-team/workflow.md",
-            self.REPO_ROOT / "trellis/workflows/guru-team/README.md",
-            self.REPO_ROOT / "trellis/presets/guru-team/README.md",
-            self.REPO_ROOT / ".trellis/workflow.md",
-        ]
-        for root in [
-            self.REPO_ROOT / "docs/requirements",
-            self.REPO_ROOT / "trellis/presets/guru-team/overlays",
-            self.REPO_ROOT / ".trellis/spec",
-            self.REPO_ROOT / ".agents/skills/trellis-start",
-            self.REPO_ROOT / ".agents/skills/trellis-continue",
-            self.REPO_ROOT / ".agents/skills/trellis-finish-work",
-            self.REPO_ROOT / ".codex/prompts",
-            self.REPO_ROOT / ".codex/skills/trellis-start",
-            self.REPO_ROOT / ".codex/skills/trellis-continue",
-            self.REPO_ROOT / ".codex/skills/trellis-finish-work",
-            self.REPO_ROOT / ".claude/commands/trellis",
-            self.REPO_ROOT / ".cursor/commands",
-            self.REPO_ROOT / ".trellis/agents",
-        ]:
-            files.extend(path for path in root.rglob("*") if path.is_file())
-        return sorted(set(files))
+    def managed_overlay_files(self, repo_root: Path) -> list[Path]:
+        overlay_root = repo_root / "trellis/presets/guru-team/overlays"
+        files: list[Path] = []
+        for source in overlay_root.rglob("*"):
+            if not source.is_file():
+                continue
+            files.append(source)
+            files.append(repo_root / source.relative_to(overlay_root))
+        return files
 
-    def test_active_public_surfaces_do_not_restore_legacy_workspace_api(self) -> None:
+    def active_public_files(self, repo_root: Path | None = None) -> list[Path]:
+        root = repo_root or self.REPO_ROOT
+        files = [
+            root / "README.md",
+            root / "trellis/workflows/guru-team/workflow.md",
+            root / "trellis/workflows/guru-team/README.md",
+            root / "trellis/presets/guru-team/README.md",
+            root / ".trellis/workflow.md",
+        ]
+        files.extend(self.managed_overlay_files(root))
+        for public_root in [
+            root / "docs/requirements",
+            root / ".trellis/spec",
+        ]:
+            files.extend(path for path in public_root.rglob("*") if path.is_file())
+        return sorted(path for path in set(files) if path.is_file())
+
+    def active_public_reference_violations(self, repo_root: Path | None = None) -> list[str]:
+        root = repo_root or self.REPO_ROOT
         violations: list[str] = []
-        for path in self.active_public_files():
+        for path in self.active_public_files(root):
             text = path.read_text(encoding="utf-8")
             for reference in self.FORBIDDEN_REFERENCES:
                 if reference in text:
-                    violations.append(f"{path.relative_to(self.REPO_ROOT)}: {reference}")
-        self.assertEqual(violations, [])
+                    violations.append(f"{path.relative_to(root)}: {reference}")
+        return violations
+
+    def test_active_public_surfaces_do_not_restore_legacy_workspace_api(self) -> None:
+        self.assertEqual(self.active_public_reference_violations(), [])
+
+    def test_scanner_detects_forbidden_reference_in_dogfood_codex_agent_copy(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            relative = Path(".codex/agents/trellis-check.toml")
+            canonical = root / "trellis/presets/guru-team/overlays" / relative
+            dogfood = root / relative
+            canonical.parent.mkdir(parents=True)
+            dogfood.parent.mkdir(parents=True)
+            canonical.write_text("description = 'portable boundary'\n", encoding="utf-8")
+            dogfood.write_text("description = 'handoff.workspace_path'\n", encoding="utf-8")
+
+            violations = self.active_public_reference_violations(root)
+
+            self.assertEqual(violations, [".codex/agents/trellis-check.toml: handoff.workspace_path"])
 
 
 class MarketplaceVerificationContractTest(unittest.TestCase):

@@ -72,11 +72,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-10T11:53:31Z",
+  "installed_at": "2026-07-10T12:04:38Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/096-task-runtime-boundary",
-    "commit": "f05cd662e852984f7f07cf6336d0867eb6532302",
+    "commit": "f48abcf1f73da439efc68f7342dde562c4c9c452",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
