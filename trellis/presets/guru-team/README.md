@@ -350,10 +350,14 @@ non-metadata task paths after the Phase 2 recorded HEAD are covered by those
 dirty paths and that no non-metadata dirty paths remain in the working tree.
 Do not re-record Phase 2 after commit just to make HEAD match. `review-branch.sh`
 records and validates the prior AI/human review result; it is not the reviewer.
-Passing gates require every finding owner to complete a later same-agent
-`问题闭环审查代理` review with zero findings for its finding, or an explicitly
-recorded replacement closure chain when the finding owner failed/interrupted and
-cannot continue, before a fresh `最终放行审查代理` independent review can pass. The
+Passing gates require every finding owner to have one explicit closure form: a
+later same-agent `问题闭环审查代理` review with zero findings and
+`reuse-for-closure`; a different fresh closure agent linked by
+`reuse_decisions[] decision=new-agent` with exact `from_round`, `to_round`,
+closure agent, reviewed HEAD, and reason; or a replacement closure chain when
+the finding owner failed/interrupted and cannot continue. A closure round that
+still has findings becomes a new finding owner and must be closed before a fresh
+`最终放行审查代理` independent review can pass. The
 final review must cover the full current HEAD
 diff with zero findings of any priority, must not continue implementation or
 patch missing Phase 2 check work, and be recorded with task-local

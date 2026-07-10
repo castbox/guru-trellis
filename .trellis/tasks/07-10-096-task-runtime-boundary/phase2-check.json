@@ -1,19 +1,35 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-10T12:06:20Z",
+  "generated_at": "2026-07-10T12:55:24Z",
   "task_dir": ".trellis/tasks/07-10-096-task-runtime-boundary",
   "base_branch": "main",
-  "head": "f48abcf1f73da439efc68f7342dde562c4c9c452",
+  "head": "30f4f4a5bc42cfb099ea07fa7e64c9af5dd5e623",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".trellis/guru-team/extension.json",
-    ".trellis/tasks/07-10-096-task-runtime-boundary/agent-assignment.json",
-    ".trellis/tasks/07-10-096-task-runtime-boundary/implementation-handoff.md",
+    ".agents/skills/trellis-continue/SKILL.md",
+    ".claude/commands/trellis/continue.md",
+    ".codex/prompts/trellis-continue.md",
+    ".codex/skills/trellis-continue/SKILL.md",
+    ".cursor/commands/trellis-continue.md",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/tasks/07-10-096-task-runtime-boundary/review.md",
+    ".trellis/workflow.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
     "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-5.md"
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-6.md",
+    ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-7.md"
   ],
-  "checker": "trellis-check + Codex 主会话 Round 5 修复复验",
-  "check_summary": "Round 5 scanner 覆盖 P1 已闭环。active public files 由 canonical overlay managed files 派生全部 dogfood targets，覆盖 Codex/Claude/Cursor/Trellis implement/check agents；mutation regression 证明注入 forbidden workspace reference 会失败，历史 tasks 不扫描。241+30 tests 通过。",
+  "checker": "Descartes the 2nd (019f4c12-84bf-7ea1-bc91-0886122fb909)",
+  "check_summary": "Issue #96 增量 Phase 2 检查通过：完整复核需求、设计、代码、测试、spec sync、跨层数据流、Docs SSOT 与部署影响；跨 agent closure 必须由 reuse_decisions 中 new-agent + 精确 from_round/to_round/agent/head/reason 证明，链式 finding 必须继续闭环，final freshness 保持；core 247、preset 30、定向 8、临时 all-platform apply、mutation、drift、静态与 task checks 全通过，零 findings。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-10-096-task-runtime-boundary/prd.md",
@@ -38,9 +54,40 @@
       "sha256": "5f19fb1637624fd842ef3b19434e7cd8802a40d4c710b0787531f4023875e429",
       "size_bytes": 4285,
       "modified_at": "2026-07-10T09:37:00.058082+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/implementation-handoff.md",
+      "sha256": "bc6cb7b3b903a3274bcb5b8431df57836ab9829cb7ac10a6729e1a2452c3484a",
+      "size_bytes": 12630,
+      "modified_at": "2026-07-10T12:53:07.038347+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/issue-scope-ledger.json",
+      "sha256": "75f187ed5176dae70eb27fdccce50f61a718c85b8c6bdeabd6837f885f616aa0",
+      "size_bytes": 6607,
+      "modified_at": "2026-07-10T11:19:21.483256+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/agent-assignment.json",
+      "sha256": "88629862260eb0720db6f9af2e06a00fa2a97a1fa77145ba72a656aec9550a45",
+      "size_bytes": 35483,
+      "modified_at": "2026-07-10T12:54:02.258568+00:00"
     }
   ],
-  "checked_specs": [],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "da021aaffba3f13c86a0060290ea83f15f1a4ff2653956dc36ccbd790f4899ba",
+      "size_bytes": 26892,
+      "modified_at": "2026-07-10T12:42:11.847814+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "2acfbe7a80a6f0afc5a92d8249602170cff61347bb6ba2c38206c0a66c98cf1d",
+      "size_bytes": 21157,
+      "modified_at": "2026-07-10T12:42:11.869113+00:00"
+    }
+  ],
   "coverage": {
     "requirements": true,
     "design": true,
@@ -54,33 +101,33 @@
   "validation_commands": [
     {
       "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "result": "241 tests passed"
+      "result": "247 tests passed"
     },
     {
       "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
       "result": "30 tests passed"
     },
     {
-      "command": "active scanner mutation regression for dogfood .codex/agents",
-      "result": "passed; injected forbidden reference detected"
+      "command": "cross-agent closure targeted tests",
+      "result": "8 tests passed"
     },
     {
-      "command": "canonical overlay to all dogfood agent target derivation",
-      "result": "passed; historical .trellis/tasks excluded"
-    },
-    {
-      "command": "task validation + workspace boundary + dogfood drift + git diff --check",
+      "command": "python compile + managed shell bash -n + JSON/JSONL/task validation",
       "result": "passed"
-    }
-  ],
-  "findings": [
+    },
     {
-      "priority": "P1",
-      "status": "resolved",
-      "message": "active-reference scanner 漏扫三平台 dogfood implement/check agents。",
-      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "resolution": "从 canonical overlay files 派生 dogfood targets，覆盖 Codex/Claude/Cursor/Trellis agents；新增隔离 mutation regression，历史 task artifacts 排除。"
+      "command": "check-workspace-boundary + check-agent-assignment + dogfood overlay drift",
+      "result": "passed"
+    },
+    {
+      "command": "canonical/dogfood byte equality + active-reference mutation + git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "temporary repository all-platform preset apply",
+      "result": "passed; no .new/.bak"
     }
   ],
+  "findings": [],
   "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
 }

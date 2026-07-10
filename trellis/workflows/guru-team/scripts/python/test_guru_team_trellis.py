@@ -4365,6 +4365,225 @@ class ReviewGateReportTest(unittest.TestCase):
         self.assertTrue(payload["conclusion"]["passed"])
         self.assertEqual(payload["verification_evidence"]["agent_assignment"]["review_rounds_count"], 3)
 
+    def test_final_review_round_errors_accepts_explicit_new_agent_closure(self) -> None:
+        payload = {
+            "review_rounds": [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "reviewed_head": "old123",
+                    "findings_count": 2,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "reviewed_head": "fixed123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+            ],
+            "reuse_decisions": [
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "new-agent",
+                    "reason": "agent-c 针对 round 1 findings 审查修复后的新 HEAD。",
+                    "head": "fixed123",
+                    "from_round": 1,
+                    "to_round": 2,
+                }
+            ],
+        }
+
+        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
+
+        self.assertEqual(errors, [])
+
+    def test_final_review_round_errors_accepts_chained_new_agent_closures(self) -> None:
+        payload = {
+            "review_rounds": [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "reviewed_head": "head-1",
+                    "findings_count": 4,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "reviewed_head": "head-2",
+                    "findings_count": 2,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-d",
+                    "reviewed_head": "head-3",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 4,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+            ],
+            "reuse_decisions": [
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "new-agent",
+                    "reason": "round 2 明确闭环 round 1 findings，同时记录新 findings。",
+                    "head": "head-2",
+                    "from_round": 1,
+                    "to_round": 2,
+                },
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-d",
+                    "decision": "new-agent",
+                    "reason": "round 3 明确闭环 round 2 新 findings。",
+                    "head": "head-3",
+                    "from_round": 2,
+                    "to_round": 3,
+                },
+            ],
+        }
+
+        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
+
+        self.assertEqual(errors, [])
+
+    def test_final_review_round_errors_rejects_new_agent_closure_without_explicit_relation(self) -> None:
+        base_payload = {
+            "review_rounds": [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "reviewed_head": "old123",
+                    "findings_count": 1,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "reviewed_head": "fixed123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+            ],
+            "reuse_decisions": [],
+        }
+        invalid_decisions = [
+            None,
+            {
+                "logical_role": "问题闭环审查代理",
+                "agent_id": "agent-c",
+                "decision": "new-agent",
+                "reason": "缺少 from_round/to_round。",
+                "head": "fixed123",
+            },
+            {
+                "logical_role": "问题闭环审查代理",
+                "agent_id": "wrong-agent",
+                "decision": "new-agent",
+                "reason": "agent_id 不匹配 closure round。",
+                "head": "fixed123",
+                "from_round": 1,
+                "to_round": 2,
+            },
+            {
+                "logical_role": "问题闭环审查代理",
+                "agent_id": "agent-c",
+                "decision": "new-agent",
+                "reason": "from/to 轮次错误。",
+                "head": "fixed123",
+                "from_round": 2,
+                "to_round": 3,
+            },
+        ]
+
+        for decision in invalid_decisions:
+            with self.subTest(decision=decision):
+                payload = gtt.json.loads(gtt.json.dumps(base_payload))
+                if decision is not None:
+                    payload["reuse_decisions"] = [decision]
+                errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
+                self.assertTrue(any("from_round/to_round" in error for error in errors))
+
+    def test_final_review_round_errors_rejects_unclosed_nonzero_new_agent_closure(self) -> None:
+        payload = {
+            "review_rounds": [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "reviewed_head": "old123",
+                    "findings_count": 1,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "reviewed_head": "fixed123",
+                    "findings_count": 1,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+            ],
+            "reuse_decisions": [
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "new-agent",
+                    "reason": "round 2 仍有 finding，不能闭环 round 1。",
+                    "head": "fixed123",
+                    "from_round": 1,
+                    "to_round": 2,
+                }
+            ],
+        }
+
+        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
+
+        self.assertTrue(any("from_round/to_round" in error for error in errors))
+
     def test_review_branch_accepts_replacement_closure_when_original_review_agent_failed(self) -> None:
         review_report = self.task_dir / "review.md"
         rounds = [
@@ -4633,6 +4852,51 @@ class ReviewGateReportTest(unittest.TestCase):
         errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
 
         self.assertTrue(any("替代 finding closure" in error for error in errors))
+
+    def test_final_review_round_errors_rejects_new_agent_closure_agent_as_final(self) -> None:
+        payload = {
+            "review_rounds": [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "reviewed_head": "old123",
+                    "findings_count": 1,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-c",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+            ],
+            "reuse_decisions": [
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "new-agent",
+                    "reason": "agent-c 只负责闭环 round 1 finding。",
+                    "head": "abc123",
+                    "from_round": 1,
+                    "to_round": 2,
+                }
+            ],
+        }
+
+        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
+
+        self.assertTrue(any("finding closure" in error for error in errors))
 
     def test_review_branch_accepts_prior_head_closure_before_current_final(self) -> None:
         review_report = self.task_dir / "review.md"
@@ -7044,6 +7308,61 @@ class ActivePublicReferenceContractTest(unittest.TestCase):
 
     def test_active_public_surfaces_do_not_restore_legacy_workspace_api(self) -> None:
         self.assertEqual(self.active_public_reference_violations(), [])
+
+    def test_review_closure_contract_is_explicit_and_dogfood_copies_match(self) -> None:
+        root = self.REPO_ROOT
+        canonical_workflow = root / "trellis/workflows/guru-team/workflow.md"
+        dogfood_workflow = root / ".trellis/workflow.md"
+        self.assertEqual(canonical_workflow.read_bytes(), dogfood_workflow.read_bytes())
+
+        workflow_text = canonical_workflow.read_text(encoding="utf-8")
+        for expected in [
+            "reuse_decision: reuse-for-closure",
+            "decision: new-agent",
+            "`from_round`, `to_round`, closure `agent_id`, reviewed `head`",
+            "non-empty",
+            "replacement closure chain",
+            "becomes a new finding owner",
+            "finding owner or closure agent",
+        ]:
+            self.assertIn(expected, workflow_text)
+
+        overlay_pairs = [
+            (
+                "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+                ".agents/skills/trellis-continue/SKILL.md",
+            ),
+            (
+                "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+                ".codex/skills/trellis-continue/SKILL.md",
+            ),
+            (
+                "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+                ".codex/prompts/trellis-continue.md",
+            ),
+            (
+                "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+                ".claude/commands/trellis/continue.md",
+            ),
+            (
+                "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+                ".cursor/commands/trellis-continue.md",
+            ),
+        ]
+        for canonical_relative, dogfood_relative in overlay_pairs:
+            with self.subTest(canonical=canonical_relative, dogfood=dogfood_relative):
+                canonical = root / canonical_relative
+                dogfood = root / dogfood_relative
+                self.assertEqual(canonical.read_bytes(), dogfood.read_bytes())
+                text = canonical.read_text(encoding="utf-8")
+                self.assertIn("reuse_decision: reuse-for-closure", text)
+                self.assertIn("reuse_decisions[] decision=new-agent", text)
+                self.assertIn("from_round", text)
+                self.assertIn("to_round", text)
+                self.assertIn("replacement", text)
+                self.assertIn("becomes a new finding owner", text)
+                self.assertIn("Neither a finding owner nor any closure agent may become final", text)
+                self.assertIn("reuse_decision: new-agent", text)
 
     def test_scanner_detects_forbidden_reference_in_dogfood_codex_agent_copy(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

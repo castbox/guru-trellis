@@ -1239,16 +1239,27 @@ only.
 
 ##### 3.5.2 Gate Artifact Recorder
 
-Only after every finding owner has completed a successful same-agent
-`问题闭环审查代理` closure round for its finding, or an objectively documented replacement closure chain for a failed/interrupted finding owner, then a fresh `最终放行审查代理` has completed an
+Only after every finding owner has one of these explicit closure forms: a
+successful same-agent `问题闭环审查代理` round with
+`reuse_decision: reuse-for-closure`; a different fresh `问题闭环审查代理`
+whose `reuse_decisions[]` entry records `decision: new-agent` plus exact
+`from_round`, `to_round`, closure `agent_id`, reviewed `head`, and non-empty
+`reason`; or an objectively documented replacement closure chain for a
+failed/interrupted finding owner. A closure round that still reports findings
+becomes a new finding owner and must itself have a later explicit closure before
+the gate can pass. Then a fresh `最终放行审查代理` must complete an
 independent review of the current HEAD's full diff with zero findings and
 `{TASK_DIR}/review.md` exists and links every `{TASK_DIR}/reviews/*.md` raw report, and `agent-assignment.json.status_events[]` has no unclosed `terminated-unfinished` chain, write the passing gate artifact. The pass path must include
 `--review-source independent-agent` and `--review-report {TASK_DIR}/review.md`;
 `--reviewer` may additionally record the independent reviewer identity, but it
 cannot replace the review report. Always pass task-local `agent-assignment.json`
-so the recorder validates that every finding owner has a later same-agent closure round or complete replacement closure chain, every unfinished terminated agent has same-agent resume or replacement plus later `completed`/`failed` status evidence, and
-the final review round is fresh, last, has `findings_count: 0`, reviewed the
-current HEAD, and is not an agent that found findings in an earlier round:
+so the recorder validates that every finding owner has a later same-agent
+closure round, an explicitly related different fresh closure round, or a
+complete replacement closure chain; every unfinished terminated agent has
+same-agent resume or replacement plus later `completed`/`failed` status
+evidence; and the final review round is fresh, uses `reuse_decision: new-agent`,
+is last, has `findings_count: 0`, reviewed the current HEAD, and is not any
+finding owner or closure agent:
 
 ```bash
 .trellis/guru-team/scripts/bash/review-branch.sh --json --pass \

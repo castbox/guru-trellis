@@ -4145,6 +4145,50 @@ def finding_round_has_replacement_closure(
     return False
 
 
+def finding_round_has_new_agent_closure(
+    payload: dict[str, Any],
+    rounds: list[Any],
+    finding_round: dict[str, Any],
+    final_round_number: int,
+) -> bool:
+    finding_agent = str(finding_round.get("agent_id") or "").strip()
+    finding_round_number = review_round_number(finding_round)
+    if not finding_agent or finding_round_number <= 0:
+        return False
+    decisions = payload.get("reuse_decisions")
+    if not isinstance(decisions, list):
+        return False
+    closure_candidates = [
+        item
+        for item in rounds
+        if isinstance(item, dict)
+        and review_round_number(item) > finding_round_number
+        and review_round_number(item) < final_round_number
+        and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+        and str(item.get("agent_id") or "").strip()
+        and str(item.get("agent_id") or "").strip() != finding_agent
+        and is_strict_int(item.get("findings_count"))
+        and item["findings_count"] >= 0
+    ]
+    for closure in closure_candidates:
+        closure_agent = str(closure.get("agent_id") or "").strip()
+        closure_round_number = review_round_number(closure)
+        closure_head = str(closure.get("reviewed_head") or "").strip()
+        if any(
+            isinstance(item, dict)
+            and str(item.get("decision") or "").strip() == "new-agent"
+            and item.get("from_round") == finding_round_number
+            and item.get("to_round") == closure_round_number
+            and str(item.get("agent_id") or "").strip() == closure_agent
+            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+            and str(item.get("head") or "").strip() == closure_head
+            and str(item.get("reason") or "").strip()
+            for item in decisions
+        ):
+            return True
+    return False
+
+
 def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head: str | None = None) -> list[str]:
     rounds = payload.get("review_rounds")
     if not isinstance(rounds, list) or not rounds:
@@ -4214,6 +4258,14 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
         and str(item.get("reuse_decision") or "").strip() == "replace"
         and str(item.get("agent_id") or "").strip()
     }
+    closure_agents = {
+        str(item.get("agent_id") or "").strip()
+        for item in rounds
+        if isinstance(item, dict)
+        and item is not final_round
+        and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
+        and str(item.get("agent_id") or "").strip()
+    }
     missing_finding_owner_agent_rounds = [
         str(item.get("round") or index)
         for index, item in enumerate(rounds)
@@ -4253,9 +4305,20 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
             and item["findings_count"] == 0
             and str(item.get("reuse_decision") or "").strip() == "reuse-for-closure"
         ]
-        if not closure_candidates and not finding_round_has_replacement_closure(payload, rounds, finding_round, final_round_number):
+        has_explicit_new_agent_closure = finding_round_has_new_agent_closure(
+            payload,
+            rounds,
+            finding_round,
+            final_round_number,
+        )
+        if (
+            not closure_candidates
+            and not has_explicit_new_agent_closure
+            and not finding_round_has_replacement_closure(payload, rounds, finding_round, final_round_number)
+        ):
             errors.append(
                 "发现过 finding 的 review agent 必须先以问题闭环审查代理复审并给出 0 findings，"
+                "或由不同的新问题闭环审查代理通过 new-agent reuse_decision 的明确 from_round/to_round 关系闭环，"
                 "或在原 agent 失败/中断时记录完整 replacement-started、replace reuse_decision 与 completed 替代闭环链，"
                 f"然后才能启动新的最终放行审查代理；缺少闭环轮次: round {finding_round.get('round') or finding_round_number} agent {finding_agent}。"
             )
@@ -4263,6 +4326,8 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
         errors.append("发现过 finding 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
     if final_agent and final_agent in replacement_closure_agents:
         errors.append("替代 finding closure 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
+    elif final_agent and final_agent in closure_agents:
+        errors.append("finding closure 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
     return errors
 
 
