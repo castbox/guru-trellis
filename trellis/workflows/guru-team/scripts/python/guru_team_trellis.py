@@ -2396,14 +2396,65 @@ def issue_numbers(items: Any) -> list[int]:
 def issue_has_evidence(issue: dict[str, Any]) -> bool:
     for key in ("acceptance_evidence", "verification", "evidence"):
         value = issue.get(key)
-        if isinstance(value, list) and any(str(item).strip() for item in value):
+        if isinstance(value, list) and any(
+            (isinstance(item, str) and item.strip())
+            or (isinstance(item, dict) and item.get("status") == "passed")
+            for item in value
+        ):
             return True
         if isinstance(value, str) and value.strip():
             return True
     return False
 
 
-def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any]) -> list[str]:
+REMOTE_MARKETPLACE_EVIDENCE_TYPE = "remote_marketplace_verification"
+
+
+def remote_marketplace_evidence(issue: dict[str, Any]) -> dict[str, Any] | None:
+    evidence = issue.get("acceptance_evidence")
+    if not isinstance(evidence, list):
+        return None
+    matches = [item for item in evidence if isinstance(item, dict) and item.get("type") == REMOTE_MARKETPLACE_EVIDENCE_TYPE]
+    return matches[0] if len(matches) == 1 else None
+
+
+def remote_marketplace_evidence_errors(issue: dict[str, Any], *, allow_pending: bool) -> list[str]:
+    item = remote_marketplace_evidence(issue)
+    if item is None:
+        return ["缺少唯一 remote_marketplace_verification 结构化 evidence。"]
+    status = item.get("status")
+    if status == "pending" and allow_pending:
+        if item != {
+            "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
+            "status": "pending",
+            "required": True,
+            "artifact_path": "marketplace-verification.json",
+            "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。",
+        }:
+            return ["pending remote marketplace evidence 不符合固定合同。"]
+        return []
+    if status != "passed":
+        return ["required remote marketplace evidence 必须是 passed；pending/文字说明不能发布。"]
+    required = {
+        "type", "status", "required", "artifact_path", "artifact_sha256",
+        "verified_content_head", "remote_head", "publish_head", "commands_passed",
+    }
+    if set(item) != required:
+        return ["passed remote marketplace evidence 字段不符合固定合同。"]
+    errors: list[str] = []
+    if item.get("required") is not True:
+        errors.append("remote marketplace evidence required 必须为 true。")
+    if not re.fullmatch(r"[0-9a-f]{64}", str(item.get("artifact_sha256") or "")):
+        errors.append("remote marketplace evidence artifact_sha256 无效。")
+    for key in ["verified_content_head", "remote_head", "publish_head"]:
+        if not re.fullmatch(r"[0-9a-f]{40}", str(item.get(key) or "")):
+            errors.append(f"remote marketplace evidence {key} 无效。")
+    if item.get("commands_passed") is not True:
+        errors.append("remote marketplace evidence commands_passed 必须为 true。")
+    return errors
+
+
+def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any], *, allow_pending_remote_marketplace: bool = False) -> list[str]:
     errors: list[str] = []
     close_issues = ledger.get("close_issues")
     if not isinstance(close_issues, list):
@@ -2425,6 +2476,11 @@ def validate_ledger_for_publish(ledger: dict[str, Any], gate: dict[str, Any]) ->
             errors.append(f"issue #{number} 同时出现在 close_issues 与 related/followup 中。")
         if not issue_has_evidence(issue):
             errors.append(f"close_issues 中 issue #{number} 缺少验收或验证证据。")
+        if marketplace_verification_required(gate):
+            errors.extend(
+                f"close_issues 中 issue #{number}：{error}"
+                for error in remote_marketplace_evidence_errors(issue, allow_pending=allow_pending_remote_marketplace)
+            )
         if number not in gate_reviewed:
             errors.append(f"Branch Review Gate 未记录对 close issue #{number} 的覆盖结论。")
     return errors
@@ -7288,23 +7344,76 @@ def marketplace_verification_required(gate: dict[str, Any]) -> bool:
     return any(str(path).startswith(MARKETPLACE_VERIFICATION_PREFIXES) for path in files)
 
 
-def commit_marketplace_verification_artifact(root: Path, artifact_path: Path, message: str) -> dict[str, Any]:
+def write_remote_marketplace_evidence(
+    root: Path,
+    task_dir: Path,
+    ledger: dict[str, Any],
+    verification_path: Path,
+    verification: dict[str, Any],
+) -> Path:
+    contract_errors = marketplace_verification_contract_errors(verification)
+    if verification.get("status") != "passed" or contract_errors:
+        raise WorkflowError(
+            "Cannot record remote marketplace evidence from a failed or invalid verifier payload.",
+            exit_code=2,
+            payload={"errors": contract_errors, "status": verification.get("status")},
+        )
+    artifact_relative = repo_relative(root, verification_path)
+    artifact_sha = hashlib.sha256(verification_path.read_bytes()).hexdigest()
+    passed = {
+        "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
+        "status": "passed",
+        "required": True,
+        "artifact_path": artifact_relative,
+        "artifact_sha256": artifact_sha,
+        "verified_content_head": verification["verified_head"],
+        "remote_head": verification["remote_head"],
+        "publish_head": verification["verified_head"],
+        "commands_passed": all(step.get("passed") is True for step in verification.get("steps", [])),
+    }
+    targets: list[dict[str, Any]] = []
+    primary = ledger.get("primary_issue")
+    if isinstance(primary, dict):
+        targets.append(primary)
+    close_issues = ledger.get("close_issues")
+    if isinstance(close_issues, list):
+        targets.extend(item for item in close_issues if isinstance(item, dict))
+    for issue in targets:
+        evidence = issue.setdefault("acceptance_evidence", [])
+        if not isinstance(evidence, list):
+            raise WorkflowError("Issue Scope Ledger acceptance_evidence must be an array.", exit_code=2)
+        evidence[:] = [item for item in evidence if not (isinstance(item, dict) and item.get("type") == REMOTE_MARKETPLACE_EVIDENCE_TYPE)]
+        evidence.append(dict(passed))
+    path = issue_scope_ledger_path(task_dir)
+    write_json(path, ledger)
+    return path
+
+
+def commit_marketplace_verification_metadata(
+    root: Path,
+    artifact_path: Path,
+    ledger_path: Path,
+    message: str,
+) -> dict[str, Any]:
     artifact_relative = repo_relative(root, artifact_path)
+    ledger_relative = repo_relative(root, ledger_path)
+    allowed = {artifact_relative, ledger_relative}
     dirty_paths = git_status_paths(root)
-    unexpected = [path for path in dirty_paths if path != artifact_relative]
+    unexpected = [path for path in dirty_paths if path not in allowed]
     if unexpected:
         raise WorkflowError(
             "Marketplace verification metadata tail contains unexpected dirty paths.",
             exit_code=2,
-            payload={"artifact_path": artifact_relative, "unexpected_dirty_paths": unexpected},
+            payload={"allowed_paths": sorted(allowed), "unexpected_dirty_paths": unexpected},
         )
-    if artifact_relative not in dirty_paths:
-        raise WorkflowError("Marketplace verification did not produce its required task artifact.", exit_code=2)
-    run_stdout(["git", "add", "--", artifact_relative], cwd=root)
+    missing = sorted(allowed - set(dirty_paths))
+    if missing:
+        raise WorkflowError("Marketplace verification did not produce required artifact and ledger metadata.", exit_code=2, payload={"missing_paths": missing})
+    run_stdout(["git", "add", "--", artifact_relative, ledger_relative], cwd=root)
     if run(["git", "diff", "--cached", "--quiet"], cwd=root, check=False).returncode == 0:
         raise WorkflowError("Marketplace verification artifact has no staged content to commit.", exit_code=2)
     run_stdout(["git", "commit", "-m", message], cwd=root)
-    return {"committed": True, "paths": [artifact_relative], "commit": current_head(root)}
+    return {"committed": True, "paths": sorted(allowed), "commit": current_head(root)}
 
 
 def command_evidence(command: list[str], proc: subprocess.CompletedProcess[str], display_command: list[str] | None = None) -> dict[str, Any]:
@@ -7319,6 +7428,74 @@ def command_evidence(command: list[str], proc: subprocess.CompletedProcess[str],
         "stderr_size_bytes": len(stderr.encode("utf-8")),
         "passed": proc.returncode == 0,
     }
+
+
+MARKETPLACE_VERIFICATION_KEYS = {
+    "schema_version", "generated_at", "status", "repo", "remote", "branch",
+    "marketplace_source", "verified_head", "remote_head", "task_dir", "steps", "assets",
+}
+MARKETPLACE_ASSET_KEYS = {
+    "workflow_sha256", "preview_sha256", "task_start_context_schema_sha256",
+    "runtime_gitignore_present", "legacy_handoff_absent", "legacy_intake_schema_absent",
+}
+
+
+def marketplace_verification_contract_errors(payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if set(payload) != MARKETPLACE_VERIFICATION_KEYS:
+        errors.append("marketplace verification keys do not match schema 1.0.")
+    if payload.get("schema_version") != "1.0" or payload.get("status") not in {"passed", "failed"}:
+        errors.append("marketplace verification schema_version/status is invalid.")
+    for key in ["generated_at", "repo", "remote", "branch", "marketplace_source", "task_dir"]:
+        if not isinstance(payload.get(key), str) or not payload.get(key):
+            errors.append(f"marketplace verification {key} must be a non-empty string.")
+    if not re.fullmatch(r"[0-9a-f]{40}", str(payload.get("verified_head") or "")):
+        errors.append("marketplace verification verified_head must be a 40-character lowercase SHA.")
+    remote_head = str(payload.get("remote_head") or "")
+    if remote_head and not re.fullmatch(r"[0-9a-f]{40}", remote_head):
+        errors.append("marketplace verification remote_head must be empty or a 40-character lowercase SHA.")
+    steps = payload.get("steps")
+    if not isinstance(steps, list) or not steps or any(not isinstance(step, dict) for step in steps):
+        errors.append("marketplace verification steps must be a non-empty object array.")
+    else:
+        required_step_keys = {
+            "command", "exit_code", "stdout_sha256", "stderr_sha256",
+            "stdout_size_bytes", "stderr_size_bytes", "passed",
+        }
+        for index, step in enumerate(steps):
+            if not required_step_keys.issubset(step):
+                errors.append(f"marketplace verification step {index} is missing required audit fields.")
+                continue
+            command = step.get("command")
+            if not isinstance(command, list) or not command or any(not isinstance(part, str) for part in command):
+                errors.append(f"marketplace verification step {index} command is invalid.")
+            if not isinstance(step.get("exit_code"), int):
+                errors.append(f"marketplace verification step {index} exit_code is invalid.")
+            for key in ["stdout_sha256", "stderr_sha256"]:
+                if not re.fullmatch(r"[0-9a-f]{64}", str(step.get(key) or "")):
+                    errors.append(f"marketplace verification step {index} {key} is invalid.")
+            for key in ["stdout_size_bytes", "stderr_size_bytes"]:
+                if not isinstance(step.get(key), int) or step.get(key) < 0:
+                    errors.append(f"marketplace verification step {index} {key} is invalid.")
+            if not isinstance(step.get("passed"), bool):
+                errors.append(f"marketplace verification step {index} passed is invalid.")
+    assets = payload.get("assets")
+    if not isinstance(assets, dict) or set(assets) != MARKETPLACE_ASSET_KEYS:
+        errors.append("marketplace verification assets keys do not match schema 1.0.")
+        assets = {}
+    digest_pattern = re.compile(r"^[0-9a-f]{64}$")
+    for key in ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256"]:
+        value = str(assets.get(key) or "")
+        if payload.get("status") == "passed" and not digest_pattern.fullmatch(value):
+            errors.append(f"passed marketplace verification requires asset digest: {key}.")
+        elif payload.get("status") == "failed" and value and not digest_pattern.fullmatch(value):
+            errors.append(f"failed marketplace verification asset digest must be empty or valid: {key}.")
+    for key in ["runtime_gitignore_present", "legacy_handoff_absent", "legacy_intake_schema_absent"]:
+        if not isinstance(assets.get(key), bool):
+            errors.append(f"marketplace verification asset flag must be boolean: {key}.")
+        elif payload.get("status") == "passed" and assets.get(key) is not True:
+            errors.append(f"passed marketplace verification requires true asset flag: {key}.")
+    return errors
 
 
 def execute_marketplace_verification(
@@ -7406,26 +7583,42 @@ def execute_marketplace_verification(
         "steps": steps,
         "assets": assets,
     }
+    contract_errors = marketplace_verification_contract_errors(payload)
+    if contract_errors:
+        payload["status"] = "failed"
+        payload["assets"] = {
+            "workflow_sha256": assets.get("workflow_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("workflow_sha256") or "")) else "",
+            "preview_sha256": assets.get("preview_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("preview_sha256") or "")) else "",
+            "task_start_context_schema_sha256": assets.get("task_start_context_schema_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("task_start_context_schema_sha256") or "")) else "",
+            "runtime_gitignore_present": bool(assets.get("runtime_gitignore_present")),
+            "legacy_handoff_absent": bool(assets.get("legacy_handoff_absent")),
+            "legacy_intake_schema_absent": bool(assets.get("legacy_intake_schema_absent")),
+        }
+        contract_errors = marketplace_verification_contract_errors(payload)
+        if contract_errors:
+            raise WorkflowError("Internal marketplace verification payload contract failure.", exit_code=2, payload={"errors": contract_errors})
     write_json(marketplace_verification_path(task_dir, config), payload)
     if not passed:
         raise WorkflowError("Remote marketplace verification failed after push.", exit_code=2, payload=payload)
     return payload
 
 
-def validate_marketplace_verification(root: Path, task_dir: Path, current_publish_head: str, repo: str, remote: str, branch: str, config: dict[str, Any] | None = None) -> tuple[Path, dict[str, Any], list[str]]:
+def validate_marketplace_verification(
+    root: Path,
+    task_dir: Path,
+    current_publish_head: str,
+    repo: str,
+    remote: str,
+    branch: str,
+    config: dict[str, Any] | None = None,
+    ledger: dict[str, Any] | None = None,
+) -> tuple[Path, dict[str, Any], list[str]]:
     path = marketplace_verification_path(task_dir, config)
     payload, read_error = read_optional_json(path)
     errors: list[str] = []
     if payload is None:
         return path, {}, [f"marketplace verification artifact {read_error or 'missing'}: {path}"]
-    required_keys = {
-        "schema_version", "generated_at", "status", "repo", "remote", "branch",
-        "marketplace_source", "verified_head", "remote_head", "task_dir", "steps", "assets",
-    }
-    if set(payload) != required_keys:
-        errors.append("marketplace verification keys do not match schema 1.0.")
-    if payload.get("schema_version") != "1.0":
-        errors.append("marketplace verification schema_version must be 1.0.")
+    errors.extend(marketplace_verification_contract_errors(payload))
     expected_repo = repo.strip()
     expected_source = f"gh:{expected_repo}/trellis#{branch}" if expected_repo else ""
     if expected_repo and payload.get("repo") != expected_repo:
@@ -7449,10 +7642,13 @@ def validate_marketplace_verification(root: Path, task_dir: Path, current_publis
         errors.append("marketplace verification lacks a matching verified/remote content HEAD.")
     elif verified_head != current_publish_head:
         diff_proc = run(["git", "diff", "--name-only", f"{verified_head}..{current_publish_head}"], cwd=root, check=False)
-        allowed = {repo_relative(root, path)}
+        allowed = {
+            repo_relative(root, path),
+            repo_relative(root, issue_scope_ledger_path(task_dir)),
+        }
         changed = {line.strip() for line in diff_proc.stdout.splitlines() if line.strip()}
         if diff_proc.returncode != 0 or changed != allowed:
-            errors.append("marketplace verification is stale; current HEAD contains changes beyond its artifact metadata tail.")
+            errors.append("marketplace verification is stale; current HEAD is not the exact artifact + ledger metadata tail.")
     remote_proc = run(["git", "ls-remote", "--heads", remote, branch], cwd=root, check=False)
     remote_lines = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
     current_remote_head = remote_lines[0][0] if remote_lines and remote_lines[0] else ""
@@ -7477,6 +7673,32 @@ def validate_marketplace_verification(root: Path, task_dir: Path, current_publis
         errors.append("marketplace verification did not confirm runtime gitignore contract.")
     if assets.get("legacy_handoff_absent") is not True or assets.get("legacy_intake_schema_absent") is not True:
         errors.append("marketplace verification did not confirm obsolete handoff artifacts are absent.")
+    if ledger is not None:
+        artifact_sha = hashlib.sha256(path.read_bytes()).hexdigest()
+        targets: list[tuple[str, dict[str, Any]]] = []
+        primary = ledger.get("primary_issue")
+        if isinstance(primary, dict):
+            targets.append(("primary_issue", primary))
+        close_issues = ledger.get("close_issues")
+        if isinstance(close_issues, list):
+            targets.extend((f"close_issues issue #{issue.get('number')}", issue) for issue in close_issues if isinstance(issue, dict))
+        expected_evidence = {
+            "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
+            "status": "passed",
+            "required": True,
+            "artifact_path": repo_relative(root, path),
+            "artifact_sha256": artifact_sha,
+            "verified_content_head": verified_head,
+            "remote_head": str(payload.get("remote_head") or ""),
+            "publish_head": verified_head,
+            "commands_passed": isinstance(steps, list) and bool(steps) and all(
+                isinstance(step, dict) and step.get("passed") is True for step in steps
+            ),
+        }
+        for label, issue in targets:
+            evidence = remote_marketplace_evidence(issue)
+            if evidence != expected_evidence:
+                errors.append(f"{label} remote marketplace evidence does not match the verified artifact facts.")
     return path, payload, errors
 
 
@@ -7525,7 +7747,12 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
         )
 
     ledger = load_issue_scope_ledger(task_dir, task_context)
-    ledger_errors = validate_ledger_for_publish(ledger, gate)
+    requires_marketplace_verification = marketplace_verification_required(gate)
+    ledger_errors = validate_ledger_for_publish(
+        ledger,
+        gate,
+        allow_pending_remote_marketplace=requires_marketplace_verification,
+    )
     if ledger_errors:
         raise WorkflowError(
             "Publish blocked because Issue Scope Ledger is incomplete.",
@@ -7602,21 +7829,40 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
     require_gh_auth(root)
     run_stdout(["git", "push", "-u", remote, branch], cwd=root)
     verified_content_head = current_head(root)
-    if marketplace_verification_required(gate):
+    if requires_marketplace_verification:
         marketplace_verification = execute_marketplace_verification(root, task_dir, repo, remote, branch, verified_content_head, config)
-        verification_commit = commit_marketplace_verification_artifact(
-            root, marketplace_verification_path(task_dir, config), metadata_commit_subject
+        verification_artifact_path = marketplace_verification_path(task_dir, config)
+        updated_ledger_path = write_remote_marketplace_evidence(
+            root, task_dir, ledger, verification_artifact_path, marketplace_verification
+        )
+        verification_commit = commit_marketplace_verification_metadata(
+            root, verification_artifact_path, updated_ledger_path, metadata_commit_subject
         )
         run_stdout(["git", "push", remote, branch], cwd=root)
         publish_head = current_head(root)
+        ledger = load_issue_scope_ledger(task_dir, task_context)
         verification_path, _verification_payload, verification_errors = validate_marketplace_verification(
-            root, task_dir, publish_head, repo, remote, branch, config
+            root, task_dir, publish_head, repo, remote, branch, config, ledger
         )
         if verification_errors:
             raise WorkflowError(
                 "Publish blocked because remote marketplace verification artifact is missing, failed, or stale.",
                 exit_code=2,
                 payload={"artifact_path": str(verification_path), "errors": verification_errors},
+            )
+        final_ledger_errors = validate_ledger_for_publish(ledger, gate)
+        if final_ledger_errors:
+            raise WorkflowError(
+                "Publish blocked because post-verifier Issue Scope Ledger evidence is incomplete or invalid.",
+                exit_code=2,
+                payload={"ledger_path": str(issue_scope_ledger_path(task_dir)), "errors": final_ledger_errors},
+            )
+        _gate_path, _gate, post_metadata_gate_errors = validate_review_gate(root, task_dir, config, True)
+        if post_metadata_gate_errors:
+            raise WorkflowError(
+                "Publish blocked because Branch Review Gate became invalid after marketplace metadata tail.",
+                exit_code=2,
+                payload={"artifact_path": str(_gate_path), "errors": post_metadata_gate_errors},
             )
         payload["marketplace_verification"] = marketplace_verification
         payload["marketplace_verification_commit"] = verification_commit

@@ -27,7 +27,7 @@
 
 ## 实现期验证
 
-- canonical unit tests：227 项通过（含 Round 1 SHA/verifier 回归）。
+- canonical unit tests：239 项通过（含 Round 1 SHA 回归及 Round 2 ledger/verifier/schema/metadata-tail 回归）。
 - preset installer tests：30 项通过；obsolete clean fixture 不依赖 Git history。
 - JSON、shell syntax、Python compile、task validation、phase context、workspace boundary、dogfood drift、`git diff --check` 通过。
 - throwaway preset 安装通过，新安装含 runtime ignore、不含旧 handoff/schema、包含新 schema。
@@ -54,3 +54,12 @@
 - core/preset unit tests、JSON/schema、shell syntax、Python compile。
 - `apply.sh --repo . --all-platforms`、dogfood drift、`.new/.bak`、task validation、workspace boundary、`git diff --check`。
 - 不执行真实 push；远端 verifier 的真实执行点保留在 formal `finish-work` / `publish-pr`，届时缺失或失败会阻止 PR 创建。
+
+## Branch Review Round 2 修复
+
+- Finding 1：`issue-scope-ledger.json` 的 primary/close #96 已把 AC9 deferred 文字改为固定结构的 `remote_marketplace_verification` pending evidence；pending、普通非空文字或缺失结构均不能通过最终 publish。
+- Verifier recorder：真实 push 后只有 schema-valid `status=passed` payload 才能回写 ledger；回写事实包含 artifact repo-relative path、SHA-256、verified content HEAD、verifier remote HEAD、publish content HEAD 和全命令通过结果。AI 仍决定 #96 是否属于 `close_issues` 以及证据是否充分。
+- Metadata tail：只允许 `marketplace-verification.json` 与 `issue-scope-ledger.json` 两个精确路径；任何第三路径阻断。metadata push 后重新校验 artifact schema/identity/digest、ledger artifact digest/HEAD 事实、verified HEAD 到当前 HEAD 的精确双路径 diff、远端 metadata HEAD 和 Branch Review Gate，全部通过后才允许 `gh pr create`。
+- Finding 2：公开 `marketplace-verification.schema.json` 允许 `failed` payload 保留空 asset digest/false flags，同时要求每个 step 具备 command、exit code、stdout/stderr digest 与 size、passed 字段；运行时 exact-contract validator 在 artifact 写盘前执行。early failure、partial failure、passed 三类 payload 均有回归测试，失败证据不会因 schema 不合法而丢失审计能力。
+- Canonical/dogfood：workflow、README、workflow specs、finish-work skills/commands/prompts、managed helper/schema 已通过 `apply.sh --repo . --all-platforms` 同步；`.bak` 已逐个处理，dogfood overlay drift 通过。
+- 本轮未生成 `marketplace-verification.json`，未把 pending 伪造成 passed；真实远端证据只会在后续显式 finish/publish 的真实 push 后生成并回写。

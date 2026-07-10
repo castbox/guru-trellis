@@ -2609,6 +2609,14 @@ class PlanningApprovalDogfoodSyncTest(unittest.TestCase):
 
 
 class PublishBoundaryTest(unittest.TestCase):
+    PENDING_REMOTE_MARKETPLACE_EVIDENCE = {
+        "type": "remote_marketplace_verification",
+        "status": "pending",
+        "required": True,
+        "artifact_path": "marketplace-verification.json",
+        "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。",
+    }
+
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
@@ -2623,11 +2631,15 @@ class PublishBoundaryTest(unittest.TestCase):
             '{"title":"Publish boundary","base_branch":"main"}\n',
             encoding="utf-8",
         )
-        (self.task_dir / "issue-scope-ledger.json").write_text(
-            '{"close_issues":[{"number":18,"title":"Publish boundary","acceptance_evidence":["ok"]}],'
-            '"related_issues":[],"followup_issues":[]}\n',
-            encoding="utf-8",
-        )
+        gtt.write_json(self.task_dir / "issue-scope-ledger.json", {
+            "close_issues": [{
+                "number": 18,
+                "title": "Publish boundary",
+                "acceptance_evidence": ["ok", dict(self.PENDING_REMOTE_MARKETPLACE_EVIDENCE)],
+            }],
+            "related_issues": [],
+            "followup_issues": [],
+        })
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
@@ -2666,6 +2678,33 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])),
             mock.patch.object(gtt, "current_branch", return_value="codex/18-publish-boundary"),
         ]
+
+    def record_passed_marketplace_evidence(
+        self,
+        _root: Path,
+        _task_dir: Path,
+        ledger: dict[str, Any],
+        _verification_path: Path,
+        verification: dict[str, Any],
+    ) -> Path:
+        passed = {
+            "type": "remote_marketplace_verification",
+            "status": "passed",
+            "required": True,
+            "artifact_path": ".trellis/tasks/07-04-publish-boundary/marketplace-verification.json",
+            "artifact_sha256": "f" * 64,
+            "verified_content_head": verification["verified_head"],
+            "remote_head": verification["remote_head"],
+            "publish_head": verification["verified_head"],
+            "commands_passed": True,
+        }
+        for issue in ledger["close_issues"]:
+            issue["acceptance_evidence"] = [
+                item for item in issue["acceptance_evidence"]
+                if not (isinstance(item, dict) and item.get("type") == "remote_marketplace_verification")
+            ] + [dict(passed)]
+        gtt.write_json(self.task_dir / "issue-scope-ledger.json", ledger)
+        return self.task_dir / "issue-scope-ledger.json"
 
     def test_publish_pr_direct_call_is_blocked_before_repo_or_push(self) -> None:
         with (
@@ -2738,9 +2777,15 @@ class PublishBoundaryTest(unittest.TestCase):
             with (
                 mock.patch.object(gtt, "require_gh_auth"),
                 mock.patch.object(gtt, "run_stdout"),
-                mock.patch.object(gtt, "current_head", side_effect=["abc123", "def456", "def456"]),
-                mock.patch.object(gtt, "execute_marketplace_verification", return_value={"status": "passed", "verified_head": "abc123"}),
-                mock.patch.object(gtt, "commit_marketplace_verification_artifact", return_value={"committed": True}),
+                mock.patch.object(gtt, "current_head", side_effect=["a" * 40, "b" * 40, "b" * 40]),
+                mock.patch.object(gtt, "execute_marketplace_verification", return_value={
+                    "status": "passed",
+                    "verified_head": "a" * 40,
+                    "remote_head": "a" * 40,
+                    "steps": [{"passed": True}],
+                }),
+                mock.patch.object(gtt, "write_remote_marketplace_evidence", side_effect=self.record_passed_marketplace_evidence),
+                mock.patch.object(gtt, "commit_marketplace_verification_metadata", return_value={"committed": True}),
                 mock.patch.object(gtt, "validate_marketplace_verification", return_value=(self.task_dir / "marketplace-verification.json", {}, [])),
                 mock.patch.object(gtt, "run") as run,
             ):
@@ -3072,11 +3117,15 @@ class PublishBoundaryTest(unittest.TestCase):
 
     def test_publish_pr_rejects_close_keyword_for_related_issue(self) -> None:
         ledger_path = self.task_dir / "issue-scope-ledger.json"
-        ledger_path.write_text(
-            '{"close_issues":[{"number":18,"title":"Publish boundary","acceptance_evidence":["ok"]}],'
-            '"related_issues":[{"number":19,"title":"Related only"}],"followup_issues":[]}\n',
-            encoding="utf-8",
-        )
+        gtt.write_json(ledger_path, {
+            "close_issues": [{
+                "number": 18,
+                "title": "Publish boundary",
+                "acceptance_evidence": ["ok", dict(self.PENDING_REMOTE_MARKETPLACE_EVIDENCE)],
+            }],
+            "related_issues": [{"number": 19, "title": "Related only"}],
+            "followup_issues": [],
+        })
         body_path = self.root / "pr-body.md"
         body_path.write_text(
             """## 变更摘要
@@ -6947,6 +6996,46 @@ class TaskRuntimeBoundaryContractTest(unittest.TestCase):
 
 
 class MarketplaceVerificationContractTest(unittest.TestCase):
+    MARKETPLACE_SCHEMA = gtt.read_json(Path(__file__).resolve().parents[2] / "schemas/marketplace-verification.schema.json")
+
+    def assert_public_schema_valid(self, payload: dict[str, Any]) -> None:
+        self.assertEqual(set(payload), set(self.MARKETPLACE_SCHEMA["required"]))
+        self.assertIn(payload["status"], self.MARKETPLACE_SCHEMA["properties"]["status"]["enum"])
+        step_schema = self.MARKETPLACE_SCHEMA["properties"]["steps"]["items"]
+        for step in payload["steps"]:
+            self.assertTrue(set(step_schema["required"]).issubset(step))
+        self.assertEqual(set(payload["assets"]), set(self.MARKETPLACE_SCHEMA["properties"]["assets"]["required"]))
+        self.assertEqual(gtt.marketplace_verification_contract_errors(payload), [])
+
+    def passed_payload(self, root: Path, task_dir: Path) -> dict[str, Any]:
+        workflow = root / "trellis/workflows/guru-team/workflow.md"
+        schema = root / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
+        workflow.parent.mkdir(parents=True, exist_ok=True)
+        schema.parent.mkdir(parents=True, exist_ok=True)
+        workflow.write_text("workflow\n", encoding="utf-8")
+        schema.write_text("{}\n", encoding="utf-8")
+        workflow_sha = gtt.digest_text("workflow\n")
+        step = {
+            "command": ["test"], "exit_code": 0,
+            "stdout_sha256": gtt.digest_text(""), "stderr_sha256": gtt.digest_text(""),
+            "stdout_size_bytes": 0, "stderr_size_bytes": 0, "passed": True,
+        }
+        return {
+            "schema_version": "1.0", "generated_at": "2026-07-10T00:00:00Z", "status": "passed",
+            "repo": "owner/repo", "remote": "origin", "branch": "codex/task",
+            "marketplace_source": "gh:owner/repo/trellis#codex/task", "verified_head": "a" * 40,
+            "remote_head": "a" * 40, "task_dir": gtt.repo_relative(root, task_dir),
+            "steps": [dict(step) for _ in range(7)],
+            "assets": {
+                "workflow_sha256": workflow_sha,
+                "preview_sha256": workflow_sha,
+                "task_start_context_schema_sha256": gtt.hashlib.sha256(schema.read_bytes()).hexdigest(),
+                "runtime_gitignore_present": True,
+                "legacy_handoff_absent": True,
+                "legacy_intake_schema_absent": True,
+            },
+        }
+
     def test_marketplace_metadata_commit_rejects_unexpected_metadata_tail(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -6954,12 +7043,128 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
             with (
                 mock.patch.object(gtt, "git_status_paths", return_value=[
                     ".trellis/tasks/task/marketplace-verification.json",
+                    ".trellis/tasks/task/issue-scope-ledger.json",
                     ".trellis/tasks/task/agent-assignment.json",
                 ]),
                 self.assertRaises(gtt.WorkflowError) as raised,
             ):
-                gtt.commit_marketplace_verification_artifact(root, artifact, "chore(meta): test")
+                gtt.commit_marketplace_verification_metadata(root, artifact, root / ".trellis/tasks/task/issue-scope-ledger.json", "chore(meta): test")
             self.assertIn(".trellis/tasks/task/agent-assignment.json", raised.exception.payload["unexpected_dirty_paths"])
+
+    def test_marketplace_metadata_commit_allows_exact_artifact_and_ledger_tail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = root / ".trellis/tasks/task/marketplace-verification.json"
+            ledger = root / ".trellis/tasks/task/issue-scope-ledger.json"
+            with (
+                mock.patch.object(gtt, "git_status_paths", return_value=[
+                    ".trellis/tasks/task/marketplace-verification.json",
+                    ".trellis/tasks/task/issue-scope-ledger.json",
+                ]),
+                mock.patch.object(gtt, "run_stdout"),
+                mock.patch.object(gtt, "run", return_value=mock.Mock(returncode=1)),
+                mock.patch.object(gtt, "current_head", return_value="a" * 40),
+            ):
+                payload = gtt.commit_marketplace_verification_metadata(root, artifact, ledger, "chore(meta): test")
+            self.assertEqual(payload["paths"], [
+                ".trellis/tasks/task/issue-scope-ledger.json",
+                ".trellis/tasks/task/marketplace-verification.json",
+            ])
+
+    def test_pending_remote_marketplace_evidence_blocks_final_publish(self) -> None:
+        pending = {
+            "type": gtt.REMOTE_MARKETPLACE_EVIDENCE_TYPE,
+            "status": "pending",
+            "required": True,
+            "artifact_path": "marketplace-verification.json",
+            "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。",
+        }
+        ledger = {"close_issues": [{"number": 96, "acceptance_evidence": ["local ok", pending]}], "related_issues": [], "followup_issues": []}
+        gate = {"changed_files": ["trellis/workflows/guru-team/workflow.md"], "issue_scope": {"close_issues_reviewed": [{"number": 96}]}}
+        self.assertEqual(gtt.validate_ledger_for_publish(ledger, gate, allow_pending_remote_marketplace=True), [])
+        self.assertTrue(any("必须是 passed" in error for error in gtt.validate_ledger_for_publish(ledger, gate)))
+
+    def test_passed_remote_marketplace_evidence_rejects_tampered_digest(self) -> None:
+        issue = {"acceptance_evidence": [{
+            "type": gtt.REMOTE_MARKETPLACE_EVIDENCE_TYPE, "status": "passed", "required": True,
+            "artifact_path": ".trellis/tasks/task/marketplace-verification.json", "artifact_sha256": "tampered",
+            "verified_content_head": "a" * 40, "remote_head": "a" * 40, "publish_head": "a" * 40,
+            "commands_passed": True,
+        }]}
+        self.assertTrue(any("artifact_sha256" in error for error in gtt.remote_marketplace_evidence_errors(issue, allow_pending=False)))
+
+    def test_write_remote_marketplace_evidence_rejects_failed_payload(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            task_dir = root / ".trellis/tasks/task"
+            task_dir.mkdir(parents=True)
+            artifact = task_dir / "marketplace-verification.json"
+            payload = self.passed_payload(root, task_dir)
+            payload["status"] = "failed"
+            payload["remote_head"] = ""
+            payload["assets"] = {
+                "workflow_sha256": "", "preview_sha256": "", "task_start_context_schema_sha256": "",
+                "runtime_gitignore_present": False, "legacy_handoff_absent": False, "legacy_intake_schema_absent": False,
+            }
+            gtt.write_json(artifact, payload)
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.write_remote_marketplace_evidence(root, task_dir, {"close_issues": []}, artifact, payload)
+
+    def test_validate_marketplace_verification_accepts_exact_two_file_metadata_tail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            task_dir = root / ".trellis/tasks/task"
+            task_dir.mkdir(parents=True)
+            artifact = task_dir / "marketplace-verification.json"
+            payload = self.passed_payload(root, task_dir)
+            gtt.write_json(artifact, payload)
+            artifact_sha = gtt.hashlib.sha256(artifact.read_bytes()).hexdigest()
+            evidence = {
+                "type": gtt.REMOTE_MARKETPLACE_EVIDENCE_TYPE, "status": "passed", "required": True,
+                "artifact_path": gtt.repo_relative(root, artifact), "artifact_sha256": artifact_sha,
+                "verified_content_head": "a" * 40, "remote_head": "a" * 40, "publish_head": "a" * 40,
+                "commands_passed": True,
+            }
+            ledger = {
+                "primary_issue": {"number": 96, "acceptance_evidence": [dict(evidence)]},
+                "close_issues": [{"number": 96, "acceptance_evidence": [dict(evidence)]}],
+                "related_issues": [], "followup_issues": [],
+            }
+            with mock.patch.object(gtt, "run") as run:
+                run.side_effect = [
+                    mock.Mock(returncode=0, stdout=(
+                        ".trellis/tasks/task/issue-scope-ledger.json\n"
+                        ".trellis/tasks/task/marketplace-verification.json\n"
+                    ), stderr=""),
+                    mock.Mock(returncode=0, stdout=f"{'b' * 40}\trefs/heads/codex/task\n", stderr=""),
+                ]
+                _path, _payload, errors = gtt.validate_marketplace_verification(
+                    root, task_dir, "b" * 40, "owner/repo", "origin", "codex/task", ledger=ledger
+                )
+            self.assertEqual(errors, [])
+
+    def test_validate_marketplace_verification_rejects_tampered_ledger_digest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            task_dir = root / ".trellis/tasks/task"
+            task_dir.mkdir(parents=True)
+            artifact = task_dir / "marketplace-verification.json"
+            payload = self.passed_payload(root, task_dir)
+            gtt.write_json(artifact, payload)
+            evidence = {
+                "type": gtt.REMOTE_MARKETPLACE_EVIDENCE_TYPE, "status": "passed", "required": True,
+                "artifact_path": gtt.repo_relative(root, artifact), "artifact_sha256": "f" * 64,
+                "verified_content_head": "a" * 40, "remote_head": "a" * 40, "publish_head": "a" * 40,
+                "commands_passed": True,
+            }
+            ledger = {"close_issues": [{"number": 96, "acceptance_evidence": [evidence]}]}
+            with mock.patch.object(gtt, "run", return_value=mock.Mock(
+                returncode=0, stdout=f"{'a' * 40}\trefs/heads/codex/task\n", stderr=""
+            )):
+                _path, _payload, errors = gtt.validate_marketplace_verification(
+                    root, task_dir, "a" * 40, "owner/repo", "origin", "codex/task", ledger=ledger
+                )
+            self.assertTrue(any("does not match" in error for error in errors))
 
     def test_execute_marketplace_verification_records_order_and_digests(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -7009,6 +7214,7 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
                 payload = gtt.execute_marketplace_verification(root, task_dir, "owner/repo", "origin", "codex/096-task-runtime-boundary", expected)
 
             self.assertEqual(payload["status"], "passed")
+            self.assert_public_schema_valid(payload)
             self.assertEqual(payload["remote_head"], expected)
             self.assertEqual([step["passed"] for step in payload["steps"]], [True] * 7)
             self.assertEqual(commands[2][0:2], ["git", "clone"])
@@ -7021,6 +7227,59 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
             self.assertTrue(payload["assets"]["legacy_handoff_absent"])
             self.assertTrue(payload["assets"]["legacy_intake_schema_absent"])
             self.assertTrue((task_dir / "marketplace-verification.json").exists())
+
+    def test_marketplace_failed_payload_contract_allows_partial_evidence(self) -> None:
+        payload = {
+            "schema_version": "1.0", "generated_at": "2026-07-10T00:00:00Z", "status": "failed",
+            "repo": "owner/repo", "remote": "origin", "branch": "codex/task",
+            "marketplace_source": "gh:owner/repo/trellis#codex/task", "verified_head": "a" * 40,
+            "remote_head": "", "task_dir": ".trellis/tasks/task",
+            "steps": [{"command": ["git", "ls-remote"], "exit_code": 2, "stdout_sha256": gtt.digest_text(""), "stderr_sha256": gtt.digest_text("failed"), "stdout_size_bytes": 0, "stderr_size_bytes": 6, "passed": False}],
+            "assets": {"workflow_sha256": "", "preview_sha256": "", "task_start_context_schema_sha256": "", "runtime_gitignore_present": False, "legacy_handoff_absent": False, "legacy_intake_schema_absent": False},
+        }
+        self.assertEqual(gtt.marketplace_verification_contract_errors(payload), [])
+
+    def test_execute_marketplace_verification_writes_schema_valid_early_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            task_dir = root / ".trellis/tasks/task"
+            task_dir.mkdir(parents=True)
+            with (
+                mock.patch.object(gtt, "run", return_value=mock.Mock(returncode=2, stdout="", stderr="network failed")),
+                self.assertRaises(gtt.WorkflowError),
+            ):
+                gtt.execute_marketplace_verification(root, task_dir, "owner/repo", "origin", "codex/task", "a" * 40)
+            payload = gtt.read_json(task_dir / "marketplace-verification.json")
+            self.assertEqual(payload["status"], "failed")
+            self.assertEqual(gtt.marketplace_verification_contract_errors(payload), [])
+            self.assert_public_schema_valid(payload)
+            self.assertGreaterEqual(len(payload["steps"]), 1)
+
+    def test_execute_marketplace_verification_writes_schema_valid_partial_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            task_dir = root / ".trellis/tasks/task"
+            task_dir.mkdir(parents=True)
+            expected = "a" * 40
+            def fake_run(command: list[str], cwd: Path, check: bool = True) -> mock.Mock:
+                if command[:4] == ["git", "ls-remote", "--heads", "origin"]:
+                    return mock.Mock(returncode=0, stdout=f"{expected}\trefs/heads/codex/task\n", stderr="")
+                if command[:4] == ["git", "remote", "get-url", "origin"]:
+                    return mock.Mock(returncode=0, stdout="https://github.com/owner/repo.git\n", stderr="")
+                if command[:2] == ["git", "clone"]:
+                    source = Path(command[-1])
+                    (source / "trellis/presets/guru-team/scripts/bash").mkdir(parents=True)
+                    return mock.Mock(returncode=0, stdout="", stderr="")
+                if command[:2] == ["git", "init"]:
+                    return mock.Mock(returncode=0, stdout="", stderr="")
+                return mock.Mock(returncode=3, stdout="", stderr="init failed")
+            with mock.patch.object(gtt, "run", side_effect=fake_run), self.assertRaises(gtt.WorkflowError):
+                gtt.execute_marketplace_verification(root, task_dir, "owner/repo", "origin", "codex/task", expected)
+            payload = gtt.read_json(task_dir / "marketplace-verification.json")
+            self.assertEqual(payload["status"], "failed")
+            self.assertEqual(gtt.marketplace_verification_contract_errors(payload), [])
+            self.assert_public_schema_valid(payload)
+            self.assertGreater(len(payload["steps"]), 3)
 
     def test_marketplace_verification_required_for_public_extension_paths(self) -> None:
         self.assertTrue(gtt.marketplace_verification_required({"changed_files": ["trellis/workflows/guru-team/workflow.md"]}))

@@ -542,4 +542,4 @@ concrete reason after the final diff is reviewed.
 
 ## Push 后远端 Marketplace 门禁
 
-修改 marketplace/preset/overlay/schema/public API 的发布路径会在 branch push 后、`gh pr create` 前执行远端分支 `init`、preview、switch 和 preset reapply，记录 task-local `marketplace-verification.json`。缺失、失败、HEAD 不匹配或 stale artifact 会阻止创建 PR；该门禁不创建 tag，AI 仍负责 PR readiness 判断。
+修改 marketplace/preset/overlay/schema/public API 的发布路径要求 primary/close issue ledger 先保存精确的 `remote_marketplace_verification: pending` 结构，pending 或普通文字不能通过最终 publish。branch push 后、`gh pr create` 前会执行远端分支 `init`、preview、switch 和 preset reapply，生成 schema-valid 的 task-local `marketplace-verification.json`；成功后脚本把真实 artifact path/SHA-256、verified content HEAD、remote HEAD、publish content HEAD 与命令结果回写 ledger，仅允许 artifact + ledger 两个路径形成 metadata tail。metadata push 后重新校验 artifact、ledger、双路径 diff、remote metadata HEAD 与 review gate，缺失、pending、失败、篡改、HEAD 不匹配或 stale 均阻止创建 PR；该门禁不创建 tag，AI 仍负责 close scope 与 PR readiness 判断。

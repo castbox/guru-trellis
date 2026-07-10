@@ -13,7 +13,13 @@
       "AC6 并行 task 隔离：`TaskRuntimeBoundaryContractTest.test_parallel_tasks_use_distinct_runtime_and_tracked_paths` 通过，各 task 使用独立 task context/runtime key。",
       "AC7 删除 handoff public API：canonical/dogfood 删除 `.trellis/guru-team/handoff.json`、`schemas/intake-handoff.schema.json`、`handoff_path`；active reference audit 仅保留 obsolete cleanup fixture/forbidden-key 保护。",
       "AC8 canonical/dogfood：`apply.sh --repo . --all-platforms`、`check-dogfood-overlay-drift.sh`、`.new/.bak` 扫描和 `git diff --check` 通过。",
-      "AC9 throwaway/upgrade：本地 throwaway install/preset reapply/runtime ignore/旧 artifact absence 已验证；push 后当前 branch marketplace 的 init/preview/switch/preset reapply 必须由 `marketplace-verification.json` 真实生成，publish validator 校验 passed/current HEAD/remote HEAD 后才允许 `gh pr create`，当前未 push，不伪造 passed。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "pending",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。"
+      },
       "AC10 issue scope：仅 #96 位于 close_issues；#53 为 related，#97/#98/#99/#100 为 followup，不使用 close keyword。"
     ]
   },
@@ -32,7 +38,13 @@
         "AC6 并行 task 隔离：`TaskRuntimeBoundaryContractTest.test_parallel_tasks_use_distinct_runtime_and_tracked_paths` 通过，各 task 使用独立 task context/runtime key。",
         "AC7 删除 handoff public API：canonical/dogfood 删除 `.trellis/guru-team/handoff.json`、`schemas/intake-handoff.schema.json`、`handoff_path`；active reference audit 仅保留 obsolete cleanup fixture/forbidden-key 保护。",
         "AC8 canonical/dogfood：`apply.sh --repo . --all-platforms`、`check-dogfood-overlay-drift.sh`、`.new/.bak` 扫描和 `git diff --check` 通过。",
-        "AC9 throwaway/upgrade：本地 throwaway install/preset reapply/runtime ignore/旧 artifact absence 已验证；push 后当前 branch marketplace 的 init/preview/switch/preset reapply 必须由 `marketplace-verification.json` 真实生成，publish validator 校验 passed/current HEAD/remote HEAD 后才允许 `gh pr create`，当前未 push，不伪造 passed。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "pending",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。"
+        },
         "AC10 issue scope：仅 #96 位于 close_issues；#53 为 related，#97/#98/#99/#100 为 followup，不使用 close keyword。"
       ]
     }
