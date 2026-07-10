@@ -4472,6 +4472,162 @@ class ReviewGateReportTest(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
+    def test_final_review_round_errors_rejects_new_agent_closure_seen_in_earlier_round(self) -> None:
+        payload = {
+            "review_rounds": [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-c",
+                    "reviewed_head": "head-1",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "reviewed_head": "head-2",
+                    "findings_count": 1,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "reviewed_head": "head-3",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 4,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+            ],
+            "reuse_decisions": [
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "new-agent",
+                    "reason": "Round 8 反例：agent-c 已在 round 1 出现，不能冒充 fresh closure agent。",
+                    "head": "head-3",
+                    "from_round": 2,
+                    "to_round": 3,
+                }
+            ],
+        }
+
+        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
+
+        self.assertTrue(any("缺少闭环轮次" in error for error in errors))
+
+    def test_final_review_round_errors_rejects_final_agent_seen_in_earlier_clean_round(self) -> None:
+        payload = {
+            "review_rounds": [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-b",
+                    "reviewed_head": "old123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+            ],
+            "reuse_decisions": [],
+        }
+
+        errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
+
+        self.assertTrue(any("任何更早 review_rounds" in error for error in errors))
+
+    def test_final_review_round_errors_rejects_new_agent_relation_type_and_round_decision_mismatch(self) -> None:
+        base_payload = {
+            "review_rounds": [
+                {
+                    "round": 1,
+                    "logical_role": "问题发现审查代理",
+                    "agent_id": "agent-a",
+                    "reviewed_head": "old123",
+                    "findings_count": 1,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 2,
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "reviewed_head": "fixed123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+                {
+                    "round": 3,
+                    "logical_role": "最终放行审查代理",
+                    "agent_id": "agent-b",
+                    "reviewed_head": "abc123",
+                    "findings_count": 0,
+                    "reuse_decision": "new-agent",
+                },
+            ],
+            "reuse_decisions": [
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "new-agent",
+                    "reason": "Round 8 关系精确性反例。",
+                    "head": "fixed123",
+                    "from_round": 1,
+                    "to_round": 2,
+                }
+            ],
+        }
+        invalid_payloads = []
+        for field, value in [("from_round", True), ("to_round", False), ("from_round", "1"), ("to_round", "2")]:
+            payload = gtt.json.loads(gtt.json.dumps(base_payload))
+            payload["reuse_decisions"][0][field] = value
+            invalid_payloads.append(payload)
+        round_mismatch = gtt.json.loads(gtt.json.dumps(base_payload))
+        round_mismatch["review_rounds"][1]["reuse_decision"] = "not-applicable"
+        invalid_payloads.append(round_mismatch)
+
+        for payload in invalid_payloads:
+            with self.subTest(payload=payload):
+                errors = gtt.final_review_round_errors(self.root, payload, expected_head="abc123")
+                self.assertTrue(any("缺少闭环轮次" in error for error in errors))
+
+    def test_validate_agent_assignment_rejects_non_strict_reuse_decision_rounds(self) -> None:
+        assignment = self.write_agent_assignment(
+            reuse_decisions=[
+                {
+                    "logical_role": "问题闭环审查代理",
+                    "agent_id": "agent-c",
+                    "decision": "new-agent",
+                    "reason": "Round 8 strict int 反例。",
+                    "head": "abc123",
+                    "from_round": True,
+                    "to_round": "2",
+                }
+            ]
+        )
+        payload = gtt.read_json(assignment)
+
+        with mock.patch.object(gtt, "git_object_exists", return_value=True):
+            errors = gtt.validate_agent_assignment_payload(self.root, self.task_dir, payload)
+
+        self.assertTrue(any("from_round 必须是正 strict int" in error for error in errors))
+        self.assertTrue(any("to_round 必须是正 strict int" in error for error in errors))
+
     def test_final_review_round_errors_rejects_new_agent_closure_without_explicit_relation(self) -> None:
         base_payload = {
             "review_rounds": [

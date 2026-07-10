@@ -352,7 +352,7 @@ Do not re-record Phase 2 after commit just to make HEAD match. `review-branch.sh
 records and validates the prior AI/human review result; it is not the reviewer.
 Passing gates require every finding owner to have one explicit closure form: a
 later same-agent `问题闭环审查代理` review with zero findings and
-`reuse-for-closure`; a different fresh closure agent linked by
+`reuse-for-closure`; a different fresh closure agent whose technical identity has not appeared in any earlier review round and is linked by
 `reuse_decisions[] decision=new-agent` with exact `from_round`, `to_round`,
 closure agent, reviewed HEAD, and reason; or a replacement closure chain when
 the finding owner failed/interrupted and cannot continue. A closure round that

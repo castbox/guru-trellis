@@ -260,7 +260,8 @@ When a review round has findings, including a previous final-review round that
 found a new issue, it must later be closed by one of three explicit forms: the
 same technical `agent_id` recorded as `问题闭环审查代理` with
 `findings_count: 0` and `reuse_decision: reuse-for-closure`; a different fresh
-`问题闭环审查代理` whose `reuse_decisions[]` entry records
+`问题闭环审查代理` whose technical `agent_id` has not appeared in any earlier
+`review_rounds[]` and whose `reuse_decisions[]` entry records
 `decision=new-agent` with exact `from_round`, `to_round`, closure `agent_id`,
 reviewed `head`, and non-empty `reason`; or, when the finding owner objectively
 failed, was interrupted, or became stale and cannot continue, a replacement
@@ -276,8 +277,8 @@ pass. The gate then validates a fresh
 `最终放行审查代理` review round: `review_rounds[].round` values are unique and
 strictly increasing in recorded order, it is the unambiguous last round,
 `reviewed_head` equals the reviewed code HEAD, `findings_count` is 0,
-`reuse_decision` is `new-agent`, and the final reviewer did not own any earlier
-finding round or act as any closure reviewer. This is an objective
+`reuse_decision` is `new-agent`, and the final reviewer technical `agent_id` has
+not appeared in any earlier `review_rounds[]`. This is an objective
 metadata check only; the AI/human review still owns the judgment that the
 review covered the full diff.
 

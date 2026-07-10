@@ -334,7 +334,8 @@ only as `问题闭环审查代理` for fix confirmation. This includes a previou
 `最终放行审查代理` round that found a new issue. A finding owner may be closed
 by a later same-agent closure round with `findings_count: 0` and
 `reuse_decision: reuse-for-closure`; or by a different fresh
-`问题闭环审查代理` whose `reuse_decisions[]` entry records
+`问题闭环审查代理` whose technical `agent_id` has not appeared in any earlier
+`review_rounds[]` and whose `reuse_decisions[]` entry records
 `decision=new-agent` with exact `from_round`, `to_round`, closure `agent_id`,
 reviewed `head`, and non-empty `reason`. If the finding owner objectively
 failed, was interrupted, or became stale and cannot continue, the workflow may
@@ -349,8 +350,7 @@ reports findings becomes a new finding owner and must itself have a later
 explicit closure; a closure that reports zero findings confirms its targeted
 finding is closed and does not need to be repeated for every later HEAD. The final
 passing review round must be the last `最终放行审查代理`, use a fresh technical
-`agent_id` that did not own an earlier finding round and did not act as any
-closure reviewer, set `findings_count` to 0, set
+`agent_id` that has not appeared in any earlier `review_rounds[]`, set `findings_count` to 0, set
 `reuse_decision` to `new-agent`, record the reviewed code `HEAD` in
 `reviewed_head`, and have a unique, strictly increasing `round` value so no
 later record can make the final round ambiguous.

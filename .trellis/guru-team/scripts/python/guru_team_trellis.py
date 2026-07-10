@@ -3837,6 +3837,11 @@ def validate_agent_assignment_payload(
                 errors.append(f"agent-assignment.json reuse_decisions[{index}].decision 非法。")
             if not str(item.get("reason") or "").strip():
                 errors.append(f"agent-assignment.json reuse_decisions[{index}] 缺少 reason。")
+            for round_field in ["from_round", "to_round"]:
+                if round_field in item and (not is_strict_int(item.get(round_field)) or item[round_field] <= 0):
+                    errors.append(
+                        f"agent-assignment.json reuse_decisions[{index}].{round_field} 必须是正 strict int。"
+                    )
             validate_head_field(root, item.get("head"), f"reuse_decisions[{index}].head", errors)
     errors.extend(validate_liveness_payload_errors(root, payload, enforce_recovery_chains=enforce_recovery_chains))
     return errors
@@ -4091,8 +4096,10 @@ def finding_round_has_replacement_closure(
         matching_decision = any(
             isinstance(item, dict)
             and str(item.get("decision") or "").strip() == "replace"
-            and item.get("from_round") == finding_round_number
-            and item.get("to_round") == closure_round_number
+            and is_strict_int(item.get("from_round"))
+            and item["from_round"] == finding_round_number
+            and is_strict_int(item.get("to_round"))
+            and item["to_round"] == closure_round_number
             and str(item.get("agent_id") or "").strip() == closure_agent
             and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
             and str(item.get("head") or "").strip() == closure_head
@@ -4169,6 +4176,7 @@ def finding_round_has_new_agent_closure(
         and str(item.get("agent_id") or "").strip() != finding_agent
         and is_strict_int(item.get("findings_count"))
         and item["findings_count"] >= 0
+        and str(item.get("reuse_decision") or "").strip() == "new-agent"
     ]
     for closure in closure_candidates:
         closure_agent = str(closure.get("agent_id") or "").strip()
@@ -4176,9 +4184,18 @@ def finding_round_has_new_agent_closure(
         closure_head = str(closure.get("reviewed_head") or "").strip()
         if any(
             isinstance(item, dict)
+            and review_round_number(item) < closure_round_number
+            and str(item.get("agent_id") or "").strip() == closure_agent
+            for item in rounds
+        ):
+            continue
+        if any(
+            isinstance(item, dict)
             and str(item.get("decision") or "").strip() == "new-agent"
-            and item.get("from_round") == finding_round_number
-            and item.get("to_round") == closure_round_number
+            and is_strict_int(item.get("from_round"))
+            and item["from_round"] == finding_round_number
+            and is_strict_int(item.get("to_round"))
+            and item["to_round"] == closure_round_number
             and str(item.get("agent_id") or "").strip() == closure_agent
             and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
             and str(item.get("head") or "").strip() == closure_head
@@ -4240,6 +4257,13 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
         errors.append("最终放行审查代理 reuse_decision 必须是 new-agent，不能复用问题发现/闭环审查代理。")
     if not final_agent:
         errors.append("最终放行审查代理缺少 agent_id。")
+    earlier_review_agents = {
+        str(item.get("agent_id") or "").strip()
+        for item in rounds
+        if isinstance(item, dict)
+        and review_round_number(item) < final_round_number
+        and str(item.get("agent_id") or "").strip()
+    }
     finding_owner_agents = {
         str(item.get("agent_id") or "").strip()
         for item in rounds
@@ -4328,6 +4352,8 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
         errors.append("替代 finding closure 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
     elif final_agent and final_agent in closure_agents:
         errors.append("finding closure 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
+    if final_agent and final_agent in earlier_review_agents:
+        errors.append("最终放行审查代理必须使用未在任何更早 review_rounds[] 出现过的 fresh agent_id。")
     return errors
 
 
