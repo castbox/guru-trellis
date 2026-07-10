@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_at": "2026-07-10T13:49:59Z",
-  "task_dir": ".trellis/tasks/07-10-096-task-runtime-boundary",
+  "task_dir": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary",
   "base_branch": "main",
   "base_ref": "origin/main",
   "head_branch": "codex/096-task-runtime-boundary",
@@ -176,7 +176,7 @@
     }
   ],
   "issue_scope": {
-    "ledger_path": ".trellis/tasks/07-10-096-task-runtime-boundary/issue-scope-ledger.json",
+    "ledger_path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/issue-scope-ledger.json",
     "close_issues_reviewed": [
       {
         "number": 96,
@@ -249,13 +249,13 @@
     "reviewer": "Galileo the 2nd (019f4c44-ab1f-74f1-94b5-d44e1395feb5)",
     "review_source": "independent-agent",
     "review_report": {
-      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/review.md",
+      "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/review.md",
       "sha256": "a0effd5dd7f89d924af94662b64554d9c255d406643bc98e6965dac3c4ae633a",
       "size_bytes": 4410,
       "modified_at": "2026-07-10T13:48:47.879527+00:00"
     },
     "agent_assignment": {
-      "path": ".trellis/tasks/07-10-096-task-runtime-boundary/agent-assignment.json",
+      "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/agent-assignment.json",
       "sha256": "70482070448c2f328b4552c939dc8f9d4933ec4f3abb3322cdbd20ce9357e05b",
       "size_bytes": 64528,
       "modified_at": "2026-07-10T13:49:36.714692+00:00",
@@ -272,7 +272,7 @@
       "review_rounds_count": 12,
       "reuse_decisions_count": 11,
       "status_events_count": 32,
-      "task": ".trellis/tasks/07-10-096-task-runtime-boundary",
+      "task": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary",
       "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
     },
     "review_reports": [
@@ -282,7 +282,7 @@
         "agent_id": "019f4b89-6014-7a33-a7ae-aabcfe9412e7",
         "reviewed_head": "a84e5720d0ea18482b46b165062930e50cf54b34",
         "findings_count": 4,
-        "path": ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-1.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/reviews/round-1.md",
         "sha256": "251597a27d9417ec866e04f5a9ee0fcf71ac45483b782b73a578c4d37d9ee12f",
         "size_bytes": 14221,
         "modified_at": "2026-07-10T10:28:22.781718+00:00"
@@ -293,7 +293,7 @@
         "agent_id": "019f4bad-324e-7090-a293-b4c07e588530",
         "reviewed_head": "90a2d45c823775ff0eaa485ef10640d8b4aa96f5",
         "findings_count": 2,
-        "path": ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-2.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/reviews/round-2.md",
         "sha256": "fcce0bbfd5f1b7bcad16448442af15c6ab8f9e54c95b44a9dc4db8a8e486e036",
         "size_bytes": 13046,
         "modified_at": "2026-07-10T11:05:55.719199+00:00"
@@ -304,7 +304,7 @@
         "agent_id": "019f4bc6-9fb7-7352-af1e-2cbb9d00117b",
         "reviewed_head": "f05cd662e852984f7f07cf6336d0867eb6532302",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-3.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/reviews/round-3.md",
         "sha256": "8a239e1accdaa688713e210262045e6e37b8af35a0fee88078c09c6b12f96410",
         "size_bytes": 12839,
         "modified_at": "2026-07-10T11:34:36.735229+00:00"
@@ -315,10 +315,10 @@
         "agent_id": "019f4bcf-d958-7a50-ae0c-9164c603610c",
         "reviewed_head": "f05cd662e852984f7f07cf6336d0867eb6532302",
         "findings_count": 1,
-        "path": ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-4.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/reviews/round-4.md",
         "sha256": "0932f7b62b06061121000a490f69169c1d3ef83281fdddaa7637460441dc2ed2",
         "size_bytes": 10552,
-        "modified_at": "2026-07-10T11:43:10.362984+00:00"
+        "modified_at": "2026-07-10T11:56:18.990272+00:00"
       },
       {
         "round": 5,
@@ -326,7 +326,7 @@
         "agent_id": "019f4be1-dd67-77a2-b91c-a8c19d61dd88",
         "reviewed_head": "f48abcf1f73da439efc68f7342dde562c4c9c452",
         "findings_count": 1,
-        "path": ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-5.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/reviews/round-5.md",
         "sha256": "eb4a9c1dad2f4e4374740210c291408636046d07dc6fc3257bbaedc06eab4541",
         "size_bytes": 8221,
         "modified_at": "2026-07-10T12:00:30.103203+00:00"
@@ -337,7 +337,7 @@
         "agent_id": "019f4bec-1d07-7783-bcd0-3d6f5e3c2c9e",
         "reviewed_head": "30f4f4a5bc42cfb099ea07fa7e64c9af5dd5e623",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-6.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/reviews/round-6.md",
         "sha256": "fa63eb43389a5598596634d435d027705be80b26b53d6df76a77ca1fc42d0434",
         "size_bytes": 8549,
         "modified_at": "2026-07-10T12:11:22.684007+00:00"
@@ -348,7 +348,7 @@
         "agent_id": "019f4bfb-2fc9-77b1-987b-de9f904b69e6",
         "reviewed_head": "30f4f4a5bc42cfb099ea07fa7e64c9af5dd5e623",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-7.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/reviews/round-7.md",
         "sha256": "1f80114b18ba00cbf812dd264d39efd454242b3f44acbd777c92d96d60f00ebc",
         "size_bytes": 11031,
         "modified_at": "2026-07-10T12:28:28.335842+00:00"
@@ -359,7 +359,7 @@
         "agent_id": "019f4c1a-ea3d-78a2-8125-a55ae761c236",
         "reviewed_head": "4bbac759ab67e5975b56bc63f96c9e373282a6d5",
         "findings_count": 2,
-        "path": ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-8.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/reviews/round-8.md",
         "sha256": "1fdf7f7221baf5dbff1be697ddb81ed5a2886a31e9e8912bf9a1b84b38abc102",
         "size_bytes": 10486,
         "modified_at": "2026-07-10T13:05:35.922129+00:00"
@@ -370,7 +370,7 @@
         "agent_id": "019f4c2f-7a65-7631-a3f2-8a79f732b8fc",
         "reviewed_head": "be3e27b6a09ede95819aca36d52319a9cde199be",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-9.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/reviews/round-9.md",
         "sha256": "4edf652d6b177b6bc6b2706fff35784e60467ea0351f5aff90ef4762d7826d1b",
         "size_bytes": 9111,
         "modified_at": "2026-07-10T13:27:10.493620+00:00"
@@ -381,7 +381,7 @@
         "agent_id": "019f4c37-b395-7ae1-a37a-3b16b83d7a0e",
         "reviewed_head": "be3e27b6a09ede95819aca36d52319a9cde199be",
         "findings_count": 1,
-        "path": ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-10.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/reviews/round-10.md",
         "sha256": "4db68c48333390993c6b4b79675487c3588360ff7821f7b8fc4e6c1a57d5e8b9",
         "size_bytes": 9973,
         "modified_at": "2026-07-10T13:36:29.212217+00:00"
@@ -392,7 +392,7 @@
         "agent_id": "019f4c40-73b4-7132-81e2-3034e10be707",
         "reviewed_head": "be3e27b6a09ede95819aca36d52319a9cde199be",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-11.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/reviews/round-11.md",
         "sha256": "6921188f741935bb1512f103547212589c291d6a21e2f72657524fc1cc73c3cc",
         "size_bytes": 5873,
         "modified_at": "2026-07-10T13:42:18.986388+00:00"
@@ -403,7 +403,7 @@
         "agent_id": "019f4c44-ab1f-74f1-94b5-d44e1395feb5",
         "reviewed_head": "be3e27b6a09ede95819aca36d52319a9cde199be",
         "findings_count": 0,
-        "path": ".trellis/tasks/07-10-096-task-runtime-boundary/reviews/round-12.md",
+        "path": ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/reviews/round-12.md",
         "sha256": "34e64b08abb3591e24409328d04bd384502e0fc80e6044b51aafed26757451e1",
         "size_bytes": 8507,
         "modified_at": "2026-07-10T13:48:47.877549+00:00"
