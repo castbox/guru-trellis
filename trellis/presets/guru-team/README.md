@@ -177,7 +177,7 @@ platform selection:
 
 - `.trellis/guru-team/config.yml`
 - `.trellis/guru-team/extension.json`
-- `.trellis/guru-team/schemas/intake-handoff.schema.json`
+- `.trellis/guru-team/schemas/task-start-context.schema.json`
 - `.trellis/guru-team/scripts/bash/check-env.sh`
 - `.trellis/guru-team/scripts/bash/version.sh`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh`
@@ -299,7 +299,7 @@ displayed task-local links to `prd.md`, `design.md`, and `implement.md`. The
 artifact uses schema 1.2, passed `ambiguity_review` evidence,
 fixed-scope scanner evidence for `prd.md`, `design.md`, and `implement.md`,
 `user_confirmation.source=explicit-post-planning-review`, and hash / size /
-modified-time metadata for all three files; Phase 0 handoff approval, old
+modified-time metadata for all three files; Phase 0 intake approval, old
 schema/source evidence, missing/non-passed ambiguity evidence, unclassified
 controlled-term hits, or `contract_violation` hits must fail closed.
 Freshness is based on the three planning document content digests and the
@@ -430,9 +430,9 @@ project, the first hop is Guru Team intake, not bare `task.py create`:
 
 `prepare-task.sh --json` is an intake/preflight planner by default. It may read
 an explicit issue and search duplicates, but it does not create a GitHub issue,
-worktree, branch, Trellis task, or `.trellis/guru-team/handoff.json`. Freeform
+worktree, branch, Trellis task, or `.trellis/tasks/<task-slug>/task-start-context.json`. Freeform
 requests without a source issue return `proposed_issue`, `requires_confirmation`,
-`naming_quality`, `preflight.base_freshness`, and `handoff_written: false` in
+`naming_quality`, `preflight.base_freshness`, and `no task context/runtime write` in
 stdout JSON. Planner output fetches or explicitly confirms the selected remote
 base before reporting freshness; `fetch_performed: false` must not be treated as
 `fresh: true` evidence. When local base is behind remote, planner output reports
@@ -464,7 +464,7 @@ worktree, branch, or Trellis task if the generated or overridden name is low
 information, such as `issue-52`, `52-issue-52`, a bare number, or only generic
 tokens like `bug`, `fix`, `task`, `work`, `update`, or `change`.
 
-After executor handoff is written, `handoff.workspace_path` is the machine
+After executor handoff is written, `local runtime workspace mapping` is the machine
 boundary for task artifact writes in worktree mode. Before writing or validating
 `planning-approval.json`, `phase2-check.json`, `agent-assignment.json`,
 `reviews/*.md`, `review.md`, or `review-gate.json`, run:
@@ -478,19 +478,19 @@ status, task worktree status, and suspicious current-task artifacts or review
 metadata in the source checkout. It is a deterministic validator/fact snapshot,
 not stale judgment, cleanup, or patch migration. Editing tools without an
 explicit `workdir` must use absolute paths under the task worktree selected by
-handoff `workspace_path`. The #76 liveness checker uses this source/task fact
+local runtime workspace mapping. The #76 liveness checker uses this source/task fact
 layer: source checkout `HEAD`, dirty status, diff stat, or mtime changes are
 `workspace_boundary_violation_progress`, not stale evidence.
 
 When executor paths create or reuse a worktree, they refresh the selected base
-branch again with `git fetch`, record `preflight.base_freshness` in
-`handoff.json`, fast-forward the local base only when safe, and fail closed when
+branch again with `git fetch`, keep `preflight.base_freshness` in the current
+planner/executor result only, fast-forward the local base only when safe, and fail closed when
 the local base diverges from the remote. Planner refresh evidence does not
 replace the executor's create-time guard; this prevents new task branches from
 silently starting from a stale local base.
 
 After the worktree exists, the executor ensures the target workspace has
-Trellis developer identity before writing handoff or creating a task. It copies
+Trellis developer identity before writing task context or creating a task. It copies
 the gitignored source checkout `.trellis/.developer` when available, initializes
 an equivalent target identity from an explicit `--assignee` when the source file
 is missing, and otherwise fails closed with the recovery command

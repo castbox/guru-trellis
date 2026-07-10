@@ -30,7 +30,7 @@
       ".trellis/config.yaml"
     ],
     "artifact_contracts": [
-      ".trellis/guru-team/handoff.json",
+      "task-start-context.json",
       ".trellis/guru-team/extension.json",
       "planning-approval.json",
       "phase2-check.json",

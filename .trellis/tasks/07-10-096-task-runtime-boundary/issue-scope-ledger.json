@@ -1,0 +1,57 @@
+{
+  "primary_issue": {
+    "number": 96,
+    "url": "https://github.com/castbox/guru-trellis/issues/96",
+    "title": "拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界",
+    "reason": "本任务 primary issue；完成任务启动上下文与本机运行态边界验收后关闭。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 96,
+      "url": "https://github.com/castbox/guru-trellis/issues/96",
+      "title": "拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界",
+      "reason": "本任务完整实现并通过 Phase 2 check、Branch Review Gate、throwaway install 与 upgrade/update 验证后关闭。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 53,
+      "url": "https://github.com/castbox/guru-trellis/issues/53",
+      "title": "并行 Trellis task 的 tracked artifact 冲突治理",
+      "reason": "umbrella issue；本任务只回填原 handoff 冲突面结论，不关闭。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 97,
+      "url": "https://github.com/castbox/guru-trellis/issues/97",
+      "title": "用 task-local finish-summary 替代 workspace journal/add_session",
+      "reason": "承接 finish-work workspace 冲突，不属于 #96。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 98,
+      "url": "https://github.com/castbox/guru-trellis/issues/98",
+      "title": "基于 finish-summary 的历史上下文发现",
+      "reason": "承接历史上下文分级发现，不属于 #96。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 99,
+      "url": "https://github.com/castbox/guru-trellis/issues/99",
+      "title": "取消 Guru Team 对 developer identity 的前置依赖",
+      "reason": "承接剩余 developer identity 前置移除，不属于 #96。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 100,
+      "url": "https://github.com/castbox/guru-trellis/issues/100",
+      "title": "为 archived tasks 回填 finish-summary 历史索引",
+      "reason": "承接历史回填，不属于 #96。",
+      "acceptance_evidence": []
+    }
+  ]
+}

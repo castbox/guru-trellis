@@ -1,2 +1,5 @@
 __pycache__/
 *.py[cod]
+
+# Guru Team local runtime cache
+.trellis/.runtime/

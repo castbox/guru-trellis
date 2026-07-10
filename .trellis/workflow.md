@@ -29,11 +29,11 @@ Before creating a Trellis task or writing task artifacts, run the Guru Team inta
 .trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request, issue number, or issue URL>"
 ```
 
-The default prepare command is side-effect-free intake/preflight planning for GitHub and filesystem writes: it may read an explicit issue and open duplicate candidates, then outputs source/proposed issue, base branch, branch name, workspace path, `create_task_command`, and `naming_quality`. Planner output is JSON only and does not write `.trellis/guru-team/handoff.json`, create a GitHub issue, worktree, branch, or Trellis task.
+The default prepare command is side-effect-free intake/preflight planning for GitHub and filesystem writes: it may read an explicit issue and open duplicate candidates, then outputs source/proposed issue, base branch, branch name, workspace path, `create_task_command`, and `naming_quality`. Planner output is JSON only and does not write `.trellis/tasks/<task-slug>/task-start-context.json`, create a GitHub issue, worktree, branch, or Trellis task.
 
 If no source issue was supplied, prepare writes `proposed_issue` and `requires_confirmation`. The AI must show the duplicate-search result, proposed issue title/body, base branch, branch name, and workspace path to the user. Only after confirmation may it rerun prepare with `--create-issue-confirmed --issue-title "<reviewed title>" --issue-body-file <reviewed-body-file>`.
 
-After a confirmed source issue exists and the handoff plan has been reviewed, use `--create-worktree` or `--create-task` only with explicit user approval. Those executor paths create or reuse the chosen workspace and then write `.trellis/guru-team/handoff.json` inside that workspace. They must not be used as a shortcut around planning review. They also enforce `naming_quality`: if the generated or overridden slug, branch, workspace slug, or task slug is low-information, the executor fails before creating a worktree or Trellis task and asks the agent to pass semantic overrides.
+After a confirmed source issue exists and the intake plan has been reviewed, use `--create-worktree` or `--create-task` only with explicit user approval. `--create-worktree` creates or reuses the chosen workspace and writes only gitignored local runtime mapping. `--create-task` additionally creates the Trellis task and writes `.trellis/tasks/<task-slug>/task-start-context.json` inside that workspace. They must not be used as a shortcut around planning review. They also enforce `naming_quality`: if the generated or overridden slug, branch, workspace slug, or task slug is low-information, the executor fails before creating a worktree or Trellis task and asks the agent to pass semantic overrides.
 
 When there is no active task and the current turn requires file changes, do not
 silently edit the current checkout. First run Phase 0 intake/preflight, or ask
@@ -55,7 +55,7 @@ The companion scripts live under `.trellis/guru-team/` and are installed by the 
 
 - If the user supplies a GitHub issue number or URL, read that issue body and comments before planning.
 - If no issue is supplied, decide whether the request is clear enough for an intake issue.
-- After reading the request, issue body, and comments, perform an intake clarity check before handoff review. If the problem statement, acceptance criteria, close scope, risk boundary, or implementation target is still ambiguous, load `trellis-brainstorm`, inspect repository evidence before asking user questions, and clarify the scope before creating or starting the Trellis task.
+- After reading the request, issue body, and comments, perform an intake clarity check before intake plan review. If the problem statement, acceptance criteria, close scope, risk boundary, or implementation target is still ambiguous, load `trellis-brainstorm`, inspect repository evidence before asking user questions, and clarify the scope before creating or starting the Trellis task.
 - For an existing source issue, decide whether clarified requirements should be captured as a new issue comment or by asking the user to update the original issue body. Use comments for additive clarifications, scope decisions, and user confirmations; use body edits only when the original body would mislead future intake and the edit has been reviewed.
 - For a no-issue natural-language request, proposed issue title/body must incorporate the clarified scope before `--create-issue-confirmed`; do not create a generic placeholder issue and expect `prd.md` to repair the source issue later.
 - Before creating an issue, search open issues for likely duplicates and show the result to the user.
@@ -77,12 +77,12 @@ The companion scripts live under `.trellis/guru-team/` and are installed by the 
 - Recommended worktree/task slug format is `NNN-business-capability`. When `--branch` is omitted, `prepare-task` deterministically infers a branch type and uses `<branch-type>/NNN-business-capability`; valid branch types are `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `style`, `build`, `ci`, `chore`, and `revert`, with `chore` as the fallback. Example: `feat/052-resume-detail-inline-attachment-preview`.
 - Use `--short-name`, `--workspace-slug`, and `--task-slug` as the deterministic interface from the agent's semantic judgment into the companion script; use `--branch` only when a special explicit branch name is needed. Explicit overrides still go through the same low-information naming gate.
 
-### Handoff
+### Task Runtime Boundary
 
-Planner output, including output with a confirmed `source_issue`, sets `handoff_written: false` and remains stdout-only. After explicit approval for `--create-worktree` or `--create-task`, the executor writes `.trellis/guru-team/handoff.json` inside the chosen workspace. It must not dirty the source checkout merely because a new AI session or intake preflight ran. A written handoff contains:
+Planner output, including output with a confirmed `source_issue`, sets `no task context/runtime write` and remains stdout-only. After explicit approval, `--create-worktree` writes only local runtime mapping; `--create-task` writes the task-local tracked `.trellis/tasks/<task-slug>/task-start-context.json` after task creation. It must not dirty the source checkout merely because a new AI session or intake preflight ran. A task-start-context and local runtime mapping contains:
 
 - confirmed source issue number, URL, title, and creation flag; `source_issue` is intake provenance, not the final close scope
-- handoff path and `handoff_written` state
+- task context path and runtime mapping state
 - slug, task slug, task title, branch, base branch, workspace path
 - `naming_quality` with `ok`, `reason`, `requires_semantic_name`, `current_slug`, and `suggested_override_flags`
 - an Issue Scope Ledger seed that the task copies to `{TASK_DIR}/issue-scope-ledger.json`
@@ -92,7 +92,7 @@ Planner output, including output with a confirmed `source_issue`, sets `handoff_
 
 ### Workspace Boundary
 
-When `workspace_mode: worktree`, the written handoff's `workspace_path` is the
+When `workspace_mode: worktree`, the task-start-context and local runtime mapping's `workspace_path` is the
 machine source of truth for task artifact writes. Before writing or reading
 task-local recorder/validator inputs such as `planning-approval.json`,
 `phase2-check.json`, `agent-assignment.json`, `reviews/*.md`, `review.md`, or
@@ -114,7 +114,7 @@ review, not as automatic stale/failure evidence.
 
 All relative task artifact paths are relative to the task worktree. Manual edit
 tools that cannot receive an explicit `workdir` must use an absolute path inside
-the task worktree selected by handoff `workspace_path`; do not use a source
+the task worktree selected by local runtime workspace mapping; do not use a source
 checkout relative path for task artifacts or patches. `--review-report`,
 `--agent-assignment`, `--review-round-report`, and `--checked-artifact` inputs
 must resolve inside the current task directory in that worktree. In worktree
@@ -312,7 +312,7 @@ and journal succeed. They are not new user-facing primary commands.
 Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research` sub-agents on agent-capable platforms. Guru Team keeps that official model:
 
 - Guru Team workflow identity uses Chinese logical roles recorded in task artifacts, not platform UI names. Allowed roles are `实现代理`, `阶段二检查代理`, `问题发现审查代理`, `问题闭环审查代理`, and `最终放行审查代理`.
-- `logical_role` is the Trellis process identity used in task artifacts, review reports, review gates, and final handoff. `agent_id` is the technical platform identity used for continuing or reusing an agent. `platform_nickname` is display-only and must not participate in gate decisions.
+- `logical_role` is the Trellis process identity used in task artifacts, review reports, review gates, and final implementation report. `agent_id` is the technical platform identity used for continuing or reusing an agent. `platform_nickname` is display-only and must not participate in gate decisions.
 - Platform agent dispatch identifiers such as `trellis-implement`, `trellis-check`, `trellis-research`, channel-runtime `implement`, and channel-runtime `check` are technical API ids and must stay stable. User-facing agent labels should be Chinese where the platform supports it. Markdown-based agent files use Chinese headings and descriptions. Codex custom agents use Chinese `description`, but `nickname_candidates` must stay ASCII in current Codex releases or Codex ignores the agent file. If a platform still emits an automatic/random nickname, record that raw value in `platform_nickname` only and continue to use `logical_role` for workflow judgment.
 - In default `sub-agent` mode, Guru Team has three mandatory execution boundaries:
   - implementation must be performed by `trellis-implement` or channel-runtime `implement` and produce an implementation handoff;
@@ -423,7 +423,7 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - `review-gate.json` — Branch Review Gate result for the reviewed HEAD.
 - `implement.jsonl` / `check.jsonl` — spec and research manifests for sub-agent context. They do not replace `implement.md`.
 
-Guru Team implementation tasks must have `prd.md`, `design.md`, `implement.md`, and one locatable `Docs SSOT Plan` before `task.py start`; a Phase 0 handoff approval never substitutes for this post-planning review.
+Guru Team implementation tasks must have `prd.md`, `design.md`, `implement.md`, and one locatable `Docs SSOT Plan` before `task.py start`; a Phase 0 intake approval never substitutes for this post-planning review.
 
 Planning artifact normative language must be deterministic. Requirements,
 design contracts, event/state-machine rules, gate clauses, acceptance criteria,
@@ -547,7 +547,7 @@ No active task. First classify the user's natural-language request; do not requi
 If the request includes an issue URL, issue number, clear development task, or file change, the first priority is Guru Team Phase 0 intake, not bare `task.py create`:
 `.trellis/guru-team/scripts/bash/check-env.sh --json`
 `.trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request, issue number, or issue URL>"`
-Default `prepare-task` is planner-only. After handoff review and user approval in `workspace_mode: worktree`, create the execution environment with `prepare-task --create-worktree --create-task` or an equivalent controlled Guru Team executor.
+Default `prepare-task` is planner-only. After intake plan review and user approval in `workspace_mode: worktree`, create the execution environment with `prepare-task --create-worktree --create-task` or an equivalent controlled Guru Team executor.
 Do not silently edit the current checkout. Direct edits require explicit user approval to skip GitHub issue, Trellis task, worktree, and branch for this turn.
 Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect.
 Task creation consent is not current-checkout direct-edit consent. Do not write `.trellis/tasks/` artifacts until consent is clear and preflight has a clear workspace.
@@ -648,7 +648,7 @@ does not approve commit, push, PR creation, or issue closure.
 
 [workflow-state:planning]
 Load `trellis-brainstorm`; stay in planning.
-Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
+Confirm the Guru Team task-start context exists in the chosen workspace for durable tasks: `.trellis/tasks/<task-slug>/task-start-context.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
 Finish `prd.md`, `design.md`, and `implement.md`; then perform planning artifact ambiguity review before displaying them. Verify no requirement weakening, source issue semantics preserved, conditional paths have trigger conditions, no parallel implementation paths, gates have machine-verifiable conditions, acceptance criteria are deterministic, and external quotes are labeled non-contract.
@@ -660,7 +660,7 @@ Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research mani
 
 [workflow-state:planning-inline]
 Load `trellis-brainstorm`; stay in planning.
-Confirm Guru Team intake handoff exists in the chosen workspace for durable tasks: `.trellis/guru-team/handoff.json`.
+Confirm the Guru Team task-start context exists in the chosen workspace for durable tasks: `.trellis/tasks/<task-slug>/task-start-context.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
 Finish `prd.md`, `design.md`, and `implement.md`; then perform planning artifact ambiguity review before displaying them. Verify no requirement weakening, source issue semantics preserved, conditional paths have trigger conditions, no parallel implementation paths, gates have machine-verifiable conditions, acceptance criteria are deterministic, and external quotes are labeled non-contract.
@@ -686,10 +686,10 @@ When `workspace_mode: worktree`, prefer the single controlled executor path:
 ```
 
 This creates or reuses the chosen workspace, creates the branch and Trellis task
-there, and writes `.trellis/guru-team/handoff.json` inside that workspace.
+there, and writes `.trellis/tasks/<task-slug>/task-start-context.json` inside that workspace.
 
-- Use `--create-worktree` to create or reuse the chosen workspace and write `.trellis/guru-team/handoff.json`; then run the `create_task_command` from that workspace handoff in `workspace_path`.
-- Use `--create-task` only when the user approved task creation as part of the executor step; it creates or reuses the chosen workspace, creates the Trellis task, and writes the workspace handoff.
+- Use `--create-worktree` to create or reuse the chosen workspace and write only `.trellis/.runtime/guru-team/workspaces/<workspace-slug>.json`.
+- Use `--create-task` only when the user approved task creation as part of the executor step; it creates or reuses the chosen workspace, creates the Trellis task, writes task-local `task-start-context.json` and Issue Scope Ledger seed, then writes the task runtime mapping.
 
 ```bash
 python3 ./.trellis/scripts/task.py create "<task title>" --slug <issue-or-unique-slug>
@@ -702,7 +702,7 @@ it from the source checkout for issue-backed or file-changing Guru Team tasks.
 
 Use `task.py set-branch`, `set-base-branch`, and `set-scope` to record handoff details only when the prepare script has not already done that.
 
-Copy or materialize the Issue Scope Ledger seed from `.trellis/guru-team/handoff.json` into:
+Copy or materialize the Issue Scope Ledger seed from `.trellis/tasks/<task-slug>/task-start-context.json` into:
 
 ```text
 {TASK_DIR}/issue-scope-ledger.json
@@ -744,7 +744,7 @@ Run the Middle-platform Knowledge Gate when the task may involve Guru Team middl
 
 Scope Change Gate: when scope changes, first stop and ask the user how to classify the new requirement or referenced issue unless the user already made that classification explicit. Then update `issue-scope-ledger.json` immediately:
 
-- `primary_issue`: the intake/handoff issue that anchors the task.
+- `primary_issue`: the intake issue that anchors the task.
 - `close_issues`: issues this task explicitly promises to complete and close.
 - `related_issues`: context, reusable mechanism, partial overlap, or references only.
 - `followup_issues`: new scope, new bug, or expansion that should become a new Trellis task.
@@ -839,7 +839,7 @@ links, the workflow will not enter implementation, will not dispatch
 `trellis-implement` / channel `implement`, and will not record
 `phase2-check.json`.
 
-The user's Phase 0 handoff approval to create a GitHub issue, worktree, branch,
+The user's Phase 0 intake approval to create a GitHub issue, worktree, branch,
 or Trellis task is not planning approval. Do not reuse a Phase 0 confirmation,
 generic "continue" consent, or historical `planning-approval.json` with
 `user_confirmation.source=workflow`. If `planning-approval.json` is missing,
@@ -890,7 +890,7 @@ transition; it is not planning review evidence.
 
 | Condition | Required |
 | --- | :---: |
-| Guru Team handoff exists for durable tasks | yes |
+| Guru Team task-start context exists for durable tasks | yes |
 | `prd.md` exists | yes |
 | `design.md` exists | yes |
 | `implement.md` exists | yes |
@@ -1415,11 +1415,11 @@ If any `close_issues` entry lacks acceptance/verification evidence, or the revie
 
 ### Issue Scope Ledger Rules
 
-`handoff.source_issue` only records intake provenance. It is not the final set of issues that the PR closes.
+`task-start-context.source_issue` only records intake provenance. It is not the final set of issues that the PR closes.
 
 Task-level `issue-scope-ledger.json` owns close/ref/followup semantics:
 
-- `primary_issue`: the intake/handoff issue, default close candidate.
+- `primary_issue`: the intake issue, default close candidate.
 - `close_issues`: issues this task explicitly commits to fully resolving; PR body may use `Closes/Fixes/Resolves` only for these.
 - `related_issues`: context, reuse, partial overlap, or non-closing references; PR body may use `Refs` or `Related`, never close keywords.
 - `followup_issues`: expanded scope, newly found bug, or later work; never close from the current PR.

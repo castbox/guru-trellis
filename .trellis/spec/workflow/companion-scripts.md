@@ -62,10 +62,10 @@ Do not assume the GitHub CLI is configured just because `gh` exists.
 Default `prepare` must be side-effect-free for GitHub and filesystem writes
 until the corresponding explicit confirmed/executor flag is present. It may call
 `gh issue view/list` for explicit issues and duplicate search, but planner
-output must stay on stdout and must not write `.trellis/guru-team/handoff.json`.
+output must stay on stdout and must not write `.trellis/tasks/<task-slug>/task-start-context.json`.
 It must not call `gh issue create`, `git worktree add`, or `task.py create`
 unless the corresponding explicit confirmed/executor flag is present and the
-workflow has already required AI/human handoff review. Confirming or creating a
+workflow has already required AI/human intake plan review. Confirming or creating a
 source issue alone still must not write handoff; handoff is written only by
 `--create-worktree` or `--create-task` in the chosen workspace.
 
@@ -180,7 +180,7 @@ Workspace boundary helpers are deterministic validators and fact snapshots:
   `workspace_path` before touching `planning-approval.json`,
   `phase2-check.json`, `agent-assignment.json`, `review.md`, `reviews/*.md`,
   `review-gate.json`, or equivalent task-local artifacts.
-- In `workspace_mode: worktree`, a missing current-checkout `handoff.json` is
+- In `workspace_mode: worktree`, a missing task-local `task-start-context.json` is
   also a boundary failure for these recorder/validator commands, because the
   script cannot confirm the selected `workspace_path` and must not fall back to
   a same-named task directory in the source checkout.

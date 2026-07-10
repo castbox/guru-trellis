@@ -36,7 +36,8 @@ DEFAULTS: dict[str, Any] = {
     "base_branch_candidates": ["dev", "develop", "main", "master"],
     "workspace_mode": "worktree",
     "worktree_root": "",
-    "handoff_path": ".trellis/guru-team/handoff.json",
+    "task_start_context_artifact": "task-start-context.json",
+    "runtime_root": ".trellis/.runtime/guru-team",
     "artifact_language": "zh-CN",
     "review_gate": {
         "artifact_path": "review-gate.json",
@@ -296,7 +297,7 @@ SELF_REVIEWER_PATTERNS = [
     re.compile(r"(^|[-_./\s])self[-_./\s]*review($|[-_./\s])", re.IGNORECASE),
 ]
 METADATA_ONLY_PREFIXES = (".trellis/tasks/", ".trellis/workspace/", ".trellis/.runtime/")
-METADATA_ONLY_FILES = {".trellis/guru-team/handoff.json"}
+METADATA_ONLY_FILES: set[str] = set()
 PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS = {
     "issue-scope-ledger.json",
     "pr-body.md",
@@ -1684,6 +1685,21 @@ def worktree_lines(root: Path) -> list[str]:
     return [line for line in proc.stdout.splitlines() if line.strip()]
 
 
+def worktree_records(root: Path) -> list[dict[str, str]]:
+    proc = run(["git", "worktree", "list", "--porcelain"], cwd=root, check=False)
+    records: list[dict[str, str]] = []
+    current: dict[str, str] = {}
+    for line in [*proc.stdout.splitlines(), ""]:
+        if not line.strip():
+            if current.get("worktree"):
+                records.append(current)
+            current = {}
+            continue
+        key, _, value = line.partition(" ")
+        current[key] = value
+    return records
+
+
 def default_worktree_root(root: Path) -> Path:
     return root.parent / f"{root.name}-worktrees"
 
@@ -1823,34 +1839,83 @@ def ensure_workspace_developer_identity(source_root: Path, workspace_path: Path,
     )
 
 
-def configured_handoff_path(root: Path, config: dict[str, Any]) -> Path:
-    rel = Path(str(config.get("handoff_path") or DEFAULTS["handoff_path"]))
+def task_start_context_path(task_dir: Path, config: dict[str, Any]) -> Path:
+    return task_dir / str(config.get("task_start_context_artifact") or DEFAULTS["task_start_context_artifact"])
+
+
+def runtime_root(root: Path, config: dict[str, Any]) -> Path:
+    rel = Path(str(config.get("runtime_root") or DEFAULTS["runtime_root"]))
     return rel if rel.is_absolute() else root / rel
 
 
-def workspace_handoff_path(config: dict[str, Any], workspace_path: Path) -> Path:
-    rel = Path(str(config.get("handoff_path") or DEFAULTS["handoff_path"]))
-    return rel if rel.is_absolute() else workspace_path / rel
+def runtime_workspace_path(root: Path, config: dict[str, Any], workspace_slug: str) -> Path:
+    return runtime_root(root, config) / "workspaces" / f"{workspace_slug}.json"
 
 
-def write_handoff(
-    root: Path,
-    config: dict[str, Any],
-    payload: dict[str, Any],
-    workspace_path: Path,
-    mirror_to_source: bool = False,
-) -> Path:
-    path = workspace_handoff_path(config, workspace_path)
-    payload["handoff_path"] = str(path)
-    content = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
+def runtime_task_path(root: Path, config: dict[str, Any], task_slug: str) -> Path:
+    return runtime_root(root, config) / "tasks" / f"{task_slug}.json"
 
-    if mirror_to_source and workspace_path != root:
-        source_handoff = configured_handoff_path(root, config)
-        source_handoff.parent.mkdir(parents=True, exist_ok=True)
-        source_handoff.write_text(content, encoding="utf-8")
-    return path
+
+def write_runtime_mappings(root: Path, config: dict[str, Any], payload: dict[str, Any], workspace_path: Path) -> None:
+    workspace_slug = str(payload["workspace_slug"])
+    roots = {root.resolve(), workspace_path.resolve()}
+    workspace_payload = {
+        "schema_version": "1.0", "workspace_slug": workspace_slug,
+        "workspace_path": str(workspace_path.resolve()), "source_checkout": str(root.resolve()),
+        "branch_name": payload["branch_name"], "updated_at": now_iso(),
+    }
+    for runtime_repo in roots:
+        write_json(runtime_workspace_path(runtime_repo, config, workspace_slug), workspace_payload)
+    task_slug = str(payload.get("task_slug") or "")
+    task_dir = str(payload.get("task_dir") or "")
+    if task_slug and task_dir:
+        task_payload = {
+            "schema_version": "1.0", "task_slug": task_slug, "workspace_slug": workspace_slug,
+            "workspace_path": str(workspace_path.resolve()), "task_artifact_dir": task_dir,
+            "updated_at": now_iso(),
+        }
+        for runtime_repo in roots:
+            write_json(runtime_task_path(runtime_repo, config, task_slug), task_payload)
+
+
+def rebuild_runtime_mappings(root: Path, config: dict[str, Any], context: dict[str, Any]) -> dict[str, Any] | None:
+    workspace_slug = str(context.get("workspace_slug") or "").strip()
+    task_slug = str(context.get("task_slug") or "").strip()
+    task_dir = str(context.get("task_artifact_dir") or "").strip()
+    branch_name = str(context.get("branch_name") or "").strip()
+    if not all([workspace_slug, task_slug, task_dir, branch_name]):
+        return None
+
+    records = worktree_records(root)
+    expected_branch = f"refs/heads/{branch_name}"
+    matches = [
+        Path(record["worktree"]).resolve()
+        for record in records
+        if record.get("branch") == expected_branch
+        and (Path(record["worktree"]) / task_dir / "task-start-context.json").is_file()
+    ]
+    if len(matches) != 1:
+        return None
+
+    workspace_path = matches[0]
+    base_branch = str(context.get("base_branch") or "").strip()
+    base_ref = f"refs/heads/{base_branch}" if base_branch else ""
+    source_candidates = [
+        Path(record["worktree"]).resolve()
+        for record in records
+        if Path(record["worktree"]).resolve() != workspace_path
+        and (not base_ref or record.get("branch") == base_ref)
+    ]
+    source_checkout = source_candidates[0] if source_candidates else root.resolve()
+    payload = {
+        "workspace_slug": workspace_slug,
+        "task_slug": task_slug,
+        "task_dir": task_dir,
+        "branch_name": branch_name,
+    }
+    write_runtime_mappings(source_checkout, config, payload, workspace_path)
+    cache, _ = read_optional_json(runtime_workspace_path(workspace_path, config, workspace_slug))
+    return cache
 
 
 def now_iso() -> str:
@@ -1933,12 +1998,15 @@ def guru_team_extension_payload(root: Path) -> dict[str, Any]:
     }
 
 
-def load_handoff(root: Path, config: dict[str, Any]) -> dict[str, Any]:
-    path = configured_handoff_path(root, config)
+def load_task_start_context(task_dir: Path, config: dict[str, Any]) -> dict[str, Any]:
+    path = task_start_context_path(task_dir, config)
     if not path.exists():
         return {}
     payload = read_json(path)
-    payload.setdefault("handoff_path", str(path))
+    validate_task_start_context(payload)
+    payload.setdefault("_path", str(path))
+    payload.setdefault("task_dir", payload.get("task_artifact_dir"))
+    payload.setdefault("issue_scope_ledger", payload.get("issue_scope_ledger_seed") or {})
     return payload
 
 
@@ -1982,17 +2050,17 @@ def current_task_dir(root: Path) -> Path | None:
     return None
 
 
-def resolve_task_dir(root: Path, task_arg: str | None, handoff: dict[str, Any] | None = None) -> Path:
+def resolve_task_dir(root: Path, task_arg: str | None, context: dict[str, Any] | None = None) -> Path:
     if task_arg:
         resolved = resolve_existing_task_dir(root, task_arg)
         if resolved:
             return resolved
         raise WorkflowError(f"Could not resolve task directory: {task_arg}")
 
-    if handoff:
-        handoff_task = str(handoff.get("task_dir") or "").strip()
-        if handoff_task:
-            resolved = resolve_existing_task_dir(root, handoff_task)
+    if context:
+        context_task = str(context.get("task_artifact_dir") or "").strip()
+        if context_task:
+            resolved = resolve_existing_task_dir(root, context_task)
             if resolved:
                 return resolved
 
@@ -2046,36 +2114,6 @@ def optional_resolved_path(value: Any) -> Path | None:
     return Path(text).expanduser().resolve()
 
 
-def workspace_boundary_task_relative(root: Path, handoff: dict[str, Any], task_dir: Path) -> str:
-    handoff_task = str(handoff.get("task_dir") or "").strip().replace("\\", "/")
-    if handoff_task and not Path(handoff_task).expanduser().is_absolute():
-        return handoff_task.strip("/")
-    if path_within(root, task_dir):
-        return repo_relative(root, task_dir)
-    return f".trellis/tasks/{task_dir.name}"
-
-
-def handoff_matches_boundary_task(source_handoff: dict[str, Any] | None, handoff: dict[str, Any], task_dir: Path) -> bool:
-    if not source_handoff:
-        return False
-    source_task = str(source_handoff.get("task_dir") or "").strip()
-    current_task = str(handoff.get("task_dir") or "").strip()
-    if source_task and current_task and Path(source_task).name == Path(current_task).name:
-        return True
-    if source_task and Path(source_task).name == task_dir.name:
-        return True
-    for key in ["task_slug", "workspace_slug", "branch_name", "workspace_path"]:
-        source_value = str(source_handoff.get(key) or "").strip()
-        current_value = str(handoff.get(key) or "").strip()
-        if source_value and current_value and source_value == current_value:
-            return True
-    source_issue = source_handoff.get("source_issue") if isinstance(source_handoff.get("source_issue"), dict) else {}
-    current_issue = handoff.get("source_issue") if isinstance(handoff.get("source_issue"), dict) else {}
-    source_number = str(source_issue.get("number") or "").strip()
-    current_number = str(current_issue.get("number") or "").strip()
-    return bool(source_number and current_number and source_number == current_number)
-
-
 def safe_git_status_paths(root: Path | None) -> list[str]:
     if root is None or not root.exists():
         return []
@@ -2088,15 +2126,22 @@ def safe_git_status_paths(root: Path | None) -> list[str]:
 def workspace_boundary_context(
     root: Path,
     config: dict[str, Any],
-    handoff: dict[str, Any],
+    context: dict[str, Any],
     task_dir: Path,
 ) -> dict[str, Any]:
-    preflight = handoff.get("preflight") if isinstance(handoff.get("preflight"), dict) else {}
-    workspace_mode = str(handoff.get("workspace_mode") or config.get("workspace_mode") or "").strip()
-    expected_workspace = optional_resolved_path(handoff.get("workspace_path"))
-    source_checkout = optional_resolved_path(preflight.get("current_checkout") or preflight.get("repo_root"))
-    task_relative = workspace_boundary_task_relative(root, handoff, task_dir)
-    handoff_path = configured_handoff_path(root, config)
+    workspace_mode = str(config.get("workspace_mode") or "").strip()
+    task_relative = str(context.get("task_artifact_dir") or repo_relative(root, task_dir)).strip("/")
+    expected_workspace = root.resolve()
+    source_checkout = None
+    workspace_slug = str(context.get("workspace_slug") or "").strip()
+    if workspace_slug:
+        cache, _ = read_optional_json(runtime_workspace_path(root, config, workspace_slug))
+        if not cache:
+            cache = rebuild_runtime_mappings(root, config, context)
+        cached_path = optional_resolved_path((cache or {}).get("workspace_path"))
+        if cached_path and cached_path.exists():
+            expected_workspace = cached_path
+            source_checkout = optional_resolved_path((cache or {}).get("source_checkout"))
     return {
         "workspace_mode": workspace_mode,
         "expected_workspace": expected_workspace,
@@ -2104,15 +2149,14 @@ def workspace_boundary_context(
         "source_checkout": source_checkout,
         "task_dir": task_dir.resolve(),
         "task_dir_relative": task_relative,
-        "handoff_path": handoff_path.resolve(),
-        "handoff_present": bool(handoff),
+        "task_context_present": bool(context),
     }
 
 
 def collect_workspace_boundary_snapshot(
     context: dict[str, Any],
     config: dict[str, Any],
-    handoff: dict[str, Any],
+    task_context: dict[str, Any],
 ) -> dict[str, Any]:
     actual_root = context["actual_repo_root"]
     expected_workspace = context.get("expected_workspace")
@@ -2123,23 +2167,6 @@ def collect_workspace_boundary_snapshot(
     source_status = safe_git_status_paths(source_checkout if isinstance(source_checkout, Path) else None)
     task_status = safe_git_status_paths(task_status_root if isinstance(task_status_root, Path) else None)
     suspicious: list[dict[str, Any]] = []
-
-    source_handoff_payload: dict[str, Any] | None = None
-    source_handoff_matches = False
-    if isinstance(source_checkout, Path):
-        source_handoff_path = configured_handoff_path(source_checkout, config)
-        source_handoff_payload, source_handoff_error = read_optional_json(source_handoff_path)
-        source_handoff_matches = handoff_matches_boundary_task(source_handoff_payload, handoff, task_dir)
-        if source_handoff_path.exists():
-            suspicious.append(
-                {
-                    "kind": "source_handoff",
-                    "path": repo_relative(source_checkout, source_handoff_path),
-                    "absolute_path": str(source_handoff_path.resolve()),
-                    "matches_current_task": source_handoff_matches,
-                    "error": source_handoff_error,
-                }
-            )
 
     if (
         isinstance(source_checkout, Path)
@@ -2169,12 +2196,9 @@ def collect_workspace_boundary_snapshot(
                     "absolute_path": str(reviews_dir.resolve()),
                 }
             )
-        handoff_relative = repo_relative(source_checkout, configured_handoff_path(source_checkout, config))
         for dirty_path in source_status:
             normalized = dirty_path.strip().replace("\\", "/")
-            if normalized.startswith(f"{task_relative}/") or (
-                source_handoff_matches and normalized == handoff_relative
-            ):
+            if normalized.startswith(f"{task_relative}/"):
                 suspicious.append(
                     {
                         "kind": "same_task_dirty_path",
@@ -2197,15 +2221,7 @@ def collect_workspace_boundary_snapshot(
 
 
 def blocking_suspicious_source_artifacts(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
-    blockers: list[dict[str, Any]] = []
-    for item in snapshot.get("suspicious_source_artifacts", []):
-        if not isinstance(item, dict):
-            continue
-        kind = str(item.get("kind") or "")
-        if kind == "source_handoff" and item.get("matches_current_task") is not True:
-            continue
-        blockers.append(item)
-    return blockers
+    return [item for item in snapshot.get("suspicious_source_artifacts", []) if isinstance(item, dict)]
 
 
 def workspace_boundary_errors(
@@ -2215,7 +2231,7 @@ def workspace_boundary_errors(
     allow_source_clean: bool = False,
 ) -> list[str]:
     errors: list[str] = []
-    handoff_present = bool(context.get("handoff_present"))
+    task_context_present = bool(context.get("task_context_present"))
     workspace_mode = str(context.get("workspace_mode") or "")
     expected_workspace = context.get("expected_workspace")
     actual_root = context["actual_repo_root"]
@@ -2223,15 +2239,9 @@ def workspace_boundary_errors(
     task_dir = context["task_dir"]
     blockers = blocking_suspicious_source_artifacts(snapshot)
 
-    if workspace_mode == "worktree" and not handoff_present:
-        errors.append(
-            "workspace boundary 缺少当前 checkout 的 handoff.json，无法确认 handoff.workspace_path；"
-            "请从 intake 选定的 task worktree 运行该命令。"
-        )
-    elif handoff_present and workspace_mode == "worktree":
-        if not isinstance(expected_workspace, Path):
-            errors.append("workspace boundary 缺少 handoff.workspace_path，无法确认 task worktree。")
-        elif actual_root.resolve() != expected_workspace.resolve():
+    if workspace_mode == "worktree" and not task_context_present:
+        errors.append("workspace boundary 缺少 task-start-context.json，无法确认 task-local portable context。")
+    elif workspace_mode == "worktree" and isinstance(expected_workspace, Path) and actual_root.resolve() != expected_workspace.resolve():
             allow_source = (
                 allow_source_clean
                 and isinstance(source_checkout, Path)
@@ -2241,7 +2251,7 @@ def workspace_boundary_errors(
             )
             if not allow_source:
                 errors.append(
-                    "workspace boundary mismatch: expected workspace_path="
+                    "workspace boundary mismatch: expected runtime workspace="
                     f"{expected_workspace}, actual_repo_root={actual_root}, source_checkout={source_checkout or '(unknown)'}, task_dir={task_dir}."
                 )
 
@@ -2263,13 +2273,13 @@ def workspace_boundary_errors(
 def workspace_boundary_snapshot(
     root: Path,
     config: dict[str, Any],
-    handoff: dict[str, Any],
+    task_context: dict[str, Any],
     task_dir: Path,
     *,
     allow_source_clean: bool = False,
 ) -> dict[str, Any]:
-    context = workspace_boundary_context(root, config, handoff, task_dir)
-    snapshot = collect_workspace_boundary_snapshot(context, config, handoff)
+    context = workspace_boundary_context(root, config, task_context, task_dir)
+    snapshot = collect_workspace_boundary_snapshot(context, config, task_context)
     errors = workspace_boundary_errors(context, snapshot, allow_source_clean=allow_source_clean)
     snapshot["status"] = "blocked" if errors else "ok"
     snapshot["errors"] = errors
@@ -2279,7 +2289,7 @@ def workspace_boundary_snapshot(
 def assert_workspace_boundary(
     root: Path,
     config: dict[str, Any],
-    handoff: dict[str, Any],
+    task_context: dict[str, Any],
     task_dir: Path,
     *,
     allow_source_clean: bool = False,
@@ -2287,7 +2297,7 @@ def assert_workspace_boundary(
     snapshot = workspace_boundary_snapshot(
         root,
         config,
-        handoff,
+        task_context,
         task_dir,
         allow_source_clean=allow_source_clean,
     )
@@ -2318,13 +2328,13 @@ def issue_entry(number: Any, url: str = "", title: str = "", reason: str = "", e
     }
 
 
-def default_issue_scope_ledger(handoff: dict[str, Any]) -> dict[str, Any]:
-    source = handoff.get("source_issue") if isinstance(handoff.get("source_issue"), dict) else {}
+def default_issue_scope_ledger(task_context: dict[str, Any]) -> dict[str, Any]:
+    source = task_context.get("source_issue") if isinstance(task_context.get("source_issue"), dict) else {}
     primary = issue_entry(
         source.get("number"),
         str(source.get("url") or ""),
         str(source.get("title") or ""),
-        "intake/handoff 主 issue，默认进入 close 候选；publish 前必须补齐验收证据。",
+        "intake 主 issue，默认进入 close 候选；publish 前必须补齐验收证据。",
     )
     return {
         "schema_version": "1.0",
@@ -2345,24 +2355,24 @@ def issue_scope_ledger_path(task_dir: Path) -> Path:
     return task_dir / "issue-scope-ledger.json"
 
 
-def ensure_issue_scope_ledger(task_dir: Path, handoff: dict[str, Any]) -> Path:
+def ensure_issue_scope_ledger(task_dir: Path, task_context: dict[str, Any]) -> Path:
     path = issue_scope_ledger_path(task_dir)
     if not path.exists():
-        ledger = handoff.get("issue_scope_ledger")
+        ledger = task_context.get("issue_scope_ledger")
         if not isinstance(ledger, dict):
-            ledger = default_issue_scope_ledger(handoff)
+            ledger = default_issue_scope_ledger(task_context)
         write_json(path, ledger)
     return path
 
 
-def load_issue_scope_ledger(task_dir: Path, handoff: dict[str, Any]) -> dict[str, Any]:
+def load_issue_scope_ledger(task_dir: Path, task_context: dict[str, Any]) -> dict[str, Any]:
     path = issue_scope_ledger_path(task_dir)
     if path.exists():
         return read_json(path)
-    ledger = handoff.get("issue_scope_ledger")
+    ledger = task_context.get("issue_scope_ledger")
     if isinstance(ledger, dict):
         return ledger
-    return default_issue_scope_ledger(handoff)
+    return default_issue_scope_ledger(task_context)
 
 
 def issue_numbers(items: Any) -> list[int]:
@@ -2934,10 +2944,8 @@ def collect_liveness_snapshot(root: Path, task_dir: Path, source_repo: Path, pay
     }
 
 
-def source_repo_from_handoff(root: Path, handoff: dict[str, Any]) -> Path:
-    source = handoff.get("preflight", {}).get("current_checkout") if isinstance(handoff.get("preflight"), dict) else ""
-    if not source:
-        source = handoff.get("source_checkout") or str(root)
+def source_repo_from_task_context(root: Path, task_context: dict[str, Any]) -> Path:
+    source = task_context.get("source_repo_path") or str(root)
     return repo_root(Path(str(source)).expanduser())
 
 
@@ -5093,7 +5101,7 @@ def parse_validation_arg(value: str) -> dict[str, Any]:
 def build_phase2_check_payload(
     root: Path,
     task_dir: Path,
-    handoff: dict[str, Any],
+    task_context: dict[str, Any],
     task: dict[str, Any],
     checker: str,
     check_summary: str,
@@ -5103,7 +5111,7 @@ def build_phase2_check_payload(
     validation_items: list[str],
     findings: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, handoff)
+    base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, task_context)
     task_artifact_names = checked_artifacts or default_existing_task_artifacts(task_dir, DEFAULT_PHASE2_TASK_ARTIFACTS)
     task_artifacts = [file_digest(root, resolve_task_local_path(root, task_dir, item)) for item in task_artifact_names]
     specs = [file_digest(root, resolve_checked_spec_path(root, item)) for item in checked_specs]
@@ -5251,7 +5259,7 @@ def build_review_gate_payload(
     root: Path,
     task_dir: Path,
     config: dict[str, Any],
-    handoff: dict[str, Any],
+    task_context: dict[str, Any],
     base_branch: str,
     pass_gate: bool,
     findings: list[dict[str, Any]],
@@ -5270,7 +5278,7 @@ def build_review_gate_payload(
     files = changed_files(root, diff_spec)
     deployment_impact = detect_deployment_impact(files)
     blockers = review_gate_blocking_findings(findings)
-    ledger = load_issue_scope_ledger(task_dir, handoff)
+    ledger = load_issue_scope_ledger(task_dir, task_context)
     close_issues = ledger.get("close_issues") if isinstance(ledger.get("close_issues"), list) else []
     return {
         "schema_version": "1.0",
@@ -5514,15 +5522,15 @@ def validate_review_gate(
     return path, gate, errors
 
 
-def base_branch_from_sources(args: argparse.Namespace, task: dict[str, Any], handoff: dict[str, Any]) -> str:
+def base_branch_from_sources(args: argparse.Namespace, task: dict[str, Any], task_context: dict[str, Any]) -> str:
     for value in [
         getattr(args, "base_branch", None),
-        handoff.get("base_branch"),
+        task_context.get("base_branch"),
         task.get("base_branch"),
     ]:
         if value:
             return str(value)
-    raise WorkflowError("Could not resolve base_branch from args, handoff, or task.json.")
+    raise WorkflowError("Could not resolve base_branch from args, task-start-context, or task.json.")
 
 
 def pr_issue_line(keyword: str, issue: dict[str, Any], mode: str) -> str:
@@ -6221,12 +6229,12 @@ def cmd_version(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_check_workspace_boundary(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
     snapshot = workspace_boundary_snapshot(
         root,
         config,
-        handoff,
+        task_context,
         task_dir,
         allow_source_clean=bool(getattr(args, "allow_source_clean", False)),
     )
@@ -6242,8 +6250,8 @@ def cmd_check_workspace_boundary(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_resolve_human_artifacts(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
     return resolve_human_markdown_artifacts(root, task_dir)
 
 
@@ -6270,6 +6278,68 @@ def create_task(root: Path, payload: dict[str, Any], args: argparse.Namespace) -
     if proc.returncode != 0:
         raise WorkflowError(f"task.py create failed:\n{proc.stderr.strip()}")
     return proc.stdout.strip()
+
+
+def build_task_start_context(root: Path, payload: dict[str, Any], task_dir: Path, assignee: str | None) -> dict[str, Any]:
+    freshness = payload.get("base_freshness") if isinstance(payload.get("base_freshness"), dict) else {}
+    source_issue = payload.get("source_issue") if isinstance(payload.get("source_issue"), dict) else {}
+    context = {
+        "schema_version": "1.0", "source_issue": source_issue,
+        "source_repo": {"repo": payload.get("source_repo", ""), "url": source_issue.get("url", "")},
+        "task_slug": payload["task_slug"], "task_title": payload["task_title"],
+        "task_artifact_dir": repo_relative(Path(payload["workspace_path"]), task_dir),
+        "branch_name": payload["branch_name"], "base_branch": payload["base_branch"],
+        "base_ref": freshness.get("base_ref") or payload["base_branch"],
+        "base_head_sha": freshness.get("local_sha") or "", "remote_head_sha": freshness.get("remote_sha") or "",
+        "workspace_slug": payload["workspace_slug"], "task_workspace_id": payload["workspace_slug"],
+        "assignee": assignee or "", "actor": {"login": assignee or ""},
+        "issue_scope_ledger_seed": payload.get("issue_scope_ledger") or {},
+        "intake_summary": {
+            "duplicate_decision": {"search_performed": payload.get("duplicate_search", {}).get("performed", False), "selected_issue": source_issue.get("number")},
+            "naming_quality": payload.get("naming_quality") or {},
+            "confirmation": {"source_issue_confirmed": bool(source_issue), "created_by_workflow": source_issue.get("created_by_workflow", False)},
+        },
+    }
+    validate_task_start_context(context)
+    return context
+
+
+TASK_START_CONTEXT_FORBIDDEN_KEYS = {
+    "workspace_path", "runtime_root", "preflight", "existing_worktrees",
+    "developer_identity", "current_checkout", "repo_root", "worktree_root",
+    "create_task_command", "handoff_path", "handoff_written",
+}
+
+
+def validate_task_start_context(payload: dict[str, Any]) -> None:
+    required = {
+        "schema_version", "source_issue", "source_repo", "task_slug", "task_title",
+        "task_artifact_dir", "branch_name", "base_branch", "base_ref", "base_head_sha",
+        "remote_head_sha", "workspace_slug", "task_workspace_id", "assignee", "actor",
+        "issue_scope_ledger_seed", "intake_summary",
+    }
+    extra = set(payload) - required
+    missing = required - set(payload)
+    if missing or extra:
+        raise WorkflowError(f"Invalid task-start-context keys: missing={sorted(missing)}, extra={sorted(extra)}", exit_code=2)
+    task_dir = str(payload.get("task_artifact_dir") or "")
+    if Path(task_dir).is_absolute() or not re.fullmatch(r"\.trellis/tasks/[^/]+", task_dir):
+        raise WorkflowError("task-start-context task_artifact_dir must be a repo-relative active task directory.", exit_code=2)
+
+    def scan(value: Any, path: str = "$") -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if key in TASK_START_CONTEXT_FORBIDDEN_KEYS:
+                    raise WorkflowError(f"task-start-context forbidden key at {path}.{key}", exit_code=2)
+                scan(child, f"{path}.{key}")
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                scan(child, f"{path}[{index}]")
+        elif isinstance(value, str):
+            if value.startswith(".trellis/.runtime/") or Path(value).expanduser().is_absolute():
+                raise WorkflowError(f"task-start-context contains local-only path at {path}", exit_code=2)
+
+    scan(payload)
 
 
 def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
@@ -6447,12 +6517,11 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
         create_cmd.extend(["--description", args.description])
 
     payload: dict[str, Any] = {
-        "schema_version": "1.1",
+        "schema_version": "1.2",
+        "source_repo": repo,
         "source_issue": source_issue,
         "proposed_issue": proposed_issue,
         "requires_confirmation": confirmation_required,
-        "handoff_path": str(workspace_handoff_path(config, workspace_path)),
-        "handoff_written": False,
         "slug": issue_slug,
         "naming_quality": naming_quality,
         "task_slug": task_slug,
@@ -6464,6 +6533,7 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
         "workspace_ready": workspace_ready,
         "base_branch": base_ref,
         "base_branch_candidates": base_candidates,
+        "base_freshness": base_freshness,
         "create_task_command": create_cmd,
         "task_dir": None,
         "duplicate_search": {
@@ -6490,7 +6560,7 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
                 source_issue["number"],
                 source_issue["url"],
                 source_issue.get("title", ""),
-                "intake/handoff 主 issue，默认进入 close 候选。",
+                "intake 主 issue，默认进入 close 候选。",
             ),
             "close_issues": [
                 issue_entry(
@@ -6526,25 +6596,26 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
         run(["python3", "./.trellis/scripts/task.py", "set-branch", payload["task_dir"], branch_name], cwd=workspace_path, check=False)
         run(["python3", "./.trellis/scripts/task.py", "set-base-branch", payload["task_dir"], base_ref], cwd=workspace_path, check=False)
         run(["python3", "./.trellis/scripts/task.py", "set-scope", payload["task_dir"], f"GitHub issue: {source_issue['url']}"], cwd=workspace_path, check=False)
-        task_dir = resolve_task_dir(workspace_path, payload["task_dir"], payload)
+        task_dir = resolve_task_dir(workspace_path, payload["task_dir"])
         ensure_issue_scope_ledger(task_dir, payload)
+        context = build_task_start_context(root, payload, task_dir, assignee)
+        write_json(task_start_context_path(task_dir, config), context)
+        payload["task_start_context"] = repo_relative(workspace_path, task_start_context_path(task_dir, config))
 
     if source_issue is not None and should_create_worktree:
-        payload["handoff_written"] = True
-        handoff = write_handoff(root, config, payload, workspace_path)
-        payload["handoff_path"] = str(handoff)
+        write_runtime_mappings(root, config, payload, workspace_path)
     return payload
 
 
 def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     task = task_json(task_dir)
-    base_branch = base_branch_from_sources(args, task, handoff)
-    ensure_issue_scope_ledger(task_dir, handoff)
+    base_branch = base_branch_from_sources(args, task, task_context)
+    ensure_issue_scope_ledger(task_dir, task_context)
     planning_path, _planning_payload, planning_errors = validate_planning_approval(
         root,
         task_dir,
@@ -6655,7 +6726,7 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         root=root,
         task_dir=task_dir,
         config=config,
-        handoff=handoff,
+        task_context=task_context,
         base_branch=base_branch,
         pass_gate=bool(args.pass_gate),
         findings=findings,
@@ -6689,9 +6760,9 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     payload = load_agent_assignment(root, task_dir)
     payload["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
     payload["task"] = repo_relative(root, task_dir)
@@ -6741,7 +6812,7 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
             clean_optional_text(args.decision_head) or None,
         )
     else:
-        source_repo = source_repo_from_handoff(root, handoff)
+        source_repo = source_repo_from_task_context(root, task_context)
         recorded = append_agent_assignment_event(
             payload,
             root,
@@ -6791,9 +6862,9 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_record_subagent_liveness_event(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     source_repo = resolve_source_repo(args.source_repo)
     payload = load_agent_assignment(root, task_dir)
     payload["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
@@ -6847,9 +6918,9 @@ def cmd_record_subagent_liveness_event(args: argparse.Namespace) -> dict[str, An
 def cmd_check_subagent_liveness(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     path = agent_assignment_path(task_dir)
     if not path.exists():
         return {
@@ -6907,9 +6978,9 @@ def cmd_check_subagent_liveness(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_check_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     path, payload, errors, summary = validate_agent_assignment(
         root,
         task_dir,
@@ -6936,9 +7007,9 @@ def cmd_check_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     reviewer = str(args.reviewer or "").strip()
     summary = str(args.summary or "").strip()
     confirmation = str(args.user_confirmation or "").strip()
@@ -6980,9 +7051,9 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_check_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     path, payload, errors = validate_planning_approval(
         root,
         task_dir,
@@ -7006,9 +7077,9 @@ def cmd_check_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     task = task_json(task_dir)
     checker = str(args.checker or "").strip()
     summary = str(args.summary or "").strip()
@@ -7020,7 +7091,7 @@ def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
     payload = build_phase2_check_payload(
         root=root,
         task_dir=task_dir,
-        handoff=handoff,
+        task_context=task_context,
         task=task,
         checker=checker,
         check_summary=summary,
@@ -7061,9 +7132,9 @@ def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_check_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     path, payload, errors = validate_phase2_check(root, task_dir)
     if errors:
         raise WorkflowError(
@@ -7083,9 +7154,9 @@ def cmd_check_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
-    assert_workspace_boundary(root, config, handoff, task_dir)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     path, gate, errors = validate_review_gate(root, task_dir, config, args.allow_metadata_after_gate)
     if errors:
         raise WorkflowError(
@@ -7105,16 +7176,16 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_check_commit_messages(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff) if getattr(args, "task", None) else None
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config) if getattr(args, "task", None) else None
     task = task_json(task_dir) if task_dir else {}
-    ledger = load_issue_scope_ledger(task_dir, handoff) if task_dir else {}
+    ledger = load_issue_scope_ledger(task_dir, task_context) if task_dir else {}
     primary_issue = int(args.primary_issue) if getattr(args, "primary_issue", None) else primary_issue_number_from_ledger(ledger)
     if getattr(args, "range", None):
         range_spec = str(args.range)
         base_ref = range_spec.split("..", 1)[0] if ".." in range_spec else ""
     else:
-        base_branch = str(args.base_ref or base_branch_from_sources(args, task, handoff))
+        base_branch = str(args.base_ref or base_branch_from_sources(args, task, task_context))
         base_ref = diff_base_ref(root, base_branch)
         range_spec = f"{base_ref}..HEAD"
     commits = git_commit_messages(root, range_spec)
@@ -7152,12 +7223,12 @@ def cmd_check_commit_messages(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_format_merge_commit(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff) if getattr(args, "task", None) else None
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config) if getattr(args, "task", None) else None
     task = task_json(task_dir) if task_dir else {}
-    ledger = load_issue_scope_ledger(task_dir, handoff) if task_dir else {}
+    ledger = load_issue_scope_ledger(task_dir, task_context) if task_dir else {}
     primary_issue = int(args.primary_issue) if getattr(args, "primary_issue", None) else primary_issue_number_from_ledger(ledger)
-    base_branch = str(args.base_branch or base_branch_from_sources(args, task, handoff))
+    base_branch = str(args.base_branch or base_branch_from_sources(args, task, task_context))
     base_branch_name = normalize_ref(base_branch).removeprefix("origin/")
     head_branch = str(args.head_branch or current_branch(root))
     title = str(args.summary or pr_title_from_task(task, args)).strip()
@@ -7190,10 +7261,11 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     publish = publish_config(config)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     task = task_json(task_dir)
-    base_branch = base_branch_from_sources(args, task, handoff)
+    base_branch = base_branch_from_sources(args, task, task_context)
     repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
     if not repo:
         raise WorkflowError("Could not resolve GitHub repo. Configure github_repo or pass --repo owner/repo.")
@@ -7214,7 +7286,7 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
             payload={"artifact_path": str(gate_path), "errors": gate_errors},
         )
 
-    ledger = load_issue_scope_ledger(task_dir, handoff)
+    ledger = load_issue_scope_ledger(task_dir, task_context)
     ledger_errors = validate_ledger_for_publish(ledger, gate)
     if ledger_errors:
         raise WorkflowError(
@@ -7338,7 +7410,7 @@ def build_finish_work_dry_run_plan(
     root: Path,
     args: argparse.Namespace,
     config: dict[str, Any],
-    handoff: dict[str, Any],
+    task_context: dict[str, Any],
     task_dir: Path,
     task_name: str,
     gate_path: Path,
@@ -7355,7 +7427,7 @@ def build_finish_work_dry_run_plan(
 ) -> dict[str, Any]:
     publish = publish_config(config)
     task = task_json(task_dir)
-    base_branch = base_branch_from_sources(args, task, handoff)
+    base_branch = base_branch_from_sources(args, task, task_context)
     repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
     remote = str(args.remote or publish.get("remote") or "origin")
     head_branch = current_branch(root)
@@ -7438,8 +7510,9 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     validate_finish_work_invocation(args)
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    handoff = load_handoff(root, config)
-    task_dir = resolve_task_dir(root, args.task, handoff)
+    task_dir = resolve_task_dir(root, args.task)
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, True)
     if gate_errors:
         raise WorkflowError(
@@ -7463,7 +7536,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     commits = args.commit or ",".join(recent_work_commits(root, reviewed_head))
     draft = bool(args.draft) if args.draft is not None else bool(publish_config(config).get("draft", False))
 
-    ledger = load_issue_scope_ledger(task_dir, handoff)
+    ledger = load_issue_scope_ledger(task_dir, task_context)
     validations = list(args.validation or [])
     body, body_source = resolve_pr_body(root, args, ledger, gate, validations, config)
     body_errors = validate_pr_body_quality(body, ledger, draft)
@@ -7486,7 +7559,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             root,
             args,
             config,
-            handoff,
+            task_context,
             task_dir,
             task_name,
             gate_path,

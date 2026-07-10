@@ -49,8 +49,9 @@ workspace_mode: worktree
 # Root directory for generated worktrees. Empty means ../<repo-name>-worktrees.
 worktree_root: ""
 
-# Handoff file consumed by the workflow and companion scripts.
-handoff_path: ".trellis/guru-team/handoff.json"
+# Task-local portable context artifact and gitignored local runtime namespace.
+task_start_context_artifact: "task-start-context.json"
+runtime_root: ".trellis/.runtime/guru-team"
 
 # Language used for Trellis task planning artifacts and human-readable review fields.
 artifact_language: zh-CN

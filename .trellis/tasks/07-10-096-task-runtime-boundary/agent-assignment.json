@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.1",
+  "generated_at": "2026-07-10T09:37:42Z",
+  "updated_at": "2026-07-10T09:59:19Z",
+  "task": ".trellis/tasks/07-10-096-task-runtime-boundary",
+  "head": "59d6c0caf404c4c927fe8aada92811d1ced907d5",
+  "agents": [
+    {
+      "logical_role": "实现代理",
+      "agent_id": "019f4b63-b84b-7091-90a0-e108488589ec",
+      "platform_nickname": "Build Agent",
+      "assigned_at": "2026-07-10T09:37:42Z",
+      "assigned_head": "59d6c0caf404c4c927fe8aada92811d1ced907d5",
+      "reason": "Issue #96 跨 canonical Python、schema、preset installer、workflow、spec、docs 和多平台 overlay，按 guru-team 默认 sub-agent 模式由唯一 trellis-implement 代理完成实现，主会话负责协调、门禁和最终发布。",
+      "event_id": "evt-0001-d08ff3d51c"
+    },
+    {
+      "logical_role": "阶段二检查代理",
+      "agent_id": "019f4b77-7bd7-7a11-a320-9f621dfac9a5",
+      "platform_nickname": "Review Agent",
+      "assigned_at": "2026-07-10T09:59:19Z",
+      "assigned_head": "59d6c0caf404c4c927fe8aada92811d1ced907d5",
+      "reason": "实现代理已完成 Issue #96 全链改造；按 Guru Team Phase 2 门禁分配独立 trellis-check 代理复核需求、设计、数据流、测试、docs SSOT、dogfood、throwaway 和 update 抗漂移，并仅修复机械性问题。",
+      "event_id": "evt-0002-344d0ad0d8"
+    }
+  ],
+  "liveness": {
+    "019f4b63-b84b-7091-90a0-e108488589ec": {
+      "progress_anchor_at": "2026-07-10T09:37:42Z",
+      "last_scan_snapshot": {
+        "captured_at": "2026-07-10T09:37:42Z",
+        "task_head": "59d6c0caf404c4c927fe8aada92811d1ced907d5",
+        "task_content_status_digest": "eabd7951d7617d52084d62be8fc5dd9b86c072125ebc14a9789dcee560f7fd96",
+        "task_content_diff_stat_digest": "6470093060254af8ec7e56de39fbe107e2001563a48228c08ff3268fd6df3312",
+        "task_content_max_mtime": "2026-07-10T09:37:00Z",
+        "source_head": "59d6c0caf404c4c927fe8aada92811d1ced907d5",
+        "source_status_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_diff_stat_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_max_mtime": "2026-07-10T09:26:38Z",
+        "progress_events_count": 0,
+        "progress_events_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "progress_events_newest_event_id": ""
+      },
+      "pending_status_request_at": null,
+      "last_checked_at": "",
+      "last_decision": ""
+    },
+    "019f4b77-7bd7-7a11-a320-9f621dfac9a5": {
+      "progress_anchor_at": "2026-07-10T09:59:19Z",
+      "last_scan_snapshot": {
+        "captured_at": "2026-07-10T09:59:19Z",
+        "task_head": "59d6c0caf404c4c927fe8aada92811d1ced907d5",
+        "task_content_status_digest": "1151594d438093a6d0c52c49f271dbb8beff92db9935c9758620ac9be68c1419",
+        "task_content_diff_stat_digest": "688d51451fff930d6e1214cc14119c552ada44af166d573954d8c553f0ddceb3",
+        "task_content_max_mtime": "2026-07-10T09:57:34Z",
+        "source_head": "59d6c0caf404c4c927fe8aada92811d1ced907d5",
+        "source_status_digest": "1151594d438093a6d0c52c49f271dbb8beff92db9935c9758620ac9be68c1419",
+        "source_diff_stat_digest": "688d51451fff930d6e1214cc14119c552ada44af166d573954d8c553f0ddceb3",
+        "source_max_mtime": "2026-07-10T09:57:34Z",
+        "progress_events_count": 0,
+        "progress_events_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "progress_events_newest_event_id": ""
+      },
+      "pending_status_request_at": null,
+      "last_checked_at": "",
+      "last_decision": ""
+    }
+  },
+  "review_rounds": [],
+  "reuse_decisions": [],
+  "status_events": [
+    {
+      "event_id": "evt-0001-d08ff3d51c",
+      "event": "assigned",
+      "agent_id": "019f4b63-b84b-7091-90a0-e108488589ec",
+      "logical_role": "实现代理",
+      "platform_nickname": "Build Agent",
+      "observed_at": "2026-07-10T09:37:42Z",
+      "recorded_at": "2026-07-10T09:37:42Z",
+      "head": "59d6c0caf404c4c927fe8aada92811d1ced907d5",
+      "source": "main-session",
+      "evidence": "Issue #96 跨 canonical Python、schema、preset installer、workflow、spec、docs 和多平台 overlay，按 guru-team 默认 sub-agent 模式由唯一 trellis-implement 代理完成实现，主会话负责协调、门禁和最终发布。",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0002-344d0ad0d8",
+      "event": "assigned",
+      "agent_id": "019f4b77-7bd7-7a11-a320-9f621dfac9a5",
+      "logical_role": "阶段二检查代理",
+      "platform_nickname": "Review Agent",
+      "observed_at": "2026-07-10T09:59:19Z",
+      "recorded_at": "2026-07-10T09:59:19Z",
+      "head": "59d6c0caf404c4c927fe8aada92811d1ced907d5",
+      "source": "main-session",
+      "evidence": "实现代理已完成 Issue #96 全链改造；按 Guru Team Phase 2 门禁分配独立 trellis-check 代理复核需求、设计、数据流、测试、docs SSOT、dogfood、throwaway 和 update 抗漂移，并仅修复机械性问题。",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    }
+  ],
+  "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用、更换或状态处理；脚本只记录和校验客观字段、HEAD、digest 与枚举值。"
+}

@@ -34,7 +34,7 @@
         ".trellis/config.yaml"
       ],
       "artifact_contracts": [
-        ".trellis/guru-team/handoff.json",
+        "task-start-context.json",
         ".trellis/guru-team/extension.json",
         "planning-approval.json",
         "phase2-check.json",
@@ -70,11 +70,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-09T21:35:30Z",
+  "installed_at": "2026-07-10T10:14:04Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/092-conventional-commits",
-    "commit": "e94f4ab68d5e805d8b298936da52832c5caf16cc",
+    "ref": "codex/096-task-runtime-boundary",
+    "commit": "59d6c0caf404c4c927fe8aada92811d1ced907d5",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -131,7 +131,7 @@
       ".trellis/agents/implement.md",
       ".trellis/guru-team/config-template.yml",
       ".trellis/guru-team/extension.json",
-      ".trellis/guru-team/schemas/intake-handoff.schema.json",
+      ".trellis/guru-team/schemas/task-start-context.schema.json",
       ".trellis/guru-team/scripts/bash/check-agent-assignment.sh",
       ".trellis/guru-team/scripts/bash/check-commit-messages.sh",
       ".trellis/guru-team/scripts/bash/check-env.sh",

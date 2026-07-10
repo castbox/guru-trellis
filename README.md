@@ -269,11 +269,11 @@ Guru Team issue intake 和 worktree preflight。对 issue-backed、task-like 或
 issue、搜索重复候选，并输出 proposed issue、base branch、branch name、workspace
 path、create-task command 和 `naming_quality`，但不会创建 GitHub issue、worktree、
 branch 或 Trellis task，也不会在未确认 source issue 时写
-`.trellis/guru-team/handoff.json`。没有 source issue 的 freeform 请求必须先由 AI 展示
-proposed issue title/body、duplicate evidence 和 naming quality；stdout JSON 会标记
-`handoff_written: false`。用户确认后才可用
+task-local `.trellis/tasks/<task-slug>/task-start-context.json` and gitignored `.trellis/.runtime/guru-team/**` mappings。没有 source issue 的 freeform 请求必须先由 AI 展示
+proposed issue title/body、duplicate evidence 和 naming quality；planner 输出不会写
+task context 或 runtime cache。用户确认后才可用
 `--create-issue-confirmed --issue-title ... --issue-body-file ...` 执行 GitHub issue
-创建；`--create-worktree` / `--create-task` 同样只用于 handoff review 之后的显式执行。
+创建；`--create-worktree` / `--create-task` 同样只用于 intake plan review 之后的显式执行。
 当 `workspace_mode: worktree` 时，执行环境和 task 创建应通过
 `prepare-task --create-worktree --create-task` 或等价 Guru Team 受控入口完成，不能把
 task creation consent 当成在 source checkout 直接运行 `task.py create` 的批准。

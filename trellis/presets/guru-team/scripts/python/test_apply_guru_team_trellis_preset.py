@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import os
 import tempfile
 import unittest
@@ -786,6 +787,39 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("observed at apply time", installed["notes"])
         self.assertIn("not a claim", installed["notes"])
         self.assertEqual(payload["extension_manifest"], ".trellis/guru-team/extension.json")
+        self.assertEqual(payload["runtime_gitignore"]["rule"], ".trellis/.runtime/")
+        self.assertIn(".trellis/.runtime/", (self.repo / ".gitignore").read_text(encoding="utf-8"))
+
+    def test_runtime_gitignore_is_idempotent(self) -> None:
+        first = preset.ensure_runtime_gitignore(self.repo)
+        second = preset.ensure_runtime_gitignore(self.repo)
+        self.assertEqual(first["action"], "installed")
+        self.assertEqual(second["action"], "unchanged")
+        self.assertEqual((self.repo / ".gitignore").read_text().count(".trellis/.runtime/"), 1)
+
+    def test_install_removes_unmodified_obsolete_schema(self) -> None:
+        obsolete = self.install_dst / "schemas/intake-handoff.schema.json"
+        obsolete.parent.mkdir(parents=True)
+        content = subprocess.run(
+            ["git", "show", "HEAD:trellis/workflows/guru-team/schemas/intake-handoff.schema.json"],
+            cwd=self.guru_root, text=True, stdout=subprocess.PIPE, check=True,
+        ).stdout
+        obsolete.write_text(content, encoding="utf-8")
+
+        payload = preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex"})
+
+        self.assertFalse(obsolete.exists())
+        self.assertIn(".trellis/guru-team/schemas/intake-handoff.schema.json", payload["removed_obsolete"])
+
+    def test_install_preserves_modified_obsolete_schema_as_conflict(self) -> None:
+        obsolete = self.install_dst / "schemas/intake-handoff.schema.json"
+        obsolete.parent.mkdir(parents=True)
+        obsolete.write_text('{"user_modified": true}\n', encoding="utf-8")
+
+        payload = preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex"})
+
+        self.assertTrue(obsolete.exists())
+        self.assertIn(".trellis/guru-team/schemas/intake-handoff.schema.json", payload["obsolete_conflicts"])
 
     def test_main_version_prints_canonical_extension_version(self) -> None:
         with mock.patch("sys.argv", ["apply_guru_team_trellis_preset.py", "--version"]):

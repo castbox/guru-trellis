@@ -31,13 +31,14 @@ before `.trellis/tasks/` artifacts are written.
 `prepare-task.sh --json` is the default planner path. It may read GitHub issues,
 search duplicates, and compute source/proposed issue data. Planner output,
 including output with a confirmed `source_issue`, must be stdout-only and must
-not write `.trellis/guru-team/handoff.json`, create a GitHub issue, worktree,
+not write `.trellis/tasks/<task-slug>/task-start-context.json`, create a GitHub issue, worktree,
 branch, or Trellis task. GitHub issue creation requires an explicit confirmed
 executor flag such as `--create-issue-confirmed` plus reviewed title/body input.
-`--create-worktree` and `--create-task` are executor flags for after AI handoff
-review and user approval; only these workspace executor paths may write the
-handoff artifact, and they write it inside the chosen workspace instead of
-dirtying the source checkout during new-session intake.
+`--create-worktree` and `--create-task` are executor flags for after AI intake
+plan review and user approval. `--create-worktree` may write only the gitignored
+local runtime workspace mapping; `--create-task` additionally writes tracked
+task-local `task-start-context.json` after task creation. Ordinary intake does
+not dirty the source checkout.
 
 When there is no active task and the current turn requires file changes,
 current-checkout direct edits are an explicit override, not a silent shortcut.
@@ -172,7 +173,7 @@ Gate:
   dirty paths do not invalidate approval while `prd.md`, `design.md`, and
   `implement.md` content still matches the last explicit user review. If any of
   those three planning documents changes, show the three links again and wait
-  for fresh explicit post-planning confirmation. Phase 0 handoff approval,
+  for fresh explicit post-planning confirmation. Phase 0 intake approval,
   generic workflow confirmation, old `source=workflow`, old schema, missing
   `ambiguity_review`, non-passed ambiguity evidence, unclassified scanner hits,
   `contract_violation` hits, or stale scanner evidence fails closed. `task.py
@@ -423,7 +424,7 @@ low-information phrases, reviewed source presence, Docs SSOT section/key
 presence, archive-path resolution, and close/ref issue semantics, but it must
 not decide whether the business explanation is true or sufficient.
 
-Do not treat `.trellis/guru-team/handoff.json` as final close scope. It is
+Do not treat `.trellis/tasks/<task-slug>/task-start-context.json` as final close scope. It is
 intake provenance only.
 
 ## Common Mistakes

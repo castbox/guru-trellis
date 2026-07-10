@@ -130,7 +130,7 @@ Python / shell 代码只负责确定性动作：
 
 - 目标 GitHub repo / issue / PR；
 - base branch、目标 branch、worktree path；
-- 是否会写 `.trellis/tasks/`、`.trellis/guru-team/handoff.json` 或 workspace journal；
+- 是否会写 `.trellis/tasks/`、`.trellis/.runtime/guru-team/**` 或 workspace journal；
 - 将 stage / commit / push 的文件；
 - 将使用的命令和预期结果。
 

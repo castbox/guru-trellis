@@ -61,107 +61,24 @@ Release order matters: merge the manifest/docs PR first, create the annotated
 `trellis workflow` marketplace commands, then retire any old competing tag
 names only after the new tag is verified.
 
-## Handoff
+## Task Start Context and Local Runtime
 
-`.trellis/guru-team/handoff.json` records intake provenance and preflight:
+`.trellis/tasks/<task-slug>/task-start-context.json` is the task-local, tracked, portable intake context. Its schema is `trellis/workflows/guru-team/schemas/task-start-context.schema.json`, uses `additionalProperties: false`, and allows only source issue/repo metadata, task and branch identifiers, repo-relative `task_artifact_dir`, base refs/SHAs, portable workspace ids, actor metadata, issue-ledger seed, and compact duplicate/naming/confirmation summaries. It must never contain absolute paths, `.trellis/.runtime/**`, full preflight payloads, dirty/fetch process logs, existing worktree lists, developer identity paths, or command paths.
 
-- source issue
-- slug, task slug, task title
-- `naming_quality` with `ok`, `reason`, `requires_semantic_name`, `current_slug`, and `suggested_override_flags`
-- branch, base branch, workspace path
-- duplicate-search result
-- Issue Scope Ledger seed
-- exact task creation command
-- preflight evidence
-- base freshness evidence under `preflight.base_freshness`
+Local-only reusable mappings live under the gitignored producer namespace:
 
-The schema lives at
-`trellis/workflows/guru-team/schemas/intake-handoff.schema.json`. Keep it
-permissive with `additionalProperties: true` so older and newer helpers can
-interoperate.
+- `.trellis/.runtime/guru-team/workspaces/<workspace-slug>.json`
+- `.trellis/.runtime/guru-team/tasks/<task-slug>.json`
 
-Do not use `handoff.source_issue` as PR close scope. The task-level
-`issue-scope-ledger.json` owns `close_issues`, `related_issues`, and
-`followup_issues`.
+Runtime cache may contain absolute worktree paths and executor timestamps, but it is disposable, untracked, has no index/developer dimension, and must be reconstructable from the current checkout, task-start-context, `git worktree list`, or explicit parameters. Ordinary task commands read tracked shared config but do not rewrite it.
 
-In `workspace_mode: worktree`, `handoff.workspace_path` is the machine boundary
-for task artifact writes. `handoff.preflight.current_checkout` records the
-source checkout used for intake and lets boundary validators compare both sides.
+Planner-only prepare remains stdout-only and writes neither task context nor runtime cache. `--create-worktree` writes/reuses the worktree and local runtime workspace mapping. `--create-task` creates the task, writes `task-start-context.json` and `issue-scope-ledger.json` in that task directory, then writes task/runtime mappings. Naming quality, base freshness, and developer identity remain deterministic executor preconditions and stdout evidence, not fields copied wholesale into the portable task context.
 
-Planner-only prepare paths must refresh or explicitly confirm the selected
-remote base before reporting `preflight.base_freshness`. The planner may run
-`git fetch <remote> <base>` and update the remote-tracking ref, but it must not
-fast-forward or otherwise move the local base branch, write handoff artifacts,
-create a worktree, or create a task. Its freshness payload must make the
-evidence source auditable:
-
-- `fetch_attempted: true` when a remote refresh was attempted;
-- `fetch_performed: true` only after the selected remote base was successfully
-  refreshed or equivalently confirmed;
-- `fast_forwarded: false` for planner-only output;
-- `fresh: false`, `status: stale`, and unchanged
-  `local_head_before` / `local_head_after` when local base is behind remote;
-- `status: diverged` when local and remote are not in an ancestor relationship;
-- `status: fetch_failed` or `remote_ref_missing` when remote freshness cannot
-  be confirmed.
-
-`fetch_performed: false` must never be presented as `fresh: true` handoff
-evidence. If the planner cannot confirm remote freshness, the AI handoff review
-must treat the freshness evidence as blocked or stale-risk instead of
-approving a task branch from local cache.
-
-Executor prepare paths (`--create-worktree` / `--create-task`) must refresh the
-selected base branch before creating the task worktree. Record remote, local
-head before/after, remote head, fetch state, fast-forward state, and the ref used
-for worktree creation in `preflight.base_freshness`. Fail closed on divergence
-or unknown freshness instead of creating a branch from a stale base.
-
-Executor prepare paths must also enforce `naming_quality` before any worktree,
-branch, GitHub issue, or Trellis task side effect. Chinese or non-ASCII source
-titles must not be transliterated or mechanically converted to pinyin by the
-script; the agent reads the issue and passes semantic English naming through
-`--short-name`, `--workspace-slug`, `--task-slug`, and `--branch`. Low-information
-names such as `issue-52`, `52-issue-52`, a bare number, or only generic tokens
-like `bug`, `fix`, `task`, `work`, `update`, and `change` must block create
-paths with a user-actionable error. Planner-only output may report
-`naming_quality.ok=false` so the handoff review can choose the semantic
-override before executor flags are used.
-
-Executor prepare paths must also ensure the selected workspace has
-`.trellis/.developer` before handoff/task creation continues. Prefer copying the
-source checkout identity into the target worktree. If the source identity is
-missing but an explicit developer/assignee name is available, initialize an
-equivalent target identity. If neither source identity nor explicit developer is
-available, fail closed with a recovery command instead of allowing journal or
-`task.py list --mine` to fail later. Record the objective result in
-`preflight.developer_identity`.
+Do not use `task-start-context.source_issue` as PR close scope. The task-level `issue-scope-ledger.json` owns `close_issues`, `related_issues`, and `followup_issues`.
 
 ## Workspace Boundary Snapshot
 
-`check-workspace-boundary --json` and recorder/validator boundary failures use
-an additive payload with these fields:
-
-- `status`: `ok` or `blocked`;
-- `workspace_mode`: normally `worktree` for Guru Team issue-backed tasks;
-- `expected_workspace`: resolved `handoff.workspace_path` when present;
-- `actual_repo_root`: repo root for the current command;
-- `source_checkout`: resolved `handoff.preflight.current_checkout` when present;
-- `task_dir`: resolved current task directory;
-- `task_dir_relative`: task path relative to the worktree, usually
-  `.trellis/tasks/<task>`;
-- `source_checkout_status`: normalized `git status --porcelain` paths from the
-  source checkout;
-- `task_worktree_status`: normalized `git status --porcelain` paths from the
-  expected workspace when known, otherwise the actual repo root;
-- `suspicious_source_artifacts[]`: objects with `kind`, `path`,
-  `absolute_path`, and optional `matches_current_task` / `error` for source
-  checkout handoff, same-task artifacts, review metadata, review directories, or
-  dirty paths;
-- `errors[]`: machine-verifiable boundary failures.
-
-The payload is audit evidence only. It must remain additive and must not embed
-AI judgments about stale state, cleanup, patch migration, issue closure, or
-review sufficiency.
+`check-workspace-boundary --json` resolves the task from `--task` or current task, validates the task-local context, then derives the expected workspace from current repo root, local runtime mapping, and Git worktree facts. It never trusts a committed absolute workspace path. The snapshot records `status`, `workspace_mode`, `expected_workspace`, `actual_repo_root`, optional `source_checkout`, `task_dir`, repo-relative `task_dir_relative`, source/task git status, suspicious same-task artifacts, and deterministic errors. Missing task context, a mismatched runtime workspace, a task outside the current repo `.trellis/tasks`, or source-checkout same-task metadata fails closed.
 
 ## Planning Approval Artifact
 
@@ -568,14 +485,13 @@ Validate JSON assets with:
 
 ```bash
 python3 -m json.tool trellis/index.json
-python3 -m json.tool trellis/workflows/guru-team/schemas/intake-handoff.schema.json
+python3 -m json.tool trellis/workflows/guru-team/schemas/task-start-context.schema.json
 ```
 
 ## Common Mistakes
 
 - Adding a config key to `config-template.yml` without adding a default in
   `DEFAULTS`.
-- Adding a new handoff field that is required by code but absent from the JSON
-  schema or older installed handoffs.
+- Adding a new task-start-context field required by code but absent from the strict JSON schema.
 - Letting PR generation close `related_issues` or `followup_issues`.
 - Recording review-gate evidence that does not mention deployment impact.
