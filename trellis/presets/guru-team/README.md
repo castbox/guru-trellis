@@ -54,10 +54,9 @@ official Trellis CLI version and from the marketplace index schema version in
 
 The preset also normalizes known Trellis-generated English documentation
 language rules in target business repositories. It deterministically replaces
-the fixed `All documentation ... English` template lines in `.trellis/spec/**`,
-`.trellis/workspace/index.md`, `.trellis/workspace/*/index.md`, and
+the fixed `All documentation ... English` template lines in `.trellis/spec/**` and
 `.trellis/tasks/00-bootstrap-guidelines/**/*.md` with the Guru Team Chinese
-documentation rule. It does not scan ordinary task history or translate
+documentation rule. It does not scan `.trellis/workspace/**`, ordinary task history, or translate
 business `docs/**`; those documents are governed by the workflow's AI-facing
 Chinese documentation contract.
 
@@ -133,7 +132,7 @@ created, asserts the active workflow, Codex / Cursor SessionStart hooks, Cursor
 sub-agent context hook, brainstorm/check/before-dev skills, and Trellis meta
 planning references no longer contain legacy `PRD-only` / lightweight /
 optional-design planning hints,
-asserts target `.trellis/spec/**`, workspace indexes, and
+asserts target `.trellis/spec/**` and
 `00-bootstrap-guidelines` do not retain known English documentation language
 requirements, and runs `check-env --json` plus `version.sh --json`. Trellis CLI accepts
 `gh:user/repo/path#ref` workflow marketplace sources; the script defaults to
@@ -178,6 +177,8 @@ platform selection:
 - `.trellis/guru-team/config.yml`
 - `.trellis/guru-team/extension.json`
 - `.trellis/guru-team/schemas/task-start-context.schema.json`
+- `.trellis/guru-team/schemas/finish-summary.schema.json`
+- `.trellis/guru-team/schemas/marketplace-verification.schema.json`
 - `.trellis/guru-team/scripts/bash/check-env.sh`
 - `.trellis/guru-team/scripts/bash/version.sh`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh`
@@ -386,7 +387,7 @@ work.
 `trellis-continue` cannot chain closeout, commit review metadata, push, or
 create a PR before the explicit `trellis-finish-work` entrypoint. Normal PR
 publish is triggered only by `finish-work.sh --from-trellis-finish-work` after
-archive, journal, and remaining Trellis metadata-only commit succeed. That
+archive, task-local finish-summary recording, and remaining Trellis metadata-only commit succeed. That
 metadata tail may include `review.md`, `reviews/*.md`, `review-gate.json`, and
 PR readiness files; `check-review-gate` / `finish-work` validate and migrate
 raw report digest paths after archive. Direct
@@ -398,9 +399,10 @@ CI/CD, deployment, migration, or Makefile drift after the gate must return to
 Phase 2/3; dry-run and formal finish do not perform a first Docs SSOT merge.
 
 `finish-work.sh --dry-run --from-trellis-finish-work` is a side-effect-free
-readiness preview. It validates the gate, dirty state, and PR body/readiness,
-then prints the planned archive, journal, metadata commit, and publish actions
-without moving task files, writing journal entries, creating commits, pushing,
+readiness preview. It validates the gate, dirty state, AI-authored
+`finish-summary-index.json`, and PR body/readiness, then prints the planned
+archive, initial finish-summary, metadata commit, and publish actions
+without moving or writing task files, creating commits, pushing,
 or creating a PR.
 After dry-run, the AI should render the active-task `Markdown 产物 review 表`;
 after formal archive, it must rerun the resolver and render the archive-path
@@ -502,8 +504,18 @@ the gitignored source checkout `.trellis/.developer` when available, initializes
 an equivalent target identity from an explicit `--assignee` when the source file
 is missing, and otherwise fails closed with the recovery command
 `python3 ./.trellis/scripts/init_developer.py <name>`. This makes the new
-worktree immediately usable by `get_context.py`, `task.py list --mine`, and
-`add_session.py`.
+worktree immediately usable by `get_context.py` and `task.py list --mine`.
+Guru Team finish does not call `add_session.py`.
+
+The installer manages `schemas/finish-summary.schema.json`, writes top-level
+`session_auto_commit: false` into `.trellis/config.yaml`, adds
+`.trellis/workspace/` to `.gitignore`, and never creates or rewrites workspace
+journal/index files. PR URL recovery validates repo/base/head, review/readiness,
+current/remote HEAD, and any existing passed marketplace evidence before querying
+the current repo/head/base. It reuses one open PR, retries create exactly once
+with the same title/body/draft when none exists, and fails closed without create
+when multiple exist. A failed retry keeps the initial empty URL/refs and returns
+the same recovery command.
 
 Current-checkout direct edits while `no_task` is active are allowed only as an
 explicit user override. The user approval must say this turn should skip

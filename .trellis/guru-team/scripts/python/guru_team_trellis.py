@@ -125,6 +125,55 @@ PHASE2_CHECK_ARTIFACT = "phase2-check.json"
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 REVIEW_REPORT_ARTIFACT = "review.md"
 MARKETPLACE_VERIFICATION_ARTIFACT = "marketplace-verification.json"
+FINISH_SUMMARY_ARTIFACT = "finish-summary.json"
+FINISH_SUMMARY_INDEX_ARTIFACT = "finish-summary-index.json"
+FINISH_SUMMARY_SCHEMA_VERSION = 1
+FINISH_SUMMARY_GENERATOR = "guru-team.finish-work"
+FINISH_SUMMARY_BACKFILL_GENERATOR = "guru-team.finish-summary-backfill"
+FINISH_SUMMARY_GENERATORS = {FINISH_SUMMARY_GENERATOR, FINISH_SUMMARY_BACKFILL_GENERATOR}
+FINISH_SUMMARY_SURFACE_KINDS = {
+    "workflow", "script", "schema", "preset", "overlay", "skill", "prompt",
+    "docs", "test", "config", "task-artifact", "github", "other",
+}
+FINISH_SUMMARY_ARTIFACT_FILES = {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "finish_summary_index": FINISH_SUMMARY_INDEX_ARTIFACT,
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "phase2_check": PHASE2_CHECK_ARTIFACT,
+    "review": REVIEW_REPORT_ARTIFACT,
+    "review_gate": "review-gate.json",
+    "pr_body": "pr-body.md",
+    "pr_readiness": "pr-readiness.json",
+    "marketplace_verification": MARKETPLACE_VERIFICATION_ARTIFACT,
+}
+FINISH_SUMMARY_INDEX_KEYS = {
+    "problem", "outcome", "changed_behavior", "affected_surfaces",
+    "contract_changes", "search_terms",
+}
+FINISH_SUMMARY_AI_SEARCH_TERM_KEYS = {
+    "commands", "config_keys", "schema_fields", "symbols", "phrases",
+}
+FINISH_SUMMARY_SEARCH_TERM_KEYS = {
+    "issue_refs", "pr_refs", "branches", "paths",
+    *FINISH_SUMMARY_AI_SEARCH_TERM_KEYS,
+}
+FINISH_SUMMARY_COMPLETION_MARKERS = (
+    "完成", "改为", "不再", "新增", "移除", "修复", "支持", "写入", "更新", "归档", "回写", "保留",
+)
+FINISH_SUMMARY_FORBIDDEN_TEXT = (
+    ".trellis/workspace/", ".trellis/.runtime/", "/Users/", "/tmp/",
+)
+FINISH_SUMMARY_PROTECTED_PATH_PREFIXES = (
+    ".trellis/workspace/", ".trellis/.runtime/",
+)
+FINISH_SUMMARY_PROTECTED_PATH_FILTER_CONTRACT = {
+    "contract": "finish-summary protected path filtering",
+    "before": "原始 Git 变更集合包含受保护运行态路径。",
+    "after": "完成摘要已过滤受保护运行态路径，过滤项未写入 path 字段。",
+    "source_artifact": "",
+}
 REVIEW_ROUND_REPORT_DIR = "reviews"
 HUMAN_MARKDOWN_ARTIFACTS = [
     {
@@ -298,7 +347,7 @@ SELF_REVIEWER_PATTERNS = [
     re.compile(r"(^|[-_./\s])main[-_./\s]*session($|[-_./\s])", re.IGNORECASE),
     re.compile(r"(^|[-_./\s])self[-_./\s]*review($|[-_./\s])", re.IGNORECASE),
 ]
-METADATA_ONLY_PREFIXES = (".trellis/tasks/", ".trellis/workspace/", ".trellis/.runtime/")
+METADATA_ONLY_PREFIXES = (".trellis/tasks/", ".trellis/.runtime/")
 METADATA_ONLY_FILES: set[str] = set()
 PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS = {
     "issue-scope-ledger.json",
@@ -325,6 +374,605 @@ def is_phase2_post_commit_mutable_artifact_path(artifact_path: str) -> bool:
         and parts[-2] == REVIEW_ROUND_REPORT_DIR
         and parts[-1].endswith(".md")
     )
+
+
+def finish_summary_normalized_text(value: str) -> str:
+    folded = value.strip().casefold()
+    folded = re.sub(r"\s+", "", folded)
+    return "".join(char for char in folded if char.isalnum())
+
+
+def finish_summary_duplicate_errors(values: Any, label: str) -> list[str]:
+    if not isinstance(values, list):
+        return [f"{label} must be an array."]
+    errors: list[str] = []
+    seen: dict[str, int] = {}
+    for index, value in enumerate(values):
+        if not isinstance(value, str):
+            continue
+        normalized = finish_summary_normalized_text(value)
+        if normalized in seen:
+            errors.append(f"{label}[{index}] duplicates {label}[{seen[normalized]}] after normalization.")
+        else:
+            seen[normalized] = index
+    return errors
+
+
+def finish_summary_text_errors(value: Any, label: str, minimum: int, maximum: int) -> list[str]:
+    if not isinstance(value, str):
+        return [f"{label} must be a string."]
+    errors: list[str] = []
+    if value != value.strip():
+        errors.append(f"{label} must not contain leading or trailing whitespace.")
+    if not (minimum <= len(value) <= maximum):
+        errors.append(f"{label} length must be between {minimum} and {maximum} characters.")
+    if any(marker in value for marker in FINISH_SUMMARY_FORBIDDEN_TEXT):
+        errors.append(f"{label} contains a forbidden workspace/runtime/absolute path marker.")
+    clauses = [part for part in re.split(r"[。！？!?；;，,\n]+", value) if part.strip()]
+    for previous, current in zip(clauses, clauses[1:]):
+        if finish_summary_normalized_text(previous) == finish_summary_normalized_text(current):
+            errors.append(f"{label} contains adjacent duplicate clauses.")
+            break
+    return errors
+
+
+def finish_summary_path_errors(value: Any, label: str, *, allow_empty: bool = False) -> list[str]:
+    if not isinstance(value, str):
+        return [f"{label} must be a string path."]
+    if not value:
+        return [] if allow_empty else [f"{label} must not be empty."]
+    parts = value.split("/")
+    errors: list[str] = []
+    if "\\" in value:
+        errors.append(f"{label} must not contain backslashes.")
+    if "\r" in value or "\n" in value:
+        errors.append(f"{label} must not contain carriage returns or line feeds.")
+    if value != value.strip() or value.startswith("/") or re.match(r"^[A-Za-z]:/", value):
+        errors.append(f"{label} must be a clean relative path.")
+    if any(part in {"", ".", ".."} for part in parts):
+        errors.append(f"{label} must not contain empty, dot, or parent segments.")
+    if finish_summary_path_is_protected(value):
+        errors.append(f"{label} must not point to workspace or runtime state.")
+    if len(value) > 500:
+        errors.append(f"{label} exceeds 500 characters.")
+    return errors
+
+
+def finish_summary_path_is_protected(value: str) -> bool:
+    return any(
+        value == prefix.removesuffix("/") or value.startswith(prefix)
+        for prefix in FINISH_SUMMARY_PROTECTED_PATH_PREFIXES
+    )
+
+
+def sanitize_finish_summary_git_paths(paths: Any) -> tuple[list[str], bool]:
+    if not isinstance(paths, (list, tuple, set)) or any(
+        not isinstance(path, str) or not path.strip()
+        for path in paths
+    ):
+        raise WorkflowError("finish-summary changed paths must be non-empty strings.", exit_code=2)
+    raw_paths = sorted(set(paths))
+    protected_paths_filtered = any(finish_summary_path_is_protected(path) for path in raw_paths)
+    safe_paths = [path for path in raw_paths if not finish_summary_path_is_protected(path)]
+    path_errors = [
+        error
+        for path in safe_paths
+        for error in finish_summary_path_errors(path, "git.changed_paths[]")
+    ]
+    if path_errors:
+        raise WorkflowError(
+            "finish-summary changed paths are invalid.",
+            exit_code=2,
+            payload={"errors": path_errors},
+        )
+    return safe_paths, protected_paths_filtered
+
+
+def apply_finish_summary_path_filter_contract(index: dict[str, Any], protected_paths_filtered: bool) -> None:
+    contracts = index.get("contract_changes")
+    existing = contracts if isinstance(contracts, list) else []
+    filtered_contracts = [
+        item
+        for item in existing
+        if not (
+            isinstance(item, dict)
+            and item.get("contract") == FINISH_SUMMARY_PROTECTED_PATH_FILTER_CONTRACT["contract"]
+        )
+    ]
+    if protected_paths_filtered:
+        filtered_contracts.append(copy.deepcopy(FINISH_SUMMARY_PROTECTED_PATH_FILTER_CONTRACT))
+    index["contract_changes"] = filtered_contracts
+
+
+def finish_summary_string_array_errors(
+    values: Any,
+    label: str,
+    *,
+    minimum_items: int = 0,
+    maximum_items: int = 100,
+    minimum_length: int = 1,
+    maximum_length: int = 500,
+) -> list[str]:
+    if not isinstance(values, list):
+        return [f"{label} must be an array."]
+    errors: list[str] = []
+    if not (minimum_items <= len(values) <= maximum_items):
+        errors.append(f"{label} item count must be between {minimum_items} and {maximum_items}.")
+    for index, value in enumerate(values):
+        errors.extend(finish_summary_text_errors(value, f"{label}[{index}]", minimum_length, maximum_length))
+    errors.extend(finish_summary_duplicate_errors(values, label))
+    return errors
+
+
+def finish_summary_retrieval_text(task_title: str, index: dict[str, Any]) -> str:
+    values: list[str] = [task_title, str(index.get("problem") or ""), str(index.get("outcome") or "")]
+    values.extend(str(item) for item in index.get("changed_behavior", []) if isinstance(item, str))
+    for item in index.get("affected_surfaces", []):
+        if isinstance(item, dict) and isinstance(item.get("change"), str):
+            values.append(item["change"])
+    for item in index.get("contract_changes", []):
+        if isinstance(item, dict):
+            for key in ["before", "after"]:
+                if isinstance(item.get(key), str):
+                    values.append(item[key])
+    search_terms = index.get("search_terms") if isinstance(index.get("search_terms"), dict) else {}
+    values.extend(str(item) for item in search_terms.get("phrases", []) if isinstance(item, str))
+    return "\n".join(value.strip() for value in values if value.strip())
+
+
+def finish_summary_index_errors(index: Any, *, artifacts: dict[str, Any] | None = None, final: bool) -> list[str]:
+    if not isinstance(index, dict):
+        return ["index must be an object."]
+    expected_keys = FINISH_SUMMARY_INDEX_KEYS | ({"retrieval_text"} if final else set())
+    errors: list[str] = []
+    if set(index) != expected_keys:
+        errors.append(f"index keys must equal {sorted(expected_keys)}.")
+    errors.extend(finish_summary_text_errors(index.get("problem"), "index.problem", 1, 400))
+    errors.extend(finish_summary_text_errors(index.get("outcome"), "index.outcome", 1, 500))
+    changed = index.get("changed_behavior")
+    errors.extend(
+        finish_summary_string_array_errors(
+            changed, "index.changed_behavior", minimum_items=1, maximum_items=12, maximum_length=180
+        )
+    )
+    surfaces = index.get("affected_surfaces")
+    if not isinstance(surfaces, list):
+        errors.append("index.affected_surfaces must be an array.")
+    else:
+        if not (1 <= len(surfaces) <= 20):
+            errors.append("index.affected_surfaces item count must be between 1 and 20.")
+        seen_surfaces: set[str] = set()
+        for index_number, surface in enumerate(surfaces):
+            label = f"index.affected_surfaces[{index_number}]"
+            if not isinstance(surface, dict):
+                errors.append(f"{label} must be an object.")
+                continue
+            if set(surface) != {"kind", "name", "paths", "change"}:
+                errors.append(f"{label} keys are invalid.")
+            if surface.get("kind") not in FINISH_SUMMARY_SURFACE_KINDS:
+                errors.append(f"{label}.kind is invalid.")
+            errors.extend(finish_summary_text_errors(surface.get("name"), f"{label}.name", 1, 200))
+            paths = surface.get("paths")
+            if not isinstance(paths, list):
+                errors.append(f"{label}.paths must be an array.")
+            else:
+                if len(paths) > 100:
+                    errors.append(f"{label}.paths exceeds 100 items.")
+                for path_index, path in enumerate(paths):
+                    errors.extend(finish_summary_path_errors(path, f"{label}.paths[{path_index}]"))
+                errors.extend(finish_summary_duplicate_errors(paths, f"{label}.paths"))
+            errors.extend(finish_summary_text_errors(surface.get("change"), f"{label}.change", 1, 240))
+            fingerprint = finish_summary_normalized_text(json.dumps(surface, ensure_ascii=False, sort_keys=True))
+            if fingerprint in seen_surfaces:
+                errors.append(f"{label} duplicates an earlier affected surface.")
+            seen_surfaces.add(fingerprint)
+    contracts = index.get("contract_changes")
+    if not isinstance(contracts, list):
+        errors.append("index.contract_changes must be an array.")
+    else:
+        contract_limit = 20 if final else 19
+        if len(contracts) > contract_limit:
+            errors.append(f"index.contract_changes exceeds {contract_limit} items.")
+        seen_contracts: set[str] = set()
+        artifact_values = set(artifacts.values()) if isinstance(artifacts, dict) else set()
+        for index_number, contract in enumerate(contracts):
+            label = f"index.contract_changes[{index_number}]"
+            if not isinstance(contract, dict):
+                errors.append(f"{label} must be an object.")
+                continue
+            if set(contract) != {"contract", "before", "after", "source_artifact"}:
+                errors.append(f"{label} keys are invalid.")
+            errors.extend(finish_summary_text_errors(contract.get("contract"), f"{label}.contract", 1, 200))
+            errors.extend(finish_summary_text_errors(contract.get("before"), f"{label}.before", 1, 400))
+            errors.extend(finish_summary_text_errors(contract.get("after"), f"{label}.after", 1, 400))
+            source_artifact = contract.get("source_artifact")
+            if source_artifact != "":
+                errors.extend(finish_summary_path_errors(source_artifact, f"{label}.source_artifact"))
+                if final and source_artifact not in artifact_values:
+                    errors.append(f"{label}.source_artifact must reference an artifacts value.")
+            fingerprint = finish_summary_normalized_text(json.dumps(contract, ensure_ascii=False, sort_keys=True))
+            if fingerprint in seen_contracts:
+                errors.append(f"{label} duplicates an earlier contract change.")
+            seen_contracts.add(fingerprint)
+    search_terms = index.get("search_terms")
+    expected_search_keys = FINISH_SUMMARY_SEARCH_TERM_KEYS if final else FINISH_SUMMARY_AI_SEARCH_TERM_KEYS
+    if not isinstance(search_terms, dict):
+        errors.append("index.search_terms must be an object.")
+    else:
+        if set(search_terms) != expected_search_keys:
+            errors.append(f"index.search_terms keys must equal {sorted(expected_search_keys)}.")
+        limits = {
+            "issue_refs": (0, 100, 1, 30), "pr_refs": (0, 1, 1, 30),
+            "branches": (0, 1, 1, 300), "paths": (0, 2000, 1, 500),
+            "commands": (0, 100, 1, 200), "config_keys": (0, 100, 1, 200),
+            "schema_fields": (0, 100, 1, 300), "symbols": (0, 100, 1, 300),
+            "phrases": (3, 40, 2, 60),
+        }
+        for key in expected_search_keys:
+            minimum_items, maximum_items, minimum_length, maximum_length = limits[key]
+            values = search_terms.get(key)
+            errors.extend(
+                finish_summary_string_array_errors(
+                    values, f"index.search_terms.{key}",
+                    minimum_items=minimum_items, maximum_items=maximum_items,
+                    minimum_length=minimum_length, maximum_length=maximum_length,
+                )
+            )
+            if final and key == "paths" and isinstance(values, list):
+                for path_index, path in enumerate(values):
+                    errors.extend(
+                        finish_summary_path_errors(path, f"index.search_terms.paths[{path_index}]")
+                    )
+        phrases = search_terms.get("phrases") if isinstance(search_terms.get("phrases"), list) else []
+        if phrases and not any(re.search(r"[\u3400-\u9fff]", phrase) for phrase in phrases if isinstance(phrase, str)):
+            errors.append("index.search_terms.phrases must include a Chinese problem phrase.")
+        searchable_tokens: list[str] = []
+        for key in ["commands", "config_keys", "schema_fields", "symbols"]:
+            values = search_terms.get(key)
+            if isinstance(values, list):
+                searchable_tokens.extend(str(value) for value in values)
+        if final and isinstance(artifacts, dict):
+            searchable_tokens.extend(Path(str(value)).name for value in artifacts.values())
+        if final:
+            paths = search_terms.get("paths")
+            if isinstance(paths, list):
+                searchable_tokens.extend(Path(str(value)).name for value in paths)
+        if searchable_tokens and not any(
+            token.casefold() in phrase.casefold()
+            for token in searchable_tokens
+            for phrase in phrases
+            if token and isinstance(phrase, str)
+        ):
+            errors.append("index.search_terms.phrases must include an artifact/path/command/config/schema/symbol token.")
+        if phrases and not any(
+            marker in phrase for marker in FINISH_SUMMARY_COMPLETION_MARKERS
+            for phrase in phrases if isinstance(phrase, str)
+        ):
+            errors.append("index.search_terms.phrases must include a completed-behavior phrase.")
+    if final:
+        errors.extend(finish_summary_text_errors(index.get("retrieval_text"), "index.retrieval_text", 1, 3000))
+    return errors
+
+
+def load_finish_summary_index(task_dir: Path, value: str | None) -> tuple[Path, dict[str, Any]]:
+    if not value:
+        raise WorkflowError(
+            "finish-work requires task-local finish-summary-index.json AI review evidence.",
+            exit_code=2,
+            payload={"required_flag": "--finish-summary-index-file"},
+        )
+    path = Path(value)
+    if not path.is_absolute():
+        path = (task_dir / path) if len(path.parts) == 1 else (repo_root(task_dir) / path)
+    resolved = path.resolve()
+    if resolved.parent != task_dir.resolve() or resolved.name != FINISH_SUMMARY_INDEX_ARTIFACT:
+        raise WorkflowError("finish-summary index must be the task-local finish-summary-index.json file.", exit_code=2)
+    if not resolved.is_file():
+        raise WorkflowError(f"finish-summary index not found: {resolved}", exit_code=2)
+    payload = read_json(resolved)
+    errors: list[str] = []
+    if set(payload) != {"schema_version", "index"}:
+        errors.append("finish-summary index top-level keys must equal schema_version and index.")
+    if payload.get("schema_version") != FINISH_SUMMARY_SCHEMA_VERSION:
+        errors.append("finish-summary index schema_version must be integer 1.")
+    errors.extend(finish_summary_index_errors(payload.get("index"), final=False))
+    if errors:
+        raise WorkflowError("finish-summary index validation failed.", exit_code=2, payload={"errors": errors})
+    return resolved, payload
+
+
+def finish_summary_issue_numbers(ledger: dict[str, Any], key: str) -> list[int]:
+    if key == "source_issues":
+        primary = ledger.get("primary_issue")
+        values = [primary] if isinstance(primary, dict) else []
+    else:
+        ledger_key = {"close_issues": "close_issues", "related_issues": "related_issues", "followup_issues": "followup_issues"}[key]
+        raw = ledger.get(ledger_key)
+        values = raw if isinstance(raw, list) else []
+    numbers = {
+        int(item["number"])
+        for item in values
+        if isinstance(item, dict) and isinstance(item.get("number"), int) and not isinstance(item.get("number"), bool) and item["number"] > 0
+    }
+    return sorted(numbers)
+
+
+def finish_summary_artifacts(task_dir: Path) -> dict[str, str]:
+    return {
+        key: filename
+        for key, filename in FINISH_SUMMARY_ARTIFACT_FILES.items()
+        if (task_dir / filename).is_file()
+    }
+
+
+def finish_summary_git_output_paths(output: str) -> set[str]:
+    values = output.split("\0") if "\0" in output else output.splitlines()
+    return {value for value in values if value}
+
+
+def finish_summary_git_path_snapshot(root: Path, base_ref: str, *, include_worktree: bool) -> tuple[list[str], bool]:
+    range_spec = base_ref if include_worktree else f"{base_ref}...HEAD"
+    proc = run(["git", "diff", "--name-only", "-z", range_spec], cwd=root, check=False)
+    if proc.returncode != 0:
+        raise WorkflowError("Could not calculate finish-summary changed paths.", exit_code=2, payload={"base_ref": base_ref})
+    paths = finish_summary_git_output_paths(proc.stdout)
+    if include_worktree:
+        untracked_proc = run(
+            ["git", "ls-files", "--others", "--exclude-standard", "-z"],
+            cwd=root,
+            check=False,
+        )
+        if untracked_proc.returncode != 0:
+            raise WorkflowError(
+                "Could not calculate finish-summary untracked task metadata paths.",
+                exit_code=2,
+            )
+        paths.update(finish_summary_git_output_paths(untracked_proc.stdout))
+    return sanitize_finish_summary_git_paths(paths)
+
+
+def finish_summary_git_paths(root: Path, base_ref: str, *, include_worktree: bool) -> list[str]:
+    paths, _protected_paths_filtered = finish_summary_git_path_snapshot(
+        root, base_ref, include_worktree=include_worktree
+    )
+    return paths
+
+
+def build_finish_summary(
+    root: Path,
+    task_dir: Path,
+    task_context: dict[str, Any],
+    ledger: dict[str, Any],
+    index_payload: dict[str, Any],
+    reviewed_head: str,
+    *,
+    pr_url: str = "",
+    changed_paths: list[str] | None = None,
+) -> dict[str, Any]:
+    task = task_json(task_dir)
+    base_branch = str(task_context.get("base_branch") or task.get("base_branch") or "").strip()
+    base_ref = str(task_context.get("base_ref") or diff_base_ref(root, base_branch)).strip()
+    commits_proc = run(["git", "rev-list", "--reverse", f"{base_ref}..{reviewed_head}"], cwd=root, check=False)
+    if commits_proc.returncode != 0:
+        raise WorkflowError("Could not calculate finish-summary task commits.", exit_code=2)
+    commits = [line.strip() for line in commits_proc.stdout.splitlines() if line.strip()]
+    if changed_paths is None:
+        changed_paths, protected_paths_filtered = finish_summary_git_path_snapshot(
+            root, base_ref, include_worktree=True
+        )
+    else:
+        changed_paths, protected_paths_filtered = sanitize_finish_summary_git_paths(changed_paths)
+    github = {
+        key: finish_summary_issue_numbers(ledger, key)
+        for key in ["source_issues", "close_issues", "related_issues", "followup_issues"]
+    }
+    github["pr_url"] = pr_url
+    artifacts = finish_summary_artifacts(task_dir)
+    index = copy.deepcopy(index_payload["index"])
+    apply_finish_summary_path_filter_contract(index, protected_paths_filtered)
+    issue_numbers = sorted({number for key in ["source_issues", "close_issues", "related_issues", "followup_issues"] for number in github[key]})
+    pr_match = re.search(r"/pull/([1-9][0-9]*)$", pr_url)
+    index["search_terms"] = {
+        "issue_refs": [f"#{number}" for number in issue_numbers],
+        "pr_refs": [f"PR #{pr_match.group(1)}"] if pr_match else [],
+        "branches": [str(task_context.get("branch_name") or current_branch(root))],
+        "paths": sorted(set(changed_paths)),
+        **copy.deepcopy(index["search_terms"]),
+    }
+    index["retrieval_text"] = finish_summary_retrieval_text(str(task.get("title") or task.get("name") or task_dir.name), index)
+    payload = {
+        "schema_version": FINISH_SUMMARY_SCHEMA_VERSION,
+        "generated_at": now_iso(),
+        "generator": FINISH_SUMMARY_GENERATOR,
+        "task": {
+            "slug": task_dir.name,
+            "title": str(task.get("title") or task.get("name") or task_dir.name),
+            "status": "completed",
+            "artifact_dir": str(task_context.get("task_artifact_dir") or ""),
+            "archive_dir": repo_relative(root, task_dir),
+        },
+        "git": {
+            "base_branch": base_branch,
+            "branch": str(task_context.get("branch_name") or current_branch(root)),
+            "commits": commits,
+            "changed_paths": sorted(set(changed_paths)),
+        },
+        "github": github,
+        "artifacts": artifacts,
+        "index": index,
+    }
+    errors = finish_summary_errors(payload, task_dir=task_dir)
+    if errors:
+        raise WorkflowError("Generated finish-summary validation failed.", exit_code=2, payload={"errors": errors})
+    return payload
+
+
+def finish_summary_errors(payload: Any, *, task_dir: Path | None = None) -> list[str]:
+    if not isinstance(payload, dict):
+        return ["finish-summary must be an object."]
+    generator = payload.get("generator")
+    expected_keys = {"schema_version", "generated_at", "generator", "task", "git", "github", "artifacts", "index"}
+    if generator == FINISH_SUMMARY_BACKFILL_GENERATOR:
+        expected_keys.add("backfill")
+    errors: list[str] = []
+    if set(payload) != expected_keys:
+        errors.append(f"finish-summary top-level keys must equal {sorted(expected_keys)}.")
+    if payload.get("schema_version") != FINISH_SUMMARY_SCHEMA_VERSION:
+        errors.append("schema_version must be integer 1.")
+    generated_at = payload.get("generated_at")
+    if not isinstance(generated_at, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", generated_at):
+        errors.append("generated_at must be second-precision UTC RFC3339.")
+    if generator not in FINISH_SUMMARY_GENERATORS:
+        errors.append("generator is invalid.")
+    task = payload.get("task")
+    if not isinstance(task, dict) or set(task) != {"slug", "title", "status", "artifact_dir", "archive_dir"}:
+        errors.append("task object keys are invalid.")
+        task = {}
+    errors.extend(finish_summary_text_errors(task.get("slug"), "task.slug", 1, 200))
+    errors.extend(finish_summary_text_errors(task.get("title"), "task.title", 1, 500))
+    if task.get("status") != "completed":
+        errors.append("task.status must be completed.")
+    errors.extend(finish_summary_path_errors(task.get("artifact_dir"), "task.artifact_dir", allow_empty=generator == FINISH_SUMMARY_BACKFILL_GENERATOR))
+    errors.extend(finish_summary_path_errors(task.get("archive_dir"), "task.archive_dir"))
+    if task.get("archive_dir") and not str(task.get("archive_dir")).startswith(".trellis/tasks/archive/"):
+        errors.append("task.archive_dir must be under .trellis/tasks/archive/.")
+    if generator == FINISH_SUMMARY_GENERATOR and task.get("artifact_dir"):
+        artifact_dir_value = str(task.get("artifact_dir"))
+        if not artifact_dir_value.startswith(".trellis/tasks/") or artifact_dir_value.startswith(".trellis/tasks/archive/"):
+            errors.append("normal task.artifact_dir must be the original active task path.")
+    if task_dir is not None:
+        root_for_task = repo_root(task_dir)
+        if not task_dir_is_archived(root_for_task, task_dir):
+            errors.append("finish-summary must live in an archived task directory.")
+        if task.get("slug") != task_dir.name:
+            errors.append("task.slug must equal the archive task directory basename.")
+        if task.get("archive_dir") != repo_relative(root_for_task, task_dir):
+            errors.append("task.archive_dir must match the current archived task directory.")
+    git = payload.get("git")
+    if not isinstance(git, dict) or set(git) != {"base_branch", "branch", "commits", "changed_paths"}:
+        errors.append("git object keys are invalid.")
+        git = {}
+    minimum_git_text = 0 if generator == FINISH_SUMMARY_BACKFILL_GENERATOR else 1
+    errors.extend(finish_summary_text_errors(git.get("base_branch"), "git.base_branch", minimum_git_text, 300))
+    errors.extend(finish_summary_text_errors(git.get("branch"), "git.branch", minimum_git_text, 300))
+    commits = git.get("commits")
+    if not isinstance(commits, list) or len(commits) > 500:
+        errors.append("git.commits must be an array with at most 500 items.")
+    else:
+        if len(set(commits)) != len(commits):
+            errors.append("git.commits must be unique.")
+        for commit in commits:
+            if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
+                errors.append("git.commits entries must be lowercase 40-character SHAs.")
+    changed_paths = git.get("changed_paths")
+    if not isinstance(changed_paths, list) or len(changed_paths) > 2000:
+        errors.append("git.changed_paths must be an array with at most 2000 items.")
+        changed_paths = []
+    else:
+        for path in changed_paths:
+            errors.extend(finish_summary_path_errors(path, "git.changed_paths[]"))
+        if changed_paths != sorted(set(changed_paths)):
+            errors.append("git.changed_paths must be sorted and unique.")
+    github = payload.get("github")
+    github_keys = {"source_issues", "close_issues", "related_issues", "followup_issues", "pr_url"}
+    if not isinstance(github, dict) or set(github) != github_keys:
+        errors.append("github object keys are invalid.")
+        github = {}
+    for key in ["source_issues", "close_issues", "related_issues", "followup_issues"]:
+        values = github.get(key)
+        if not isinstance(values, list) or len(values) > 100 or any(isinstance(value, bool) or not isinstance(value, int) or value < 1 for value in values):
+            errors.append(f"github.{key} must contain positive issue integers.")
+        elif values != sorted(set(values)):
+            errors.append(f"github.{key} must be sorted and unique.")
+    pr_url = github.get("pr_url")
+    if (
+        not isinstance(pr_url, str)
+        or len(pr_url) > 1000
+        or (pr_url and not re.fullmatch(r"https://github\.com/[^/]+/[^/]+/pull/[1-9][0-9]*", pr_url))
+    ):
+        errors.append("github.pr_url must be empty or a canonical GitHub pull URL.")
+    artifacts = payload.get("artifacts")
+    if not isinstance(artifacts, dict) or any(key not in FINISH_SUMMARY_ARTIFACT_FILES for key in artifacts):
+        errors.append("artifacts keys are invalid.")
+        artifacts = {}
+    for key, path in artifacts.items():
+        errors.extend(finish_summary_path_errors(path, f"artifacts.{key}"))
+        if path != FINISH_SUMMARY_ARTIFACT_FILES[key]:
+            errors.append(f"artifacts.{key} must equal {FINISH_SUMMARY_ARTIFACT_FILES[key]}.")
+        if task_dir is not None and not (task_dir / str(path)).is_file():
+            errors.append(f"artifacts.{key} does not exist in the archived task.")
+    errors.extend(finish_summary_index_errors(payload.get("index"), artifacts=artifacts, final=True))
+    index = payload.get("index") if isinstance(payload.get("index"), dict) else {}
+    search_terms = index.get("search_terms") if isinstance(index.get("search_terms"), dict) else {}
+    issue_values = sorted({number for key in ["source_issues", "close_issues", "related_issues", "followup_issues"] for number in github.get(key, []) if isinstance(number, int) and not isinstance(number, bool)})
+    if search_terms.get("issue_refs") != [f"#{number}" for number in issue_values]:
+        errors.append("index.search_terms.issue_refs must be derived from all GitHub issue arrays.")
+    pr_match = re.search(r"/pull/([1-9][0-9]*)$", pr_url or "")
+    expected_pr_refs = [f"PR #{pr_match.group(1)}"] if pr_match else []
+    if search_terms.get("pr_refs") != expected_pr_refs:
+        errors.append("index.search_terms.pr_refs must be derived from github.pr_url.")
+    expected_branches = [git.get("branch")] if git.get("branch") else []
+    if search_terms.get("branches") != expected_branches:
+        errors.append("index.search_terms.branches must be derived from git.branch.")
+    if search_terms.get("paths") != changed_paths:
+        errors.append("index.search_terms.paths must equal sorted git.changed_paths.")
+    expected_retrieval = finish_summary_retrieval_text(str(task.get("title") or ""), index)
+    if index.get("retrieval_text") != expected_retrieval:
+        errors.append("index.retrieval_text must equal the deterministic derived text.")
+    if generator == FINISH_SUMMARY_BACKFILL_GENERATOR:
+        backfill = payload.get("backfill")
+        expected_backfill_keys = {"generated", "generated_at", "source_artifacts", "missing_fields", "confidence"}
+        if not isinstance(backfill, dict) or set(backfill) != expected_backfill_keys:
+            errors.append("backfill object keys are invalid.")
+        else:
+            if backfill.get("generated") is not True:
+                errors.append("backfill.generated must be true.")
+            if not isinstance(backfill.get("generated_at"), str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", backfill["generated_at"]):
+                errors.append("backfill.generated_at must be second-precision UTC RFC3339.")
+            source_artifacts = backfill.get("source_artifacts")
+            errors.extend(
+                finish_summary_string_array_errors(
+                    source_artifacts,
+                    "backfill.source_artifacts",
+                    maximum_items=20,
+                    maximum_length=500,
+                )
+            )
+            if isinstance(source_artifacts, list):
+                for path_index, path in enumerate(source_artifacts):
+                    path_errors = finish_summary_path_errors(
+                        path, f"backfill.source_artifacts[{path_index}]"
+                    )
+                    errors.extend(path_errors)
+                    if (
+                        not path_errors
+                        and task_dir is not None
+                        and isinstance(path, str)
+                        and not (task_dir / path).is_file()
+                    ):
+                        errors.append(
+                            f"backfill.source_artifacts[{path_index}] does not exist in the archived task."
+                        )
+            errors.extend(
+                finish_summary_string_array_errors(
+                    backfill.get("missing_fields"),
+                    "backfill.missing_fields",
+                    maximum_items=30,
+                    maximum_length=200,
+                )
+            )
+            if backfill.get("confidence") not in {"complete", "partial", "minimal"}:
+                errors.append("backfill.confidence is invalid.")
+            missing = backfill.get("missing_fields") if isinstance(backfill.get("missing_fields"), list) else []
+            if not task.get("artifact_dir") and "task.artifact_dir" not in missing:
+                errors.append("backfill.missing_fields must record empty task.artifact_dir.")
+    return errors
+
+
+def validate_finish_summary(payload: Any, *, task_dir: Path | None = None) -> None:
+    errors = finish_summary_errors(payload, task_dir=task_dir)
+    if errors:
+        raise WorkflowError("finish-summary validation failed.", exit_code=2, payload={"errors": errors})
 PR_BODY_REQUIRED_SECTIONS = [
     "变更摘要",
     "影响范围",
@@ -2501,7 +3149,7 @@ def validate_publish_invocation(args: argparse.Namespace) -> None:
         return
     raise WorkflowError(
         "publish-pr is an internal helper. Run `.trellis/guru-team/scripts/bash/finish-work.sh --json` "
-        "so archive and journal complete before PR publish. If finish-work already completed and only "
+        "so archive and initial finish-summary recording complete before PR publish. If finish-work already completed and only "
         "publish recovery is needed, rerun publish-pr with --recovery-after-finish-work.",
         exit_code=2,
         payload={
@@ -7526,8 +8174,9 @@ MARKETPLACE_VERIFICATION_KEYS = {
     "marketplace_source", "verified_head", "remote_head", "task_dir", "steps", "assets",
 }
 MARKETPLACE_ASSET_KEYS = {
-    "workflow_sha256", "preview_sha256", "task_start_context_schema_sha256",
-    "runtime_gitignore_present", "legacy_handoff_absent", "legacy_intake_schema_absent",
+    "workflow_sha256", "preview_sha256", "task_start_context_schema_sha256", "finish_summary_schema_sha256",
+    "runtime_gitignore_present", "workspace_gitignore_present", "session_auto_commit_false",
+    "legacy_handoff_absent", "legacy_intake_schema_absent",
 }
 
 
@@ -7575,13 +8224,13 @@ def marketplace_verification_contract_errors(payload: dict[str, Any]) -> list[st
         errors.append("marketplace verification assets keys do not match schema 1.0.")
         assets = {}
     digest_pattern = re.compile(r"^[0-9a-f]{64}$")
-    for key in ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256"]:
+    for key in ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256", "finish_summary_schema_sha256"]:
         value = str(assets.get(key) or "")
         if payload.get("status") == "passed" and not digest_pattern.fullmatch(value):
             errors.append(f"passed marketplace verification requires asset digest: {key}.")
         elif payload.get("status") == "failed" and value and not digest_pattern.fullmatch(value):
             errors.append(f"failed marketplace verification asset digest must be empty or valid: {key}.")
-    for key in ["runtime_gitignore_present", "legacy_handoff_absent", "legacy_intake_schema_absent"]:
+    for key in ["runtime_gitignore_present", "workspace_gitignore_present", "session_auto_commit_false", "legacy_handoff_absent", "legacy_intake_schema_absent"]:
         if not isinstance(assets.get(key), bool):
             errors.append(f"marketplace verification asset flag must be boolean: {key}.")
         elif payload.get("status") == "passed" and assets.get(key) is not True:
@@ -7638,25 +8287,37 @@ def execute_marketplace_verification(
         workflow_path = project / ".trellis/workflow.md"
         preview_path = project / ".trellis/workflow.md.new"
         installed_schema = project / ".trellis/guru-team/schemas/task-start-context.schema.json"
+        installed_finish_summary_schema = project / ".trellis/guru-team/schemas/finish-summary.schema.json"
         canonical_workflow = source_checkout / "trellis/workflows/guru-team/workflow.md"
         canonical_schema = source_checkout / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
+        canonical_finish_summary_schema = source_checkout / "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
+        project_gitignore = (project / ".gitignore").read_text(encoding="utf-8") if (project / ".gitignore").exists() else ""
+        project_config = (project / ".trellis/config.yaml").read_text(encoding="utf-8") if (project / ".trellis/config.yaml").exists() else ""
         assets = {
             "workflow_sha256": digest_text(workflow_path.read_text(encoding="utf-8")) if workflow_path.exists() else "",
             "preview_sha256": digest_text(preview_path.read_text(encoding="utf-8")) if preview_path.exists() else "",
             "task_start_context_schema_sha256": hashlib.sha256(installed_schema.read_bytes()).hexdigest() if installed_schema.exists() else "",
-            "runtime_gitignore_present": ".trellis/.runtime/" in (project / ".gitignore").read_text(encoding="utf-8") if (project / ".gitignore").exists() else False,
+            "finish_summary_schema_sha256": hashlib.sha256(installed_finish_summary_schema.read_bytes()).hexdigest() if installed_finish_summary_schema.exists() else "",
+            "runtime_gitignore_present": ".trellis/.runtime/" in project_gitignore,
+            "workspace_gitignore_present": ".trellis/workspace/" in project_gitignore,
+            "session_auto_commit_false": bool(re.search(r"(?m)^session_auto_commit:\s*false\s*$", project_config)),
             "legacy_handoff_absent": not (project / ".trellis/guru-team/handoff.json").exists(),
             "legacy_intake_schema_absent": not (project / ".trellis/guru-team/schemas/intake-handoff.schema.json").exists(),
         }
         expected_workflow_sha = digest_text(canonical_workflow.read_text(encoding="utf-8")) if canonical_workflow.exists() else ""
         expected_schema_sha = hashlib.sha256(canonical_schema.read_bytes()).hexdigest() if canonical_schema.exists() else ""
+        expected_finish_summary_schema_sha = hashlib.sha256(canonical_finish_summary_schema.read_bytes()).hexdigest() if canonical_finish_summary_schema.exists() else ""
     passed = all(step.get("passed") is True for step in steps) and all([
         expected_workflow_sha,
         expected_schema_sha,
+        expected_finish_summary_schema_sha,
         assets["workflow_sha256"] == expected_workflow_sha,
         assets["preview_sha256"] == expected_workflow_sha,
         assets["task_start_context_schema_sha256"] == expected_schema_sha,
+        assets["finish_summary_schema_sha256"] == expected_finish_summary_schema_sha,
         assets["runtime_gitignore_present"],
+        assets["workspace_gitignore_present"],
+        assets["session_auto_commit_false"],
         assets["legacy_handoff_absent"],
         assets["legacy_intake_schema_absent"],
     ])
@@ -7681,7 +8342,10 @@ def execute_marketplace_verification(
             "workflow_sha256": assets.get("workflow_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("workflow_sha256") or "")) else "",
             "preview_sha256": assets.get("preview_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("preview_sha256") or "")) else "",
             "task_start_context_schema_sha256": assets.get("task_start_context_schema_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("task_start_context_schema_sha256") or "")) else "",
+            "finish_summary_schema_sha256": assets.get("finish_summary_schema_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("finish_summary_schema_sha256") or "")) else "",
             "runtime_gitignore_present": bool(assets.get("runtime_gitignore_present")),
+            "workspace_gitignore_present": bool(assets.get("workspace_gitignore_present")),
+            "session_auto_commit_false": bool(assets.get("session_auto_commit_false")),
             "legacy_handoff_absent": bool(assets.get("legacy_handoff_absent")),
             "legacy_intake_schema_absent": bool(assets.get("legacy_intake_schema_absent")),
         }
@@ -7733,13 +8397,21 @@ def validate_marketplace_verification(
         errors.append("marketplace verification lacks a matching verified/remote content HEAD.")
     elif verified_head != current_publish_head:
         diff_proc = run(["git", "diff", "--name-only", f"{verified_head}..{current_publish_head}"], cwd=root, check=False)
-        allowed = {
+        verifier_tail = {
             repo_relative(root, path),
             repo_relative(root, issue_scope_ledger_path(task_dir)),
         }
+        finish_summary_tail = verifier_tail | {repo_relative(root, task_dir / FINISH_SUMMARY_ARTIFACT)}
         changed = {line.strip() for line in diff_proc.stdout.splitlines() if line.strip()}
-        if diff_proc.returncode != 0 or changed != allowed:
-            errors.append("marketplace verification is stale; current HEAD is not the exact artifact + ledger metadata tail.")
+        if diff_proc.returncode != 0 or frozenset(changed) not in {frozenset(verifier_tail), frozenset(finish_summary_tail)}:
+            errors.append("marketplace verification is stale; current HEAD is not the exact verifier tail or verifier + finish-summary tail.")
+        elif changed == finish_summary_tail:
+            summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
+            summary, summary_error = read_optional_json(summary_path)
+            if summary is None:
+                errors.append(f"post-verifier finish-summary tail is {summary_error or 'missing'}.")
+            else:
+                errors.extend(finish_summary_errors(summary, task_dir=task_dir))
     remote_proc = run(["git", "ls-remote", "--heads", remote, branch], cwd=root, check=False)
     remote_lines = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
     current_remote_head = remote_lines[0][0] if remote_lines and remote_lines[0] else ""
@@ -7749,19 +8421,27 @@ def validate_marketplace_verification(
     if not isinstance(steps, list) or len(steps) < 7 or any(not isinstance(step, dict) or step.get("passed") is not True for step in steps):
         errors.append("marketplace verification must record passed remote/ref clone/init/preview/switch/preset steps.")
     assets = payload.get("assets") if isinstance(payload.get("assets"), dict) else {}
-    for key in ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256"]:
+    for key in ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256", "finish_summary_schema_sha256"]:
         if not digest_pattern.fullmatch(str(assets.get(key) or "")):
             errors.append(f"marketplace verification missing asset digest: {key}.")
     canonical_workflow = root / "trellis/workflows/guru-team/workflow.md"
     canonical_schema = root / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
+    canonical_finish_summary_schema = root / "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
     expected_workflow_sha = digest_text(canonical_workflow.read_text(encoding="utf-8")) if canonical_workflow.exists() else ""
     expected_schema_sha = hashlib.sha256(canonical_schema.read_bytes()).hexdigest() if canonical_schema.exists() else ""
+    expected_finish_summary_schema_sha = hashlib.sha256(canonical_finish_summary_schema.read_bytes()).hexdigest() if canonical_finish_summary_schema.exists() else ""
     if assets.get("workflow_sha256") != expected_workflow_sha or assets.get("preview_sha256") != expected_workflow_sha:
         errors.append("marketplace installed/preview workflow digests do not match the current canonical workflow.")
     if assets.get("task_start_context_schema_sha256") != expected_schema_sha:
         errors.append("marketplace installed task-start-context schema digest does not match current canonical schema.")
+    if assets.get("finish_summary_schema_sha256") != expected_finish_summary_schema_sha:
+        errors.append("marketplace installed finish-summary schema digest does not match current canonical schema.")
     if assets.get("runtime_gitignore_present") is not True:
         errors.append("marketplace verification did not confirm runtime gitignore contract.")
+    if assets.get("workspace_gitignore_present") is not True:
+        errors.append("marketplace verification did not confirm workspace gitignore contract.")
+    if assets.get("session_auto_commit_false") is not True:
+        errors.append("marketplace verification did not confirm session_auto_commit=false.")
     if assets.get("legacy_handoff_absent") is not True or assets.get("legacy_intake_schema_absent") is not True:
         errors.append("marketplace verification did not confirm obsolete handoff artifacts are absent.")
     if ledger is not None:
@@ -7793,6 +8473,43 @@ def validate_marketplace_verification(
     return path, payload, errors
 
 
+def validate_marketplace_publish_evidence(
+    root: Path,
+    task_dir: Path,
+    current_publish_head: str,
+    repo: str,
+    remote: str,
+    branch: str,
+    config: dict[str, Any],
+    ledger: dict[str, Any],
+    gate: dict[str, Any],
+) -> tuple[Path, dict[str, Any]]:
+    path, payload, errors = validate_marketplace_verification(
+        root, task_dir, current_publish_head, repo, remote, branch, config, ledger
+    )
+    if errors:
+        raise WorkflowError(
+            "Publish blocked because remote marketplace verification artifact is missing, failed, or stale.",
+            exit_code=2,
+            payload={"artifact_path": str(path), "errors": errors},
+        )
+    ledger_errors = validate_ledger_for_publish(ledger, gate)
+    if ledger_errors:
+        raise WorkflowError(
+            "Publish blocked because post-verifier Issue Scope Ledger evidence is incomplete or invalid.",
+            exit_code=2,
+            payload={"ledger_path": str(issue_scope_ledger_path(task_dir)), "errors": ledger_errors},
+        )
+    gate_path, _gate, gate_errors = validate_review_gate(root, task_dir, config, True)
+    if gate_errors:
+        raise WorkflowError(
+            "Publish blocked because Branch Review Gate became invalid after marketplace metadata tail.",
+            exit_code=2,
+            payload={"artifact_path": str(gate_path), "errors": gate_errors},
+        )
+    return path, payload
+
+
 def cmd_verify_marketplace(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
@@ -7805,6 +8522,303 @@ def cmd_verify_marketplace(args: argparse.Namespace) -> dict[str, Any]:
     branch = str(args.branch or current_branch(root))
     remote = str(args.remote or publish_config(config).get("remote") or "origin")
     return execute_marketplace_verification(root, task_dir, repo, remote, branch, current_head(root), config)
+
+
+def publish_recovery_command(
+    root: Path,
+    task_dir: Path,
+    args: argparse.Namespace,
+    repo: str,
+    base_branch: str,
+    remote: str,
+) -> list[str]:
+    command = [
+        ".trellis/guru-team/scripts/bash/publish-pr.sh", "--json",
+        "--recovery-after-finish-work", "--allow-metadata-after-gate",
+        "--task", repo_relative(root, task_dir),
+        "--repo", repo, "--base-branch", base_branch, "--remote", remote,
+    ]
+    if getattr(args, "title", None):
+        command.extend(["--title", str(args.title)])
+    if getattr(args, "body_file", None):
+        command.extend(["--body-file", str(args.body_file)])
+    elif getattr(args, "body_artifact", None):
+        command.extend(["--body-artifact", str(args.body_artifact)])
+    if getattr(args, "draft", None) is True:
+        command.append("--draft")
+    elif getattr(args, "draft", None) is False:
+        command.append("--no-draft")
+    for validation in getattr(args, "validation", None) or []:
+        command.extend(["--validation", str(validation)])
+    return command
+
+
+def canonical_pull_request_url(repo: str, number: int, url: Any) -> str:
+    value = str(url or "")
+    match = re.fullmatch(
+        r"https://github\.com/([^/]+)/([^/]+)/pull/([1-9][0-9]*)",
+        value,
+    )
+    if (
+        match is None
+        or f"{match.group(1)}/{match.group(2)}".casefold() != repo.casefold()
+        or int(match.group(3)) != number
+    ):
+        raise WorkflowError(
+            "Publish recovery open PR lacks a canonical URL for the current repository.",
+            exit_code=2,
+        )
+    return value
+
+
+def resolve_open_pull_request_for_recovery(
+    root: Path,
+    repo: str,
+    branch: str,
+    base_branch: str,
+) -> dict[str, Any]:
+    proc = run(
+        [
+            "gh", "pr", "list", "--repo", repo, "--head", branch,
+            "--base", base_branch, "--state", "open", "--limit", "100",
+            "--json", "number,url,headRefName,baseRefName",
+        ],
+        cwd=root,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise WorkflowError("Could not query the open PR for publish recovery.", exit_code=2, payload={"stderr": proc.stderr.strip()})
+    try:
+        values = json.loads(proc.stdout or "[]")
+    except json.JSONDecodeError as exc:
+        raise WorkflowError("Open PR recovery query returned invalid JSON.", exit_code=2) from exc
+    if not isinstance(values, list):
+        raise WorkflowError("Open PR recovery query must return a JSON array.", exit_code=2)
+    matches: list[dict[str, Any]] = []
+    for index, item in enumerate(values):
+        errors: list[str] = []
+        if not isinstance(item, dict):
+            errors.append("entry must be an object")
+        else:
+            number = item.get("number")
+            if isinstance(number, bool) or not isinstance(number, int) or number < 1:
+                errors.append("number must be a positive integer")
+            if item.get("headRefName") != branch:
+                errors.append("headRefName does not match the current head branch")
+            if item.get("baseRefName") != base_branch:
+                errors.append("baseRefName does not match the publish base branch")
+            if not errors:
+                canonical_pull_request_url(repo, number, item.get("url"))
+                matches.append(item)
+        if errors:
+            raise WorkflowError(
+                "Open PR recovery query returned an invalid or mismatched entry.",
+                exit_code=2,
+                payload={"entry_index": index, "errors": errors},
+            )
+    if len(matches) > 1:
+        raise WorkflowError(
+            "Publish recovery found multiple open PRs for the current head/base branch.",
+            exit_code=2,
+            payload={
+                "repo": repo,
+                "head_branch": branch,
+                "base_branch": base_branch,
+                "open_pr_count": len(matches),
+            },
+        )
+    return {
+        "state": "one" if matches else "none",
+        "open_pr_count": len(matches),
+        "pull_request": matches[0] if matches else None,
+    }
+
+
+def create_pull_request(
+    root: Path,
+    repo: str,
+    base_branch: str,
+    branch: str,
+    title: str,
+    body: str,
+    draft: bool,
+) -> str:
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False) as tmp:
+        tmp.write(body)
+        body_file = tmp.name
+    try:
+        command = [
+            "gh", "pr", "create", "--repo", repo, "--base", base_branch,
+            "--head", branch, "--title", title, "--body-file", body_file,
+        ]
+        if draft:
+            command.append("--draft")
+        proc = run(command, cwd=root, check=False)
+        if proc.returncode != 0:
+            raise WorkflowError(
+                f"gh pr create failed:\n{proc.stderr.strip()}",
+                exit_code=2,
+            )
+        pr_url = proc.stdout.strip()
+        pull_request = parse_pull_request_number(pr_url)
+        if pull_request is None:
+            raise WorkflowError("gh pr create did not return a canonical PR URL.", exit_code=2)
+        return canonical_pull_request_url(repo, pull_request, pr_url)
+    finally:
+        Path(body_file).unlink(missing_ok=True)
+
+
+def validate_publish_identity_and_remote_head(
+    root: Path,
+    task: dict[str, Any],
+    task_context: dict[str, Any],
+    repo: str,
+    base_branch: str,
+    branch: str,
+    remote: str,
+) -> dict[str, str]:
+    errors: list[str] = []
+    expected_repo = str(
+        task_context.get("source_repo", {}).get("repo")
+        if isinstance(task_context.get("source_repo"), dict)
+        else ""
+    ).strip()
+    if expected_repo and expected_repo.casefold() != repo.casefold():
+        errors.append("publish repo does not match task-start-context source_repo.repo")
+    expected_branch = str(task_context.get("branch_name") or "").strip()
+    if expected_branch and expected_branch != branch:
+        errors.append("current head branch does not match task-start-context branch_name")
+    normalized_base = normalize_ref(base_branch).removeprefix("origin/")
+    for label, value in [
+        ("task-start-context", task_context.get("base_branch")),
+        ("task.json", task.get("base_branch")),
+    ]:
+        if value and normalize_ref(str(value)).removeprefix("origin/") != normalized_base:
+            errors.append(f"publish base branch does not match {label} base_branch")
+    if errors:
+        raise WorkflowError(
+            "Publish branch/base/repository identity validation failed.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    head = current_head(root)
+    remote_proc = run(["git", "ls-remote", "--heads", remote, branch], cwd=root, check=False)
+    remote_lines = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
+    remote_head = remote_lines[0][0] if len(remote_lines) == 1 and remote_lines[0] else ""
+    if remote_proc.returncode != 0 or remote_head != head:
+        raise WorkflowError(
+            "Publish remote branch HEAD does not match the current local HEAD.",
+            exit_code=2,
+            payload={"head": head, "remote_head": remote_head},
+        )
+    return {
+        "repo": repo,
+        "base_branch": normalized_base,
+        "head_branch": branch,
+        "head": head,
+        "remote_head": remote_head,
+    }
+
+
+def update_finish_summary_for_pr(
+    root: Path,
+    task_dir: Path,
+    task_context: dict[str, Any],
+    pr_url: str,
+) -> tuple[Path, dict[str, Any]]:
+    path = task_dir / FINISH_SUMMARY_ARTIFACT
+    payload = read_json(path)
+    validate_finish_summary(payload, task_dir=task_dir)
+    base_branch = str(task_context.get("base_branch") or payload.get("git", {}).get("base_branch") or "")
+    base_ref = str(task_context.get("base_ref") or diff_base_ref(root, base_branch))
+    changed_paths, protected_paths_filtered = finish_summary_git_path_snapshot(
+        root, base_ref, include_worktree=False
+    )
+    updated = copy.deepcopy(payload)
+    updated["git"]["changed_paths"] = changed_paths
+    updated["github"]["pr_url"] = pr_url
+    updated["artifacts"] = finish_summary_artifacts(task_dir)
+    pr_match = re.search(r"/pull/([1-9][0-9]*)$", pr_url)
+    if pr_match is None:
+        raise WorkflowError("Cannot update finish-summary from a non-canonical PR URL.", exit_code=2)
+    updated["index"]["search_terms"]["pr_refs"] = [f"PR #{pr_match.group(1)}"]
+    updated["index"]["search_terms"]["paths"] = changed_paths
+    apply_finish_summary_path_filter_contract(updated["index"], protected_paths_filtered)
+    updated["index"]["retrieval_text"] = finish_summary_retrieval_text(
+        str(updated.get("task", {}).get("title") or ""), updated["index"]
+    )
+    validate_finish_summary(updated, task_dir=task_dir)
+    write_json(path, updated)
+    validate_finish_summary(read_json(path), task_dir=task_dir)
+    return path, updated
+
+
+def commit_and_push_finish_summary_metadata(
+    root: Path,
+    summary_path: Path,
+    message: str,
+    remote: str,
+    branch: str,
+) -> dict[str, Any]:
+    relative = repo_relative(root, summary_path)
+    allowed = {relative}
+    dirty_paths = set(git_status_paths(root))
+    unexpected = sorted(dirty_paths - allowed)
+    if unexpected:
+        raise WorkflowError(
+            "finish-summary PR metadata tail contains unexpected dirty paths.",
+            exit_code=2,
+            payload={"allowed_paths": sorted(allowed), "unexpected_dirty_paths": unexpected},
+        )
+    previous_head = current_head(root)
+    committed = False
+    if relative in dirty_paths:
+        run_stdout(["git", "add", "--", relative], cwd=root)
+        staged_proc = run(["git", "diff", "--cached", "--name-only"], cwd=root, check=False)
+        staged = {line.strip() for line in staged_proc.stdout.splitlines() if line.strip()}
+        if staged_proc.returncode != 0 or staged != allowed:
+            raise WorkflowError(
+                "finish-summary staged metadata paths do not match the exact allowlist.",
+                exit_code=2,
+                payload={"allowed_paths": sorted(allowed), "staged_paths": sorted(staged)},
+            )
+        run_stdout(["git", "commit", "-m", message], cwd=root)
+        committed = True
+        committed_proc = run(["git", "diff", "--name-only", f"{previous_head}..HEAD"], cwd=root, check=False)
+        committed_paths = {line.strip() for line in committed_proc.stdout.splitlines() if line.strip()}
+        if committed_proc.returncode != 0 or committed_paths != allowed:
+            raise WorkflowError(
+                "finish-summary metadata commit contains unexpected paths.",
+                exit_code=2,
+                payload={"allowed_paths": sorted(allowed), "committed_paths": sorted(committed_paths)},
+            )
+    else:
+        last_commit_proc = run(["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"], cwd=root, check=False)
+        last_commit_paths = {line.strip() for line in last_commit_proc.stdout.splitlines() if line.strip()}
+        if last_commit_proc.returncode != 0 or last_commit_paths != allowed:
+            raise WorkflowError(
+                "finish-summary recovery found no pending change and HEAD is not the exact summary metadata tail.",
+                exit_code=2,
+                payload={"allowed_paths": sorted(allowed), "head_paths": sorted(last_commit_paths)},
+            )
+    run_stdout(["git", "push", remote, branch], cwd=root)
+    metadata_head = current_head(root)
+    remote_proc = run(["git", "ls-remote", "--heads", remote, branch], cwd=root, check=False)
+    remote_lines = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
+    remote_head = remote_lines[0][0] if remote_lines and remote_lines[0] else ""
+    if remote_proc.returncode != 0 or remote_head != metadata_head:
+        raise WorkflowError(
+            "Remote branch does not contain the finish-summary metadata tail.",
+            exit_code=2,
+            payload={"metadata_head": metadata_head, "remote_head": remote_head},
+        )
+    return {
+        "committed": committed,
+        "previous_head": previous_head,
+        "commit": metadata_head,
+        "paths": sorted(allowed),
+        "remote_head": remote_head,
+    }
 
 
 def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
@@ -7918,88 +8932,243 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
         return payload
 
     require_gh_auth(root)
-    run_stdout(["git", "push", "-u", remote, branch], cwd=root)
-    verified_content_head = current_head(root)
+    recovery_command = publish_recovery_command(root, task_dir, args, repo, base_branch_name, remote)
+    payload["recovery_command"] = recovery_command
+    payload["recovery_command_shell"] = shlex.join(recovery_command)
+    publish_inputs = {
+        "repo": repo,
+        "base_branch": base_branch_name,
+        "head_branch": branch,
+        "title": title,
+        "body": body,
+        "draft": draft,
+    }
+    try:
+        run_stdout(["git", "push", "-u", remote, branch], cwd=root)
+    except WorkflowError as exc:
+        if not args.recovery_after_finish_work:
+            raise
+        details = dict(exc.payload)
+        details.update({
+            "failed_stage": "recovery-content-push",
+            "pr_url": "",
+            "publish_inputs": publish_inputs,
+            "recovery_command": recovery_command,
+            "recovery_command_shell": shlex.join(recovery_command),
+        })
+        raise WorkflowError(
+            "Publish recovery could not push the current content HEAD.",
+            exit_code=2,
+            payload=details,
+        ) from exc
+    try:
+        publish_identity = validate_publish_identity_and_remote_head(
+            root,
+            task,
+            task_context,
+            repo,
+            base_branch_name,
+            branch,
+            remote,
+        )
+    except WorkflowError as exc:
+        if not args.recovery_after_finish_work:
+            raise
+        details = dict(exc.payload)
+        details.update({
+            "failed_stage": "recovery-publish-identity",
+            "pr_url": "",
+            "publish_inputs": publish_inputs,
+            "recovery_command": recovery_command,
+            "recovery_command_shell": shlex.join(recovery_command),
+        })
+        raise WorkflowError(
+            "Publish recovery identity or remote HEAD validation failed.",
+            exit_code=2,
+            payload=details,
+        ) from exc
+    payload["publish_identity"] = publish_identity
+    verified_content_head = publish_identity["head"]
     if requires_marketplace_verification:
-        marketplace_verification = execute_marketplace_verification(root, task_dir, repo, remote, branch, verified_content_head, config)
-        verification_artifact_path = marketplace_verification_path(task_dir, config)
-        updated_ledger_path = write_remote_marketplace_evidence(
-            root, task_dir, ledger, verification_artifact_path, marketplace_verification
-        )
-        verification_commit = commit_marketplace_verification_metadata(
-            root, verification_artifact_path, updated_ledger_path, metadata_commit_subject
-        )
-        run_stdout(["git", "push", remote, branch], cwd=root)
-        publish_head = current_head(root)
-        ledger = load_issue_scope_ledger(task_dir, task_context)
-        verification_path, _verification_payload, verification_errors = validate_marketplace_verification(
-            root, task_dir, publish_head, repo, remote, branch, config, ledger
-        )
-        if verification_errors:
-            raise WorkflowError(
-                "Publish blocked because remote marketplace verification artifact is missing, failed, or stale.",
-                exit_code=2,
-                payload={"artifact_path": str(verification_path), "errors": verification_errors},
+        if args.recovery_after_finish_work:
+            try:
+                _verification_path, marketplace_verification = validate_marketplace_publish_evidence(
+                    root,
+                    task_dir,
+                    verified_content_head,
+                    repo,
+                    remote,
+                    branch,
+                    config,
+                    ledger,
+                    gate,
+                )
+            except WorkflowError as exc:
+                details = dict(exc.payload)
+                details.update({
+                    "failed_stage": "recovery-marketplace-evidence",
+                    "pr_url": "",
+                    "publish_inputs": publish_inputs,
+                    "recovery_command": recovery_command,
+                    "recovery_command_shell": shlex.join(recovery_command),
+                })
+                raise WorkflowError(
+                    "Publish recovery marketplace evidence validation failed.",
+                    exit_code=2,
+                    payload=details,
+                ) from exc
+            payload["marketplace_verification_reused"] = True
+            publish_head = verified_content_head
+        else:
+            marketplace_verification = execute_marketplace_verification(
+                root, task_dir, repo, remote, branch, verified_content_head, config
             )
-        final_ledger_errors = validate_ledger_for_publish(ledger, gate)
-        if final_ledger_errors:
-            raise WorkflowError(
-                "Publish blocked because post-verifier Issue Scope Ledger evidence is incomplete or invalid.",
-                exit_code=2,
-                payload={"ledger_path": str(issue_scope_ledger_path(task_dir)), "errors": final_ledger_errors},
+            verification_artifact_path = marketplace_verification_path(task_dir, config)
+            updated_ledger_path = write_remote_marketplace_evidence(
+                root, task_dir, ledger, verification_artifact_path, marketplace_verification
             )
-        _gate_path, _gate, post_metadata_gate_errors = validate_review_gate(root, task_dir, config, True)
-        if post_metadata_gate_errors:
-            raise WorkflowError(
-                "Publish blocked because Branch Review Gate became invalid after marketplace metadata tail.",
-                exit_code=2,
-                payload={"artifact_path": str(_gate_path), "errors": post_metadata_gate_errors},
+            verification_commit = commit_marketplace_verification_metadata(
+                root, verification_artifact_path, updated_ledger_path, metadata_commit_subject
             )
+            run_stdout(["git", "push", remote, branch], cwd=root)
+            publish_head = current_head(root)
+            ledger = load_issue_scope_ledger(task_dir, task_context)
+            _verification_path, marketplace_verification = validate_marketplace_publish_evidence(
+                root,
+                task_dir,
+                publish_head,
+                repo,
+                remote,
+                branch,
+                config,
+                ledger,
+                gate,
+            )
+            payload["marketplace_verification_commit"] = verification_commit
         payload["marketplace_verification"] = marketplace_verification
-        payload["marketplace_verification_commit"] = verification_commit
         payload["publish_head"] = publish_head
     else:
         payload["marketplace_verification"] = {"status": "not-required", "reason": "review gate changed_files do not touch marketplace/preset public extension assets"}
-    with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False) as tmp:
-        tmp.write(body)
-        body_file = tmp.name
-    try:
-        cmd = [
-            "pr",
-            "create",
-            "--repo",
-            repo,
-            "--base",
-            payload["base_branch"],
-            "--head",
-            branch,
-            "--title",
-            title,
-            "--body-file",
-            body_file,
-        ]
-        if draft:
-            cmd.append("--draft")
-        proc = run(["gh", *cmd], cwd=root, check=False)
-        if proc.returncode != 0:
-            raise WorkflowError(f"gh pr create failed:\n{proc.stderr.strip()}")
-        payload["pr_url"] = proc.stdout.strip()
-        pull_request = parse_pull_request_number(payload["pr_url"])
-        if pull_request is None:
-            raise WorkflowError(
-                "Could not parse pull request number from gh pr create output.",
-                exit_code=2,
-                payload={"pr_url": payload["pr_url"]},
+    pr_url = ""
+    if args.recovery_after_finish_work:
+        try:
+            resolution = resolve_open_pull_request_for_recovery(
+                root, repo, branch, base_branch_name
             )
-        payload["merge_commit"] = build_merge_commit_payload(
-            primary_issue=primary_issue,
-            summary=merge_summary,
-            head_branch=branch,
-            base_branch=base_branch_name,
-            pull_request=pull_request,
+        except WorkflowError as exc:
+            details = dict(exc.payload)
+            details.update({
+                "failed_stage": "open-pr-query",
+                "pr_url": "",
+                "publish_inputs": publish_inputs,
+                "recovery_command": recovery_command,
+                "recovery_command_shell": shlex.join(recovery_command),
+            })
+            raise WorkflowError(
+                "Publish recovery could not resolve a safe open PR state.",
+                exit_code=2,
+                payload=details,
+            ) from exc
+        recovered_pr = resolution.get("pull_request")
+        if resolution["state"] == "one" and isinstance(recovered_pr, dict):
+            pr_url = str(recovered_pr["url"])
+            payload["pr_recovery"] = {
+                "state": "one",
+                "open_pr_count": 1,
+                "reused_existing_open_pr": True,
+                "created_after_zero_open_pr": False,
+                "number": recovered_pr["number"],
+                "url": pr_url,
+            }
+        else:
+            try:
+                pr_url = create_pull_request(
+                    root, repo, base_branch_name, branch, title, body, draft
+                )
+            except WorkflowError as exc:
+                details = dict(exc.payload)
+                details.update({
+                    "failed_stage": "gh-pr-create-recovery",
+                    "pr_url": "",
+                    "open_pr_count": 0,
+                    "publish_inputs": publish_inputs,
+                    "recovery_command": recovery_command,
+                    "recovery_command_shell": shlex.join(recovery_command),
+                })
+                raise WorkflowError(
+                    "Publish recovery found no open PR and its single create retry failed.",
+                    exit_code=2,
+                    payload=details,
+                ) from exc
+            pull_request = parse_pull_request_number(pr_url)
+            payload["pr_recovery"] = {
+                "state": "none",
+                "open_pr_count": 0,
+                "reused_existing_open_pr": False,
+                "created_after_zero_open_pr": True,
+                "number": pull_request,
+                "url": pr_url,
+            }
+    else:
+        try:
+            pr_url = create_pull_request(
+                root, repo, base_branch_name, branch, title, body, draft
+            )
+        except WorkflowError as exc:
+            details = dict(exc.payload)
+            details.update({
+                "failed_stage": "gh-pr-create",
+                "pr_url": "",
+                "publish_inputs": publish_inputs,
+                "recovery_command": recovery_command,
+                "recovery_command_shell": shlex.join(recovery_command),
+            })
+            raise WorkflowError(
+                str(exc),
+                exit_code=2,
+                payload=details,
+            ) from exc
+    payload["pr_url"] = pr_url
+    pull_request = parse_pull_request_number(pr_url)
+    if pull_request is None:
+        raise WorkflowError(
+            "Could not parse pull request number from publish PR URL.",
+            exit_code=2,
+            payload={
+                "pr_url": pr_url,
+                "publish_inputs": publish_inputs,
+                "recovery_command": recovery_command,
+                "recovery_command_shell": shlex.join(recovery_command),
+            },
         )
-    finally:
-        Path(body_file).unlink(missing_ok=True)
+    payload["merge_commit"] = build_merge_commit_payload(
+        primary_issue=primary_issue,
+        summary=merge_summary,
+        head_branch=branch,
+        base_branch=base_branch_name,
+        pull_request=pull_request,
+    )
+    failed_stage = "finish-summary-rewrite"
+    try:
+        summary_path, _summary = update_finish_summary_for_pr(root, task_dir, task_context, pr_url)
+        failed_stage = "finish-summary-metadata-commit-push"
+        payload["finish_summary_metadata"] = commit_and_push_finish_summary_metadata(
+            root, summary_path, metadata_commit_subject, remote, branch
+        )
+    except WorkflowError as exc:
+        details = dict(exc.payload)
+        details.update({
+            "failed_stage": failed_stage,
+            "pr_url": pr_url,
+            "publish_inputs": publish_inputs,
+            "recovery_command": recovery_command,
+            "recovery_command_shell": shlex.join(recovery_command),
+        })
+        raise WorkflowError(
+            "PR exists but finish-summary URL metadata recovery is incomplete.",
+            exit_code=2,
+            payload=details,
+        ) from exc
     return payload
 
 
@@ -8013,9 +9182,7 @@ def build_finish_work_dry_run_plan(
     gate_path: Path,
     gate: dict[str, Any],
     reviewed_head: str,
-    title: str,
-    summary: str,
-    commits: str,
+    finish_summary_index_path: Path,
     draft: bool,
     body_source: str,
     body_errors: list[str],
@@ -8030,7 +9197,6 @@ def build_finish_work_dry_run_plan(
     head_branch = current_branch(root)
     pr_title = pr_title_from_task(task, args)
     archive_would_run = not args.skip_archive
-    journal_would_run = not args.skip_journal
     primary_issue = primary_issue_number_from_ledger(ledger)
     merge_summary = merge_summary_from_title(pr_title, primary_issue, ledger)
     base_branch_name = normalize_ref(base_branch).removeprefix("origin/")
@@ -8059,22 +9225,16 @@ def build_finish_work_dry_run_plan(
                 "task_name": task_name,
                 "command": ["python3", "./.trellis/scripts/task.py", "archive", task_name],
             },
-            "journal": {
-                "would_run": journal_would_run,
-                "skip": bool(args.skip_journal),
-                "title": title,
-                "summary": summary,
-                "commits": commits or reviewed_head,
-                "command": [
-                    "python3",
-                    "./.trellis/scripts/add_session.py",
-                    "--title",
-                    title,
-                    "--commit",
-                    commits or reviewed_head,
-                    "--summary",
-                    summary,
-                ],
+            "finish_summary": {
+                "would_run": True,
+                "input_validated": True,
+                "index_file": repo_relative(root, finish_summary_index_path),
+                "target": repo_relative(
+                    root,
+                    root / ".trellis/tasks/archive" / datetime.now().strftime("%Y-%m") / task_name / FINISH_SUMMARY_ARTIFACT,
+                ),
+                "initial_pr_url": "",
+                "initial_pr_refs": [],
             },
             "metadata_commit": {
                 "would_run": True,
@@ -8128,9 +9288,9 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
 
     reviewed_head = str(gate.get("head") or current_head(root))
     task_name = args.task_name or task_dir.name
-    title = args.journal_title or f"完成：{task_json(task_dir).get('title') or task_name}"
-    summary = args.journal_summary or str(gate.get("conclusion", {}).get("summary") or "完成当前 Trellis task，并通过 Branch Review Gate。")
-    commits = args.commit or ",".join(recent_work_commits(root, reviewed_head))
+    finish_summary_index_path, finish_summary_index = load_finish_summary_index(
+        task_dir, args.finish_summary_index_file
+    )
     draft = bool(args.draft) if args.draft is not None else bool(publish_config(config).get("draft", False))
 
     ledger = load_issue_scope_ledger(task_dir, task_context)
@@ -8162,9 +9322,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             gate_path,
             gate,
             reviewed_head,
-            title,
-            summary,
-            commits,
+            finish_summary_index_path,
             draft,
             body_source,
             body_errors,
@@ -8180,37 +9338,33 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         if proc.returncode != 0:
             raise WorkflowError(f"task.py archive failed:\n{proc.stderr.strip()}", payload={"stdout": proc.stdout.strip()})
 
-    if not args.skip_journal:
-        journal_script = root / ".trellis/scripts/add_session.py"
-        if not journal_script.exists():
-            raise WorkflowError(f"Trellis add_session.py not found: {journal_script}")
-        journal_cmd = [
-            "python3",
-            "./.trellis/scripts/add_session.py",
-            "--title",
-            title,
-            "--commit",
-            commits or reviewed_head,
-            "--summary",
-            summary,
-        ]
-        proc = run(journal_cmd, cwd=root, check=False)
-        if proc.returncode != 0:
-            raise WorkflowError(f"add_session.py failed:\n{proc.stderr.strip()}", payload={"stdout": proc.stdout.strip()})
-
     primary_issue = primary_issue_number_from_ledger(ledger)
     metadata_commit_subject = format_metadata_commit_subject(primary_issue)
-    metadata_commit = commit_if_metadata_dirty(root, metadata_commit_subject)
     archived_task_dir = resolve_existing_task_dir(root, task_name)
-    publish_task = str(archived_task_dir) if archived_task_dir else (args.task or str(task_dir))
+    if archived_task_dir is None or not task_dir_is_archived(root, archived_task_dir):
+        raise WorkflowError(
+            "finish-work could not resolve the archived task for finish-summary recording.",
+            exit_code=2,
+            payload={"task_name": task_name},
+        )
+    finish_summary = build_finish_summary(
+        root,
+        archived_task_dir,
+        task_context,
+        ledger,
+        finish_summary_index,
+        reviewed_head,
+    )
+    finish_summary_path = archived_task_dir / FINISH_SUMMARY_ARTIFACT
+    write_json(finish_summary_path, finish_summary)
+    validate_finish_summary(read_json(finish_summary_path), task_dir=archived_task_dir)
+    publish_task = str(archived_task_dir)
     publish_body_file = args.body_file
     publish_body_artifact = args.body_artifact
-    archive_migration: dict[str, Any] | None = None
-    if archived_task_dir:
-        archive_migration = migrate_review_gate_for_archived_task(root, archived_task_dir, config)
-        metadata_commit = commit_if_metadata_dirty(root, metadata_commit_subject)
-        publish_body_file = rewrite_active_task_artifact_path(root, task_dir, archived_task_dir, publish_body_file)
-        publish_body_artifact = rewrite_active_task_artifact_path(root, task_dir, archived_task_dir, publish_body_artifact)
+    archive_migration = migrate_review_gate_for_archived_task(root, archived_task_dir, config)
+    metadata_commit = commit_if_metadata_dirty(root, metadata_commit_subject)
+    publish_body_file = rewrite_active_task_artifact_path(root, task_dir, archived_task_dir, publish_body_file)
+    publish_body_artifact = rewrite_active_task_artifact_path(root, task_dir, archived_task_dir, publish_body_artifact)
     publish_args = argparse.Namespace(
         root=str(root),
         task=publish_task,
@@ -8234,6 +9388,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         "task_name": task_name,
         "review_gate": str(gate_path),
         "reviewed_head": reviewed_head,
+        "finish_summary": str(finish_summary_path),
         "metadata_commit": metadata_commit,
         "archive_migration": archive_migration,
         "publish": publish_payload,
@@ -8505,20 +9660,20 @@ def build_parser() -> argparse.ArgumentParser:
     finish.add_argument("--body-artifact", help="AI-reviewed JSON readiness artifact passed through to publish-pr.")
     finish.add_argument("--draft", dest="draft", action="store_true", default=None)
     finish.add_argument("--no-draft", dest="draft", action="store_false")
-    finish.add_argument("--journal-title", help="Chinese session journal title.")
-    finish.add_argument("--journal-summary", help="Chinese session journal summary.")
-    finish.add_argument("--commit", help="Comma-separated work commit hashes for add_session.py.")
+    finish.add_argument(
+        "--finish-summary-index-file",
+        help="Task-local AI-authored finish-summary-index.json. Required for dry-run and formal finish.",
+    )
     finish.add_argument(
         "--from-trellis-finish-work",
         action="store_true",
         help="Required intent marker set by the explicit trellis-finish-work entrypoint.",
     )
     finish.add_argument("--skip-archive", action="store_true", help="Internal recovery switch. Do not use in normal finish-work.")
-    finish.add_argument("--skip-journal", action="store_true", help="Internal recovery switch. Do not use in normal finish-work.")
     finish.add_argument(
         "--dry-run",
         action="store_true",
-        help="Validate finish-work readiness and print planned archive/journal/publish actions without writing files.",
+        help="Validate finish-work readiness and print planned archive/finish-summary/publish actions without writing files.",
     )
     return parser
 

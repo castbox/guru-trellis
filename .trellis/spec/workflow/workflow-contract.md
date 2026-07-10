@@ -59,6 +59,16 @@ Do not introduce `review-branch`, `check-review-gate`, `finish-work.sh`, or
 `publish-pr` as new user-facing phases. They are companion script subcommands
 used by the workflow entrypoints.
 
+The explicit finish entry requires AI-authored task-local
+`finish-summary-index.json`, then dry-runs and formally archives to a strict
+`finish-summary.json`. Guru Team does not call upstream `add_session.py` and
+does not use `.trellis/workspace/**` as finish, readiness, or context evidence.
+Publish writes the PR URL back through one exact archived-task metadata tail;
+recovery first validates publish identity/evidence and queries the current
+repo/head/base. One open PR is reused, zero triggers one same-input create
+retry, and multiple fail closed without create; a failed retry preserves the
+initial empty URL/refs and the same recovery command.
+
 Reference files:
 
 - `trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md`
@@ -384,7 +394,7 @@ Passing the gate requires:
 required `--from-trellis-finish-work` intent marker. The helper validates the
 passed review gate and its `review_report` digest, allows only Trellis
 metadata after the reviewed HEAD, rejects uncommitted non-metadata changes,
-archives the active task, records the journal, commits remaining Trellis
+archives the active task, records initial task-local finish-summary, commits remaining Trellis
 metadata, and then invokes publish.
 
 Finish-work and archive must not execute the first Docs SSOT merge. If durable
@@ -396,9 +406,9 @@ the gate, dry-run and formal finish fail closed and the task returns to Phase
 `trellis-continue` must stop at Branch Review Gate and must not push, create a
 PR, invoke `publish-pr`, or invoke `finish-work`. The finish and publish helpers
 are fail-closed: ordinary direct `finish-work.sh` calls are rejected before
-archive/journal/push side effects, and ordinary direct `publish-pr` calls are
+archive/finish-summary/push side effects, and ordinary direct `publish-pr` calls are
 rejected before `git push` / `gh pr create`. Publish may run only from
-`finish-work.sh` after archive and journal succeed, or through an explicit
+`finish-work.sh` after archive and initial finish-summary recording succeed, or through an explicit
 recovery/debug flag when finish-work already completed but publish must be
 retried.
 

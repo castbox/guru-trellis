@@ -411,16 +411,31 @@ test / schema / config / script / preset / overlay 不一致必须记录为 find
 `finish-work.sh` 和 `publish-pr.sh` 默认拒绝普通直接调用，避免
 `trellis-continue` 链式执行 closeout、提交 review metadata，或在未完成显式
 `trellis-finish-work` 时提前 push 分支并创建 PR；日常发布必须由 `trellis-finish-work` 入口带
-`--from-trellis-finish-work` 意图标记，在 archive task、记录 journal 并提交允许的
+`--from-trellis-finish-work` 意图标记，在 archive task、生成并校验 task-local
+`finish-summary.json` 并提交允许的
 Trellis metadata（包括 `review.md`、`reviews/*.md`、`review-gate.json`、PR readiness）之后内部触发。只有 finish-work 已完成但 publish 需要重试时，才使用
 显式 recovery/debug flag。
 
 `finish-work.sh --dry-run --from-trellis-finish-work` 是无副作用 readiness preview：
-只校验 gate、dirty state 和 PR body/readiness，并输出将要 archive、journal、
-metadata commit、publish 与 merge commit payload 的计划；不会移动 task、写 journal、创建 commit、push 或创建 PR。
+通过 `--finish-summary-index-file "{TASK_DIR}/finish-summary-index.json"` 校验 AI 已审查的索引输入，
+并输出将要 archive、写入初始 finish-summary、metadata commit、publish 与 merge commit payload 的计划；
+不会移动或写入文件、创建 commit、push 或创建 PR，也不存在 journal/workspace 计划。
 dry-run 回复使用 active task 路径表；正式 finish archive 后，AI 必须重新运行
 `resolve-human-artifacts.sh` 解析 archive 后 task 路径，并在最终回复输出 archive-path
 `Markdown 产物 review 表`，不能复用 archive 前的 active task 链接。
+
+Guru Team 不调用官方 `add_session.py`，不把 `.trellis/workspace/**` 用作 finish、readiness
+或 context 证据；preset 固定 materialize `session_auto_commit: false` 并忽略该目录。PR 创建后，
+`publish-pr` 将 raw base-to-HEAD paths 排序去重并过滤 workspace/runtime 受保护前缀，把安全集合
+同时写入 `git.changed_paths` 与 search `paths`，再回写同一 archived task 的 `github.pr_url` 和
+`PR #<number>`。过滤发生时 recorder 追加一条不含具体路径、basename 或数量的固定 contract fact；
+schema/validator 的所有 path 字段仍拒绝受保护前缀。publish 只允许 `finish-summary.json` 精确
+metadata tail。可恢复失败 payload 保留 PR URL、recovery 命令和同一
+`repo/base/head/title/body/draft` 的 `publish_inputs` 快照；
+recovery 在查询或创建 PR 前重新校验 repo/base/head、review/readiness、当前与远端 HEAD，
+marketplace-required 路径只复用既有 passed verifier evidence。随后先查询当前 repo/head/base：
+1 个 open PR 时复用，0 个时按同一 title/body/draft 输入只重试创建一次，多于 1 个时阻塞且不创建。
+单次 retry 仍失败时保留 initial summary 的空 URL/ref，并返回同一 recovery 命令。
 
 Guru Team workflow 强制中文 Conventional Commits。工作提交和 Trellis metadata
 提交 subject 使用 `{type}({scope}): #{primary_issue} 中文描述`，工作提交 body 使用

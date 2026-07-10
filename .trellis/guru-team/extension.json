@@ -45,7 +45,8 @@
         "pr-body.md",
         "review-gate.json",
         "pr-readiness.json",
-        "marketplace-verification.json"
+        "marketplace-verification.json",
+        "finish-summary.json"
       ],
       "companion_scripts": [
         "check-env",
@@ -72,11 +73,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-10T12:04:38Z",
+  "installed_at": "2026-07-10T19:36:18Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/096-task-runtime-boundary",
-    "commit": "f48abcf1f73da439efc68f7342dde562c4c9c452",
+    "ref": "codex/097-finish-summary-replaces-add-session",
+    "commit": "ff8c03abb259c2a048626ea72e0bf57138db2c14",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -133,6 +134,7 @@
       ".trellis/agents/implement.md",
       ".trellis/guru-team/config-template.yml",
       ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/schemas/finish-summary.schema.json",
       ".trellis/guru-team/schemas/marketplace-verification.schema.json",
       ".trellis/guru-team/schemas/task-start-context.schema.json",
       ".trellis/guru-team/scripts/bash/check-agent-assignment.sh",
@@ -158,7 +160,9 @@
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"
     ],
     "new_copies": [],
-    "managed_backups": [],
+    "managed_backups": [
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py.bak"
+    ],
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
   },

@@ -74,15 +74,51 @@ defined by `METADATA_ONLY_PREFIXES` and `METADATA_ONLY_FILES`; update these
 constants deliberately if Trellis metadata ownership changes.
 
 `finish-work.sh` and `publish-pr` are internal helpers, not the normal user
-path. `finish-work.sh` must reject ordinary direct calls before archive, journal,
+path. `finish-work.sh` must reject ordinary direct calls before archive, finish-summary,
 metadata commit, push, or PR side effects; only the explicit
 `trellis-finish-work` entrypoint may pass the `--from-trellis-finish-work`
 intent marker. `publish-pr` must reject ordinary direct calls before `git push`
 or `gh pr create`; only `finish-work` may set the internal publish marker after
-archive and journal succeed. A separate explicit recovery/debug flag may exist
+archive and initial finish-summary recording succeed. A separate explicit recovery/debug flag may exist
 for rerunning publish after finish-work already completed, but it still must
 pass review gate, dirty state, issue ledger, base branch, and GitHub auth
 checks.
+
+Finish-summary separates AI judgment from deterministic facts. The explicit
+finish entry writes task-local `finish-summary-index.json` with reviewed
+problem/outcome/behavior/surface/contract/search-term judgment and passes it via
+`--finish-summary-index-file`. The companion rejects factual issue/PR/branch/path
+fields in that input, injects task/Git/ledger/artifact/time facts, derives
+`retrieval_text`, and validates the strict shared schema. Dry-run validates and
+previews archive/summary/publish without writing. Formal finish archives, writes
+an initial empty-PR summary, and never invokes upstream `add_session.py` or
+reads/writes `.trellis/workspace/**`.
+
+The initial summary is built after `task.py archive` and before the metadata
+commit. Its snapshot combines the base-to-working-tree `git diff --name-only
+-z` result with `git ls-files --others --exclude-standard -z`, so an untracked
+archived task directory is expanded to individual task-local metadata files
+instead of a trailing-slash directory placeholder. The same protected-prefix
+filter and fixed contract fact rules apply to this initial snapshot.
+
+After PR creation, `publish-pr` sorts and deduplicates raw final base-to-HEAD
+paths, filters workspace/runtime protected prefixes, and writes the safe set to
+both final path arrays. A non-empty filtered set adds exactly one fixed
+`finish-summary protected path filtering` contract fact without path, basename,
+or count details; an empty filtered set removes that reserved fact. Schema and
+Python validation reject protected prefixes in every path field. Publish then
+rewrites URL and PR ref, and commits and pushes exactly the archived task
+`finish-summary.json`. Recovery validates repo/base/head identity,
+AI-reviewed body/readiness, review gate, and current/remote HEAD before any PR
+query or create. Marketplace-required recovery only validates and reuses the
+existing passed verifier evidence. It then queries the current repo/head/base:
+one open PR is reused without create, zero triggers exactly one create with the
+same title/body/draft inputs, and multiple fail closed without selection or
+create. A failed zero-PR retry leaves the initial empty URL/refs unchanged and
+returns the same recovery command; the same invocation does not query or create
+again. Failures after PR creation preserve the URL and executable recovery
+command. The post-verifier summary tail is compatible with remote marketplace
+evidence only when its path is exact and the summary remains valid.
 
 Use the intake/task `base_branch` for diff ranges and PR base. Do not fall back
 to the GitHub default branch when the task has an explicit base.
@@ -328,4 +364,4 @@ or representative script paths in a disposable worktree whenever practical.
 
 For tasks that change the workflow marketplace, preset, overlays, installer, schema, or public extension contract, publish is fail-closed after the branch push and before `gh pr create`. The deterministic `verify-marketplace` companion command records task-local `marketplace-verification.json` with repository, remote, branch/ref, verified content HEAD, remote HEAD, command exit codes, stdout/stderr digests and sizes, and installed workflow/preview/schema digests. It executes remote branch `trellis init`, workflow preview, workflow switch, canonical preset reapply, and runtime-ignore checks in a clean temporary repository. It does not decide PR readiness.
 
-`issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` evidence object in the primary issue and every close issue. Before the verifier it is `status=pending`, `required=true`, points to `marketplace-verification.json`, and explicitly does not satisfy final publish. `publish-pr` pushes the reviewed content HEAD, runs the verifier, replaces only those structured entries with real `status=passed` facts (artifact path and SHA-256, verified content HEAD, verifier remote HEAD, publish content HEAD, and all-command result), then commits exactly the verifier artifact plus the ledger as the only allowed metadata tail and pushes it. After that push it reloads and cross-validates the ledger and artifact, requires the current HEAD to differ from the verified content HEAD by exactly those two paths, requires the remote branch to equal the metadata HEAD, revalidates Branch Review Gate metadata tolerance, and only then permits `gh pr create`. Missing, pending, failed, stale, tampered, or mismatched evidence blocks. The AI remains responsible for deciding close scope and whether evidence is sufficient and truthful; scripts only execute, record, and validate deterministic verifier facts. No release tag is created by this gate.
+`issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` evidence object in the primary issue and every close issue. Before the verifier it is `status=pending`, `required=true`, points to `marketplace-verification.json`, and explicitly does not satisfy final publish. `publish-pr` pushes the reviewed content HEAD, runs the verifier, replaces only those structured entries with real `status=passed` facts, then commits exactly the verifier artifact plus ledger and pushes it. The verifier records finish-summary schema digest plus runtime/workspace ignore and `session_auto_commit=false` facts. After PR creation, one additional exact archived-task `finish-summary.json` tail is allowed and revalidated; no other path is accepted. Missing, pending, failed, stale, tampered, or mismatched evidence blocks. No release tag is created by this gate.

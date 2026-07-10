@@ -146,16 +146,24 @@ Continue entries must:
 Finish entries must:
 
 - call `.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work`
+- require the AI to create/review task-local `finish-summary-index.json` and pass
+  it through `--finish-summary-index-file` for dry-run and formal finish
 - explain that the `--from-trellis-finish-work` marker belongs only in explicit
   finish entries and must not be copied into continue entries
-- explain that finish-work archives the task, records journal metadata, and
-  publishes a non-draft PR
+- explain that finish-work archives the task, records task-local
+  `finish-summary.json`, never calls `add_session.py` or reads/writes
+  `.trellis/workspace/**`, and publishes a non-draft PR
 - explain that after finish-work dry-run the AI must run
   `resolve-human-artifacts.sh` against the active task and output the active
   `Markdown 产物 review 表`, and after formal archive it must run the resolver
   again against the archive path/name and output the archive-path table
 - explain that finish-work may commit Trellis metadata-only changes after the
   reviewed HEAD, but rejects non-metadata changes
+- explain that PR creation is followed by an exact archived-task summary URL
+  metadata tail; recovery validates identity/evidence, queries the current
+  repo/head/base before create, reuses one open PR, retries create once with
+  identical inputs for zero, and fails closed without create for multiple while
+  preserving the URL/initial empty refs and executable recovery command on error
 - explain that finish-work/archive never performs the first Docs SSOT merge;
   durable docs, `.trellis/spec/`, source, tests, schema, config, scripts,
   preset, overlay, CI/CD, deployment, migration, and Makefile drift after the

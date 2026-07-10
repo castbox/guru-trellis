@@ -12,7 +12,7 @@
 6. **Incremental development** — one task, one branch, one workspace unless the user explicitly approves a current-checkout direct-edit override for this turn.
 7. **Business project Chinese docs by default** — In target business repositories, `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**` durable docs, `00-bootstrap-guidelines` generated docs SSOT, and human-readable workflow artifact fields are written in Chinese by default.
 8. **Review before finish** — committed branch work must pass Branch Review Gate before `finish-work`.
-9. **Publish after finish** — `finish-work` archives the task, records the journal, then automatically pushes and creates a non-draft PR.
+9. **Publish after finish** — `finish-work` archives the task, records task-local `finish-summary.json`, then automatically pushes, creates a non-draft PR, and writes the PR URL back as an exact metadata tail.
 10. **Capture learnings** — after each task, review whether `.trellis/spec/` needs updates.
 11. **Knowledge before framework changes** — when a task may touch Guru Team middle-platform SDKs or frameworks, retrieve and cite current framework knowledge before design or implementation.
 12. **Task artifacts do not replace durable docs** — reconcile Trellis task artifacts with the repo's long-lived `docs/` source of truth before finish.
@@ -193,7 +193,7 @@ The merge commit body must use:
 本次 PR 完成 #{primary_issue}：中文 PR 摘要。
 
 审计：
-Trellis task archive、review gate 和 journal 提交保留在 PR 分支历史中，用于审计任务过程。
+Trellis task archive、review gate 和 finish-summary 提交保留在 PR 分支历史中，用于审计任务过程。
 
 PR: #{pull_request}
 Refs #{primary_issue}
@@ -218,7 +218,10 @@ On first use, initialize your identity:
 python3 ./.trellis/scripts/init_developer.py <your-name>
 ```
 
-Creates `.trellis/.developer` (gitignored) and `.trellis/workspace/<your-name>/`.
+The official command may create `.trellis/workspace/<your-name>/`; Guru Team
+ignores that directory, never uses it for finish/readiness/context evidence, and
+the preset keeps `.trellis/workspace/` gitignored. Task completion history lives
+in archived task-local `finish-summary.json` instead.
 
 ### Spec System
 
@@ -280,9 +283,11 @@ finish:
 
 ```bash
 .trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
+  --finish-summary-index-file "{TASK_DIR}/finish-summary-index.json" \
   --body-file "{TASK_DIR}/pr-body.md" \
   --dry-run
 .trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
+  --finish-summary-index-file "{TASK_DIR}/finish-summary-index.json" \
   --body-file "{TASK_DIR}/pr-body.md"
 ```
 
@@ -307,7 +312,7 @@ intentionally omitted from the normal helper sequence because ordinary direct
 publish calls are blocked; ordinary direct `finish-work.sh` calls are also
 blocked unless the explicit `trellis-finish-work` entrypoint supplies its
 intent marker. PR publish is triggered by that finish entrypoint after archive
-and journal succeed. They are not new user-facing primary commands.
+and initial finish-summary recording succeed. They are not new user-facing primary commands.
 
 ### Sub-agent Boundary
 
@@ -918,7 +923,7 @@ transition; it is not planning review evidence.
 
 [workflow-state:in_progress]
 Flow: `trellis-implement` -> `trellis-check` -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
-Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and journal succeed.
+Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and task-local finish-summary recording succeed.
 Before dispatching `trellis-implement` / channel `implement` or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, missing or non-passed `ambiguity_review`, or changed `prd.md`/`design.md`/`implement.md` content blocks Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
 Before commit, record and check `phase2-check.json`; it records completed `trellis-check` AI evidence, and validation commands or recorder success alone are not a complete check. The check must cover the Commit Message Contract for planned work commits, Trellis metadata commits, and merge commit payloads.
 Main-session default on dispatch platforms: dispatch `trellis-implement` / channel `implement`, wait for an implementation handoff, then dispatch `trellis-check` / channel `check`. Dispatch prompt starts with `Active task: <task path from task.py current>`. The main session may coordinate and record evidence, but it must not directly implement or directly check in default `sub-agent` mode.
@@ -931,7 +936,7 @@ Every Phase 2 or Phase 3 stop/completion reply must first run `resolve-human-art
 
 [workflow-state:in_progress-inline]
 Flow: `trellis-before-dev` -> edit -> `trellis-check` -> validation -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
-Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and journal succeed.
+Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; PR publish is owned by the explicit `trellis-finish-work` entrypoint after archive and task-local finish-summary recording succeed.
 Before editing or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, missing or non-passed `ambiguity_review`, or changed `prd.md`/`design.md`/`implement.md` content blocks inline Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
 Before commit, record and check `phase2-check.json`; validation commands alone are not a complete `trellis-check`. The check must cover the Commit Message Contract for planned work commits, Trellis metadata commits, and merge commit payloads.
 Do not dispatch implement/check sub-agents in inline mode.
@@ -1058,7 +1063,7 @@ If implementation reveals a requirement defect, return to Phase 1 and update art
 - 3.3 Spec update and Docs SSOT reconciliation `[required · once]`
 - 3.4 Commit changes `[required · once]`
 - 3.5 Branch Review Gate `[required · repeatable]`
-- 3.6 Finish-work archive and journal `[required · once]`
+- 3.6 Finish-work archive and finish-summary `[required · once]`
 - 3.7 Publish PR `[automatic after finish-work]`
 
 [workflow-state:completed]
@@ -1066,12 +1071,12 @@ Fallback/legacy closeout breadcrumb for an active task already marked `completed
 If `review-gate.json` is missing, failed, stale for the current HEAD, or reviewer-only, return to Phase 3.5 for independent review and the `review-branch` recorder.
 If the gate passed, create or review task-local PR readiness: `{TASK_DIR}/pr-body.md` via `--body-file "{TASK_DIR}/pr-body.md"` or a task-local `--body-artifact`.
 Run a dry-run first:
-`.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work --body-file "{TASK_DIR}/pr-body.md" --dry-run`
+`.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work --finish-summary-index-file "{TASK_DIR}/finish-summary-index.json" --body-file "{TASK_DIR}/pr-body.md" --dry-run`
 After dry-run, run `resolve-human-artifacts.sh --json --task <task-path>` and include an active-task `Markdown 产物 review 表`; then review the dry-run output and run the same command without `--dry-run`.
 After the formal finish archives the task, run `resolve-human-artifacts.sh --json --task <task-name-or-archive-path>` again and include the archive-path `Markdown 产物 review 表` in the final reply.
 Finish-work accepts only Trellis metadata tail such as `review.md`, `reviews/*.md`, `review-gate.json`, `agent-assignment.json`, `pr-body.md`, and `pr-readiness.json`, `marketplace-verification.json`; any non-metadata dirty path or non-metadata committed drift must go back to `trellis-continue` / Phase 2-3.
 Finish-work and archive do not perform the first Docs SSOT merge. If durable docs, `.trellis/spec/`, source, tests, schema, config, scripts, preset, overlay, CI/CD, deployment, migration, or Makefile assets changed after the gate, return to Phase 2/3 instead of treating the change as metadata tail.
-Do not call `publish-pr` directly; normal publish is only through the explicit `trellis-finish-work` closeout after archive and journal.
+Do not call `publish-pr` directly; normal publish is only through the explicit `trellis-finish-work` closeout after archive and initial finish-summary recording.
 [/workflow-state:completed]
 
 #### 3.2 Debug retrospective `[on demand]`
@@ -1313,7 +1318,7 @@ If a user manually commits on the command line, the next `trellis-continue` or `
 
 Do not implement this gate as a non-blocking task lifecycle hook. The workflow phase owns the review judgment; the companion script only records and validates the gate artifact.
 
-#### 3.6 Finish-work archive and journal `[required · once]`
+#### 3.6 Finish-work archive and finish-summary `[required · once]`
 
 Start only after Branch Review Gate has passed for the current HEAD. If only
 Trellis metadata such as `review.md`, `reviews/*.md`, `review-gate.json`,
@@ -1324,21 +1329,31 @@ reviewed code HEAD, finish-work may allow that metadata tail:
 .trellis/guru-team/scripts/bash/check-review-gate.sh --json --allow-metadata-after-gate
 ```
 
-Then create or review the task-local PR body at `{TASK_DIR}/pr-body.md` and
+Then create and AI-review `{TASK_DIR}/finish-summary-index.json`. It contains only
+`problem`, `outcome`, `changed_behavior`, `affected_surfaces`,
+`contract_changes`, and non-factual `commands` / `config_keys` /
+`schema_fields` / `symbols` / `phrases` search terms. The AI must not place
+issue, PR, branch, path, commit, timestamp, or derived retrieval facts in this
+input; the recorder injects those objective facts. AI input may contain at most
+19 `contract_changes`; the final summary remains bounded at 20 so the recorder
+can append the fixed protected-path filtering fact when required. Create or
+review the task-local PR body at `{TASK_DIR}/pr-body.md` and
 run the internal Guru Team finish helper first as a side-effect-free readiness
 preview, then as the formal finish:
 
 ```bash
 .trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
+  --finish-summary-index-file "{TASK_DIR}/finish-summary-index.json" \
   --body-file "{TASK_DIR}/pr-body.md" \
   --dry-run
 .trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
+  --finish-summary-index-file "{TASK_DIR}/finish-summary-index.json" \
   --body-file "{TASK_DIR}/pr-body.md"
 ```
 
-The `--from-trellis-finish-work` marker is required proof that the explicit finish entrypoint was invoked; `trellis-continue` must not add or synthesize it. Ordinary direct `finish-work.sh` calls fail before gate, archive, journal, push, or PR side effects. The helper then runs the normal finish-work actions: it verifies the passed gate has final `review_report` digest evidence plus raw `review_reports[]` digest evidence, rejects uncommitted non-metadata changes, archives the active task with `task.py archive`, records the session journal with `add_session.py`, commits any remaining Trellis metadata-only changes, then invokes publish. Metadata commits created here must use the empty-body Conventional Commits subject `chore(trellis): #<primary_issue> 固化任务收尾元数据`, not `chore(trellis): finalize task metadata`.
+The `--from-trellis-finish-work` marker is required proof that the explicit finish entrypoint was invoked; `trellis-continue` must not add or synthesize it. Ordinary direct `finish-work.sh` calls fail before gate, archive, finish-summary, push, or PR side effects. The helper verifies the passed gate and AI index input, rejects uncommitted non-metadata changes, archives the active task with the unmodified official `task.py archive`, writes and validates `.trellis/tasks/archive/<YYYY-MM>/<task>/finish-summary.json` with `github.pr_url=""` and `pr_refs=[]`, commits the task-local metadata, then invokes publish. Guru Team never calls `.trellis/scripts/add_session.py` and never reads or writes `.trellis/workspace/**`. Metadata commits use the empty-body Conventional Commits subject `chore(trellis): #<primary_issue> 固化任务收尾元数据`.
 
-When `--dry-run` is also passed with the explicit finish intent marker, the helper is a side-effect-free readiness preview: it validates the same gate, dirty-state, and PR body/readiness inputs, then prints the planned archive, journal, metadata commit subject, publish actions, and merge commit payload without moving task files, writing journal entries, creating commits, pushing, or creating a PR.
+When `--dry-run` is also passed, the helper validates the same gate, dirty state, AI index, and PR readiness inputs, then prints the planned archive target, finish-summary target/initial PR state, metadata commit, publish actions, and merge payload without moving or writing files, creating commits, pushing, or creating a PR. There is no journal/workspace plan.
 
 After the dry-run returns, run the human artifact resolver against the active
 task and include the active-task `Markdown 产物 review 表` in the preview reply:
@@ -1353,7 +1368,7 @@ archived task name or archived task path and include the archive-path
 because old active task links are not expected to remain valid after
 `task.py archive`; do not create symlinks, pointer dirs, or old-path stubs.
 
-`finish-work` may create Trellis metadata commits for archive and journal. These metadata commits do not invalidate the earlier code review gate; the helper only accepts Trellis metadata after the reviewed HEAD and blocks any code, config, script, schema, CI/CD, deployment, or preset change that appears after the gate.
+`finish-work` may create Trellis metadata commits for archive and finish-summary. These metadata commits do not invalidate the earlier code review gate; the helper only accepts Trellis metadata after the reviewed HEAD and blocks any code, config, script, schema, CI/CD, deployment, or preset change that appears after the gate.
 It also blocks durable docs, `.trellis/spec/`, tests, overlay, migration, and
 Makefile drift after the gate. Dry-run and formal finish both fail closed for
 that drift. Finish-work/archive must not be used to first execute Docs SSOT
@@ -1362,7 +1377,9 @@ Phase 2 check and Branch Review can run again.
 
 #### 3.7 Publish PR `[automatic after finish-work]`
 
-After archive and journal succeed, automatically publish the PR. This is not a new user-facing phase or command. The normal path is through the explicit `trellis-finish-work` entrypoint, which calls `finish-work.sh --from-trellis-finish-work`; `publish-pr.sh` is an internal helper and rejects ordinary direct calls. Direct `publish-pr.sh` is allowed only when `finish-work` calls it with its internal marker, or when an operator uses the explicit recovery/debug flag after `finish-work` already completed archive and journal but publish must be retried.
+After archive and initial finish-summary recording succeed, automatically publish the PR. This is not a new user-facing phase or command. The normal path is through the explicit `trellis-finish-work` entrypoint. Direct `publish-pr.sh` is allowed only when finish-work calls it internally, or through `--recovery-after-finish-work` after an archived-task publish interruption.
+
+After `gh pr create` returns a URL, publish sorts and deduplicates the raw final base-to-HEAD paths, filters `.trellis/workspace/**` and `.trellis/.runtime/**`, and writes the safe set to both `git.changed_paths` and search `paths`. If filtering occurred, the recorder appends exactly one fixed `finish-summary protected path filtering` contract fact without path, basename, or count details; if no filtering occurred, that fact is absent. The schema and validator continue to reject protected prefixes in every path field. Publish also writes `github.pr_url` and one derived `PR #<number>` ref, validates the same schema, commits exactly the archived task's `finish-summary.json`, pushes that metadata tail, and verifies the remote branch SHA. This tail does not reopen Branch Review Gate. Any code, config, schema, workflow, preset, docs, test, CI/CD, deployment, migration, or Makefile path fails closed. If PR creation fails, the initial empty URL remains. Every recovery-capable error preserves the PR URL, executable recovery command, and one `publish_inputs` snapshot containing the same repo, base branch, head branch, title, reviewed body, and draft mode. Before any recovery PR query or create, publish revalidates repo/base/head identity, AI-reviewed body/readiness, Branch Review Gate, and current/remote HEAD. When marketplace verification is required, normal publish executes the remote verifier, while recovery only validates and reuses the existing passed verifier artifact, ledger evidence, verified/remote/publish HEAD, and review gate. Recovery then queries open PRs for the current repo/head/base before any create: one is reused without create, none triggers exactly one create retry with the same title/body/draft inputs, and multiple fail closed without selecting or creating. A failed zero-PR create retry leaves the initial empty URL/ref summary unchanged and returns the same executable recovery command; the same recovery invocation performs no second query or create.
 
 The final publish/finish response must use the archive-after-finish resolver
 result from Phase 3.6 for its `Markdown 产物 review 表`; do not reuse active

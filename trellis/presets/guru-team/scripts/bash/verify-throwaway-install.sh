@@ -62,6 +62,24 @@ fail_if_stale_planning_hint() {
   fi
 }
 
+workspace_tree_digest() {
+  python3 - "$1" <<'PY'
+import hashlib
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+digest = hashlib.sha256()
+if root.is_dir():
+    for path in sorted(item for item in root.rglob("*") if item.is_file()):
+        digest.update(path.relative_to(root).as_posix().encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+print(digest.hexdigest())
+PY
+}
+
 CURRENT_BRANCH="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
 CURRENT_DIRTY="$(git -C "$REPO_ROOT" status --short -- trellis/index.json trellis/workflows/guru-team/workflow.md 2>/dev/null || true)"
 if [[ "$WORKFLOW_SOURCE" == gh:castbox/guru-trellis/trellis && ( "$CURRENT_BRANCH" != "main" || -n "$CURRENT_DIRTY" ) && "$ALLOW_PUBLIC_SAMPLE" != "1" ]]; then
@@ -94,6 +112,8 @@ git -C "$TARGET" remote add origin https://github.com/castbox/guru-trellis-throw
     --workflow-source "$WORKFLOW_SOURCE"
 )
 
+WORKSPACE_TREE_DIGEST_BEFORE="$(workspace_tree_digest "$TARGET/.trellis/workspace")"
+
 "$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
   --repo "$TARGET" \
   --platform codex \
@@ -107,14 +127,11 @@ grep -q "record-subagent-liveness-event.sh" "$TARGET/.trellis/workflow.md"
 grep -q "check-subagent-liveness.sh" "$TARGET/.trellis/workflow.md"
 grep -q "dispatch_mode: sub-agent" "$TARGET/.trellis/config.yaml"
 fail_if_english_language_rule ".trellis/spec" "$TARGET/.trellis/spec"
-WORKSPACE_LANGUAGE_FILES=()
-if [[ -f "$TARGET/.trellis/workspace/index.md" ]]; then
-  WORKSPACE_LANGUAGE_FILES+=("$TARGET/.trellis/workspace/index.md")
+WORKSPACE_TREE_DIGEST_AFTER="$(workspace_tree_digest "$TARGET/.trellis/workspace")"
+if [[ "$WORKSPACE_TREE_DIGEST_AFTER" != "$WORKSPACE_TREE_DIGEST_BEFORE" ]]; then
+  echo "Preset modified .trellis/workspace content" >&2
+  exit 2
 fi
-while IFS= read -r -d '' path; do
-  WORKSPACE_LANGUAGE_FILES+=("$path")
-done < <(find "$TARGET/.trellis/workspace" -mindepth 2 -maxdepth 2 -type f -name index.md -print0 2>/dev/null || true)
-fail_if_english_language_rule ".trellis/workspace index files" "${WORKSPACE_LANGUAGE_FILES[@]}"
 if [[ -d "$TARGET/.trellis/tasks/00-bootstrap-guidelines" ]]; then
   fail_if_english_language_rule "00-bootstrap-guidelines" "$TARGET/.trellis/tasks/00-bootstrap-guidelines"
 fi
@@ -126,7 +143,10 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/check-subagent-liveness.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-commit-messages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/format-merge-commit.sh"
 test -f "$TARGET/.trellis/guru-team/extension.json"
-python3 -c 'import json, sys; payload = json.load(open(sys.argv[1], encoding="utf-8")); extension = payload["extension"]; api = extension["public_api"]; assert extension["extension_id"] == "guru-team"; assert extension["version"]; assert extension["target_trellis_cli"] == "0.6.5"; assert "agent-assignment.json" in api["artifact_contracts"]; assert "pr-body.md" in api["artifact_contracts"]; assert "resolve-human-artifacts" in api["companion_scripts"]; assert "record-subagent-liveness-event" in api["companion_scripts"]; assert "check-subagent-liveness" in api["companion_scripts"]; assert "check-commit-messages" in api["companion_scripts"]; assert "format-merge-commit" in api["companion_scripts"]' "$TARGET/.trellis/guru-team/extension.json"
+python3 -c 'import json, sys; payload = json.load(open(sys.argv[1], encoding="utf-8")); extension = payload["extension"]; api = extension["public_api"]; assert extension["extension_id"] == "guru-team"; assert extension["version"]; assert extension["target_trellis_cli"] == "0.6.5"; assert "agent-assignment.json" in api["artifact_contracts"]; assert "pr-body.md" in api["artifact_contracts"]; assert "finish-summary.json" in api["artifact_contracts"]; assert "resolve-human-artifacts" in api["companion_scripts"]; assert "record-subagent-liveness-event" in api["companion_scripts"]; assert "check-subagent-liveness" in api["companion_scripts"]; assert "check-commit-messages" in api["companion_scripts"]; assert "format-merge-commit" in api["companion_scripts"]' "$TARGET/.trellis/guru-team/extension.json"
+grep -q "def resolve_open_pull_request_for_recovery" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
+grep -q "zero triggers one same-input create retry" "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
+test -z "$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print -quit)"
 test -d "$TARGET/.agents/skills"
 test -d "$TARGET/.codex"
 test -d "$TARGET/.cursor"

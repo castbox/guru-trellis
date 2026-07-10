@@ -88,6 +88,48 @@ class CodexDispatchModeInstallerTest(unittest.TestCase):
         self.assertIn("dispatch_mode: sub-agent", config.read_text(encoding="utf-8"))
 
 
+class FinishSummaryPresetPolicyTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tmp.name)
+        (self.repo / ".trellis").mkdir()
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_session_auto_commit_missing_true_false_and_invalid_values(self) -> None:
+        config = self.repo / ".trellis/config.yaml"
+        cases = [
+            ("# config\n", None, "updated"),
+            ("session_auto_commit: true\n", "true", "updated"),
+            ("session_auto_commit: false\n", "false", "unchanged"),
+            ("session_auto_commit: sometimes\n", "sometimes", "updated"),
+        ]
+        for content, previous, action in cases:
+            with self.subTest(content=content):
+                config.write_text(content, encoding="utf-8")
+                payload = preset.ensure_session_auto_commit_false(self.repo)
+                self.assertEqual(payload["action"], action)
+                self.assertEqual(payload["previous"], previous)
+                text = config.read_text(encoding="utf-8")
+                self.assertEqual(sum(line == "session_auto_commit: false" for line in text.splitlines()), 1)
+
+    def test_duplicate_active_session_auto_commit_keys_fail_closed(self) -> None:
+        config = self.repo / ".trellis/config.yaml"
+        config.write_text("session_auto_commit: true\nsession_auto_commit: false\n", encoding="utf-8")
+        with self.assertRaises(SystemExit):
+            preset.ensure_session_auto_commit_false(self.repo)
+
+    def test_workspace_ignore_is_idempotent_and_does_not_write_workspace(self) -> None:
+        first = preset.ensure_workspace_gitignore(self.repo)
+        second = preset.ensure_workspace_gitignore(self.repo)
+        self.assertEqual(first["action"], "installed")
+        self.assertEqual(second["action"], "unchanged")
+        text = (self.repo / ".gitignore").read_text(encoding="utf-8")
+        self.assertEqual(text.splitlines().count(".trellis/workspace/"), 1)
+        self.assertFalse((self.repo / ".trellis/workspace").exists())
+
+
 class LanguageGuidanceInstallerTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -117,7 +159,7 @@ class LanguageGuidanceInstallerTest(unittest.TestCase):
         self.assertIn("业务项目人类可读文档默认使用**中文**", text)
         self.assertNotIn("All documentation must be written in **English**", text)
 
-    def test_workspace_indexes_english_language_rules_are_replaced_with_chinese(self) -> None:
+    def test_workspace_indexes_are_not_scanned_or_rewritten(self) -> None:
         root_index = self.repo / ".trellis/workspace/index.md"
         user_index = self.repo / ".trellis/workspace/wumengye/index.md"
         user_index.parent.mkdir(parents=True)
@@ -132,16 +174,11 @@ class LanguageGuidanceInstallerTest(unittest.TestCase):
 
         payload = preset.normalize_business_doc_language_guidance(self.repo)
 
-        self.assertEqual(payload["replacement_count"], 2)
-        self.assertEqual(
-            payload["updated_paths"],
-            [
-                {"path": ".trellis/workspace/index.md", "replacements": 1},
-                {"path": ".trellis/workspace/wumengye/index.md", "replacements": 1},
-            ],
-        )
-        self.assertIn("业务项目人类可读文档默认使用**中文**", root_index.read_text(encoding="utf-8"))
-        self.assertIn("业务项目人类可读文档默认使用**中文**", user_index.read_text(encoding="utf-8"))
+        self.assertEqual(payload["replacement_count"], 0)
+        self.assertEqual(payload["updated_paths"], [])
+        self.assertNotIn(".trellis/workspace/index.md", payload["checked_paths"])
+        self.assertIn("All documentation should be written in **English**", root_index.read_text(encoding="utf-8"))
+        self.assertIn("All documentation must be written in **English**", user_index.read_text(encoding="utf-8"))
 
     def test_bootstrap_guidelines_language_rule_is_replaced_with_chinese(self) -> None:
         bootstrap_prd = self.repo / ".trellis/tasks/00-bootstrap-guidelines/prd.md"
@@ -238,6 +275,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertIn(Path("scripts/bash/check-subagent-liveness.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-commit-messages.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/format-merge-commit.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("schemas/finish-summary.schema.json"), preset.MANAGED_ASSET_PATHS)
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh").is_file())
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh", os.X_OK))
@@ -249,6 +287,9 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-commit-messages.sh", os.X_OK))
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/format-merge-commit.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/format-merge-commit.sh", os.X_OK))
+        self.assertTrue((self.repo / ".trellis/guru-team/schemas/finish-summary.schema.json").is_file())
+        self.assertIn("session_auto_commit: false", (self.repo / ".trellis/config.yaml").read_text(encoding="utf-8"))
+        self.assertIn(".trellis/workspace/", (self.repo / ".gitignore").read_text(encoding="utf-8"))
         self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
         self.assertTrue((self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").is_file())
         brainstorm = (self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").read_text(encoding="utf-8")

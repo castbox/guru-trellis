@@ -43,7 +43,8 @@
       "pr-body.md",
       "review-gate.json",
       "pr-readiness.json",
-      "marketplace-verification.json"
+      "marketplace-verification.json",
+      "finish-summary.json"
     ],
     "companion_scripts": [
       "check-env",

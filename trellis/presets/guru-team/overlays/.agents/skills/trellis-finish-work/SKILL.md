@@ -1,6 +1,6 @@
 ---
 name: trellis-finish-work
-description: "Guru Team Trellis finish entry. Use after task work is committed and Branch Review Gate passed; archives task, records journal, then publishes a non-draft PR."
+description: "Guru Team Trellis finish entry. Use after task work is committed and Branch Review Gate passed; archives task, records finish-summary, then publishes a non-draft PR."
 ---
 
 <!-- guru-team-overlay: v1 -->
@@ -28,10 +28,18 @@ Non-draft publish requires one of these reviewed sources; script-generated
 evidence. The readiness/body files are Trellis task metadata and publish reads
 the final body from the archived task artifact after archive.
 
+Create and AI-review `{TASK_DIR}/finish-summary-index.json` before dry-run. It
+contains semantic problem/outcome/behavior/surface/contract judgment plus
+non-factual command/config/schema/symbol/phrase search terms; the companion
+injects issue, PR, branch, path, commit, artifact, and time facts.
+The AI input accepts at most 19 `contract_changes`; the final summary accepts
+20 so the recorder can append the fixed protected-path filtering fact.
+
 Run the internal Guru Team finish helper as a dry-run readiness preview first:
 
 ```bash
 .trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
+  --finish-summary-index-file "{TASK_DIR}/finish-summary-index.json" \
   --body-file "{TASK_DIR}/pr-body.md" \
   --dry-run
 ```
@@ -40,6 +48,7 @@ Only after reviewing the dry-run output, run the formal finish:
 
 ```bash
 .trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
+  --finish-summary-index-file "{TASK_DIR}/finish-summary-index.json" \
   --body-file "{TASK_DIR}/pr-body.md"
 ```
 
@@ -57,4 +66,4 @@ archived task name or archive path and include the archive-path
 not be rendered as Markdown links, and JSON artifacts stay out of the standard
 table.
 
-The `--from-trellis-finish-work` marker is required proof that this explicit finish entrypoint was invoked; do not add it to `trellis-continue`. The helper verifies the passed Branch Review Gate, allowing only Trellis metadata such as `review.md`, `reviews/*.md`, `agent-assignment.json`, `review-gate.json`, and PR readiness files after the reviewed HEAD; rejects uncommitted non-metadata changes; archives the active task; records the session journal; commits any remaining Trellis metadata-only changes; then internally pushes the reviewed content branch, runs deterministic remote marketplace init/preview/switch/preset-reapply verification, records schema-valid task-local `marketplace-verification.json`, replaces the required structured pending evidence in primary/close Issue Scope Ledger entries with real verifier facts, commits exactly the artifact plus ledger as the metadata-only tail, pushes it, cross-validates artifact SHA-256/content HEAD/remote HEAD against the ledger, rechecks the exact two-path tail and Branch Review Gate, and only then creates the PR. Missing, pending, failed, tampered, or stale verification blocks before `gh pr create`; no tag is created. Durable docs, `.trellis/spec/`, source, tests, schema, config, scripts, preset, overlay, CI/CD, deployment, migration, or Makefile drift after the gate must return to Phase 2/3; finish-work/archive must not first merge durable docs or patch missing Docs SSOT work. Direct `publish-pr` is not the normal path and is reserved for explicit recovery/debug after finish-work. The helper does not perform review itself; the gate must already record task-local `review.md` as `review_report` digest evidence and raw `review_reports[]` digest evidence for every review round, and those Markdown reports must already be Chinese human-readable task artifacts except for literal command/path/JSON/HEAD/API/code tokens; when sub-agents were used it should already record `agent-assignment.json` digest/roles evidence. Docs SSOT reconciliation and any required Middle-platform Knowledge Gate evidence must also be present.
+The `--from-trellis-finish-work` marker proves this explicit entrypoint was invoked; do not add it to `trellis-continue`. The helper validates the gate and AI index, archives the task, writes schema-valid initial `finish-summary.json`, commits task metadata, verifies any remote marketplace change, and creates the PR. It never calls `add_session.py` or reads/writes `.trellis/workspace/**`. Initial and final summaries sort and deduplicate raw Git paths, filter workspace/runtime protected prefixes, write the safe set to both path arrays, and add exactly one fixed non-disclosing contract fact only when filtering occurred; schema/validator path fields have no protected-prefix exception. After PR creation it rewrites URL and PR ref, then commits and pushes exactly the archived summary path without reopening Branch Review Gate. Any non-task metadata path fails. A post-PR failure preserves the URL and executable recovery command. Recovery revalidates repo/base/head, reviewed body/readiness, gate, and current/remote HEAD, then queries the current repo/head/base before create: one open PR is reused, zero triggers one same-input create retry, and multiple fail closed without create. A failed retry keeps the initial empty URL/refs and returns the same recovery command. Normal marketplace publish executes the verifier; recovery validates and reuses existing passed verifier evidence instead of rerunning it against a dirty/staged summary. Missing/stale marketplace or review evidence blocks, and no tag is created. Durable docs, source, tests, schema, config, scripts, preset, overlay, CI/CD, deployment, migration, or Makefile drift must return to Phase 2/3.

@@ -3,3 +3,6 @@ __pycache__/
 
 # Guru Team local runtime cache
 .trellis/.runtime/
+
+# Guru Team excludes upstream workspace journals
+.trellis/workspace/

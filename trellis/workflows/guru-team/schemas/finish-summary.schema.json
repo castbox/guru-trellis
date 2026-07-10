@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/trellis/workflows/guru-team/schemas/finish-summary.schema.json",
+  "title": "Guru Team Finish Summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "generator",
+    "task",
+    "git",
+    "github",
+    "artifacts",
+    "index"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "generated_at": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
+    "generator": {"enum": ["guru-team.finish-work", "guru-team.finish-summary-backfill"]},
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slug", "title", "status", "artifact_dir", "archive_dir"],
+      "properties": {
+        "slug": {"type": "string", "minLength": 1, "maxLength": 200},
+        "title": {"type": "string", "minLength": 1, "maxLength": 500},
+        "status": {"const": "completed"},
+        "artifact_dir": {"$ref": "#/$defs/optionalSafePath"},
+        "archive_dir": {"$ref": "#/$defs/safePath"}
+      }
+    },
+    "git": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base_branch", "branch", "commits", "changed_paths"],
+      "properties": {
+        "base_branch": {"type": "string", "maxLength": 300},
+        "branch": {"type": "string", "maxLength": 300},
+        "commits": {"type": "array", "maxItems": 500, "uniqueItems": true, "items": {"type": "string", "pattern": "^[0-9a-f]{40}$"}},
+        "changed_paths": {"type": "array", "maxItems": 2000, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}}
+      }
+    },
+    "github": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_issues", "close_issues", "related_issues", "followup_issues", "pr_url"],
+      "properties": {
+        "source_issues": {"$ref": "#/$defs/issueNumbers"},
+        "close_issues": {"$ref": "#/$defs/issueNumbers"},
+        "related_issues": {"$ref": "#/$defs/issueNumbers"},
+        "followup_issues": {"$ref": "#/$defs/issueNumbers"},
+        "pr_url": {"type": "string", "maxLength": 1000, "pattern": "^$|^https://github\\.com/[^/]+/[^/]+/pull/[1-9][0-9]*$"}
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "prd": {"$ref": "#/$defs/taskPath"},
+        "design": {"$ref": "#/$defs/taskPath"},
+        "implement": {"$ref": "#/$defs/taskPath"},
+        "finish_summary_index": {"$ref": "#/$defs/taskPath"},
+        "issue_scope_ledger": {"$ref": "#/$defs/taskPath"},
+        "phase2_check": {"$ref": "#/$defs/taskPath"},
+        "review": {"$ref": "#/$defs/taskPath"},
+        "review_gate": {"$ref": "#/$defs/taskPath"},
+        "pr_body": {"$ref": "#/$defs/taskPath"},
+        "pr_readiness": {"$ref": "#/$defs/taskPath"},
+        "marketplace_verification": {"$ref": "#/$defs/taskPath"}
+      }
+    },
+    "index": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["problem", "outcome", "changed_behavior", "affected_surfaces", "contract_changes", "search_terms", "retrieval_text"],
+      "properties": {
+        "problem": {"type": "string", "minLength": 1, "maxLength": 400},
+        "outcome": {"type": "string", "minLength": 1, "maxLength": 500},
+        "changed_behavior": {"type": "array", "minItems": 1, "maxItems": 12, "items": {"type": "string", "minLength": 1, "maxLength": 180}},
+        "affected_surfaces": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"$ref": "#/$defs/affectedSurface"}},
+        "contract_changes": {"type": "array", "maxItems": 20, "items": {"$ref": "#/$defs/contractChange"}},
+        "search_terms": {"$ref": "#/$defs/searchTerms"},
+        "retrieval_text": {"type": "string", "minLength": 1, "maxLength": 3000}
+      }
+    },
+    "backfill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["generated", "generated_at", "source_artifacts", "missing_fields", "confidence"],
+      "properties": {
+        "generated": {"const": true},
+        "generated_at": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
+        "source_artifacts": {"type": "array", "maxItems": 20, "uniqueItems": true, "items": {"$ref": "#/$defs/taskPath"}},
+        "missing_fields": {"type": "array", "maxItems": 30, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 200}},
+        "confidence": {"enum": ["complete", "partial", "minimal"]}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"generator": {"const": "guru-team.finish-work"}}},
+      "then": {
+        "not": {"required": ["backfill"]},
+        "properties": {
+          "task": {"properties": {"artifact_dir": {"minLength": 1}}},
+          "git": {"properties": {"base_branch": {"minLength": 1}, "branch": {"minLength": 1}}}
+        }
+      },
+      "else": {"required": ["backfill"]}
+    }
+  ],
+  "$defs": {
+    "safePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^(?!/)(?![A-Za-z]:/)(?!\\.trellis/(?:workspace|\\.runtime)(?:/|$))(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*//)(?!.*\\\\)(?!.*[\\r\\n])\\S(?:.*\\S)?$"
+    },
+    "optionalSafePath": {"anyOf": [{"const": ""}, {"$ref": "#/$defs/safePath"}]},
+    "taskPath": {"$ref": "#/$defs/safePath"},
+    "issueNumbers": {"type": "array", "maxItems": 100, "uniqueItems": true, "items": {"type": "integer", "minimum": 1}},
+    "affectedSurface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "paths", "change"],
+      "properties": {
+        "kind": {"enum": ["workflow", "script", "schema", "preset", "overlay", "skill", "prompt", "docs", "test", "config", "task-artifact", "github", "other"]},
+        "name": {"type": "string", "minLength": 1, "maxLength": 200},
+        "paths": {"type": "array", "maxItems": 100, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
+        "change": {"type": "string", "minLength": 1, "maxLength": 240}
+      }
+    },
+    "contractChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "before", "after", "source_artifact"],
+      "properties": {
+        "contract": {"type": "string", "minLength": 1, "maxLength": 200},
+        "before": {"type": "string", "minLength": 1, "maxLength": 400},
+        "after": {"type": "string", "minLength": 1, "maxLength": 400},
+        "source_artifact": {"$ref": "#/$defs/optionalSafePath"}
+      }
+    },
+    "searchStringArray": {"type": "array", "maxItems": 100, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 500}},
+    "searchTerms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["issue_refs", "pr_refs", "branches", "paths", "commands", "config_keys", "schema_fields", "symbols", "phrases"],
+      "properties": {
+        "issue_refs": {"$ref": "#/$defs/searchStringArray"},
+        "pr_refs": {"type": "array", "maxItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^PR #[1-9][0-9]*$"}},
+        "branches": {"type": "array", "maxItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 300}},
+        "paths": {"type": "array", "maxItems": 2000, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
+        "commands": {"$ref": "#/$defs/searchStringArray"},
+        "config_keys": {"$ref": "#/$defs/searchStringArray"},
+        "schema_fields": {"$ref": "#/$defs/searchStringArray"},
+        "symbols": {"$ref": "#/$defs/searchStringArray"},
+        "phrases": {"type": "array", "minItems": 3, "maxItems": 40, "uniqueItems": true, "items": {"type": "string", "minLength": 2, "maxLength": 60}}
+      }
+    }
+  }
+}
