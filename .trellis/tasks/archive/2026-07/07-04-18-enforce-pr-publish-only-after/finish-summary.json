@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:33Z",
+  "generated_at": "2026-07-11T03:21:31Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-04-18-enforce-pr-publish-only-after",
@@ -78,7 +78,7 @@
   },
   "index": {
     "problem": "Guru Team Trellis 的当前目标流程是：",
-    "outcome": "历史结果：#18 Enforce PR publish only after finish-work；非目标信息未记录。",
+    "outcome": "#18 Enforce PR publish only after finish-work；非目标：历史 artifact 未记录。",
     "changed_behavior": [
       "历史归档 task 已完成：#18 Enforce PR publish only after finish-work。"
     ],
@@ -263,15 +263,15 @@
         "#18 Enforce PR publish only after finish-work",
         "07-04-18-enforce-pr-publish-only-after",
         "Guru Team Trellis 的当前目标流程是：",
-        "历史结果：#18 Enforce PR publish only after finish-work；非目标信息未记录。",
+        "#18 Enforce PR publish only after finish-work；非目标：历史 artifac",
         "历史归档 task 已完成：#18 Enforce PR publish only after finish-work。"
       ]
     },
-    "retrieval_text": "#18 Enforce PR publish only after finish-work\nGuru Team Trellis 的当前目标流程是：\n历史结果：#18 Enforce PR publish only after finish-work；非目标信息未记录。\n历史归档 task 已完成：#18 Enforce PR publish only after finish-work。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#18 Enforce PR publish only after finish-work\n07-04-18-enforce-pr-publish-only-after\nGuru Team Trellis 的当前目标流程是：\n历史结果：#18 Enforce PR publish only after finish-work；非目标信息未记录。\n历史归档 task 已完成：#18 Enforce PR publish only after finish-work。"
+    "retrieval_text": "#18 Enforce PR publish only after finish-work\nGuru Team Trellis 的当前目标流程是：\n#18 Enforce PR publish only after finish-work；非目标：历史 artifact 未记录。\n历史归档 task 已完成：#18 Enforce PR publish only after finish-work。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#18 Enforce PR publish only after finish-work\n07-04-18-enforce-pr-publish-only-after\nGuru Team Trellis 的当前目标流程是：\n#18 Enforce PR publish only after finish-work；非目标：历史 artifac\n历史归档 task 已完成：#18 Enforce PR publish only after finish-work。"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:33Z",
+    "generated_at": "2026-07-11T03:21:31Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

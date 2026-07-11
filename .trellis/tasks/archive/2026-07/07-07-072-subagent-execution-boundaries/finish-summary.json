@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:35Z",
+  "generated_at": "2026-07-11T03:21:33Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-07-072-subagent-execution-boundaries",
@@ -88,7 +88,7 @@
   },
   "index": {
     "problem": "在 Guru Team 默认 `sub-agent` mode 下，主 agent 必须真实调度并等待三个独立 subagent 边界：",
-    "outcome": "历史结果：#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行；非目标信息未记录。",
+    "outcome": "在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mode 的三段强制执行边界：实现必须由 `trellis-implement` 执行，Phase 2 check 必须由 `trellis-check` 执行，commit 后 Branch Review 必须由独立 review subag",
     "changed_behavior": [
       "在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mode 的三段强制执行边界：实现必须由 `trellis-implement` 执行，Phase 2 check 必须由 `trellis-check` 执行，commit 后 Branch Review 必须由独立 review subag",
       "更新 Codex、Claude、Cursor 与 channel runtime 的 continue / implement / check overlay，明确主 agent 只负责规划、调度、等待、恢复、替换、记录 evidence、commit 与 finish，不得用主 agent 自己的实现、自检、自审或脚本校验替代 subagent 工作。",
@@ -303,18 +303,17 @@
         "#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由",
         "07-07-072-subagent-execution-boundaries",
         "在 Guru Team 默认 `sub-agent` mode 下，主 agent 必须真实调度并等待三个独立 suba",
-        "历史结果：#72 默认 sub-agent mode 下强制 implement、check 与 branch revi",
         "在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mo",
         "更新 Codex、Claude、Cursor 与 channel runtime 的 continue / implem",
         "同步 README、workflow README、preset README、durable requirements",
         "保持 #43 agent identity、#44 Branch Review Gate pass 语义、#62 wai"
       ]
     },
-    "retrieval_text": "#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行\n在 Guru Team 默认 `sub-agent` mode 下，主 agent 必须真实调度并等待三个独立 subagent 边界：\n历史结果：#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行；非目标信息未记录。\n在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mode 的三段强制执行边界：实现必须由 `trellis-implement` 执行，Phase 2 check 必须由 `trellis-check` 执行，commit 后 Branch Review 必须由独立 review subag\n更新 Codex、Claude、Cursor 与 channel runtime 的 continue / implement / check overlay，明确主 agent 只负责规划、调度、等待、恢复、替换、记录 evidence、commit 与 finish，不得用主 agent 自己的实现、自检、自审或脚本校验替代 subagent 工作。\n同步 README、workflow README、preset README、durable requirements 与 `.trellis/spec/**`，明确 `phase2-check.json` 是固化 `trellis-check` AI check 结论和验证证据的 Guru Team artifact，不是脚本替代 AI check 的入\n保持 #43 agent identity、#44 Branch Review Gate pass 语义、#62 wait timeout / stale / unfinished termination 合同为引用关系，没有复制、改写或弱化既有规则。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由\n07-07-072-subagent-execution-boundaries\n在 Guru Team 默认 `sub-agent` mode 下，主 agent 必须真实调度并等待三个独立 suba\n历史结果：#72 默认 sub-agent mode 下强制 implement、check 与 branch revi\n在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mo\n更新 Codex、Claude、Cursor 与 channel runtime 的 continue / implem\n同步 README、workflow README、preset README、durable requirements\n保持 #43 agent identity、#44 Branch Review Gate pass 语义、#62 wai"
+    "retrieval_text": "#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行\n在 Guru Team 默认 `sub-agent` mode 下，主 agent 必须真实调度并等待三个独立 subagent 边界：\n在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mode 的三段强制执行边界：实现必须由 `trellis-implement` 执行，Phase 2 check 必须由 `trellis-check` 执行，commit 后 Branch Review 必须由独立 review subag\n在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mode 的三段强制执行边界：实现必须由 `trellis-implement` 执行，Phase 2 check 必须由 `trellis-check` 执行，commit 后 Branch Review 必须由独立 review subag\n更新 Codex、Claude、Cursor 与 channel runtime 的 continue / implement / check overlay，明确主 agent 只负责规划、调度、等待、恢复、替换、记录 evidence、commit 与 finish，不得用主 agent 自己的实现、自检、自审或脚本校验替代 subagent 工作。\n同步 README、workflow README、preset README、durable requirements 与 `.trellis/spec/**`，明确 `phase2-check.json` 是固化 `trellis-check` AI check 结论和验证证据的 Guru Team artifact，不是脚本替代 AI check 的入\n保持 #43 agent identity、#44 Branch Review Gate pass 语义、#62 wait timeout / stale / unfinished termination 合同为引用关系，没有复制、改写或弱化既有规则。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由\n07-07-072-subagent-execution-boundaries\n在 Guru Team 默认 `sub-agent` mode 下，主 agent 必须真实调度并等待三个独立 suba\n在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mo\n更新 Codex、Claude、Cursor 与 channel runtime 的 continue / implem\n同步 README、workflow README、preset README、durable requirements\n保持 #43 agent identity、#44 Branch Review Gate pass 语义、#62 wai"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:35Z",
+    "generated_at": "2026-07-11T03:21:33Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

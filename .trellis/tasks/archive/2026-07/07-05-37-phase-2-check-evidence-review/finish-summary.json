@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:34Z",
+  "generated_at": "2026-07-11T03:21:31Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-05-37-phase-2-check-evidence-review",
@@ -70,7 +70,7 @@
   },
   "index": {
     "problem": "修复 Guru Team Branch Review Gate 对 `phase2-check.json` 的 post-commit 校验语义：允许“提交前完整 `trellis-check` 记录 dirty paths，随后 Phase 3.4 将这些 dirty paths 提交”的正常流程通过 Review Gate，同时继续阻断未被 Phase 2 check 覆盖的新提交或非 metadata 工作区改动。",
-    "outcome": "历史结果：#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判；非目标信息未记录。",
+    "outcome": "修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 stale 误判：提交前记录的 `phase2-check.json` 可以在提交后继续作为有效证据，只要后续提交的非 metadata 路径全部被当时的 `dirty_paths` 覆盖。",
     "changed_behavior": [
       "修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 stale 误判：提交前记录的 `phase2-check.json` 可以在提交后继续作为有效证据，只要后续提交的非 metadata 路径全部被当时的 `dirty_paths` 覆盖。",
       "新增 `committed_paths_match_phase2_dirty_paths()` 与路径覆盖判断，使用 `<recorded_head>..HEAD` 审计提交后的路径，并继续阻断未被覆盖的代码、文档、配置、测试或脚本变更。",
@@ -248,18 +248,17 @@
         "#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判",
         "07-05-37-phase-2-check-evidence-review",
         "修复 Guru Team Branch Review Gate 对 `phase2-check.json` 的 post",
-        "历史结果：#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale",
         "修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 s",
         "新增 `committed_paths_match_phase2_dirty_paths()` 与路径覆盖判断，使用 `",
         "补齐目录 dirty path 的边界语义：`docs/` 这类以 `/` 结尾的记录可以覆盖子路径，普通前缀字符串不会",
         "同步 Guru Team workflow、`trellis-continue` overlay、Codex/Claud"
       ]
     },
-    "retrieval_text": "#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判\n修复 Guru Team Branch Review Gate 对 `phase2-check.json` 的 post-commit 校验语义：允许“提交前完整 `trellis-check` 记录 dirty paths，随后 Phase 3.4 将这些 dirty paths 提交”的正常流程通过 Review Gate，同时继续阻断未被 Phase 2 check 覆盖的新提交或非 metadata 工作区改动。\n历史结果：#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判；非目标信息未记录。\n修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 stale 误判：提交前记录的 `phase2-check.json` 可以在提交后继续作为有效证据，只要后续提交的非 metadata 路径全部被当时的 `dirty_paths` 覆盖。\n新增 `committed_paths_match_phase2_dirty_paths()` 与路径覆盖判断，使用 `<recorded_head>..HEAD` 审计提交后的路径，并继续阻断未被覆盖的代码、文档、配置、测试或脚本变更。\n补齐目录 dirty path 的边界语义：`docs/` 这类以 `/` 结尾的记录可以覆盖子路径，普通前缀字符串不会误放行无关文件。\n同步 Guru Team workflow、`trellis-continue` overlay、Codex/Claude/Cursor installed copies、README、durable requirements docs 和 `.trellis/spec/workflow/*`，避免 AI 在正常流程里用“提交后重录 Phase 2 evid\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判\n07-05-37-phase-2-check-evidence-review\n修复 Guru Team Branch Review Gate 对 `phase2-check.json` 的 post\n历史结果：#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale\n修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 s\n新增 `committed_paths_match_phase2_dirty_paths()` 与路径覆盖判断，使用 `\n补齐目录 dirty path 的边界语义：`docs/` 这类以 `/` 结尾的记录可以覆盖子路径，普通前缀字符串不会\n同步 Guru Team workflow、`trellis-continue` overlay、Codex/Claud"
+    "retrieval_text": "#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判\n修复 Guru Team Branch Review Gate 对 `phase2-check.json` 的 post-commit 校验语义：允许“提交前完整 `trellis-check` 记录 dirty paths，随后 Phase 3.4 将这些 dirty paths 提交”的正常流程通过 Review Gate，同时继续阻断未被 Phase 2 check 覆盖的新提交或非 metadata 工作区改动。\n修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 stale 误判：提交前记录的 `phase2-check.json` 可以在提交后继续作为有效证据，只要后续提交的非 metadata 路径全部被当时的 `dirty_paths` 覆盖。\n修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 stale 误判：提交前记录的 `phase2-check.json` 可以在提交后继续作为有效证据，只要后续提交的非 metadata 路径全部被当时的 `dirty_paths` 覆盖。\n新增 `committed_paths_match_phase2_dirty_paths()` 与路径覆盖判断，使用 `<recorded_head>..HEAD` 审计提交后的路径，并继续阻断未被覆盖的代码、文档、配置、测试或脚本变更。\n补齐目录 dirty path 的边界语义：`docs/` 这类以 `/` 结尾的记录可以覆盖子路径，普通前缀字符串不会误放行无关文件。\n同步 Guru Team workflow、`trellis-continue` overlay、Codex/Claude/Cursor installed copies、README、durable requirements docs 和 `.trellis/spec/workflow/*`，避免 AI 在正常流程里用“提交后重录 Phase 2 evid\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判\n07-05-37-phase-2-check-evidence-review\n修复 Guru Team Branch Review Gate 对 `phase2-check.json` 的 post\n修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 s\n新增 `committed_paths_match_phase2_dirty_paths()` 与路径覆盖判断，使用 `\n补齐目录 dirty path 的边界语义：`docs/` 这类以 `/` 结尾的记录可以覆盖子路径，普通前缀字符串不会\n同步 Guru Team workflow、`trellis-continue` overlay、Codex/Claud"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:34Z",
+    "generated_at": "2026-07-11T03:21:31Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

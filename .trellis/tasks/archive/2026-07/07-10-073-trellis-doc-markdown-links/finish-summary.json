@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:37Z",
+  "generated_at": "2026-07-11T03:21:34Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-10-073-trellis-doc-markdown-links",
@@ -115,7 +115,7 @@
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:37Z",
+    "generated_at": "2026-07-11T03:21:34Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:36Z",
+  "generated_at": "2026-07-11T03:21:33Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-08-078-review-report-chinese-language",
@@ -82,7 +82,7 @@
     "pr_body": "pr-body.md"
   },
   "index": {
-    "problem": "历史问题：#78 Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则 的旧行为未记录。",
+    "problem": "#78 Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则；旧行为：历史 artifact 未记录。",
     "outcome": "Branch Review Gate 可通过。最终放行审查代理未发现 P0/P1/P2/P3 finding，`findings_count=0`，当前变更可进入 gate recorder。后续 PR / finish-work 文案必须明确 throwaway install 未实测，不得声称已完整覆盖开箱即用验证。",
     "changed_behavior": [
       "将 Branch Review 每轮 `reviews/*.md` raw report 和最终 `review.md` rollup 明确列为中文 human-readable task artifacts，补齐标题、字段名、证据、发现、观察项、后续候选、部署 / 安全判断和结论的中文默认规则。",
@@ -278,7 +278,6 @@
       "phrases": [
         "#78 Branch Review raw reports / review.md 必须继承 #57 中文 artifa",
         "07-08-078-review-report-chinese-language",
-        "历史问题：#78 Branch Review raw reports / review.md 必须继承 #57 中文 a",
         "Branch Review Gate 可通过。最终放行审查代理未发现 P0/P1/P2/P3 finding，`find",
         "将 Branch Review 每轮 `reviews/*.md` raw report 和最终 `review.md`",
         "同步 canonical workflow、dogfood workflow、preset overlays、Codex",
@@ -286,11 +285,11 @@
         "更新 `.trellis/spec/**` 与 `docs/requirements/**` durable docs，"
       ]
     },
-    "retrieval_text": "#78 Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则\n历史问题：#78 Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则 的旧行为未记录。\nBranch Review Gate 可通过。最终放行审查代理未发现 P0/P1/P2/P3 finding，`findings_count=0`，当前变更可进入 gate recorder。后续 PR / finish-work 文案必须明确 throwaway install 未实测，不得声称已完整覆盖开箱即用验证。\n将 Branch Review 每轮 `reviews/*.md` raw report 和最终 `review.md` rollup 明确列为中文 human-readable task artifacts，补齐标题、字段名、证据、发现、观察项、后续候选、部署 / 安全判断和结论的中文默认规则。\n同步 canonical workflow、dogfood workflow、preset overlays、Codex / Claude / Cursor / `.agents` / `.trellis/agents` installed copies，确保后续生成链路不会只修当前 task artifact。\n在 Guru Team companion validator 中新增固定英文模板标题拦截，防止 `Review Rounds`、`Findings Lifecycle`、`Evidence Handoff`、`Deployment / safety impact`、`Follow-up Candidates` 等模板痕迹进入 `review.md` 或 `\n更新 `.trellis/spec/**` 与 `docs/requirements/**` durable docs，记录 Branch Review review artifact 的中文规则和 validator 边界。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#78 Branch Review raw reports / review.md 必须继承 #57 中文 artifa\n07-08-078-review-report-chinese-language\n历史问题：#78 Branch Review raw reports / review.md 必须继承 #57 中文 a\nBranch Review Gate 可通过。最终放行审查代理未发现 P0/P1/P2/P3 finding，`find\n将 Branch Review 每轮 `reviews/*.md` raw report 和最终 `review.md`\n同步 canonical workflow、dogfood workflow、preset overlays、Codex\n在 Guru Team companion validator 中新增固定英文模板标题拦截，防止 `Review Rou\n更新 `.trellis/spec/**` 与 `docs/requirements/**` durable docs，"
+    "retrieval_text": "#78 Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则\n#78 Branch Review raw reports / review.md 必须继承 #57 中文 artifact 规则；旧行为：历史 artifact 未记录。\nBranch Review Gate 可通过。最终放行审查代理未发现 P0/P1/P2/P3 finding，`findings_count=0`，当前变更可进入 gate recorder。后续 PR / finish-work 文案必须明确 throwaway install 未实测，不得声称已完整覆盖开箱即用验证。\n将 Branch Review 每轮 `reviews/*.md` raw report 和最终 `review.md` rollup 明确列为中文 human-readable task artifacts，补齐标题、字段名、证据、发现、观察项、后续候选、部署 / 安全判断和结论的中文默认规则。\n同步 canonical workflow、dogfood workflow、preset overlays、Codex / Claude / Cursor / `.agents` / `.trellis/agents` installed copies，确保后续生成链路不会只修当前 task artifact。\n在 Guru Team companion validator 中新增固定英文模板标题拦截，防止 `Review Rounds`、`Findings Lifecycle`、`Evidence Handoff`、`Deployment / safety impact`、`Follow-up Candidates` 等模板痕迹进入 `review.md` 或 `\n更新 `.trellis/spec/**` 与 `docs/requirements/**` durable docs，记录 Branch Review review artifact 的中文规则和 validator 边界。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#78 Branch Review raw reports / review.md 必须继承 #57 中文 artifa\n07-08-078-review-report-chinese-language\nBranch Review Gate 可通过。最终放行审查代理未发现 P0/P1/P2/P3 finding，`find\n将 Branch Review 每轮 `reviews/*.md` raw report 和最终 `review.md`\n同步 canonical workflow、dogfood workflow、preset overlays、Codex\n在 Guru Team companion validator 中新增固定英文模板标题拦截，防止 `Review Rou\n更新 `.trellis/spec/**` 与 `docs/requirements/**` durable docs，"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:36Z",
+    "generated_at": "2026-07-11T03:21:33Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

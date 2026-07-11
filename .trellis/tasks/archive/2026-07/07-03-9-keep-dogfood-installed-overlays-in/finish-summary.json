@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:33Z",
+  "generated_at": "2026-07-11T03:21:30Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-03-9-keep-dogfood-installed-overlays-in",
@@ -70,7 +70,7 @@
   },
   "index": {
     "problem": "解决 GitHub issue #9：让本仓库 dogfood 安装副本与 canonical preset overlay 对齐，并提供可重复运行的漂移检查，避免 `.agents/.codex/.cursor/.claude` 等平台入口再次静默落后于 `trellis/presets/guru-team/overlays/`。",
-    "outcome": "历史结果：#9 Keep dogfood installed overlays in sync with canonical preset overlays；非目标信息未记录。",
+    "outcome": "#9 Keep dogfood installed overlays in sync with canonical preset overlays；非目标：历史 artifact 未记录。",
     "changed_behavior": [
       "历史归档 task 已完成：#9 Keep dogfood installed overlays in sync with canonical preset overlays。"
     ],
@@ -240,15 +240,14 @@
         "#9 Keep dogfood installed overlays in sync with canonical pr",
         "07-03-9-keep-dogfood-installed-overlays-in",
         "解决 GitHub issue #9：让本仓库 dogfood 安装副本与 canonical preset overl",
-        "历史结果：#9 Keep dogfood installed overlays in sync with canonic",
         "历史归档 task 已完成：#9 Keep dogfood installed overlays in sync wit"
       ]
     },
-    "retrieval_text": "#9 Keep dogfood installed overlays in sync with canonical preset overlays\n解决 GitHub issue #9：让本仓库 dogfood 安装副本与 canonical preset overlay 对齐，并提供可重复运行的漂移检查，避免 `.agents/.codex/.cursor/.claude` 等平台入口再次静默落后于 `trellis/presets/guru-team/overlays/`。\n历史结果：#9 Keep dogfood installed overlays in sync with canonical preset overlays；非目标信息未记录。\n历史归档 task 已完成：#9 Keep dogfood installed overlays in sync with canonical preset overlays。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#9 Keep dogfood installed overlays in sync with canonical pr\n07-03-9-keep-dogfood-installed-overlays-in\n解决 GitHub issue #9：让本仓库 dogfood 安装副本与 canonical preset overl\n历史结果：#9 Keep dogfood installed overlays in sync with canonic\n历史归档 task 已完成：#9 Keep dogfood installed overlays in sync wit"
+    "retrieval_text": "#9 Keep dogfood installed overlays in sync with canonical preset overlays\n解决 GitHub issue #9：让本仓库 dogfood 安装副本与 canonical preset overlay 对齐，并提供可重复运行的漂移检查，避免 `.agents/.codex/.cursor/.claude` 等平台入口再次静默落后于 `trellis/presets/guru-team/overlays/`。\n#9 Keep dogfood installed overlays in sync with canonical preset overlays；非目标：历史 artifact 未记录。\n历史归档 task 已完成：#9 Keep dogfood installed overlays in sync with canonical preset overlays。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#9 Keep dogfood installed overlays in sync with canonical pr\n07-03-9-keep-dogfood-installed-overlays-in\n解决 GitHub issue #9：让本仓库 dogfood 安装副本与 canonical preset overl\n历史归档 task 已完成：#9 Keep dogfood installed overlays in sync wit"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:33Z",
+    "generated_at": "2026-07-11T03:21:30Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

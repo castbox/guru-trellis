@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:35Z",
+  "generated_at": "2026-07-11T03:21:33Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-08-060-workspace-boundary-guard",
@@ -342,7 +342,7 @@
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:35Z",
+    "generated_at": "2026-07-11T03:21:33Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

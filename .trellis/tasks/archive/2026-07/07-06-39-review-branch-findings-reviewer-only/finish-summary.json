@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:34Z",
+  "generated_at": "2026-07-11T03:21:32Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-06-39-review-branch-findings-reviewer-only",
@@ -69,7 +69,7 @@
     "pr_body": "pr-body.md"
   },
   "index": {
-    "problem": "历史问题：#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact 的旧行为未记录。",
+    "problem": "#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact；旧行为：历史 artifact 未记录。",
     "outcome": "本 PR 收紧 Guru Team Branch Review Gate 的 `review-branch` 记录语义，避免 findings 路径产生只有 `--reviewer` identity、缺少独立审查来源和 task-local `review.md` 的 gate artifact。",
     "changed_behavior": [
       "`review-branch` 的 pass 和 findings 记录路径都必须提供 `--review-source independent-agent`，且不能使用 main-session/self-review identity 冒充独立审查。",
@@ -244,7 +244,6 @@
       "phrases": [
         "#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate",
         "07-06-39-review-branch-findings-reviewer-only",
-        "历史问题：#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only",
         "本 PR 收紧 Guru Team Branch Review Gate 的 `review-branch` 记录语义，",
         "`review-branch` 的 pass 和 findings 记录路径都必须提供 `--review-source",
         "`--review-report` 必须指向当前 task-local `review.md`；`--reviewer`",
@@ -253,11 +252,11 @@
         "历史归档 task 已完成"
       ]
     },
-    "retrieval_text": "#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact\n历史问题：#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact 的旧行为未记录。\n本 PR 收紧 Guru Team Branch Review Gate 的 `review-branch` 记录语义，避免 findings 路径产生只有 `--reviewer` identity、缺少独立审查来源和 task-local `review.md` 的 gate artifact。\n`review-branch` 的 pass 和 findings 记录路径都必须提供 `--review-source independent-agent`，且不能使用 main-session/self-review identity 冒充独立审查。\n`--review-report` 必须指向当前 task-local `review.md`；`--reviewer` 只保留为 reviewer identity metadata。\n`conclusion.passed=true` 只会在显式 `--pass` 且没有任何 finding 时出现；P0/P1/P2/P3 任意 finding 都会阻断 pass。\nworkflow、Codex/Claude/Cursor/agents continue 入口、dogfood installed copies 和 `.trellis/spec/workflow/*` 已同步 failed findings artifact 也必须承接独立审查证据的规则。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate\n07-06-39-review-branch-findings-reviewer-only\n历史问题：#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only\n本 PR 收紧 Guru Team Branch Review Gate 的 `review-branch` 记录语义，\n`review-branch` 的 pass 和 findings 记录路径都必须提供 `--review-source\n`--review-report` 必须指向当前 task-local `review.md`；`--reviewer`\n`conclusion.passed=true` 只会在显式 `--pass` 且没有任何 finding 时出现；P0\nworkflow、Codex/Claude/Cursor/agents continue 入口、dogfood inst\n历史归档 task 已完成"
+    "retrieval_text": "#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact\n#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact；旧行为：历史 artifact 未记录。\n本 PR 收紧 Guru Team Branch Review Gate 的 `review-branch` 记录语义，避免 findings 路径产生只有 `--reviewer` identity、缺少独立审查来源和 task-local `review.md` 的 gate artifact。\n`review-branch` 的 pass 和 findings 记录路径都必须提供 `--review-source independent-agent`，且不能使用 main-session/self-review identity 冒充独立审查。\n`--review-report` 必须指向当前 task-local `review.md`；`--reviewer` 只保留为 reviewer identity metadata。\n`conclusion.passed=true` 只会在显式 `--pass` 且没有任何 finding 时出现；P0/P1/P2/P3 任意 finding 都会阻断 pass。\nworkflow、Codex/Claude/Cursor/agents continue 入口、dogfood installed copies 和 `.trellis/spec/workflow/*` 已同步 failed findings artifact 也必须承接独立审查证据的规则。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate\n07-06-39-review-branch-findings-reviewer-only\n本 PR 收紧 Guru Team Branch Review Gate 的 `review-branch` 记录语义，\n`review-branch` 的 pass 和 findings 记录路径都必须提供 `--review-source\n`--review-report` 必须指向当前 task-local `review.md`；`--reviewer`\n`conclusion.passed=true` 只会在显式 `--pass` 且没有任何 finding 时出现；P0\nworkflow、Codex/Claude/Cursor/agents continue 入口、dogfood inst\n历史归档 task 已完成"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:34Z",
+    "generated_at": "2026-07-11T03:21:32Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

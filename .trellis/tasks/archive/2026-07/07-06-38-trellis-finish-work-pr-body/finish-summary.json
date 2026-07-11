@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:34Z",
+  "generated_at": "2026-07-11T03:21:32Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-06-38-trellis-finish-work-pr-body",
@@ -68,7 +68,7 @@
   },
   "index": {
     "problem": "修正 Guru Team `trellis-finish-work` 入口的推荐命令示例，避免 AI 看到无 `--body-file` / `--body-artifact` 的单行示例后直接执行 finish-work，导致 reviewed PR body 缺失问题延后到 finish 阶段才失败。",
-    "outcome": "历史结果：#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程；非目标信息未记录。",
+    "outcome": "完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.md`，再执行 `--body-file ... --dry-run`，dry-run 通过后再正式执行 `--body-file ...`。",
     "changed_behavior": [
       "完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.md`，再执行 `--body-file ... --dry-run`，dry-run 通过后再正式执行 `--body-file ...`。",
       "同步 canonical `guru-team` workflow、preset overlay、dogfood workflow，以及 Codex、Claude、Cursor、`.agents` 等 finish-work 入口，避免某个平台仍展示裸 `finish-work.sh` 调用。",
@@ -237,17 +237,16 @@
         "#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程",
         "07-06-38-trellis-finish-work-pr-body",
         "修正 Guru Team `trellis-finish-work` 入口的推荐命令示例，避免 AI 看到无 `--bo",
-        "历史结果：#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run",
         "完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.m",
         "同步 canonical `guru-team` workflow、preset overlay、dogfood wor",
         "补充回归测试，防止 runtime entrypoint 或 public docs 再次出现缺少 reviewed P"
       ]
     },
-    "retrieval_text": "#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程\n修正 Guru Team `trellis-finish-work` 入口的推荐命令示例，避免 AI 看到无 `--body-file` / `--body-artifact` 的单行示例后直接执行 finish-work，导致 reviewed PR body 缺失问题延后到 finish 阶段才失败。\n历史结果：#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程；非目标信息未记录。\n完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.md`，再执行 `--body-file ... --dry-run`，dry-run 通过后再正式执行 `--body-file ...`。\n同步 canonical `guru-team` workflow、preset overlay、dogfood workflow，以及 Codex、Claude、Cursor、`.agents` 等 finish-work 入口，避免某个平台仍展示裸 `finish-work.sh` 调用。\n补充回归测试，防止 runtime entrypoint 或 public docs 再次出现缺少 reviewed PR body 与 dry-run 的 finish-work 示例。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程\n07-06-38-trellis-finish-work-pr-body\n修正 Guru Team `trellis-finish-work` 入口的推荐命令示例，避免 AI 看到无 `--bo\n历史结果：#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run\n完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.m\n同步 canonical `guru-team` workflow、preset overlay、dogfood wor\n补充回归测试，防止 runtime entrypoint 或 public docs 再次出现缺少 reviewed P"
+    "retrieval_text": "#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程\n修正 Guru Team `trellis-finish-work` 入口的推荐命令示例，避免 AI 看到无 `--body-file` / `--body-artifact` 的单行示例后直接执行 finish-work，导致 reviewed PR body 缺失问题延后到 finish 阶段才失败。\n完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.md`，再执行 `--body-file ... --dry-run`，dry-run 通过后再正式执行 `--body-file ...`。\n完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.md`，再执行 `--body-file ... --dry-run`，dry-run 通过后再正式执行 `--body-file ...`。\n同步 canonical `guru-team` workflow、preset overlay、dogfood workflow，以及 Codex、Claude、Cursor、`.agents` 等 finish-work 入口，避免某个平台仍展示裸 `finish-work.sh` 调用。\n补充回归测试，防止 runtime entrypoint 或 public docs 再次出现缺少 reviewed PR body 与 dry-run 的 finish-work 示例。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程\n07-06-38-trellis-finish-work-pr-body\n修正 Guru Team `trellis-finish-work` 入口的推荐命令示例，避免 AI 看到无 `--bo\n完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.m\n同步 canonical `guru-team` workflow、preset overlay、dogfood wor\n补充回归测试，防止 runtime entrypoint 或 public docs 再次出现缺少 reviewed P"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:34Z",
+    "generated_at": "2026-07-11T03:21:32Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

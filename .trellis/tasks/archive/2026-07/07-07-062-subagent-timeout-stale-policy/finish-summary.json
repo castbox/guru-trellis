@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:35Z",
+  "generated_at": "2026-07-11T03:21:33Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-07-062-subagent-timeout-stale-policy",
@@ -90,8 +90,8 @@
     "pr_body": "pr-body.md"
   },
   "index": {
-    "problem": "历史问题：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果 的旧行为未记录。",
-    "outcome": "历史结果：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果；非目标信息未记录。",
+    "problem": "#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果；旧行为：历史 artifact 未记录。",
+    "outcome": "为 Guru Team workflow 增加 sub-agent wait timeout / stale / unfinished termination 合同：`wait_agent`、`trellis channel wait` 或等价等待命令 timeout 只表示等待窗口结束，不代表 agent 失败、卡死或可以采用半成品输出。",
     "changed_behavior": [
       "为 Guru Team workflow 增加 sub-agent wait timeout / stale / unfinished termination 合同：`wait_agent`、`trellis channel wait` 或等价等待命令 timeout 只表示等待窗口结束，不代表 agent 失败、卡死或可以采用半成品输出。",
       "在 `agent-assignment.json` 中增加 additive `status_events[]` ledger，记录 wait timeout、progress observed、stale assessed、continue waiting、resume/replacement、terminated unfinished、completed",
@@ -312,19 +312,18 @@
       "phrases": [
         "#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果",
         "07-07-062-subagent-timeout-stale-policy",
-        "历史问题：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果 的旧行为未记录。",
-        "历史结果：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果；非目标信息未记录。",
+        "#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果；旧行为：历史 artifact",
         "为 Guru Team workflow 增加 sub-agent wait timeout / stale / unf",
         "在 `agent-assignment.json` 中增加 additive `status_events[]` led",
         "更新 Branch Review Gate 校验：若存在未闭环的 `terminated-unfinished`，必须先",
         "同步 Guru Team workflow、trellis-continue、Codex/Claude/Cursor/c"
       ]
     },
-    "retrieval_text": "#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果\n历史问题：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果 的旧行为未记录。\n历史结果：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果；非目标信息未记录。\n为 Guru Team workflow 增加 sub-agent wait timeout / stale / unfinished termination 合同：`wait_agent`、`trellis channel wait` 或等价等待命令 timeout 只表示等待窗口结束，不代表 agent 失败、卡死或可以采用半成品输出。\n在 `agent-assignment.json` 中增加 additive `status_events[]` ledger，记录 wait timeout、progress observed、stale assessed、continue waiting、resume/replacement、terminated unfinished、completed\n更新 Branch Review Gate 校验：若存在未闭环的 `terminated-unfinished`，必须先有 same-agent resume 或 replacement-started，并最终到达 `completed` 或明确 `failed`，否则 pass 路径 fail closed。\n同步 Guru Team workflow、trellis-continue、Codex/Claude/Cursor/channel agent overlay、dogfood installed copies、README、requirements docs 和 `.trellis/spec/**`，让实现代理、阶段二检查代理和 review 代理都遵守同\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果\n07-07-062-subagent-timeout-stale-policy\n历史问题：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果 的旧行为未记录。\n历史结果：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果；非目标信息未记录。\n为 Guru Team workflow 增加 sub-agent wait timeout / stale / unf\n在 `agent-assignment.json` 中增加 additive `status_events[]` led\n更新 Branch Review Gate 校验：若存在未闭环的 `terminated-unfinished`，必须先\n同步 Guru Team workflow、trellis-continue、Codex/Claude/Cursor/c"
+    "retrieval_text": "#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果\n#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果；旧行为：历史 artifact 未记录。\n为 Guru Team workflow 增加 sub-agent wait timeout / stale / unfinished termination 合同：`wait_agent`、`trellis channel wait` 或等价等待命令 timeout 只表示等待窗口结束，不代表 agent 失败、卡死或可以采用半成品输出。\n为 Guru Team workflow 增加 sub-agent wait timeout / stale / unfinished termination 合同：`wait_agent`、`trellis channel wait` 或等价等待命令 timeout 只表示等待窗口结束，不代表 agent 失败、卡死或可以采用半成品输出。\n在 `agent-assignment.json` 中增加 additive `status_events[]` ledger，记录 wait timeout、progress observed、stale assessed、continue waiting、resume/replacement、terminated unfinished、completed\n更新 Branch Review Gate 校验：若存在未闭环的 `terminated-unfinished`，必须先有 same-agent resume 或 replacement-started，并最终到达 `completed` 或明确 `failed`，否则 pass 路径 fail closed。\n同步 Guru Team workflow、trellis-continue、Codex/Claude/Cursor/channel agent overlay、dogfood installed copies、README、requirements docs 和 `.trellis/spec/**`，让实现代理、阶段二检查代理和 review 代理都遵守同\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果\n07-07-062-subagent-timeout-stale-policy\n#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果；旧行为：历史 artifact\n为 Guru Team workflow 增加 sub-agent wait timeout / stale / unf\n在 `agent-assignment.json` 中增加 additive `status_events[]` led\n更新 Branch Review Gate 校验：若存在未闭环的 `terminated-unfinished`，必须先\n同步 Guru Team workflow、trellis-continue、Codex/Claude/Cursor/c"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:35Z",
+    "generated_at": "2026-07-11T03:21:33Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

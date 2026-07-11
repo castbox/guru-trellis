@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:35Z",
+  "generated_at": "2026-07-11T03:21:33Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-07-059-refresh-base-freshness",
@@ -64,8 +64,8 @@
     "pr_body": "pr-body.md"
   },
   "index": {
-    "problem": "历史问题：#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态 的旧行为未记录。",
-    "outcome": "历史结果：#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态；非目标信息未记录。",
+    "problem": "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态；旧行为：历史 artifact 未记录。",
+    "outcome": "修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 base freshness 的问题。",
     "changed_behavior": [
       "修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 base freshness 的问题。",
       "planner 阶段现在会先执行 `git fetch origin <base>` 刷新远端 base 引用，再输出 `preflight.base_freshness` 结论。",
@@ -206,19 +206,18 @@
       "phrases": [
         "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态",
         "07-07-059-refresh-base-freshness",
-        "历史问题：#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态 的旧行为未记录。",
-        "历史结果：#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态；非目标信息未记录。",
+        "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态；旧行为：历史 artifact",
         "修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 b",
         "planner 阶段现在会先执行 `git fetch origin <base>` 刷新远端 base 引用，再输出",
         "planner-only 路径只做远端刷新和状态报告，不 fast-forward 本地 base，不写 handoff",
         "executor 路径继续在真正创建 task/worktree 前独立调用强刷新逻辑，避免 planner 结果被当作"
       ]
     },
-    "retrieval_text": "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态\n历史问题：#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态 的旧行为未记录。\n历史结果：#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态；非目标信息未记录。\n修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 base freshness 的问题。\nplanner 阶段现在会先执行 `git fetch origin <base>` 刷新远端 base 引用，再输出 `preflight.base_freshness` 结论。\nplanner-only 路径只做远端刷新和状态报告，不 fast-forward 本地 base，不写 handoff，不创建 worktree/task。\nexecutor 路径继续在真正创建 task/worktree 前独立调用强刷新逻辑，避免 planner 结果被当作执行阶段的 freshness 保证。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态\n07-07-059-refresh-base-freshness\n历史问题：#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态 的旧行为未记录。\n历史结果：#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态；非目标信息未记录。\n修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 b\nplanner 阶段现在会先执行 `git fetch origin <base>` 刷新远端 base 引用，再输出\nplanner-only 路径只做远端刷新和状态报告，不 fast-forward 本地 base，不写 handoff\nexecutor 路径继续在真正创建 task/worktree 前独立调用强刷新逻辑，避免 planner 结果被当作"
+    "retrieval_text": "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态\n#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态；旧行为：历史 artifact 未记录。\n修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 base freshness 的问题。\n修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 base freshness 的问题。\nplanner 阶段现在会先执行 `git fetch origin <base>` 刷新远端 base 引用，再输出 `preflight.base_freshness` 结论。\nplanner-only 路径只做远端刷新和状态报告，不 fast-forward 本地 base，不写 handoff，不创建 worktree/task。\nexecutor 路径继续在真正创建 task/worktree 前独立调用强刷新逻辑，避免 planner 结果被当作执行阶段的 freshness 保证。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态\n07-07-059-refresh-base-freshness\n#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态；旧行为：历史 artifact\n修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 b\nplanner 阶段现在会先执行 `git fetch origin <base>` 刷新远端 base 引用，再输出\nplanner-only 路径只做远端刷新和状态报告，不 fast-forward 本地 base，不写 handoff\nexecutor 路径继续在真正创建 task/worktree 前独立调用强刷新逻辑，避免 planner 结果被当作"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:35Z",
+    "generated_at": "2026-07-11T03:21:33Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

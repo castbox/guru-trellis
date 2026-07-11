@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:32Z",
+  "generated_at": "2026-07-11T03:21:30Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-03-2-align-guru-team-workflow-trellis",
@@ -59,7 +59,7 @@
   },
   "index": {
     "problem": "将 `guru-team` workflow、README、preset README 和平台入口 overlay 的用户心智模型，从“用户每次显式运行 `trellis-start`”调整为“用户日常直接描述任务，由 AI 依赖 Trellis auto-bootstrap / workflow-state / hook breadcrumb 自行判断是否进入 Trellis task 流程”。",
-    "outcome": "历史结果：#2 Align guru-team workflow with Trellis auto-bootstrap start model；非目标信息未记录。",
+    "outcome": "#2 Align guru-team workflow with Trellis auto-bootstrap start model；非目标：历史 artifact 未记录。",
     "changed_behavior": [
       "历史归档 task 已完成：#2 Align guru-team workflow with Trellis auto-bootstrap start model。"
     ],
@@ -191,15 +191,14 @@
         "#2 Align guru-team workflow with Trellis auto-bootstrap star",
         "07-03-2-align-guru-team-workflow-trellis",
         "将 `guru-team` workflow、README、preset README 和平台入口 overlay 的用",
-        "历史结果：#2 Align guru-team workflow with Trellis auto-bootstrap",
         "历史归档 task 已完成：#2 Align guru-team workflow with Trellis auto-"
       ]
     },
-    "retrieval_text": "#2 Align guru-team workflow with Trellis auto-bootstrap start model\n将 `guru-team` workflow、README、preset README 和平台入口 overlay 的用户心智模型，从“用户每次显式运行 `trellis-start`”调整为“用户日常直接描述任务，由 AI 依赖 Trellis auto-bootstrap / workflow-state / hook breadcrumb 自行判断是否进入 Trellis task 流程”。\n历史结果：#2 Align guru-team workflow with Trellis auto-bootstrap start model；非目标信息未记录。\n历史归档 task 已完成：#2 Align guru-team workflow with Trellis auto-bootstrap start model。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#2 Align guru-team workflow with Trellis auto-bootstrap star\n07-03-2-align-guru-team-workflow-trellis\n将 `guru-team` workflow、README、preset README 和平台入口 overlay 的用\n历史结果：#2 Align guru-team workflow with Trellis auto-bootstrap\n历史归档 task 已完成：#2 Align guru-team workflow with Trellis auto-"
+    "retrieval_text": "#2 Align guru-team workflow with Trellis auto-bootstrap start model\n将 `guru-team` workflow、README、preset README 和平台入口 overlay 的用户心智模型，从“用户每次显式运行 `trellis-start`”调整为“用户日常直接描述任务，由 AI 依赖 Trellis auto-bootstrap / workflow-state / hook breadcrumb 自行判断是否进入 Trellis task 流程”。\n#2 Align guru-team workflow with Trellis auto-bootstrap start model；非目标：历史 artifact 未记录。\n历史归档 task 已完成：#2 Align guru-team workflow with Trellis auto-bootstrap start model。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#2 Align guru-team workflow with Trellis auto-bootstrap star\n07-03-2-align-guru-team-workflow-trellis\n将 `guru-team` workflow、README、preset README 和平台入口 overlay 的用\n历史归档 task 已完成：#2 Align guru-team workflow with Trellis auto-"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:32Z",
+    "generated_at": "2026-07-11T03:21:30Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

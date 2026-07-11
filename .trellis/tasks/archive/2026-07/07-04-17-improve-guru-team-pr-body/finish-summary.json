@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:33Z",
+  "generated_at": "2026-07-11T03:21:30Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-04-17-improve-guru-team-pr-body",
@@ -233,7 +233,7 @@
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:33Z",
+    "generated_at": "2026-07-11T03:21:30Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

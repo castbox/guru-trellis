@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:32Z",
+  "generated_at": "2026-07-11T03:21:30Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-03-1-enhance-guru-team-workflow-middle",
@@ -69,7 +69,7 @@
   },
   "index": {
     "problem": "增强可复用的 `guru-team` Trellis workflow，使 AI 在设计和实现阶段能显式处理两类容易漂移的上下文：",
-    "outcome": "历史结果：#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation；非目标信息未记录。",
+    "outcome": "#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation；非目标：历史 artifact 未记录。",
     "changed_behavior": [
       "历史归档 task 已完成：#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation。"
     ],
@@ -214,15 +214,14 @@
         "#1 Enhance guru-team workflow with middle-platform knowledge",
         "07-03-1-enhance-guru-team-workflow-middle",
         "增强可复用的 `guru-team` Trellis workflow，使 AI 在设计和实现阶段能显式处理两类容易漂移",
-        "历史结果：#1 Enhance guru-team workflow with middle-platform know",
         "历史归档 task 已完成：#1 Enhance guru-team workflow with middle-plat"
       ]
     },
-    "retrieval_text": "#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation\n增强可复用的 `guru-team` Trellis workflow，使 AI 在设计和实现阶段能显式处理两类容易漂移的上下文：\n历史结果：#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation；非目标信息未记录。\n历史归档 task 已完成：#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#1 Enhance guru-team workflow with middle-platform knowledge\n07-03-1-enhance-guru-team-workflow-middle\n增强可复用的 `guru-team` Trellis workflow，使 AI 在设计和实现阶段能显式处理两类容易漂移\n历史结果：#1 Enhance guru-team workflow with middle-platform know\n历史归档 task 已完成：#1 Enhance guru-team workflow with middle-plat"
+    "retrieval_text": "#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation\n增强可复用的 `guru-team` Trellis workflow，使 AI 在设计和实现阶段能显式处理两类容易漂移的上下文：\n#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation；非目标：历史 artifact 未记录。\n历史归档 task 已完成：#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#1 Enhance guru-team workflow with middle-platform knowledge\n07-03-1-enhance-guru-team-workflow-middle\n增强可复用的 `guru-team` Trellis workflow，使 AI 在设计和实现阶段能显式处理两类容易漂移\n历史归档 task 已完成：#1 Enhance guru-team workflow with middle-plat"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:32Z",
+    "generated_at": "2026-07-11T03:21:30Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

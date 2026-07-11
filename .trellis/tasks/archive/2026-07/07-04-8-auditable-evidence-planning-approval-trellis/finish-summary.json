@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:34Z",
+  "generated_at": "2026-07-11T03:21:31Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-04-8-auditable-evidence-planning-approval-trellis",
@@ -87,7 +87,7 @@
   },
   "index": {
     "problem": "把 Guru Team workflow 中两个依赖 AI 判断的关键步骤从“口头执行过”升级为可审计 artifact：",
-    "outcome": "历史结果：#8 Add auditable evidence for planning approval and trellis-check；非目标信息未记录。",
+    "outcome": "为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-check.json` 两个可审计 gate artifact，明确 `task.py start` 只是状态写入，验证命令只是 `trellis-check` 证据的一部分。",
     "changed_behavior": [
       "为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-check.json` 两个可审计 gate artifact，明确 `task.py start` 只是状态写入，验证命令只是 `trellis-check` 证据的一部分。",
       "强化 Branch Review Gate：通过状态必须来自独立 Agent review，`review-branch --pass` 要求 `--review-source independent-agent`、非 main-session reviewer、task-local `review.md` digest，并拒绝 `prd.md` 等其他 a",
@@ -310,18 +310,17 @@
         "#8 Add auditable evidence for planning approval and trellis-",
         "07-04-8-auditable-evidence-planning-approval-trellis",
         "把 Guru Team workflow 中两个依赖 AI 判断的关键步骤从“口头执行过”升级为可审计 artifact",
-        "历史结果：#8 Add auditable evidence for planning approval and tre",
         "为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-c",
         "强化 Branch Review Gate：通过状态必须来自独立 Agent review，`review-branch",
         "修复 worktree preflight：`prepare-task --create-worktree` / `--",
         "更新 Guru Team workflow、platform overlays、README、spec、preset i"
       ]
     },
-    "retrieval_text": "#8 Add auditable evidence for planning approval and trellis-check\n把 Guru Team workflow 中两个依赖 AI 判断的关键步骤从“口头执行过”升级为可审计 artifact：\n历史结果：#8 Add auditable evidence for planning approval and trellis-check；非目标信息未记录。\n为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-check.json` 两个可审计 gate artifact，明确 `task.py start` 只是状态写入，验证命令只是 `trellis-check` 证据的一部分。\n强化 Branch Review Gate：通过状态必须来自独立 Agent review，`review-branch --pass` 要求 `--review-source independent-agent`、非 main-session reviewer、task-local `review.md` digest，并拒绝 `prd.md` 等其他 a\n修复 worktree preflight：`prepare-task --create-worktree` / `--create-task` 在创建 worktree 或 task 前刷新并校验 base branch freshness，handoff 记录 local/remote HEAD、fetch 和 fast-forward evidence\n更新 Guru Team workflow、platform overlays、README、spec、preset installer 与 dogfood copy，并补充 focused 单元测试覆盖 gate 缺失、stale、通过路径和 base freshness 关键分支。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#8 Add auditable evidence for planning approval and trellis-\n07-04-8-auditable-evidence-planning-approval-trellis\n把 Guru Team workflow 中两个依赖 AI 判断的关键步骤从“口头执行过”升级为可审计 artifact\n历史结果：#8 Add auditable evidence for planning approval and tre\n为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-c\n强化 Branch Review Gate：通过状态必须来自独立 Agent review，`review-branch\n修复 worktree preflight：`prepare-task --create-worktree` / `--\n更新 Guru Team workflow、platform overlays、README、spec、preset i"
+    "retrieval_text": "#8 Add auditable evidence for planning approval and trellis-check\n把 Guru Team workflow 中两个依赖 AI 判断的关键步骤从“口头执行过”升级为可审计 artifact：\n为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-check.json` 两个可审计 gate artifact，明确 `task.py start` 只是状态写入，验证命令只是 `trellis-check` 证据的一部分。\n为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-check.json` 两个可审计 gate artifact，明确 `task.py start` 只是状态写入，验证命令只是 `trellis-check` 证据的一部分。\n强化 Branch Review Gate：通过状态必须来自独立 Agent review，`review-branch --pass` 要求 `--review-source independent-agent`、非 main-session reviewer、task-local `review.md` digest，并拒绝 `prd.md` 等其他 a\n修复 worktree preflight：`prepare-task --create-worktree` / `--create-task` 在创建 worktree 或 task 前刷新并校验 base branch freshness，handoff 记录 local/remote HEAD、fetch 和 fast-forward evidence\n更新 Guru Team workflow、platform overlays、README、spec、preset installer 与 dogfood copy，并补充 focused 单元测试覆盖 gate 缺失、stale、通过路径和 base freshness 关键分支。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#8 Add auditable evidence for planning approval and trellis-\n07-04-8-auditable-evidence-planning-approval-trellis\n把 Guru Team workflow 中两个依赖 AI 判断的关键步骤从“口头执行过”升级为可审计 artifact\n为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-c\n强化 Branch Review Gate：通过状态必须来自独立 Agent review，`review-branch\n修复 worktree preflight：`prepare-task --create-worktree` / `--\n更新 Guru Team workflow、platform overlays、README、spec、preset i"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:34Z",
+    "generated_at": "2026-07-11T03:21:31Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

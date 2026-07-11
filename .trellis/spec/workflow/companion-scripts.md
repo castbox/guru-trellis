@@ -373,13 +373,20 @@ The Bash file is a thin wrapper around the canonical Python
 `trellis mem`.
 
 The command requires exactly one of `--dry-run` and `--write`. `--force` is
-valid only with `--write`; `--task` accepts only a clean repo-relative directory
-strictly below `.trellis/tasks/archive/`. Invalid arguments or paths exit 2
-before scanning. A completed batch exits 0, while any task-local read/build,
+valid only with `--write`; `--task` accepts only a clean repo-relative archived
+task root. A task root contains a direct whitelist artifact or existing
+`finish-summary.json` marker, and none of its strict ancestors below the archive
+root contains such a marker. Discovery uses the same marker rule and stops
+descending after the first task root. This rejects archive grouping directories
+and every task subdirectory without relying on directory basenames. Invalid
+arguments, non-root targets, or symlink escapes exit 2 before scanning. A
+completed batch exits 0, while any task-local read/build,
 validation, or write error is isolated, reported, and makes the final exit code
 1 after the remaining tasks are processed. `--json` returns the stable object
 fields `mode`, `archive_glob`, `scanned_tasks`, `to_write`, `skipped`, and
-`errors`; the default renderer prints the same facts as a stable table.
+`errors`; the default renderer prints the same facts as a stable table. Every
+`to_write` table row includes `source_artifacts`, `missing_fields`, and
+`confidence` so a human preview preserves the JSON decision evidence.
 
 Dry-run and write share discovery, extraction, build, and schema validation.
 Write mode creates only missing summaries unless `--force` is present, uses a

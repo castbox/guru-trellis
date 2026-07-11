@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:35Z",
+  "generated_at": "2026-07-11T03:21:33Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-08-052-explicit-planning-review",
@@ -138,7 +138,7 @@
   },
   "index": {
     "problem": "在默认 Guru Team workflow 下，`prd.md`、`design.md`、`implement.md` 生成后必须停在用户可见的规划审核门禁。只有用户在看到这三个具体文档链接后明确确认，主会话才能记录 `planning-approval.json`、执行 `task.py start`，并在默认 `sub-agent` mode 下派发 `trellis-implement`。",
-    "outcome": "历史结果：#52 prd/design/implement 文档需要显式用户审核；非目标信息未记录。",
+    "outcome": "Guru Team workflow 新增显式 post-planning review gate：`prd.md`、`design.md`、`implement.md` 三份规划文档生成后，主会话必须向用户展示三个 task-local 链接，并在用户明确确认后才允许进入实现。",
     "changed_behavior": [
       "Guru Team workflow 新增显式 post-planning review gate：`prd.md`、`design.md`、`implement.md` 三份规划文档生成后，主会话必须向用户展示三个 task-local 链接，并在用户明确确认后才允许进入实现。",
       "`planning-approval.json` 升级为 `schema_version=1.1`，强制 `user_confirmation.source=explicit-post-planning-review`，记录三份规划文档的 digest/size/mtime、approval HEAD 和 dirty paths。",
@@ -473,18 +473,17 @@
         "#52 prd/design/implement 文档需要显式用户审核",
         "07-08-052-explicit-planning-review",
         "在默认 Guru Team workflow 下，`prd.md`、`design.md`、`implement.md`",
-        "历史结果：#52 prd/design/implement 文档需要显式用户审核；非目标信息未记录。",
         "Guru Team workflow 新增显式 post-planning review gate：`prd.md`、`",
         "`planning-approval.json` 升级为 `schema_version=1.1`，强制 `user_c",
         "`check-planning-approval` 会拒绝 Phase 0 handoff / generic work",
         "Codex / Claude / Cursor / shared `.agents` overlay、channel r"
       ]
     },
-    "retrieval_text": "#52 prd/design/implement 文档需要显式用户审核\n在默认 Guru Team workflow 下，`prd.md`、`design.md`、`implement.md` 生成后必须停在用户可见的规划审核门禁。只有用户在看到这三个具体文档链接后明确确认，主会话才能记录 `planning-approval.json`、执行 `task.py start`，并在默认 `sub-agent` mode 下派发 `trellis-implement`。\n历史结果：#52 prd/design/implement 文档需要显式用户审核；非目标信息未记录。\nGuru Team workflow 新增显式 post-planning review gate：`prd.md`、`design.md`、`implement.md` 三份规划文档生成后，主会话必须向用户展示三个 task-local 链接，并在用户明确确认后才允许进入实现。\n`planning-approval.json` 升级为 `schema_version=1.1`，强制 `user_confirmation.source=explicit-post-planning-review`，记录三份规划文档的 digest/size/mtime、approval HEAD 和 dirty paths。\n`check-planning-approval` 会拒绝 Phase 0 handoff / generic workflow confirmation、旧 schema、缺少三文档、digest/mtime 漂移、HEAD 漂移，以及 dirty paths freshness 不匹配。\nCodex / Claude / Cursor / shared `.agents` overlay、channel runtime agent、durable docs 和 `.trellis/spec` 已同步三文档显式审核门禁，避免 fresh install 或 dogfood copy 继续看到旧的 PRD-only / optional plan\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#52 prd/design/implement 文档需要显式用户审核\n07-08-052-explicit-planning-review\n在默认 Guru Team workflow 下，`prd.md`、`design.md`、`implement.md`\n历史结果：#52 prd/design/implement 文档需要显式用户审核；非目标信息未记录。\nGuru Team workflow 新增显式 post-planning review gate：`prd.md`、`\n`planning-approval.json` 升级为 `schema_version=1.1`，强制 `user_c\n`check-planning-approval` 会拒绝 Phase 0 handoff / generic work\nCodex / Claude / Cursor / shared `.agents` overlay、channel r"
+    "retrieval_text": "#52 prd/design/implement 文档需要显式用户审核\n在默认 Guru Team workflow 下，`prd.md`、`design.md`、`implement.md` 生成后必须停在用户可见的规划审核门禁。只有用户在看到这三个具体文档链接后明确确认，主会话才能记录 `planning-approval.json`、执行 `task.py start`，并在默认 `sub-agent` mode 下派发 `trellis-implement`。\nGuru Team workflow 新增显式 post-planning review gate：`prd.md`、`design.md`、`implement.md` 三份规划文档生成后，主会话必须向用户展示三个 task-local 链接，并在用户明确确认后才允许进入实现。\nGuru Team workflow 新增显式 post-planning review gate：`prd.md`、`design.md`、`implement.md` 三份规划文档生成后，主会话必须向用户展示三个 task-local 链接，并在用户明确确认后才允许进入实现。\n`planning-approval.json` 升级为 `schema_version=1.1`，强制 `user_confirmation.source=explicit-post-planning-review`，记录三份规划文档的 digest/size/mtime、approval HEAD 和 dirty paths。\n`check-planning-approval` 会拒绝 Phase 0 handoff / generic workflow confirmation、旧 schema、缺少三文档、digest/mtime 漂移、HEAD 漂移，以及 dirty paths freshness 不匹配。\nCodex / Claude / Cursor / shared `.agents` overlay、channel runtime agent、durable docs 和 `.trellis/spec` 已同步三文档显式审核门禁，避免 fresh install 或 dogfood copy 继续看到旧的 PRD-only / optional plan\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#52 prd/design/implement 文档需要显式用户审核\n07-08-052-explicit-planning-review\n在默认 Guru Team workflow 下，`prd.md`、`design.md`、`implement.md`\nGuru Team workflow 新增显式 post-planning review gate：`prd.md`、`\n`planning-approval.json` 升级为 `schema_version=1.1`，强制 `user_c\n`check-planning-approval` 会拒绝 Phase 0 handoff / generic work\nCodex / Claude / Cursor / shared `.agents` overlay、channel r"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:35Z",
+    "generated_at": "2026-07-11T03:21:33Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

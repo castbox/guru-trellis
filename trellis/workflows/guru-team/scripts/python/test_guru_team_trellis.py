@@ -8967,6 +8967,77 @@ class FinishSummaryContractTests(unittest.TestCase):
         payload = self.valid_backfill_summary()
         self.assertEqual(gtt.finish_summary_errors(payload), [])
 
+    def test_backfill_exact_problem_fallback_allows_only_the_title_boundary(self) -> None:
+        titles = [
+            "07-07-051-prepare-task-naming-quality-gate",
+            "07-07-059-refresh-base-freshness",
+            "07-07-062-subagent-timeout-stale-policy",
+            "07-08-078-review-report-chinese-language",
+        ]
+        for title in titles:
+            with self.subTest(title=title):
+                payload = self.valid_backfill_summary()
+                payload["task"]["title"] = title  # type: ignore[index]
+                payload["index"]["problem"] = (  # type: ignore[index]
+                    f"{title}；旧行为：历史 artifact 未记录。"
+                )
+                payload["index"]["retrieval_text"] = gtt.finish_summary_retrieval_text(  # type: ignore[index]
+                    title, payload["index"]  # type: ignore[index]
+                )
+                self.assertEqual(gtt.finish_summary_errors(payload), [])
+
+    def test_normal_finish_work_rejects_the_backfill_title_boundary_pattern(self) -> None:
+        payload = self.valid_summary()
+        title = payload["task"]["title"]  # type: ignore[index]
+        payload["index"]["problem"] = f"{title}；旧行为：历史 artifact 未记录。"  # type: ignore[index]
+        payload["index"]["retrieval_text"] = gtt.finish_summary_retrieval_text(  # type: ignore[index]
+            title, payload["index"]  # type: ignore[index]
+        )
+
+        self.assertIn(
+            "index.retrieval_text contains adjacent duplicate clauses.",
+            gtt.finish_summary_errors(payload),
+        )
+
+    def test_normal_finish_work_rejects_outcome_behavior_boundary_pattern(self) -> None:
+        payload = self.valid_summary()
+        first_behavior = payload["index"]["changed_behavior"][0]  # type: ignore[index]
+        payload["index"]["outcome"] = first_behavior  # type: ignore[index]
+        payload["index"]["retrieval_text"] = gtt.finish_summary_retrieval_text(  # type: ignore[index]
+            payload["task"]["title"], payload["index"]  # type: ignore[index]
+        )
+
+        self.assertIn(
+            "index.retrieval_text contains adjacent duplicate clauses.",
+            gtt.finish_summary_errors(payload),
+        )
+
+    def test_backfill_non_exact_problem_fallback_keeps_duplicate_rejection(self) -> None:
+        payload = self.valid_backfill_summary()
+        title = payload["task"]["title"]  # type: ignore[index]
+        payload["index"]["problem"] = f"{title}；旧行为：旧 artifact 未记录。"  # type: ignore[index]
+        payload["index"]["retrieval_text"] = gtt.finish_summary_retrieval_text(  # type: ignore[index]
+            title, payload["index"]  # type: ignore[index]
+        )
+
+        self.assertIn(
+            "index.retrieval_text contains adjacent duplicate clauses.",
+            gtt.finish_summary_errors(payload),
+        )
+
+    def test_backfill_exact_fallback_keeps_other_adjacent_duplicate_rejection(self) -> None:
+        payload = self.valid_backfill_summary()
+        title = payload["task"]["title"]  # type: ignore[index]
+        payload["index"]["problem"] = f"{title}；旧行为：历史 artifact 未记录。"  # type: ignore[index]
+        payload["index"]["outcome"] = "历史结果已记录；历史结果已记录。"  # type: ignore[index]
+        payload["index"]["retrieval_text"] = gtt.finish_summary_retrieval_text(  # type: ignore[index]
+            title, payload["index"]  # type: ignore[index]
+        )
+        errors = gtt.finish_summary_errors(payload)
+
+        self.assertIn("index.outcome contains adjacent duplicate clauses.", errors)
+        self.assertIn("index.retrieval_text contains adjacent duplicate clauses.", errors)
+
     def test_finish_summary_schema_key_limits_and_path_refs_with_stdlib(self) -> None:
         schema = self.finish_summary_schema()
         properties = schema["properties"]  # type: ignore[index]
@@ -9816,6 +9887,7 @@ class FinishSummaryBackfillTests(unittest.TestCase):
         self.addCleanup(tmp.cleanup)
         task_dir = archive / "task"
         task_dir.mkdir()
+        gtt.write_json(task_dir / "task.json", {})
         active = root / ".trellis/tasks/active"
         active.mkdir(parents=True)
         outside = root / "outside"
@@ -9832,6 +9904,41 @@ class FinishSummaryBackfillTests(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises(gtt.WorkflowError) as raised:
                 gtt.resolve_finish_summary_backfill_task(root, value)
             self.assertEqual(raised.exception.exit_code, 2)
+        self.assertEqual(
+            gtt.resolve_finish_summary_backfill_task(root, task_dir.relative_to(root).as_posix()),
+            task_dir.resolve(),
+        )
+
+    def test_task_root_rejects_group_and_nested_markers_for_all_write_modes(self) -> None:
+        tmp, root, archive = self.make_repo()
+        self.addCleanup(tmp.cleanup)
+        task_dir = archive / "task"
+        task_dir.mkdir()
+        gtt.write_json(task_dir / "task.json", {"title": "真实任务"})
+        nested = task_dir / "arbitrary/nested"
+        nested.mkdir(parents=True)
+        gtt.write_json(nested / "task.json", {"title": "嵌套伪任务"})
+        plain_child = task_dir / "plain-child"
+        plain_child.mkdir()
+        group = archive / "date-group"
+        group.mkdir()
+        targets = [archive, group, plain_child, nested]
+        modes = [
+            {"dry_run": True, "write": False, "force": False},
+            {"dry_run": False, "write": True, "force": False},
+            {"dry_run": False, "write": True, "force": True},
+        ]
+        for target in targets:
+            for mode in modes:
+                with self.subTest(target=target, mode=mode), self.assertRaises(gtt.WorkflowError) as raised:
+                    gtt.cmd_backfill_finish_summary(self.args(
+                        root,
+                        task=target.relative_to(root).as_posix(),
+                        **mode,
+                    ))
+                self.assertEqual(raised.exception.exit_code, 2)
+                self.assertFalse((target / "finish-summary.json").exists())
+        self.assertEqual(gtt.discover_finish_summary_backfill_tasks(root), [task_dir.resolve()])
 
     def test_complete_builder_uses_schema_validator_and_kind_chunks(self) -> None:
         tmp, root, archive = self.make_repo()
@@ -9895,6 +10002,179 @@ class FinishSummaryBackfillTests(unittest.TestCase):
         self.assertEqual(payload["github"]["source_issues"], [100])
         self.assertNotIn("github.source_issues", payload["backfill"]["missing_fields"])
 
+    def test_pr_body_list_outcome_preserves_complete_behavior_with_two_narrow_boundaries(self) -> None:
+        tmp, root, archive = self.make_repo()
+        self.addCleanup(tmp.cleanup)
+        task_dir = archive / "pr-body-list-only"
+        task_dir.mkdir()
+        gtt.write_json(task_dir / "task.json", {"title": "PR body 列表任务"})
+        (task_dir / "pr-body.md").write_text(
+            "# PR\n\n## 变更摘要\n\n"
+            "- 回填历史完成摘要。\n"
+            "- 保留完整行为列表。\n",
+            encoding="utf-8",
+        )
+        sources, loaded, errors = gtt.load_finish_summary_backfill_sources(task_dir)
+        self.assertEqual(errors, [])
+        payload = gtt.build_finish_summary_backfill(root, task_dir, sources, loaded)
+
+        self.assertEqual(payload["index"]["outcome"], "回填历史完成摘要。")
+        self.assertEqual(payload["index"]["changed_behavior"], [
+            "回填历史完成摘要。",
+            "保留完整行为列表。",
+        ])
+        self.assertEqual(gtt.finish_summary_errors(payload, task_dir=task_dir), [])
+        self.assertIn(
+            "index.retrieval_text contains adjacent duplicate clauses.",
+            gtt.finish_summary_errors(payload),
+        )
+
+        tampered_retrieval = json.loads(json.dumps(payload, ensure_ascii=False))
+        tampered_retrieval["index"]["retrieval_text"] += "\n篡改派生文本。"
+        self.assertIn(
+            "index.retrieval_text must equal the deterministic derived text.",
+            gtt.finish_summary_errors(tampered_retrieval, task_dir=task_dir),
+        )
+
+        incomplete_behavior = json.loads(json.dumps(payload, ensure_ascii=False))
+        incomplete_behavior["index"]["changed_behavior"] = incomplete_behavior["index"]["changed_behavior"][:1]
+        incomplete_behavior["index"]["retrieval_text"] = gtt.finish_summary_retrieval_text(
+            incomplete_behavior["task"]["title"], incomplete_behavior["index"]
+        )
+        self.assertIn(
+            "index.retrieval_text contains adjacent duplicate clauses.",
+            gtt.finish_summary_errors(incomplete_behavior, task_dir=task_dir),
+        )
+
+        other_duplicate = json.loads(json.dumps(payload, ensure_ascii=False))
+        other_duplicate["index"]["changed_behavior"][1] = other_duplicate["index"]["changed_behavior"][0]
+        other_duplicate["index"]["retrieval_text"] = gtt.finish_summary_retrieval_text(
+            other_duplicate["task"]["title"], other_duplicate["index"]
+        )
+        other_errors = gtt.finish_summary_errors(other_duplicate, task_dir=task_dir)
+        self.assertIn(
+            "index.changed_behavior[1] duplicates index.changed_behavior[0] after normalization.",
+            other_errors,
+        )
+        self.assertIn("index.retrieval_text contains adjacent duplicate clauses.", other_errors)
+
+        (task_dir / "pr-body.md").write_text(
+            "# PR\n\n## 变更摘要\n\n- 来源已被篡改。\n",
+            encoding="utf-8",
+        )
+        self.assertIn(
+            "index.retrieval_text contains adjacent duplicate clauses.",
+            gtt.finish_summary_errors(payload, task_dir=task_dir),
+        )
+
+    def test_pr_body_paragraph_and_higher_outcome_sources_do_not_use_list_exception(self) -> None:
+        tmp, root, archive = self.make_repo()
+        self.addCleanup(tmp.cleanup)
+        task_dir = archive / "pr-body-priority"
+        task_dir.mkdir()
+        gtt.write_json(task_dir / "task.json", {"title": "PR body 优先级任务"})
+        (task_dir / "pr-body.md").write_text(
+            "# PR\n\n## 变更摘要\n\n段落结论优先。\n\n- 列表行为仍然保留。\n",
+            encoding="utf-8",
+        )
+        sources, loaded, errors = gtt.load_finish_summary_backfill_sources(task_dir)
+        self.assertEqual(errors, [])
+        paragraph_payload = gtt.build_finish_summary_backfill(root, task_dir, sources, loaded)
+        self.assertEqual(paragraph_payload["index"]["outcome"], "段落结论优先。")
+        self.assertEqual(paragraph_payload["index"]["changed_behavior"], ["列表行为仍然保留。"])
+        self.assertEqual(gtt.finish_summary_errors(paragraph_payload, task_dir=task_dir), [])
+
+        gtt.write_json(task_dir / "review-gate.json", {"summary": "审查结论优先。"})
+        sources, loaded, errors = gtt.load_finish_summary_backfill_sources(task_dir)
+        self.assertEqual(errors, [])
+        gate_payload = gtt.build_finish_summary_backfill(root, task_dir, sources, loaded)
+        self.assertEqual(gate_payload["index"]["outcome"], "审查结论优先。")
+        self.assertEqual(gtt.finish_summary_errors(gate_payload, task_dir=task_dir), [])
+
+    def test_commit_sources_use_first_non_empty_priority_and_reject_invalid_values(self) -> None:
+        tmp, root, archive = self.make_repo()
+        self.addCleanup(tmp.cleanup)
+        task_dir = archive / "commit-priority"
+        task_dir.mkdir()
+        gtt.write_json(task_dir / "task.json", {"title": "提交优先级", "commit": "a" * 40})
+        gtt.write_json(task_dir / "review-gate.json", {"head": "b" * 40})
+        gtt.write_json(task_dir / "pr-readiness.json", {"commits": ["c" * 40]})
+        sources, loaded, errors = gtt.load_finish_summary_backfill_sources(task_dir)
+        self.assertEqual(errors, [])
+        self.assertEqual(
+            gtt.build_finish_summary_backfill(root, task_dir, sources, loaded)["git"]["commits"],
+            ["a" * 40],
+        )
+
+        sources["task.json"].pop("commit")
+        self.assertEqual(
+            gtt.build_finish_summary_backfill(root, task_dir, sources, loaded)["git"]["commits"],
+            ["b" * 40],
+        )
+        sources["review-gate.json"].pop("head")
+        self.assertEqual(
+            gtt.build_finish_summary_backfill(root, task_dir, sources, loaded)["git"]["commits"],
+            ["c" * 40],
+        )
+        sources["task.json"]["commit"] = []
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.build_finish_summary_backfill(root, task_dir, sources, loaded)
+
+    def test_complete_confidence_requires_branch(self) -> None:
+        tmp, root, archive = self.make_repo()
+        self.addCleanup(tmp.cleanup)
+        task_dir = archive / "missing-branch"
+        task_dir.mkdir()
+        self.write_complete_sources(task_dir)
+        task = gtt.read_json(task_dir / "task.json")
+        task.pop("branch")
+        gtt.write_json(task_dir / "task.json", task)
+        gate = gtt.read_json(task_dir / "review-gate.json")
+        gate.pop("branch")
+        gtt.write_json(task_dir / "review-gate.json", gate)
+        sources, loaded, errors = gtt.load_finish_summary_backfill_sources(task_dir)
+        self.assertEqual(errors, [])
+        payload = gtt.build_finish_summary_backfill(root, task_dir, sources, loaded)
+        self.assertEqual(payload["git"]["branch"], "")
+        self.assertEqual(payload["backfill"]["confidence"], "partial")
+
+    def test_minimal_confidence_requires_absence_of_all_non_title_evidence(self) -> None:
+        tmp, root, archive = self.make_repo()
+        self.addCleanup(tmp.cleanup)
+        cases = {
+            "artifact-dir": ({"artifact_dir": ".trellis/tasks/artifact-dir"}, {}),
+            "base-branch": ({"base_branch": "main"}, {}),
+            "branch": ({"branch": "feat/history"}, {}),
+            "commit": ({"commit": "a" * 40}, {}),
+            "description": ({"description": "历史任务需要回填。"}, {}),
+            "source-issue": ({"source_issue": "issue #100"}, {}),
+            "pr-url": ({"pr_url": "https://github.com/castbox/guru-trellis/pull/100"}, {}),
+            "review-summary": ({}, {"review-gate.json": {"summary": "历史任务已完成审查。"}}),
+            "prd-problem": ({}, {"prd.md": "# PRD\n\n## 问题\n\n旧归档缺少索引。\n"}),
+            "implement-check": ({}, {"implement.md": "# Plan\n\n- [x] 回填历史完成摘要。\n"}),
+            "contract-table": ({}, {"design.md": (
+                "# Design\n\n## 合同变化\n\n"
+                "| contract | before | after | source_artifact |\n"
+                "| --- | --- | --- | --- |\n"
+                "| history | 无索引 | 有索引 | design.md |\n"
+            )}),
+        }
+        for name, (task_delta, files) in cases.items():
+            with self.subTest(name=name):
+                task_dir = archive / name
+                task_dir.mkdir()
+                gtt.write_json(task_dir / "task.json", {"title": f"{name} 任务", **task_delta})
+                for filename, content in files.items():
+                    path = task_dir / filename
+                    if isinstance(content, dict):
+                        gtt.write_json(path, content)
+                    else:
+                        path.write_text(content, encoding="utf-8")
+                sources, loaded, errors = gtt.load_finish_summary_backfill_sources(task_dir)
+                self.assertEqual(errors, [])
+                payload = gtt.build_finish_summary_backfill(root, task_dir, sources, loaded)
+                self.assertEqual(payload["backfill"]["confidence"], "partial")
+
     def test_search_terms_adds_completion_fallback_only_when_required(self) -> None:
         common = {
             "task_title": "历史任务",
@@ -9917,6 +10197,65 @@ class FinishSummaryBackfillTests(unittest.TestCase):
         self.assertNotIn("历史归档 task 已完成", with_marker["phrases"])
         self.assertNotIn("完成摘要 backfill 已生成", with_marker["phrases"])
 
+    def test_search_terms_skips_only_exact_fallback_at_a_duplicate_phrase_edge(self) -> None:
+        title = "minimal-task"
+        problem = f"{title}；旧行为：历史 artifact 未记录。"
+        outcome = f"{title}；非目标：历史 artifact 未记录。"
+        common = {
+            "task_title": title,
+            "problem": problem,
+            "outcome": outcome,
+            "changed_behavior": ["历史归档 task 已完成"],
+            "surfaces": [{"change": "历史 artifact 未记录 changed_paths"}],
+            "source_artifacts": [],
+            "changed_paths": [],
+        }
+
+        same_slug = gtt.backfill_search_terms(task_slug=title, **common)
+        self.assertNotIn(gtt.backfill_clean_text(problem, 60), same_slug["phrases"])
+        self.assertNotIn(gtt.backfill_clean_text(outcome, 60), same_slug["phrases"])
+
+        distinct_slug = gtt.backfill_search_terms(task_slug="07-11-minimal-task", **common)
+        self.assertIn(gtt.backfill_clean_text(problem, 60), distinct_slug["phrases"])
+        self.assertIn(gtt.backfill_clean_text(outcome, 60), distinct_slug["phrases"])
+
+        non_exact = gtt.backfill_search_terms(
+            task_slug=title,
+            **{**common, "problem": f"{title}；旧行为：其它 artifact 未记录。"},
+        )
+        self.assertIn(
+            gtt.backfill_clean_text(f"{title}；旧行为：其它 artifact 未记录。", 60),
+            non_exact["phrases"],
+        )
+
+    def test_completion_fallback_matches_the_eight_historical_fixtures(self) -> None:
+        root = Path(gtt.__file__).resolve().parents[5]
+        expected = [
+            "07-04-7-require-pr-readiness-review-before",
+            "07-06-39-review-branch-findings-reviewer-only",
+            "07-06-40-workflow-state-completed-closeout-pr",
+            "07-06-41-task-system-task-py-create",
+            "07-09-064-docs-ssot-plan-contract",
+            "07-09-065-docs-ssot-phase2-sync-gate",
+            "07-09-066-docs-ssot-phase3-enforcement",
+            "07-10-073-trellis-doc-markdown-links",
+        ]
+        actual: list[str] = []
+        for task_dir in gtt.discover_finish_summary_backfill_tasks(root):
+            existing_path = task_dir / gtt.FINISH_SUMMARY_ARTIFACT
+            if not existing_path.is_file():
+                continue
+            existing = gtt.read_json(existing_path)
+            if existing.get("generator") != gtt.FINISH_SUMMARY_BACKFILL_GENERATOR:
+                continue
+            sources, source_artifacts, errors = gtt.load_finish_summary_backfill_sources(task_dir)
+            self.assertEqual(errors, [], task_dir.name)
+            payload = gtt.build_finish_summary_backfill(root, task_dir, sources, source_artifacts)
+            if "历史归档 task 已完成" in payload["index"]["search_terms"]["phrases"]:
+                actual.append(task_dir.name)
+
+        self.assertEqual(actual, expected)
+
     def test_minimal_builder_has_fallback_surface_and_missing_fields(self) -> None:
         tmp, root, archive = self.make_repo()
         self.addCleanup(tmp.cleanup)
@@ -9925,9 +10264,46 @@ class FinishSummaryBackfillTests(unittest.TestCase):
         payload = gtt.build_finish_summary_backfill(root, task_dir, {}, [])
         self.assertEqual(payload["backfill"]["confidence"], "minimal")
         self.assertEqual(payload["index"]["affected_surfaces"][0]["paths"], [])
+        self.assertEqual(
+            payload["index"]["problem"],
+            "minimal-task；旧行为：历史 artifact 未记录。",
+        )
+        self.assertEqual(
+            payload["index"]["outcome"],
+            "minimal-task；非目标：历史 artifact 未记录。",
+        )
         self.assertIn("task.artifact_dir", payload["backfill"]["missing_fields"])
         self.assertIn("github.pr_url", payload["backfill"]["missing_fields"])
         self.assertEqual(gtt.finish_summary_errors(payload, task_dir=task_dir), [])
+
+    def test_table_preview_matches_json_for_complete_partial_and_minimal(self) -> None:
+        tmp, root, archive = self.make_repo()
+        self.addCleanup(tmp.cleanup)
+        complete = archive / "complete"
+        complete.mkdir()
+        self.write_complete_sources(complete)
+        partial = archive / "partial"
+        partial.mkdir()
+        gtt.write_json(partial / "task.json", {
+            "title": "部分证据任务",
+            "description": "历史归档任务需要完成摘要。",
+        })
+        minimal = archive / "minimal"
+        minimal.mkdir()
+        gtt.write_json(minimal / "task.json", {})
+
+        payload = gtt.cmd_backfill_finish_summary(self.args(root))
+        self.assertEqual(payload["scanned_tasks"], 3)
+        self.assertEqual({item["confidence"] for item in payload["to_write"]}, {"complete", "partial", "minimal"})
+        table = gtt.render_finish_summary_backfill_table(payload)
+        for item in payload["to_write"]:
+            source_artifacts = ",".join(item["source_artifacts"]) or "-"
+            missing_fields = ",".join(item["missing_fields"]) or "-"
+            row = (
+                f"to_write\t{item['archive_dir']}\t{item['target']}\t"
+                f"{source_artifacts}\t{missing_fields}\t{item['confidence']}"
+            )
+            self.assertIn(row, table)
 
     def test_issue_number_parser_does_not_take_unrelated_url_digits(self) -> None:
         self.assertEqual(gtt.backfill_issue_number("https://github.com/team2/repo/issues/100"), 100)
@@ -9975,7 +10351,7 @@ class FinishSummaryBackfillTests(unittest.TestCase):
         outside = root / "outside.json"
         outside.write_text('{"title":"外部文件"}\n', encoding="utf-8")
         (task_dir / "review-gate.json").symlink_to(outside)
-        self.assertEqual(gtt.discover_finish_summary_backfill_tasks(root), [task_dir])
+        self.assertEqual(gtt.discover_finish_summary_backfill_tasks(root), [task_dir.resolve()])
         sources, artifacts, errors = gtt.load_finish_summary_backfill_sources(task_dir)
         self.assertIn("task.json", sources)
         self.assertNotIn("review-gate.json", sources)

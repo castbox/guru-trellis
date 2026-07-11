@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:37Z",
+  "generated_at": "2026-07-11T03:21:35Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-10-096-task-runtime-boundary",
@@ -144,7 +144,7 @@
   },
   "index": {
     "problem": "完整移除 Guru Team 原 `.trellis/guru-team/handoff.json` 概念，把任务启动阶段的数据拆分为 task-local、git tracked、可移植的“任务启动上下文”，以及 gitignored、可丢弃的“本机运行态”。普通 task 命令不得再修改固定 tracked 运行文件或仓库共享配置，从根因消除并行 task 对同一路径的争用和本机绝对路径泄露。",
-    "outcome": "历史结果：#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界；非目标信息未记录。",
+    "outcome": "完整移除 Guru Team 旧的 tracked `.trellis/guru-team/handoff.json`、`intake-handoff.schema.json` 和 `handoff_path` 公共 API。",
     "changed_behavior": [
       "历史归档 task 已完成：#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界。"
     ],
@@ -481,15 +481,15 @@
         "#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界",
         "07-10-096-task-runtime-boundary",
         "完整移除 Guru Team 原 `.trellis/guru-team/handoff.json` 概念，把任务启动阶",
-        "历史结果：#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界；",
+        "完整移除 Guru Team 旧的 tracked `.trellis/guru-team/handoff.json`、",
         "历史归档 task 已完成：#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文"
       ]
     },
-    "retrieval_text": "#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界\n完整移除 Guru Team 原 `.trellis/guru-team/handoff.json` 概念，把任务启动阶段的数据拆分为 task-local、git tracked、可移植的“任务启动上下文”，以及 gitignored、可丢弃的“本机运行态”。普通 task 命令不得再修改固定 tracked 运行文件或仓库共享配置，从根因消除并行 task 对同一路径的争用和本机绝对路径泄露。\n历史结果：#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界；非目标信息未记录。\n历史归档 task 已完成：#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界\n07-10-096-task-runtime-boundary\n完整移除 Guru Team 原 `.trellis/guru-team/handoff.json` 概念，把任务启动阶\n历史结果：#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界；\n历史归档 task 已完成：#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文"
+    "retrieval_text": "#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界\n完整移除 Guru Team 原 `.trellis/guru-team/handoff.json` 概念，把任务启动阶段的数据拆分为 task-local、git tracked、可移植的“任务启动上下文”，以及 gitignored、可丢弃的“本机运行态”。普通 task 命令不得再修改固定 tracked 运行文件或仓库共享配置，从根因消除并行 task 对同一路径的争用和本机绝对路径泄露。\n完整移除 Guru Team 旧的 tracked `.trellis/guru-team/handoff.json`、`intake-handoff.schema.json` 和 `handoff_path` 公共 API。\n历史归档 task 已完成：#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界\n07-10-096-task-runtime-boundary\n完整移除 Guru Team 原 `.trellis/guru-team/handoff.json` 概念，把任务启动阶\n完整移除 Guru Team 旧的 tracked `.trellis/guru-team/handoff.json`、\n历史归档 task 已完成：#96 拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:37Z",
+    "generated_at": "2026-07-11T03:21:35Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

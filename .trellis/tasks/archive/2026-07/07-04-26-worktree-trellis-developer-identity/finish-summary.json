@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:33Z",
+  "generated_at": "2026-07-11T03:21:31Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-04-26-worktree-trellis-developer-identity",
@@ -57,7 +57,7 @@
   },
   "index": {
     "problem": "修复 Guru Team `prepare-task.sh --create-worktree` / `--create-task` 在创建或复用 task worktree 后没有可用 `.trellis/.developer` 的问题，确保新 task worktree 能立即运行 `get_context.py`、`add_session.py`、`task.py list --mine` 等依赖 developer identity 的 Trellis 步骤。",
-    "outcome": "历史结果：#26 worktree 创建后应继承 Trellis developer identity；非目标信息未记录。",
+    "outcome": "修复 Guru Team `prepare-task --create-worktree` / `--create-task` 创建或复用 task worktree 后缺少 Trellis developer identity 的问题。",
     "changed_behavior": [
       "修复 Guru Team `prepare-task --create-worktree` / `--create-task` 创建或复用 task worktree 后缺少 Trellis developer identity 的问题。",
       "executor 路径现在会优先从 source checkout 复制 gitignored `.trellis/.developer`，source 缺失但调用方提供 `--assignee` 时初始化目标 worktree identity，两者都不可用时 fail closed 并提示 `init_developer.py` 恢复命令。",
@@ -180,17 +180,16 @@
         "#26 worktree 创建后应继承 Trellis developer identity",
         "07-04-26-worktree-trellis-developer-identity",
         "修复 Guru Team `prepare-task.sh --create-worktree` / `--create",
-        "历史结果：#26 worktree 创建后应继承 Trellis developer identity；非目标信息未记录",
         "修复 Guru Team `prepare-task --create-worktree` / `--create-ta",
         "executor 路径现在会优先从 source checkout 复制 gitignored `.trellis/.d",
         "`infer_assignee()` 改为解析 `.trellis/.developer` 的 `name=` 字段，避"
       ]
     },
-    "retrieval_text": "#26 worktree 创建后应继承 Trellis developer identity\n修复 Guru Team `prepare-task.sh --create-worktree` / `--create-task` 在创建或复用 task worktree 后没有可用 `.trellis/.developer` 的问题，确保新 task worktree 能立即运行 `get_context.py`、`add_session.py`、`task.py list --mine` 等依赖 developer identity 的 Trellis 步骤。\n历史结果：#26 worktree 创建后应继承 Trellis developer identity；非目标信息未记录。\n修复 Guru Team `prepare-task --create-worktree` / `--create-task` 创建或复用 task worktree 后缺少 Trellis developer identity 的问题。\nexecutor 路径现在会优先从 source checkout 复制 gitignored `.trellis/.developer`，source 缺失但调用方提供 `--assignee` 时初始化目标 worktree identity，两者都不可用时 fail closed 并提示 `init_developer.py` 恢复命令。\n`infer_assignee()` 改为解析 `.trellis/.developer` 的 `name=` 字段，避免把整个多行 identity 文件写入 `task.py create --assignee`。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#26 worktree 创建后应继承 Trellis developer identity\n07-04-26-worktree-trellis-developer-identity\n修复 Guru Team `prepare-task.sh --create-worktree` / `--create\n历史结果：#26 worktree 创建后应继承 Trellis developer identity；非目标信息未记录\n修复 Guru Team `prepare-task --create-worktree` / `--create-ta\nexecutor 路径现在会优先从 source checkout 复制 gitignored `.trellis/.d\n`infer_assignee()` 改为解析 `.trellis/.developer` 的 `name=` 字段，避"
+    "retrieval_text": "#26 worktree 创建后应继承 Trellis developer identity\n修复 Guru Team `prepare-task.sh --create-worktree` / `--create-task` 在创建或复用 task worktree 后没有可用 `.trellis/.developer` 的问题，确保新 task worktree 能立即运行 `get_context.py`、`add_session.py`、`task.py list --mine` 等依赖 developer identity 的 Trellis 步骤。\n修复 Guru Team `prepare-task --create-worktree` / `--create-task` 创建或复用 task worktree 后缺少 Trellis developer identity 的问题。\n修复 Guru Team `prepare-task --create-worktree` / `--create-task` 创建或复用 task worktree 后缺少 Trellis developer identity 的问题。\nexecutor 路径现在会优先从 source checkout 复制 gitignored `.trellis/.developer`，source 缺失但调用方提供 `--assignee` 时初始化目标 worktree identity，两者都不可用时 fail closed 并提示 `init_developer.py` 恢复命令。\n`infer_assignee()` 改为解析 `.trellis/.developer` 的 `name=` 字段，避免把整个多行 identity 文件写入 `task.py create --assignee`。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#26 worktree 创建后应继承 Trellis developer identity\n07-04-26-worktree-trellis-developer-identity\n修复 Guru Team `prepare-task.sh --create-worktree` / `--create\n修复 Guru Team `prepare-task --create-worktree` / `--create-ta\nexecutor 路径现在会优先从 source checkout 复制 gitignored `.trellis/.d\n`infer_assignee()` 改为解析 `.trellis/.developer` 的 `name=` 字段，避"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:33Z",
+    "generated_at": "2026-07-11T03:21:31Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

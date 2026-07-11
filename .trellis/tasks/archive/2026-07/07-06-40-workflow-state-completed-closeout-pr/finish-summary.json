@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:34Z",
+  "generated_at": "2026-07-11T03:21:32Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-06-40-workflow-state-completed-closeout-pr",
@@ -55,7 +55,7 @@
   },
   "index": {
     "problem": "Issue #40 要求复查 `[workflow-state:completed]` 的提示是否仍不足，并判断原方案是否因近期大量 PR 合并而过时。当前主干已经在 Phase 3.6/3.7、`trellis-finish-work` skill / prompt / command overlay、README 和 companion script 中补齐了 PR body、dry-run、metadata-only tail 与 direct publish 限制。但 canonical workflow 和 dogfood active workflow 的 `[workflow-state:completed]` 仍然只有一句：",
-    "outcome": "历史结果：#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail；非目标信息未记录。",
+    "outcome": "扩展 `trellis/workflows/guru-team/workflow.md` 中的 `[workflow-state:completed]` closeout breadcrumb，使它覆盖 Branch Review Gate stale fallback、PR body/readiness、finish-work dry-run、metada",
     "changed_behavior": [
       "扩展 `trellis/workflows/guru-team/workflow.md` 中的 `[workflow-state:completed]` closeout breadcrumb，使它覆盖 Branch Review Gate stale fallback、PR body/readiness、finish-work dry-run、metada",
       "同步 dogfood 运行副本 `.trellis/workflow.md`，保证当前仓库运行时读取到的 completed breadcrumb 与 canonical workflow 一致。",
@@ -172,18 +172,17 @@
         "#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-r",
         "07-06-40-workflow-state-completed-closeout-pr",
         "Issue #40 要求复查 `[workflow-state:completed]` 的提示是否仍不足，并判断原方案是",
-        "历史结果：#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、",
         "扩展 `trellis/workflows/guru-team/workflow.md` 中的 `[workflow-s",
         "同步 dogfood 运行副本 `.trellis/workflow.md`，保证当前仓库运行时读取到的 complet",
         "为 `.codex/hooks/test_inject_workflow_state.py` 增加 completed",
         "历史归档 task 已完成"
       ]
     },
-    "retrieval_text": "#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail\nIssue #40 要求复查 `[workflow-state:completed]` 的提示是否仍不足，并判断原方案是否因近期大量 PR 合并而过时。当前主干已经在 Phase 3.6/3.7、`trellis-finish-work` skill / prompt / command overlay、README 和 companion script 中补齐了 PR body、dry-run、metadata-only tail 与 direct publish 限制。但 canonical workflow 和 dogfood active workflow 的 `[workflow-state:completed]` 仍然只有一句：\n历史结果：#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail；非目标信息未记录。\n扩展 `trellis/workflows/guru-team/workflow.md` 中的 `[workflow-state:completed]` closeout breadcrumb，使它覆盖 Branch Review Gate stale fallback、PR body/readiness、finish-work dry-run、metada\n同步 dogfood 运行副本 `.trellis/workflow.md`，保证当前仓库运行时读取到的 completed breadcrumb 与 canonical workflow 一致。\n为 `.codex/hooks/test_inject_workflow_state.py` 增加 completed breadcrumb 回归测试，验证 hook parser 会从 workflow Markdown 注入新的 closeout 关键文案。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-r\n07-06-40-workflow-state-completed-closeout-pr\nIssue #40 要求复查 `[workflow-state:completed]` 的提示是否仍不足，并判断原方案是\n历史结果：#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、\n扩展 `trellis/workflows/guru-team/workflow.md` 中的 `[workflow-s\n同步 dogfood 运行副本 `.trellis/workflow.md`，保证当前仓库运行时读取到的 complet\n为 `.codex/hooks/test_inject_workflow_state.py` 增加 completed\n历史归档 task 已完成"
+    "retrieval_text": "#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-run 与 metadata tail\nIssue #40 要求复查 `[workflow-state:completed]` 的提示是否仍不足，并判断原方案是否因近期大量 PR 合并而过时。当前主干已经在 Phase 3.6/3.7、`trellis-finish-work` skill / prompt / command overlay、README 和 companion script 中补齐了 PR body、dry-run、metadata-only tail 与 direct publish 限制。但 canonical workflow 和 dogfood active workflow 的 `[workflow-state:completed]` 仍然只有一句：\n扩展 `trellis/workflows/guru-team/workflow.md` 中的 `[workflow-state:completed]` closeout breadcrumb，使它覆盖 Branch Review Gate stale fallback、PR body/readiness、finish-work dry-run、metada\n扩展 `trellis/workflows/guru-team/workflow.md` 中的 `[workflow-state:completed]` closeout breadcrumb，使它覆盖 Branch Review Gate stale fallback、PR body/readiness、finish-work dry-run、metada\n同步 dogfood 运行副本 `.trellis/workflow.md`，保证当前仓库运行时读取到的 completed breadcrumb 与 canonical workflow 一致。\n为 `.codex/hooks/test_inject_workflow_state.py` 增加 completed breadcrumb 回归测试，验证 hook parser 会从 workflow Markdown 注入新的 closeout 关键文案。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#40 扩展 workflow-state:completed closeout 提示，覆盖 PR body、dry-r\n07-06-40-workflow-state-completed-closeout-pr\nIssue #40 要求复查 `[workflow-state:completed]` 的提示是否仍不足，并判断原方案是\n扩展 `trellis/workflows/guru-team/workflow.md` 中的 `[workflow-s\n同步 dogfood 运行副本 `.trellis/workflow.md`，保证当前仓库运行时读取到的 complet\n为 `.codex/hooks/test_inject_workflow_state.py` 增加 completed\n历史归档 task 已完成"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:34Z",
+    "generated_at": "2026-07-11T03:21:32Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

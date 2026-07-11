@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:34Z",
+  "generated_at": "2026-07-11T03:21:31Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-05-35-guru-team-no-task-intake",
@@ -67,7 +67,7 @@
   },
   "index": {
     "problem": "修复 Guru Team workflow / overlay 在 `no_task` 和 Phase 1.0 下的提示缺陷，确保 issue-backed、task-like 或需要文件修改的开发请求不会只凭通用 task creation consent 在 source checkout 直接运行裸 `task.py create`。",
-    "outcome": "历史结果：#35 修复 Guru Team no_task intake 防止绕过 worktree；非目标信息未记录。",
+    "outcome": "更新 Guru Team workflow 的 no_task triage、`[workflow-state:no_task]`、Phase 0.4 handoff review 和 Phase 1.0 task creation 文案，使 issue-backed、task-like、file-changing 请求优先进入 `check-env.sh",
     "changed_behavior": [
       "更新 Guru Team workflow 的 no_task triage、`[workflow-state:no_task]`、Phase 0.4 handoff review 和 Phase 1.0 task creation 文案，使 issue-backed、task-like、file-changing 请求优先进入 `check-env.sh",
       "同步 canonical `trellis-start` overlay、Codex prompt/skill 副本、dogfood `.trellis/workflow.md` 和 README/spec，明确 `workspace_mode: worktree` 下创建执行环境必须通过 `prepare-task --create-worktree --",
@@ -235,17 +235,16 @@
         "#35 修复 Guru Team no_task intake 防止绕过 worktree",
         "07-05-35-guru-team-no-task-intake",
         "修复 Guru Team workflow / overlay 在 `no_task` 和 Phase 1.0 下的提示",
-        "历史结果：#35 修复 Guru Team no_task intake 防止绕过 worktree；非目标信息未记录。",
         "更新 Guru Team workflow 的 no_task triage、`[workflow-state:no_t",
         "同步 canonical `trellis-start` overlay、Codex prompt/skill 副本、d",
         "更新 Codex/Cursor no-task session fallback，并补充回归测试，覆盖 prepare/"
       ]
     },
-    "retrieval_text": "#35 修复 Guru Team no_task intake 防止绕过 worktree\n修复 Guru Team workflow / overlay 在 `no_task` 和 Phase 1.0 下的提示缺陷，确保 issue-backed、task-like 或需要文件修改的开发请求不会只凭通用 task creation consent 在 source checkout 直接运行裸 `task.py create`。\n历史结果：#35 修复 Guru Team no_task intake 防止绕过 worktree；非目标信息未记录。\n更新 Guru Team workflow 的 no_task triage、`[workflow-state:no_task]`、Phase 0.4 handoff review 和 Phase 1.0 task creation 文案，使 issue-backed、task-like、file-changing 请求优先进入 `check-env.sh\n同步 canonical `trellis-start` overlay、Codex prompt/skill 副本、dogfood `.trellis/workflow.md` 和 README/spec，明确 `workspace_mode: worktree` 下创建执行环境必须通过 `prepare-task --create-worktree --\n更新 Codex/Cursor no-task session fallback，并补充回归测试，覆盖 prepare/worktree 入口、`task creation consent` 不等于 current-checkout direct-edit consent，以及旧泛化 task consent 提示不再出现。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#35 修复 Guru Team no_task intake 防止绕过 worktree\n07-05-35-guru-team-no-task-intake\n修复 Guru Team workflow / overlay 在 `no_task` 和 Phase 1.0 下的提示\n历史结果：#35 修复 Guru Team no_task intake 防止绕过 worktree；非目标信息未记录。\n更新 Guru Team workflow 的 no_task triage、`[workflow-state:no_t\n同步 canonical `trellis-start` overlay、Codex prompt/skill 副本、d\n更新 Codex/Cursor no-task session fallback，并补充回归测试，覆盖 prepare/"
+    "retrieval_text": "#35 修复 Guru Team no_task intake 防止绕过 worktree\n修复 Guru Team workflow / overlay 在 `no_task` 和 Phase 1.0 下的提示缺陷，确保 issue-backed、task-like 或需要文件修改的开发请求不会只凭通用 task creation consent 在 source checkout 直接运行裸 `task.py create`。\n更新 Guru Team workflow 的 no_task triage、`[workflow-state:no_task]`、Phase 0.4 handoff review 和 Phase 1.0 task creation 文案，使 issue-backed、task-like、file-changing 请求优先进入 `check-env.sh\n更新 Guru Team workflow 的 no_task triage、`[workflow-state:no_task]`、Phase 0.4 handoff review 和 Phase 1.0 task creation 文案，使 issue-backed、task-like、file-changing 请求优先进入 `check-env.sh\n同步 canonical `trellis-start` overlay、Codex prompt/skill 副本、dogfood `.trellis/workflow.md` 和 README/spec，明确 `workspace_mode: worktree` 下创建执行环境必须通过 `prepare-task --create-worktree --\n更新 Codex/Cursor no-task session fallback，并补充回归测试，覆盖 prepare/worktree 入口、`task creation consent` 不等于 current-checkout direct-edit consent，以及旧泛化 task consent 提示不再出现。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#35 修复 Guru Team no_task intake 防止绕过 worktree\n07-05-35-guru-team-no-task-intake\n修复 Guru Team workflow / overlay 在 `no_task` 和 Phase 1.0 下的提示\n更新 Guru Team workflow 的 no_task triage、`[workflow-state:no_t\n同步 canonical `trellis-start` overlay、Codex prompt/skill 副本、d\n更新 Codex/Cursor no-task session fallback，并补充回归测试，覆盖 prepare/"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:34Z",
+    "generated_at": "2026-07-11T03:21:31Z",
     "source_artifacts": [
       "design.md",
       "implement.md",

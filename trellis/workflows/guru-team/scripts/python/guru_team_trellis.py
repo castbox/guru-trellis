@@ -623,6 +623,113 @@ def finish_summary_retrieval_text(task_title: str, index: dict[str, Any]) -> str
     return "\n".join(value.strip() for value in values if value.strip())
 
 
+def finish_summary_backfill_retrieval_boundary_allowed(
+    generator: Any,
+    task: dict[str, Any],
+    index: dict[str, Any],
+    *,
+    task_dir: Path | None = None,
+) -> bool:
+    if generator != FINISH_SUMMARY_BACKFILL_GENERATOR:
+        return False
+    title = task.get("title")
+    problem = index.get("problem")
+    retrieval = index.get("retrieval_text")
+    if not all(isinstance(value, str) for value in [title, problem, retrieval]):
+        return False
+    if retrieval != finish_summary_retrieval_text(title, index):
+        return False
+
+    values: list[str] = [title, problem, str(index.get("outcome") or "")]
+    changed_behavior = index.get("changed_behavior")
+    if isinstance(changed_behavior, list):
+        values.extend(str(item) for item in changed_behavior if isinstance(item, str))
+    surfaces = index.get("affected_surfaces")
+    if isinstance(surfaces, list):
+        values.extend(
+            str(item["change"])
+            for item in surfaces
+            if isinstance(item, dict) and isinstance(item.get("change"), str)
+        )
+    contracts = index.get("contract_changes")
+    if isinstance(contracts, list):
+        for item in contracts:
+            if isinstance(item, dict):
+                values.extend(
+                    str(item[key])
+                    for key in ["before", "after"]
+                    if isinstance(item.get(key), str)
+                )
+    search_terms = index.get("search_terms")
+    if isinstance(search_terms, dict) and isinstance(search_terms.get("phrases"), list):
+        values.extend(
+            str(item)
+            for item in search_terms["phrases"]
+            if isinstance(item, str)
+        )
+    values = [value.strip() for value in values if value.strip()]
+    if any("\n" in value or "\r" in value for value in values):
+        return False
+    if retrieval.splitlines() != values:
+        return False
+
+    removable_indexes: set[int] = set()
+    fallback = f"{title}；旧行为：历史 artifact 未记录。"
+    if (
+        problem == fallback
+        and len(values) >= 2
+        and values[:2] == [title, fallback]
+        and backfill_phrase_clauses(values[0])[-1:] == backfill_phrase_clauses(values[1])[:1]
+    ):
+        removable_indexes.add(0)
+
+    if (
+        len(values) >= 4
+        and values[2] == values[3]
+        and finish_summary_backfill_pr_body_list_outcome(task_dir, index)
+    ):
+        removable_indexes.add(3)
+
+    if not removable_indexes:
+        return False
+    remaining_errors = finish_summary_text_errors(
+        "\n".join(value for position, value in enumerate(values) if position not in removable_indexes),
+        "index.retrieval_text",
+        1,
+        3000,
+    )
+    return "index.retrieval_text contains adjacent duplicate clauses." not in remaining_errors
+
+
+def finish_summary_backfill_pr_body_list_outcome(
+    task_dir: Path | None,
+    index: dict[str, Any],
+) -> bool:
+    if task_dir is None:
+        return False
+    sources, _source_artifacts, source_errors = load_finish_summary_backfill_sources(task_dir)
+    if source_errors:
+        return False
+    review_gate = sources.get("review-gate.json") if isinstance(sources.get("review-gate.json"), dict) else {}
+    review = sources.get("review.md") if isinstance(sources.get("review.md"), str) else ""
+    pr_body = sources.get("pr-body.md") if isinstance(sources.get("pr-body.md"), str) else ""
+    higher_priority = [
+        backfill_clean_text(review_gate.get("summary") or review_gate.get("conclusion"), 500),
+        backfill_first_paragraph(backfill_markdown_section(review, ("结论",)), 500),
+        backfill_first_paragraph(backfill_markdown_section(review, ("变更摘要",)), 500),
+    ]
+    pr_body_section = backfill_markdown_section(pr_body, ("变更摘要",))
+    if any(higher_priority) or backfill_first_paragraph(pr_body_section, 500):
+        return False
+    list_items = backfill_list_items(pr_body_section)
+    changed_behavior = index.get("changed_behavior")
+    return bool(
+        list_items
+        and index.get("outcome") == list_items[0]
+        and changed_behavior == list_items
+    )
+
+
 def finish_summary_index_errors(index: Any, *, artifacts: dict[str, Any] | None = None, final: bool) -> list[str]:
     if not isinstance(index, dict):
         return ["index must be an object."]
@@ -830,6 +937,14 @@ def backfill_unique_text(values: list[str], maximum_items: int) -> list[str]:
         if len(result) == maximum_items:
             break
     return result
+
+
+def backfill_phrase_clauses(value: str) -> list[str]:
+    return [
+        finish_summary_normalized_text(part)
+        for part in re.split(r"[。！？!?；;，,\n]+", value)
+        if finish_summary_normalized_text(part)
+    ]
 
 
 def backfill_text_is_safe(value: str) -> bool:
@@ -1076,8 +1191,25 @@ def backfill_search_terms(
     phrases = backfill_unique_text([
         backfill_clean_text(task_title, 60),
         backfill_clean_text(task_slug, 60),
-        backfill_clean_text(problem, 60),
-        backfill_clean_text(outcome, 60),
+    ], 40)
+    exact_fallbacks = [
+        (problem, f"{task_title}；旧行为：历史 artifact 未记录。"),
+        (outcome, f"{task_title}；非目标：历史 artifact 未记录。"),
+    ]
+    for value, exact_fallback in exact_fallbacks:
+        candidate = backfill_clean_text(value, 60)
+        candidate_clauses = backfill_phrase_clauses(candidate)
+        previous_clauses = backfill_phrase_clauses(phrases[-1]) if phrases else []
+        if (
+            value == exact_fallback
+            and candidate_clauses
+            and previous_clauses
+            and candidate_clauses[0] == previous_clauses[-1]
+        ):
+            continue
+        phrases = backfill_unique_text([*phrases, candidate], 40)
+    phrases = backfill_unique_text([
+        *phrases,
         *(backfill_clean_text(value, 60) for value in changed_behavior),
     ], 40)
     if len(phrases) < 3:
@@ -1130,13 +1262,19 @@ def build_finish_summary_backfill(
         backfill_first_paragraph(backfill_markdown_section(prd, ("背景",)), 400),
         backfill_first_paragraph(backfill_markdown_section(prd, ("目标",)), 400),
         backfill_clean_text(task.get("description"), 400),
-    ] if backfill_text_is_safe(value)), f"历史问题：{title[:330]} 的旧行为未记录。")
+    ] if backfill_text_is_safe(value)), f"{title}；旧行为：历史 artifact 未记录。")
+    pr_body_summary = backfill_markdown_section(pr_body, ("变更摘要",))
+    pr_body_paragraph = backfill_first_paragraph(pr_body_summary, 500)
+    pr_body_list_items = backfill_list_items(pr_body_summary)
+    pr_body_list_outcome = pr_body_list_items[0] if not pr_body_paragraph and pr_body_list_items else ""
+    outcome_fallback = f"{title}；非目标：历史 artifact 未记录。"
     outcome = next((value for value in [
         backfill_clean_text(review_gate.get("summary") or review_gate.get("conclusion"), 500),
         backfill_first_paragraph(backfill_markdown_section(review, ("结论",)), 500),
         backfill_first_paragraph(backfill_markdown_section(review, ("变更摘要",)), 500),
-        backfill_first_paragraph(backfill_markdown_section(pr_body, ("变更摘要",)), 500),
-    ] if backfill_text_is_safe(value)), f"历史结果：{title[:410]}；非目标信息未记录。")
+        pr_body_paragraph,
+        pr_body_list_outcome,
+    ] if backfill_text_is_safe(value)), outcome_fallback)
     behavior_sources = [
         backfill_list_items(backfill_markdown_section(pr_body, ("变更摘要",))),
         backfill_list_items(backfill_markdown_section(review, ("变更摘要", "结论"))),
@@ -1153,10 +1291,25 @@ def build_finish_summary_backfill(
         missing.append("git.base_branch")
     if not branch:
         missing.append("git.branch")
-    commit_candidates: list[Any] = [task.get("commit"), review_gate.get("head")]
-    if isinstance(readiness.get("commits"), list):
-        commit_candidates.extend(readiness["commits"])
-    commits = sorted({value for value in commit_candidates if isinstance(value, str) and re.fullmatch(r"[0-9a-f]{40}", value)})
+    commits: list[str] = []
+    task_commit = task.get("commit")
+    review_head = review_gate.get("head")
+    readiness_commits = readiness.get("commits")
+    if task_commit is not None and task_commit != "":
+        if not isinstance(task_commit, str) or not re.fullmatch(r"[0-9a-f]{40}", task_commit):
+            raise WorkflowError("invalid task.json commit source")
+        commits = [task_commit]
+    elif review_head is not None and review_head != "":
+        if not isinstance(review_head, str) or not re.fullmatch(r"[0-9a-f]{40}", review_head):
+            raise WorkflowError("invalid review-gate.json head source")
+        commits = [review_head]
+    elif readiness_commits is not None:
+        if not isinstance(readiness_commits, list) or any(
+            not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{40}", value)
+            for value in readiness_commits
+        ):
+            raise WorkflowError("invalid pr-readiness.json commits source")
+        commits = sorted(set(readiness_commits))
     if not commits:
         missing.append("git.commits")
 
@@ -1220,17 +1373,26 @@ def build_finish_summary_backfill(
     index["retrieval_text"] = finish_summary_retrieval_text(title, index)
     if not artifact_dir:
         missing.append("task.artifact_dir")
+    problem_fallback = f"{title}；旧行为：历史 artifact 未记录。"
+    behavior_fallback = [backfill_clean_text(f"历史归档 task 已完成：{title}。", 180)]
     has_semantic_source = any([
-        task.get("description"), changed_paths, github["source_issues"], pr_url,
-        backfill_markdown_section(prd, ("问题", "背景", "目标")),
-        backfill_markdown_section(review, ("结论", "变更摘要")),
-        backfill_markdown_section(pr_body, ("变更摘要",)),
-        backfill_completed_checklist(implement),
+        artifact_dir,
+        base_branch,
+        branch,
+        commits,
+        changed_paths,
+        *(github[key] for key in ["source_issues", "close_issues", "related_issues", "followup_issues"]),
+        pr_url,
+        problem != problem_fallback,
+        outcome != outcome_fallback,
+        changed_behavior != behavior_fallback,
+        contracts,
     ])
     complete = all([
         "task.json" in sources,
         "issue-scope-ledger.json" in sources,
         "review-gate.json" in sources or "pr-readiness.json" in sources,
+        branch,
         changed_paths,
         github["source_issues"],
         pr_url,
@@ -1287,24 +1449,35 @@ def resolve_finish_summary_backfill_task(root: Path, value: str) -> Path:
         raise WorkflowError("--task must be below .trellis/tasks/archive/.", exit_code=2) from exc
     if not relative.parts or resolved == archive_root or not resolved.is_dir():
         raise WorkflowError("--task must name an existing archived task directory.", exit_code=2)
+    if not finish_summary_backfill_task_root_marker(resolved):
+        raise WorkflowError("--task must name an archived task root with a direct task marker.", exit_code=2)
+    ancestor = resolved.parent
+    while ancestor != archive_root:
+        if finish_summary_backfill_task_root_marker(ancestor):
+            raise WorkflowError("--task must not name a subdirectory of another archived task root.", exit_code=2)
+        ancestor = ancestor.parent
     return resolved
+
+
+def finish_summary_backfill_task_root_marker(path: Path) -> bool:
+    for marker in (*FINISH_SUMMARY_BACKFILL_SOURCE_FILES, FINISH_SUMMARY_ARTIFACT):
+        candidate = path / marker
+        if candidate.is_file() and candidate.resolve().parent == path.resolve():
+            return True
+    return False
 
 
 def discover_finish_summary_backfill_tasks(root: Path) -> list[Path]:
     archive_root = root / ".trellis/tasks/archive"
-    task_markers = set(FINISH_SUMMARY_BACKFILL_SOURCE_FILES) | {FINISH_SUMMARY_ARTIFACT}
     tasks: list[Path] = []
-    for path in archive_root.rglob("*"):
-        if not path.is_dir():
+    for current, dirs, _files in os.walk(archive_root, topdown=True, followlinks=False):
+        path = Path(current)
+        dirs[:] = sorted(name for name in dirs if not (path / name).is_symlink())
+        if path == archive_root:
             continue
-        try:
-            relative = path.resolve().relative_to(archive_root.resolve())
-        except ValueError:
-            continue
-        if any(part in {"research", "reviews"} for part in relative.parts):
-            continue
-        if any((path / marker).is_file() for marker in task_markers):
-            tasks.append(path)
+        if finish_summary_backfill_task_root_marker(path):
+            tasks.append(path.resolve())
+            dirs.clear()
     return sorted(tasks)
 
 
@@ -1313,12 +1486,17 @@ def render_finish_summary_backfill_table(payload: dict[str, Any]) -> str:
         f"mode: {payload['mode']}",
         f"archive_glob: {payload['archive_glob']}",
         f"scanned_tasks: {payload['scanned_tasks']}",
-        "STATUS\tARCHIVE_DIR\tTARGET/REASON\tCONFIDENCE",
+        "STATUS\tARCHIVE_DIR\tTARGET/REASON\tSOURCE_ARTIFACTS\tMISSING_FIELDS\tCONFIDENCE",
     ]
     for item in payload["to_write"]:
-        lines.append(f"to_write\t{item['archive_dir']}\t{item['target']}\t{item['confidence']}")
+        source_artifacts = ",".join(item["source_artifacts"]) or "-"
+        missing_fields = ",".join(item["missing_fields"]) or "-"
+        lines.append(
+            f"to_write\t{item['archive_dir']}\t{item['target']}\t"
+            f"{source_artifacts}\t{missing_fields}\t{item['confidence']}"
+        )
     for item in payload["skipped"]:
-        lines.append(f"skipped\t{item['archive_dir']}\t{item['reason']}\t-")
+        lines.append(f"skipped\t{item['archive_dir']}\t{item['reason']}\t-\t-\t-")
     if payload["errors"]:
         lines.append("ERRORS")
         for item in payload["errors"]:
@@ -1594,8 +1772,17 @@ def finish_summary_errors(payload: Any, *, task_dir: Path | None = None) -> list
             errors.append(f"artifacts.{key} must equal {FINISH_SUMMARY_ARTIFACT_FILES[key]}.")
         if task_dir is not None and not (task_dir / str(path)).is_file():
             errors.append(f"artifacts.{key} does not exist in the archived task.")
-    errors.extend(finish_summary_index_errors(payload.get("index"), artifacts=artifacts, final=True))
     index = payload.get("index") if isinstance(payload.get("index"), dict) else {}
+    index_errors = finish_summary_index_errors(index, artifacts=artifacts, final=True)
+    retrieval_duplicate_error = "index.retrieval_text contains adjacent duplicate clauses."
+    if finish_summary_backfill_retrieval_boundary_allowed(
+        generator,
+        task,
+        index,
+        task_dir=task_dir,
+    ):
+        index_errors = [error for error in index_errors if error != retrieval_duplicate_error]
+    errors.extend(index_errors)
     search_terms = index.get("search_terms") if isinstance(index.get("search_terms"), dict) else {}
     issue_values = sorted({number for key in ["source_issues", "close_issues", "related_issues", "followup_issues"] for number in github.get(key, []) if isinstance(number, int) and not isinstance(number, bool)})
     if search_terms.get("issue_refs") != [f"#{number}" for number in issue_values]:

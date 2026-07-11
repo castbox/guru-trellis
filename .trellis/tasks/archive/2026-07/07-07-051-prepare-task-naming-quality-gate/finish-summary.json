@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T02:04:35Z",
+  "generated_at": "2026-07-11T03:21:32Z",
   "generator": "guru-team.finish-summary-backfill",
   "task": {
     "slug": "07-07-051-prepare-task-naming-quality-gate",
@@ -60,7 +60,7 @@
     "pr_body": "pr-body.md"
   },
   "index": {
-    "problem": "历史问题：#51 修正 prepare-task 命名质量门禁 的旧行为未记录。",
+    "problem": "#51 修正 prepare-task 命名质量门禁；旧行为：历史 artifact 未记录。",
     "outcome": "本次修正 Guru Team `prepare-task` 的 slug / branch / worktree / task 命名门禁，避免在中文 issue 或语义不足标题上静默创建 `issue-52`、`52-issue-52` 这类低信息名称。",
     "changed_behavior": [
       "`prepare-task --json` 输出新增 `naming_quality`，包含 `ok`、`reason`、`requires_semantic_name`、`current_slug`、`suggested_override_flags`，并在 handoff schema / handoff payload 中保留。",
@@ -209,7 +209,7 @@
       "phrases": [
         "#51 修正 prepare-task 命名质量门禁",
         "07-07-051-prepare-task-naming-quality-gate",
-        "历史问题：#51 修正 prepare-task 命名质量门禁 的旧行为未记录。",
+        "#51 修正 prepare-task 命名质量门禁；旧行为：历史 artifact 未记录。",
         "本次修正 Guru Team `prepare-task` 的 slug / branch / worktree / t",
         "`prepare-task --json` 输出新增 `naming_quality`，包含 `ok`、`reason`",
         "保留英文标题的确定性自动 slug，但新增质量判定，识别 `issue-<n>`、`<n>-issue-<n>`、纯编号",
@@ -218,11 +218,11 @@
         "同步 canonical workflow、dogfood 副本、schema、README / workflow RE"
       ]
     },
-    "retrieval_text": "#51 修正 prepare-task 命名质量门禁\n历史问题：#51 修正 prepare-task 命名质量门禁 的旧行为未记录。\n本次修正 Guru Team `prepare-task` 的 slug / branch / worktree / task 命名门禁，避免在中文 issue 或语义不足标题上静默创建 `issue-52`、`52-issue-52` 这类低信息名称。\n`prepare-task --json` 输出新增 `naming_quality`，包含 `ok`、`reason`、`requires_semantic_name`、`current_slug`、`suggested_override_flags`，并在 handoff schema / handoff payload 中保留。\n保留英文标题的确定性自动 slug，但新增质量判定，识别 `issue-<n>`、`<n>-issue-<n>`、纯编号、仅通用词、过短或业务 token 不足的名称。\n中文或非 ASCII issue title 不做拼音 / transliteration；只读 planner 可以输出计划，但标记需要 agent 显式提供语义英文 short-name。\n`--create-worktree` / `--create-task` 在任何 worktree、branch、task 副作用前阻断低信息命名，并提示使用 `--short-name`、`--workspace-slug`、`--task-slug`、`--branch` 覆盖。\n同步 canonical workflow、dogfood 副本、schema、README / workflow README / preset README、overlay 和 durable requirements 文档。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#51 修正 prepare-task 命名质量门禁\n07-07-051-prepare-task-naming-quality-gate\n历史问题：#51 修正 prepare-task 命名质量门禁 的旧行为未记录。\n本次修正 Guru Team `prepare-task` 的 slug / branch / worktree / t\n`prepare-task --json` 输出新增 `naming_quality`，包含 `ok`、`reason`\n保留英文标题的确定性自动 slug，但新增质量判定，识别 `issue-<n>`、`<n>-issue-<n>`、纯编号\n中文或非 ASCII issue title 不做拼音 / transliteration；只读 planner 可以输\n`--create-worktree` / `--create-task` 在任何 worktree、branch、ta\n同步 canonical workflow、dogfood 副本、schema、README / workflow RE"
+    "retrieval_text": "#51 修正 prepare-task 命名质量门禁\n#51 修正 prepare-task 命名质量门禁；旧行为：历史 artifact 未记录。\n本次修正 Guru Team `prepare-task` 的 slug / branch / worktree / task 命名门禁，避免在中文 issue 或语义不足标题上静默创建 `issue-52`、`52-issue-52` 这类低信息名称。\n`prepare-task --json` 输出新增 `naming_quality`，包含 `ok`、`reason`、`requires_semantic_name`、`current_slug`、`suggested_override_flags`，并在 handoff schema / handoff payload 中保留。\n保留英文标题的确定性自动 slug，但新增质量判定，识别 `issue-<n>`、`<n>-issue-<n>`、纯编号、仅通用词、过短或业务 token 不足的名称。\n中文或非 ASCII issue title 不做拼音 / transliteration；只读 planner 可以输出计划，但标记需要 agent 显式提供语义英文 short-name。\n`--create-worktree` / `--create-task` 在任何 worktree、branch、task 副作用前阻断低信息命名，并提示使用 `--short-name`、`--workspace-slug`、`--task-slug`、`--branch` 覆盖。\n同步 canonical workflow、dogfood 副本、schema、README / workflow README / preset README、overlay 和 durable requirements 文档。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#51 修正 prepare-task 命名质量门禁\n07-07-051-prepare-task-naming-quality-gate\n#51 修正 prepare-task 命名质量门禁；旧行为：历史 artifact 未记录。\n本次修正 Guru Team `prepare-task` 的 slug / branch / worktree / t\n`prepare-task --json` 输出新增 `naming_quality`，包含 `ok`、`reason`\n保留英文标题的确定性自动 slug，但新增质量判定，识别 `issue-<n>`、`<n>-issue-<n>`、纯编号\n中文或非 ASCII issue title 不做拼音 / transliteration；只读 planner 可以输\n`--create-worktree` / `--create-task` 在任何 worktree、branch、ta\n同步 canonical workflow、dogfood 副本、schema、README / workflow RE"
   },
   "backfill": {
     "generated": true,
-    "generated_at": "2026-07-11T02:04:35Z",
+    "generated_at": "2026-07-11T03:21:32Z",
     "source_artifacts": [
       "design.md",
       "implement.md",
