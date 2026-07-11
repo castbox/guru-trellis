@@ -144,11 +144,12 @@ identity is the task-local `pr-body.md` raw UTF-8 text: no trim, newline
 insertion, or second normalization is permitted between plan hashing,
 readiness, create, reuse, and final projection. After the official move, remote
 PR queries are checked only against the plan's exact title and raw-body digest;
-they do not reopen task-local body, readiness, or summary artifacts. The normal
-flow also carries the already-bound PR number/URL across archive and ready
-confirmation. A fresh archived reentry, where runtime PR number/URL are not in
-the immutable plan by design, accepts only the unique target-repository
-repo/head/base candidate whose title/body digest matches the plan. A fork
+they do not reopen task-local body or readiness artifacts. The normal flow also
+carries the already-bound PR number/URL across archive and ready confirmation.
+A fresh exact-archive reentry recovers that number/URL from the immutable
+commit's deterministic `finish-summary.json` blob, without opening the
+working-tree summary or invoking the general summary validator, then requires
+the unique target-repository repo/head/base candidate to match it. A fork
 candidate, multiple target-repo matches, changed title/body, or a number/URL
 change within one bound invocation fails closed.
 The canonical PR URL is used to build the only final finish-summary in the
@@ -237,6 +238,9 @@ commit must equal its archived working-tree and archive-commit blob
 byte-for-byte, except `task.json`, whose only permitted change is the official
 `status=completed` and `completedAt=YYYY-MM-DD` transition. A partial, missing,
 extra, misclassified, or content-tampered pre-commit set is never valid.
+The final summary is also a deterministic continuity input: fresh execution
+and incomplete recovery rebuild its exact UTF-8 JSON bytes/digest from the
+immutable template and the already-bound remote PR number/URL.
 
 Once current `HEAD` is the exact planned archive commit, every archived
 finish-work reentry, including a normal task that still has
@@ -244,8 +248,12 @@ finish-work reentry, including a normal task that still has
 blob. The plan and
 that commit's parent, path set, tree, and blobs are authoritative. Missing or
 tampered archived working-tree files and their dirty status do not block
-pushing that exact commit, remote/PR HEAD checks, or draft-to-ready. If current
-`HEAD` is absent from or mismatched with the planned archive transaction,
+pushing that exact commit, remote/PR HEAD checks, or draft-to-ready. Fresh exact
+recovery reads the committed `finish-summary.json` blob to recover the original
+PR number/URL and verify the deterministic bytes/digest without calling the
+general local summary validator; it never reads the archived working-tree
+summary. A missing, closed, or replacement PR fails closed. If current `HEAD`
+is absent from or mismatched with the planned archive transaction,
 recovery falls back to the pre-commit metadata path and keeps all layout,
 dirty/staged path, blob, official `task.json`, and lineage checks fail closed.
 An archived directory containing only `closeout-plan.json` is resolvable only

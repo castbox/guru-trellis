@@ -127,13 +127,20 @@ archive locator. Readiness binds repo/base/head, reviewed HEAD, exact title,
 `closeout_plan_digest`. Active-state recovery consumes committed plan/readiness
 plus Git/remote and PR facts. Reuse and final projection require one exact PR
 number/URL/title/body identity; one matching draft is reused, zero creates one,
-and multiple identities fail closed. After the official move, recovery does not
-read readiness, body, or summary artifacts: it validates remote title/body
-against the plan digest, carries the bound number/URL within the current
-invocation, and checks three-way HEAD equality before retrying draft-to-ready.
-A fresh archived reentry accepts the unique repo/head/base PR whose remote
-title/body digest matches the plan because runtime number/URL are intentionally
-excluded from the immutable input digest.
+and multiple identities fail closed. The real-PR final summary has one
+deterministic UTF-8 JSON byte representation and digest. Pre-move continuity
+and incomplete post-move recovery rebuild those bytes from the immutable
+summary template plus the already-bound remote PR number/URL, so a summary and
+its PR identity cannot be changed together. After the exact archive commit
+exists, fresh recovery reads only that commit's `finish-summary.json` blob,
+strictly parses the canonical PR URL and unique PR ref, rebuilds the expected
+bytes/digest, and recovers the original number/URL. It does not read the
+archived working-tree summary or invoke the general finish-summary artifact
+validator. The recovered PR must still exist as the unique open repo/head/base
+candidate and match that exact number/URL; missing, closed, or replacement PRs
+fail closed. Readiness, body, ledger, and verifier remain unopened after the
+official move, while remote title/body and three-way HEAD checks still come
+from the immutable plan and remote facts.
 
 Archive content identity is not inferred from the no-renames path set. Before
 the exact archive commit exists, each `tracked_move_paths` item binds the

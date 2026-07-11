@@ -486,7 +486,9 @@ on both sides, while outputs first generated after the evidence commit appear
 only at archive. A partial, missing, extra, misclassified, or tampered
 pre-commit state is invalid. If current `HEAD` is absent from or mismatched with
 the planned archive transaction, this metadata recovery path remains fail
-closed.
+closed. The final summary's deterministic real-PR bytes/digest are part of both
+pre-move and incomplete-recovery continuity and must be rebuilt against the
+already-bound remote PR; the summary cannot self-authorize a different PR.
 
 Before official move, the active side is checked earlier: the live official
 archive month still equals the plan, the index is empty, untracked paths equal
@@ -511,7 +513,13 @@ still retain context. It validates Git parent/path/tree/blob lineage instead of 
 working-tree layout or dirty state. Missing or tampered local archived files do
 not block pushing that exact commit when remote is behind, verifying
 local/remote/PR HEAD, or retrying `gh pr ready`; no task artifact may be built
-or rewritten. A plan-only archived directory is resolvable only through
+or rewritten. Exact recovery reads the immutable archive commit's
+`finish-summary.json` blob, not the archived working tree, to recover the
+original PR number/URL and verify its deterministic bytes/digest against the
+plan template. This narrow runtime-facts check does not invoke the general
+finish-summary artifact validator. The original PR must remain the unique open
+repo/head/base candidate; missing, closed, or same-branch replacement PRs fail
+closed. A plan-only archived directory is resolvable only through
 `trellis-finish-work`; ordinary task commands still require `task.json`.
 Plan-only recovery uses the same committed authority plus a dedicated boundary,
 not an unconditional workspace-boundary skip. Before

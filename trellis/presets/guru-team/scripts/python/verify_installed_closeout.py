@@ -553,6 +553,16 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
         raise RuntimeError("installed closeout summary PR URL is not canonical")
     if summary["index"]["search_terms"]["pr_refs"] != [f"PR #{issue}"]:
         raise RuntimeError("installed closeout summary PR ref is not unique")
+    recovery = run([*common, "--expected-plan-digest", digest], root, env=env)
+    recovery_payload = json.loads(recovery.stdout)
+    recovered_pr = recovery_payload.get("publish", {}).get("pr", {})
+    recovered_remote_pr = json.loads(store.read_text(encoding="utf-8"))
+    if recovery_payload.get("stage") != "ready" or recovery_payload.get("plan_digest") != digest:
+        raise RuntimeError("installed fresh archived recovery did not reuse the exact closeout transaction")
+    if recovered_pr.get("number") != issue or recovered_pr.get("url") != expected_url:
+        raise RuntimeError("installed fresh archived recovery changed the bound PR identity")
+    if recovered_remote_pr.get("number") != issue or recovered_remote_pr.get("url") != expected_url:
+        raise RuntimeError("installed fresh archived recovery changed the remote PR identity")
     return {
         "status": "ok",
         "issue": issue,
@@ -564,6 +574,7 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
         "pr_head": pr["headRefOid"],
         "pr_url": pr["url"],
         "pr_ready": not pr["isDraft"],
+        "fresh_archived_pr_binding": True,
         "after_archive_hook_preflight": True,
         "archive_path_symlink_preflight": True,
     }

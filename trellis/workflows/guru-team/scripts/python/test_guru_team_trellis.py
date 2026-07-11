@@ -9266,6 +9266,40 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             gtt.assert_closeout_archive_path_preflight(self.root, archive_locator)
         self.assertEqual(month_error.exception.payload.get("component"), "archive-month")
 
+    def test_committed_summary_runtime_facts_use_deterministic_bytes_without_general_validator(self) -> None:
+        plan = self.build_plan()
+        pr = {"number": 105, "url": "https://github.com/owner/repo/pull/105"}
+        summary = gtt.render_closeout_summary_for_pr(plan, pr)
+        content = gtt.closeout_json_artifact_bytes(summary)
+        with mock.patch.object(
+            gtt,
+            "validate_finish_summary",
+            side_effect=AssertionError("general validator must not run"),
+        ):
+            facts = gtt.closeout_summary_runtime_pr_facts_from_bytes(
+                plan,
+                content,
+                expected_pr=pr,
+            )
+        self.assertEqual(facts["number"], 105)
+        self.assertEqual(facts["url"], pr["url"])
+        self.assertEqual(facts["summary_sha256"], gtt.hashlib.sha256(content).hexdigest())
+
+        tampered = gtt.copy.deepcopy(summary)
+        tampered["index"]["outcome"] = "tampered deterministic JSON"
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.closeout_summary_runtime_pr_facts_from_bytes(
+                plan,
+                gtt.closeout_json_artifact_bytes(tampered),
+                expected_pr=pr,
+            )
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.closeout_summary_runtime_pr_facts_from_bytes(
+                plan,
+                content,
+                expected_pr={"number": 106, "url": "https://github.com/owner/repo/pull/106"},
+            )
+
     def build_plan(self) -> dict[str, object]:
         def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
             stdout = f"{self.head}\n" if command[:2] == ["git", "rev-list"] else ""
@@ -9824,7 +9858,6 @@ shutil.move(str(active), str(archived))
             evidence_head = subprocess.run(
                 ["git", "rev-parse", "HEAD"], cwd=root, check=True, text=True, capture_output=True
             ).stdout.strip()
-            (active / gtt.FINISH_SUMMARY_ARTIFACT).write_text('{"projected":true}\n', encoding="utf-8")
             expected = {
                 ".trellis/tasks/task/task.json",
                 ".trellis/tasks/task/review.md",
@@ -9839,6 +9872,7 @@ shutil.move(str(active), str(archived))
                     "source_issue": 105,
                 },
                 "git": {
+                    "repo": "owner/repo",
                     "reviewed_work_head": reviewed_head,
                     "remote": "origin",
                     "head_branch": "main",
@@ -9858,8 +9892,27 @@ shutil.move(str(active), str(archived))
                         ".trellis/tasks/task/review.md",
                         ".trellis/tasks/task/task.json",
                     ],
+                    "summary_template": {
+                        "task": {"title": "task"},
+                        "github": {
+                            "pr_url": "https://github.com/owner/repo/pull/9223372036854775807"
+                        },
+                        "index": {
+                            "problem": "archive continuity",
+                            "outcome": "deterministic summary",
+                            "search_terms": {"pr_refs": ["PR #9223372036854775807"]},
+                            "retrieval_text": "task\narchive continuity\ndeterministic summary",
+                        },
+                    },
                 },
             }
+            summary = gtt.render_closeout_summary_for_pr(
+                plan,
+                {"number": 105, "url": "https://github.com/owner/repo/pull/105"},
+            )
+            (active / gtt.FINISH_SUMMARY_ARTIFACT).write_bytes(
+                gtt.closeout_json_artifact_bytes(summary)
+            )
             self.assertNotIn(".trellis/tasks/task/finish-summary.json", expected)
             gtt.validate_closeout_archive_git_paths(expected, plan, stage="real-status")
             gtt.validate_closeout_evidence_commit(root, plan, evidence_head)
@@ -10919,7 +10972,7 @@ shutil.move(str(active), str(archived))
             mock.patch.object(gtt, "commit_closeout_evidence_metadata", side_effect=lambda *a: (order.append("evidence-commit"), {"commit": self.head})[1]),
             mock.patch.object(gtt, "ensure_closeout_draft_pr", side_effect=lambda *a: (order.append("draft"), pr)[1]),
             mock.patch.object(gtt, "build_final_archive_projection", side_effect=lambda *a: (order.append("projection"), (self.task_dir / "finish-summary.json", {}))[1]),
-            mock.patch.object(gtt, "execute_archive_metadata_transaction", side_effect=lambda *a: (order.append("archive"), (archived, {"commit": self.head}))[1]),
+            mock.patch.object(gtt, "execute_archive_metadata_transaction", side_effect=lambda *a, **k: (order.append("archive"), (archived, {"commit": self.head}))[1]),
             mock.patch.object(gtt, "ensure_closeout_pr_ready", side_effect=lambda *a, **k: (order.append("ready"), {"status": "ready"})[1]),
         ):
             result = gtt.cmd_finish_work(args)
@@ -11107,7 +11160,7 @@ shutil.move(str(active), str(archived))
                 )
             )
             result = gtt.resume_archived_closeout(self.root, args, archived)
-        archive.assert_called_once_with(self.root, archived, plan)
+        archive.assert_called_once_with(self.root, archived, plan, bound_pr=draft)
         self.assertEqual(result["stage"], "ready")
         self.assertEqual(
             [command[:3] for command in commands],
@@ -11194,6 +11247,7 @@ shutil.move(str(active), str(archived))
         archive_locator_conflict: bool = False,
         children_case: str | None = None,
         archive_path_symlink: str | None = None,
+        archived_pr_replacement: bool = False,
     ) -> dict[str, object]:
         source_root = Path(__file__).resolve().parents[5]
         with tempfile.TemporaryDirectory() as tmp:
@@ -11437,6 +11491,19 @@ shutil.move(str(active), str(archived))
                             check=True,
                         ).stdout.split()[0]
                         pr_store["headRefOid"] = remote_head
+                    return result
+                if (
+                    command[:2] == ["git", "add"]
+                    and injected_stage == "archive-summary-tamper"
+                    and archived_path.is_dir()
+                ):
+                    result = original_run(command, cwd=cwd, check=check)
+                    original_run(["git", "reset"], cwd=root, check=True)
+                    summary_path = archived_path / gtt.FINISH_SUMMARY_ARTIFACT
+                    summary = gtt.read_json(summary_path)
+                    summary["index"]["outcome"] = "tampered after archive move and index loss"
+                    gtt.write_json(summary_path, summary)
+                    record_transition("archive-summary-tamper")
                     return result
                 if command[:2] == ["git", "commit"]:
                     stage = git_transition_stage(command)
@@ -11879,6 +11946,15 @@ shutil.move(str(active), str(archived))
                             )
                         if archived_damage is not None:
                             damage_archived_worktree(archived_damage)
+                        if archived_pr_replacement:
+                            pr_store.update(
+                                {
+                                    "number": 106,
+                                    "url": "https://github.com/owner/repo/pull/106",
+                                    "isDraft": True,
+                                    "state": "OPEN",
+                                }
+                            )
                         if plan_only_boundary_fault == "branch":
                             original_run(
                                 ["git", "branch", "-m", "fix/105-wrong-branch"],
@@ -12236,6 +12312,38 @@ shutil.move(str(active), str(archived))
                 self.assertEqual(final["pr_is_draft"], False)
                 self.assertEqual(final["pr_state"], "OPEN")
                 self.assertIn(failed_stage, result["reentry_events"])
+
+    def test_production_fresh_archived_recovery_rejects_replacement_pr_identity(self) -> None:
+        result = self.run_production_finish_case(
+            "ready",
+            expect_reentry_failure=True,
+            archived_pr_replacement=True,
+        )
+        state = result["reentry_failed_state"]
+        self.assertIsNone(state["active_locator"])
+        self.assertIsNotNone(state["archive_locator"])
+        self.assertEqual(state["pr_number"], 106)
+        self.assertEqual(state["pr_is_draft"], True)
+        self.assertEqual(state["local_sha"], state["remote_sha"])
+        self.assertEqual(result["reentry_events"], [])
+        self.assertIn("bound remote identity", result["reentry_error"])
+
+    def test_production_index_loss_summary_only_tamper_fails_incomplete_recovery(self) -> None:
+        result = self.run_production_finish_case(
+            "archive-summary-tamper",
+            expect_reentry_failure=True,
+        )
+        failed = result["failed_state"]
+        reentry = result["reentry_failed_state"]
+        self.assertIsNone(failed["active_locator"])
+        self.assertIsNotNone(failed["archive_locator"])
+        self.assertEqual(failed["pr_is_draft"], True)
+        self.assertEqual(reentry["local_sha"], failed["local_sha"])
+        self.assertEqual(reentry["remote_sha"], failed["remote_sha"])
+        self.assertEqual(reentry["pr_head_sha"], failed["pr_head_sha"])
+        self.assertEqual(reentry["pr_is_draft"], True)
+        self.assertIn("deterministic runtime PR projection", result["reentry_error"])
+        self.assertEqual(result["reentry_events"], [])
 
     def test_production_incomplete_or_mismatched_archive_still_requires_worktree_contracts(self) -> None:
         cases = [

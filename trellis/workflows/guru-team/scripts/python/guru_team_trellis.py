@@ -11253,7 +11253,7 @@ def closeout_pr_placeholder(repo: str) -> dict[str, Any]:
     }
 
 
-def closeout_summary_for_pr(plan: dict[str, Any], pr: dict[str, Any]) -> dict[str, Any]:
+def render_closeout_summary_for_pr(plan: dict[str, Any], pr: dict[str, Any]) -> dict[str, Any]:
     number = pr.get("number")
     if (
         not isinstance(number, int)
@@ -11269,8 +11269,74 @@ def closeout_summary_for_pr(plan: dict[str, Any], pr: dict[str, Any]) -> dict[st
     summary["index"]["retrieval_text"] = finish_summary_retrieval_text(
         str(summary["task"]["title"]), summary["index"]
     )
+    return summary
+
+
+def closeout_summary_for_pr(plan: dict[str, Any], pr: dict[str, Any]) -> dict[str, Any]:
+    summary = render_closeout_summary_for_pr(plan, pr)
     validate_finish_summary(summary)
     return summary
+
+
+def closeout_json_artifact_bytes(payload: dict[str, Any]) -> bytes:
+    return (json.dumps(payload, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+
+
+def closeout_summary_runtime_pr_facts_from_bytes(
+    plan: dict[str, Any], content: bytes, *, expected_pr: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    """Bind runtime PR facts without invoking the general local summary validator."""
+    try:
+        summary = json.loads(content.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise WorkflowError("Committed final summary is not deterministic UTF-8 JSON.", exit_code=2) from exc
+    if not isinstance(summary, dict):
+        raise WorkflowError("Committed final summary JSON root must be an object.", exit_code=2)
+    github = summary.get("github")
+    index = summary.get("index")
+    search_terms = index.get("search_terms") if isinstance(index, dict) else None
+    pr_url = github.get("pr_url") if isinstance(github, dict) else None
+    match = re.fullmatch(
+        rf"https://github\.com/{re.escape(plan['git']['repo'])}/pull/([1-9][0-9]*)",
+        str(pr_url or ""),
+    )
+    if match is None:
+        raise WorkflowError("Committed final summary PR URL is not canonical for the immutable repo.", exit_code=2)
+    number = int(match.group(1))
+    if not isinstance(search_terms, dict) or search_terms.get("pr_refs") != [f"PR #{number}"]:
+        raise WorkflowError("Committed final summary PR ref does not match its canonical URL.", exit_code=2)
+    runtime_pr = {"number": number, "url": pr_url}
+    if expected_pr is not None:
+        expected_number = expected_pr.get("number")
+        if not isinstance(expected_number, int) or isinstance(expected_number, bool):
+            raise WorkflowError("Expected final summary PR number is invalid.", exit_code=2)
+        expected_url = canonical_pull_request_url(
+            plan["git"]["repo"], expected_number, expected_pr.get("url")
+        )
+        if number != expected_number or pr_url != expected_url:
+            raise WorkflowError(
+                "Final summary runtime PR facts differ from the bound pull request.",
+                exit_code=2,
+            )
+        runtime_pr = {"number": expected_number, "url": expected_url}
+    expected_summary = render_closeout_summary_for_pr(plan, runtime_pr)
+    expected_bytes = closeout_json_artifact_bytes(expected_summary)
+    actual_digest = hashlib.sha256(content).hexdigest()
+    expected_digest = hashlib.sha256(expected_bytes).hexdigest()
+    if content != expected_bytes:
+        raise WorkflowError(
+            "Final summary bytes do not match the deterministic runtime PR projection.",
+            exit_code=2,
+            payload={
+                "expected_summary_sha256": expected_digest,
+                "actual_summary_sha256": actual_digest,
+            },
+        )
+    return {
+        "number": number,
+        "url": str(pr_url),
+        "summary_sha256": actual_digest,
+    }
 
 
 def closeout_summary_template_digest(plan: dict[str, Any], summary: dict[str, Any]) -> str:
@@ -11327,8 +11393,7 @@ def closeout_plan_digest(plan: dict[str, Any]) -> str:
 
 
 def closeout_json_artifact_sha256(payload: dict[str, Any]) -> str:
-    content = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
-    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+    return hashlib.sha256(closeout_json_artifact_bytes(payload)).hexdigest()
 
 
 def closeout_plan_errors(plan: Any) -> list[str]:
@@ -12624,6 +12689,8 @@ def validate_closeout_pre_move_continuity(
     task_dir: Path,
     plan: dict[str, Any],
     evidence_commit: str,
+    *,
+    expected_summary_pr: dict[str, Any] | None = None,
 ) -> None:
     """Validate every local archive input before official task.py can mutate it."""
     assert_closeout_archive_month_current(plan)
@@ -12657,6 +12724,12 @@ def validate_closeout_pre_move_continuity(
                 exit_code=2,
                 payload={"path": relative, "stage": "pre-archive-continuity"},
             )
+
+    closeout_summary_runtime_pr_facts_from_bytes(
+        plan,
+        (task_dir / FINISH_SUMMARY_ARTIFACT).read_bytes(),
+        expected_pr=expected_summary_pr,
+    )
 
     for relative in plan["projection"]["tracked_move_paths"]:
         repo_path = f"{active_locator}/{relative}"
@@ -12801,7 +12874,8 @@ def validate_closeout_archive_blob_continuity(
     evidence_commit: str,
     *,
     archive_commit: str | None = None,
-) -> None:
+    expected_summary_pr: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     active_locator = plan["task"]["active_locator"]
     archive_locator = plan["task"]["archive_locator"]
     for relative in plan["projection"]["tracked_move_paths"]:
@@ -12825,6 +12899,23 @@ def validate_closeout_archive_blob_continuity(
                 exit_code=2,
                 payload={"path": relative},
             )
+    if archive_commit is None:
+        summary_path = archived / FINISH_SUMMARY_ARTIFACT
+        try:
+            summary_bytes = summary_path.read_bytes()
+        except OSError as exc:
+            raise WorkflowError("Archived final summary is missing during continuity validation.", exit_code=2) from exc
+    else:
+        summary_bytes = closeout_commit_blob_bytes(
+            root,
+            archive_commit,
+            f"{archive_locator}/{FINISH_SUMMARY_ARTIFACT}",
+        )
+    return closeout_summary_runtime_pr_facts_from_bytes(
+        plan,
+        summary_bytes,
+        expected_pr=expected_summary_pr,
+    )
 
 
 def validate_closeout_archive_commit_tree(
@@ -12861,7 +12952,7 @@ def resolve_committed_closeout_archive_transaction(
     evidence_commit = closeout_commit_parent(root, archive_commit)
     validate_closeout_evidence_commit(root, plan, evidence_commit)
     validate_closeout_archive_commit_tree(root, plan, archive_commit)
-    validate_closeout_archive_blob_continuity(
+    summary_pr = validate_closeout_archive_blob_continuity(
         root,
         root / plan["task"]["archive_locator"],
         plan,
@@ -12872,6 +12963,7 @@ def resolve_committed_closeout_archive_transaction(
         "commit": archive_commit,
         "parent": evidence_commit,
         "paths": sorted(committed_paths),
+        "summary_pr": summary_pr,
     }
 
 
@@ -13047,7 +13139,11 @@ def assert_archived_committed_workspace_boundary(
 
 
 def execute_archive_metadata_transaction(
-    root: Path, task_dir: Path, plan: dict[str, Any]
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    *,
+    bound_pr: dict[str, Any] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     archive_script = root / ".trellis/scripts/task.py"
     if not archive_script.is_file():
@@ -13056,7 +13152,13 @@ def execute_archive_metadata_transaction(
     validate_closeout_evidence_commit(root, plan, evidence_commit)
     validate_closeout_active_projection(root, task_dir, plan)
     assert_closeout_archive_path_preflight(root, plan["task"]["archive_locator"])
-    validate_closeout_pre_move_continuity(root, task_dir, plan, evidence_commit)
+    validate_closeout_pre_move_continuity(
+        root,
+        task_dir,
+        plan,
+        evidence_commit,
+        expected_summary_pr=bound_pr,
+    )
     proc = run(
         ["python3", "./.trellis/scripts/task.py", "archive", task_dir.name, "--no-commit"],
         cwd=root,
@@ -13066,7 +13168,13 @@ def execute_archive_metadata_transaction(
         raise WorkflowError("task.py archive move failed.", exit_code=2, payload={"stderr": proc.stderr.strip(), "stdout": proc.stdout.strip()})
     archived = root / plan["task"]["archive_locator"]
     validate_closeout_archive_move_layout(root, archived, plan)
-    validate_closeout_archive_blob_continuity(root, archived, plan, evidence_commit)
+    validate_closeout_archive_blob_continuity(
+        root,
+        archived,
+        plan,
+        evidence_commit,
+        expected_summary_pr=bound_pr,
+    )
     active_locator = plan["task"]["active_locator"]
     archive_locator = plan["task"]["archive_locator"]
     dirty = set(git_status_paths(root))
@@ -13083,7 +13191,12 @@ def execute_archive_metadata_transaction(
     if closeout_commit_parent(root, archive_commit) != evidence_commit:
         raise WorkflowError("Archive metadata commit parent is not the validated evidence commit.", exit_code=2)
     validate_closeout_archive_blob_continuity(
-        root, archived, plan, evidence_commit, archive_commit=archive_commit
+        root,
+        archived,
+        plan,
+        evidence_commit,
+        archive_commit=archive_commit,
+        expected_summary_pr=bound_pr,
     )
     if git_status_paths(root):
         raise WorkflowError("Archive metadata commit left repository paths dirty.", exit_code=2)
@@ -13137,14 +13250,26 @@ def ensure_closeout_pr_ready(
     return {"pr": pr, "local_head": local_head, "remote_head": remote_head, "status": "ready"}
 
 
-def resume_archive_metadata_transaction(root: Path, task_dir: Path, plan: dict[str, Any]) -> dict[str, Any]:
+def resume_archive_metadata_transaction(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    *,
+    bound_pr: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     validate_closeout_archive_move_layout(root, task_dir, plan)
     dirty = set(git_status_paths(root))
     if dirty:
         validate_closeout_archive_git_paths(dirty, plan, stage="archive-recovery-dirty")
         evidence_commit = current_head(root)
         validate_closeout_evidence_commit(root, plan, evidence_commit)
-        validate_closeout_archive_blob_continuity(root, task_dir, plan, evidence_commit)
+        validate_closeout_archive_blob_continuity(
+            root,
+            task_dir,
+            plan,
+            evidence_commit,
+            expected_summary_pr=bound_pr,
+        )
         active = plan["task"]["active_locator"]
         archived = plan["task"]["archive_locator"]
         staged = set(run_stdout(["git", "diff", "--cached", "--name-only", "--no-renames"], cwd=root).splitlines())
@@ -13163,7 +13288,12 @@ def resume_archive_metadata_transaction(root: Path, task_dir: Path, plan: dict[s
         if closeout_commit_parent(root, archive_commit) != evidence_commit:
             raise WorkflowError("Recovered archive commit does not match the exact parent/path transaction.", exit_code=2)
         validate_closeout_archive_blob_continuity(
-            root, task_dir, plan, evidence_commit, archive_commit=archive_commit
+            root,
+            task_dir,
+            plan,
+            evidence_commit,
+            archive_commit=archive_commit,
+            expected_summary_pr=bound_pr,
         )
     else:
         archive_commit = current_head(root)
@@ -13172,7 +13302,12 @@ def resume_archive_metadata_transaction(root: Path, task_dir: Path, plan: dict[s
         validate_closeout_archive_git_paths(last_paths, plan, stage="archive-recovery-head")
         validate_closeout_evidence_commit(root, plan, evidence_commit)
         validate_closeout_archive_blob_continuity(
-            root, task_dir, plan, evidence_commit, archive_commit=archive_commit
+            root,
+            task_dir,
+            plan,
+            evidence_commit,
+            archive_commit=archive_commit,
+            expected_summary_pr=bound_pr,
         )
     local_head = current_head(root)
     remote_proc = run(
@@ -13203,8 +13338,21 @@ def resume_archived_closeout(
     expected = str(getattr(args, "expected_plan_digest", "") or "")
     if expected != plan["plan_digest"]:
         raise WorkflowError("Formal closeout expected digest does not match the archived plan.", exit_code=2, payload={"expected": expected, "actual": plan["plan_digest"]})
-    require_gh_auth(root)
     git = plan["git"]
+    require_gh_auth(root)
+    archive_commit = committed_archive or resolve_committed_closeout_archive_transaction(root, plan)
+    bound_pr: dict[str, Any] | None = None
+    if archive_commit is not None:
+        summary_pr = archive_commit.get("summary_pr")
+        if not isinstance(summary_pr, dict):
+            commit = str(archive_commit.get("commit") or "")
+            summary_bytes = closeout_commit_blob_bytes(
+                root,
+                commit,
+                f"{plan['task']['archive_locator']}/{FINISH_SUMMARY_ARTIFACT}",
+            )
+            summary_pr = closeout_summary_runtime_pr_facts_from_bytes(plan, summary_bytes)
+        bound_pr = summary_pr
     pr = resolve_closeout_pull_request(
         root, git["repo"], git["head_branch"], git["base_branch"], git["remote"]
     )
@@ -13214,13 +13362,18 @@ def resume_archived_closeout(
         plan,
         pr,
         expected_draft=bool(pr["isDraft"]),
+        bound_pr=bound_pr,
     )
-    archive_commit = committed_archive or resolve_committed_closeout_archive_transaction(root, plan)
     if archive_commit is None:
-        archive_commit = resume_archive_metadata_transaction(root, task_dir, plan)
+        archive_commit = resume_archive_metadata_transaction(
+            root,
+            task_dir,
+            plan,
+            bound_pr=pr,
+        )
     else:
         push_closeout_branch_if_needed(root, plan)
-    result = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
+    result = ensure_closeout_pr_ready(root, plan, bound_pr=bound_pr or pr)
     return {
         "status": "ok",
         "stage": "ready",
@@ -13327,7 +13480,12 @@ def resume_active_archive_move(
         require_summary=True,
         expected_head=current_head(root),
     )
-    archived_task_dir, archive_commit = execute_archive_metadata_transaction(root, task_dir, plan)
+    archived_task_dir, archive_commit = execute_archive_metadata_transaction(
+        root,
+        task_dir,
+        plan,
+        bound_pr=pr,
+    )
     publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
         "status": "ok",
@@ -13489,7 +13647,12 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         )
     else:
         finish_summary_path, _summary = build_final_archive_projection(root, task_dir, prepared, pr)
-    archived_task_dir, archive_commit = execute_archive_metadata_transaction(root, task_dir, plan)
+    archived_task_dir, archive_commit = execute_archive_metadata_transaction(
+        root,
+        task_dir,
+        plan,
+        bound_pr=pr,
+    )
     publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
         "status": "ok",

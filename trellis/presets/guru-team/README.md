@@ -573,8 +573,14 @@ are authoritative, so missing or tampered archived working-tree files do not
 block the exact push, remote title/body check, HEAD alignment, or
 draft-to-ready. A plan-only archived directory is resolvable only by the
 `trellis-finish-work` recovery entry; ordinary task commands still require
-`task.json`. Neither recovery path reopens archived artifacts for semantic
-validation.
+`task.json`. The real-PR final summary's deterministic bytes/digest participate
+in pre-move, incomplete-recovery, and exact-commit continuity. The first two
+paths rebuild expected bytes against the already-bound remote PR. Exact
+recovery reads only the immutable archive commit's `finish-summary.json` blob
+to recover the original PR number/URL and verify those bytes without invoking
+the general summary artifact validator; it never reads the working-tree
+summary. Missing, closed, or replacement PRs fail closed. Other archived
+artifacts remain unopened for semantic validation.
 The plan-only path reads the immutable plan from the current commit blob and
 runs a dedicated fail-closed boundary before GitHub or fast-path actions. Git
 toplevel, configured/effective repository, current head branch, available base
