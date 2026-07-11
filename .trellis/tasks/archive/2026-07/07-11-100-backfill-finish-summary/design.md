@@ -45,12 +45,15 @@ Canonical parser 增加 `backfill-finish-summary`：
 - root 必须是 Git repository 且包含 `.trellis/tasks/archive/`。
 - 递归扫描 archive root 下包含白名单 artifact 或现有 `finish-summary.json` 的 task 目录，并在识别 task 根后排除其 `research/` 和 `reviews/` 子目录。
 - 空 archive 返回 `scanned_tasks=0`。只有目录 basename 的 minimal fixture 通过显式 `--task` 处理，避免把 archive 分组目录误识别为 task。
+- Task root marker 是目标根目录内任一白名单 artifact 或现有 `finish-summary.json`；discovery 在命中 marker 后停止向该目录的后代递归识别 task。
 
 ### 4.2 指定 task
 
 - 原始参数必须是相对路径且不含空、`.`、`..` segment 或反斜杠。
 - resolve 后必须严格位于 archive root 下；archive root 本身和 active `.trellis/tasks/<task>` 均为无效目标。
 - symlink escape、绝对路径、repo 外路径全部在读文件前退出 2。
+- resolve 后目标必须含 task root marker；从 archive root 到目标的任一严格祖先若已含 task root marker，则目标是 task 子目录并退出 2。月份/日期分组目录因无 marker 退出 2；该规则不依赖 `research` 或 `reviews` basename 特判。
+- Minimal confidence fixture 使用存在但不提供可用字段的白名单 marker，索引内容仍只依赖 directory basename；纯空目录不是 archived task root。
 
 ## 5. Artifact 读取模型
 
@@ -74,6 +77,7 @@ Canonical parser 增加 `backfill-finish-summary`：
 ### 6.2 文本字段
 
 - problem/outcome 只读取固定标题后的第一段或固定 fallback。
+- problem fallback 固定为 `<task.title>；旧行为：历史 artifact 未记录。`；outcome fallback 固定为 `<task.title>；非目标：历史 artifact 未记录。`，实现和 durable spec 不得改写措辞。
 - changed behavior 只读取固定章节列表或完成 checklist，规范为 1 到 12 条。
 - 文本统一 trim、折叠空白，并按 #97 各字段最大长度做确定性尾部截断；禁止文本命中时该 task 校验失败，不做替换掩盖。
 
@@ -89,7 +93,12 @@ Canonical parser 增加 `backfill-finish-summary`：
 - contract changes 只读取 `design.md` 固定标题下第一张、列名完全匹配的 Markdown 表格；不满足时为 `[]`。
 - issue/pr/branch/path search terms 只从结构化字段派生。
 - commands/config/schema/symbol 使用固定 regex、固定输入集合、排序去重和 schema 上限；phrases 按 issue 顺序截取到 60 字、去重并限制 40 条，少于 3 条时使用固定 fallback 补足。
+- phrases 在完成 issue 固定来源和少于 3 条的固定补足后，检查 #97 `FINISH_SUMMARY_COMPLETION_MARKERS`；仅当全部 phrase 均未命中时，在数组末尾追加 `历史归档 task 已完成`。该分支不修改既有 phrase，当前数据固定覆盖 8 个 task。
 - retrieval text 只调用现有 `finish_summary_retrieval_text()`。
+- `finish_summary_errors()` 在 generator 为 backfill 时接收 task title 与 problem，且必须只在 problem 精确匹配批准 fallback 时忽略 retrieval_text 开头 `task.title\ntask.title；旧行为：历史 artifact 未记录。` 形成的单个边界重复；内部重复、后续重复、非精确文本和正常 finish-work 不进入例外。
+- 该例外不修改 `finish_summary_retrieval_text()`、#97 schema、正常 finish-work payload 或通用 `finish_summary_text_errors()`；实现通过 backfill final-validation 上下文收窄判断，禁止将例外下沉为通用文本放宽。
+- Builder 必须记录 outcome 是否来自 pr-body-only 第一列表项；只有该来源标记为真、outcome 精确匹配 `changed_behavior[0]`、retrieval 与 helper 派生完全一致，且移除一个边界副本后不存在其它相邻重复时，backfill final validation 才忽略 outcome / behavior 边界的单个重复错误。
+- 第二个例外不得删除或改写 `changed_behavior[0]`，不得覆盖 pr-body paragraph 或更高优先级 outcome 来源，不得修改通用 helper、schema、normal finish-work 或其它字段重复规则。
 
 ### 6.5 missing fields 与 confidence
 
@@ -113,6 +122,9 @@ Canonical parser 增加 `backfill-finish-summary`：
 - strategy：`ssot_first`，因为新增 user-facing public companion command 和一次性 migration 合同。
 - durable docs：先更新 `.trellis/spec/workflow/companion-scripts.md`、`.trellis/spec/workflow/data-contracts.md` 和 `.trellis/spec/preset/installer.md`，再更新 canonical workflow/README/preset README，最后 apply 同步 dogfood。
 - task deltas：聚合规则、错误退出码、历史 write 结果和验证证据只在 task artifact 记录；可复用合同必须合并到上述 durable docs。
+- Branch Review delta：task-root marker/ancestor、issue 固定 fallback、唯一 completion fallback 和 table parity 必须在恢复 Phase 2 前合并到 `companion-scripts.md` 与 `data-contracts.md`；删除此前反向追认的非合同 phrase 描述。
+- Contract conflict delta：严格 backfill-only retrieval 边界例外必须合并到 `data-contracts.md`，并以 normal finish-work 与其它重复拒绝测试证明没有扩大 #97 正常路径。
+- Phase 2 delta：pr-body-only outcome/behavior 边界例外必须合并到 `data-contracts.md`，并通过来源标记、deterministic derivation、负向边界与完整列表断言证明例外不可泛化。
 - merge checkpoint：代码完成前检查 durable docs 已包含最终 CLI 与聚合规则；Phase 2 check 前验证 canonical/dogfood 一致。
 
 ## 9. 安装、升级与回滚

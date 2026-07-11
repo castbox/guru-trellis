@@ -70,14 +70,27 @@ git diff --check
 - [ ] 记录并校验 `phase2-check.json`，更新 issue acceptance evidence。
 - [ ] 只 stage #100 范围文件，提交信息符合 Conventional Commits 与 issue 关联规则。
 
-## 9. Branch Review Gate 与发布
+## 9. Branch Review Finding 闭环
+
+- [ ] F-001：让 explicit resolver 与 discovery 共用 task-root marker/ancestor 判定；补 task root、task 子目录、archive 分组目录、symlink escape、write/force 回归。
+- [ ] F-002：恢复 issue 固定 problem/outcome fallback；phrases 先执行 issue 固定顺序和少于 3 条补足，仅在无 #97 completion marker 时追加 `历史归档 task 已完成`。
+- [ ] F-002：在 final validator 增加严格 backfill-only、精确 problem fallback 的 task title / problem 边界重复例外；不得修改通用 helper、schema 或 normal finish-work 行为。
+- [ ] 删除 durable spec 中未获批准的 phrase 规则，写入 GitHub comment `4941670415` 确认的唯一 completion fallback。
+- [ ] 将 GitHub comment `4941812435` 的 retrieval 冲突口径同步到 durable data contract；补 4 个真实冲突 fixture、normal finish-work、非精确 fallback 和其它重复继续失败的回归。
+- [ ] Phase 2 P2：按 GitHub comment `4942002004` 支持 pr-body-only 第一列表项 outcome，并增加严格 backfill-only outcome / behavior 单一边界例外；保留完整 `changed_behavior`。
+- [ ] 补 paragraph 与更高来源优先、来源标记、首项匹配、deterministic derivation、派生篡改、其它重复和 normal finish-work 的正负回归。
+- [ ] F-003：人类 preview 为每个 `to_write` 项显示 `source_artifacts`、`missing_fields`、`confidence`，并补 JSON/table parity 回归。
+- [ ] 用最终 builder 重建 44 个 backfill summary，验证 #97 正常 summary 未变、45/45 schema、44/44 deterministic rebuild 与写后 45 skip/0 error。
+- [ ] 重新派发 Phase 2 check、记录新的 `phase2-check.json`、提交修复；同一 finding owner 以 `问题闭环审查代理` 复核 3 个 finding 后，再派发 fresh `最终放行审查代理`。
+
+## 10. Branch Review Gate 与发布
 
 - [ ] 独立 reviewer 覆盖 `origin/main...HEAD` 完整 diff；记录 raw reports、agent ledger、review rollup 和 gate。
 - [ ] public extension 改动触发 remote marketplace verification；ledger 中 pending 证据必须被真实 passed artifact 替换。
 - [ ] 完成 PR readiness，标题/正文使用中文，`Closes #100`，其它 issue 只用 Refs/Follow-up。
 - [ ] 执行 finish-work dry-run、正式 archive/publish 和 PR URL summary tail。
 
-## 10. 回滚点
+## 11. 回滚点
 
 - 代码/安装回滚点：删除新 parser、wrapper、managed asset 和对应 docs/tests。
 - 数据回滚点：历史 summary 独立集中在 `.trellis/tasks/archive/**/finish-summary.json`，通过专门 revert commit 删除；不得运行脚本批量删除未知现有 summary。

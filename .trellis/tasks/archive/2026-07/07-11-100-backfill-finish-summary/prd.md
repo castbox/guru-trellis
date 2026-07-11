@@ -15,6 +15,10 @@
 - 当前 #97 schema 将 `index.affected_surfaces` 限制为 1 到 20 条。
 - 历史 `review-gate.json.changed_files[]` 实际最多 96 条，因此 #100 的“每个 changed path 生成一条 surface”与 #97 schema 上限在真实数据上冲突。
 - 用户已确认按 `kind` 聚合 surface，GitHub-visible 澄清记录为 <https://github.com/castbox/guru-trellis/issues/100#issuecomment-4941094903>。
+- 第 1 轮 Branch Review 在 HEAD `4398046075ac0432a11e1d4687c39488723d2df0` 发现 3 个 P2：显式 `--task` 未验证 task root、固定 fallback/phrase 合同偏差、人类 preview 字段不完整。
+- 用户已确认 phrases 与 #97 completion-marker 的最小兼容规则，GitHub-visible 澄清记录为 <https://github.com/castbox/guru-trellis/issues/100#issuecomment-4941670415>。
+- 实现复核确认精确 problem fallback 会在 `retrieval_text` 的 task title / problem 边界触发 #97 相邻重复校验；用户已确认严格 backfill-only 例外，GitHub-visible 澄清记录为 <https://github.com/castbox/guru-trellis/issues/100#issuecomment-4941812435>。
+- Phase 2 确认 pr-body-only 第一列表项会同时成为 outcome 与 `changed_behavior[0]`，从而在 `retrieval_text` 形成第二处确定性边界重复；用户已确认保留两个字段并增加严格 backfill-only 例外，GitHub-visible 澄清记录为 <https://github.com/castbox/guru-trellis/issues/100#issuecomment-4942002004>。
 
 ## 3. 功能需求
 
@@ -22,9 +26,9 @@
 
 - 新增 `.trellis/guru-team/scripts/bash/backfill-finish-summary.sh`，wrapper 只调用 canonical `guru_team_trellis.py backfill-finish-summary`。
 - `--dry-run` 与 `--write` 必须二选一；`--force` 只能与 `--write` 同用；非法组合退出 2。
-- `--task` 只接受 repo-relative、无 `..` segment、位于 `.trellis/tasks/archive/**/<task>/` 的目录；active task、绝对路径和 repo 外路径退出 2。
+- `--task` 只接受 repo-relative、无 `..` segment、位于 `.trellis/tasks/archive/**/<task>/` 的真实 task root；目标必须含白名单 artifact marker，且 archive root 到目标之间不得存在另一个 task root marker。active task、分组目录、task 子目录、绝对路径、symlink escape 和 repo 外路径退出 2。
 - 未提供 `--task` 时扫描全部 archived task；不读取 active task、`.trellis/workspace/**`、`.trellis/.runtime/**`，不访问 GitHub，不调用 `trellis mem`。
-- 缺少 `--json` 时输出人类可读表格；`--json` 输出固定 JSON object，退出码语义一致。
+- 缺少 `--json` 时输出人类可读表格；每个 `to_write` 项必须显示 `source_artifacts`、`missing_fields` 和 `confidence`。`--json` 输出固定 JSON object，退出码语义一致。
 
 ### R2. 固定数据来源与抽取
 
@@ -34,6 +38,10 @@
 - `retrieval_text` 必须复用 #97 的 `finish_summary_retrieval_text()`；最终 payload 必须通过现有 `finish_summary_errors(..., task_dir=...)`。
 - `source_artifacts` 只记录实际存在且成功读取的白名单 artifact；`missing_fields`、`confidence` 按 issue #100 固定规则生成。
 - `affected_surfaces` 按 issue 定义的 path-prefix `kind` 聚合；每个 surface 的 `paths[]` 完整、去重、排序，不截断 `git.changed_paths` 或 `index.search_terms.paths`，不修改 #97 schema。
+- `problem` 和 `outcome` fallback 必须逐字使用 issue #100 定义的 `<task.title>；旧行为：历史 artifact 未记录。` 与 `<task.title>；非目标：历史 artifact 未记录。`。
+- phrases 必须先按 issue #100 固定来源顺序生成、去重，并在少于 3 条时只使用 `task.slug`、`task.title`、`历史归档 task` 补足；仅当结果仍不含 #97 `FINISH_SUMMARY_COMPLETION_MARKERS` 任一标记时追加唯一固定 fallback `历史归档 task 已完成`，不得替换或改写既有 phrase。
+- validator 必须仅在 `generator=guru-team.finish-summary-backfill` 且 `index.problem` 精确匹配 `<task.title>；旧行为：历史 artifact 未记录。` 时，对 `retrieval_text` 在 task title / problem 边界出现的这一处确定性相邻重复不报错；其它相邻重复、其它字段和正常 `guru-team.finish-work` 必须继续按 #97 原规则拒绝。
+- 当 outcome 的高优先级来源均缺失、pr-body 变更摘要只有列表、outcome 确由第一列表项生成且精确匹配 `changed_behavior[0]` 时，validator 必须只对 `retrieval_text` 的 outcome / behavior 边界这一处确定性重复不报错；实现必须保留完整 `changed_behavior`，并继续拒绝非 pr-body-only 来源、非首项匹配、派生文本不一致、仍含其它相邻重复和 normal finish-work。
 
 ### R3. 写入与错误隔离
 
@@ -41,6 +49,7 @@
 - write 只写缺失的 `finish-summary.json`；已有文件在未提供 `--force` 时跳过，只有 `--write --force` 才覆盖。
 - 单个 task 的损坏 JSON、缺失 artifact 或最终 schema 失败不得中断其它 task；无法生成 schema-valid payload 的 task 必须留在 `errors[]` 且不得写文件。
 - 所有目标路径必须位于对应 archived task 目录；不创建 committed 全局 index。
+- 修复 fallback/phrase 规则后必须用最终 builder 重建全部 44 个 backfill summary；#97 正常 summary 不得覆盖。
 
 ### R4. Canonical、preset、dogfood 与文档
 
@@ -61,6 +70,8 @@
 
 - `affected_surfaces` 按 `kind` 聚合，并在 surface `paths[]` 保留全部路径。单个 kind 超过 schema 的 100-path 上限时按稳定排序分批；若完整表达仍会超过 20 个 surface，则该 task fail closed、写入 `errors[]` 且不生成文件。
 - 不扩大 #97 schema，不截断历史 path，不把路径信息藏入自然语言字段。
+- phrases 的固定 completion fallback 只解决 #97 validator 与 #100 固定来源在 8 个历史任务上的交集，不扩大其它字段、来源或正常 finish-work 合同。
+- 显式 `--task` 与无参数 discovery 共用 task-root marker/ancestor 判定；task 子目录和 archive 分组目录不能成为写入目标。
 - `0.6.5-guru.3` 尚未发布 release tag，本任务更新其尚未发布的 public companion list，不创建新版本号或 tag。
 
 ## 6. Docs SSOT 状态
@@ -74,6 +85,10 @@
 - [ ] CLI 参数、扫描边界、JSON/表格输出和退出码符合 R1。
 - [ ] 生成 payload 符合 #97 schema/validator，且没有旧式顶层 `summary` / `keywords`。
 - [ ] 测试覆盖空 archive、skip、force、complete/partial/minimal、损坏 JSON、路径净化、index 生成和旧字段拒绝。
+- [ ] 测试覆盖显式 `--task` 对 task root、task 子目录、archive 分组目录和 symlink escape 的统一判定。
+- [ ] 测试覆盖 issue 固定 problem/outcome fallback、8 个 completion fallback 分支和 JSON/table preview 字段一致性。
+- [ ] 测试覆盖 4 个真实 problem fallback 冲突 fixture、严格 backfill-only 边界例外，以及 normal finish-work / 非精确 fallback / 其它相邻重复继续拒绝。
+- [ ] 测试覆盖 pr-body-only 第一列表项同时生成 outcome 与 `changed_behavior[0]`，并覆盖 paragraph 优先、其它 outcome 来源、非首项匹配、派生篡改、其它相邻重复和 normal finish-work 继续拒绝。
 - [ ] 44 个既有缺失 task 完成一次性回填，所有新文件通过 validator。
 - [ ] canonical tests、preset tests、compile、shell syntax、JSON、task validation、overlay drift、canonical/dogfood equality 和 `git diff --check` 全部通过。
 - [ ] throwaway 安装与 upgrade/update 兼容性验证通过；若环境阻塞，PR body 明确记录未验证项和风险。

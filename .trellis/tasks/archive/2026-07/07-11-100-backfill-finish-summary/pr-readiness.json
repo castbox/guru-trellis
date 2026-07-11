@@ -1,0 +1,16 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/100-backfill-finish-summary",
+    "reviewed_head_sha": "ec5ac3e0f7752286ca5b17428b713711c1a07758",
+    "title": "完成：#100 拆分 #53：为既有 archived tasks 回填 finish-summary 历史索引",
+    "body_source": "pr-body.md",
+    "body_sha256": "6e8ed031c7820b5299a40308432d93e5d5c43c57dbb0f39e7a6155de6ddef65e",
+    "draft": false,
+    "reviewed_source": "body-artifact:pr-readiness.json"
+  },
+  "publish_inputs_sha256": "9b15f5fc2903be83508fdc0e29363a8b47c6ada19697f530c5624561871efa6d"
+}

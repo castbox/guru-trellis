@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-11T03:55:52Z",
+  "task_dir": ".trellis/tasks/07-11-100-backfill-finish-summary",
+  "base_branch": "main",
+  "head": "ec5ac3e0f7752286ca5b17428b713711c1a07758",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/tasks/07-11-100-backfill-finish-summary/agent-assignment.json",
+    ".trellis/tasks/07-11-100-backfill-finish-summary/review-gate.json",
+    ".trellis/tasks/07-11-100-backfill-finish-summary/review.md",
+    ".trellis/tasks/07-11-100-backfill-finish-summary/reviews/"
+  ],
+  "checker": "/root/trellis_check_100_round2",
+  "check_summary": "Phase 2 trellis-check 通过，最终 findings=0；Round 3 指出的 preset 测试命令证据已用真实文件 test_apply_guru_team_trellis_preset.py 原样复跑并修正，完整需求、设计、代码、数据、Docs SSOT、测试、安装升级、安全和部署覆盖结论保持有效。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-11-100-backfill-finish-summary/prd.md",
+      "sha256": "9f39a36d9b01cbd343c7dae50826fb7dbc7e27e8944a13baf70a8cd077d82b7f",
+      "size_bytes": 10682,
+      "modified_at": "2026-07-11T03:14:02.439190+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-11-100-backfill-finish-summary/design.md",
+      "sha256": "a3a098734794e0f32c29ce6859dfc2fb814409ac36ef9504727667605a115f2b",
+      "size_bytes": 11338,
+      "modified_at": "2026-07-11T03:14:02.439843+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-11-100-backfill-finish-summary/implement.md",
+      "sha256": "d24a3be33d2be0a69307ad6047a61c5f76c1d8decdacde434eb9ec4b53617c99",
+      "size_bytes": 7029,
+      "modified_at": "2026-07-11T03:14:02.440295+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-11-100-backfill-finish-summary/planning-approval.json",
+      "sha256": "56116633a978df70be25dc5ad6072e275b6dc3a4c72606ff2fe9fa913bec23b3",
+      "size_bytes": 9090,
+      "modified_at": "2026-07-11T03:14:26.725732+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-11-100-backfill-finish-summary/implementation-handoff.md",
+      "sha256": "9edaa551d624e0ad77d30db931fee0cf6cc7bb23146c3455392f1489885a98e9",
+      "size_bytes": 7932,
+      "modified_at": "2026-07-11T03:28:46.198695+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "9ba87d88d43a776b79182d3ec5c748f35da8a2251e4541b1a30dcbe4294496c3",
+      "size_bytes": 25564,
+      "modified_at": "2026-07-11T02:35:28.737395+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "96c427c67e71f0c38706a19a456f88d839c1380335e954a1debb466724272a0f",
+      "size_bytes": 36049,
+      "modified_at": "2026-07-11T03:20:14.282552+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "b97d2a9b19b7da7c415704b246745ce286319a3610f052b3b23b41f1202f347c",
+      "size_bytes": 11025,
+      "modified_at": "2026-07-11T01:35:48.353261+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/index.md",
+      "sha256": "94fcfb6a6d2ff77f8f11535a9ca02501a41e043b812866e0af5ed8783db7f2a3",
+      "size_bytes": 797,
+      "modified_at": "2026-07-11T01:19:43.170814+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "334 passed"
+    },
+    {
+      "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "36 passed"
+    },
+    {
+      "command": "Python validator + Draft 2020-12 schema",
+      "result": "45/45 passed"
+    },
+    {
+      "command": "deterministic rebuild + surface path conservation",
+      "result": "44/44 passed"
+    },
+    {
+      "command": "backfill-finish-summary --json --dry-run",
+      "result": "45 skipped, 0 errors"
+    },
+    {
+      "command": "invalid explicit task matrix dry/write/force",
+      "result": "18 groups x 3 modes exited 2"
+    },
+    {
+      "command": "#97 normal finish-summary SHA-256",
+      "result": "f18370b72df53c720f33e170b2113a6a7958311913f787a4c64279e7d025fd80 unchanged"
+    },
+    {
+      "command": "check-dogfood-overlay-drift.sh",
+      "result": "passed, sidecar 0, canonical/dogfood byte-equal"
+    },
+    {
+      "command": "throwaway init + workflow preview/switch + trellis update --force + preset reapply",
+      "result": "passed"
+    },
+    {
+      "command": "workspace boundary + planning approval + task validate + py_compile + bash -n + git diff --check",
+      "result": "passed"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}
