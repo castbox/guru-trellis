@@ -494,11 +494,16 @@ locator relationship. All other discovery and command paths retain the normal
 `task.json` and worktree-mode `task-start-context.json` requirements.
 The finish entry validates its raw locator before ordinary resolution: only a
 basename, exact former active locator, or exact archive locator is accepted,
-and lexical repo/archive containment plus component-wise `lstat` through the
-final directory rejects internal/external, relative/absolute, ancestor/final,
-multilevel, dangling, and loop aliases. The resulting non-symlink target must
-still resolve to the plan's canonical archive locator. Do not use arbitrary
-`samefile` re-anchoring; only the verified Darwin system `/var` ->
+and path-like input receives lexical repo/archive containment plus
+component-wise `lstat` through the final directory before any fallback, which
+rejects internal/external, relative/absolute, ancestor/final, multilevel,
+dangling, and loop aliases. The ordinary resolver then keeps explicit
+`task.json`, active task, and normal archived `task.json` precedence. Only its
+not-found result enables plan-only recovery. An exact archive locator selects
+that candidate; basename/former-active fallback requires one unique archive
+match and fails closed on ambiguity. The resulting non-symlink plan-only target
+must still resolve to the plan's canonical archive locator. Do not use
+arbitrary `samefile` re-anchoring; only the verified Darwin system `/var` ->
 `/private/var` mapping is an allowed outer-path normalization.
 
 The generated PR must start as draft, target the intake/task `base_branch`, and

@@ -225,13 +225,19 @@ bypass and is unavailable to every other command, which continues to require
 `task.json` and `task-start-context.json` in worktree mode.
 Before ordinary resolution or canonicalization, the finish entry classifies
 the raw locator as only a task basename, the exact former active locator, or
-the exact archive locator. It requires lexical containment under the current
-repo archive, applies `lstat` from repo root through every ancestor and the
-final task directory, and rejects internal/external, relative/absolute,
-ancestor/final, multilevel, dangling, and loop symlinks. After those checks the
-resolved target must still equal the plan's canonical archive locator. The
-only outer re-anchor is the verified Darwin system `/var` -> `/private/var`
-mapping; arbitrary `samefile` or user-created aliases are never trusted.
+the exact archive locator. Path-like locators require lexical containment and
+`lstat` from repo root through every ancestor and the final task directory,
+rejecting internal/external, relative/absolute, ancestor/final, multilevel,
+dangling, and loop symlinks before any resolver fallback. After that preflight,
+the ordinary resolver runs first so explicit `task.json`, active task, and
+normal archived `task.json` precedence stays unchanged. Plan-only recovery runs
+only when ordinary resolution returns not-found: an exact archive locator may
+select that exact candidate, while basename/former-active fallback must find
+exactly one matching archive month and fails closed on multiple matches. The
+resolved plan-only target must still equal the plan's canonical archive
+locator. The only outer re-anchor is the verified Darwin system `/var` ->
+`/private/var` mapping; arbitrary `samefile` or user-created aliases are never
+trusted.
 
 Closeout failure injection must enter through production `cmd_finish_work()`.
 Use a real temporary Git repository, bare remote, official `task.py archive`,

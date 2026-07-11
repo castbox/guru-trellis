@@ -567,12 +567,17 @@ unconditional boundary bypass; ordinary task discovery and commands retain
 their `task.json` and worktree-mode `task-start-context.json` requirements.
 The finish entry validates the raw locator before ordinary resolution or
 canonicalization. Only a basename, exact former active locator, or exact
-archive locator may select plan-only recovery. Component-wise `lstat` from the
-repo root through the final task directory rejects internal/external,
-relative/absolute, ancestor/final, multilevel, dangling, and loop symlinks; the
-resolved target must still equal the plan's canonical archive locator. Only
-the verified Darwin `/var` -> `/private/var` system mapping may re-anchor an
-outer path; arbitrary `samefile` and user aliases are never trusted.
+archive locator may select plan-only recovery. Path-like input receives
+component-wise `lstat` from the repo root through the final task directory
+before any fallback, rejecting internal/external, relative/absolute,
+ancestor/final, multilevel, dangling, and loop symlinks. The ordinary resolver
+then preserves explicit `task.json`, active task, and normal archived
+`task.json` precedence. Plan-only fallback runs only after ordinary not-found:
+an exact archive locator selects that candidate, while basename/former-active
+fallback requires a unique archive-month match and fails closed on ambiguity.
+The plan-only target must still equal the plan's canonical archive locator.
+Only the verified Darwin `/var` -> `/private/var` system mapping may re-anchor
+an outer path; arbitrary `samefile` and user aliases are never trusted.
 
 Current-checkout direct edits while `no_task` is active are allowed only as an
 explicit user override. The user approval must say this turn should skip

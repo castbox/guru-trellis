@@ -731,13 +731,19 @@ discovery and workspace-boundary commands do not enable this mode and still
 require the normal `task.json` / `task-start-context.json` contracts.
 The raw finish-work locator is preserved before ordinary resolution. Only a
 basename, exact former active locator, or exact archive locator may select the
-plan-only search. The lexical archive path is checked component-by-component
-with `lstat` from repo root through the final task directory, rejecting every
+plan-only search. Path-like input is checked component-by-component with
+`lstat` from repo root through the final task directory, rejecting every
 internal/external, relative/absolute, ancestor/final, multilevel, dangling, or
-loop symlink. The verified non-symlink target must resolve to the same canonical
-archive locator recorded by `task` and `projection`. Only the structurally
-verified Darwin `/var` -> `/private/var` system mapping may re-anchor an outer
-path; arbitrary `samefile` discovery and user aliases are not valid identity.
+loop symlink before any resolver fallback. The ordinary resolver then runs
+first and preserves explicit `task.json`, active task, and normal archived
+`task.json` precedence. Only an ordinary not-found result enables plan-only
+fallback. An exact archive locator selects only that candidate; basename or
+former-active fallback requires a unique matching archive month and fails
+closed when multiple months match. The verified plan-only target must resolve
+to the same canonical archive locator recorded by `task` and `projection`.
+Only the structurally verified Darwin `/var` -> `/private/var` system mapping
+may re-anchor an outer path; arbitrary `samefile` discovery and user aliases
+are not valid identity.
 
 Branch Review Gate treats every finding priority (`P0`, `P1`, `P2`, `P3`) as
 blocking. `observations[]` are non-blocking notes, and

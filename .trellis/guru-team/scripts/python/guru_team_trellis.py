@@ -3889,6 +3889,7 @@ def resolve_finish_work_task_dir(root: Path, task_arg: str | None) -> Path:
     root_lexical = closeout_lexical_path(root)
     raw = Path(task_arg).expanduser()
     basename = raw.name.rstrip("/")
+    exact_plan_only_candidate: Path | None = None
     if len(raw.parts) == 1 and basename not in {"", ".", ".."}:
         lookup_by_basename = True
     else:
@@ -3917,9 +3918,17 @@ def resolve_finish_work_task_dir(root: Path, task_arg: str | None) -> Path:
         ):
             lookup_by_basename = True
         elif relative.parts[:3] == (".trellis", "tasks", "archive"):
-            archived = plan_only_archived_task_candidate(root_lexical, target)
-            if archived is not None:
-                return archived
+            archive_relative = relative.parts[3:]
+            if (
+                len(archive_relative) != 2
+                or not re.fullmatch(r"\d{4}-\d{2}", archive_relative[0])
+            ):
+                raise WorkflowError(
+                    "finish-work archived plan-only task locator must be an exact archive month/task path.",
+                    exit_code=2,
+                    payload={"path": str(task_arg)},
+                )
+            exact_plan_only_candidate = target
             lookup_by_basename = False
         else:
             raise WorkflowError(
@@ -3928,8 +3937,21 @@ def resolve_finish_work_task_dir(root: Path, task_arg: str | None) -> Path:
                 payload={"path": str(task_arg)},
             )
 
+    normal = resolve_existing_task_dir(root, task_arg)
+    if normal is not None:
+        return normal
+
+    if exact_plan_only_candidate is not None:
+        archived = plan_only_archived_task_candidate(
+            root_lexical,
+            exact_plan_only_candidate,
+        )
+        if archived is not None:
+            return archived
+
     if lookup_by_basename:
         archive_root = tasks_root(root_lexical) / "archive"
+        plan_only_matches: list[Path] = []
         if archive_root.is_dir():
             for month in sorted(archive_root.iterdir(), reverse=True):
                 if not re.fullmatch(r"\d{4}-\d{2}", month.name):
@@ -3939,10 +3961,21 @@ def resolve_finish_work_task_dir(root: Path, task_arg: str | None) -> Path:
                     month / basename,
                 )
                 if archived is not None:
-                    return archived
-    normal = resolve_existing_task_dir(root, task_arg)
-    if normal is not None:
-        return normal
+                    plan_only_matches.append(archived)
+        if len(plan_only_matches) > 1:
+            raise WorkflowError(
+                "finish-work found multiple archived plan-only tasks with the same basename; pass an exact archive locator.",
+                exit_code=2,
+                payload={
+                    "task": basename,
+                    "candidates": [
+                        repo_relative(root_lexical, candidate)
+                        for candidate in plan_only_matches
+                    ],
+                },
+            )
+        if plan_only_matches:
+            return plan_only_matches[0]
     raise WorkflowError(f"Could not resolve task directory: {task_arg}")
 
 

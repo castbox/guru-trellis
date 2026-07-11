@@ -1440,6 +1440,103 @@ class WorkspaceBoundaryGuardTest(unittest.TestCase):
                 boundary_args(root=str(self.workspace), task=str(archived))
             )
 
+    def test_finish_work_prefers_active_task_over_same_name_plan_only_archive(self) -> None:
+        archived = self.workspace / ".trellis/tasks/archive/2026-06" / self.task_dir.name
+        archived.mkdir(parents=True)
+        (archived / gtt.CLOSEOUT_PLAN_ARTIFACT).write_text("{}\n", encoding="utf-8")
+
+        for task_arg in [
+            self.task_dir.name,
+            str(self.task_dir.relative_to(self.workspace)),
+            str(self.task_dir),
+        ]:
+            with self.subTest(task_arg=task_arg):
+                self.assertEqual(
+                    gtt.resolve_finish_work_task_dir(self.workspace, task_arg),
+                    self.task_dir.resolve(),
+                )
+
+    def test_finish_work_prefers_ordinary_archive_over_same_name_plan_only_archive(self) -> None:
+        shutil.rmtree(self.task_dir)
+        ordinary = self.workspace / ".trellis/tasks/archive/2026-06" / self.task_dir.name
+        ordinary.mkdir(parents=True)
+        (ordinary / "task.json").write_text(
+            '{"title":"Ordinary archived task"}\n',
+            encoding="utf-8",
+        )
+        plan_only = self.workspace / ".trellis/tasks/archive/2026-07" / self.task_dir.name
+        plan_only.mkdir(parents=True)
+        (plan_only / gtt.CLOSEOUT_PLAN_ARTIFACT).write_text("{}\n", encoding="utf-8")
+
+        self.assertEqual(
+            gtt.resolve_finish_work_task_dir(self.workspace, self.task_dir.name),
+            ordinary.resolve(),
+        )
+
+    def test_finish_work_uses_unique_plan_only_fallback_after_ordinary_not_found(self) -> None:
+        shutil.rmtree(self.task_dir)
+        archived = self.workspace / ".trellis/tasks/archive/2026-07" / self.task_dir.name
+        archived.mkdir(parents=True)
+        (archived / gtt.CLOSEOUT_PLAN_ARTIFACT).write_text("{}\n", encoding="utf-8")
+
+        self.assertIsNone(gtt.resolve_existing_task_dir(self.workspace, self.task_dir.name))
+        self.assertEqual(
+            gtt.resolve_finish_work_task_dir(self.workspace, self.task_dir.name),
+            gtt.closeout_lexical_path(archived),
+        )
+
+    def test_finish_work_exact_plan_only_locator_falls_back_after_ordinary_not_found(self) -> None:
+        archived = self.workspace / ".trellis/tasks/archive/2026-07/07-08-exact-plan-only"
+        archived.mkdir(parents=True)
+        (archived / gtt.CLOSEOUT_PLAN_ARTIFACT).write_text("{}\n", encoding="utf-8")
+        same_name = self.workspace / ".trellis/tasks/archive/2026-06" / archived.name
+        same_name.mkdir(parents=True)
+        (same_name / gtt.CLOSEOUT_PLAN_ARTIFACT).write_text("{}\n", encoding="utf-8")
+
+        self.assertIsNone(gtt.resolve_existing_task_dir(self.workspace, str(archived)))
+        self.assertEqual(
+            gtt.resolve_finish_work_task_dir(self.workspace, str(archived)),
+            gtt.closeout_lexical_path(archived),
+        )
+
+    def test_finish_work_rejects_ambiguous_plan_only_basename(self) -> None:
+        shutil.rmtree(self.task_dir)
+        archived_paths = []
+        for month in ["2026-06", "2026-07"]:
+            archived = self.workspace / ".trellis/tasks/archive" / month / self.task_dir.name
+            archived.mkdir(parents=True)
+            (archived / gtt.CLOSEOUT_PLAN_ARTIFACT).write_text("{}\n", encoding="utf-8")
+            archived_paths.append(archived)
+
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.resolve_finish_work_task_dir(self.workspace, self.task_dir.name)
+
+        self.assertIn("multiple archived plan-only tasks", str(raised.exception))
+        self.assertEqual(
+            raised.exception.payload["candidates"],
+            [
+                str(path.relative_to(self.workspace))
+                for path in reversed(archived_paths)
+            ],
+        )
+
+    def test_finish_work_symlink_input_fails_before_any_resolver_fallback(self) -> None:
+        archived = self.workspace / ".trellis/tasks/archive/2026-07/07-08-plan-only-no-fallback"
+        archived.mkdir(parents=True)
+        (archived / gtt.CLOSEOUT_PLAN_ARTIFACT).write_text("{}\n", encoding="utf-8")
+        alias = archived.parent / "plan-only-alias-no-fallback"
+        alias.symlink_to(archived, target_is_directory=True)
+
+        with (
+            mock.patch.object(gtt, "resolve_existing_task_dir") as ordinary_resolver,
+            mock.patch.object(gtt, "plan_only_archived_task_candidate") as plan_only_fallback,
+        ):
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.resolve_finish_work_task_dir(self.workspace, str(alias))
+
+        ordinary_resolver.assert_not_called()
+        plan_only_fallback.assert_not_called()
+
     def test_finish_work_plan_only_resolution_rejects_internal_and_external_aliases(self) -> None:
         archived = self.workspace / ".trellis/tasks/archive/2026-07/07-08-plan-only-alias"
         archived.mkdir(parents=True)
