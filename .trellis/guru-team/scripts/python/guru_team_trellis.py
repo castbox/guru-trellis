@@ -10948,18 +10948,65 @@ def assert_closeout_archive_month_current(plan: dict[str, Any]) -> None:
         )
 
 
-def assert_closeout_archive_locator_available(root: Path, archive_locator: str) -> None:
-    """Reject a destination that would change official shutil.move semantics."""
-    destination = root / archive_locator
-    if os.path.lexists(destination):
-        raise WorkflowError(
-            "Closeout planned archive locator already exists; the task remains active.",
-            exit_code=2,
-            payload={
-                "stage": "archive-locator-preflight",
-                "archive_locator": archive_locator,
-            },
-        )
+def assert_closeout_archive_path_preflight(root: Path, archive_locator: str) -> None:
+    """Inspect archive ancestors lexically without following symlink components."""
+    parts = Path(archive_locator).parts
+    if (
+        len(parts) != 5
+        or parts[:3] != (".trellis", "tasks", "archive")
+        or not re.fullmatch(r"\d{4}-\d{2}", parts[3])
+        or not parts[4]
+    ):
+        raise WorkflowError("Closeout archive locator is not canonical.", exit_code=2)
+    components = (
+        ("archive-root", root.joinpath(*parts[:3])),
+        ("archive-month", root.joinpath(*parts[:4])),
+        ("archive-destination", root.joinpath(*parts)),
+    )
+    for component, path in components:
+        try:
+            mode = os.lstat(path).st_mode
+        except FileNotFoundError:
+            break
+        except OSError as exc:
+            raise WorkflowError(
+                "Closeout archive path component could not be inspected lexically.",
+                exit_code=2,
+                payload={
+                    "stage": "archive-path-preflight",
+                    "component": component,
+                    "path": path.relative_to(root).as_posix(),
+                },
+            ) from exc
+        if stat.S_ISLNK(mode):
+            raise WorkflowError(
+                "Closeout archive path contains a symlink component; the task remains active.",
+                exit_code=2,
+                payload={
+                    "stage": "archive-path-preflight",
+                    "component": component,
+                    "path": path.relative_to(root).as_posix(),
+                },
+            )
+        if component != "archive-destination" and not stat.S_ISDIR(mode):
+            raise WorkflowError(
+                "Closeout archive path ancestor is not a directory; the task remains active.",
+                exit_code=2,
+                payload={
+                    "stage": "archive-path-preflight",
+                    "component": component,
+                    "path": path.relative_to(root).as_posix(),
+                },
+            )
+        if component == "archive-destination":
+            raise WorkflowError(
+                "Closeout planned archive locator already exists; the task remains active.",
+                exit_code=2,
+                payload={
+                    "stage": "archive-locator-preflight",
+                    "archive_locator": archive_locator,
+                },
+            )
 
 
 def official_active_task_match(tasks_dir: Path, task_name: str) -> Path | None:
@@ -11540,7 +11587,7 @@ def build_closeout_plan(
         archive_locator = f".trellis/tasks/archive/{archive_month_now}/{task_dir.name}"
     if not archive_locator:
         archive_locator = f".trellis/tasks/archive/{archive_month_now}/{task_dir.name}"
-    assert_closeout_archive_locator_available(root, archive_locator)
+    assert_closeout_archive_path_preflight(root, archive_locator)
     observed_task_files = {
         path.relative_to(task_dir).as_posix()
         for path in task_dir.rglob("*")
@@ -13008,6 +13055,7 @@ def execute_archive_metadata_transaction(
     evidence_commit = current_head(root)
     validate_closeout_evidence_commit(root, plan, evidence_commit)
     validate_closeout_active_projection(root, task_dir, plan)
+    assert_closeout_archive_path_preflight(root, plan["task"]["archive_locator"])
     validate_closeout_pre_move_continuity(root, task_dir, plan, evidence_commit)
     proc = run(
         ["python3", "./.trellis/scripts/task.py", "archive", task_dir.name, "--no-commit"],

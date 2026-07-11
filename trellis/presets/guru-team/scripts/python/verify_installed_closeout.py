@@ -11,6 +11,7 @@ import shutil
 import stat
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -394,6 +395,93 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
     original_config = config_path.read_bytes() if config_path.exists() else None
     hook_sentinel = root / f"installed-after-archive-hook-{issue}.sentinel"
     hook_sentinel.unlink(missing_ok=True)
+
+    def preflight_state() -> dict[str, Any]:
+        return {
+            "head": git(root, real_git, "rev-parse", "HEAD"),
+            "remote": git(root, real_git, "ls-remote", "--heads", "origin", branch),
+            "pr_store": store.read_bytes() if store.is_file() else None,
+            "git_status": git(root, real_git, "status", "--porcelain"),
+            "task": (task_dir / "task.json").read_bytes(),
+            "ledger": (task_dir / "issue-scope-ledger.json").read_bytes(),
+            "plan": (
+                (task_dir / "closeout-plan.json").read_bytes()
+                if (task_dir / "closeout-plan.json").is_file()
+                else None
+            ),
+            "readiness": (
+                (task_dir / "pr-readiness.json").read_bytes()
+                if (task_dir / "pr-readiness.json").is_file()
+                else None
+            ),
+        }
+
+    def verify_archive_path_symlink_case(component: str, target_scope: str) -> None:
+        archive_root = root / ".trellis/tasks/archive"
+        month = archive_root / datetime.now().strftime("%Y-%m")
+        link_path = archive_root if component == "archive-root" else month
+        backup = link_path.with_name(f"{link_path.name}.installed-preflight-backup-{issue}")
+        if os.path.lexists(backup):
+            raise RuntimeError(f"installed archive symlink backup already exists: {backup}")
+        target = (
+            root / f".trellis/tasks/installed-archive-symlink-target-{component}"
+            if target_scope == "inside"
+            else root.parent / f"installed-archive-symlink-target-{component}-{issue}"
+        )
+        target.mkdir(parents=True)
+        sentinel = target / "sentinel.txt"
+        sentinel.write_bytes(b"installed-archive-path-sentinel\n")
+        archive_root_created = False
+        moved_existing = False
+        try:
+            if component == "archive-month" and not os.path.lexists(archive_root):
+                archive_root.mkdir(parents=True)
+                archive_root_created = True
+            if os.path.lexists(link_path):
+                link_path.rename(backup)
+                moved_existing = True
+            link_path.symlink_to(target, target_is_directory=True)
+            before = preflight_state()
+            for command in (
+                [*common, "--dry-run"],
+                [*common, "--expected-plan-digest", "0" * 64],
+            ):
+                blocked = subprocess.run(
+                    command,
+                    cwd=root,
+                    env=env,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                if blocked.returncode == 0:
+                    raise RuntimeError("installed closeout accepted an archive ancestor symlink")
+                try:
+                    blocked_payload = json.loads(blocked.stderr)
+                except json.JSONDecodeError as exc:
+                    raise RuntimeError("installed archive symlink preflight did not return JSON") from exc
+                if (
+                    blocked_payload.get("stage") != "archive-path-preflight"
+                    or blocked_payload.get("component") != component
+                ):
+                    raise RuntimeError("installed archive symlink preflight evidence is incomplete")
+                if preflight_state() != before:
+                    raise RuntimeError("installed archive symlink preflight changed closeout state")
+                if sentinel.read_bytes() != b"installed-archive-path-sentinel\n":
+                    raise RuntimeError("installed archive symlink preflight followed or changed its target")
+        finally:
+            if link_path.is_symlink():
+                link_path.unlink()
+            if moved_existing:
+                backup.rename(link_path)
+            elif archive_root_created:
+                archive_root.rmdir()
+            shutil.rmtree(target, ignore_errors=True)
+
+    for archive_component in ("archive-root", "archive-month"):
+        for scope in ("inside", "outside"):
+            verify_archive_path_symlink_case(archive_component, scope)
+
     try:
         existing = original_config.decode("utf-8") if original_config is not None else ""
         if existing and not existing.endswith("\n"):
@@ -477,6 +565,7 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
         "pr_url": pr["url"],
         "pr_ready": not pr["isDraft"],
         "after_archive_hook_preflight": True,
+        "archive_path_symlink_preflight": True,
     }
 
 

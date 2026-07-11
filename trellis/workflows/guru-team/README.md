@@ -428,7 +428,10 @@ Prepare 使用已安装的官方 config parser，只支持缺失或空 `hooks.af
 official move 前重新核对实时 archive 月份、空 index、精确 untracked 集合、regular-file/mode
 与 tracked evidence blob。已提交 plan 跨月时 task 保持 active；同一 entry 重新 dry-run
 得到新 digest，再追加只更新 plan/readiness 的 evidence commit，不 rewrite history 或迁移目录。
-共享 prepare 同时要求计划 archive locator 不存在，并把缺失的 `task.json.children` 视为
+共享 prepare 从 archive root 到 month/final destination 逐层 `lstat` 既有组件，不读取或
+跟随 symlink target；任何 symlink（含 dangling、repo 内 target）都拒绝，且 final locator
+必须不存在。official move 前重复同一检查，阻止 prepare-to-move 漂移。缺失的
+`task.json.children` 视为
 空 list、其余值严格校验为 `list[str]`。按官方 active task exact/suffix lookup，只有会被
 archive 改写的 active child 阻塞；已归档 child 不阻塞 parent closeout。
 Gate 后到 finish-work/archive 只允许 Trellis metadata tail；durable docs、`.trellis/spec/`、

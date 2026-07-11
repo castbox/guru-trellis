@@ -9250,6 +9250,22 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             )
         self.assertEqual(error.exception.payload.get("active_children"), ["07-10-child"])
 
+    def test_archive_path_preflight_rejects_dangling_root_and_month_symlinks(self) -> None:
+        archive_root = self.root / ".trellis/tasks/archive"
+        archive_locator = ".trellis/tasks/archive/2026-07/07-11-closeout"
+        archive_root.symlink_to(self.root / "missing-archive-root", target_is_directory=True)
+        with self.assertRaises(gtt.WorkflowError) as root_error:
+            gtt.assert_closeout_archive_path_preflight(self.root, archive_locator)
+        self.assertEqual(root_error.exception.payload.get("component"), "archive-root")
+        archive_root.unlink()
+
+        archive_root.mkdir()
+        month = archive_root / "2026-07"
+        month.symlink_to(self.root / "missing-archive-month", target_is_directory=True)
+        with self.assertRaises(gtt.WorkflowError) as month_error:
+            gtt.assert_closeout_archive_path_preflight(self.root, archive_locator)
+        self.assertEqual(month_error.exception.payload.get("component"), "archive-month")
+
     def build_plan(self) -> dict[str, object]:
         def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
             stdout = f"{self.head}\n" if command[:2] == ["git", "rev-list"] else ""
@@ -11177,6 +11193,7 @@ shutil.move(str(active), str(archived))
         after_archive_hook: bool = False,
         archive_locator_conflict: bool = False,
         children_case: str | None = None,
+        archive_path_symlink: str | None = None,
     ) -> dict[str, object]:
         source_root = Path(__file__).resolve().parents[5]
         with tempfile.TemporaryDirectory() as tmp:
@@ -11478,6 +11495,8 @@ shutil.move(str(active), str(archived))
                         original_run(["git", "add", unexpected.name], cwd=root, check=True)
                     elif pre_move_fault == "archive-month":
                         archive_month_clock = following_month(archive_month_clock)
+                    elif pre_move_fault == "archive-path-symlink":
+                        install_archive_path_symlink("month-outside")
                     if injected_stage == "projection":
                         record_transition("projection")
                         (task_dir / "review.md").unlink()
@@ -11554,6 +11573,33 @@ shutil.move(str(active), str(archived))
 
             archive_locator = f".trellis/tasks/archive/{datetime.now().strftime('%Y-%m')}/{task_dir.name}"
             archived_path = root / archive_locator
+            archive_symlink_sentinel: Path | None = None
+
+            def install_archive_path_symlink(case: str) -> None:
+                nonlocal archive_symlink_sentinel
+                component, target_scope = case.split("-", 1)
+                archive_root = root / ".trellis/tasks/archive"
+                target = (
+                    root / f".trellis/tasks/archive-symlink-target-{component}"
+                    if target_scope == "inside"
+                    else base / f"archive-symlink-target-{component}"
+                )
+                target.mkdir(parents=True)
+                archive_symlink_sentinel = target / "sentinel.txt"
+                archive_symlink_sentinel.write_bytes(b"archive-path-sentinel\n")
+                if component == "root":
+                    archive_root.symlink_to(target, target_is_directory=True)
+                    return
+                if component == "month":
+                    archive_root.mkdir(parents=True, exist_ok=True)
+                    (archive_root / datetime.now().strftime("%Y-%m")).symlink_to(
+                        target, target_is_directory=True
+                    )
+                    return
+                raise AssertionError(f"unsupported archive path symlink case: {case}")
+
+            if archive_path_symlink is not None:
+                install_archive_path_symlink(archive_path_symlink)
             if archive_locator_conflict:
                 archived_path.mkdir(parents=True)
 
@@ -11647,6 +11693,12 @@ shutil.move(str(active), str(archived))
                         if (task_dir / gtt.PR_READINESS_ARTIFACT).is_file()
                         else None
                     ),
+                    "archive_symlink_sentinel": (
+                        archive_symlink_sentinel.read_bytes()
+                        if archive_symlink_sentinel is not None
+                        and archive_symlink_sentinel.is_file()
+                        else None
+                    ),
                 }
 
             dry_args = finish_args(
@@ -11669,7 +11721,11 @@ shutil.move(str(active), str(archived))
                 mock.patch.object(gtt, "run", side_effect=fake_external_run),
                 mock.patch.object(gtt, "current_archive_month", side_effect=lambda: archive_month_clock),
             ):
-                if archive_locator_conflict or children_case in {"active", "malformed"}:
+                if (
+                    archive_locator_conflict
+                    or children_case in {"active", "malformed"}
+                    or archive_path_symlink is not None
+                ):
                     before = exact_state()
                     errors: list[gtt.WorkflowError] = []
                     for failure_args in (
@@ -11786,6 +11842,11 @@ shutil.move(str(active), str(archived))
                                 "events": failed_events,
                                 "reviewed_sha": reviewed_head,
                                 "evidence_sha": gtt.run_stdout(["git", "rev-parse", "HEAD"], cwd=root),
+                                "sentinel_bytes": (
+                                    archive_symlink_sentinel.read_bytes()
+                                    if archive_symlink_sentinel is not None
+                                    else None
+                                ),
                             }
                         reentry_offset = len(transition_attempts)
                         replacement_preview = gtt.cmd_finish_work(dry_args)
@@ -12019,6 +12080,53 @@ shutil.move(str(active), str(archived))
             [error.payload.get("stage") for error in result["errors"]],
             ["task-children-preflight", "task-children-preflight"],
         )
+
+    def test_production_archive_ancestor_symlinks_fail_dry_run_and_formal_without_side_effects(self) -> None:
+        cases = {
+            "root-inside": "archive-root",
+            "root-outside": "archive-root",
+            "month-inside": "archive-month",
+            "month-outside": "archive-month",
+        }
+        for case, component in cases.items():
+            with self.subTest(case=case):
+                result = self.run_production_finish_case(archive_path_symlink=case)
+                state = result["failed_state"]
+                self.assertEqual(state["active_locator"], ".trellis/tasks/07-11-closeout")
+                self.assertIsNone(state["archive_locator"])
+                self.assertEqual(state["task_status"], "in_progress")
+                self.assertEqual(state["local_sha"], result["reviewed_sha"])
+                self.assertIsNone(state["remote_sha"])
+                self.assertIsNone(state["pr_number"])
+                self.assertIsNone(state["plan_bytes"])
+                self.assertIsNone(state["readiness_bytes"])
+                self.assertEqual(state["archive_symlink_sentinel"], b"archive-path-sentinel\n")
+                self.assertEqual(result["events"], [])
+                self.assertEqual(
+                    [error.payload.get("stage") for error in result["errors"]],
+                    ["archive-path-preflight", "archive-path-preflight"],
+                )
+                self.assertEqual(
+                    [error.payload.get("component") for error in result["errors"]],
+                    [component, component],
+                )
+
+    def test_production_archive_ancestor_symlink_drift_fails_immediately_before_move(self) -> None:
+        result = self.run_production_finish_case(pre_move_fault="archive-path-symlink")
+        state = result["failed_state"]
+        self.assertEqual(state["active_locator"], ".trellis/tasks/07-11-closeout")
+        self.assertIsNone(state["archive_locator"])
+        self.assertEqual(state["task_status"], "in_progress")
+        self.assertEqual(state["local_sha"], result["evidence_sha"])
+        self.assertEqual(state["remote_sha"], result["evidence_sha"])
+        self.assertEqual(state["pr_head_sha"], result["evidence_sha"])
+        self.assertEqual(state["pr_is_draft"], True)
+        self.assertIsNotNone(state["plan_bytes"])
+        self.assertIsNotNone(state["readiness_bytes"])
+        self.assertEqual(result["sentinel_bytes"], b"archive-path-sentinel\n")
+        self.assertEqual(result["error_payload"].get("stage"), "archive-path-preflight")
+        self.assertEqual(result["error_payload"].get("component"), "archive-month")
+        self.assertNotIn("archive-move", result["events"])
 
     def test_production_pre_move_continuity_failures_keep_task_active_and_pr_draft(self) -> None:
         cases = [

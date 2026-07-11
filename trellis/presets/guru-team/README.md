@@ -402,8 +402,11 @@ requires the same digest, pushes reviewed content, records marketplace evidence
 and readiness, binds a draft PR, validates the final archive projection, then
 creates one archive metadata commit and marks the PR ready after three-way HEAD
 alignment. Every interruption resumes through the same finish entry.
-Shared prepare requires the planned archive locator to be absent before dry-run
-and formal diverge. Missing `task.json.children` means an empty list; otherwise
+Shared prepare lexically `lstat`s each existing archive root, month, and final
+destination component, rejects every symlink including dangling and
+repo-internal targets without following it, and requires the final locator to
+be absent. The identical preflight repeats immediately before official move.
+Missing `task.json.children` means an empty list; otherwise
 it must be `list[str]`. Official active-task exact/suffix lookup blocks only a
 child whose active `task.json` would be rewritten, while an archived child does
 not block its parent.

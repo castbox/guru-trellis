@@ -454,8 +454,11 @@ or GitHub call. Once the draft PR exists, the executor may substitute only the
 canonical PR URL and unique `PR #<number>` ref into that prevalidated template.
 Marketplace evidence locators are task-relative and remain valid after archive.
 
-Initial prepare also requires the planned archive locator to be absent, so the
-official move cannot nest the task inside an existing destination. Task
+Initial prepare walks the existing archive root, month, and final destination
+components with lexical `lstat`, rejects every symlink including dangling
+links without reading its target, and requires the planned final locator to be
+absent. The same preflight runs again immediately before the official move, so
+prepare-to-move ancestor drift cannot redirect or nest the task. Task
 `children` defaults to `[]` but otherwise must be `list[str]`; using the
 official active-task exact/suffix lookup, only children whose active
 `task.json` would be rewritten block closeout. Historical archived children do
@@ -492,6 +495,8 @@ the planned final outputs, every move path is a regular file, tracked modes are
 evidence blobs. Prepare uses the installed official config parser to accept only
 missing/empty `hooks.after_archive`; non-empty, ambiguous, unreadable, invalid,
 or symlinked config fails before side effects and no hook command is executed.
+The archive root/month/final lexical ancestor preflight is repeated before these
+move checks and before `task.py archive`; it never follows a symlink target.
 
 If the live month changes while the task remains active, same-entry dry-run may
 replace only an exact old evidence plan with a new-month digest. Formal appends
