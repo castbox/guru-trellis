@@ -49,10 +49,12 @@
       ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/check.jsonl",
       ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/design.md",
       ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/finish-summary-index.json",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/finish-summary.json",
       ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/implement.jsonl",
       ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/implement.md",
       ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/implementation-handoff.md",
       ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/marketplace-verification.json",
       ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/phase2-check.json",
       ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/planning-approval.json",
       ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/pr-body.md",
@@ -116,7 +118,7 @@
       98,
       99
     ],
-    "pr_url": ""
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/103"
   },
   "artifacts": {
     "prd": "prd.md",
@@ -128,7 +130,8 @@
     "review": "review.md",
     "review_gate": "review-gate.json",
     "pr_body": "pr-body.md",
-    "pr_readiness": "pr-readiness.json"
+    "pr_readiness": "pr-readiness.json",
+    "marketplace_verification": "marketplace-verification.json"
   },
   "index": {
     "problem": "Guru Team 使用固定 workspace journal 记录任务完成信息，多个 task 并行时会共同修改同一文件并产生分支冲突；add_session 同时把完成、发布恢复和上下文读取绑定到共享运行态。",
@@ -302,7 +305,9 @@
         "#99",
         "#100"
       ],
-      "pr_refs": [],
+      "pr_refs": [
+        "PR #103"
+      ],
       "branches": [
         "codex/097-finish-summary-replaces-add-session"
       ],
@@ -337,10 +342,12 @@
         ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/check.jsonl",
         ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/design.md",
         ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/finish-summary-index.json",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/finish-summary.json",
         ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/implement.jsonl",
         ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/implement.md",
         ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/implementation-handoff.md",
         ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/marketplace-verification.json",
         ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/phase2-check.json",
         ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/planning-approval.json",
         ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/pr-body.md",
