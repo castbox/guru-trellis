@@ -1,0 +1,115 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 97,
+    "url": "https://github.com/castbox/guru-trellis/issues/97",
+    "title": "拆分 #53：用 task-local finish-summary 替代 workspace journal/add_session",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/97"
+  },
+  "task_slug": "097-finish-summary-replaces-add-session",
+  "task_title": "#97 拆分 #53：用 task-local finish-summary 替代 workspace journal/add_session",
+  "task_artifact_dir": ".trellis/tasks/07-10-097-finish-summary-replaces-add-session",
+  "branch_name": "codex/097-finish-summary-replaces-add-session",
+  "base_branch": "main",
+  "base_ref": "main",
+  "base_head_sha": "ff8c03abb259c2a048626ea72e0bf57138db2c14",
+  "remote_head_sha": "ff8c03abb259c2a048626ea72e0bf57138db2c14",
+  "workspace_slug": "097-finish-summary-replaces-add-session",
+  "task_workspace_id": "097-finish-summary-replaces-add-session",
+  "assignee": "wumengye",
+  "actor": {
+    "login": "wumengye"
+  },
+  "issue_scope_ledger_seed": {
+    "primary_issue": {
+      "number": 97,
+      "url": "https://github.com/castbox/guru-trellis/issues/97",
+      "title": "拆分 #53：用 task-local finish-summary 替代 workspace journal/add_session",
+      "reason": "intake 主 issue，默认进入 close 候选。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 97,
+        "url": "https://github.com/castbox/guru-trellis/issues/97",
+        "title": "拆分 #53：用 task-local finish-summary 替代 workspace journal/add_session",
+        "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": false,
+      "selected_issue": 97
+    },
+    "naming_quality": {
+      "ok": true,
+      "reason": "naming includes enough business tokens",
+      "requires_semantic_name": false,
+      "current_slug": "097-finish-summary-replaces-add-session",
+      "current_surface": "workspace_slug",
+      "suggested_override_flags": [],
+      "checked_names": {
+        "slug": {
+          "ok": true,
+          "slug": "097-finish-summary-replaces-add-session",
+          "reason": "ok",
+          "business_tokens": [
+            "finish",
+            "summary",
+            "replaces",
+            "add",
+            "session"
+          ]
+        },
+        "task_slug": {
+          "ok": true,
+          "slug": "097-finish-summary-replaces-add-session",
+          "reason": "ok",
+          "business_tokens": [
+            "finish",
+            "summary",
+            "replaces",
+            "add",
+            "session"
+          ]
+        },
+        "workspace_slug": {
+          "ok": true,
+          "slug": "097-finish-summary-replaces-add-session",
+          "reason": "ok",
+          "business_tokens": [
+            "finish",
+            "summary",
+            "replaces",
+            "add",
+            "session"
+          ]
+        },
+        "branch_name": {
+          "ok": true,
+          "slug": "097-finish-summary-replaces-add-session",
+          "reason": "ok",
+          "business_tokens": [
+            "finish",
+            "summary",
+            "replaces",
+            "add",
+            "session"
+          ]
+        }
+      }
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    }
+  }
+}

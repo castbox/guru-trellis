@@ -1,0 +1,10 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"Guru Team Phase 3 与 finish/publish 流程 SSOT"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"AI 判断与 recorder/validator/executor 边界"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"task、schema、metadata tail 与 extension public API 合同"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"测试、同步与发布前质量门禁"}
+{"file":".trellis/spec/preset/installer.md","reason":"schema/config/ignore 安装与 upgrade 行为"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"canonical overlay 与 dogfood copy 同步规则"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"README 与 requirements durable docs 规则"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"复用现有 recorder、validator、metadata commit helper"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"finish input 到 archive、publish、preset、docs 的跨层数据流"}
+{"file":".trellis/tasks/07-10-097-finish-summary-replaces-add-session/research/current-finish-publish-contract.md","reason":"#97 live issue 与当前实现差距证据"}

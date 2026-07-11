@@ -1,0 +1,16 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "codex/097-finish-summary-replaces-add-session",
+    "reviewed_head_sha": "fd310e15b08a2a29d253a1308b38816db7bc005d",
+    "title": "完成：#97 拆分 #53：用 task-local finish-summary 替代 workspace journal/add_session",
+    "body_source": "pr-body.md",
+    "body_sha256": "9600c2f144785add366d7e234fe6729eda5ac67806f78ee90993ab106c114a9b",
+    "draft": false,
+    "reviewed_source": "body-artifact:pr-readiness.json"
+  },
+  "publish_inputs_sha256": "067b7e4b249224c2e73cd1ac7c39c815af778772178a20714136a39eb536f610"
+}

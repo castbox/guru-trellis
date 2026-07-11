@@ -1,0 +1,10 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"复核 Phase 3 流程承接"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"复核脚本未替代 AI 判断"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"复核 schema、path 与 metadata tail"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"复核验证矩阵与发布门禁"}
+{"file":".trellis/spec/preset/installer.md","reason":"复核新仓库安装和 update 后恢复"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"复核 overlay drift 与 canonical/dogfood 一致"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"复核 durable docs SSOT"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"复核 helper 复用与重复实现"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"复核 AI input 到历史搜索字段的跨层链路"}
+{"file":".trellis/tasks/07-10-097-finish-summary-replaces-add-session/research/current-finish-publish-contract.md","reason":"复核 live contract 全量覆盖"}
