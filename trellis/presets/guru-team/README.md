@@ -571,8 +571,10 @@ archive locator may select plan-only recovery. Path-like input receives
 component-wise `lstat` from the repo root through the final task directory
 before any fallback. Basename input preflights `<repo>/<basename>`, the active
 candidate, the archive root, and archive candidates in ordinary resolver order.
-A matching archive alias fails closed, while an unmatched same-name archive
-alias does not block a later real match. These checks reject internal/external,
+Every direct or archive candidate first retains only `symlink_component`
+evidence, then uses the ordinary resolver's exact follow-symlink
+`directory + task.json` predicate. A matching alias fails closed, while an
+unmatched alias continues to the next candidate. These checks reject internal/external,
 relative/absolute, ancestor/final, multilevel, dangling, and loop symlinks
 before raw evidence is discarded. The ordinary resolver then preserves
 explicit `task.json`, active task, and normal archived `task.json` precedence.

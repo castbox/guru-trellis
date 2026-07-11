@@ -734,10 +734,11 @@ basename, exact former active locator, or exact archive locator may select the
 plan-only search. Path-like input is checked component-by-component with
 `lstat` from repo root through the final task directory. Basename input checks
 the raw `<repo>/<basename>` and `.trellis/tasks/<basename>` candidates, then
-checks archive candidates in ordinary resolver order before resolution. A
-matching archive candidate with a symlink component is rejected; a
-non-matching same-name archive alias is ignored rather than misclassified as
-the selected candidate. This rejects internal/external, relative/absolute,
+checks archive candidates in ordinary resolver order before resolution. Every
+direct or archive candidate first retains only `symlink_component` evidence,
+then uses the ordinary resolver's exact follow-symlink `directory + task.json`
+predicate. A matching alias is rejected; an unmatched alias continues to the
+next candidate. This rejects internal/external, relative/absolute,
 ancestor/final, multilevel, dangling, or loop aliases before raw evidence can
 be discarded. The ordinary resolver then runs and preserves explicit
 `task.json`, active task, and normal archived `task.json` precedence. Only an

@@ -498,8 +498,10 @@ and path-like input receives lexical repo/archive containment plus
 component-wise `lstat` through the final directory before any fallback.
 Basename input performs the same raw preflight for `<repo>/<basename>`, the
 active task candidate, the archive root, and archive candidates in ordinary
-resolver order. A matching archive alias fails closed, while an unmatched
-same-name archive alias does not block a later real match. This rejects
+resolver order. Each direct or archive candidate first retains only raw
+`symlink_component` evidence, then applies the ordinary resolver's exact
+follow-symlink `directory + task.json` predicate. A matching alias fails closed,
+while an unmatched alias continues to the next candidate. This rejects
 internal/external, relative/absolute, ancestor/final, multilevel, dangling,
 and loop aliases before raw evidence is discarded. The ordinary resolver then
 keeps explicit `task.json`, active task, and normal archived `task.json`

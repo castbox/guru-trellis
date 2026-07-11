@@ -1613,6 +1613,34 @@ class WorkspaceBoundaryGuardTest(unittest.TestCase):
             ordinary.resolve(),
         )
 
+    def test_finish_work_basename_ignores_unmatched_repo_root_alias(self) -> None:
+        empty_target = self.workspace / "empty-root-alias-target"
+        empty_target.mkdir()
+        alias = self.workspace / self.task_dir.name
+        alias.symlink_to(empty_target, target_is_directory=True)
+
+        self.assertEqual(
+            gtt.resolve_finish_work_task_dir(self.workspace, self.task_dir.name),
+            self.task_dir.resolve(),
+        )
+
+    def test_finish_work_basename_ignores_unmatched_active_alias(self) -> None:
+        shutil.rmtree(self.task_dir)
+        empty_target = self.workspace / ".trellis/tasks/empty-active-alias-target"
+        empty_target.mkdir(parents=True)
+        self.task_dir.symlink_to(empty_target, target_is_directory=True)
+        ordinary = self.workspace / ".trellis/tasks/archive/2026-07" / self.task_dir.name
+        ordinary.mkdir(parents=True)
+        (ordinary / "task.json").write_text(
+            '{"title":"Ordinary archive after unmatched active alias"}\n',
+            encoding="utf-8",
+        )
+
+        self.assertEqual(
+            gtt.resolve_finish_work_task_dir(self.workspace, self.task_dir.name),
+            ordinary.resolve(),
+        )
+
     def test_finish_work_plan_only_resolution_rejects_internal_and_external_aliases(self) -> None:
         archived = self.workspace / ".trellis/tasks/archive/2026-07/07-08-plan-only-alias"
         archived.mkdir(parents=True)

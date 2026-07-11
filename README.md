@@ -453,8 +453,9 @@ discovery、workspace boundary 和其它命令继续要求 `task.json`，worktre
 该入口在普通 resolver/`resolve()` 前保留 raw locator，只允许 task basename、原 active locator 或
 精确 archive locator；path-like 输入先从 repo root 到 final task dir 逐组件 `lstat`。basename
 输入则在普通 resolver 前按其候选顺序预检 `<repo>/<basename>`、active task candidate、archive
-root 和 archive candidates；命中的 archive alias fail closed，未命中的同名 archive alias 不会误阻断
-后续真实候选。预检统一拒绝 repo 内外、relative/absolute、ancestor/final、多层、dangling、loop
+root 和 archive candidates；每个 direct/archive candidate 都先保留 `symlink_component` 证据，再用
+普通 resolver 完全相同的 follow-symlink `directory + task.json` 谓词判断，matching alias fail closed，
+unmatched alias 继续下一候选。预检统一拒绝 repo 内外、relative/absolute、ancestor/final、多层、dangling、loop
 symlink，再调用普通 resolver，保留显式 `task.json`、active task 和普通 archived `task.json` 的
 既有优先级；仅普通 resolver 返回 not-found 时才进入 plan-only fallback。精确 archive locator
 只尝试该候选，basename/

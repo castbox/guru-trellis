@@ -479,7 +479,9 @@ task discovery 与其它命令仍要求 `task.json`，worktree mode 仍要求 `t
 raw locator 在普通 resolver/`resolve()` 前验证，只允许 basename、原 active locator 或精确 archive
 locator；path-like 输入先从 repo root 到 final task dir 逐组件 `lstat`。basename 输入在普通
 resolver 前按其候选顺序预检 `<repo>/<basename>`、active task candidate、archive root 和 archive
-candidates；命中的 archive alias fail closed，未命中的同名 archive alias 不误阻断后续真实候选。
+candidates；每个 direct/archive candidate 都先保留 `symlink_component` 证据，再用普通 resolver
+完全相同的 follow-symlink `directory + task.json` 谓词判断，matching alias fail closed，unmatched
+alias 继续下一候选。
 预检统一拒绝 repo 内外、relative/absolute、ancestor/final、多层、dangling、loop symlink，再优先调用
 普通 resolver，保留显式 `task.json`、active task 和普通 archived `task.json` 的顺序；仅 ordinary
 not-found 才进入 plan-only fallback。精确 archive locator 只尝试该候选，basename/原 active locator

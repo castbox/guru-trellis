@@ -3886,12 +3886,32 @@ def ordinary_task_dir_candidate_matches(candidate: Path) -> bool:
     return candidate.is_dir() and (candidate / "task.json").is_file()
 
 
+def preflight_finish_work_ordinary_candidate(
+    root: Path,
+    candidate: Path,
+    label: str,
+) -> bool:
+    symlink_error: WorkflowError | None = None
+    # Capture raw alias evidence before using the ordinary resolver's
+    # follow-symlink predicates to decide whether this candidate matches.
+    try:
+        reject_closeout_symlink_components(root, candidate, label)
+    except WorkflowError as exc:
+        if not exc.payload.get("symlink_component"):
+            raise
+        symlink_error = exc
+    if not ordinary_task_dir_candidate_matches(candidate):
+        return False
+    if symlink_error is not None:
+        raise symlink_error
+    return True
+
+
 def preflight_finish_work_basename_candidates(root: Path, basename: str) -> None:
     label = "task basename candidate"
     direct_candidates = [root / basename, tasks_root(root) / basename]
     for candidate in direct_candidates:
-        target = reject_closeout_symlink_components(root, candidate, label)
-        if ordinary_task_dir_candidate_matches(target):
+        if preflight_finish_work_ordinary_candidate(root, candidate, label):
             return
 
     archive_root = tasks_root(root) / "archive"
@@ -3900,20 +3920,8 @@ def preflight_finish_work_basename_candidates(root: Path, basename: str) -> None
         return
     for month in sorted(archive_root.iterdir(), reverse=True):
         candidate = month / basename
-        symlink_error: WorkflowError | None = None
-        # Capture raw alias evidence before using the ordinary resolver's
-        # follow-symlink predicates to decide whether this candidate matches.
-        try:
-            reject_closeout_symlink_components(root, candidate, label)
-        except WorkflowError as exc:
-            if not exc.payload.get("symlink_component"):
-                raise
-            symlink_error = exc
-        if not ordinary_task_dir_candidate_matches(candidate):
-            continue
-        if symlink_error is not None:
-            raise symlink_error
-        return
+        if preflight_finish_work_ordinary_candidate(root, candidate, label):
+            return
 
 
 def resolve_finish_work_task_dir(root: Path, task_arg: str | None) -> Path:
