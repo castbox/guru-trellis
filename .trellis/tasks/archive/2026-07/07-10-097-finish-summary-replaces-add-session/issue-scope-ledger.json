@@ -13,10 +13,14 @@
       },
       {
         "type": "remote_marketplace_verification",
-        "status": "pending",
+        "status": "passed",
         "required": true,
-        "artifact_path": "marketplace-verification.json",
-        "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。"
+        "artifact_path": ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/marketplace-verification.json",
+        "artifact_sha256": "8c81d5b7b7e814edc0cd345adefaa27c466b433f8b59f3b717f0cc9d534816ce",
+        "verified_content_head": "9a4afdb6635ecbe0f0e76831527e063bda1da066",
+        "remote_head": "9a4afdb6635ecbe0f0e76831527e063bda1da066",
+        "publish_head": "9a4afdb6635ecbe0f0e76831527e063bda1da066",
+        "commands_passed": true
       }
     ]
   },
@@ -35,10 +39,14 @@
         },
         {
           "type": "remote_marketplace_verification",
-          "status": "pending",
+          "status": "passed",
           "required": true,
-          "artifact_path": "marketplace-verification.json",
-          "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。"
+          "artifact_path": ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/marketplace-verification.json",
+          "artifact_sha256": "8c81d5b7b7e814edc0cd345adefaa27c466b433f8b59f3b717f0cc9d534816ce",
+          "verified_content_head": "9a4afdb6635ecbe0f0e76831527e063bda1da066",
+          "remote_head": "9a4afdb6635ecbe0f0e76831527e063bda1da066",
+          "publish_head": "9a4afdb6635ecbe0f0e76831527e063bda1da066",
+          "commands_passed": true
         }
       ]
     }
