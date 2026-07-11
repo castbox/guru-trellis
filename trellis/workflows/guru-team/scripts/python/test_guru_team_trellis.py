@@ -9428,17 +9428,90 @@ shutil.move(str(active), str(archived))
                     gtt.ensure_closeout_draft_pr(self.root, plan, body)
 
     def test_closeout_repository_identity_normalizes_remote_urls_and_rejects_mismatch(self) -> None:
+        for value in ["owner/repo", "Owner/Repo", "OWNER/REPO"]:
+            with self.subTest(identifier=value):
+                self.assertEqual(gtt.normalize_github_repository(value), "owner/repo")
         for value in [
-            "owner/repo",
+            "",
+            "owner",
+            "owner/repo/extra",
             "https://github.com/Owner/Repo.git",
             "git@github.com:OWNER/REPO.git",
             "ssh://git@github.com/owner/repo.git",
+            "owner/repo?token=x",
         ]:
-            with self.subTest(value=value):
-                self.assertEqual(gtt.normalize_github_repository(value), "owner/repo")
-        for value in ["", "owner", "owner/repo/extra", "https://example.com/owner/repo", "owner/repo?token=x"]:
-            with self.subTest(invalid=value):
+            with self.subTest(invalid_identifier=value):
                 self.assertEqual(gtt.normalize_github_repository(value), "")
+
+        for value in [
+            "https://github.com/Owner/Repo.git",
+            "https://GITHUB.COM/owner/repo",
+            "git@github.com:OWNER/REPO.git",
+            "ssh://git@github.com/owner/repo.git",
+        ]:
+            with self.subTest(remote=value):
+                self.assertEqual(gtt.parse_github_remote_repository_url(value), "owner/repo")
+        for value in [
+            "",
+            "owner/repo",
+            "Owner/Repo.git",
+            "../owner/repo",
+            "/tmp/owner/repo",
+            "file:///tmp/owner/repo.git",
+            "github.com/owner/repo",
+            "github.com:owner/repo",
+            "https://example.com/owner/repo.git",
+            "http://github.com/owner/repo.git",
+            "git://github.com/owner/repo.git",
+            "https://token@github.com/owner/repo.git",
+            "https://token:secret@github.com/owner/repo.git",
+            "ssh://owner@github.com/owner/repo.git",
+            "ssh://git:secret@github.com/owner/repo.git",
+            "ssh://git@github.com:22/owner/repo.git",
+            "https://github.com/owner/repo.git?token=secret",
+            "https://github.com/owner/repo.git#fragment",
+            "https://github.com/owner/repo/extra",
+            "https://github.com/owner/repo/",
+        ]:
+            with self.subTest(invalid_remote=value):
+                self.assertEqual(gtt.parse_github_remote_repository_url(value), "")
+
+        canonical_remote = "https://github.com/owner/repo.git"
+        unsafe_remote_values = [
+            " " + canonical_remote,
+            canonical_remote + " ",
+            "\t" + canonical_remote,
+            canonical_remote + "\t",
+            canonical_remote + "\r",
+            canonical_remote + "\n",
+            canonical_remote + "\x00",
+            canonical_remote + "\x01",
+            canonical_remote + "\x7f",
+            canonical_remote + "\u0085",
+        ]
+        self.assertTrue(gtt.git_remote_config_value_is_safe(canonical_remote))
+        for value in unsafe_remote_values:
+            with self.subTest(unsafe_remote=repr(value)):
+                self.assertFalse(gtt.git_remote_config_value_is_safe(value))
+                self.assertEqual(gtt.parse_github_remote_repository_url(value), "")
+        self.assertEqual(
+            gtt.parse_nul_terminated_git_config_values("one\0two\0"), ["one", "two"]
+        )
+        for output in ["", "one", "one\0two", "\0", "one\0\0"]:
+            with self.subTest(invalid_nul_output=repr(output)):
+                self.assertIsNone(gtt.parse_nul_terminated_git_config_values(output))
+        self.assertEqual(
+            gtt.parse_effective_git_remote_urls(canonical_remote + "\n", 1),
+            [canonical_remote],
+        )
+        for output, count in [
+            (canonical_remote, 1),
+            (canonical_remote + "\r\n", 1),
+            (canonical_remote + "\n" + canonical_remote + "\n", 1),
+            ("\n", 1),
+        ]:
+            with self.subTest(invalid_effective_output=repr(output)):
+                self.assertIsNone(gtt.parse_effective_git_remote_urls(output, count))
 
         with tempfile.TemporaryDirectory() as tmp:
             fixture_root = Path(tmp)
@@ -9472,7 +9545,10 @@ shutil.move(str(active), str(archived))
             )
             effective_fetch = git("remote", "get-url", "--all", "origin", cwd=fetch_mismatch)
             self.assertEqual(
-                [gtt.normalize_github_repository(value) for value in effective_fetch.stdout.splitlines()],
+                [
+                    gtt.parse_github_remote_repository_url(value)
+                    for value in effective_fetch.stdout.splitlines()
+                ],
                 ["fork-owner/repo", "owner/repo"],
             )
             with self.assertRaises(gtt.WorkflowError) as raised:
@@ -9493,7 +9569,10 @@ shutil.move(str(active), str(archived))
                 "remote", "get-url", "--push", "--all", "origin", cwd=push_mismatch
             )
             self.assertEqual(
-                [gtt.normalize_github_repository(value) for value in effective_push.stdout.splitlines()],
+                [
+                    gtt.parse_github_remote_repository_url(value)
+                    for value in effective_push.stdout.splitlines()
+                ],
                 ["owner/repo", "fork-owner/repo", "owner/repo"],
             )
             with self.assertRaises(gtt.WorkflowError) as raised:
@@ -9514,7 +9593,10 @@ shutil.move(str(active), str(archived))
                 "remote", "get-url", "--push", "--all", "origin", cwd=rewritten_push
             )
             self.assertEqual(
-                [gtt.normalize_github_repository(value) for value in effective_rewrite.stdout.splitlines()],
+                [
+                    gtt.parse_github_remote_repository_url(value)
+                    for value in effective_rewrite.stdout.splitlines()
+                ],
                 ["fork-owner/repo"],
             )
             with self.assertRaises(gtt.WorkflowError) as raised:
@@ -9541,7 +9623,10 @@ shutil.move(str(active), str(archived))
                 result = git(*command, cwd=matching)
                 self.assertTrue(result.stdout.splitlines())
                 self.assertEqual(
-                    {gtt.normalize_github_repository(value) for value in result.stdout.splitlines()},
+                    {
+                        gtt.parse_github_remote_repository_url(value)
+                        for value in result.stdout.splitlines()
+                    },
                     {"owner/repo"},
                 )
             self.assertEqual(
@@ -9563,15 +9648,126 @@ shutil.move(str(active), str(archived))
             with self.assertRaises(gtt.WorkflowError) as raised:
                 gtt.validate_github_remote_repository(missing_remote, "origin", "owner/repo")
             self.assertEqual(
-                raised.exception.payload, {"remote": "origin", "direction": "fetch"}
+                raised.exception.payload, {"remote": "origin", "source": "raw-config"}
             )
+
+            raw_control_values = [
+                ("leading-space", " " + canonical_remote),
+                ("trailing-space", canonical_remote + " "),
+                ("leading-tab", "\t" + canonical_remote),
+                ("trailing-tab", canonical_remote + "\t"),
+                ("carriage-return", canonical_remote + "\r"),
+                ("single-value-newline", canonical_remote + "\n" + canonical_remote),
+                ("c0-control", canonical_remote + "\x01"),
+                ("delete-control", canonical_remote + "\x7f"),
+            ]
+            for name, value in raw_control_values:
+                with self.subTest(raw_control=name):
+                    repository = remote_fixture(f"raw-{name}", [value])
+                    raw = git(
+                        "config", "--null", "--get-all", "remote.origin.url", cwd=repository
+                    )
+                    self.assertTrue(raw.stdout.endswith("\0"))
+                    with self.assertRaises(gtt.WorkflowError) as raised:
+                        gtt.validate_github_remote_repository(repository, "origin", "owner/repo")
+                    self.assertEqual(
+                        raised.exception.payload,
+                        {"remote": "origin", "direction": "fetch", "source": "raw-config"},
+                    )
+                    self.assertNotIn(value, json.dumps(raised.exception.payload))
+
+            for name, pattern in [
+                ("newline", "gh:\n"),
+                ("tab", "gh:\t"),
+                ("c0", "gh:\x01"),
+            ]:
+                with self.subTest(rewrite_control=name):
+                    repository = remote_fixture(f"rewrite-{name}", ["gh:repo"])
+                    git(
+                        "config",
+                        "url.https://github.com/owner/.insteadOf",
+                        pattern,
+                        cwd=repository,
+                    )
+                    with self.assertRaises(gtt.WorkflowError) as raised:
+                        gtt.validate_github_remote_repository(repository, "origin", "owner/repo")
+                    self.assertEqual(
+                        raised.exception.payload, {"source": "url-rewrite-config"}
+                    )
+                    self.assertNotIn(pattern, json.dumps(raised.exception.payload))
+
+            rewrite_base = remote_fixture("rewrite-base-tab", ["gh:repo"])
+            rewrite_config = rewrite_base / ".git/config"
+            rewrite_config.write_text(
+                rewrite_config.read_text(encoding="utf-8")
+                + '\n[url "https://github.com/\t"]\n\tinsteadOf = gh:\n',
+                encoding="utf-8",
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.validate_github_remote_repository(rewrite_base, "origin", "owner/repo")
+            self.assertEqual(raised.exception.payload, {"source": "url-rewrite-config"})
+
+            nul_config = fixture_root / "raw-nul"
+            nul_config.mkdir()
+            git("init", "-q", cwd=nul_config)
+            config_path = nul_config / ".git/config"
+            config_path.write_bytes(
+                config_path.read_bytes()
+                + b'\n[remote "origin"]\n\turl = https://github.com/owner/repo.git\x00tail\n'
+            )
+            raw_nul = subprocess.run(
+                ["git", "config", "--null", "--get-all", "remote.origin.url"],
+                cwd=nul_config,
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(raw_nul.returncode, 0)
+            self.assertEqual(raw_nul.stdout, canonical_remote + "\0")
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.validate_github_remote_repository(nul_config, "origin", "owner/repo")
+            self.assertEqual(
+                raised.exception.payload, {"remote": "origin", "source": "raw-config"}
+            )
+            self.assertNotIn("tail", json.dumps(raised.exception.payload))
+
+            local_target = fixture_root / "local-target.git"
+            invalid_transports = [
+                ("relative", "owner/repo"),
+                ("relative-dotgit", "Owner/Repo.git"),
+                ("parent-relative", "../owner/repo"),
+                ("absolute", str(local_target)),
+                ("file", local_target.as_uri()),
+            ]
+            for name, value in invalid_transports:
+                with self.subTest(local_transport=name):
+                    repository = remote_fixture(f"invalid-{name}", [value])
+                    effective = git("remote", "get-url", "--all", "origin", cwd=repository)
+                    self.assertTrue(effective.stdout.strip())
+                    with self.assertRaises(gtt.WorkflowError) as raised:
+                        gtt.validate_github_remote_repository(repository, "origin", "owner/repo")
+                    self.assertEqual(
+                        raised.exception.payload,
+                        {
+                            "remote": "origin",
+                            "direction": "fetch",
+                            "expected_repo": "owner/repo",
+                        },
+                    )
 
         empty = subprocess.CompletedProcess(
             ["git", "remote", "get-url", "--all", "origin"], 0, "\n", ""
         )
-        with mock.patch.object(gtt, "run", return_value=empty) as remote, self.assertRaises(
-            gtt.WorkflowError
-        ) as raised:
+        with (
+            mock.patch.object(gtt, "git_url_rewrite_config_is_safe", return_value=True),
+            mock.patch.object(
+                gtt,
+                "read_raw_git_config_values",
+                side_effect=[[canonical_remote], []],
+            ),
+            mock.patch.object(gtt, "run", return_value=empty) as remote,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
             gtt.validate_github_remote_repository(self.root, "origin", "owner/repo")
         remote.assert_called_once_with(
             ["git", "remote", "get-url", "--all", "origin"], cwd=self.root, check=False
@@ -9590,9 +9786,16 @@ shutil.move(str(active), str(archived))
             "",
             "credential-bearing failure",
         )
-        with mock.patch.object(gtt, "run", side_effect=[fetch, failed_push]), self.assertRaises(
-            gtt.WorkflowError
-        ) as raised:
+        with (
+            mock.patch.object(gtt, "git_url_rewrite_config_is_safe", return_value=True),
+            mock.patch.object(
+                gtt,
+                "read_raw_git_config_values",
+                side_effect=[[canonical_remote], []],
+            ),
+            mock.patch.object(gtt, "run", side_effect=[fetch, failed_push]),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
             gtt.validate_github_remote_repository(self.root, "origin", "owner/repo")
         self.assertEqual(raised.exception.payload, {"remote": "origin", "direction": "push"})
         self.assertNotIn("credential-bearing", str(raised.exception))
@@ -10245,6 +10448,18 @@ shutil.move(str(active), str(archived))
             injected_stage = failed_stage
             archive_pushed = False
             transition_attempts: list[str] = []
+            if failed_stage == "raw-remote-control":
+                original_run(
+                    [
+                        "git",
+                        "config",
+                        "--replace-all",
+                        "remote.origin.url",
+                        " " + str(remote),
+                    ],
+                    cwd=root,
+                    check=True,
+                )
 
             def record_transition(stage: str) -> None:
                 transition_attempts.append(stage)
@@ -10269,14 +10484,35 @@ shutil.move(str(active), str(archived))
                 command: list[str], cwd: Path | None = None, check: bool = True
             ) -> subprocess.CompletedProcess[str]:
                 nonlocal archive_pushed
+                if (
+                    command
+                    == [
+                        "git",
+                        "config",
+                        "--null",
+                        "--show-origin",
+                        "--get-all",
+                        "remote.origin.url",
+                    ]
+                    and injected_stage == "raw-remote-control"
+                ):
+                    record_transition("raw-remote-control")
                 if command in [
                     ["git", "remote", "get-url", "--all", "origin"],
                     ["git", "remote", "get-url", "--push", "--all", "origin"],
                 ]:
-                    if injected_stage == "remote-identity" and "--push" in command:
-                        record_transition("remote-identity")
+                    if (
+                        injected_stage in {"remote-identity", "remote-transport"}
+                        and "--push" in command
+                    ):
+                        record_transition(str(injected_stage))
+                        value = (
+                            "owner/repo"
+                            if injected_stage == "remote-transport"
+                            else "https://github.com/fork-owner/repo.git"
+                        )
                         return subprocess.CompletedProcess(
-                            command, 0, "https://github.com/fork-owner/repo.git\n", ""
+                            command, 0, value + "\n", ""
                         )
                     return subprocess.CompletedProcess(
                         command, 0, "https://github.com/owner/repo.git\n", ""
@@ -10468,7 +10704,12 @@ shutil.move(str(active), str(archived))
                 ),
                 mock.patch.object(gtt, "run", side_effect=fake_external_run),
             ):
-                if failed_stage in {"prepare", "remote-identity"}:
+                if failed_stage in {
+                    "prepare",
+                    "raw-remote-control",
+                    "remote-identity",
+                    "remote-transport",
+                }:
                     if failed_stage == "prepare":
                         (task_dir / "finish-summary-index.json").write_text(
                             "{}\n", encoding="utf-8"
@@ -10478,6 +10719,18 @@ shutil.move(str(active), str(archived))
                     failed_state = exact_state()
                     if failed_stage == "prepare":
                         gtt.write_json(task_dir / "finish-summary-index.json", index)
+                    if failed_stage == "raw-remote-control":
+                        original_run(
+                            [
+                                "git",
+                                "config",
+                                "--replace-all",
+                                "remote.origin.url",
+                                str(remote),
+                            ],
+                            cwd=root,
+                            check=True,
+                        )
                     injected_stage = None
                     reentry_offset = len(transition_attempts)
                     preview = gtt.cmd_finish_work(dry_args)
@@ -10600,6 +10853,46 @@ shutil.move(str(active), str(archived))
         self.assertIsNone(failed["pr_number"])
         self.assertFalse(failed["finish_summary_exists"])
         self.assertEqual(result["all_transition_attempts"].count("remote-identity"), 1)
+
+        final = result["final_state"]
+        self.assertIsNone(final["active_locator"])
+        self.assertEqual(final["task_status"], "completed")
+        self.assertEqual(final["pr_number"], 105)
+        self.assertEqual(final["pr_head_sha"], result["archive_sha"])
+
+    def test_production_finish_local_remote_transport_is_side_effect_free_and_retryable(self) -> None:
+        result = self.run_production_finish_case("remote-transport")
+        failed = result["failed_state"]
+        self.assertEqual(failed["active_locator"], ".trellis/tasks/07-11-closeout")
+        self.assertIsNone(failed["archive_locator"])
+        self.assertEqual(failed["task_status"], "in_progress")
+        self.assertEqual(failed["dirty_paths"], set())
+        self.assertEqual(failed["staged_paths"], set())
+        self.assertEqual(failed["local_sha"], result["reviewed_sha"])
+        self.assertIsNone(failed["remote_sha"])
+        self.assertIsNone(failed["pr_number"])
+        self.assertFalse(failed["finish_summary_exists"])
+        self.assertEqual(result["all_transition_attempts"].count("remote-transport"), 1)
+
+        final = result["final_state"]
+        self.assertIsNone(final["active_locator"])
+        self.assertEqual(final["task_status"], "completed")
+        self.assertEqual(final["pr_number"], 105)
+        self.assertEqual(final["pr_head_sha"], result["archive_sha"])
+
+    def test_production_finish_raw_remote_control_is_side_effect_free_and_retryable(self) -> None:
+        result = self.run_production_finish_case("raw-remote-control")
+        failed = result["failed_state"]
+        self.assertEqual(failed["active_locator"], ".trellis/tasks/07-11-closeout")
+        self.assertIsNone(failed["archive_locator"])
+        self.assertEqual(failed["task_status"], "in_progress")
+        self.assertEqual(failed["dirty_paths"], set())
+        self.assertEqual(failed["staged_paths"], set())
+        self.assertEqual(failed["local_sha"], result["reviewed_sha"])
+        self.assertIsNone(failed["remote_sha"])
+        self.assertIsNone(failed["pr_number"])
+        self.assertFalse(failed["finish_summary_exists"])
+        self.assertEqual(result["all_transition_attempts"].count("raw-remote-control"), 1)
 
         final = result["final_state"]
         self.assertIsNone(final["active_locator"])

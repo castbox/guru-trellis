@@ -623,8 +623,20 @@ URL/ref and the complete schema-valid finish-summary template so all local
 summary errors are known during prepare.
 
 `git.repo` is the normalized `owner/repository` identity. All effective fetch
-and push URLs of `git.remote`, after Git applies `insteadOf` /
-`pushInsteadOf`, must normalize to this value. Every queried PR must include
+and push URLs of `git.remote` have a raw/effective two-layer contract. Raw
+`remote.<name>.url`, optional `pushurl`, and every `url.*.insteadOf` /
+`pushInsteadOf` base/pattern are read with NUL value boundaries plus origin.
+They reject empty/ambiguous records, leading/trailing whitespace, all control
+characters, unreadable origins, and NUL bytes in relevant config files;
+missing `pushurl` reuses the raw `url` set. Effective output is never trimmed,
+must preserve raw-source cardinality, and after Git rewrite must use
+credential-free `https://github.com/...`,
+`ssh://git@github.com/...`, or `git@github.com:...` transport and normalize to
+this value. HTTP, `git://`, `file://`, relative/absolute filesystem paths,
+scheme-less host/path forms, userinfo/password/token variants, explicit ports,
+query strings, fragments, and extra path segments are invalid. The repo
+identifier normalizer is not a remote URL parser and must never be used as a
+fallback for effective remote values. Every queried PR must include
 `headRepository.nameWithOwner`,
 `headRepositoryOwner.login`, and `isCrossRepository`; the first two must agree
 with each other and with `git.repo`, while `isCrossRepository` must be false.

@@ -40,9 +40,18 @@ from persisted plan/readiness/evidence, Git/remote state, PR identity, and final
 summary presence instead of replaying completed side effects. Archive
 recovery also binds every tracked evidence blob to its archived blob; only the
 official deterministic `task.json` completion fields may differ.
-All effective fetch/push remote URLs after Git `insteadOf` / `pushInsteadOf`
-resolution, and GitHub's
-`headRepository.nameWithOwner` must normalize to `plan.git.repo`, the reported
+Raw `remote.<name>.url` / `pushurl` and `url.*.insteadOf` / `pushInsteadOf`
+base/pattern values are read with NUL boundaries and origin evidence before
+effective resolution. Empty/ambiguous records, boundary whitespace, controls,
+unreadable origins, or a relevant config-file NUL fail closed; missing push URL
+uses the raw fetch URL set. Effective output is not trimmed, must preserve raw
+source cardinality, and after Git rewrite must use credential-free GitHub
+HTTPS, `ssh://git@github.com`, or
+`git@github.com:` transport. HTTP, `git://`, `file://`, local/bare paths,
+scheme-less forms, userinfo/token variants, explicit ports, query/fragment, and
+extra paths fail closed; the repo identifier normalizer is never a remote
+parser fallback. Each strict URL and GitHub's `headRepository.nameWithOwner`
+must normalize to `plan.git.repo`, the reported
 owner must agree, and `isCrossRepository` must be false. Same-name fork
 candidates and missing/unknown repository fields fail before 0/1/>1 selection
 and cannot bind or replace the final summary.

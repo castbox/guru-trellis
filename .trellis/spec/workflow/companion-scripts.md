@@ -112,9 +112,22 @@ HEAD, replaces only the machine evidence with passed facts, and commits/pushes
 the exact plan/readiness/verifier/ledger allowlist. It then creates or reuses
 one draft PR for the exact base-repo/head-repo/head-branch/base-branch/title/body
 identity. Every effective fetch and push URL for `plan.git.remote` returned by
-Git after `insteadOf` / `pushInsteadOf` resolution, plus
-`headRepository.nameWithOwner`, must normalize to the immutable
-`plan.git.repo`; `headRepositoryOwner.login` must agree and
+Git is preceded by a raw-config gate. The validator reads every
+`remote.<name>.url` and `remote.<name>.pushurl` with NUL-delimited values and
+origins, rejects empty values, boundary whitespace, Unicode/ASCII controls,
+ambiguous framing, unreadable origins, and any NUL byte in a relevant config
+file. Missing `pushurl` uses the raw `url` set, matching Git semantics. Every
+raw `url.*.insteadOf` / `url.*.pushInsteadOf` base and pattern receives the
+same boundary/control/origin validation before rewrite. Effective output is
+then consumed without trim/normalization, must have one newline-delimited value
+per raw source value, and after Git rewrite resolution must use one credential-free
+GitHub transport form: `https://github.com/<owner>/<repo>[.git]`,
+`ssh://git@github.com/<owner>/<repo>[.git]`, or
+`git@github.com:<owner>/<repo>[.git]`. HTTP, `git://`, `file://`, local or bare
+paths, scheme-less host/path forms, userinfo/password/token variants, explicit
+ports, query strings, fragments, and extra path segments fail closed. Each
+strictly parsed URL and `headRepository.nameWithOwner` must normalize to the
+immutable `plan.git.repo`; `headRepositoryOwner.login` must agree and
 `isCrossRepository` must be `false`. Because `gh pr list --head` cannot scope
 by owner, the query requests all three head-repository fields, rejects missing
 or inconsistent fields, and rejects a same-name cross-repository candidate

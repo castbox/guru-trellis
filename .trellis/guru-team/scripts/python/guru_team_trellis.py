@@ -19,9 +19,11 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 
 DEFAULTS: dict[str, Any] = {
@@ -2170,25 +2172,10 @@ def repo_root(start: Path) -> Path:
 
 
 def normalize_github_repository(value: Any) -> str:
-    raw = str(value or "").strip().rstrip("/")
-    if not raw or any(character in raw for character in ["?", "#"]):
+    if not isinstance(value, str) or not value:
         return ""
-    patterns = [
-        r"https?://github\.com/(.+)",
-        r"ssh://(?:git@)?github\.com/(.+)",
-        r"(?:git@)?github\.com:(.+)",
-        r"github\.com/(.+)",
-        r"(.+)",
-    ]
-    path = ""
-    for pattern in patterns:
-        match = re.fullmatch(pattern, raw, flags=re.IGNORECASE)
-        if match:
-            path = match.group(1).rstrip("/")
-            break
-    if path.endswith(".git"):
-        path = path[:-4]
-    parts = path.split("/")
+    raw = value
+    parts = raw.split("/")
     if len(parts) != 2:
         return ""
     owner, repository = parts
@@ -2203,10 +2190,196 @@ def normalize_github_repository(value: Any) -> str:
     return f"{owner}/{repository}".casefold()
 
 
+def git_remote_config_value_is_safe(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and bool(value)
+        and not value[0].isspace()
+        and not value[-1].isspace()
+        and not any(unicodedata.category(character).startswith("C") for character in value)
+    )
+
+
+def parse_github_remote_repository_url(value: Any) -> str:
+    if not git_remote_config_value_is_safe(value):
+        return ""
+    raw = value
+    scp = re.fullmatch(r"git@(?i:github\.com):(.+)", raw)
+    if scp:
+        path = scp.group(1)
+    else:
+        try:
+            parsed = urlsplit(raw)
+            port = parsed.port
+        except ValueError:
+            return ""
+        if parsed.query or parsed.fragment or port is not None:
+            return ""
+        hostname = str(parsed.hostname or "").casefold()
+        if parsed.scheme == "https":
+            if (
+                hostname != "github.com"
+                or parsed.username is not None
+                or parsed.password is not None
+            ):
+                return ""
+        elif parsed.scheme == "ssh":
+            if (
+                hostname != "github.com"
+                or parsed.username != "git"
+                or parsed.password is not None
+            ):
+                return ""
+        else:
+            return ""
+        if not parsed.path.startswith("/") or parsed.path.startswith("//"):
+            return ""
+        path = parsed.path[1:]
+    if path.endswith("/"):
+        return ""
+    path = path.removesuffix(".git")
+    return normalize_github_repository(path)
+
+
+def parse_nul_terminated_git_config_values(output: Any) -> list[str] | None:
+    if not isinstance(output, str) or not output or not output.endswith("\0"):
+        return None
+    values = output.split("\0")
+    if values[-1] != "" or any(value == "" for value in values[:-1]):
+        return None
+    return values[:-1]
+
+
+def git_config_origin_is_nul_safe(root: Path, origin: str) -> bool:
+    if not isinstance(origin, str) or not origin or any(
+        unicodedata.category(character).startswith("C") for character in origin
+    ):
+        return False
+    if origin == "command line:":
+        return True
+    if not origin.startswith("file:"):
+        return False
+    path = Path(origin[len("file:") :])
+    if not path.is_absolute():
+        path = root / path
+    try:
+        return b"\0" not in path.read_bytes()
+    except OSError:
+        return False
+
+
+def parse_git_config_origin_value_pairs(
+    root: Path, output: Any
+) -> list[tuple[str, str]] | None:
+    fields = parse_nul_terminated_git_config_values(output)
+    if fields is None or len(fields) % 2 != 0:
+        return None
+    pairs = list(zip(fields[::2], fields[1::2]))
+    if any(not git_config_origin_is_nul_safe(root, origin) for origin, _value in pairs):
+        return None
+    return pairs
+
+
+def read_raw_git_config_values(
+    root: Path, key: str, *, missing_allowed: bool
+) -> list[str] | None:
+    try:
+        result = run(
+            ["git", "config", "--null", "--show-origin", "--get-all", key],
+            cwd=root,
+            check=False,
+        )
+    except UnicodeError:
+        return None
+    if result.returncode == 1 and missing_allowed:
+        return []
+    if result.returncode != 0:
+        return None
+    pairs = parse_git_config_origin_value_pairs(root, result.stdout)
+    return [value for _origin, value in pairs] if pairs is not None else None
+
+
+def git_url_rewrite_config_is_safe(root: Path) -> bool:
+    try:
+        result = run(
+            [
+                "git",
+                "config",
+                "--null",
+                "--show-origin",
+                "--get-regexp",
+                r"^url\..*\.(insteadof|pushinsteadof)$",
+            ],
+            cwd=root,
+            check=False,
+        )
+    except UnicodeError:
+        return False
+    if result.returncode == 1:
+        return True
+    if result.returncode != 0:
+        return False
+    pairs = parse_git_config_origin_value_pairs(root, result.stdout)
+    if pairs is None:
+        return False
+    for _origin, record in pairs:
+        if record.count("\n") != 1:
+            return False
+        key, pattern = record.split("\n", 1)
+        lowered = key.casefold()
+        suffix = next(
+            (
+                candidate
+                for candidate in [".insteadof", ".pushinsteadof"]
+                if lowered.endswith(candidate)
+            ),
+            "",
+        )
+        base = key[len("url.") : -len(suffix)] if key.startswith("url.") and suffix else ""
+        if not git_remote_config_value_is_safe(base) or not git_remote_config_value_is_safe(pattern):
+            return False
+    return True
+
+
+def parse_effective_git_remote_urls(output: Any, expected_count: int) -> list[str] | None:
+    if not isinstance(output, str) or not output.endswith("\n"):
+        return None
+    values = output[:-1].split("\n")
+    if len(values) != expected_count or any(
+        not git_remote_config_value_is_safe(value) for value in values
+    ):
+        return None
+    return values
+
+
 def validate_github_remote_repository(root: Path, remote: str, expected_repo: str) -> str:
     expected = normalize_github_repository(expected_repo)
     if not expected:
         raise WorkflowError("Closeout immutable GitHub repository identity is invalid.", exit_code=2)
+    if not isinstance(remote, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]*", remote):
+        raise WorkflowError("Closeout Git remote name is invalid.", exit_code=2)
+    if not git_url_rewrite_config_is_safe(root):
+        raise WorkflowError(
+            "Closeout Git URL rewrite configuration is invalid.",
+            exit_code=2,
+            payload={"source": "url-rewrite-config"},
+        )
+    raw_fetch = read_raw_git_config_values(root, f"remote.{remote}.url", missing_allowed=False)
+    raw_push = read_raw_git_config_values(root, f"remote.{remote}.pushurl", missing_allowed=True)
+    if raw_fetch is None or raw_push is None or not raw_fetch:
+        raise WorkflowError(
+            "Closeout could not read the raw Git remote repository identity.",
+            exit_code=2,
+            payload={"remote": remote, "source": "raw-config"},
+        )
+    raw_urls = {"fetch": raw_fetch, "push": raw_push or raw_fetch}
+    for direction, values in raw_urls.items():
+        if any(not git_remote_config_value_is_safe(value) for value in values):
+            raise WorkflowError(
+                "Closeout raw Git remote repository identity is invalid.",
+                exit_code=2,
+                payload={"remote": remote, "direction": direction, "source": "raw-config"},
+            )
     commands = {
         "fetch": ["git", "remote", "get-url", "--all", remote],
         "push": ["git", "remote", "get-url", "--push", "--all", remote],
@@ -2219,15 +2392,15 @@ def validate_github_remote_repository(root: Path, remote: str, expected_repo: st
                 exit_code=2,
                 payload={"remote": remote, "direction": direction},
             )
-        urls = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+        urls = parse_effective_git_remote_urls(result.stdout, len(raw_urls[direction]))
         if not urls:
             raise WorkflowError(
-                "Closeout Git remote has no effective repository URL.",
+                "Closeout effective Git remote repository output is invalid.",
                 exit_code=2,
                 payload={"remote": remote, "direction": direction},
             )
         for value in urls:
-            actual = normalize_github_repository(value)
+            actual = parse_github_remote_repository_url(value)
             if actual != expected:
                 raise WorkflowError(
                     "Closeout Git remote repository differs from the immutable GitHub repository.",
@@ -2239,10 +2412,13 @@ def validate_github_remote_repository(root: Path, remote: str, expected_repo: st
 
 def infer_github_repo(root: Path) -> str:
     try:
-        url = run_stdout(["git", "remote", "get-url", "origin"], cwd=root)
-    except WorkflowError:
+        result = run(["git", "remote", "get-url", "origin"], cwd=root, check=False)
+    except UnicodeError:
         return ""
-    return normalize_github_repository(url)
+    if result.returncode != 0:
+        return ""
+    urls = parse_effective_git_remote_urls(result.stdout, 1)
+    return parse_github_remote_repository_url(urls[0]) if urls else ""
 
 
 def gh_json(args: list[str], cwd: Path) -> Any:
