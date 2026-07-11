@@ -9378,7 +9378,10 @@ class FinishSummaryContractTests(unittest.TestCase):
                 mock.patch.object(
                     gtt,
                     "finish_summary_git_path_snapshot",
-                    return_value=(["README.md"], True, False),
+                    return_value=([
+                        ".trellis/guru-team/extension.json",
+                        "trellis/guru-team-extension.json",
+                    ], True, False),
                 ),
             ):
                 index_payload = self.valid_ai_index()
@@ -9392,8 +9395,12 @@ class FinishSummaryContractTests(unittest.TestCase):
                     "a" * 40,
                 )
 
-            self.assertEqual(summary["git"]["changed_paths"], ["README.md"])
-            self.assertEqual(summary["index"]["search_terms"]["paths"], ["README.md"])
+            expected_paths = [
+                ".trellis/guru-team/extension.json",
+                "trellis/guru-team-extension.json",
+            ]
+            self.assertEqual(summary["git"]["changed_paths"], expected_paths)
+            self.assertEqual(summary["index"]["search_terms"]["paths"], expected_paths)
             self.assertEqual(sum(
                 item.get("contract") == "finish-summary protected path filtering"
                 for item in summary["index"]["contract_changes"]
@@ -9572,9 +9579,73 @@ class FinishSummaryContractTests(unittest.TestCase):
         payload["index"]["search_terms"]["phrases"] = ["相同短语", "相同 短语！"]  # type: ignore[index]
         errors = gtt.finish_summary_errors(payload)
         self.assertTrue(any("index.problem length" in error for error in errors))
-        self.assertTrue(any("duplicates" in error for error in errors))
+        self.assertTrue(any(
+            "index.changed_behavior[1] duplicates index.changed_behavior[0] after normalization."
+            == error
+            for error in errors
+        ))
+        self.assertTrue(any(
+            "index.search_terms.phrases[1] duplicates index.search_terms.phrases[0] after normalization."
+            == error
+            for error in errors
+        ))
         self.assertTrue(any("kind is invalid" in error for error in errors))
         self.assertTrue(any("item count" in error for error in errors))
+
+    def test_summary_path_arrays_use_exact_identity(self) -> None:
+        payload = self.valid_summary()
+        paths = [
+            ".trellis/guru-team/extension.json",
+            "trellis/guru-team-extension.json",
+        ]
+        payload["git"]["changed_paths"] = paths  # type: ignore[index]
+        payload["index"]["search_terms"]["paths"] = paths  # type: ignore[index]
+        payload["index"]["affected_surfaces"][0]["paths"] = paths  # type: ignore[index]
+        second_surface = json.loads(json.dumps(
+            payload["index"]["affected_surfaces"][0], ensure_ascii=False  # type: ignore[index]
+        ))
+        payload["index"]["affected_surfaces"][0]["paths"] = [paths[0]]  # type: ignore[index]
+        second_surface["paths"] = [paths[1]]
+        payload["index"]["affected_surfaces"].append(second_surface)  # type: ignore[index]
+        payload["index"]["retrieval_text"] = gtt.finish_summary_retrieval_text(  # type: ignore[index]
+            payload["task"]["title"], payload["index"]  # type: ignore[index]
+        )
+
+        self.assertEqual(gtt.finish_summary_errors(payload), [])
+
+    def test_summary_path_arrays_reject_exact_duplicates(self) -> None:
+        payload = self.valid_summary()
+        duplicate_paths = ["README.md", "README.md"]
+        payload["git"]["changed_paths"] = duplicate_paths  # type: ignore[index]
+        payload["index"]["search_terms"]["paths"] = duplicate_paths  # type: ignore[index]
+        payload["index"]["affected_surfaces"][0]["paths"] = duplicate_paths  # type: ignore[index]
+        errors = gtt.finish_summary_errors(payload)
+
+        self.assertIn("git.changed_paths must be sorted and unique.", errors)
+        self.assertIn(
+            "index.search_terms.paths[1] duplicates index.search_terms.paths[0].",
+            errors,
+        )
+        self.assertIn(
+            "index.affected_surfaces[0].paths[1] duplicates "
+            "index.affected_surfaces[0].paths[0].",
+            errors,
+        )
+
+    def test_backfill_source_artifact_paths_use_exact_identity(self) -> None:
+        payload = self.valid_backfill_summary()
+        payload["backfill"]["source_artifacts"] = [  # type: ignore[index]
+            ".trellis/guru-team/extension.json",
+            "trellis/guru-team-extension.json",
+        ]
+
+        self.assertEqual(gtt.finish_summary_errors(payload), [])
+
+        payload["backfill"]["source_artifacts"] = ["task.json", "task.json"]  # type: ignore[index]
+        self.assertIn(
+            "backfill.source_artifacts[1] duplicates backfill.source_artifacts[0].",
+            gtt.finish_summary_errors(payload),
+        )
 
     def test_summary_rejects_adjacent_duplicate_clause_and_derived_field_drift(self) -> None:
         payload = self.valid_summary()

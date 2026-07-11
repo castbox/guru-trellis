@@ -417,6 +417,31 @@ def finish_summary_duplicate_errors(values: Any, label: str) -> list[str]:
     return errors
 
 
+def finish_summary_exact_duplicate_errors(values: Any, label: str) -> list[str]:
+    if not isinstance(values, list):
+        return [f"{label} must be an array."]
+    errors: list[str] = []
+    seen: dict[str, int] = {}
+    for index, value in enumerate(values):
+        if not isinstance(value, str):
+            continue
+        if value in seen:
+            errors.append(f"{label}[{index}] duplicates {label}[{seen[value]}].")
+        else:
+            seen[value] = index
+    return errors
+
+
+def finish_summary_object_fingerprint(value: dict[str, Any], *, exact_fields: set[str]) -> str:
+    normalized = {
+        key: item
+        if key in exact_fields or not isinstance(item, str)
+        else finish_summary_normalized_text(item)
+        for key, item in value.items()
+    }
+    return json.dumps(normalized, ensure_ascii=False, sort_keys=True)
+
+
 def finish_summary_text_errors(value: Any, label: str, minimum: int, maximum: int) -> list[str]:
     if not isinstance(value, str):
         return [f"{label} must be a string."]
@@ -539,6 +564,7 @@ def finish_summary_string_array_errors(
     maximum_items: int = 100,
     minimum_length: int = 1,
     maximum_length: int = 500,
+    exact_identity: bool = False,
 ) -> list[str]:
     if not isinstance(values, list):
         return [f"{label} must be an array."]
@@ -547,7 +573,12 @@ def finish_summary_string_array_errors(
         errors.append(f"{label} item count must be between {minimum_items} and {maximum_items}.")
     for index, value in enumerate(values):
         errors.extend(finish_summary_text_errors(value, f"{label}[{index}]", minimum_length, maximum_length))
-    errors.extend(finish_summary_duplicate_errors(values, label))
+    duplicate_errors = (
+        finish_summary_exact_duplicate_errors(values, label)
+        if exact_identity
+        else finish_summary_duplicate_errors(values, label)
+    )
+    errors.extend(duplicate_errors)
     return errors
 
 
@@ -607,9 +638,9 @@ def finish_summary_index_errors(index: Any, *, artifacts: dict[str, Any] | None 
                     errors.append(f"{label}.paths exceeds 100 items.")
                 for path_index, path in enumerate(paths):
                     errors.extend(finish_summary_path_errors(path, f"{label}.paths[{path_index}]"))
-                errors.extend(finish_summary_duplicate_errors(paths, f"{label}.paths"))
+                errors.extend(finish_summary_exact_duplicate_errors(paths, f"{label}.paths"))
             errors.extend(finish_summary_text_errors(surface.get("change"), f"{label}.change", 1, 240))
-            fingerprint = finish_summary_normalized_text(json.dumps(surface, ensure_ascii=False, sort_keys=True))
+            fingerprint = finish_summary_object_fingerprint(surface, exact_fields={"paths"})
             if fingerprint in seen_surfaces:
                 errors.append(f"{label} duplicates an earlier affected surface.")
             seen_surfaces.add(fingerprint)
@@ -637,7 +668,7 @@ def finish_summary_index_errors(index: Any, *, artifacts: dict[str, Any] | None 
                 errors.extend(finish_summary_path_errors(source_artifact, f"{label}.source_artifact"))
                 if final and source_artifact not in artifact_values:
                     errors.append(f"{label}.source_artifact must reference an artifacts value.")
-            fingerprint = finish_summary_normalized_text(json.dumps(contract, ensure_ascii=False, sort_keys=True))
+            fingerprint = finish_summary_object_fingerprint(contract, exact_fields={"source_artifact"})
             if fingerprint in seen_contracts:
                 errors.append(f"{label} duplicates an earlier contract change.")
             seen_contracts.add(fingerprint)
@@ -663,6 +694,7 @@ def finish_summary_index_errors(index: Any, *, artifacts: dict[str, Any] | None 
                     values, f"index.search_terms.{key}",
                     minimum_items=minimum_items, maximum_items=maximum_items,
                     minimum_length=minimum_length, maximum_length=maximum_length,
+                    exact_identity=key == "paths",
                 )
             )
             if final and key == "paths" and isinstance(values, list):
@@ -991,6 +1023,7 @@ def finish_summary_errors(payload: Any, *, task_dir: Path | None = None) -> list
                     "backfill.source_artifacts",
                     maximum_items=20,
                     maximum_length=500,
+                    exact_identity=True,
                 )
             )
             if isinstance(source_artifacts, list):

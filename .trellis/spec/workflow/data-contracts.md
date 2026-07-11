@@ -86,6 +86,15 @@ field sets, types, lengths, counts, enums, SHA/issue/PR formats, clean relative
 paths, normalized duplicates, adjacent repeated clauses, source-artifact links,
 and all derived search/retrieval facts.
 
+Duplicate identity is domain-specific. Every path-bearing array, including
+`git.changed_paths`, `index.search_terms.paths`,
+`index.affected_surfaces[].paths`, and `backfill.source_artifacts`, uses the
+exact path string as identity; punctuation-removing text normalization must not
+collapse two different valid Git paths. Generators sort and deduplicate Git
+paths by exact string, and validators still reject exact duplicates. Non-path
+semantic and search-token string arrays continue to reject duplicates after
+text normalization.
+
 The AI input is task-local `finish-summary-index.json` with schema version 1 and
 only semantic index fields. It accepts at most 19 `contract_changes`; the final
 schema accepts 20 so the recorder always has capacity for the fixed
