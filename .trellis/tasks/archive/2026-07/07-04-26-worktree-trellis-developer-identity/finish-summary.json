@@ -1,0 +1,212 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:33Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-04-26-worktree-trellis-developer-identity",
+    "title": "#26 worktree 创建后应继承 Trellis developer identity",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-04-26-worktree-trellis-developer-identity",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-04-26-worktree-trellis-developer-identity"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/26-worktree-trellis-developer-identity",
+    "commits": [
+      "0e628860dad7bdc3a34ec7e68e168a7e9812d5b9"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/handoff.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/check.jsonl",
+      ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/design.md",
+      ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/implement.jsonl",
+      ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/implement.md",
+      ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/issue-scope-ledger.json",
+      ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/phase2-check.json",
+      ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/planning-approval.json",
+      ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/prd.md",
+      ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/task.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      26
+    ],
+    "close_issues": [
+      26
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "修复 Guru Team `prepare-task.sh --create-worktree` / `--create-task` 在创建或复用 task worktree 后没有可用 `.trellis/.developer` 的问题，确保新 task worktree 能立即运行 `get_context.py`、`add_session.py`、`task.py list --mine` 等依赖 developer identity 的 Trellis 步骤。",
+    "outcome": "历史结果：#26 worktree 创建后应继承 Trellis developer identity；非目标信息未记录。",
+    "changed_behavior": [
+      "修复 Guru Team `prepare-task --create-worktree` / `--create-task` 创建或复用 task worktree 后缺少 Trellis developer identity 的问题。",
+      "executor 路径现在会优先从 source checkout 复制 gitignored `.trellis/.developer`，source 缺失但调用方提供 `--assignee` 时初始化目标 worktree identity，两者都不可用时 fail closed 并提示 `init_developer.py` 恢复命令。",
+      "`infer_assignee()` 改为解析 `.trellis/.developer` 的 `name=` 字段，避免把整个多行 identity 文件写入 `task.py create --assignee`。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/data-contracts.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/handoff.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/check.jsonl",
+          ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/design.md",
+          ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/implement.jsonl",
+          ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/implement.md",
+          ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/issue-scope-ledger.json",
+          ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/phase2-check.json",
+          ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/planning-approval.json",
+          ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/prd.md",
+          ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#26"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/26-worktree-trellis-developer-identity"
+      ],
+      "paths": [
+        ".trellis/guru-team/handoff.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/check.jsonl",
+        ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/design.md",
+        ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/implement.jsonl",
+        ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/implement.md",
+        ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/issue-scope-ledger.json",
+        ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/phase2-check.json",
+        ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/planning-approval.json",
+        ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/prd.md",
+        ".trellis/tasks/07-04-26-worktree-trellis-developer-identity/task.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "commands": [
+        "--assignee",
+        "--create-task",
+        ".trellis/.developer",
+        "init_developer.py",
+        "task.py"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "init_developer.py",
+        "task.py",
+        "trellis/.developer"
+      ],
+      "symbols": [
+        "07-04-26-worktree-trellis-developer-identity",
+        "README.md",
+        "check.jsonl",
+        "data-contracts.md",
+        "design.md",
+        "guru_team_trellis.py",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py"
+      ],
+      "phrases": [
+        "#26 worktree 创建后应继承 Trellis developer identity",
+        "07-04-26-worktree-trellis-developer-identity",
+        "修复 Guru Team `prepare-task.sh --create-worktree` / `--create",
+        "历史结果：#26 worktree 创建后应继承 Trellis developer identity；非目标信息未记录",
+        "修复 Guru Team `prepare-task --create-worktree` / `--create-ta",
+        "executor 路径现在会优先从 source checkout 复制 gitignored `.trellis/.d",
+        "`infer_assignee()` 改为解析 `.trellis/.developer` 的 `name=` 字段，避"
+      ]
+    },
+    "retrieval_text": "#26 worktree 创建后应继承 Trellis developer identity\n修复 Guru Team `prepare-task.sh --create-worktree` / `--create-task` 在创建或复用 task worktree 后没有可用 `.trellis/.developer` 的问题，确保新 task worktree 能立即运行 `get_context.py`、`add_session.py`、`task.py list --mine` 等依赖 developer identity 的 Trellis 步骤。\n历史结果：#26 worktree 创建后应继承 Trellis developer identity；非目标信息未记录。\n修复 Guru Team `prepare-task --create-worktree` / `--create-task` 创建或复用 task worktree 后缺少 Trellis developer identity 的问题。\nexecutor 路径现在会优先从 source checkout 复制 gitignored `.trellis/.developer`，source 缺失但调用方提供 `--assignee` 时初始化目标 worktree identity，两者都不可用时 fail closed 并提示 `init_developer.py` 恢复命令。\n`infer_assignee()` 改为解析 `.trellis/.developer` 的 `name=` 字段，避免把整个多行 identity 文件写入 `task.py create --assignee`。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#26 worktree 创建后应继承 Trellis developer identity\n07-04-26-worktree-trellis-developer-identity\n修复 Guru Team `prepare-task.sh --create-worktree` / `--create\n历史结果：#26 worktree 创建后应继承 Trellis developer identity；非目标信息未记录\n修复 Guru Team `prepare-task --create-worktree` / `--create-ta\nexecutor 路径现在会优先从 source checkout 复制 gitignored `.trellis/.d\n`infer_assignee()` 改为解析 `.trellis/.developer` 的 `name=` 字段，避"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:33Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

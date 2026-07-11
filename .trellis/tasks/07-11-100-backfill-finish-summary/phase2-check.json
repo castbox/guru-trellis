@@ -1,0 +1,180 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-11T02:13:27Z",
+  "task_dir": ".trellis/tasks/07-11-100-backfill-finish-summary",
+  "base_branch": "main",
+  "head": "920e7f9f797efb6356286f638efc1995ffe4075d",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/workflow.md",
+    "trellis/guru-team-extension.json",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/guru-team/scripts/bash/backfill-finish-summary.sh",
+    ".trellis/tasks/07-11-100-backfill-finish-summary/",
+    ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-03-2-align-guru-team-workflow-trellis/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-03-5-require-ai-review-prompt-before/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-03-9-keep-dogfood-installed-overlays-in/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-04-11-let-preset-installer-apply-only/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-04-17-improve-guru-team-pr-body/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-04-18-enforce-pr-publish-only-after/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-04-20-review-gate-report-metadata/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-04-26-worktree-trellis-developer-identity/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-04-27-finish-work-dry-run-readiness/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-04-31-guru-team-extension-version-manifest/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-04-7-require-pr-readiness-review-before/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-04-8-auditable-evidence-planning-approval-trellis/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-05-35-guru-team-no-task-intake/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-05-37-phase-2-check-evidence-review/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-05-43-trellis-subagent/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-05-extension-v065-release-tag/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-06-38-trellis-finish-work-pr-body/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-06-39-review-branch-findings-reviewer-only/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-06-40-workflow-state-completed-closeout-pr/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-06-41-task-system-task-py-create/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-07-051-prepare-task-naming-quality-gate/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-07-055-intake-scope-evolution/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-07-057-chinese-doc-language/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-07-059-refresh-base-freshness/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-07-062-subagent-timeout-stale-policy/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-07-072-subagent-execution-boundaries/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-08-052-explicit-planning-review/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-08-060-workspace-boundary-guard/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-08-070-branch-review-report-retention/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-08-078-review-report-chinese-language/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-09-056-auto-branch-type-prefix/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-09-061-task-markdown-review-table/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-09-065-docs-ssot-phase2-sync-gate/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-09-066-docs-ssot-phase3-enforcement/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-09-076-subagent-liveness-state-machine/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-09-083-planning-ambiguity-review/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-10-092-conventional-commits/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-10-093-planning-ambiguity-scanner/finish-summary.json",
+    ".trellis/tasks/archive/2026-07/07-10-096-task-runtime-boundary/finish-summary.json",
+    "trellis/workflows/guru-team/scripts/bash/backfill-finish-summary.sh"
+  ],
+  "checker": "/root/trellis_check_100",
+  "check_summary": "独立阶段二检查覆盖 #100 需求、设计、完整未提交实现、44 份历史回填、#97 schema 兼容、Docs SSOT、preset/dogfood、安装升级、安全部署和提交消息合同；自修复 3 类缺陷并补回归，最终无开放 P0/P1/P2/P3 finding。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-11-100-backfill-finish-summary/prd.md",
+      "sha256": "28e8cd2b5b4b8fe89dad50dbf238723d7a0b04318f7eb775166b49fb80d78183",
+      "size_bytes": 6890,
+      "modified_at": "2026-07-11T01:28:26.599555+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-11-100-backfill-finish-summary/design.md",
+      "sha256": "6cd18122eff8102503d3991513cc222fb2a8f5d5e50688ca84abb92a2d1b0098",
+      "size_bytes": 8364,
+      "modified_at": "2026-07-11T01:28:26.600192+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-11-100-backfill-finish-summary/implement.md",
+      "sha256": "bdd80b3f09d38682d58b281d17e32a5284c77867e8fd415eebe4e200f398d525",
+      "size_bytes": 5166,
+      "modified_at": "2026-07-11T01:28:26.600681+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-11-100-backfill-finish-summary/implementation-handoff.md",
+      "sha256": "4932b28160796cfd62ae8a1338e0dd096ae97019c338fce293ed48aa6c5e227c",
+      "size_bytes": 2977,
+      "modified_at": "2026-07-11T01:56:54.898442+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "8edbc3dc5a14e2227a3667dbe5ecbadc911bc9e56775bfbb6206da96a99cbe56",
+      "size_bytes": 25054,
+      "modified_at": "2026-07-11T01:35:48.352199+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "be5cf9594d2a8f870b0f9ccc06425a2b6a5eb08f3418e2f0b9e1a185afa01880",
+      "size_bytes": 33307,
+      "modified_at": "2026-07-11T02:04:19.627732+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "b97d2a9b19b7da7c415704b246745ce286319a3610f052b3b23b41f1202f347c",
+      "size_bytes": 11025,
+      "modified_at": "2026-07-11T01:35:48.353261+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/index.md",
+      "sha256": "94fcfb6a6d2ff77f8f11535a9ca02501a41e043b812866e0af5ed8783db7f2a3",
+      "size_bytes": 797,
+      "modified_at": "2026-07-11T01:19:43.170814+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "320 passed"
+    },
+    {
+      "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "36 passed"
+    },
+    {
+      "command": "python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "result": "通过"
+    },
+    {
+      "command": "bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh",
+      "result": "通过"
+    },
+    {
+      "command": "backfill-finish-summary.sh --json --dry-run",
+      "result": "45 scanned, 0 to_write, 45 skipped, 0 errors"
+    },
+    {
+      "command": "finish-summary Python + Draft 2020-12 schema validation",
+      "result": "45/45 通过；44/44 deterministic rebuild 与 surface paths 守恒"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "通过；canonical/dogfood byte-equal；sidecar=0"
+    },
+    {
+      "command": "throwaway fresh install + preview/switch + trellis update --force + workflow reselect + preset reapply",
+      "result": "通过"
+    },
+    {
+      "command": "git diff --check",
+      "result": "通过"
+    },
+    {
+      "command": "check-commit-messages/format-merge-commit planned payload",
+      "result": "work/metadata/merge errors=[]"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

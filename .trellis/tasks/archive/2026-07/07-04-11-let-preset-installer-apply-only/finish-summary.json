@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:33Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-04-11-let-preset-installer-apply-only",
+    "title": "#11 Let preset installer apply only selected platform overlays",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-04-11-let-preset-installer-apply-only",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-04-11-let-preset-installer-apply-only"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/11-let-preset-installer-apply-only",
+    "commits": [
+      "59832b11aaecaf8bdf0fe13ef629d442d2629fa0"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/handoff.json",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/tasks/07-04-11-let-preset-installer-apply-only/check.jsonl",
+      ".trellis/tasks/07-04-11-let-preset-installer-apply-only/design.md",
+      ".trellis/tasks/07-04-11-let-preset-installer-apply-only/implement.jsonl",
+      ".trellis/tasks/07-04-11-let-preset-installer-apply-only/implement.md",
+      ".trellis/tasks/07-04-11-let-preset-installer-apply-only/issue-scope-ledger.json",
+      ".trellis/tasks/07-04-11-let-preset-installer-apply-only/phase2-check.json",
+      ".trellis/tasks/07-04-11-let-preset-installer-apply-only/planning-approval.json",
+      ".trellis/tasks/07-04-11-let-preset-installer-apply-only/prd.md",
+      ".trellis/tasks/07-04-11-let-preset-installer-apply-only/task.json",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      11
+    ],
+    "close_issues": [
+      11
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "让 Guru Team preset installer 根据安装者选择的平台只应用对应平台 overlay，避免 `trellis init --codex --cursor` 后又由 preset 恢复 `.claude/` 等未选择平台入口。默认安装文档、升级 prompt、preset README、throwaway 验证都必须与 installer 实际参数一致。",
+    "outcome": "无 P0/P1/P2/P3 findings。实现满足 issue #11 的验收范围，可以记录 Branch Review Gate。",
+    "changed_behavior": [
+      "新增可重复 `--platform {codex,cursor,claude}` 参数。",
+      "默认安装共享 `.agents/skills`、Codex overlay、Cursor overlay，不再默认创建 `.claude/`。",
+      "新增 `--all-platforms`，用于需要保留历史全量 overlay 安装行为的维护场景。",
+      "`--platform` 与 `--all-platforms` 互斥，未知平台由 argparse fail closed。",
+      "同步更新顶层 `README.md`、preset README、throwaway 验证脚本和 preset installer spec。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/installer.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          "README.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/handoff.json"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-04-11-let-preset-installer-apply-only/check.jsonl",
+          ".trellis/tasks/07-04-11-let-preset-installer-apply-only/design.md",
+          ".trellis/tasks/07-04-11-let-preset-installer-apply-only/implement.jsonl",
+          ".trellis/tasks/07-04-11-let-preset-installer-apply-only/implement.md",
+          ".trellis/tasks/07-04-11-let-preset-installer-apply-only/issue-scope-ledger.json",
+          ".trellis/tasks/07-04-11-let-preset-installer-apply-only/phase2-check.json",
+          ".trellis/tasks/07-04-11-let-preset-installer-apply-only/planning-approval.json",
+          ".trellis/tasks/07-04-11-let-preset-installer-apply-only/prd.md",
+          ".trellis/tasks/07-04-11-let-preset-installer-apply-only/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#11"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/11-let-preset-installer-apply-only"
+      ],
+      "paths": [
+        ".trellis/guru-team/handoff.json",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/check.jsonl",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/design.md",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/implement.jsonl",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/implement.md",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/issue-scope-ledger.json",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/phase2-check.json",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/planning-approval.json",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/prd.md",
+        ".trellis/tasks/07-04-11-let-preset-installer-apply-only/task.json",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+      ],
+      "commands": [
+        "--all-platforms",
+        "--platform",
+        ".agents/skills",
+        ".claude/"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "README.md"
+      ],
+      "symbols": [
+        "07-04-11-let-preset-installer-apply-only",
+        "README.md",
+        "apply_guru_team_trellis_preset.py",
+        "check.jsonl",
+        "design.md",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "installer.md",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_apply_guru_team_trellis_preset.py",
+        "verify-throwaway-install.sh"
+      ],
+      "phrases": [
+        "#11 Let preset installer apply only selected platform overla",
+        "07-04-11-let-preset-installer-apply-only",
+        "让 Guru Team preset installer 根据安装者选择的平台只应用对应平台 overlay，避免 `t",
+        "无 P0/P1/P2/P3 findings。实现满足 issue #11 的验收范围，可以记录 Branch Revi",
+        "新增可重复 `--platform {codex,cursor,claude}` 参数。",
+        "默认安装共享 `.agents/skills`、Codex overlay、Cursor overlay，不再默认创建",
+        "新增 `--all-platforms`，用于需要保留历史全量 overlay 安装行为的维护场景。",
+        "`--platform` 与 `--all-platforms` 互斥，未知平台由 argparse fail clos",
+        "同步更新顶层 `README.md`、preset README、throwaway 验证脚本和 preset inst"
+      ]
+    },
+    "retrieval_text": "#11 Let preset installer apply only selected platform overlays\n让 Guru Team preset installer 根据安装者选择的平台只应用对应平台 overlay，避免 `trellis init --codex --cursor` 后又由 preset 恢复 `.claude/` 等未选择平台入口。默认安装文档、升级 prompt、preset README、throwaway 验证都必须与 installer 实际参数一致。\n无 P0/P1/P2/P3 findings。实现满足 issue #11 的验收范围，可以记录 Branch Review Gate。\n新增可重复 `--platform {codex,cursor,claude}` 参数。\n默认安装共享 `.agents/skills`、Codex overlay、Cursor overlay，不再默认创建 `.claude/`。\n新增 `--all-platforms`，用于需要保留历史全量 overlay 安装行为的维护场景。\n`--platform` 与 `--all-platforms` 互斥，未知平台由 argparse fail closed。\n同步更新顶层 `README.md`、preset README、throwaway 验证脚本和 preset installer spec。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n#11 Let preset installer apply only selected platform overla\n07-04-11-let-preset-installer-apply-only\n让 Guru Team preset installer 根据安装者选择的平台只应用对应平台 overlay，避免 `t\n无 P0/P1/P2/P3 findings。实现满足 issue #11 的验收范围，可以记录 Branch Revi\n新增可重复 `--platform {codex,cursor,claude}` 参数。\n默认安装共享 `.agents/skills`、Codex overlay、Cursor overlay，不再默认创建\n新增 `--all-platforms`，用于需要保留历史全量 overlay 安装行为的维护场景。\n`--platform` 与 `--all-platforms` 互斥，未知平台由 argparse fail clos\n同步更新顶层 `README.md`、preset README、throwaway 验证脚本和 preset inst"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:33Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

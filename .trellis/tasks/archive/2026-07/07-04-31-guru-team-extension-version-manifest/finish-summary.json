@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:33Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-04-31-guru-team-extension-version-manifest",
+    "title": "#31 Add Guru Team extension version manifest and installed provenance",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-04-31-guru-team-extension-version-manifest",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-04-31-guru-team-extension-version-manifest"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/31-guru-team-extension-version-manifest",
+    "commits": [
+      "5030cde306bf22962b729ef135d31186d532c893"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/guru-team/scripts/bash/version.sh",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/check.jsonl",
+      ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/design.md",
+      ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/implement.jsonl",
+      ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/implement.md",
+      ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/issue-scope-ledger.json",
+      ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/phase2-check.json",
+      ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/planning-approval.json",
+      ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/prd.md",
+      ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/task.json",
+      "README.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/bash/version.sh",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      31
+    ],
+    "close_issues": [
+      31
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "### R1. 独立扩展版本",
+    "outcome": "本次独立 Branch Review Gate 复审范围为 `origin/main...HEAD`，当前 HEAD 为 `5030cde306bf22962b729ef135d31186d532c893`，任务为 issue #31 `Add Guru Team extension version manifest and installed provenance`。",
+    "changed_behavior": [
+      "为 Guru Team Trellis extension 增加独立于官方 Trellis CLI 的 canonical SemVer manifest：`trellis/guru-team-extension.json`，当前版本为 `0.1.0`。",
+      "preset installer 现在会在目标仓库写入 `.trellis/guru-team/extension.json`，记录安装版本、workflow template、source repo/ref/commit/tree state、selected platforms、managed assets 和安装时间。",
+      "`check-env --json` 与新增 `version.sh --json` 会暴露 `guru_team_extension` 节点，用户和 AI 排障时可以直接看到当前安装的 extension version 与 source provenance。",
+      "README、preset/workflow README、需求文档和 `.trellis/spec/` 已同步说明 official Trellis CLI version、marketplace index schema version、canonical extension version、installed provenance 的边界。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/workflow/data-contracts.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          "README.md",
+          "docs/requirements/requirement-main.md",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/handoff.json",
+          ".trellis/guru-team/scripts/bash/version.sh",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/check.jsonl",
+          ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/design.md",
+          ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/implement.jsonl",
+          ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/implement.md",
+          ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/issue-scope-ledger.json",
+          ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/phase2-check.json",
+          ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/planning-approval.json",
+          ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/prd.md",
+          ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/bash/version.sh",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#31"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/31-guru-team-extension-version-manifest"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/guru-team/scripts/bash/version.sh",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/check.jsonl",
+        ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/design.md",
+        ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/implement.jsonl",
+        ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/implement.md",
+        ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/issue-scope-ledger.json",
+        ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/phase2-check.json",
+        ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/planning-approval.json",
+        ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/prd.md",
+        ".trellis/tasks/07-04-31-guru-team-extension-version-manifest/task.json",
+        "README.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/bash/version.sh",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "commands": [
+        ".trellis/spec/",
+        "trellis/guru-team-extension.json",
+        "version.sh"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "0.1.0",
+        "json",
+        "schema",
+        "trellis/guru-team-extension.json",
+        "version.sh"
+      ],
+      "symbols": [
+        "07-04-31-guru-team-extension-version-manifest",
+        "README.md",
+        "apply_guru_team_trellis_preset.py",
+        "check.jsonl",
+        "data-contracts.md",
+        "design.md",
+        "extension.json",
+        "guru-team-extension.json",
+        "guru_team_trellis.py",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "installer.md",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_apply_guru_team_trellis_preset.py",
+        "test_guru_team_trellis.py",
+        "verify-throwaway-install.sh",
+        "version.sh"
+      ],
+      "phrases": [
+        "#31 Add Guru Team extension version manifest and installed p",
+        "07-04-31-guru-team-extension-version-manifest",
+        "### R1. 独立扩展版本",
+        "本次独立 Branch Review Gate 复审范围为 `origin/main...HEAD`，当前 HEAD 为",
+        "为 Guru Team Trellis extension 增加独立于官方 Trellis CLI 的 canonica",
+        "preset installer 现在会在目标仓库写入 `.trellis/guru-team/extension.js",
+        "`check-env --json` 与新增 `version.sh --json` 会暴露 `guru_team_ex",
+        "README、preset/workflow README、需求文档和 `.trellis/spec/` 已同步说明 o"
+      ]
+    },
+    "retrieval_text": "#31 Add Guru Team extension version manifest and installed provenance\n### R1. 独立扩展版本\n本次独立 Branch Review Gate 复审范围为 `origin/main...HEAD`，当前 HEAD 为 `5030cde306bf22962b729ef135d31186d532c893`，任务为 issue #31 `Add Guru Team extension version manifest and installed provenance`。\n为 Guru Team Trellis extension 增加独立于官方 Trellis CLI 的 canonical SemVer manifest：`trellis/guru-team-extension.json`，当前版本为 `0.1.0`。\npreset installer 现在会在目标仓库写入 `.trellis/guru-team/extension.json`，记录安装版本、workflow template、source repo/ref/commit/tree state、selected platforms、managed assets 和安装时间。\n`check-env --json` 与新增 `version.sh --json` 会暴露 `guru_team_extension` 节点，用户和 AI 排障时可以直接看到当前安装的 extension version 与 source provenance。\nREADME、preset/workflow README、需求文档和 `.trellis/spec/` 已同步说明 official Trellis CLI version、marketplace index schema version、canonical extension version、installed provenance 的边界。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#31 Add Guru Team extension version manifest and installed p\n07-04-31-guru-team-extension-version-manifest\n### R1. 独立扩展版本\n本次独立 Branch Review Gate 复审范围为 `origin/main...HEAD`，当前 HEAD 为\n为 Guru Team Trellis extension 增加独立于官方 Trellis CLI 的 canonica\npreset installer 现在会在目标仓库写入 `.trellis/guru-team/extension.js\n`check-env --json` 与新增 `version.sh --json` 会暴露 `guru_team_ex\nREADME、preset/workflow README、需求文档和 `.trellis/spec/` 已同步说明 o"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:33Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

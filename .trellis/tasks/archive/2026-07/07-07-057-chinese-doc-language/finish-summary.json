@@ -1,0 +1,324 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:35Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-07-057-chinese-doc-language",
+    "title": "#57 统一业务项目 Trellis 文档语言为中文",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-07-057-chinese-doc-language",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-07-057-chinese-doc-language"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/057-chinese-doc-language",
+    "commits": [
+      "c19b9e2af89399f2b7fbd8f0f0ef26bc44b83dc8"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".agents/skills/trellis-start/SKILL.md",
+      ".claude/commands/trellis/continue.md",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/prompts/trellis-start.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".codex/skills/trellis-start/SKILL.md",
+      ".cursor/commands/trellis-continue.md",
+      ".trellis/guru-team/config-template.yml",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-07-057-chinese-doc-language/agent-assignment.json",
+      ".trellis/tasks/07-07-057-chinese-doc-language/check.jsonl",
+      ".trellis/tasks/07-07-057-chinese-doc-language/design.md",
+      ".trellis/tasks/07-07-057-chinese-doc-language/implement.jsonl",
+      ".trellis/tasks/07-07-057-chinese-doc-language/implement.md",
+      ".trellis/tasks/07-07-057-chinese-doc-language/issue-scope-ledger.json",
+      ".trellis/tasks/07-07-057-chinese-doc-language/phase2-check.json",
+      ".trellis/tasks/07-07-057-chinese-doc-language/planning-approval.json",
+      ".trellis/tasks/07-07-057-chinese-doc-language/prd.md",
+      ".trellis/tasks/07-07-057-chinese-doc-language/research/official-trellis-docs.md",
+      ".trellis/tasks/07-07-057-chinese-doc-language/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/config-template.yml",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      57
+    ],
+    "close_issues": [
+      57
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "统一 Guru Team Trellis 扩展在业务项目中的人类可读文档语言规则：除命令、路径、代码符号、GitHub keyword、配置键等 literal token 必须保留英文外，业务项目内由 Trellis / Guru Team 生成、维护或要求 AI 更新的文档默认使用中文。",
+    "outcome": "历史结果：#57 统一业务项目 Trellis 文档语言为中文；非目标信息未记录。",
+    "changed_behavior": [
+      "将 Guru Team workflow 的业务项目文档语言规则调整为默认中文，覆盖 `.trellis/spec/**`、`.trellis/tasks/**`、`docs/**`、`00-bootstrap-guidelines` docs SSOT 文档，以及 workflow 运行 artifact 中面向人类阅读的摘要、证据、finding、rev",
+      "保留 literal token、命令、路径、schema key、API name、错误码、外部系统字段和引用原文可使用英文的边界，并明确 `guru-trellis` 源码仓库自身可按公共 Trellis marketplace / preset / script 语境保留英文。",
+      "更新 canonical workflow、preset README、workflow README、README、docs requirement、`.trellis/spec`、dogfood workflow 和各平台 overlay，使 Codex、Claude、Cursor 入口的语言规则一致。",
+      "在 preset installer 中加入确定性的 `language_guidance` 迁移逻辑，替换 `.trellis/spec/**/*.md`、workspace index 和 `.trellis/tasks/00-bootstrap-guidelines/**/*.md` 中已知 Trellis 英文文档语言规则，不扫描普通历史 task"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/docs/public-docs.md",
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/preset/overlay-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md",
+          "docs/requirements/README.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/commands/trellis/continue.md",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/prompts/trellis-start.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".codex/skills/trellis-start/SKILL.md",
+          ".cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/config-template.yml"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md",
+          ".agents/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-07-057-chinese-doc-language/agent-assignment.json",
+          ".trellis/tasks/07-07-057-chinese-doc-language/check.jsonl",
+          ".trellis/tasks/07-07-057-chinese-doc-language/design.md",
+          ".trellis/tasks/07-07-057-chinese-doc-language/implement.jsonl",
+          ".trellis/tasks/07-07-057-chinese-doc-language/implement.md",
+          ".trellis/tasks/07-07-057-chinese-doc-language/issue-scope-ledger.json",
+          ".trellis/tasks/07-07-057-chinese-doc-language/phase2-check.json",
+          ".trellis/tasks/07-07-057-chinese-doc-language/planning-approval.json",
+          ".trellis/tasks/07-07-057-chinese-doc-language/prd.md",
+          ".trellis/tasks/07-07-057-chinese-doc-language/research/official-trellis-docs.md",
+          ".trellis/tasks/07-07-057-chinese-doc-language/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/config-template.yml",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#57"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/057-chinese-doc-language"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".agents/skills/trellis-start/SKILL.md",
+        ".claude/commands/trellis/continue.md",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/prompts/trellis-start.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".codex/skills/trellis-start/SKILL.md",
+        ".cursor/commands/trellis-continue.md",
+        ".trellis/guru-team/config-template.yml",
+        ".trellis/spec/docs/public-docs.md",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-07-057-chinese-doc-language/agent-assignment.json",
+        ".trellis/tasks/07-07-057-chinese-doc-language/check.jsonl",
+        ".trellis/tasks/07-07-057-chinese-doc-language/design.md",
+        ".trellis/tasks/07-07-057-chinese-doc-language/implement.jsonl",
+        ".trellis/tasks/07-07-057-chinese-doc-language/implement.md",
+        ".trellis/tasks/07-07-057-chinese-doc-language/issue-scope-ledger.json",
+        ".trellis/tasks/07-07-057-chinese-doc-language/phase2-check.json",
+        ".trellis/tasks/07-07-057-chinese-doc-language/planning-approval.json",
+        ".trellis/tasks/07-07-057-chinese-doc-language/prd.md",
+        ".trellis/tasks/07-07-057-chinese-doc-language/research/official-trellis-docs.md",
+        ".trellis/tasks/07-07-057-chinese-doc-language/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/README.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/config-template.yml",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        ".trellis/spec",
+        "00-bootstrap-guidelines",
+        "guru-trellis"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "schema"
+      ],
+      "symbols": [
+        "07-07-057-chinese-doc-language",
+        "README.md",
+        "SKILL.md",
+        "agent-assignment.json",
+        "apply_guru_team_trellis_preset.py",
+        "check.jsonl",
+        "config-template.yml",
+        "continue.md",
+        "design.md",
+        "implement.jsonl",
+        "implement.md",
+        "installer.md",
+        "issue-scope-ledger.json",
+        "official-trellis-docs.md",
+        "overlay-guidelines.md",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "public-docs.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_apply_guru_team_trellis_preset.py",
+        "trellis-continue.md",
+        "trellis-start.md",
+        "verify-throwaway-install.sh",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#57 统一业务项目 Trellis 文档语言为中文",
+        "07-07-057-chinese-doc-language",
+        "统一 Guru Team Trellis 扩展在业务项目中的人类可读文档语言规则：除命令、路径、代码符号、GitHub",
+        "历史结果：#57 统一业务项目 Trellis 文档语言为中文；非目标信息未记录。",
+        "将 Guru Team workflow 的业务项目文档语言规则调整为默认中文，覆盖 `.trellis/spec/**",
+        "保留 literal token、命令、路径、schema key、API name、错误码、外部系统字段和引用原文可使",
+        "更新 canonical workflow、preset README、workflow README、README、d",
+        "在 preset installer 中加入确定性的 `language_guidance` 迁移逻辑，替换 `.tre"
+      ]
+    },
+    "retrieval_text": "#57 统一业务项目 Trellis 文档语言为中文\n统一 Guru Team Trellis 扩展在业务项目中的人类可读文档语言规则：除命令、路径、代码符号、GitHub keyword、配置键等 literal token 必须保留英文外，业务项目内由 Trellis / Guru Team 生成、维护或要求 AI 更新的文档默认使用中文。\n历史结果：#57 统一业务项目 Trellis 文档语言为中文；非目标信息未记录。\n将 Guru Team workflow 的业务项目文档语言规则调整为默认中文，覆盖 `.trellis/spec/**`、`.trellis/tasks/**`、`docs/**`、`00-bootstrap-guidelines` docs SSOT 文档，以及 workflow 运行 artifact 中面向人类阅读的摘要、证据、finding、rev\n保留 literal token、命令、路径、schema key、API name、错误码、外部系统字段和引用原文可使用英文的边界，并明确 `guru-trellis` 源码仓库自身可按公共 Trellis marketplace / preset / script 语境保留英文。\n更新 canonical workflow、preset README、workflow README、README、docs requirement、`.trellis/spec`、dogfood workflow 和各平台 overlay，使 Codex、Claude、Cursor 入口的语言规则一致。\n在 preset installer 中加入确定性的 `language_guidance` 迁移逻辑，替换 `.trellis/spec/**/*.md`、workspace index 和 `.trellis/tasks/00-bootstrap-guidelines/**/*.md` 中已知 Trellis 英文文档语言规则，不扫描普通历史 task\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#57 统一业务项目 Trellis 文档语言为中文\n07-07-057-chinese-doc-language\n统一 Guru Team Trellis 扩展在业务项目中的人类可读文档语言规则：除命令、路径、代码符号、GitHub\n历史结果：#57 统一业务项目 Trellis 文档语言为中文；非目标信息未记录。\n将 Guru Team workflow 的业务项目文档语言规则调整为默认中文，覆盖 `.trellis/spec/**\n保留 literal token、命令、路径、schema key、API name、错误码、外部系统字段和引用原文可使\n更新 canonical workflow、preset README、workflow README、README、d\n在 preset installer 中加入确定性的 `language_guidance` 迁移逻辑，替换 `.tre"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:35Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

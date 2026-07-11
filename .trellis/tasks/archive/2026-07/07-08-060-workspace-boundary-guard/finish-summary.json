@@ -1,0 +1,363 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:35Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-08-060-workspace-boundary-guard",
+    "title": "#60 防止 task artifact 和 patch 误写到 source checkout",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-08-060-workspace-boundary-guard",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-08-060-workspace-boundary-guard"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/060-workspace-boundary-guard",
+    "commits": [
+      "3af6ee1d99fcbae862ef993efa851111c9874a96"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".agents/skills/trellis-start/SKILL.md",
+      ".claude/agents/trellis-check.md",
+      ".claude/agents/trellis-implement.md",
+      ".claude/commands/trellis/continue.md",
+      ".codex/agents/trellis-check.toml",
+      ".codex/agents/trellis-implement.toml",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/prompts/trellis-start.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".codex/skills/trellis-start/SKILL.md",
+      ".cursor/agents/trellis-check.md",
+      ".cursor/agents/trellis-implement.md",
+      ".cursor/commands/trellis-continue.md",
+      ".trellis/agents/check.md",
+      ".trellis/agents/implement.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+      "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+      "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+      "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+      "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      60
+    ],
+    "close_issues": [
+      60
+    ],
+    "related_issues": [],
+    "followup_issues": [
+      76
+    ],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "建立 Guru Team worktree 模式下的 workspace boundary 机器事实层和流程合同，确保 issue-backed / task-like / file-changing 任务的 task artifact、review artifact、recorder 输入路径、sub-agent 状态证据和手工 patch 都只落在 intake 选定的 task worktree 中，而不是 source checkout。",
+    "outcome": "通过。当前 findings_count 为 0；第 001 轮 P2 已由第 002 轮 replacement closure 审查闭环，第 003 轮在上一 HEAD 通过，第 004 轮已重新覆盖最新 `3af6ee1d99fcbae862ef993efa851111c9874a96` 的完整 `origin/main...HEAD` diff。`review.md` 已链接全部 raw reports，可供主会话继续记录第 004 轮 fresh final review evidence 与 Branch Review Gate。",
+    "changed_behavior": [
+      "为 Guru Team workflow 增加 workspace boundary guard：在 worktree 模式下，任务创建、handoff、review/report artifact、agent assignment、Branch Review Gate 等关键入口都会校验当前写入位置属于任务 `workspace_path`，避免把 `.t",
+      "新增并同步 `check-workspace-boundary` validator、相关 Python 记录/校验逻辑、bash wrapper、回归测试、workflow/spec/README 文档、Codex/Claude/Cursor overlay 与 dogfood installed copy。",
+      "将 Guru Team extension 版本提升到 `0.6.5-guru.2`，同步 canonical manifest、dogfood manifest、preset README、workflow README 和 `verify-throwaway-install.sh` 默认 source，确保这次 workspace boundary 能力",
+      "为 Branch Review Gate validator 增加 replacement closure chain 的机器校验：当原 finding-owner review agent 失败或中断时，要求存在 predecessor failed/unfinished 状态、`replacement-started` 事件、`reuse_decisio"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/agents/check.md",
+          ".trellis/agents/implement.md",
+          ".trellis/workflow.md",
+          "README.md",
+          "docs/requirements/README.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+          "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+          "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+          "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+          "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/agents/trellis-check.md",
+          ".claude/agents/trellis-implement.md",
+          ".claude/commands/trellis/continue.md",
+          ".codex/agents/trellis-check.toml",
+          ".codex/agents/trellis-implement.toml",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/prompts/trellis-start.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".codex/skills/trellis-start/SKILL.md",
+          ".cursor/agents/trellis-check.md",
+          ".cursor/agents/trellis-implement.md",
+          ".cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md",
+          ".agents/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#60",
+        "#76"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/060-workspace-boundary-guard"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".agents/skills/trellis-start/SKILL.md",
+        ".claude/agents/trellis-check.md",
+        ".claude/agents/trellis-implement.md",
+        ".claude/commands/trellis/continue.md",
+        ".codex/agents/trellis-check.toml",
+        ".codex/agents/trellis-implement.toml",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/prompts/trellis-start.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".codex/skills/trellis-start/SKILL.md",
+        ".cursor/agents/trellis-check.md",
+        ".cursor/agents/trellis-implement.md",
+        ".cursor/commands/trellis-continue.md",
+        ".trellis/agents/check.md",
+        ".trellis/agents/implement.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/README.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+        "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+        "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+        "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+        "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/bash/check-workspace-boundary.sh",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "0.6.5-guru.2",
+        "check-workspace-boundary",
+        "replacement-started",
+        "verify-throwaway-install.sh"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "0.6.5-guru.2",
+        "verify-throwaway-install.sh"
+      ],
+      "symbols": [
+        "07-08-060-workspace-boundary-guard",
+        "README.md",
+        "SKILL.md",
+        "apply_guru_team_trellis_preset.py",
+        "check-workspace-boundary.sh",
+        "check.md",
+        "companion-scripts.md",
+        "continue.md",
+        "data-contracts.md",
+        "design.md",
+        "extension.json",
+        "guru-team-extension.json",
+        "guru-team-trellis-flow.md",
+        "guru_team_trellis.py",
+        "implement.md",
+        "installer.md",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "pr-body.md",
+        "prd.md",
+        "quality-guidelines.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_apply_guru_team_trellis_preset.py",
+        "test_guru_team_trellis.py",
+        "trellis-check.md",
+        "trellis-check.toml",
+        "trellis-continue.md",
+        "trellis-implement.md",
+        "trellis-implement.toml",
+        "trellis-start.md",
+        "verify-throwaway-install.sh",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#60 防止 task artifact 和 patch 误写到 source checkout",
+        "07-08-060-workspace-boundary-guard",
+        "建立 Guru Team worktree 模式下的 workspace boundary 机器事实层和流程合同，确保",
+        "通过。当前 findings_count 为 0；第 001 轮 P2 已由第 002 轮 replacement cl",
+        "为 Guru Team workflow 增加 workspace boundary guard：在 worktree",
+        "新增并同步 `check-workspace-boundary` validator、相关 Python 记录/校验逻辑",
+        "将 Guru Team extension 版本提升到 `0.6.5-guru.2`，同步 canonical mani",
+        "为 Branch Review Gate validator 增加 replacement closure chain"
+      ]
+    },
+    "retrieval_text": "#60 防止 task artifact 和 patch 误写到 source checkout\n建立 Guru Team worktree 模式下的 workspace boundary 机器事实层和流程合同，确保 issue-backed / task-like / file-changing 任务的 task artifact、review artifact、recorder 输入路径、sub-agent 状态证据和手工 patch 都只落在 intake 选定的 task worktree 中，而不是 source checkout。\n通过。当前 findings_count 为 0；第 001 轮 P2 已由第 002 轮 replacement closure 审查闭环，第 003 轮在上一 HEAD 通过，第 004 轮已重新覆盖最新 `3af6ee1d99fcbae862ef993efa851111c9874a96` 的完整 `origin/main...HEAD` diff。`review.md` 已链接全部 raw reports，可供主会话继续记录第 004 轮 fresh final review evidence 与 Branch Review Gate。\n为 Guru Team workflow 增加 workspace boundary guard：在 worktree 模式下，任务创建、handoff、review/report artifact、agent assignment、Branch Review Gate 等关键入口都会校验当前写入位置属于任务 `workspace_path`，避免把 `.t\n新增并同步 `check-workspace-boundary` validator、相关 Python 记录/校验逻辑、bash wrapper、回归测试、workflow/spec/README 文档、Codex/Claude/Cursor overlay 与 dogfood installed copy。\n将 Guru Team extension 版本提升到 `0.6.5-guru.2`，同步 canonical manifest、dogfood manifest、preset README、workflow README 和 `verify-throwaway-install.sh` 默认 source，确保这次 workspace boundary 能力\n为 Branch Review Gate validator 增加 replacement closure chain 的机器校验：当原 finding-owner review agent 失败或中断时，要求存在 predecessor failed/unfinished 状态、`replacement-started` 事件、`reuse_decisio\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#60 防止 task artifact 和 patch 误写到 source checkout\n07-08-060-workspace-boundary-guard\n建立 Guru Team worktree 模式下的 workspace boundary 机器事实层和流程合同，确保\n通过。当前 findings_count 为 0；第 001 轮 P2 已由第 002 轮 replacement cl\n为 Guru Team workflow 增加 workspace boundary guard：在 worktree\n新增并同步 `check-workspace-boundary` validator、相关 Python 记录/校验逻辑\n将 Guru Team extension 版本提升到 `0.6.5-guru.2`，同步 canonical mani\n为 Branch Review Gate validator 增加 replacement closure chain"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:35Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

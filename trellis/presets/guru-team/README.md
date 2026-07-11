@@ -200,6 +200,7 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/check-review-gate.sh`
 - `.trellis/guru-team/scripts/bash/publish-pr.sh`
 - `.trellis/guru-team/scripts/bash/finish-work.sh`
+- `.trellis/guru-team/scripts/bash/backfill-finish-summary.sh`
 - `.trellis/guru-team/scripts/python/guru_team_trellis.py`
 
 Shared overlays are always installed:
@@ -429,6 +430,24 @@ title/body/draft/base overrides and validates Git blob/history and digests befor
 PR resolution. The script validates objective structure,
 reviewed source presence, Docs SSOT section/key presence, and close/ref
 semantics but does not replace AI release judgment.
+
+## One-Time Archived Task Backfill
+
+For repositories with archived tasks created before the normal finish-summary
+path, run the managed one-time migration after install or update:
+
+```bash
+.trellis/guru-team/scripts/bash/backfill-finish-summary.sh --json --dry-run
+.trellis/guru-team/scripts/bash/backfill-finish-summary.sh --json --write
+```
+
+The wrapper is a managed executable and preset reapply restores it. It scans
+only `.trellis/tasks/archive/**/<task>/`, skips existing summaries unless
+`--write --force` is used, keeps complete changed paths grouped by kind, and
+continues after task-local errors. It does not read active tasks,
+workspace/runtime state, GitHub, or `trellis mem`, and it creates no global
+index. This migration prepares historical records for #98 discovery while the
+normal finish-work path remains unchanged.
 
 ## Workflow Guardrails
 

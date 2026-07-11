@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:34Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-05-extension-v065-release-tag",
+    "title": "#33 Align Guru Team extension version and release tag to v0.6.5",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-05-extension-v065-release-tag",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-05-extension-v065-release-tag"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/extension-v065-release-tag",
+    "commits": [
+      "1e498a01804684aa2cf7d5275c5b12c09d5755d9"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/tasks/07-05-extension-v065-release-tag/check.jsonl",
+      ".trellis/tasks/07-05-extension-v065-release-tag/design.md",
+      ".trellis/tasks/07-05-extension-v065-release-tag/implement.jsonl",
+      ".trellis/tasks/07-05-extension-v065-release-tag/implement.md",
+      ".trellis/tasks/07-05-extension-v065-release-tag/issue-scope-ledger.json",
+      ".trellis/tasks/07-05-extension-v065-release-tag/phase2-check.json",
+      ".trellis/tasks/07-05-extension-v065-release-tag/planning-approval.json",
+      ".trellis/tasks/07-05-extension-v065-release-tag/prd.md",
+      ".trellis/tasks/07-05-extension-v065-release-tag/research/official-trellis-marketplace-notes.md",
+      ".trellis/tasks/07-05-extension-v065-release-tag/task.json",
+      "README.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      33
+    ],
+    "close_issues": [],
+    "related_issues": [
+      33
+    ],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "Issue #31 已经引入 Guru Team extension canonical manifest 和 installed provenance， 但当前 `trellis/guru-team-extension.json.version` 仍为 `0.1.0`。用户已经确认本 repo 是 Guru Team 专门维护的 Trellis 扩展仓库，发布 tag 应采用 repo 级 `vX.Y.Z`，本次目标版本为 `v0.6.5`，而不是长期使用 `guru-team/v0.6.5`。",
+    "outcome": "历史结果：#33 Align Guru Team extension version and release tag to v0.6.5；非目标信息未记录。",
+    "changed_behavior": [
+      "将 Guru Team Trellis extension 的 canonical manifest 版本对齐到 `0.6.5`，并记录已验证的 Trellis CLI `0.6.5`。",
+      "通过 preset installer 同步 dogfood installed manifest，使 `.trellis/guru-team/extension.json` 可显示当前 installed extension version `0.6.5`。",
+      "更新顶层 README、workflow README、preset README、需求文档和 `.trellis/spec/`，明确稳定安装使用 repo 级 `vX.Y.Z` tag，例如 `gh:castbox/guru-trellis/trellis#v0.6.5`。",
+      "调整 throwaway install 验证脚本默认 source 到 `#v0.6.5`，并补充测试覆盖，确保版本/tag 规则和 marketplace schema version 不混淆。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/workflow/data-contracts.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          "README.md",
+          "docs/requirements/requirement-main.md",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-05-extension-v065-release-tag/check.jsonl",
+          ".trellis/tasks/07-05-extension-v065-release-tag/design.md",
+          ".trellis/tasks/07-05-extension-v065-release-tag/implement.jsonl",
+          ".trellis/tasks/07-05-extension-v065-release-tag/implement.md",
+          ".trellis/tasks/07-05-extension-v065-release-tag/issue-scope-ledger.json",
+          ".trellis/tasks/07-05-extension-v065-release-tag/phase2-check.json",
+          ".trellis/tasks/07-05-extension-v065-release-tag/planning-approval.json",
+          ".trellis/tasks/07-05-extension-v065-release-tag/prd.md",
+          ".trellis/tasks/07-05-extension-v065-release-tag/research/official-trellis-marketplace-notes.md",
+          ".trellis/tasks/07-05-extension-v065-release-tag/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#33"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/extension-v065-release-tag"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/check.jsonl",
+        ".trellis/tasks/07-05-extension-v065-release-tag/design.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/implement.jsonl",
+        ".trellis/tasks/07-05-extension-v065-release-tag/implement.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/issue-scope-ledger.json",
+        ".trellis/tasks/07-05-extension-v065-release-tag/phase2-check.json",
+        ".trellis/tasks/07-05-extension-v065-release-tag/planning-approval.json",
+        ".trellis/tasks/07-05-extension-v065-release-tag/prd.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/research/official-trellis-marketplace-notes.md",
+        ".trellis/tasks/07-05-extension-v065-release-tag/task.json",
+        "README.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "commands": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/spec/"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "0.6.5",
+        "gh:castbox/guru-trellis/trellis",
+        "schema",
+        "trellis/guru-team/extension.json",
+        "v0.6.5",
+        "vX.Y.Z"
+      ],
+      "symbols": [
+        "07-05-extension-v065-release-tag",
+        "README.md",
+        "check.jsonl",
+        "data-contracts.md",
+        "design.md",
+        "extension.json",
+        "guru-team-extension.json",
+        "implement.jsonl",
+        "implement.md",
+        "installer.md",
+        "issue-scope-ledger.json",
+        "official-trellis-marketplace-notes.md",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "verify-throwaway-install.sh"
+      ],
+      "phrases": [
+        "#33 Align Guru Team extension version and release tag to v0.",
+        "07-05-extension-v065-release-tag",
+        "Issue #31 已经引入 Guru Team extension canonical manifest 和 inst",
+        "历史结果：#33 Align Guru Team extension version and release tag t",
+        "将 Guru Team Trellis extension 的 canonical manifest 版本对齐到 `0.",
+        "通过 preset installer 同步 dogfood installed manifest，使 `.trelli",
+        "更新顶层 README、workflow README、preset README、需求文档和 `.trellis/sp",
+        "调整 throwaway install 验证脚本默认 source 到 `#v0.6.5`，并补充测试覆盖，确保版本/"
+      ]
+    },
+    "retrieval_text": "#33 Align Guru Team extension version and release tag to v0.6.5\nIssue #31 已经引入 Guru Team extension canonical manifest 和 installed provenance， 但当前 `trellis/guru-team-extension.json.version` 仍为 `0.1.0`。用户已经确认本 repo 是 Guru Team 专门维护的 Trellis 扩展仓库，发布 tag 应采用 repo 级 `vX.Y.Z`，本次目标版本为 `v0.6.5`，而不是长期使用 `guru-team/v0.6.5`。\n历史结果：#33 Align Guru Team extension version and release tag to v0.6.5；非目标信息未记录。\n将 Guru Team Trellis extension 的 canonical manifest 版本对齐到 `0.6.5`，并记录已验证的 Trellis CLI `0.6.5`。\n通过 preset installer 同步 dogfood installed manifest，使 `.trellis/guru-team/extension.json` 可显示当前 installed extension version `0.6.5`。\n更新顶层 README、workflow README、preset README、需求文档和 `.trellis/spec/`，明确稳定安装使用 repo 级 `vX.Y.Z` tag，例如 `gh:castbox/guru-trellis/trellis#v0.6.5`。\n调整 throwaway install 验证脚本默认 source 到 `#v0.6.5`，并补充测试覆盖，确保版本/tag 规则和 marketplace schema version 不混淆。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#33 Align Guru Team extension version and release tag to v0.\n07-05-extension-v065-release-tag\nIssue #31 已经引入 Guru Team extension canonical manifest 和 inst\n历史结果：#33 Align Guru Team extension version and release tag t\n将 Guru Team Trellis extension 的 canonical manifest 版本对齐到 `0.\n通过 preset installer 同步 dogfood installed manifest，使 `.trelli\n更新顶层 README、workflow README、preset README、需求文档和 `.trellis/sp\n调整 throwaway install 验证脚本默认 source 到 `#v0.6.5`，并补充测试覆盖，确保版本/"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:34Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.close_issues",
+      "github.followup_issues",
+      "github.pr_url"
+    ],
+    "confidence": "partial"
+  }
+}

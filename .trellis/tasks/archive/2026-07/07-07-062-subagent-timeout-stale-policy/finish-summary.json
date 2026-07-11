@@ -1,0 +1,346 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:35Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-07-062-subagent-timeout-stale-policy",
+    "title": "#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-07-062-subagent-timeout-stale-policy",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-07-062-subagent-timeout-stale-policy"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/062-subagent-timeout-stale-policy",
+    "commits": [
+      "413713cc8cf0ce4f04377e00609d0e6801b3b856"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".claude/agents/trellis-check.md",
+      ".claude/agents/trellis-implement.md",
+      ".claude/commands/trellis/continue.md",
+      ".codex/agents/trellis-check.toml",
+      ".codex/agents/trellis-implement.toml",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".cursor/agents/trellis-check.md",
+      ".cursor/agents/trellis-implement.md",
+      ".cursor/commands/trellis-continue.md",
+      ".trellis/agents/check.md",
+      ".trellis/agents/implement.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/check.jsonl",
+      ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/design.md",
+      ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/implement.jsonl",
+      ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/implement.md",
+      ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/issue-scope-ledger.json",
+      ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/phase2-check.json",
+      ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/planning-approval.json",
+      ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/prd.md",
+      ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/research/official-trellis-docs.md",
+      ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+      "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+      "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+      "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+      "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      62
+    ],
+    "close_issues": [
+      62
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "历史问题：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果 的旧行为未记录。",
+    "outcome": "历史结果：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果；非目标信息未记录。",
+    "changed_behavior": [
+      "为 Guru Team workflow 增加 sub-agent wait timeout / stale / unfinished termination 合同：`wait_agent`、`trellis channel wait` 或等价等待命令 timeout 只表示等待窗口结束，不代表 agent 失败、卡死或可以采用半成品输出。",
+      "在 `agent-assignment.json` 中增加 additive `status_events[]` ledger，记录 wait timeout、progress observed、stale assessed、continue waiting、resume/replacement、terminated unfinished、completed",
+      "更新 Branch Review Gate 校验：若存在未闭环的 `terminated-unfinished`，必须先有 same-agent resume 或 replacement-started，并最终到达 `completed` 或明确 `failed`，否则 pass 路径 fail closed。",
+      "同步 Guru Team workflow、trellis-continue、Codex/Claude/Cursor/channel agent overlay、dogfood installed copies、README、requirements docs 和 `.trellis/spec/**`，让实现代理、阶段二检查代理和 review 代理都遵守同"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/overlay-guidelines.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/agents/check.md",
+          ".trellis/agents/implement.md",
+          ".trellis/workflow.md",
+          "README.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+          "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+          "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+          "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+          "trellis/presets/guru-team/overlays/.trellis/agents/implement.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/agents/trellis-check.md",
+          ".claude/agents/trellis-implement.md",
+          ".claude/commands/trellis/continue.md",
+          ".codex/agents/trellis-check.toml",
+          ".codex/agents/trellis-implement.toml",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".cursor/agents/trellis-check.md",
+          ".cursor/agents/trellis-implement.md",
+          ".cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/check.jsonl",
+          ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/design.md",
+          ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/implement.jsonl",
+          ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/implement.md",
+          ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/issue-scope-ledger.json",
+          ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/phase2-check.json",
+          ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/planning-approval.json",
+          ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/prd.md",
+          ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/research/official-trellis-docs.md",
+          ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#62"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/062-subagent-timeout-stale-policy"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".claude/agents/trellis-check.md",
+        ".claude/agents/trellis-implement.md",
+        ".claude/commands/trellis/continue.md",
+        ".codex/agents/trellis-check.toml",
+        ".codex/agents/trellis-implement.toml",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".cursor/agents/trellis-check.md",
+        ".cursor/agents/trellis-implement.md",
+        ".cursor/commands/trellis-continue.md",
+        ".trellis/agents/check.md",
+        ".trellis/agents/implement.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/check.jsonl",
+        ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/design.md",
+        ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/implement.jsonl",
+        ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/implement.md",
+        ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/issue-scope-ledger.json",
+        ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/phase2-check.json",
+        ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/planning-approval.json",
+        ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/prd.md",
+        ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/research/official-trellis-docs.md",
+        ".trellis/tasks/07-07-062-subagent-timeout-stale-policy/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+        "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+        "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+        "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+        "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "agent-assignment.json",
+        "terminated-unfinished"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "agent-assignment.json"
+      ],
+      "symbols": [
+        "07-07-062-subagent-timeout-stale-policy",
+        "README.md",
+        "SKILL.md",
+        "check.jsonl",
+        "check.md",
+        "companion-scripts.md",
+        "continue.md",
+        "data-contracts.md",
+        "design.md",
+        "extension.json",
+        "guru-team-trellis-flow.md",
+        "guru_team_trellis.py",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "official-trellis-docs.md",
+        "overlay-guidelines.md",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-check.md",
+        "trellis-check.toml",
+        "trellis-continue.md",
+        "trellis-implement.md",
+        "trellis-implement.toml",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果",
+        "07-07-062-subagent-timeout-stale-policy",
+        "历史问题：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果 的旧行为未记录。",
+        "历史结果：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果；非目标信息未记录。",
+        "为 Guru Team workflow 增加 sub-agent wait timeout / stale / unf",
+        "在 `agent-assignment.json` 中增加 additive `status_events[]` led",
+        "更新 Branch Review Gate 校验：若存在未闭环的 `terminated-unfinished`，必须先",
+        "同步 Guru Team workflow、trellis-continue、Codex/Claude/Cursor/c"
+      ]
+    },
+    "retrieval_text": "#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果\n历史问题：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果 的旧行为未记录。\n历史结果：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果；非目标信息未记录。\n为 Guru Team workflow 增加 sub-agent wait timeout / stale / unfinished termination 合同：`wait_agent`、`trellis channel wait` 或等价等待命令 timeout 只表示等待窗口结束，不代表 agent 失败、卡死或可以采用半成品输出。\n在 `agent-assignment.json` 中增加 additive `status_events[]` ledger，记录 wait timeout、progress observed、stale assessed、continue waiting、resume/replacement、terminated unfinished、completed\n更新 Branch Review Gate 校验：若存在未闭环的 `terminated-unfinished`，必须先有 same-agent resume 或 replacement-started，并最终到达 `completed` 或明确 `failed`，否则 pass 路径 fail closed。\n同步 Guru Team workflow、trellis-continue、Codex/Claude/Cursor/channel agent overlay、dogfood installed copies、README、requirements docs 和 `.trellis/spec/**`，让实现代理、阶段二检查代理和 review 代理都遵守同\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果\n07-07-062-subagent-timeout-stale-policy\n历史问题：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果 的旧行为未记录。\n历史结果：#62 subagent 超时/终止策略不能把 wait 超时当作未完成工作可接受结果；非目标信息未记录。\n为 Guru Team workflow 增加 sub-agent wait timeout / stale / unf\n在 `agent-assignment.json` 中增加 additive `status_events[]` led\n更新 Branch Review Gate 校验：若存在未闭环的 `terminated-unfinished`，必须先\n同步 Guru Team workflow、trellis-continue、Codex/Claude/Cursor/c"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:35Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

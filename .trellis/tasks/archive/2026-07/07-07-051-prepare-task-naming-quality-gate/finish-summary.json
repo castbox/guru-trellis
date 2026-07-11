@@ -1,0 +1,244 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:35Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-07-051-prepare-task-naming-quality-gate",
+    "title": "#51 修正 prepare-task 命名质量门禁",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-07-051-prepare-task-naming-quality-gate",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-07-051-prepare-task-naming-quality-gate"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/051-prepare-task-naming-quality-gate",
+    "commits": [
+      "4981f15082c8c7ca4a7425253bc9c5949ac1c68c"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-start/SKILL.md",
+      ".codex/prompts/trellis-start.md",
+      ".codex/skills/trellis-start/SKILL.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/schemas/intake-handoff.schema.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      51
+    ],
+    "close_issues": [
+      51
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "历史问题：#51 修正 prepare-task 命名质量门禁 的旧行为未记录。",
+    "outcome": "本次修正 Guru Team `prepare-task` 的 slug / branch / worktree / task 命名门禁，避免在中文 issue 或语义不足标题上静默创建 `issue-52`、`52-issue-52` 这类低信息名称。",
+    "changed_behavior": [
+      "`prepare-task --json` 输出新增 `naming_quality`，包含 `ok`、`reason`、`requires_semantic_name`、`current_slug`、`suggested_override_flags`，并在 handoff schema / handoff payload 中保留。",
+      "保留英文标题的确定性自动 slug，但新增质量判定，识别 `issue-<n>`、`<n>-issue-<n>`、纯编号、仅通用词、过短或业务 token 不足的名称。",
+      "中文或非 ASCII issue title 不做拼音 / transliteration；只读 planner 可以输出计划，但标记需要 agent 显式提供语义英文 short-name。",
+      "`--create-worktree` / `--create-task` 在任何 worktree、branch、task 副作用前阻断低信息命名，并提示使用 `--short-name`、`--workspace-slug`、`--task-slug`、`--branch` 覆盖。",
+      "同步 canonical workflow、dogfood 副本、schema、README / workflow README / preset README、overlay 和 durable requirements 文档。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/data-contracts.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md",
+          "docs/requirements/README.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".codex/prompts/trellis-start.md",
+          ".codex/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/schemas/intake-handoff.schema.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#51"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/051-prepare-task-naming-quality-gate"
+      ],
+      "paths": [
+        ".agents/skills/trellis-start/SKILL.md",
+        ".codex/prompts/trellis-start.md",
+        ".codex/skills/trellis-start/SKILL.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/schemas/intake-handoff.schema.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/README.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "--branch",
+        "--create-task",
+        "--create-worktree",
+        "--short-name",
+        "--task-slug",
+        "--workspace-slug"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "json",
+        "schema"
+      ],
+      "symbols": [
+        "07-07-051-prepare-task-naming-quality-gate",
+        "README.md",
+        "SKILL.md",
+        "data-contracts.md",
+        "design.md",
+        "extension.json",
+        "guru_team_trellis.py",
+        "implement.md",
+        "intake-handoff.schema.json",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "pr-body.md",
+        "prd.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-start.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#51 修正 prepare-task 命名质量门禁",
+        "07-07-051-prepare-task-naming-quality-gate",
+        "历史问题：#51 修正 prepare-task 命名质量门禁 的旧行为未记录。",
+        "本次修正 Guru Team `prepare-task` 的 slug / branch / worktree / t",
+        "`prepare-task --json` 输出新增 `naming_quality`，包含 `ok`、`reason`",
+        "保留英文标题的确定性自动 slug，但新增质量判定，识别 `issue-<n>`、`<n>-issue-<n>`、纯编号",
+        "中文或非 ASCII issue title 不做拼音 / transliteration；只读 planner 可以输",
+        "`--create-worktree` / `--create-task` 在任何 worktree、branch、ta",
+        "同步 canonical workflow、dogfood 副本、schema、README / workflow RE"
+      ]
+    },
+    "retrieval_text": "#51 修正 prepare-task 命名质量门禁\n历史问题：#51 修正 prepare-task 命名质量门禁 的旧行为未记录。\n本次修正 Guru Team `prepare-task` 的 slug / branch / worktree / task 命名门禁，避免在中文 issue 或语义不足标题上静默创建 `issue-52`、`52-issue-52` 这类低信息名称。\n`prepare-task --json` 输出新增 `naming_quality`，包含 `ok`、`reason`、`requires_semantic_name`、`current_slug`、`suggested_override_flags`，并在 handoff schema / handoff payload 中保留。\n保留英文标题的确定性自动 slug，但新增质量判定，识别 `issue-<n>`、`<n>-issue-<n>`、纯编号、仅通用词、过短或业务 token 不足的名称。\n中文或非 ASCII issue title 不做拼音 / transliteration；只读 planner 可以输出计划，但标记需要 agent 显式提供语义英文 short-name。\n`--create-worktree` / `--create-task` 在任何 worktree、branch、task 副作用前阻断低信息命名，并提示使用 `--short-name`、`--workspace-slug`、`--task-slug`、`--branch` 覆盖。\n同步 canonical workflow、dogfood 副本、schema、README / workflow README / preset README、overlay 和 durable requirements 文档。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#51 修正 prepare-task 命名质量门禁\n07-07-051-prepare-task-naming-quality-gate\n历史问题：#51 修正 prepare-task 命名质量门禁 的旧行为未记录。\n本次修正 Guru Team `prepare-task` 的 slug / branch / worktree / t\n`prepare-task --json` 输出新增 `naming_quality`，包含 `ok`、`reason`\n保留英文标题的确定性自动 slug，但新增质量判定，识别 `issue-<n>`、`<n>-issue-<n>`、纯编号\n中文或非 ASCII issue title 不做拼音 / transliteration；只读 planner 可以输\n`--create-worktree` / `--create-task` 在任何 worktree、branch、ta\n同步 canonical workflow、dogfood 副本、schema、README / workflow RE"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:35Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

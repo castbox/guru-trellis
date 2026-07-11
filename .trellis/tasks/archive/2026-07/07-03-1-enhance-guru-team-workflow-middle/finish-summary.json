@@ -1,0 +1,242 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:32Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-03-1-enhance-guru-team-workflow-middle",
+    "title": "#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation",
+    "status": "completed",
+    "artifact_dir": "",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/1-enhance-guru-team-workflow-middle",
+    "commits": [
+      "8b3225d94def44b6d52e33dd2b6aace7a869e35a"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/handoff.json",
+      ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/check.jsonl",
+      ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/design.md",
+      ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/implement.jsonl",
+      ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/implement.md",
+      ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/prd.md",
+      ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/research/middle-platform-knowledge.md",
+      ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/research/official-trellis-docs.md",
+      ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/review-gate.json",
+      ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/index.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/config-template.yml",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      1
+    ],
+    "close_issues": [
+      1
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review_gate": "review-gate.json"
+  },
+  "index": {
+    "problem": "增强可复用的 `guru-team` Trellis workflow，使 AI 在设计和实现阶段能显式处理两类容易漂移的上下文：",
+    "outcome": "历史结果：#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation；非目标信息未记录。",
+    "changed_behavior": [
+      "历史归档 task 已完成：#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md",
+          "trellis/index.json"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/handoff.json"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/check.jsonl",
+          ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/design.md",
+          ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/implement.jsonl",
+          ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/implement.md",
+          ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/prd.md",
+          ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/research/middle-platform-knowledge.md",
+          ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/research/official-trellis-docs.md",
+          ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/review-gate.json",
+          ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/config-template.yml",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#1"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/1-enhance-guru-team-workflow-middle"
+      ],
+      "paths": [
+        ".trellis/guru-team/handoff.json",
+        ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/check.jsonl",
+        ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/design.md",
+        ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/implement.jsonl",
+        ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/implement.md",
+        ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/prd.md",
+        ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/research/middle-platform-knowledge.md",
+        ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/research/official-trellis-docs.md",
+        ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/review-gate.json",
+        ".trellis/tasks/archive/2026-07/07-03-1-enhance-guru-team-workflow-middle/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/index.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/config-template.yml",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [
+        "07-03-1-enhance-guru-team-workflow-middle",
+        "README.md",
+        "SKILL.md",
+        "check.jsonl",
+        "config-template.yml",
+        "continue.md",
+        "design.md",
+        "finish-work.md",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "index.json",
+        "issue-scope-ledger.json",
+        "middle-platform-knowledge.md",
+        "official-trellis-docs.md",
+        "prd.md",
+        "review-gate.json",
+        "task.json",
+        "trellis-continue.md",
+        "trellis-finish-work.md",
+        "trellis-start.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#1 Enhance guru-team workflow with middle-platform knowledge",
+        "07-03-1-enhance-guru-team-workflow-middle",
+        "增强可复用的 `guru-team` Trellis workflow，使 AI 在设计和实现阶段能显式处理两类容易漂移",
+        "历史结果：#1 Enhance guru-team workflow with middle-platform know",
+        "历史归档 task 已完成：#1 Enhance guru-team workflow with middle-plat"
+      ]
+    },
+    "retrieval_text": "#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation\n增强可复用的 `guru-team` Trellis workflow，使 AI 在设计和实现阶段能显式处理两类容易漂移的上下文：\n历史结果：#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation；非目标信息未记录。\n历史归档 task 已完成：#1 Enhance guru-team workflow with middle-platform knowledge lookup and docs SSOT reconciliation。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#1 Enhance guru-team workflow with middle-platform knowledge\n07-03-1-enhance-guru-team-workflow-middle\n增强可复用的 `guru-team` Trellis workflow，使 AI 在设计和实现阶段能显式处理两类容易漂移\n历史结果：#1 Enhance guru-team workflow with middle-platform know\n历史归档 task 已完成：#1 Enhance guru-team workflow with middle-plat"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:32Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "prd.md",
+      "review-gate.json",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues",
+      "task.artifact_dir"
+    ],
+    "confidence": "partial"
+  }
+}

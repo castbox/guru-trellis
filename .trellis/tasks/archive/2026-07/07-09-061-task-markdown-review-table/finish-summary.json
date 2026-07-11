@@ -1,0 +1,290 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:36Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-09-061-task-markdown-review-table",
+    "title": "#61 阶段回复必须提供 Markdown task 产物 review 表",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-09-061-task-markdown-review-table",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-09-061-task-markdown-review-table"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/061-task-markdown-review-table",
+    "commits": [
+      "936b5bdb869ed8b799c33988a5ae11dfbf89f920"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".agents/skills/trellis-finish-work/SKILL.md",
+      ".claude/commands/trellis/continue.md",
+      ".claude/commands/trellis/finish-work.md",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/prompts/trellis-finish-work.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".codex/skills/trellis-finish-work/SKILL.md",
+      ".cursor/commands/trellis-continue.md",
+      ".cursor/commands/trellis-finish-work.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/bash/resolve-human-artifacts.sh",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      61
+    ],
+    "close_issues": [
+      61
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "用户在任意 Guru Team 阶段收到 Agent 回复时，都能从最近一次回复打开当前 task 的关键 Markdown 产物进行 review，不需要翻找旧会话消息，也不需要把机器 JSON 证据当作常规入口。",
+    "outcome": "Branch Review Gate 可记录为 pass。当前最终审查 findings_count 为 0。",
+    "changed_behavior": [
+      "新增 `resolve-human-artifacts` 子命令和 thin Bash wrapper，面向阶段回复提供 task Markdown 产物的路径、存在性、active/archive 状态事实。",
+      "将 `Markdown 产物 review 表` 写入 Guru Team workflow、continue / finish-work overlay 和公开文档，确保用户从最近一次阶段回复即可打开当前 task 的关键 Markdown 产物。",
+      "把新 wrapper 纳入 preset managed assets、installed dogfood copy、extension manifest、throwaway install verifier 和回归测试，避免新仓库安装时缺少脚本入口。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/overlay-guidelines.md",
+          ".trellis/spec/workflow/companion-scripts.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/commands/trellis/continue.md",
+          ".claude/commands/trellis/finish-work.md",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/prompts/trellis-finish-work.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".codex/skills/trellis-finish-work/SKILL.md",
+          ".cursor/commands/trellis-continue.md",
+          ".cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md",
+          ".agents/skills/trellis-finish-work/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/bash/resolve-human-artifacts.sh",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#61"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/061-task-markdown-review-table"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".agents/skills/trellis-finish-work/SKILL.md",
+        ".claude/commands/trellis/continue.md",
+        ".claude/commands/trellis/finish-work.md",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/prompts/trellis-finish-work.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".codex/skills/trellis-finish-work/SKILL.md",
+        ".cursor/commands/trellis-continue.md",
+        ".cursor/commands/trellis-finish-work.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/bash/resolve-human-artifacts.sh",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "resolve-human-artifacts"
+      ],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [
+        "07-09-061-task-markdown-review-table",
+        "README.md",
+        "SKILL.md",
+        "apply_guru_team_trellis_preset.py",
+        "companion-scripts.md",
+        "continue.md",
+        "design.md",
+        "extension.json",
+        "finish-work.md",
+        "guru-team-extension.json",
+        "guru_team_trellis.py",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "overlay-guidelines.md",
+        "phase2-check.json",
+        "pr-body.md",
+        "prd.md",
+        "resolve-human-artifacts.sh",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_apply_guru_team_trellis_preset.py",
+        "test_guru_team_trellis.py",
+        "trellis-continue.md",
+        "trellis-finish-work.md",
+        "verify-throwaway-install.sh",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#61 阶段回复必须提供 Markdown task 产物 review 表",
+        "07-09-061-task-markdown-review-table",
+        "用户在任意 Guru Team 阶段收到 Agent 回复时，都能从最近一次回复打开当前 task 的关键 Markdo",
+        "Branch Review Gate 可记录为 pass。当前最终审查 findings_count 为 0。",
+        "新增 `resolve-human-artifacts` 子命令和 thin Bash wrapper，面向阶段回复提供",
+        "将 `Markdown 产物 review 表` 写入 Guru Team workflow、continue / fi",
+        "把新 wrapper 纳入 preset managed assets、installed dogfood copy、e"
+      ]
+    },
+    "retrieval_text": "#61 阶段回复必须提供 Markdown task 产物 review 表\n用户在任意 Guru Team 阶段收到 Agent 回复时，都能从最近一次回复打开当前 task 的关键 Markdown 产物进行 review，不需要翻找旧会话消息，也不需要把机器 JSON 证据当作常规入口。\nBranch Review Gate 可记录为 pass。当前最终审查 findings_count 为 0。\n新增 `resolve-human-artifacts` 子命令和 thin Bash wrapper，面向阶段回复提供 task Markdown 产物的路径、存在性、active/archive 状态事实。\n将 `Markdown 产物 review 表` 写入 Guru Team workflow、continue / finish-work overlay 和公开文档，确保用户从最近一次阶段回复即可打开当前 task 的关键 Markdown 产物。\n把新 wrapper 纳入 preset managed assets、installed dogfood copy、extension manifest、throwaway install verifier 和回归测试，避免新仓库安装时缺少脚本入口。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#61 阶段回复必须提供 Markdown task 产物 review 表\n07-09-061-task-markdown-review-table\n用户在任意 Guru Team 阶段收到 Agent 回复时，都能从最近一次回复打开当前 task 的关键 Markdo\nBranch Review Gate 可记录为 pass。当前最终审查 findings_count 为 0。\n新增 `resolve-human-artifacts` 子命令和 thin Bash wrapper，面向阶段回复提供\n将 `Markdown 产物 review 表` 写入 Guru Team workflow、continue / fi\n把新 wrapper 纳入 preset managed assets、installed dogfood copy、e"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:36Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:32Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-03-15-require-explicit-approval-no-task",
+    "title": "#15 Require explicit approval for no_task current-checkout direct edits",
+    "status": "completed",
+    "artifact_dir": "",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/15-require-explicit-approval-no-task",
+    "commits": [
+      "d0ff1dde8a8c7e75a71d90ce1e5ec93bcf345142"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-start/SKILL.md",
+      ".codex/prompts/trellis-start.md",
+      ".codex/skills/trellis-start/SKILL.md",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/check.jsonl",
+      ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/design.md",
+      ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/implement.jsonl",
+      ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/implement.md",
+      ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/prd.md",
+      ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review-gate.json",
+      ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review.md",
+      ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      15
+    ],
+    "close_issues": [
+      15
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json"
+  },
+  "index": {
+    "problem": "补齐 Guru Team workflow 在 `no_task` 状态下的文件修改边界：当用户请求会修改文件、修复 bug、实现功能或改变 workflow / preset / script 行为时，默认必须先进入 GitHub issue intake 和 Git base/worktree preflight；如果用户确实想跳过 issue/task/worktree/branch，在当前 checkout 直接修改，必须先明确批准这个 direct-edit override。",
+    "outcome": "通过。已按 `origin/main...HEAD` 重新完整审查 issue 15 分支 diff，覆盖后续补充提交 `d0ff1dd`，未发现 P0/P1/P2/P3 finding。",
+    "changed_behavior": [
+      "Phase 0 intake / preflight 已完成，worktree 与 task 已创建。",
+      "读取 issue 15 live body。",
+      "读取官方 Trellis `custom-workflow`、`custom-spec-template-marketplace` Markdown 文档。",
+      "读取 `.trellis/spec/workflow`、`.trellis/spec/preset`、`.trellis/spec/docs`、`.trellis/spec/guides`。",
+      "Docs SSOT 结论：本仓库无业务 `docs/` 目录；长期文档面为 README、workflow README、preset README、workflow specs。",
+      "Middle-platform Knowledge Gate：不适用。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".codex/prompts/trellis-start.md",
+          ".codex/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/handoff.json"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/check.jsonl",
+          ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/design.md",
+          ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/implement.jsonl",
+          ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/implement.md",
+          ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/prd.md",
+          ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review-gate.json",
+          ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review.md",
+          ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#15"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/15-require-explicit-approval-no-task"
+      ],
+      "paths": [
+        ".agents/skills/trellis-start/SKILL.md",
+        ".codex/prompts/trellis-start.md",
+        ".codex/skills/trellis-start/SKILL.md",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/check.jsonl",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/design.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/implement.jsonl",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/implement.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/prd.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review-gate.json",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/review.md",
+        ".trellis/tasks/archive/2026-07/07-03-15-require-explicit-approval-no-task/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        ".trellis/spec/docs",
+        ".trellis/spec/guides",
+        ".trellis/spec/preset",
+        ".trellis/spec/workflow",
+        "custom-spec-template-marketplace",
+        "custom-workflow",
+        "docs/"
+      ],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [
+        "07-03-15-require-explicit-approval-no-task",
+        "README.md",
+        "SKILL.md",
+        "check.jsonl",
+        "design.md",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "prd.md",
+        "quality-guidelines.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "trellis-start.md",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#15 Require explicit approval for no_task current-checkout d",
+        "07-03-15-require-explicit-approval-no-task",
+        "补齐 Guru Team workflow 在 `no_task` 状态下的文件修改边界：当用户请求会修改文件、修复 b",
+        "通过。已按 `origin/main...HEAD` 重新完整审查 issue 15 分支 diff，覆盖后续补充提交",
+        "Phase 0 intake / preflight 已完成，worktree 与 task 已创建。",
+        "读取 issue 15 live body。",
+        "读取官方 Trellis `custom-workflow`、`custom-spec-template-marketp",
+        "读取 `.trellis/spec/workflow`、`.trellis/spec/preset`、`.trellis",
+        "Docs SSOT 结论：本仓库无业务 `docs/` 目录；长期文档面为 README、workflow README",
+        "Middle-platform Knowledge Gate：不适用。"
+      ]
+    },
+    "retrieval_text": "#15 Require explicit approval for no_task current-checkout direct edits\n补齐 Guru Team workflow 在 `no_task` 状态下的文件修改边界：当用户请求会修改文件、修复 bug、实现功能或改变 workflow / preset / script 行为时，默认必须先进入 GitHub issue intake 和 Git base/worktree preflight；如果用户确实想跳过 issue/task/worktree/branch，在当前 checkout 直接修改，必须先明确批准这个 direct-edit override。\n通过。已按 `origin/main...HEAD` 重新完整审查 issue 15 分支 diff，覆盖后续补充提交 `d0ff1dd`，未发现 P0/P1/P2/P3 finding。\nPhase 0 intake / preflight 已完成，worktree 与 task 已创建。\n读取 issue 15 live body。\n读取官方 Trellis `custom-workflow`、`custom-spec-template-marketplace` Markdown 文档。\n读取 `.trellis/spec/workflow`、`.trellis/spec/preset`、`.trellis/spec/docs`、`.trellis/spec/guides`。\nDocs SSOT 结论：本仓库无业务 `docs/` 目录；长期文档面为 README、workflow README、preset README、workflow specs。\nMiddle-platform Knowledge Gate：不适用。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#15 Require explicit approval for no_task current-checkout d\n07-03-15-require-explicit-approval-no-task\n补齐 Guru Team workflow 在 `no_task` 状态下的文件修改边界：当用户请求会修改文件、修复 b\n通过。已按 `origin/main...HEAD` 重新完整审查 issue 15 分支 diff，覆盖后续补充提交\nPhase 0 intake / preflight 已完成，worktree 与 task 已创建。\n读取 issue 15 live body。\n读取官方 Trellis `custom-workflow`、`custom-spec-template-marketp\n读取 `.trellis/spec/workflow`、`.trellis/spec/preset`、`.trellis\nDocs SSOT 结论：本仓库无业务 `docs/` 目录；长期文档面为 README、workflow README\nMiddle-platform Knowledge Gate：不适用。"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:32Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues",
+      "task.artifact_dir"
+    ],
+    "confidence": "partial"
+  }
+}

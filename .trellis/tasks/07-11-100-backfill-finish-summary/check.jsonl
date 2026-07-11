@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"检查 CLI、错误隔离、验证和安全边界是否完整承接。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查 backfill payload 与 #97 schema/validator 一致性。"}
+{"file":".trellis/spec/preset/installer.md","reason":"检查 managed asset、可执行权限、throwaway 与 update 门禁。"}
+{"file":".trellis/spec/docs/index.md","reason":"检查 workflow/README/preset README 的 Docs SSOT 同步。"}

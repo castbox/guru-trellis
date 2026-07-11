@@ -1,0 +1,242 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:36Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-09-056-auto-branch-type-prefix",
+    "title": "#56 branch type 的前缀不要固定 codex，应该自动判定",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-09-056-auto-branch-type-prefix",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-09-056-auto-branch-type-prefix"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/056-auto-branch-type-prefix",
+    "commits": [
+      "65d053a7592dd6bfc6c5407c2c20acf8ece853a5"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/config-template.yml",
+      ".trellis/guru-team/config.yml",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/tasks/07-09-056-auto-branch-type-prefix/agent-assignment.json",
+      ".trellis/tasks/07-09-056-auto-branch-type-prefix/check.jsonl",
+      ".trellis/tasks/07-09-056-auto-branch-type-prefix/design.md",
+      ".trellis/tasks/07-09-056-auto-branch-type-prefix/implement.jsonl",
+      ".trellis/tasks/07-09-056-auto-branch-type-prefix/implement.md",
+      ".trellis/tasks/07-09-056-auto-branch-type-prefix/issue-scope-ledger.json",
+      ".trellis/tasks/07-09-056-auto-branch-type-prefix/phase2-check.json",
+      ".trellis/tasks/07-09-056-auto-branch-type-prefix/planning-approval.json",
+      ".trellis/tasks/07-09-056-auto-branch-type-prefix/prd.md",
+      ".trellis/tasks/07-09-056-auto-branch-type-prefix/review.md",
+      ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-1-final-review.md",
+      ".trellis/tasks/07-09-056-auto-branch-type-prefix/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/config-template.yml",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      56
+    ],
+    "close_issues": [
+      56
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "历史问题：#56 branch type 的前缀不要固定 codex，应该自动判定 的旧行为未记录。",
+    "outcome": "findings_count=0。F-001 已闭环，第 3 轮 fresh final Branch Review 未发现 P0/P1/P2/P3 finding；当前分支可放行，`issue-scope-ledger.json` 足以支撑 #56 close scope。",
+    "changed_behavior": [
+      "支持的自动分支类型限定为 `feat`、`fix`、`refactor`、`perf`、`test`、`docs`、`style`、`build`、`ci`、`chore`、`revert`。",
+      "支持显式类型标记和关键词规则；识别不到合法类型时使用 `branch_type_default`，默认值为 `chore`。",
+      "显式 `--branch` 仍然优先，不受自动推断影响。",
+      "`branch_prefix` 保留为 legacy 兼容字段，但默认置空，且不再驱动自动分支命名。",
+      "`naming_quality.suggested_override_flags` 改为建议 `--branch <type>/<slug>`，不再建议 `--branch codex/...`。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/config-template.yml",
+          ".trellis/guru-team/config.yml",
+          ".trellis/guru-team/handoff.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-09-056-auto-branch-type-prefix/agent-assignment.json",
+          ".trellis/tasks/07-09-056-auto-branch-type-prefix/check.jsonl",
+          ".trellis/tasks/07-09-056-auto-branch-type-prefix/design.md",
+          ".trellis/tasks/07-09-056-auto-branch-type-prefix/implement.jsonl",
+          ".trellis/tasks/07-09-056-auto-branch-type-prefix/implement.md",
+          ".trellis/tasks/07-09-056-auto-branch-type-prefix/issue-scope-ledger.json",
+          ".trellis/tasks/07-09-056-auto-branch-type-prefix/phase2-check.json",
+          ".trellis/tasks/07-09-056-auto-branch-type-prefix/planning-approval.json",
+          ".trellis/tasks/07-09-056-auto-branch-type-prefix/prd.md",
+          ".trellis/tasks/07-09-056-auto-branch-type-prefix/review.md",
+          ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-1-final-review.md",
+          ".trellis/tasks/07-09-056-auto-branch-type-prefix/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/config-template.yml",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#56"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "fix/056-auto-branch-type-prefix"
+      ],
+      "paths": [
+        ".trellis/guru-team/config-template.yml",
+        ".trellis/guru-team/config.yml",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/agent-assignment.json",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/check.jsonl",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/design.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/implement.jsonl",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/implement.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/issue-scope-ledger.json",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/phase2-check.json",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/planning-approval.json",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/prd.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/review.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/reviews/round-1-final-review.md",
+        ".trellis/tasks/07-09-056-auto-branch-type-prefix/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/config-template.yml",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "--branch"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "naming_quality.suggested_override_flags"
+      ],
+      "symbols": [
+        "07-09-056-auto-branch-type-prefix",
+        "README.md",
+        "agent-assignment.json",
+        "check.jsonl",
+        "config-template.yml",
+        "config.yml",
+        "design.md",
+        "guru_team_trellis.py",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "round-1-final-review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#56 branch type 的前缀不要固定 codex，应该自动判定",
+        "07-09-056-auto-branch-type-prefix",
+        "历史问题：#56 branch type 的前缀不要固定 codex，应该自动判定 的旧行为未记录。",
+        "findings_count=0。F-001 已闭环，第 3 轮 fresh final Branch Review 未",
+        "支持的自动分支类型限定为 `feat`、`fix`、`refactor`、`perf`、`test`、`docs`、`s",
+        "支持显式类型标记和关键词规则；识别不到合法类型时使用 `branch_type_default`，默认值为 `chore",
+        "显式 `--branch` 仍然优先，不受自动推断影响。",
+        "`branch_prefix` 保留为 legacy 兼容字段，但默认置空，且不再驱动自动分支命名。",
+        "`naming_quality.suggested_override_flags` 改为建议 `--branch <ty"
+      ]
+    },
+    "retrieval_text": "#56 branch type 的前缀不要固定 codex，应该自动判定\n历史问题：#56 branch type 的前缀不要固定 codex，应该自动判定 的旧行为未记录。\nfindings_count=0。F-001 已闭环，第 3 轮 fresh final Branch Review 未发现 P0/P1/P2/P3 finding；当前分支可放行，`issue-scope-ledger.json` 足以支撑 #56 close scope。\n支持的自动分支类型限定为 `feat`、`fix`、`refactor`、`perf`、`test`、`docs`、`style`、`build`、`ci`、`chore`、`revert`。\n支持显式类型标记和关键词规则；识别不到合法类型时使用 `branch_type_default`，默认值为 `chore`。\n显式 `--branch` 仍然优先，不受自动推断影响。\n`branch_prefix` 保留为 legacy 兼容字段，但默认置空，且不再驱动自动分支命名。\n`naming_quality.suggested_override_flags` 改为建议 `--branch <type>/<slug>`，不再建议 `--branch codex/...`。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#56 branch type 的前缀不要固定 codex，应该自动判定\n07-09-056-auto-branch-type-prefix\n历史问题：#56 branch type 的前缀不要固定 codex，应该自动判定 的旧行为未记录。\nfindings_count=0。F-001 已闭环，第 3 轮 fresh final Branch Review 未\n支持的自动分支类型限定为 `feat`、`fix`、`refactor`、`perf`、`test`、`docs`、`s\n支持显式类型标记和关键词规则；识别不到合法类型时使用 `branch_type_default`，默认值为 `chore\n显式 `--branch` 仍然优先，不受自动推断影响。\n`branch_prefix` 保留为 legacy 兼容字段，但默认置空，且不再驱动自动分支命名。\n`naming_quality.suggested_override_flags` 改为建议 `--branch <ty"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:36Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

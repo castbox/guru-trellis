@@ -1,0 +1,341 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:34Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-05-44-branch-review-gate-finding-fresh",
+    "title": "#44 收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查",
+    "status": "completed",
+    "artifact_dir": "",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/44-branch-review-gate-finding-fresh",
+    "commits": [
+      "55940c2e0e74c19e6eb839ba8781b9461df36110"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".claude/commands/trellis/continue.md",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".cursor/commands/trellis-continue.md",
+      ".trellis/guru-team/config-template.yml",
+      ".trellis/guru-team/config.yml",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/agent-assignment.json",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/check.jsonl",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/design.md",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/implement.jsonl",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/implement.md",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/phase2-check.json",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/planning-approval.json",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/pr-body.md",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/pr-readiness.json",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/prd.md",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/research/sync-surfaces.md",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/review-gate.json",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/review.md",
+      ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/config-template.yml",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      44
+    ],
+    "close_issues": [
+      44
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md",
+    "pr_readiness": "pr-readiness.json"
+  },
+  "index": {
+    "problem": "把 Guru Team Branch Review Gate 从“P0/P1/P2 finding 阻断、P3 可记录放行”收紧为“任何 finding 都阻断”。当某轮 review 发现 finding 后，该 review agent 后续必须先作为同一 `问题闭环审查代理` 复审自己的 finding 并给出 0 findings；该闭环证据不需要在每个后续 HEAD 重跑。随后才允许启动新的 fresh `最终放行审查代理`，并且该代理要在当前 HEAD 上完整审查 `origin/<base>...HEAD` 后给出 0 findings。",
+    "outcome": "历史结果：#44 收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查；非目标信息未记录。",
+    "changed_behavior": [
+      "收紧 Guru Team Branch Review Gate：任意 `finding` 都阻断通过，包括 P3；`observation` 和 `followup_candidate` 只能作为非阻断记录，不能替代当前 scope defect。",
+      "强制通过态 gate 绑定 task-local `agent-assignment.json` 与 `review.md` digest，校验 review round 唯一递增、finding owner later same-agent closure、fresh final reviewer、当前 HEAD 和 0 findings。",
+      "修正用户指出的 reviewer 职责边界：finding owner closure 只证明自己的 finding 已关闭，不要求每个后续 HEAD 重跑；fresh final reviewer 负责当前 HEAD 完整 diff；独立 review subagent 不调用 Guru Team recorder/validator 扩展脚本。",
+      "修正 Phase 2 post-commit audit 与 Branch Review Gate metadata 的边界：`review.md`、`review-gate.json`、`agent-assignment.json`、PR body/readiness 和 issue ledger 这类 gate/publish metadata 可在 f",
+      "补齐归档后 publish recovery：归档 task 成为新的 task-local 边界，validator 可只读接受 pre-archive active task path 的 digest entry，finish/publish recovery 只迁移路径与 digest 元数据并提交 Trellis metadata。",
+      "同步 canonical workflow、dogfood workflow、preset overlay、平台 continue 入口、README、requirements 与 `.trellis/spec/workflow/*`，避免不同入口继续传播旧 gate 语义。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/overlay-guidelines.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md",
+          "docs/requirements/README.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/commands/trellis/continue.md",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/config-template.yml",
+          ".trellis/guru-team/config.yml",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/handoff.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/agent-assignment.json",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/check.jsonl",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/design.md",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/implement.jsonl",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/implement.md",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/phase2-check.json",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/planning-approval.json",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/pr-body.md",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/pr-readiness.json",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/prd.md",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/research/sync-surfaces.md",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/review-gate.json",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/review.md",
+          ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/config-template.yml",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#44"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/44-branch-review-gate-finding-fresh"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".claude/commands/trellis/continue.md",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".cursor/commands/trellis-continue.md",
+        ".trellis/guru-team/config-template.yml",
+        ".trellis/guru-team/config.yml",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/agent-assignment.json",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/check.jsonl",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/design.md",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/implement.jsonl",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/implement.md",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/phase2-check.json",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/planning-approval.json",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/pr-body.md",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/pr-readiness.json",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/prd.md",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/research/sync-surfaces.md",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/review-gate.json",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/review.md",
+        ".trellis/tasks/archive/2026-07/07-05-44-branch-review-gate-finding-fresh/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/README.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/config-template.yml",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "agent-assignment.json",
+        "review-gate.json"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "agent-assignment.json",
+        "review-gate.json",
+        "review.md"
+      ],
+      "symbols": [
+        "07-05-44-branch-review-gate-finding-fresh",
+        "README.md",
+        "SKILL.md",
+        "agent-assignment.json",
+        "check.jsonl",
+        "companion-scripts.md",
+        "config-template.yml",
+        "config.yml",
+        "continue.md",
+        "data-contracts.md",
+        "design.md",
+        "extension.json",
+        "guru_team_trellis.py",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "overlay-guidelines.md",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "pr-readiness.json",
+        "prd.md",
+        "quality-guidelines.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "sync-surfaces.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-continue.md",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#44 收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查",
+        "07-05-44-branch-review-gate-finding-fresh",
+        "把 Guru Team Branch Review Gate 从“P0/P1/P2 finding 阻断、P3 可记录放",
+        "历史结果：#44 收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查",
+        "收紧 Guru Team Branch Review Gate：任意 `finding` 都阻断通过，包括 P3；`ob",
+        "强制通过态 gate 绑定 task-local `agent-assignment.json` 与 `review.m",
+        "修正用户指出的 reviewer 职责边界：finding owner closure 只证明自己的 finding 已",
+        "修正 Phase 2 post-commit audit 与 Branch Review Gate metadata 的",
+        "补齐归档后 publish recovery：归档 task 成为新的 task-local 边界，validator",
+        "同步 canonical workflow、dogfood workflow、preset overlay、平台 con"
+      ]
+    },
+    "retrieval_text": "#44 收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查\n把 Guru Team Branch Review Gate 从“P0/P1/P2 finding 阻断、P3 可记录放行”收紧为“任何 finding 都阻断”。当某轮 review 发现 finding 后，该 review agent 后续必须先作为同一 `问题闭环审查代理` 复审自己的 finding 并给出 0 findings；该闭环证据不需要在每个后续 HEAD 重跑。随后才允许启动新的 fresh `最终放行审查代理`，并且该代理要在当前 HEAD 上完整审查 `origin/<base>...HEAD` 后给出 0 findings。\n历史结果：#44 收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查；非目标信息未记录。\n收紧 Guru Team Branch Review Gate：任意 `finding` 都阻断通过，包括 P3；`observation` 和 `followup_candidate` 只能作为非阻断记录，不能替代当前 scope defect。\n强制通过态 gate 绑定 task-local `agent-assignment.json` 与 `review.md` digest，校验 review round 唯一递增、finding owner later same-agent closure、fresh final reviewer、当前 HEAD 和 0 findings。\n修正用户指出的 reviewer 职责边界：finding owner closure 只证明自己的 finding 已关闭，不要求每个后续 HEAD 重跑；fresh final reviewer 负责当前 HEAD 完整 diff；独立 review subagent 不调用 Guru Team recorder/validator 扩展脚本。\n修正 Phase 2 post-commit audit 与 Branch Review Gate metadata 的边界：`review.md`、`review-gate.json`、`agent-assignment.json`、PR body/readiness 和 issue ledger 这类 gate/publish metadata 可在 f\n补齐归档后 publish recovery：归档 task 成为新的 task-local 边界，validator 可只读接受 pre-archive active task path 的 digest entry，finish/publish recovery 只迁移路径与 digest 元数据并提交 Trellis metadata。\n同步 canonical workflow、dogfood workflow、preset overlay、平台 continue 入口、README、requirements 与 `.trellis/spec/workflow/*`，避免不同入口继续传播旧 gate 语义。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#44 收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查\n07-05-44-branch-review-gate-finding-fresh\n把 Guru Team Branch Review Gate 从“P0/P1/P2 finding 阻断、P3 可记录放\n历史结果：#44 收紧 Branch Review Gate：任何 finding 阻断并要求 fresh 最终放行审查\n收紧 Guru Team Branch Review Gate：任意 `finding` 都阻断通过，包括 P3；`ob\n强制通过态 gate 绑定 task-local `agent-assignment.json` 与 `review.m\n修正用户指出的 reviewer 职责边界：finding owner closure 只证明自己的 finding 已\n修正 Phase 2 post-commit audit 与 Branch Review Gate metadata 的\n补齐归档后 publish recovery：归档 task 成为新的 task-local 边界，validator\n同步 canonical workflow、dogfood workflow、preset overlay、平台 con"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:34Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "pr-readiness.json",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues",
+      "task.artifact_dir"
+    ],
+    "confidence": "partial"
+  }
+}

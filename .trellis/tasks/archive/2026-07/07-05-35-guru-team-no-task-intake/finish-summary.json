@@ -1,0 +1,267 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:34Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-05-35-guru-team-no-task-intake",
+    "title": "#35 修复 Guru Team no_task intake 防止绕过 worktree",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-05-35-guru-team-no-task-intake",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-05-35-guru-team-no-task-intake"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/35-guru-team-no-task-intake",
+    "commits": [
+      "ef72b424bfdf159863ed5606787e4b7dac6c2028"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-start/SKILL.md",
+      ".codex/hooks/session-start.py",
+      ".codex/hooks/test_inject_workflow_state.py",
+      ".codex/prompts/trellis-start.md",
+      ".codex/skills/trellis-start/SKILL.md",
+      ".cursor/hooks/session-start.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/tasks/07-05-35-guru-team-no-task-intake/check.jsonl",
+      ".trellis/tasks/07-05-35-guru-team-no-task-intake/design.md",
+      ".trellis/tasks/07-05-35-guru-team-no-task-intake/implement.jsonl",
+      ".trellis/tasks/07-05-35-guru-team-no-task-intake/implement.md",
+      ".trellis/tasks/07-05-35-guru-team-no-task-intake/issue-scope-ledger.json",
+      ".trellis/tasks/07-05-35-guru-team-no-task-intake/phase2-check.json",
+      ".trellis/tasks/07-05-35-guru-team-no-task-intake/planning-approval.json",
+      ".trellis/tasks/07-05-35-guru-team-no-task-intake/prd.md",
+      ".trellis/tasks/07-05-35-guru-team-no-task-intake/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      35
+    ],
+    "close_issues": [
+      35
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "修复 Guru Team workflow / overlay 在 `no_task` 和 Phase 1.0 下的提示缺陷，确保 issue-backed、task-like 或需要文件修改的开发请求不会只凭通用 task creation consent 在 source checkout 直接运行裸 `task.py create`。",
+    "outcome": "历史结果：#35 修复 Guru Team no_task intake 防止绕过 worktree；非目标信息未记录。",
+    "changed_behavior": [
+      "更新 Guru Team workflow 的 no_task triage、`[workflow-state:no_task]`、Phase 0.4 handoff review 和 Phase 1.0 task creation 文案，使 issue-backed、task-like、file-changing 请求优先进入 `check-env.sh",
+      "同步 canonical `trellis-start` overlay、Codex prompt/skill 副本、dogfood `.trellis/workflow.md` 和 README/spec，明确 `workspace_mode: worktree` 下创建执行环境必须通过 `prepare-task --create-worktree --",
+      "更新 Codex/Cursor no-task session fallback，并补充回归测试，覆盖 prepare/worktree 入口、`task creation consent` 不等于 current-checkout direct-edit consent，以及旧泛化 task consent 提示不再出现。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/quality-guidelines.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".codex/hooks/session-start.py",
+          ".codex/hooks/test_inject_workflow_state.py",
+          ".codex/prompts/trellis-start.md",
+          ".codex/skills/trellis-start/SKILL.md",
+          ".cursor/hooks/session-start.py"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/handoff.json"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-05-35-guru-team-no-task-intake/check.jsonl",
+          ".trellis/tasks/07-05-35-guru-team-no-task-intake/design.md",
+          ".trellis/tasks/07-05-35-guru-team-no-task-intake/implement.jsonl",
+          ".trellis/tasks/07-05-35-guru-team-no-task-intake/implement.md",
+          ".trellis/tasks/07-05-35-guru-team-no-task-intake/issue-scope-ledger.json",
+          ".trellis/tasks/07-05-35-guru-team-no-task-intake/phase2-check.json",
+          ".trellis/tasks/07-05-35-guru-team-no-task-intake/planning-approval.json",
+          ".trellis/tasks/07-05-35-guru-team-no-task-intake/prd.md",
+          ".trellis/tasks/07-05-35-guru-team-no-task-intake/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#35"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/35-guru-team-no-task-intake"
+      ],
+      "paths": [
+        ".agents/skills/trellis-start/SKILL.md",
+        ".codex/hooks/session-start.py",
+        ".codex/hooks/test_inject_workflow_state.py",
+        ".codex/prompts/trellis-start.md",
+        ".codex/skills/trellis-start/SKILL.md",
+        ".cursor/hooks/session-start.py",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/07-05-35-guru-team-no-task-intake/check.jsonl",
+        ".trellis/tasks/07-05-35-guru-team-no-task-intake/design.md",
+        ".trellis/tasks/07-05-35-guru-team-no-task-intake/implement.jsonl",
+        ".trellis/tasks/07-05-35-guru-team-no-task-intake/implement.md",
+        ".trellis/tasks/07-05-35-guru-team-no-task-intake/issue-scope-ledger.json",
+        ".trellis/tasks/07-05-35-guru-team-no-task-intake/phase2-check.json",
+        ".trellis/tasks/07-05-35-guru-team-no-task-intake/planning-approval.json",
+        ".trellis/tasks/07-05-35-guru-team-no-task-intake/prd.md",
+        ".trellis/tasks/07-05-35-guru-team-no-task-intake/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        ".trellis/workflow.md",
+        "check-env.sh",
+        "trellis-start"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "0.4",
+        "1.0",
+        "check-env.sh",
+        "trellis/workflow.md",
+        "workflow-state:no_task"
+      ],
+      "symbols": [
+        "07-05-35-guru-team-no-task-intake",
+        "README.md",
+        "SKILL.md",
+        "check.jsonl",
+        "design.md",
+        "extension.json",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "quality-guidelines.md",
+        "review-gate.json",
+        "review.md",
+        "session-start.py",
+        "task.json",
+        "test_inject_workflow_state.py",
+        "trellis-start.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#35 修复 Guru Team no_task intake 防止绕过 worktree",
+        "07-05-35-guru-team-no-task-intake",
+        "修复 Guru Team workflow / overlay 在 `no_task` 和 Phase 1.0 下的提示",
+        "历史结果：#35 修复 Guru Team no_task intake 防止绕过 worktree；非目标信息未记录。",
+        "更新 Guru Team workflow 的 no_task triage、`[workflow-state:no_t",
+        "同步 canonical `trellis-start` overlay、Codex prompt/skill 副本、d",
+        "更新 Codex/Cursor no-task session fallback，并补充回归测试，覆盖 prepare/"
+      ]
+    },
+    "retrieval_text": "#35 修复 Guru Team no_task intake 防止绕过 worktree\n修复 Guru Team workflow / overlay 在 `no_task` 和 Phase 1.0 下的提示缺陷，确保 issue-backed、task-like 或需要文件修改的开发请求不会只凭通用 task creation consent 在 source checkout 直接运行裸 `task.py create`。\n历史结果：#35 修复 Guru Team no_task intake 防止绕过 worktree；非目标信息未记录。\n更新 Guru Team workflow 的 no_task triage、`[workflow-state:no_task]`、Phase 0.4 handoff review 和 Phase 1.0 task creation 文案，使 issue-backed、task-like、file-changing 请求优先进入 `check-env.sh\n同步 canonical `trellis-start` overlay、Codex prompt/skill 副本、dogfood `.trellis/workflow.md` 和 README/spec，明确 `workspace_mode: worktree` 下创建执行环境必须通过 `prepare-task --create-worktree --\n更新 Codex/Cursor no-task session fallback，并补充回归测试，覆盖 prepare/worktree 入口、`task creation consent` 不等于 current-checkout direct-edit consent，以及旧泛化 task consent 提示不再出现。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#35 修复 Guru Team no_task intake 防止绕过 worktree\n07-05-35-guru-team-no-task-intake\n修复 Guru Team workflow / overlay 在 `no_task` 和 Phase 1.0 下的提示\n历史结果：#35 修复 Guru Team no_task intake 防止绕过 worktree；非目标信息未记录。\n更新 Guru Team workflow 的 no_task triage、`[workflow-state:no_t\n同步 canonical `trellis-start` overlay、Codex prompt/skill 副本、d\n更新 Codex/Cursor no-task session fallback，并补充回归测试，覆盖 prepare/"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:34Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

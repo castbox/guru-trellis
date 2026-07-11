@@ -1,0 +1,278 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:35Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-07-055-intake-scope-evolution",
+    "title": "#55 github issue intake 的过程需要与时俱进",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-07-055-intake-scope-evolution",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-07-055-intake-scope-evolution"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/055-intake-scope-evolution",
+    "commits": [
+      "ecfa4c51f5da93f2672a28913f50450406408307"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".agents/skills/trellis-start/SKILL.md",
+      ".claude/commands/trellis/continue.md",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/prompts/trellis-start.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".codex/skills/trellis-start/SKILL.md",
+      ".cursor/commands/trellis-continue.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/tasks/07-07-055-intake-scope-evolution/check.jsonl",
+      ".trellis/tasks/07-07-055-intake-scope-evolution/design.md",
+      ".trellis/tasks/07-07-055-intake-scope-evolution/implement.jsonl",
+      ".trellis/tasks/07-07-055-intake-scope-evolution/implement.md",
+      ".trellis/tasks/07-07-055-intake-scope-evolution/issue-scope-ledger.json",
+      ".trellis/tasks/07-07-055-intake-scope-evolution/phase2-check.json",
+      ".trellis/tasks/07-07-055-intake-scope-evolution/planning-approval.json",
+      ".trellis/tasks/07-07-055-intake-scope-evolution/prd.md",
+      ".trellis/tasks/07-07-055-intake-scope-evolution/task.json",
+      ".trellis/workflow.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      55
+    ],
+    "close_issues": [
+      55
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "让 Guru Team issue intake 在用户输入、GitHub issue、任务执行中需求发生变化时保持“与时俱进”：AI 必须先判断需求是否清晰，必要时进入 `trellis-brainstorm` 与用户澄清，并把澄清或增补结论同步到合适的 GitHub issue 记录，而不是只把最初的 issue body 当成固定事实。",
+    "outcome": "本 PR 解决 GitHub issue intake 在需求不清晰或执行中范围变化时缺少显式判断与留痕的问题。",
+    "changed_behavior": [
+      "在 Guru Team workflow 中加入 intake clarity check：当 GitHub issue 或用户请求存在范围模糊、验收标准不清、涉及多个 issue 或可能需要拆分时，必须先使用 `trellis-brainstorm` 澄清，不能直接创建 task 或进入实现。",
+      "要求澄清后的 scope 回写到 GitHub issue body/comment，或在新 issue 创建前给出已审查的 proposed issue body，保证 Trellis task 的依据对 GitHub 可见。",
+      "新增任务执行中的 Scope Change Gate：当用户提出新增需求、引用其他 issue 或要求扩 scope 时，必须判断 current task / related issue / follow-up issue 的归属，并同步更新 `issue-scope-ledger.json`。",
+      "收紧 `issue-scope-ledger.json` 语义：只有被当前 task 完整验收且被 Branch Review Gate 覆盖的 issue 才能进入 `close_issues` 并在 PR 中使用 `Closes #xx`。",
+      "同步 canonical workflow、dogfood workflow、preset overlay、Codex/Claude/Cursor 入口文案、长期需求文档和回归测试。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/commands/trellis/continue.md",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/prompts/trellis-start.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".codex/skills/trellis-start/SKILL.md",
+          ".cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/handoff.json"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md",
+          ".agents/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-07-055-intake-scope-evolution/check.jsonl",
+          ".trellis/tasks/07-07-055-intake-scope-evolution/design.md",
+          ".trellis/tasks/07-07-055-intake-scope-evolution/implement.jsonl",
+          ".trellis/tasks/07-07-055-intake-scope-evolution/implement.md",
+          ".trellis/tasks/07-07-055-intake-scope-evolution/issue-scope-ledger.json",
+          ".trellis/tasks/07-07-055-intake-scope-evolution/phase2-check.json",
+          ".trellis/tasks/07-07-055-intake-scope-evolution/planning-approval.json",
+          ".trellis/tasks/07-07-055-intake-scope-evolution/prd.md",
+          ".trellis/tasks/07-07-055-intake-scope-evolution/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#55"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/055-intake-scope-evolution"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".agents/skills/trellis-start/SKILL.md",
+        ".claude/commands/trellis/continue.md",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/prompts/trellis-start.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".codex/skills/trellis-start/SKILL.md",
+        ".cursor/commands/trellis-continue.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/tasks/07-07-055-intake-scope-evolution/check.jsonl",
+        ".trellis/tasks/07-07-055-intake-scope-evolution/design.md",
+        ".trellis/tasks/07-07-055-intake-scope-evolution/implement.jsonl",
+        ".trellis/tasks/07-07-055-intake-scope-evolution/implement.md",
+        ".trellis/tasks/07-07-055-intake-scope-evolution/issue-scope-ledger.json",
+        ".trellis/tasks/07-07-055-intake-scope-evolution/phase2-check.json",
+        ".trellis/tasks/07-07-055-intake-scope-evolution/planning-approval.json",
+        ".trellis/tasks/07-07-055-intake-scope-evolution/prd.md",
+        ".trellis/tasks/07-07-055-intake-scope-evolution/task.json",
+        ".trellis/workflow.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "issue-scope-ledger.json",
+        "trellis-brainstorm"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "issue-scope-ledger.json"
+      ],
+      "symbols": [
+        "07-07-055-intake-scope-evolution",
+        "SKILL.md",
+        "check.jsonl",
+        "continue.md",
+        "design.md",
+        "extension.json",
+        "guru-team-trellis-flow.md",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-continue.md",
+        "trellis-start.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#55 github issue intake 的过程需要与时俱进",
+        "07-07-055-intake-scope-evolution",
+        "让 Guru Team issue intake 在用户输入、GitHub issue、任务执行中需求发生变化时保持“与",
+        "本 PR 解决 GitHub issue intake 在需求不清晰或执行中范围变化时缺少显式判断与留痕的问题。",
+        "在 Guru Team workflow 中加入 intake clarity check：当 GitHub issue",
+        "要求澄清后的 scope 回写到 GitHub issue body/comment，或在新 issue 创建前给出已审",
+        "新增任务执行中的 Scope Change Gate：当用户提出新增需求、引用其他 issue 或要求扩 scope 时",
+        "收紧 `issue-scope-ledger.json` 语义：只有被当前 task 完整验收且被 Branch Rev",
+        "同步 canonical workflow、dogfood workflow、preset overlay、Codex/"
+      ]
+    },
+    "retrieval_text": "#55 github issue intake 的过程需要与时俱进\n让 Guru Team issue intake 在用户输入、GitHub issue、任务执行中需求发生变化时保持“与时俱进”：AI 必须先判断需求是否清晰，必要时进入 `trellis-brainstorm` 与用户澄清，并把澄清或增补结论同步到合适的 GitHub issue 记录，而不是只把最初的 issue body 当成固定事实。\n本 PR 解决 GitHub issue intake 在需求不清晰或执行中范围变化时缺少显式判断与留痕的问题。\n在 Guru Team workflow 中加入 intake clarity check：当 GitHub issue 或用户请求存在范围模糊、验收标准不清、涉及多个 issue 或可能需要拆分时，必须先使用 `trellis-brainstorm` 澄清，不能直接创建 task 或进入实现。\n要求澄清后的 scope 回写到 GitHub issue body/comment，或在新 issue 创建前给出已审查的 proposed issue body，保证 Trellis task 的依据对 GitHub 可见。\n新增任务执行中的 Scope Change Gate：当用户提出新增需求、引用其他 issue 或要求扩 scope 时，必须判断 current task / related issue / follow-up issue 的归属，并同步更新 `issue-scope-ledger.json`。\n收紧 `issue-scope-ledger.json` 语义：只有被当前 task 完整验收且被 Branch Review Gate 覆盖的 issue 才能进入 `close_issues` 并在 PR 中使用 `Closes #xx`。\n同步 canonical workflow、dogfood workflow、preset overlay、Codex/Claude/Cursor 入口文案、长期需求文档和回归测试。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#55 github issue intake 的过程需要与时俱进\n07-07-055-intake-scope-evolution\n让 Guru Team issue intake 在用户输入、GitHub issue、任务执行中需求发生变化时保持“与\n本 PR 解决 GitHub issue intake 在需求不清晰或执行中范围变化时缺少显式判断与留痕的问题。\n在 Guru Team workflow 中加入 intake clarity check：当 GitHub issue\n要求澄清后的 scope 回写到 GitHub issue body/comment，或在新 issue 创建前给出已审\n新增任务执行中的 Scope Change Gate：当用户提出新增需求、引用其他 issue 或要求扩 scope 时\n收紧 `issue-scope-ledger.json` 语义：只有被当前 task 完整验收且被 Branch Rev\n同步 canonical workflow、dogfood workflow、preset overlay、Codex/"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:35Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

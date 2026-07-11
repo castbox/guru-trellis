@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:33Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-04-27-finish-work-dry-run-readiness",
+    "title": "#27 让 finish-work --dry-run 成为真正无副作用的 readiness preview",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-04-27-finish-work-dry-run-readiness",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-04-27-finish-work-dry-run-readiness"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/27-finish-work-dry-run-readiness",
+    "commits": [
+      "68850596ba7dcaaeebed7503378eedd3c798ef6a"
+    ],
+    "changed_paths": [
+      ".codex/hooks/inject-workflow-state.py",
+      ".codex/hooks/test_inject_workflow_state.py",
+      ".trellis/config.yaml",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/scripts/common/test_workflow_phase.py",
+      ".trellis/scripts/common/workflow_phase.py",
+      ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/check.jsonl",
+      ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/design.md",
+      ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/implement.jsonl",
+      ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/implement.md",
+      ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/issue-scope-ledger.json",
+      ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/phase2-check.json",
+      ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/planning-approval.json",
+      ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/prd.md",
+      ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      27
+    ],
+    "close_issues": [
+      27
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "修复 Guru Team companion helper 中 `finish-work --dry-run` 的危险语义，并修正阻塞本 issue closeout 的 Codex dispatch 默认模式。",
+    "outcome": "无 P0/P1/P2 阻塞 finding。当前分支可通过 Branch Review Gate。",
+    "changed_behavior": [
+      "修复 Guru Team `finish-work` 的 dry-run 语义：`finish-work --dry-run --from-trellis-finish-work` 现在只执行 readiness 校验并输出将要执行的 archive、journal、metadata commit、push、PR 发布计划，不再移动 task、写 journ",
+      "修正 Codex 平台默认运行方式：缺省或非法 `codex.dispatch_mode` 现在会回落到 `sub-agent`，避免新安装项目默认 inline 导致 Branch Review Gate 无法获得独立 Agent review。",
+      "保留显式 `codex.dispatch_mode: inline`，作为调试或降级模式；preset installer 会为缺省项目 materialize `.trellis/config.yaml` 中的 `codex.dispatch_mode: sub-agent`。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/config.yaml",
+          ".trellis/scripts/common/test_workflow_phase.py",
+          ".trellis/scripts/common/workflow_phase.py",
+          ".trellis/workflow.md",
+          "README.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".codex/hooks/inject-workflow-state.py",
+          ".codex/hooks/test_inject_workflow_state.py"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/check.jsonl",
+          ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/design.md",
+          ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/implement.jsonl",
+          ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/implement.md",
+          ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/issue-scope-ledger.json",
+          ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/phase2-check.json",
+          ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/planning-approval.json",
+          ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/prd.md",
+          ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#27"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/27-finish-work-dry-run-readiness"
+      ],
+      "paths": [
+        ".codex/hooks/inject-workflow-state.py",
+        ".codex/hooks/test_inject_workflow_state.py",
+        ".trellis/config.yaml",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/scripts/common/test_workflow_phase.py",
+        ".trellis/scripts/common/workflow_phase.py",
+        ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/check.jsonl",
+        ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/design.md",
+        ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/implement.jsonl",
+        ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/implement.md",
+        ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/issue-scope-ledger.json",
+        ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/phase2-check.json",
+        ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/planning-approval.json",
+        ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/prd.md",
+        ".trellis/tasks/07-04-27-finish-work-dry-run-readiness/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        ".trellis/config.yaml",
+        "finish-work",
+        "sub-agent"
+      ],
+      "config_keys": [
+        "codex.dispatch_mode",
+        "config.yaml"
+      ],
+      "schema_fields": [
+        "codex.dispatch_mode",
+        "trellis/config.yaml"
+      ],
+      "symbols": [
+        "07-04-27-finish-work-dry-run-readiness",
+        "README.md",
+        "apply_guru_team_trellis_preset.py",
+        "check.jsonl",
+        "config.yaml",
+        "design.md",
+        "guru_team_trellis.py",
+        "implement.jsonl",
+        "implement.md",
+        "inject-workflow-state.py",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_apply_guru_team_trellis_preset.py",
+        "test_guru_team_trellis.py",
+        "test_inject_workflow_state.py",
+        "test_workflow_phase.py",
+        "verify-throwaway-install.sh",
+        "workflow.md",
+        "workflow_phase.py"
+      ],
+      "phrases": [
+        "#27 让 finish-work --dry-run 成为真正无副作用的 readiness preview",
+        "07-04-27-finish-work-dry-run-readiness",
+        "修复 Guru Team companion helper 中 `finish-work --dry-run` 的危险语",
+        "无 P0/P1/P2 阻塞 finding。当前分支可通过 Branch Review Gate。",
+        "修复 Guru Team `finish-work` 的 dry-run 语义：`finish-work --dry-r",
+        "修正 Codex 平台默认运行方式：缺省或非法 `codex.dispatch_mode` 现在会回落到 `sub-ag",
+        "保留显式 `codex.dispatch_mode: inline`，作为调试或降级模式；preset installe"
+      ]
+    },
+    "retrieval_text": "#27 让 finish-work --dry-run 成为真正无副作用的 readiness preview\n修复 Guru Team companion helper 中 `finish-work --dry-run` 的危险语义，并修正阻塞本 issue closeout 的 Codex dispatch 默认模式。\n无 P0/P1/P2 阻塞 finding。当前分支可通过 Branch Review Gate。\n修复 Guru Team `finish-work` 的 dry-run 语义：`finish-work --dry-run --from-trellis-finish-work` 现在只执行 readiness 校验并输出将要执行的 archive、journal、metadata commit、push、PR 发布计划，不再移动 task、写 journ\n修正 Codex 平台默认运行方式：缺省或非法 `codex.dispatch_mode` 现在会回落到 `sub-agent`，避免新安装项目默认 inline 导致 Branch Review Gate 无法获得独立 Agent review。\n保留显式 `codex.dispatch_mode: inline`，作为调试或降级模式；preset installer 会为缺省项目 materialize `.trellis/config.yaml` 中的 `codex.dispatch_mode: sub-agent`。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#27 让 finish-work --dry-run 成为真正无副作用的 readiness preview\n07-04-27-finish-work-dry-run-readiness\n修复 Guru Team companion helper 中 `finish-work --dry-run` 的危险语\n无 P0/P1/P2 阻塞 finding。当前分支可通过 Branch Review Gate。\n修复 Guru Team `finish-work` 的 dry-run 语义：`finish-work --dry-r\n修正 Codex 平台默认运行方式：缺省或非法 `codex.dispatch_mode` 现在会回落到 `sub-ag\n保留显式 `codex.dispatch_mode: inline`，作为调试或降级模式；preset installe"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:33Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

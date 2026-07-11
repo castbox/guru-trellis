@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"实现 companion CLI、退出码、AI 判断与确定性脚本边界。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"实现 finish-summary backfill 数据合同、路径净化和 schema 承接。"}
+{"file":".trellis/spec/preset/installer.md","reason":"新增 managed executable asset 并验证安装升级。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"保持 canonical workflow、dogfood 与平台入口一致。"}

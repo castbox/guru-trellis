@@ -68,16 +68,17 @@
         "check-review-gate",
         "verify-marketplace",
         "finish-work",
+        "backfill-finish-summary",
         "publish-pr"
       ]
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-10T21:23:39Z",
+  "installed_at": "2026-07-11T01:54:53Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/097-finish-summary-replaces-add-session",
-    "commit": "53f265f3949ca8374c7b534da309a4c924325450",
+    "ref": "feat/100-backfill-finish-summary",
+    "commit": "920e7f9f797efb6356286f638efc1995ffe4075d",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -137,6 +138,7 @@
       ".trellis/guru-team/schemas/finish-summary.schema.json",
       ".trellis/guru-team/schemas/marketplace-verification.schema.json",
       ".trellis/guru-team/schemas/task-start-context.schema.json",
+      ".trellis/guru-team/scripts/bash/backfill-finish-summary.sh",
       ".trellis/guru-team/scripts/bash/check-agent-assignment.sh",
       ".trellis/guru-team/scripts/bash/check-commit-messages.sh",
       ".trellis/guru-team/scripts/bash/check-env.sh",
@@ -160,7 +162,9 @@
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"
     ],
     "new_copies": [],
-    "managed_backups": [],
+    "managed_backups": [
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py.bak"
+    ],
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
   },

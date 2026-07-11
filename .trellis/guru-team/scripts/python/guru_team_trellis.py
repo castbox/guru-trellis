@@ -180,6 +180,31 @@ FINISH_SUMMARY_PATH_SNAPSHOT_UNAVAILABLE_CONTRACT = {
     "after": "完成摘要已使用空路径集合，未写入未验证路径。",
     "source_artifact": "",
 }
+FINISH_SUMMARY_BACKFILL_ARCHIVE_GLOB = ".trellis/tasks/archive/**/<task>/"
+FINISH_SUMMARY_BACKFILL_SOURCE_FILES = (
+    "task.json",
+    "issue-scope-ledger.json",
+    "prd.md",
+    "design.md",
+    "implement.md",
+    "review.md",
+    "review-gate.json",
+    "phase2-check.json",
+    "pr-body.md",
+    "pr-readiness.json",
+)
+FINISH_SUMMARY_BACKFILL_JSON_FILES = {
+    "task.json",
+    "issue-scope-ledger.json",
+    "review-gate.json",
+    "phase2-check.json",
+    "pr-readiness.json",
+}
+FINISH_SUMMARY_BACKFILL_ARTIFACT_KEYS = {
+    filename: key
+    for key, filename in FINISH_SUMMARY_ARTIFACT_FILES.items()
+    if filename in FINISH_SUMMARY_BACKFILL_SOURCE_FILES
+}
 PR_READINESS_ARTIFACT = "pr-readiness.json"
 PR_BODY_ARTIFACT = "pr-body.md"
 PR_READINESS_PUBLISH_INPUT_KEYS = {
@@ -782,6 +807,587 @@ def finish_summary_artifacts(task_dir: Path) -> dict[str, str]:
         for key, filename in FINISH_SUMMARY_ARTIFACT_FILES.items()
         if (task_dir / filename).is_file()
     }
+
+
+def backfill_clean_text(value: Any, maximum: int) -> str:
+    if not isinstance(value, str):
+        return ""
+    cleaned = re.sub(r"\s+", " ", value).strip()
+    return cleaned[:maximum].rstrip()
+
+
+def backfill_unique_text(values: list[str], maximum_items: int) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        if not value:
+            continue
+        identity = finish_summary_normalized_text(value)
+        if not identity or identity in seen:
+            continue
+        seen.add(identity)
+        result.append(value)
+        if len(result) == maximum_items:
+            break
+    return result
+
+
+def backfill_text_is_safe(value: str) -> bool:
+    return bool(value) and not any(marker in value for marker in FINISH_SUMMARY_FORBIDDEN_TEXT)
+
+
+def backfill_os_error_reason(exc: OSError) -> str:
+    detail = backfill_clean_text(exc.strerror or "filesystem operation failed", 300)
+    return f"{type(exc).__name__}: {detail}"
+
+
+def backfill_markdown_section(text: str, headings: tuple[str, ...]) -> list[str]:
+    lines = text.splitlines()
+    wanted = {heading.casefold() for heading in headings}
+    start = -1
+    level = 0
+    for index, line in enumerate(lines):
+        match = re.match(r"^(#{1,6})\s+(.+?)\s*$", line)
+        if match and match.group(2).strip().casefold() in wanted:
+            start = index + 1
+            level = len(match.group(1))
+            break
+    if start < 0:
+        return []
+    result: list[str] = []
+    for line in lines[start:]:
+        match = re.match(r"^(#{1,6})\s+", line)
+        if match and len(match.group(1)) <= level:
+            break
+        result.append(line)
+    return result
+
+
+def backfill_first_paragraph(lines: list[str], maximum: int) -> str:
+    paragraph: list[str] = []
+    for raw in lines:
+        line = raw.strip()
+        if not line:
+            if paragraph:
+                break
+            continue
+        if line.startswith(("|", "```", ">")) or re.match(r"^(?:[-*+] |\d+\. )", line):
+            if paragraph:
+                break
+            continue
+        paragraph.append(line)
+    return backfill_clean_text(" ".join(paragraph), maximum)
+
+
+def backfill_list_items(lines: list[str], maximum_items: int = 12) -> list[str]:
+    values: list[str] = []
+    for raw in lines:
+        match = re.match(r"^\s*(?:[-*+]|\d+\.)\s+(?:\[[ xX]\]\s*)?(.+?)\s*$", raw)
+        if match:
+            value = backfill_clean_text(match.group(1), 180)
+            if value:
+                values.append(value)
+    return backfill_unique_text(values, maximum_items)
+
+
+def backfill_completed_checklist(text: str) -> list[str]:
+    values = [
+        backfill_clean_text(match.group(1), 180)
+        for line in text.splitlines()
+        if (match := re.match(r"^\s*[-*+]\s+\[[xX]\]\s+(.+?)\s*$", line))
+    ]
+    return backfill_unique_text(values, 12)
+
+
+def backfill_contract_table(design_text: str) -> list[dict[str, str]]:
+    lines = backfill_markdown_section(design_text, ("合同变化", "Contract Changes"))
+    for index in range(len(lines) - 1):
+        header = lines[index].strip()
+        separator = lines[index + 1].strip()
+        if not (header.startswith("|") and separator.startswith("|")):
+            continue
+        columns = [column.strip().casefold() for column in header.strip("|").split("|")]
+        if columns != ["contract", "before", "after", "source_artifact"]:
+            continue
+        if not all(re.fullmatch(r":?-{3,}:?", cell.strip()) for cell in separator.strip("|").split("|")):
+            continue
+        rows: list[dict[str, str]] = []
+        for raw in lines[index + 2:]:
+            if not raw.strip().startswith("|"):
+                break
+            cells = [cell.strip() for cell in raw.strip().strip("|").split("|")]
+            if len(cells) != 4:
+                break
+            row = {
+                "contract": backfill_clean_text(cells[0], 200),
+                "before": backfill_clean_text(cells[1], 400),
+                "after": backfill_clean_text(cells[2], 400),
+                "source_artifact": backfill_clean_text(cells[3], 500),
+            }
+            if all(row[key] for key in ["contract", "before", "after"]):
+                rows.append(row)
+            if len(rows) == 20:
+                break
+        return rows
+    return []
+
+
+def load_finish_summary_backfill_sources(task_dir: Path) -> tuple[dict[str, Any], list[str], list[dict[str, str]]]:
+    sources: dict[str, Any] = {}
+    source_artifacts: list[str] = []
+    errors: list[dict[str, str]] = []
+    for filename in FINISH_SUMMARY_BACKFILL_SOURCE_FILES:
+        path = task_dir / filename
+        if not path.is_file():
+            continue
+        if path.resolve().parent != task_dir.resolve():
+            errors.append({"artifact": filename, "error": "source artifact symlink escapes the archived task directory"})
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+            if filename in FINISH_SUMMARY_BACKFILL_JSON_FILES:
+                value = json.loads(text)
+                if not isinstance(value, dict):
+                    raise ValueError("JSON root must be an object")
+            else:
+                value = text
+        except OSError as exc:
+            errors.append({"artifact": filename, "error": backfill_os_error_reason(exc)})
+            continue
+        except (UnicodeError, json.JSONDecodeError, ValueError) as exc:
+            errors.append({"artifact": filename, "error": str(exc).splitlines()[0]})
+            continue
+        sources[filename] = value
+        source_artifacts.append(filename)
+    return sources, source_artifacts, errors
+
+
+def backfill_issue_number(value: Any) -> int | None:
+    candidate = value.get("number") if isinstance(value, dict) else value
+    if isinstance(candidate, int) and not isinstance(candidate, bool) and candidate > 0:
+        return candidate
+    if isinstance(candidate, str):
+        match = re.search(r"(?:/issues/|#)([1-9][0-9]*)\b", candidate)
+        if not match:
+            match = re.search(r"\bissue\s+#?([1-9][0-9]*)\b", candidate, re.IGNORECASE)
+        if not match:
+            match = re.fullmatch(r"[1-9][0-9]*", candidate.strip())
+        if match:
+            return int(match.group(1))
+    return None
+
+
+def backfill_issue_numbers(value: Any) -> list[int]:
+    values = value if isinstance(value, list) else ([value] if value is not None else [])
+    return sorted({number for item in values if (number := backfill_issue_number(item)) is not None})
+
+
+def backfill_surface_kind(path: str) -> str:
+    mappings = (
+        ("trellis/workflows/", "workflow"),
+        ("trellis/presets/", "preset"),
+        (".agents/skills/", "skill"),
+        (".codex/", "prompt"),
+        (".claude/", "prompt"),
+        (".cursor/", "prompt"),
+        (".trellis/spec/", "docs"),
+        (".trellis/guru-team/", "script"),
+        (".trellis/tasks/", "task-artifact"),
+    )
+    return next((kind for prefix, kind in mappings if path.startswith(prefix)), "other")
+
+
+def backfill_original_artifact_dir(task_dir: Path, candidates: list[Any]) -> str:
+    for candidate in candidates:
+        if not isinstance(candidate, str):
+            continue
+        value = candidate.strip()
+        if (
+            finish_summary_path_errors(value, "task.artifact_dir") == []
+            and value.startswith(".trellis/tasks/")
+            and not value.startswith(".trellis/tasks/archive/")
+            and Path(value).name == task_dir.name
+        ):
+            return value
+    return ""
+
+
+def backfill_affected_surfaces(changed_paths: list[str], title: str) -> list[dict[str, Any]]:
+    if not changed_paths:
+        return [{
+            "kind": "task-artifact",
+            "name": title[:200],
+            "paths": [],
+            "change": "历史 artifact 未记录 changed_paths；该条目只提供基础检索入口。",
+        }]
+    grouped: dict[str, list[str]] = {}
+    for path in changed_paths:
+        grouped.setdefault(backfill_surface_kind(path), []).append(path)
+    surfaces: list[dict[str, Any]] = []
+    for kind in sorted(grouped):
+        paths = sorted(set(grouped[kind]))
+        chunks = [paths[index:index + 100] for index in range(0, len(paths), 100)]
+        for chunk_index, chunk in enumerate(chunks, start=1):
+            suffix = f"-{chunk_index}" if len(chunks) > 1 else ""
+            surfaces.append({
+                "kind": kind,
+                "name": f"{kind}{suffix}",
+                "paths": chunk,
+                "change": f"历史归档 task 修改了 {kind} 类路径（第 {chunk_index} 批）。",
+            })
+    if len(surfaces) > 20:
+        raise WorkflowError(
+            "affected_surfaces would exceed the schema limit without truncating paths.",
+            payload={"surface_count": len(surfaces)},
+        )
+    return surfaces
+
+
+def backfill_search_terms(
+    task_title: str,
+    task_slug: str,
+    problem: str,
+    outcome: str,
+    changed_behavior: list[str],
+    surfaces: list[dict[str, Any]],
+    source_artifacts: list[str],
+    changed_paths: list[str],
+) -> dict[str, list[str]]:
+    source_text = "\n".join([
+        task_title,
+        *changed_behavior,
+        *(str(surface["change"]) for surface in surfaces),
+    ])
+    commands = re.findall(r"(?<![\w/])[A-Za-z0-9_./-]+\.(?:sh|py)\b", source_text)
+    commands.extend(
+        token
+        for token in re.findall(r"`([^`\s]+)`", source_text)
+        if re.fullmatch(r"[A-Za-z0-9_.:/-]+", token) and any(char in token for char in "-/")
+    )
+    config_keys: list[str] = []
+    if re.search(r"config|配置", source_text, re.IGNORECASE):
+        config_keys = re.findall(r"\b[A-Za-z][A-Za-z0-9]*(?:[._][A-Za-z0-9_]+)+\b", source_text)
+    schema_fields = [
+        token
+        for token in re.findall(r"\b[A-Za-z0-9_./:-]+\b", source_text)
+        if re.search(r"json|schema|[:.]", token, re.IGNORECASE)
+    ]
+    symbols = [task_slug, *source_artifacts, *(Path(path).name for path in changed_paths)]
+    phrases = backfill_unique_text([
+        backfill_clean_text(task_title, 60),
+        backfill_clean_text(task_slug, 60),
+        backfill_clean_text(problem, 60),
+        backfill_clean_text(outcome, 60),
+        *(backfill_clean_text(value, 60) for value in changed_behavior),
+    ], 40)
+    if len(phrases) < 3:
+        phrases = backfill_unique_text([
+            *phrases,
+            backfill_clean_text(task_slug, 60),
+            backfill_clean_text(task_title, 60),
+            "历史归档 task",
+        ], 40)
+    if not any(marker in phrase for marker in FINISH_SUMMARY_COMPLETION_MARKERS for phrase in phrases):
+        phrases = backfill_unique_text([*phrases, "历史归档 task 已完成"], 40)
+    return {
+        "commands": sorted(backfill_unique_text([backfill_clean_text(value, 200) for value in commands], 100)),
+        "config_keys": sorted(backfill_unique_text([backfill_clean_text(value, 200) for value in config_keys], 100)),
+        "schema_fields": sorted(backfill_unique_text([backfill_clean_text(value, 300) for value in schema_fields], 100)),
+        "symbols": sorted(backfill_unique_text([backfill_clean_text(value, 300) for value in symbols], 100)),
+        "phrases": phrases,
+    }
+
+
+def build_finish_summary_backfill(
+    root: Path,
+    task_dir: Path,
+    sources: dict[str, Any],
+    source_artifacts: list[str],
+) -> dict[str, Any]:
+    task = sources.get("task.json") if isinstance(sources.get("task.json"), dict) else {}
+    ledger = sources.get("issue-scope-ledger.json") if isinstance(sources.get("issue-scope-ledger.json"), dict) else {}
+    review_gate = sources.get("review-gate.json") if isinstance(sources.get("review-gate.json"), dict) else {}
+    phase2 = sources.get("phase2-check.json") if isinstance(sources.get("phase2-check.json"), dict) else {}
+    readiness = sources.get("pr-readiness.json") if isinstance(sources.get("pr-readiness.json"), dict) else {}
+    prd = sources.get("prd.md") if isinstance(sources.get("prd.md"), str) else ""
+    design = sources.get("design.md") if isinstance(sources.get("design.md"), str) else ""
+    implement = sources.get("implement.md") if isinstance(sources.get("implement.md"), str) else ""
+    review = sources.get("review.md") if isinstance(sources.get("review.md"), str) else ""
+    pr_body = sources.get("pr-body.md") if isinstance(sources.get("pr-body.md"), str) else ""
+    missing: list[str] = []
+
+    artifact_dir = backfill_original_artifact_dir(task_dir, [
+        task.get("artifact_dir"),
+        task.get("task_artifact_dir"),
+        review_gate.get("task_dir"),
+        phase2.get("task_dir"),
+    ])
+
+    prd_heading = next((match.group(1).strip() for line in prd.splitlines() if (match := re.match(r"^#\s+(.+)$", line))), "")
+    title = backfill_clean_text(task.get("title") or task.get("name") or prd_heading or task_dir.name, 500)
+    problem = next((value for value in [
+        backfill_first_paragraph(backfill_markdown_section(prd, ("问题",)), 400),
+        backfill_first_paragraph(backfill_markdown_section(prd, ("背景",)), 400),
+        backfill_first_paragraph(backfill_markdown_section(prd, ("目标",)), 400),
+        backfill_clean_text(task.get("description"), 400),
+    ] if backfill_text_is_safe(value)), f"历史问题：{title[:330]} 的旧行为未记录。")
+    outcome = next((value for value in [
+        backfill_clean_text(review_gate.get("summary") or review_gate.get("conclusion"), 500),
+        backfill_first_paragraph(backfill_markdown_section(review, ("结论",)), 500),
+        backfill_first_paragraph(backfill_markdown_section(review, ("变更摘要",)), 500),
+        backfill_first_paragraph(backfill_markdown_section(pr_body, ("变更摘要",)), 500),
+    ] if backfill_text_is_safe(value)), f"历史结果：{title[:410]}；非目标信息未记录。")
+    behavior_sources = [
+        backfill_list_items(backfill_markdown_section(pr_body, ("变更摘要",))),
+        backfill_list_items(backfill_markdown_section(review, ("变更摘要", "结论"))),
+        backfill_completed_checklist(implement),
+    ]
+    changed_behavior = next(
+        (values for values in behavior_sources if values and all(backfill_text_is_safe(value) for value in values)),
+        [backfill_clean_text(f"历史归档 task 已完成：{title}。", 180)],
+    )
+
+    base_branch = backfill_clean_text(task.get("base_branch") or review_gate.get("base_branch"), 300)
+    branch = backfill_clean_text(task.get("branch") or review_gate.get("branch"), 300)
+    if not base_branch:
+        missing.append("git.base_branch")
+    if not branch:
+        missing.append("git.branch")
+    commit_candidates: list[Any] = [task.get("commit"), review_gate.get("head")]
+    if isinstance(readiness.get("commits"), list):
+        commit_candidates.extend(readiness["commits"])
+    commits = sorted({value for value in commit_candidates if isinstance(value, str) and re.fullmatch(r"[0-9a-f]{40}", value)})
+    if not commits:
+        missing.append("git.commits")
+
+    raw_paths = review_gate.get("changed_files")
+    if not isinstance(raw_paths, list):
+        raw_paths = phase2.get("changed_files")
+    if not isinstance(raw_paths, list):
+        raw_paths = readiness.get("changed_paths")
+    if raw_paths is None:
+        changed_paths = []
+    elif not isinstance(raw_paths, list):
+        raise WorkflowError("invalid changed path source", payload={"errors": ["git.changed_paths must be an array"]})
+    else:
+        changed_paths, _protected_filtered = sanitize_finish_summary_git_paths(raw_paths)
+    if not changed_paths:
+        missing.append("git.changed_paths")
+
+    github = {key: finish_summary_issue_numbers(ledger, key) for key in ["source_issues", "close_issues", "related_issues", "followup_issues"]}
+    if not github["source_issues"]:
+        fallback_issue = backfill_issue_number(task.get("source_issue")) or backfill_issue_number(task.get("issue"))
+        if fallback_issue:
+            github["source_issues"] = [fallback_issue]
+    for key in ["source_issues", "close_issues", "related_issues", "followup_issues"]:
+        if not github[key]:
+            missing.append(f"github.{key}")
+    pr_url = backfill_clean_text(readiness.get("pr_url") or task.get("pr_url"), 1000)
+    if pr_url and not re.fullmatch(r"https://github\.com/[^/]+/[^/]+/pull/[1-9][0-9]*", pr_url):
+        raise WorkflowError("invalid github.pr_url source")
+    if not pr_url:
+        missing.append("github.pr_url")
+    github["pr_url"] = pr_url
+
+    surfaces = backfill_affected_surfaces(changed_paths, title)
+    search_terms = backfill_search_terms(
+        title, task_dir.name, problem, outcome, changed_behavior, surfaces,
+        source_artifacts, changed_paths,
+    )
+    issue_numbers = sorted({number for key in ["source_issues", "close_issues", "related_issues", "followup_issues"] for number in github[key]})
+    pr_match = re.search(r"/pull/([1-9][0-9]*)$", pr_url)
+    search_terms = {
+        "issue_refs": [f"#{number}" for number in issue_numbers],
+        "pr_refs": [f"PR #{pr_match.group(1)}"] if pr_match else [],
+        "branches": [branch] if branch else [],
+        "paths": changed_paths,
+        **search_terms,
+    }
+    artifacts = {
+        FINISH_SUMMARY_BACKFILL_ARTIFACT_KEYS[filename]: filename
+        for filename in source_artifacts
+        if filename in FINISH_SUMMARY_BACKFILL_ARTIFACT_KEYS
+    }
+    contracts = backfill_contract_table(design)
+    index = {
+        "problem": problem,
+        "outcome": outcome,
+        "changed_behavior": changed_behavior,
+        "affected_surfaces": surfaces,
+        "contract_changes": contracts,
+        "search_terms": search_terms,
+    }
+    index["retrieval_text"] = finish_summary_retrieval_text(title, index)
+    if not artifact_dir:
+        missing.append("task.artifact_dir")
+    has_semantic_source = any([
+        task.get("description"), changed_paths, github["source_issues"], pr_url,
+        backfill_markdown_section(prd, ("问题", "背景", "目标")),
+        backfill_markdown_section(review, ("结论", "变更摘要")),
+        backfill_markdown_section(pr_body, ("变更摘要",)),
+        backfill_completed_checklist(implement),
+    ])
+    complete = all([
+        "task.json" in sources,
+        "issue-scope-ledger.json" in sources,
+        "review-gate.json" in sources or "pr-readiness.json" in sources,
+        changed_paths,
+        github["source_issues"],
+        pr_url,
+    ])
+    confidence = "complete" if complete else ("partial" if has_semantic_source else "minimal")
+    generated_at = now_iso()
+    payload = {
+        "schema_version": FINISH_SUMMARY_SCHEMA_VERSION,
+        "generated_at": generated_at,
+        "generator": FINISH_SUMMARY_BACKFILL_GENERATOR,
+        "task": {
+            "slug": task_dir.name,
+            "title": title,
+            "status": "completed",
+            "artifact_dir": artifact_dir,
+            "archive_dir": repo_relative(root, task_dir),
+        },
+        "git": {
+            "base_branch": base_branch,
+            "branch": branch,
+            "commits": commits,
+            "changed_paths": changed_paths,
+        },
+        "github": github,
+        "artifacts": artifacts,
+        "index": index,
+        "backfill": {
+            "generated": True,
+            "generated_at": generated_at,
+            "source_artifacts": sorted(source_artifacts),
+            "missing_fields": sorted(set(missing)),
+            "confidence": confidence,
+        },
+    }
+    errors = finish_summary_errors(payload, task_dir=task_dir)
+    if errors:
+        raise WorkflowError("Generated backfill finish-summary validation failed.", payload={"errors": errors})
+    return payload
+
+
+def resolve_finish_summary_backfill_task(root: Path, value: str) -> Path:
+    if not value or "\\" in value:
+        raise WorkflowError("--task must be a clean repo-relative archived task directory.", exit_code=2)
+    if any(segment in {"", ".", ".."} for segment in value.split("/")):
+        raise WorkflowError("--task must be a clean repo-relative archived task directory.", exit_code=2)
+    raw = Path(value)
+    if raw.is_absolute() or any(part in {"", ".", ".."} for part in raw.parts):
+        raise WorkflowError("--task must be a clean repo-relative archived task directory.", exit_code=2)
+    archive_root = (root / ".trellis/tasks/archive").resolve()
+    resolved = (root / raw).resolve()
+    try:
+        relative = resolved.relative_to(archive_root)
+    except ValueError as exc:
+        raise WorkflowError("--task must be below .trellis/tasks/archive/.", exit_code=2) from exc
+    if not relative.parts or resolved == archive_root or not resolved.is_dir():
+        raise WorkflowError("--task must name an existing archived task directory.", exit_code=2)
+    return resolved
+
+
+def discover_finish_summary_backfill_tasks(root: Path) -> list[Path]:
+    archive_root = root / ".trellis/tasks/archive"
+    task_markers = set(FINISH_SUMMARY_BACKFILL_SOURCE_FILES) | {FINISH_SUMMARY_ARTIFACT}
+    tasks: list[Path] = []
+    for path in archive_root.rglob("*"):
+        if not path.is_dir():
+            continue
+        try:
+            relative = path.resolve().relative_to(archive_root.resolve())
+        except ValueError:
+            continue
+        if any(part in {"research", "reviews"} for part in relative.parts):
+            continue
+        if any((path / marker).is_file() for marker in task_markers):
+            tasks.append(path)
+    return sorted(tasks)
+
+
+def render_finish_summary_backfill_table(payload: dict[str, Any]) -> str:
+    lines = [
+        f"mode: {payload['mode']}",
+        f"archive_glob: {payload['archive_glob']}",
+        f"scanned_tasks: {payload['scanned_tasks']}",
+        "STATUS\tARCHIVE_DIR\tTARGET/REASON\tCONFIDENCE",
+    ]
+    for item in payload["to_write"]:
+        lines.append(f"to_write\t{item['archive_dir']}\t{item['target']}\t{item['confidence']}")
+    for item in payload["skipped"]:
+        lines.append(f"skipped\t{item['archive_dir']}\t{item['reason']}\t-")
+    if payload["errors"]:
+        lines.append("ERRORS")
+        for item in payload["errors"]:
+            artifact = f"/{item['artifact']}" if item.get("artifact") else ""
+            lines.append(f"{item['archive_dir']}{artifact}: {item['error']}")
+    return "\n".join(lines)
+
+
+def cmd_backfill_finish_summary(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    git_root = run(["git", "rev-parse", "--show-toplevel"], cwd=root, check=False)
+    if git_root.returncode != 0 or Path(git_root.stdout.strip()).resolve() != root.resolve():
+        raise WorkflowError("--root must be a Git repository root.", exit_code=2)
+    archive_root = root / ".trellis/tasks/archive"
+    if not archive_root.is_dir() or archive_root.is_symlink():
+        raise WorkflowError("archive root not found: .trellis/tasks/archive", exit_code=2)
+    if args.force and not args.write:
+        raise WorkflowError("--force requires --write.", exit_code=2)
+    tasks = [resolve_finish_summary_backfill_task(root, args.task)] if args.task else discover_finish_summary_backfill_tasks(root)
+    result: dict[str, Any] = {
+        "mode": "write" if args.write else "dry-run",
+        "archive_glob": FINISH_SUMMARY_BACKFILL_ARCHIVE_GLOB,
+        "scanned_tasks": len(tasks),
+        "to_write": [],
+        "skipped": [],
+        "errors": [],
+    }
+    for task_dir in tasks:
+        archive_dir = repo_relative(root, task_dir)
+        target = task_dir / FINISH_SUMMARY_ARTIFACT
+        if target.exists() and not args.force:
+            result["skipped"].append({"archive_dir": archive_dir, "reason": "finish-summary exists"})
+            continue
+        sources, source_artifacts, source_errors = load_finish_summary_backfill_sources(task_dir)
+        result["errors"].extend({"archive_dir": archive_dir, **item} for item in source_errors)
+        try:
+            payload = build_finish_summary_backfill(root, task_dir, sources, source_artifacts)
+        except WorkflowError as exc:
+            detail = "; ".join(str(item) for item in exc.payload.get("errors", [])) or str(exc)
+            result["errors"].append({"archive_dir": archive_dir, "artifact": "", "error": detail})
+            continue
+        preview = {
+            "archive_dir": archive_dir,
+            "target": repo_relative(root, target),
+            "source_artifacts": payload["backfill"]["source_artifacts"],
+            "missing_fields": payload["backfill"]["missing_fields"],
+            "confidence": payload["backfill"]["confidence"],
+        }
+        if args.write:
+            try:
+                write_json(target, payload)
+                validate_finish_summary(read_json(target), task_dir=task_dir)
+            except OSError as exc:
+                result["errors"].append({
+                    "archive_dir": archive_dir,
+                    "artifact": FINISH_SUMMARY_ARTIFACT,
+                    "error": backfill_os_error_reason(exc),
+                })
+                continue
+            except WorkflowError as exc:
+                detail = "; ".join(str(item) for item in exc.payload.get("errors", []))
+                result["errors"].append({
+                    "archive_dir": archive_dir,
+                    "artifact": FINISH_SUMMARY_ARTIFACT,
+                    "error": detail or "post-write finish-summary validation failed",
+                })
+                continue
+        result["to_write"].append(preview)
+    return result
 
 
 def finish_summary_git_output_paths(output: str) -> set[str]:
@@ -9981,6 +10587,15 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Validate finish-work readiness and print planned archive/finish-summary/publish actions without writing files.",
     )
+
+    backfill = sub.add_parser("backfill-finish-summary")
+    backfill.add_argument("--root")
+    backfill.add_argument("--json", action="store_true")
+    mode = backfill.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--dry-run", action="store_true")
+    mode.add_argument("--write", action="store_true")
+    backfill.add_argument("--force", action="store_true")
+    backfill.add_argument("--task")
     return parser
 
 
@@ -10028,10 +10643,15 @@ def main() -> int:
             payload = cmd_publish_pr(args)
         elif args.command == "finish-work":
             payload = cmd_finish_work(args)
+        elif args.command == "backfill-finish-summary":
+            payload = cmd_backfill_finish_summary(args)
         else:
             raise WorkflowError(f"Unsupported command: {args.command}")
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-        return 0
+        if args.command == "backfill-finish-summary" and not args.json:
+            print(render_finish_summary_backfill_table(payload))
+        else:
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 1 if args.command == "backfill-finish-summary" and payload["errors"] else 0
     except WorkflowError as exc:
         payload = {"status": "error", "error": str(exc), **exc.payload}
         if getattr(args, "json", False):

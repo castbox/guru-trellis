@@ -141,6 +141,38 @@ verifier; recovery validates and reuses the existing passed verifier artifact,
 ledger evidence, verified/remote/publish HEAD, and review gate, and does not
 rerun the verifier against a dirty or staged summary.
 
+### Archived Task Backfill Contract
+
+The #100 backfill reads only these task-local source names: `task.json`,
+`issue-scope-ledger.json`, `prd.md`, `design.md`, `implement.md`, `review.md`,
+`review-gate.json`, `phase2-check.json`, `pr-body.md`, and
+`pr-readiness.json`. A source is recorded in `backfill.source_artifacts` only
+after a successful UTF-8/JSON read. Missing files are not read errors; malformed
+or unreadable files are isolated to that task and excluded from extraction.
+Task, Git, GitHub, artifact, problem/outcome/behavior, contract-table, and
+search-term fields follow the fixed priority rules documented by the public
+backfill command. The generator never infers facts from GitHub or conversation
+history and never invents an issue, PR, commit, branch, path, or behavior.
+Search-term phrases use the fixed source order and only add the deterministic
+`历史归档 task 已完成` fallback when the derived phrases lack the completion
+marker required by the #97 Python validator.
+
+Backfill reuses the normal `finish_summary_errors(..., task_dir=...)` validator
+and `finish_summary_retrieval_text()` derivation. It adds exactly the schema
+defined `backfill` object with `generated=true`, a UTC generation time,
+successful source artifacts, sorted canonical `missing_fields`, and one of
+`complete`, `partial`, or `minimal`. The normal #97 schema remains unchanged;
+legacy top-level `summary` and `keywords` are forbidden by its closed field set.
+
+`git.changed_paths` and `index.search_terms.paths` retain the complete clean,
+sorted, exact-deduplicated path set. Affected surfaces group paths by the fixed
+path-prefix `kind` mapping. Each kind is split into stable chunks of at most 100
+paths, and every path remains present in exactly one chunk. If the complete
+representation would exceed the schema maximum of 20 surfaces, generation
+fails closed for that task instead of truncating paths or expanding the schema.
+An empty changed-path set receives the schema-valid `task-artifact` fallback
+surface with no paths.
+
 ## Workspace Boundary Snapshot
 
 `check-workspace-boundary --json` resolves the task from `--task` or current task, validates the task-local context, then derives the expected workspace from current repo root, local runtime mapping, and Git worktree facts. It never trusts a committed absolute workspace path. The snapshot records `status`, `workspace_mode`, `expected_workspace`, `actual_repo_root`, optional `source_checkout`, `task_dir`, repo-relative `task_dir_relative`, source/task git status, suspicious same-task artifacts, and deterministic errors. Missing task context, a mismatched runtime workspace, a task outside the current repo `.trellis/tasks`, or source-checkout same-task metadata fails closed.

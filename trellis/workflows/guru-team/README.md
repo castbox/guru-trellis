@@ -483,6 +483,24 @@ Trellis task metadata，`finish-work` 会在 archive 后从
 不能用脚本生成的空泛摘要或 `generated` body 替代 AI 发布判断。
 
 
+## One-Time Archived Task Backfill
+
+After installing or updating this preset, repositories with archived tasks from
+before `finish-summary.json` can preview and write schema-valid history records:
+
+```bash
+.trellis/guru-team/scripts/bash/backfill-finish-summary.sh --json --dry-run
+.trellis/guru-team/scripts/bash/backfill-finish-summary.sh --json --write
+```
+
+Use `--task .trellis/tasks/archive/<YYYY-MM>/<task>` to limit the batch. Existing
+summaries are skipped unless `--write --force` is explicit. The command reads
+only its fixed archived-task artifact whitelist, groups all changed paths by
+surface kind without truncation, reports task-local errors while continuing the
+batch, and never reads workspace/runtime state or creates a global index. This
+one-time migration supplies historical records consumed by the later #98
+history-discovery capability; it does not replace normal finish-work.
+
 ## Push 后远端 Marketplace 门禁
 
 修改 marketplace/preset/overlay/schema/public API 的发布路径要求 primary/close issue ledger 先保存精确的 `remote_marketplace_verification: pending` 结构，pending 或普通文字不能通过最终 publish。branch push 后、`gh pr create` 前会执行远端分支 `init`、preview、switch 和 preset reapply，生成 schema-valid 的 task-local `marketplace-verification.json`；成功后脚本把真实 artifact path/SHA-256、verified content HEAD、remote HEAD、publish content HEAD 与命令结果回写 ledger，仅允许 artifact + ledger 两个路径形成 metadata tail。metadata push 后重新校验 artifact、ledger、双路径 diff、remote metadata HEAD 与 review gate，缺失、pending、失败、篡改、HEAD 不匹配或 stale 均阻止创建 PR；该门禁不创建 tag，AI 仍负责 close scope 与 PR readiness 判断。

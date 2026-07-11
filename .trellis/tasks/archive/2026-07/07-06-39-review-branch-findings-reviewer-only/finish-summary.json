@@ -1,0 +1,279 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T02:04:34Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-06-39-review-branch-findings-reviewer-only",
+    "title": "#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-06-39-review-branch-findings-reviewer-only"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/39-review-branch-findings-reviewer-only",
+    "commits": [
+      "cdc58d9961ee25dacf782b6c24b215b6eb6c2130"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".claude/commands/trellis/continue.md",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".cursor/commands/trellis-continue.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/agent-assignment.json",
+      ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/check.jsonl",
+      ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/design.md",
+      ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/implement.jsonl",
+      ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/implement.md",
+      ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/issue-scope-ledger.json",
+      ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/phase2-check.json",
+      ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/planning-approval.json",
+      ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/prd.md",
+      ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/task.json",
+      ".trellis/workflow.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      39
+    ],
+    "close_issues": [
+      39
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "历史问题：#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact 的旧行为未记录。",
+    "outcome": "本 PR 收紧 Guru Team Branch Review Gate 的 `review-branch` 记录语义，避免 findings 路径产生只有 `--reviewer` identity、缺少独立审查来源和 task-local `review.md` 的 gate artifact。",
+    "changed_behavior": [
+      "`review-branch` 的 pass 和 findings 记录路径都必须提供 `--review-source independent-agent`，且不能使用 main-session/self-review identity 冒充独立审查。",
+      "`--review-report` 必须指向当前 task-local `review.md`；`--reviewer` 只保留为 reviewer identity metadata。",
+      "`conclusion.passed=true` 只会在显式 `--pass` 且没有任何 finding 时出现；P0/P1/P2/P3 任意 finding 都会阻断 pass。",
+      "workflow、Codex/Claude/Cursor/agents continue 入口、dogfood installed copies 和 `.trellis/spec/workflow/*` 已同步 failed findings artifact 也必须承接独立审查证据的规则。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/commands/trellis/continue.md",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/handoff.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/agent-assignment.json",
+          ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/check.jsonl",
+          ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/design.md",
+          ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/implement.jsonl",
+          ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/implement.md",
+          ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/issue-scope-ledger.json",
+          ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/phase2-check.json",
+          ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/planning-approval.json",
+          ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/prd.md",
+          ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#39"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/39-review-branch-findings-reviewer-only"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".claude/commands/trellis/continue.md",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".cursor/commands/trellis-continue.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/agent-assignment.json",
+        ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/check.jsonl",
+        ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/design.md",
+        ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/implement.jsonl",
+        ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/implement.md",
+        ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/issue-scope-ledger.json",
+        ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/phase2-check.json",
+        ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/planning-approval.json",
+        ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/prd.md",
+        ".trellis/tasks/07-06-39-review-branch-findings-reviewer-only/task.json",
+        ".trellis/workflow.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "--pass",
+        "--review-report",
+        "--reviewer",
+        "review-branch"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "conclusion.passed",
+        "review.md"
+      ],
+      "symbols": [
+        "07-06-39-review-branch-findings-reviewer-only",
+        "SKILL.md",
+        "agent-assignment.json",
+        "check.jsonl",
+        "companion-scripts.md",
+        "continue.md",
+        "data-contracts.md",
+        "design.md",
+        "extension.json",
+        "guru_team_trellis.py",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-continue.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate",
+        "07-06-39-review-branch-findings-reviewer-only",
+        "历史问题：#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only",
+        "本 PR 收紧 Guru Team Branch Review Gate 的 `review-branch` 记录语义，",
+        "`review-branch` 的 pass 和 findings 记录路径都必须提供 `--review-source",
+        "`--review-report` 必须指向当前 task-local `review.md`；`--reviewer`",
+        "`conclusion.passed=true` 只会在显式 `--pass` 且没有任何 finding 时出现；P0",
+        "workflow、Codex/Claude/Cursor/agents continue 入口、dogfood inst",
+        "历史归档 task 已完成"
+      ]
+    },
+    "retrieval_text": "#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact\n历史问题：#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate artifact 的旧行为未记录。\n本 PR 收紧 Guru Team Branch Review Gate 的 `review-branch` 记录语义，避免 findings 路径产生只有 `--reviewer` identity、缺少独立审查来源和 task-local `review.md` 的 gate artifact。\n`review-branch` 的 pass 和 findings 记录路径都必须提供 `--review-source independent-agent`，且不能使用 main-session/self-review identity 冒充独立审查。\n`--review-report` 必须指向当前 task-local `review.md`；`--reviewer` 只保留为 reviewer identity metadata。\n`conclusion.passed=true` 只会在显式 `--pass` 且没有任何 finding 时出现；P0/P1/P2/P3 任意 finding 都会阻断 pass。\nworkflow、Codex/Claude/Cursor/agents continue 入口、dogfood installed copies 和 `.trellis/spec/workflow/*` 已同步 failed findings artifact 也必须承接独立审查证据的规则。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only gate\n07-06-39-review-branch-findings-reviewer-only\n历史问题：#39 收紧 review-branch findings 示例和脚本语义，避免 reviewer-only\n本 PR 收紧 Guru Team Branch Review Gate 的 `review-branch` 记录语义，\n`review-branch` 的 pass 和 findings 记录路径都必须提供 `--review-source\n`--review-report` 必须指向当前 task-local `review.md`；`--reviewer`\n`conclusion.passed=true` 只会在显式 `--pass` 且没有任何 finding 时出现；P0\nworkflow、Codex/Claude/Cursor/agents continue 入口、dogfood inst\n历史归档 task 已完成"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T02:04:34Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}
