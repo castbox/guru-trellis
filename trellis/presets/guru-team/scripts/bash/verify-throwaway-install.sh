@@ -62,6 +62,24 @@ fail_if_stale_planning_hint() {
   fi
 }
 
+workspace_tree_digest() {
+  python3 - "$1" <<'PY'
+import hashlib
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+digest = hashlib.sha256()
+if root.is_dir():
+    for path in sorted(item for item in root.rglob("*") if item.is_file()):
+        digest.update(path.relative_to(root).as_posix().encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+print(digest.hexdigest())
+PY
+}
+
 CURRENT_BRANCH="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
 CURRENT_DIRTY="$(git -C "$REPO_ROOT" status --short -- trellis/index.json trellis/workflows/guru-team/workflow.md 2>/dev/null || true)"
 if [[ "$WORKFLOW_SOURCE" == gh:castbox/guru-trellis/trellis && ( "$CURRENT_BRANCH" != "main" || -n "$CURRENT_DIRTY" ) && "$ALLOW_PUBLIC_SAMPLE" != "1" ]]; then
@@ -94,6 +112,31 @@ git -C "$TARGET" remote add origin https://github.com/castbox/guru-trellis-throw
     --workflow-source "$WORKFLOW_SOURCE"
 )
 
+WORKSPACE_SENTINEL="$TARGET/.trellis/workspace/private/shared-start-secret-journal.md"
+mkdir -p "$(dirname "$WORKSPACE_SENTINEL")"
+printf '%s\n' 'SHARED_START_SECRET_JOURNAL_CONTENT' >"$WORKSPACE_SENTINEL"
+NO_WORKSPACE_GUARD_DIR="$(mktemp -d "$WORK_DIR/no-workspace-guard.XXXXXX")"
+cat >"$NO_WORKSPACE_GUARD_DIR/sitecustomize.py" <<'PY'
+import os
+import sys
+
+
+def _reject_workspace_access(event, args):
+    if event not in {"open", "os.listdir", "os.scandir"} or not args:
+        return
+    try:
+        value = os.fspath(args[0]).replace("\\", "/")
+    except TypeError:
+        return
+    if ".trellis/workspace" in value:
+        os._exit(91)
+
+
+sys.addaudithook(_reject_workspace_access)
+PY
+
+WORKSPACE_TREE_DIGEST_BEFORE="$(workspace_tree_digest "$TARGET/.trellis/workspace")"
+
 "$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
   --repo "$TARGET" \
   --platform codex \
@@ -107,14 +150,11 @@ grep -q "record-subagent-liveness-event.sh" "$TARGET/.trellis/workflow.md"
 grep -q "check-subagent-liveness.sh" "$TARGET/.trellis/workflow.md"
 grep -q "dispatch_mode: sub-agent" "$TARGET/.trellis/config.yaml"
 fail_if_english_language_rule ".trellis/spec" "$TARGET/.trellis/spec"
-WORKSPACE_LANGUAGE_FILES=()
-if [[ -f "$TARGET/.trellis/workspace/index.md" ]]; then
-  WORKSPACE_LANGUAGE_FILES+=("$TARGET/.trellis/workspace/index.md")
+WORKSPACE_TREE_DIGEST_AFTER="$(workspace_tree_digest "$TARGET/.trellis/workspace")"
+if [[ "$WORKSPACE_TREE_DIGEST_AFTER" != "$WORKSPACE_TREE_DIGEST_BEFORE" ]]; then
+  echo "Preset modified .trellis/workspace content" >&2
+  exit 2
 fi
-while IFS= read -r -d '' path; do
-  WORKSPACE_LANGUAGE_FILES+=("$path")
-done < <(find "$TARGET/.trellis/workspace" -mindepth 2 -maxdepth 2 -type f -name index.md -print0 2>/dev/null || true)
-fail_if_english_language_rule ".trellis/workspace index files" "${WORKSPACE_LANGUAGE_FILES[@]}"
 if [[ -d "$TARGET/.trellis/tasks/00-bootstrap-guidelines" ]]; then
   fail_if_english_language_rule "00-bootstrap-guidelines" "$TARGET/.trellis/tasks/00-bootstrap-guidelines"
 fi
@@ -126,7 +166,10 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/check-subagent-liveness.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-commit-messages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/format-merge-commit.sh"
 test -f "$TARGET/.trellis/guru-team/extension.json"
-python3 -c 'import json, sys; payload = json.load(open(sys.argv[1], encoding="utf-8")); extension = payload["extension"]; api = extension["public_api"]; assert extension["extension_id"] == "guru-team"; assert extension["version"]; assert extension["target_trellis_cli"] == "0.6.5"; assert "agent-assignment.json" in api["artifact_contracts"]; assert "pr-body.md" in api["artifact_contracts"]; assert "resolve-human-artifacts" in api["companion_scripts"]; assert "record-subagent-liveness-event" in api["companion_scripts"]; assert "check-subagent-liveness" in api["companion_scripts"]; assert "check-commit-messages" in api["companion_scripts"]; assert "format-merge-commit" in api["companion_scripts"]' "$TARGET/.trellis/guru-team/extension.json"
+python3 -c 'import json, sys; payload = json.load(open(sys.argv[1], encoding="utf-8")); extension = payload["extension"]; api = extension["public_api"]; assert extension["extension_id"] == "guru-team"; assert extension["version"]; assert extension["target_trellis_cli"] == "0.6.5"; assert "agent-assignment.json" in api["artifact_contracts"]; assert "pr-body.md" in api["artifact_contracts"]; assert "finish-summary.json" in api["artifact_contracts"]; assert "resolve-human-artifacts" in api["companion_scripts"]; assert "record-subagent-liveness-event" in api["companion_scripts"]; assert "check-subagent-liveness" in api["companion_scripts"]; assert "check-commit-messages" in api["companion_scripts"]; assert "format-merge-commit" in api["companion_scripts"]' "$TARGET/.trellis/guru-team/extension.json"
+grep -q "def resolve_open_pull_request_for_recovery" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
+grep -q "zero triggers one same-input create retry" "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
+test -z "$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print -quit)"
 test -d "$TARGET/.agents/skills"
 test -d "$TARGET/.codex"
 test -d "$TARGET/.cursor"
@@ -174,6 +217,29 @@ fail_if_stale_planning_hint \
   "$TARGET/.cursor/skills/trellis-meta/references/platform-files/agents.md"
 grep -q "post-planning confirmation" "$TARGET/.codex/hooks/session-start.py"
 grep -q "post-planning confirmation" "$TARGET/.cursor/hooks/session-start.py"
+set +e
+PHASE_CONTEXT_OUTPUT="$(cd "$TARGET" && PYTHONPATH="$NO_WORKSPACE_GUARD_DIR" python3 ./.trellis/scripts/get_context.py --mode phase 2>&1)"
+PHASE_CONTEXT_STATUS=$?
+PACKAGE_CONTEXT_OUTPUT="$(cd "$TARGET" && PYTHONPATH="$NO_WORKSPACE_GUARD_DIR" python3 ./.trellis/scripts/get_context.py --mode packages 2>&1)"
+PACKAGE_CONTEXT_STATUS=$?
+CURRENT_TASK_OUTPUT="$(cd "$TARGET" && PYTHONPATH="$NO_WORKSPACE_GUARD_DIR" python3 ./.trellis/scripts/task.py current --source 2>&1)"
+CURRENT_TASK_STATUS=$?
+set -e
+if [[ "$PHASE_CONTEXT_STATUS" -ne 0 || "$PACKAGE_CONTEXT_STATUS" -ne 0 ]]; then
+  echo "Guru Team no-workspace phase/packages context command failed" >&2
+  exit 2
+fi
+if [[ "$CURRENT_TASK_STATUS" -ne 0 && "$CURRENT_TASK_STATUS" -ne 1 ]]; then
+  echo "Guru Team no-workspace current-task command returned an unexpected status" >&2
+  exit 2
+fi
+NO_WORKSPACE_CONTEXT_OUTPUT="$PHASE_CONTEXT_OUTPUT
+$PACKAGE_CONTEXT_OUTPUT
+$CURRENT_TASK_OUTPUT"
+if grep -Eq 'shared-start-secret-journal\.md|SHARED_START_SECRET_JOURNAL_CONTENT|JOURNAL FILE|Line count:' <<<"$NO_WORKSPACE_CONTEXT_OUTPUT"; then
+  echo "Guru Team no-workspace context disclosed the workspace journal sentinel" >&2
+  exit 2
+fi
 grep -q "required design.md" "$TARGET/.cursor/hooks/inject-subagent-context.py"
 grep -q "explicit post-planning confirmation" "$TARGET/.agents/skills/trellis-brainstorm/SKILL.md"
 grep -q "explicit post-planning confirmation" "$TARGET/.cursor/skills/trellis-brainstorm/SKILL.md"
@@ -250,10 +316,37 @@ rm -f "$TARGET/.trellis/workflow.md.new"
 )
 test -f "$TARGET/.trellis/workflow.md.new"
 grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md.new"
+rm -f "$TARGET/.trellis/workflow.md.new"
+test ! -e "$TARGET/.trellis/workflow.md.new"
 (
   cd "$TARGET"
   trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force
 )
 grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
+
+(
+  cd "$TARGET"
+  trellis update --force
+)
+(
+  cd "$TARGET"
+  trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force
+)
+"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
+  --repo "$TARGET" \
+  --platform codex \
+  --platform cursor
+
+grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
+test -f "$TARGET/.trellis/guru-team/schemas/finish-summary.schema.json"
+grep -q '^session_auto_commit: false$' "$TARGET/.trellis/config.yaml"
+grep -q '^\.trellis/workspace/$' "$TARGET/.gitignore"
+
+FINAL_SIDECARS="$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print)"
+if [[ -n "$FINAL_SIDECARS" ]]; then
+  echo "Unexpected .new/.bak sidecars after preview, switch, update, and preset reapply:" >&2
+  printf '%s\n' "$FINAL_SIDECARS" >&2
+  exit 2
+fi
 
 echo "Verified throwaway Guru Team Trellis install at $TARGET"

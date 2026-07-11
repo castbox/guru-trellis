@@ -76,6 +76,71 @@ Planner-only prepare remains stdout-only and writes neither task context nor run
 
 Do not use `task-start-context.source_issue` as PR close scope. The task-level `issue-scope-ledger.json` owns `close_issues`, `related_issues`, and `followup_issues`.
 
+## Finish Summary
+
+`trellis/workflows/guru-team/schemas/finish-summary.schema.json` is the shared
+schema SSOT for normal finish and #100 backfill. Normal finish uses generator
+`guru-team.finish-work`; backfill uses `guru-team.finish-summary-backfill` and
+must carry conditional `backfill` metadata. The Python validator is strict about
+field sets, types, lengths, counts, enums, SHA/issue/PR formats, clean relative
+paths, normalized duplicates, adjacent repeated clauses, source-artifact links,
+and all derived search/retrieval facts.
+
+Duplicate identity is domain-specific. Every path-bearing array, including
+`git.changed_paths`, `index.search_terms.paths`,
+`index.affected_surfaces[].paths`, and `backfill.source_artifacts`, uses the
+exact path string as identity; punctuation-removing text normalization must not
+collapse two different valid Git paths. Generators sort and deduplicate Git
+paths by exact string, and validators still reject exact duplicates. Non-path
+semantic and search-token string arrays continue to reject duplicates after
+text normalization.
+
+The AI input is task-local `finish-summary-index.json` with schema version 1 and
+only semantic index fields. It accepts at most 19 `contract_changes`; the final
+schema accepts 20 so the recorder always has capacity for the fixed
+protected-path filtering fact. Final facts come from `task.json`,
+`task-start-context.json`, Issue Scope Ledger, Git, archived artifact existence,
+UTC time, and publish output. Final artifacts live at
+`.trellis/tasks/archive/<YYYY-MM>/<task>/finish-summary.json`; values may not
+contain absolute, parent, workspace, runtime, backslash, CR, or LF paths, and
+may not contain leading or trailing whitespace. Backfill `source_artifacts`
+remain structurally valid without a task directory, but when an archived
+`task_dir` is available every clean source path must name an existing file.
+
+Initial summary uses empty `github.pr_url` and `pr_refs`. Because it is built
+after archive and before the metadata commit, its path snapshot combines a
+NUL-delimited base-to-working-tree diff with NUL-delimited untracked file
+enumeration; archived task metadata is recorded as individual files, never as
+an untracked directory placeholder. The protected-prefix filter and fixed fact
+rules apply to this initial snapshot. If initial diff, initial untracked
+enumeration, or final/recovery diff fails, both path arrays are `[]`, the
+filtering fact is removed, and exactly one fixed non-disclosing
+`finish-summary git path snapshot unavailable` fact is recorded before
+`retrieval_text` is re-derived. After PR creation,
+publish sorts and deduplicates raw base-to-HEAD paths, filters workspace/runtime
+protected prefixes, and writes the safe set to both `git.changed_paths` and
+search `paths`. A non-empty filtered set deterministically adds one fixed
+`finish-summary protected path filtering` contract fact without path, basename,
+or count details; an empty filtered set adds no such fact. Schema and Python
+validation reject protected prefixes in every path field without a deletion
+exception. Publish then writes URL/PR ref, validates the full summary, and
+refreshes the artifact whitelist from the current archived task before
+committing exactly that archived-task file. This metadata tail does not
+rerun Branch Review Gate. Before the first create, finish-work records and
+commits task-local `pr-readiness.json.publish_inputs` with repo, base/head,
+reviewed HEAD, exact title, `pr-body.md`, body SHA-256, draft, reviewed source,
+and canonical snapshot SHA-256. Recovery accepts only that archived artifact,
+checks clean/staged state, HEAD blobs, one-commit artifact history, digests,
+gate ancestry, and repo/base/head/current/remote identity, and rejects CLI
+title/body/draft/base overrides. Recovery revalidates the gate and
+current/remote HEAD before querying the current repo/head/base. One open PR is
+reused; zero triggers exactly one same-title/body/draft create retry; multiple
+fail closed without create. A failed retry preserves initial empty URL/refs and
+the same recovery command. Marketplace normal publish executes the remote
+verifier; recovery validates and reuses the existing passed verifier artifact,
+ledger evidence, verified/remote/publish HEAD, and review gate, and does not
+rerun the verifier against a dirty or staged summary.
+
 ## Workspace Boundary Snapshot
 
 `check-workspace-boundary --json` resolves the task from `--task` or current task, validates the task-local context, then derives the expected workspace from current repo root, local runtime mapping, and Git worktree facts. It never trusts a committed absolute workspace path. The snapshot records `status`, `workspace_mode`, `expected_workspace`, `actual_repo_root`, optional `source_checkout`, `task_dir`, repo-relative `task_dir_relative`, source/task git status, suspicious same-task artifacts, and deterministic errors. Missing task context, a mismatched runtime workspace, a task outside the current repo `.trellis/tasks`, or source-checkout same-task metadata fails closed.

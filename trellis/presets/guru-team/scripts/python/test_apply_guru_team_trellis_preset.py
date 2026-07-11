@@ -5,7 +5,10 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import tempfile
+import importlib.util
+import types
 import unittest
 from pathlib import Path
 import sys
@@ -88,6 +91,48 @@ class CodexDispatchModeInstallerTest(unittest.TestCase):
         self.assertIn("dispatch_mode: sub-agent", config.read_text(encoding="utf-8"))
 
 
+class FinishSummaryPresetPolicyTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tmp.name)
+        (self.repo / ".trellis").mkdir()
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_session_auto_commit_missing_true_false_and_invalid_values(self) -> None:
+        config = self.repo / ".trellis/config.yaml"
+        cases = [
+            ("# config\n", None, "updated"),
+            ("session_auto_commit: true\n", "true", "updated"),
+            ("session_auto_commit: false\n", "false", "unchanged"),
+            ("session_auto_commit: sometimes\n", "sometimes", "updated"),
+        ]
+        for content, previous, action in cases:
+            with self.subTest(content=content):
+                config.write_text(content, encoding="utf-8")
+                payload = preset.ensure_session_auto_commit_false(self.repo)
+                self.assertEqual(payload["action"], action)
+                self.assertEqual(payload["previous"], previous)
+                text = config.read_text(encoding="utf-8")
+                self.assertEqual(sum(line == "session_auto_commit: false" for line in text.splitlines()), 1)
+
+    def test_duplicate_active_session_auto_commit_keys_fail_closed(self) -> None:
+        config = self.repo / ".trellis/config.yaml"
+        config.write_text("session_auto_commit: true\nsession_auto_commit: false\n", encoding="utf-8")
+        with self.assertRaises(SystemExit):
+            preset.ensure_session_auto_commit_false(self.repo)
+
+    def test_workspace_ignore_is_idempotent_and_does_not_write_workspace(self) -> None:
+        first = preset.ensure_workspace_gitignore(self.repo)
+        second = preset.ensure_workspace_gitignore(self.repo)
+        self.assertEqual(first["action"], "installed")
+        self.assertEqual(second["action"], "unchanged")
+        text = (self.repo / ".gitignore").read_text(encoding="utf-8")
+        self.assertEqual(text.splitlines().count(".trellis/workspace/"), 1)
+        self.assertFalse((self.repo / ".trellis/workspace").exists())
+
+
 class LanguageGuidanceInstallerTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -117,7 +162,7 @@ class LanguageGuidanceInstallerTest(unittest.TestCase):
         self.assertIn("业务项目人类可读文档默认使用**中文**", text)
         self.assertNotIn("All documentation must be written in **English**", text)
 
-    def test_workspace_indexes_english_language_rules_are_replaced_with_chinese(self) -> None:
+    def test_workspace_indexes_are_not_scanned_or_rewritten(self) -> None:
         root_index = self.repo / ".trellis/workspace/index.md"
         user_index = self.repo / ".trellis/workspace/wumengye/index.md"
         user_index.parent.mkdir(parents=True)
@@ -132,16 +177,11 @@ class LanguageGuidanceInstallerTest(unittest.TestCase):
 
         payload = preset.normalize_business_doc_language_guidance(self.repo)
 
-        self.assertEqual(payload["replacement_count"], 2)
-        self.assertEqual(
-            payload["updated_paths"],
-            [
-                {"path": ".trellis/workspace/index.md", "replacements": 1},
-                {"path": ".trellis/workspace/wumengye/index.md", "replacements": 1},
-            ],
-        )
-        self.assertIn("业务项目人类可读文档默认使用**中文**", root_index.read_text(encoding="utf-8"))
-        self.assertIn("业务项目人类可读文档默认使用**中文**", user_index.read_text(encoding="utf-8"))
+        self.assertEqual(payload["replacement_count"], 0)
+        self.assertEqual(payload["updated_paths"], [])
+        self.assertNotIn(".trellis/workspace/index.md", payload["checked_paths"])
+        self.assertIn("All documentation should be written in **English**", root_index.read_text(encoding="utf-8"))
+        self.assertIn("All documentation must be written in **English**", user_index.read_text(encoding="utf-8"))
 
     def test_bootstrap_guidelines_language_rule_is_replaced_with_chinese(self) -> None:
         bootstrap_prd = self.repo / ".trellis/tasks/00-bootstrap-guidelines/prd.md"
@@ -238,6 +278,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertIn(Path("scripts/bash/check-subagent-liveness.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-commit-messages.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/format-merge-commit.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("schemas/finish-summary.schema.json"), preset.MANAGED_ASSET_PATHS)
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh").is_file())
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh", os.X_OK))
@@ -249,6 +290,9 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-commit-messages.sh", os.X_OK))
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/format-merge-commit.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/format-merge-commit.sh", os.X_OK))
+        self.assertTrue((self.repo / ".trellis/guru-team/schemas/finish-summary.schema.json").is_file())
+        self.assertIn("session_auto_commit: false", (self.repo / ".trellis/config.yaml").read_text(encoding="utf-8"))
+        self.assertIn(".trellis/workspace/", (self.repo / ".gitignore").read_text(encoding="utf-8"))
         self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
         self.assertTrue((self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").is_file())
         brainstorm = (self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").read_text(encoding="utf-8")
@@ -536,6 +580,124 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertIn("post-planning confirmation", cursor_hook.read_text(encoding="utf-8"))
         self.assertNotIn("PRD-only", codex_hook.read_text(encoding="utf-8"))
         self.assertNotIn("PRD-only", cursor_hook.read_text(encoding="utf-8"))
+
+    def test_no_workspace_session_start_overlays_never_access_or_disclose_journal_sentinel(self) -> None:
+        workspace_dir = self.repo / ".trellis/workspace/private"
+        workspace_dir.mkdir(parents=True)
+        sentinel = workspace_dir / "secret-journal-name.md"
+        sentinel.write_text("SECRET_JOURNAL_CONTENT\nsecond line\n", encoding="utf-8")
+
+        self.install({"codex", "cursor"})
+        for name, relative in [
+            ("codex", ".codex/hooks/session-start.py"),
+            ("cursor", ".cursor/hooks/session-start.py"),
+        ]:
+            with self.subTest(platform=name):
+                hook_path = self.repo / relative
+                source = hook_path.read_text(encoding="utf-8")
+                self.assertNotIn("get_active_journal_file", source)
+                self.assertNotIn("count_lines", source)
+                self.assertNotIn("Journal:", source)
+
+                spec = importlib.util.spec_from_file_location(f"guru_{name}_session_start", hook_path)
+                self.assertIsNotNone(spec)
+                self.assertIsNotNone(spec.loader)
+                module = importlib.util.module_from_spec(spec)
+                with mock.patch.object(sys, "dont_write_bytecode", True):
+                    spec.loader.exec_module(module)
+
+                original_read_text = Path.read_text
+                original_iterdir = Path.iterdir
+
+                def guarded_read_text(path: Path, *args: object, **kwargs: object) -> str:
+                    if ".trellis/workspace" in path.as_posix():
+                        raise AssertionError(f"workspace read attempted: {path}")
+                    return original_read_text(path, *args, **kwargs)
+
+                def guarded_iterdir(path: Path):
+                    if ".trellis/workspace" in path.as_posix():
+                        raise AssertionError(f"workspace enumeration attempted: {path}")
+                    return original_iterdir(path)
+
+                with (
+                    mock.patch.object(module, "_resolve_active_task", return_value=types.SimpleNamespace(task_path=None)),
+                    mock.patch.object(Path, "read_text", guarded_read_text),
+                    mock.patch.object(Path, "iterdir", guarded_iterdir),
+                ):
+                    output = module._build_compact_current_state(self.repo / ".trellis", {}, [])
+
+                self.assertNotIn("secret-journal-name.md", output)
+                self.assertNotIn("SECRET_JOURNAL_CONTENT", output)
+                self.assertNotIn("2 / 2000", output)
+
+    def test_shared_start_uses_fixed_no_workspace_context_commands(self) -> None:
+        workspace_dir = self.repo / ".trellis/workspace/private"
+        workspace_dir.mkdir(parents=True)
+        (workspace_dir / "shared-start-secret.md").write_text(
+            "SHARED_START_SECRET_CONTENT\n",
+            encoding="utf-8",
+        )
+        self.install({"codex"})
+        skill = (
+            self.repo / ".agents/skills/trellis-start/SKILL.md"
+        ).read_text(encoding="utf-8")
+
+        command_block = re.search(
+            r"Load only the fixed Guru Team no-workspace context set:\n\n```bash\n(.*?)\n```",
+            skill,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(command_block)
+        commands = [line.strip() for line in command_block.group(1).splitlines() if line.strip()]
+        self.assertEqual(commands, [
+            "python3 ./.trellis/scripts/get_context.py --mode phase",
+            "python3 ./.trellis/scripts/get_context.py --mode packages",
+            "python3 ./.trellis/scripts/task.py current --source",
+            "git branch --show-current",
+            "git status --short --branch",
+        ])
+        self.assertNotRegex(skill, r"(?m)^python3 \.\/\.trellis/scripts/get_context\.py$")
+        self.assertIn("Do not open, enumerate, read", skill)
+        self.assertNotIn("shared-start-secret.md", skill)
+        self.assertNotIn("SHARED_START_SECRET_CONTENT", skill)
+
+    def test_throwaway_verifier_cleans_preview_and_scans_sidecars_after_reapply(self) -> None:
+        verifier = (
+            self.guru_root
+            / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ).read_text(encoding="utf-8")
+
+        preview_assert = verifier.index('test -f "$TARGET/.trellis/workflow.md.new"')
+        preview_remove = verifier.index('rm -f "$TARGET/.trellis/workflow.md.new"', preview_assert)
+        initial_switch = verifier.index(
+            'trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force',
+            preview_remove,
+        )
+        update = verifier.index("trellis update --force", initial_switch)
+        workflow_reapply = verifier.index(
+            'trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force',
+            update,
+        )
+        preset_reapply = verifier.index(
+            '"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh"',
+            workflow_reapply,
+        )
+        final_scan = verifier.index('FINAL_SIDECARS="$(find "$TARGET"', preset_reapply)
+
+        self.assertLess(preview_assert, preview_remove)
+        self.assertLess(preview_remove, initial_switch)
+        self.assertLess(initial_switch, update)
+        self.assertLess(update, workflow_reapply)
+        self.assertLess(workflow_reapply, preset_reapply)
+        self.assertLess(preset_reapply, final_scan)
+        self.assertIn('WORKSPACE_SENTINEL="$TARGET/.trellis/workspace/private/shared-start-secret-journal.md"', verifier)
+        self.assertIn('event not in {"open", "os.listdir", "os.scandir"}', verifier)
+        self.assertIn("os._exit(91)", verifier)
+        self.assertIn('"$CURRENT_TASK_STATUS" -ne 0 && "$CURRENT_TASK_STATUS" -ne 1', verifier)
+        self.assertIn("get_context.py --mode phase", verifier)
+        self.assertIn("get_context.py --mode packages", verifier)
+        self.assertIn("task.py current --source", verifier)
+        self.assertIn("Unexpected .new/.bak sidecars after preview, switch, update, and preset reapply", verifier)
 
     def test_generated_trellis_meta_task_system_docs_are_replaced_with_guru_team_overlay(self) -> None:
         shared_meta = self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md"

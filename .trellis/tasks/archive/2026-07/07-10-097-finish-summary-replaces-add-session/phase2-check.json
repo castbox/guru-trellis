@@ -1,0 +1,172 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-11T00:57:47Z",
+  "task_dir": ".trellis/tasks/07-10-097-finish-summary-replaces-add-session",
+  "base_branch": "main",
+  "head": "017b9f351bfbb90fcfca3a3935a9167de645b97c",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/workflow/data-contracts.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/agent-assignment.json",
+    ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/check.jsonl",
+    ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/implement.jsonl",
+    ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/pr-readiness.json",
+    ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/research/",
+    ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/review-gate.json",
+    ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/review.md",
+    ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/reviews/",
+    ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/task-start-context.json",
+    ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/task.json"
+  ],
+  "checker": "/root/issue97_phase2_path_collision",
+  "check_summary": "Formal finish 真实 collision 修复后的 fresh 阶段二检查通过：所有 path-bearing arrays 使用 exact string identity，合法标点差异路径在两个 summary path 字段精确保留，非路径语义 normalized duplicate 门禁保持；完整 #97、Docs SSOT、安装升级、部署安全无回归，P0/P1/P2/P3 均为 0。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/prd.md",
+      "sha256": "999a21143e712ada95f2c83e50fe3122c7d5af286075210877327ca845c4c756",
+      "size_bytes": 15059,
+      "modified_at": "2026-07-10T20:51:26.641049+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/design.md",
+      "sha256": "345c2c7f66268dc49fdbc892bff8245ae8feba45cef977366f71508089e4e902",
+      "size_bytes": 17226,
+      "modified_at": "2026-07-10T20:51:26.641390+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/implement.md",
+      "sha256": "47625e594a4a146db2a3672c219ce863218998e1728182955dd23b5855228354",
+      "size_bytes": 11623,
+      "modified_at": "2026-07-10T20:50:54.205445+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/planning-approval.json",
+      "sha256": "05bb2f7f0bfd3cbb5cff8f6ec6e07acf2eb192e8498e2a4cef264c30248b3b8c",
+      "size_bytes": 6168,
+      "modified_at": "2026-07-10T20:54:01.818008+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/implementation-handoff.md",
+      "sha256": "4b9287300210d3664f2f58d8236fb16ab70d28ed0cf8e12a3bfdf225c2a8baee",
+      "size_bytes": 17165,
+      "modified_at": "2026-07-11T00:46:01.066807+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/finish-summary-index.json",
+      "sha256": "3dd39b2cf1472b88288827edc6459b585b3a4862237502a8638610c581c32e8e",
+      "size_bytes": 10010,
+      "modified_at": "2026-07-11T00:57:23.174208+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/pr-body.md",
+      "sha256": "9600c2f144785add366d7e234fe6729eda5ac67806f78ee90993ab106c114a9b",
+      "size_bytes": 5335,
+      "modified_at": "2026-07-11T00:57:23.174660+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-10-097-finish-summary-replaces-add-session/issue-scope-ledger.json",
+      "sha256": "0d43ad300b3c92cad4cba535c561a725d0a558fef597d0dbd2b63b5b1f34f948",
+      "size_bytes": 3680,
+      "modified_at": "2026-07-10T20:03:25.918786+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "af501148671526be742c196037da7ba9b24dd3eb190bbe6d7d69814042754e6b",
+      "size_bytes": 31277,
+      "modified_at": "2026-07-11T00:45:29.663006+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "09d72a899eca7225716f85456b4ca45608316a85a1dcc52af6c5f9319b744c07",
+      "size_bytes": 28608,
+      "modified_at": "2026-07-10T21:14:58.624164+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "419525fb208a45df467b6465b2c9dd5f4c72bba328141aef2463966fb6e9371c",
+      "size_bytes": 23616,
+      "modified_at": "2026-07-10T21:13:19.969305+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "bf62db8e6ac0888db78afd50c74ea9322cf4617317ed32b62540d44bc73b7fdc",
+      "size_bytes": 10396,
+      "modified_at": "2026-07-10T14:25:05.067694+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "ca3a3c6206c3b95ecc4d29d2d98a7d7c30ee1b7878d77320873505b001b3df56",
+      "size_bytes": 10631,
+      "modified_at": "2026-07-10T21:37:49.898753+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "929962f0d2b6fd6a66d60b955804c2267eb8f60626c5b5fdc351608a3a0ce3f4",
+      "size_bytes": 16174,
+      "modified_at": "2026-07-10T21:15:29.713380+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "真实 collision build + Python validator + JSON Schema",
+      "result": "两个合法路径在 git.changed_paths 与 index.search_terms.paths 精确保留，0 errors"
+    },
+    {
+      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "305 PASS，py_compile 后重跑 305 PASS"
+    },
+    {
+      "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "36 PASS"
+    },
+    {
+      "command": "PublishBoundaryTest + FinishSummaryContractTests",
+      "result": "82 PASS"
+    },
+    {
+      "command": "python3 -S FinishSummaryContractTests",
+      "result": "34 PASS，1 optional jsonschema skip"
+    },
+    {
+      "command": "Python compile + 43 tracked Bash + 251 tracked JSON 与 task-local JSON",
+      "result": "PASS"
+    },
+    {
+      "command": "planning approval + workspace boundary + task context + commit messages",
+      "result": "PASS"
+    },
+    {
+      "command": "all-platform apply + overlay drift + 6 canonical/dogfood equality groups",
+      "result": "PASS，无 managed drift"
+    },
+    {
+      "command": "public-main throwaway preview/switch/update/workflow reapply/preset reapply/no-workspace/final sidecar",
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check + workspace tracking + source checkout",
+      "result": "PASS，3 条预期 D，source clean"
+    },
+    {
+      "command": "Docs SSOT + CI/CD/容器/K8s/Helm/migration/Makefile/秘密信息审查",
+      "result": "PASS，无业务部署或安全影响"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

@@ -42,6 +42,7 @@ MANAGED_CONFIG = Path("config-template.yml")
 MANAGED_ASSET_PATHS = [
     Path("config-template.yml"),
     Path("schemas/task-start-context.schema.json"),
+    Path("schemas/finish-summary.schema.json"),
     Path("schemas/marketplace-verification.schema.json"),
     Path("scripts/bash/check-env.sh"),
     Path("scripts/bash/version.sh"),
@@ -81,6 +82,11 @@ CHINESE_LANGUAGE_RULE = (
 )
 RUNTIME_GITIGNORE_MARKER = "# Guru Team local runtime cache"
 RUNTIME_GITIGNORE_RULE = ".trellis/.runtime/"
+WORKSPACE_GITIGNORE_MARKER = "# Guru Team excludes upstream workspace journals"
+WORKSPACE_GITIGNORE_RULE = ".trellis/workspace/"
+SESSION_AUTO_COMMIT_HEADER = """# Guru Team owns archive and finish-summary metadata commits.
+# Keep official task.py/add_session.py bookkeeping from committing implicitly.
+"""
 
 
 def now_iso() -> str:
@@ -259,6 +265,47 @@ def ensure_runtime_gitignore(repo: Path) -> dict[str, str]:
     separator = "" if not original or original.endswith("\n\n") else ("\n" if original.endswith("\n") else "\n\n")
     path.write_text(f"{original}{separator}{RUNTIME_GITIGNORE_MARKER}\n{RUNTIME_GITIGNORE_RULE}\n", encoding="utf-8")
     return {"action": "updated" if original else "installed", "path": ".gitignore", "rule": RUNTIME_GITIGNORE_RULE}
+
+
+def ensure_workspace_gitignore(repo: Path) -> dict[str, str]:
+    path = repo / ".gitignore"
+    original = path.read_text(encoding="utf-8") if path.exists() else ""
+    if WORKSPACE_GITIGNORE_RULE in {line.strip() for line in original.splitlines()}:
+        return {"action": "unchanged", "path": ".gitignore", "rule": WORKSPACE_GITIGNORE_RULE}
+    separator = "" if not original or original.endswith("\n\n") else ("\n" if original.endswith("\n") else "\n\n")
+    path.write_text(
+        f"{original}{separator}{WORKSPACE_GITIGNORE_MARKER}\n{WORKSPACE_GITIGNORE_RULE}\n",
+        encoding="utf-8",
+    )
+    return {"action": "updated" if original else "installed", "path": ".gitignore", "rule": WORKSPACE_GITIGNORE_RULE}
+
+
+def ensure_session_auto_commit_false(repo: Path) -> dict[str, str | None]:
+    path = repo / ".trellis/config.yaml"
+    original = path.read_text(encoding="utf-8") if path.exists() else ""
+    lines = original.splitlines()
+    active_indexes: list[int] = []
+    previous: str | None = None
+    for index, line in enumerate(lines):
+        if line.startswith("session_auto_commit:"):
+            active_indexes.append(index)
+            if previous is None:
+                previous = strip_inline_comment(line.split(":", 1)[1]) or None
+    if len(active_indexes) > 1:
+        raise SystemExit(".trellis/config.yaml contains duplicate top-level session_auto_commit keys")
+    if active_indexes and previous == "false":
+        return {"action": "unchanged", "path": ".trellis/config.yaml", "previous": "false", "value": "false"}
+    if active_indexes:
+        lines[active_indexes[0]] = "session_auto_commit: false"
+        path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+        return {"action": "updated", "path": ".trellis/config.yaml", "previous": previous, "value": "false"}
+    separator = "" if not original else ("\n" if original.endswith("\n") else "\n\n")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        f"{original}{separator}{SESSION_AUTO_COMMIT_HEADER}session_auto_commit: false\n",
+        encoding="utf-8",
+    )
+    return {"action": "updated" if original else "installed", "path": ".trellis/config.yaml", "previous": None, "value": "false"}
 
 
 def path_has_prefix(path: Path, prefix: Path) -> bool:
@@ -550,13 +597,6 @@ def language_guidance_targets(repo: Path) -> list[Path]:
     if spec_root.is_dir():
         targets.update(path for path in spec_root.rglob("*.md") if path.is_file())
 
-    workspace_root = repo / ".trellis/workspace"
-    workspace_index = workspace_root / "index.md"
-    if workspace_index.is_file():
-        targets.add(workspace_index)
-    if workspace_root.is_dir():
-        targets.update(path for path in workspace_root.glob("*/index.md") if path.is_file())
-
     bootstrap_root = repo / ".trellis/tasks/00-bootstrap-guidelines"
     if bootstrap_root.is_dir():
         targets.update(path for path in bootstrap_root.rglob("*.md") if path.is_file())
@@ -599,8 +639,6 @@ def normalize_business_doc_language_guidance(repo: Path) -> dict[str, Any]:
         "replacement_count": replacement_count,
         "scope": [
             ".trellis/spec/**/*.md",
-            ".trellis/workspace/index.md",
-            ".trellis/workspace/*/index.md",
             ".trellis/tasks/00-bootstrap-guidelines/**/*.md",
         ],
     }
@@ -695,7 +733,9 @@ def install_assets(
     updated_managed.extend(overlays["updated_managed"])
     managed_backups.extend(overlays["managed_backups"])
     codex_dispatch = ensure_codex_dispatch_mode(repo)
+    session_auto_commit = ensure_session_auto_commit_false(repo)
     runtime_gitignore = ensure_runtime_gitignore(repo)
+    workspace_gitignore = ensure_workspace_gitignore(repo)
     language_guidance = normalize_business_doc_language_guidance(repo)
 
     result = {
@@ -708,7 +748,9 @@ def install_assets(
         "removed_obsolete": removed_obsolete,
         "obsolete_conflicts": obsolete_conflicts,
         "codex_dispatch": codex_dispatch,
+        "session_auto_commit": session_auto_commit,
         "runtime_gitignore": runtime_gitignore,
+        "workspace_gitignore": workspace_gitignore,
         "language_guidance": language_guidance,
         "platforms": sorted(selected),
         "all_platforms": all_platforms,
@@ -811,6 +853,9 @@ def main() -> int:
         "updated_managed": result["updated_managed"],
         "managed_backups": result["managed_backups"],
         "codex_dispatch": result["codex_dispatch"],
+        "session_auto_commit": result["session_auto_commit"],
+        "runtime_gitignore": result["runtime_gitignore"],
+        "workspace_gitignore": result["workspace_gitignore"],
         "language_guidance": result["language_guidance"],
         "extension_manifest": result["extension_manifest"],
         "guru_team_extension": result["guru_team_extension"],

@@ -368,13 +368,11 @@ def _build_compact_current_state(
     lines: list[str] = []
 
     try:
-        from common.paths import get_active_journal_file, get_developer, get_tasks_dir, count_lines  # type: ignore[import-not-found]
+        from common.paths import get_developer, get_tasks_dir  # type: ignore[import-not-found]
         from common.tasks import iter_active_tasks  # type: ignore[import-not-found]
     except Exception:
-        get_active_journal_file = None  # type: ignore[assignment]
         get_developer = None  # type: ignore[assignment]
         get_tasks_dir = None  # type: ignore[assignment]
-        count_lines = None  # type: ignore[assignment]
         iter_active_tasks = None  # type: ignore[assignment]
 
     developer = get_developer(repo_root) if get_developer else None
@@ -405,13 +403,6 @@ def _build_compact_current_state(
             )
         except Exception:
             pass
-
-    if get_active_journal_file and count_lines:
-        journal = get_active_journal_file(repo_root)
-        if journal:
-            lines.append(
-                f"Journal: {_repo_relative(repo_root, journal)}, {count_lines(journal)} / 2000 lines."
-            )
 
     if spec_index_paths:
         lines.append(f"Spec indexes: {len(spec_index_paths)} available.")

@@ -1,0 +1,442 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T01:10:04Z",
+  "generator": "guru-team.finish-work",
+  "task": {
+    "slug": "07-10-097-finish-summary-replaces-add-session",
+    "title": "#97 拆分 #53：用 task-local finish-summary 替代 workspace journal/add_session",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-10-097-finish-summary-replaces-add-session",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/097-finish-summary-replaces-add-session",
+    "commits": [
+      "53f265f3949ca8374c7b534da309a4c924325450",
+      "0abdc0f97911c28b96439f2ba2c1dd3c1aa5bfaf",
+      "017b9f351bfbb90fcfca3a3935a9167de645b97c",
+      "fd310e15b08a2a29d253a1308b38816db7bc005d"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".agents/skills/trellis-finish-work/SKILL.md",
+      ".agents/skills/trellis-start/SKILL.md",
+      ".claude/commands/trellis/continue.md",
+      ".claude/commands/trellis/finish-work.md",
+      ".codex/hooks/session-start.py",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/prompts/trellis-finish-work.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".codex/skills/trellis-finish-work/SKILL.md",
+      ".cursor/commands/trellis-continue.md",
+      ".cursor/commands/trellis-finish-work.md",
+      ".cursor/hooks/session-start.py",
+      ".gitignore",
+      ".trellis/.gitignore",
+      ".trellis/config.yaml",
+      ".trellis/guru-team/config-template.yml",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/schemas/finish-summary.schema.json",
+      ".trellis/guru-team/schemas/marketplace-verification.schema.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/agent-assignment.json",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/check.jsonl",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/design.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/finish-summary-index.json",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/finish-summary.json",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/implement.jsonl",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/implement.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/implementation-handoff.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/marketplace-verification.json",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/phase2-check.json",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/planning-approval.json",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/pr-body.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/pr-readiness.json",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/prd.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/research/current-finish-publish-contract.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/review-gate.json",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/review.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/reviews/round-001-finding.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/reviews/round-001-replacement-finding.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/reviews/round-002-closure.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/reviews/round-003-closure.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/reviews/round-004-final.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/reviews/round-005-final.md",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/task-start-context.json",
+      ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/hooks/session-start.py",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.cursor/hooks/session-start.py",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/config-template.yml",
+      "trellis/workflows/guru-team/schemas/finish-summary.schema.json",
+      "trellis/workflows/guru-team/schemas/marketplace-verification.schema.json",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      97
+    ],
+    "close_issues": [
+      97
+    ],
+    "related_issues": [
+      53,
+      96,
+      100
+    ],
+    "followup_issues": [
+      98,
+      99
+    ],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/103"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "finish_summary_index": "finish-summary-index.json",
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "phase2_check": "phase2-check.json",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "pr_body": "pr-body.md",
+    "pr_readiness": "pr-readiness.json",
+    "marketplace_verification": "marketplace-verification.json"
+  },
+  "index": {
+    "problem": "Guru Team 使用固定 workspace journal 记录任务完成信息，多个 task 并行时会共同修改同一文件并产生分支冲突；add_session 同时把完成、发布恢复和上下文读取绑定到共享运行态。",
+    "outcome": "完成摘要改存于当前归档 task，并把 AI 语义判断与脚本采集的 Git、发布和 artifact 事实分层；发布恢复、远端 marketplace 验证和上下文读取均使用 task-local 或确定性证据。非目标是不回填历史任务、不实现历史搜索，也不调整 developer identity。",
+    "changed_behavior": [
+      "finish-work 归档后写入 task-local finish-summary.json，不再调用 add_session.py。",
+      "完成摘要先记录空 PR URL，再在 PR 创建或恢复后执行受限 metadata tail 回写。",
+      "AI 负责提供语义 index，companion script 只注入并校验确定性事实。",
+      "发布恢复只消费 immutable publish_inputs，并按零个、一个或多个 open PR fail closed。",
+      "Git 路径先排序去重并过滤受保护前缀，再同步写入两个安全路径字段。",
+      "所有 path-bearing arrays 使用 exact string identity，合法的标点差异路径不会被文本规范化折叠。",
+      "路径快照失败时写入双空路径集合和固定 unavailable contract，并重新派生 retrieval_text。",
+      "Shared start 与 Codex、Cursor session-start 不再读取或输出 workspace journal。",
+      "远端 marketplace verifier 在 push 后验证 current ref，passed evidence 写回 ledger 后才创建 PR。",
+      "Throwaway 验证在 update 后重新应用 marketplace workflow 与 preset，并执行最终 sidecar gate。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "workflow",
+        "name": "Guru Team finish and publish workflow",
+        "paths": [
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "finish、archive、publish、recovery 与 review gate 改为 task-local finish-summary 主线。"
+      },
+      {
+        "kind": "script",
+        "name": "Guru Team deterministic companion",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "新增 index 校验、summary recorder、immutable readiness、remote verifier 和 recovery 状态机。"
+      },
+      {
+        "kind": "schema",
+        "name": "Finish summary and marketplace evidence schemas",
+        "paths": [
+          "trellis/workflows/guru-team/schemas/finish-summary.schema.json",
+          "trellis/workflows/guru-team/schemas/marketplace-verification.schema.json"
+        ],
+        "change": "定义完成摘要和远端安装验证的严格、可机器校验合同。"
+      },
+      {
+        "kind": "preset",
+        "name": "Guru Team preset installer",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "change": "安装 no-workspace-read 入口并验证 update、workflow reapply、preset reapply 和 sidecar 清理。"
+      },
+      {
+        "kind": "overlay",
+        "name": "Codex and Cursor session entry overlays",
+        "paths": [
+          "trellis/presets/guru-team/overlays/.codex/hooks/session-start.py",
+          "trellis/presets/guru-team/overlays/.cursor/hooks/session-start.py"
+        ],
+        "change": "会话启动只消费 task 与 phase 上下文，不打开或枚举 workspace journal。"
+      },
+      {
+        "kind": "skill",
+        "name": "Guru Team continue and finish entries",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md",
+          ".agents/skills/trellis-finish-work/SKILL.md"
+        ],
+        "change": "明确 Branch Review Gate、AI index、finish-summary 和 publish recovery 的职责边界。"
+      },
+      {
+        "kind": "docs",
+        "name": "Durable requirements and reusable specifications",
+        "paths": [
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/companion-scripts.md"
+        ],
+        "change": "文档 SSOT 移除 Guru Team journal/add_session 旧链路并记录新的完成与发布合同。"
+      },
+      {
+        "kind": "test",
+        "name": "Workflow and preset regression suites",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "change": "覆盖 schema、路径安全、失败降级、两阶段发布、recovery、no-workspace access 和 throwaway 升级行为。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Guru Team completion recording",
+        "before": "任务完成信息写入固定 workspace journal，并由 add_session.py 参与收尾。",
+        "after": "任务完成信息写入 archived task 的 finish-summary.json，Guru Team 不再调用 add_session.py。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "AI judgment and deterministic facts",
+        "before": "完成摘要的语义与 Git、发布事实缺少明确的生成职责边界。",
+        "after": "AI index 只承载语义判断，companion recorder 注入 issue、Git、artifact、时间和 PR 事实。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Two-stage PR metadata",
+        "before": "任务归档与 PR URL 记录没有 task-local 的可恢复两阶段提交合同。",
+        "after": "initial summary 使用空 PR URL，PR 成功后只回写归档 summary 的 URL、ref 和安全路径。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Immutable publish recovery inputs",
+        "before": "恢复执行可能从变化的配置、body 或 task 状态重新解析发布参数。",
+        "after": "recovery 只消费 task-local readiness 中冻结并带 digest 的 publish_inputs。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Open PR recovery state machine",
+        "before": "发布中断后的 PR 查询、复用、创建和多结果处理缺少单一 fail-closed 状态机。",
+        "after": "一个 open PR 复用，零个仅允许同参数创建一次，多个结果直接阻塞。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Protected Git path handling",
+        "before": "完成摘要可能把共享运行态路径混入变更路径和检索输入。",
+        "after": "raw paths 按 exact string 排序去重后过滤受保护前缀，安全集合同步写入两个 path 字段。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Path and semantic duplicate identity",
+        "before": "通用文本规范化会把标点不同的合法 Git paths 误判为重复项。",
+        "after": "路径数组按 exact string 判断重复，非路径语义数组继续使用 normalized text identity。",
+        "source_artifact": "review.md"
+      },
+      {
+        "contract": "Git path snapshot failure",
+        "before": "Git 路径快照失败会中止收尾或保留未验证的部分路径结果。",
+        "after": "路径快照失败统一使用双空路径集合、固定 unavailable fact 和重新派生的 retrieval_text。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Session context boundary",
+        "before": "Shared start 与平台 session-start 会读取或输出 workspace journal 元数据。",
+        "after": "Guru Team 启动上下文只使用 phase、task、package 和 Git 事实，不读取 workspace journal。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Remote marketplace publish evidence",
+        "before": "本地或 public-main sampling 可以被误认为 current-ref 的正式安装验证。",
+        "after": "push 后必须对 current ref 运行远端 verifier，passed artifact 与 ledger 交叉校验后才创建 PR。",
+        "source_artifact": "review.md"
+      },
+      {
+        "contract": "Upgrade and sidecar verification",
+        "before": "Throwaway update 后未固定 workflow reapply 顺序，也可能漏检残留 sidecar。",
+        "after": "update 后依次重应用 marketplace workflow 与 preset，并在最后递归检查 sidecar。",
+        "source_artifact": "review.md"
+      },
+      {
+        "contract": "finish-summary protected path filtering",
+        "before": "原始 Git 变更集合包含受保护运行态路径。",
+        "after": "完成摘要已过滤受保护运行态路径，过滤项未写入 path 字段。",
+        "source_artifact": ""
+      }
+    ],
+    "search_terms": {
+      "issue_refs": [
+        "#53",
+        "#96",
+        "#97",
+        "#98",
+        "#99",
+        "#100"
+      ],
+      "pr_refs": [
+        "PR #103"
+      ],
+      "branches": [
+        "codex/097-finish-summary-replaces-add-session"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".agents/skills/trellis-finish-work/SKILL.md",
+        ".agents/skills/trellis-start/SKILL.md",
+        ".claude/commands/trellis/continue.md",
+        ".claude/commands/trellis/finish-work.md",
+        ".codex/hooks/session-start.py",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/prompts/trellis-finish-work.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".codex/skills/trellis-finish-work/SKILL.md",
+        ".cursor/commands/trellis-continue.md",
+        ".cursor/commands/trellis-finish-work.md",
+        ".cursor/hooks/session-start.py",
+        ".gitignore",
+        ".trellis/.gitignore",
+        ".trellis/config.yaml",
+        ".trellis/guru-team/config-template.yml",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/schemas/finish-summary.schema.json",
+        ".trellis/guru-team/schemas/marketplace-verification.schema.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/agent-assignment.json",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/check.jsonl",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/design.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/finish-summary-index.json",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/finish-summary.json",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/implement.jsonl",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/implement.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/implementation-handoff.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/marketplace-verification.json",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/phase2-check.json",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/planning-approval.json",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/pr-body.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/pr-readiness.json",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/prd.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/research/current-finish-publish-contract.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/review-gate.json",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/review.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/reviews/round-001-finding.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/reviews/round-001-replacement-finding.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/reviews/round-002-closure.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/reviews/round-003-closure.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/reviews/round-004-final.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/reviews/round-005-final.md",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/task-start-context.json",
+        ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/hooks/session-start.py",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.cursor/hooks/session-start.py",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/config-template.yml",
+        "trellis/workflows/guru-team/schemas/finish-summary.schema.json",
+        "trellis/workflows/guru-team/schemas/marketplace-verification.schema.json",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "finish-work",
+        "publish-pr",
+        "verify-marketplace",
+        "add_session.py",
+        "trellis update",
+        "trellis workflow"
+      ],
+      "config_keys": [
+        "session_auto_commit",
+        "publish.draft",
+        "workflow.source",
+        "workflow.template"
+      ],
+      "schema_fields": [
+        "index.problem",
+        "index.outcome",
+        "index.changed_behavior",
+        "index.contract_changes",
+        "index.search_terms.paths",
+        "git.changed_paths",
+        "github.pr_url",
+        "publish_inputs"
+      ],
+      "symbols": [
+        "cmd_finish_work",
+        "cmd_publish_pr",
+        "load_finish_summary_index",
+        "build_finish_summary",
+        "execute_marketplace_verification",
+        "FINISH_SUMMARY_PATH_SNAPSHOT_UNAVAILABLE_CONTRACT"
+      ],
+      "phrases": [
+        "workspace journal 并行冲突",
+        "finish-work 不再调用 add_session.py",
+        "完成摘要改为 task-local finish-summary.json",
+        "recovery 使用 immutable publish_inputs",
+        "路径快照失败写入空路径集合",
+        "合法 Git paths 按 exact identity 保留",
+        "remote marketplace verifier 完成后再创建 PR",
+        "trellis update 后重新应用 workflow 和 preset"
+      ]
+    },
+    "retrieval_text": "#97 拆分 #53：用 task-local finish-summary 替代 workspace journal/add_session\nGuru Team 使用固定 workspace journal 记录任务完成信息，多个 task 并行时会共同修改同一文件并产生分支冲突；add_session 同时把完成、发布恢复和上下文读取绑定到共享运行态。\n完成摘要改存于当前归档 task，并把 AI 语义判断与脚本采集的 Git、发布和 artifact 事实分层；发布恢复、远端 marketplace 验证和上下文读取均使用 task-local 或确定性证据。非目标是不回填历史任务、不实现历史搜索，也不调整 developer identity。\nfinish-work 归档后写入 task-local finish-summary.json，不再调用 add_session.py。\n完成摘要先记录空 PR URL，再在 PR 创建或恢复后执行受限 metadata tail 回写。\nAI 负责提供语义 index，companion script 只注入并校验确定性事实。\n发布恢复只消费 immutable publish_inputs，并按零个、一个或多个 open PR fail closed。\nGit 路径先排序去重并过滤受保护前缀，再同步写入两个安全路径字段。\n所有 path-bearing arrays 使用 exact string identity，合法的标点差异路径不会被文本规范化折叠。\n路径快照失败时写入双空路径集合和固定 unavailable contract，并重新派生 retrieval_text。\nShared start 与 Codex、Cursor session-start 不再读取或输出 workspace journal。\n远端 marketplace verifier 在 push 后验证 current ref，passed evidence 写回 ledger 后才创建 PR。\nThrowaway 验证在 update 后重新应用 marketplace workflow 与 preset，并执行最终 sidecar gate。\nfinish、archive、publish、recovery 与 review gate 改为 task-local finish-summary 主线。\n新增 index 校验、summary recorder、immutable readiness、remote verifier 和 recovery 状态机。\n定义完成摘要和远端安装验证的严格、可机器校验合同。\n安装 no-workspace-read 入口并验证 update、workflow reapply、preset reapply 和 sidecar 清理。\n会话启动只消费 task 与 phase 上下文，不打开或枚举 workspace journal。\n明确 Branch Review Gate、AI index、finish-summary 和 publish recovery 的职责边界。\n文档 SSOT 移除 Guru Team journal/add_session 旧链路并记录新的完成与发布合同。\n覆盖 schema、路径安全、失败降级、两阶段发布、recovery、no-workspace access 和 throwaway 升级行为。\n任务完成信息写入固定 workspace journal，并由 add_session.py 参与收尾。\n任务完成信息写入 archived task 的 finish-summary.json，Guru Team 不再调用 add_session.py。\n完成摘要的语义与 Git、发布事实缺少明确的生成职责边界。\nAI index 只承载语义判断，companion recorder 注入 issue、Git、artifact、时间和 PR 事实。\n任务归档与 PR URL 记录没有 task-local 的可恢复两阶段提交合同。\ninitial summary 使用空 PR URL，PR 成功后只回写归档 summary 的 URL、ref 和安全路径。\n恢复执行可能从变化的配置、body 或 task 状态重新解析发布参数。\nrecovery 只消费 task-local readiness 中冻结并带 digest 的 publish_inputs。\n发布中断后的 PR 查询、复用、创建和多结果处理缺少单一 fail-closed 状态机。\n一个 open PR 复用，零个仅允许同参数创建一次，多个结果直接阻塞。\n完成摘要可能把共享运行态路径混入变更路径和检索输入。\nraw paths 按 exact string 排序去重后过滤受保护前缀，安全集合同步写入两个 path 字段。\n通用文本规范化会把标点不同的合法 Git paths 误判为重复项。\n路径数组按 exact string 判断重复，非路径语义数组继续使用 normalized text identity。\nGit 路径快照失败会中止收尾或保留未验证的部分路径结果。\n路径快照失败统一使用双空路径集合、固定 unavailable fact 和重新派生的 retrieval_text。\nShared start 与平台 session-start 会读取或输出 workspace journal 元数据。\nGuru Team 启动上下文只使用 phase、task、package 和 Git 事实，不读取 workspace journal。\n本地或 public-main sampling 可以被误认为 current-ref 的正式安装验证。\npush 后必须对 current ref 运行远端 verifier，passed artifact 与 ledger 交叉校验后才创建 PR。\nThrowaway update 后未固定 workflow reapply 顺序，也可能漏检残留 sidecar。\nupdate 后依次重应用 marketplace workflow 与 preset，并在最后递归检查 sidecar。\n原始 Git 变更集合包含受保护运行态路径。\n完成摘要已过滤受保护运行态路径，过滤项未写入 path 字段。\nworkspace journal 并行冲突\nfinish-work 不再调用 add_session.py\n完成摘要改为 task-local finish-summary.json\nrecovery 使用 immutable publish_inputs\n路径快照失败写入空路径集合\n合法 Git paths 按 exact identity 保留\nremote marketplace verifier 完成后再创建 PR\ntrellis update 后重新应用 workflow 和 preset"
+  }
+}

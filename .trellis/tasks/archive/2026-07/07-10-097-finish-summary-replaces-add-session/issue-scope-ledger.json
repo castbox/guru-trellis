@@ -1,0 +1,93 @@
+{
+  "primary_issue": {
+    "number": 97,
+    "url": "https://github.com/castbox/guru-trellis/issues/97",
+    "title": "拆分 #53：用 task-local finish-summary 替代 workspace journal/add_session",
+    "reason": "intake 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      {
+        "type": "phase2_check",
+        "status": "passed",
+        "artifact_path": "phase2-check.json",
+        "reason": "独立阶段二检查覆盖 #97 需求、设计、实现、测试、schema、preset/update、Docs SSOT、部署与安全；原 P1 和本轮 P2 均已闭环，当前无未解决 P0/P1/P2/P3 finding。"
+      },
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/marketplace-verification.json",
+        "artifact_sha256": "8c81d5b7b7e814edc0cd345adefaa27c466b433f8b59f3b717f0cc9d534816ce",
+        "verified_content_head": "9a4afdb6635ecbe0f0e76831527e063bda1da066",
+        "remote_head": "9a4afdb6635ecbe0f0e76831527e063bda1da066",
+        "publish_head": "9a4afdb6635ecbe0f0e76831527e063bda1da066",
+        "commands_passed": true
+      }
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 97,
+      "url": "https://github.com/castbox/guru-trellis/issues/97",
+      "title": "拆分 #53：用 task-local finish-summary 替代 workspace journal/add_session",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        {
+          "type": "phase2_check",
+          "status": "passed",
+          "artifact_path": "phase2-check.json",
+          "reason": "独立阶段二检查覆盖 #97 需求、设计、实现、测试、schema、preset/update、Docs SSOT、部署与安全；原 P1 和本轮 P2 均已闭环，当前无未解决 P0/P1/P2/P3 finding。"
+        },
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": ".trellis/tasks/archive/2026-07/07-10-097-finish-summary-replaces-add-session/marketplace-verification.json",
+          "artifact_sha256": "8c81d5b7b7e814edc0cd345adefaa27c466b433f8b59f3b717f0cc9d534816ce",
+          "verified_content_head": "9a4afdb6635ecbe0f0e76831527e063bda1da066",
+          "remote_head": "9a4afdb6635ecbe0f0e76831527e063bda1da066",
+          "publish_head": "9a4afdb6635ecbe0f0e76831527e063bda1da066",
+          "commands_passed": true
+        }
+      ]
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 53,
+      "url": "https://github.com/castbox/guru-trellis/issues/53",
+      "title": "优化 Trellis 扩展，避免多个task并行开发时产生文件冲突",
+      "reason": "父 issue；本任务只承接 workspace journal/add_session 冲突，不关闭 #53。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 96,
+      "url": "https://github.com/castbox/guru-trellis/issues/96",
+      "title": "拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界",
+      "reason": "已完成前置依赖；本任务基于 task-start-context 与 runtime boundary 实施。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 100,
+      "url": "https://github.com/castbox/guru-trellis/issues/100",
+      "title": "拆分 #53：为既有 archived tasks 回填 finish-summary 历史索引",
+      "reason": "消费本任务 schema 的后续迁移，不由本 PR 实现或关闭。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 98,
+      "url": "https://github.com/castbox/guru-trellis/issues/98",
+      "title": "拆分 #53：基于 finish-summary 的 Guru Team 历史上下文分级发现",
+      "reason": "消费 archived finish-summary 的搜索能力，排在 #100 之后。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 99,
+      "url": "https://github.com/castbox/guru-trellis/issues/99",
+      "title": "拆分 #53：取消 Guru Team 安装与任务创建对 Trellis developer identity 的依赖",
+      "reason": "developer identity 前置解耦不属于本任务。",
+      "acceptance_evidence": []
+    }
+  ]
+}

@@ -38,7 +38,7 @@ Canonical 资产：
 | 业务项目中文文档默认规则 | 业务项目 `.trellis/spec/**`、`.trellis/tasks/**`（含 `reviews/*.md` raw reports 与 `review.md` rollup）、`docs/**` durable docs、`00-bootstrap-guidelines` 生成或补齐的 docs SSOT，以及 workflow artifact human-readable 字段默认中文；literal token 可保留英文。 |
 | Phase 1 planning | Trellis task 创建后写中文 `prd.md` / `design.md` / `implement.md`，并定位同一个 `Docs SSOT Plan`；主会话必须显式展示三份 task-local 规划文档链接并等待用户 post-planning 确认；Phase 0 handoff 确认不能替代 planning approval。 |
 | Phase 2 execute/check | 默认 sub-agent mode 下实现由 `trellis-implement` / channel `implement` 完成并输出 handoff，随后 `trellis-check` / channel `check` 基于真实 diff、task artifacts、spec、docs/overlay/config/test 和验证命令完成完整检查；实现/check 都必须消费 Phase 1 `Docs SSOT Plan`，按 `ssot_first` / `delta_first` / `bootstrap_or_repair_docs` / `no_docs_update_needed` 策略说明 docs 同步结果并复核 durable docs / task artifacts / code / test 一致性；不用主会话自检或少量命令通过替代完整检查。 |
-| Phase 3 review/finish/publish | commit 后由独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff；每轮保留 task-local 中文 `reviews/*.md` raw report，最终中文 `review.md` 作为 rollup 汇总并链接 raw reports，再经过 Branch Review Gate；final reviewer 只验证 Phase 2 已按 `Docs SSOT Plan` 完成 reconciliation，current-scope Docs SSOT 不一致必须 finding；之后由 `trellis-finish-work` archive task、记录 journal、提交 metadata 并发布包含 Docs SSOT / 文档同步结果的非 draft PR。 |
+| Phase 3 review/finish/publish | commit 后由独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff；每轮保留 task-local 中文 `reviews/*.md` raw report，最终中文 `review.md` 作为 rollup 汇总并链接 raw reports，再经过 Branch Review Gate；final reviewer 只验证 Phase 2 已按 `Docs SSOT Plan` 完成 reconciliation，current-scope Docs SSOT 不一致必须 finding；之后由 `trellis-finish-work` archive task、基于 AI-authored index 生成 task-local `finish-summary.json`、提交 metadata、发布非 draft PR，并以精确 metadata tail 回写 PR URL。 |
 | Auto-bootstrap 日常入口 | 用户日常直接描述任务、贴 issue URL 或说 issue number；`trellis-start` 是 fallback / explicit orientation，不是每个任务的必需入口。 |
 
 边界：
@@ -155,13 +155,13 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 
 | 能力 | 说明 |
 | --- | --- |
-| Publish after finish | 普通 `publish-pr` 直接调用被阻塞；正常发布只能由 `finish-work.sh --from-trellis-finish-work` 在 archive / journal / metadata commit 后内部触发。 |
-| Recovery/debug 明确化 | 直接 publish 只保留显式 recovery/debug 路径，并必须通过 review gate、dirty state、issue ledger、base branch 和 GitHub auth 校验。 |
+| Publish after finish | 普通 `publish-pr` 直接调用被阻塞；正常发布只能由 `finish-work.sh --from-trellis-finish-work` 在 archive / initial finish-summary / metadata commit 后内部触发。 |
+| Recovery/debug 明确化 | 直接 publish 只保留显式 recovery/debug 路径，并必须通过 repo/base/head identity、review/readiness、dirty state、issue ledger、current/remote HEAD 与 GitHub auth 校验；marketplace-required recovery 只复用既有 passed verifier evidence。PR query 必须先于 create：1 个 open PR 复用，0 个按同一 title/body/draft 只重试 create 一次，多于 1 个 fail closed；retry 失败保持 initial summary 空 URL/ref 并返回同一 recovery。 |
 | Non-draft body source | non-draft publish 必须传入 AI 审查后的 `--body-file` 或 `--body-artifact`；generated body 只可用于 draft/preview。 |
 | PR body 质量门禁 | 变更摘要、影响范围、验证结果、Review Gate、Issue 关闭范围、安全说明必须具体，禁止“当前 Trellis task”“详见 artifact”等低信息量短语作为主要摘要。 |
 | Issue close 语义 | `Closes #xx` 只能来自 task-level `issue-scope-ledger.json` 的 `close_issues`，`related_issues` / `followup_issues` 不得被关闭。 |
 | Archive path rewrite | finish-work archive 后，active task 下的 body/readiness path 会重写到 archived task artifact path 再读取。 |
-| Dry-run readiness preview | `finish-work --dry-run --from-trellis-finish-work` 只校验 readiness 并输出 archive / journal / publish plan，不移动 task、不写 journal、不 commit、不 push、不创建 PR。 |
+| Dry-run readiness preview | `finish-work --dry-run --from-trellis-finish-work --finish-summary-index-file <task>/finish-summary-index.json` 校验 readiness 与 AI index，输出 archive / initial finish-summary / publish plan，不移动或写入文件、不 commit、不 push、不创建 PR。 |
 | Codex default dispatch | 缺省或非法 `codex.dispatch_mode` 回落到 `sub-agent`，显式 `inline` 保留为调试/降级模式。 |
 
 实现资产：
@@ -207,7 +207,8 @@ Canonical 资产：
 | Extension version/provenance | `trellis/guru-team-extension.json` 是 Guru Team extension canonical version；installer 写入 `.trellis/guru-team/extension.json` 记录安装版本、source ref/commit、source tree state 和 selected platforms。 |
 | Release tag contract | Guru Team extension release tag 使用 repo 级 `vX.Y.Z`，并与 `trellis/guru-team-extension.json.version` 一致；tag-pinned stable marketplace source 使用 `gh:castbox/guru-trellis/trellis#vX.Y.Z`。 |
 | Dogfood drift check | canonical overlay 与本仓库安装副本可通过 `check-dogfood-overlay-drift.sh` 比对。 |
-| 业务项目语言归一化 | preset installer 确定性替换 `.trellis/spec/**`、workspace index 和 `00-bootstrap-guidelines` 中已知 Trellis 英文文档语言规则，不扫描普通 task 历史或翻译业务 `docs/**`。 |
+| 业务项目语言归一化 | preset installer 确定性替换 `.trellis/spec/**` 和 `00-bootstrap-guidelines` 中已知 Trellis 英文文档语言规则，不扫描 `.trellis/workspace/**`、普通 task 历史或翻译业务 `docs/**`。 |
+| Finish summary 合同 | `finish-summary.schema.json` 是正常 finish 与 #100 backfill 的共同 SSOT；Guru Team 不调用 `add_session.py`，shared/Codex/Cursor context 不打开、枚举或输出 `.trellis/workspace/**`，preset 写入 `session_auto_commit: false` 与 workspace ignore。recorder 对 raw paths 排序去重并过滤受保护前缀；任一必需 Git path snapshot 命令失败时两个 path 数组清空，只记录固定 unavailable fact。`pr-readiness.json.publish_inputs` 在首次 PR create 前提交并绑定 repo/base/head/title/body digest/draft/reviewed source，recovery 在 query/create 前验证 Git blob、snapshot/body digest、gate 与 current/remote HEAD。 |
 
 平台 overlay 当前覆盖：
 

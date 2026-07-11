@@ -83,7 +83,7 @@ review_gate:
   require_head_match: true
   require_deployment_impact_evidence: true
 
-# Publish PR runs after finish-work archives the task and records the journal.
+# Publish PR runs after finish-work archives the task and records initial finish-summary metadata.
 publish:
   draft: false
   close_keyword: Closes

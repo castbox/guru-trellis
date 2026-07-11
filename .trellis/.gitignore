@@ -7,6 +7,9 @@
 # Session/window scoped runtime state
 .runtime/
 
+# Guru Team does not track upstream workspace journals
+workspace/
+
 # Ralph Loop state file
 .ralph-state.json
 

@@ -10,6 +10,11 @@ The installer copies reusable assets from `trellis/workflows/guru-team/` into
 the target repository's `.trellis/guru-team/` directory, then applies platform
 overlays from `trellis/presets/guru-team/overlays/`.
 
+It also installs the managed finish-summary schema, materializes top-level
+`session_auto_commit: false`, and adds `.trellis/workspace/` to the target root
+`.gitignore`. It does not create, scan, translate, or rewrite workspace
+journal/index files.
+
 ## Managed Assets
 
 `MANAGED_ASSET_PATHS` is the authoritative list of companion assets copied from
@@ -73,8 +78,6 @@ target business repositories after managed assets and overlays are applied. The
 allowed scope is limited to:
 
 - `.trellis/spec/**/*.md`
-- `.trellis/workspace/index.md`
-- `.trellis/workspace/*/index.md`
 - `.trellis/tasks/00-bootstrap-guidelines/**/*.md`
 
 It must only replace the known Trellis-generated English language-rule
@@ -117,6 +120,12 @@ canonical workflow has a stricter post-planning approval gate.
 
 Do not overwrite unknown platform command, prompt, skill, or agent edits. The
 target repo owner must inspect `.new` when local customization exists.
+Throwaway verification must remove the expected workflow preview `.new` after
+content validation, run the initial switch, execute `trellis update --force`,
+then reapply the marketplace workflow before preset reapply. The second workflow
+switch is required because official update may restore the upstream default
+workflow. Successful completion requires a final recursive `.new`/`.bak` scan
+with no remaining sidecars.
 
 ## Platform Overlay Selection
 
@@ -215,9 +224,9 @@ or disposable copy and verify:
 - unknown overlay edits produce `.new`
 - known upstream Trellis-generated entries are replaced
 - scripts remain executable
-- `language_guidance` reports checked/updated `.trellis/spec/**` and workspace
-  index paths without modifying business `docs/**`
-- throwaway validation fails if `.trellis/spec/**`, workspace index files, or
+- `language_guidance` reports checked/updated `.trellis/spec/**` and bootstrap
+  paths without modifying business `docs/**` or `.trellis/workspace/**`
+- throwaway validation fails if `.trellis/spec/**` or
   `00-bootstrap-guidelines` still contain known English documentation language
   requirements
 
