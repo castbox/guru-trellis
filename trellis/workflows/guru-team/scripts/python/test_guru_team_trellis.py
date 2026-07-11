@@ -9431,16 +9431,35 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
     def test_closeout_runtime_contracts_reject_legacy_archive_first_semantics(self) -> None:
         repo = Path(__file__).resolve().parents[5]
+        continue_surfaces = [
+            repo / "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+            repo / "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+            repo / "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+            repo / "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+            repo / "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+            repo / ".agents/skills/trellis-continue/SKILL.md",
+            repo / ".claude/commands/trellis/continue.md",
+            repo / ".codex/prompts/trellis-continue.md",
+            repo / ".codex/skills/trellis-continue/SKILL.md",
+            repo / ".cursor/commands/trellis-continue.md",
+        ]
         surfaces = [
             repo / ".trellis/spec/workflow/companion-scripts.md",
             repo / ".trellis/spec/workflow/data-contracts.md",
             repo / ".trellis/spec/workflow/workflow-contract.md",
             repo / "trellis/workflows/guru-team/workflow.md",
             repo / ".trellis/workflow.md",
+            *continue_surfaces,
         ]
         forbidden = [
             "Initial summary uses empty",
             "after archive and initial finish-summary",
+            "publishes after archive, initial finish-summary, and immutable readiness recording succeed",
+            "initial finish-summary",
+            "creates a draft PR after archive",
+            "binds one draft PR after archive",
+            "builds the final summary after archive",
+            "records immutable readiness after archive",
             "After PR creation, one additional exact archived-task",
             "archives the active task before publish",
             '"initial_pr_url"',
@@ -9455,6 +9474,25 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 if phrase in text
             )
         self.assertEqual(violations, [])
+
+        required = [
+            "Stop after Branch Review Gate",
+            "Before archive",
+            "binds one exact draft PR",
+            "builds the only final summary projection",
+            "After the archive metadata transaction",
+            "only remote HEAD/PR binding verification and draft-to-ready remain",
+            "does not rebuild or rewrite local artifacts, create another commit, or push again",
+        ]
+        missing = []
+        for path in continue_surfaces:
+            text = path.read_text(encoding="utf-8")
+            missing.extend(
+                f"{path.relative_to(repo)}: {phrase}"
+                for phrase in required
+                if phrase not in text
+            )
+        self.assertEqual(missing, [])
 
     def test_final_summary_injects_only_plan_constrained_pr_runtime_facts(self) -> None:
         plan = self.build_plan()
