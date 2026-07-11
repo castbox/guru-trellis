@@ -141,6 +141,74 @@ verifier; recovery validates and reuses the existing passed verifier artifact,
 ledger evidence, verified/remote/publish HEAD, and review gate, and does not
 rerun the verifier against a dirty or staged summary.
 
+### Archived Task Backfill Contract
+
+The #100 backfill reads only these task-local source names: `task.json`,
+`issue-scope-ledger.json`, `prd.md`, `design.md`, `implement.md`, `review.md`,
+`review-gate.json`, `phase2-check.json`, `pr-body.md`, and
+`pr-readiness.json`. A source is recorded in `backfill.source_artifacts` only
+after a successful UTF-8/JSON read. Missing files are not read errors; malformed
+or unreadable files are isolated to that task and excluded from extraction.
+Task, Git, GitHub, artifact, problem/outcome/behavior, contract-table, and
+search-term fields follow the fixed priority rules documented by the public
+backfill command. The generator never infers facts from GitHub or conversation
+history and never invents an issue, PR, commit, branch, path, or behavior.
+Git commits use the first non-empty valid source in order: `task.json.commit`,
+`review-gate.json.head`, then `pr-readiness.json.commits[]`; values from lower
+priority sources are not unioned into a selected higher-priority source.
+Problem fallback is exactly `<task.title>；旧行为：历史 artifact 未记录。` and
+outcome fallback is exactly `<task.title>；非目标：历史 artifact 未记录。`.
+When higher-priority outcome sources and a pr-body summary paragraph are absent,
+the first `pr-body.md` `## 变更摘要` list item becomes outcome while the
+complete normalized list remains `changed_behavior`.
+Search-term phrases first use, in order, task title, task slug, problem prefix,
+outcome prefix, and changed-behavior prefixes. Only when fewer than three
+unique phrases remain may task slug, task title, and `历史归档 task` be used to
+fill the array. After that fixed sequence, and only when no phrase contains a
+#97 `FINISH_SUMMARY_COMPLETION_MARKERS` value, the generator appends the single
+fixed phrase `历史归档 task 已完成`; it never replaces or rewrites an existing
+phrase. During the fixed sequence, only an exact problem or outcome fallback
+candidate may be skipped when its first clause equals the last clause of the
+previously retained phrase. This narrow edge de-duplication prevents the same
+fallback boundary from being repeated inside retrieval phrases; it does not
+rewrite candidates or apply clause-level de-duplication to any other phrase.
+
+Backfill reuses the normal `finish_summary_errors(..., task_dir=...)` validator
+and `finish_summary_retrieval_text()` derivation. It adds exactly the schema
+defined `backfill` object with `generated=true`, a UTC generation time,
+successful source artifacts, sorted canonical `missing_fields`, and one of
+`complete`, `partial`, or `minimal`. The normal #97 schema remains unchanged;
+legacy top-level `summary` and `keywords` are forbidden by its closed field set.
+The final validator permits one backfill-only retrieval boundary duplication
+only when `generator` is exactly `guru-team.finish-summary-backfill`, problem is
+exactly `<task.title>；旧行为：历史 artifact 未记录。`, retrieval starts with the
+exact task title followed by that problem, and the retrieval remainder contains
+no unapproved adjacent duplicate clause. A second backfill-only boundary is
+allowed only when task-local sources prove the higher-priority outcome sources
+and pr-body paragraph are absent, outcome equals the first pr-body summary list
+item, the complete list equals `changed_behavior`, retrieval exactly matches the
+shared helper, and removing one copy leaves no unapproved adjacent duplicate.
+The two approved boundaries may coexist. Normal finish-work, non-exact source
+text, source drift, and every other duplicate inside problem, outcome, behavior,
+surface, contract, or phrase content remain rejected by the shared #97 rules.
+
+Backfill confidence is `complete` only when the required structural artifacts,
+`git.branch`, complete changed paths, source issues, PR URL, and core index
+fields are present. It is `minimal` only when retrieval fields depend solely on
+the archive basename, task title/name, or Markdown H1. Any other generated
+semantic or provenance evidence, including artifact/base/branch/commit facts,
+issue or PR facts, review outcome, completed checklist, or contract table, makes
+the result at least `partial`.
+
+`git.changed_paths` and `index.search_terms.paths` retain the complete clean,
+sorted, exact-deduplicated path set. Affected surfaces group paths by the fixed
+path-prefix `kind` mapping. Each kind is split into stable chunks of at most 100
+paths, and every path remains present in exactly one chunk. If the complete
+representation would exceed the schema maximum of 20 surfaces, generation
+fails closed for that task instead of truncating paths or expanding the schema.
+An empty changed-path set receives the schema-valid `task-artifact` fallback
+surface with no paths.
+
 ## Workspace Boundary Snapshot
 
 `check-workspace-boundary --json` resolves the task from `--task` or current task, validates the task-local context, then derives the expected workspace from current repo root, local runtime mapping, and Git worktree facts. It never trusts a committed absolute workspace path. The snapshot records `status`, `workspace_mode`, `expected_workspace`, `actual_repo_root`, optional `source_checkout`, `task_dir`, repo-relative `task_dir_relative`, source/task git status, suspicious same-task artifacts, and deterministic errors. Missing task context, a mismatched runtime workspace, a task outside the current repo `.trellis/tasks`, or source-checkout same-task metadata fails closed.

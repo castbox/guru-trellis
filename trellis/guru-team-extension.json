@@ -66,6 +66,7 @@
       "check-review-gate",
       "verify-marketplace",
       "finish-work",
+      "backfill-finish-summary",
       "publish-pr"
     ]
   },

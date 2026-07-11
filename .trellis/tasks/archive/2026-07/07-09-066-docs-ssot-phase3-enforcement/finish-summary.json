@@ -1,0 +1,353 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:34Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-09-066-docs-ssot-phase3-enforcement",
+    "title": "#66 Docs SSOT Branch Review/finish-work enforcement：final review 只验证不补救",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-09-066-docs-ssot-phase3-enforcement"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/066-docs-ssot-phase3-enforcement",
+    "commits": [
+      "8cd0b774b788fb965fd07e4843107e6eccc59d7c"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".agents/skills/trellis-finish-work/SKILL.md",
+      ".claude/agents/trellis-check.md",
+      ".claude/commands/trellis/continue.md",
+      ".claude/commands/trellis/finish-work.md",
+      ".codex/agents/trellis-check.toml",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/prompts/trellis-finish-work.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".codex/skills/trellis-finish-work/SKILL.md",
+      ".cursor/agents/trellis-check.md",
+      ".cursor/commands/trellis-continue.md",
+      ".cursor/commands/trellis-finish-work.md",
+      ".trellis/agents/check.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/agent-assignment.json",
+      ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/check.jsonl",
+      ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/design.md",
+      ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/implement.jsonl",
+      ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/implement.md",
+      ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/issue-scope-ledger.json",
+      ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/phase2-check.json",
+      ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/planning-approval.json",
+      ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/prd.md",
+      ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      66
+    ],
+    "close_issues": [
+      66
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "GitHub issue: https://github.com/castbox/guru-trellis/issues/66",
+    "outcome": "Branch Review Gate 可记录为通过。当前 diff 已满足 #66：final review 只验证 Phase 2 Docs SSOT reconciliation，不首次补救；current-scope Docs SSOT inconsistency 被定义为 blocking finding；finish-work 只允许 metadata tail；PR body 必须说明 Docs SSOT / 文档同步结果。",
+    "changed_behavior": [
+      "收紧 Guru Team Phase 3 / Branch Review / finish-work 对 Docs SSOT 的放行语义：final reviewer 只验证 Phase 2 reconciliation，不首次执行 docs merge 或补救遗漏。",
+      "将 current-scope Docs SSOT inconsistency 明确为 blocking finding，并保持 review gate 后只允许 Trellis metadata tail 的规则。",
+      "增加 PR body `Docs SSOT` / `文档同步` 客观结构校验和回归测试，避免 validator 替代 AI 语义审查。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/overlay-guidelines.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/agents/check.md",
+          ".trellis/workflow.md",
+          "README.md",
+          "docs/requirements/README.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+          "trellis/presets/guru-team/overlays/.trellis/agents/check.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/agents/trellis-check.md",
+          ".claude/commands/trellis/continue.md",
+          ".claude/commands/trellis/finish-work.md",
+          ".codex/agents/trellis-check.toml",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/prompts/trellis-finish-work.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".codex/skills/trellis-finish-work/SKILL.md",
+          ".cursor/agents/trellis-check.md",
+          ".cursor/commands/trellis-continue.md",
+          ".cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md",
+          ".agents/skills/trellis-finish-work/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/agent-assignment.json",
+          ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/check.jsonl",
+          ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/design.md",
+          ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/implement.jsonl",
+          ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/implement.md",
+          ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/issue-scope-ledger.json",
+          ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/phase2-check.json",
+          ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/planning-approval.json",
+          ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/prd.md",
+          ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#66"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/066-docs-ssot-phase3-enforcement"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".agents/skills/trellis-finish-work/SKILL.md",
+        ".claude/agents/trellis-check.md",
+        ".claude/commands/trellis/continue.md",
+        ".claude/commands/trellis/finish-work.md",
+        ".codex/agents/trellis-check.toml",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/prompts/trellis-finish-work.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".codex/skills/trellis-finish-work/SKILL.md",
+        ".cursor/agents/trellis-check.md",
+        ".cursor/commands/trellis-continue.md",
+        ".cursor/commands/trellis-finish-work.md",
+        ".trellis/agents/check.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/agent-assignment.json",
+        ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/check.jsonl",
+        ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/design.md",
+        ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/implement.jsonl",
+        ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/implement.md",
+        ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/issue-scope-ledger.json",
+        ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/phase2-check.json",
+        ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/planning-approval.json",
+        ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/prd.md",
+        ".trellis/tasks/07-09-066-docs-ssot-phase3-enforcement/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/README.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [
+        "07-09-066-docs-ssot-phase3-enforcement",
+        "README.md",
+        "SKILL.md",
+        "agent-assignment.json",
+        "check.jsonl",
+        "check.md",
+        "companion-scripts.md",
+        "continue.md",
+        "design.md",
+        "extension.json",
+        "finish-work.md",
+        "guru-team-trellis-flow.md",
+        "guru_team_trellis.py",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "overlay-guidelines.md",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "quality-guidelines.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-check.md",
+        "trellis-check.toml",
+        "trellis-continue.md",
+        "trellis-finish-work.md",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#66 Docs SSOT Branch Review/finish-work enforcement：final re",
+        "07-09-066-docs-ssot-phase3-enforcement",
+        "GitHub issue: https://github.com/castbox/guru-trellis/issues",
+        "Branch Review Gate 可记录为通过。当前 diff 已满足 #66：final review 只验证 P",
+        "收紧 Guru Team Phase 3 / Branch Review / finish-work 对 Docs SS",
+        "将 current-scope Docs SSOT inconsistency 明确为 blocking finding",
+        "增加 PR body `Docs SSOT` / `文档同步` 客观结构校验和回归测试，避免 validator 替代",
+        "历史归档 task 已完成"
+      ]
+    },
+    "retrieval_text": "#66 Docs SSOT Branch Review/finish-work enforcement：final review 只验证不补救\nGitHub issue: https://github.com/castbox/guru-trellis/issues/66\nBranch Review Gate 可记录为通过。当前 diff 已满足 #66：final review 只验证 Phase 2 Docs SSOT reconciliation，不首次补救；current-scope Docs SSOT inconsistency 被定义为 blocking finding；finish-work 只允许 metadata tail；PR body 必须说明 Docs SSOT / 文档同步结果。\n收紧 Guru Team Phase 3 / Branch Review / finish-work 对 Docs SSOT 的放行语义：final reviewer 只验证 Phase 2 reconciliation，不首次执行 docs merge 或补救遗漏。\n将 current-scope Docs SSOT inconsistency 明确为 blocking finding，并保持 review gate 后只允许 Trellis metadata tail 的规则。\n增加 PR body `Docs SSOT` / `文档同步` 客观结构校验和回归测试，避免 validator 替代 AI 语义审查。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#66 Docs SSOT Branch Review/finish-work enforcement：final re\n07-09-066-docs-ssot-phase3-enforcement\nGitHub issue: https://github.com/castbox/guru-trellis/issues\nBranch Review Gate 可记录为通过。当前 diff 已满足 #66：final review 只验证 P\n收紧 Guru Team Phase 3 / Branch Review / finish-work 对 Docs SS\n将 current-scope Docs SSOT inconsistency 明确为 blocking finding\n增加 PR body `Docs SSOT` / `文档同步` 客观结构校验和回归测试，避免 validator 替代\n历史归档 task 已完成"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:34Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

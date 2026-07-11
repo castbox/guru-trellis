@@ -27,6 +27,12 @@ template:
 4. Update `trellis/presets/guru-team/README.md` installed-file list.
 5. Validate a temporary install or upgrade path.
 
+`scripts/bash/backfill-finish-summary.sh` is a managed executable asset. Fresh
+install and preset reapply/update validation must prove that the wrapper and
+canonical Python subcommand are both present, the wrapper is executable, and
+an empty archive can run `--json --dry-run` successfully. Reapply must restore
+the managed wrapper without changing user-owned `.trellis/guru-team/config.yml`.
+
 ## Extension Version Manifest
 
 `trellis/guru-team-extension.json` is the canonical source for the Guru Team

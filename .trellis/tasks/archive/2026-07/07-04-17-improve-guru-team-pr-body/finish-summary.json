@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:30Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-04-17-improve-guru-team-pr-body",
+    "title": "#17 Improve Guru Team PR body quality standards",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-04-17-improve-guru-team-pr-body",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-04-17-improve-guru-team-pr-body"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/17-improve-guru-team-pr-body",
+    "commits": [
+      "803841d4553ffb3fae8556f6c04149706f49c10f"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-finish-work/SKILL.md",
+      ".claude/commands/trellis/finish-work.md",
+      ".codex/prompts/trellis-finish-work.md",
+      ".codex/skills/trellis-finish-work/SKILL.md",
+      ".cursor/commands/trellis-finish-work.md",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-04-17-improve-guru-team-pr-body/check.jsonl",
+      ".trellis/tasks/07-04-17-improve-guru-team-pr-body/design.md",
+      ".trellis/tasks/07-04-17-improve-guru-team-pr-body/implement.jsonl",
+      ".trellis/tasks/07-04-17-improve-guru-team-pr-body/implement.md",
+      ".trellis/tasks/07-04-17-improve-guru-team-pr-body/issue-scope-ledger.json",
+      ".trellis/tasks/07-04-17-improve-guru-team-pr-body/prd.md",
+      ".trellis/tasks/07-04-17-improve-guru-team-pr-body/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      17
+    ],
+    "close_issues": [
+      17
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json"
+  },
+  "index": {
+    "problem": "把 Guru Team `finish-work` / `publish-pr` 生成 PR body 的质量标准从口头期望变成 workflow、AI 入口和 companion script 共同执行的发布合同。未来非 draft PR body 必须面向不了解 Trellis task 的 GitHub reviewer 自解释，不能用“当前 Trellis task”“已提交实现与文档更新”这类低信息量摘要替代真实变更说明。",
+    "outcome": "通过。已按 `origin/main...HEAD` 审查当前分支 `codex/17-improve-guru-team-pr-body`，Reviewed HEAD 为 `803841d4553ffb3fae8556f6c04149706f49c10f`。未发现 P0/P1/P2/P3 finding。",
+    "changed_behavior": [
+      "历史归档 task 已完成：#17 Improve Guru Team PR body quality standards。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/commands/trellis/finish-work.md",
+          ".codex/prompts/trellis-finish-work.md",
+          ".codex/skills/trellis-finish-work/SKILL.md",
+          ".cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-finish-work/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-04-17-improve-guru-team-pr-body/check.jsonl",
+          ".trellis/tasks/07-04-17-improve-guru-team-pr-body/design.md",
+          ".trellis/tasks/07-04-17-improve-guru-team-pr-body/implement.jsonl",
+          ".trellis/tasks/07-04-17-improve-guru-team-pr-body/implement.md",
+          ".trellis/tasks/07-04-17-improve-guru-team-pr-body/issue-scope-ledger.json",
+          ".trellis/tasks/07-04-17-improve-guru-team-pr-body/prd.md",
+          ".trellis/tasks/07-04-17-improve-guru-team-pr-body/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#17"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/17-improve-guru-team-pr-body"
+      ],
+      "paths": [
+        ".agents/skills/trellis-finish-work/SKILL.md",
+        ".claude/commands/trellis/finish-work.md",
+        ".codex/prompts/trellis-finish-work.md",
+        ".codex/skills/trellis-finish-work/SKILL.md",
+        ".cursor/commands/trellis-finish-work.md",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/check.jsonl",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/design.md",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/implement.jsonl",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/implement.md",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/issue-scope-ledger.json",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/prd.md",
+        ".trellis/tasks/07-04-17-improve-guru-team-pr-body/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [
+        "07-04-17-improve-guru-team-pr-body",
+        "README.md",
+        "SKILL.md",
+        "check.jsonl",
+        "companion-scripts.md",
+        "design.md",
+        "finish-work.md",
+        "guru_team_trellis.py",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "prd.md",
+        "quality-guidelines.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-finish-work.md",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#17 Improve Guru Team PR body quality standards",
+        "07-04-17-improve-guru-team-pr-body",
+        "把 Guru Team `finish-work` / `publish-pr` 生成 PR body 的质量标准从口头",
+        "通过。已按 `origin/main...HEAD` 审查当前分支 `codex/17-improve-guru-tea",
+        "历史归档 task 已完成：#17 Improve Guru Team PR body quality standard"
+      ]
+    },
+    "retrieval_text": "#17 Improve Guru Team PR body quality standards\n把 Guru Team `finish-work` / `publish-pr` 生成 PR body 的质量标准从口头期望变成 workflow、AI 入口和 companion script 共同执行的发布合同。未来非 draft PR body 必须面向不了解 Trellis task 的 GitHub reviewer 自解释，不能用“当前 Trellis task”“已提交实现与文档更新”这类低信息量摘要替代真实变更说明。\n通过。已按 `origin/main...HEAD` 审查当前分支 `codex/17-improve-guru-team-pr-body`，Reviewed HEAD 为 `803841d4553ffb3fae8556f6c04149706f49c10f`。未发现 P0/P1/P2/P3 finding。\n历史归档 task 已完成：#17 Improve Guru Team PR body quality standards。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#17 Improve Guru Team PR body quality standards\n07-04-17-improve-guru-team-pr-body\n把 Guru Team `finish-work` / `publish-pr` 生成 PR body 的质量标准从口头\n通过。已按 `origin/main...HEAD` 审查当前分支 `codex/17-improve-guru-tea\n历史归档 task 已完成：#17 Improve Guru Team PR body quality standard"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:30Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

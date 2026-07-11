@@ -1,0 +1,276 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:31Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-04-7-require-pr-readiness-review-before",
+    "title": "#7 Require PR readiness review before finish-work publishes",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-04-7-require-pr-readiness-review-before",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-04-7-require-pr-readiness-review-before"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/7-require-pr-readiness-review-before",
+    "commits": [
+      "d5c333e160817857d1bc202668cafa110a6d9823"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-finish-work/SKILL.md",
+      ".claude/commands/trellis/finish-work.md",
+      ".codex/prompts/trellis-finish-work.md",
+      ".codex/skills/trellis-finish-work/SKILL.md",
+      ".cursor/commands/trellis-finish-work.md",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-04-7-require-pr-readiness-review-before/check.jsonl",
+      ".trellis/tasks/07-04-7-require-pr-readiness-review-before/design.md",
+      ".trellis/tasks/07-04-7-require-pr-readiness-review-before/implement.jsonl",
+      ".trellis/tasks/07-04-7-require-pr-readiness-review-before/implement.md",
+      ".trellis/tasks/07-04-7-require-pr-readiness-review-before/issue-scope-ledger.json",
+      ".trellis/tasks/07-04-7-require-pr-readiness-review-before/prd.md",
+      ".trellis/tasks/07-04-7-require-pr-readiness-review-before/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      7
+    ],
+    "close_issues": [
+      7
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "pr_readiness": "pr-readiness.json"
+  },
+  "index": {
+    "problem": "解决 GitHub issue #7：`finish-work` 自动发布 non-draft PR 前，必须使用 AI 已审阅的 PR body source（`--body-file` 或 `--body-artifact`）作为发布前判断证据，不能让脚本生成的 `generated` fallback 替代 PR readiness review。",
+    "outcome": "#7 Require PR readiness review before finish-work publishes；非目标：历史 artifact 未记录。",
+    "changed_behavior": [
+      "`python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py`：通过，32 个测试。",
+      "`trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh`：通过，dogfood overlay copies match canonical。",
+      "完整静态验证已执行：py_compile、bash -n、json.tool、task.py validate、phase context reads、dogfood overlay drift check、git diff --check 均通过。",
+      "2026-07-04 14:05 CST 复验通过：单测 32 个、py_compile、bash -n、`trellis/index.json` 与 intake schema JSON、task.py validate、phase context reads、dogfood overlay drift check、git diff --check 均通过"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/commands/trellis/finish-work.md",
+          ".codex/prompts/trellis-finish-work.md",
+          ".codex/skills/trellis-finish-work/SKILL.md",
+          ".cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/handoff.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-finish-work/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-04-7-require-pr-readiness-review-before/check.jsonl",
+          ".trellis/tasks/07-04-7-require-pr-readiness-review-before/design.md",
+          ".trellis/tasks/07-04-7-require-pr-readiness-review-before/implement.jsonl",
+          ".trellis/tasks/07-04-7-require-pr-readiness-review-before/implement.md",
+          ".trellis/tasks/07-04-7-require-pr-readiness-review-before/issue-scope-ledger.json",
+          ".trellis/tasks/07-04-7-require-pr-readiness-review-before/prd.md",
+          ".trellis/tasks/07-04-7-require-pr-readiness-review-before/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#7"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/7-require-pr-readiness-review-before"
+      ],
+      "paths": [
+        ".agents/skills/trellis-finish-work/SKILL.md",
+        ".claude/commands/trellis/finish-work.md",
+        ".codex/prompts/trellis-finish-work.md",
+        ".codex/skills/trellis-finish-work/SKILL.md",
+        ".cursor/commands/trellis-finish-work.md",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-04-7-require-pr-readiness-review-before/check.jsonl",
+        ".trellis/tasks/07-04-7-require-pr-readiness-review-before/design.md",
+        ".trellis/tasks/07-04-7-require-pr-readiness-review-before/implement.jsonl",
+        ".trellis/tasks/07-04-7-require-pr-readiness-review-before/implement.md",
+        ".trellis/tasks/07-04-7-require-pr-readiness-review-before/issue-scope-ledger.json",
+        ".trellis/tasks/07-04-7-require-pr-readiness-review-before/prd.md",
+        ".trellis/tasks/07-04-7-require-pr-readiness-review-before/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "task.py",
+        "trellis/index.json",
+        "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "14:05",
+        "JSON",
+        "json.tool",
+        "schema",
+        "task.py",
+        "trellis/index.json",
+        "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "symbols": [
+        "07-04-7-require-pr-readiness-review-before",
+        "README.md",
+        "SKILL.md",
+        "check.jsonl",
+        "companion-scripts.md",
+        "design.md",
+        "finish-work.md",
+        "guru_team_trellis.py",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "pr-readiness.json",
+        "prd.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-finish-work.md",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#7 Require PR readiness review before finish-work publishes",
+        "07-04-7-require-pr-readiness-review-before",
+        "解决 GitHub issue #7：`finish-work` 自动发布 non-draft PR 前，必须使用 AI",
+        "`python3 -m unittest trellis/workflows/guru-team/scripts/pyt",
+        "`trellis/presets/guru-team/scripts/bash/check-dogfood-overla",
+        "完整静态验证已执行：py_compile、bash -n、json.tool、task.py validate、phas",
+        "2026-07-04 14:05 CST 复验通过：单测 32 个、py_compile、bash -n、`trelli",
+        "历史归档 task 已完成"
+      ]
+    },
+    "retrieval_text": "#7 Require PR readiness review before finish-work publishes\n解决 GitHub issue #7：`finish-work` 自动发布 non-draft PR 前，必须使用 AI 已审阅的 PR body source（`--body-file` 或 `--body-artifact`）作为发布前判断证据，不能让脚本生成的 `generated` fallback 替代 PR readiness review。\n#7 Require PR readiness review before finish-work publishes；非目标：历史 artifact 未记录。\n`python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py`：通过，32 个测试。\n`trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh`：通过，dogfood overlay copies match canonical。\n完整静态验证已执行：py_compile、bash -n、json.tool、task.py validate、phase context reads、dogfood overlay drift check、git diff --check 均通过。\n2026-07-04 14:05 CST 复验通过：单测 32 个、py_compile、bash -n、`trellis/index.json` 与 intake schema JSON、task.py validate、phase context reads、dogfood overlay drift check、git diff --check 均通过\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#7 Require PR readiness review before finish-work publishes\n07-04-7-require-pr-readiness-review-before\n解决 GitHub issue #7：`finish-work` 自动发布 non-draft PR 前，必须使用 AI\n`python3 -m unittest trellis/workflows/guru-team/scripts/pyt\n`trellis/presets/guru-team/scripts/bash/check-dogfood-overla\n完整静态验证已执行：py_compile、bash -n、json.tool、task.py validate、phas\n2026-07-04 14:05 CST 复验通过：单测 32 个、py_compile、bash -n、`trelli\n历史归档 task 已完成"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:31Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "pr-readiness.json",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

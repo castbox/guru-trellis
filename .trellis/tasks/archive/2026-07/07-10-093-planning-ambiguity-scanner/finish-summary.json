@@ -1,0 +1,403 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:35Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-10-093-planning-ambiguity-scanner",
+    "title": "#93 将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-10-093-planning-ambiguity-scanner",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-10-093-planning-ambiguity-scanner"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/093-planning-ambiguity-scanner",
+    "commits": [
+      "a70374094f869637561cdc677efbff8af3c1368f"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-before-dev/SKILL.md",
+      ".agents/skills/trellis-brainstorm/SKILL.md",
+      ".agents/skills/trellis-check/SKILL.md",
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+      ".claude/agents/trellis-check.md",
+      ".claude/agents/trellis-implement.md",
+      ".claude/commands/trellis/continue.md",
+      ".codex/agents/trellis-check.toml",
+      ".codex/agents/trellis-implement.toml",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".cursor/agents/trellis-check.md",
+      ".cursor/agents/trellis-implement.md",
+      ".cursor/commands/trellis-continue.md",
+      ".cursor/skills/trellis-before-dev/SKILL.md",
+      ".cursor/skills/trellis-brainstorm/SKILL.md",
+      ".cursor/skills/trellis-check/SKILL.md",
+      ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+      ".trellis/agents/check.md",
+      ".trellis/agents/implement.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-10-093-planning-ambiguity-scanner/agent-assignment.json",
+      ".trellis/tasks/07-10-093-planning-ambiguity-scanner/check.jsonl",
+      ".trellis/tasks/07-10-093-planning-ambiguity-scanner/design.md",
+      ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.jsonl",
+      ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+      ".trellis/tasks/07-10-093-planning-ambiguity-scanner/issue-scope-ledger.json",
+      ".trellis/tasks/07-10-093-planning-ambiguity-scanner/phase2-check.json",
+      ".trellis/tasks/07-10-093-planning-ambiguity-scanner/planning-approval.json",
+      ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+      ".trellis/tasks/07-10-093-planning-ambiguity-scanner/task.json",
+      ".trellis/workflow.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-before-dev/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-brainstorm/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-check/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+      "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+      "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+      "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+      "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.cursor/skills/trellis-before-dev/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/skills/trellis-brainstorm/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/skills/trellis-check/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+      "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+      "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      93
+    ],
+    "close_issues": [
+      93
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "Guru Team workflow 在 planning approval 前必须对当前 task 的 `prd.md`、`design.md`、`implement.md` 执行正文扫描。扫描命中必须进入 `planning-approval.json` 的 `ambiguity_review.normative_language.hits[]`，未分类命中和 `contract_violation` 命中必须进入 `unchecked_normative_hits[]` 并阻塞 `record-planning-approval` 与 `check-planning-approval`。",
+    "outcome": "Branch Review 结论为 pass，无 findings。当前 `HEAD` `a70374094f869637561cdc677efbff8af3c1368f` 可进入 Branch Review Gate recorder；`trellis-continue` 不执行 push、PR 创建或 finish-work。",
+    "changed_behavior": [
+      "将 planning artifact 弱约束词检查升级为 v2 受控词表，覆盖 `可以`、`允许`、`建议`、`推荐`、`可选`、`尽量`、`应该`、`默认` 等 35 个触发词。",
+      "将扫描范围固定为 `prd.md`、`design.md`、`implement.md`，并在 `planning-approval.json` 中记录 `controlled_terms`、`scan_scope`、`hits[]` 和 `unchecked_normative_hits[]`。",
+      "新增 `--normative-hit \"path|line|term|classification|reason\"` 记录入口，要求每个命中都有分类和理由；未分类命中或 `contract_violation` 会失败并阻塞。",
+      "强化 `check-planning-approval`：重新扫描当前 planning artifacts，并与 artifact 中记录的扫描结果对比，防止 approval evidence 与当前文档漂移。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/overlay-guidelines.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/agents/check.md",
+          ".trellis/agents/implement.md",
+          ".trellis/workflow.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-before-dev/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-brainstorm/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-check/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+          "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+          "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+          "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+          "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.cursor/skills/trellis-before-dev/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/skills/trellis-brainstorm/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/skills/trellis-check/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+          "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+          "trellis/presets/guru-team/overlays/.trellis/agents/implement.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/agents/trellis-check.md",
+          ".claude/agents/trellis-implement.md",
+          ".claude/commands/trellis/continue.md",
+          ".codex/agents/trellis-check.toml",
+          ".codex/agents/trellis-implement.toml",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".cursor/agents/trellis-check.md",
+          ".cursor/agents/trellis-implement.md",
+          ".cursor/commands/trellis-continue.md",
+          ".cursor/skills/trellis-before-dev/SKILL.md",
+          ".cursor/skills/trellis-brainstorm/SKILL.md",
+          ".cursor/skills/trellis-check/SKILL.md",
+          ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-before-dev/SKILL.md",
+          ".agents/skills/trellis-brainstorm/SKILL.md",
+          ".agents/skills/trellis-check/SKILL.md",
+          ".agents/skills/trellis-continue/SKILL.md",
+          ".agents/skills/trellis-meta/references/customize-local/change-workflow.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-10-093-planning-ambiguity-scanner/agent-assignment.json",
+          ".trellis/tasks/07-10-093-planning-ambiguity-scanner/check.jsonl",
+          ".trellis/tasks/07-10-093-planning-ambiguity-scanner/design.md",
+          ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.jsonl",
+          ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+          ".trellis/tasks/07-10-093-planning-ambiguity-scanner/issue-scope-ledger.json",
+          ".trellis/tasks/07-10-093-planning-ambiguity-scanner/phase2-check.json",
+          ".trellis/tasks/07-10-093-planning-ambiguity-scanner/planning-approval.json",
+          ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+          ".trellis/tasks/07-10-093-planning-ambiguity-scanner/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#93"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "fix/093-planning-ambiguity-scanner"
+      ],
+      "paths": [
+        ".agents/skills/trellis-before-dev/SKILL.md",
+        ".agents/skills/trellis-brainstorm/SKILL.md",
+        ".agents/skills/trellis-check/SKILL.md",
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+        ".claude/agents/trellis-check.md",
+        ".claude/agents/trellis-implement.md",
+        ".claude/commands/trellis/continue.md",
+        ".codex/agents/trellis-check.toml",
+        ".codex/agents/trellis-implement.toml",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".cursor/agents/trellis-check.md",
+        ".cursor/agents/trellis-implement.md",
+        ".cursor/commands/trellis-continue.md",
+        ".cursor/skills/trellis-before-dev/SKILL.md",
+        ".cursor/skills/trellis-brainstorm/SKILL.md",
+        ".cursor/skills/trellis-check/SKILL.md",
+        ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+        ".trellis/agents/check.md",
+        ".trellis/agents/implement.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-10-093-planning-ambiguity-scanner/agent-assignment.json",
+        ".trellis/tasks/07-10-093-planning-ambiguity-scanner/check.jsonl",
+        ".trellis/tasks/07-10-093-planning-ambiguity-scanner/design.md",
+        ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.jsonl",
+        ".trellis/tasks/07-10-093-planning-ambiguity-scanner/implement.md",
+        ".trellis/tasks/07-10-093-planning-ambiguity-scanner/issue-scope-ledger.json",
+        ".trellis/tasks/07-10-093-planning-ambiguity-scanner/phase2-check.json",
+        ".trellis/tasks/07-10-093-planning-ambiguity-scanner/planning-approval.json",
+        ".trellis/tasks/07-10-093-planning-ambiguity-scanner/prd.md",
+        ".trellis/tasks/07-10-093-planning-ambiguity-scanner/task.json",
+        ".trellis/workflow.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-before-dev/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-brainstorm/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-check/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+        "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+        "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+        "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+        "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.cursor/skills/trellis-before-dev/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/skills/trellis-brainstorm/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/skills/trellis-check/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+        "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+        "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "check-planning-approval",
+        "planning-approval.json"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "design.md",
+        "implement.md",
+        "planning-approval.json",
+        "prd.md"
+      ],
+      "symbols": [
+        "07-10-093-planning-ambiguity-scanner",
+        "README.md",
+        "SKILL.md",
+        "agent-assignment.json",
+        "change-workflow.md",
+        "check.jsonl",
+        "check.md",
+        "companion-scripts.md",
+        "continue.md",
+        "data-contracts.md",
+        "design.md",
+        "extension.json",
+        "guru-team-trellis-flow.md",
+        "guru_team_trellis.py",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "overlay-guidelines.md",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "quality-guidelines.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-check.md",
+        "trellis-check.toml",
+        "trellis-continue.md",
+        "trellis-implement.md",
+        "trellis-implement.toml",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#93 将 planning artifact 弱约束词改为受控词表并阻塞未分类命中",
+        "07-10-093-planning-ambiguity-scanner",
+        "Guru Team workflow 在 planning approval 前必须对当前 task 的 `prd.md",
+        "Branch Review 结论为 pass，无 findings。当前 `HEAD` `a70374094f86963",
+        "将 planning artifact 弱约束词检查升级为 v2 受控词表，覆盖 `可以`、`允许`、`建议`、`推荐`",
+        "将扫描范围固定为 `prd.md`、`design.md`、`implement.md`，并在 `planning-ap",
+        "新增 `--normative-hit \"path|line|term|classification|reason\"`",
+        "强化 `check-planning-approval`：重新扫描当前 planning artifacts，并与 ar"
+      ]
+    },
+    "retrieval_text": "#93 将 planning artifact 弱约束词改为受控词表并阻塞未分类命中\nGuru Team workflow 在 planning approval 前必须对当前 task 的 `prd.md`、`design.md`、`implement.md` 执行正文扫描。扫描命中必须进入 `planning-approval.json` 的 `ambiguity_review.normative_language.hits[]`，未分类命中和 `contract_violation` 命中必须进入 `unchecked_normative_hits[]` 并阻塞 `record-planning-approval` 与 `check-planning-approval`。\nBranch Review 结论为 pass，无 findings。当前 `HEAD` `a70374094f869637561cdc677efbff8af3c1368f` 可进入 Branch Review Gate recorder；`trellis-continue` 不执行 push、PR 创建或 finish-work。\n将 planning artifact 弱约束词检查升级为 v2 受控词表，覆盖 `可以`、`允许`、`建议`、`推荐`、`可选`、`尽量`、`应该`、`默认` 等 35 个触发词。\n将扫描范围固定为 `prd.md`、`design.md`、`implement.md`，并在 `planning-approval.json` 中记录 `controlled_terms`、`scan_scope`、`hits[]` 和 `unchecked_normative_hits[]`。\n新增 `--normative-hit \"path|line|term|classification|reason\"` 记录入口，要求每个命中都有分类和理由；未分类命中或 `contract_violation` 会失败并阻塞。\n强化 `check-planning-approval`：重新扫描当前 planning artifacts，并与 artifact 中记录的扫描结果对比，防止 approval evidence 与当前文档漂移。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#93 将 planning artifact 弱约束词改为受控词表并阻塞未分类命中\n07-10-093-planning-ambiguity-scanner\nGuru Team workflow 在 planning approval 前必须对当前 task 的 `prd.md\nBranch Review 结论为 pass，无 findings。当前 `HEAD` `a70374094f86963\n将 planning artifact 弱约束词检查升级为 v2 受控词表，覆盖 `可以`、`允许`、`建议`、`推荐`\n将扫描范围固定为 `prd.md`、`design.md`、`implement.md`，并在 `planning-ap\n新增 `--normative-hit \"path|line|term|classification|reason\"`\n强化 `check-planning-approval`：重新扫描当前 planning artifacts，并与 ar"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:35Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

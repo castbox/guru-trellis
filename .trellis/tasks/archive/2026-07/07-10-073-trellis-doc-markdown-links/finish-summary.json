@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:34Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-10-073-trellis-doc-markdown-links",
+    "title": "#73 将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-10-073-trellis-doc-markdown-links",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-10-073-trellis-doc-markdown-links"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/073-trellis-doc-markdown-links",
+    "commits": [
+      "04741e2b3fe6ef945cab933e642b7d8c167d6d6e"
+    ],
+    "changed_paths": [
+      "AGENTS.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      73
+    ],
+    "close_issues": [
+      73
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "将仓库内仍指向 Trellis 官方 HTML 页面的文档链接替换为对应 markdown 端点，减少 AI Agent 先访问 HTML、再访问 markdown 的重复读取。",
+    "outcome": "Branch Review Gate 可记录为通过：最终放行审查代理对 `04741e2b3fe6ef945cab933e642b7d8c167d6d6e` 的完整 `origin/main...HEAD` diff 审查结果为 `findings_count=0`。",
+    "changed_behavior": [
+      "`https://docs.trytrellis.app/` -> `https://docs.trytrellis.app/index.md`",
+      "`https://docs.trytrellis.app/advanced/custom-workflow` -> `https://docs.trytrellis.app/advanced/custom-workflow.md`",
+      "`https://docs.trytrellis.app/advanced/custom-spec-template-marketplace` -> `https://docs.trytrellis.app/advanced/custom-spec-template-marketplace.md`"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          "AGENTS.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#73"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/073-trellis-doc-markdown-links"
+      ],
+      "paths": [
+        "AGENTS.md"
+      ],
+      "commands": [
+        "https://docs.trytrellis.app/",
+        "https://docs.trytrellis.app/advanced/custom-spec-template-marketplace",
+        "https://docs.trytrellis.app/advanced/custom-spec-template-marketplace.md",
+        "https://docs.trytrellis.app/advanced/custom-workflow",
+        "https://docs.trytrellis.app/advanced/custom-workflow.md",
+        "https://docs.trytrellis.app/index.md"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "https://docs.trytrellis.app",
+        "https://docs.trytrellis.app/advanced/custom-spec-template-marketplace",
+        "https://docs.trytrellis.app/advanced/custom-spec-template-marketplace.md",
+        "https://docs.trytrellis.app/advanced/custom-workflow",
+        "https://docs.trytrellis.app/advanced/custom-workflow.md",
+        "https://docs.trytrellis.app/index.md"
+      ],
+      "symbols": [
+        "07-10-073-trellis-doc-markdown-links",
+        "AGENTS.md",
+        "design.md",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "pr-body.md",
+        "prd.md",
+        "review-gate.json",
+        "review.md",
+        "task.json"
+      ],
+      "phrases": [
+        "#73 将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址",
+        "07-10-073-trellis-doc-markdown-links",
+        "将仓库内仍指向 Trellis 官方 HTML 页面的文档链接替换为对应 markdown 端点，减少 AI Agent",
+        "Branch Review Gate 可记录为通过：最终放行审查代理对 `04741e2b3fe6ef945cab933",
+        "`https://docs.trytrellis.app/` -> `https://docs.trytrellis.a",
+        "`https://docs.trytrellis.app/advanced/custom-workflow` -> `h",
+        "`https://docs.trytrellis.app/advanced/custom-spec-template-m",
+        "历史归档 task 已完成"
+      ]
+    },
+    "retrieval_text": "#73 将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址\n将仓库内仍指向 Trellis 官方 HTML 页面的文档链接替换为对应 markdown 端点，减少 AI Agent 先访问 HTML、再访问 markdown 的重复读取。\nBranch Review Gate 可记录为通过：最终放行审查代理对 `04741e2b3fe6ef945cab933e642b7d8c167d6d6e` 的完整 `origin/main...HEAD` diff 审查结果为 `findings_count=0`。\n`https://docs.trytrellis.app/` -> `https://docs.trytrellis.app/index.md`\n`https://docs.trytrellis.app/advanced/custom-workflow` -> `https://docs.trytrellis.app/advanced/custom-workflow.md`\n`https://docs.trytrellis.app/advanced/custom-spec-template-marketplace` -> `https://docs.trytrellis.app/advanced/custom-spec-template-marketplace.md`\n历史归档 task 修改了 other 类路径（第 1 批）。\n#73 将项目里的 trellis 官方文档链接的 html 地址替换为 markdown 格式的地址\n07-10-073-trellis-doc-markdown-links\n将仓库内仍指向 Trellis 官方 HTML 页面的文档链接替换为对应 markdown 端点，减少 AI Agent\nBranch Review Gate 可记录为通过：最终放行审查代理对 `04741e2b3fe6ef945cab933\n`https://docs.trytrellis.app/` -> `https://docs.trytrellis.a\n`https://docs.trytrellis.app/advanced/custom-workflow` -> `h\n`https://docs.trytrellis.app/advanced/custom-spec-template-m\n历史归档 task 已完成"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:34Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

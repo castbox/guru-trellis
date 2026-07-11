@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "既有 archived tasks 缺少 finish-summary.json，导致后续历史上下文发现只能覆盖未来完成的任务。",
+    "outcome": "新增一次性 archive backfill 命令并生成 44 份 schema-valid 完成摘要；非目标：不实现 #98 搜索，不改变 #97 正常 finish-work。",
+    "changed_behavior": [
+      "新增 backfill-finish-summary.sh，支持 dry-run、write、force 和单 task 处理。",
+      "扫描和写入只接受真实 archived task root，并拒绝 active task、分组目录、子目录和 symlink escape。",
+      "按固定 artifact 优先级生成 index、missing_fields 与 confidence，并逐 task 隔离错误。",
+      "Changed paths 按 surface kind 聚合且不截断，超过 schema 上限时失败。",
+      "为精确历史 fallback 增加两个严格 backfill-only retrieval 边界校验，不放宽正常 finish-work。",
+      "使用最终 builder 重建 44 份历史摘要，并保持 #97 正常 summary 字节不变。",
+      "Preset installer、dogfood、workflow 与 durable specs 已同步新增公共命令。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "script",
+        "name": "历史完成摘要回填命令",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/bash/backfill-finish-summary.sh",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/bash/backfill-finish-summary.sh",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "新增 archive-only backfill CLI、固定抽取 builder、路径边界、错误隔离和写后校验。"
+      },
+      {
+        "kind": "preset",
+        "name": "Guru Team preset 安装资产",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/guru-team-extension.json",
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "Preset 将 backfill wrapper 作为受管可执行公共 companion script 安装并校验。"
+      },
+      {
+        "kind": "docs",
+        "name": "Backfill durable contracts",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/preset/installer.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "Durable SSOT 记录 CLI、字段优先级、validator 边界、安装升级与一次性迁移合同。"
+      },
+      {
+        "kind": "test",
+        "name": "Backfill 回归与安装验证",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "change": "测试覆盖字段抽取、路径拒绝、严格 validator 例外、44 份数据和 throwaway install/update。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "历史 finish-summary 数据",
+        "paths": [],
+        "change": "44 个既有 archived tasks 获得符合 #97 schema 的 task-local 完成摘要。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "历史完成摘要迁移入口",
+        "before": "#97 只为未来正常完成的 task 写入 finish-summary.json。",
+        "after": "维护者通过一次性 backfill 命令预览并回填既有 archived tasks。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Archived task root 判定",
+        "before": "Archive 下的分组目录或 task 子目录可能被误当作写入目标。",
+        "after": "目标必须有直接 task marker 且祖先不得已是另一个 task root。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "历史字段抽取",
+        "before": "既有 artifact 没有统一的 finish-summary 字段来源和优先级。",
+        "after": "白名单 artifact 按固定优先级生成 task、Git、GitHub、index 与 backfill metadata。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Affected surface path 保真",
+        "before": "逐 path surface 会超过 #97 的 20 项 schema 上限。",
+        "after": "Paths 按 kind 与 100 项上限稳定分组，无法完整表达时失败而不截断。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Backfill retrieval 重复边界",
+        "before": "固定 fallback 和 pr-body-only 列表会产生两类确定性相邻重复并被共享 validator 拒绝。",
+        "after": "仅在可从 task-local 来源重建的精确 backfill 边界过滤单一重复错误，正常 finish-work 仍拒绝。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Dry-run 审核信息",
+        "before": "人类预览不能完整判断字段来源、缺失项和置信度。",
+        "after": "JSON 与表格逐项显示 source_artifacts、missing_fields 和 confidence。",
+        "source_artifact": "design.md"
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "backfill-finish-summary.sh",
+        "guru_team_trellis.py"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "finish-summary.json",
+        "backfill.source_artifacts",
+        "backfill.missing_fields",
+        "backfill.confidence",
+        "index.affected_surfaces",
+        "index.retrieval_text"
+      ],
+      "symbols": [
+        "cmd_backfill_finish_summary",
+        "build_finish_summary_backfill",
+        "finish_summary_backfill_retrieval_boundary_allowed",
+        "resolve_finish_summary_backfill_task"
+      ],
+      "phrases": [
+        "历史 archived task 缺少完成摘要",
+        "backfill-finish-summary.sh 已完成历史回填",
+        "真实 archived task root 校验",
+        "固定 artifact 优先级抽取",
+        "backfill-only retrieval 边界",
+        "44 份历史完成摘要回填"
+      ]
+    }
+  }
+}

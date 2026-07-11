@@ -1,0 +1,305 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:31Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-04-20-review-gate-report-metadata",
+    "title": "#20 强制 Branch Review Gate 每次产出 review，并由 finish-work 提交 metadata",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-04-20-review-gate-report-metadata",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-04-20-review-gate-report-metadata"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/20-review-gate-report-metadata",
+    "commits": [
+      "be437f8366470f53507572b43975b009e07591eb"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".agents/skills/trellis-finish-work/SKILL.md",
+      ".claude/commands/trellis/continue.md",
+      ".claude/commands/trellis/finish-work.md",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/prompts/trellis-finish-work.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".codex/skills/trellis-finish-work/SKILL.md",
+      ".cursor/commands/trellis-continue.md",
+      ".cursor/commands/trellis-finish-work.md",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-04-20-review-gate-report-metadata/check.jsonl",
+      ".trellis/tasks/07-04-20-review-gate-report-metadata/design.md",
+      ".trellis/tasks/07-04-20-review-gate-report-metadata/implement.jsonl",
+      ".trellis/tasks/07-04-20-review-gate-report-metadata/implement.md",
+      ".trellis/tasks/07-04-20-review-gate-report-metadata/issue-scope-ledger.json",
+      ".trellis/tasks/07-04-20-review-gate-report-metadata/prd.md",
+      ".trellis/tasks/07-04-20-review-gate-report-metadata/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      20
+    ],
+    "close_issues": [
+      20
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json"
+  },
+  "index": {
+    "problem": "Issue #20 指出 Guru Team Branch Review Gate 目前存在两条 pass 路径：",
+    "outcome": "通过。未发现 P0/P1/P2/P3 finding。",
+    "changed_behavior": [
+      "读取 issue #20、官方 Trellis custom workflow / spec marketplace 文档、仓库 workflow/preset spec。",
+      "创建新 worktree、分支和 Trellis task，关闭范围仅绑定 #20。",
+      "修改 companion script，使 passed gate 强制 `--review-report` 并校验 digest 四字段。",
+      "补充 focused unit tests 覆盖 review report 必填、旧 gate 拒绝、metadata-only tail 规则。",
+      "更新 canonical workflow、dogfood workflow、platform overlays、README、spec，使 continue/finish-work 边界一致。",
+      "运行 preset apply，同步 dogfood 安装副本，并检查 overlay drift。",
+      "运行脚本、JSON、phase context、throwaway install、task validate、diff check 等验证。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/overlay-guidelines.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/commands/trellis/continue.md",
+          ".claude/commands/trellis/finish-work.md",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/prompts/trellis-finish-work.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".codex/skills/trellis-finish-work/SKILL.md",
+          ".cursor/commands/trellis-continue.md",
+          ".cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/handoff.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md",
+          ".agents/skills/trellis-finish-work/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-04-20-review-gate-report-metadata/check.jsonl",
+          ".trellis/tasks/07-04-20-review-gate-report-metadata/design.md",
+          ".trellis/tasks/07-04-20-review-gate-report-metadata/implement.jsonl",
+          ".trellis/tasks/07-04-20-review-gate-report-metadata/implement.md",
+          ".trellis/tasks/07-04-20-review-gate-report-metadata/issue-scope-ledger.json",
+          ".trellis/tasks/07-04-20-review-gate-report-metadata/prd.md",
+          ".trellis/tasks/07-04-20-review-gate-report-metadata/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#20"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/20-review-gate-report-metadata"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".agents/skills/trellis-finish-work/SKILL.md",
+        ".claude/commands/trellis/continue.md",
+        ".claude/commands/trellis/finish-work.md",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/prompts/trellis-finish-work.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".codex/skills/trellis-finish-work/SKILL.md",
+        ".cursor/commands/trellis-continue.md",
+        ".cursor/commands/trellis-finish-work.md",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-04-20-review-gate-report-metadata/check.jsonl",
+        ".trellis/tasks/07-04-20-review-gate-report-metadata/design.md",
+        ".trellis/tasks/07-04-20-review-gate-report-metadata/implement.jsonl",
+        ".trellis/tasks/07-04-20-review-gate-report-metadata/implement.md",
+        ".trellis/tasks/07-04-20-review-gate-report-metadata/issue-scope-ledger.json",
+        ".trellis/tasks/07-04-20-review-gate-report-metadata/prd.md",
+        ".trellis/tasks/07-04-20-review-gate-report-metadata/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "--review-report"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "JSON"
+      ],
+      "symbols": [
+        "07-04-20-review-gate-report-metadata",
+        "README.md",
+        "SKILL.md",
+        "check.jsonl",
+        "continue.md",
+        "data-contracts.md",
+        "design.md",
+        "finish-work.md",
+        "guru_team_trellis.py",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "overlay-guidelines.md",
+        "prd.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-continue.md",
+        "trellis-finish-work.md",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#20 强制 Branch Review Gate 每次产出 review，并由 finish-work 提交 meta",
+        "07-04-20-review-gate-report-metadata",
+        "Issue #20 指出 Guru Team Branch Review Gate 目前存在两条 pass 路径：",
+        "通过。未发现 P0/P1/P2/P3 finding。",
+        "读取 issue #20、官方 Trellis custom workflow / spec marketplace 文",
+        "创建新 worktree、分支和 Trellis task，关闭范围仅绑定 #20。",
+        "修改 companion script，使 passed gate 强制 `--review-report` 并校验 d",
+        "补充 focused unit tests 覆盖 review report 必填、旧 gate 拒绝、metadata",
+        "更新 canonical workflow、dogfood workflow、platform overlays、REA",
+        "运行 preset apply，同步 dogfood 安装副本，并检查 overlay drift。",
+        "运行脚本、JSON、phase context、throwaway install、task validate、diff"
+      ]
+    },
+    "retrieval_text": "#20 强制 Branch Review Gate 每次产出 review，并由 finish-work 提交 metadata\nIssue #20 指出 Guru Team Branch Review Gate 目前存在两条 pass 路径：\n通过。未发现 P0/P1/P2/P3 finding。\n读取 issue #20、官方 Trellis custom workflow / spec marketplace 文档、仓库 workflow/preset spec。\n创建新 worktree、分支和 Trellis task，关闭范围仅绑定 #20。\n修改 companion script，使 passed gate 强制 `--review-report` 并校验 digest 四字段。\n补充 focused unit tests 覆盖 review report 必填、旧 gate 拒绝、metadata-only tail 规则。\n更新 canonical workflow、dogfood workflow、platform overlays、README、spec，使 continue/finish-work 边界一致。\n运行 preset apply，同步 dogfood 安装副本，并检查 overlay drift。\n运行脚本、JSON、phase context、throwaway install、task validate、diff check 等验证。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#20 强制 Branch Review Gate 每次产出 review，并由 finish-work 提交 meta\n07-04-20-review-gate-report-metadata\nIssue #20 指出 Guru Team Branch Review Gate 目前存在两条 pass 路径：\n通过。未发现 P0/P1/P2/P3 finding。\n读取 issue #20、官方 Trellis custom workflow / spec marketplace 文\n创建新 worktree、分支和 Trellis task，关闭范围仅绑定 #20。\n修改 companion script，使 passed gate 强制 `--review-report` 并校验 d\n补充 focused unit tests 覆盖 review report 必填、旧 gate 拒绝、metadata\n更新 canonical workflow、dogfood workflow、platform overlays、REA\n运行 preset apply，同步 dogfood 安装副本，并检查 overlay drift。\n运行脚本、JSON、phase context、throwaway install、task validate、diff"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:31Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

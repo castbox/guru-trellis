@@ -1,0 +1,342 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:31Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-04-8-auditable-evidence-planning-approval-trellis",
+    "title": "#8 Add auditable evidence for planning approval and trellis-check",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-04-8-auditable-evidence-planning-approval-trellis"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/8-auditable-evidence-planning-approval-trellis",
+    "commits": [
+      "fbf0dc49f33cc104243e95772e623b634ec10eda"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".claude/commands/trellis/continue.md",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".cursor/commands/trellis-continue.md",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/guru-team/schemas/intake-handoff.schema.json",
+      ".trellis/guru-team/scripts/bash/check-phase2-check.sh",
+      ".trellis/guru-team/scripts/bash/check-planning-approval.sh",
+      ".trellis/guru-team/scripts/bash/record-phase2-check.sh",
+      ".trellis/guru-team/scripts/bash/record-planning-approval.sh",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/check.jsonl",
+      ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/design.md",
+      ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/implement.jsonl",
+      ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/implement.md",
+      ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/issue-scope-ledger.json",
+      ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/phase2-check.json",
+      ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/planning-approval.json",
+      ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/prd.md",
+      ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
+      "trellis/workflows/guru-team/scripts/bash/check-phase2-check.sh",
+      "trellis/workflows/guru-team/scripts/bash/check-planning-approval.sh",
+      "trellis/workflows/guru-team/scripts/bash/record-phase2-check.sh",
+      "trellis/workflows/guru-team/scripts/bash/record-planning-approval.sh",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      8
+    ],
+    "close_issues": [
+      8
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "把 Guru Team workflow 中两个依赖 AI 判断的关键步骤从“口头执行过”升级为可审计 artifact：",
+    "outcome": "为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-check.json` 两个可审计 gate artifact，明确 `task.py start` 只是状态写入，验证命令只是 `trellis-check` 证据的一部分。",
+    "changed_behavior": [
+      "为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-check.json` 两个可审计 gate artifact，明确 `task.py start` 只是状态写入，验证命令只是 `trellis-check` 证据的一部分。",
+      "强化 Branch Review Gate：通过状态必须来自独立 Agent review，`review-branch --pass` 要求 `--review-source independent-agent`、非 main-session reviewer、task-local `review.md` digest，并拒绝 `prd.md` 等其他 a",
+      "修复 worktree preflight：`prepare-task --create-worktree` / `--create-task` 在创建 worktree 或 task 前刷新并校验 base branch freshness，handoff 记录 local/remote HEAD、fetch 和 fast-forward evidence",
+      "更新 Guru Team workflow、platform overlays、README、spec、preset installer 与 dogfood copy，并补充 focused 单元测试覆盖 gate 缺失、stale、通过路径和 base freshness 关键分支。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/preset/overlay-guidelines.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/commands/trellis/continue.md",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/handoff.json",
+          ".trellis/guru-team/schemas/intake-handoff.schema.json",
+          ".trellis/guru-team/scripts/bash/check-phase2-check.sh",
+          ".trellis/guru-team/scripts/bash/check-planning-approval.sh",
+          ".trellis/guru-team/scripts/bash/record-phase2-check.sh",
+          ".trellis/guru-team/scripts/bash/record-planning-approval.sh",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/check.jsonl",
+          ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/design.md",
+          ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/implement.jsonl",
+          ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/implement.md",
+          ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/issue-scope-ledger.json",
+          ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/phase2-check.json",
+          ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/planning-approval.json",
+          ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/prd.md",
+          ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
+          "trellis/workflows/guru-team/scripts/bash/check-phase2-check.sh",
+          "trellis/workflows/guru-team/scripts/bash/check-planning-approval.sh",
+          "trellis/workflows/guru-team/scripts/bash/record-phase2-check.sh",
+          "trellis/workflows/guru-team/scripts/bash/record-planning-approval.sh",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#8"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/8-auditable-evidence-planning-approval-trellis"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".claude/commands/trellis/continue.md",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".cursor/commands/trellis-continue.md",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/guru-team/schemas/intake-handoff.schema.json",
+        ".trellis/guru-team/scripts/bash/check-phase2-check.sh",
+        ".trellis/guru-team/scripts/bash/check-planning-approval.sh",
+        ".trellis/guru-team/scripts/bash/record-phase2-check.sh",
+        ".trellis/guru-team/scripts/bash/record-planning-approval.sh",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/check.jsonl",
+        ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/design.md",
+        ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/implement.jsonl",
+        ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/implement.md",
+        ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/issue-scope-ledger.json",
+        ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/phase2-check.json",
+        ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/planning-approval.json",
+        ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/prd.md",
+        ".trellis/tasks/07-04-8-auditable-evidence-planning-approval-trellis/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
+        "trellis/workflows/guru-team/scripts/bash/check-phase2-check.sh",
+        "trellis/workflows/guru-team/scripts/bash/check-planning-approval.sh",
+        "trellis/workflows/guru-team/scripts/bash/record-phase2-check.sh",
+        "trellis/workflows/guru-team/scripts/bash/record-planning-approval.sh",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "--create-task",
+        "phase2-check.json",
+        "planning-approval.json",
+        "task.py",
+        "trellis-check"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "phase2-check.json",
+        "planning-approval.json",
+        "prd.md",
+        "review.md",
+        "task.py"
+      ],
+      "symbols": [
+        "07-04-8-auditable-evidence-planning-approval-trellis",
+        "README.md",
+        "SKILL.md",
+        "apply_guru_team_trellis_preset.py",
+        "check-phase2-check.sh",
+        "check-planning-approval.sh",
+        "check.jsonl",
+        "companion-scripts.md",
+        "continue.md",
+        "data-contracts.md",
+        "design.md",
+        "guru_team_trellis.py",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "installer.md",
+        "intake-handoff.schema.json",
+        "issue-scope-ledger.json",
+        "overlay-guidelines.md",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "quality-guidelines.md",
+        "record-phase2-check.sh",
+        "record-planning-approval.sh",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-continue.md",
+        "verify-throwaway-install.sh",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#8 Add auditable evidence for planning approval and trellis-",
+        "07-04-8-auditable-evidence-planning-approval-trellis",
+        "把 Guru Team workflow 中两个依赖 AI 判断的关键步骤从“口头执行过”升级为可审计 artifact",
+        "为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-c",
+        "强化 Branch Review Gate：通过状态必须来自独立 Agent review，`review-branch",
+        "修复 worktree preflight：`prepare-task --create-worktree` / `--",
+        "更新 Guru Team workflow、platform overlays、README、spec、preset i"
+      ]
+    },
+    "retrieval_text": "#8 Add auditable evidence for planning approval and trellis-check\n把 Guru Team workflow 中两个依赖 AI 判断的关键步骤从“口头执行过”升级为可审计 artifact：\n为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-check.json` 两个可审计 gate artifact，明确 `task.py start` 只是状态写入，验证命令只是 `trellis-check` 证据的一部分。\n为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-check.json` 两个可审计 gate artifact，明确 `task.py start` 只是状态写入，验证命令只是 `trellis-check` 证据的一部分。\n强化 Branch Review Gate：通过状态必须来自独立 Agent review，`review-branch --pass` 要求 `--review-source independent-agent`、非 main-session reviewer、task-local `review.md` digest，并拒绝 `prd.md` 等其他 a\n修复 worktree preflight：`prepare-task --create-worktree` / `--create-task` 在创建 worktree 或 task 前刷新并校验 base branch freshness，handoff 记录 local/remote HEAD、fetch 和 fast-forward evidence\n更新 Guru Team workflow、platform overlays、README、spec、preset installer 与 dogfood copy，并补充 focused 单元测试覆盖 gate 缺失、stale、通过路径和 base freshness 关键分支。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#8 Add auditable evidence for planning approval and trellis-\n07-04-8-auditable-evidence-planning-approval-trellis\n把 Guru Team workflow 中两个依赖 AI 判断的关键步骤从“口头执行过”升级为可审计 artifact\n为 Guru Team workflow 增加 `planning-approval.json` 和 `phase2-c\n强化 Branch Review Gate：通过状态必须来自独立 Agent review，`review-branch\n修复 worktree preflight：`prepare-task --create-worktree` / `--\n更新 Guru Team workflow、platform overlays、README、spec、preset i"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:31Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

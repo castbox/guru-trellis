@@ -64,6 +64,7 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/check-review-gate.sh"),
     Path("scripts/bash/publish-pr.sh"),
     Path("scripts/bash/finish-work.sh"),
+    Path("scripts/bash/backfill-finish-summary.sh"),
     Path("scripts/python/guru_team_trellis.py"),
 ]
 OBSOLETE_MANAGED_ASSETS = {
@@ -719,6 +720,7 @@ def install_assets(
         dst / "scripts/bash/check-review-gate.sh",
         dst / "scripts/bash/publish-pr.sh",
         dst / "scripts/bash/finish-work.sh",
+        dst / "scripts/bash/backfill-finish-summary.sh",
         dst / "scripts/python/guru_team_trellis.py",
     ]:
         if script.exists():

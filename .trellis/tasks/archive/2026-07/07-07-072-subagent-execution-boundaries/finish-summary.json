@@ -1,0 +1,335 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:33Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-07-072-subagent-execution-boundaries",
+    "title": "#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-07-072-subagent-execution-boundaries",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-07-072-subagent-execution-boundaries"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/072-subagent-execution-boundaries",
+    "commits": [
+      "80ef050bd27f6556b3896b23a59447957225baab"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".claude/agents/trellis-check.md",
+      ".claude/agents/trellis-implement.md",
+      ".claude/commands/trellis/continue.md",
+      ".codex/agents/trellis-check.toml",
+      ".codex/agents/trellis-implement.toml",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".cursor/agents/trellis-check.md",
+      ".cursor/agents/trellis-implement.md",
+      ".cursor/commands/trellis-continue.md",
+      ".trellis/agents/check.md",
+      ".trellis/agents/implement.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-07-072-subagent-execution-boundaries/agent-assignment.json",
+      ".trellis/tasks/07-07-072-subagent-execution-boundaries/check.jsonl",
+      ".trellis/tasks/07-07-072-subagent-execution-boundaries/design.md",
+      ".trellis/tasks/07-07-072-subagent-execution-boundaries/implement.jsonl",
+      ".trellis/tasks/07-07-072-subagent-execution-boundaries/implement.md",
+      ".trellis/tasks/07-07-072-subagent-execution-boundaries/issue-scope-ledger.json",
+      ".trellis/tasks/07-07-072-subagent-execution-boundaries/phase2-check.json",
+      ".trellis/tasks/07-07-072-subagent-execution-boundaries/planning-approval.json",
+      ".trellis/tasks/07-07-072-subagent-execution-boundaries/prd.md",
+      ".trellis/tasks/07-07-072-subagent-execution-boundaries/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+      "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+      "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+      "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+      "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      72
+    ],
+    "close_issues": [
+      72
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "在 Guru Team 默认 `sub-agent` mode 下，主 agent 必须真实调度并等待三个独立 subagent 边界：",
+    "outcome": "在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mode 的三段强制执行边界：实现必须由 `trellis-implement` 执行，Phase 2 check 必须由 `trellis-check` 执行，commit 后 Branch Review 必须由独立 review subag",
+    "changed_behavior": [
+      "在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mode 的三段强制执行边界：实现必须由 `trellis-implement` 执行，Phase 2 check 必须由 `trellis-check` 执行，commit 后 Branch Review 必须由独立 review subag",
+      "更新 Codex、Claude、Cursor 与 channel runtime 的 continue / implement / check overlay，明确主 agent 只负责规划、调度、等待、恢复、替换、记录 evidence、commit 与 finish，不得用主 agent 自己的实现、自检、自审或脚本校验替代 subagent 工作。",
+      "同步 README、workflow README、preset README、durable requirements 与 `.trellis/spec/**`，明确 `phase2-check.json` 是固化 `trellis-check` AI check 结论和验证证据的 Guru Team artifact，不是脚本替代 AI check 的入",
+      "保持 #43 agent identity、#44 Branch Review Gate pass 语义、#62 wait timeout / stale / unfinished termination 合同为引用关系，没有复制、改写或弱化既有规则。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/overlay-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/agents/check.md",
+          ".trellis/agents/implement.md",
+          ".trellis/workflow.md",
+          "README.md",
+          "docs/requirements/README.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+          "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+          "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+          "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+          "trellis/presets/guru-team/overlays/.trellis/agents/implement.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/agents/trellis-check.md",
+          ".claude/agents/trellis-implement.md",
+          ".claude/commands/trellis/continue.md",
+          ".codex/agents/trellis-check.toml",
+          ".codex/agents/trellis-implement.toml",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".cursor/agents/trellis-check.md",
+          ".cursor/agents/trellis-implement.md",
+          ".cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-07-072-subagent-execution-boundaries/agent-assignment.json",
+          ".trellis/tasks/07-07-072-subagent-execution-boundaries/check.jsonl",
+          ".trellis/tasks/07-07-072-subagent-execution-boundaries/design.md",
+          ".trellis/tasks/07-07-072-subagent-execution-boundaries/implement.jsonl",
+          ".trellis/tasks/07-07-072-subagent-execution-boundaries/implement.md",
+          ".trellis/tasks/07-07-072-subagent-execution-boundaries/issue-scope-ledger.json",
+          ".trellis/tasks/07-07-072-subagent-execution-boundaries/phase2-check.json",
+          ".trellis/tasks/07-07-072-subagent-execution-boundaries/planning-approval.json",
+          ".trellis/tasks/07-07-072-subagent-execution-boundaries/prd.md",
+          ".trellis/tasks/07-07-072-subagent-execution-boundaries/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#72"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/072-subagent-execution-boundaries"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".claude/agents/trellis-check.md",
+        ".claude/agents/trellis-implement.md",
+        ".claude/commands/trellis/continue.md",
+        ".codex/agents/trellis-check.toml",
+        ".codex/agents/trellis-implement.toml",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".cursor/agents/trellis-check.md",
+        ".cursor/agents/trellis-implement.md",
+        ".cursor/commands/trellis-continue.md",
+        ".trellis/agents/check.md",
+        ".trellis/agents/implement.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-07-072-subagent-execution-boundaries/agent-assignment.json",
+        ".trellis/tasks/07-07-072-subagent-execution-boundaries/check.jsonl",
+        ".trellis/tasks/07-07-072-subagent-execution-boundaries/design.md",
+        ".trellis/tasks/07-07-072-subagent-execution-boundaries/implement.jsonl",
+        ".trellis/tasks/07-07-072-subagent-execution-boundaries/implement.md",
+        ".trellis/tasks/07-07-072-subagent-execution-boundaries/issue-scope-ledger.json",
+        ".trellis/tasks/07-07-072-subagent-execution-boundaries/phase2-check.json",
+        ".trellis/tasks/07-07-072-subagent-execution-boundaries/planning-approval.json",
+        ".trellis/tasks/07-07-072-subagent-execution-boundaries/prd.md",
+        ".trellis/tasks/07-07-072-subagent-execution-boundaries/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/README.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+        "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+        "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+        "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+        "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "phase2-check.json",
+        "sub-agent",
+        "trellis-check",
+        "trellis-implement"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "phase2-check.json"
+      ],
+      "symbols": [
+        "07-07-072-subagent-execution-boundaries",
+        "README.md",
+        "SKILL.md",
+        "agent-assignment.json",
+        "check.jsonl",
+        "check.md",
+        "continue.md",
+        "design.md",
+        "extension.json",
+        "guru-team-trellis-flow.md",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "overlay-guidelines.md",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "trellis-check.md",
+        "trellis-check.toml",
+        "trellis-continue.md",
+        "trellis-implement.md",
+        "trellis-implement.toml",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由",
+        "07-07-072-subagent-execution-boundaries",
+        "在 Guru Team 默认 `sub-agent` mode 下，主 agent 必须真实调度并等待三个独立 suba",
+        "在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mo",
+        "更新 Codex、Claude、Cursor 与 channel runtime 的 continue / implem",
+        "同步 README、workflow README、preset README、durable requirements",
+        "保持 #43 agent identity、#44 Branch Review Gate pass 语义、#62 wai"
+      ]
+    },
+    "retrieval_text": "#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由 subagent 执行\n在 Guru Team 默认 `sub-agent` mode 下，主 agent 必须真实调度并等待三个独立 subagent 边界：\n在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mode 的三段强制执行边界：实现必须由 `trellis-implement` 执行，Phase 2 check 必须由 `trellis-check` 执行，commit 后 Branch Review 必须由独立 review subag\n在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mode 的三段强制执行边界：实现必须由 `trellis-implement` 执行，Phase 2 check 必须由 `trellis-check` 执行，commit 后 Branch Review 必须由独立 review subag\n更新 Codex、Claude、Cursor 与 channel runtime 的 continue / implement / check overlay，明确主 agent 只负责规划、调度、等待、恢复、替换、记录 evidence、commit 与 finish，不得用主 agent 自己的实现、自检、自审或脚本校验替代 subagent 工作。\n同步 README、workflow README、preset README、durable requirements 与 `.trellis/spec/**`，明确 `phase2-check.json` 是固化 `trellis-check` AI check 结论和验证证据的 Guru Team artifact，不是脚本替代 AI check 的入\n保持 #43 agent identity、#44 Branch Review Gate pass 语义、#62 wait timeout / stale / unfinished termination 合同为引用关系，没有复制、改写或弱化既有规则。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#72 默认 sub-agent mode 下强制 implement、check 与 branch review 均由\n07-07-072-subagent-execution-boundaries\n在 Guru Team 默认 `sub-agent` mode 下，主 agent 必须真实调度并等待三个独立 suba\n在 Guru Team workflow 与 dogfood workflow 中明确默认 `sub-agent` mo\n更新 Codex、Claude、Cursor 与 channel runtime 的 continue / implem\n同步 README、workflow README、preset README、durable requirements\n保持 #43 agent identity、#44 Branch Review Gate pass 语义、#62 wai"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:33Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

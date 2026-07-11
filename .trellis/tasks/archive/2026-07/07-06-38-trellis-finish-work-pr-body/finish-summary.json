@@ -1,0 +1,268 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:32Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-06-38-trellis-finish-work-pr-body",
+    "title": "#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-06-38-trellis-finish-work-pr-body",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-06-38-trellis-finish-work-pr-body"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/38-trellis-finish-work-pr-body",
+    "commits": [
+      "156fcf43bb90b7dcc801f989c1871eb640b71c80"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-finish-work/SKILL.md",
+      ".claude/commands/trellis/finish-work.md",
+      ".codex/prompts/trellis-finish-work.md",
+      ".codex/skills/trellis-finish-work/SKILL.md",
+      ".cursor/commands/trellis-finish-work.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/agent-assignment.json",
+      ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/check.jsonl",
+      ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/design.md",
+      ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/implement.jsonl",
+      ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/implement.md",
+      ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/issue-scope-ledger.json",
+      ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/phase2-check.json",
+      ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/phase2-findings.json",
+      ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/planning-approval.json",
+      ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/prd.md",
+      ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/task.json",
+      ".trellis/workflow.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      38
+    ],
+    "close_issues": [
+      38
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "修正 Guru Team `trellis-finish-work` 入口的推荐命令示例，避免 AI 看到无 `--body-file` / `--body-artifact` 的单行示例后直接执行 finish-work，导致 reviewed PR body 缺失问题延后到 finish 阶段才失败。",
+    "outcome": "完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.md`，再执行 `--body-file ... --dry-run`，dry-run 通过后再正式执行 `--body-file ...`。",
+    "changed_behavior": [
+      "完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.md`，再执行 `--body-file ... --dry-run`，dry-run 通过后再正式执行 `--body-file ...`。",
+      "同步 canonical `guru-team` workflow、preset overlay、dogfood workflow，以及 Codex、Claude、Cursor、`.agents` 等 finish-work 入口，避免某个平台仍展示裸 `finish-work.sh` 调用。",
+      "补充回归测试，防止 runtime entrypoint 或 public docs 再次出现缺少 reviewed PR body 与 dry-run 的 finish-work 示例。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/quality-guidelines.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/commands/trellis/finish-work.md",
+          ".codex/prompts/trellis-finish-work.md",
+          ".codex/skills/trellis-finish-work/SKILL.md",
+          ".cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-finish-work/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/agent-assignment.json",
+          ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/check.jsonl",
+          ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/design.md",
+          ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/implement.jsonl",
+          ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/implement.md",
+          ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/issue-scope-ledger.json",
+          ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/phase2-check.json",
+          ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/phase2-findings.json",
+          ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/planning-approval.json",
+          ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/prd.md",
+          ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#38"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/38-trellis-finish-work-pr-body"
+      ],
+      "paths": [
+        ".agents/skills/trellis-finish-work/SKILL.md",
+        ".claude/commands/trellis/finish-work.md",
+        ".codex/prompts/trellis-finish-work.md",
+        ".codex/skills/trellis-finish-work/SKILL.md",
+        ".cursor/commands/trellis-finish-work.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/agent-assignment.json",
+        ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/check.jsonl",
+        ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/design.md",
+        ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/implement.jsonl",
+        ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/implement.md",
+        ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/issue-scope-ledger.json",
+        ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/phase2-check.json",
+        ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/phase2-findings.json",
+        ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/planning-approval.json",
+        ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/prd.md",
+        ".trellis/tasks/07-06-38-trellis-finish-work-pr-body/task.json",
+        ".trellis/workflow.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "finish-work.sh",
+        "guru-team",
+        "pr-body.md",
+        "trellis-finish-work"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "finish-work.sh",
+        "pr-body.md"
+      ],
+      "symbols": [
+        "07-06-38-trellis-finish-work-pr-body",
+        "README.md",
+        "SKILL.md",
+        "agent-assignment.json",
+        "check.jsonl",
+        "design.md",
+        "extension.json",
+        "finish-work.md",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "phase2-findings.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "quality-guidelines.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-finish-work.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程",
+        "07-06-38-trellis-finish-work-pr-body",
+        "修正 Guru Team `trellis-finish-work` 入口的推荐命令示例，避免 AI 看到无 `--bo",
+        "完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.m",
+        "同步 canonical `guru-team` workflow、preset overlay、dogfood wor",
+        "补充回归测试，防止 runtime entrypoint 或 public docs 再次出现缺少 reviewed P"
+      ]
+    },
+    "retrieval_text": "#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程\n修正 Guru Team `trellis-finish-work` 入口的推荐命令示例，避免 AI 看到无 `--body-file` / `--body-artifact` 的单行示例后直接执行 finish-work，导致 reviewed PR body 缺失问题延后到 finish 阶段才失败。\n完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.md`，再执行 `--body-file ... --dry-run`，dry-run 通过后再正式执行 `--body-file ...`。\n完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.md`，再执行 `--body-file ... --dry-run`，dry-run 通过后再正式执行 `--body-file ...`。\n同步 canonical `guru-team` workflow、preset overlay、dogfood workflow，以及 Codex、Claude、Cursor、`.agents` 等 finish-work 入口，避免某个平台仍展示裸 `finish-work.sh` 调用。\n补充回归测试，防止 runtime entrypoint 或 public docs 再次出现缺少 reviewed PR body 与 dry-run 的 finish-work 示例。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#38 完善 trellis-finish-work 示例，强制展示 PR body 文件与 dry-run 流程\n07-06-38-trellis-finish-work-pr-body\n修正 Guru Team `trellis-finish-work` 入口的推荐命令示例，避免 AI 看到无 `--bo\n完成 #38：`trellis-finish-work` 的主示例改为先准备 task-local `pr-body.m\n同步 canonical `guru-team` workflow、preset overlay、dogfood wor\n补充回归测试，防止 runtime entrypoint 或 public docs 再次出现缺少 reviewed P"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:32Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

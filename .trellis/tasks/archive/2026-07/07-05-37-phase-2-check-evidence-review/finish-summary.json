@@ -1,0 +1,280 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:31Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-05-37-phase-2-check-evidence-review",
+    "title": "#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-05-37-phase-2-check-evidence-review",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-05-37-phase-2-check-evidence-review"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/37-phase-2-check-evidence-review",
+    "commits": [
+      "9095ea10437d4486c8e3a191d8100defbf7f19c7"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".cursor/commands/trellis-continue.md",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-05-37-phase-2-check-evidence-review/check.jsonl",
+      ".trellis/tasks/07-05-37-phase-2-check-evidence-review/design.md",
+      ".trellis/tasks/07-05-37-phase-2-check-evidence-review/implement.jsonl",
+      ".trellis/tasks/07-05-37-phase-2-check-evidence-review/implement.md",
+      ".trellis/tasks/07-05-37-phase-2-check-evidence-review/issue-scope-ledger.json",
+      ".trellis/tasks/07-05-37-phase-2-check-evidence-review/phase2-check.json",
+      ".trellis/tasks/07-05-37-phase-2-check-evidence-review/planning-approval.json",
+      ".trellis/tasks/07-05-37-phase-2-check-evidence-review/prd.md",
+      ".trellis/tasks/07-05-37-phase-2-check-evidence-review/task.json",
+      ".trellis/workflow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      37
+    ],
+    "close_issues": [
+      37
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "修复 Guru Team Branch Review Gate 对 `phase2-check.json` 的 post-commit 校验语义：允许“提交前完整 `trellis-check` 记录 dirty paths，随后 Phase 3.4 将这些 dirty paths 提交”的正常流程通过 Review Gate，同时继续阻断未被 Phase 2 check 覆盖的新提交或非 metadata 工作区改动。",
+    "outcome": "修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 stale 误判：提交前记录的 `phase2-check.json` 可以在提交后继续作为有效证据，只要后续提交的非 metadata 路径全部被当时的 `dirty_paths` 覆盖。",
+    "changed_behavior": [
+      "修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 stale 误判：提交前记录的 `phase2-check.json` 可以在提交后继续作为有效证据，只要后续提交的非 metadata 路径全部被当时的 `dirty_paths` 覆盖。",
+      "新增 `committed_paths_match_phase2_dirty_paths()` 与路径覆盖判断，使用 `<recorded_head>..HEAD` 审计提交后的路径，并继续阻断未被覆盖的代码、文档、配置、测试或脚本变更。",
+      "补齐目录 dirty path 的边界语义：`docs/` 这类以 `/` 结尾的记录可以覆盖子路径，普通前缀字符串不会误放行无关文件。",
+      "同步 Guru Team workflow、`trellis-continue` overlay、Codex/Claude/Cursor installed copies、README、durable requirements docs 和 `.trellis/spec/workflow/*`，避免 AI 在正常流程里用“提交后重录 Phase 2 evid"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".codex/prompts/trellis-continue.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/handoff.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-05-37-phase-2-check-evidence-review/check.jsonl",
+          ".trellis/tasks/07-05-37-phase-2-check-evidence-review/design.md",
+          ".trellis/tasks/07-05-37-phase-2-check-evidence-review/implement.jsonl",
+          ".trellis/tasks/07-05-37-phase-2-check-evidence-review/implement.md",
+          ".trellis/tasks/07-05-37-phase-2-check-evidence-review/issue-scope-ledger.json",
+          ".trellis/tasks/07-05-37-phase-2-check-evidence-review/phase2-check.json",
+          ".trellis/tasks/07-05-37-phase-2-check-evidence-review/planning-approval.json",
+          ".trellis/tasks/07-05-37-phase-2-check-evidence-review/prd.md",
+          ".trellis/tasks/07-05-37-phase-2-check-evidence-review/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#37"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/37-phase-2-check-evidence-review"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".cursor/commands/trellis-continue.md",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-05-37-phase-2-check-evidence-review/check.jsonl",
+        ".trellis/tasks/07-05-37-phase-2-check-evidence-review/design.md",
+        ".trellis/tasks/07-05-37-phase-2-check-evidence-review/implement.jsonl",
+        ".trellis/tasks/07-05-37-phase-2-check-evidence-review/implement.md",
+        ".trellis/tasks/07-05-37-phase-2-check-evidence-review/issue-scope-ledger.json",
+        ".trellis/tasks/07-05-37-phase-2-check-evidence-review/phase2-check.json",
+        ".trellis/tasks/07-05-37-phase-2-check-evidence-review/planning-approval.json",
+        ".trellis/tasks/07-05-37-phase-2-check-evidence-review/prd.md",
+        ".trellis/tasks/07-05-37-phase-2-check-evidence-review/task.json",
+        ".trellis/workflow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "docs/",
+        "phase2-check.json",
+        "trellis-continue"
+      ],
+      "config_keys": [
+        "check.json",
+        "committed_paths_match_phase2_dirty_paths",
+        "dirty_paths",
+        "recorded_head"
+      ],
+      "schema_fields": [
+        "phase2-check.json"
+      ],
+      "symbols": [
+        "07-05-37-phase-2-check-evidence-review",
+        "README.md",
+        "SKILL.md",
+        "check.jsonl",
+        "companion-scripts.md",
+        "data-contracts.md",
+        "design.md",
+        "guru_team_trellis.py",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-continue.md",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判",
+        "07-05-37-phase-2-check-evidence-review",
+        "修复 Guru Team Branch Review Gate 对 `phase2-check.json` 的 post",
+        "修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 s",
+        "新增 `committed_paths_match_phase2_dirty_paths()` 与路径覆盖判断，使用 `",
+        "补齐目录 dirty path 的边界语义：`docs/` 这类以 `/` 结尾的记录可以覆盖子路径，普通前缀字符串不会",
+        "同步 Guru Team workflow、`trellis-continue` overlay、Codex/Claud"
+      ]
+    },
+    "retrieval_text": "#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判\n修复 Guru Team Branch Review Gate 对 `phase2-check.json` 的 post-commit 校验语义：允许“提交前完整 `trellis-check` 记录 dirty paths，随后 Phase 3.4 将这些 dirty paths 提交”的正常流程通过 Review Gate，同时继续阻断未被 Phase 2 check 覆盖的新提交或非 metadata 工作区改动。\n修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 stale 误判：提交前记录的 `phase2-check.json` 可以在提交后继续作为有效证据，只要后续提交的非 metadata 路径全部被当时的 `dirty_paths` 覆盖。\n修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 stale 误判：提交前记录的 `phase2-check.json` 可以在提交后继续作为有效证据，只要后续提交的非 metadata 路径全部被当时的 `dirty_paths` 覆盖。\n新增 `committed_paths_match_phase2_dirty_paths()` 与路径覆盖判断，使用 `<recorded_head>..HEAD` 审计提交后的路径，并继续阻断未被覆盖的代码、文档、配置、测试或脚本变更。\n补齐目录 dirty path 的边界语义：`docs/` 这类以 `/` 结尾的记录可以覆盖子路径，普通前缀字符串不会误放行无关文件。\n同步 Guru Team workflow、`trellis-continue` overlay、Codex/Claude/Cursor installed copies、README、durable requirements docs 和 `.trellis/spec/workflow/*`，避免 AI 在正常流程里用“提交后重录 Phase 2 evid\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#37 修复 Phase 2 check evidence 与提交后 Review Gate 的 stale 误判\n07-05-37-phase-2-check-evidence-review\n修复 Guru Team Branch Review Gate 对 `phase2-check.json` 的 post\n修复 Guru Team Branch Review Gate 对 Phase 2 check evidence 的 s\n新增 `committed_paths_match_phase2_dirty_paths()` 与路径覆盖判断，使用 `\n补齐目录 dirty path 的边界语义：`docs/` 这类以 `/` 结尾的记录可以覆盖子路径，普通前缀字符串不会\n同步 Guru Team workflow、`trellis-continue` overlay、Codex/Claud"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:31Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

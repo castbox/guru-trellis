@@ -1,0 +1,365 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:33Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-08-070-branch-review-report-retention",
+    "title": "#70 保留多轮 Branch Review 原始报告并生成最终 review.md 汇总",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-08-070-branch-review-report-retention",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-08-070-branch-review-report-retention"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/070-branch-review-report-retention",
+    "commits": [
+      "294e79b847869622bab481b4da0030fcacc56197"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".agents/skills/trellis-finish-work/SKILL.md",
+      ".claude/agents/trellis-implement.md",
+      ".claude/commands/trellis/continue.md",
+      ".claude/commands/trellis/finish-work.md",
+      ".codex/agents/trellis-implement.toml",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/prompts/trellis-finish-work.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".codex/skills/trellis-finish-work/SKILL.md",
+      ".cursor/agents/trellis-implement.md",
+      ".cursor/commands/trellis-continue.md",
+      ".cursor/commands/trellis-finish-work.md",
+      ".trellis/agents/implement.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-08-070-branch-review-report-retention/agent-assignment.json",
+      ".trellis/tasks/07-08-070-branch-review-report-retention/check.jsonl",
+      ".trellis/tasks/07-08-070-branch-review-report-retention/design.md",
+      ".trellis/tasks/07-08-070-branch-review-report-retention/implement.jsonl",
+      ".trellis/tasks/07-08-070-branch-review-report-retention/implement.md",
+      ".trellis/tasks/07-08-070-branch-review-report-retention/issue-scope-ledger.json",
+      ".trellis/tasks/07-08-070-branch-review-report-retention/phase2-check.json",
+      ".trellis/tasks/07-08-070-branch-review-report-retention/planning-approval.json",
+      ".trellis/tasks/07-08-070-branch-review-report-retention/prd.md",
+      ".trellis/tasks/07-08-070-branch-review-report-retention/research/official-trellis-docs.md",
+      ".trellis/tasks/07-08-070-branch-review-report-retention/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      70
+    ],
+    "close_issues": [
+      70
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "当前 Guru Team Branch Review Gate 已要求独立审查后产出 task-local `review.md`，并在 `review-gate.json` 中记录该文件 digest。这个规则能避免 reviewer-only gate，但多轮 review / 修复 / 复核时，前序独立审查报告仍可能被最终 `review.md` 覆盖或手工压缩，导致 findings、修复闭环、复核结论和阶段性 evidence 难以追溯。",
+    "outcome": "Branch Review Gate 可以放行。第 1 轮的 P3 finding 已由同一问题发现代理在第 2 轮闭环，第 3 轮 fresh 最终审查代理对当前 HEAD 完整审查后记录 0 findings。",
+    "changed_behavior": [
+      "为 Guru Team workflow 补齐多轮 Branch Review evidence retention 合同：每一轮独立 review 都保留 task-local raw Markdown 报告，最终 `review.md` 改为人类可读的汇总入口，并链接每轮 raw report。",
+      "让 `agent-assignment.json.review_rounds[]` 绑定每轮 report 的 path / digest / HEAD / agent 信息，并让 `review-gate.json` 记录最终 rollup 和 raw review reports 的 digest evidence。",
+      "修正 planning approval 校验的 stale 判定：有效性以用户确认后的 `prd.md` / `design.md` / `implement.md` 内容 digest 为准，HEAD、mtime 或无关 dirty path 变化不会单独使 approval 过期；规划文档内容变化仍会 fail closed，要求重新显式 review"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/overlay-guidelines.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/agents/implement.md",
+          ".trellis/workflow.md",
+          "README.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+          "trellis/presets/guru-team/overlays/.trellis/agents/implement.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/agents/trellis-implement.md",
+          ".claude/commands/trellis/continue.md",
+          ".claude/commands/trellis/finish-work.md",
+          ".codex/agents/trellis-implement.toml",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/prompts/trellis-finish-work.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".codex/skills/trellis-finish-work/SKILL.md",
+          ".cursor/agents/trellis-implement.md",
+          ".cursor/commands/trellis-continue.md",
+          ".cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md",
+          ".agents/skills/trellis-finish-work/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-08-070-branch-review-report-retention/agent-assignment.json",
+          ".trellis/tasks/07-08-070-branch-review-report-retention/check.jsonl",
+          ".trellis/tasks/07-08-070-branch-review-report-retention/design.md",
+          ".trellis/tasks/07-08-070-branch-review-report-retention/implement.jsonl",
+          ".trellis/tasks/07-08-070-branch-review-report-retention/implement.md",
+          ".trellis/tasks/07-08-070-branch-review-report-retention/issue-scope-ledger.json",
+          ".trellis/tasks/07-08-070-branch-review-report-retention/phase2-check.json",
+          ".trellis/tasks/07-08-070-branch-review-report-retention/planning-approval.json",
+          ".trellis/tasks/07-08-070-branch-review-report-retention/prd.md",
+          ".trellis/tasks/07-08-070-branch-review-report-retention/research/official-trellis-docs.md",
+          ".trellis/tasks/07-08-070-branch-review-report-retention/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#70"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/070-branch-review-report-retention"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".agents/skills/trellis-finish-work/SKILL.md",
+        ".claude/agents/trellis-implement.md",
+        ".claude/commands/trellis/continue.md",
+        ".claude/commands/trellis/finish-work.md",
+        ".codex/agents/trellis-implement.toml",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/prompts/trellis-finish-work.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".codex/skills/trellis-finish-work/SKILL.md",
+        ".cursor/agents/trellis-implement.md",
+        ".cursor/commands/trellis-continue.md",
+        ".cursor/commands/trellis-finish-work.md",
+        ".trellis/agents/implement.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-08-070-branch-review-report-retention/agent-assignment.json",
+        ".trellis/tasks/07-08-070-branch-review-report-retention/check.jsonl",
+        ".trellis/tasks/07-08-070-branch-review-report-retention/design.md",
+        ".trellis/tasks/07-08-070-branch-review-report-retention/implement.jsonl",
+        ".trellis/tasks/07-08-070-branch-review-report-retention/implement.md",
+        ".trellis/tasks/07-08-070-branch-review-report-retention/issue-scope-ledger.json",
+        ".trellis/tasks/07-08-070-branch-review-report-retention/phase2-check.json",
+        ".trellis/tasks/07-08-070-branch-review-report-retention/planning-approval.json",
+        ".trellis/tasks/07-08-070-branch-review-report-retention/prd.md",
+        ".trellis/tasks/07-08-070-branch-review-report-retention/research/official-trellis-docs.md",
+        ".trellis/tasks/07-08-070-branch-review-report-retention/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "review-gate.json"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "agent-assignment.json.review_rounds",
+        "design.md",
+        "implement.md",
+        "prd.md",
+        "review-gate.json",
+        "review.md"
+      ],
+      "symbols": [
+        "07-08-070-branch-review-report-retention",
+        "README.md",
+        "SKILL.md",
+        "agent-assignment.json",
+        "check.jsonl",
+        "companion-scripts.md",
+        "continue.md",
+        "data-contracts.md",
+        "design.md",
+        "extension.json",
+        "finish-work.md",
+        "guru-team-trellis-flow.md",
+        "guru_team_trellis.py",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "official-trellis-docs.md",
+        "overlay-guidelines.md",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "quality-guidelines.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "trellis-continue.md",
+        "trellis-finish-work.md",
+        "trellis-implement.md",
+        "trellis-implement.toml",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#70 保留多轮 Branch Review 原始报告并生成最终 review.md 汇总",
+        "07-08-070-branch-review-report-retention",
+        "当前 Guru Team Branch Review Gate 已要求独立审查后产出 task-local `revie",
+        "Branch Review Gate 可以放行。第 1 轮的 P3 finding 已由同一问题发现代理在第 2 轮闭环",
+        "为 Guru Team workflow 补齐多轮 Branch Review evidence retention 合",
+        "让 `agent-assignment.json.review_rounds[]` 绑定每轮 report 的 path",
+        "修正 planning approval 校验的 stale 判定：有效性以用户确认后的 `prd.md` / `des"
+      ]
+    },
+    "retrieval_text": "#70 保留多轮 Branch Review 原始报告并生成最终 review.md 汇总\n当前 Guru Team Branch Review Gate 已要求独立审查后产出 task-local `review.md`，并在 `review-gate.json` 中记录该文件 digest。这个规则能避免 reviewer-only gate，但多轮 review / 修复 / 复核时，前序独立审查报告仍可能被最终 `review.md` 覆盖或手工压缩，导致 findings、修复闭环、复核结论和阶段性 evidence 难以追溯。\nBranch Review Gate 可以放行。第 1 轮的 P3 finding 已由同一问题发现代理在第 2 轮闭环，第 3 轮 fresh 最终审查代理对当前 HEAD 完整审查后记录 0 findings。\n为 Guru Team workflow 补齐多轮 Branch Review evidence retention 合同：每一轮独立 review 都保留 task-local raw Markdown 报告，最终 `review.md` 改为人类可读的汇总入口，并链接每轮 raw report。\n让 `agent-assignment.json.review_rounds[]` 绑定每轮 report 的 path / digest / HEAD / agent 信息，并让 `review-gate.json` 记录最终 rollup 和 raw review reports 的 digest evidence。\n修正 planning approval 校验的 stale 判定：有效性以用户确认后的 `prd.md` / `design.md` / `implement.md` 内容 digest 为准，HEAD、mtime 或无关 dirty path 变化不会单独使 approval 过期；规划文档内容变化仍会 fail closed，要求重新显式 review\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#70 保留多轮 Branch Review 原始报告并生成最终 review.md 汇总\n07-08-070-branch-review-report-retention\n当前 Guru Team Branch Review Gate 已要求独立审查后产出 task-local `revie\nBranch Review Gate 可以放行。第 1 轮的 P3 finding 已由同一问题发现代理在第 2 轮闭环\n为 Guru Team workflow 补齐多轮 Branch Review evidence retention 合\n让 `agent-assignment.json.review_rounds[]` 绑定每轮 report 的 path\n修正 planning approval 校验的 stale 判定：有效性以用户确认后的 `prd.md` / `des"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:33Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

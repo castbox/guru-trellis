@@ -1,0 +1,308 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:30Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-03-5-require-ai-review-prompt-before",
+    "title": "#5 Require AI review prompt before Branch Review Gate artifact",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-03-5-require-ai-review-prompt-before",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-03-5-require-ai-review-prompt-before"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/5-require-ai-review-prompt-before",
+    "commits": [
+      "cb53a56fbb6b6628d244946071f8ee305693a865"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".agents/skills/trellis-finish-work/SKILL.md",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/prompts/trellis-finish-work.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".codex/skills/trellis-finish-work/SKILL.md",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-03-5-require-ai-review-prompt-before/check.jsonl",
+      ".trellis/tasks/07-03-5-require-ai-review-prompt-before/design.md",
+      ".trellis/tasks/07-03-5-require-ai-review-prompt-before/implement.jsonl",
+      ".trellis/tasks/07-03-5-require-ai-review-prompt-before/implement.md",
+      ".trellis/tasks/07-03-5-require-ai-review-prompt-before/issue-scope-ledger.json",
+      ".trellis/tasks/07-03-5-require-ai-review-prompt-before/prd.md",
+      ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review-dry-run.md",
+      ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review-gate.json",
+      ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review.md",
+      ".trellis/tasks/07-03-5-require-ai-review-prompt-before/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      5
+    ],
+    "close_issues": [
+      5
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json"
+  },
+  "index": {
+    "problem": "GitHub issue #5 指出：当前 `guru-team` workflow 虽然有 Branch Review Gate 和 `review-branch.sh` artifact，但实际执行时 Agent 容易把 `review-branch.sh --pass` 当成“完成 review”，导致没有独立的文档 + 代码 review 判断，仍可写入 passed 的 `review-gate.json` 并进入 `finish-work` / publish。",
+    "outcome": "#5 Require AI review prompt before Branch Review Gate artifact；非目标：历史 artifact 未记录。",
+    "changed_behavior": [
+      "缺少 reviewer/report 的 `review-branch --pass --dry-run` 被拒绝，错误为 `Branch Review Gate passing result needs --reviewer or --review-report from the prior AI/human review.`",
+      "只有 P3 finding、没有 reviewer/report 的非阻塞通过结论也被拒绝，避免 P3-only gate 绕过 review 身份。",
+      "P3-only 非阻塞通过结论缺少 evidence 时也会被 `review-branch` 提前拒绝；带 reviewer + evidence 时允许记录。",
+      "提供 `--reviewer codex-main-session` 的 dry-run 通过，并在 `verification_evidence.reviewer` 记录 reviewer。",
+      "提供 `--review-report .trellis/tasks/07-03-5-require-ai-review-prompt-before/review-dry-run.md` 的 dry-run 通过，并记录 report path、sha256、size 和 mtime。",
+      "静态检查全部通过：`python3 -m json.tool`、`bash -n`、`python3 -m py_compile`、`task.py validate`、`git diff --check`、phase context 读取。",
+      "preset installer 临时安装验证完成：config preserved、managed scripts / Python companion / `.agents` / `.codex` / `.claude` / `.cursor` overlay installed，scripts executable，continue 文案含 `--re"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".codex/prompts/trellis-continue.md",
+          ".codex/prompts/trellis-finish-work.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".codex/skills/trellis-finish-work/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/handoff.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md",
+          ".agents/skills/trellis-finish-work/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-03-5-require-ai-review-prompt-before/check.jsonl",
+          ".trellis/tasks/07-03-5-require-ai-review-prompt-before/design.md",
+          ".trellis/tasks/07-03-5-require-ai-review-prompt-before/implement.jsonl",
+          ".trellis/tasks/07-03-5-require-ai-review-prompt-before/implement.md",
+          ".trellis/tasks/07-03-5-require-ai-review-prompt-before/issue-scope-ledger.json",
+          ".trellis/tasks/07-03-5-require-ai-review-prompt-before/prd.md",
+          ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review-dry-run.md",
+          ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review-gate.json",
+          ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review.md",
+          ".trellis/tasks/07-03-5-require-ai-review-prompt-before/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#5"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/5-require-ai-review-prompt-before"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".agents/skills/trellis-finish-work/SKILL.md",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/prompts/trellis-finish-work.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".codex/skills/trellis-finish-work/SKILL.md",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-03-5-require-ai-review-prompt-before/check.jsonl",
+        ".trellis/tasks/07-03-5-require-ai-review-prompt-before/design.md",
+        ".trellis/tasks/07-03-5-require-ai-review-prompt-before/implement.jsonl",
+        ".trellis/tasks/07-03-5-require-ai-review-prompt-before/implement.md",
+        ".trellis/tasks/07-03-5-require-ai-review-prompt-before/issue-scope-ledger.json",
+        ".trellis/tasks/07-03-5-require-ai-review-prompt-before/prd.md",
+        ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review-dry-run.md",
+        ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review-gate.json",
+        ".trellis/tasks/07-03-5-require-ai-review-prompt-before/review.md",
+        ".trellis/tasks/07-03-5-require-ai-review-prompt-before/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "review-branch",
+        "task.py"
+      ],
+      "config_keys": [
+        "json.tool",
+        "py_compile",
+        "run.md",
+        "task.py",
+        "verification_evidence.reviewer"
+      ],
+      "schema_fields": [
+        "json.tool",
+        "task.py",
+        "trellis/tasks/07-03-5-require-ai-review-prompt-before/review-dry-run.md",
+        "verification_evidence.reviewer"
+      ],
+      "symbols": [
+        "07-03-5-require-ai-review-prompt-before",
+        "README.md",
+        "SKILL.md",
+        "check.jsonl",
+        "continue.md",
+        "data-contracts.md",
+        "design.md",
+        "finish-work.md",
+        "guru_team_trellis.py",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "prd.md",
+        "quality-guidelines.md",
+        "review-dry-run.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "trellis-continue.md",
+        "trellis-finish-work.md",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#5 Require AI review prompt before Branch Review Gate artifa",
+        "07-03-5-require-ai-review-prompt-before",
+        "GitHub issue #5 指出：当前 `guru-team` workflow 虽然有 Branch Review",
+        "缺少 reviewer/report 的 `review-branch --pass --dry-run` 被拒绝，错误",
+        "只有 P3 finding、没有 reviewer/report 的非阻塞通过结论也被拒绝，避免 P3-only gat",
+        "P3-only 非阻塞通过结论缺少 evidence 时也会被 `review-branch` 提前拒绝；带 revie",
+        "提供 `--reviewer codex-main-session` 的 dry-run 通过，并在 `verifica",
+        "提供 `--review-report .trellis/tasks/07-03-5-require-ai-review",
+        "静态检查全部通过：`python3 -m json.tool`、`bash -n`、`python3 -m py_com",
+        "preset installer 临时安装验证完成：config preserved、managed scripts /"
+      ]
+    },
+    "retrieval_text": "#5 Require AI review prompt before Branch Review Gate artifact\nGitHub issue #5 指出：当前 `guru-team` workflow 虽然有 Branch Review Gate 和 `review-branch.sh` artifact，但实际执行时 Agent 容易把 `review-branch.sh --pass` 当成“完成 review”，导致没有独立的文档 + 代码 review 判断，仍可写入 passed 的 `review-gate.json` 并进入 `finish-work` / publish。\n#5 Require AI review prompt before Branch Review Gate artifact；非目标：历史 artifact 未记录。\n缺少 reviewer/report 的 `review-branch --pass --dry-run` 被拒绝，错误为 `Branch Review Gate passing result needs --reviewer or --review-report from the prior AI/human review.`\n只有 P3 finding、没有 reviewer/report 的非阻塞通过结论也被拒绝，避免 P3-only gate 绕过 review 身份。\nP3-only 非阻塞通过结论缺少 evidence 时也会被 `review-branch` 提前拒绝；带 reviewer + evidence 时允许记录。\n提供 `--reviewer codex-main-session` 的 dry-run 通过，并在 `verification_evidence.reviewer` 记录 reviewer。\n提供 `--review-report .trellis/tasks/07-03-5-require-ai-review-prompt-before/review-dry-run.md` 的 dry-run 通过，并记录 report path、sha256、size 和 mtime。\n静态检查全部通过：`python3 -m json.tool`、`bash -n`、`python3 -m py_compile`、`task.py validate`、`git diff --check`、phase context 读取。\npreset installer 临时安装验证完成：config preserved、managed scripts / Python companion / `.agents` / `.codex` / `.claude` / `.cursor` overlay installed，scripts executable，continue 文案含 `--re\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#5 Require AI review prompt before Branch Review Gate artifa\n07-03-5-require-ai-review-prompt-before\nGitHub issue #5 指出：当前 `guru-team` workflow 虽然有 Branch Review\n缺少 reviewer/report 的 `review-branch --pass --dry-run` 被拒绝，错误\n只有 P3 finding、没有 reviewer/report 的非阻塞通过结论也被拒绝，避免 P3-only gat\nP3-only 非阻塞通过结论缺少 evidence 时也会被 `review-branch` 提前拒绝；带 revie\n提供 `--reviewer codex-main-session` 的 dry-run 通过，并在 `verifica\n提供 `--review-report .trellis/tasks/07-03-5-require-ai-review\n静态检查全部通过：`python3 -m json.tool`、`bash -n`、`python3 -m py_com\npreset installer 临时安装验证完成：config preserved、managed scripts /"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:30Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

@@ -1,0 +1,279 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:34Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-09-064-docs-ssot-plan-contract",
+    "title": "#64 Docs SSOT planning contract：Phase 1 必须选择同步策略",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-09-064-docs-ssot-plan-contract",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-09-064-docs-ssot-plan-contract"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/064-docs-ssot-plan-contract",
+    "commits": [
+      "51045439b5c6fea8aacd61d10446932e9de3c80e"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".claude/commands/trellis/continue.md",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".cursor/commands/trellis-continue.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-09-064-docs-ssot-plan-contract/agent-assignment.json",
+      ".trellis/tasks/07-09-064-docs-ssot-plan-contract/check.jsonl",
+      ".trellis/tasks/07-09-064-docs-ssot-plan-contract/design.md",
+      ".trellis/tasks/07-09-064-docs-ssot-plan-contract/implement.jsonl",
+      ".trellis/tasks/07-09-064-docs-ssot-plan-contract/implement.md",
+      ".trellis/tasks/07-09-064-docs-ssot-plan-contract/issue-scope-ledger.json",
+      ".trellis/tasks/07-09-064-docs-ssot-plan-contract/phase2-check.json",
+      ".trellis/tasks/07-09-064-docs-ssot-plan-contract/planning-approval.json",
+      ".trellis/tasks/07-09-064-docs-ssot-plan-contract/prd.md",
+      ".trellis/tasks/07-09-064-docs-ssot-plan-contract/task.json",
+      ".trellis/workflow.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      64
+    ],
+    "close_issues": [
+      64
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "在 Guru Team workflow 的 Phase 1 planning 阶段建立显式 `Docs SSOT Plan` 合同。后续 #65 的 implementation/check 消费和 #66 的 Branch Review / finish-work / PR body enforcement 都应以同一个 planning 合同为输入，避免到实现后或 final review 后才临时补 durable docs。",
+    "outcome": "Branch Review Gate 可记录为通过：最终放行审查代理对 reviewed HEAD `51045439b5c6fea8aacd61d10446932e9de3c80e` 的完整 diff 未发现阻断 finding。",
+    "changed_behavior": [
+      "文档状态枚举：`complete_docs`、`partial_docs`、`stale_docs`、`no_docs`。",
+      "同步策略枚举：`ssot_first`、`delta_first`、`bootstrap_or_repair_docs`、`no_docs_update_needed`。",
+      "必填计划字段：docs state 与 evidence paths、strategy 与 reason、affected durable docs、task artifact deltas、`delta_first` merge checkpoint、`bootstrap_or_repair_docs` repair/follow-up scope、`no",
+      "推荐 artifact 分工：`design.md` 承载权威计划，`prd.md` 记录文档状态和需求影响，`implement.md` 记录执行 checklist/checkpoint。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/overlay-guidelines.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/commands/trellis/continue.md",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-09-064-docs-ssot-plan-contract/agent-assignment.json",
+          ".trellis/tasks/07-09-064-docs-ssot-plan-contract/check.jsonl",
+          ".trellis/tasks/07-09-064-docs-ssot-plan-contract/design.md",
+          ".trellis/tasks/07-09-064-docs-ssot-plan-contract/implement.jsonl",
+          ".trellis/tasks/07-09-064-docs-ssot-plan-contract/implement.md",
+          ".trellis/tasks/07-09-064-docs-ssot-plan-contract/issue-scope-ledger.json",
+          ".trellis/tasks/07-09-064-docs-ssot-plan-contract/phase2-check.json",
+          ".trellis/tasks/07-09-064-docs-ssot-plan-contract/planning-approval.json",
+          ".trellis/tasks/07-09-064-docs-ssot-plan-contract/prd.md",
+          ".trellis/tasks/07-09-064-docs-ssot-plan-contract/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#64"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/064-docs-ssot-plan-contract"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".claude/commands/trellis/continue.md",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".cursor/commands/trellis-continue.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/agent-assignment.json",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/check.jsonl",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/design.md",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/implement.jsonl",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/implement.md",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/issue-scope-ledger.json",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/phase2-check.json",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/planning-approval.json",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/prd.md",
+        ".trellis/tasks/07-09-064-docs-ssot-plan-contract/task.json",
+        ".trellis/workflow.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [
+        "design.md",
+        "implement.md",
+        "prd.md"
+      ],
+      "symbols": [
+        "07-09-064-docs-ssot-plan-contract",
+        "README.md",
+        "SKILL.md",
+        "agent-assignment.json",
+        "check.jsonl",
+        "continue.md",
+        "design.md",
+        "extension.json",
+        "guru-team-trellis-flow.md",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "overlay-guidelines.md",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "quality-guidelines.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "trellis-continue.md",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#64 Docs SSOT planning contract：Phase 1 必须选择同步策略",
+        "07-09-064-docs-ssot-plan-contract",
+        "在 Guru Team workflow 的 Phase 1 planning 阶段建立显式 `Docs SSOT Pl",
+        "Branch Review Gate 可记录为通过：最终放行审查代理对 reviewed HEAD `51045439b",
+        "文档状态枚举：`complete_docs`、`partial_docs`、`stale_docs`、`no_docs`",
+        "同步策略枚举：`ssot_first`、`delta_first`、`bootstrap_or_repair_docs`",
+        "必填计划字段：docs state 与 evidence paths、strategy 与 reason、affecte",
+        "推荐 artifact 分工：`design.md` 承载权威计划，`prd.md` 记录文档状态和需求影响，`impl",
+        "历史归档 task 已完成"
+      ]
+    },
+    "retrieval_text": "#64 Docs SSOT planning contract：Phase 1 必须选择同步策略\n在 Guru Team workflow 的 Phase 1 planning 阶段建立显式 `Docs SSOT Plan` 合同。后续 #65 的 implementation/check 消费和 #66 的 Branch Review / finish-work / PR body enforcement 都应以同一个 planning 合同为输入，避免到实现后或 final review 后才临时补 durable docs。\nBranch Review Gate 可记录为通过：最终放行审查代理对 reviewed HEAD `51045439b5c6fea8aacd61d10446932e9de3c80e` 的完整 diff 未发现阻断 finding。\n文档状态枚举：`complete_docs`、`partial_docs`、`stale_docs`、`no_docs`。\n同步策略枚举：`ssot_first`、`delta_first`、`bootstrap_or_repair_docs`、`no_docs_update_needed`。\n必填计划字段：docs state 与 evidence paths、strategy 与 reason、affected durable docs、task artifact deltas、`delta_first` merge checkpoint、`bootstrap_or_repair_docs` repair/follow-up scope、`no\n推荐 artifact 分工：`design.md` 承载权威计划，`prd.md` 记录文档状态和需求影响，`implement.md` 记录执行 checklist/checkpoint。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#64 Docs SSOT planning contract：Phase 1 必须选择同步策略\n07-09-064-docs-ssot-plan-contract\n在 Guru Team workflow 的 Phase 1 planning 阶段建立显式 `Docs SSOT Pl\nBranch Review Gate 可记录为通过：最终放行审查代理对 reviewed HEAD `51045439b\n文档状态枚举：`complete_docs`、`partial_docs`、`stale_docs`、`no_docs`\n同步策略枚举：`ssot_first`、`delta_first`、`bootstrap_or_repair_docs`\n必填计划字段：docs state 与 evidence paths、strategy 与 reason、affecte\n推荐 artifact 分工：`design.md` 承载权威计划，`prd.md` 记录文档状态和需求影响，`impl\n历史归档 task 已完成"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:34Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

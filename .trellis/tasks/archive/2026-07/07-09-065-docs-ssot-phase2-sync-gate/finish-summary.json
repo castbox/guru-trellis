@@ -1,0 +1,345 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:34Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-09-065-docs-ssot-phase2-sync-gate",
+    "title": "#65 Docs SSOT implementation/check gate：把同步纳入 Phase 2",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-09-065-docs-ssot-phase2-sync-gate"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/065-docs-ssot-phase2-sync-gate",
+    "commits": [
+      "6c3497204c8ab02453d2383c69fbca04c167e63f"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-continue/SKILL.md",
+      ".claude/agents/trellis-check.md",
+      ".claude/agents/trellis-implement.md",
+      ".claude/commands/trellis/continue.md",
+      ".codex/agents/trellis-check.toml",
+      ".codex/agents/trellis-implement.toml",
+      ".codex/prompts/trellis-continue.md",
+      ".codex/skills/trellis-continue/SKILL.md",
+      ".cursor/agents/trellis-check.md",
+      ".cursor/agents/trellis-implement.md",
+      ".cursor/commands/trellis-continue.md",
+      ".trellis/agents/check.md",
+      ".trellis/agents/implement.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/agent-assignment.json",
+      ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/check.jsonl",
+      ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/design.md",
+      ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/implement.jsonl",
+      ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/implement.md",
+      ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/issue-scope-ledger.json",
+      ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/phase2-check.json",
+      ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/planning-approval.json",
+      ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/prd.md",
+      ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/research/official-trellis-docs.md",
+      ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/research/subagent-inline-exemption.md",
+      ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/task.json",
+      ".trellis/workflow.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+      "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+      "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+      "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+      "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+      "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+      "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+      "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+      "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+      "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      65
+    ],
+    "close_issues": [
+      65
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "在 #64 已建立 Phase 1 `Docs SSOT Plan` 合同之后，把这份计划纳入 Phase 2 implementation 与 `trellis-check` 的 AI 判断流程。实现代理必须按计划执行 durable docs 同步责任，阶段二检查代理必须按计划验证 durable docs、task artifacts、代码、测试与 overlay/spec 是否一致。",
+    "outcome": "Branch Review raw report 的 `findings_count=0`。本轮审查可用于记录 passing Branch Review Gate。",
+    "changed_behavior": [
+      "Phase 2 实现入口现在要求实现代理读取并执行已批准的 `Docs SSOT Plan`，而不是在 Branch Review 或 finish-work 阶段才重新判断 docs 策略。",
+      "实现 handoff 必须说明 `ssot_first` / `delta_first` / `bootstrap_or_repair_docs` / `no_docs_update_needed` 策略、durable docs 同步结果、task delta 是否 merge、哪些内容只保留为 task history、以及实现输入来自 durable",
+      "`trellis-check` / channel runtime check 现在必须按 plan strategy 复核 durable docs、task artifacts、code/API/schema/config/deploy/test 和验证覆盖一致性；如果发现长期合同 drift，必须回到 planning artifacts / `Doc",
+      "本 PR 只处理 Phase 2 implementation/check 消费 `Docs SSOT Plan`；Branch Review / finish-work / PR body 的最终 enforcement 仍留给后续 #66。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/overlay-guidelines.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/agents/check.md",
+          ".trellis/agents/implement.md",
+          ".trellis/workflow.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+          "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+          "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+          "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+          "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+          "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+          "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+          "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+          "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+          "trellis/presets/guru-team/overlays/.trellis/agents/implement.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".claude/agents/trellis-check.md",
+          ".claude/agents/trellis-implement.md",
+          ".claude/commands/trellis/continue.md",
+          ".codex/agents/trellis-check.toml",
+          ".codex/agents/trellis-implement.toml",
+          ".codex/prompts/trellis-continue.md",
+          ".codex/skills/trellis-continue/SKILL.md",
+          ".cursor/agents/trellis-check.md",
+          ".cursor/agents/trellis-implement.md",
+          ".cursor/commands/trellis-continue.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-continue/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/agent-assignment.json",
+          ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/check.jsonl",
+          ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/design.md",
+          ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/implement.jsonl",
+          ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/implement.md",
+          ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/issue-scope-ledger.json",
+          ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/phase2-check.json",
+          ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/planning-approval.json",
+          ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/prd.md",
+          ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/research/official-trellis-docs.md",
+          ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/research/subagent-inline-exemption.md",
+          ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#65"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/065-docs-ssot-phase2-sync-gate"
+      ],
+      "paths": [
+        ".agents/skills/trellis-continue/SKILL.md",
+        ".claude/agents/trellis-check.md",
+        ".claude/agents/trellis-implement.md",
+        ".claude/commands/trellis/continue.md",
+        ".codex/agents/trellis-check.toml",
+        ".codex/agents/trellis-implement.toml",
+        ".codex/prompts/trellis-continue.md",
+        ".codex/skills/trellis-continue/SKILL.md",
+        ".cursor/agents/trellis-check.md",
+        ".cursor/agents/trellis-implement.md",
+        ".cursor/commands/trellis-continue.md",
+        ".trellis/agents/check.md",
+        ".trellis/agents/implement.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/agent-assignment.json",
+        ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/check.jsonl",
+        ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/design.md",
+        ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/implement.jsonl",
+        ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/implement.md",
+        ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/issue-scope-ledger.json",
+        ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/phase2-check.json",
+        ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/planning-approval.json",
+        ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/prd.md",
+        ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/research/official-trellis-docs.md",
+        ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/research/subagent-inline-exemption.md",
+        ".trellis/tasks/07-09-065-docs-ssot-phase2-sync-gate/task.json",
+        ".trellis/workflow.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.claude/agents/trellis-check.md",
+        "trellis/presets/guru-team/overlays/.claude/agents/trellis-implement.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
+        "trellis/presets/guru-team/overlays/.codex/agents/trellis-check.toml",
+        "trellis/presets/guru-team/overlays/.codex/agents/trellis-implement.toml",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
+        "trellis/presets/guru-team/overlays/.cursor/agents/trellis-check.md",
+        "trellis/presets/guru-team/overlays/.cursor/agents/trellis-implement.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
+        "trellis/presets/guru-team/overlays/.trellis/agents/check.md",
+        "trellis/presets/guru-team/overlays/.trellis/agents/implement.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "trellis-check"
+      ],
+      "config_keys": [
+        "bootstrap_or_repair_docs",
+        "delta_first",
+        "no_docs_update_needed",
+        "ssot_first"
+      ],
+      "schema_fields": [
+        "code/API/schema/config/deploy/test"
+      ],
+      "symbols": [
+        "07-09-065-docs-ssot-phase2-sync-gate",
+        "README.md",
+        "SKILL.md",
+        "agent-assignment.json",
+        "check.jsonl",
+        "check.md",
+        "continue.md",
+        "design.md",
+        "extension.json",
+        "guru-team-trellis-flow.md",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "official-trellis-docs.md",
+        "overlay-guidelines.md",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "quality-guidelines.md",
+        "requirement-main.md",
+        "review-gate.json",
+        "review.md",
+        "subagent-inline-exemption.md",
+        "task.json",
+        "trellis-check.md",
+        "trellis-check.toml",
+        "trellis-continue.md",
+        "trellis-implement.md",
+        "trellis-implement.toml",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#65 Docs SSOT implementation/check gate：把同步纳入 Phase 2",
+        "07-09-065-docs-ssot-phase2-sync-gate",
+        "在 #64 已建立 Phase 1 `Docs SSOT Plan` 合同之后，把这份计划纳入 Phase 2 impl",
+        "Branch Review raw report 的 `findings_count=0`。本轮审查可用于记录 pass",
+        "Phase 2 实现入口现在要求实现代理读取并执行已批准的 `Docs SSOT Plan`，而不是在 Branch R",
+        "实现 handoff 必须说明 `ssot_first` / `delta_first` / `bootstrap_or",
+        "`trellis-check` / channel runtime check 现在必须按 plan strategy",
+        "本 PR 只处理 Phase 2 implementation/check 消费 `Docs SSOT Plan`；Br",
+        "历史归档 task 已完成"
+      ]
+    },
+    "retrieval_text": "#65 Docs SSOT implementation/check gate：把同步纳入 Phase 2\n在 #64 已建立 Phase 1 `Docs SSOT Plan` 合同之后，把这份计划纳入 Phase 2 implementation 与 `trellis-check` 的 AI 判断流程。实现代理必须按计划执行 durable docs 同步责任，阶段二检查代理必须按计划验证 durable docs、task artifacts、代码、测试与 overlay/spec 是否一致。\nBranch Review raw report 的 `findings_count=0`。本轮审查可用于记录 passing Branch Review Gate。\nPhase 2 实现入口现在要求实现代理读取并执行已批准的 `Docs SSOT Plan`，而不是在 Branch Review 或 finish-work 阶段才重新判断 docs 策略。\n实现 handoff 必须说明 `ssot_first` / `delta_first` / `bootstrap_or_repair_docs` / `no_docs_update_needed` 策略、durable docs 同步结果、task delta 是否 merge、哪些内容只保留为 task history、以及实现输入来自 durable\n`trellis-check` / channel runtime check 现在必须按 plan strategy 复核 durable docs、task artifacts、code/API/schema/config/deploy/test 和验证覆盖一致性；如果发现长期合同 drift，必须回到 planning artifacts / `Doc\n本 PR 只处理 Phase 2 implementation/check 消费 `Docs SSOT Plan`；Branch Review / finish-work / PR body 的最终 enforcement 仍留给后续 #66。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#65 Docs SSOT implementation/check gate：把同步纳入 Phase 2\n07-09-065-docs-ssot-phase2-sync-gate\n在 #64 已建立 Phase 1 `Docs SSOT Plan` 合同之后，把这份计划纳入 Phase 2 impl\nBranch Review raw report 的 `findings_count=0`。本轮审查可用于记录 pass\nPhase 2 实现入口现在要求实现代理读取并执行已批准的 `Docs SSOT Plan`，而不是在 Branch R\n实现 handoff 必须说明 `ssot_first` / `delta_first` / `bootstrap_or\n`trellis-check` / channel runtime check 现在必须按 plan strategy\n本 PR 只处理 Phase 2 implementation/check 消费 `Docs SSOT Plan`；Br\n历史归档 task 已完成"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:34Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

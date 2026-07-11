@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 100,
+    "url": "https://github.com/castbox/guru-trellis/issues/100",
+    "title": "拆分 #53：为既有 archived tasks 回填 finish-summary 历史索引",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/100"
+  },
+  "task_slug": "100-backfill-finish-summary",
+  "task_title": "#100 拆分 #53：为既有 archived tasks 回填 finish-summary 历史索引",
+  "task_artifact_dir": ".trellis/tasks/07-11-100-backfill-finish-summary",
+  "branch_name": "feat/100-backfill-finish-summary",
+  "base_branch": "main",
+  "base_ref": "main",
+  "base_head_sha": "920e7f9f797efb6356286f638efc1995ffe4075d",
+  "remote_head_sha": "920e7f9f797efb6356286f638efc1995ffe4075d",
+  "workspace_slug": "100-backfill-finish-summary",
+  "task_workspace_id": "100-backfill-finish-summary",
+  "assignee": "wumengye",
+  "actor": {
+    "login": "wumengye"
+  },
+  "issue_scope_ledger_seed": {
+    "primary_issue": {
+      "number": 100,
+      "url": "https://github.com/castbox/guru-trellis/issues/100",
+      "title": "拆分 #53：为既有 archived tasks 回填 finish-summary 历史索引",
+      "reason": "intake 主 issue，默认进入 close 候选。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 100,
+        "url": "https://github.com/castbox/guru-trellis/issues/100",
+        "title": "拆分 #53：为既有 archived tasks 回填 finish-summary 历史索引",
+        "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": false,
+      "selected_issue": 100
+    },
+    "naming_quality": {
+      "ok": true,
+      "reason": "naming includes enough business tokens",
+      "requires_semantic_name": false,
+      "current_slug": "100-backfill-finish-summary",
+      "current_surface": "workspace_slug",
+      "suggested_override_flags": [],
+      "checked_names": {
+        "slug": {
+          "ok": true,
+          "slug": "backfill-finish-summary",
+          "reason": "ok",
+          "business_tokens": [
+            "backfill",
+            "finish",
+            "summary"
+          ]
+        },
+        "task_slug": {
+          "ok": true,
+          "slug": "100-backfill-finish-summary",
+          "reason": "ok",
+          "business_tokens": [
+            "backfill",
+            "finish",
+            "summary"
+          ]
+        },
+        "workspace_slug": {
+          "ok": true,
+          "slug": "100-backfill-finish-summary",
+          "reason": "ok",
+          "business_tokens": [
+            "backfill",
+            "finish",
+            "summary"
+          ]
+        },
+        "branch_name": {
+          "ok": true,
+          "slug": "100-backfill-finish-summary",
+          "reason": "ok",
+          "business_tokens": [
+            "backfill",
+            "finish",
+            "summary"
+          ]
+        }
+      }
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    }
+  }
+}

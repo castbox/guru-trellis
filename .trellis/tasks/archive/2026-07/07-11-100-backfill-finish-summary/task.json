@@ -1,0 +1,33 @@
+{
+  "id": "100-backfill-finish-summary",
+  "name": "100-backfill-finish-summary",
+  "title": "#100 拆分 #53：为既有 archived tasks 回填 finish-summary 历史索引",
+  "description": "",
+  "status": "completed",
+  "dev_type": null,
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/100",
+  "package": null,
+  "priority": "P2",
+  "creator": "wumengye",
+  "assignee": "wumengye",
+  "createdAt": "2026-07-11",
+  "completedAt": "2026-07-11",
+  "branch": "feat/100-backfill-finish-summary",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/schemas/finish-summary.schema.json",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/presets/guru-team/README.md"
+  ],
+  "notes": "",
+  "meta": {}
+}

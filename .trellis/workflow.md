@@ -1358,6 +1358,22 @@ The `--from-trellis-finish-work` marker is required proof that the explicit fini
 
 When `--dry-run` is also passed, the helper validates the same gate, dirty state, AI index, and PR readiness inputs, then prints the planned archive target, finish-summary target/initial PR state, metadata commit, publish actions, and merge payload without moving or writing files, creating commits, pushing, or creating a PR. There is no journal/workspace plan.
 
+Repositories upgrading from archives created before this finish-summary
+contract may run the one-time public migration helper before history discovery:
+
+```bash
+.trellis/guru-team/scripts/bash/backfill-finish-summary.sh --json --dry-run
+.trellis/guru-team/scripts/bash/backfill-finish-summary.sh --json --write
+```
+
+The backfill scans archived tasks only, uses the fixed task-local artifact
+whitelist, validates the unchanged #97 schema, and isolates per-task failures.
+It groups complete changed paths by surface kind, splitting each kind at 100
+paths and failing closed if the result would exceed 20 surfaces. It never reads
+workspace/runtime state, calls GitHub or `trellis mem`, changes active tasks, or
+creates a global index. `--force` may overwrite an existing summary only with
+`--write`; `--task` must be a clean repo-relative archived task directory.
+
 After the dry-run returns, run the human artifact resolver against the active
 task and include the active-task `Markdown 产物 review 表` in the preview reply:
 

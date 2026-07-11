@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:30Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-03-2-align-guru-team-workflow-trellis",
+    "title": "#2 Align guru-team workflow with Trellis auto-bootstrap start model",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-03-2-align-guru-team-workflow-trellis"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/2-align-guru-team-workflow-trellis",
+    "commits": [
+      "2d687d4b1178578b0d2fb26558cb1ee0480f2d41"
+    ],
+    "changed_paths": [
+      ".agents/skills/trellis-start/SKILL.md",
+      ".codex/prompts/trellis-start.md",
+      ".codex/skills/trellis-start/SKILL.md",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/check.jsonl",
+      ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/design.md",
+      ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/implement.jsonl",
+      ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/implement.md",
+      ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/issue-scope-ledger.json",
+      ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/prd.md",
+      ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/research/official-trellis-auto-bootstrap.md",
+      ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/review-gate.json",
+      ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+      "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+      "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      2
+    ],
+    "close_issues": [
+      2
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review_gate": "review-gate.json"
+  },
+  "index": {
+    "problem": "将 `guru-team` workflow、README、preset README 和平台入口 overlay 的用户心智模型，从“用户每次显式运行 `trellis-start`”调整为“用户日常直接描述任务，由 AI 依赖 Trellis auto-bootstrap / workflow-state / hook breadcrumb 自行判断是否进入 Trellis task 流程”。",
+    "outcome": "#2 Align guru-team workflow with Trellis auto-bootstrap start model；非目标：历史 artifact 未记录。",
+    "changed_behavior": [
+      "历史归档 task 已完成：#2 Align guru-team workflow with Trellis auto-bootstrap start model。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+          "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+          "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "prompt",
+        "name": "prompt",
+        "paths": [
+          ".codex/prompts/trellis-start.md",
+          ".codex/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 prompt 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/handoff.json"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/trellis-start/SKILL.md"
+        ],
+        "change": "历史归档 task 修改了 skill 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/check.jsonl",
+          ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/design.md",
+          ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/implement.jsonl",
+          ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/implement.md",
+          ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/issue-scope-ledger.json",
+          ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/prd.md",
+          ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/research/official-trellis-auto-bootstrap.md",
+          ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/review-gate.json",
+          ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#2"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/2-align-guru-team-workflow-trellis"
+      ],
+      "paths": [
+        ".agents/skills/trellis-start/SKILL.md",
+        ".codex/prompts/trellis-start.md",
+        ".codex/skills/trellis-start/SKILL.md",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/check.jsonl",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/design.md",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/implement.jsonl",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/implement.md",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/issue-scope-ledger.json",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/prd.md",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/research/official-trellis-auto-bootstrap.md",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/review-gate.json",
+        ".trellis/tasks/07-03-2-align-guru-team-workflow-trellis/task.json",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [
+        "07-03-2-align-guru-team-workflow-trellis",
+        "README.md",
+        "SKILL.md",
+        "check.jsonl",
+        "design.md",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "official-trellis-auto-bootstrap.md",
+        "prd.md",
+        "review-gate.json",
+        "task.json",
+        "trellis-start.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#2 Align guru-team workflow with Trellis auto-bootstrap star",
+        "07-03-2-align-guru-team-workflow-trellis",
+        "将 `guru-team` workflow、README、preset README 和平台入口 overlay 的用",
+        "历史归档 task 已完成：#2 Align guru-team workflow with Trellis auto-"
+      ]
+    },
+    "retrieval_text": "#2 Align guru-team workflow with Trellis auto-bootstrap start model\n将 `guru-team` workflow、README、preset README 和平台入口 overlay 的用户心智模型，从“用户每次显式运行 `trellis-start`”调整为“用户日常直接描述任务，由 AI 依赖 Trellis auto-bootstrap / workflow-state / hook breadcrumb 自行判断是否进入 Trellis task 流程”。\n#2 Align guru-team workflow with Trellis auto-bootstrap start model；非目标：历史 artifact 未记录。\n历史归档 task 已完成：#2 Align guru-team workflow with Trellis auto-bootstrap start model。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 prompt 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 skill 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#2 Align guru-team workflow with Trellis auto-bootstrap star\n07-03-2-align-guru-team-workflow-trellis\n将 `guru-team` workflow、README、preset README 和平台入口 overlay 的用\n历史归档 task 已完成：#2 Align guru-team workflow with Trellis auto-"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:30Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "prd.md",
+      "review-gate.json",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

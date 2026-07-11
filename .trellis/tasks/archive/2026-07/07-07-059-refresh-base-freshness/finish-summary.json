@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:33Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-07-059-refresh-base-freshness",
+    "title": "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-07-059-refresh-base-freshness",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-07-059-refresh-base-freshness"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/059-refresh-base-freshness",
+    "commits": [
+      "548a24f8e9709b1a720088ae053e8c80d6b8cf98"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/handoff.json",
+      ".trellis/guru-team/schemas/intake-handoff.schema.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/tasks/07-07-059-refresh-base-freshness/agent-assignment.json",
+      ".trellis/tasks/07-07-059-refresh-base-freshness/check.jsonl",
+      ".trellis/tasks/07-07-059-refresh-base-freshness/design.md",
+      ".trellis/tasks/07-07-059-refresh-base-freshness/implement.jsonl",
+      ".trellis/tasks/07-07-059-refresh-base-freshness/implement.md",
+      ".trellis/tasks/07-07-059-refresh-base-freshness/issue-scope-ledger.json",
+      ".trellis/tasks/07-07-059-refresh-base-freshness/phase2-check.json",
+      ".trellis/tasks/07-07-059-refresh-base-freshness/planning-approval.json",
+      ".trellis/tasks/07-07-059-refresh-base-freshness/prd.md",
+      ".trellis/tasks/07-07-059-refresh-base-freshness/task.json",
+      ".trellis/workflow.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      59
+    ],
+    "close_issues": [
+      59
+    ],
+    "related_issues": [],
+    "followup_issues": [
+      62
+    ],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态；旧行为：历史 artifact 未记录。",
+    "outcome": "修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 base freshness 的问题。",
+    "changed_behavior": [
+      "修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 base freshness 的问题。",
+      "planner 阶段现在会先执行 `git fetch origin <base>` 刷新远端 base 引用，再输出 `preflight.base_freshness` 结论。",
+      "planner-only 路径只做远端刷新和状态报告，不 fast-forward 本地 base，不写 handoff，不创建 worktree/task。",
+      "executor 路径继续在真正创建 task/worktree 前独立调用强刷新逻辑，避免 planner 结果被当作执行阶段的 freshness 保证。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/data-contracts.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/handoff.json",
+          ".trellis/guru-team/schemas/intake-handoff.schema.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-07-059-refresh-base-freshness/agent-assignment.json",
+          ".trellis/tasks/07-07-059-refresh-base-freshness/check.jsonl",
+          ".trellis/tasks/07-07-059-refresh-base-freshness/design.md",
+          ".trellis/tasks/07-07-059-refresh-base-freshness/implement.jsonl",
+          ".trellis/tasks/07-07-059-refresh-base-freshness/implement.md",
+          ".trellis/tasks/07-07-059-refresh-base-freshness/issue-scope-ledger.json",
+          ".trellis/tasks/07-07-059-refresh-base-freshness/phase2-check.json",
+          ".trellis/tasks/07-07-059-refresh-base-freshness/planning-approval.json",
+          ".trellis/tasks/07-07-059-refresh-base-freshness/prd.md",
+          ".trellis/tasks/07-07-059-refresh-base-freshness/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#59",
+        "#62"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/059-refresh-base-freshness"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/handoff.json",
+        ".trellis/guru-team/schemas/intake-handoff.schema.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/tasks/07-07-059-refresh-base-freshness/agent-assignment.json",
+        ".trellis/tasks/07-07-059-refresh-base-freshness/check.jsonl",
+        ".trellis/tasks/07-07-059-refresh-base-freshness/design.md",
+        ".trellis/tasks/07-07-059-refresh-base-freshness/implement.jsonl",
+        ".trellis/tasks/07-07-059-refresh-base-freshness/implement.md",
+        ".trellis/tasks/07-07-059-refresh-base-freshness/issue-scope-ledger.json",
+        ".trellis/tasks/07-07-059-refresh-base-freshness/phase2-check.json",
+        ".trellis/tasks/07-07-059-refresh-base-freshness/planning-approval.json",
+        ".trellis/tasks/07-07-059-refresh-base-freshness/prd.md",
+        ".trellis/tasks/07-07-059-refresh-base-freshness/task.json",
+        ".trellis/workflow.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/schemas/intake-handoff.schema.json",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "prepare-task"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "preflight.base_freshness"
+      ],
+      "symbols": [
+        "07-07-059-refresh-base-freshness",
+        "README.md",
+        "agent-assignment.json",
+        "check.jsonl",
+        "data-contracts.md",
+        "design.md",
+        "extension.json",
+        "guru_team_trellis.py",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "intake-handoff.schema.json",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_guru_team_trellis.py",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态",
+        "07-07-059-refresh-base-freshness",
+        "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态；旧行为：历史 artifact",
+        "修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 b",
+        "planner 阶段现在会先执行 `git fetch origin <base>` 刷新远端 base 引用，再输出",
+        "planner-only 路径只做远端刷新和状态报告，不 fast-forward 本地 base，不写 handoff",
+        "executor 路径继续在真正创建 task/worktree 前独立调用强刷新逻辑，避免 planner 结果被当作"
+      ]
+    },
+    "retrieval_text": "#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态\n#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态；旧行为：历史 artifact 未记录。\n修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 base freshness 的问题。\n修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 base freshness 的问题。\nplanner 阶段现在会先执行 `git fetch origin <base>` 刷新远端 base 引用，再输出 `preflight.base_freshness` 结论。\nplanner-only 路径只做远端刷新和状态报告，不 fast-forward 本地 base，不写 handoff，不创建 worktree/task。\nexecutor 路径继续在真正创建 task/worktree 前独立调用强刷新逻辑，避免 planner 结果被当作执行阶段的 freshness 保证。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态\n07-07-059-refresh-base-freshness\n#59 prepare-task 应在 planner 阶段刷新 base 分支远程状态；旧行为：历史 artifact\n修复 `prepare-task` 在 planner-only 阶段使用过期 `origin/<base>` 判断 b\nplanner 阶段现在会先执行 `git fetch origin <base>` 刷新远端 base 引用，再输出\nplanner-only 路径只做远端刷新和状态报告，不 fast-forward 本地 base，不写 handoff\nexecutor 路径继续在真正创建 task/worktree 前独立调用强刷新逻辑，避免 planner 结果被当作"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:33Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

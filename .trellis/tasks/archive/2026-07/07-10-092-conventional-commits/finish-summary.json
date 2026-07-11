@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:34Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-10-092-conventional-commits",
+    "title": "#92 强制 guru-team workflow 使用中文 Conventional Commits 提交规范",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-10-092-conventional-commits",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-10-092-conventional-commits"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/092-conventional-commits",
+    "commits": [
+      "73a4985d07e4d2876c39a8ff53130cbdb1eb119e"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/bash/check-commit-messages.sh",
+      ".trellis/guru-team/scripts/bash/format-merge-commit.sh",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/workflow.md",
+      "README.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/bash/check-commit-messages.sh",
+      "trellis/workflows/guru-team/scripts/bash/format-merge-commit.sh",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      92
+    ],
+    "close_issues": [
+      92
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "把 issue #92 的提交规范固化为 `guru-team` workflow 的长期合同。进入 PR 分支和 `main` 的工作提交、Trellis metadata 提交、merge commit subject/body 必须使用 Conventional Commits 前缀、主 issue 位置、中文描述和 `Refs` / `Closes` 分工。",
+    "outcome": "Branch Review 通过。Round 001 P2 已由 Round 002 闭合，Round 003 最终放行审查使用全新 agent 覆盖最新 HEAD，`findings_count: 0`。可以记录通过型 Branch Review Gate。",
+    "changed_behavior": [
+      "为 Guru Team workflow 固化中文 Conventional Commits 合同：工作提交和 Trellis metadata 提交使用 `{type}({scope}): #{primary_issue} 中文描述`，merge commit 使用 `chore(merge): #{pull_request} 合并 #{primary_i",
+      "增加 `check-commit-messages` 与 `format-merge-commit` companion script，提供客观 commit message 校验和 merge commit payload 生成能力。",
+      "接入 finish/publish：metadata commit 使用 `chore(trellis): #<primary_issue> 固化任务收尾元数据`，publish dry-run/formal payload 输出合规 merge commit subject/body/命令，维护者不得依赖 GitHub 默认 `Merge pull req",
+      "补充 workflow helper 与 preset installer 测试，覆盖 issue #92 正反例、work body、metadata empty body、merge body、managed asset、extension public API 与 throwaway installer 断言。",
+      "修复 Branch Review Round 001 发现的缺口：commit subject 现在禁止 `Closes/Fixes/Resolves/Close/Fix/Resolve #xx`，PR body 才承载 issue close 语义。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "历史归档 task 修改了 docs 类路径（第 1 批）。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md",
+          "README.md",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "change": "历史归档 task 修改了 preset 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/scripts/bash/check-commit-messages.sh",
+          ".trellis/guru-team/scripts/bash/format-merge-commit.sh",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/scripts/bash/check-commit-messages.sh",
+          "trellis/workflows/guru-team/scripts/bash/format-merge-commit.sh",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#92"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/092-conventional-commits"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/scripts/bash/check-commit-messages.sh",
+        ".trellis/guru-team/scripts/bash/format-merge-commit.sh",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/workflow.md",
+        "README.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/scripts/bash/check-commit-messages.sh",
+        "trellis/workflows/guru-team/scripts/bash/format-merge-commit.sh",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        "check-commit-messages",
+        "format-merge-commit"
+      ],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [
+        "07-10-092-conventional-commits",
+        "README.md",
+        "apply_guru_team_trellis_preset.py",
+        "check-commit-messages.sh",
+        "data-contracts.md",
+        "design.md",
+        "extension.json",
+        "format-merge-commit.sh",
+        "guru-team-extension.json",
+        "guru_team_trellis.py",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "pr-body.md",
+        "prd.md",
+        "quality-guidelines.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "test_apply_guru_team_trellis_preset.py",
+        "test_guru_team_trellis.py",
+        "verify-throwaway-install.sh",
+        "workflow-contract.md",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#92 强制 guru-team workflow 使用中文 Conventional Commits 提交规范",
+        "07-10-092-conventional-commits",
+        "把 issue #92 的提交规范固化为 `guru-team` workflow 的长期合同。进入 PR 分支和 `m",
+        "Branch Review 通过。Round 001 P2 已由 Round 002 闭合，Round 003 最终放行",
+        "为 Guru Team workflow 固化中文 Conventional Commits 合同：工作提交和 Trel",
+        "增加 `check-commit-messages` 与 `format-merge-commit` companion",
+        "接入 finish/publish：metadata commit 使用 `chore(trellis): #<prim",
+        "补充 workflow helper 与 preset installer 测试，覆盖 issue #92 正反例、wo",
+        "修复 Branch Review Round 001 发现的缺口：commit subject 现在禁止 `Closes"
+      ]
+    },
+    "retrieval_text": "#92 强制 guru-team workflow 使用中文 Conventional Commits 提交规范\n把 issue #92 的提交规范固化为 `guru-team` workflow 的长期合同。进入 PR 分支和 `main` 的工作提交、Trellis metadata 提交、merge commit subject/body 必须使用 Conventional Commits 前缀、主 issue 位置、中文描述和 `Refs` / `Closes` 分工。\nBranch Review 通过。Round 001 P2 已由 Round 002 闭合，Round 003 最终放行审查使用全新 agent 覆盖最新 HEAD，`findings_count: 0`。可以记录通过型 Branch Review Gate。\n为 Guru Team workflow 固化中文 Conventional Commits 合同：工作提交和 Trellis metadata 提交使用 `{type}({scope}): #{primary_issue} 中文描述`，merge commit 使用 `chore(merge): #{pull_request} 合并 #{primary_i\n增加 `check-commit-messages` 与 `format-merge-commit` companion script，提供客观 commit message 校验和 merge commit payload 生成能力。\n接入 finish/publish：metadata commit 使用 `chore(trellis): #<primary_issue> 固化任务收尾元数据`，publish dry-run/formal payload 输出合规 merge commit subject/body/命令，维护者不得依赖 GitHub 默认 `Merge pull req\n补充 workflow helper 与 preset installer 测试，覆盖 issue #92 正反例、work body、metadata empty body、merge body、managed asset、extension public API 与 throwaway installer 断言。\n修复 Branch Review Round 001 发现的缺口：commit subject 现在禁止 `Closes/Fixes/Resolves/Close/Fix/Resolve #xx`，PR body 才承载 issue close 语义。\n历史归档 task 修改了 docs 类路径（第 1 批）。\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 preset 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#92 强制 guru-team workflow 使用中文 Conventional Commits 提交规范\n07-10-092-conventional-commits\n把 issue #92 的提交规范固化为 `guru-team` workflow 的长期合同。进入 PR 分支和 `m\nBranch Review 通过。Round 001 P2 已由 Round 002 闭合，Round 003 最终放行\n为 Guru Team workflow 固化中文 Conventional Commits 合同：工作提交和 Trel\n增加 `check-commit-messages` 与 `format-merge-commit` companion\n接入 finish/publish：metadata commit 使用 `chore(trellis): #<prim\n补充 workflow helper 与 preset installer 测试，覆盖 issue #92 正反例、wo\n修复 Branch Review Round 001 发现的缺口：commit subject 现在禁止 `Closes"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:34Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}

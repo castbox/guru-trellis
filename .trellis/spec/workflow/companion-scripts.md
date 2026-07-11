@@ -363,6 +363,38 @@ python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trell
 When changing `review-branch`, `finish-work`, or `publish-pr`, also run dry-run
 or representative script paths in a disposable worktree whenever practical.
 
+## Archived Finish-Summary Backfill
+
+`backfill-finish-summary.sh` is a public, one-time migration helper for
+archived tasks created before normal finish-work wrote `finish-summary.json`.
+The Bash file is a thin wrapper around the canonical Python
+`backfill-finish-summary` subcommand. It never reads active tasks,
+`.trellis/workspace/**`, or `.trellis/.runtime/**`, and it never calls GitHub or
+`trellis mem`.
+
+The command requires exactly one of `--dry-run` and `--write`. `--force` is
+valid only with `--write`; `--task` accepts only a clean repo-relative archived
+task root. A task root contains a direct whitelist artifact or existing
+`finish-summary.json` marker, and none of its strict ancestors below the archive
+root contains such a marker. Discovery uses the same marker rule and stops
+descending after the first task root. This rejects archive grouping directories
+and every task subdirectory without relying on directory basenames. Invalid
+arguments, non-root targets, or symlink escapes exit 2 before scanning. A
+completed batch exits 0, while any task-local read/build,
+validation, or write error is isolated, reported, and makes the final exit code
+1 after the remaining tasks are processed. `--json` returns the stable object
+fields `mode`, `archive_glob`, `scanned_tasks`, `to_write`, `skipped`, and
+`errors`; the default renderer prints the same facts as a stable table. Every
+`to_write` table row includes `source_artifacts`, `missing_fields`, and
+`confidence` so a human preview preserves the JSON decision evidence.
+
+Dry-run and write share discovery, extraction, build, and schema validation.
+Write mode creates only missing summaries unless `--force` is present, uses a
+same-directory temporary file plus `os.replace()`, then rereads and validates
+the result. No invocation creates a committed global archive index. Per-task
+errors contain only repo-relative task/artifact paths and reasons, never source
+content or secrets.
+
 ### Remote Marketplace Verification Gate
 
 For tasks that change the workflow marketplace, preset, overlays, installer, schema, or public extension contract, publish is fail-closed after the branch push and before `gh pr create`. The deterministic `verify-marketplace` companion command records task-local `marketplace-verification.json` with repository, remote, branch/ref, verified content HEAD, remote HEAD, command exit codes, stdout/stderr digests and sizes, and installed workflow/preview/schema digests. It executes remote branch `trellis init`, workflow preview, workflow switch, canonical preset reapply, and runtime-ignore checks in a clean temporary repository. It does not decide PR readiness.

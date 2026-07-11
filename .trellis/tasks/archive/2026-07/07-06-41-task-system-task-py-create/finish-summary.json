@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-11T03:21:32Z",
+  "generator": "guru-team.finish-summary-backfill",
+  "task": {
+    "slug": "07-06-41-task-system-task-py-create",
+    "title": "#41 在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/07-06-41-task-system-task-py-create",
+    "archive_dir": ".trellis/tasks/archive/2026-07/07-06-41-task-system-task-py-create"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/41-task-system-task-py-create",
+    "commits": [
+      "0074a7b98cc348083b2a48b3ff33f88d108e175b"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/handoff.json",
+      ".trellis/tasks/07-06-41-task-system-task-py-create/check.jsonl",
+      ".trellis/tasks/07-06-41-task-system-task-py-create/design.md",
+      ".trellis/tasks/07-06-41-task-system-task-py-create/implement.jsonl",
+      ".trellis/tasks/07-06-41-task-system-task-py-create/implement.md",
+      ".trellis/tasks/07-06-41-task-system-task-py-create/issue-scope-ledger.json",
+      ".trellis/tasks/07-06-41-task-system-task-py-create/phase2-check.json",
+      ".trellis/tasks/07-06-41-task-system-task-py-create/planning-approval.json",
+      ".trellis/tasks/07-06-41-task-system-task-py-create/prd.md",
+      ".trellis/tasks/07-06-41-task-system-task-py-create/task.json",
+      ".trellis/workflow.md",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      41
+    ],
+    "close_issues": [
+      41
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": ""
+  },
+  "artifacts": {
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "review": "review.md",
+    "review_gate": "review-gate.json",
+    "phase2_check": "phase2-check.json",
+    "pr_body": "pr-body.md"
+  },
+  "index": {
+    "problem": "在 Guru Team workflow 前部 `### Task System` 命令目录之前补充明确提示，防止 AI 在 issue-backed、task-like 或 file-changing Guru Team worktree 任务中被早期 `task.py create` 命令示例锚定，从 source checkout 直接创建 Trellis task 并绕过 Phase 0 intake/preflight。",
+    "outcome": "在 Guru Team workflow 的 `### Task System` 命令目录前增加 reference-only 提示，明确该命令块只是 Trellis task CLI 参考，不是 Guru Team issue-backed / task-like / file-changing work 的入口。",
+    "changed_behavior": [
+      "Guru Team durable、issue-backed、task-like、file-changing work 必须先走 Phase 0 `check-env` + `prepare-task`。",
+      "`workspace_mode: worktree` 下不能从 source checkout 直接运行裸 `task.py create`。",
+      "裸 `task.py create` 只允许作为 Phase 1.0 controlled follow-up，且 shell/editor 已位于 `prepare-task` 返回或写入的 `workspace_path`。",
+      "`trellis/workflows/guru-team/workflow.md`",
+      "`.trellis/workflow.md`"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 other 类路径（第 1 批）。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/handoff.json"
+        ],
+        "change": "历史归档 task 修改了 script 类路径（第 1 批）。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/07-06-41-task-system-task-py-create/check.jsonl",
+          ".trellis/tasks/07-06-41-task-system-task-py-create/design.md",
+          ".trellis/tasks/07-06-41-task-system-task-py-create/implement.jsonl",
+          ".trellis/tasks/07-06-41-task-system-task-py-create/implement.md",
+          ".trellis/tasks/07-06-41-task-system-task-py-create/issue-scope-ledger.json",
+          ".trellis/tasks/07-06-41-task-system-task-py-create/phase2-check.json",
+          ".trellis/tasks/07-06-41-task-system-task-py-create/planning-approval.json",
+          ".trellis/tasks/07-06-41-task-system-task-py-create/prd.md",
+          ".trellis/tasks/07-06-41-task-system-task-py-create/task.json"
+        ],
+        "change": "历史归档 task 修改了 task-artifact 类路径（第 1 批）。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "历史归档 task 修改了 workflow 类路径（第 1 批）。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#41"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/41-task-system-task-py-create"
+      ],
+      "paths": [
+        ".trellis/guru-team/handoff.json",
+        ".trellis/tasks/07-06-41-task-system-task-py-create/check.jsonl",
+        ".trellis/tasks/07-06-41-task-system-task-py-create/design.md",
+        ".trellis/tasks/07-06-41-task-system-task-py-create/implement.jsonl",
+        ".trellis/tasks/07-06-41-task-system-task-py-create/implement.md",
+        ".trellis/tasks/07-06-41-task-system-task-py-create/issue-scope-ledger.json",
+        ".trellis/tasks/07-06-41-task-system-task-py-create/phase2-check.json",
+        ".trellis/tasks/07-06-41-task-system-task-py-create/planning-approval.json",
+        ".trellis/tasks/07-06-41-task-system-task-py-create/prd.md",
+        ".trellis/tasks/07-06-41-task-system-task-py-create/task.json",
+        ".trellis/workflow.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [
+        ".trellis/workflow.md",
+        "check-env",
+        "prepare-task",
+        "task.py",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "1.0",
+        "task.py",
+        "trellis/workflow.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "symbols": [
+        "07-06-41-task-system-task-py-create",
+        "check.jsonl",
+        "design.md",
+        "handoff.json",
+        "implement.jsonl",
+        "implement.md",
+        "issue-scope-ledger.json",
+        "phase2-check.json",
+        "planning-approval.json",
+        "pr-body.md",
+        "prd.md",
+        "review-gate.json",
+        "review.md",
+        "task.json",
+        "workflow.md"
+      ],
+      "phrases": [
+        "#41 在 Task System 命令目录前标注 task.py create 为 reference-only，避免",
+        "07-06-41-task-system-task-py-create",
+        "在 Guru Team workflow 前部 `### Task System` 命令目录之前补充明确提示，防止 AI",
+        "在 Guru Team workflow 的 `### Task System` 命令目录前增加 reference-o",
+        "Guru Team durable、issue-backed、task-like、file-changing work",
+        "`workspace_mode: worktree` 下不能从 source checkout 直接运行裸 `task.",
+        "裸 `task.py create` 只允许作为 Phase 1.0 controlled follow-up，且 sh",
+        "`trellis/workflows/guru-team/workflow.md`",
+        "`.trellis/workflow.md`",
+        "历史归档 task 已完成"
+      ]
+    },
+    "retrieval_text": "#41 在 Task System 命令目录前标注 task.py create 为 reference-only，避免绕过 Phase 0\n在 Guru Team workflow 前部 `### Task System` 命令目录之前补充明确提示，防止 AI 在 issue-backed、task-like 或 file-changing Guru Team worktree 任务中被早期 `task.py create` 命令示例锚定，从 source checkout 直接创建 Trellis task 并绕过 Phase 0 intake/preflight。\n在 Guru Team workflow 的 `### Task System` 命令目录前增加 reference-only 提示，明确该命令块只是 Trellis task CLI 参考，不是 Guru Team issue-backed / task-like / file-changing work 的入口。\nGuru Team durable、issue-backed、task-like、file-changing work 必须先走 Phase 0 `check-env` + `prepare-task`。\n`workspace_mode: worktree` 下不能从 source checkout 直接运行裸 `task.py create`。\n裸 `task.py create` 只允许作为 Phase 1.0 controlled follow-up，且 shell/editor 已位于 `prepare-task` 返回或写入的 `workspace_path`。\n`trellis/workflows/guru-team/workflow.md`\n`.trellis/workflow.md`\n历史归档 task 修改了 other 类路径（第 1 批）。\n历史归档 task 修改了 script 类路径（第 1 批）。\n历史归档 task 修改了 task-artifact 类路径（第 1 批）。\n历史归档 task 修改了 workflow 类路径（第 1 批）。\n#41 在 Task System 命令目录前标注 task.py create 为 reference-only，避免\n07-06-41-task-system-task-py-create\n在 Guru Team workflow 前部 `### Task System` 命令目录之前补充明确提示，防止 AI\n在 Guru Team workflow 的 `### Task System` 命令目录前增加 reference-o\nGuru Team durable、issue-backed、task-like、file-changing work\n`workspace_mode: worktree` 下不能从 source checkout 直接运行裸 `task.\n裸 `task.py create` 只允许作为 Phase 1.0 controlled follow-up，且 sh\n`trellis/workflows/guru-team/workflow.md`\n`.trellis/workflow.md`\n历史归档 task 已完成"
+  },
+  "backfill": {
+    "generated": true,
+    "generated_at": "2026-07-11T03:21:32Z",
+    "source_artifacts": [
+      "design.md",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "phase2-check.json",
+      "pr-body.md",
+      "prd.md",
+      "review-gate.json",
+      "review.md",
+      "task.json"
+    ],
+    "missing_fields": [
+      "github.followup_issues",
+      "github.pr_url",
+      "github.related_issues"
+    ],
+    "confidence": "partial"
+  }
+}
