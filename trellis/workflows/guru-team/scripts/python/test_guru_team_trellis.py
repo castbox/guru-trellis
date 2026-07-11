@@ -1418,6 +1418,99 @@ class WorkspaceBoundaryGuardTest(unittest.TestCase):
         self.assertEqual(payload["status"], "blocked")
         self.assertTrue(any("task-start-context.json" in error for error in payload["errors"]))
 
+    def test_ordinary_task_resolution_rejects_plan_only_archived_directory(self) -> None:
+        archived = self.workspace / ".trellis/tasks/archive/2026-07/07-08-plan-only"
+        archived.mkdir(parents=True)
+        (archived / gtt.CLOSEOUT_PLAN_ARTIFACT).write_text("{}\n", encoding="utf-8")
+
+        self.assertIsNone(gtt.resolve_existing_task_dir(self.workspace, str(archived)))
+        for task_arg in [
+            archived.name,
+            str(self.workspace / ".trellis/tasks" / archived.name),
+            str(archived.relative_to(self.workspace)),
+            str(archived),
+        ]:
+            with self.subTest(task_arg=task_arg):
+                self.assertEqual(
+                    gtt.resolve_finish_work_task_dir(self.workspace, task_arg),
+                    gtt.closeout_lexical_path(archived),
+                )
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.cmd_check_workspace_boundary(
+                boundary_args(root=str(self.workspace), task=str(archived))
+            )
+
+    def test_finish_work_plan_only_resolution_rejects_internal_and_external_aliases(self) -> None:
+        archived = self.workspace / ".trellis/tasks/archive/2026-07/07-08-plan-only-alias"
+        archived.mkdir(parents=True)
+        (archived / gtt.CLOSEOUT_PLAN_ARTIFACT).write_text("{}\n", encoding="utf-8")
+
+        internal_final = archived.parent / "final-alias"
+        internal_final.symlink_to(archived, target_is_directory=True)
+        internal_ancestor = self.workspace / ".trellis/tasks/archive-alias"
+        internal_ancestor.symlink_to(
+            self.workspace / ".trellis/tasks/archive",
+            target_is_directory=True,
+        )
+        aliases = self.workspace / "aliases"
+        aliases.mkdir()
+        multilevel_second = aliases / "second"
+        multilevel_second.symlink_to(archived, target_is_directory=True)
+        multilevel_first = aliases / "first"
+        multilevel_first.symlink_to(multilevel_second, target_is_directory=True)
+        dangling = aliases / "dangling"
+        dangling.symlink_to(self.workspace / "missing-plan-only", target_is_directory=True)
+        loop = aliases / "loop"
+        loop.symlink_to(loop, target_is_directory=True)
+
+        external_alias = Path(self.tmp.name) / "external-plan-only-alias"
+        external_alias.symlink_to(archived, target_is_directory=True)
+        sources = [
+            internal_final,
+            internal_ancestor / "2026-07" / archived.name,
+            multilevel_first,
+            dangling,
+            loop,
+            external_alias,
+        ]
+        for source in sources:
+            for task_arg in [str(source), os.path.relpath(source, self.workspace)]:
+                with self.subTest(source=source.name, task_arg=task_arg):
+                    with self.assertRaises(gtt.WorkflowError) as raised:
+                        gtt.resolve_finish_work_task_dir(self.workspace, task_arg)
+                    self.assertTrue(
+                        "symbolic-link" in str(raised.exception)
+                        or "repository root" in str(raised.exception)
+                        or "current repository" in str(raised.exception)
+                    )
+
+        (archived / "task.json").write_text(
+            '{"title":"restored dirty task metadata"}\n',
+            encoding="utf-8",
+        )
+        for task_arg in [str(internal_final), str(external_alias)]:
+            with self.subTest(restored_task_json=task_arg):
+                with self.assertRaises(gtt.WorkflowError):
+                    gtt.resolve_finish_work_task_dir(self.workspace, task_arg)
+
+    @unittest.skipUnless(sys.platform == "darwin", "Darwin /var system alias compatibility")
+    def test_finish_work_plan_only_resolution_accepts_fixed_darwin_var_alias(self) -> None:
+        canonical_root = self.workspace.resolve()
+        canonical_prefix = Path("/private/var")
+        try:
+            suffix = canonical_root.relative_to(canonical_prefix)
+        except ValueError:
+            self.skipTest("temporary workspace is not under /private/var")
+        archived = canonical_root / ".trellis/tasks/archive/2026-07/07-08-plan-only-var"
+        archived.mkdir(parents=True)
+        (archived / gtt.CLOSEOUT_PLAN_ARTIFACT).write_text("{}\n", encoding="utf-8")
+        aliased = Path("/var") / suffix / archived.relative_to(canonical_root)
+
+        self.assertEqual(
+            gtt.resolve_finish_work_task_dir(canonical_root, str(aliased)),
+            gtt.closeout_lexical_path(archived),
+        )
+
     def test_check_workspace_boundary_blocks_wrong_cwd(self) -> None:
         self.source_task_dir.mkdir(parents=True)
         (self.source_task_dir / "task.json").write_text('{"title":"Wrong task copy"}\n', encoding="utf-8")
@@ -10704,6 +10797,7 @@ shutil.move(str(active), str(archived))
         archived_damage: str | None = None,
         expect_reentry_failure: bool = False,
         create_mismatched_commit: bool = False,
+        plan_only_boundary_fault: str | None = None,
     ) -> dict[str, object]:
         source_root = Path(__file__).resolve().parents[5]
         with tempfile.TemporaryDirectory() as tmp:
@@ -10805,6 +10899,7 @@ shutil.move(str(active), str(archived))
             pr_store: dict[str, object] = {}
             original_run = gtt.run
             injected_stage = failed_stage
+            active_plan_only_boundary_fault: str | None = None
             archive_pushed = False
             transition_attempts: list[str] = []
             if failed_stage == "raw-remote-control":
@@ -10844,6 +10939,13 @@ shutil.move(str(active), str(archived))
             ) -> subprocess.CompletedProcess[str]:
                 nonlocal archive_pushed
                 if (
+                    command == ["git", "rev-parse", "--show-toplevel"]
+                    and active_plan_only_boundary_fault == "root"
+                ):
+                    return subprocess.CompletedProcess(
+                        command, 0, str(root.parent / "wrong-root") + "\n", ""
+                    )
+                if (
                     command
                     == [
                         "git",
@@ -10860,6 +10962,13 @@ shutil.move(str(active), str(archived))
                     ["git", "remote", "get-url", "--all", "origin"],
                     ["git", "remote", "get-url", "--push", "--all", "origin"],
                 ]:
+                    if active_plan_only_boundary_fault == "repo":
+                        return subprocess.CompletedProcess(
+                            command,
+                            0,
+                            "https://github.com/wrong-owner/repo.git\n",
+                            "",
+                        )
                     if (
                         injected_stage in {"remote-identity", "remote-transport"}
                         and "--push" in command
@@ -11008,9 +11117,12 @@ shutil.move(str(active), str(archived))
             def damage_archived_worktree(mode: str) -> None:
                 if not archived_path.is_dir():
                     raise AssertionError("archive damage requires the official move to have completed")
-                if mode == "delete":
+                if mode in {"delete", "delete-keep-context"}:
                     for path in list(archived_path.iterdir()):
-                        if path.name == gtt.CLOSEOUT_PLAN_ARTIFACT:
+                        keep = {gtt.CLOSEOUT_PLAN_ARTIFACT}
+                        if mode == "delete-keep-context":
+                            keep.add("task-start-context.json")
+                        if path.name in keep:
                             continue
                         if path.is_dir():
                             shutil.rmtree(path)
@@ -11077,7 +11189,6 @@ shutil.move(str(active), str(archived))
                 dry_run=True,
             )
             with (
-                mock.patch.object(gtt, "assert_workspace_boundary"),
                 mock.patch.object(
                     gtt,
                     "validate_review_gate",
@@ -11160,12 +11271,55 @@ shutil.move(str(active), str(archived))
                             )
                         if archived_damage is not None:
                             damage_archived_worktree(archived_damage)
+                        if plan_only_boundary_fault == "branch":
+                            original_run(
+                                ["git", "branch", "-m", "fix/105-wrong-branch"],
+                                cwd=root,
+                                check=True,
+                            )
+                        elif plan_only_boundary_fault == "config-repo":
+                            config.write_text(
+                                "github_repo: wrong-owner/repo\n"
+                                "publish:\n"
+                                "  remote: origin\n",
+                                encoding="utf-8",
+                            )
+                        elif plan_only_boundary_fault == "head":
+                            mismatch = root / ".trellis/plan-only-head-mismatch.txt"
+                            mismatch.write_text("wrong head\n", encoding="utf-8")
+                            original_run(["git", "add", str(mismatch)], cwd=root, check=True)
+                            original_run(
+                                ["git", "commit", "-qm", "plan-only wrong head"],
+                                cwd=root,
+                                check=True,
+                            )
+                        elif plan_only_boundary_fault == "locator":
+                            wrong_archived = archived_path.parent / f"wrong-{archived_path.name}"
+                            wrong_archived.mkdir(parents=True)
+                            shutil.copy2(
+                                archived_path / gtt.CLOSEOUT_PLAN_ARTIFACT,
+                                wrong_archived / gtt.CLOSEOUT_PLAN_ARTIFACT,
+                            )
+                            original_run(
+                                ["git", "add", str(wrong_archived / gtt.CLOSEOUT_PLAN_ARTIFACT)],
+                                cwd=root,
+                                check=True,
+                            )
+                            original_run(
+                                ["git", "commit", "-qm", "plan-only wrong locator"],
+                                cwd=root,
+                                check=True,
+                            )
+                            formal_args.task = str(wrong_archived)
                         injected_stage = None
+                        active_plan_only_boundary_fault = plan_only_boundary_fault
                         if failed_stage == "projection":
                             (task_dir / "review.md").write_text(
                                 "# 审查报告\n\n最终审查通过。\n", encoding="utf-8"
                             )
                         formal_args.expected_plan_digest = preview["closeout_plan_digest"]
+                        if plan_only_boundary_fault == "plan":
+                            formal_args.expected_plan_digest = "0" * 64
                         reentry_offset = len(transition_attempts)
                         if failed_stage == "plan-digest":
                             transition_attempts.append("plan-digest")
@@ -11266,7 +11420,9 @@ shutil.move(str(active), str(archived))
             with self.subTest(create_mismatch=create_mismatch):
                 result = self.run_production_finish_case(
                     "archive-commit",
-                    archived_damage="tamper" if create_mismatch else "delete",
+                    archived_damage=(
+                        "tamper" if create_mismatch else "delete-keep-context"
+                    ),
                     expect_reentry_failure=True,
                     create_mismatched_commit=create_mismatch,
                 )
@@ -11275,6 +11431,31 @@ shutil.move(str(active), str(archived))
                 self.assertIsNotNone(state["archive_locator"])
                 self.assertTrue(state["dirty_paths"])
                 self.assertEqual(state["pr_is_draft"], True)
+                self.assertIn(expected_error, result["reentry_error"])
+
+    def test_production_plan_only_boundary_fails_closed_before_recovery(self) -> None:
+        cases = [
+            ("repo", "repository differs"),
+            ("config-repo", "configured repository mismatch"),
+            ("root", "repository root mismatch"),
+            ("branch", "branch mismatch"),
+            ("head", "exact committed archive transaction"),
+            ("locator", "task identity or locator mismatch"),
+            ("plan", "expected digest mismatch"),
+        ]
+        for fault, expected_error in cases:
+            with self.subTest(fault=fault):
+                result = self.run_production_finish_case(
+                    "ready",
+                    archived_damage="delete",
+                    expect_reentry_failure=True,
+                    plan_only_boundary_fault=fault,
+                )
+                state = result["reentry_failed_state"]
+                self.assertIsNone(state["active_locator"])
+                self.assertTrue(state["dirty_paths"])
+                self.assertEqual(state["pr_is_draft"], True)
+                self.assertEqual(result["reentry_events"], [])
                 self.assertIn(expected_error, result["reentry_error"])
 
     def test_production_finish_fork_candidate_fails_before_archive_and_summary_binding(self) -> None:

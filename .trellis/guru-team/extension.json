@@ -75,11 +75,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-11T14:41:19Z",
+  "installed_at": "2026-07-11T15:58:36Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "fix/105-finish-work-closeout-transaction",
-    "commit": "6b8e1938cc547a0279141566696304f776c60f1d",
+    "commit": "c8ad047493414d58862281866a447c4f02fa0d4d",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

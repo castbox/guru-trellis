@@ -558,6 +558,21 @@ draft-to-ready. A plan-only archived directory is resolvable only by the
 `trellis-finish-work` recovery entry; ordinary task commands still require
 `task.json`. Neither recovery path reopens archived artifacts for semantic
 validation.
+The plan-only path reads the immutable plan from the current commit blob and
+runs a dedicated fail-closed boundary before GitHub or fast-path actions. Git
+toplevel, configured/effective repository, current head branch, available base
+ref, current HEAD transaction, expected digest, task identity, and
+active/archive locators must all match. Missing context is never an
+unconditional boundary bypass; ordinary task discovery and commands retain
+their `task.json` and worktree-mode `task-start-context.json` requirements.
+The finish entry validates the raw locator before ordinary resolution or
+canonicalization. Only a basename, exact former active locator, or exact
+archive locator may select plan-only recovery. Component-wise `lstat` from the
+repo root through the final task directory rejects internal/external,
+relative/absolute, ancestor/final, multilevel, dangling, and loop symlinks; the
+resolved target must still equal the plan's canonical archive locator. Only
+the verified Darwin `/var` -> `/private/var` system mapping may re-anchor an
+outer path; arbitrary `samefile` and user aliases are never trusted.
 
 Current-checkout direct edits while `no_task` is active are allowed only as an
 explicit user override. The user approval must say this turn should skip

@@ -485,6 +485,21 @@ not block pushing that exact commit when remote is behind, verifying
 local/remote/PR HEAD, or retrying `gh pr ready`; no task artifact may be built
 or rewritten. A plan-only archived directory is resolvable only through
 `trellis-finish-work`; ordinary task commands still require `task.json`.
+Plan-only recovery reads the immutable plan from the current commit blob and
+uses a dedicated boundary, not an unconditional workspace-boundary skip. Before
+GitHub access or committed recovery it must match the Git toplevel,
+configured/effective repo, current head branch, available base ref, current
+HEAD transaction, expected plan digest, task identity, and exact active/archive
+locator relationship. All other discovery and command paths retain the normal
+`task.json` and worktree-mode `task-start-context.json` requirements.
+The finish entry validates its raw locator before ordinary resolution: only a
+basename, exact former active locator, or exact archive locator is accepted,
+and lexical repo/archive containment plus component-wise `lstat` through the
+final directory rejects internal/external, relative/absolute, ancestor/final,
+multilevel, dangling, and loop aliases. The resulting non-symlink target must
+still resolve to the plan's canonical archive locator. Do not use arbitrary
+`samefile` re-anchoring; only the verified Darwin system `/var` ->
+`/private/var` mapping is an allowed outer-path normalization.
 
 The generated PR must start as draft, target the intake/task `base_branch`, and
 become non-draft only after archive HEAD alignment. Close keywords are allowed

@@ -720,6 +720,25 @@ path only by `trellis-finish-work`; other commands still require `task.json`.
 Neither path parses, rebuilds, validates, or rewrites an archived body, summary,
 ledger, readiness, or marketplace artifact.
 
+Plan-only recovery does not use an empty task context as authorization. It
+loads `closeout-plan.json` from the current commit blob and, before GitHub or
+fast-path side effects, validates canonical digest plus Git toplevel,
+configured/effective repository, current head branch, base ref availability,
+current HEAD transaction, active/archive locator and basename relationship,
+summary task/branch/base/source-issue identity, and the exact task directory.
+Working-tree plan bytes cannot replace the committed plan. Ordinary task
+discovery and workspace-boundary commands do not enable this mode and still
+require the normal `task.json` / `task-start-context.json` contracts.
+The raw finish-work locator is preserved before ordinary resolution. Only a
+basename, exact former active locator, or exact archive locator may select the
+plan-only search. The lexical archive path is checked component-by-component
+with `lstat` from repo root through the final task directory, rejecting every
+internal/external, relative/absolute, ancestor/final, multilevel, dangling, or
+loop symlink. The verified non-symlink target must resolve to the same canonical
+archive locator recorded by `task` and `projection`. Only the structurally
+verified Darwin `/var` -> `/private/var` system mapping may re-anchor an outer
+path; arbitrary `samefile` discovery and user aliases are not valid identity.
+
 Branch Review Gate treats every finding priority (`P0`, `P1`, `P2`, `P3`) as
 blocking. `observations[]` are non-blocking notes, and
 `followup_candidates[]` are out-of-scope future work candidates. They must not

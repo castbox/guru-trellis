@@ -3815,23 +3815,7 @@ def tasks_root(root: Path) -> Path:
     return root / ".trellis/tasks"
 
 
-def resolvable_task_directory(
-    root: Path, candidate: Path, *, allow_archived_closeout_plan: bool = False
-) -> bool:
-    if not candidate.is_dir():
-        return False
-    if (candidate / "task.json").is_file():
-        return True
-    return (
-        allow_archived_closeout_plan
-        and task_dir_is_archived(root, candidate)
-        and (candidate / CLOSEOUT_PLAN_ARTIFACT).is_file()
-    )
-
-
-def resolve_existing_task_dir(
-    root: Path, value: str, *, allow_archived_closeout_plan: bool = False
-) -> Path | None:
+def resolve_existing_task_dir(root: Path, value: str) -> Path | None:
     raw = Path(value)
     candidates: list[Path] = []
     if raw.is_absolute():
@@ -3839,9 +3823,7 @@ def resolve_existing_task_dir(
     else:
         candidates.extend([root / raw, tasks_root(root) / value])
     for candidate in candidates:
-        if resolvable_task_directory(
-            root, candidate, allow_archived_closeout_plan=allow_archived_closeout_plan
-        ):
+        if candidate.is_dir() and (candidate / "task.json").is_file():
             return candidate.resolve()
 
     base_name = raw.name.rstrip("/")
@@ -3853,11 +3835,115 @@ def resolve_existing_task_dir(
     if archive_root.is_dir():
         for month in sorted(archive_root.iterdir(), reverse=True):
             archived = month / base_name
-            if resolvable_task_directory(
-                root, archived, allow_archived_closeout_plan=allow_archived_closeout_plan
-            ):
+            if archived.is_dir() and (archived / "task.json").is_file():
                 return archived.resolve()
     return None
+
+
+def plan_only_archived_task_candidate(root: Path, candidate: Path) -> Path | None:
+    root_lexical = closeout_lexical_path(root)
+    target = reject_closeout_symlink_components(
+        root_lexical,
+        candidate,
+        "archived plan-only task locator",
+    )
+    archive_root = root_lexical / ".trellis/tasks/archive"
+    try:
+        relative = target.relative_to(archive_root)
+    except ValueError as exc:
+        raise WorkflowError(
+            "finish-work archived plan-only task locator must stay under the current repository archive root.",
+            exit_code=2,
+            payload={"path": str(candidate), "archive_root": str(archive_root)},
+        ) from exc
+    if len(relative.parts) != 2 or not re.fullmatch(r"\d{4}-\d{2}", relative.parts[0]):
+        raise WorkflowError(
+            "finish-work archived plan-only task locator must be an exact archive month/task path.",
+            exit_code=2,
+            payload={"path": str(candidate)},
+        )
+    try:
+        task_mode = os.lstat(target).st_mode
+        plan_mode = os.lstat(target / CLOSEOUT_PLAN_ARTIFACT).st_mode
+    except FileNotFoundError:
+        return None
+    except OSError as exc:
+        raise WorkflowError(
+            "finish-work could not inspect the archived plan-only task locator.",
+            exit_code=2,
+            payload={"path": str(candidate)},
+        ) from exc
+    if not stat.S_ISDIR(task_mode) or not stat.S_ISREG(plan_mode):
+        raise WorkflowError(
+            "finish-work archived plan-only locator must be a real directory with a regular closeout plan file.",
+            exit_code=2,
+            payload={"path": str(candidate)},
+        )
+    return target
+
+
+def resolve_finish_work_task_dir(root: Path, task_arg: str | None) -> Path:
+    if not task_arg:
+        return resolve_task_dir(root, task_arg)
+
+    root_lexical = closeout_lexical_path(root)
+    raw = Path(task_arg).expanduser()
+    basename = raw.name.rstrip("/")
+    if len(raw.parts) == 1 and basename not in {"", ".", ".."}:
+        lookup_by_basename = True
+    else:
+        if raw.is_absolute():
+            candidate = raw
+        elif raw.parts and raw.parts[0] == "archive":
+            candidate = tasks_root(root_lexical) / raw
+        else:
+            candidate = root_lexical / raw
+        target = reject_closeout_symlink_components(
+            root_lexical,
+            candidate,
+            "archived plan-only task locator",
+        )
+        try:
+            relative = target.relative_to(root_lexical)
+        except ValueError as exc:
+            raise WorkflowError(
+                "finish-work archived plan-only task locator must stay inside the current repository.",
+                exit_code=2,
+                payload={"path": str(task_arg)},
+            ) from exc
+        if (
+            len(relative.parts) == 3
+            and relative.parts[:2] == (".trellis", "tasks")
+        ):
+            lookup_by_basename = True
+        elif relative.parts[:3] == (".trellis", "tasks", "archive"):
+            archived = plan_only_archived_task_candidate(root_lexical, target)
+            if archived is not None:
+                return archived
+            lookup_by_basename = False
+        else:
+            raise WorkflowError(
+                "finish-work plan-only task locator must be a task basename, exact active locator, or exact archive locator.",
+                exit_code=2,
+                payload={"path": str(task_arg)},
+            )
+
+    if lookup_by_basename:
+        archive_root = tasks_root(root_lexical) / "archive"
+        if archive_root.is_dir():
+            for month in sorted(archive_root.iterdir(), reverse=True):
+                if not re.fullmatch(r"\d{4}-\d{2}", month.name):
+                    continue
+                archived = plan_only_archived_task_candidate(
+                    root_lexical,
+                    month / basename,
+                )
+                if archived is not None:
+                    return archived
+    normal = resolve_existing_task_dir(root, task_arg)
+    if normal is not None:
+        return normal
+    raise WorkflowError(f"Could not resolve task directory: {task_arg}")
 
 
 def current_task_dir(root: Path) -> Path | None:
@@ -3875,15 +3961,9 @@ def resolve_task_dir(
     root: Path,
     task_arg: str | None,
     context: dict[str, Any] | None = None,
-    *,
-    allow_archived_closeout_plan: bool = False,
 ) -> Path:
     if task_arg:
-        resolved = resolve_existing_task_dir(
-            root,
-            task_arg,
-            allow_archived_closeout_plan=allow_archived_closeout_plan,
-        )
+        resolved = resolve_existing_task_dir(root, task_arg)
         if resolved:
             return resolved
         raise WorkflowError(f"Could not resolve task directory: {task_arg}")
@@ -12150,6 +12230,158 @@ def resolve_committed_closeout_archive_transaction(
     }
 
 
+def assert_archived_plan_only_workspace_boundary(
+    root: Path,
+    config: dict[str, Any],
+    task_dir: Path,
+    expected_plan_digest: str,
+) -> dict[str, Any]:
+    root = closeout_lexical_path(root)
+    task_dir = closeout_lexical_path(task_dir)
+    try:
+        task_locator = task_dir.relative_to(root).as_posix()
+    except ValueError as exc:
+        raise WorkflowError(
+            "Archived plan-only workspace boundary task locator is outside the repository.",
+            exit_code=2,
+            payload={"repo_root": str(root), "task_dir": str(task_dir)},
+        ) from exc
+
+    git_root = Path(run_stdout(["git", "rev-parse", "--show-toplevel"], cwd=root)).resolve()
+    if git_root != root:
+        raise WorkflowError(
+            "Archived plan-only workspace boundary repository root mismatch.",
+            exit_code=2,
+            payload={"expected_root": str(root), "actual_git_root": str(git_root)},
+        )
+    if (
+        not task_dir_is_archived(root, task_dir)
+        or not path_within(tasks_root(root) / "archive", task_dir)
+    ):
+        raise WorkflowError(
+            "Archived plan-only workspace boundary task locator is invalid.",
+            exit_code=2,
+            payload={"repo_root": str(root), "task_dir": str(task_dir)},
+        )
+
+    archive_commit = current_head(root)
+    plan_blob = closeout_commit_blob_bytes(
+        root,
+        archive_commit,
+        f"{task_locator}/{CLOSEOUT_PLAN_ARTIFACT}",
+    )
+    try:
+        raw_plan = json.loads(plan_blob.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise WorkflowError(
+            "Archived plan-only workspace boundary committed plan is invalid JSON.",
+            exit_code=2,
+        ) from exc
+    plan = validate_closeout_plan(raw_plan)
+    if expected_plan_digest != plan["plan_digest"]:
+        raise WorkflowError(
+            "Archived plan-only workspace boundary expected digest mismatch.",
+            exit_code=2,
+            payload={
+                "expected": expected_plan_digest,
+                "actual": plan["plan_digest"],
+            },
+        )
+
+    task = plan["task"]
+    git = plan["git"]
+    projection = plan["projection"]
+    summary = projection["summary_template"]
+    summary_task = summary.get("task") if isinstance(summary.get("task"), dict) else {}
+    summary_git = summary.get("git") if isinstance(summary.get("git"), dict) else {}
+    summary_github = summary.get("github") if isinstance(summary.get("github"), dict) else {}
+    active_locator = str(task["active_locator"])
+    archive_locator = str(task["archive_locator"])
+    expected_task_dir = closeout_lexical_path(root / archive_locator)
+    try:
+        resolved_task_dir = task_dir.resolve(strict=True)
+        resolved_expected_task_dir = expected_task_dir.resolve(strict=True)
+    except (FileNotFoundError, OSError) as exc:
+        raise WorkflowError(
+            "Archived plan-only workspace boundary could not resolve the validated task locator.",
+            exit_code=2,
+            payload={"task_dir": str(task_dir), "archive_locator": archive_locator},
+        ) from exc
+    active_parts = Path(active_locator).parts
+    archive_parts = Path(archive_locator).parts
+    source_issues = summary_github.get("source_issues")
+    locator_identity_valid = (
+        task_locator == archive_locator
+        and resolved_task_dir == resolved_expected_task_dir
+        and active_parts[:2] == (".trellis", "tasks")
+        and len(active_parts) == 3
+        and archive_parts[:3] == (".trellis", "tasks", "archive")
+        and len(archive_parts) == 5
+        and active_parts[-1] == archive_parts[-1] == task_dir.name
+        and not (root / active_locator).exists()
+        and CLOSEOUT_PLAN_ARTIFACT in projection["tracked_move_paths"]
+        and summary_task.get("slug") == task_dir.name
+        and summary_task.get("title") == task["title"]
+        and summary_task.get("artifact_dir") == active_locator
+        and summary_task.get("archive_dir") == archive_locator
+        and summary_git.get("branch") == git["head_branch"]
+        and summary_git.get("base_branch") == git["base_branch"]
+        and isinstance(source_issues, list)
+        and task["source_issue"] in source_issues
+    )
+    if not locator_identity_valid:
+        raise WorkflowError(
+            "Archived plan-only workspace boundary task identity or locator mismatch.",
+            exit_code=2,
+            payload={
+                "task_dir": task_locator,
+                "active_locator": active_locator,
+                "archive_locator": archive_locator,
+            },
+        )
+
+    configured_repo_value = str(config.get("github_repo") or "").strip()
+    configured_repo = normalize_github_repository(configured_repo_value)
+    if configured_repo_value and configured_repo != git["repo"]:
+        raise WorkflowError(
+            "Archived plan-only workspace boundary configured repository mismatch.",
+            exit_code=2,
+            payload={"expected_repo": git["repo"], "configured_repo": configured_repo},
+        )
+    validate_github_remote_repository(root, git["remote"], git["repo"])
+    actual_branch = current_branch(root)
+    if actual_branch != git["head_branch"]:
+        raise WorkflowError(
+            "Archived plan-only workspace boundary branch mismatch.",
+            exit_code=2,
+            payload={"expected_branch": git["head_branch"], "actual_branch": actual_branch},
+        )
+    base_refs = [git["base_branch"], f"{git['remote']}/{git['base_branch']}"]
+    if not any(git_branch_exists(root, ref) for ref in base_refs):
+        raise WorkflowError(
+            "Archived plan-only workspace boundary base branch is unavailable.",
+            exit_code=2,
+            payload={"base_branch": git["base_branch"], "checked_refs": base_refs},
+        )
+
+    transaction = resolve_committed_closeout_archive_transaction(root, plan)
+    if transaction is None:
+        raise WorkflowError(
+            "Archived plan-only workspace boundary requires the exact committed archive transaction.",
+            exit_code=2,
+            payload={"head": archive_commit, "task_dir": task_locator},
+        )
+    return {
+        "status": "ok",
+        "mode": "archived-plan-only",
+        "repo_root": str(root),
+        "task_dir": str(task_dir),
+        "task_dir_relative": task_locator,
+        "plan": plan,
+        "archive_commit": transaction,
+    }
+
+
 def execute_archive_metadata_transaction(
     root: Path, task_dir: Path, plan: dict[str, Any]
 ) -> tuple[Path, dict[str, Any]]:
@@ -12293,8 +12525,15 @@ def resume_archive_metadata_transaction(root: Path, task_dir: Path, plan: dict[s
     }
 
 
-def resume_archived_closeout(root: Path, args: argparse.Namespace, task_dir: Path) -> dict[str, Any]:
-    plan = validate_closeout_plan(read_json(closeout_plan_path(task_dir)))
+def resume_archived_closeout(
+    root: Path,
+    args: argparse.Namespace,
+    task_dir: Path,
+    *,
+    committed_plan: dict[str, Any] | None = None,
+    committed_archive: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    plan = committed_plan or validate_closeout_plan(read_json(closeout_plan_path(task_dir)))
     expected = str(getattr(args, "expected_plan_digest", "") or "")
     if expected != plan["plan_digest"]:
         raise WorkflowError("Formal closeout expected digest does not match the archived plan.", exit_code=2, payload={"expected": expected, "actual": plan["plan_digest"]})
@@ -12310,7 +12549,7 @@ def resume_archived_closeout(root: Path, args: argparse.Namespace, task_dir: Pat
         pr,
         expected_draft=bool(pr["isDraft"]),
     )
-    archive_commit = resolve_committed_closeout_archive_transaction(root, plan)
+    archive_commit = committed_archive or resolve_committed_closeout_archive_transaction(root, plan)
     if archive_commit is None:
         archive_commit = resume_archive_metadata_transaction(root, task_dir, plan)
     else:
@@ -12389,13 +12628,28 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     validate_finish_work_invocation(args)
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    task_dir = resolve_task_dir(root, args.task, allow_archived_closeout_plan=True)
+    task_dir = resolve_finish_work_task_dir(root, args.task)
     task_context = load_task_start_context(task_dir, config)
-    assert_workspace_boundary(root, config, task_context, task_dir)
+    plan_only_boundary: dict[str, Any] | None = None
+    if task_dir_is_archived(root, task_dir) and not task_context:
+        plan_only_boundary = assert_archived_plan_only_workspace_boundary(
+            root,
+            config,
+            task_dir,
+            str(getattr(args, "expected_plan_digest", "") or ""),
+        )
+    else:
+        assert_workspace_boundary(root, config, task_context, task_dir)
     if task_dir_is_archived(root, task_dir):
         if args.dry_run:
             raise WorkflowError("Archived closeout recovery does not have a new dry-run phase.", exit_code=2)
-        return resume_archived_closeout(root, args, task_dir)
+        return resume_archived_closeout(
+            root,
+            args,
+            task_dir,
+            committed_plan=(plan_only_boundary or {}).get("plan"),
+            committed_archive=(plan_only_boundary or {}).get("archive_commit"),
+        )
     if closeout_plan_path(task_dir).is_file() and task_json(task_dir).get("status") == "completed":
         if args.dry_run:
             raise WorkflowError("Interrupted archive move must resume through formal finish-work.", exit_code=2)

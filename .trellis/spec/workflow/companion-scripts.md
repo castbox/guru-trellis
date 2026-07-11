@@ -214,7 +214,24 @@ recovery falls back to the pre-commit metadata path and keeps all layout,
 dirty/staged path, blob, official `task.json`, and lineage checks fail closed.
 An archived directory containing only `closeout-plan.json` is resolvable only
 by the `trellis-finish-work` recovery entry; ordinary task resolution still
-requires `task.json`.
+requires `task.json`. That plan-only entry reads the plan from the current
+commit blob rather than trusting working-tree bytes, then applies a dedicated
+fail-closed workspace boundary before GitHub access or committed-archive
+recovery. The boundary requires the actual Git toplevel, configured and remote
+repository identity, current head branch, available base ref, current HEAD,
+plan digest, active/archive locator relationship, task identity, and exact
+archive transaction to match the immutable plan. It is not a context-free
+bypass and is unavailable to every other command, which continues to require
+`task.json` and `task-start-context.json` in worktree mode.
+Before ordinary resolution or canonicalization, the finish entry classifies
+the raw locator as only a task basename, the exact former active locator, or
+the exact archive locator. It requires lexical containment under the current
+repo archive, applies `lstat` from repo root through every ancestor and the
+final task directory, and rejects internal/external, relative/absolute,
+ancestor/final, multilevel, dangling, and loop symlinks. After those checks the
+resolved target must still equal the plan's canonical archive locator. The
+only outer re-anchor is the verified Darwin system `/var` -> `/private/var`
+mapping; arbitrary `samefile` or user-created aliases are never trusted.
 
 Closeout failure injection must enter through production `cmd_finish_work()`.
 Use a real temporary Git repository, bare remote, official `task.py archive`,
