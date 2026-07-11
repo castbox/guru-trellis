@@ -110,13 +110,22 @@ Formal finish pushes the reviewed content HEAD first, records deterministic
 pending marketplace evidence, runs the required verifier against that remote
 HEAD, replaces only the machine evidence with passed facts, and commits/pushes
 the exact plan/readiness/verifier/ledger allowlist. It then creates or reuses
-one draft PR for the exact repo/head/base/title/body identity. The body identity
+one draft PR for the exact base-repo/head-repo/head-branch/base-branch/title/body
+identity. Every effective fetch and push URL for `plan.git.remote` returned by
+Git after `insteadOf` / `pushInsteadOf` resolution, plus
+`headRepository.nameWithOwner`, must normalize to the immutable
+`plan.git.repo`; `headRepositoryOwner.login` must agree and
+`isCrossRepository` must be `false`. Because `gh pr list --head` cannot scope
+by owner, the query requests all three head-repository fields, rejects missing
+or inconsistent fields, and rejects a same-name cross-repository candidate
+before applying the 0/1/>1 exact-candidate rule. The body identity
 is the task-local `pr-body.md` raw UTF-8 text: no trim, newline insertion, or
 second normalization is permitted between plan hashing, readiness, create,
 reuse, final projection, archived recovery, and ready. Query results must
 include title and body; their values are checked byte-for-text against immutable
 readiness and the bound `pr-body.md` digest during reuse, final projection,
-archived recovery, and draft-to-ready. Multiple matches, changed title/body, or
+archived recovery, and draft-to-ready. A fork candidate, multiple target-repo
+matches, changed title/body, or
 a replacement PR whose number/URL differs from the final summary fail closed.
 The canonical PR URL is used to build the only final finish-summary in the
 active task, including exactly one `PR #<number>` ref. A temporary future
@@ -169,6 +178,10 @@ exact local/remote/PR HEAD SHA values, complete dirty/staged path sets, then
 clear the failure and re-enter production `cmd_finish_work()`. The observed
 retry must execute the failed transition without repeating an earlier mutating
 transition or skipping ahead.
+The negative matrix also covers a fork PR with the same branch, SHA, title, and
+body. It must fail while the task is active and before final-summary binding;
+archived recovery must preserve the already-bound summary and never rebind it
+to the fork PR.
 
 Use the intake/task `base_branch` for diff ranges and PR base. Do not fall back
 to the GitHub default branch when the task has an explicit base.

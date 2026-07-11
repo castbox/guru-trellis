@@ -32,13 +32,20 @@ one exact metadata commit/push, local/remote/PR HEAD equality, then
 draft-to-ready. Archive is the last repository mutation, not the midpoint of
 publish. Normal flow never asks the caller to choose `--skip-archive`,
 `--recovery-after-finish-work`, or a separate publish command.
-The unique PR remains bound by repo/head/base/number/URL/title and the untrimmed
+The unique PR remains bound by normalized base repository, exact head
+repository, head/base refs, number/URL/title and the untrimmed
 task-local `pr-body.md` UTF-8 text across draft reuse, final summary, archived
 recovery, and ready transition. Partial retries derive the exact missing stage
 from persisted plan/readiness/evidence, Git/remote state, PR identity, and final
 summary presence instead of replaying completed side effects. Archive
 recovery also binds every tracked evidence blob to its archived blob; only the
 official deterministic `task.json` completion fields may differ.
+All effective fetch/push remote URLs after Git `insteadOf` / `pushInsteadOf`
+resolution, and GitHub's
+`headRepository.nameWithOwner` must normalize to `plan.git.repo`, the reported
+owner must agree, and `isCrossRepository` must be false. Same-name fork
+candidates and missing/unknown repository fields fail before 0/1/>1 selection
+and cannot bind or replace the final summary.
 The closeout failure matrix invokes production `cmd_finish_work()` against a
 real temporary Git repository and bare remote. Only external GitHub/verifier
 responses are faked; production transition functions are not mocked. Every

@@ -2169,15 +2169,80 @@ def repo_root(start: Path) -> Path:
     return Path(top).resolve()
 
 
+def normalize_github_repository(value: Any) -> str:
+    raw = str(value or "").strip().rstrip("/")
+    if not raw or any(character in raw for character in ["?", "#"]):
+        return ""
+    patterns = [
+        r"https?://github\.com/(.+)",
+        r"ssh://(?:git@)?github\.com/(.+)",
+        r"(?:git@)?github\.com:(.+)",
+        r"github\.com/(.+)",
+        r"(.+)",
+    ]
+    path = ""
+    for pattern in patterns:
+        match = re.fullmatch(pattern, raw, flags=re.IGNORECASE)
+        if match:
+            path = match.group(1).rstrip("/")
+            break
+    if path.endswith(".git"):
+        path = path[:-4]
+    parts = path.split("/")
+    if len(parts) != 2:
+        return ""
+    owner, repository = parts
+    component = re.compile(r"^[A-Za-z0-9_.-]+$")
+    if (
+        not component.fullmatch(owner)
+        or not component.fullmatch(repository)
+        or owner in {".", ".."}
+        or repository in {".", ".."}
+    ):
+        return ""
+    return f"{owner}/{repository}".casefold()
+
+
+def validate_github_remote_repository(root: Path, remote: str, expected_repo: str) -> str:
+    expected = normalize_github_repository(expected_repo)
+    if not expected:
+        raise WorkflowError("Closeout immutable GitHub repository identity is invalid.", exit_code=2)
+    commands = {
+        "fetch": ["git", "remote", "get-url", "--all", remote],
+        "push": ["git", "remote", "get-url", "--push", "--all", remote],
+    }
+    for direction, command in commands.items():
+        result = run(command, cwd=root, check=False)
+        if result.returncode != 0:
+            raise WorkflowError(
+                "Closeout could not read the effective Git remote repository identity.",
+                exit_code=2,
+                payload={"remote": remote, "direction": direction},
+            )
+        urls = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+        if not urls:
+            raise WorkflowError(
+                "Closeout Git remote has no effective repository URL.",
+                exit_code=2,
+                payload={"remote": remote, "direction": direction},
+            )
+        for value in urls:
+            actual = normalize_github_repository(value)
+            if actual != expected:
+                raise WorkflowError(
+                    "Closeout Git remote repository differs from the immutable GitHub repository.",
+                    exit_code=2,
+                    payload={"remote": remote, "direction": direction, "expected_repo": expected},
+                )
+    return expected
+
+
 def infer_github_repo(root: Path) -> str:
     try:
         url = run_stdout(["git", "remote", "get-url", "origin"], cwd=root)
     except WorkflowError:
         return ""
-    match = re.search(r"github\.com[:/]([^/]+)/(.+?)(?:\.git)?$", url)
-    if not match:
-        return ""
-    return f"{match.group(1)}/{match.group(2)}"
+    return normalize_github_repository(url)
 
 
 def gh_json(args: list[str], cwd: Path) -> Any:
@@ -10500,6 +10565,8 @@ def closeout_plan_errors(plan: Any) -> list[str]:
     for key in ["repo", "remote", "base_branch", "head_branch"]:
         if not isinstance(git.get(key), str) or not str(git[key]).strip():
             errors.append(f"closeout git.{key} is invalid.")
+    if normalize_github_repository(git.get("repo")) != git.get("repo"):
+        errors.append("closeout git.repo must be a normalized GitHub owner/repository identity.")
     if not re.fullmatch(r"[0-9a-f]{40}", str(git.get("reviewed_work_head") or "")):
         errors.append("closeout reviewed_work_head is invalid.")
     if review.get("reviewed_head") != git.get("reviewed_work_head"):
@@ -10924,12 +10991,15 @@ def prepare_closeout(
             exit_code=2,
             payload={"children": task.get("children")},
         )
-    repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
+    repo = normalize_github_repository(
+        str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
+    )
     if not repo:
         raise WorkflowError("Could not resolve GitHub repo for closeout plan.", exit_code=2)
     base = base_branch_from_sources(args, task, task_context)
     branch = current_branch(root)
     remote = str(args.remote or publish_config(config).get("remote") or "origin")
+    validate_github_remote_repository(root, remote, repo)
     title = pr_title_from_task(task, args)
     plan = build_closeout_plan(
         root, task_dir, task_context, task, gate_path, gate, ledger, index_path,
@@ -11187,14 +11257,42 @@ def resolve_closeout_state(
     return "projection_validated"
 
 
+def closeout_pull_request_head_repository(
+    item: dict[str, Any], expected_repo: str
+) -> tuple[str, bool]:
+    expected = normalize_github_repository(expected_repo)
+    repository = item.get("headRepository")
+    owner = item.get("headRepositoryOwner")
+    cross_repository = item.get("isCrossRepository")
+    if (
+        not expected
+        or not isinstance(repository, dict)
+        or not isinstance(owner, dict)
+        or not isinstance(cross_repository, bool)
+    ):
+        raise WorkflowError("Closeout pull request head repository identity is missing or invalid.", exit_code=2)
+    actual = normalize_github_repository(repository.get("nameWithOwner"))
+    owner_login = str(owner.get("login") or "").strip().casefold()
+    if not actual or owner_login != actual.split("/", 1)[0]:
+        raise WorkflowError("Closeout pull request head repository fields are inconsistent.", exit_code=2)
+    is_target = actual == expected
+    if cross_repository != (not is_target):
+        raise WorkflowError("Closeout pull request cross-repository identity is inconsistent.", exit_code=2)
+    return actual, is_target
+
+
 def resolve_closeout_pull_request(
-    root: Path, repo: str, branch: str, base_branch: str
+    root: Path, repo: str, branch: str, base_branch: str, remote: str = "origin"
 ) -> dict[str, Any] | None:
+    expected_repo = validate_github_remote_repository(root, remote, repo)
     proc = run(
         [
             "gh", "pr", "list", "--repo", repo, "--head", branch,
             "--base", base_branch, "--state", "open", "--limit", "100",
-            "--json", "number,url,title,body,headRefName,baseRefName,headRefOid,isDraft",
+            "--json", (
+                "number,url,title,body,headRefName,baseRefName,headRefOid,isDraft,"
+                "headRepository,headRepositoryOwner,isCrossRepository"
+            ),
         ],
         cwd=root,
         check=False,
@@ -11205,28 +11303,45 @@ def resolve_closeout_pull_request(
         values = json.loads(proc.stdout or "[]")
     except json.JSONDecodeError as exc:
         raise WorkflowError("Closeout pull request query returned invalid JSON.", exit_code=2) from exc
-    if not isinstance(values, list) or len(values) > 1:
-        raise WorkflowError("Closeout requires zero or one exact open pull request.", exit_code=2, payload={"open_pr_count": len(values) if isinstance(values, list) else -1})
-    if not values:
-        return None
-    item = values[0]
-    if not isinstance(item, dict):
-        raise WorkflowError("Closeout pull request identity is invalid.", exit_code=2)
-    number = item.get("number")
-    if (
-        not isinstance(number, int)
-        or item.get("headRefName") != branch
-        or item.get("baseRefName") != base_branch
-    ):
-        raise WorkflowError("Closeout pull request repo/head/base identity is invalid.", exit_code=2)
-    item["url"] = canonical_pull_request_url(repo, number, item.get("url"))
-    if not re.fullmatch(r"[0-9a-f]{40}", str(item.get("headRefOid") or "")):
-        raise WorkflowError("Closeout pull request headRefOid is invalid.", exit_code=2)
-    if not isinstance(item.get("isDraft"), bool):
-        raise WorkflowError("Closeout pull request draft state is invalid.", exit_code=2)
-    if not isinstance(item.get("title"), str) or not isinstance(item.get("body"), str):
-        raise WorkflowError("Closeout pull request title/body identity is invalid.", exit_code=2)
-    return item
+    if not isinstance(values, list):
+        raise WorkflowError("Closeout pull request query must return an array.", exit_code=2)
+    exact: list[dict[str, Any]] = []
+    cross_repository: list[dict[str, Any]] = []
+    for item in values:
+        if not isinstance(item, dict):
+            raise WorkflowError("Closeout pull request identity is invalid.", exit_code=2)
+        number = item.get("number")
+        if (
+            not isinstance(number, int)
+            or item.get("headRefName") != branch
+            or item.get("baseRefName") != base_branch
+        ):
+            raise WorkflowError("Closeout pull request repo/head/base identity is invalid.", exit_code=2)
+        actual_repo, is_target = closeout_pull_request_head_repository(item, expected_repo)
+        if not is_target:
+            cross_repository.append({"number": number, "head_repository": actual_repo})
+            continue
+        item["url"] = canonical_pull_request_url(expected_repo, number, item.get("url"))
+        if not re.fullmatch(r"[0-9a-f]{40}", str(item.get("headRefOid") or "")):
+            raise WorkflowError("Closeout pull request headRefOid is invalid.", exit_code=2)
+        if not isinstance(item.get("isDraft"), bool):
+            raise WorkflowError("Closeout pull request draft state is invalid.", exit_code=2)
+        if not isinstance(item.get("title"), str) or not isinstance(item.get("body"), str):
+            raise WorkflowError("Closeout pull request title/body identity is invalid.", exit_code=2)
+        exact.append(item)
+    if cross_repository:
+        raise WorkflowError(
+            "Closeout found cross-repository pull request candidates for the immutable head branch.",
+            exit_code=2,
+            payload={"candidates": cross_repository},
+        )
+    if len(exact) > 1:
+        raise WorkflowError(
+            "Closeout requires zero or one exact open pull request.",
+            exit_code=2,
+            payload={"open_pr_count": len(exact)},
+        )
+    return exact[0] if exact else None
 
 
 def closeout_task_dir_from_plan(root: Path, plan: dict[str, Any]) -> Path:
@@ -11252,6 +11367,10 @@ def validate_closeout_pull_request_identity(
     require_summary: bool,
     expected_head: str | None = None,
 ) -> None:
+    expected_repo = normalize_github_repository(plan["git"]["repo"])
+    actual_repo, is_target = closeout_pull_request_head_repository(pr, expected_repo)
+    if not is_target or actual_repo != expected_repo:
+        raise WorkflowError("Closeout pull request head repository differs from immutable readiness.", exit_code=2)
     number = pr.get("number")
     if not isinstance(number, int):
         raise WorkflowError("Closeout pull request number is invalid.", exit_code=2)
@@ -11298,7 +11417,9 @@ def validate_closeout_pull_request_identity(
 def ensure_closeout_draft_pr(root: Path, plan: dict[str, Any], body: str) -> dict[str, Any]:
     git = plan["git"]
     task_dir = closeout_task_dir_from_plan(root, plan)
-    existing = resolve_closeout_pull_request(root, git["repo"], git["head_branch"], git["base_branch"])
+    existing = resolve_closeout_pull_request(
+        root, git["repo"], git["head_branch"], git["base_branch"], git["remote"]
+    )
     if existing is not None:
         validate_closeout_pull_request_identity(
             root,
@@ -11317,7 +11438,9 @@ def ensure_closeout_draft_pr(root: Path, plan: dict[str, Any], body: str) -> dic
     number = parse_pull_request_number(pr_url)
     if number is None:
         raise WorkflowError("Could not parse draft PR identity.", exit_code=2)
-    created = resolve_closeout_pull_request(root, git["repo"], git["head_branch"], git["base_branch"])
+    created = resolve_closeout_pull_request(
+        root, git["repo"], git["head_branch"], git["base_branch"], git["remote"]
+    )
     if created is None or created.get("number") != number:
         raise WorkflowError("Created draft PR could not be rebound to one immutable identity.", exit_code=2)
     validate_closeout_pull_request_identity(
@@ -11643,7 +11766,9 @@ def execute_archive_metadata_transaction(
 def ensure_closeout_pr_ready(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
     git = plan["git"]
     task_dir = closeout_task_dir_from_plan(root, plan)
-    pr = resolve_closeout_pull_request(root, git["repo"], git["head_branch"], git["base_branch"])
+    pr = resolve_closeout_pull_request(
+        root, git["repo"], git["head_branch"], git["base_branch"], git["remote"]
+    )
     if pr is None:
         raise WorkflowError("Closeout draft PR is missing.", exit_code=2)
     validate_closeout_pull_request_identity(
@@ -11669,7 +11794,9 @@ def ensure_closeout_pr_ready(root: Path, plan: dict[str, Any]) -> dict[str, Any]
         proc = run(["gh", "pr", "ready", "--repo", git["repo"], str(pr["number"])], cwd=root, check=False)
         if proc.returncode != 0:
             raise WorkflowError("Draft-to-ready transition failed.", exit_code=2, payload={"stderr": proc.stderr.strip(), "stage": "draft-to-ready"})
-        confirmed = resolve_closeout_pull_request(root, git["repo"], git["head_branch"], git["base_branch"])
+        confirmed = resolve_closeout_pull_request(
+            root, git["repo"], git["head_branch"], git["base_branch"], git["remote"]
+        )
         if confirmed is None or confirmed.get("isDraft") is not False or confirmed.get("headRefOid") != local_head:
             raise WorkflowError("Draft-to-ready transition could not be confirmed.", exit_code=2, payload={"stage": "draft-to-ready-confirmation"})
         validate_closeout_pull_request_identity(
@@ -11747,7 +11874,9 @@ def resume_archived_closeout(root: Path, args: argparse.Namespace, task_dir: Pat
         raise WorkflowError("Formal closeout expected digest does not match the archived plan.", exit_code=2, payload={"expected": expected, "actual": plan["plan_digest"]})
     require_gh_auth(root)
     git = plan["git"]
-    pr = resolve_closeout_pull_request(root, git["repo"], git["head_branch"], git["base_branch"])
+    pr = resolve_closeout_pull_request(
+        root, git["repo"], git["head_branch"], git["base_branch"], git["remote"]
+    )
     if pr is None:
         raise WorkflowError("Archived closeout recovery requires the bound pull request.", exit_code=2)
     validate_closeout_pull_request_identity(
@@ -11797,7 +11926,11 @@ def resume_active_archive_move(
     validate_closeout_evidence_commit(root, plan, current_head(root))
     require_gh_auth(root)
     pr = resolve_closeout_pull_request(
-        root, plan["git"]["repo"], plan["git"]["head_branch"], plan["git"]["base_branch"]
+        root,
+        plan["git"]["repo"],
+        plan["git"]["head_branch"],
+        plan["git"]["base_branch"],
+        plan["git"]["remote"],
     )
     if pr is None or pr.get("isDraft") is not True:
         raise WorkflowError("Archive-move recovery requires the bound draft PR.", exit_code=2)

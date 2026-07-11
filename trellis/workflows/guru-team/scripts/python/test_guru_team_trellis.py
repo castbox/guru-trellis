@@ -131,6 +131,17 @@ def valid_pr_body(summary: str = "增加 publish-pr 的 reviewed body source 门
 """
 
 
+def closeout_head_repository_fields(
+    repo: str = "owner/repo", *, cross_repository: bool = False
+) -> dict[str, object]:
+    owner, name = repo.split("/", 1)
+    return {
+        "headRepository": {"name": name, "nameWithOwner": repo},
+        "headRepositoryOwner": {"login": owner},
+        "isCrossRepository": cross_repository,
+    }
+
+
 def review_args(**overrides: object) -> argparse.Namespace:
     values: dict[str, object] = {
         "root": None,
@@ -4034,6 +4045,7 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
             mock.patch.object(gtt, "recent_work_commits", return_value=["abc123"]),
             mock.patch.object(gtt, "current_branch", return_value="codex/27-finish-work-dry-run-readiness"),
+            mock.patch.object(gtt, "validate_github_remote_repository", return_value="owner/repo"),
             mock.patch.object(gtt, "run") as run,
             mock.patch.object(gtt, "commit_if_metadata_dirty") as commit_metadata,
             mock.patch.object(gtt, "cmd_publish_pr") as publish,
@@ -4080,6 +4092,7 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])) as validate_gate,
             mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
             mock.patch.object(gtt, "recent_work_commits", return_value=["abc123"]),
+            mock.patch.object(gtt, "validate_github_remote_repository", return_value="owner/repo"),
             mock.patch.object(gtt, "run") as run,
             mock.patch.object(gtt, "commit_if_metadata_dirty", return_value=None),
             mock.patch.object(gtt, "resolve_existing_task_dir", return_value=archived_task_dir),
@@ -9385,6 +9398,7 @@ shutil.move(str(active), str(archived))
         plan = self.build_plan()
         body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
         entry = {
+            **closeout_head_repository_fields(),
             "number": 105,
             "url": "https://github.com/owner/repo/pull/105",
             "title": plan["publish"]["title"],
@@ -9394,7 +9408,11 @@ shutil.move(str(active), str(archived))
             "headRefOid": self.head,
             "isDraft": True,
         }
-        with mock.patch.object(gtt, "run", return_value=mock.Mock(returncode=0, stdout=json.dumps([entry, entry]), stderr="")), self.assertRaises(gtt.WorkflowError):
+        with (
+            mock.patch.object(gtt, "validate_github_remote_repository", return_value="owner/repo"),
+            mock.patch.object(gtt, "run", return_value=mock.Mock(returncode=0, stdout=json.dumps([entry, entry]), stderr="")),
+            self.assertRaises(gtt.WorkflowError),
+        ):
             gtt.resolve_closeout_pull_request(self.root, "owner/repo", "fix/105-closeout", "main")
         ready = dict(entry, isDraft=False)
         with mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=ready), self.assertRaises(gtt.WorkflowError):
@@ -9408,6 +9426,309 @@ shutil.move(str(active), str(archived))
                     self.assertRaises(gtt.WorkflowError),
                 ):
                     gtt.ensure_closeout_draft_pr(self.root, plan, body)
+
+    def test_closeout_repository_identity_normalizes_remote_urls_and_rejects_mismatch(self) -> None:
+        for value in [
+            "owner/repo",
+            "https://github.com/Owner/Repo.git",
+            "git@github.com:OWNER/REPO.git",
+            "ssh://git@github.com/owner/repo.git",
+        ]:
+            with self.subTest(value=value):
+                self.assertEqual(gtt.normalize_github_repository(value), "owner/repo")
+        for value in ["", "owner", "owner/repo/extra", "https://example.com/owner/repo", "owner/repo?token=x"]:
+            with self.subTest(invalid=value):
+                self.assertEqual(gtt.normalize_github_repository(value), "")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            fixture_root = Path(tmp)
+
+            def git(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
+                return subprocess.run(
+                    ["git", *args], cwd=cwd, check=True, text=True, capture_output=True
+                )
+
+            def remote_fixture(
+                name: str,
+                fetch_urls: list[str],
+                push_urls: list[str] | None = None,
+            ) -> Path:
+                repository = fixture_root / name
+                repository.mkdir()
+                git("init", "-q", cwd=repository)
+                git("remote", "add", "origin", fetch_urls[0], cwd=repository)
+                for value in fetch_urls[1:]:
+                    git("config", "--add", "remote.origin.url", value, cwd=repository)
+                for value in push_urls or []:
+                    git("config", "--add", "remote.origin.pushurl", value, cwd=repository)
+                return repository
+
+            fetch_mismatch = remote_fixture(
+                "multiple-fetch",
+                [
+                    "https://github.com/fork-owner/repo.git",
+                    "https://github.com/owner/repo.git",
+                ],
+            )
+            effective_fetch = git("remote", "get-url", "--all", "origin", cwd=fetch_mismatch)
+            self.assertEqual(
+                [gtt.normalize_github_repository(value) for value in effective_fetch.stdout.splitlines()],
+                ["fork-owner/repo", "owner/repo"],
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.validate_github_remote_repository(fetch_mismatch, "origin", "owner/repo")
+            self.assertEqual(raised.exception.payload["direction"], "fetch")
+            self.assertNotIn("fork-owner", json.dumps(raised.exception.payload))
+
+            push_mismatch = remote_fixture(
+                "multiple-push",
+                ["https://github.com/owner/repo.git"],
+                [
+                    "https://github.com/owner/repo.git",
+                    "https://github.com/fork-owner/repo.git",
+                    "https://github.com/OWNER/REPO.git",
+                ],
+            )
+            effective_push = git(
+                "remote", "get-url", "--push", "--all", "origin", cwd=push_mismatch
+            )
+            self.assertEqual(
+                [gtt.normalize_github_repository(value) for value in effective_push.stdout.splitlines()],
+                ["owner/repo", "fork-owner/repo", "owner/repo"],
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.validate_github_remote_repository(push_mismatch, "origin", "owner/repo")
+            self.assertEqual(raised.exception.payload["direction"], "push")
+            self.assertNotIn("fork-owner", json.dumps(raised.exception.payload))
+
+            rewritten_push = remote_fixture(
+                "push-instead-of", ["https://github.com/owner/repo.git"]
+            )
+            git(
+                "config",
+                "url.https://github.com/fork-owner/repo.git.pushInsteadOf",
+                "https://github.com/owner/repo.git",
+                cwd=rewritten_push,
+            )
+            effective_rewrite = git(
+                "remote", "get-url", "--push", "--all", "origin", cwd=rewritten_push
+            )
+            self.assertEqual(
+                [gtt.normalize_github_repository(value) for value in effective_rewrite.stdout.splitlines()],
+                ["fork-owner/repo"],
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.validate_github_remote_repository(rewritten_push, "origin", "owner/repo")
+            self.assertEqual(raised.exception.payload["direction"], "push")
+            self.assertNotIn("fork-owner", json.dumps(raised.exception.payload))
+
+            matching = remote_fixture(
+                "matching",
+                [
+                    "https://github.com/Owner/Repo.git",
+                    "ssh://git@github.com/owner/repo.git",
+                ],
+                [
+                    "git@github.com:OWNER/REPO.git",
+                    "https://github.com/owner/repo.git",
+                ],
+            )
+            for push in [False, True]:
+                command = ["remote", "get-url"]
+                if push:
+                    command.append("--push")
+                command.extend(["--all", "origin"])
+                result = git(*command, cwd=matching)
+                self.assertTrue(result.stdout.splitlines())
+                self.assertEqual(
+                    {gtt.normalize_github_repository(value) for value in result.stdout.splitlines()},
+                    {"owner/repo"},
+                )
+            self.assertEqual(
+                gtt.validate_github_remote_repository(matching, "origin", "OWNER/REPO"),
+                "owner/repo",
+            )
+
+            malformed = remote_fixture(
+                "malformed", ["https://example.com/owner/repo.git"]
+            )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.validate_github_remote_repository(malformed, "origin", "owner/repo")
+            self.assertEqual(raised.exception.payload["direction"], "fetch")
+            self.assertNotIn("example.com", json.dumps(raised.exception.payload))
+
+            missing_remote = fixture_root / "missing-remote"
+            missing_remote.mkdir()
+            git("init", "-q", cwd=missing_remote)
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.validate_github_remote_repository(missing_remote, "origin", "owner/repo")
+            self.assertEqual(
+                raised.exception.payload, {"remote": "origin", "direction": "fetch"}
+            )
+
+        empty = subprocess.CompletedProcess(
+            ["git", "remote", "get-url", "--all", "origin"], 0, "\n", ""
+        )
+        with mock.patch.object(gtt, "run", return_value=empty) as remote, self.assertRaises(
+            gtt.WorkflowError
+        ) as raised:
+            gtt.validate_github_remote_repository(self.root, "origin", "owner/repo")
+        remote.assert_called_once_with(
+            ["git", "remote", "get-url", "--all", "origin"], cwd=self.root, check=False
+        )
+        self.assertEqual(raised.exception.payload, {"remote": "origin", "direction": "fetch"})
+
+        fetch = subprocess.CompletedProcess(
+            ["git", "remote", "get-url", "--all", "origin"],
+            0,
+            "https://github.com/owner/repo.git\n",
+            "",
+        )
+        failed_push = subprocess.CompletedProcess(
+            ["git", "remote", "get-url", "--push", "--all", "origin"],
+            2,
+            "",
+            "credential-bearing failure",
+        )
+        with mock.patch.object(gtt, "run", side_effect=[fetch, failed_push]), self.assertRaises(
+            gtt.WorkflowError
+        ) as raised:
+            gtt.validate_github_remote_repository(self.root, "origin", "owner/repo")
+        self.assertEqual(raised.exception.payload, {"remote": "origin", "direction": "push"})
+        self.assertNotIn("credential-bearing", str(raised.exception))
+
+        noncanonical_plan = self.build_plan()
+        noncanonical_plan["git"]["repo"] = "Owner/Repo"
+        self.assertIn(
+            "closeout git.repo must be a normalized GitHub owner/repository identity.",
+            gtt.closeout_plan_errors(noncanonical_plan),
+        )
+
+    def test_closeout_pr_query_rejects_same_branch_fork_before_cardinality(self) -> None:
+        plan = self.build_plan()
+        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        target = {
+            **closeout_head_repository_fields(),
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+            "title": plan["publish"]["title"],
+            "body": body,
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
+            "headRefOid": self.head,
+            "isDraft": True,
+        }
+        fork = {
+            **target,
+            **closeout_head_repository_fields("fork-owner/repo", cross_repository=True),
+            "number": 106,
+            "url": "https://github.com/owner/repo/pull/106",
+        }
+        for name, candidates in [("fork-only", [fork]), ("target-and-fork", [target, fork])]:
+            with (
+                self.subTest(case=name),
+                mock.patch.object(gtt, "validate_github_remote_repository", return_value="owner/repo"),
+                mock.patch.object(
+                    gtt,
+                    "run",
+                    return_value=mock.Mock(returncode=0, stdout=json.dumps(candidates), stderr=""),
+                ) as query,
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.resolve_closeout_pull_request(
+                    self.root, "owner/repo", "fix/105-closeout", "main", "origin"
+                )
+            self.assertIn("cross-repository", str(raised.exception))
+            json_fields = query.call_args.args[0][query.call_args.args[0].index("--json") + 1]
+            self.assertIn("headRepository", json_fields)
+            self.assertIn("headRepositoryOwner", json_fields)
+            self.assertIn("isCrossRepository", json_fields)
+
+        missing = dict(target)
+        missing.pop("headRepositoryOwner")
+        with (
+            mock.patch.object(gtt, "validate_github_remote_repository", return_value="owner/repo"),
+            mock.patch.object(
+                gtt, "run", return_value=mock.Mock(returncode=0, stdout=json.dumps([missing]), stderr="")
+            ),
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.resolve_closeout_pull_request(
+                self.root, "owner/repo", "fix/105-closeout", "main", "origin"
+            )
+
+    def test_fork_identity_blocks_draft_reuse_final_projection_and_ready(self) -> None:
+        plan = self.build_plan()
+        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        fork = {
+            **closeout_head_repository_fields("fork-owner/repo", cross_repository=True),
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+            "title": plan["publish"]["title"],
+            "body": body,
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
+            "headRefOid": self.head,
+            "isDraft": True,
+        }
+        with (
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=fork),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "create_pull_request") as create,
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.ensure_closeout_draft_pr(self.root, plan, body)
+        create.assert_not_called()
+
+        gtt.write_json(
+            self.task_dir / gtt.PR_READINESS_ARTIFACT,
+            {"publish_inputs": {"closeout_plan_digest": plan["plan_digest"]}},
+        )
+        prepared = {
+            "plan": plan,
+            "task_context": self.context,
+            "gate": self.gate,
+        }
+        with (
+            mock.patch.object(gtt, "load_issue_scope_ledger", return_value=self.ledger),
+            mock.patch.object(gtt, "validate_ledger_for_publish", return_value=[]),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.build_final_archive_projection(self.root, self.task_dir, prepared, fork)
+        self.assertFalse((self.task_dir / gtt.FINISH_SUMMARY_ARTIFACT).exists())
+
+        with (
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=fork),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "run") as mutation,
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.ensure_closeout_pr_ready(self.root, plan)
+        mutation.assert_not_called()
+
+    def test_closeout_docs_and_query_require_exact_head_repository_identity(self) -> None:
+        source_root = Path(__file__).resolve().parents[5]
+        paths = [
+            source_root / ".trellis/spec/workflow/companion-scripts.md",
+            source_root / ".trellis/spec/workflow/data-contracts.md",
+            source_root / ".trellis/spec/workflow/workflow-contract.md",
+            source_root / "trellis/workflows/guru-team/workflow.md",
+            source_root / "docs/requirements/guru-team-trellis-flow.md",
+        ]
+        for path in paths:
+            with self.subTest(path=str(path)):
+                text = path.read_text(encoding="utf-8")
+                self.assertIn("headRepository", text)
+                self.assertIn("isCrossRepository", text)
+        source = (
+            source_root / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("headRepository,headRepositoryOwner,isCrossRepository", source)
+        self.assertNotIn(
+            '"--json", "number,url,title,body,headRefName,baseRefName,headRefOid,isDraft"',
+            source,
+        )
 
     def test_closeout_pr_body_identity_preserves_exact_utf8_whitespace(self) -> None:
         base_body = valid_pr_body("PR body exact bytes identity。")
@@ -9445,6 +9766,7 @@ shutil.move(str(active), str(archived))
                 self.assertEqual(recovered_body, exact_body)
 
                 pr = {
+                    **closeout_head_repository_fields(),
                     "number": 105,
                     "url": "https://github.com/owner/repo/pull/105",
                     "title": plan["publish"]["title"],
@@ -9480,6 +9802,7 @@ shutil.move(str(active), str(archived))
         )
         gtt.write_json(self.task_dir / gtt.FINISH_SUMMARY_ARTIFACT, summary)
         replacement = {
+            **closeout_head_repository_fields(),
             "number": 106,
             "url": "https://github.com/owner/repo/pull/106",
             "title": plan["publish"]["title"],
@@ -9517,6 +9840,71 @@ shutil.move(str(active), str(archived))
                 gtt.resume_archived_closeout(self.root, args, self.task_dir)
             archive.assert_not_called()
             ready.assert_not_called()
+
+    def test_active_and_archived_recovery_never_rebind_same_identity_fork(self) -> None:
+        plan = self.build_plan()
+        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        target = {
+            **closeout_head_repository_fields(),
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+        }
+        summary = gtt.closeout_summary_for_pr(plan, target)
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        gtt.write_json(self.task_dir / gtt.FINISH_SUMMARY_ARTIFACT, summary)
+        fork = {
+            **closeout_head_repository_fields("fork-owner/repo", cross_repository=True),
+            "number": 106,
+            "url": "https://github.com/owner/repo/pull/106",
+            "title": plan["publish"]["title"],
+            "body": body,
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
+            "headRefOid": self.head,
+            "isDraft": True,
+        }
+        completed = dict(self.task, status="completed")
+        gtt.write_json(self.task_dir / "task.json", completed)
+        args = finish_args(dry_run=False, expected_plan_digest=plan["plan_digest"])
+        with (
+            mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", self.gate, [])),
+            mock.patch.object(gtt, "load_issue_scope_ledger", return_value=self.ledger),
+            mock.patch.object(gtt, "closeout_evidence_is_committed", return_value=True),
+            mock.patch.object(gtt, "validate_closeout_active_projection"),
+            mock.patch.object(gtt, "validate_closeout_evidence_commit"),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "require_gh_auth"),
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=fork),
+            mock.patch.object(gtt, "execute_archive_metadata_transaction") as archive,
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.resume_active_archive_move(self.root, args, {}, self.task_dir, self.context)
+        archive.assert_not_called()
+        self.assertEqual(
+            gtt.read_json(self.task_dir / gtt.FINISH_SUMMARY_ARTIFACT)["github"]["pr_url"],
+            target["url"],
+        )
+
+        archived = self.root / plan["task"]["archive_locator"]
+        archived.parent.mkdir(parents=True, exist_ok=True)
+        self.task_dir.rename(archived)
+        summary_before = (archived / gtt.FINISH_SUMMARY_ARTIFACT).read_bytes()
+        with (
+            mock.patch.object(gtt, "require_gh_auth"),
+            mock.patch.object(gtt, "validate_github_remote_repository", return_value="owner/repo"),
+            mock.patch.object(
+                gtt,
+                "run",
+                return_value=mock.Mock(returncode=0, stdout=json.dumps([fork]), stderr=""),
+            ),
+            mock.patch.object(gtt, "resume_archive_metadata_transaction") as archive,
+            mock.patch.object(gtt, "ensure_closeout_pr_ready") as ready,
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.resume_archived_closeout(self.root, args, archived)
+        archive.assert_not_called()
+        ready.assert_not_called()
+        self.assertEqual((archived / gtt.FINISH_SUMMARY_ARTIFACT).read_bytes(), summary_before)
 
     def test_task_json_archive_content_allows_only_official_fields(self) -> None:
         before = b'{"status":"in_progress","title":"task"}\n'
@@ -9664,6 +10052,7 @@ shutil.move(str(active), str(archived))
         )
         gtt.write_json(self.task_dir / gtt.FINISH_SUMMARY_ARTIFACT, summary)
         draft = {
+            **closeout_head_repository_fields(),
             "number": 105,
             "url": "https://github.com/owner/repo/pull/105",
             "title": plan["publish"]["title"],
@@ -9704,6 +10093,7 @@ shutil.move(str(active), str(archived))
         )
         gtt.write_json(self.task_dir / gtt.FINISH_SUMMARY_ARTIFACT, summary)
         draft = {
+            **closeout_head_repository_fields(),
             "number": 105,
             "url": "https://github.com/owner/repo/pull/105",
             "title": plan["publish"]["title"],
@@ -9879,6 +10269,18 @@ shutil.move(str(active), str(archived))
                 command: list[str], cwd: Path | None = None, check: bool = True
             ) -> subprocess.CompletedProcess[str]:
                 nonlocal archive_pushed
+                if command in [
+                    ["git", "remote", "get-url", "--all", "origin"],
+                    ["git", "remote", "get-url", "--push", "--all", "origin"],
+                ]:
+                    if injected_stage == "remote-identity" and "--push" in command:
+                        record_transition("remote-identity")
+                        return subprocess.CompletedProcess(
+                            command, 0, "https://github.com/fork-owner/repo.git\n", ""
+                        )
+                    return subprocess.CompletedProcess(
+                        command, 0, "https://github.com/owner/repo.git\n", ""
+                    )
                 if command[:2] == ["git", "push"]:
                     stage = git_transition_stage(command)
                     record_transition(stage)
@@ -9922,6 +10324,7 @@ shutil.move(str(active), str(archived))
                         check=True,
                     ).stdout.split()[0]
                     pr_store.update({
+                        **closeout_head_repository_fields(),
                         "number": 105,
                         "url": "https://github.com/owner/repo/pull/105",
                         "title": command[command.index("--title") + 1],
@@ -9935,7 +10338,27 @@ shutil.move(str(active), str(archived))
                         (task_dir / "review.md").unlink()
                     return subprocess.CompletedProcess(command, 0, str(pr_store["url"]) + "\n", "")
                 if command[:3] == ["gh", "pr", "list"]:
-                    if not pr_store:
+                    if injected_stage == "fork-candidate" and not pr_store:
+                        remote_head = original_run(
+                            ["git", "ls-remote", "--heads", "origin", "fix/105-closeout"],
+                            cwd=root,
+                            check=True,
+                        ).stdout.split()[0]
+                        payload = [{
+                            **closeout_head_repository_fields(
+                                "fork-owner/repo", cross_repository=True
+                            ),
+                            "number": 106,
+                            "url": "https://github.com/owner/repo/pull/106",
+                            "title": "#105 重构 finish-work 收尾事务",
+                            "body": (task_dir / "pr-body.md").read_text(encoding="utf-8"),
+                            "isDraft": True,
+                            "state": "OPEN",
+                            "headRefOid": remote_head,
+                            "headRefName": "fix/105-closeout",
+                            "baseRefName": "main",
+                        }]
+                    elif not pr_store:
                         payload: list[dict[str, object]] = []
                     else:
                         payload = [{
@@ -10019,6 +10442,10 @@ shutil.move(str(active), str(archived))
                     "pr_is_draft": pr_store.get("isDraft"),
                     "pr_state": pr_store.get("state"),
                     "pr_number": pr_store.get("number"),
+                    "finish_summary_exists": (
+                        current_task_dir is not None
+                        and (current_task_dir / gtt.FINISH_SUMMARY_ARTIFACT).is_file()
+                    ),
                 }
 
             dry_args = finish_args(
@@ -10041,16 +10468,21 @@ shutil.move(str(active), str(archived))
                 ),
                 mock.patch.object(gtt, "run", side_effect=fake_external_run),
             ):
-                if failed_stage == "prepare":
-                    (task_dir / "finish-summary-index.json").write_text("{}\n", encoding="utf-8")
+                if failed_stage in {"prepare", "remote-identity"}:
+                    if failed_stage == "prepare":
+                        (task_dir / "finish-summary-index.json").write_text(
+                            "{}\n", encoding="utf-8"
+                        )
                     with self.assertRaises(gtt.WorkflowError):
                         gtt.cmd_finish_work(dry_args)
                     failed_state = exact_state()
-                    gtt.write_json(task_dir / "finish-summary-index.json", index)
+                    if failed_stage == "prepare":
+                        gtt.write_json(task_dir / "finish-summary-index.json", index)
                     injected_stage = None
                     reentry_offset = len(transition_attempts)
                     preview = gtt.cmd_finish_work(dry_args)
-                    transition_attempts.insert(reentry_offset, "prepare")
+                    if failed_stage == "prepare":
+                        transition_attempts.insert(reentry_offset, "prepare")
                     formal_args = finish_args(
                         **{
                             **vars(dry_args),
@@ -10140,6 +10572,40 @@ shutil.move(str(active), str(archived))
         self.assertEqual(final["pr_head_sha"], result["archive_sha"])
         self.assertEqual(final["pr_is_draft"], False)
         self.assertEqual(final["pr_state"], "OPEN")
+
+    def test_production_finish_fork_candidate_fails_before_archive_and_summary_binding(self) -> None:
+        result = self.run_production_finish_case("fork-candidate")
+        failed = result["failed_state"]
+        self.assertEqual(failed["active_locator"], ".trellis/tasks/07-11-closeout")
+        self.assertIsNone(failed["archive_locator"])
+        self.assertEqual(failed["task_status"], "in_progress")
+        self.assertEqual(failed["pr_number"], None)
+        self.assertEqual(failed["finish_summary_exists"], False)
+        final = result["final_state"]
+        self.assertIsNone(final["active_locator"])
+        self.assertEqual(final["task_status"], "completed")
+        self.assertEqual(final["pr_number"], 105)
+        self.assertEqual(final["pr_head_sha"], result["archive_sha"])
+
+    def test_production_finish_remote_identity_failure_is_side_effect_free_and_retryable(self) -> None:
+        result = self.run_production_finish_case("remote-identity")
+        failed = result["failed_state"]
+        self.assertEqual(failed["active_locator"], ".trellis/tasks/07-11-closeout")
+        self.assertIsNone(failed["archive_locator"])
+        self.assertEqual(failed["task_status"], "in_progress")
+        self.assertEqual(failed["dirty_paths"], set())
+        self.assertEqual(failed["staged_paths"], set())
+        self.assertEqual(failed["local_sha"], result["reviewed_sha"])
+        self.assertIsNone(failed["remote_sha"])
+        self.assertIsNone(failed["pr_number"])
+        self.assertFalse(failed["finish_summary_exists"])
+        self.assertEqual(result["all_transition_attempts"].count("remote-identity"), 1)
+
+        final = result["final_state"]
+        self.assertIsNone(final["active_locator"])
+        self.assertEqual(final["task_status"], "completed")
+        self.assertEqual(final["pr_number"], 105)
+        self.assertEqual(final["pr_head_sha"], result["archive_sha"])
 
     def test_production_finish_entry_failure_matrix_reads_real_state(self) -> None:
         stages = [

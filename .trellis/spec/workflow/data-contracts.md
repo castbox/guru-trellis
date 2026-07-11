@@ -622,6 +622,15 @@ output, or archive commit SHA. Its projection does record a fixed sentinel PR
 URL/ref and the complete schema-valid finish-summary template so all local
 summary errors are known during prepare.
 
+`git.repo` is the normalized `owner/repository` identity. All effective fetch
+and push URLs of `git.remote`, after Git applies `insteadOf` /
+`pushInsteadOf`, must normalize to this value. Every queried PR must include
+`headRepository.nameWithOwner`,
+`headRepositoryOwner.login`, and `isCrossRepository`; the first two must agree
+with each other and with `git.repo`, while `isCrossRepository` must be false.
+Missing/unknown fields or a same-name fork candidate fail closed before PR
+cardinality, final-summary binding, archive, recovery, or ready transition.
+
 `publish.body_sha256` hashes the task-local `pr-body.md` bytes. Those bytes must
 decode as non-empty UTF-8, and the decoded text is the one canonical body value
 used by readiness recovery, `gh pr create`, unique draft reuse, final
