@@ -13,10 +13,14 @@
       },
       {
         "type": "remote_marketplace_verification",
-        "status": "pending",
+        "status": "passed",
         "required": true,
-        "artifact_path": "marketplace-verification.json",
-        "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。"
+        "artifact_path": ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/marketplace-verification.json",
+        "artifact_sha256": "45c78b329577324ac7460ab75fdb0c25c5d2a38d94b8ee6d3da13c4e797246f0",
+        "verified_content_head": "0cf780e1061655b3b92f9dba8615dd467b3dd298",
+        "remote_head": "0cf780e1061655b3b92f9dba8615dd467b3dd298",
+        "publish_head": "0cf780e1061655b3b92f9dba8615dd467b3dd298",
+        "commands_passed": true
       }
     ]
   },
@@ -35,10 +39,14 @@
         },
         {
           "type": "remote_marketplace_verification",
-          "status": "pending",
+          "status": "passed",
           "required": true,
-          "artifact_path": "marketplace-verification.json",
-          "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。"
+          "artifact_path": ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/marketplace-verification.json",
+          "artifact_sha256": "45c78b329577324ac7460ab75fdb0c25c5d2a38d94b8ee6d3da13c4e797246f0",
+          "verified_content_head": "0cf780e1061655b3b92f9dba8615dd467b3dd298",
+          "remote_head": "0cf780e1061655b3b92f9dba8615dd467b3dd298",
+          "publish_head": "0cf780e1061655b3b92f9dba8615dd467b3dd298",
+          "commands_passed": true
         }
       ]
     }
