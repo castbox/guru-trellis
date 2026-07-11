@@ -76,6 +76,7 @@
       ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/implement.md",
       ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/implementation-handoff.md",
       ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/marketplace-verification.json",
       ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/phase2-check.json",
       ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/planning-approval.json",
       ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/pr-body.md",
@@ -119,7 +120,7 @@
     "followup_issues": [
       98
     ],
-    "pr_url": ""
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/104"
   },
   "artifacts": {
     "prd": "prd.md",
@@ -131,7 +132,8 @@
     "review": "review.md",
     "review_gate": "review-gate.json",
     "pr_body": "pr-body.md",
-    "pr_readiness": "pr-readiness.json"
+    "pr_readiness": "pr-readiness.json",
+    "marketplace_verification": "marketplace-verification.json"
   },
   "index": {
     "problem": "既有 archived tasks 缺少 finish-summary.json，导致后续历史上下文发现只能覆盖未来完成的任务。",
@@ -241,7 +243,9 @@
         "#99",
         "#100"
       ],
-      "pr_refs": [],
+      "pr_refs": [
+        "PR #104"
+      ],
       "branches": [
         "feat/100-backfill-finish-summary"
       ],
@@ -305,6 +309,7 @@
         ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/implement.md",
         ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/implementation-handoff.md",
         ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/marketplace-verification.json",
         ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/phase2-check.json",
         ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/planning-approval.json",
         ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/pr-body.md",
