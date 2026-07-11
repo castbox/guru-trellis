@@ -226,11 +226,16 @@ bypass and is unavailable to every other command, which continues to require
 Before ordinary resolution or canonicalization, the finish entry classifies
 the raw locator as only a task basename, the exact former active locator, or
 the exact archive locator. Path-like locators require lexical containment and
-`lstat` from repo root through every ancestor and the final task directory,
-rejecting internal/external, relative/absolute, ancestor/final, multilevel,
-dangling, and loop symlinks before any resolver fallback. After that preflight,
-the ordinary resolver runs first so explicit `task.json`, active task, and
-normal archived `task.json` precedence stays unchanged. Plan-only recovery runs
+`lstat` from repo root through every ancestor and the final task directory.
+Basename locators apply the same raw check, before ordinary resolution, to
+`<repo>/<basename>`, `.trellis/tasks/<basename>`, the archive root, and archive
+candidates in ordinary resolver order. A matching archive candidate with a
+symlink component is rejected, while a non-matching same-name archive alias is
+not mistaken for the selected candidate. These checks reject internal/external,
+relative/absolute, ancestor/final, multilevel, dangling, and loop symlinks
+before the ordinary resolver can discard raw alias evidence. The ordinary
+resolver then runs so explicit `task.json`, active task, and normal archived
+`task.json` precedence stays unchanged. Plan-only recovery runs
 only when ordinary resolution returns not-found: an exact archive locator may
 select that exact candidate, while basename/former-active fallback must find
 exactly one matching archive month and fails closed on multiple matches. The

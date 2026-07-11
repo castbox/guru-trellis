@@ -732,12 +732,17 @@ require the normal `task.json` / `task-start-context.json` contracts.
 The raw finish-work locator is preserved before ordinary resolution. Only a
 basename, exact former active locator, or exact archive locator may select the
 plan-only search. Path-like input is checked component-by-component with
-`lstat` from repo root through the final task directory, rejecting every
-internal/external, relative/absolute, ancestor/final, multilevel, dangling, or
-loop symlink before any resolver fallback. The ordinary resolver then runs
-first and preserves explicit `task.json`, active task, and normal archived
-`task.json` precedence. Only an ordinary not-found result enables plan-only
-fallback. An exact archive locator selects only that candidate; basename or
+`lstat` from repo root through the final task directory. Basename input checks
+the raw `<repo>/<basename>` and `.trellis/tasks/<basename>` candidates, then
+checks archive candidates in ordinary resolver order before resolution. A
+matching archive candidate with a symlink component is rejected; a
+non-matching same-name archive alias is ignored rather than misclassified as
+the selected candidate. This rejects internal/external, relative/absolute,
+ancestor/final, multilevel, dangling, or loop aliases before raw evidence can
+be discarded. The ordinary resolver then runs and preserves explicit
+`task.json`, active task, and normal archived `task.json` precedence. Only an
+ordinary not-found result enables plan-only fallback. An exact archive locator
+selects only that candidate; basename or
 former-active fallback requires a unique matching archive month and fails
 closed when multiple months match. The verified plan-only target must resolve
 to the same canonical archive locator recorded by `task` and `projection`.

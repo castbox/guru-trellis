@@ -451,10 +451,13 @@ base ref、current HEAD transaction、expected digest、task identity 与 active
 discovery、workspace boundary 和其它命令继续要求 `task.json`，worktree mode 继续要求
 `task-start-context.json`。
 该入口在普通 resolver/`resolve()` 前保留 raw locator，只允许 task basename、原 active locator 或
-精确 archive locator；path-like 输入先从 repo root 到 final task dir 逐组件 `lstat`，拒绝 repo
-内外、relative/absolute、ancestor/final、多层、dangling、loop symlink。预检通过后先调用普通
-resolver，保留显式 `task.json`、active task 和普通 archived `task.json` 的既有优先级；仅普通
-resolver 返回 not-found 时才进入 plan-only fallback。精确 archive locator 只尝试该候选，basename/
+精确 archive locator；path-like 输入先从 repo root 到 final task dir 逐组件 `lstat`。basename
+输入则在普通 resolver 前按其候选顺序预检 `<repo>/<basename>`、active task candidate、archive
+root 和 archive candidates；命中的 archive alias fail closed，未命中的同名 archive alias 不会误阻断
+后续真实候选。预检统一拒绝 repo 内外、relative/absolute、ancestor/final、多层、dangling、loop
+symlink，再调用普通 resolver，保留显式 `task.json`、active task 和普通 archived `task.json` 的
+既有优先级；仅普通 resolver 返回 not-found 时才进入 plan-only fallback。精确 archive locator
+只尝试该候选，basename/
 原 active locator fallback 必须只命中一个 archive 月份，多候选 fail closed。plan-only resolved
 target 仍须等于 plan canonical archive locator；仅允许经结构验证的 Darwin 系统
 `/var -> /private/var` 映射，不使用任意 `samefile` 或用户 alias 重锚。

@@ -1537,6 +1537,82 @@ class WorkspaceBoundaryGuardTest(unittest.TestCase):
         ordinary_resolver.assert_not_called()
         plan_only_fallback.assert_not_called()
 
+    def test_finish_work_basename_rejects_direct_active_and_repo_root_aliases(self) -> None:
+        target = self.workspace / ".trellis/tasks/07-08-basename-alias-target"
+        target.mkdir(parents=True)
+        (target / "task.json").write_text('{"title":"Alias target"}\n', encoding="utf-8")
+
+        aliases = [
+            self.workspace / ".trellis/tasks/07-08-active-basename-alias",
+            self.workspace / "07-08-root-basename-alias",
+        ]
+        for alias in aliases:
+            alias.symlink_to(target, target_is_directory=True)
+            with self.subTest(alias=alias):
+                with mock.patch.object(gtt, "resolve_existing_task_dir") as ordinary_resolver:
+                    with self.assertRaises(gtt.WorkflowError) as raised:
+                        gtt.resolve_finish_work_task_dir(self.workspace, alias.name)
+                self.assertIn("symbolic-link", str(raised.exception))
+                ordinary_resolver.assert_not_called()
+
+    def test_finish_work_basename_rejects_matching_ordinary_archive_alias(self) -> None:
+        shutil.rmtree(self.task_dir)
+        target = self.workspace / ".trellis/tasks/archive/2026-06/ordinary-alias-target"
+        target.mkdir(parents=True)
+        (target / "task.json").write_text(
+            '{"title":"Ordinary archive alias target"}\n',
+            encoding="utf-8",
+        )
+        alias = self.workspace / ".trellis/tasks/archive/2026-07/07-08-ordinary-archive-alias"
+        alias.parent.mkdir(parents=True)
+        alias.symlink_to(target, target_is_directory=True)
+
+        with mock.patch.object(gtt, "resolve_existing_task_dir") as ordinary_resolver:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.resolve_finish_work_task_dir(self.workspace, alias.name)
+
+        self.assertIn("symbolic-link", str(raised.exception))
+        ordinary_resolver.assert_not_called()
+
+    def test_finish_work_basename_rejects_matching_restored_plan_only_alias(self) -> None:
+        shutil.rmtree(self.task_dir)
+        target = self.workspace / ".trellis/tasks/archive/2026-06/restored-plan-only-target"
+        target.mkdir(parents=True)
+        (target / gtt.CLOSEOUT_PLAN_ARTIFACT).write_text("{}\n", encoding="utf-8")
+        (target / "task.json").write_text(
+            '{"title":"Restored plan-only alias target"}\n',
+            encoding="utf-8",
+        )
+        alias = self.workspace / ".trellis/tasks/archive/2026-07/07-08-restored-plan-only-alias"
+        alias.parent.mkdir(parents=True)
+        alias.symlink_to(target, target_is_directory=True)
+
+        with mock.patch.object(gtt, "resolve_existing_task_dir") as ordinary_resolver:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.resolve_finish_work_task_dir(self.workspace, alias.name)
+
+        self.assertIn("symbolic-link", str(raised.exception))
+        ordinary_resolver.assert_not_called()
+
+    def test_finish_work_basename_ignores_unmatched_archive_alias(self) -> None:
+        shutil.rmtree(self.task_dir)
+        empty_target = self.workspace / ".trellis/tasks/archive/2026-05/empty-alias-target"
+        empty_target.mkdir(parents=True)
+        alias = self.workspace / ".trellis/tasks/archive/2026-07" / self.task_dir.name
+        alias.parent.mkdir(parents=True)
+        alias.symlink_to(empty_target, target_is_directory=True)
+        ordinary = self.workspace / ".trellis/tasks/archive/2026-06" / self.task_dir.name
+        ordinary.mkdir(parents=True)
+        (ordinary / "task.json").write_text(
+            '{"title":"Later ordinary archive match"}\n',
+            encoding="utf-8",
+        )
+
+        self.assertEqual(
+            gtt.resolve_finish_work_task_dir(self.workspace, self.task_dir.name),
+            ordinary.resolve(),
+        )
+
     def test_finish_work_plan_only_resolution_rejects_internal_and_external_aliases(self) -> None:
         archived = self.workspace / ".trellis/tasks/archive/2026-07/07-08-plan-only-alias"
         archived.mkdir(parents=True)

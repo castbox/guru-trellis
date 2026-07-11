@@ -495,12 +495,17 @@ locator relationship. All other discovery and command paths retain the normal
 The finish entry validates its raw locator before ordinary resolution: only a
 basename, exact former active locator, or exact archive locator is accepted,
 and path-like input receives lexical repo/archive containment plus
-component-wise `lstat` through the final directory before any fallback, which
-rejects internal/external, relative/absolute, ancestor/final, multilevel,
-dangling, and loop aliases. The ordinary resolver then keeps explicit
-`task.json`, active task, and normal archived `task.json` precedence. Only its
-not-found result enables plan-only recovery. An exact archive locator selects
-that candidate; basename/former-active fallback requires one unique archive
+component-wise `lstat` through the final directory before any fallback.
+Basename input performs the same raw preflight for `<repo>/<basename>`, the
+active task candidate, the archive root, and archive candidates in ordinary
+resolver order. A matching archive alias fails closed, while an unmatched
+same-name archive alias does not block a later real match. This rejects
+internal/external, relative/absolute, ancestor/final, multilevel, dangling,
+and loop aliases before raw evidence is discarded. The ordinary resolver then
+keeps explicit `task.json`, active task, and normal archived `task.json`
+precedence. Only its not-found result enables plan-only recovery. An exact
+archive locator selects that candidate; basename/former-active fallback
+requires one unique archive
 match and fails closed on ambiguity. The resulting non-symlink plan-only target
 must still resolve to the plan's canonical archive locator. Do not use
 arbitrary `samefile` re-anchoring; only the verified Darwin system `/var` ->

@@ -477,10 +477,13 @@ boundary 校验 Git toplevel、配置/effective repo、当前head branch、base 
 expected digest、task identity 和 active/archive locator；它不是缺失 context 时的无条件跳过。普通
 task discovery 与其它命令仍要求 `task.json`，worktree mode 仍要求 `task-start-context.json`。
 raw locator 在普通 resolver/`resolve()` 前验证，只允许 basename、原 active locator 或精确 archive
-locator；path-like 输入先从 repo root 到 final task dir 逐组件 `lstat`，拒绝 repo 内外、
-relative/absolute、ancestor/final、多层、dangling、loop symlink。预检通过后优先调用普通 resolver，
-保留显式 `task.json`、active task 和普通 archived `task.json` 的顺序；仅 ordinary not-found 才进入
-plan-only fallback。精确 archive locator 只尝试该候选，basename/原 active locator fallback 必须
+locator；path-like 输入先从 repo root 到 final task dir 逐组件 `lstat`。basename 输入在普通
+resolver 前按其候选顺序预检 `<repo>/<basename>`、active task candidate、archive root 和 archive
+candidates；命中的 archive alias fail closed，未命中的同名 archive alias 不误阻断后续真实候选。
+预检统一拒绝 repo 内外、relative/absolute、ancestor/final、多层、dangling、loop symlink，再优先调用
+普通 resolver，保留显式 `task.json`、active task 和普通 archived `task.json` 的顺序；仅 ordinary
+not-found 才进入 plan-only fallback。精确 archive locator 只尝试该候选，basename/原 active locator
+fallback 必须
 唯一命中一个 archive 月份，多候选 fail closed。plan-only resolved target 仍须等于 plan canonical
 archive locator；仅固定 Darwin `/var -> /private/var` 系统映射可重锚，不接受任意
 `samefile`/用户 alias。

@@ -569,10 +569,14 @@ The finish entry validates the raw locator before ordinary resolution or
 canonicalization. Only a basename, exact former active locator, or exact
 archive locator may select plan-only recovery. Path-like input receives
 component-wise `lstat` from the repo root through the final task directory
-before any fallback, rejecting internal/external, relative/absolute,
-ancestor/final, multilevel, dangling, and loop symlinks. The ordinary resolver
-then preserves explicit `task.json`, active task, and normal archived
-`task.json` precedence. Plan-only fallback runs only after ordinary not-found:
+before any fallback. Basename input preflights `<repo>/<basename>`, the active
+candidate, the archive root, and archive candidates in ordinary resolver order.
+A matching archive alias fails closed, while an unmatched same-name archive
+alias does not block a later real match. These checks reject internal/external,
+relative/absolute, ancestor/final, multilevel, dangling, and loop symlinks
+before raw evidence is discarded. The ordinary resolver then preserves
+explicit `task.json`, active task, and normal archived `task.json` precedence.
+Plan-only fallback runs only after ordinary not-found:
 an exact archive locator selects that candidate, while basename/former-active
 fallback requires a unique archive-month match and fails closed on ambiguity.
 The plan-only target must still equal the plan's canonical archive locator.
