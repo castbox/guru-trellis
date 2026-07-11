@@ -146,6 +146,24 @@ archive projection validates schema, path safety, artifact locators, ledger,
 gate, readiness, and the exact archive allowlist before the official
 `task.py archive --no-commit` move.
 
+The finish-work prepare path has its own reviewed-body resolver. It preserves
+the lexical path and rejects paths outside the lexical repo root. The only
+re-anchor is Darwin's verified fixed `/var` -> `/private/var` system prefix:
+the code requires `/var` itself to be that symlink and requires both the repo
+suffix and file-relative suffix to match structurally. It never searches
+arbitrary ancestors with `samefile`, so an external user symlink that points
+back to the repo remains outside and is rejected. It then uses `lstat` to
+reject any existing symlink component from repo root through
+`.trellis/tasks/<task>/pr-body.md`. This includes directory aliases,
+multi-level ancestors, task-directory parents, dangling/loop links, and the
+final file. It then requires `--body-file` to equal that direct task path,
+reads both source and task-local bytes, requires exact byte equality, and
+decodes strict UTF-8. It rejects `--body-artifact`, external files even when
+their stripped text is equal, final-newline differences, and Markdown
+hard-break space differences. Generic `publish-pr` compatibility may still
+accept a reviewed body artifact, but finish-work never uses that legacy source
+resolver.
+
 Marketplace machine evidence uses the task-relative locator
 `marketplace-verification.json`, never the active task path. Final projection
 and archive recovery resolve that locator inside the current active/archived

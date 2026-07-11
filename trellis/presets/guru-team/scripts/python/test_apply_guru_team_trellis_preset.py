@@ -474,6 +474,18 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
             self,
             (self.repo / ".claude/agents/trellis-check.md").read_text(encoding="utf-8"),
         )
+        installed_manifest = json.loads(
+            (self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
+        )
+        managed_assets = installed_manifest["install"]["managed_assets"]
+        self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
+        self.assertTrue(installed_manifest["install"]["all_platforms"])
+        self.assertEqual(len(managed_assets), 71)
+        self.assertEqual(managed_assets, sorted(set(managed_assets)))
+        self.assertEqual(
+            [path for path in managed_assets if not (self.repo / path).is_file()],
+            [],
+        )
 
     def test_main_accepts_repeated_platform_arguments(self) -> None:
         with mock.patch(
@@ -701,6 +713,18 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertIn("get_context.py --mode packages", verifier)
         self.assertIn("task.py current --source", verifier)
         self.assertIn("Unexpected .new/.bak sidecars after preview, switch, update, and preset reapply", verifier)
+        self.assertIn("verify_installed_closeout.py", verifier)
+        self.assertIn("--case initial", verifier)
+        self.assertIn("--case after-update", verifier)
+        installed_closeout = (
+            self.guru_root
+            / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn('.trellis/guru-team/scripts/bash/finish-work.sh', installed_closeout)
+        self.assertIn('.trellis/guru-team/scripts/python/guru_team_trellis.py', installed_closeout)
+        self.assertIn('args[:2] == ["remote", "get-url"]', installed_closeout)
+        self.assertIn('args[:2] == ["pr", "ready"]', installed_closeout)
+        self.assertNotIn("copytree", installed_closeout)
 
     def test_generated_trellis_meta_task_system_docs_are_replaced_with_guru_team_overlay(self) -> None:
         shared_meta = self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md"

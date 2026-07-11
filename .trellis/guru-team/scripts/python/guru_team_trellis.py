@@ -16,6 +16,7 @@ import os
 import re
 import shlex
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -8169,10 +8170,158 @@ def read_pr_body_file(root: Path, body_file: str | None) -> str | None:
         raise WorkflowError(f"PR body file not found: {path}", exit_code=2)
     if not path.is_file():
         raise WorkflowError(f"PR body file must point to a file: {path}", exit_code=2)
-    body = path.read_text(encoding="utf-8").strip()
-    if not body:
+    try:
+        body = path.read_bytes().decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise WorkflowError(f"PR body file is not valid UTF-8: {path}", exit_code=2) from exc
+    if not body.strip():
         raise WorkflowError(f"PR body file is empty: {path}", exit_code=2)
-    return body + "\n"
+    return body
+
+
+def closeout_lexical_path(path: Path) -> Path:
+    return Path(os.path.abspath(os.fspath(path)))
+
+
+def reanchor_darwin_system_repo_alias(boundary: Path, target: Path) -> Path | None:
+    if sys.platform != "darwin":
+        return None
+    alias_prefix = Path("/var")
+    canonical_prefix = Path("/private/var")
+    try:
+        alias_mode = os.lstat(alias_prefix).st_mode
+        alias_target = Path(os.readlink(alias_prefix))
+    except OSError:
+        return None
+    if not stat.S_ISLNK(alias_mode):
+        return None
+    if not alias_target.is_absolute():
+        alias_target = alias_prefix.parent / alias_target
+    if closeout_lexical_path(alias_target) != canonical_prefix:
+        return None
+
+    prefix_pairs = [
+        (canonical_prefix, alias_prefix),
+        (alias_prefix, canonical_prefix),
+    ]
+    for boundary_prefix, target_prefix in prefix_pairs:
+        try:
+            repo_suffix = boundary.relative_to(boundary_prefix)
+            alias_repo_root = target_prefix / repo_suffix
+            path_suffix = target.relative_to(alias_repo_root)
+        except ValueError:
+            continue
+        return boundary / path_suffix
+    return None
+
+
+def reject_closeout_symlink_components(root: Path, path: Path, label: str) -> Path:
+    boundary = closeout_lexical_path(root)
+    target = closeout_lexical_path(path)
+    try:
+        relative = target.relative_to(boundary)
+    except ValueError:
+        mapped = reanchor_darwin_system_repo_alias(boundary, target)
+        if mapped is None:
+            raise WorkflowError(
+                f"finish-work {label} must stay inside the repository root.",
+                exit_code=2,
+                payload={"path": str(path)},
+            )
+        target = mapped
+        relative = target.relative_to(boundary)
+
+    components = [boundary]
+    current = boundary
+    for part in relative.parts:
+        current = current / part
+        components.append(current)
+    for component in components:
+        try:
+            mode = os.lstat(component).st_mode
+        except FileNotFoundError:
+            break
+        except OSError as exc:
+            raise WorkflowError(
+                f"finish-work could not inspect {label} path components.",
+                exit_code=2,
+                payload={"path": str(path), "component": str(component)},
+            ) from exc
+        if stat.S_ISLNK(mode):
+            component_label = "." if component == boundary else component.relative_to(boundary).as_posix()
+            raise WorkflowError(
+                f"finish-work {label} path must not contain symbolic-link components.",
+                exit_code=2,
+                payload={"path": str(path), "symlink_component": component_label},
+            )
+    return target
+
+
+def resolve_closeout_reviewed_body(
+    root: Path,
+    task_dir: Path,
+    args: argparse.Namespace,
+) -> tuple[str, str]:
+    body_file = getattr(args, "body_file", None)
+    body_artifact = getattr(args, "body_artifact", None)
+    if body_artifact:
+        raise WorkflowError(
+            "finish-work does not accept --body-artifact; pass the current task-local pr-body.md with --body-file.",
+            exit_code=2,
+        )
+    if not body_file:
+        raise WorkflowError(
+            "finish-work requires --body-file pointing to the current task-local pr-body.md.",
+            exit_code=2,
+        )
+
+    root_path = closeout_lexical_path(root)
+    direct_task_dir = root_path / ".trellis/tasks" / task_dir.name
+    task_body_path = reject_closeout_symlink_components(
+        root_path,
+        direct_task_dir / PR_BODY_ARTIFACT,
+        "task-local PR body",
+    )
+    if closeout_lexical_path(task_dir) != direct_task_dir:
+        raise WorkflowError(
+            "finish-work task directory must be the direct active task path under .trellis/tasks.",
+            exit_code=2,
+            payload={"task_dir": str(task_dir)},
+        )
+
+    raw_source = Path(body_file).expanduser()
+    source_candidate = raw_source if raw_source.is_absolute() else root_path / raw_source
+    source_path = reject_closeout_symlink_components(root_path, source_candidate, "--body-file")
+    if not source_path.exists():
+        raise WorkflowError(f"PR body file not found: {source_path}", exit_code=2)
+    if not source_path.is_file():
+        raise WorkflowError(f"PR body file must point to a file: {source_path}", exit_code=2)
+    if not task_body_path.is_file():
+        raise WorkflowError(
+            "finish-work requires task-local pr-body.md.",
+            exit_code=2,
+        )
+    if source_path != task_body_path:
+        raise WorkflowError(
+            "finish-work --body-file must be the direct current task-local pr-body.md path.",
+            exit_code=2,
+            payload={"body_file": str(body_file), "required_body_file": repo_relative(root, task_body_path)},
+        )
+
+    source_bytes = source_path.read_bytes()
+    task_body_bytes = task_body_path.read_bytes()
+    if source_bytes != task_body_bytes:
+        raise WorkflowError(
+            "finish-work reviewed body source bytes do not match task-local pr-body.md.",
+            exit_code=2,
+        )
+    try:
+        body = task_body_bytes.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise WorkflowError("finish-work task-local pr-body.md is not valid UTF-8.", exit_code=2) from exc
+    if not body.strip():
+        raise WorkflowError("finish-work task-local pr-body.md is empty.", exit_code=2)
+    return body, f"body-file:{repo_relative(root, task_body_path)}"
 
 
 def resolve_pr_body(
@@ -11139,17 +11288,7 @@ def prepare_closeout(
     )
     if ledger_errors:
         raise WorkflowError("Issue Scope Ledger is incomplete for closeout.", exit_code=2, payload={"errors": ledger_errors})
-    resolved_body, body_source = resolve_pr_body(root, args, ledger, gate, list(args.validation or []), config)
-    task_body_path = task_dir / PR_BODY_ARTIFACT
-    if not task_body_path.is_file():
-        raise WorkflowError("finish-work requires task-local pr-body.md.", exit_code=2)
-    task_body_bytes = task_body_path.read_bytes()
-    try:
-        body = task_body_bytes.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise WorkflowError("finish-work task-local pr-body.md is not valid UTF-8.", exit_code=2) from exc
-    if not body.strip():
-        raise WorkflowError("finish-work task-local pr-body.md is empty.", exit_code=2)
+    body, body_source = resolve_closeout_reviewed_body(root, task_dir, args)
     body_errors = validate_pr_body_quality(body, ledger, False)
     source_errors = validate_reviewed_body_source_for_publish(body_source, False)
     if body_errors or source_errors:
@@ -11158,8 +11297,6 @@ def prepare_closeout(
             exit_code=2,
             payload={"errors": body_errors + source_errors, "body_source": body_source, "reviewed_source_ok": not source_errors},
         )
-    if resolved_body.strip() != body.strip():
-        raise WorkflowError("finish-work reviewed body source does not match task-local pr-body.md content.", exit_code=2)
     task = task_json(task_dir)
     if isinstance(task.get("children"), list) and task.get("children"):
         raise WorkflowError(
@@ -12528,8 +12665,8 @@ def build_parser() -> argparse.ArgumentParser:
     finish.add_argument("--remote")
     finish.add_argument("--title", help="Chinese PR title override.")
     finish.add_argument("--validation", action="append", help="Chinese validation evidence line for PR body.")
-    finish.add_argument("--body-file", help="AI-reviewed Markdown PR body passed through to publish-pr.")
-    finish.add_argument("--body-artifact", help="AI-reviewed JSON readiness artifact passed through to publish-pr.")
+    finish.add_argument("--body-file", help="Exact current task-local non-symlink pr-body.md required by finish-work.")
+    finish.add_argument("--body-artifact", help="Rejected by finish-work; retained only for an explicit compatibility error.")
     finish.add_argument("--draft", dest="draft", action="store_true", default=None)
     finish.add_argument("--no-draft", dest="draft", action="store_false")
     finish.add_argument(

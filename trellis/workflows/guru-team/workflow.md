@@ -1073,7 +1073,7 @@ If implementation reveals a requirement defect, return to Phase 1 and update art
 [workflow-state:completed]
 Fallback/legacy closeout breadcrumb for an active task already marked `completed`; the normal path is `trellis-continue` stops after Branch Review Gate and the user/session explicitly invokes `/trellis:finish-work`.
 If `review-gate.json` is missing, failed, stale for the current HEAD, or reviewer-only, return to Phase 3.5 for independent review and the `review-branch` recorder.
-If the gate passed, create or review task-local PR readiness: `{TASK_DIR}/pr-body.md` via `--body-file "{TASK_DIR}/pr-body.md"` or a task-local `--body-artifact`.
+If the gate passed, create or review task-local PR readiness at `{TASK_DIR}/pr-body.md`. Finish-work must pass that exact direct task path via `--body-file "{TASK_DIR}/pr-body.md"`; every existing path component from repo root through the task directory and final file must be non-symlink. It rejects `--body-artifact`, external/user-alias paths, and trim/newline-equivalent substitutes; only the verified Darwin `/var` to `/private/var` system root prefix may be structurally re-anchored.
 Run a dry-run first:
 `.trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work --finish-summary-index-file "{TASK_DIR}/finish-summary-index.json" --body-file "{TASK_DIR}/pr-body.md" --dry-run`
 After dry-run, run `resolve-human-artifacts.sh --json --task <task-path>` and include an active-task `Markdown 产物 review 表`; review the complete plan and rerun formal finish with `--expected-plan-digest <closeout_plan_digest>`.

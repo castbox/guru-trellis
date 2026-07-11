@@ -75,20 +75,21 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-11T07:37:31Z",
+  "installed_at": "2026-07-11T12:39:56Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "fix/105-finish-work-closeout-transaction",
-    "commit": "3dec302206783fe4ac1296066e9a1789c995d58b",
+    "commit": "533d9e54fb912a29e5a422219163afa9e2c3ec32",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
   "install": {
     "selected_platforms": [
+      "claude",
       "codex",
       "cursor"
     ],
-    "all_platforms": false,
+    "all_platforms": true,
     "managed_assets": [
       ".agents/skills/trellis-before-dev/SKILL.md",
       ".agents/skills/trellis-brainstorm/SKILL.md",
@@ -101,6 +102,11 @@
       ".agents/skills/trellis-meta/references/local-architecture/task-system.md",
       ".agents/skills/trellis-meta/references/platform-files/agents.md",
       ".agents/skills/trellis-start/SKILL.md",
+      ".claude/agents/trellis-check.md",
+      ".claude/agents/trellis-implement.md",
+      ".claude/agents/trellis-research.md",
+      ".claude/commands/trellis/continue.md",
+      ".claude/commands/trellis/finish-work.md",
       ".codex/agents/trellis-check.toml",
       ".codex/agents/trellis-implement.toml",
       ".codex/agents/trellis-research.toml",
@@ -158,9 +164,7 @@
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"
     ],
     "new_copies": [],
-    "managed_backups": [
-      ".trellis/guru-team/scripts/python/guru_team_trellis.py.bak"
-    ],
+    "managed_backups": [],
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
   },

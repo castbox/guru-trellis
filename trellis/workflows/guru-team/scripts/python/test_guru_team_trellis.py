@@ -3938,8 +3938,8 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertNotIn(["python3", "./.trellis/scripts/task.py", "archive", self.task_dir.name], run_commands)
         self.assertFalse(any(command[:3] == ["python3", "./.trellis/scripts/add_session.py", "--title"] for command in run_commands))
         self.assertEqual(raised.exception.exit_code, 2)
-        self.assertEqual(raised.exception.payload["body_source"], "generated")
-        self.assertFalse(raised.exception.payload["reviewed_source_ok"])
+        self.assertIn("requires --body-file", str(raised.exception))
+        self.assertNotIn("body_source", raised.exception.payload)
 
     def test_finish_work_calls_publish_with_internal_marker(self) -> None:
         body_path = self.task_dir / "reviewed-pr-body.md"
@@ -8908,6 +8908,193 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 reviewed_head=self.head,
                 title="#105 重构 finish-work 收尾事务",
             )
+
+    def test_read_pr_body_file_preserves_exact_utf8_text(self) -> None:
+        body_path = self.root / "reviewed-body.md"
+        exact = "\n## 变更摘要\n\n- Markdown hard break.  \n\n"
+        body_path.write_bytes(exact.encode("utf-8"))
+
+        self.assertEqual(gtt.read_pr_body_file(self.root, str(body_path)), exact)
+
+    def test_closeout_reviewed_body_accepts_exact_task_local_relative_and_absolute_sources(self) -> None:
+        body_path = self.task_dir / gtt.PR_BODY_ARTIFACT
+        expected = body_path.read_text(encoding="utf-8")
+        relative = body_path.relative_to(self.root).as_posix()
+
+        for source in [relative, str(body_path)]:
+            with self.subTest(source=source):
+                body, body_source = gtt.resolve_closeout_reviewed_body(
+                    self.root,
+                    self.task_dir,
+                    finish_args(body_file=source),
+                )
+                self.assertEqual(body, expected)
+                self.assertEqual(body_source, f"body-file:{relative}")
+
+    def test_closeout_reviewed_body_rejects_external_sources_even_when_strip_equivalent(self) -> None:
+        body_path = self.task_dir / gtt.PR_BODY_ARTIFACT
+        canonical = body_path.read_text(encoding="utf-8")
+        variants = {
+            "same-bytes": canonical,
+            "leading-trailing-whitespace": f" \n{canonical}\n ",
+            "final-newline": canonical.rstrip("\n"),
+            "markdown-hard-break-spaces": canonical.replace(
+                "- Guru Team publish helper\n",
+                "- Guru Team publish helper  \n",
+            ),
+        }
+
+        for label, content in variants.items():
+            external = self.root / f"external-{label}.md"
+            external.write_text(content, encoding="utf-8")
+            with self.subTest(label=label), self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.resolve_closeout_reviewed_body(
+                    self.root,
+                    self.task_dir,
+                    finish_args(body_file=str(external)),
+                )
+            self.assertIn("current task-local pr-body.md", str(raised.exception))
+
+    def test_closeout_reviewed_body_rejects_body_artifact(self) -> None:
+        artifact = self.task_dir / gtt.PR_READINESS_ARTIFACT
+        gtt.write_json(artifact, {"ready": True, "body_file": gtt.PR_BODY_ARTIFACT})
+
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.resolve_closeout_reviewed_body(
+                self.root,
+                self.task_dir,
+                finish_args(
+                    body_file=str(self.task_dir / gtt.PR_BODY_ARTIFACT),
+                    body_artifact=str(artifact),
+                ),
+            )
+        self.assertIn("does not accept --body-artifact", str(raised.exception))
+
+    def test_closeout_reviewed_body_rejects_symlink_to_task_body(self) -> None:
+        symlink = self.root / "reviewed-body-link.md"
+        symlink.symlink_to(self.task_dir / gtt.PR_BODY_ARTIFACT)
+
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.resolve_closeout_reviewed_body(
+                self.root,
+                self.task_dir,
+                finish_args(body_file=str(symlink)),
+            )
+        self.assertIn("symbolic-link components", str(raised.exception))
+        self.assertEqual(raised.exception.payload["symlink_component"], symlink.name)
+
+    def test_closeout_reviewed_body_rejects_relative_and_absolute_ancestor_symlink_aliases(self) -> None:
+        alias = self.root / "task-body-alias"
+        alias.symlink_to(self.task_dir, target_is_directory=True)
+        sources = [
+            f"{alias.name}/{gtt.PR_BODY_ARTIFACT}",
+            str(alias / gtt.PR_BODY_ARTIFACT),
+        ]
+
+        for source in sources:
+            with self.subTest(source=source), self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.resolve_closeout_reviewed_body(
+                    self.root,
+                    self.task_dir,
+                    finish_args(body_file=source),
+                )
+            self.assertIn("symbolic-link components", str(raised.exception))
+            self.assertEqual(raised.exception.payload["symlink_component"], alias.name)
+
+    def test_closeout_reviewed_body_rejects_multilevel_dangling_and_loop_symlink_components(self) -> None:
+        aliases = self.root / "aliases"
+        aliases.mkdir()
+        multilevel = aliases / "level-one"
+        multilevel.symlink_to(self.task_dir, target_is_directory=True)
+        dangling = aliases / "dangling"
+        dangling.symlink_to(self.root / "missing-task", target_is_directory=True)
+        loop = aliases / "loop"
+        loop.symlink_to(loop, target_is_directory=True)
+
+        for alias in [multilevel, dangling, loop]:
+            source = alias / gtt.PR_BODY_ARTIFACT
+            with self.subTest(alias=alias.name), self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.resolve_closeout_reviewed_body(
+                    self.root,
+                    self.task_dir,
+                    finish_args(body_file=str(source)),
+                )
+            self.assertIn("symbolic-link components", str(raised.exception))
+            self.assertEqual(
+                raised.exception.payload["symlink_component"],
+                f"aliases/{alias.name}",
+            )
+
+    def test_closeout_reviewed_body_rejects_symlinked_task_directory_parent(self) -> None:
+        root = self.root / "symlinked-task-parent"
+        external_tasks = self.root / "external-tasks"
+        task_dir = external_tasks / "07-11-closeout"
+        task_dir.mkdir(parents=True)
+        (task_dir / gtt.PR_BODY_ARTIFACT).write_text(valid_pr_body("symlinked task parent"), encoding="utf-8")
+        (root / ".trellis").mkdir(parents=True)
+        (root / ".trellis/tasks").symlink_to(external_tasks, target_is_directory=True)
+        direct_task_dir = root / ".trellis/tasks/07-11-closeout"
+
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.resolve_closeout_reviewed_body(
+                root,
+                direct_task_dir,
+                finish_args(body_file=".trellis/tasks/07-11-closeout/pr-body.md"),
+            )
+        self.assertIn("symbolic-link components", str(raised.exception))
+        self.assertEqual(raised.exception.payload["symlink_component"], ".trellis/tasks")
+
+    def test_closeout_reviewed_body_rejects_repo_external_alias_for_relative_and_absolute_sources(self) -> None:
+        alias = self.root.parent / f"{self.root.name}-repo-alias"
+        alias.symlink_to(self.root, target_is_directory=True)
+        self.addCleanup(alias.unlink, missing_ok=True)
+        aliased_body = alias / self.task_dir.relative_to(self.root) / gtt.PR_BODY_ARTIFACT
+        sources = [str(aliased_body), os.path.relpath(aliased_body, self.root)]
+
+        for source in sources:
+            with self.subTest(source=source), self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.resolve_closeout_reviewed_body(
+                    self.root,
+                    self.task_dir,
+                    finish_args(body_file=source),
+                )
+            self.assertIn("must stay inside the repository root", str(raised.exception))
+
+    def test_closeout_reviewed_body_rejects_multilevel_outer_alias_to_repo_root(self) -> None:
+        second = self.root.parent / f"{self.root.name}-outer-second"
+        first = self.root.parent / f"{self.root.name}-outer-first"
+        second.symlink_to(self.root, target_is_directory=True)
+        first.symlink_to(second, target_is_directory=True)
+        self.addCleanup(first.unlink, missing_ok=True)
+        self.addCleanup(second.unlink, missing_ok=True)
+        source = first / self.task_dir.relative_to(self.root) / gtt.PR_BODY_ARTIFACT
+
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.resolve_closeout_reviewed_body(
+                self.root,
+                self.task_dir,
+                finish_args(body_file=str(source)),
+            )
+        self.assertIn("must stay inside the repository root", str(raised.exception))
+
+    @unittest.skipUnless(sys.platform == "darwin", "Darwin /var system alias compatibility")
+    def test_closeout_reviewed_body_accepts_fixed_darwin_var_system_alias(self) -> None:
+        if not str(self.root).startswith("/var/"):
+            self.skipTest("temporary directory is not exposed through the /var alias")
+        canonical_root = Path("/private") / self.root.relative_to("/")
+        canonical_task_dir = canonical_root / self.task_dir.relative_to(self.root)
+        aliased_body = self.task_dir / gtt.PR_BODY_ARTIFACT
+
+        body, body_source = gtt.resolve_closeout_reviewed_body(
+            canonical_root,
+            canonical_task_dir,
+            finish_args(body_file=str(aliased_body)),
+        )
+        self.assertEqual(body, aliased_body.read_text(encoding="utf-8"))
+        self.assertEqual(
+            body_source,
+            f"body-file:{self.task_dir.relative_to(self.root).as_posix()}/{gtt.PR_BODY_ARTIFACT}",
+        )
 
     def test_closeout_plan_is_canonical_schema_valid_and_digest_stable(self) -> None:
         first = self.build_plan()

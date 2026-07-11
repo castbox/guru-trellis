@@ -145,7 +145,13 @@ sampling from being reported as current-branch marketplace verification. When
 it does run, it also exercises the existing-project `trellis workflow
 --create-new` preview, deletes the validated expected preview `.new`, then runs
 forced switch, `trellis update --force`, workflow reapply, and preset reapply.
-A final recursive scan must find no `.new` or `.bak` sidecars. It intentionally lives in this
+A controlled bare remote and fake GitHub adapter drive the already-installed
+`finish-work.sh` through dry-run digest, formal draft binding, official archive,
+three-way HEAD equality, ready transition, and clean-tree assertions once after
+install and once after update/reapply. The fixture uses installed wrappers,
+companion, schemas, config, workflow, and official `task.py`; it does not copy
+canonical runtime assets into the target. A final recursive scan must find no
+`.new` or `.bak` sidecars. It intentionally lives in this
 source repository and is not copied into target business repos as a managed
 companion asset.
 
@@ -423,7 +429,11 @@ non-draft publish. Non-draft publish requires reviewed Markdown with
 task-local `--body-file <path>`; formal finish builds
 `pr-readiness.json.publish_inputs` with repo/base/head/reviewed HEAD/title/body
 SHA-256/`draft=true`/reviewed source and `closeout_plan_digest`. Generated fallback
-bodies are preview-only. The readiness/body files are committed before the
+bodies are preview-only. Finish-work requires the direct task-local
+`pr-body.md` with exact raw UTF-8 bytes and rejects every symlink component
+from repo root through the task parent and final file, including alias,
+dangling, and loop paths. It rejects `--body-artifact` and external or
+whitespace-normalized substitutes. The readiness/body files are committed before the
 draft PR create and moved unchanged by archive. The script validates objective structure,
 reviewed source presence, Docs SSOT section/key presence, and close/ref
 semantics but does not replace AI release judgment.

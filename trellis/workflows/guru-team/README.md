@@ -442,8 +442,10 @@ AI 在调用 finish helper 前必须生成或审查 body readiness，确认 `变
 diff range / findings 状态、`Issue 关闭范围` 只关闭 ledger 中的 `close_issues`，并且
 `安全说明` / 部署影响与本次 diff 相符。Body 还必须包含 `Docs SSOT` / `文档同步`
 section，说明策略、durable docs 更新或 no-update 理由、已 merge 的 task delta、仅保留
-task history 的内容，以及 follow-up / 当前 PR limitation。non-draft publish 必须把审阅后的 Markdown
-body 存成 task-local 文件并传给 helper，或传入 task-local readiness artifact：
+task history 的内容，以及 follow-up / 当前 PR limitation。finish-work 必须把审阅后的 Markdown
+body 存成当前 task-local `pr-body.md` 并以 `--body-file` 传入；从 repo root 到 task
+目录和最终文件的每个现存 path component 都必须不是 symlink。它拒绝 `--body-artifact`、
+外部/alias 路径、dangling/loop symlink，以及仅在 trim/末尾换行/Markdown hard-break 空格上等价的替代内容：
 
 ```bash
 .trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \

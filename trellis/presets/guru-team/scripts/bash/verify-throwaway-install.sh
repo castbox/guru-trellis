@@ -167,7 +167,7 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/check-commit-messages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/format-merge-commit.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
 test -f "$TARGET/.trellis/guru-team/extension.json"
-python3 -c 'import json, sys; payload = json.load(open(sys.argv[1], encoding="utf-8")); extension = payload["extension"]; api = extension["public_api"]; assert extension["extension_id"] == "guru-team"; assert extension["version"]; assert extension["target_trellis_cli"] == "0.6.5"; assert "agent-assignment.json" in api["artifact_contracts"]; assert "pr-body.md" in api["artifact_contracts"]; assert "closeout-plan.json" in api["artifact_contracts"]; assert "finish-summary.json" in api["artifact_contracts"]; assert "resolve-human-artifacts" in api["companion_scripts"]; assert "record-subagent-liveness-event" in api["companion_scripts"]; assert "check-subagent-liveness" in api["companion_scripts"]; assert "check-commit-messages" in api["companion_scripts"]; assert "format-merge-commit" in api["companion_scripts"]; assert "backfill-finish-summary" in api["companion_scripts"]' "$TARGET/.trellis/guru-team/extension.json"
+python3 -c 'import json, pathlib, sys; manifest_path = pathlib.Path(sys.argv[1]); root = pathlib.Path(sys.argv[2]); payload = json.loads(manifest_path.read_text(encoding="utf-8")); extension = payload["extension"]; install = payload["install"]; api = extension["public_api"]; assets = install["managed_assets"]; assert extension["extension_id"] == "guru-team"; assert extension["version"]; assert extension["target_trellis_cli"] == "0.6.5"; assert assets == sorted(set(assets)); assert len(assets) == 66; assert all((root / path).is_file() for path in assets); assert "agent-assignment.json" in api["artifact_contracts"]; assert "pr-body.md" in api["artifact_contracts"]; assert "closeout-plan.json" in api["artifact_contracts"]; assert "finish-summary.json" in api["artifact_contracts"]; assert "resolve-human-artifacts" in api["companion_scripts"]; assert "record-subagent-liveness-event" in api["companion_scripts"]; assert "check-subagent-liveness" in api["companion_scripts"]; assert "check-commit-messages" in api["companion_scripts"]; assert "format-merge-commit" in api["companion_scripts"]; assert "backfill-finish-summary" in api["companion_scripts"]' "$TARGET/.trellis/guru-team/extension.json" "$TARGET"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 mkdir -p "$TARGET/.trellis/tasks/archive"
 BACKFILL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh" --root "$TARGET" --json --dry-run)"
@@ -316,6 +316,10 @@ fi
 printf '%s\n' "$PUBLISH_ERROR_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "error"; assert payload["blocked_step"] == "publish-pr"; assert payload["required_entrypoint"] == "trellis-finish-work"' <<<"$PUBLISH_ERROR_JSON"
 
+INITIAL_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case initial)"
+printf '%s\n' "$INITIAL_CLOSEOUT_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 105; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True' <<<"$INITIAL_CLOSEOUT_JSON"
+
 rm -f "$TARGET/.trellis/workflow.md.new"
 (
   cd "$TARGET"
@@ -349,9 +353,13 @@ test -f "$TARGET/.trellis/guru-team/schemas/finish-summary.schema.json"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
 BACKFILL_AFTER_UPDATE_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh" --root "$TARGET" --json --dry-run)"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["mode"] == "dry-run"; assert payload["scanned_tasks"] == 0; assert payload["errors"] == []' <<<"$BACKFILL_AFTER_UPDATE_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["mode"] == "dry-run"; assert payload["scanned_tasks"] == 1; assert payload["errors"] == []' <<<"$BACKFILL_AFTER_UPDATE_JSON"
 grep -q '^session_auto_commit: false$' "$TARGET/.trellis/config.yaml"
 grep -q '^\.trellis/workspace/$' "$TARGET/.gitignore"
+
+UPDATED_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case after-update)"
+printf '%s\n' "$UPDATED_CLOSEOUT_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 106; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True' <<<"$UPDATED_CLOSEOUT_JSON"
 
 FINAL_SIDECARS="$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print)"
 if [[ -n "$FINAL_SIDECARS" ]]; then

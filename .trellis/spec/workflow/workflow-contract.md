@@ -60,6 +60,11 @@ real temporary Git repository and bare remote. Only external GitHub/verifier
 responses are faked; production transition functions are not mocked. Every
 injected failure is cleared and re-entered through production `cmd_finish_work()`
 while exact paths, SHA values, PR state, and transition attempts are asserted.
+The preset throwaway verifier separately runs the installed `finish-work.sh`
+through one complete dry-run/formal/archive/ready transaction after install and
+again after `trellis update` plus preset reapply. It uses installed workflow,
+wrapper, companion, schemas, config, and official `task.py`; it does not copy
+canonical runtime assets into the fixture.
 
 Do not move Phase 0 side effects into `task.py create`: `prepare-task.sh` must
 resolve the source issue, base branch, branch name, executor-selected local worktree, and intake plan

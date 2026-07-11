@@ -218,7 +218,7 @@ def build_installed_extension_manifest(
     result: dict[str, Any],
 ) -> dict[str, Any]:
     managed_assets = sorted(
-        set(result["installed"])
+        (set(result["installed"]) - {".trellis/guru-team/config.yml"})
         | set(result["unchanged"])
         | set(result["updated_managed"])
         | set(result["replaced_overlays"])
