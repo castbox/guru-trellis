@@ -112,8 +112,8 @@ after archive and before the metadata commit, its path snapshot combines a
 NUL-delimited base-to-working-tree diff with NUL-delimited untracked file
 enumeration; archived task metadata is recorded as individual files, never as
 an untracked directory placeholder. The protected-prefix filter and fixed fact
-rules apply to this initial snapshot. If initial diff, initial untracked
-enumeration, or final/recovery diff fails, both path arrays are `[]`, the
+rules apply to the final pre-archive snapshot. If the required diff snapshot
+fails, both path arrays are `[]`, the
 filtering fact is removed, and exactly one fixed non-disclosing
 `finish-summary git path snapshot unavailable` fact is recorded before
 `retrieval_text` is re-derived. After PR creation,
@@ -122,24 +122,14 @@ protected prefixes, and writes the safe set to both `git.changed_paths` and
 search `paths`. A non-empty filtered set deterministically adds one fixed
 `finish-summary protected path filtering` contract fact without path, basename,
 or count details; an empty filtered set adds no such fact. Schema and Python
-validation reject protected prefixes in every path field without a deletion
-exception. Publish then writes URL/PR ref, validates the full summary, and
-refreshes the artifact whitelist from the current archived task before
-committing exactly that archived-task file. This metadata tail does not
-rerun Branch Review Gate. Before the first create, finish-work records and
-commits task-local `pr-readiness.json.publish_inputs` with repo, base/head,
-reviewed HEAD, exact title, `pr-body.md`, body SHA-256, draft, reviewed source,
-and canonical snapshot SHA-256. Recovery accepts only that archived artifact,
-checks clean/staged state, HEAD blobs, one-commit artifact history, digests,
-gate ancestry, and repo/base/head/current/remote identity, and rejects CLI
-title/body/draft/base overrides. Recovery revalidates the gate and
-current/remote HEAD before querying the current repo/head/base. One open PR is
-reused; zero triggers exactly one same-title/body/draft create retry; multiple
-fail closed without create. A failed retry preserves initial empty URL/refs and
-the same recovery command. Marketplace normal publish executes the remote
-verifier; recovery validates and reuses the existing passed verifier artifact,
-ledger evidence, verified/remote/publish HEAD, and review gate, and does not
-rerun the verifier against a dirty or staged summary.
+validation reject protected prefixes in every path field. The final summary is
+built once in the active task after draft PR binding and moves unchanged to the
+archive locator. Readiness binds repo/base/head, reviewed HEAD, exact title,
+`pr-body.md`, body SHA-256, `draft=true`, reviewed source, and
+`closeout_plan_digest`. Recovery consumes committed plan/readiness plus
+active/archive, Git/remote, and PR facts. One draft PR is reused; zero creates
+one draft; multiple fail closed. After archive push, recovery may only validate
+HEAD identity and retry draft-to-ready.
 
 ### Archived Task Backfill Contract
 
@@ -600,13 +590,73 @@ A failed findings artifact is also invalid recorder evidence when it lacks
 `conclusion.passed` must be `false`; `passed=true` is reserved for explicit
 `--pass` with zero findings.
 
-After `task.py archive`, the archived task is the new task-local boundary.
-Validators may accept a gate whose digest entries still point at the
-pre-archive active task path when the corresponding archived files exist and
-their content digests match. Finish/publish recovery may then rewrite only the
-task path, ledger path, `review_report`, and `agent_assignment` digest metadata
-to the archived task path before committing Trellis metadata. This does not
-change the reviewed code `HEAD` or the AI review conclusion.
+Before `task.py archive`, `prepare_closeout()` fixes both the active and future
+archive locators. The active task remains the task-local boundary until the
+single archive metadata transaction moves it to the prevalidated archive
+locator. Validators may accept gate digest entries that still use the active
+locator when the projected archived files have matching bytes; no artifact is
+rewritten after the archive move.
+
+## Closeout Plan
+
+`closeout-plan.json` is schema version `1.0` and is the immutable machine input
+contract shared by dry-run and formal finish. It records portable task and
+repo/base/head identity, protected input SHA-256 values, Branch Review Gate
+coverage, exact draft PR inputs, marketplace pending machine evidence, future
+archive projection, exact metadata allowlist, and the fixed transition list.
+It never records tokens, absolute worktree paths, a real PR URL, verifier
+output, or archive commit SHA. Its projection does record a fixed sentinel PR
+URL/ref and the complete schema-valid finish-summary template so all local
+summary errors are known during prepare.
+
+`projection.move_paths` is the complete task-relative filesystem set moved by
+the official archive command. `projection.tracked_move_paths` is the subset in
+the Git index after the evidence commit; each requires an active deletion and
+archive addition. `projection.untracked_archive_outputs` is the subset created
+after that commit; currently it is exactly `finish-summary.json`, and Git must
+report only its archive addition. `projection.evidence_paths` is the complete
+active task path set owned by the pre-draft metadata commit. These tracking
+classes are immutable plan facts derived before archive, not inferred from
+post-move status. The evidence commit tree must contain exactly the active
+locator projection of `tracked_move_paths`; this Git-tree check proves the
+classification before final projection writes any untracked output. The
+projection also stores `summary_template`,
+`summary_template_sha256`, the sentinel PR identity, and the exact runtime
+fields that may change. The sentinel uses the
+maximum-width positive 64-bit number so replacing it with a real PR number
+cannot introduce a new string-length validation failure.
+
+`summary_template_sha256` hashes the exact UTF-8 `write_json` encoding: two-space
+indentation, `ensure_ascii=false`, and one trailing newline. Final and archived
+summary validation first requires that exact byte encoding, then normalizes the
+two PR runtime fields back to the sentinel and compares the template digest.
+Whitespace-only artifact rewrites therefore fail recovery instead of being
+silently accepted.
+
+`plan_digest` is the SHA-256 of canonical JSON with `plan_digest` omitted.
+Dry-run returns the complete plan and digest. First formal execution accepts
+only the same digest through `--expected-plan-digest`; a mismatch or protected
+input drift fails before push or file writes. `pr-readiness.json` binds the same
+digest under `publish_inputs.closeout_plan_digest`. After the first metadata
+commit, retries load the committed plan and validate reachable successor facts;
+passed ledger evidence is never used to reconstruct the initial plan.
+
+Marketplace machine evidence has one deterministic pending identity and one
+deterministic passed identity. Pending and passed use the same fixed machine
+fields; pending uses empty artifact/remote digests and `commands_passed=false`.
+Human scope reasons remain outside this object and do not affect its identity.
+`artifact_path` is exactly task-relative `marketplace-verification.json`, so
+the same locator resolves after the active directory moves to archive.
+Missing, duplicate, altered, path-bound, or digest-mismatched machine fields
+fail closed.
+
+Archive recovery accepts only the complete mixed no-renames path set: both
+sides for every tracked move and archive-only for every untracked output.
+It validates evidence-commit parent/path identity, archive-commit parent/path
+identity, active absence, archive completeness, and the normalized final
+summary digest against the immutable template. It may complete only exact
+commit, push, HEAD alignment, and draft-to-ready executor steps; it never
+rebuilds or rewrites an archived artifact.
 
 Branch Review Gate treats every finding priority (`P0`, `P1`, `P2`, `P3`) as
 blocking. `observations[]` are non-blocking notes, and

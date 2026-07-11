@@ -24,6 +24,15 @@ The workflow has four durable phases:
 - Phase 2: implementation and quality check.
 - Phase 3: spec decision, commit, Branch Review Gate, finish-work, and automatic publish.
 
+`trellis-finish-work` is a single resumable transaction entry. Its mandatory
+order is: shared prepare/digest preview, expected-digest handshake, reviewed
+content push, deterministic marketplace evidence and readiness commit/push,
+unique draft PR binding, final archive projection, official task archive move,
+one exact metadata commit/push, local/remote/PR HEAD equality, then
+draft-to-ready. Archive is the last repository mutation, not the midpoint of
+publish. Normal flow never asks the caller to choose `--skip-archive`,
+`--recovery-after-finish-work`, or a separate publish command.
+
 Do not move Phase 0 side effects into `task.py create`: `prepare-task.sh` must
 resolve the source issue, base branch, branch name, executor-selected local worktree, and intake plan
 before `.trellis/tasks/` artifacts are written.
@@ -60,14 +69,12 @@ Do not introduce `review-branch`, `check-review-gate`, `finish-work.sh`, or
 used by the workflow entrypoints.
 
 The explicit finish entry requires AI-authored task-local
-`finish-summary-index.json`, then dry-runs and formally archives to a strict
-`finish-summary.json`. Guru Team does not call upstream `add_session.py` and
-does not use `.trellis/workspace/**` as finish, readiness, or context evidence.
-Publish writes the PR URL back through one exact archived-task metadata tail;
-recovery first validates publish identity/evidence and queries the current
-repo/head/base. One open PR is reused, zero triggers one same-input create
-retry, and multiple fail closed without create; a failed retry preserves the
-initial empty URL/refs and the same recovery command.
+`finish-summary-index.json`, dry-runs the shared prepare pipeline, and requires
+the returned plan digest for formal execution. It binds one draft PR, builds a
+strict final `finish-summary.json` before archive, moves it unchanged in one
+archive transaction, then marks the PR ready after three-way HEAD alignment.
+Guru Team does not call upstream `add_session.py` and does not use
+`.trellis/workspace/**` as finish, readiness, or context evidence.
 Shared `trellis-start` and canonical Codex/Cursor SessionStart overlays load
 phase/packages/task/Git facts without journal helper imports or workspace
 enumeration. Formal finish commits `pr-readiness.json.publish_inputs` before
@@ -401,8 +408,16 @@ Passing the gate requires:
 required `--from-trellis-finish-work` intent marker. The helper validates the
 passed review gate and its `review_report` digest, allows only Trellis
 metadata after the reviewed HEAD, rejects uncommitted non-metadata changes,
-archives the active task, records initial task-local finish-summary, commits remaining Trellis
-metadata, and then invokes publish.
+builds and validates the immutable plan, pushes reviewed content and evidence,
+binds one draft PR, validates the final projection, archives the active task in
+one metadata transaction, and then marks the PR ready.
+
+The shared prepare stage must construct the full future finish-summary with a
+deterministic sentinel PR and validate its schema, artifact set, archive paths,
+ledger, readiness inputs, and exact move set before any write, push, verifier,
+or GitHub call. Once the draft PR exists, the executor may substitute only the
+canonical PR URL and unique `PR #<number>` ref into that prevalidated template.
+Marketplace evidence locators are task-relative and remain valid after archive.
 
 Finish-work and archive must not execute the first Docs SSOT merge. If durable
 docs, `.trellis/spec/`, source, tests, schema, config, scripts, preset, overlay,
@@ -414,14 +429,22 @@ the gate, dry-run and formal finish fail closed and the task returns to Phase
 PR, invoke `publish-pr`, or invoke `finish-work`. The finish and publish helpers
 are fail-closed: ordinary direct `finish-work.sh` calls are rejected before
 archive/finish-summary/push side effects, and ordinary direct `publish-pr` calls are
-rejected before `git push` / `gh pr create`. Publish may run only from
-`finish-work.sh` after archive and initial finish-summary recording succeed, or through an explicit
-recovery/debug flag when finish-work already completed but publish must be
-retried.
+rejected before `git push` / `gh pr create`. Every closeout interruption is
+resumed through the same state-aware `trellis-finish-work` entry.
 
-The generated PR must be non-draft by default, target the intake/task
-`base_branch`, and use close keywords only for issues listed in the task-level
-`issue-scope-ledger.json` `close_issues` array.
+Same-entry archive recovery is bound to the plan's complete `move_paths`,
+`tracked_move_paths`, `untracked_archive_outputs`, exact `evidence_paths`,
+evidence commit parent, archive commit parent, final-summary template digest,
+active-locator absence, and archive completeness. Git paths are exact: tracked
+moves appear on both sides, while outputs first generated after the evidence
+commit appear only at archive. A partial, missing, extra, or misclassified path
+set is invalid. After the exact archive commit exists, recovery may
+only push that commit when remote is behind, verify local/remote/PR HEAD, and
+retry `gh pr ready`; it must not build or rewrite task artifacts.
+
+The generated PR must start as draft, target the intake/task `base_branch`, and
+become non-draft only after archive HEAD alignment. Close keywords are allowed
+only for issues in `issue-scope-ledger.json.close_issues`.
 
 Before publish, the AI must generate or review a PR body that is readable to a
 GitHub reviewer without Trellis session context. The body must include concrete

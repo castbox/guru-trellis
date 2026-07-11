@@ -1,5 +1,12 @@
 # Preset Installer
 
+The managed Guru Team assets include `schemas/closeout-plan.schema.json`.
+Fresh install, workflow switch/update, and preset reapply must preserve the
+same finish-work state order, expected-digest flag, draft handshake, and
+single-entry recovery text across shared, Codex, Claude, and Cursor entries.
+Recursive `.new`/`.bak` scans and canonical/dogfood equality include the new
+schema and finish entry content.
+
 ## Boundary
 
 `trellis/presets/guru-team/scripts/bash/apply.sh` is a Bash wrapper. The

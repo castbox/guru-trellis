@@ -67,6 +67,7 @@
         "review_gate": {"$ref": "#/$defs/taskPath"},
         "pr_body": {"$ref": "#/$defs/taskPath"},
         "pr_readiness": {"$ref": "#/$defs/taskPath"},
+        "closeout_plan": {"$ref": "#/$defs/taskPath"},
         "marketplace_verification": {"$ref": "#/$defs/taskPath"}
       }
     },

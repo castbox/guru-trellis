@@ -127,6 +127,23 @@ REVIEW_REPORT_ARTIFACT = "review.md"
 MARKETPLACE_VERIFICATION_ARTIFACT = "marketplace-verification.json"
 FINISH_SUMMARY_ARTIFACT = "finish-summary.json"
 FINISH_SUMMARY_INDEX_ARTIFACT = "finish-summary-index.json"
+CLOSEOUT_PLAN_ARTIFACT = "closeout-plan.json"
+CLOSEOUT_PLAN_SCHEMA_VERSION = "1.0"
+CLOSEOUT_PR_PLACEHOLDER_NUMBER = 9223372036854775807
+CLOSEOUT_SUMMARY_RUNTIME_FACT_FIELDS = [
+    "github.pr_url",
+    "index.search_terms.pr_refs",
+]
+CLOSEOUT_TRANSITIONS = [
+    "prepared",
+    "content_pushed",
+    "evidence_pushed",
+    "draft_bound",
+    "projection_validated",
+    "archive_moved",
+    "archive_pushed",
+    "ready",
+]
 FINISH_SUMMARY_SCHEMA_VERSION = 1
 FINISH_SUMMARY_GENERATOR = "guru-team.finish-work"
 FINISH_SUMMARY_BACKFILL_GENERATOR = "guru-team.finish-summary-backfill"
@@ -146,6 +163,7 @@ FINISH_SUMMARY_ARTIFACT_FILES = {
     "review_gate": "review-gate.json",
     "pr_body": "pr-body.md",
     "pr_readiness": "pr-readiness.json",
+    "closeout_plan": CLOSEOUT_PLAN_ARTIFACT,
     "marketplace_verification": MARKETPLACE_VERIFICATION_ARTIFACT,
 }
 FINISH_SUMMARY_INDEX_KEYS = {
@@ -218,6 +236,7 @@ PR_READINESS_PUBLISH_INPUT_KEYS = {
     "draft",
     "reviewed_source",
 }
+PR_READINESS_CLOSEOUT_INPUT_KEYS = PR_READINESS_PUBLISH_INPUT_KEYS | {"closeout_plan_digest"}
 REVIEW_ROUND_REPORT_DIR = "reviews"
 HUMAN_MARKDOWN_ARTIFACTS = [
     {
@@ -1614,6 +1633,9 @@ def build_finish_summary(
     *,
     pr_url: str = "",
     changed_paths: list[str] | None = None,
+    archive_dir_override: str | None = None,
+    generated_at_override: str | None = None,
+    artifacts_override: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     task = task_json(task_dir)
     base_branch = str(task_context.get("base_branch") or task.get("base_branch") or "").strip()
@@ -1634,7 +1656,7 @@ def build_finish_summary(
         for key in ["source_issues", "close_issues", "related_issues", "followup_issues"]
     }
     github["pr_url"] = pr_url
-    artifacts = finish_summary_artifacts(task_dir)
+    artifacts = copy.deepcopy(artifacts_override) if artifacts_override is not None else finish_summary_artifacts(task_dir)
     index = copy.deepcopy(index_payload["index"])
     apply_finish_summary_path_snapshot_contract(
         index,
@@ -1653,14 +1675,14 @@ def build_finish_summary(
     index["retrieval_text"] = finish_summary_retrieval_text(str(task.get("title") or task.get("name") or task_dir.name), index)
     payload = {
         "schema_version": FINISH_SUMMARY_SCHEMA_VERSION,
-        "generated_at": now_iso(),
+        "generated_at": generated_at_override or now_iso(),
         "generator": FINISH_SUMMARY_GENERATOR,
         "task": {
             "slug": task_dir.name,
             "title": str(task.get("title") or task.get("name") or task_dir.name),
             "status": "completed",
             "artifact_dir": str(task_context.get("task_artifact_dir") or ""),
-            "archive_dir": repo_relative(root, task_dir),
+            "archive_dir": archive_dir_override or repo_relative(root, task_dir),
         },
         "git": {
             "base_branch": base_branch,
@@ -1672,7 +1694,7 @@ def build_finish_summary(
         "artifacts": artifacts,
         "index": index,
     }
-    errors = finish_summary_errors(payload, task_dir=task_dir)
+    errors = finish_summary_errors(payload, task_dir=None if archive_dir_override else task_dir)
     if errors:
         raise WorkflowError("Generated finish-summary validation failed.", exit_code=2, payload={"errors": errors})
     return payload
@@ -2919,7 +2941,11 @@ def git_dirty(root: Path) -> bool:
 
 
 def git_status_paths(root: Path) -> list[str]:
-    lines = run(["git", "status", "--porcelain"], cwd=root, check=False).stdout.splitlines()
+    lines = run(
+        ["git", "status", "--porcelain", "--untracked-files=all", "--no-renames"],
+        cwd=root,
+        check=False,
+    ).stdout.splitlines()
     paths: list[str] = []
     for line in lines:
         if not line.strip():
@@ -3953,13 +3979,29 @@ def remote_marketplace_evidence_errors(issue: dict[str, Any], *, allow_pending: 
         return ["缺少唯一 remote_marketplace_verification 结构化 evidence。"]
     status = item.get("status")
     if status == "pending" and allow_pending:
-        if item != {
+        legacy_pending = {
             "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
             "status": "pending",
             "required": True,
             "artifact_path": "marketplace-verification.json",
             "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。",
-        }:
+        }
+        machine_pending_keys = {
+            "type", "status", "required", "artifact_path", "artifact_sha256",
+            "verified_content_head", "remote_head", "publish_head", "commands_passed",
+        }
+        machine_pending_ok = (
+            set(item) == machine_pending_keys
+            and item.get("required") is True
+            and isinstance(item.get("artifact_path"), str)
+            and item.get("artifact_path") == MARKETPLACE_VERIFICATION_ARTIFACT
+            and item.get("artifact_sha256") == ""
+            and bool(re.fullmatch(r"[0-9a-f]{40}", str(item.get("verified_content_head") or "")))
+            and item.get("remote_head") == ""
+            and item.get("publish_head") == item.get("verified_content_head")
+            and item.get("commands_passed") is False
+        )
+        if item != legacy_pending and not machine_pending_ok:
             return ["pending remote marketplace evidence 不符合固定合同。"]
         return []
     if status != "passed":
@@ -4029,19 +4071,28 @@ def validate_publish_invocation(args: argparse.Namespace) -> None:
     if getattr(args, "from_finish_work", False) or getattr(args, "recovery_after_finish_work", False):
         return
     raise WorkflowError(
-        "publish-pr is an internal helper. Run `.trellis/guru-team/scripts/bash/finish-work.sh --json` "
-        "so archive and initial finish-summary recording complete before PR publish. If finish-work already completed and only "
-        "publish recovery is needed, rerun publish-pr with --recovery-after-finish-work.",
+        "publish-pr is an internal helper. Run the explicit state-aware `trellis-finish-work` entry "
+        "for both initial closeout and recovery.",
         exit_code=2,
         payload={
             "blocked_step": "publish-pr",
-            "required_entrypoint": ".trellis/guru-team/scripts/bash/finish-work.sh --json",
-            "recovery_flag": "--recovery-after-finish-work",
+            "required_entrypoint": "trellis-finish-work",
         },
     )
 
 
 def validate_finish_work_invocation(args: argparse.Namespace) -> None:
+    if getattr(args, "skip_archive", False):
+        raise WorkflowError(
+            "--skip-archive is no longer a closeout recovery path; rerun the same trellis-finish-work entry.",
+            exit_code=2,
+            payload={"required_entrypoint": "trellis-finish-work"},
+        )
+    if getattr(args, "draft", None) is not None:
+        raise WorkflowError(
+            "finish-work owns the draft-to-ready strategy; --draft/--no-draft overrides are forbidden.",
+            exit_code=2,
+        )
     if getattr(args, "from_trellis_finish_work", False):
         return
     raise WorkflowError(
@@ -7723,6 +7774,7 @@ def build_pr_readiness_snapshot(
     reviewed_head_sha: str,
     title: str,
     draft: bool,
+    closeout_plan_digest: str | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     body_path = (task_dir / PR_BODY_ARTIFACT).resolve()
     if not body_path.is_file():
@@ -7742,6 +7794,10 @@ def build_pr_readiness_snapshot(
         "draft": draft,
         "reviewed_source": f"body-artifact:{PR_READINESS_ARTIFACT}",
     }
+    if closeout_plan_digest is not None:
+        if not re.fullmatch(r"[0-9a-f]{64}", closeout_plan_digest):
+            raise WorkflowError("PR readiness closeout plan digest is invalid.", exit_code=2)
+        publish_inputs["closeout_plan_digest"] = closeout_plan_digest
     artifact = {
         "ready": True,
         "body_file": PR_BODY_ARTIFACT,
@@ -7776,7 +7832,10 @@ def read_pr_readiness_publish_inputs(
     if artifact.get("ready") is not True or artifact.get("body_file") != PR_BODY_ARTIFACT:
         raise WorkflowError("pr-readiness.json must bind ready=true to task-local pr-body.md.", exit_code=2)
     publish_inputs = artifact.get("publish_inputs")
-    if not isinstance(publish_inputs, dict) or set(publish_inputs) != PR_READINESS_PUBLISH_INPUT_KEYS:
+    if not isinstance(publish_inputs, dict) or frozenset(publish_inputs) not in {
+        frozenset(PR_READINESS_PUBLISH_INPUT_KEYS),
+        frozenset(PR_READINESS_CLOSEOUT_INPUT_KEYS),
+    }:
         raise WorkflowError("pr-readiness.json publish_inputs keys are invalid.", exit_code=2)
     digest = str(artifact.get("publish_inputs_sha256") or "")
     if not re.fullmatch(r"[0-9a-f]{64}", digest) or digest != canonical_json_sha256(publish_inputs):
@@ -7794,6 +7853,9 @@ def read_pr_readiness_publish_inputs(
         raise WorkflowError("pr-readiness.json body_sha256 is invalid.", exit_code=2)
     if not isinstance(publish_inputs.get("draft"), bool):
         raise WorkflowError("pr-readiness.json draft must be boolean.", exit_code=2)
+    closeout_digest = publish_inputs.get("closeout_plan_digest")
+    if closeout_digest is not None and not re.fullmatch(r"[0-9a-f]{64}", str(closeout_digest)):
+        raise WorkflowError("pr-readiness.json closeout_plan_digest is invalid.", exit_code=2)
 
     body_path = task_dir / PR_BODY_ARTIFACT
     if not body_path.is_file():
@@ -9225,7 +9287,7 @@ MARKETPLACE_VERIFICATION_KEYS = {
     "marketplace_source", "verified_head", "remote_head", "task_dir", "steps", "assets",
 }
 MARKETPLACE_ASSET_KEYS = {
-    "workflow_sha256", "preview_sha256", "task_start_context_schema_sha256", "finish_summary_schema_sha256",
+    "workflow_sha256", "preview_sha256", "task_start_context_schema_sha256", "finish_summary_schema_sha256", "closeout_plan_schema_sha256",
     "runtime_gitignore_present", "workspace_gitignore_present", "session_auto_commit_false",
     "legacy_handoff_absent", "legacy_intake_schema_absent",
 }
@@ -9275,7 +9337,7 @@ def marketplace_verification_contract_errors(payload: dict[str, Any]) -> list[st
         errors.append("marketplace verification assets keys do not match schema 1.0.")
         assets = {}
     digest_pattern = re.compile(r"^[0-9a-f]{64}$")
-    for key in ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256", "finish_summary_schema_sha256"]:
+    for key in ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256", "finish_summary_schema_sha256", "closeout_plan_schema_sha256"]:
         value = str(assets.get(key) or "")
         if payload.get("status") == "passed" and not digest_pattern.fullmatch(value):
             errors.append(f"passed marketplace verification requires asset digest: {key}.")
@@ -9339,9 +9401,11 @@ def execute_marketplace_verification(
         preview_path = project / ".trellis/workflow.md.new"
         installed_schema = project / ".trellis/guru-team/schemas/task-start-context.schema.json"
         installed_finish_summary_schema = project / ".trellis/guru-team/schemas/finish-summary.schema.json"
+        installed_closeout_plan_schema = project / ".trellis/guru-team/schemas/closeout-plan.schema.json"
         canonical_workflow = source_checkout / "trellis/workflows/guru-team/workflow.md"
         canonical_schema = source_checkout / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
         canonical_finish_summary_schema = source_checkout / "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
+        canonical_closeout_plan_schema = source_checkout / "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
         project_gitignore = (project / ".gitignore").read_text(encoding="utf-8") if (project / ".gitignore").exists() else ""
         project_config = (project / ".trellis/config.yaml").read_text(encoding="utf-8") if (project / ".trellis/config.yaml").exists() else ""
         assets = {
@@ -9349,6 +9413,7 @@ def execute_marketplace_verification(
             "preview_sha256": digest_text(preview_path.read_text(encoding="utf-8")) if preview_path.exists() else "",
             "task_start_context_schema_sha256": hashlib.sha256(installed_schema.read_bytes()).hexdigest() if installed_schema.exists() else "",
             "finish_summary_schema_sha256": hashlib.sha256(installed_finish_summary_schema.read_bytes()).hexdigest() if installed_finish_summary_schema.exists() else "",
+            "closeout_plan_schema_sha256": hashlib.sha256(installed_closeout_plan_schema.read_bytes()).hexdigest() if installed_closeout_plan_schema.exists() else "",
             "runtime_gitignore_present": ".trellis/.runtime/" in project_gitignore,
             "workspace_gitignore_present": ".trellis/workspace/" in project_gitignore,
             "session_auto_commit_false": bool(re.search(r"(?m)^session_auto_commit:\s*false\s*$", project_config)),
@@ -9358,14 +9423,17 @@ def execute_marketplace_verification(
         expected_workflow_sha = digest_text(canonical_workflow.read_text(encoding="utf-8")) if canonical_workflow.exists() else ""
         expected_schema_sha = hashlib.sha256(canonical_schema.read_bytes()).hexdigest() if canonical_schema.exists() else ""
         expected_finish_summary_schema_sha = hashlib.sha256(canonical_finish_summary_schema.read_bytes()).hexdigest() if canonical_finish_summary_schema.exists() else ""
+        expected_closeout_plan_schema_sha = hashlib.sha256(canonical_closeout_plan_schema.read_bytes()).hexdigest() if canonical_closeout_plan_schema.exists() else ""
     passed = all(step.get("passed") is True for step in steps) and all([
         expected_workflow_sha,
         expected_schema_sha,
         expected_finish_summary_schema_sha,
+        expected_closeout_plan_schema_sha,
         assets["workflow_sha256"] == expected_workflow_sha,
         assets["preview_sha256"] == expected_workflow_sha,
         assets["task_start_context_schema_sha256"] == expected_schema_sha,
         assets["finish_summary_schema_sha256"] == expected_finish_summary_schema_sha,
+        assets["closeout_plan_schema_sha256"] == expected_closeout_plan_schema_sha,
         assets["runtime_gitignore_present"],
         assets["workspace_gitignore_present"],
         assets["session_auto_commit_false"],
@@ -9394,6 +9462,7 @@ def execute_marketplace_verification(
             "preview_sha256": assets.get("preview_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("preview_sha256") or "")) else "",
             "task_start_context_schema_sha256": assets.get("task_start_context_schema_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("task_start_context_schema_sha256") or "")) else "",
             "finish_summary_schema_sha256": assets.get("finish_summary_schema_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("finish_summary_schema_sha256") or "")) else "",
+            "closeout_plan_schema_sha256": assets.get("closeout_plan_schema_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("closeout_plan_schema_sha256") or "")) else "",
             "runtime_gitignore_present": bool(assets.get("runtime_gitignore_present")),
             "workspace_gitignore_present": bool(assets.get("workspace_gitignore_present")),
             "session_auto_commit_false": bool(assets.get("session_auto_commit_false")),
@@ -9472,21 +9541,25 @@ def validate_marketplace_verification(
     if not isinstance(steps, list) or len(steps) < 7 or any(not isinstance(step, dict) or step.get("passed") is not True for step in steps):
         errors.append("marketplace verification must record passed remote/ref clone/init/preview/switch/preset steps.")
     assets = payload.get("assets") if isinstance(payload.get("assets"), dict) else {}
-    for key in ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256", "finish_summary_schema_sha256"]:
+    for key in ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256", "finish_summary_schema_sha256", "closeout_plan_schema_sha256"]:
         if not digest_pattern.fullmatch(str(assets.get(key) or "")):
             errors.append(f"marketplace verification missing asset digest: {key}.")
     canonical_workflow = root / "trellis/workflows/guru-team/workflow.md"
     canonical_schema = root / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
     canonical_finish_summary_schema = root / "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
+    canonical_closeout_plan_schema = root / "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
     expected_workflow_sha = digest_text(canonical_workflow.read_text(encoding="utf-8")) if canonical_workflow.exists() else ""
     expected_schema_sha = hashlib.sha256(canonical_schema.read_bytes()).hexdigest() if canonical_schema.exists() else ""
     expected_finish_summary_schema_sha = hashlib.sha256(canonical_finish_summary_schema.read_bytes()).hexdigest() if canonical_finish_summary_schema.exists() else ""
+    expected_closeout_plan_schema_sha = hashlib.sha256(canonical_closeout_plan_schema.read_bytes()).hexdigest() if canonical_closeout_plan_schema.exists() else ""
     if assets.get("workflow_sha256") != expected_workflow_sha or assets.get("preview_sha256") != expected_workflow_sha:
         errors.append("marketplace installed/preview workflow digests do not match the current canonical workflow.")
     if assets.get("task_start_context_schema_sha256") != expected_schema_sha:
         errors.append("marketplace installed task-start-context schema digest does not match current canonical schema.")
     if assets.get("finish_summary_schema_sha256") != expected_finish_summary_schema_sha:
         errors.append("marketplace installed finish-summary schema digest does not match current canonical schema.")
+    if assets.get("closeout_plan_schema_sha256") != expected_closeout_plan_schema_sha:
+        errors.append("marketplace installed closeout-plan schema digest does not match current canonical schema.")
     if assets.get("runtime_gitignore_present") is not True:
         errors.append("marketplace verification did not confirm runtime gitignore contract.")
     if assets.get("workspace_gitignore_present") is not True:
@@ -9508,7 +9581,7 @@ def validate_marketplace_verification(
             "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
             "status": "passed",
             "required": True,
-            "artifact_path": repo_relative(root, path),
+            "artifact_path": MARKETPLACE_VERIFICATION_ARTIFACT,
             "artifact_sha256": artifact_sha,
             "verified_content_head": verified_head,
             "remote_head": str(payload.get("remote_head") or ""),
@@ -10241,6 +10314,1213 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
     return payload
 
 
+def closeout_plan_path(task_dir: Path) -> Path:
+    return task_dir / CLOSEOUT_PLAN_ARTIFACT
+
+
+def closeout_semantic_ledger(ledger: dict[str, Any]) -> dict[str, Any]:
+    normalized = copy.deepcopy(ledger)
+    targets: list[dict[str, Any]] = []
+    primary = normalized.get("primary_issue")
+    if isinstance(primary, dict):
+        targets.append(primary)
+    close_issues = normalized.get("close_issues")
+    if isinstance(close_issues, list):
+        targets.extend(item for item in close_issues if isinstance(item, dict))
+    for issue in targets:
+        evidence = issue.get("acceptance_evidence")
+        if isinstance(evidence, list):
+            issue["acceptance_evidence"] = [
+                item
+                for item in evidence
+                if not (isinstance(item, dict) and item.get("type") == REMOTE_MARKETPLACE_EVIDENCE_TYPE)
+            ]
+    return normalized
+
+
+def closeout_input_record(root: Path, path: Path, *, payload: dict[str, Any] | None = None) -> dict[str, str]:
+    if not path.is_file() and payload is None:
+        raise WorkflowError("Closeout protected input is missing.", exit_code=2, payload={"path": str(path)})
+    digest = canonical_json_sha256(payload) if payload is not None else hashlib.sha256(path.read_bytes()).hexdigest()
+    return {"path": repo_relative(root, path), "sha256": digest}
+
+
+def closeout_pending_marketplace_evidence(root: Path, task_dir: Path, reviewed_head: str) -> dict[str, Any]:
+    return {
+        "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
+        "status": "pending",
+        "required": True,
+        "artifact_path": MARKETPLACE_VERIFICATION_ARTIFACT,
+        "artifact_sha256": "",
+        "verified_content_head": reviewed_head,
+        "remote_head": "",
+        "publish_head": reviewed_head,
+        "commands_passed": False,
+    }
+
+
+def closeout_pr_placeholder(repo: str) -> dict[str, Any]:
+    number = CLOSEOUT_PR_PLACEHOLDER_NUMBER
+    return {
+        "number": number,
+        "url": f"https://github.com/{repo}/pull/{number}",
+        "ref": f"PR #{number}",
+    }
+
+
+def closeout_summary_for_pr(plan: dict[str, Any], pr: dict[str, Any]) -> dict[str, Any]:
+    number = pr.get("number")
+    if (
+        not isinstance(number, int)
+        or isinstance(number, bool)
+        or number < 1
+        or number > CLOSEOUT_PR_PLACEHOLDER_NUMBER
+    ):
+        raise WorkflowError("Final projection PR number is invalid.", exit_code=2)
+    expected_url = canonical_pull_request_url(plan["git"]["repo"], number, pr.get("url"))
+    summary = copy.deepcopy(plan["projection"]["summary_template"])
+    summary["github"]["pr_url"] = expected_url
+    summary["index"]["search_terms"]["pr_refs"] = [f"PR #{number}"]
+    summary["index"]["retrieval_text"] = finish_summary_retrieval_text(
+        str(summary["task"]["title"]), summary["index"]
+    )
+    validate_finish_summary(summary)
+    return summary
+
+
+def closeout_summary_template_digest(plan: dict[str, Any], summary: dict[str, Any]) -> str:
+    normalized = copy.deepcopy(summary)
+    placeholder = plan["projection"]["summary_placeholder"]
+    normalized["github"]["pr_url"] = placeholder["url"]
+    normalized["index"]["search_terms"]["pr_refs"] = [placeholder["ref"]]
+    normalized["index"]["retrieval_text"] = finish_summary_retrieval_text(
+        str(normalized["task"]["title"]), normalized["index"]
+    )
+    return closeout_json_artifact_sha256(normalized)
+
+
+def validate_closeout_final_summary(plan: dict[str, Any], summary: dict[str, Any]) -> None:
+    validate_finish_summary(summary)
+    pr_url = str(summary.get("github", {}).get("pr_url") or "")
+    match = re.fullmatch(
+        rf"https://github\.com/{re.escape(plan['git']['repo'])}/pull/([1-9][0-9]*)",
+        pr_url,
+    )
+    if match is None:
+        raise WorkflowError("Final summary PR URL does not match closeout repo identity.", exit_code=2)
+    expected_ref = [f"PR #{match.group(1)}"]
+    if summary.get("index", {}).get("search_terms", {}).get("pr_refs") != expected_ref:
+        raise WorkflowError("Final summary PR ref does not match canonical PR identity.", exit_code=2)
+    actual = closeout_summary_template_digest(plan, summary)
+    expected = plan["projection"]["summary_template_sha256"]
+    if actual != expected:
+        raise WorkflowError(
+            "Final summary differs from the prevalidated closeout template.",
+            exit_code=2,
+            payload={"expected_template_sha256": expected, "actual_template_sha256": actual},
+        )
+
+
+def read_and_validate_closeout_final_summary(path: Path, plan: dict[str, Any]) -> dict[str, Any]:
+    summary = read_json(path)
+    expected_file_sha = closeout_json_artifact_sha256(summary)
+    actual_file_sha = hashlib.sha256(path.read_bytes()).hexdigest()
+    if actual_file_sha != expected_file_sha:
+        raise WorkflowError(
+            "Final summary bytes are not the exact deterministic JSON artifact encoding.",
+            exit_code=2,
+            payload={"expected_file_sha256": expected_file_sha, "actual_file_sha256": actual_file_sha},
+        )
+    validate_closeout_final_summary(plan, summary)
+    return summary
+
+
+def closeout_plan_digest(plan: dict[str, Any]) -> str:
+    payload = copy.deepcopy(plan)
+    payload.pop("plan_digest", None)
+    return canonical_json_sha256(payload)
+
+
+def closeout_json_artifact_sha256(payload: dict[str, Any]) -> str:
+    content = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def closeout_plan_errors(plan: Any) -> list[str]:
+    if not isinstance(plan, dict):
+        return ["closeout plan must be an object."]
+    expected = {
+        "schema_version", "task", "git", "inputs", "review", "publish",
+        "marketplace", "projection", "transitions", "plan_digest",
+    }
+    errors: list[str] = []
+    if set(plan) != expected:
+        errors.append("closeout plan top-level keys do not match schema 1.0.")
+    if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
+        errors.append("closeout plan schema_version must be 1.0.")
+    digest = str(plan.get("plan_digest") or "")
+    if not re.fullmatch(r"[0-9a-f]{64}", digest) or digest != closeout_plan_digest(plan):
+        errors.append("closeout plan digest does not match canonical content.")
+    if plan.get("transitions") != CLOSEOUT_TRANSITIONS:
+        errors.append("closeout plan transitions are invalid.")
+    task = plan.get("task") if isinstance(plan.get("task"), dict) else {}
+    git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
+    review = plan.get("review") if isinstance(plan.get("review"), dict) else {}
+    publish = plan.get("publish") if isinstance(plan.get("publish"), dict) else {}
+    marketplace = plan.get("marketplace") if isinstance(plan.get("marketplace"), dict) else {}
+    projection = plan.get("projection") if isinstance(plan.get("projection"), dict) else {}
+    nested_keys = {
+        "task": (task, {"id", "title", "source_issue", "active_locator", "archive_locator"}),
+        "git": (git, {"repo", "remote", "base_branch", "head_branch", "reviewed_work_head"}),
+        "review": (review, {"gate_locator", "reviewed_head", "changed_paths", "close_issues_reviewed"}),
+        "publish": (publish, {"title", "body_sha256", "draft", "draft_to_ready", "match"}),
+        "marketplace": (marketplace, {"required", "pending_machine", "verifier_artifact_locator"}),
+        "projection": (
+            projection,
+            {
+                "active_locator", "archive_locator", "finish_summary_locator",
+                "metadata_allowlist", "move_paths", "tracked_move_paths",
+                "untracked_archive_outputs", "evidence_paths",
+                "summary_placeholder", "summary_template_sha256",
+                "summary_template", "runtime_fact_fields",
+            },
+        ),
+    }
+    for label, (value, keys) in nested_keys.items():
+        if set(value) != keys:
+            errors.append(f"closeout plan {label} keys are invalid.")
+    for label, value in [
+        ("task.active_locator", task.get("active_locator")),
+        ("task.archive_locator", task.get("archive_locator")),
+        ("projection.finish_summary_locator", projection.get("finish_summary_locator")),
+    ]:
+        errors.extend(finish_summary_path_errors(value, label))
+    if not str(task.get("active_locator") or "").startswith(".trellis/tasks/"):
+        errors.append("closeout task active locator is invalid.")
+    if not str(task.get("archive_locator") or "").startswith(".trellis/tasks/archive/"):
+        errors.append("closeout task archive locator is invalid.")
+    if not isinstance(task.get("source_issue"), int) or isinstance(task.get("source_issue"), bool) or int(task.get("source_issue") or 0) < 1:
+        errors.append("closeout task source_issue is invalid.")
+    for key in ["repo", "remote", "base_branch", "head_branch"]:
+        if not isinstance(git.get(key), str) or not str(git[key]).strip():
+            errors.append(f"closeout git.{key} is invalid.")
+    if not re.fullmatch(r"[0-9a-f]{40}", str(git.get("reviewed_work_head") or "")):
+        errors.append("closeout reviewed_work_head is invalid.")
+    if review.get("reviewed_head") != git.get("reviewed_work_head"):
+        errors.append("closeout review HEAD does not match git identity.")
+    changed = review.get("changed_paths")
+    if not isinstance(changed, list) or any(not isinstance(path, str) for path in changed) or changed != sorted(set(changed)):
+        errors.append("closeout review changed paths must be sorted and unique.")
+    reviewed_issues = review.get("close_issues_reviewed")
+    if not isinstance(reviewed_issues, list) or any(not isinstance(number, int) or isinstance(number, bool) for number in reviewed_issues) or reviewed_issues != sorted(set(reviewed_issues)):
+        errors.append("closeout reviewed close issues must be sorted and unique.")
+    if publish.get("draft") is not True or publish.get("draft_to_ready") is not True:
+        errors.append("closeout publish must use draft then ready.")
+    if not re.fullmatch(r"[0-9a-f]{64}", str(publish.get("body_sha256") or "")):
+        errors.append("closeout publish body digest is invalid.")
+    expected_match = {"repo": git.get("repo"), "head": git.get("head_branch"), "base": git.get("base_branch")}
+    if publish.get("match") != expected_match:
+        errors.append("closeout publish match identity does not match git identity.")
+    pending = marketplace.get("pending_machine") if isinstance(marketplace.get("pending_machine"), dict) else {}
+    pending_keys = {
+        "type", "status", "required", "artifact_path", "artifact_sha256",
+        "verified_content_head", "remote_head", "publish_head", "commands_passed",
+    }
+    if (
+        set(pending) != pending_keys
+        or pending.get("type") != REMOTE_MARKETPLACE_EVIDENCE_TYPE
+        or pending.get("status") != "pending"
+        or pending.get("required") is not True
+        or pending.get("artifact_sha256") != ""
+        or pending.get("verified_content_head") != git.get("reviewed_work_head")
+        or pending.get("remote_head") != ""
+        or pending.get("publish_head") != git.get("reviewed_work_head")
+        or pending.get("commands_passed") is not False
+    ):
+        errors.append("closeout pending marketplace machine identity is invalid.")
+    if not isinstance(marketplace.get("required"), bool):
+        errors.append("closeout marketplace required must be boolean.")
+    if pending.get("artifact_path") != MARKETPLACE_VERIFICATION_ARTIFACT:
+        errors.append("closeout marketplace artifact locator must be task-relative.")
+    if marketplace.get("verifier_artifact_locator") != pending.get("artifact_path"):
+        errors.append("closeout verifier locator does not match pending machine identity.")
+    if projection.get("active_locator") != task.get("active_locator") or projection.get("archive_locator") != task.get("archive_locator"):
+        errors.append("closeout projection task locators do not match task identity.")
+    if projection.get("finish_summary_locator") != f"{task.get('archive_locator')}/{FINISH_SUMMARY_ARTIFACT}":
+        errors.append("closeout projection finish-summary locator is invalid.")
+    allowlist = projection.get("metadata_allowlist")
+    if not isinstance(allowlist, list) or not allowlist or any(not isinstance(path, str) for path in allowlist) or allowlist != sorted(set(allowlist)):
+        errors.append("closeout metadata allowlist must be sorted and unique.")
+    elif any(finish_summary_path_errors(path, "projection.metadata_allowlist[]") for path in allowlist):
+        errors.append("closeout metadata allowlist contains an unsafe path.")
+    move_paths = projection.get("move_paths")
+    if (
+        not isinstance(move_paths, list)
+        or not move_paths
+        or any(
+            not isinstance(path, str)
+            or bool(finish_summary_path_errors(path, "projection.move_paths[]"))
+            for path in move_paths
+        )
+        or move_paths != sorted(set(move_paths))
+    ):
+        errors.append("closeout move paths must be a sorted unique task-relative file set.")
+        move_paths = []
+    tracked_move_paths = projection.get("tracked_move_paths")
+    if (
+        not isinstance(tracked_move_paths, list)
+        or not tracked_move_paths
+        or tracked_move_paths != sorted(set(tracked_move_paths))
+        or any(path not in move_paths for path in tracked_move_paths)
+    ):
+        errors.append("closeout tracked move paths must be a sorted non-empty subset of move paths.")
+        tracked_move_paths = []
+    untracked_archive_outputs = projection.get("untracked_archive_outputs")
+    if (
+        not isinstance(untracked_archive_outputs, list)
+        or not untracked_archive_outputs
+        or untracked_archive_outputs != sorted(set(untracked_archive_outputs))
+        or any(path not in move_paths for path in untracked_archive_outputs)
+    ):
+        errors.append("closeout untracked archive outputs must be a sorted non-empty subset of move paths.")
+        untracked_archive_outputs = []
+    if (
+        set(tracked_move_paths) & set(untracked_archive_outputs)
+        or sorted(set(tracked_move_paths) | set(untracked_archive_outputs)) != move_paths
+    ):
+        errors.append("closeout tracked/untracked move classes must be disjoint and cover every move path.")
+    if FINISH_SUMMARY_ARTIFACT not in untracked_archive_outputs:
+        errors.append("closeout final summary must be classified as an untracked archive output.")
+    expected_allowlist = sorted(
+        [f"{task.get('active_locator')}/{path}" for path in tracked_move_paths]
+        + [f"{task.get('archive_locator')}/{path}" for path in move_paths]
+    )
+    if allowlist != expected_allowlist:
+        errors.append("closeout metadata allowlist must equal tracked active deletions plus all archive outputs.")
+    evidence_paths = projection.get("evidence_paths")
+    if (
+        not isinstance(evidence_paths, list)
+        or not evidence_paths
+        or evidence_paths != sorted(set(evidence_paths))
+        or any(
+            path not in expected_allowlist
+            or not path.startswith(f"{task.get('active_locator')}/")
+            for path in evidence_paths
+        )
+    ):
+        errors.append("closeout evidence paths must be the exact active-task pre-draft set.")
+    placeholder = projection.get("summary_placeholder")
+    expected_placeholder = closeout_pr_placeholder(str(git.get("repo") or "invalid/invalid"))
+    if placeholder != expected_placeholder:
+        errors.append("closeout summary PR placeholder is invalid.")
+    if projection.get("runtime_fact_fields") != CLOSEOUT_SUMMARY_RUNTIME_FACT_FIELDS:
+        errors.append("closeout summary runtime fact fields are invalid.")
+    template = projection.get("summary_template")
+    template_digest = str(projection.get("summary_template_sha256") or "")
+    if not isinstance(template, dict):
+        errors.append("closeout summary template must be an object.")
+    else:
+        template_errors = finish_summary_errors(template)
+        if template_errors:
+            errors.extend(f"closeout summary template: {error}" for error in template_errors)
+        if template.get("github", {}).get("pr_url") != expected_placeholder["url"]:
+            errors.append("closeout summary template PR URL must equal the deterministic placeholder.")
+        if template.get("index", {}).get("search_terms", {}).get("pr_refs") != [expected_placeholder["ref"]]:
+            errors.append("closeout summary template PR ref must equal the deterministic placeholder.")
+        if template.get("task", {}).get("archive_dir") != task.get("archive_locator"):
+            errors.append("closeout summary template archive locator is invalid.")
+        template_artifacts = set(template.get("artifacts", {}).values()) if isinstance(template.get("artifacts"), dict) else set()
+        if not template_artifacts.issubset(set(move_paths)):
+            errors.append("closeout summary template artifacts are outside the planned move set.")
+        if not re.fullmatch(r"[0-9a-f]{64}", template_digest) or template_digest != closeout_json_artifact_sha256(template):
+            errors.append("closeout summary template digest does not match canonical content.")
+    inputs = plan.get("inputs")
+    if not isinstance(inputs, dict) or not inputs:
+        errors.append("closeout inputs must be a non-empty object.")
+    else:
+        for key, item in inputs.items():
+            if not isinstance(item, dict) or set(item) != {"path", "sha256"}:
+                errors.append(f"closeout input {key} is invalid.")
+            elif not re.fullmatch(r"[0-9a-f]{64}", str(item.get("sha256") or "")):
+                errors.append(f"closeout input {key} digest is invalid.")
+            else:
+                errors.extend(finish_summary_path_errors(item.get("path"), f"inputs.{key}.path"))
+    return errors
+
+
+def validate_closeout_plan(plan: Any) -> dict[str, Any]:
+    errors = closeout_plan_errors(plan)
+    if errors:
+        raise WorkflowError("closeout-plan validation failed.", exit_code=2, payload={"errors": errors})
+    return plan
+
+
+def build_closeout_plan(
+    root: Path,
+    task_dir: Path,
+    task_context: dict[str, Any],
+    task: dict[str, Any],
+    gate_path: Path,
+    gate: dict[str, Any],
+    ledger: dict[str, Any],
+    finish_summary_index_path: Path,
+    *,
+    repo: str,
+    remote: str,
+    base_branch: str,
+    head_branch: str,
+    reviewed_head: str,
+    title: str,
+) -> dict[str, Any]:
+    active_locator = repo_relative(root, task_dir)
+    existing_plan_path = closeout_plan_path(task_dir)
+    existing_plan = read_json(existing_plan_path) if existing_plan_path.is_file() else {}
+    if existing_plan:
+        validate_closeout_plan(existing_plan)
+    existing_task = existing_plan.get("task") if isinstance(existing_plan.get("task"), dict) else {}
+    existing_projection = (
+        existing_plan.get("projection")
+        if isinstance(existing_plan.get("projection"), dict)
+        else {}
+    )
+    archive_locator = str(existing_task.get("archive_locator") or "")
+    if not archive_locator:
+        archive_locator = f".trellis/tasks/archive/{datetime.now().strftime('%Y-%m')}/{task_dir.name}"
+    observed_task_files = {
+        path.relative_to(task_dir).as_posix()
+        for path in task_dir.rglob("*")
+        if path.is_file()
+    }
+    active_prefix = f"{active_locator}/"
+    observed_task_files.update(
+        path.removeprefix(active_prefix)
+        for path in git_status_paths(root)
+        if path.startswith(active_prefix)
+    )
+    if existing_projection:
+        task_files = set(existing_projection.get("move_paths", []))
+        unexpected_task_files = sorted(observed_task_files - task_files)
+        if unexpected_task_files:
+            raise WorkflowError(
+                "Persisted closeout plan does not own newly added task artifacts.",
+                exit_code=2,
+                payload={"unexpected_task_files": unexpected_task_files},
+            )
+    else:
+        if (task_dir / FINISH_SUMMARY_ARTIFACT).exists():
+            raise WorkflowError(
+                "Initial closeout prepare found a stale final summary before the immutable plan existed.",
+                exit_code=2,
+            )
+        task_files = set(observed_task_files)
+        task_files.update({CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT, FINISH_SUMMARY_ARTIFACT})
+        if marketplace_verification_required(gate):
+            task_files.add(MARKETPLACE_VERIFICATION_ARTIFACT)
+    move_paths = sorted(task_files)
+    if existing_projection:
+        tracked_move_paths = list(existing_projection.get("tracked_move_paths", []))
+        untracked_archive_outputs = list(existing_projection.get("untracked_archive_outputs", []))
+    else:
+        untracked_archive_outputs = [FINISH_SUMMARY_ARTIFACT]
+        tracked_move_paths = sorted(set(move_paths) - set(untracked_archive_outputs))
+    metadata_allowlist = sorted(
+        {f"{active_locator}/{name}" for name in tracked_move_paths}
+        | {f"{archive_locator}/{name}" for name in move_paths}
+    )
+    if existing_projection:
+        evidence_paths = list(existing_projection.get("evidence_paths", []))
+    else:
+        current_dirty = set(git_status_paths(root))
+        evidence_names = {
+            path.removeprefix(active_prefix)
+            for path in current_dirty
+            if path.startswith(active_prefix)
+        }
+        evidence_names.update({CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT})
+        if marketplace_verification_required(gate):
+            evidence_names.update({MARKETPLACE_VERIFICATION_ARTIFACT, "issue-scope-ledger.json"})
+        evidence_paths = sorted(f"{active_locator}/{name}" for name in evidence_names)
+    context_path = task_dir / str(DEFAULTS["task_start_context_artifact"])
+    body_path = task_dir / PR_BODY_ARTIFACT
+    ledger_path = issue_scope_ledger_path(task_dir)
+    inputs = {
+        "task_context": closeout_input_record(root, context_path, payload=task_context),
+        "task": closeout_input_record(root, task_dir / "task.json"),
+        "review_gate": closeout_input_record(root, gate_path, payload=gate),
+        "issue_scope_ledger": closeout_input_record(
+            root, ledger_path, payload=closeout_semantic_ledger(ledger)
+        ),
+        "pr_body": closeout_input_record(root, body_path),
+        "finish_summary_index": closeout_input_record(root, finish_summary_index_path),
+    }
+    config_path = root / ".trellis/guru-team/config.yml"
+    if config_path.is_file():
+        inputs["guru_team_config"] = closeout_input_record(root, config_path)
+    source_issue = primary_issue_number_from_ledger(ledger)
+    pending = closeout_pending_marketplace_evidence(root, task_dir, reviewed_head)
+    placeholder = closeout_pr_placeholder(repo)
+    generated_at = str(gate.get("generated_at") or "")
+    if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", generated_at):
+        raise WorkflowError(
+            "Branch Review Gate generated_at is required for the deterministic final-summary projection.",
+            exit_code=2,
+        )
+    projected_ledger = (
+        record_marketplace_machine_evidence(ledger, pending)
+        if marketplace_verification_required(gate)
+        else ledger
+    )
+    projected_artifacts = {
+        key: filename
+        for key, filename in FINISH_SUMMARY_ARTIFACT_FILES.items()
+        if filename in task_files
+    }
+    summary_template = build_finish_summary(
+        root,
+        task_dir,
+        task_context,
+        projected_ledger,
+        read_json(finish_summary_index_path),
+        reviewed_head,
+        pr_url=placeholder["url"],
+        changed_paths=sorted(set(gate.get("changed_files", [])) | set(metadata_allowlist)),
+        archive_dir_override=archive_locator,
+        generated_at_override=generated_at,
+        artifacts_override=projected_artifacts,
+    )
+    plan: dict[str, Any] = {
+        "schema_version": CLOSEOUT_PLAN_SCHEMA_VERSION,
+        "task": {
+            "id": str(task.get("id") or task.get("name") or task_dir.name),
+            "title": str(task.get("title") or task.get("name") or task_dir.name),
+            "source_issue": source_issue,
+            "active_locator": active_locator,
+            "archive_locator": archive_locator,
+        },
+        "git": {
+            "repo": repo,
+            "remote": remote,
+            "base_branch": normalize_ref(base_branch).removeprefix("origin/"),
+            "head_branch": head_branch,
+            "reviewed_work_head": reviewed_head,
+        },
+        "inputs": inputs,
+        "review": {
+            "gate_locator": repo_relative(root, gate_path),
+            "reviewed_head": str(gate.get("head") or ""),
+            "changed_paths": sorted(set(str(path) for path in gate.get("changed_files", []) if str(path))),
+            "close_issues_reviewed": sorted(set(issue_numbers(gate.get("issue_scope", {}).get("close_issues_reviewed")))),
+        },
+        "publish": {
+            "title": title,
+            "body_sha256": hashlib.sha256(body_path.read_bytes()).hexdigest(),
+            "draft": True,
+            "draft_to_ready": True,
+            "match": {"repo": repo, "head": head_branch, "base": normalize_ref(base_branch).removeprefix("origin/")},
+        },
+        "marketplace": {
+            "required": marketplace_verification_required(gate),
+            "pending_machine": pending,
+            "verifier_artifact_locator": MARKETPLACE_VERIFICATION_ARTIFACT,
+        },
+        "projection": {
+            "active_locator": active_locator,
+            "archive_locator": archive_locator,
+            "finish_summary_locator": f"{archive_locator}/{FINISH_SUMMARY_ARTIFACT}",
+            "metadata_allowlist": metadata_allowlist,
+            "move_paths": move_paths,
+            "tracked_move_paths": tracked_move_paths,
+            "untracked_archive_outputs": untracked_archive_outputs,
+            "evidence_paths": evidence_paths,
+            "summary_placeholder": placeholder,
+            "summary_template_sha256": closeout_json_artifact_sha256(summary_template),
+            "summary_template": summary_template,
+            "runtime_fact_fields": list(CLOSEOUT_SUMMARY_RUNTIME_FACT_FIELDS),
+        },
+        "transitions": list(CLOSEOUT_TRANSITIONS),
+        "plan_digest": "",
+    }
+    plan["plan_digest"] = closeout_plan_digest(plan)
+    return validate_closeout_plan(plan)
+
+
+def prepare_closeout(
+    root: Path,
+    args: argparse.Namespace,
+    config: dict[str, Any],
+    task_dir: Path,
+    task_context: dict[str, Any],
+) -> dict[str, Any]:
+    gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, True)
+    if gate_errors:
+        raise WorkflowError(
+            "finish-work blocked because Branch Review Gate is not valid for the reviewed HEAD.",
+            exit_code=2,
+            payload={"artifact_path": str(gate_path), "errors": gate_errors},
+        )
+    dirty, dirty_paths = has_non_metadata_dirty_paths(root)
+    if dirty:
+        raise WorkflowError(
+            "Working tree has uncommitted non-metadata changes. Commit task work before finish-work.",
+            exit_code=2,
+            payload={"dirty_paths": dirty_paths},
+        )
+    reviewed_head = str(gate.get("head") or "")
+    if not re.fullmatch(r"[0-9a-f]{40}", reviewed_head):
+        raise WorkflowError("Branch Review Gate reviewed HEAD is invalid.", exit_code=2)
+    index_path, index = load_finish_summary_index(task_dir, args.finish_summary_index_file)
+    ledger = load_issue_scope_ledger(task_dir, task_context)
+    requires_marketplace = marketplace_verification_required(gate)
+    if requires_marketplace:
+        existing_targets: list[dict[str, Any]] = []
+        if isinstance(ledger.get("primary_issue"), dict):
+            existing_targets.append(ledger["primary_issue"])
+        existing_targets.extend(item for item in ledger.get("close_issues", []) if isinstance(item, dict))
+        tampered_errors: list[str] = []
+        for issue in existing_targets:
+            if remote_marketplace_evidence(issue) is None:
+                continue
+            pending_errors = remote_marketplace_evidence_errors(issue, allow_pending=True)
+            passed_errors = remote_marketplace_evidence_errors(issue, allow_pending=False)
+            if pending_errors and passed_errors:
+                tampered_errors.extend(pending_errors)
+        if tampered_errors:
+            raise WorkflowError(
+                "Existing marketplace machine evidence is malformed or tampered.",
+                exit_code=2,
+                payload={"errors": tampered_errors},
+            )
+        validation_ledger = record_marketplace_machine_evidence(
+            ledger, closeout_pending_marketplace_evidence(root, task_dir, reviewed_head)
+        )
+    else:
+        validation_ledger = ledger
+    ledger_errors = validate_ledger_for_publish(
+        validation_ledger, gate, allow_pending_remote_marketplace=requires_marketplace
+    )
+    if ledger_errors:
+        raise WorkflowError("Issue Scope Ledger is incomplete for closeout.", exit_code=2, payload={"errors": ledger_errors})
+    body, body_source = resolve_pr_body(root, args, ledger, gate, list(args.validation or []), config)
+    body_errors = validate_pr_body_quality(body, ledger, False)
+    source_errors = validate_reviewed_body_source_for_publish(body_source, False)
+    if body_errors or source_errors:
+        raise WorkflowError(
+            "finish-work blocked because PR readiness evidence is incomplete.",
+            exit_code=2,
+            payload={"errors": body_errors + source_errors, "body_source": body_source, "reviewed_source_ok": not source_errors},
+        )
+    task_body_path = task_dir / PR_BODY_ARTIFACT
+    if read_pr_body_file(root, str(task_body_path)) != body:
+        raise WorkflowError("finish-work must bind the reviewed task-local pr-body.md bytes.", exit_code=2)
+    task = task_json(task_dir)
+    if isinstance(task.get("children"), list) and task.get("children"):
+        raise WorkflowError(
+            "Closeout archive transaction requires a task with no active child metadata mutations.",
+            exit_code=2,
+            payload={"children": task.get("children")},
+        )
+    repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
+    if not repo:
+        raise WorkflowError("Could not resolve GitHub repo for closeout plan.", exit_code=2)
+    base = base_branch_from_sources(args, task, task_context)
+    branch = current_branch(root)
+    remote = str(args.remote or publish_config(config).get("remote") or "origin")
+    title = pr_title_from_task(task, args)
+    plan = build_closeout_plan(
+        root, task_dir, task_context, task, gate_path, gate, ledger, index_path,
+        repo=repo, remote=remote, base_branch=base, head_branch=branch,
+        reviewed_head=reviewed_head, title=title,
+    )
+    existing = closeout_plan_path(task_dir)
+    if existing.is_file():
+        persisted = validate_closeout_plan(read_json(existing))
+        if persisted != plan:
+            raise WorkflowError(
+                "Persisted closeout plan no longer matches protected inputs.",
+                exit_code=2,
+                payload={"persisted_digest": persisted.get("plan_digest"), "rebuilt_digest": plan.get("plan_digest")},
+            )
+        plan = persisted
+    return {
+        "plan": plan,
+        "plan_digest": plan["plan_digest"],
+        "task": task,
+        "task_context": task_context,
+        "gate": gate,
+        "gate_path": gate_path,
+        "ledger": ledger,
+        "finish_summary_index": index,
+        "finish_summary_index_path": index_path,
+        "body": body,
+        "body_source": body_source,
+    }
+
+
+def record_marketplace_machine_evidence(
+    ledger: dict[str, Any], evidence: dict[str, Any]
+) -> dict[str, Any]:
+    updated = copy.deepcopy(ledger)
+    targets: list[dict[str, Any]] = []
+    primary = updated.get("primary_issue")
+    if isinstance(primary, dict):
+        targets.append(primary)
+    close_issues = updated.get("close_issues")
+    if isinstance(close_issues, list):
+        targets.extend(item for item in close_issues if isinstance(item, dict))
+    for issue in targets:
+        values = issue.get("acceptance_evidence")
+        if not isinstance(values, list):
+            raise WorkflowError("Issue Scope Ledger acceptance_evidence must be an array.", exit_code=2)
+        values[:] = [
+            item for item in values
+            if not (isinstance(item, dict) and item.get("type") == REMOTE_MARKETPLACE_EVIDENCE_TYPE)
+        ]
+        values.append(copy.deepcopy(evidence))
+    return updated
+
+
+def closeout_passed_marketplace_evidence(
+    root: Path, verification_path: Path, verification: dict[str, Any]
+) -> dict[str, Any]:
+    if verification.get("status") != "passed" or marketplace_verification_contract_errors(verification):
+        raise WorkflowError("Cannot record invalid marketplace verification.", exit_code=2)
+    return {
+        "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
+        "status": "passed",
+        "required": True,
+        "artifact_path": MARKETPLACE_VERIFICATION_ARTIFACT,
+        "artifact_sha256": hashlib.sha256(verification_path.read_bytes()).hexdigest(),
+        "verified_content_head": verification["verified_head"],
+        "remote_head": verification["remote_head"],
+        "publish_head": verification["verified_head"],
+        "commands_passed": all(step.get("passed") is True for step in verification.get("steps", [])),
+    }
+
+
+def commit_closeout_evidence_metadata(root: Path, task_dir: Path, plan: dict[str, Any]) -> dict[str, Any]:
+    names = [CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT]
+    if plan["marketplace"]["required"]:
+        names.extend([MARKETPLACE_VERIFICATION_ARTIFACT, "issue-scope-ledger.json"])
+    required = {repo_relative(root, task_dir / name) for name in names}
+    expected = set(plan["projection"]["evidence_paths"])
+    dirty = set(git_status_paths(root))
+    if dirty != expected:
+        raise WorkflowError(
+            "Closeout evidence metadata does not match the prevalidated exact path set.",
+            exit_code=2,
+            payload={
+                "expected_paths": sorted(expected),
+                "dirty_paths": sorted(dirty),
+                "unexpected_dirty_paths": sorted(dirty - expected),
+                "missing_dirty_paths": sorted(expected - dirty),
+            },
+        )
+    missing = sorted(path for path in required if not (root / path).is_file())
+    if missing:
+        raise WorkflowError("Closeout evidence metadata is incomplete.", exit_code=2, payload={"missing_paths": missing})
+    if not expected:
+        raise WorkflowError("Closeout evidence metadata has no exact task-local changes to commit.", exit_code=2)
+    run_stdout(["git", "add", "-A", "--", plan["task"]["active_locator"]], cwd=root)
+    staged = set(run_stdout(["git", "diff", "--cached", "--name-only", "--no-renames"], cwd=root).splitlines())
+    if staged != expected:
+        raise WorkflowError("Closeout evidence staged paths do not match the exact allowlist.", exit_code=2, payload={"staged_paths": sorted(staged), "expected_paths": sorted(expected)})
+    parent = current_head(root)
+    if parent != plan["git"]["reviewed_work_head"]:
+        raise WorkflowError("Closeout evidence commit parent drifted from reviewed work HEAD.", exit_code=2)
+    run_stdout(["git", "commit", "-m", format_metadata_commit_subject(int(plan["task"]["source_issue"]))], cwd=root)
+    commit = current_head(root)
+    validate_closeout_evidence_commit(root, plan, commit)
+    return {"commit": commit, "parent": parent, "paths": sorted(expected)}
+
+
+def closeout_evidence_is_committed(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    ledger: dict[str, Any],
+    gate: dict[str, Any],
+) -> bool:
+    required = [closeout_plan_path(task_dir), task_dir / PR_READINESS_ARTIFACT]
+    if plan["marketplace"]["required"]:
+        required.append(marketplace_verification_path(task_dir))
+    if any(not path.is_file() for path in required):
+        return False
+    dirty = set(git_status_paths(root))
+    if any(repo_relative(root, path) in dirty for path in required + [issue_scope_ledger_path(task_dir)]):
+        return False
+    targets = []
+    if isinstance(ledger.get("primary_issue"), dict):
+        targets.append(ledger["primary_issue"])
+    targets.extend(item for item in ledger.get("close_issues", []) if isinstance(item, dict))
+    if plan["marketplace"]["required"] and any(remote_marketplace_evidence_errors(issue, allow_pending=False) for issue in targets):
+        return False
+    _path, inputs, _body = read_pr_readiness_publish_inputs(
+        root,
+        task_dir,
+        str(task_dir / PR_READINESS_ARTIFACT),
+        gate,
+        require_committed=True,
+    )
+    expected = {
+        "repo": plan["git"]["repo"],
+        "base_branch": plan["git"]["base_branch"],
+        "head_branch": plan["git"]["head_branch"],
+        "reviewed_head_sha": plan["git"]["reviewed_work_head"],
+        "title": plan["publish"]["title"],
+        "body_sha256": plan["publish"]["body_sha256"],
+        "draft": True,
+        "closeout_plan_digest": plan["plan_digest"],
+    }
+    if any(inputs.get(key) != value for key, value in expected.items()):
+        raise WorkflowError("Committed closeout readiness does not match immutable plan.", exit_code=2)
+    validate_closeout_evidence_commit(root, plan, current_head(root))
+    return True
+
+
+def resolve_closeout_state(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    ledger: dict[str, Any],
+    gate: dict[str, Any],
+    pull_request: dict[str, Any] | None = None,
+) -> str:
+    if task_dir_is_archived(root, task_dir):
+        if git_status_paths(root):
+            return "archive_moved"
+        if pull_request is not None and pull_request.get("isDraft") is False:
+            return "ready"
+        return "archive_pushed"
+    if not closeout_evidence_is_committed(root, task_dir, plan, ledger, gate):
+        return "prepared"
+    if pull_request is None:
+        return "evidence_pushed"
+    if not (task_dir / FINISH_SUMMARY_ARTIFACT).is_file():
+        return "draft_bound"
+    validate_finish_summary(read_json(task_dir / FINISH_SUMMARY_ARTIFACT))
+    return "projection_validated"
+
+
+def resolve_closeout_pull_request(
+    root: Path, repo: str, branch: str, base_branch: str
+) -> dict[str, Any] | None:
+    proc = run(
+        [
+            "gh", "pr", "list", "--repo", repo, "--head", branch,
+            "--base", base_branch, "--state", "open", "--limit", "100",
+            "--json", "number,url,headRefName,baseRefName,headRefOid,isDraft",
+        ],
+        cwd=root,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise WorkflowError("Could not query closeout pull request identity.", exit_code=2, payload={"stderr": proc.stderr.strip()})
+    try:
+        values = json.loads(proc.stdout or "[]")
+    except json.JSONDecodeError as exc:
+        raise WorkflowError("Closeout pull request query returned invalid JSON.", exit_code=2) from exc
+    if not isinstance(values, list) or len(values) > 1:
+        raise WorkflowError("Closeout requires zero or one exact open pull request.", exit_code=2, payload={"open_pr_count": len(values) if isinstance(values, list) else -1})
+    if not values:
+        return None
+    item = values[0]
+    if not isinstance(item, dict):
+        raise WorkflowError("Closeout pull request identity is invalid.", exit_code=2)
+    number = item.get("number")
+    if (
+        not isinstance(number, int)
+        or item.get("headRefName") != branch
+        or item.get("baseRefName") != base_branch
+    ):
+        raise WorkflowError("Closeout pull request repo/head/base identity is invalid.", exit_code=2)
+    item["url"] = canonical_pull_request_url(repo, number, item.get("url"))
+    if not re.fullmatch(r"[0-9a-f]{40}", str(item.get("headRefOid") or "")):
+        raise WorkflowError("Closeout pull request headRefOid is invalid.", exit_code=2)
+    if not isinstance(item.get("isDraft"), bool):
+        raise WorkflowError("Closeout pull request draft state is invalid.", exit_code=2)
+    return item
+
+
+def ensure_closeout_draft_pr(root: Path, plan: dict[str, Any], body: str) -> dict[str, Any]:
+    git = plan["git"]
+    existing = resolve_closeout_pull_request(root, git["repo"], git["head_branch"], git["base_branch"])
+    if existing is not None:
+        if existing["isDraft"] is not True:
+            raise WorkflowError("Closeout found a ready PR before archive transaction completed.", exit_code=2)
+        return existing
+    pr_url = create_pull_request(
+        root, git["repo"], git["base_branch"], git["head_branch"],
+        plan["publish"]["title"], body, True,
+    )
+    number = parse_pull_request_number(pr_url)
+    if number is None:
+        raise WorkflowError("Could not parse draft PR identity.", exit_code=2)
+    return {
+        "number": number,
+        "url": pr_url,
+        "headRefName": git["head_branch"],
+        "baseRefName": git["base_branch"],
+        "headRefOid": current_head(root),
+        "isDraft": True,
+    }
+
+
+def validate_closeout_marketplace_artifact(
+    root: Path, task_dir: Path, plan: dict[str, Any], ledger: dict[str, Any]
+) -> None:
+    if not plan["marketplace"]["required"]:
+        return
+    locator = plan["marketplace"]["verifier_artifact_locator"]
+    if locator != MARKETPLACE_VERIFICATION_ARTIFACT:
+        raise WorkflowError("Marketplace verifier locator is not task-relative.", exit_code=2)
+    artifact = task_dir / locator
+    if not artifact.is_file():
+        raise WorkflowError("Marketplace verifier artifact is missing from the task.", exit_code=2)
+    verification = read_json(artifact)
+    if verification.get("status") != "passed" or marketplace_verification_contract_errors(verification):
+        raise WorkflowError("Marketplace verifier artifact is not a passed canonical artifact.", exit_code=2)
+    expected = closeout_passed_marketplace_evidence(root, artifact, verification)
+    targets: list[dict[str, Any]] = []
+    if isinstance(ledger.get("primary_issue"), dict):
+        targets.append(ledger["primary_issue"])
+    targets.extend(item for item in ledger.get("close_issues", []) if isinstance(item, dict))
+    mismatches = [
+        int(issue.get("number") or 0)
+        for issue in targets
+        if remote_marketplace_evidence(issue) != expected
+    ]
+    if mismatches:
+        raise WorkflowError(
+            "Marketplace ledger evidence does not match the task-relative artifact digest.",
+            exit_code=2,
+            payload={"issue_numbers": mismatches, "artifact_path": locator},
+        )
+
+
+def build_final_archive_projection(
+    root: Path,
+    task_dir: Path,
+    prepared: dict[str, Any],
+    pr: dict[str, Any],
+) -> tuple[Path, dict[str, Any]]:
+    plan = prepared["plan"]
+    ledger = load_issue_scope_ledger(task_dir, prepared["task_context"])
+    ledger_errors = validate_ledger_for_publish(ledger, prepared["gate"])
+    if ledger_errors:
+        raise WorkflowError("Final projection ledger validation failed.", exit_code=2, payload={"errors": ledger_errors})
+    readiness = read_json(task_dir / PR_READINESS_ARTIFACT)
+    inputs = readiness.get("publish_inputs") if isinstance(readiness.get("publish_inputs"), dict) else {}
+    if inputs.get("closeout_plan_digest") != plan["plan_digest"]:
+        raise WorkflowError("Final projection readiness digest does not match closeout plan.", exit_code=2)
+    validate_closeout_marketplace_artifact(root, task_dir, plan, ledger)
+    summary = closeout_summary_for_pr(plan, pr)
+    if summary["index"]["search_terms"]["pr_refs"] != [f"PR #{pr['number']}"]:
+        raise WorkflowError("Final projection must contain one canonical PR ref.", exit_code=2)
+    required_artifacts = set(summary["artifacts"].values()) | {
+        CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT, FINISH_SUMMARY_INDEX_ARTIFACT,
+        "issue-scope-ledger.json", "review-gate.json", PR_BODY_ARTIFACT,
+    }
+    missing = sorted(name for name in required_artifacts if not (task_dir / name).is_file())
+    if missing:
+        raise WorkflowError("Final archive projection is missing task artifacts.", exit_code=2, payload={"missing": missing})
+    validate_closeout_final_summary(plan, summary)
+    path = task_dir / FINISH_SUMMARY_ARTIFACT
+    write_json(path, summary)
+    read_and_validate_closeout_final_summary(path, plan)
+    return path, summary
+
+
+def closeout_commit_paths(root: Path, commit: str) -> set[str]:
+    return set(
+        run_stdout(
+            ["git", "diff-tree", "--no-commit-id", "--name-only", "--no-renames", "-r", commit],
+            cwd=root,
+        ).splitlines()
+    )
+
+
+def closeout_archive_transaction_paths(plan: dict[str, Any]) -> set[str]:
+    projection = plan["projection"]
+    active = plan["task"]["active_locator"]
+    archived = plan["task"]["archive_locator"]
+    return {
+        *(f"{active}/{path}" for path in projection["tracked_move_paths"]),
+        *(f"{archived}/{path}" for path in projection["move_paths"]),
+    }
+
+
+def validate_closeout_archive_git_paths(
+    paths: set[str], plan: dict[str, Any], *, stage: str
+) -> None:
+    expected = closeout_archive_transaction_paths(plan)
+    if paths != expected:
+        raise WorkflowError(
+            f"Closeout {stage} paths do not equal the immutable tracked/untracked archive transaction.",
+            exit_code=2,
+            payload={
+                "stage": stage,
+                "expected_paths": sorted(expected),
+                "actual_paths": sorted(paths),
+                "missing_paths": sorted(expected - paths),
+                "extra_paths": sorted(paths - expected),
+            },
+        )
+
+
+def closeout_commit_parent(root: Path, commit: str) -> str:
+    return run_stdout(["git", "rev-parse", f"{commit}^"], cwd=root)
+
+
+def closeout_commit_tracked_task_paths(
+    root: Path, commit: str, active_locator: str
+) -> set[str]:
+    return set(
+        run_stdout(
+            ["git", "ls-tree", "-r", "--name-only", commit, "--", active_locator],
+            cwd=root,
+        ).splitlines()
+    )
+
+
+def validate_closeout_evidence_commit(root: Path, plan: dict[str, Any], commit: str) -> None:
+    parent = closeout_commit_parent(root, commit)
+    paths = closeout_commit_paths(root, commit)
+    expected_paths = set(plan["projection"]["evidence_paths"])
+    active = plan["task"]["active_locator"]
+    tracked_paths = closeout_commit_tracked_task_paths(root, commit, active)
+    expected_tracked_paths = {
+        f"{active}/{path}" for path in plan["projection"]["tracked_move_paths"]
+    }
+    if (
+        parent != plan["git"]["reviewed_work_head"]
+        or paths != expected_paths
+        or tracked_paths != expected_tracked_paths
+    ):
+        raise WorkflowError(
+            "Closeout evidence commit does not match the prevalidated parent/path/tracking snapshot.",
+            exit_code=2,
+            payload={
+                "commit": commit,
+                "expected_parent": plan["git"]["reviewed_work_head"],
+                "actual_parent": parent,
+                "expected_paths": sorted(expected_paths),
+                "actual_paths": sorted(paths),
+                "expected_tracked_paths": sorted(expected_tracked_paths),
+                "actual_tracked_paths": sorted(tracked_paths),
+            },
+        )
+
+
+def validate_closeout_active_projection(root: Path, task_dir: Path, plan: dict[str, Any]) -> None:
+    if repo_relative(root, task_dir) != plan["task"]["active_locator"] or not task_dir.is_dir():
+        raise WorkflowError("Closeout active projection locator is invalid.", exit_code=2)
+    actual_files = sorted(path.relative_to(task_dir).as_posix() for path in task_dir.rglob("*") if path.is_file())
+    expected_files = plan["projection"]["move_paths"]
+    if actual_files != expected_files:
+        raise WorkflowError(
+            "Closeout active projection does not match the complete planned move set.",
+            exit_code=2,
+            payload={"expected_files": expected_files, "actual_files": actual_files},
+        )
+    read_and_validate_closeout_final_summary(task_dir / FINISH_SUMMARY_ARTIFACT, plan)
+    ledger = read_json(task_dir / "issue-scope-ledger.json")
+    validate_closeout_marketplace_artifact(root, task_dir, plan, ledger)
+
+
+def validate_closeout_archive_layout(root: Path, archived: Path, plan: dict[str, Any]) -> None:
+    active = root / plan["task"]["active_locator"]
+    expected_archived = root / plan["task"]["archive_locator"]
+    if active.exists() or archived.resolve() != expected_archived.resolve() or not archived.is_dir():
+        raise WorkflowError(
+            "Archived closeout must have no active locator and one complete planned archive locator.",
+            exit_code=2,
+        )
+    actual_files = sorted(path.relative_to(archived).as_posix() for path in archived.rglob("*") if path.is_file())
+    expected_files = plan["projection"]["move_paths"]
+    if actual_files != expected_files:
+        raise WorkflowError(
+            "Archived closeout files do not match the complete prevalidated move set.",
+            exit_code=2,
+            payload={"expected_files": expected_files, "actual_files": actual_files},
+        )
+    summary = read_and_validate_closeout_final_summary(archived / FINISH_SUMMARY_ARTIFACT, plan)
+    validate_finish_summary(summary, task_dir=archived)
+    ledger = read_json(archived / "issue-scope-ledger.json")
+    validate_closeout_marketplace_artifact(root, archived, plan, ledger)
+
+
+def execute_archive_metadata_transaction(
+    root: Path, task_dir: Path, plan: dict[str, Any]
+) -> tuple[Path, dict[str, Any]]:
+    archive_script = root / ".trellis/scripts/task.py"
+    if not archive_script.is_file():
+        raise WorkflowError(f"Trellis task.py not found: {archive_script}")
+    evidence_commit = current_head(root)
+    validate_closeout_evidence_commit(root, plan, evidence_commit)
+    validate_closeout_active_projection(root, task_dir, plan)
+    proc = run(
+        ["python3", "./.trellis/scripts/task.py", "archive", task_dir.name, "--no-commit"],
+        cwd=root,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise WorkflowError("task.py archive move failed.", exit_code=2, payload={"stderr": proc.stderr.strip(), "stdout": proc.stdout.strip()})
+    archived = root / plan["task"]["archive_locator"]
+    validate_closeout_archive_layout(root, archived, plan)
+    active_locator = plan["task"]["active_locator"]
+    archive_locator = plan["task"]["archive_locator"]
+    allowed = closeout_archive_transaction_paths(plan)
+    dirty = set(git_status_paths(root))
+    validate_closeout_archive_git_paths(dirty, plan, stage="archive-move-dirty")
+    run_stdout(["git", "add", "-A", "--", active_locator, archive_locator], cwd=root)
+    staged = set(run_stdout(["git", "diff", "--cached", "--name-only", "--no-renames"], cwd=root).splitlines())
+    validate_closeout_archive_git_paths(staged, plan, stage="archive-staged")
+    run_stdout(["git", "commit", "-m", format_metadata_commit_subject(int(plan["task"]["source_issue"]))], cwd=root)
+    archive_commit = current_head(root)
+    committed = closeout_commit_paths(root, archive_commit)
+    validate_closeout_archive_git_paths(committed, plan, stage="archive-commit")
+    if committed != staged:
+        raise WorkflowError("Archive metadata commit differs from its staged transaction.", exit_code=2, payload={"staged": sorted(staged), "committed": sorted(committed)})
+    if closeout_commit_parent(root, archive_commit) != evidence_commit:
+        raise WorkflowError("Archive metadata commit parent is not the validated evidence commit.", exit_code=2)
+    if git_status_paths(root):
+        raise WorkflowError("Archive metadata commit left repository paths dirty.", exit_code=2)
+    run_stdout(["git", "push", plan["git"]["remote"], plan["git"]["head_branch"]], cwd=root)
+    return archived, {"commit": archive_commit, "parent": evidence_commit, "paths": sorted(committed)}
+
+
+def ensure_closeout_pr_ready(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
+    git = plan["git"]
+    pr = resolve_closeout_pull_request(root, git["repo"], git["head_branch"], git["base_branch"])
+    if pr is None:
+        raise WorkflowError("Closeout draft PR is missing.", exit_code=2)
+    local_head = current_head(root)
+    remote_proc = run(["git", "ls-remote", "--heads", git["remote"], git["head_branch"]], cwd=root, check=False)
+    rows = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
+    remote_head = rows[0][0] if len(rows) == 1 else ""
+    if remote_proc.returncode != 0 or not (local_head == remote_head == pr["headRefOid"]):
+        raise WorkflowError(
+            "Closeout local/remote/PR HEAD identity mismatch.",
+            exit_code=2,
+            payload={"local_head": local_head, "remote_head": remote_head, "pr_head": pr["headRefOid"]},
+        )
+    if pr["isDraft"]:
+        proc = run(["gh", "pr", "ready", "--repo", git["repo"], str(pr["number"])], cwd=root, check=False)
+        if proc.returncode != 0:
+            raise WorkflowError("Draft-to-ready transition failed.", exit_code=2, payload={"stderr": proc.stderr.strip(), "stage": "draft-to-ready"})
+        confirmed = resolve_closeout_pull_request(root, git["repo"], git["head_branch"], git["base_branch"])
+        if confirmed is None or confirmed.get("isDraft") is not False or confirmed.get("headRefOid") != local_head:
+            raise WorkflowError("Draft-to-ready transition could not be confirmed.", exit_code=2, payload={"stage": "draft-to-ready-confirmation"})
+        pr = confirmed
+    return {"pr": pr, "local_head": local_head, "remote_head": remote_head, "status": "ready"}
+
+
+def resume_archive_metadata_transaction(root: Path, task_dir: Path, plan: dict[str, Any]) -> dict[str, Any]:
+    validate_closeout_archive_layout(root, task_dir, plan)
+    dirty = set(git_status_paths(root))
+    allowed = closeout_archive_transaction_paths(plan)
+    if dirty:
+        validate_closeout_archive_git_paths(dirty, plan, stage="archive-recovery-dirty")
+        evidence_commit = current_head(root)
+        validate_closeout_evidence_commit(root, plan, evidence_commit)
+        active = plan["task"]["active_locator"]
+        archived = plan["task"]["archive_locator"]
+        run_stdout(["git", "add", "-A", "--", active, archived], cwd=root)
+        staged = set(run_stdout(["git", "diff", "--cached", "--name-only", "--no-renames"], cwd=root).splitlines())
+        validate_closeout_archive_git_paths(staged, plan, stage="archive-recovery-staged")
+        run_stdout(["git", "commit", "-m", format_metadata_commit_subject(int(plan["task"]["source_issue"]))], cwd=root)
+        archive_commit = current_head(root)
+        archive_paths = closeout_commit_paths(root, archive_commit)
+        validate_closeout_archive_git_paths(archive_paths, plan, stage="archive-recovery-commit")
+        if closeout_commit_parent(root, archive_commit) != evidence_commit:
+            raise WorkflowError("Recovered archive commit does not match the exact parent/path transaction.", exit_code=2)
+    else:
+        archive_commit = current_head(root)
+        last_paths = closeout_commit_paths(root, archive_commit)
+        evidence_commit = closeout_commit_parent(root, archive_commit)
+        validate_closeout_archive_git_paths(last_paths, plan, stage="archive-recovery-head")
+        validate_closeout_evidence_commit(root, plan, evidence_commit)
+    local_head = current_head(root)
+    remote_proc = run(
+        ["git", "ls-remote", "--heads", plan["git"]["remote"], plan["git"]["head_branch"]],
+        cwd=root,
+        check=False,
+    )
+    rows = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
+    remote_head = rows[0][0] if len(rows) == 1 else ""
+    if remote_proc.returncode != 0 or remote_head != local_head:
+        run_stdout(["git", "push", plan["git"]["remote"], plan["git"]["head_branch"]], cwd=root)
+    return {
+        "commit": archive_commit,
+        "parent": evidence_commit,
+        "paths": sorted(closeout_commit_paths(root, archive_commit)),
+    }
+
+
+def resume_archived_closeout(root: Path, args: argparse.Namespace, task_dir: Path) -> dict[str, Any]:
+    plan = validate_closeout_plan(read_json(closeout_plan_path(task_dir)))
+    expected = str(getattr(args, "expected_plan_digest", "") or "")
+    if expected != plan["plan_digest"]:
+        raise WorkflowError("Formal closeout expected digest does not match the archived plan.", exit_code=2, payload={"expected": expected, "actual": plan["plan_digest"]})
+    require_gh_auth(root)
+    archive_commit = resume_archive_metadata_transaction(root, task_dir, plan)
+    result = ensure_closeout_pr_ready(root, plan)
+    return {
+        "status": "ok",
+        "stage": "ready",
+        "task_dir": str(task_dir),
+        "plan_digest": plan["plan_digest"],
+        "archive_commit": archive_commit,
+        "publish": result,
+    }
+
+
+def resume_active_archive_move(
+    root: Path,
+    args: argparse.Namespace,
+    config: dict[str, Any],
+    task_dir: Path,
+    task_context: dict[str, Any],
+) -> dict[str, Any]:
+    plan = validate_closeout_plan(read_json(closeout_plan_path(task_dir)))
+    expected = str(getattr(args, "expected_plan_digest", "") or "")
+    if expected != plan["plan_digest"]:
+        raise WorkflowError("Archive-move recovery digest does not match committed plan.", exit_code=2)
+    task = task_json(task_dir)
+    if task.get("status") != "completed":
+        raise WorkflowError("Archive-move recovery requires active task status=completed.", exit_code=2)
+    gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, True)
+    if gate_errors:
+        raise WorkflowError("Archive-move recovery review gate is invalid.", exit_code=2, payload={"artifact_path": str(gate_path), "errors": gate_errors})
+    ledger = load_issue_scope_ledger(task_dir, task_context)
+    if not closeout_evidence_is_committed(root, task_dir, plan, ledger, gate):
+        raise WorkflowError("Archive-move recovery requires committed plan/readiness/evidence.", exit_code=2)
+    summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
+    if not summary_path.is_file():
+        raise WorkflowError("Archive-move recovery requires the validated final summary.", exit_code=2)
+    validate_closeout_active_projection(root, task_dir, plan)
+    validate_closeout_evidence_commit(root, plan, current_head(root))
+    require_gh_auth(root)
+    pr = resolve_closeout_pull_request(
+        root, plan["git"]["repo"], plan["git"]["head_branch"], plan["git"]["base_branch"]
+    )
+    if pr is None or pr.get("isDraft") is not True:
+        raise WorkflowError("Archive-move recovery requires the bound draft PR.", exit_code=2)
+    archived_task_dir, archive_commit = execute_archive_metadata_transaction(root, task_dir, plan)
+    publish_payload = ensure_closeout_pr_ready(root, plan)
+    return {
+        "status": "ok",
+        "stage": "ready",
+        "entry_state": "archive_moved",
+        "task_dir": str(task_dir),
+        "archived_task_dir": str(archived_task_dir),
+        "closeout_plan_digest": plan["plan_digest"],
+        "finish_summary": str(archived_task_dir / FINISH_SUMMARY_ARTIFACT),
+        "archive_commit": archive_commit,
+        "publish": publish_payload,
+    }
+
+
 def build_finish_work_dry_run_plan(
     root: Path,
     args: argparse.Namespace,
@@ -10339,157 +11619,105 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     task_dir = resolve_task_dir(root, args.task)
     task_context = load_task_start_context(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
-    gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, True)
-    if gate_errors:
-        raise WorkflowError(
-            "finish-work blocked because Branch Review Gate is not valid for the current HEAD.",
-            exit_code=2,
-            payload={"artifact_path": str(gate_path), "errors": gate_errors},
-        )
+    if task_dir_is_archived(root, task_dir):
+        if args.dry_run:
+            raise WorkflowError("Archived closeout recovery does not have a new dry-run phase.", exit_code=2)
+        return resume_archived_closeout(root, args, task_dir)
+    if closeout_plan_path(task_dir).is_file() and task_json(task_dir).get("status") == "completed":
+        if args.dry_run:
+            raise WorkflowError("Interrupted archive move must resume through formal finish-work.", exit_code=2)
+        return resume_active_archive_move(root, args, config, task_dir, task_context)
 
-    dirty, dirty_paths = has_non_metadata_dirty_paths(root)
-    if dirty:
-        raise WorkflowError(
-            "Working tree has uncommitted non-metadata changes. Commit task work before finish-work.",
-            exit_code=2,
-            payload={"dirty_paths": dirty_paths},
-        )
-
-    reviewed_head = str(gate.get("head") or current_head(root))
-    task_name = args.task_name or task_dir.name
-    finish_summary_index_path, finish_summary_index = load_finish_summary_index(
-        task_dir, args.finish_summary_index_file
-    )
-    draft = bool(args.draft) if args.draft is not None else bool(publish_config(config).get("draft", False))
-
-    ledger = load_issue_scope_ledger(task_dir, task_context)
-    validations = list(args.validation or [])
-    body, body_source = resolve_pr_body(root, args, ledger, gate, validations, config)
-    body_errors = validate_pr_body_quality(body, ledger, draft)
-    reviewed_source_errors = validate_reviewed_body_source_for_publish(body_source, draft)
-    readiness_errors = body_errors + reviewed_source_errors
-    if readiness_errors:
-        raise WorkflowError(
-            "finish-work blocked because PR readiness evidence is incomplete.",
-            exit_code=2,
-            payload={
-                "errors": readiness_errors,
-                "body_source": body_source,
-                "reviewed_source_required": not draft,
-                "reviewed_source_ok": not reviewed_source_errors,
-            },
-        )
-
-    task_body_path = task_dir / PR_BODY_ARTIFACT
-    task_body = read_pr_body_file(root, str(task_body_path))
-    if task_body != body:
-        raise WorkflowError(
-            "finish-work PR readiness must bind the reviewed task-local pr-body.md bytes.",
-            exit_code=2,
-        )
-    task = task_json(task_dir)
-    readiness_repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
-    if not readiness_repo:
-        raise WorkflowError("Could not resolve GitHub repo for pr-readiness.json.", exit_code=2)
-    readiness_base = base_branch_from_sources(args, task, task_context)
-    readiness_title = pr_title_from_task(task, args)
-    readiness_path, readiness_snapshot = build_pr_readiness_snapshot(
-        root,
-        task_dir,
-        repo=readiness_repo,
-        base_branch=readiness_base,
-        head_branch=current_branch(root),
-        reviewed_head_sha=reviewed_head,
-        title=readiness_title,
-        draft=draft,
-    )
-
+    prepared = prepare_closeout(root, args, config, task_dir, task_context)
+    plan = prepared["plan"]
     if args.dry_run:
-        plan = build_finish_work_dry_run_plan(
-            root,
-            args,
-            config,
-            task_context,
-            task_dir,
-            task_name,
-            gate_path,
-            gate,
-            reviewed_head,
-            finish_summary_index_path,
-            draft,
-            body_source,
-            body_errors,
-            reviewed_source_errors,
-            ledger,
-        )
-        plan["pr_readiness_snapshot"] = {
-            "artifact": str(readiness_path),
-            "publish_inputs_sha256": readiness_snapshot["publish_inputs_sha256"],
-            "would_write": False,
+        return {
+            "status": "dry-run",
+            "dry_run_side_effects": False,
+            "task_dir": str(task_dir),
+            "closeout_plan": plan,
+            "closeout_plan_digest": plan["plan_digest"],
+            "expected_actions": list(CLOSEOUT_TRANSITIONS[1:]),
         }
-        return plan
 
-    write_json(readiness_path, readiness_snapshot)
-
-    if not args.skip_archive:
-        archive_script = root / ".trellis/scripts/task.py"
-        if not archive_script.exists():
-            raise WorkflowError(f"Trellis task.py not found: {archive_script}")
-        proc = run(["python3", "./.trellis/scripts/task.py", "archive", task_name], cwd=root, check=False)
-        if proc.returncode != 0:
-            raise WorkflowError(f"task.py archive failed:\n{proc.stderr.strip()}", payload={"stdout": proc.stdout.strip()})
-
-    primary_issue = primary_issue_number_from_ledger(ledger)
-    metadata_commit_subject = format_metadata_commit_subject(primary_issue)
-    archived_task_dir = resolve_existing_task_dir(root, task_name)
-    if archived_task_dir is None or not task_dir_is_archived(root, archived_task_dir):
+    expected_digest = str(getattr(args, "expected_plan_digest", "") or "")
+    if expected_digest != plan["plan_digest"]:
         raise WorkflowError(
-            "finish-work could not resolve the archived task for finish-summary recording.",
+            "Formal closeout expected digest does not match the rebuilt plan.",
             exit_code=2,
-            payload={"task_name": task_name},
+            payload={"expected": expected_digest, "actual": plan["plan_digest"], "failed_stage": "plan-digest-handshake"},
         )
-    finish_summary = build_finish_summary(
-        root,
-        archived_task_dir,
-        task_context,
-        ledger,
-        finish_summary_index,
-        reviewed_head,
-    )
-    finish_summary_path = archived_task_dir / FINISH_SUMMARY_ARTIFACT
-    write_json(finish_summary_path, finish_summary)
-    validate_finish_summary(read_json(finish_summary_path), task_dir=archived_task_dir)
-    publish_task = str(archived_task_dir)
-    publish_body_artifact = str(readiness_path)
-    archive_migration = migrate_review_gate_for_archived_task(root, archived_task_dir, config)
-    metadata_commit = commit_if_metadata_dirty(root, metadata_commit_subject)
-    publish_body_artifact = rewrite_active_task_artifact_path(root, task_dir, archived_task_dir, publish_body_artifact)
-    publish_args = argparse.Namespace(
-        root=str(root),
-        task=publish_task,
-        repo=args.repo,
-        base_branch=args.base_branch,
-        remote=args.remote,
-        title=None,
-        validation=[],
-        body_file=None,
-        body_artifact=publish_body_artifact,
-        draft=None,
-        allow_metadata_after_gate=True,
-        dry_run=args.dry_run,
-        from_finish_work=True,
-        recovery_after_finish_work=False,
-    )
-    publish_payload = cmd_publish_pr(publish_args)
+    require_gh_auth(root)
+    ledger = load_issue_scope_ledger(task_dir, task_context)
+    evidence_commit: dict[str, Any] | None = None
+    entry_state = resolve_closeout_state(root, task_dir, plan, ledger, prepared["gate"])
+    if entry_state != "prepared":
+        run_stdout(["git", "push", plan["git"]["remote"], plan["git"]["head_branch"]], cwd=root)
+        validate_publish_identity_and_remote_head(
+            root, prepared["task"], task_context, plan["git"]["repo"],
+            plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
+        )
+    else:
+        if current_head(root) != plan["git"]["reviewed_work_head"]:
+            raise WorkflowError(
+                "Closeout content HEAD drifted before evidence commit.",
+                exit_code=2,
+                payload={"expected": plan["git"]["reviewed_work_head"], "actual": current_head(root)},
+            )
+        run_stdout(["git", "push", "-u", plan["git"]["remote"], plan["git"]["head_branch"]], cwd=root)
+        validate_publish_identity_and_remote_head(
+            root, prepared["task"], task_context, plan["git"]["repo"],
+            plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
+        )
+        write_json(closeout_plan_path(task_dir), plan)
+        readiness_path, readiness = build_pr_readiness_snapshot(
+            root,
+            task_dir,
+            repo=plan["git"]["repo"],
+            base_branch=plan["git"]["base_branch"],
+            head_branch=plan["git"]["head_branch"],
+            reviewed_head_sha=plan["git"]["reviewed_work_head"],
+            title=plan["publish"]["title"],
+            draft=True,
+            closeout_plan_digest=plan["plan_digest"],
+        )
+        write_json(readiness_path, readiness)
+        if plan["marketplace"]["required"]:
+            pending_ledger = record_marketplace_machine_evidence(ledger, plan["marketplace"]["pending_machine"])
+            write_json(issue_scope_ledger_path(task_dir), pending_ledger)
+            verification = execute_marketplace_verification(
+                root,
+                task_dir,
+                plan["git"]["repo"],
+                plan["git"]["remote"],
+                plan["git"]["head_branch"],
+                plan["git"]["reviewed_work_head"],
+                config,
+            )
+            verification_path = marketplace_verification_path(task_dir, config)
+            passed = closeout_passed_marketplace_evidence(root, verification_path, verification)
+            write_json(issue_scope_ledger_path(task_dir), record_marketplace_machine_evidence(ledger, passed))
+        evidence_commit = commit_closeout_evidence_metadata(root, task_dir, plan)
+        run_stdout(["git", "push", plan["git"]["remote"], plan["git"]["head_branch"]], cwd=root)
+        validate_publish_identity_and_remote_head(
+            root, prepared["task"], task_context, plan["git"]["repo"],
+            plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
+        )
+
+    pr = ensure_closeout_draft_pr(root, plan, prepared["body"])
+    finish_summary_path, _summary = build_final_archive_projection(root, task_dir, prepared, pr)
+    archived_task_dir, archive_commit = execute_archive_metadata_transaction(root, task_dir, plan)
+    publish_payload = ensure_closeout_pr_ready(root, plan)
     return {
-        "status": "dry-run" if args.dry_run else "ok",
+        "status": "ok",
+        "stage": "ready",
         "task_dir": str(task_dir),
-        "task_name": task_name,
-        "review_gate": str(gate_path),
-        "reviewed_head": reviewed_head,
-        "finish_summary": str(finish_summary_path),
-        "metadata_commit": metadata_commit,
-        "archive_migration": archive_migration,
+        "archived_task_dir": str(archived_task_dir),
+        "closeout_plan_digest": plan["plan_digest"],
+        "entry_state": entry_state,
+        "finish_summary": str(archived_task_dir / finish_summary_path.name),
+        "evidence_commit": evidence_commit,
+        "archive_commit": archive_commit,
         "publish": publish_payload,
     }
 
@@ -10738,11 +11966,6 @@ def build_parser() -> argparse.ArgumentParser:
     publish.add_argument("--draft", dest="draft", action="store_true", default=None)
     publish.add_argument("--no-draft", dest="draft", action="store_false")
     publish.add_argument("--allow-metadata-after-gate", action="store_true")
-    publish.add_argument(
-        "--recovery-after-finish-work",
-        action="store_true",
-        help="Explicit recovery/debug path for rerunning publish after finish-work already completed.",
-    )
     publish.add_argument("--dry-run", action="store_true")
 
     finish = sub.add_parser("finish-work")
@@ -10768,7 +11991,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Required intent marker set by the explicit trellis-finish-work entrypoint.",
     )
-    finish.add_argument("--skip-archive", action="store_true", help="Internal recovery switch. Do not use in normal finish-work.")
+    finish.add_argument("--skip-archive", action="store_true", help=argparse.SUPPRESS)
+    finish.add_argument(
+        "--expected-plan-digest",
+        help="Canonical digest returned by the immediately reviewed finish-work dry-run.",
+    )
     finish.add_argument(
         "--dry-run",
         action="store_true",

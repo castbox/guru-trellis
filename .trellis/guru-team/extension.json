@@ -45,6 +45,7 @@
         "pr-body.md",
         "review-gate.json",
         "pr-readiness.json",
+        "closeout-plan.json",
         "marketplace-verification.json",
         "finish-summary.json"
       ],
@@ -74,21 +75,20 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-11T03:25:51Z",
+  "installed_at": "2026-07-11T07:37:31Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "feat/100-backfill-finish-summary",
-    "commit": "4398046075ac0432a11e1d4687c39488723d2df0",
+    "ref": "fix/105-finish-work-closeout-transaction",
+    "commit": "3dec302206783fe4ac1296066e9a1789c995d58b",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
   "install": {
     "selected_platforms": [
-      "claude",
       "codex",
       "cursor"
     ],
-    "all_platforms": true,
+    "all_platforms": false,
     "managed_assets": [
       ".agents/skills/trellis-before-dev/SKILL.md",
       ".agents/skills/trellis-brainstorm/SKILL.md",
@@ -101,11 +101,6 @@
       ".agents/skills/trellis-meta/references/local-architecture/task-system.md",
       ".agents/skills/trellis-meta/references/platform-files/agents.md",
       ".agents/skills/trellis-start/SKILL.md",
-      ".claude/agents/trellis-check.md",
-      ".claude/agents/trellis-implement.md",
-      ".claude/agents/trellis-research.md",
-      ".claude/commands/trellis/continue.md",
-      ".claude/commands/trellis/finish-work.md",
       ".codex/agents/trellis-check.toml",
       ".codex/agents/trellis-implement.toml",
       ".codex/agents/trellis-research.toml",
@@ -135,6 +130,7 @@
       ".trellis/agents/implement.md",
       ".trellis/guru-team/config-template.yml",
       ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/schemas/closeout-plan.schema.json",
       ".trellis/guru-team/schemas/finish-summary.schema.json",
       ".trellis/guru-team/schemas/marketplace-verification.schema.json",
       ".trellis/guru-team/schemas/task-start-context.schema.json",

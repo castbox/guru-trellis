@@ -2906,15 +2906,18 @@ class PublishBoundaryTest(unittest.TestCase):
         repo_root.assert_not_called()
         run_stdout.assert_not_called()
         self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("finish-work.sh", str(raised.exception))
-        self.assertEqual(raised.exception.payload["recovery_flag"], "--recovery-after-finish-work")
+        self.assertIn("trellis-finish-work", str(raised.exception))
+        self.assertEqual(raised.exception.payload["required_entrypoint"], "trellis-finish-work")
 
     def test_publish_pr_checks_workspace_boundary_before_review_gate(self) -> None:
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
-            mock.patch.object(gtt, "load_task_start_context", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "load_task_start_context", return_value={
+                "base_branch": "main",
+                "task_artifact_dir": ".trellis/tasks/07-04-publish-boundary",
+            }),
             mock.patch.object(gtt, "assert_workspace_boundary", side_effect=gtt.WorkflowError("wrong workspace", exit_code=2)) as boundary,
             mock.patch.object(gtt, "validate_review_gate") as gate,
         ):
@@ -3895,9 +3898,10 @@ class PublishBoundaryTest(unittest.TestCase):
 
     def test_finish_work_rejects_missing_reviewed_source_before_archive(self) -> None:
         gate = {
-            "head": "abc123",
+            "head": "a" * 40,
             "conclusion": {"passed": True, "summary": "finish-work 后发布。"},
             "changed_files": ["trellis/workflows/guru-team/workflow.md"],
+            "issue_scope": {"close_issues_reviewed": [{"number": 18}]},
         }
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
@@ -3929,15 +3933,20 @@ class PublishBoundaryTest(unittest.TestCase):
         body_path = self.task_dir / "reviewed-pr-body.md"
         body_path.write_text(valid_pr_body("finish-work 传递 reviewed body file。"), encoding="utf-8")
         gate = {
-            "head": "abc123",
+            "head": "a" * 40,
+            "generated_at": "2026-07-11T00:00:00Z",
             "conclusion": {"passed": True, "summary": "finish-work 后发布。"},
             "changed_files": ["trellis/workflows/guru-team/workflow.md"],
+            "issue_scope": {"close_issues_reviewed": [{"number": 18}]},
         }
         archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-publish-boundary"
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_task_start_context", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "load_task_start_context", return_value={
+                "base_branch": "main",
+                "task_artifact_dir": ".trellis/tasks/07-04-publish-boundary",
+            }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "assert_workspace_boundary"),
             mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])),
@@ -3946,33 +3955,30 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "run") as run,
             mock.patch.object(gtt, "commit_if_metadata_dirty", return_value=None),
             mock.patch.object(gtt, "resolve_existing_task_dir", return_value=archived_task_dir),
+            mock.patch.object(gtt, "prepare_closeout", return_value={"plan": {"plan_digest": "a" * 64}}),
             mock.patch.object(gtt, "build_finish_summary", return_value={"schema_version": 1}) as build_summary,
             mock.patch.object(gtt, "validate_finish_summary") as validate_summary,
             mock.patch.object(gtt, "cmd_publish_pr", return_value={"status": "dry-run"}) as publish,
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
-            payload = gtt.cmd_finish_work(finish_args(body_file=str(self.body_path), dry_run=False))
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_finish_work(finish_args(body_file=str(self.body_path), dry_run=False))
 
-        publish.assert_called_once()
-        publish_args_obj = publish.call_args.args[0]
-        self.assertTrue(publish_args_obj.from_finish_work)
-        self.assertFalse(publish_args_obj.recovery_after_finish_work)
-        self.assertTrue(publish_args_obj.allow_metadata_after_gate)
-        self.assertEqual(publish_args_obj.task, str(archived_task_dir))
-        self.assertIsNone(publish_args_obj.body_file)
-        self.assertEqual(publish_args_obj.body_artifact, str(archived_task_dir / "pr-readiness.json"))
-        build_summary.assert_called_once()
-        validate_summary.assert_called_once()
-        self.assertEqual(gtt.read_json(archived_task_dir / "finish-summary.json"), {"schema_version": 1})
-        self.assertEqual(payload["publish"]["status"], "dry-run")
+        self.assertEqual(raised.exception.payload["failed_stage"], "plan-digest-handshake")
+        publish.assert_not_called()
+        build_summary.assert_not_called()
+        validate_summary.assert_not_called()
+        self.assertFalse(any(call.args[0][:3] == ["python3", "./.trellis/scripts/task.py", "archive"] for call in run.call_args_list))
 
     def test_finish_work_migrates_archived_review_gate_before_publish(self) -> None:
         body_path = self.task_dir / "reviewed-pr-body.md"
         body_path.write_text(valid_pr_body("finish-work 归档后迁移 review gate。"), encoding="utf-8")
         gate = {
-            "head": "abc123",
+            "head": "a" * 40,
+            "generated_at": "2026-07-11T00:00:00Z",
             "conclusion": {"passed": True, "summary": "finish-work 后发布。"},
             "changed_files": ["trellis/workflows/guru-team/workflow.md"],
+            "issue_scope": {"close_issues_reviewed": [{"number": 18}]},
         }
         archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-publish-boundary"
         archive_migration = {"migrated": True, "updates": ["verification_evidence.review_report"]}
@@ -3990,32 +3996,38 @@ class PublishBoundaryTest(unittest.TestCase):
                 {"committed": True, "commit": "migration"},
             ]) as commit_metadata,
             mock.patch.object(gtt, "resolve_existing_task_dir", return_value=archived_task_dir),
+            mock.patch.object(gtt, "prepare_closeout", return_value={"plan": {"plan_digest": "a" * 64}}),
             mock.patch.object(gtt, "migrate_review_gate_for_archived_task", return_value=archive_migration) as migrate,
             mock.patch.object(gtt, "build_finish_summary", return_value={"schema_version": 1}),
             mock.patch.object(gtt, "validate_finish_summary"),
             mock.patch.object(gtt, "cmd_publish_pr", return_value={"status": "dry-run"}) as publish,
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
-            payload = gtt.cmd_finish_work(finish_args(body_file=str(self.body_path), dry_run=False))
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_finish_work(finish_args(body_file=str(self.body_path), dry_run=False))
 
-        migrate.assert_called_once_with(self.root, archived_task_dir, {**gtt.DEFAULTS, "github_repo": "owner/repo"})
-        self.assertEqual(commit_metadata.call_count, 1)
-        publish.assert_called_once()
-        self.assertEqual(payload["archive_migration"], archive_migration)
-        self.assertEqual(payload["metadata_commit"]["commit"], "archive")
+        self.assertEqual(raised.exception.payload["failed_stage"], "plan-digest-handshake")
+        migrate.assert_not_called()
+        commit_metadata.assert_not_called()
+        publish.assert_not_called()
 
     def test_finish_work_dry_run_returns_plan_without_archive_journal_commit_or_publish(self) -> None:
         body_path = self.task_dir / "reviewed-pr-body.md"
         body_path.write_text(valid_pr_body("finish-work dry-run 只输出 readiness preview。"), encoding="utf-8")
         gate = {
-            "head": "abc123",
+            "head": "a" * 40,
+            "generated_at": "2026-07-11T00:00:00Z",
             "conclusion": {"passed": True, "summary": "finish-work dry-run preview。"},
             "changed_files": ["trellis/workflows/guru-team/workflow.md"],
+            "issue_scope": {"close_issues_reviewed": [{"number": 18}]},
         }
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_task_start_context", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "load_task_start_context", return_value={
+                "base_branch": "main",
+                "task_artifact_dir": ".trellis/tasks/07-04-publish-boundary",
+            }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])),
             mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
@@ -4025,6 +4037,7 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "commit_if_metadata_dirty") as commit_metadata,
             mock.patch.object(gtt, "cmd_publish_pr") as publish,
         ):
+            run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
             payload = gtt.cmd_finish_work(finish_args(body_file=str(self.body_path)))
 
         run_commands = [call.args[0] for call in run.call_args_list]
@@ -4034,35 +4047,34 @@ class PublishBoundaryTest(unittest.TestCase):
         publish.assert_not_called()
         self.assertEqual(payload["status"], "dry-run")
         self.assertFalse(payload["dry_run_side_effects"])
-        self.assertEqual(payload["plan"]["archive"]["task_name"], self.task_dir.name)
-        self.assertNotIn("journal", payload["plan"])
-        self.assertTrue(payload["plan"]["finish_summary"]["input_validated"])
-        self.assertEqual(payload["plan"]["finish_summary"]["initial_pr_refs"], [])
-        self.assertEqual(payload["plan"]["publish"]["repo"], "owner/repo")
-        self.assertEqual(payload["plan"]["publish"]["base_branch"], "main")
-        self.assertEqual(payload["plan"]["publish"]["head_branch"], "codex/27-finish-work-dry-run-readiness")
-        self.assertEqual(payload["plan"]["metadata_commit"]["message"], "chore(trellis): #18 固化任务收尾元数据")
-        self.assertEqual(
-            payload["plan"]["publish"]["merge_commit"]["subject"],
-            "chore(merge): #<pull_request> 合并 #18 完成 Publish boundary",
-        )
-        self.assertIn("body-file:", payload["checks"]["pr_readiness"]["body_source"])
-        self.assertTrue(payload["checks"]["pr_readiness"]["body_quality_ok"])
-        self.assertTrue(payload["checks"]["pr_readiness"]["reviewed_source_ok"])
+        plan = payload["closeout_plan"]
+        self.assertEqual(payload["closeout_plan_digest"], plan["plan_digest"])
+        self.assertEqual(plan["task"]["id"], self.task_dir.name)
+        self.assertEqual(plan["git"]["repo"], "owner/repo")
+        self.assertEqual(plan["git"]["base_branch"], "main")
+        self.assertEqual(plan["git"]["head_branch"], "codex/27-finish-work-dry-run-readiness")
+        self.assertTrue(plan["publish"]["draft"])
+        self.assertEqual(plan["transitions"], gtt.CLOSEOUT_TRANSITIONS)
+        self.assertEqual(gtt.closeout_plan_errors(plan), [])
 
     def test_finish_work_validates_gate_with_metadata_tail_allowed(self) -> None:
         body_path = self.task_dir / "reviewed-pr-body.md"
         body_path.write_text(valid_pr_body("finish-work 校验 gate metadata tail。"), encoding="utf-8")
         gate = {
-            "head": "abc123",
+            "head": "a" * 40,
+            "generated_at": "2026-07-11T00:00:00Z",
             "conclusion": {"passed": True, "summary": "finish-work 后发布。"},
             "changed_files": ["trellis/workflows/guru-team/workflow.md"],
+            "issue_scope": {"close_issues_reviewed": [{"number": 18}]},
         }
         archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-publish-boundary"
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_task_start_context", return_value={"base_branch": "main"}),
+            mock.patch.object(gtt, "load_task_start_context", return_value={
+                "base_branch": "main",
+                "task_artifact_dir": ".trellis/tasks/07-04-publish-boundary",
+            }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])) as validate_gate,
             mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
@@ -4070,12 +4082,11 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "run") as run,
             mock.patch.object(gtt, "commit_if_metadata_dirty", return_value=None),
             mock.patch.object(gtt, "resolve_existing_task_dir", return_value=archived_task_dir),
-            mock.patch.object(gtt, "build_finish_summary", return_value={"schema_version": 1}),
             mock.patch.object(gtt, "validate_finish_summary"),
             mock.patch.object(gtt, "cmd_publish_pr", return_value={"status": "dry-run"}),
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
-            gtt.cmd_finish_work(finish_args(body_file=str(self.body_path), dry_run=False))
+            gtt.cmd_finish_work(finish_args(body_file=str(self.body_path), dry_run=True))
 
         self.assertTrue(validate_gate.call_args.args[3])
 
@@ -8494,11 +8505,13 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
         workflow = root / "trellis/workflows/guru-team/workflow.md"
         schema = root / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
         finish_schema = root / "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
+        closeout_schema = root / "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
         workflow.parent.mkdir(parents=True, exist_ok=True)
         schema.parent.mkdir(parents=True, exist_ok=True)
         workflow.write_text("workflow\n", encoding="utf-8")
         schema.write_text("{}\n", encoding="utf-8")
         finish_schema.write_text('{"title":"finish"}\n', encoding="utf-8")
+        closeout_schema.write_text('{"title":"closeout"}\n', encoding="utf-8")
         workflow_sha = gtt.digest_text("workflow\n")
         step = {
             "command": ["test"], "exit_code": 0,
@@ -8516,6 +8529,7 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
                 "preview_sha256": workflow_sha,
                 "task_start_context_schema_sha256": gtt.hashlib.sha256(schema.read_bytes()).hexdigest(),
                 "finish_summary_schema_sha256": gtt.hashlib.sha256(finish_schema.read_bytes()).hexdigest(),
+                "closeout_plan_schema_sha256": gtt.hashlib.sha256(closeout_schema.read_bytes()).hexdigest(),
                 "runtime_gitignore_present": True,
                 "workspace_gitignore_present": True,
                 "session_auto_commit_false": True,
@@ -8591,7 +8605,7 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
             payload["status"] = "failed"
             payload["remote_head"] = ""
             payload["assets"] = {
-                "workflow_sha256": "", "preview_sha256": "", "task_start_context_schema_sha256": "", "finish_summary_schema_sha256": "",
+                "workflow_sha256": "", "preview_sha256": "", "task_start_context_schema_sha256": "", "finish_summary_schema_sha256": "", "closeout_plan_schema_sha256": "",
                 "runtime_gitignore_present": False, "workspace_gitignore_present": False, "session_auto_commit_false": False,
                 "legacy_handoff_absent": False, "legacy_intake_schema_absent": False,
             }
@@ -8610,7 +8624,7 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
             artifact_sha = gtt.hashlib.sha256(artifact.read_bytes()).hexdigest()
             evidence = {
                 "type": gtt.REMOTE_MARKETPLACE_EVIDENCE_TYPE, "status": "passed", "required": True,
-                "artifact_path": gtt.repo_relative(root, artifact), "artifact_sha256": artifact_sha,
+                "artifact_path": gtt.MARKETPLACE_VERIFICATION_ARTIFACT, "artifact_sha256": artifact_sha,
                 "verified_content_head": "a" * 40, "remote_head": "a" * 40, "publish_head": "a" * 40,
                 "commands_passed": True,
             }
@@ -8680,11 +8694,13 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
                     workflow = source_checkout / "trellis/workflows/guru-team/workflow.md"
                     schema = source_checkout / "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
                     finish_schema = source_checkout / "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
+                    closeout_schema = source_checkout / "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
                     workflow.parent.mkdir(parents=True, exist_ok=True)
                     schema.parent.mkdir(parents=True, exist_ok=True)
                     workflow.write_text("workflow", encoding="utf-8")
                     schema.write_text("{}", encoding="utf-8")
                     finish_schema.write_text('{"title":"finish"}', encoding="utf-8")
+                    closeout_schema.write_text('{"title":"closeout"}', encoding="utf-8")
                     return mock.Mock(returncode=0, stdout="", stderr="")
                 if command[:2] == ["git", "init"]:
                     return mock.Mock(returncode=0, stdout="", stderr="")
@@ -8699,6 +8715,7 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
                 elif command[0].endswith("trellis/presets/guru-team/scripts/bash/apply.sh"):
                     (project / ".trellis/guru-team/schemas/task-start-context.schema.json").write_text("{}", encoding="utf-8")
                     (project / ".trellis/guru-team/schemas/finish-summary.schema.json").write_text('{"title":"finish"}', encoding="utf-8")
+                    (project / ".trellis/guru-team/schemas/closeout-plan.schema.json").write_text('{"title":"closeout"}', encoding="utf-8")
                     (project / ".gitignore").write_text(".trellis/.runtime/\n.trellis/workspace/\n", encoding="utf-8")
                     (project / ".trellis/config.yaml").write_text("session_auto_commit: false\n", encoding="utf-8")
                 return mock.Mock(returncode=0, stdout="ok", stderr="")
@@ -8731,7 +8748,7 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
             "marketplace_source": "gh:owner/repo/trellis#codex/task", "verified_head": "a" * 40,
             "remote_head": "", "task_dir": ".trellis/tasks/task",
             "steps": [{"command": ["git", "ls-remote"], "exit_code": 2, "stdout_sha256": gtt.digest_text(""), "stderr_sha256": gtt.digest_text("failed"), "stdout_size_bytes": 0, "stderr_size_bytes": 6, "passed": False}],
-            "assets": {"workflow_sha256": "", "preview_sha256": "", "task_start_context_schema_sha256": "", "finish_summary_schema_sha256": "", "runtime_gitignore_present": False, "workspace_gitignore_present": False, "session_auto_commit_false": False, "legacy_handoff_absent": False, "legacy_intake_schema_absent": False},
+            "assets": {"workflow_sha256": "", "preview_sha256": "", "task_start_context_schema_sha256": "", "finish_summary_schema_sha256": "", "closeout_plan_schema_sha256": "", "runtime_gitignore_present": False, "workspace_gitignore_present": False, "session_auto_commit_false": False, "legacy_handoff_absent": False, "legacy_intake_schema_absent": False},
         }
         self.assertEqual(gtt.marketplace_verification_contract_errors(payload), [])
 
@@ -8780,6 +8797,955 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
     def test_marketplace_verification_required_for_public_extension_paths(self) -> None:
         self.assertTrue(gtt.marketplace_verification_required({"changed_files": ["trellis/workflows/guru-team/workflow.md"]}))
         self.assertFalse(gtt.marketplace_verification_required({"changed_files": ["docs/internal-note.md"]}))
+
+
+class CloseoutTransactionContractTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.task_dir = self.root / ".trellis/tasks/07-11-closeout"
+        self.task_dir.mkdir(parents=True)
+        self.head = "a" * 40
+        self.context = {
+            "task_artifact_dir": ".trellis/tasks/07-11-closeout",
+            "base_branch": "main",
+            "branch_name": "fix/105-closeout",
+        }
+        self.task = {"id": "105-closeout", "title": "#105 closeout", "base_branch": "main"}
+        self.gate = {
+            "head": self.head,
+            "generated_at": "2026-07-11T00:00:00Z",
+            "changed_files": ["trellis/workflows/guru-team/workflow.md"],
+            "issue_scope": {"close_issues_reviewed": [{"number": 105}]},
+        }
+        self.ledger = {
+            "primary_issue": {"number": 105, "acceptance_evidence": ["review passed"]},
+            "close_issues": [{
+                "number": 105,
+                "acceptance_evidence": [
+                    "acceptance passed",
+                    {
+                        "type": "remote_marketplace_verification",
+                        "status": "pending",
+                        "required": True,
+                        "artifact_path": "marketplace-verification.json",
+                        "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。",
+                    },
+                ],
+            }],
+            "related_issues": [],
+            "followup_issues": [],
+        }
+        self.index = {
+            "schema_version": 1,
+            "index": {
+                "problem": "旧 finish-work 在 archive 后仍有可预见失败。",
+                "outcome": "closeout 改为单入口可恢复事务。",
+                "changed_behavior": ["archive 前完成 draft identity 与 final projection。"],
+                "affected_surfaces": [{
+                    "kind": "workflow",
+                    "name": "finish-work",
+                    "paths": ["trellis/workflows/guru-team/workflow.md"],
+                    "change": "收尾改为 immutable plan 状态机。",
+                }],
+                "contract_changes": [],
+                "search_terms": {
+                    "commands": ["finish-work.sh"],
+                    "config_keys": [],
+                    "schema_fields": ["closeout_plan_digest"],
+                    "symbols": ["prepare_closeout"],
+                    "phrases": [
+                        "旧 finish-work archive 后失败问题",
+                        "closeout_plan_digest schema 合同",
+                        "draft-to-ready 收尾事务已完成",
+                    ],
+                },
+            },
+        }
+        gtt.write_json(self.task_dir / "task.json", self.task)
+        gtt.write_json(self.task_dir / "task-start-context.json", self.context)
+        gtt.write_json(self.task_dir / "review-gate.json", self.gate)
+        gtt.write_json(self.task_dir / "issue-scope-ledger.json", self.ledger)
+        gtt.write_json(self.task_dir / "finish-summary-index.json", self.index)
+        (self.task_dir / "pr-body.md").write_text(valid_pr_body("#105 closeout transaction。"), encoding="utf-8")
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def build_plan(self) -> dict[str, object]:
+        def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            stdout = f"{self.head}\n" if command[:2] == ["git", "rev-list"] else ""
+            return mock.Mock(returncode=0, stdout=stdout, stderr="")
+
+        with mock.patch.object(gtt, "run", side_effect=fake_run):
+            return gtt.build_closeout_plan(
+                self.root,
+                self.task_dir,
+                self.context,
+                self.task,
+                self.task_dir / "review-gate.json",
+                self.gate,
+                self.ledger,
+                self.task_dir / "finish-summary-index.json",
+                repo="owner/repo",
+                remote="origin",
+                base_branch="main",
+                head_branch="fix/105-closeout",
+                reviewed_head=self.head,
+                title="#105 重构 finish-work 收尾事务",
+            )
+
+    def test_closeout_plan_is_canonical_schema_valid_and_digest_stable(self) -> None:
+        first = self.build_plan()
+        second = self.build_plan()
+        self.assertEqual(first, second)
+        self.assertEqual(gtt.closeout_plan_errors(first), [])
+        self.assertEqual(first["plan_digest"], gtt.closeout_plan_digest(first))
+        self.assertTrue(first["publish"]["draft"])
+        self.assertEqual(first["transitions"], gtt.CLOSEOUT_TRANSITIONS)
+        serialized = json.dumps(first, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        self.assertNotIn(str(self.root), serialized)
+        self.assertEqual(
+            first["marketplace"]["verifier_artifact_locator"],
+            gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+        )
+        self.assertEqual(
+            first["projection"]["summary_template_sha256"],
+            gtt.closeout_json_artifact_sha256(first["projection"]["summary_template"]),
+        )
+        self.assertEqual(
+            first["projection"]["untracked_archive_outputs"],
+            [gtt.FINISH_SUMMARY_ARTIFACT],
+        )
+        self.assertNotIn(
+            f"{first['task']['active_locator']}/{gtt.FINISH_SUMMARY_ARTIFACT}",
+            first["projection"]["metadata_allowlist"],
+        )
+        self.assertIn(
+            f"{first['task']['archive_locator']}/{gtt.FINISH_SUMMARY_ARTIFACT}",
+            first["projection"]["metadata_allowlist"],
+        )
+        if importlib.util.find_spec("jsonschema") is not None:
+            from jsonschema import Draft202012Validator
+
+            schema = gtt.read_json(
+                Path(__file__).resolve().parents[2] / "schemas/closeout-plan.schema.json"
+            )
+            self.assertEqual(list(Draft202012Validator(schema).iter_errors(first)), [])
+
+    def test_final_summary_injects_only_plan_constrained_pr_runtime_facts(self) -> None:
+        plan = self.build_plan()
+        template = plan["projection"]["summary_template"]
+        summary = gtt.closeout_summary_for_pr(
+            plan,
+            {"number": 105, "url": "https://github.com/owner/repo/pull/105"},
+        )
+
+        def changed_paths(left: object, right: object, prefix: str = "") -> set[str]:
+            if isinstance(left, dict) and isinstance(right, dict):
+                result: set[str] = set()
+                for key in set(left) | set(right):
+                    child = f"{prefix}.{key}" if prefix else str(key)
+                    result.update(changed_paths(left.get(key), right.get(key), child))
+                return result
+            return set() if left == right else {prefix}
+
+        self.assertEqual(
+            changed_paths(template, summary),
+            set(gtt.CLOSEOUT_SUMMARY_RUNTIME_FACT_FIELDS),
+        )
+        gtt.validate_closeout_final_summary(plan, summary)
+        tampered = json.loads(json.dumps(summary, ensure_ascii=False))
+        tampered["git"]["branch"] = "fix/tampered"
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.validate_closeout_final_summary(plan, tampered)
+        summary_path = self.task_dir / gtt.FINISH_SUMMARY_ARTIFACT
+        summary_path.write_text(json.dumps(summary, ensure_ascii=False), encoding="utf-8")
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.read_and_validate_closeout_final_summary(summary_path, plan)
+        gtt.write_json(summary_path, summary)
+        self.assertEqual(gtt.read_and_validate_closeout_final_summary(summary_path, plan), summary)
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.closeout_summary_for_pr(
+                plan,
+                {
+                    "number": gtt.CLOSEOUT_PR_PLACEHOLDER_NUMBER + 1,
+                    "url": f"https://github.com/owner/repo/pull/{gtt.CLOSEOUT_PR_PLACEHOLDER_NUMBER + 1}",
+                },
+            )
+
+    def test_prepare_projection_failure_is_identical_for_dry_run_and_formal_before_side_effects(self) -> None:
+        observed: list[dict[str, object]] = []
+        for dry_run in [True, False]:
+            args = finish_args(
+                dry_run=dry_run,
+                expected_plan_digest="a" * 64,
+            )
+            error = gtt.WorkflowError(
+                "future summary projection invalid",
+                exit_code=2,
+                payload={"failed_stage": "prepare-final-summary-projection", "errors": ["schema"]},
+            )
+            with (
+                mock.patch.object(gtt, "repo_root", return_value=self.root),
+                mock.patch.object(gtt, "load_config", return_value={}),
+                mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+                mock.patch.object(gtt, "load_task_start_context", return_value=self.context),
+                mock.patch.object(gtt, "assert_workspace_boundary"),
+                mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+                mock.patch.object(gtt, "prepare_closeout", side_effect=error),
+                mock.patch.object(gtt, "require_gh_auth") as auth,
+                mock.patch.object(gtt, "write_json") as write,
+                mock.patch.object(gtt, "run_stdout") as mutation,
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.cmd_finish_work(args)
+            observed.append(raised.exception.payload)
+            auth.assert_not_called()
+            write.assert_not_called()
+            mutation.assert_not_called()
+        self.assertEqual(observed[0], observed[1])
+
+    def test_marketplace_relative_locator_survives_exact_archive_move_with_digest(self) -> None:
+        plan = self.build_plan()
+        verification = {
+            "status": "passed",
+            "verified_head": self.head,
+            "remote_head": self.head,
+            "steps": [{"passed": True}],
+        }
+        artifact = self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT
+        gtt.write_json(artifact, verification)
+        with mock.patch.object(gtt, "marketplace_verification_contract_errors", return_value=[]):
+            evidence = gtt.closeout_passed_marketplace_evidence(self.root, artifact, verification)
+            ledger = gtt.record_marketplace_machine_evidence(self.ledger, evidence)
+            gtt.write_json(self.task_dir / "issue-scope-ledger.json", ledger)
+            gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+            gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, {"ready": True})
+            summary = gtt.closeout_summary_for_pr(
+                plan,
+                {"number": 105, "url": "https://github.com/owner/repo/pull/105"},
+            )
+            gtt.write_json(self.task_dir / gtt.FINISH_SUMMARY_ARTIFACT, summary)
+            for name in plan["projection"]["move_paths"]:
+                path = self.task_dir / name
+                if not path.exists():
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("planned metadata\n", encoding="utf-8")
+            archived = self.root / plan["task"]["archive_locator"]
+            archived.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(self.task_dir), str(archived))
+            gtt.validate_closeout_archive_layout(self.root, archived, plan)
+        archived_ledger = gtt.read_json(archived / "issue-scope-ledger.json")
+        archived_evidence = gtt.remote_marketplace_evidence(archived_ledger["primary_issue"])
+        self.assertEqual(archived_evidence["artifact_path"], gtt.MARKETPLACE_VERIFICATION_ARTIFACT)
+        self.assertEqual(
+            archived_evidence["artifact_sha256"],
+            gtt.hashlib.sha256((archived / gtt.MARKETPLACE_VERIFICATION_ARTIFACT).read_bytes()).hexdigest(),
+        )
+
+    def test_archive_recovery_rejects_partial_move_subset_and_evidence_lineage(self) -> None:
+        plan = self.build_plan()
+        allowed = set(plan["projection"]["metadata_allowlist"])
+        subset = sorted(allowed - {next(iter(allowed))})
+        archived = self.root / plan["task"]["archive_locator"]
+        with (
+            mock.patch.object(gtt, "validate_closeout_archive_layout"),
+            mock.patch.object(gtt, "git_status_paths", return_value=subset),
+            mock.patch.object(gtt, "run_stdout") as mutation,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.resume_archive_metadata_transaction(self.root, archived, plan)
+        self.assertTrue(raised.exception.payload["missing_paths"])
+        mutation.assert_not_called()
+
+        evidence_paths = set(plan["projection"]["evidence_paths"])
+        with (
+            mock.patch.object(gtt, "closeout_commit_parent", return_value=self.head),
+            mock.patch.object(gtt, "closeout_commit_paths", return_value=evidence_paths - {next(iter(evidence_paths))}),
+            mock.patch.object(
+                gtt,
+                "closeout_commit_tracked_task_paths",
+                return_value={
+                    f"{plan['task']['active_locator']}/{path}"
+                    for path in plan["projection"]["tracked_move_paths"]
+                },
+            ),
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.validate_closeout_evidence_commit(self.root, plan, "b" * 40)
+
+    def test_real_git_mixed_tracked_untracked_archive_transaction_and_recovery(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            root = base / "project"
+            root.mkdir()
+            active = root / ".trellis/tasks/task"
+            archived = root / ".trellis/tasks/archive/2026-07/task"
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "branch", "-M", "main"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "Test"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=root, check=True)
+            (root / "README.md").write_text("reviewed work\n", encoding="utf-8")
+            archive_script = root / ".trellis/scripts/task.py"
+            archive_script.parent.mkdir(parents=True)
+            archive_script.write_text(
+                """import json
+import shutil
+from pathlib import Path
+
+root = Path.cwd()
+active = root / ".trellis/tasks/task"
+task_path = active / "task.json"
+task = json.loads(task_path.read_text(encoding="utf-8"))
+task["status"] = "completed"
+task["completedAt"] = "2026-07-11"
+task_path.write_text(json.dumps(task, indent=2) + "\\n", encoding="utf-8")
+archived = root / ".trellis/tasks/archive/2026-07/task"
+archived.parent.mkdir(parents=True, exist_ok=True)
+shutil.move(str(active), str(archived))
+""",
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "add", "README.md", ".trellis/scripts/task.py"], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "reviewed"], cwd=root, check=True)
+            reviewed_head = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=root, check=True, text=True, capture_output=True
+            ).stdout.strip()
+            active.mkdir(parents=True)
+            (active / "task.json").write_text('{"status":"in_progress"}\n', encoding="utf-8")
+            (active / "review.md").write_text("reviewed metadata\n", encoding="utf-8")
+            subprocess.run(["git", "add", ".trellis/tasks/task"], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "evidence"], cwd=root, check=True)
+            evidence_head = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=root, check=True, text=True, capture_output=True
+            ).stdout.strip()
+            (active / gtt.FINISH_SUMMARY_ARTIFACT).write_text('{"projected":true}\n', encoding="utf-8")
+            expected = {
+                ".trellis/tasks/task/task.json",
+                ".trellis/tasks/task/review.md",
+                ".trellis/tasks/archive/2026-07/task/task.json",
+                ".trellis/tasks/archive/2026-07/task/review.md",
+                ".trellis/tasks/archive/2026-07/task/finish-summary.json",
+            }
+            plan = {
+                "task": {
+                    "active_locator": ".trellis/tasks/task",
+                    "archive_locator": ".trellis/tasks/archive/2026-07/task",
+                    "source_issue": 105,
+                },
+                "git": {
+                    "reviewed_work_head": reviewed_head,
+                    "remote": "origin",
+                    "head_branch": "main",
+                },
+                "projection": {
+                    "move_paths": ["finish-summary.json", "review.md", "task.json"],
+                    "tracked_move_paths": ["review.md", "task.json"],
+                    "untracked_archive_outputs": ["finish-summary.json"],
+                    "metadata_allowlist": sorted(expected),
+                    "evidence_paths": [
+                        ".trellis/tasks/task/review.md",
+                        ".trellis/tasks/task/task.json",
+                    ],
+                },
+            }
+            self.assertNotIn(".trellis/tasks/task/finish-summary.json", expected)
+            gtt.validate_closeout_archive_git_paths(expected, plan, stage="real-status")
+            gtt.validate_closeout_evidence_commit(root, plan, evidence_head)
+            bare = base / "remote.git"
+            subprocess.run(["git", "init", "--bare", "-q", str(bare)], check=True)
+            subprocess.run(["git", "remote", "add", "origin", str(bare)], cwd=root, check=True)
+            subprocess.run(["git", "push", "-qu", "origin", "main"], cwd=root, check=True)
+            observed_status_sets: list[set[str]] = []
+            real_git_status_paths = gtt.git_status_paths
+
+            def capture_git_status_paths(repo: Path) -> list[str]:
+                paths = real_git_status_paths(repo)
+                observed_status_sets.append(set(paths))
+                return paths
+
+            with (
+                mock.patch.object(gtt, "validate_closeout_active_projection"),
+                mock.patch.object(gtt, "validate_closeout_archive_layout"),
+                mock.patch.object(gtt, "git_status_paths", side_effect=capture_git_status_paths),
+            ):
+                executed_archive, archive_commit = gtt.execute_archive_metadata_transaction(
+                    root, active, plan
+                )
+            archive_head = archive_commit["commit"]
+            self.assertEqual(executed_archive, archived)
+            self.assertIn(expected, observed_status_sets)
+            self.assertEqual(gtt.closeout_commit_parent(root, archive_head), evidence_head)
+            self.assertEqual(gtt.closeout_commit_paths(root, archive_head), expected)
+            with mock.patch.object(gtt, "validate_closeout_archive_layout"):
+                recovered = gtt.resume_archive_metadata_transaction(root, archived, plan)
+            self.assertEqual(recovered["commit"], archive_head)
+            self.assertEqual(set(recovered["paths"]), expected)
+
+            invalid_sets = {
+                "misreported-untracked-active-delete": expected | {".trellis/tasks/task/finish-summary.json"},
+                "missing-archive-output": expected - {".trellis/tasks/archive/2026-07/task/finish-summary.json"},
+                "extra-nonmetadata": expected | {"src/runtime.py"},
+                "partial-tracked-move": expected - {".trellis/tasks/task/review.md"},
+            }
+            for case, paths in invalid_sets.items():
+                with self.subTest(case=case), self.assertRaises(gtt.WorkflowError):
+                    gtt.validate_closeout_archive_git_paths(paths, plan, stage=case)
+
+    def test_2026_07_04_archive_move_failure_keeps_active_without_commit_or_push(self) -> None:
+        plan = self.build_plan()
+        archive_script = self.root / ".trellis/scripts/task.py"
+        archive_script.parent.mkdir(parents=True)
+        archive_script.write_text("# fixture\n", encoding="utf-8")
+        archived = self.root / plan["task"]["archive_locator"]
+        with (
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "validate_closeout_evidence_commit"),
+            mock.patch.object(gtt, "validate_closeout_active_projection"),
+            mock.patch.object(
+                gtt,
+                "run",
+                return_value=mock.Mock(returncode=1, stdout="", stderr="injected archive move failure"),
+            ),
+            mock.patch.object(gtt, "run_stdout") as mutation,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.execute_archive_metadata_transaction(self.root, self.task_dir, plan)
+        self.assertIn("archive move failed", str(raised.exception).lower())
+        self.assertTrue(self.task_dir.is_dir())
+        self.assertFalse(archived.exists())
+        mutation.assert_not_called()
+
+    def test_closeout_plan_tampering_and_protected_input_drift_fail_closed(self) -> None:
+        plan = self.build_plan()
+        plan["publish"]["title"] = "tampered"
+        self.assertTrue(any("digest" in error for error in gtt.closeout_plan_errors(plan)))
+        persisted = self.build_plan()
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, persisted)
+        (self.task_dir / "pr-body.md").write_text(valid_pr_body("changed body。"), encoding="utf-8")
+        rebuilt = self.build_plan()
+        self.assertNotEqual(persisted["plan_digest"], rebuilt["plan_digest"])
+
+    def test_closeout_evidence_commit_owns_exact_phase3_metadata_tail(self) -> None:
+        phase3 = [
+            "review.md",
+            "reviews/round-001-final.md",
+            "review-gate.json",
+            "agent-assignment.json",
+            "pr-body.md",
+            "finish-summary-index.json",
+        ]
+        for name in phase3:
+            path = self.task_dir / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if not path.exists():
+                path.write_text("reviewed metadata\n", encoding="utf-8")
+        planned_dirty = [
+            f".trellis/tasks/07-11-closeout/{name}"
+            for name in phase3
+        ]
+        with mock.patch.object(gtt, "git_status_paths", return_value=planned_dirty):
+            plan = self.build_plan()
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, {"ready": True})
+        gtt.write_json(self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT, {"status": "passed"})
+        dirty = set(plan["projection"]["evidence_paths"])
+
+        def fake_stdout(command: list[str], **_kwargs: object) -> str:
+            if command[:4] == ["git", "diff", "--cached", "--name-only"]:
+                return "\n".join(sorted(dirty))
+            if command[:3] == ["git", "rev-parse", "HEAD"]:
+                return self.head
+            return ""
+
+        with (
+            mock.patch.object(gtt, "git_status_paths", return_value=sorted(dirty)),
+            mock.patch.object(gtt, "run_stdout", side_effect=fake_stdout) as run_stdout,
+            mock.patch.object(gtt, "validate_closeout_evidence_commit"),
+        ):
+            result = gtt.commit_closeout_evidence_metadata(self.root, self.task_dir, plan)
+        self.assertEqual(result["paths"], sorted(dirty))
+        self.assertIn(
+            mock.call(["git", "add", "-A", "--", plan["task"]["active_locator"]], cwd=self.root),
+            run_stdout.mock_calls,
+        )
+
+    def test_closeout_evidence_commit_rejects_other_task_metadata(self) -> None:
+        plan = self.build_plan()
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, {"ready": True})
+        gtt.write_json(self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT, {"status": "passed"})
+        dirty = [
+            f"{plan['task']['active_locator']}/{gtt.CLOSEOUT_PLAN_ARTIFACT}",
+            ".trellis/tasks/07-11-other-task/review.md",
+        ]
+        with (
+            mock.patch.object(gtt, "git_status_paths", return_value=dirty),
+            mock.patch.object(gtt, "run_stdout") as mutation,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.commit_closeout_evidence_metadata(self.root, self.task_dir, plan)
+        self.assertIn(dirty[1], raised.exception.payload["unexpected_dirty_paths"])
+        mutation.assert_not_called()
+
+    def test_git_status_expands_untracked_and_disables_rename_detection(self) -> None:
+        proc = mock.Mock(returncode=0, stdout=" D src/runtime.py\n?? .trellis/tasks/07-11-closeout/runtime.py\n")
+        with mock.patch.object(gtt, "run", return_value=proc) as run:
+            paths = gtt.git_status_paths(self.root)
+        self.assertEqual(paths, ["src/runtime.py", ".trellis/tasks/07-11-closeout/runtime.py"])
+        run.assert_called_once_with(
+            ["git", "status", "--porcelain", "--untracked-files=all", "--no-renames"],
+            cwd=self.root,
+            check=False,
+        )
+
+    def test_marketplace_recorder_replaces_only_machine_evidence(self) -> None:
+        pending = gtt.closeout_pending_marketplace_evidence(self.root, self.task_dir, self.head)
+        first = gtt.record_marketplace_machine_evidence(self.ledger, pending)
+        changed_reason = json.loads(json.dumps(self.ledger, ensure_ascii=False))
+        changed_reason["close_issues"][0]["reason"] = "AI reviewed reason changed"
+        second = gtt.record_marketplace_machine_evidence(changed_reason, pending)
+        self.assertEqual(
+            gtt.remote_marketplace_evidence(first["close_issues"][0]),
+            gtt.remote_marketplace_evidence(second["close_issues"][0]),
+        )
+        tampered = dict(pending)
+        tampered.pop("publish_head")
+        issue = {"acceptance_evidence": [tampered]}
+        self.assertTrue(gtt.remote_marketplace_evidence_errors(issue, allow_pending=True))
+
+    def test_readiness_binds_closeout_digest_without_breaking_legacy_snapshot(self) -> None:
+        digest = self.build_plan()["plan_digest"]
+        _path, closeout = gtt.build_pr_readiness_snapshot(
+            self.root,
+            self.task_dir,
+            repo="owner/repo",
+            base_branch="main",
+            head_branch="fix/105-closeout",
+            reviewed_head_sha=self.head,
+            title="#105 closeout",
+            draft=True,
+            closeout_plan_digest=digest,
+        )
+        self.assertEqual(closeout["publish_inputs"]["closeout_plan_digest"], digest)
+        _path, legacy = gtt.build_pr_readiness_snapshot(
+            self.root,
+            self.task_dir,
+            repo="owner/repo",
+            base_branch="main",
+            head_branch="fix/105-closeout",
+            reviewed_head_sha=self.head,
+            title="#105 closeout",
+            draft=False,
+        )
+        self.assertNotIn("closeout_plan_digest", legacy["publish_inputs"])
+
+    def test_draft_resolver_rejects_multiple_or_ready_before_archive(self) -> None:
+        plan = self.build_plan()
+        entry = {
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
+            "headRefOid": self.head,
+            "isDraft": True,
+        }
+        with mock.patch.object(gtt, "run", return_value=mock.Mock(returncode=0, stdout=json.dumps([entry, entry]), stderr="")), self.assertRaises(gtt.WorkflowError):
+            gtt.resolve_closeout_pull_request(self.root, "owner/repo", "fix/105-closeout", "main")
+        ready = dict(entry, isDraft=False)
+        with mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=ready), self.assertRaises(gtt.WorkflowError):
+            gtt.ensure_closeout_draft_pr(self.root, plan, "body")
+
+    def test_state_resolver_uses_persisted_facts_without_runtime_marker(self) -> None:
+        plan = self.build_plan()
+        with (
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+            mock.patch.object(gtt, "closeout_evidence_is_committed", return_value=False),
+        ):
+            self.assertEqual(gtt.resolve_closeout_state(self.root, self.task_dir, plan, self.ledger, self.gate), "prepared")
+        draft = {"isDraft": True}
+        with (
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+            mock.patch.object(gtt, "closeout_evidence_is_committed", return_value=True),
+        ):
+            self.assertEqual(gtt.resolve_closeout_state(self.root, self.task_dir, plan, self.ledger, self.gate), "evidence_pushed")
+            self.assertEqual(gtt.resolve_closeout_state(self.root, self.task_dir, plan, self.ledger, self.gate, draft), "draft_bound")
+
+    def test_formal_digest_mismatch_blocks_before_any_side_effect(self) -> None:
+        plan = self.build_plan()
+        prepared = {
+            "plan": plan,
+            "task": self.task,
+            "task_context": self.context,
+            "gate": self.gate,
+            "ledger": self.ledger,
+            "body": "body",
+        }
+        args = finish_args(dry_run=False, expected_plan_digest="b" * 64)
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "load_config", return_value={}),
+            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "load_task_start_context", return_value=self.context),
+            mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+            mock.patch.object(gtt, "prepare_closeout", return_value=prepared),
+            mock.patch.object(gtt, "require_gh_auth") as auth,
+            mock.patch.object(gtt, "run_stdout") as mutation,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.cmd_finish_work(args)
+        self.assertEqual(raised.exception.payload["failed_stage"], "plan-digest-handshake")
+        auth.assert_not_called()
+        mutation.assert_not_called()
+
+    def test_2026_07_04_dry_run_formal_drift_regression(self) -> None:
+        self.test_formal_digest_mismatch_blocks_before_any_side_effect()
+
+    def test_2026_07_03_post_archive_identity_regression_moves_check_before_archive(self) -> None:
+        plan = self.build_plan()
+        with mock.patch.object(gtt, "run") as remote, self.assertRaises(gtt.WorkflowError):
+            gtt.validate_publish_identity_and_remote_head(
+                self.root,
+                {"base_branch": "main"},
+                {"source_repo": {"repo": "owner/repo"}, "branch_name": "fix/105-closeout", "base_branch": "main"},
+                "other/repo",
+                "main",
+                "fix/105-closeout",
+                "origin",
+            )
+        remote.assert_not_called()
+        self.assertEqual(plan["transitions"].index("content_pushed"), 1)
+        self.assertGreater(plan["transitions"].index("archive_moved"), 1)
+
+    def test_issue_100_pending_marketplace_evidence_regression(self) -> None:
+        pending = gtt.closeout_pending_marketplace_evidence(self.root, self.task_dir, self.head)
+        ledger = gtt.record_marketplace_machine_evidence(self.ledger, pending)
+        errors = gtt.validate_ledger_for_publish(ledger, self.gate, allow_pending_remote_marketplace=False)
+        self.assertTrue(any("pending" in error for error in errors))
+
+    def test_cli_exposes_expected_digest_but_not_legacy_recovery_flag(self) -> None:
+        parser = gtt.build_parser()
+        finish = parser.parse_args([
+            "finish-work", "--from-trellis-finish-work", "--dry-run",
+            "--expected-plan-digest", "a" * 64,
+        ])
+        self.assertEqual(finish.expected_plan_digest, "a" * 64)
+        with self.assertRaises(SystemExit):
+            parser.parse_args(["publish-pr", "--recovery-after-finish-work"])
+
+    def test_formal_state_machine_orders_verifier_draft_projection_archive_ready(self) -> None:
+        plan = self.build_plan()
+        prepared = {
+            "plan": plan,
+            "task": self.task,
+            "task_context": self.context,
+            "gate": self.gate,
+            "ledger": self.ledger,
+            "body": "reviewed body",
+            "finish_summary_index": self.index,
+        }
+        order: list[str] = []
+        archived = self.root / plan["task"]["archive_locator"]
+        readiness = {
+            "ready": True,
+            "body_file": "pr-body.md",
+            "publish_inputs": {"closeout_plan_digest": plan["plan_digest"]},
+            "publish_inputs_sha256": "b" * 64,
+        }
+        verification = {"status": "passed"}
+        pr = {"number": 105, "url": "https://github.com/owner/repo/pull/105"}
+        args = finish_args(dry_run=False, expected_plan_digest=plan["plan_digest"])
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "load_config", return_value={}),
+            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "load_task_start_context", return_value=self.context),
+            mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+            mock.patch.object(gtt, "prepare_closeout", return_value=prepared),
+            mock.patch.object(gtt, "require_gh_auth", side_effect=lambda _root: order.append("auth")),
+            mock.patch.object(gtt, "load_issue_scope_ledger", return_value=self.ledger),
+            mock.patch.object(gtt, "closeout_evidence_is_committed", return_value=False),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "run_stdout", return_value=self.head),
+            mock.patch.object(gtt, "validate_publish_identity_and_remote_head"),
+            mock.patch.object(gtt, "build_pr_readiness_snapshot", return_value=(self.task_dir / "pr-readiness.json", readiness)),
+            mock.patch.object(gtt, "execute_marketplace_verification", side_effect=lambda *a, **k: (order.append("verifier"), verification)[1]),
+            mock.patch.object(gtt, "closeout_passed_marketplace_evidence", return_value={"type": "remote_marketplace_verification", "status": "passed"}),
+            mock.patch.object(gtt, "commit_closeout_evidence_metadata", side_effect=lambda *a: (order.append("evidence-commit"), {"commit": self.head})[1]),
+            mock.patch.object(gtt, "ensure_closeout_draft_pr", side_effect=lambda *a: (order.append("draft"), pr)[1]),
+            mock.patch.object(gtt, "build_final_archive_projection", side_effect=lambda *a: (order.append("projection"), (self.task_dir / "finish-summary.json", {}))[1]),
+            mock.patch.object(gtt, "execute_archive_metadata_transaction", side_effect=lambda *a: (order.append("archive"), (archived, {"commit": self.head}))[1]),
+            mock.patch.object(gtt, "ensure_closeout_pr_ready", side_effect=lambda *a: (order.append("ready"), {"status": "ready"})[1]),
+        ):
+            result = gtt.cmd_finish_work(args)
+        self.assertEqual(result["stage"], "ready")
+        self.assertEqual(order, ["auth", "verifier", "evidence-commit", "draft", "projection", "archive", "ready"])
+
+    def test_draft_to_ready_failure_has_no_repo_mutation(self) -> None:
+        plan = self.build_plan()
+        draft = {
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
+            "headRefOid": self.head,
+            "isDraft": True,
+        }
+        def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            if command[:3] == ["git", "ls-remote", "--heads"]:
+                return mock.Mock(returncode=0, stdout=f"{self.head}\trefs/heads/fix/105-closeout\n", stderr="")
+            if command[:3] == ["gh", "pr", "ready"]:
+                return mock.Mock(returncode=1, stdout="", stderr="ready failed")
+            raise AssertionError(command)
+        with (
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=draft),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "run", side_effect=fake_run),
+            mock.patch.object(gtt, "run_stdout") as mutation,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.ensure_closeout_pr_ready(self.root, plan)
+        self.assertEqual(raised.exception.payload["stage"], "draft-to-ready")
+        mutation.assert_not_called()
+
+    def test_active_completed_archive_move_recovery_skips_verifier_and_pr_create(self) -> None:
+        plan = self.build_plan()
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        completed = dict(self.task, status="completed")
+        gtt.write_json(self.task_dir / "task.json", completed)
+        gtt.write_json(self.task_dir / gtt.FINISH_SUMMARY_ARTIFACT, {"schema_version": 1})
+        archived = self.root / plan["task"]["archive_locator"]
+        args = finish_args(dry_run=False, expected_plan_digest=plan["plan_digest"])
+        draft = {"number": 105, "isDraft": True, "headRefOid": self.head}
+        with (
+            mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", self.gate, [])),
+            mock.patch.object(gtt, "load_issue_scope_ledger", return_value=self.ledger),
+            mock.patch.object(gtt, "closeout_evidence_is_committed", return_value=True),
+            mock.patch.object(gtt, "validate_finish_summary"),
+            mock.patch.object(gtt, "validate_closeout_active_projection"),
+            mock.patch.object(gtt, "validate_closeout_evidence_commit"),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "require_gh_auth"),
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=draft),
+            mock.patch.object(gtt, "execute_archive_metadata_transaction", return_value=(archived, {"commit": self.head})) as archive,
+            mock.patch.object(gtt, "ensure_closeout_pr_ready", return_value={"status": "ready"}),
+            mock.patch.object(gtt, "execute_marketplace_verification") as verifier,
+            mock.patch.object(gtt, "create_pull_request") as create,
+        ):
+            result = gtt.resume_active_archive_move(self.root, args, {}, self.task_dir, self.context)
+        self.assertEqual(result["entry_state"], "archive_moved")
+        archive.assert_called_once()
+        verifier.assert_not_called()
+        create.assert_not_called()
+
+    def test_archived_recovery_requires_gh_auth_before_git_or_pr_mutation(self) -> None:
+        plan = self.build_plan()
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        args = finish_args(dry_run=False, expected_plan_digest=plan["plan_digest"])
+        with (
+            mock.patch.object(
+                gtt,
+                "require_gh_auth",
+                side_effect=gtt.WorkflowError("auth required", exit_code=2),
+            ) as auth,
+            mock.patch.object(gtt, "resume_archive_metadata_transaction") as archive,
+            mock.patch.object(gtt, "ensure_closeout_pr_ready") as ready,
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.resume_archived_closeout(self.root, args, self.task_dir)
+        auth.assert_called_once_with(self.root)
+        archive.assert_not_called()
+        ready.assert_not_called()
+
+    def test_formal_failure_injection_stops_at_exact_transition(self) -> None:
+        plan = self.build_plan()
+        prepared = {
+            "plan": plan,
+            "task": self.task,
+            "task_context": self.context,
+            "gate": self.gate,
+            "ledger": self.ledger,
+            "body": "reviewed body",
+            "finish_summary_index": self.index,
+        }
+        transitions = [
+            "prepare", "content-push", "verifier", "evidence-commit",
+            "evidence-push", "draft", "projection", "archive-move",
+            "archive-commit", "archive-push", "remote-head", "ready",
+        ]
+        active_locator = f"{plan['task']['active_locator']}/{gtt.FINISH_SUMMARY_ARTIFACT}"
+        evidence_paths = set(plan["projection"]["evidence_paths"])
+        archive_paths = set(plan["projection"]["metadata_allowlist"])
+        evidence_head = "b" * 40
+        archive_head = "c" * 40
+        expected_states = {
+            "prepare": (True, False, "in_progress", "none", self.head, None, None, set(), set()),
+            "content-push": (True, False, "in_progress", "none", self.head, None, None, set(), set()),
+            "verifier": (True, False, "in_progress", "none", self.head, self.head, None, evidence_paths, set()),
+            "evidence-commit": (True, False, "in_progress", "none", self.head, self.head, None, evidence_paths, evidence_paths),
+            "evidence-push": (True, False, "in_progress", "none", evidence_head, self.head, None, set(), set()),
+            "draft": (True, False, "in_progress", "none", evidence_head, evidence_head, None, set(), set()),
+            "projection": (True, False, "in_progress", "draft", evidence_head, evidence_head, evidence_head, set(), set()),
+            "archive-move": (True, False, "in_progress", "draft", evidence_head, evidence_head, evidence_head, {active_locator}, set()),
+            "archive-commit": (False, True, "completed", "draft", evidence_head, evidence_head, evidence_head, archive_paths, archive_paths),
+            "archive-push": (False, True, "completed", "draft", archive_head, evidence_head, evidence_head, set(), set()),
+            "remote-head": (False, True, "completed", "draft", archive_head, archive_head, archive_head, set(), set()),
+            "ready": (False, True, "completed", "draft", archive_head, archive_head, archive_head, set(), set()),
+        }
+        for failed in transitions:
+            with self.subTest(failed=failed):
+                for name in [
+                    gtt.CLOSEOUT_PLAN_ARTIFACT,
+                    gtt.PR_READINESS_ARTIFACT,
+                    gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+                    gtt.FINISH_SUMMARY_ARTIFACT,
+                ]:
+                    (self.task_dir / name).unlink(missing_ok=True)
+                gtt.write_json(self.task_dir / "issue-scope-ledger.json", self.ledger)
+                order: list[str] = []
+                push_count = 0
+                state: dict[str, object] = {
+                    "active": True,
+                    "archive": False,
+                    "task_status": "in_progress",
+                    "pr": "none",
+                    "local_head": self.head,
+                    "remote_head": None,
+                    "pr_head": None,
+                    "dirty_paths": set(),
+                    "staged_paths": set(),
+                    "next_transition": "prepare",
+                }
+
+                def fail_at(name: str, value: object, **updates: object) -> object:
+                    order.append(name)
+                    state["next_transition"] = name
+                    if name == failed:
+                        raise gtt.WorkflowError(f"injected {name}", exit_code=2, payload={"failed_stage": name})
+                    state.update(updates)
+                    return value
+
+                def run_stdout(command: list[str], **_kwargs: object) -> str:
+                    nonlocal push_count
+                    if command[:2] == ["git", "push"]:
+                        push_count += 1
+                        if push_count == 1:
+                            return str(fail_at("content-push", self.head, remote_head=self.head))
+                        return str(fail_at("evidence-push", evidence_head, remote_head=evidence_head))
+                    return str(state["local_head"])
+
+                def archive_executor(*_args: object) -> tuple[Path, dict[str, object]]:
+                    archived = self.root / plan["task"]["archive_locator"]
+                    fail_at(
+                        "archive-move",
+                        None,
+                        active=False,
+                        archive=True,
+                        task_status="completed",
+                        dirty_paths=set(plan["projection"]["metadata_allowlist"]),
+                        staged_paths=set(plan["projection"]["metadata_allowlist"]),
+                    )
+                    fail_at(
+                        "archive-commit",
+                        None,
+                        local_head=archive_head,
+                        dirty_paths=set(),
+                        staged_paths=set(),
+                    )
+                    fail_at(
+                        "archive-push",
+                        None,
+                        remote_head=archive_head,
+                        pr_head=archive_head,
+                    )
+                    return archived, {"commit": archive_head}
+
+                def verifier_executor(*_args: object, **_kwargs: object) -> dict[str, object]:
+                    state["dirty_paths"] = set(plan["projection"]["evidence_paths"])
+                    return fail_at("verifier", {"status": "passed"})  # type: ignore[return-value]
+
+                def evidence_commit_executor(*_args: object) -> dict[str, object]:
+                    state["staged_paths"] = set(plan["projection"]["evidence_paths"])
+                    return fail_at(
+                        "evidence-commit",
+                        {"commit": evidence_head},
+                        local_head=evidence_head,
+                        dirty_paths=set(),
+                        staged_paths=set(),
+                    )  # type: ignore[return-value]
+
+                def ready_executor(*_args: object) -> dict[str, object]:
+                    fail_at("remote-head", None)
+                    return fail_at("ready", {"status": "ready"}, pr="ready")  # type: ignore[return-value]
+
+                readiness = {
+                    "ready": True,
+                    "body_file": "pr-body.md",
+                    "publish_inputs": {"closeout_plan_digest": plan["plan_digest"]},
+                    "publish_inputs_sha256": "b" * 64,
+                }
+                pr = {"number": 105, "url": "https://github.com/owner/repo/pull/105", "isDraft": True}
+                args = finish_args(dry_run=False, expected_plan_digest=plan["plan_digest"])
+                patches = [
+                    mock.patch.object(gtt, "repo_root", return_value=self.root),
+                    mock.patch.object(gtt, "load_config", return_value={}),
+                    mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+                    mock.patch.object(gtt, "load_task_start_context", return_value=self.context),
+                    mock.patch.object(gtt, "assert_workspace_boundary"),
+                    mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+                    mock.patch.object(gtt, "prepare_closeout", side_effect=lambda *_a: fail_at("prepare", prepared)),
+                    mock.patch.object(gtt, "require_gh_auth"),
+                    mock.patch.object(gtt, "load_issue_scope_ledger", return_value=self.ledger),
+                    mock.patch.object(gtt, "resolve_closeout_state", return_value="prepared"),
+                    mock.patch.object(gtt, "current_head", side_effect=lambda *_a: str(state["local_head"])),
+                    mock.patch.object(gtt, "run_stdout", side_effect=run_stdout),
+                    mock.patch.object(gtt, "validate_publish_identity_and_remote_head"),
+                    mock.patch.object(gtt, "build_pr_readiness_snapshot", return_value=(self.task_dir / "pr-readiness.json", readiness)),
+                    mock.patch.object(gtt, "execute_marketplace_verification", side_effect=verifier_executor),
+                    mock.patch.object(gtt, "closeout_passed_marketplace_evidence", return_value={"type": "remote_marketplace_verification", "status": "passed"}),
+                    mock.patch.object(gtt, "commit_closeout_evidence_metadata", side_effect=evidence_commit_executor),
+                    mock.patch.object(
+                        gtt,
+                        "ensure_closeout_draft_pr",
+                        side_effect=lambda *a: fail_at(
+                            "draft", pr, pr="draft", pr_head=evidence_head
+                        ),
+                    ),
+                    mock.patch.object(
+                        gtt,
+                        "build_final_archive_projection",
+                        side_effect=lambda *a: fail_at(
+                            "projection",
+                            (self.task_dir / "finish-summary.json", {}),
+                            dirty_paths={f"{plan['task']['active_locator']}/{gtt.FINISH_SUMMARY_ARTIFACT}"},
+                        ),
+                    ),
+                    mock.patch.object(gtt, "execute_archive_metadata_transaction", side_effect=archive_executor),
+                    mock.patch.object(gtt, "ensure_closeout_pr_ready", side_effect=ready_executor),
+                ]
+                for patcher in patches:
+                    patcher.start()
+                try:
+                    with self.assertRaises(gtt.WorkflowError) as raised:
+                        gtt.cmd_finish_work(args)
+                finally:
+                    for patcher in reversed(patches):
+                        patcher.stop()
+                self.assertEqual(raised.exception.payload["failed_stage"], failed)
+                self.assertEqual(order, transitions[: transitions.index(failed) + 1])
+                self.assertEqual(state["next_transition"], failed)
+                expected = expected_states[failed]
+                actual = tuple(
+                    state[key]
+                    for key in [
+                        "active", "archive", "task_status", "pr", "local_head",
+                        "remote_head", "pr_head", "dirty_paths", "staged_paths",
+                    ]
+                )
+                self.assertEqual(actual, expected)
 
 
 class FinishSummaryContractTests(unittest.TestCase):

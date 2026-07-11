@@ -1,0 +1,69 @@
+{
+  "primary_issue": {
+    "number": 105,
+    "url": "https://github.com/castbox/guru-trellis/issues/105",
+    "title": "拆分 #53：重构 Guru Team finish-work 收尾事务，消除 archive 后可预见失败",
+    "reason": "本任务唯一交付目标。",
+    "acceptance_evidence": [
+      "closeout-plan.json schema、canonical digest、dry-run/formal expected digest handshake、future final-summary projection与task-relative marketplace evidence locator已实现。",
+      "finish-work state machine已按 reviewed content push、remote verifier、exact evidence commit、draft PR identity、final archive projection、archive transaction、三方HEAD校验、draft-to-ready顺序重构；同一入口覆盖active/archive中断恢复。",
+      "十二阶段failure injection与真实Git mixed tracked/untracked archive transaction fixture覆盖task locator、PR state、local/remote/PR HEAD、dirty/staged paths、lineage、exact tree与next transition。",
+      "canonical workflow、durable specs/docs、preset、五个平台finish入口、dogfood copies、schemas与tests已同步；Phase 2检查确认四项P1全部resolved且无新P0-P3。",
+      "canonical 359/359、preset 36/36、targeted closeout 25/25通过；Python/Bash/schema/JSONL/task/diff、overlay drift、canonical/dogfood equality和clean throwaway init/preview/switch/update/reapply验证通过。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 105,
+      "url": "https://github.com/castbox/guru-trellis/issues/105",
+      "title": "拆分 #53：重构 Guru Team finish-work 收尾事务，消除 archive 后可预见失败",
+      "reason": "实现、测试、Branch Review Gate 与发布证据必须完整覆盖本 issue。",
+      "acceptance_evidence": [
+        "closeout-plan.json schema、canonical digest、dry-run/formal expected digest handshake、future final-summary projection与task-relative marketplace evidence locator已实现。",
+        "finish-work state machine已按 reviewed content push、remote verifier、exact evidence commit、draft PR identity、final archive projection、archive transaction、三方HEAD校验、draft-to-ready顺序重构；同一入口覆盖active/archive中断恢复。",
+        "十二阶段failure injection与真实Git mixed tracked/untracked archive transaction fixture覆盖task locator、PR state、local/remote/PR HEAD、dirty/staged paths、lineage、exact tree与next transition。",
+        "canonical workflow、durable specs/docs、preset、五个平台finish入口、dogfood copies、schemas与tests已同步；Phase 2检查确认四项P1全部resolved且无新P0-P3。",
+        "canonical 359/359、preset 36/36、targeted closeout 25/25通过；Python/Bash/schema/JSONL/task/diff、overlay drift、canonical/dogfood equality和clean throwaway init/preview/switch/update/reapply验证通过。"
+      ]
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 53,
+      "url": "https://github.com/castbox/guru-trellis/issues/53",
+      "reason": "父级拆分来源，只引用，不关闭。"
+    },
+    {
+      "number": 96,
+      "url": "https://github.com/castbox/guru-trellis/issues/96",
+      "reason": "已完成的task runtime边界前置合同，只引用，不关闭。"
+    },
+    {
+      "number": 97,
+      "url": "https://github.com/castbox/guru-trellis/issues/97",
+      "reason": "已完成的finish-summary schema与normal finish基线，只引用，不关闭。"
+    },
+    {
+      "number": 100,
+      "url": "https://github.com/castbox/guru-trellis/issues/100",
+      "reason": "已完成的历史summary回填与本次失败证据来源，只引用，不关闭。"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 98,
+      "url": "https://github.com/castbox/guru-trellis/issues/98",
+      "reason": "消费稳定finish-summary与PR ref的后续历史发现任务。"
+    },
+    {
+      "number": 99,
+      "url": "https://github.com/castbox/guru-trellis/issues/99",
+      "reason": "取消developer identity前置依赖的独立任务。"
+    },
+    {
+      "number": 101,
+      "url": "https://github.com/castbox/guru-trellis/issues/101",
+      "reason": "消费#98 Phase 0 preview的Issue Review Gate任务。"
+    }
+  ]
+}

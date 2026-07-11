@@ -74,51 +74,76 @@ defined by `METADATA_ONLY_PREFIXES` and `METADATA_ONLY_FILES`; update these
 constants deliberately if Trellis metadata ownership changes.
 
 `finish-work.sh` and `publish-pr` are internal helpers, not the normal user
-path. `finish-work.sh` must reject ordinary direct calls before archive, finish-summary,
-metadata commit, push, or PR side effects; only the explicit
+path. `finish-work.sh` must reject ordinary direct calls before closeout-plan,
+push, draft PR, archive, or publish side effects; only the explicit
 `trellis-finish-work` entrypoint may pass the `--from-trellis-finish-work`
-intent marker. `publish-pr` must reject ordinary direct calls before `git push`
-or `gh pr create`; only `finish-work` may set the internal publish marker after
-archive and initial finish-summary recording succeed. A separate explicit recovery/debug flag may exist
-for rerunning publish after finish-work already completed, but it still must
-pass review gate, dirty state, issue ledger, base branch, and GitHub auth
-checks.
+intent marker. `publish-pr` remains a low-level executor and must reject the
+legacy user-facing `--recovery-after-finish-work` path. Every interruption is
+resumed through the same state-aware `trellis-finish-work` entry.
 
 Finish-summary separates AI judgment from deterministic facts. The explicit
 finish entry writes task-local `finish-summary-index.json` with reviewed
 problem/outcome/behavior/surface/contract/search-term judgment and passes it via
 `--finish-summary-index-file`. The companion rejects factual issue/PR/branch/path
 fields in that input, injects task/Git/ledger/artifact/time facts, derives
-`retrieval_text`, and validates the strict shared schema. Dry-run validates and
-previews archive/summary/publish without writing. Formal finish archives, writes
-an initial empty-PR summary, and never invokes upstream `add_session.py` or
-reads/writes `.trellis/workspace/**`.
+`retrieval_text`, and validates the strict shared schema. Dry-run and formal
+finish call the same `prepare_closeout()` pipeline. Dry-run returns the
+immutable `closeout-plan.json` bytes and canonical `closeout_plan_digest`
+without writing. Formal finish requires `--expected-plan-digest`, rebuilds and
+compares the plan before its first side effect, then persists the exact plan
+with immutable readiness. Formal finish never writes an empty-PR summary,
+never invokes upstream `add_session.py`, and never reads/writes
+`.trellis/workspace/**`.
 
-The initial summary is built after `task.py archive` and before the metadata
-commit. Its snapshot combines the base-to-working-tree `git diff --name-only
--z` result with `git ls-files --others --exclude-standard -z`, so an untracked
-archived task directory is expanded to individual task-local metadata files
-instead of a trailing-slash directory placeholder. The same protected-prefix
-filter and fixed contract fact rules apply to this initial snapshot.
+Prepare must also build and schema-validate the complete future archived
+finish-summary before dry-run/formal diverge. The immutable plan stores that
+template with the fixed maximum-width sentinel PR
+`#9223372036854775807`, its exact UTF-8 `write_json` byte digest, the Branch Review Gate
+`generated_at` snapshot time, and the only runtime-substitution fields:
+`github.pr_url` and `index.search_terms.pr_refs`. Formal final projection copies
+the template and substitutes one canonical PR identity; it does not call the
+general summary builder after content push, verifier, evidence commit, or draft
+creation. Dry-run and formal therefore expose the same local build/path/schema
+errors before the first side effect.
 
-After PR creation, `publish-pr` sorts and deduplicates raw final base-to-HEAD
-paths, filters workspace/runtime protected prefixes, and writes the safe set to
-both final path arrays. A non-empty filtered set adds exactly one fixed
-`finish-summary protected path filtering` contract fact without path, basename,
-or count details; an empty filtered set removes that reserved fact. Schema and
-Python validation reject protected prefixes in every path field. Publish then
-rewrites URL and PR ref, and commits and pushes exactly the archived task
-`finish-summary.json`. Recovery validates repo/base/head identity,
-AI-reviewed body/readiness, review gate, and current/remote HEAD before any PR
-query or create. Marketplace-required recovery only validates and reuses the
-existing passed verifier evidence. It then queries the current repo/head/base:
-one open PR is reused without create, zero triggers exactly one create with the
-same title/body/draft inputs, and multiple fail closed without selection or
-create. A failed zero-PR retry leaves the initial empty URL/refs unchanged and
-returns the same recovery command; the same invocation does not query or create
-again. Failures after PR creation preserve the URL and executable recovery
-command. The post-verifier summary tail is compatible with remote marketplace
-evidence only when its path is exact and the summary remains valid.
+Formal finish pushes the reviewed content HEAD first, records deterministic
+pending marketplace evidence, runs the required verifier against that remote
+HEAD, replaces only the machine evidence with passed facts, and commits/pushes
+the exact plan/readiness/verifier/ledger allowlist. It then creates or reuses
+one draft PR for the exact repo/head/base identity. Multiple matches fail
+closed. The canonical PR URL is used to build the only final finish-summary in
+the active task, including exactly one `PR #<number>` ref. A temporary future
+archive projection validates schema, path safety, artifact locators, ledger,
+gate, readiness, and the exact archive allowlist before the official
+`task.py archive --no-commit` move.
+
+Marketplace machine evidence uses the task-relative locator
+`marketplace-verification.json`, never the active task path. Final projection
+and archive recovery resolve that locator inside the current active/archived
+task, require the artifact bytes to exist, and require the ledger digest to
+match. Archive never rewrites the ledger or verifier artifact.
+
+The archive transaction creates one metadata commit containing only the
+prevalidated active-to-archive task move, pushes it, and requires local branch,
+remote branch, and draft PR head to match. Only then may the executor run
+`gh pr ready`. A retry derives its state from committed plan/readiness,
+active/archive locators, Git state, remote HEAD, and PR identity. After archive
+push it may only recheck identity and retry draft-to-ready; it must not rebuild
+artifacts, rerun the verifier, commit, or push.
+
+The plan records sorted `move_paths`, `tracked_move_paths`,
+`untracked_archive_outputs`, and exact pre-draft `evidence_paths`.
+Evidence commit parent must equal `reviewed_work_head`; the archive commit
+parent must equal that validated evidence commit. `tracked_move_paths` require
+both active deletion and archive addition. Outputs created only after the
+evidence commit, currently `finish-summary.json`, are immutable
+`untracked_archive_outputs` and require only the archive addition; an active
+deletion for them is invalid because that path never entered the Git index.
+Evidence validation uses the evidence commit tree to prove that every and only
+`tracked_move_paths` exists under the active locator before archive.
+Both fresh execution and recovery require this exact mixed no-renames set,
+active locator absence, complete archive files, and a final-summary template
+digest match. A partial, missing, extra, or misclassified set is never valid.
 
 Use the intake/task `base_branch` for diff ranges and PR base. Do not fall back
 to the GitHub default branch when the task has an explicit base.

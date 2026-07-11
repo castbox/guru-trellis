@@ -36,12 +36,13 @@
     "assets": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256", "finish_summary_schema_sha256", "runtime_gitignore_present", "workspace_gitignore_present", "session_auto_commit_false", "legacy_handoff_absent", "legacy_intake_schema_absent"],
+      "required": ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256", "finish_summary_schema_sha256", "closeout_plan_schema_sha256", "runtime_gitignore_present", "workspace_gitignore_present", "session_auto_commit_false", "legacy_handoff_absent", "legacy_intake_schema_absent"],
       "properties": {
         "workflow_sha256": {"type": "string", "pattern": "^([0-9a-f]{64})?$"},
         "preview_sha256": {"type": "string", "pattern": "^([0-9a-f]{64})?$"},
         "task_start_context_schema_sha256": {"type": "string", "pattern": "^([0-9a-f]{64})?$"},
         "finish_summary_schema_sha256": {"type": "string", "pattern": "^([0-9a-f]{64})?$"},
+        "closeout_plan_schema_sha256": {"type": "string", "pattern": "^([0-9a-f]{64})?$"},
         "runtime_gitignore_present": {"type": "boolean"},
         "workspace_gitignore_present": {"type": "boolean"},
         "session_auto_commit_false": {"type": "boolean"},
@@ -62,6 +63,7 @@
               "preview_sha256": {"pattern": "^[0-9a-f]{64}$"},
               "task_start_context_schema_sha256": {"pattern": "^[0-9a-f]{64}$"},
               "finish_summary_schema_sha256": {"pattern": "^[0-9a-f]{64}$"},
+              "closeout_plan_schema_sha256": {"pattern": "^[0-9a-f]{64}$"},
               "runtime_gitignore_present": {"const": true},
               "workspace_gitignore_present": {"const": true},
               "session_auto_commit_false": {"const": true},

@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "finish-work state machine、executor/validator/recorder边界与验证命令"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "finish-summary、readiness、ledger与新closeout plan数据合同"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Guru Team Phase 3、finish entry与平台同步合同"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "canonical asset、dogfood apply与upgrade/update抗漂移门禁"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "closeout文案、验证与发布质量规则"}

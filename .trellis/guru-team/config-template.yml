@@ -83,9 +83,12 @@ review_gate:
   require_head_match: true
   require_deployment_impact_evidence: true
 
-# Publish PR runs after finish-work archives the task and records initial finish-summary metadata.
+# The closeout state machine always creates a draft PR before archive and marks
+# it ready only after the archive commit reaches local/remote/PR HEAD parity.
+# `draft` is retained for low-level publish-pr compatibility; finish-work owns
+# the draft-to-ready strategy and does not accept an override.
 publish:
-  draft: false
+  draft: true
   close_keyword: Closes
   pr_language: zh-CN
   remote: origin

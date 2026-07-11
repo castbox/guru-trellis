@@ -1,5 +1,12 @@
 # Workflow Quality Guidelines
 
+Finish-work quality evidence must distinguish the reviewed content HEAD, the
+pre-draft evidence HEAD, and the final archive metadata HEAD. A dry-run pass is
+valid only when formal execution rebuilds the same canonical plan digest.
+Successful closeout has one final summary, one archive metadata commit, no
+post-archive artifact rewrite, a clean worktree, matching local/remote/PR HEAD,
+and a non-draft PR. Any unverified stage must be reported explicitly.
+
 ## Source-Backed Changes
 
 Every workflow behavior change should update the canonical source and the
@@ -90,6 +97,17 @@ scope, missing issue ids, and English `Update ...` subjects; accept issue-bearin
 work/metadata subjects and `chore(merge)` subjects; verify work body fixed
 sections plus `Refs`, empty metadata body, fixed merge body, finish metadata
 subject, and publish dry-run/formal `merge_commit` payloads.
+
+Transactional finish tests must inject failure at prepare, reviewed-content
+push, verifier, evidence commit, evidence push, draft create/reuse, final
+projection, archive move, archive commit, archive push, remote/PR HEAD check,
+and draft-to-ready. Every case asserts active/archive locator and task status,
+PR none/draft/ready state, local/remote/PR HEAD, dirty and staged path sets, and
+the one legal next transition. Include regressions for the 2026-07-03
+post-archive identity failure, 2026-07-04 dry-run/archive drift, and issue #100
+pending marketplace evidence. Recovery tests must reject partial move subsets,
+wrong evidence/archive parents, stale task-relative verifier digests, and final
+summary bytes outside the immutable sentinel template.
 
 When changing user-facing workflow command examples, especially closeout or
 publish examples, add regression coverage or explicit grep checks for both the

@@ -179,6 +179,7 @@ platform selection:
 - `.trellis/guru-team/config.yml`
 - `.trellis/guru-team/extension.json`
 - `.trellis/guru-team/schemas/task-start-context.schema.json`
+- `.trellis/guru-team/schemas/closeout-plan.schema.json`
 - `.trellis/guru-team/schemas/finish-summary.schema.json`
 - `.trellis/guru-team/schemas/marketplace-verification.schema.json`
 - `.trellis/guru-team/scripts/bash/check-env.sh`
@@ -390,13 +391,11 @@ work.
 `trellis-continue` cannot chain closeout, commit review metadata, push, or
 create a PR before the explicit `trellis-finish-work` entrypoint. Normal PR
 publish is triggered only by `finish-work.sh --from-trellis-finish-work` after
-archive, task-local initial finish-summary, immutable readiness recording, and
-remaining Trellis metadata-only commit succeed. That
-metadata tail may include `review.md`, `reviews/*.md`, `review-gate.json`, and
-PR readiness files; `check-review-gate` / `finish-work` validate and migrate
-raw report digest paths after archive. Direct
-publish is reserved for explicit recovery/debug after finish-work already
-completed.
+a reviewed dry-run returns an immutable closeout plan digest. Formal finish
+requires the same digest, pushes reviewed content, records marketplace evidence
+and readiness, binds a draft PR, validates the final archive projection, then
+creates one archive metadata commit and marks the PR ready after three-way HEAD
+alignment. Every interruption resumes through the same finish entry.
 After a passed gate, finish-work accepts only Trellis metadata tail. Durable
 docs, `.trellis/spec/`, source, tests, schema, config, scripts, preset, overlay,
 CI/CD, deployment, migration, or Makefile drift after the gate must return to
@@ -404,8 +403,8 @@ Phase 2/3; dry-run and formal finish do not perform a first Docs SSOT merge.
 
 `finish-work.sh --dry-run --from-trellis-finish-work` is a side-effect-free
 readiness preview. It validates the gate, dirty state, AI-authored
-`finish-summary-index.json`, and PR body/readiness, then prints the planned
-archive, initial finish-summary, metadata commit, and publish actions
+`finish-summary-index.json`, and PR body/readiness, then prints the immutable
+plan, digest, future archive mapping, metadata allowlist, and transitions
 without moving or writing task files, creating commits, pushing,
 or creating a PR.
 After dry-run, the AI should render the active-task `Markdown 产物 review 表`;
@@ -423,11 +422,9 @@ limitation. Low-information summaries such as
 non-draft publish. Non-draft publish requires reviewed Markdown with
 task-local `--body-file <path>`; formal finish builds
 `pr-readiness.json.publish_inputs` with repo/base/head/reviewed HEAD/title/body
-SHA-256/draft/reviewed source and canonical snapshot SHA-256. Generated fallback
-bodies are preview/draft-only. The readiness/body files are committed before
-the first PR create and read from the archived task artifact. Recovery rejects
-title/body/draft/base overrides and validates Git blob/history and digests before
-PR resolution. The script validates objective structure,
+SHA-256/`draft=true`/reviewed source and `closeout_plan_digest`. Generated fallback
+bodies are preview-only. The readiness/body files are committed before the
+draft PR create and moved unchanged by archive. The script validates objective structure,
 reviewed source presence, Docs SSOT section/key presence, and close/ref
 semantics but does not replace AI release judgment.
 
@@ -532,18 +529,17 @@ is missing, and otherwise fails closed with the recovery command
 worktree immediately usable by `get_context.py` and `task.py list --mine`.
 Guru Team finish does not call `add_session.py`.
 
-The installer manages `schemas/finish-summary.schema.json`, writes top-level
+The installer manages `schemas/closeout-plan.schema.json` and
+`schemas/finish-summary.schema.json`, writes top-level
 `session_auto_commit: false` into `.trellis/config.yaml`, adds
 `.trellis/workspace/` to `.gitignore`, and never creates or rewrites workspace
 journal/index files. Shared start and installed Codex/Cursor SessionStart hooks
-do not open, enumerate, read, count, or output workspace journals. PR URL
-recovery validates committed readiness Git blob/history, snapshot/body digest,
-repo/base/head, review gate,
-current/remote HEAD, and any existing passed marketplace evidence before querying
-the current repo/head/base. It reuses one open PR, retries create exactly once
-with the same title/body/draft when none exists, and fails closed without create
-when multiple exist. A failed retry keeps the initial empty URL/refs and returns
-the same recovery command.
+do not open, enumerate, read, count, or output workspace journals. Closeout
+recovery validates the committed plan/readiness, active/archive locator,
+repo/base/head, review gate, current/remote HEAD, and exact PR identity. It
+reuses one draft PR, creates one when none exists, and fails closed when
+multiple exist. After archive push it performs only HEAD alignment and
+draft-to-ready recovery.
 
 Current-checkout direct edits while `no_task` is active are allowed only as an
 explicit user override. The user approval must say this turn should skip
@@ -589,4 +585,4 @@ concrete reason after the final diff is reviewed.
 
 ## Push 后远端 Marketplace 门禁
 
-修改 marketplace/preset/overlay/schema/public API 的发布路径要求 primary/close issue ledger 先保存精确的 `remote_marketplace_verification: pending` 结构，pending 或普通文字不能通过最终 publish。branch push 后、`gh pr create` 前会执行远端分支 `init`、preview、switch 和 preset reapply，生成 schema-valid 的 task-local `marketplace-verification.json`；成功后脚本把真实 artifact path/SHA-256、verified content HEAD、remote HEAD、publish content HEAD 与命令结果回写 ledger，仅允许 artifact + ledger 两个路径形成 metadata tail。metadata push 后重新校验 artifact、ledger、双路径 diff、remote metadata HEAD 与 review gate，缺失、pending、失败、篡改、HEAD 不匹配或 stale 均阻止创建 PR；该门禁不创建 tag，AI 仍负责 close scope 与 PR readiness 判断。
+修改 marketplace/preset/overlay/schema/public API 时，recorder 在 reviewed content push 后从 immutable closeout plan 生成 pending machine evidence；verifier 成功后只替换为 passed。plan、readiness、artifact 与 ledger 形成 exact pre-draft metadata commit，push 并校验 remote HEAD 后才允许绑定 draft PR。缺失、重复、pending、失败、篡改、HEAD 不匹配或 stale 均阻止创建 PR；human reason 不参与 machine identity，该门禁不创建 tag，AI 仍负责 close scope 与 PR readiness 判断。
