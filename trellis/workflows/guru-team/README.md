@@ -465,9 +465,13 @@ finish-work 先绑定唯一 draft PR，再在 active task 中一次构建包含 
 不追加。initial diff、initial untracked 或 final/recovery diff 失败时两个 path 数组都为空，
 只追加固定 snapshot-unavailable fact，并重新派生 retrieval text。schema/validator 对所有 path 字段继续拒绝受保护前缀。final summary 在 active task 中严格
 校验一次，并只随 archive metadata transaction 提交。archive 后不再校验、回写 artifact 或新增
-metadata tail。同一入口在 archive 前根据 plan/readiness、active locator 与 evidence facts 恢复；
-official move 后只读取 immutable plan，检查 exact archive path/blob/commit lineage、remote PR
-title/body digest、三方 HEAD，并执行 draft-to-ready 重试。
+metadata tail。同一入口在 archive 前根据 plan/readiness、active locator 与 evidence facts 恢复。
+official move 后、精确 archive commit 尚未形成时，仍校验 archived working-tree 完整布局、
+dirty/staged path、blob continuity 与官方 `task.json` delta；commit 缺失或不匹配继续 fail closed。
+一旦当前 `HEAD` 已是精确 archive commit，则 immutable plan 与 Git parent/path/tree/blob lineage 成为
+权威事实，本地 archived 文件缺失、篡改及其 dirty state 不阻塞 exact push、remote PR title/body
+digest、三方 HEAD 或 draft-to-ready。plan-only archived directory 只由 `trellis-finish-work` 恢复入口
+解析，普通 task 命令仍要求 `task.json`；两条路径均不重新打开 archived artifacts。
 
 `finish-work` 在首次 PR create 前写入并提交 task-local
 `pr-readiness.json.publish_inputs`，固定 repo/base/head、reviewed HEAD、exact title、

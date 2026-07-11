@@ -547,10 +547,17 @@ journal/index files. Shared start and installed Codex/Cursor SessionStart hooks
 do not open, enumerate, read, count, or output workspace journals. Before
 archive, closeout recovery validates committed plan/readiness, the active
 locator, repo/base/head, review gate, current/remote HEAD, and exact PR
-identity. After the official move it reads only the immutable plan, validates
-the exact archive path/blob/commit transaction and remote title/body digest,
-then performs HEAD alignment and draft-to-ready recovery without reopening
-archived artifacts.
+identity. After the official move but before the exact archive commit exists,
+it still requires the complete archived working-tree layout, exact
+dirty/staged paths, blob continuity, and official `task.json` delta; an absent
+or mismatched commit remains fail closed. Once current `HEAD` is the exact
+planned archive commit, the immutable plan and Git parent/path/tree/blob facts
+are authoritative, so missing or tampered archived working-tree files do not
+block the exact push, remote title/body check, HEAD alignment, or
+draft-to-ready. A plan-only archived directory is resolvable only by the
+`trellis-finish-work` recovery entry; ordinary task commands still require
+`task.json`. Neither recovery path reopens archived artifacts for semantic
+validation.
 
 Current-checkout direct edits while `no_task` is active are allowed only as an
 explicit user override. The user approval must say this turn should skip

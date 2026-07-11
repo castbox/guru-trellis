@@ -10617,6 +10617,13 @@ shutil.move(str(active), str(archived))
             )
             stack.enter_context(mock.patch.object(gtt, "current_head", return_value=self.head))
             stack.enter_context(mock.patch.object(gtt, "run", side_effect=fake_run))
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "resolve_committed_closeout_archive_transaction",
+                    return_value=None,
+                )
+            )
             result = gtt.resume_archived_closeout(self.root, args, archived)
         archive.assert_called_once_with(self.root, archived, plan)
         self.assertEqual(result["stage"], "ready")
@@ -10690,7 +10697,14 @@ shutil.move(str(active), str(archived))
         ready.assert_not_called()
 
 
-    def run_production_finish_case(self, failed_stage: str | None = None) -> dict[str, object]:
+    def run_production_finish_case(
+        self,
+        failed_stage: str | None = None,
+        *,
+        archived_damage: str | None = None,
+        expect_reentry_failure: bool = False,
+        create_mismatched_commit: bool = False,
+    ) -> dict[str, object]:
         source_root = Path(__file__).resolve().parents[5]
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -10991,6 +11005,26 @@ shutil.move(str(active), str(archived))
             archive_locator = f".trellis/tasks/archive/{datetime.now().strftime('%Y-%m')}/{task_dir.name}"
             archived_path = root / archive_locator
 
+            def damage_archived_worktree(mode: str) -> None:
+                if not archived_path.is_dir():
+                    raise AssertionError("archive damage requires the official move to have completed")
+                if mode == "delete":
+                    for path in list(archived_path.iterdir()):
+                        if path.name == gtt.CLOSEOUT_PLAN_ARTIFACT:
+                            continue
+                        if path.is_dir():
+                            shutil.rmtree(path)
+                        else:
+                            path.unlink()
+                    return
+                if mode == "tamper":
+                    (archived_path / gtt.PR_BODY_ARTIFACT).write_bytes(b"\xff")
+                    (archived_path / gtt.FINISH_SUMMARY_ARTIFACT).write_text(
+                        "invalid committed summary\n", encoding="utf-8"
+                    )
+                    return
+                raise AssertionError(f"unsupported archived damage mode: {mode}")
+
             def exact_state() -> dict[str, object]:
                 local_head = gtt.run_stdout(["git", "rev-parse", "HEAD"], cwd=root)
                 remote_proc = original_run(
@@ -11001,16 +11035,18 @@ shutil.move(str(active), str(archived))
                 rows = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
                 remote_head = rows[0][0] if len(rows) == 1 else None
                 current_task_dir = task_dir if task_dir.is_dir() else archived_path if archived_path.is_dir() else None
+                task_status: object = None
+                if current_task_dir is not None and (current_task_dir / "task.json").is_file():
+                    try:
+                        task_status = gtt.read_json(current_task_dir / "task.json").get("status")
+                    except (gtt.WorkflowError, json.JSONDecodeError):
+                        task_status = "invalid"
                 return {
                     "active_locator": ".trellis/tasks/07-11-closeout" if task_dir.is_dir() else None,
                     "active_path": str(task_dir) if task_dir.is_dir() else None,
                     "archive_locator": archive_locator if archived_path.is_dir() else None,
                     "archive_path": str(archived_path) if archived_path.is_dir() else None,
-                    "task_status": (
-                        gtt.read_json(current_task_dir / "task.json").get("status")
-                        if current_task_dir is not None
-                        else None
-                    ),
+                    "task_status": task_status,
                     "dirty_paths": set(gtt.git_status_paths(root)),
                     "staged_paths": set(
                         gtt.run_stdout(
@@ -11112,6 +11148,18 @@ shutil.move(str(active), str(archived))
                         with self.assertRaises((gtt.WorkflowError, subprocess.CalledProcessError)):
                             gtt.cmd_finish_work(formal_args)
                         failed_state = exact_state()
+                        if create_mismatched_commit:
+                            original_run(["git", "reset"], cwd=root, check=True)
+                            mismatch = root / ".trellis/archive-mismatch-marker.txt"
+                            mismatch.write_text("mismatched archive head\n", encoding="utf-8")
+                            original_run(["git", "add", str(mismatch)], cwd=root, check=True)
+                            original_run(
+                                ["git", "commit", "-qm", "mismatched archive head"],
+                                cwd=root,
+                                check=True,
+                            )
+                        if archived_damage is not None:
+                            damage_archived_worktree(archived_damage)
                         injected_stage = None
                         if failed_stage == "projection":
                             (task_dir / "review.md").write_text(
@@ -11121,6 +11169,19 @@ shutil.move(str(active), str(archived))
                         reentry_offset = len(transition_attempts)
                         if failed_stage == "plan-digest":
                             transition_attempts.append("plan-digest")
+                        if expect_reentry_failure:
+                            with self.assertRaises(
+                                (gtt.WorkflowError, subprocess.CalledProcessError)
+                            ) as reentry_error:
+                                gtt.cmd_finish_work(formal_args)
+                            return {
+                                "failed_state": failed_state,
+                                "reentry_failed_state": exact_state(),
+                                "reentry_error": str(reentry_error.exception),
+                                "reentry_events": transition_attempts[reentry_offset:],
+                                "all_transition_attempts": transition_attempts,
+                                "reviewed_sha": reviewed_head,
+                            }
                         result = gtt.cmd_finish_work(formal_args)
                         if failed_stage == "projection":
                             transition_attempts.insert(reentry_offset, "projection")
@@ -11133,14 +11194,17 @@ shutil.move(str(active), str(archived))
             ).split()[0]
             self.assertFalse(task_dir.exists())
             self.assertTrue(archived.is_dir())
-            self.assertEqual(gtt.read_json(archived / "task.json")["status"], "completed")
             self.assertEqual(local_head, remote_head)
             self.assertEqual(pr_store["isDraft"], False)
-            self.assertEqual(
-                gtt.read_json(archived / gtt.FINISH_SUMMARY_ARTIFACT)["github"]["pr_url"],
-                pr_store["url"],
-            )
-            self.assertEqual(gtt.git_status_paths(root), [])
+            if archived_damage is None:
+                self.assertEqual(gtt.read_json(archived / "task.json")["status"], "completed")
+                self.assertEqual(
+                    gtt.read_json(archived / gtt.FINISH_SUMMARY_ARTIFACT)["github"]["pr_url"],
+                    pr_store["url"],
+                )
+                self.assertEqual(gtt.git_status_paths(root), [])
+            else:
+                self.assertTrue(gtt.git_status_paths(root))
             final_state = exact_state()
             evidence_head = gtt.run_stdout(["git", "rev-parse", f"{local_head}^"], cwd=root)
             return {
@@ -11170,6 +11234,48 @@ shutil.move(str(active), str(archived))
         self.assertEqual(final["pr_head_sha"], result["archive_sha"])
         self.assertEqual(final["pr_is_draft"], False)
         self.assertEqual(final["pr_state"], "OPEN")
+
+    def test_production_archived_reentry_uses_committed_git_facts_with_damaged_worktree(self) -> None:
+        cases = [
+            ("archive-push", "delete", None),
+            ("ready", "tamper", "completed"),
+        ]
+        for failed_stage, damage, expected_task_status in cases:
+            with self.subTest(failed_stage=failed_stage, damage=damage):
+                result = self.run_production_finish_case(
+                    failed_stage,
+                    archived_damage=damage,
+                )
+                final = result["final_state"]
+                self.assertIsNone(final["active_locator"])
+                self.assertEqual(final["task_status"], expected_task_status)
+                self.assertTrue(final["dirty_paths"])
+                self.assertEqual(final["local_sha"], result["archive_sha"])
+                self.assertEqual(final["remote_sha"], result["archive_sha"])
+                self.assertEqual(final["pr_head_sha"], result["archive_sha"])
+                self.assertEqual(final["pr_is_draft"], False)
+                self.assertEqual(final["pr_state"], "OPEN")
+                self.assertIn(failed_stage, result["reentry_events"])
+
+    def test_production_incomplete_or_mismatched_archive_still_requires_worktree_contracts(self) -> None:
+        cases = [
+            (False, "Archived closeout files do not match"),
+            (True, "Closeout evidence commit does not match"),
+        ]
+        for create_mismatch, expected_error in cases:
+            with self.subTest(create_mismatch=create_mismatch):
+                result = self.run_production_finish_case(
+                    "archive-commit",
+                    archived_damage="tamper" if create_mismatch else "delete",
+                    expect_reentry_failure=True,
+                    create_mismatched_commit=create_mismatch,
+                )
+                state = result["reentry_failed_state"]
+                self.assertIsNone(state["active_locator"])
+                self.assertIsNotNone(state["archive_locator"])
+                self.assertTrue(state["dirty_paths"])
+                self.assertEqual(state["pr_is_draft"], True)
+                self.assertIn(expected_error, result["reentry_error"])
 
     def test_production_finish_fork_candidate_fails_before_archive_and_summary_binding(self) -> None:
         result = self.run_production_finish_case("fork-candidate")

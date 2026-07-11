@@ -135,12 +135,14 @@ A fresh archived reentry accepts the unique repo/head/base PR whose remote
 title/body digest matches the plan because runtime number/URL are intentionally
 excluded from the immutable input digest.
 
-Archive content identity is not inferred from the no-renames path set. For
-each `tracked_move_paths` item, the evidence commit active blob is bound to the
-archive working-tree and archive commit blob. All files are byte-identical
-except `task.json`, where only the official `status` and `completedAt` archive
-fields may change. `untracked_archive_outputs` are validated by their existing
-template/digest contracts.
+Archive content identity is not inferred from the no-renames path set. Before
+the exact archive commit exists, each `tracked_move_paths` item binds the
+evidence commit active blob to the archived working-tree file and prospective
+archive commit blob. All files are byte-identical except `task.json`, where
+only the official `status` and `completedAt` archive fields may change.
+`untracked_archive_outputs` are validated by their existing template/digest
+contracts. Once the exact archive commit exists, its tree and blobs replace the
+archived working tree as the authoritative content source.
 
 Failure-state evidence is read from the real filesystem, Git index/log, bare
 remote, and fake GitHub PR store after invoking production `cmd_finish_work()`.
@@ -700,13 +702,23 @@ the same locator resolves after the active directory moves to archive.
 Missing, duplicate, altered, path-bound, or digest-mismatched machine fields
 fail closed.
 
-Archive recovery accepts only the complete mixed no-renames path set: both
-sides for every tracked move and archive-only for every untracked output.
-It validates evidence-commit parent/path identity, archive-commit parent/path
-identity, active absence, archive completeness, and tracked blob continuity.
-It may complete only exact commit, push, remote PR identity, HEAD alignment,
-and draft-to-ready executor steps; it never parses, rebuilds, validates, or
-rewrites an archived body, summary, ledger, readiness, or marketplace artifact.
+Before the exact archive commit exists, archive recovery accepts only the
+complete mixed no-renames working-tree path set: both sides for every tracked
+move and archive-only for every untracked output. It validates exact
+dirty/staged paths, evidence-commit parent/path identity, active absence,
+archive completeness, tracked blob continuity, and the official `task.json`
+delta before it may create the commit. Missing or mismatched commit state keeps
+this metadata recovery path fail closed.
+
+When current `HEAD` is the exact planned archive commit, recovery instead
+validates only the immutable plan and Git parent/path/tree/blob lineage.
+Archived working-tree deletion, content tampering, and the resulting dirty
+paths are ignored; recovery may only push that exact commit when needed, check
+remote PR identity and three-way HEAD alignment, and retry draft-to-ready. An
+archived directory containing only `closeout-plan.json` is resolvable for this
+path only by `trellis-finish-work`; other commands still require `task.json`.
+Neither path parses, rebuilds, validates, or rewrites an archived body, summary,
+ledger, readiness, or marketplace artifact.
 
 Branch Review Gate treats every finding priority (`P0`, `P1`, `P2`, `P3`) as
 blocking. `observations[]` are non-blocking notes, and

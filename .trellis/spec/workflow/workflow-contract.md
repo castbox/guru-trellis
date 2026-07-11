@@ -467,15 +467,24 @@ archive/finish-summary/push side effects, and ordinary direct `publish-pr` calls
 rejected before `git push` / `gh pr create`. Every closeout interruption is
 resumed through the same state-aware `trellis-finish-work` entry.
 
-Same-entry archive recovery is bound to the plan's complete `move_paths`,
-`tracked_move_paths`, `untracked_archive_outputs`, exact `evidence_paths`,
-evidence commit parent, archive commit parent, active-locator absence, archive
-completeness, and tracked blob continuity. Git paths are exact: tracked
-moves appear on both sides, while outputs first generated after the evidence
-commit appear only at archive. A partial, missing, extra, or misclassified path
-set is invalid. After the exact archive commit exists, recovery may
-only push that commit when remote is behind, verify local/remote/PR HEAD, and
-retry `gh pr ready`; it must not build or rewrite task artifacts.
+Before the exact archive commit exists, same-entry archive recovery is bound to
+the plan's complete `move_paths`, `tracked_move_paths`,
+`untracked_archive_outputs`, exact `evidence_paths`, evidence commit parent,
+active-locator absence, archived working-tree completeness, exact dirty/staged
+paths, and tracked blob continuity. Git paths are exact: tracked moves appear
+on both sides, while outputs first generated after the evidence commit appear
+only at archive. A partial, missing, extra, misclassified, or tampered
+pre-commit state is invalid. If current `HEAD` is absent from or mismatched with
+the planned archive transaction, this metadata recovery path remains fail
+closed.
+
+After current `HEAD` is the exact archive commit, recovery validates the
+immutable plan and Git parent/path/tree/blob lineage instead of archived
+working-tree layout or dirty state. Missing or tampered local archived files do
+not block pushing that exact commit when remote is behind, verifying
+local/remote/PR HEAD, or retrying `gh pr ready`; no task artifact may be built
+or rewritten. A plan-only archived directory is resolvable only through
+`trellis-finish-work`; ordinary task commands still require `task.json`.
 
 The generated PR must start as draft, target the intake/task `base_branch`, and
 become non-draft only after archive HEAD alignment. Close keywords are allowed

@@ -196,13 +196,25 @@ evidence commit, currently `finish-summary.json`, are immutable
 deletion for them is invalid because that path never entered the Git index.
 Evidence validation uses the evidence commit tree to prove that every and only
 `tracked_move_paths` exists under the active locator before archive.
-Both fresh execution and recovery require this exact mixed no-renames set,
-active locator absence, and the complete prevalidated archive file set. Every
-tracked active blob in the evidence commit must equal its
-archived working-tree and archive-commit blob byte-for-byte, except `task.json`,
-whose only permitted change is the official `status=completed` and
-`completedAt=YYYY-MM-DD` transition. A partial, missing, extra, misclassified,
-or content-tampered set is never valid.
+Until the exact archive commit exists, fresh execution and recovery require
+this exact mixed no-renames set, active locator absence, the complete
+prevalidated archived working-tree file set, exact dirty/staged paths, and
+working-tree-to-Git blob continuity. Every tracked active blob in the evidence
+commit must equal its archived working-tree and archive-commit blob
+byte-for-byte, except `task.json`, whose only permitted change is the official
+`status=completed` and `completedAt=YYYY-MM-DD` transition. A partial, missing,
+extra, misclassified, or content-tampered pre-commit set is never valid.
+
+Once current `HEAD` is the exact planned archive commit, the immutable plan and
+that commit's parent, path set, tree, and blobs are authoritative. Missing or
+tampered archived working-tree files and their dirty status do not block
+pushing that exact commit, remote/PR HEAD checks, or draft-to-ready. If current
+`HEAD` is absent from or mismatched with the planned archive transaction,
+recovery falls back to the pre-commit metadata path and keeps all layout,
+dirty/staged path, blob, official `task.json`, and lineage checks fail closed.
+An archived directory containing only `closeout-plan.json` is resolvable only
+by the `trellis-finish-work` recovery entry; ordinary task resolution still
+requires `task.json`.
 
 Closeout failure injection must enter through production `cmd_finish_work()`.
 Use a real temporary Git repository, bare remote, official `task.py archive`,

@@ -436,11 +436,15 @@ finish-work 在 active task 中绑定唯一 draft PR，再一次构建包含 can
 workspace/runtime 受保护前缀，把安全集合同时写入 `git.changed_paths` 与 search `paths`；
 schema/validator 的所有 path 字段仍拒绝受保护前缀。final summary 只随 exact archive metadata
 transaction 提交，不存在 empty-URL initial summary 或 post-archive metadata tail。
-archive 前 recovery 使用 committed plan/readiness/evidence 与 task-local body/summary facts；official
-move 后只读取 immutable plan，检查 exact archive path/blob/commit lineage、远端 title/body digest 与
-三方 HEAD，不再读取 archived readiness、body、summary、ledger 或 verifier。正常流携带已绑定的
-PR number/URL 直到 ready confirmation；fresh archived reentry 只接受 repo/head/base、title/body digest
-均匹配的唯一远端候选。
+archive 前 recovery 使用 committed plan/readiness/evidence 与 task-local body/summary facts。official
+move 后、精确 archive commit 尚未形成时，仍严格校验 archived working-tree 完整布局、dirty/staged
+path、blob continuity 与官方 `task.json` delta；commit 缺失或不匹配继续 fail closed。一旦当前
+`HEAD` 已是精确 archive commit，则只以 immutable plan 和 Git parent/path/tree/blob lineage 为准，
+本地 archived 文件缺失、篡改及其 dirty state 不阻塞 exact push、远端 title/body digest、三方 HEAD
+或 draft-to-ready。plan-only archived directory 只允许 `trellis-finish-work` 恢复入口解析，普通 task
+命令仍要求 `task.json`。两条路径都不再读取 archived readiness、body、summary、ledger 或 verifier。
+正常流携带已绑定的 PR number/URL 直到 ready confirmation；fresh archived reentry 只接受
+repo/head/base、title/body digest 均匹配的唯一远端候选。
 
 Guru Team workflow 强制中文 Conventional Commits。工作提交和 Trellis metadata
 提交 subject 使用 `{type}({scope}): #{primary_issue} 中文描述`，工作提交 body 使用

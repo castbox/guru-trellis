@@ -3815,7 +3815,23 @@ def tasks_root(root: Path) -> Path:
     return root / ".trellis/tasks"
 
 
-def resolve_existing_task_dir(root: Path, value: str) -> Path | None:
+def resolvable_task_directory(
+    root: Path, candidate: Path, *, allow_archived_closeout_plan: bool = False
+) -> bool:
+    if not candidate.is_dir():
+        return False
+    if (candidate / "task.json").is_file():
+        return True
+    return (
+        allow_archived_closeout_plan
+        and task_dir_is_archived(root, candidate)
+        and (candidate / CLOSEOUT_PLAN_ARTIFACT).is_file()
+    )
+
+
+def resolve_existing_task_dir(
+    root: Path, value: str, *, allow_archived_closeout_plan: bool = False
+) -> Path | None:
     raw = Path(value)
     candidates: list[Path] = []
     if raw.is_absolute():
@@ -3823,7 +3839,9 @@ def resolve_existing_task_dir(root: Path, value: str) -> Path | None:
     else:
         candidates.extend([root / raw, tasks_root(root) / value])
     for candidate in candidates:
-        if candidate.is_dir() and (candidate / "task.json").is_file():
+        if resolvable_task_directory(
+            root, candidate, allow_archived_closeout_plan=allow_archived_closeout_plan
+        ):
             return candidate.resolve()
 
     base_name = raw.name.rstrip("/")
@@ -3835,7 +3853,9 @@ def resolve_existing_task_dir(root: Path, value: str) -> Path | None:
     if archive_root.is_dir():
         for month in sorted(archive_root.iterdir(), reverse=True):
             archived = month / base_name
-            if archived.is_dir() and (archived / "task.json").is_file():
+            if resolvable_task_directory(
+                root, archived, allow_archived_closeout_plan=allow_archived_closeout_plan
+            ):
                 return archived.resolve()
     return None
 
@@ -3851,9 +3871,19 @@ def current_task_dir(root: Path) -> Path | None:
     return None
 
 
-def resolve_task_dir(root: Path, task_arg: str | None, context: dict[str, Any] | None = None) -> Path:
+def resolve_task_dir(
+    root: Path,
+    task_arg: str | None,
+    context: dict[str, Any] | None = None,
+    *,
+    allow_archived_closeout_plan: bool = False,
+) -> Path:
     if task_arg:
-        resolved = resolve_existing_task_dir(root, task_arg)
+        resolved = resolve_existing_task_dir(
+            root,
+            task_arg,
+            allow_archived_closeout_plan=allow_archived_closeout_plan,
+        )
         if resolved:
             return resolved
         raise WorkflowError(f"Could not resolve task directory: {task_arg}")
@@ -12072,6 +12102,54 @@ def validate_closeout_archive_blob_continuity(
             )
 
 
+def validate_closeout_archive_commit_tree(
+    root: Path, plan: dict[str, Any], archive_commit: str
+) -> None:
+    active_locator = plan["task"]["active_locator"]
+    archive_locator = plan["task"]["archive_locator"]
+    active_paths = closeout_commit_tracked_task_paths(root, archive_commit, active_locator)
+    archived_paths = closeout_commit_tracked_task_paths(root, archive_commit, archive_locator)
+    expected_archived_paths = {
+        f"{archive_locator}/{relative}" for relative in plan["projection"]["move_paths"]
+    }
+    if active_paths or archived_paths != expected_archived_paths:
+        raise WorkflowError(
+            "Closeout archive commit tree does not contain the exact completed task move.",
+            exit_code=2,
+            payload={
+                "commit": archive_commit,
+                "unexpected_active_paths": sorted(active_paths),
+                "expected_archive_paths": sorted(expected_archived_paths),
+                "actual_archive_paths": sorted(archived_paths),
+            },
+        )
+
+
+def resolve_committed_closeout_archive_transaction(
+    root: Path, plan: dict[str, Any]
+) -> dict[str, Any] | None:
+    archive_commit = current_head(root)
+    committed_paths = closeout_commit_paths(root, archive_commit)
+    if committed_paths != closeout_archive_transaction_paths(plan):
+        return None
+    validate_closeout_archive_git_paths(committed_paths, plan, stage="archive-committed-head")
+    evidence_commit = closeout_commit_parent(root, archive_commit)
+    validate_closeout_evidence_commit(root, plan, evidence_commit)
+    validate_closeout_archive_commit_tree(root, plan, archive_commit)
+    validate_closeout_archive_blob_continuity(
+        root,
+        root / plan["task"]["archive_locator"],
+        plan,
+        evidence_commit,
+        archive_commit=archive_commit,
+    )
+    return {
+        "commit": archive_commit,
+        "parent": evidence_commit,
+        "paths": sorted(committed_paths),
+    }
+
+
 def execute_archive_metadata_transaction(
     root: Path, task_dir: Path, plan: dict[str, Any]
 ) -> tuple[Path, dict[str, Any]]:
@@ -12232,7 +12310,11 @@ def resume_archived_closeout(root: Path, args: argparse.Namespace, task_dir: Pat
         pr,
         expected_draft=bool(pr["isDraft"]),
     )
-    archive_commit = resume_archive_metadata_transaction(root, task_dir, plan)
+    archive_commit = resolve_committed_closeout_archive_transaction(root, plan)
+    if archive_commit is None:
+        archive_commit = resume_archive_metadata_transaction(root, task_dir, plan)
+    else:
+        push_closeout_branch_if_needed(root, plan)
     result = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
         "status": "ok",
@@ -12307,7 +12389,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     validate_finish_work_invocation(args)
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    task_dir = resolve_task_dir(root, args.task)
+    task_dir = resolve_task_dir(root, args.task, allow_archived_closeout_plan=True)
     task_context = load_task_start_context(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     if task_dir_is_archived(root, task_dir):
