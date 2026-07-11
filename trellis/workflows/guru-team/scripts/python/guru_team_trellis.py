@@ -10948,6 +10948,69 @@ def assert_closeout_archive_month_current(plan: dict[str, Any]) -> None:
         )
 
 
+def assert_closeout_archive_locator_available(root: Path, archive_locator: str) -> None:
+    """Reject a destination that would change official shutil.move semantics."""
+    destination = root / archive_locator
+    if os.path.lexists(destination):
+        raise WorkflowError(
+            "Closeout planned archive locator already exists; the task remains active.",
+            exit_code=2,
+            payload={
+                "stage": "archive-locator-preflight",
+                "archive_locator": archive_locator,
+            },
+        )
+
+
+def official_active_task_match(tasks_dir: Path, task_name: str) -> Path | None:
+    """Mirror official task_utils.find_task_by_name active-directory lookup."""
+    if not task_name or not tasks_dir.is_dir():
+        return None
+    exact_match = tasks_dir / task_name
+    if exact_match.is_dir():
+        return exact_match
+    for candidate in tasks_dir.iterdir():
+        if candidate.is_dir() and candidate.name.endswith(f"-{task_name}"):
+            return candidate
+    return None
+
+
+def official_archive_would_handle_child_metadata(child_json: Path) -> bool:
+    """Match official read_json plus the truthy child_data mutation guard."""
+    try:
+        payload = json.loads(child_json.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return False
+    return bool(payload)
+
+
+def validate_closeout_task_children(task_dir: Path, task: dict[str, Any]) -> None:
+    children = task.get("children", [])
+    if not isinstance(children, list) or any(not isinstance(child, str) for child in children):
+        raise WorkflowError(
+            "Closeout task children must be a list of strings.",
+            exit_code=2,
+            payload={"stage": "task-children-preflight"},
+        )
+    tasks_dir = task_dir.parent
+    active_children: list[str] = []
+    for child_name in children:
+        child_dir = official_active_task_match(tasks_dir, child_name)
+        if child_dir is not None and official_archive_would_handle_child_metadata(
+            child_dir / "task.json"
+        ):
+            active_children.append(child_dir.name)
+    if active_children:
+        raise WorkflowError(
+            "Closeout archive transaction would modify active child task metadata.",
+            exit_code=2,
+            payload={
+                "stage": "task-children-preflight",
+                "active_children": active_children,
+            },
+        )
+
+
 def closeout_evidence_parent_head(plan: dict[str, Any]) -> str:
     git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
     return str(git.get("evidence_parent_head") or git.get("reviewed_work_head") or "")
@@ -11477,6 +11540,7 @@ def build_closeout_plan(
         archive_locator = f".trellis/tasks/archive/{archive_month_now}/{task_dir.name}"
     if not archive_locator:
         archive_locator = f".trellis/tasks/archive/{archive_month_now}/{task_dir.name}"
+    assert_closeout_archive_locator_available(root, archive_locator)
     observed_task_files = {
         path.relative_to(task_dir).as_posix()
         for path in task_dir.rglob("*")
@@ -11713,12 +11777,7 @@ def prepare_closeout(
             payload={"errors": body_errors + source_errors, "body_source": body_source, "reviewed_source_ok": not source_errors},
         )
     task = task_json(task_dir)
-    if isinstance(task.get("children"), list) and task.get("children"):
-        raise WorkflowError(
-            "Closeout archive transaction requires a task with no active child metadata mutations.",
-            exit_code=2,
-            payload={"children": task.get("children")},
-        )
+    validate_closeout_task_children(task_dir, task)
     repo = normalize_github_repository(
         str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
     )

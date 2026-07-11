@@ -428,6 +428,9 @@ Prepare 使用已安装的官方 config parser，只支持缺失或空 `hooks.af
 official move 前重新核对实时 archive 月份、空 index、精确 untracked 集合、regular-file/mode
 与 tracked evidence blob。已提交 plan 跨月时 task 保持 active；同一 entry 重新 dry-run
 得到新 digest，再追加只更新 plan/readiness 的 evidence commit，不 rewrite history 或迁移目录。
+共享 prepare 同时要求计划 archive locator 不存在，并把缺失的 `task.json.children` 视为
+空 list、其余值严格校验为 `list[str]`。按官方 active task exact/suffix lookup，只有会被
+archive 改写的 active child 阻塞；已归档 child 不阻塞 parent closeout。
 Gate 后到 finish-work/archive 只允许 Trellis metadata tail；durable docs、`.trellis/spec/`、
 source、tests、schema、config、scripts、preset、overlay、CI/CD、deployment、migration、
 Makefile 等 non-metadata drift 必须回到 Phase 2/3。finish-work dry-run 和正式 finish 都不做

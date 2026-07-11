@@ -402,6 +402,12 @@ requires the same digest, pushes reviewed content, records marketplace evidence
 and readiness, binds a draft PR, validates the final archive projection, then
 creates one archive metadata commit and marks the PR ready after three-way HEAD
 alignment. Every interruption resumes through the same finish entry.
+Shared prepare requires the planned archive locator to be absent before dry-run
+and formal diverge. Missing `task.json.children` means an empty list; otherwise
+it must be `list[str]`. Official active-task exact/suffix lookup blocks only a
+child whose active `task.json` would be rewritten, while an archived child does
+not block its parent.
+
 After a passed gate, finish-work accepts only Trellis metadata tail. Durable
 docs, `.trellis/spec/`, source, tests, schema, config, scripts, preset, overlay,
 CI/CD, deployment, migration, or Makefile drift after the gate must return to

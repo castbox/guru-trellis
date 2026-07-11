@@ -201,6 +201,14 @@ mode equality (`100644`/`100755`), and working bytes against the evidence blob.
 Any failure leaves the task active and the PR draft; official archive has not
 run.
 
+Before dry-run and formal diverge, prepare requires the planned archive locator
+to be absent, including dangling symlink entries visible through `lexists`. It
+also validates the effective `task.json.children` value as `list[str]` and mirrors
+official active-task exact/suffix lookup. A matching active child with
+`task.json` blocks because official archive would rewrite that child; an
+already archived child is historical metadata and does not block the parent.
+Both failures happen before Git, GitHub, or recorder mutation.
+
 The plan records sorted `move_paths`, `tracked_move_paths`,
 `untracked_archive_outputs`, and exact pre-draft `evidence_paths`.
 Initial evidence commit parent equals `reviewed_work_head`. A task that remains

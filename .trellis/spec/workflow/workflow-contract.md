@@ -454,6 +454,13 @@ or GitHub call. Once the draft PR exists, the executor may substitute only the
 canonical PR URL and unique `PR #<number>` ref into that prevalidated template.
 Marketplace evidence locators are task-relative and remain valid after archive.
 
+Initial prepare also requires the planned archive locator to be absent, so the
+official move cannot nest the task inside an existing destination. Task
+`children` defaults to `[]` but otherwise must be `list[str]`; using the
+official active-task exact/suffix lookup, only children whose active
+`task.json` would be rewritten block closeout. Historical archived children do
+not block their parent.
+
 Finish-work and archive must not execute the first Docs SSOT merge. If durable
 docs, `.trellis/spec/`, source, tests, schema, config, scripts, preset, overlay,
 CI/CD, deployment, migration, Makefile, or other non-metadata assets drift after

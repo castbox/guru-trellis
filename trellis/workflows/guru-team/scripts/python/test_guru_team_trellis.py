@@ -9229,6 +9229,27 @@ class CloseoutTransactionContractTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
+    def test_closeout_children_contract_requires_list_of_strings(self) -> None:
+        gtt.validate_closeout_task_children(self.task_dir, self.task)
+        for malformed in ({"child": "bad"}, "child", ["child", 7]):
+            with self.subTest(malformed=malformed), self.assertRaises(gtt.WorkflowError) as error:
+                gtt.validate_closeout_task_children(
+                    self.task_dir,
+                    {**self.task, "children": malformed},
+                )
+            self.assertEqual(error.exception.payload.get("stage"), "task-children-preflight")
+
+    def test_closeout_children_contract_uses_official_active_suffix_lookup(self) -> None:
+        child_dir = self.task_dir.parent / "07-10-child"
+        child_dir.mkdir()
+        gtt.write_json(child_dir / "task.json", {"id": "child", "parent": self.task_dir.name})
+        with self.assertRaises(gtt.WorkflowError) as error:
+            gtt.validate_closeout_task_children(
+                self.task_dir,
+                {**self.task, "children": ["child"]},
+            )
+        self.assertEqual(error.exception.payload.get("active_children"), ["07-10-child"])
+
     def build_plan(self) -> dict[str, object]:
         def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
             stdout = f"{self.head}\n" if command[:2] == ["git", "rev-list"] else ""
@@ -11154,6 +11175,8 @@ shutil.move(str(active), str(archived))
         formal_month_fault: bool = False,
         recover_pre_move_fault: bool = False,
         after_archive_hook: bool = False,
+        archive_locator_conflict: bool = False,
+        children_case: str | None = None,
     ) -> dict[str, object]:
         source_root = Path(__file__).resolve().parents[5]
         with tempfile.TemporaryDirectory() as tmp:
@@ -11226,6 +11249,10 @@ shutil.move(str(active), str(archived))
                 "status": "in_progress",
                 "base_branch": "main",
             }
+            if children_case == "malformed":
+                task["children"] = {"invalid": "not-list-str"}
+            elif children_case in {"active", "archived"}:
+                task["children"] = ["07-10-child"]
             gate = {
                 "head": "pending",
                 "generated_at": "2026-07-11T00:00:00Z",
@@ -11245,6 +11272,24 @@ shutil.move(str(active), str(archived))
             index = json.loads(json.dumps(self.index, ensure_ascii=False))
             gtt.write_json(task_dir / "task-start-context.json", context)
             gtt.write_json(task_dir / "task.json", task)
+            if children_case in {"active", "archived"}:
+                child_parent = (
+                    task_dir.parent
+                    if children_case == "active"
+                    else task_dir.parent / "archive" / datetime.now().strftime("%Y-%m")
+                )
+                child_dir = child_parent / "07-10-child"
+                child_dir.mkdir(parents=True)
+                gtt.write_json(
+                    child_dir / "task.json",
+                    {
+                        "id": "child",
+                        "name": "child",
+                        "status": "completed" if children_case == "archived" else "in_progress",
+                        "parent": task_dir.name,
+                        "children": [],
+                    },
+                )
             gtt.write_json(task_dir / "review-gate.json", {"fixture": True})
             gtt.write_json(task_dir / "issue-scope-ledger.json", ledger)
             gtt.write_json(task_dir / "finish-summary-index.json", index)
@@ -11509,6 +11554,8 @@ shutil.move(str(active), str(archived))
 
             archive_locator = f".trellis/tasks/archive/{datetime.now().strftime('%Y-%m')}/{task_dir.name}"
             archived_path = root / archive_locator
+            if archive_locator_conflict:
+                archived_path.mkdir(parents=True)
 
             def damage_archived_worktree(mode: str) -> None:
                 if not archived_path.is_dir():
@@ -11585,6 +11632,21 @@ shutil.move(str(active), str(archived))
                         current_task_dir is not None
                         and (current_task_dir / gtt.FINISH_SUMMARY_ARTIFACT).is_file()
                     ),
+                    "ledger_bytes": (
+                        (task_dir / "issue-scope-ledger.json").read_bytes()
+                        if (task_dir / "issue-scope-ledger.json").is_file()
+                        else None
+                    ),
+                    "plan_bytes": (
+                        (task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).read_bytes()
+                        if (task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).is_file()
+                        else None
+                    ),
+                    "readiness_bytes": (
+                        (task_dir / gtt.PR_READINESS_ARTIFACT).read_bytes()
+                        if (task_dir / gtt.PR_READINESS_ARTIFACT).is_file()
+                        else None
+                    ),
                 }
 
             dry_args = finish_args(
@@ -11607,6 +11669,30 @@ shutil.move(str(active), str(archived))
                 mock.patch.object(gtt, "run", side_effect=fake_external_run),
                 mock.patch.object(gtt, "current_archive_month", side_effect=lambda: archive_month_clock),
             ):
+                if archive_locator_conflict or children_case in {"active", "malformed"}:
+                    before = exact_state()
+                    errors: list[gtt.WorkflowError] = []
+                    for failure_args in (
+                        dry_args,
+                        finish_args(
+                            **{
+                                **vars(dry_args),
+                                "dry_run": False,
+                                "expected_plan_digest": "0" * 64,
+                            }
+                        ),
+                    ):
+                        with self.assertRaises(gtt.WorkflowError) as failure:
+                            gtt.cmd_finish_work(failure_args)
+                        errors.append(failure.exception)
+                        self.assertEqual(exact_state(), before)
+                    return {
+                        "failed_state": before,
+                        "errors": errors,
+                        "events": transition_attempts,
+                        "reviewed_sha": reviewed_head,
+                        "archive_locator": archive_locator,
+                    }
                 if after_archive_hook:
                     with self.assertRaises(gtt.WorkflowError) as hook_error:
                         gtt.cmd_finish_work(dry_args)
@@ -11872,6 +11958,67 @@ shutil.move(str(active), str(archived))
         self.assertEqual(final["pr_head_sha"], result["archive_sha"])
         self.assertEqual(final["pr_is_draft"], False)
         self.assertEqual(final["pr_state"], "OPEN")
+
+    def test_production_existing_archive_locator_fails_dry_run_and_formal_without_side_effects(self) -> None:
+        result = self.run_production_finish_case(archive_locator_conflict=True)
+        state = result["failed_state"]
+        self.assertEqual(state["active_locator"], ".trellis/tasks/07-11-closeout")
+        self.assertEqual(state["archive_locator"], result["archive_locator"])
+        self.assertEqual(state["task_status"], "in_progress")
+        self.assertEqual(state["local_sha"], result["reviewed_sha"])
+        self.assertIsNone(state["remote_sha"])
+        self.assertIsNone(state["pr_number"])
+        self.assertIsNone(state["plan_bytes"])
+        self.assertIsNone(state["readiness_bytes"])
+        self.assertEqual(result["events"], [])
+        self.assertEqual(
+            [error.payload.get("stage") for error in result["errors"]],
+            ["archive-locator-preflight", "archive-locator-preflight"],
+        )
+
+    def test_production_archived_child_allows_parent_closeout(self) -> None:
+        result = self.run_production_finish_case(children_case="archived")
+        final = result["final_state"]
+        self.assertIsNone(final["active_locator"])
+        self.assertEqual(final["task_status"], "completed")
+        self.assertEqual(final["local_sha"], result["archive_sha"])
+        self.assertEqual(final["remote_sha"], result["archive_sha"])
+        self.assertEqual(final["pr_head_sha"], result["archive_sha"])
+        self.assertEqual(final["pr_is_draft"], False)
+
+    def test_production_active_child_fails_before_side_effects(self) -> None:
+        result = self.run_production_finish_case(children_case="active")
+        state = result["failed_state"]
+        self.assertEqual(state["active_locator"], ".trellis/tasks/07-11-closeout")
+        self.assertIsNone(state["archive_locator"])
+        self.assertEqual(state["task_status"], "in_progress")
+        self.assertEqual(state["local_sha"], result["reviewed_sha"])
+        self.assertIsNone(state["remote_sha"])
+        self.assertIsNone(state["pr_number"])
+        self.assertIsNone(state["plan_bytes"])
+        self.assertIsNone(state["readiness_bytes"])
+        self.assertEqual(result["events"], [])
+        self.assertEqual(
+            [error.payload.get("active_children") for error in result["errors"]],
+            [["07-10-child"], ["07-10-child"]],
+        )
+
+    def test_production_malformed_children_type_fails_before_side_effects(self) -> None:
+        result = self.run_production_finish_case(children_case="malformed")
+        state = result["failed_state"]
+        self.assertEqual(state["active_locator"], ".trellis/tasks/07-11-closeout")
+        self.assertIsNone(state["archive_locator"])
+        self.assertEqual(state["task_status"], "in_progress")
+        self.assertEqual(state["local_sha"], result["reviewed_sha"])
+        self.assertIsNone(state["remote_sha"])
+        self.assertIsNone(state["pr_number"])
+        self.assertIsNone(state["plan_bytes"])
+        self.assertIsNone(state["readiness_bytes"])
+        self.assertEqual(result["events"], [])
+        self.assertEqual(
+            [error.payload.get("stage") for error in result["errors"]],
+            ["task-children-preflight", "task-children-preflight"],
+        )
 
     def test_production_pre_move_continuity_failures_keep_task_active_and_pr_draft(self) -> None:
         cases = [

@@ -615,6 +615,12 @@ locator. Validators may accept gate digest entries that still use the active
 locator when the projected archived files have matching bytes; no artifact is
 rewritten after the archive move.
 
+The future locator must not already exist when prepare builds the plan.
+`task.json.children` uses the official missing-as-empty convention but must
+otherwise be `list[str]`; active children found by official exact/suffix lookup
+block only when their `task.json` would join the archive mutation, while archived
+children remain valid historical references.
+
 ## Closeout Plan
 
 `closeout-plan.json` is schema version `1.0` and is the immutable machine input
