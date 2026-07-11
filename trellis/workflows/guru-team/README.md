@@ -463,10 +463,11 @@ finish-work 先绑定唯一 draft PR，再在 active task 中一次构建包含 
 `PR #<number>` ref 的 final summary。recorder 对 raw base-to-HEAD paths 排序去重后过滤 workspace/runtime
 受保护前缀，过滤发生时追加一条不含 path、basename 或数量的固定 contract fact；未发生过滤时
 不追加。initial diff、initial untracked 或 final/recovery diff 失败时两个 path 数组都为空，
-只追加固定 snapshot-unavailable fact，并重新派生 retrieval text。schema/validator 对所有 path 字段继续拒绝受保护前缀。回写严格校验并只提交当前
-archived task 的 `finish-summary.json`。archive 后不再回写 artifact 或新增 metadata tail。
-同一入口根据 plan/readiness、active/archive locator、Git/remote/PR facts 恢复；archive push 后只允许
-三方 HEAD 校验与 draft-to-ready 重试。
+只追加固定 snapshot-unavailable fact，并重新派生 retrieval text。schema/validator 对所有 path 字段继续拒绝受保护前缀。final summary 在 active task 中严格
+校验一次，并只随 archive metadata transaction 提交。archive 后不再校验、回写 artifact 或新增
+metadata tail。同一入口在 archive 前根据 plan/readiness、active locator 与 evidence facts 恢复；
+official move 后只读取 immutable plan，检查 exact archive path/blob/commit lineage、remote PR
+title/body digest、三方 HEAD，并执行 draft-to-ready 重试。
 
 `finish-work` 在首次 PR create 前写入并提交 task-local
 `pr-readiness.json.publish_inputs`，固定 repo/base/head、reviewed HEAD、exact title、

@@ -32,10 +32,12 @@ one exact metadata commit/push, local/remote/PR HEAD equality, then
 draft-to-ready. Archive is the last repository mutation, not the midpoint of
 publish. Normal flow never asks the caller to choose `--skip-archive`,
 `--recovery-after-finish-work`, or a separate publish command.
-The unique PR remains bound by normalized base repository, exact head
-repository, head/base refs, number/URL/title and the untrimmed
-task-local `pr-body.md` UTF-8 text across draft reuse, final summary, archived
-recovery, and ready transition. Partial retries derive the exact missing stage
+Before archive, the unique PR remains bound by normalized base repository,
+exact head repository, head/base refs, number/URL/title and the untrimmed
+task-local `pr-body.md` UTF-8 text across draft reuse and final summary. After
+archive, ready/recovery uses remote repo/head/base/title/body digest facts from
+the plan without reopening task artifacts; the normal invocation also carries
+the already-bound number/URL through confirmation. Partial retries derive the exact missing stage
 from persisted plan/readiness/evidence, Git/remote state, PR identity, and final
 summary presence instead of replaying completed side effects. Archive
 recovery also binds every tracked evidence blob to its archived blob; only the
@@ -467,8 +469,8 @@ resumed through the same state-aware `trellis-finish-work` entry.
 
 Same-entry archive recovery is bound to the plan's complete `move_paths`,
 `tracked_move_paths`, `untracked_archive_outputs`, exact `evidence_paths`,
-evidence commit parent, archive commit parent, final-summary template digest,
-active-locator absence, and archive completeness. Git paths are exact: tracked
+evidence commit parent, archive commit parent, active-locator absence, archive
+completeness, and tracked blob continuity. Git paths are exact: tracked
 moves appear on both sides, while outputs first generated after the evidence
 commit appear only at archive. A partial, missing, extra, or misclassified path
 set is invalid. After the exact archive commit exists, recovery may
@@ -488,9 +490,10 @@ merged back, task-history-only content, and follow-up or current PR limitation.
 Non-draft publish must receive an AI-reviewed
 `--body-file` or `--body-artifact`; script-generated `generated` bodies are
 preview/draft-only and never count as publish readiness evidence. Reviewed
-body/readiness files are task metadata: they may be written in the active task
-directory before `finish-work`, then `finish-work` archives the task and publish
-reads the final body from the archived task artifact. If a readiness artifact
+body/readiness files are task metadata: they are written and fully validated in
+the active task before `finish-work` performs the official archive move.
+Post-archive ready/recovery hashes the remote PR body against the immutable plan
+and does not reopen these artifacts. If an active readiness artifact
 references a relative `body_file`, resolve it relative to the artifact's own
 directory. `publish-pr` validates objective structure, forbidden
 low-information phrases, reviewed source presence, Docs SSOT section/key

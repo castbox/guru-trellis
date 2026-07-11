@@ -11670,15 +11670,13 @@ def closeout_task_dir_from_plan(root: Path, plan: dict[str, Any]) -> Path:
     )
 
 
-def validate_closeout_pull_request_identity(
-    root: Path,
-    task_dir: Path,
+def validate_closeout_remote_pull_request_identity(
     plan: dict[str, Any],
     pr: dict[str, Any],
     *,
     expected_draft: bool,
-    require_summary: bool,
     expected_head: str | None = None,
+    bound_pr: dict[str, Any] | None = None,
 ) -> None:
     expected_repo = normalize_github_repository(plan["git"]["repo"])
     actual_repo, is_target = closeout_pull_request_head_repository(pr, expected_repo)
@@ -11690,13 +11688,54 @@ def validate_closeout_pull_request_identity(
     canonical_url = canonical_pull_request_url(plan["git"]["repo"], number, pr.get("url"))
     if pr.get("url") != canonical_url:
         raise WorkflowError("Closeout pull request URL is not canonical.", exit_code=2)
+    if (
+        pr.get("headRefName") != plan["git"]["head_branch"]
+        or pr.get("baseRefName") != plan["git"]["base_branch"]
+    ):
+        raise WorkflowError("Closeout pull request head/base differs from the immutable plan.", exit_code=2)
     if pr.get("title") != plan["publish"]["title"]:
         raise WorkflowError("Closeout pull request title differs from immutable readiness.", exit_code=2)
+    body = pr.get("body")
+    if not isinstance(body, str):
+        raise WorkflowError("Closeout pull request body identity is invalid.", exit_code=2)
+    try:
+        body_digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
+    except UnicodeEncodeError as exc:
+        raise WorkflowError("Closeout pull request body is not valid UTF-8.", exit_code=2) from exc
+    if body_digest != plan["publish"]["body_sha256"]:
+        raise WorkflowError("Closeout pull request body differs from immutable readiness.", exit_code=2)
     if pr.get("isDraft") is not expected_draft:
         state = "draft" if expected_draft else "ready"
         raise WorkflowError(f"Closeout pull request is not in expected {state} state.", exit_code=2)
     if expected_head is not None and pr.get("headRefOid") != expected_head:
         raise WorkflowError("Closeout pull request HEAD differs from the expected immutable stage HEAD.", exit_code=2)
+    if bound_pr is not None:
+        bound_number = bound_pr.get("number")
+        if not isinstance(bound_number, int):
+            raise WorkflowError("Bound closeout pull request number is invalid.", exit_code=2)
+        bound_url = canonical_pull_request_url(plan["git"]["repo"], bound_number, bound_pr.get("url"))
+        if number != bound_number or canonical_url != bound_url:
+            raise WorkflowError("Closeout pull request number/URL differs from the bound remote identity.", exit_code=2)
+
+
+def validate_closeout_pull_request_identity(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    pr: dict[str, Any],
+    *,
+    expected_draft: bool,
+    require_summary: bool,
+    expected_head: str | None = None,
+) -> None:
+    validate_closeout_remote_pull_request_identity(
+        plan,
+        pr,
+        expected_draft=expected_draft,
+        expected_head=expected_head,
+    )
+    number = pr["number"]
+    canonical_url = canonical_pull_request_url(plan["git"]["repo"], number, pr.get("url"))
 
     body_path = task_dir / PR_BODY_ARTIFACT
     if not body_path.is_file():
@@ -11939,10 +11978,15 @@ def validate_closeout_active_projection(root: Path, task_dir: Path, plan: dict[s
     validate_closeout_marketplace_artifact(root, task_dir, plan, ledger)
 
 
-def validate_closeout_archive_layout(root: Path, archived: Path, plan: dict[str, Any]) -> None:
+def validate_closeout_archive_move_layout(root: Path, archived: Path, plan: dict[str, Any]) -> None:
     active = root / plan["task"]["active_locator"]
     expected_archived = root / plan["task"]["archive_locator"]
-    if active.exists() or archived.resolve() != expected_archived.resolve() or not archived.is_dir():
+    if (
+        active.exists()
+        or closeout_lexical_path(archived) != closeout_lexical_path(expected_archived)
+        or archived.is_symlink()
+        or not archived.is_dir()
+    ):
         raise WorkflowError(
             "Archived closeout must have no active locator and one complete planned archive locator.",
             exit_code=2,
@@ -11955,10 +11999,6 @@ def validate_closeout_archive_layout(root: Path, archived: Path, plan: dict[str,
             exit_code=2,
             payload={"expected_files": expected_files, "actual_files": actual_files},
         )
-    summary = read_and_validate_closeout_final_summary(archived / FINISH_SUMMARY_ARTIFACT, plan)
-    validate_finish_summary(summary, task_dir=archived)
-    ledger = read_json(archived / "issue-scope-ledger.json")
-    validate_closeout_marketplace_artifact(root, archived, plan, ledger)
 
 
 def closeout_commit_blob_bytes(root: Path, commit: str, path: str) -> bytes:
@@ -12049,11 +12089,10 @@ def execute_archive_metadata_transaction(
     if proc.returncode != 0:
         raise WorkflowError("task.py archive move failed.", exit_code=2, payload={"stderr": proc.stderr.strip(), "stdout": proc.stdout.strip()})
     archived = root / plan["task"]["archive_locator"]
-    validate_closeout_archive_layout(root, archived, plan)
+    validate_closeout_archive_move_layout(root, archived, plan)
     validate_closeout_archive_blob_continuity(root, archived, plan, evidence_commit)
     active_locator = plan["task"]["active_locator"]
     archive_locator = plan["task"]["archive_locator"]
-    allowed = closeout_archive_transaction_paths(plan)
     dirty = set(git_status_paths(root))
     validate_closeout_archive_git_paths(dirty, plan, stage="archive-move-dirty")
     run_stdout(["git", "add", "-A", "--", active_locator, archive_locator], cwd=root)
@@ -12076,24 +12115,23 @@ def execute_archive_metadata_transaction(
     return archived, {"commit": archive_commit, "parent": evidence_commit, "paths": sorted(committed)}
 
 
-def ensure_closeout_pr_ready(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
+def ensure_closeout_pr_ready(
+    root: Path, plan: dict[str, Any], *, bound_pr: dict[str, Any] | None = None
+) -> dict[str, Any]:
     git = plan["git"]
-    task_dir = closeout_task_dir_from_plan(root, plan)
     pr = resolve_closeout_pull_request(
         root, git["repo"], git["head_branch"], git["base_branch"], git["remote"]
     )
     if pr is None:
         raise WorkflowError("Closeout draft PR is missing.", exit_code=2)
-    validate_closeout_pull_request_identity(
-        root,
-        task_dir,
+    local_head = current_head(root)
+    validate_closeout_remote_pull_request_identity(
         plan,
         pr,
         expected_draft=bool(pr["isDraft"]),
-        require_summary=True,
-        expected_head=current_head(root),
+        expected_head=local_head,
+        bound_pr=bound_pr,
     )
-    local_head = current_head(root)
     remote_proc = run(["git", "ls-remote", "--heads", git["remote"], git["head_branch"]], cwd=root, check=False)
     rows = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
     remote_head = rows[0][0] if len(rows) == 1 else ""
@@ -12112,23 +12150,20 @@ def ensure_closeout_pr_ready(root: Path, plan: dict[str, Any]) -> dict[str, Any]
         )
         if confirmed is None or confirmed.get("isDraft") is not False or confirmed.get("headRefOid") != local_head:
             raise WorkflowError("Draft-to-ready transition could not be confirmed.", exit_code=2, payload={"stage": "draft-to-ready-confirmation"})
-        validate_closeout_pull_request_identity(
-            root,
-            task_dir,
+        validate_closeout_remote_pull_request_identity(
             plan,
             confirmed,
             expected_draft=False,
-            require_summary=True,
             expected_head=local_head,
+            bound_pr=bound_pr or pr,
         )
         pr = confirmed
     return {"pr": pr, "local_head": local_head, "remote_head": remote_head, "status": "ready"}
 
 
 def resume_archive_metadata_transaction(root: Path, task_dir: Path, plan: dict[str, Any]) -> dict[str, Any]:
-    validate_closeout_archive_layout(root, task_dir, plan)
+    validate_closeout_archive_move_layout(root, task_dir, plan)
     dirty = set(git_status_paths(root))
-    allowed = closeout_archive_transaction_paths(plan)
     if dirty:
         validate_closeout_archive_git_paths(dirty, plan, stage="archive-recovery-dirty")
         evidence_commit = current_head(root)
@@ -12192,16 +12227,13 @@ def resume_archived_closeout(root: Path, args: argparse.Namespace, task_dir: Pat
     )
     if pr is None:
         raise WorkflowError("Archived closeout recovery requires the bound pull request.", exit_code=2)
-    validate_closeout_pull_request_identity(
-        root,
-        task_dir,
+    validate_closeout_remote_pull_request_identity(
         plan,
         pr,
         expected_draft=bool(pr["isDraft"]),
-        require_summary=True,
     )
     archive_commit = resume_archive_metadata_transaction(root, task_dir, plan)
-    result = ensure_closeout_pr_ready(root, plan)
+    result = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
         "status": "ok",
         "stage": "ready",
@@ -12257,7 +12289,7 @@ def resume_active_archive_move(
         expected_head=current_head(root),
     )
     archived_task_dir, archive_commit = execute_archive_metadata_transaction(root, task_dir, plan)
-    publish_payload = ensure_closeout_pr_ready(root, plan)
+    publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
         "status": "ok",
         "stage": "ready",
@@ -12394,7 +12426,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     else:
         finish_summary_path, _summary = build_final_archive_projection(root, task_dir, prepared, pr)
     archived_task_dir, archive_commit = execute_archive_metadata_transaction(root, task_dir, plan)
-    publish_payload = ensure_closeout_pr_ready(root, plan)
+    publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
         "status": "ok",
         "stage": "ready",

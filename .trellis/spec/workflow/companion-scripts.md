@@ -131,15 +131,18 @@ immutable `plan.git.repo`; `headRepositoryOwner.login` must agree and
 `isCrossRepository` must be `false`. Because `gh pr list --head` cannot scope
 by owner, the query requests all three head-repository fields, rejects missing
 or inconsistent fields, and rejects a same-name cross-repository candidate
-before applying the 0/1/>1 exact-candidate rule. The body identity
-is the task-local `pr-body.md` raw UTF-8 text: no trim, newline insertion, or
-second normalization is permitted between plan hashing, readiness, create,
-reuse, final projection, archived recovery, and ready. Query results must
-include title and body; their values are checked byte-for-text against immutable
-readiness and the bound `pr-body.md` digest during reuse, final projection,
-archived recovery, and draft-to-ready. A fork candidate, multiple target-repo
-matches, changed title/body, or
-a replacement PR whose number/URL differs from the final summary fail closed.
+before applying the 0/1/>1 exact-candidate rule. Before archive, the body
+identity is the task-local `pr-body.md` raw UTF-8 text: no trim, newline
+insertion, or second normalization is permitted between plan hashing,
+readiness, create, reuse, and final projection. After the official move, remote
+PR queries are checked only against the plan's exact title and raw-body digest;
+they do not reopen task-local body, readiness, or summary artifacts. The normal
+flow also carries the already-bound PR number/URL across archive and ready
+confirmation. A fresh archived reentry, where runtime PR number/URL are not in
+the immutable plan by design, accepts only the unique target-repository
+repo/head/base candidate whose title/body digest matches the plan. A fork
+candidate, multiple target-repo matches, changed title/body, or a number/URL
+change within one bound invocation fails closed.
 The canonical PR URL is used to build the only final finish-summary in the
 active task, including exactly one `PR #<number>` ref. A temporary future
 archive projection validates schema, path safety, artifact locators, ledger,
@@ -166,16 +169,18 @@ resolver.
 
 Marketplace machine evidence uses the task-relative locator
 `marketplace-verification.json`, never the active task path. Final projection
-and archive recovery resolve that locator inside the current active/archived
-task, require the artifact bytes to exist, and require the ledger digest to
-match. Archive never rewrites the ledger or verifier artifact.
+resolves that locator while the task is active, requires the artifact bytes to
+exist, and requires the ledger digest to match. Archive and archived recovery
+never parse or rewrite the ledger or verifier artifact.
 
 The archive transaction creates one metadata commit containing only the
 prevalidated active-to-archive task move, pushes it, and requires local branch,
 remote branch, and draft PR head to match. Only then may the executor run
 `gh pr ready`. A retry derives its exact failed transition from persisted
 plan/readiness, pending or passed marketplace evidence, final-summary presence,
-active/archive locators, Git index/tree state, remote HEAD, and PR identity. It
+active/archive locators, Git index/tree state, remote HEAD, and PR identity
+before archive; after the move it uses only the committed plan, exact
+path/blob/commit lineage, remote HEAD, and remote PR identity. It
 must not repeat a completed push, verifier, evidence commit, draft bind, or
 final projection and must not skip the failed transition. After archive
 push it may only recheck identity and retry draft-to-ready; it must not rebuild
@@ -192,8 +197,8 @@ deletion for them is invalid because that path never entered the Git index.
 Evidence validation uses the evidence commit tree to prove that every and only
 `tracked_move_paths` exists under the active locator before archive.
 Both fresh execution and recovery require this exact mixed no-renames set,
-active locator absence, complete archive files, and a final-summary template
-digest match. Every tracked active blob in the evidence commit must equal its
+active locator absence, and the complete prevalidated archive file set. Every
+tracked active blob in the evidence commit must equal its
 archived working-tree and archive-commit blob byte-for-byte, except `task.json`,
 whose only permitted change is the official `status=completed` and
 `completedAt=YYYY-MM-DD` transition. A partial, missing, extra, misclassified,
@@ -211,8 +216,8 @@ retry must execute the failed transition without repeating an earlier mutating
 transition or skipping ahead.
 The negative matrix also covers a fork PR with the same branch, SHA, title, and
 body. It must fail while the task is active and before final-summary binding;
-archived recovery must preserve the already-bound summary and never rebind it
-to the fork PR.
+archived recovery must reject the fork from remote repository facts without
+opening or rebinding the already-archived summary.
 
 Use the intake/task `base_branch` for diff ranges and PR base. Do not fall back
 to the GitHub default branch when the task has an explicit base.
@@ -228,14 +233,16 @@ to the AI readiness review before
 bodies are limited to draft/preview paths. Formal finish binds the reviewed
 task-local `pr-body.md` into `pr-readiness.json.publish_inputs`, including the
 exact repo/base/head/title/raw-body digest/draft/reviewed source and canonical
-snapshot digest. Recovery consumes only the archived task-local readiness
-artifact and validates its committed Git blob/history before any PR query or
-create; command-line title/body/draft/base overrides fail closed.
+snapshot digest. Active-state retries consume the committed readiness artifact;
+after the official archive move, recovery reads only the committed immutable
+plan and uses its title/body digest plus Git/remote facts. Command-line
+title/body/draft/base overrides fail closed.
 Final projection validates all task-relative artifact locators while the task
 is active. The official archive move carries those files unchanged to the
 planned archive locator; no gate, readiness, body, ledger, report, or summary
-path is rewritten after archive. Recovery resolves task-relative locators
-inside the archived task and rejects any digest or immutable PR identity drift.
+path is rewritten after archive. Archived recovery checks the exact planned
+locator/file set and Git blob continuity without re-entering body, summary,
+ledger, readiness, or marketplace artifact validators.
 
 Planning and Phase 2 helpers follow the same recorder / validator boundary:
 

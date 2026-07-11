@@ -544,12 +544,13 @@ The installer manages `schemas/closeout-plan.schema.json` and
 `session_auto_commit: false` into `.trellis/config.yaml`, adds
 `.trellis/workspace/` to `.gitignore`, and never creates or rewrites workspace
 journal/index files. Shared start and installed Codex/Cursor SessionStart hooks
-do not open, enumerate, read, count, or output workspace journals. Closeout
-recovery validates the committed plan/readiness, active/archive locator,
-repo/base/head, review gate, current/remote HEAD, and exact PR identity. It
-reuses one draft PR, creates one when none exists, and fails closed when
-multiple exist. After archive push it performs only HEAD alignment and
-draft-to-ready recovery.
+do not open, enumerate, read, count, or output workspace journals. Before
+archive, closeout recovery validates committed plan/readiness, the active
+locator, repo/base/head, review gate, current/remote HEAD, and exact PR
+identity. After the official move it reads only the immutable plan, validates
+the exact archive path/blob/commit transaction and remote title/body digest,
+then performs HEAD alignment and draft-to-ready recovery without reopening
+archived artifacts.
 
 Current-checkout direct edits while `no_task` is active are allowed only as an
 explicit user override. The user approval must say this turn should skip

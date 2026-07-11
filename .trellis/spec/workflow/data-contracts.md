@@ -124,13 +124,16 @@ validation reject protected prefixes in every path field. The final summary is
 built once in the active task after draft PR binding and moves unchanged to the
 archive locator. Readiness binds repo/base/head, reviewed HEAD, exact title,
 `pr-body.md`, body SHA-256, `draft=true`, reviewed source, and
-`closeout_plan_digest`. Recovery consumes committed plan/readiness plus
-active/archive, Git/remote, and PR facts. Reuse, final projection, archived
-recovery, and ready transition all require the same PR number/URL/title/body
-identity; one matching draft is reused, zero creates one, and multiple or
-replaced identities fail closed. After archive push, recovery may only validate
-immutable PR/summary identity and three-way HEAD equality before retrying
-draft-to-ready.
+`closeout_plan_digest`. Active-state recovery consumes committed plan/readiness
+plus Git/remote and PR facts. Reuse and final projection require one exact PR
+number/URL/title/body identity; one matching draft is reused, zero creates one,
+and multiple identities fail closed. After the official move, recovery does not
+read readiness, body, or summary artifacts: it validates remote title/body
+against the plan digest, carries the bound number/URL within the current
+invocation, and checks three-way HEAD equality before retrying draft-to-ready.
+A fresh archived reentry accepts the unique repo/head/base PR whose remote
+title/body digest matches the plan because runtime number/URL are intentionally
+excluded from the immutable input digest.
 
 Archive content identity is not inferred from the no-renames path set. For
 each `tracked_move_paths` item, the evidence commit active blob is bound to the
@@ -645,10 +648,12 @@ cardinality, final-summary binding, archive, recovery, or ready transition.
 
 `publish.body_sha256` hashes the task-local `pr-body.md` bytes. Those bytes must
 decode as non-empty UTF-8, and the decoded text is the one canonical body value
-used by readiness recovery, `gh pr create`, unique draft reuse, final
-projection, archived recovery, and ready confirmation. Leading/trailing
-whitespace, trailing newlines, and Markdown-sensitive spaces are identity data;
-validators never trim or add a newline before comparing the remote PR body.
+used by active readiness recovery, `gh pr create`, unique draft reuse, and final
+projection. Leading/trailing whitespace, trailing newlines, and
+Markdown-sensitive spaces are identity data; validators never trim or add a
+newline before comparing the remote PR body. After archive, the remote body's
+UTF-8 bytes are hashed directly and compared with `publish.body_sha256`; the
+task-local body is not reopened.
 
 `projection.move_paths` is the complete task-relative filesystem set moved by
 the official archive command. `projection.tracked_move_paths` is the subset in
@@ -668,11 +673,11 @@ maximum-width positive 64-bit number so replacing it with a real PR number
 cannot introduce a new string-length validation failure.
 
 `summary_template_sha256` hashes the exact UTF-8 `write_json` encoding: two-space
-indentation, `ensure_ascii=false`, and one trailing newline. Final and archived
-summary validation first requires that exact byte encoding, then normalizes the
-two PR runtime fields back to the sentinel and compares the template digest.
-Whitespace-only artifact rewrites therefore fail recovery instead of being
-silently accepted.
+indentation, `ensure_ascii=false`, and one trailing newline. Active final
+projection requires that exact byte encoding, then normalizes the two PR
+runtime fields back to the sentinel and compares the template digest before
+the official move. Archived recovery proves continuity through the exact
+path/commit/blob transaction and never reparses the summary.
 
 `plan_digest` is the SHA-256 of canonical JSON with `plan_digest` omitted.
 Dry-run returns the complete plan and digest. First formal execution accepts
@@ -698,10 +703,10 @@ fail closed.
 Archive recovery accepts only the complete mixed no-renames path set: both
 sides for every tracked move and archive-only for every untracked output.
 It validates evidence-commit parent/path identity, archive-commit parent/path
-identity, active absence, archive completeness, and the normalized final
-summary digest against the immutable template. It may complete only exact
-commit, push, HEAD alignment, and draft-to-ready executor steps; it never
-rebuilds or rewrites an archived artifact.
+identity, active absence, archive completeness, and tracked blob continuity.
+It may complete only exact commit, push, remote PR identity, HEAD alignment,
+and draft-to-ready executor steps; it never parses, rebuilds, validates, or
+rewrites an archived body, summary, ledger, readiness, or marketplace artifact.
 
 Branch Review Gate treats every finding priority (`P0`, `P1`, `P2`, `P3`) as
 blocking. `observations[]` are non-blocking notes, and

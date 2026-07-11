@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import importlib.util
 import json
 import os
@@ -9263,7 +9264,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             archived = self.root / plan["task"]["archive_locator"]
             archived.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(self.task_dir), str(archived))
-            gtt.validate_closeout_archive_layout(self.root, archived, plan)
+            gtt.validate_closeout_archive_move_layout(self.root, archived, plan)
         archived_ledger = gtt.read_json(archived / "issue-scope-ledger.json")
         archived_evidence = gtt.remote_marketplace_evidence(archived_ledger["primary_issue"])
         self.assertEqual(archived_evidence["artifact_path"], gtt.MARKETPLACE_VERIFICATION_ARTIFACT)
@@ -9278,7 +9279,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         subset = sorted(allowed - {next(iter(allowed))})
         archived = self.root / plan["task"]["archive_locator"]
         with (
-            mock.patch.object(gtt, "validate_closeout_archive_layout"),
+            mock.patch.object(gtt, "validate_closeout_archive_move_layout"),
             mock.patch.object(gtt, "git_status_paths", return_value=subset),
             mock.patch.object(gtt, "run_stdout") as mutation,
             self.assertRaises(gtt.WorkflowError) as raised,
@@ -9396,7 +9397,7 @@ shutil.move(str(active), str(archived))
             subprocess.run(["python3", "./.trellis/scripts/task.py", "archive", "task", "--no-commit"], cwd=root, check=True)
             (archived / "review.md").write_text("tampered after archive move\n", encoding="utf-8")
             with (
-                mock.patch.object(gtt, "validate_closeout_archive_layout"),
+                mock.patch.object(gtt, "validate_closeout_archive_move_layout"),
                 self.assertRaises(gtt.WorkflowError) as tampered,
             ):
                 gtt.resume_archive_metadata_transaction(root, archived, plan)
@@ -9407,7 +9408,7 @@ shutil.move(str(active), str(archived))
 
             with (
                 mock.patch.object(gtt, "validate_closeout_active_projection"),
-                mock.patch.object(gtt, "validate_closeout_archive_layout"),
+                mock.patch.object(gtt, "validate_closeout_archive_move_layout"),
                 mock.patch.object(gtt, "git_status_paths", side_effect=capture_git_status_paths),
             ):
                 executed_archive, archive_commit = gtt.execute_archive_metadata_transaction(
@@ -9418,7 +9419,7 @@ shutil.move(str(active), str(archived))
             self.assertIn(expected, observed_status_sets)
             self.assertEqual(gtt.closeout_commit_parent(root, archive_head), evidence_head)
             self.assertEqual(gtt.closeout_commit_paths(root, archive_head), expected)
-            with mock.patch.object(gtt, "validate_closeout_archive_layout"):
+            with mock.patch.object(gtt, "validate_closeout_archive_move_layout"):
                 recovered = gtt.resume_archive_metadata_transaction(root, archived, plan)
             self.assertEqual(recovered["commit"], archive_head)
             self.assertEqual(set(recovered["paths"]), expected)
@@ -10184,7 +10185,7 @@ shutil.move(str(active), str(archived))
                         require_summary=False,
                     )
 
-    def test_archived_pr_replacement_cannot_diverge_from_final_summary_identity(self) -> None:
+    def test_active_summary_and_bound_remote_identity_reject_pr_replacement(self) -> None:
         plan = self.build_plan()
         body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
         summary = gtt.closeout_summary_for_pr(
@@ -10211,11 +10212,20 @@ shutil.move(str(active), str(archived))
                 expected_draft=True,
                 require_summary=True,
             )
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.validate_closeout_remote_pull_request_identity(
+                plan,
+                replacement,
+                expected_draft=True,
+                bound_pr={
+                    "number": 105,
+                    "url": "https://github.com/owner/repo/pull/105",
+                },
+            )
 
         gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
         args = finish_args(dry_run=False, expected_plan_digest=plan["plan_digest"])
         for case, tampered in [
-            ("replacement", replacement),
             ("title", dict(replacement, number=105, url="https://github.com/owner/repo/pull/105", title="tampered")),
             ("body", dict(replacement, number=105, url="https://github.com/owner/repo/pull/105", body="tampered")),
         ]:
@@ -10428,7 +10438,7 @@ shutil.move(str(active), str(archived))
             mock.patch.object(gtt, "ensure_closeout_draft_pr", side_effect=lambda *a: (order.append("draft"), pr)[1]),
             mock.patch.object(gtt, "build_final_archive_projection", side_effect=lambda *a: (order.append("projection"), (self.task_dir / "finish-summary.json", {}))[1]),
             mock.patch.object(gtt, "execute_archive_metadata_transaction", side_effect=lambda *a: (order.append("archive"), (archived, {"commit": self.head}))[1]),
-            mock.patch.object(gtt, "ensure_closeout_pr_ready", side_effect=lambda *a: (order.append("ready"), {"status": "ready"})[1]),
+            mock.patch.object(gtt, "ensure_closeout_pr_ready", side_effect=lambda *a, **k: (order.append("ready"), {"status": "ready"})[1]),
         ):
             result = gtt.cmd_finish_work(args)
         self.assertEqual(result["stage"], "ready")
@@ -10469,6 +10479,152 @@ shutil.move(str(active), str(archived))
         self.assertEqual(raised.exception.payload["stage"], "draft-to-ready")
         mutation.assert_not_called()
 
+    def test_post_archive_layout_and_ready_do_not_run_local_artifact_validators(self) -> None:
+        plan = self.build_plan()
+        body = (self.task_dir / gtt.PR_BODY_ARTIFACT).read_text(encoding="utf-8")
+        for relative in plan["projection"]["move_paths"]:
+            path = self.task_dir / relative
+            if not path.exists():
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("not a valid closeout artifact\n", encoding="utf-8")
+        archived = self.root / plan["task"]["archive_locator"]
+        archived.parent.mkdir(parents=True, exist_ok=True)
+        self.task_dir.rename(archived)
+        (archived / gtt.PR_BODY_ARTIFACT).write_bytes(b"\xff")
+        (archived / gtt.FINISH_SUMMARY_ARTIFACT).write_text("invalid summary\n", encoding="utf-8")
+
+        draft = {
+            **closeout_head_repository_fields(),
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+            "title": plan["publish"]["title"],
+            "body": body,
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
+            "headRefOid": self.head,
+            "isDraft": True,
+        }
+        ready = dict(draft, isDraft=False)
+
+        def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            if command[:3] == ["git", "ls-remote", "--heads"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{self.head}\trefs/heads/fix/105-closeout\n",
+                    stderr="",
+                )
+            if command[:3] == ["gh", "pr", "ready"]:
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            raise AssertionError(command)
+
+        forbidden = [
+            "read_and_validate_closeout_final_summary",
+            "validate_finish_summary",
+            "load_issue_scope_ledger",
+            "validate_ledger_for_publish",
+            "validate_closeout_marketplace_artifact",
+            "read_pr_readiness_publish_inputs",
+            "validate_closeout_pull_request_identity",
+        ]
+        patches = [
+            mock.patch.object(gtt, name, side_effect=AssertionError(f"post-archive local validator called: {name}"))
+            for name in forbidden
+        ]
+        with contextlib.ExitStack() as stack:
+            for patcher in patches:
+                stack.enter_context(patcher)
+            gtt.validate_closeout_archive_move_layout(self.root, archived, plan)
+            stack.enter_context(mock.patch.object(gtt, "resolve_closeout_pull_request", side_effect=[draft, ready]))
+            stack.enter_context(mock.patch.object(gtt, "current_head", return_value=self.head))
+            stack.enter_context(mock.patch.object(gtt, "run", side_effect=fake_run))
+            result = gtt.ensure_closeout_pr_ready(self.root, plan, bound_pr=draft)
+        self.assertEqual(result["status"], "ready")
+        self.assertFalse(result["pr"]["isDraft"])
+
+    def test_archived_draft_reentry_uses_plan_remote_identity_and_ready_only(self) -> None:
+        plan = self.build_plan()
+        body = (self.task_dir / gtt.PR_BODY_ARTIFACT).read_text(encoding="utf-8")
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        archived = self.root / plan["task"]["archive_locator"]
+        archived.parent.mkdir(parents=True, exist_ok=True)
+        self.task_dir.rename(archived)
+        for path in list(archived.iterdir()):
+            if path.name != gtt.CLOSEOUT_PLAN_ARTIFACT:
+                if path.is_dir():
+                    shutil.rmtree(path)
+                else:
+                    path.unlink()
+
+        draft = {
+            **closeout_head_repository_fields(),
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+            "title": plan["publish"]["title"],
+            "body": body,
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
+            "headRefOid": self.head,
+            "isDraft": True,
+        }
+        ready = dict(draft, isDraft=False)
+        args = finish_args(dry_run=False, expected_plan_digest=plan["plan_digest"])
+        commands: list[list[str]] = []
+
+        def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            commands.append(command)
+            if command[:3] == ["git", "ls-remote", "--heads"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{self.head}\trefs/heads/fix/105-closeout\n",
+                    stderr="",
+                )
+            if command[:3] == ["gh", "pr", "ready"]:
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            raise AssertionError(command)
+
+        forbidden = [
+            "read_and_validate_closeout_final_summary",
+            "validate_finish_summary",
+            "load_issue_scope_ledger",
+            "validate_ledger_for_publish",
+            "validate_closeout_marketplace_artifact",
+            "read_pr_readiness_publish_inputs",
+            "validate_closeout_pull_request_identity",
+        ]
+        with contextlib.ExitStack() as stack:
+            for name in forbidden:
+                stack.enter_context(
+                    mock.patch.object(
+                        gtt,
+                        name,
+                        side_effect=AssertionError(f"archived recovery local validator called: {name}"),
+                    )
+                )
+            stack.enter_context(mock.patch.object(gtt, "require_gh_auth"))
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "resolve_closeout_pull_request",
+                    side_effect=[draft, draft, ready],
+                )
+            )
+            archive = stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "resume_archive_metadata_transaction",
+                    return_value={"commit": self.head},
+                )
+            )
+            stack.enter_context(mock.patch.object(gtt, "current_head", return_value=self.head))
+            stack.enter_context(mock.patch.object(gtt, "run", side_effect=fake_run))
+            result = gtt.resume_archived_closeout(self.root, args, archived)
+        archive.assert_called_once_with(self.root, archived, plan)
+        self.assertEqual(result["stage"], "ready")
+        self.assertEqual(
+            [command[:3] for command in commands],
+            [["git", "ls-remote", "--heads"], ["gh", "pr", "ready"]],
+        )
+
     def test_active_completed_archive_move_recovery_skips_verifier_and_pr_create(self) -> None:
         plan = self.build_plan()
         gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
@@ -10488,6 +10644,8 @@ shutil.move(str(active), str(archived))
             "url": "https://github.com/owner/repo/pull/105",
             "title": plan["publish"]["title"],
             "body": body,
+            "headRefName": "fix/105-closeout",
+            "baseRefName": "main",
             "isDraft": True,
             "headRefOid": self.head,
         }
