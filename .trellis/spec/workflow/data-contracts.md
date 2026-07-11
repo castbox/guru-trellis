@@ -107,19 +107,17 @@ may not contain leading or trailing whitespace. Backfill `source_artifacts`
 remain structurally valid without a task directory, but when an archived
 `task_dir` is available every clean source path must name an existing file.
 
-Initial summary uses empty `github.pr_url` and `pr_refs`. Because it is built
-after archive and before the metadata commit, its path snapshot combines a
-NUL-delimited base-to-working-tree diff with NUL-delimited untracked file
-enumeration; archived task metadata is recorded as individual files, never as
-an untracked directory placeholder. The protected-prefix filter and fixed fact
-rules apply to the final pre-archive snapshot. If the required diff snapshot
-fails, both path arrays are `[]`, the
+The final pre-archive snapshot combines a NUL-delimited base-to-working-tree
+diff with NUL-delimited untracked file enumeration; task metadata is recorded
+as individual files, never as an untracked directory placeholder. The
+protected-prefix filter and fixed fact rules apply to this snapshot. If the
+required diff snapshot fails, both path arrays are `[]`, the
 filtering fact is removed, and exactly one fixed non-disclosing
 `finish-summary git path snapshot unavailable` fact is recorded before
-`retrieval_text` is re-derived. After PR creation,
-publish sorts and deduplicates raw base-to-HEAD paths, filters workspace/runtime
-protected prefixes, and writes the safe set to both `git.changed_paths` and
-search `paths`. A non-empty filtered set deterministically adds one fixed
+`retrieval_text` is re-derived. After the unique draft PR is bound, the final
+projection sorts and deduplicates raw base-to-HEAD paths, filters
+workspace/runtime protected prefixes, and writes the safe set to both
+`git.changed_paths` and search `paths`. A non-empty filtered set adds one fixed
 `finish-summary protected path filtering` contract fact without path, basename,
 or count details; an empty filtered set adds no such fact. Schema and Python
 validation reject protected prefixes in every path field. The final summary is
@@ -127,9 +125,24 @@ built once in the active task after draft PR binding and moves unchanged to the
 archive locator. Readiness binds repo/base/head, reviewed HEAD, exact title,
 `pr-body.md`, body SHA-256, `draft=true`, reviewed source, and
 `closeout_plan_digest`. Recovery consumes committed plan/readiness plus
-active/archive, Git/remote, and PR facts. One draft PR is reused; zero creates
-one draft; multiple fail closed. After archive push, recovery may only validate
-HEAD identity and retry draft-to-ready.
+active/archive, Git/remote, and PR facts. Reuse, final projection, archived
+recovery, and ready transition all require the same PR number/URL/title/body
+identity; one matching draft is reused, zero creates one, and multiple or
+replaced identities fail closed. After archive push, recovery may only validate
+immutable PR/summary identity and three-way HEAD equality before retrying
+draft-to-ready.
+
+Archive content identity is not inferred from the no-renames path set. For
+each `tracked_move_paths` item, the evidence commit active blob is bound to the
+archive working-tree and archive commit blob. All files are byte-identical
+except `task.json`, where only the official `status` and `completedAt` archive
+fields may change. `untracked_archive_outputs` are validated by their existing
+template/digest contracts.
+
+Failure-state evidence is read from the real filesystem, Git index/log, bare
+remote, and fake GitHub PR store after invoking production `cmd_finish_work()`.
+Test-owned dictionaries may summarize those observed facts, but must not drive
+or manufacture transition state.
 
 ### Archived Task Backfill Contract
 
@@ -609,6 +622,13 @@ output, or archive commit SHA. Its projection does record a fixed sentinel PR
 URL/ref and the complete schema-valid finish-summary template so all local
 summary errors are known during prepare.
 
+`publish.body_sha256` hashes the task-local `pr-body.md` bytes. Those bytes must
+decode as non-empty UTF-8, and the decoded text is the one canonical body value
+used by readiness recovery, `gh pr create`, unique draft reuse, final
+projection, archived recovery, and ready confirmation. Leading/trailing
+whitespace, trailing newlines, and Markdown-sensitive spaces are identity data;
+validators never trim or add a newline before comparing the remote PR body.
+
 `projection.move_paths` is the complete task-relative filesystem set moved by
 the official archive command. `projection.tracked_move_paths` is the subset in
 the Git index after the evidence commit; each requires an active deletion and
@@ -640,6 +660,10 @@ input drift fails before push or file writes. `pr-readiness.json` binds the same
 digest under `publish_inputs.closeout_plan_digest`. After the first metadata
 commit, retries load the committed plan and validate reachable successor facts;
 passed ledger evidence is never used to reconstruct the initial plan.
+Before draft binding, partial retries distinguish reviewed content pushed,
+verifier pending/failed, verifier passed but evidence uncommitted, and evidence
+committed but unpushed from the exact plan/readiness/evidence/Git/remote facts.
+They retry only the missing transition.
 
 Marketplace machine evidence has one deterministic pending identity and one
 deterministic passed identity. Pending and passed use the same fixed machine

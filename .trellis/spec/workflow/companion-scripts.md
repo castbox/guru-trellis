@@ -110,9 +110,16 @@ Formal finish pushes the reviewed content HEAD first, records deterministic
 pending marketplace evidence, runs the required verifier against that remote
 HEAD, replaces only the machine evidence with passed facts, and commits/pushes
 the exact plan/readiness/verifier/ledger allowlist. It then creates or reuses
-one draft PR for the exact repo/head/base identity. Multiple matches fail
-closed. The canonical PR URL is used to build the only final finish-summary in
-the active task, including exactly one `PR #<number>` ref. A temporary future
+one draft PR for the exact repo/head/base/title/body identity. The body identity
+is the task-local `pr-body.md` raw UTF-8 text: no trim, newline insertion, or
+second normalization is permitted between plan hashing, readiness, create,
+reuse, final projection, archived recovery, and ready. Query results must
+include title and body; their values are checked byte-for-text against immutable
+readiness and the bound `pr-body.md` digest during reuse, final projection,
+archived recovery, and draft-to-ready. Multiple matches, changed title/body, or
+a replacement PR whose number/URL differs from the final summary fail closed.
+The canonical PR URL is used to build the only final finish-summary in the
+active task, including exactly one `PR #<number>` ref. A temporary future
 archive projection validates schema, path safety, artifact locators, ledger,
 gate, readiness, and the exact archive allowlist before the official
 `task.py archive --no-commit` move.
@@ -126,8 +133,11 @@ match. Archive never rewrites the ledger or verifier artifact.
 The archive transaction creates one metadata commit containing only the
 prevalidated active-to-archive task move, pushes it, and requires local branch,
 remote branch, and draft PR head to match. Only then may the executor run
-`gh pr ready`. A retry derives its state from committed plan/readiness,
-active/archive locators, Git state, remote HEAD, and PR identity. After archive
+`gh pr ready`. A retry derives its exact failed transition from persisted
+plan/readiness, pending or passed marketplace evidence, final-summary presence,
+active/archive locators, Git index/tree state, remote HEAD, and PR identity. It
+must not repeat a completed push, verifier, evidence commit, draft bind, or
+final projection and must not skip the failed transition. After archive
 push it may only recheck identity and retry draft-to-ready; it must not rebuild
 artifacts, rerun the verifier, commit, or push.
 
@@ -143,7 +153,22 @@ Evidence validation uses the evidence commit tree to prove that every and only
 `tracked_move_paths` exists under the active locator before archive.
 Both fresh execution and recovery require this exact mixed no-renames set,
 active locator absence, complete archive files, and a final-summary template
-digest match. A partial, missing, extra, or misclassified set is never valid.
+digest match. Every tracked active blob in the evidence commit must equal its
+archived working-tree and archive-commit blob byte-for-byte, except `task.json`,
+whose only permitted change is the official `status=completed` and
+`completedAt=YYYY-MM-DD` transition. A partial, missing, extra, misclassified,
+or content-tampered set is never valid.
+
+Closeout failure injection must enter through production `cmd_finish_work()`.
+Use a real temporary Git repository, bare remote, official `task.py archive`,
+and a controllable fake GitHub store/verifier at external command boundaries.
+Do not mock `prepare_closeout`, evidence commit, draft binding, final projection,
+archive transaction, recovery, or ready transition. Every failed stage records
+real active/archive locator and path state, task status, PR draft/state/number,
+exact local/remote/PR HEAD SHA values, complete dirty/staged path sets, then
+clear the failure and re-enter production `cmd_finish_work()`. The observed
+retry must execute the failed transition without repeating an earlier mutating
+transition or skipping ahead.
 
 Use the intake/task `base_branch` for diff ranges and PR base. Do not fall back
 to the GitHub default branch when the task has an explicit base.
@@ -158,17 +183,15 @@ to the AI readiness review before
 `--body-artifact` inputs that were already reviewed by AI/human; `generated`
 bodies are limited to draft/preview paths. Formal finish binds the reviewed
 task-local `pr-body.md` into `pr-readiness.json.publish_inputs`, including the
-exact repo/base/head/title/body digest/draft/reviewed source and canonical
+exact repo/base/head/title/raw-body digest/draft/reviewed source and canonical
 snapshot digest. Recovery consumes only the archived task-local readiness
 artifact and validates its committed Git blob/history before any PR query or
 create; command-line title/body/draft/base overrides fail closed.
-When `finish-work` archives the active task before publish, rewrite active task
-artifact paths to the archived task path and read the final PR body from that
-archived artifact. If the archived `review-gate.json` still contains
-pre-archive task-local paths for `review.md`, `agent-assignment.json`, or
-`issue-scope-ledger.json`, the helper may deterministically rewrite those paths
-to the archived task directory and recompute only the affected digest metadata
-before publish. This is archive metadata migration, not review judgment.
+Final projection validates all task-relative artifact locators while the task
+is active. The official archive move carries those files unchanged to the
+planned archive locator; no gate, readiness, body, ledger, report, or summary
+path is rewritten after archive. Recovery resolves task-relative locators
+inside the archived task and rejects any digest or immutable PR identity drift.
 
 Planning and Phase 2 helpers follow the same recorder / validator boundary:
 
@@ -424,4 +447,4 @@ content or secrets.
 
 For tasks that change the workflow marketplace, preset, overlays, installer, schema, or public extension contract, publish is fail-closed after the branch push and before `gh pr create`. The deterministic `verify-marketplace` companion command records task-local `marketplace-verification.json` with repository, remote, branch/ref, verified content HEAD, remote HEAD, command exit codes, stdout/stderr digests and sizes, and installed workflow/preview/schema digests. It executes remote branch `trellis init`, workflow preview, workflow switch, canonical preset reapply, and runtime-ignore checks in a clean temporary repository. It does not decide PR readiness.
 
-`issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` evidence object in the primary issue and every close issue. Before the verifier it is `status=pending`, `required=true`, points to `marketplace-verification.json`, and explicitly does not satisfy final publish. `publish-pr` pushes the reviewed content HEAD, runs the verifier, replaces only those structured entries with real `status=passed` facts, then commits exactly the verifier artifact plus ledger and pushes it. The verifier records finish-summary schema digest plus runtime/workspace ignore and `session_auto_commit=false` facts. After PR creation, one additional exact archived-task `finish-summary.json` tail is allowed and revalidated; no other path is accepted. Missing, pending, failed, stale, tampered, or mismatched evidence blocks. No release tag is created by this gate.
+`issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` evidence object in the primary issue and every close issue. Before the verifier it is `status=pending`, `required=true`, points to task-relative `marketplace-verification.json`, and explicitly does not satisfy final publish. Formal closeout pushes the reviewed content HEAD, runs the verifier, replaces only those structured entries with real `status=passed` facts, then commits the immutable plan/readiness/verifier/ledger evidence allowlist and pushes it before binding a draft PR. The final summary is created once in the active task with that draft identity and is included only in the archive transaction; no post-PR or post-archive metadata tail is allowed. Missing, pending, failed, stale, tampered, or mismatched evidence blocks. No release tag is created by this gate.

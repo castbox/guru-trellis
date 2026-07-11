@@ -7863,8 +7863,11 @@ def read_pr_readiness_publish_inputs(
     body_bytes = body_path.read_bytes()
     if hashlib.sha256(body_bytes).hexdigest() != publish_inputs["body_sha256"]:
         raise WorkflowError("pr-readiness.json body digest does not match pr-body.md.", exit_code=2)
-    body = body_bytes.decode("utf-8").strip()
-    if not body:
+    try:
+        body = body_bytes.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise WorkflowError("pr-readiness.json bound pr-body.md is not valid UTF-8.", exit_code=2) from exc
+    if not body.strip():
         raise WorkflowError("pr-readiness.json bound pr-body.md is empty.", exit_code=2)
 
     reviewed_head = str(gate.get("head") or "")
@@ -7913,7 +7916,7 @@ def read_pr_readiness_publish_inputs(
         )
         if ancestor.returncode != 0:
             raise WorkflowError("PR readiness reviewed HEAD is not an ancestor of current HEAD.", exit_code=2)
-    return path, publish_inputs, body + "\n"
+    return path, publish_inputs, body
 
 
 def read_pr_body_file(root: Path, body_file: str | None) -> str | None:
@@ -10049,13 +10052,6 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
             },
         )
 
-    archive_migration = None
-    metadata_commit: dict[str, Any] | None = None
-    if not args.dry_run:
-        archive_migration = migrate_review_gate_for_archived_task(root, task_dir, config)
-        if archive_migration.get("migrated"):
-            metadata_commit = commit_if_metadata_dirty(root, metadata_commit_subject)
-
     payload: dict[str, Any] = {
         "status": "dry-run" if args.dry_run else "ok",
         "repo": repo,
@@ -10071,8 +10067,8 @@ def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
         "reviewed_source_errors": reviewed_source_errors,
         "review_gate": str(gate_path),
         "issue_scope_ledger": str(issue_scope_ledger_path(task_dir)),
-        "archive_migration": archive_migration,
-        "metadata_commit": metadata_commit,
+        "archive_migration": None,
+        "metadata_commit": None,
         "merge_commit": merge_commit,
     }
     if args.dry_run:
@@ -10900,7 +10896,17 @@ def prepare_closeout(
     )
     if ledger_errors:
         raise WorkflowError("Issue Scope Ledger is incomplete for closeout.", exit_code=2, payload={"errors": ledger_errors})
-    body, body_source = resolve_pr_body(root, args, ledger, gate, list(args.validation or []), config)
+    resolved_body, body_source = resolve_pr_body(root, args, ledger, gate, list(args.validation or []), config)
+    task_body_path = task_dir / PR_BODY_ARTIFACT
+    if not task_body_path.is_file():
+        raise WorkflowError("finish-work requires task-local pr-body.md.", exit_code=2)
+    task_body_bytes = task_body_path.read_bytes()
+    try:
+        body = task_body_bytes.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise WorkflowError("finish-work task-local pr-body.md is not valid UTF-8.", exit_code=2) from exc
+    if not body.strip():
+        raise WorkflowError("finish-work task-local pr-body.md is empty.", exit_code=2)
     body_errors = validate_pr_body_quality(body, ledger, False)
     source_errors = validate_reviewed_body_source_for_publish(body_source, False)
     if body_errors or source_errors:
@@ -10909,9 +10915,8 @@ def prepare_closeout(
             exit_code=2,
             payload={"errors": body_errors + source_errors, "body_source": body_source, "reviewed_source_ok": not source_errors},
         )
-    task_body_path = task_dir / PR_BODY_ARTIFACT
-    if read_pr_body_file(root, str(task_body_path)) != body:
-        raise WorkflowError("finish-work must bind the reviewed task-local pr-body.md bytes.", exit_code=2)
+    if resolved_body.strip() != body.strip():
+        raise WorkflowError("finish-work reviewed body source does not match task-local pr-body.md content.", exit_code=2)
     task = task_json(task_dir)
     if isinstance(task.get("children"), list) and task.get("children"):
         raise WorkflowError(
@@ -11077,6 +11082,87 @@ def closeout_evidence_is_committed(
     return True
 
 
+def resolve_closeout_pre_draft_state(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    ledger: dict[str, Any],
+    gate: dict[str, Any],
+) -> str:
+    if closeout_evidence_is_committed(root, task_dir, plan, ledger, gate):
+        return "evidence_pushed"
+
+    plan_path = closeout_plan_path(task_dir)
+    readiness_path = task_dir / PR_READINESS_ARTIFACT
+    if not plan_path.exists() and not readiness_path.exists():
+        return "prepared"
+    if not plan_path.is_file() or not readiness_path.is_file():
+        raise WorkflowError("Interrupted closeout has an incomplete plan/readiness pair.", exit_code=2)
+    if validate_closeout_plan(read_json(plan_path)) != plan:
+        raise WorkflowError("Interrupted closeout plan differs from the rebuilt immutable plan.", exit_code=2)
+    _path, inputs, _body = read_pr_readiness_publish_inputs(
+        root,
+        task_dir,
+        str(readiness_path),
+        gate,
+        require_committed=False,
+    )
+    expected_inputs = {
+        "repo": plan["git"]["repo"],
+        "base_branch": plan["git"]["base_branch"],
+        "head_branch": plan["git"]["head_branch"],
+        "reviewed_head_sha": plan["git"]["reviewed_work_head"],
+        "title": plan["publish"]["title"],
+        "body_sha256": plan["publish"]["body_sha256"],
+        "draft": True,
+        "closeout_plan_digest": plan["plan_digest"],
+    }
+    if any(inputs.get(key) != value for key, value in expected_inputs.items()):
+        raise WorkflowError("Interrupted closeout readiness differs from the immutable plan.", exit_code=2)
+    if current_head(root) != plan["git"]["reviewed_work_head"]:
+        raise WorkflowError("Uncommitted closeout evidence is not based on the reviewed work HEAD.", exit_code=2)
+
+    if not plan["marketplace"]["required"]:
+        return "evidence_ready"
+    targets: list[dict[str, Any]] = []
+    if isinstance(ledger.get("primary_issue"), dict):
+        targets.append(ledger["primary_issue"])
+    targets.extend(item for item in ledger.get("close_issues", []) if isinstance(item, dict))
+    evidence = [remote_marketplace_evidence(issue) for issue in targets]
+    if evidence and all(item == plan["marketplace"]["pending_machine"] for item in evidence):
+        return "content_pushed"
+
+    verification_path = marketplace_verification_path(task_dir)
+    if verification_path.is_file():
+        verification = read_json(verification_path)
+        if verification.get("status") == "passed" and not marketplace_verification_contract_errors(verification):
+            passed = closeout_passed_marketplace_evidence(root, verification_path, verification)
+            if evidence and all(item == passed for item in evidence):
+                return "evidence_ready"
+    raise WorkflowError("Interrupted closeout marketplace evidence has no unique resumable state.", exit_code=2)
+
+
+def closeout_remote_branch_head(root: Path, plan: dict[str, Any]) -> str:
+    proc = run(
+        ["git", "ls-remote", "--heads", plan["git"]["remote"], plan["git"]["head_branch"]],
+        cwd=root,
+        check=False,
+    )
+    rows = [line.split() for line in proc.stdout.splitlines() if line.strip()]
+    if proc.returncode != 0 or len(rows) > 1:
+        raise WorkflowError("Could not resolve the unique closeout remote branch HEAD.", exit_code=2)
+    return rows[0][0] if rows else ""
+
+
+def push_closeout_branch_if_needed(root: Path, plan: dict[str, Any]) -> bool:
+    local_head = current_head(root)
+    if closeout_remote_branch_head(root, plan) == local_head:
+        return False
+    command = ["git", "push", plan["git"]["remote"], plan["git"]["head_branch"]]
+    run_stdout(command, cwd=root)
+    return True
+
+
 def resolve_closeout_state(
     root: Path,
     task_dir: Path,
@@ -11108,7 +11194,7 @@ def resolve_closeout_pull_request(
         [
             "gh", "pr", "list", "--repo", repo, "--head", branch,
             "--base", base_branch, "--state", "open", "--limit", "100",
-            "--json", "number,url,headRefName,baseRefName,headRefOid,isDraft",
+            "--json", "number,url,title,body,headRefName,baseRefName,headRefOid,isDraft",
         ],
         cwd=root,
         check=False,
@@ -11138,15 +11224,91 @@ def resolve_closeout_pull_request(
         raise WorkflowError("Closeout pull request headRefOid is invalid.", exit_code=2)
     if not isinstance(item.get("isDraft"), bool):
         raise WorkflowError("Closeout pull request draft state is invalid.", exit_code=2)
+    if not isinstance(item.get("title"), str) or not isinstance(item.get("body"), str):
+        raise WorkflowError("Closeout pull request title/body identity is invalid.", exit_code=2)
     return item
+
+
+def closeout_task_dir_from_plan(root: Path, plan: dict[str, Any]) -> Path:
+    active = root / plan["task"]["active_locator"]
+    archived = root / plan["task"]["archive_locator"]
+    if active.is_dir() and not archived.exists():
+        return active
+    if archived.is_dir() and not active.exists():
+        return archived
+    raise WorkflowError(
+        "Closeout PR identity requires exactly one active or archived task locator.",
+        exit_code=2,
+    )
+
+
+def validate_closeout_pull_request_identity(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    pr: dict[str, Any],
+    *,
+    expected_draft: bool,
+    require_summary: bool,
+    expected_head: str | None = None,
+) -> None:
+    number = pr.get("number")
+    if not isinstance(number, int):
+        raise WorkflowError("Closeout pull request number is invalid.", exit_code=2)
+    canonical_url = canonical_pull_request_url(plan["git"]["repo"], number, pr.get("url"))
+    if pr.get("url") != canonical_url:
+        raise WorkflowError("Closeout pull request URL is not canonical.", exit_code=2)
+    if pr.get("title") != plan["publish"]["title"]:
+        raise WorkflowError("Closeout pull request title differs from immutable readiness.", exit_code=2)
+    if pr.get("isDraft") is not expected_draft:
+        state = "draft" if expected_draft else "ready"
+        raise WorkflowError(f"Closeout pull request is not in expected {state} state.", exit_code=2)
+    if expected_head is not None and pr.get("headRefOid") != expected_head:
+        raise WorkflowError("Closeout pull request HEAD differs from the expected immutable stage HEAD.", exit_code=2)
+
+    body_path = task_dir / PR_BODY_ARTIFACT
+    if not body_path.is_file():
+        raise WorkflowError("Closeout immutable PR body artifact is missing.", exit_code=2)
+    body_bytes = body_path.read_bytes()
+    if hashlib.sha256(body_bytes).hexdigest() != plan["publish"]["body_sha256"]:
+        raise WorkflowError("Closeout immutable PR body digest does not match the plan.", exit_code=2)
+    try:
+        expected_body = body_bytes.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise WorkflowError("Closeout immutable PR body is not valid UTF-8.", exit_code=2) from exc
+    if pr.get("body") != expected_body:
+        raise WorkflowError("Closeout pull request body differs from immutable readiness.", exit_code=2)
+
+    summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
+    if require_summary and not summary_path.is_file():
+        raise WorkflowError("Closeout final summary is missing for PR identity validation.", exit_code=2)
+    if summary_path.is_file():
+        summary = read_and_validate_closeout_final_summary(summary_path, plan)
+        expected_ref = f"PR #{number}"
+        if (
+            summary.get("github", {}).get("pr_url") != canonical_url
+            or summary.get("index", {}).get("search_terms", {}).get("pr_refs") != [expected_ref]
+        ):
+            raise WorkflowError(
+                "Closeout final summary does not reference the same immutable pull request.",
+                exit_code=2,
+            )
 
 
 def ensure_closeout_draft_pr(root: Path, plan: dict[str, Any], body: str) -> dict[str, Any]:
     git = plan["git"]
+    task_dir = closeout_task_dir_from_plan(root, plan)
     existing = resolve_closeout_pull_request(root, git["repo"], git["head_branch"], git["base_branch"])
     if existing is not None:
-        if existing["isDraft"] is not True:
-            raise WorkflowError("Closeout found a ready PR before archive transaction completed.", exit_code=2)
+        validate_closeout_pull_request_identity(
+            root,
+            task_dir,
+            plan,
+            existing,
+            expected_draft=True,
+            require_summary=False,
+            expected_head=current_head(root),
+        )
         return existing
     pr_url = create_pull_request(
         root, git["repo"], git["base_branch"], git["head_branch"],
@@ -11155,14 +11317,19 @@ def ensure_closeout_draft_pr(root: Path, plan: dict[str, Any], body: str) -> dic
     number = parse_pull_request_number(pr_url)
     if number is None:
         raise WorkflowError("Could not parse draft PR identity.", exit_code=2)
-    return {
-        "number": number,
-        "url": pr_url,
-        "headRefName": git["head_branch"],
-        "baseRefName": git["base_branch"],
-        "headRefOid": current_head(root),
-        "isDraft": True,
-    }
+    created = resolve_closeout_pull_request(root, git["repo"], git["head_branch"], git["base_branch"])
+    if created is None or created.get("number") != number:
+        raise WorkflowError("Created draft PR could not be rebound to one immutable identity.", exit_code=2)
+    validate_closeout_pull_request_identity(
+        root,
+        task_dir,
+        plan,
+        created,
+        expected_draft=True,
+        require_summary=False,
+        expected_head=current_head(root),
+    )
+    return created
 
 
 def validate_closeout_marketplace_artifact(
@@ -11212,6 +11379,15 @@ def build_final_archive_projection(
     inputs = readiness.get("publish_inputs") if isinstance(readiness.get("publish_inputs"), dict) else {}
     if inputs.get("closeout_plan_digest") != plan["plan_digest"]:
         raise WorkflowError("Final projection readiness digest does not match closeout plan.", exit_code=2)
+    validate_closeout_pull_request_identity(
+        root,
+        task_dir,
+        plan,
+        pr,
+        expected_draft=True,
+        require_summary=False,
+        expected_head=current_head(root),
+    )
     validate_closeout_marketplace_artifact(root, task_dir, plan, ledger)
     summary = closeout_summary_for_pr(plan, pr)
     if summary["index"]["search_terms"]["pr_refs"] != [f"PR #{pr['number']}"]:
@@ -11349,6 +11525,77 @@ def validate_closeout_archive_layout(root: Path, archived: Path, plan: dict[str,
     validate_closeout_marketplace_artifact(root, archived, plan, ledger)
 
 
+def closeout_commit_blob_bytes(root: Path, commit: str, path: str) -> bytes:
+    proc = subprocess.run(
+        ["git", "show", f"{commit}:{path}"],
+        cwd=root,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Closeout could not read an immutable Git blob.",
+            exit_code=2,
+            payload={"commit": commit, "path": path},
+        )
+    return proc.stdout
+
+
+def validate_closeout_task_json_archive_change(before: bytes, after: bytes) -> None:
+    try:
+        before_payload = json.loads(before.decode("utf-8"))
+        after_payload = json.loads(after.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise WorkflowError("Closeout task.json archive blobs are invalid JSON.", exit_code=2) from exc
+    if not isinstance(before_payload, dict) or not isinstance(after_payload, dict):
+        raise WorkflowError("Closeout task.json archive blobs must be objects.", exit_code=2)
+    expected = copy.deepcopy(before_payload)
+    expected["status"] = "completed"
+    completed_at = after_payload.get("completedAt")
+    if not isinstance(completed_at, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", completed_at):
+        raise WorkflowError("Archived task.json completedAt is not an official date value.", exit_code=2)
+    expected["completedAt"] = completed_at
+    if after_payload != expected:
+        raise WorkflowError(
+            "Archived task.json contains changes beyond the official status/completedAt transition.",
+            exit_code=2,
+        )
+
+
+def validate_closeout_archive_blob_continuity(
+    root: Path,
+    archived: Path,
+    plan: dict[str, Any],
+    evidence_commit: str,
+    *,
+    archive_commit: str | None = None,
+) -> None:
+    active_locator = plan["task"]["active_locator"]
+    archive_locator = plan["task"]["archive_locator"]
+    for relative in plan["projection"]["tracked_move_paths"]:
+        before = closeout_commit_blob_bytes(root, evidence_commit, f"{active_locator}/{relative}")
+        if archive_commit is None:
+            target = archived / relative
+            if not target.is_file():
+                raise WorkflowError(
+                    "Archived tracked output is missing during content validation.",
+                    exit_code=2,
+                    payload={"path": relative},
+                )
+            after = target.read_bytes()
+        else:
+            after = closeout_commit_blob_bytes(root, archive_commit, f"{archive_locator}/{relative}")
+        if relative == "task.json":
+            validate_closeout_task_json_archive_change(before, after)
+        elif before != after:
+            raise WorkflowError(
+                "Archived tracked output differs from the immutable evidence blob.",
+                exit_code=2,
+                payload={"path": relative},
+            )
+
+
 def execute_archive_metadata_transaction(
     root: Path, task_dir: Path, plan: dict[str, Any]
 ) -> tuple[Path, dict[str, Any]]:
@@ -11367,6 +11614,7 @@ def execute_archive_metadata_transaction(
         raise WorkflowError("task.py archive move failed.", exit_code=2, payload={"stderr": proc.stderr.strip(), "stdout": proc.stdout.strip()})
     archived = root / plan["task"]["archive_locator"]
     validate_closeout_archive_layout(root, archived, plan)
+    validate_closeout_archive_blob_continuity(root, archived, plan, evidence_commit)
     active_locator = plan["task"]["active_locator"]
     archive_locator = plan["task"]["archive_locator"]
     allowed = closeout_archive_transaction_paths(plan)
@@ -11383,6 +11631,9 @@ def execute_archive_metadata_transaction(
         raise WorkflowError("Archive metadata commit differs from its staged transaction.", exit_code=2, payload={"staged": sorted(staged), "committed": sorted(committed)})
     if closeout_commit_parent(root, archive_commit) != evidence_commit:
         raise WorkflowError("Archive metadata commit parent is not the validated evidence commit.", exit_code=2)
+    validate_closeout_archive_blob_continuity(
+        root, archived, plan, evidence_commit, archive_commit=archive_commit
+    )
     if git_status_paths(root):
         raise WorkflowError("Archive metadata commit left repository paths dirty.", exit_code=2)
     run_stdout(["git", "push", plan["git"]["remote"], plan["git"]["head_branch"]], cwd=root)
@@ -11391,9 +11642,19 @@ def execute_archive_metadata_transaction(
 
 def ensure_closeout_pr_ready(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
     git = plan["git"]
+    task_dir = closeout_task_dir_from_plan(root, plan)
     pr = resolve_closeout_pull_request(root, git["repo"], git["head_branch"], git["base_branch"])
     if pr is None:
         raise WorkflowError("Closeout draft PR is missing.", exit_code=2)
+    validate_closeout_pull_request_identity(
+        root,
+        task_dir,
+        plan,
+        pr,
+        expected_draft=bool(pr["isDraft"]),
+        require_summary=True,
+        expected_head=current_head(root),
+    )
     local_head = current_head(root)
     remote_proc = run(["git", "ls-remote", "--heads", git["remote"], git["head_branch"]], cwd=root, check=False)
     rows = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
@@ -11411,6 +11672,15 @@ def ensure_closeout_pr_ready(root: Path, plan: dict[str, Any]) -> dict[str, Any]
         confirmed = resolve_closeout_pull_request(root, git["repo"], git["head_branch"], git["base_branch"])
         if confirmed is None or confirmed.get("isDraft") is not False or confirmed.get("headRefOid") != local_head:
             raise WorkflowError("Draft-to-ready transition could not be confirmed.", exit_code=2, payload={"stage": "draft-to-ready-confirmation"})
+        validate_closeout_pull_request_identity(
+            root,
+            task_dir,
+            plan,
+            confirmed,
+            expected_draft=False,
+            require_summary=True,
+            expected_head=local_head,
+        )
         pr = confirmed
     return {"pr": pr, "local_head": local_head, "remote_head": remote_head, "status": "ready"}
 
@@ -11423,10 +11693,17 @@ def resume_archive_metadata_transaction(root: Path, task_dir: Path, plan: dict[s
         validate_closeout_archive_git_paths(dirty, plan, stage="archive-recovery-dirty")
         evidence_commit = current_head(root)
         validate_closeout_evidence_commit(root, plan, evidence_commit)
+        validate_closeout_archive_blob_continuity(root, task_dir, plan, evidence_commit)
         active = plan["task"]["active_locator"]
         archived = plan["task"]["archive_locator"]
-        run_stdout(["git", "add", "-A", "--", active, archived], cwd=root)
         staged = set(run_stdout(["git", "diff", "--cached", "--name-only", "--no-renames"], cwd=root).splitlines())
+        if not staged:
+            pathspecs = (
+                [f"{active}/{relative}" for relative in plan["projection"]["tracked_move_paths"]]
+                + [f"{archived}/{relative}" for relative in plan["projection"]["move_paths"]]
+            )
+            run_stdout(["git", "add", "-A", "--", *pathspecs], cwd=root)
+            staged = set(run_stdout(["git", "diff", "--cached", "--name-only", "--no-renames"], cwd=root).splitlines())
         validate_closeout_archive_git_paths(staged, plan, stage="archive-recovery-staged")
         run_stdout(["git", "commit", "-m", format_metadata_commit_subject(int(plan["task"]["source_issue"]))], cwd=root)
         archive_commit = current_head(root)
@@ -11434,12 +11711,18 @@ def resume_archive_metadata_transaction(root: Path, task_dir: Path, plan: dict[s
         validate_closeout_archive_git_paths(archive_paths, plan, stage="archive-recovery-commit")
         if closeout_commit_parent(root, archive_commit) != evidence_commit:
             raise WorkflowError("Recovered archive commit does not match the exact parent/path transaction.", exit_code=2)
+        validate_closeout_archive_blob_continuity(
+            root, task_dir, plan, evidence_commit, archive_commit=archive_commit
+        )
     else:
         archive_commit = current_head(root)
         last_paths = closeout_commit_paths(root, archive_commit)
         evidence_commit = closeout_commit_parent(root, archive_commit)
         validate_closeout_archive_git_paths(last_paths, plan, stage="archive-recovery-head")
         validate_closeout_evidence_commit(root, plan, evidence_commit)
+        validate_closeout_archive_blob_continuity(
+            root, task_dir, plan, evidence_commit, archive_commit=archive_commit
+        )
     local_head = current_head(root)
     remote_proc = run(
         ["git", "ls-remote", "--heads", plan["git"]["remote"], plan["git"]["head_branch"]],
@@ -11463,6 +11746,18 @@ def resume_archived_closeout(root: Path, args: argparse.Namespace, task_dir: Pat
     if expected != plan["plan_digest"]:
         raise WorkflowError("Formal closeout expected digest does not match the archived plan.", exit_code=2, payload={"expected": expected, "actual": plan["plan_digest"]})
     require_gh_auth(root)
+    git = plan["git"]
+    pr = resolve_closeout_pull_request(root, git["repo"], git["head_branch"], git["base_branch"])
+    if pr is None:
+        raise WorkflowError("Archived closeout recovery requires the bound pull request.", exit_code=2)
+    validate_closeout_pull_request_identity(
+        root,
+        task_dir,
+        plan,
+        pr,
+        expected_draft=bool(pr["isDraft"]),
+        require_summary=True,
+    )
     archive_commit = resume_archive_metadata_transaction(root, task_dir, plan)
     result = ensure_closeout_pr_ready(root, plan)
     return {
@@ -11506,6 +11801,15 @@ def resume_active_archive_move(
     )
     if pr is None or pr.get("isDraft") is not True:
         raise WorkflowError("Archive-move recovery requires the bound draft PR.", exit_code=2)
+    validate_closeout_pull_request_identity(
+        root,
+        task_dir,
+        plan,
+        pr,
+        expected_draft=True,
+        require_summary=True,
+        expected_head=current_head(root),
+    )
     archived_task_dir, archive_commit = execute_archive_metadata_transaction(root, task_dir, plan)
     publish_payload = ensure_closeout_pr_ready(root, plan)
     return {
@@ -11518,97 +11822,6 @@ def resume_active_archive_move(
         "finish_summary": str(archived_task_dir / FINISH_SUMMARY_ARTIFACT),
         "archive_commit": archive_commit,
         "publish": publish_payload,
-    }
-
-
-def build_finish_work_dry_run_plan(
-    root: Path,
-    args: argparse.Namespace,
-    config: dict[str, Any],
-    task_context: dict[str, Any],
-    task_dir: Path,
-    task_name: str,
-    gate_path: Path,
-    gate: dict[str, Any],
-    reviewed_head: str,
-    finish_summary_index_path: Path,
-    draft: bool,
-    body_source: str,
-    body_errors: list[str],
-    reviewed_source_errors: list[str],
-    ledger: dict[str, Any],
-) -> dict[str, Any]:
-    publish = publish_config(config)
-    task = task_json(task_dir)
-    base_branch = base_branch_from_sources(args, task, task_context)
-    repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
-    remote = str(args.remote or publish.get("remote") or "origin")
-    head_branch = current_branch(root)
-    pr_title = pr_title_from_task(task, args)
-    archive_would_run = not args.skip_archive
-    primary_issue = primary_issue_number_from_ledger(ledger)
-    merge_summary = merge_summary_from_title(pr_title, primary_issue, ledger)
-    base_branch_name = normalize_ref(base_branch).removeprefix("origin/")
-    return {
-        "status": "dry-run",
-        "task_dir": str(task_dir),
-        "task_name": task_name,
-        "review_gate": str(gate_path),
-        "reviewed_head": reviewed_head,
-        "dry_run_side_effects": False,
-        "checks": {
-            "non_metadata_dirty_paths": [],
-            "pr_readiness": {
-                "body_source": body_source,
-                "body_quality_ok": not body_errors,
-                "body_quality_errors": body_errors,
-                "reviewed_source_required": not draft,
-                "reviewed_source_ok": not reviewed_source_errors,
-                "reviewed_source_errors": reviewed_source_errors,
-            },
-        },
-        "plan": {
-            "archive": {
-                "would_run": archive_would_run,
-                "skip": bool(args.skip_archive),
-                "task_name": task_name,
-                "command": ["python3", "./.trellis/scripts/task.py", "archive", task_name],
-            },
-            "finish_summary": {
-                "would_run": True,
-                "input_validated": True,
-                "index_file": repo_relative(root, finish_summary_index_path),
-                "target": repo_relative(
-                    root,
-                    root / ".trellis/tasks/archive" / datetime.now().strftime("%Y-%m") / task_name / FINISH_SUMMARY_ARTIFACT,
-                ),
-                "initial_pr_url": "",
-                "initial_pr_refs": [],
-            },
-            "metadata_commit": {
-                "would_run": True,
-                "message": format_metadata_commit_subject(primary_issue),
-            },
-            "publish": {
-                "would_run": True,
-                "repo": repo,
-                "base_branch": base_branch_name,
-                "head_branch": head_branch,
-                "remote": remote,
-                "draft": draft,
-                "title": pr_title,
-                "body_source": body_source,
-                "allow_metadata_after_gate": True,
-                "from_finish_work": True,
-                "merge_commit": build_merge_commit_payload(
-                    primary_issue=primary_issue,
-                    summary=merge_summary,
-                    head_branch=head_branch,
-                    base_branch=base_branch_name,
-                    pull_request=None,
-                ),
-            },
-        },
     }
 
 
@@ -11650,21 +11863,18 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     require_gh_auth(root)
     ledger = load_issue_scope_ledger(task_dir, task_context)
     evidence_commit: dict[str, Any] | None = None
-    entry_state = resolve_closeout_state(root, task_dir, plan, ledger, prepared["gate"])
-    if entry_state != "prepared":
-        run_stdout(["git", "push", plan["git"]["remote"], plan["git"]["head_branch"]], cwd=root)
-        validate_publish_identity_and_remote_head(
-            root, prepared["task"], task_context, plan["git"]["repo"],
-            plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
-        )
-    else:
+    entry_state = resolve_closeout_pre_draft_state(root, task_dir, plan, ledger, prepared["gate"])
+    if entry_state == "prepared":
         if current_head(root) != plan["git"]["reviewed_work_head"]:
             raise WorkflowError(
                 "Closeout content HEAD drifted before evidence commit.",
                 exit_code=2,
                 payload={"expected": plan["git"]["reviewed_work_head"], "actual": current_head(root)},
             )
-        run_stdout(["git", "push", "-u", plan["git"]["remote"], plan["git"]["head_branch"]], cwd=root)
+        run_stdout(
+            ["git", "push", "-u", plan["git"]["remote"], plan["git"]["head_branch"]],
+            cwd=root,
+        )
         validate_publish_identity_and_remote_head(
             root, prepared["task"], task_context, plan["git"]["repo"],
             plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
@@ -11685,6 +11895,16 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         if plan["marketplace"]["required"]:
             pending_ledger = record_marketplace_machine_evidence(ledger, plan["marketplace"]["pending_machine"])
             write_json(issue_scope_ledger_path(task_dir), pending_ledger)
+            ledger = pending_ledger
+
+    if entry_state in {"content_pushed", "evidence_ready"}:
+        validate_publish_identity_and_remote_head(
+            root, prepared["task"], task_context, plan["git"]["repo"],
+            plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
+        )
+
+    if entry_state in {"prepared", "content_pushed"}:
+        if plan["marketplace"]["required"]:
             verification = execute_marketplace_verification(
                 root,
                 task_dir,
@@ -11697,15 +11917,36 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             verification_path = marketplace_verification_path(task_dir, config)
             passed = closeout_passed_marketplace_evidence(root, verification_path, verification)
             write_json(issue_scope_ledger_path(task_dir), record_marketplace_machine_evidence(ledger, passed))
+
+    if entry_state in {"prepared", "content_pushed", "evidence_ready"}:
         evidence_commit = commit_closeout_evidence_metadata(root, task_dir, plan)
-        run_stdout(["git", "push", plan["git"]["remote"], plan["git"]["head_branch"]], cwd=root)
+        push_closeout_branch_if_needed(root, plan)
+        validate_publish_identity_and_remote_head(
+            root, prepared["task"], task_context, plan["git"]["repo"],
+            plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
+        )
+    elif entry_state == "evidence_pushed":
+        push_closeout_branch_if_needed(root, plan)
         validate_publish_identity_and_remote_head(
             root, prepared["task"], task_context, plan["git"]["repo"],
             plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
         )
 
     pr = ensure_closeout_draft_pr(root, plan, prepared["body"])
-    finish_summary_path, _summary = build_final_archive_projection(root, task_dir, prepared, pr)
+    finish_summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
+    if finish_summary_path.is_file():
+        validate_closeout_active_projection(root, task_dir, plan)
+        validate_closeout_pull_request_identity(
+            root,
+            task_dir,
+            plan,
+            pr,
+            expected_draft=True,
+            require_summary=True,
+            expected_head=current_head(root),
+        )
+    else:
+        finish_summary_path, _summary = build_final_archive_projection(root, task_dir, prepared, pr)
     archived_task_dir, archive_commit = execute_archive_metadata_transaction(root, task_dir, plan)
     publish_payload = ensure_closeout_pr_ready(root, plan)
     return {

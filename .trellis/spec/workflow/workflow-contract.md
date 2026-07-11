@@ -32,6 +32,18 @@ one exact metadata commit/push, local/remote/PR HEAD equality, then
 draft-to-ready. Archive is the last repository mutation, not the midpoint of
 publish. Normal flow never asks the caller to choose `--skip-archive`,
 `--recovery-after-finish-work`, or a separate publish command.
+The unique PR remains bound by repo/head/base/number/URL/title and the untrimmed
+task-local `pr-body.md` UTF-8 text across draft reuse, final summary, archived
+recovery, and ready transition. Partial retries derive the exact missing stage
+from persisted plan/readiness/evidence, Git/remote state, PR identity, and final
+summary presence instead of replaying completed side effects. Archive
+recovery also binds every tracked evidence blob to its archived blob; only the
+official deterministic `task.json` completion fields may differ.
+The closeout failure matrix invokes production `cmd_finish_work()` against a
+real temporary Git repository and bare remote. Only external GitHub/verifier
+responses are faked; production transition functions are not mocked. Every
+injected failure is cleared and re-entered through production `cmd_finish_work()`
+while exact paths, SHA values, PR state, and transition attempts are asserted.
 
 Do not move Phase 0 side effects into `task.py create`: `prepare-task.sh` must
 resolve the source issue, base branch, branch name, executor-selected local worktree, and intake plan
@@ -486,4 +498,4 @@ intake provenance only.
 
 For tasks that change the workflow marketplace, preset, overlays, installer, schema, or public extension contract, publish is fail-closed after the branch push and before `gh pr create`. The deterministic `verify-marketplace` companion command records task-local `marketplace-verification.json` with repository, remote, branch/ref, verified content HEAD, remote HEAD, command exit codes, stdout/stderr digests and sizes, and installed workflow/preview/schema digests. It executes remote branch `trellis init`, workflow preview, workflow switch, canonical preset reapply, and runtime-ignore checks in a clean temporary repository. It does not decide PR readiness.
 
-`issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` evidence object in the primary issue and every close issue. Before the verifier it is `status=pending`, `required=true`, points to `marketplace-verification.json`, and explicitly does not satisfy final publish. `publish-pr` pushes the reviewed content HEAD, runs the verifier, replaces only those structured entries with real `status=passed` facts (artifact path and SHA-256, verified content HEAD, verifier remote HEAD, publish content HEAD, and all-command result), then commits exactly the verifier artifact plus the ledger as the only allowed metadata tail and pushes it. After that push it reloads and cross-validates the ledger and artifact, requires the current HEAD to differ from the verified content HEAD by exactly those two paths, requires the remote branch to equal the metadata HEAD, revalidates Branch Review Gate metadata tolerance, and only then permits `gh pr create`. Missing, pending, failed, stale, tampered, or mismatched evidence blocks. The AI remains responsible for deciding close scope and whether evidence is sufficient and truthful; scripts only execute, record, and validate deterministic verifier facts. No release tag is created by this gate.
+`issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` evidence object in the primary issue and every close issue. Before the verifier it is `status=pending`, `required=true`, points to task-relative `marketplace-verification.json`, and explicitly does not satisfy final publish. Formal closeout pushes the reviewed content HEAD, runs the verifier, replaces only those structured entries with real `status=passed` facts, then commits and pushes the exact immutable plan/readiness/verifier/ledger evidence allowlist. Only after remote equality may it bind the unique draft PR, build the final summary once, and perform the archive transaction. Missing, pending, failed, stale, tampered, or mismatched evidence blocks. The AI remains responsible for close scope and evidence sufficiency; scripts execute and validate deterministic facts. No release tag is created by this gate.

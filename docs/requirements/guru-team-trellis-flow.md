@@ -382,6 +382,8 @@ PR readiness 要求：
 | Immutable plan/readiness | `closeout-plan.json` 固定 protected input SHA-256、repo/base/head、最大宽度 sentinel PR summary template/digest、完整 move/evidence path set 与 allowlist；`pr-readiness.json.publish_inputs` 绑定同一 `closeout_plan_digest`。 |
 | Task-relative verifier | ledger pending/passed 的 `artifact_path` 固定为 `marketplace-verification.json`；active/archive 两种 locator 都在 task 内解析并校验同一 artifact digest。 |
 | Exact archive lineage | evidence commit parent 必须是 reviewed work HEAD；archive commit parent 必须是该 evidence commit。`tracked_move_paths` 必须同时出现 active 删除和 archive 新增；evidence commit 后才生成的 `untracked_archive_outputs` 只能出现 archive 新增。partial、missing、extra、误分类 path 均阻塞。 |
+| Archive blob continuity | `tracked_move_paths` 的 evidence active blob 必须与 archive working-tree/commit blob 一致；仅 `task.json.status/completedAt` 可按官方 archive 确定性变化。 |
+| Production failure matrix | 从生产 `cmd_finish_work()` 进入，使用真实临时 Git、bare remote、official `task.py archive` 和 fake gh/verifier 外部响应；逐阶段读取 locator、status、PR、HEAD、dirty/staged 与 next transition，不 mock closeout transition。 |
 | Same-entry recovery | 同一 finish entry 从 committed plan/readiness、active/archive locator、Git/remote/PR facts 恢复；不暴露 `--skip-archive`、publish recovery flag 或 artifact override。 |
 | Git path failure | initial diff、initial untracked 或 final/recovery diff 失败时两个 path 数组都为 `[]`，只记录固定 unavailable fact，且不记录 stderr/ref/partial path 或 filtering fact。 |
 | 中文且具体 | 必须包含具体的 `变更摘要`、`影响范围`、`验证结果`、`Review Gate`、`Issue 关闭范围`、`安全说明`。 |
@@ -413,7 +415,7 @@ PR readiness 要求：
 | `finish-summary-index.json` | Phase 3.6 前 | AI-reviewed semantic input | recorder 只从该文件读取 problem/outcome/behavior/surface/contract/search terms 判断。 |
 | `closeout-plan.json` | finish-work dry-run/formal | immutable closeout input | digest handshake、sentinel final-summary template、task-relative verifier locator、完整 move/evidence path snapshot、commit lineage 与状态恢复。 |
 | `finish-summary.json` | draft PR 后、archive 前 | archived task-local 完成摘要 | #98 历史检索；一次生成 canonical PR URL/ref，随 archive move 进入终态。 |
-| `pr-body.md` | Phase 3.6 前 | AI-reviewed PR body | immutable readiness 的 body source；包含 Docs SSOT / 文档同步结果。 |
+| `pr-body.md` | Phase 3.6 前 | AI-reviewed PR body | 原始 UTF-8 文本是 immutable body identity；空白与 Markdown-sensitive spaces 不做 trim/normalize；包含 Docs SSOT / 文档同步结果。 |
 | `pr-readiness.json` | formal finish draft PR 前 | immutable publish input snapshot | title/body/draft/repo/base/head 与 closeout plan digest 绑定。 |
 | `marketplace-verification.json` | reviewed content push 后、draft PR create 前 | deterministic remote verifier evidence | required marketplace/preset/overlay/schema/public API 发布门禁；pending/passed machine identity 由 recorder 管理。 |
 
@@ -431,7 +433,7 @@ PR readiness 要求：
 8. 任意 finding 都阻断；发现过问题的 reviewer 只能闭环自己的 finding，最终放行必须是 fresh reviewer。
 9. `trellis-continue` 到 Branch Review Gate 就停；`trellis-finish-work` 通过 immutable plan/digest、draft handshake、final projection 与单次 archive transaction 自动 publish PR，Guru Team 不调用 `add_session.py`。
 10. shared start 和 Codex/Cursor SessionStart 只组合 phase/packages/task/Git facts，不打开、枚举、读取或输出 workspace journal。
-11. PR create/recovery 只消费已提交的 plan/readiness；0/1/>1 exact open PR 状态机分别 create draft、reuse draft、fail closed，archive 后不再回写 repo artifact。
+11. PR create/recovery 只消费已提交的 plan/readiness；0/1/>1 exact open PR 状态机分别 create draft、reuse draft、fail closed，PR body 全程逐字匹配 task-local 原始 UTF-8 文本；中断恢复按 evidence/Git/remote/PR/summary facts 只重试缺失 transition，archive 后不再回写 repo artifact。
 12. PR body 是给 GitHub reviewer 的发布材料，不是内部 task 摘要；必须包含 Docs SSOT / 文档同步处理结果，关闭 issue 的语义由 `issue-scope-ledger.json` 控制。
 13. `Docs SSOT Plan` 在 planning 阶段先决定 durable docs 状态与同步策略，Phase 2 implementation 必须按策略执行并在 handoff 说明同步结果，Phase 2 check 必须按策略复核 durable docs / task artifacts / code / test 一致性；Phase 3 final reviewer 只验证这些结果，不首次 merge docs 或补 Phase 2 缺口。
 14. 所有脚本都是 executor / validator / recorder，不做 planner / reviewer / product owner 判断；PR body validator 只做 Docs SSOT section/key presence 等客观结构检查。
