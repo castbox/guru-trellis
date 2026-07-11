@@ -175,7 +175,9 @@ python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["mo
 grep -q "def prepare_closeout" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
 grep -q "def resolve_closeout_state" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
 grep -q "def ensure_closeout_draft_pr" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
-grep -q "If any stage fails, rerun this same entry with the same expected digest" "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
+grep -q "If any ordinary stage fails, rerun this same entry with the same expected digest" "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
+grep -q "archive-month-preflight" "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
+grep -q "hooks.after_archive" "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
 test -z "$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print -quit)"
 test -d "$TARGET/.agents/skills"
 test -d "$TARGET/.codex"
@@ -318,7 +320,7 @@ python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["st
 
 INITIAL_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case initial)"
 printf '%s\n' "$INITIAL_CLOSEOUT_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 105; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True' <<<"$INITIAL_CLOSEOUT_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 105; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True; assert payload["after_archive_hook_preflight"] is True' <<<"$INITIAL_CLOSEOUT_JSON"
 
 rm -f "$TARGET/.trellis/workflow.md.new"
 (
@@ -359,7 +361,7 @@ grep -q '^\.trellis/workspace/$' "$TARGET/.gitignore"
 
 UPDATED_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case after-update)"
 printf '%s\n' "$UPDATED_CLOSEOUT_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 106; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True' <<<"$UPDATED_CLOSEOUT_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 106; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True; assert payload["after_archive_hook_preflight"] is True' <<<"$UPDATED_CLOSEOUT_JSON"
 
 FINAL_SIDECARS="$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print)"
 if [[ -n "$FINAL_SIDECARS" ]]; then

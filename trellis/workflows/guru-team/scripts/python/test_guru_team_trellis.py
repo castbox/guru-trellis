@@ -10,6 +10,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import tempfile
 import unittest
@@ -8299,6 +8300,11 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
         "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
         "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
         "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        ".agents/skills/trellis-finish-work/SKILL.md",
+        ".codex/prompts/trellis-finish-work.md",
+        ".codex/skills/trellis-finish-work/SKILL.md",
+        ".claude/commands/trellis/finish-work.md",
+        ".cursor/commands/trellis-finish-work.md",
     ]
     PUBLIC_DOC_FILES = [
         "README.md",
@@ -8306,15 +8312,40 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
         "trellis/presets/guru-team/README.md",
         "docs/requirements/requirement-main.md",
     ]
-    CODE_BLOCK_RE = re.compile(r"```(?:bash)?\n(.*?)```", re.DOTALL)
     BARE_FINISH_COMMAND = ".trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work"
 
     def finish_work_code_blocks(self, content: str) -> list[str]:
-        return [
-            block.strip()
-            for block in self.CODE_BLOCK_RE.findall(content)
-            if "finish-work.sh" in block
-        ]
+        blocks: list[str] = []
+        current: list[str] | None = None
+        accepted = False
+        for line in content.splitlines():
+            if current is None:
+                if line.startswith("```"):
+                    language = line.removeprefix("```").strip()
+                    current = []
+                    accepted = language in {"", "bash"}
+                continue
+            if line.strip() == "```":
+                block = "\n".join(current).strip()
+                if accepted and "finish-work.sh" in block:
+                    blocks.append(block)
+                current = None
+                accepted = False
+                continue
+            current.append(line)
+        return blocks
+
+    def finish_work_commands(self, block: str) -> list[str]:
+        commands: list[str] = []
+        current: list[str] = []
+        for line in block.splitlines():
+            if not current and self.BARE_FINISH_COMMAND not in line:
+                continue
+            current.append(line.strip())
+            if not line.rstrip().endswith("\\"):
+                commands.append(" ".join(part.removesuffix("\\").strip() for part in current))
+                current = []
+        return commands
 
     def test_finish_work_entrypoints_show_reviewed_body_and_dry_run(self) -> None:
         for relpath in self.ENTRYPOINT_FILES:
@@ -8342,6 +8373,23 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
                         self.BARE_FINISH_COMMAND,
                         f"{relpath} must not keep a bare finish-work main example",
                     )
+                commands = [
+                    command
+                    for block in finish_blocks
+                    for command in self.finish_work_commands(block)
+                ]
+                dry_commands = [command for command in commands if "--dry-run" in command]
+                formal_commands = [command for command in commands if "--dry-run" not in command]
+                self.assertTrue(dry_commands, f"{relpath} must show a dry-run command")
+                self.assertTrue(formal_commands, f"{relpath} must show a formal command")
+                self.assertTrue(
+                    all("--expected-plan-digest" not in command for command in dry_commands),
+                    f"{relpath} dry-run commands must not require a prior digest",
+                )
+                self.assertTrue(
+                    all("--expected-plan-digest" in command for command in formal_commands),
+                    f"{relpath} formal finish-work commands must pass the reviewed digest",
+                )
 
     def test_public_docs_do_not_show_bare_finish_work_command(self) -> None:
         for relpath in self.PUBLIC_DOC_FILES:
@@ -9204,6 +9252,64 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 title="#105 重构 finish-work 收尾事务",
             )
 
+    def install_official_config_parser(self) -> Path:
+        source = Path(__file__).resolve().parents[5] / ".trellis/scripts/common"
+        target = self.root / ".trellis/scripts/common"
+        shutil.copytree(source, target)
+        return self.root / ".trellis/config.yaml"
+
+    def test_after_archive_hook_preflight_allows_missing_and_empty_configuration(self) -> None:
+        self.assertEqual(gtt.official_after_archive_hook_state(self.root), {"commands": []})
+        config = self.install_official_config_parser()
+        for content in [
+            "session_auto_commit: false\n",
+            "hooks:\n  after_archive:\n",
+        ]:
+            with self.subTest(content=content):
+                config.write_text(content, encoding="utf-8")
+                self.assertEqual(
+                    gtt.official_after_archive_hook_state(self.root),
+                    {"commands": []},
+                )
+
+    def test_after_archive_hook_preflight_rejects_nonempty_or_unparseable_without_execution(self) -> None:
+        config = self.install_official_config_parser()
+        sentinel = self.root / "after-archive-hook-sentinel"
+        cases = {
+            "nonempty": f"hooks:\n  after_archive:\n    - \"touch {sentinel}\"\n",
+            "top-level": f"hooks:\nafter_archive:\n  - \"touch {sentinel}\"\n",
+            "duplicate": (
+                f"hooks:\n  after_archive:\n    - \"touch {sentinel}\"\n"
+                "  after_archive:\n"
+            ),
+            "scalar": f"hooks:\n  after_archive: \"touch {sentinel}\"\n",
+            "nul": "hooks:\n  after_archive:\n\x00",
+        }
+        for case, content in cases.items():
+            with self.subTest(case=case):
+                config.write_bytes(content.encode("utf-8"))
+                with self.assertRaises(gtt.WorkflowError):
+                    gtt.official_after_archive_hook_state(self.root)
+                self.assertFalse(sentinel.exists())
+
+    def test_after_archive_hook_preflight_rejects_config_symlink_without_execution(self) -> None:
+        config = self.install_official_config_parser()
+        target = self.root / "outside-config.yaml"
+        sentinel = self.root / "after-archive-hook-sentinel"
+        target.write_text(
+            f"hooks:\n  after_archive:\n    - \"touch {sentinel}\"\n",
+            encoding="utf-8",
+        )
+        config.symlink_to(target)
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.official_after_archive_hook_state(self.root)
+        self.assertFalse(sentinel.exists())
+        config.unlink()
+        config.symlink_to(self.root / "missing-outside-config.yaml")
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.official_after_archive_hook_state(self.root)
+        self.assertFalse(sentinel.exists())
+
     def test_read_pr_body_file_preserves_exact_utf8_text(self) -> None:
         body_path = self.root / "reviewed-body.md"
         exact = "\n## 变更摘要\n\n- Markdown hard break.  \n\n"
@@ -9700,6 +9806,12 @@ shutil.move(str(active), str(archived))
                     "remote": "origin",
                     "head_branch": "main",
                 },
+                "inputs": {
+                    "official_after_archive_hooks": {
+                        "path": ".trellis/config.yaml",
+                        "sha256": gtt.canonical_json_sha256({"commands": []}),
+                    },
+                },
                 "projection": {
                     "move_paths": ["finish-summary.json", "review.md", "task.json"],
                     "tracked_move_paths": ["review.md", "task.json"],
@@ -9776,6 +9888,7 @@ shutil.move(str(active), str(archived))
             mock.patch.object(gtt, "current_head", return_value=self.head),
             mock.patch.object(gtt, "validate_closeout_evidence_commit"),
             mock.patch.object(gtt, "validate_closeout_active_projection"),
+            mock.patch.object(gtt, "validate_closeout_pre_move_continuity"),
             mock.patch.object(
                 gtt,
                 "run",
@@ -11037,6 +11150,10 @@ shutil.move(str(active), str(archived))
         expect_reentry_failure: bool = False,
         create_mismatched_commit: bool = False,
         plan_only_boundary_fault: str | None = None,
+        pre_move_fault: str | None = None,
+        formal_month_fault: bool = False,
+        recover_pre_move_fault: bool = False,
+        after_archive_hook: bool = False,
     ) -> dict[str, object]:
         source_root = Path(__file__).resolve().parents[5]
         with tempfile.TemporaryDirectory() as tmp:
@@ -11062,6 +11179,12 @@ shutil.move(str(active), str(archived))
             config = root / ".trellis/guru-team/config.yml"
             config.parent.mkdir(parents=True, exist_ok=True)
             config.write_text("github_repo: owner/repo\npublish:\n  remote: origin\n", encoding="utf-8")
+            hook_sentinel = root / "after-archive-hook-sentinel"
+            if after_archive_hook:
+                (root / ".trellis/config.yaml").write_text(
+                    f"hooks:\n  after_archive:\n    - \"touch {hook_sentinel}\"\n",
+                    encoding="utf-8",
+                )
             (root / ".gitignore").write_text(".trellis/.runtime/\n.trellis/workspace/\n", encoding="utf-8")
             (root / "README.md").write_text("base\n", encoding="utf-8")
             subprocess.run(["git", "add", "."], cwd=root, check=True)
@@ -11141,6 +11264,19 @@ shutil.move(str(active), str(archived))
             active_plan_only_boundary_fault: str | None = None
             archive_pushed = False
             transition_attempts: list[str] = []
+            actual_archive_month = datetime.now().strftime("%Y-%m")
+            archive_month_clock = actual_archive_month
+
+            def following_month(value: str) -> str:
+                year, month = (int(part) for part in value.split("-"))
+                return f"{year + (1 if month == 12 else 0):04d}-{1 if month == 12 else month + 1:02d}"
+
+            def preceding_month(value: str) -> str:
+                year, month = (int(part) for part in value.split("-"))
+                return f"{year - (1 if month == 1 else 0):04d}-{12 if month == 1 else month - 1:02d}"
+
+            if pre_move_fault == "archive-month" and recover_pre_move_fault:
+                archive_month_clock = preceding_month(actual_archive_month)
             if failed_stage == "raw-remote-control":
                 original_run(
                     [
@@ -11176,7 +11312,7 @@ shutil.move(str(active), str(archived))
             def fake_external_run(
                 command: list[str], cwd: Path | None = None, check: bool = True
             ) -> subprocess.CompletedProcess[str]:
-                nonlocal archive_pushed
+                nonlocal archive_pushed, archive_month_clock
                 if (
                     command == ["git", "rev-parse", "--show-toplevel"]
                     and active_plan_only_boundary_fault == "root"
@@ -11276,6 +11412,27 @@ shutil.move(str(active), str(archived))
                         "state": "OPEN",
                         "headRefOid": remote_head,
                     })
+                    if pre_move_fault == "tracked-content":
+                        (task_dir / "review.md").write_text(
+                            "tampered after draft binding\n", encoding="utf-8"
+                        )
+                    elif pre_move_fault == "tracked-symlink":
+                        review_path = task_dir / "review.md"
+                        review_path.unlink()
+                        review_path.symlink_to(root / "README.md")
+                    elif pre_move_fault == "tracked-mode":
+                        review_path = task_dir / "review.md"
+                        review_path.chmod(review_path.stat().st_mode | stat.S_IXUSR)
+                    elif pre_move_fault == "unexpected-untracked":
+                        (root / "unexpected-closeout.txt").write_text(
+                            "unexpected\n", encoding="utf-8"
+                        )
+                    elif pre_move_fault == "unexpected-staged":
+                        unexpected = root / "unexpected-staged-closeout.txt"
+                        unexpected.write_text("unexpected staged\n", encoding="utf-8")
+                        original_run(["git", "add", unexpected.name], cwd=root, check=True)
+                    elif pre_move_fault == "archive-month":
+                        archive_month_clock = following_month(archive_month_clock)
                     if injected_stage == "projection":
                         record_transition("projection")
                         (task_dir / "review.md").unlink()
@@ -11374,6 +11531,20 @@ shutil.move(str(active), str(archived))
                         "invalid committed summary\n", encoding="utf-8"
                     )
                     return
+                plan_path = archived_path / gtt.CLOSEOUT_PLAN_ARTIFACT
+                if mode == "plan-delete-keep-context":
+                    plan_path.unlink()
+                    return
+                if mode == "plan-tamper-keep-context":
+                    plan_path.write_text("not committed plan bytes\n", encoding="utf-8")
+                    return
+                if mode == "plan-invalid-keep-context":
+                    plan_path.write_text('{"schema_version":"invalid"}\n', encoding="utf-8")
+                    return
+                if mode == "plan-symlink-keep-context":
+                    plan_path.unlink()
+                    plan_path.symlink_to(root / "README.md")
+                    return
                 raise AssertionError(f"unsupported archived damage mode: {mode}")
 
             def exact_state() -> dict[str, object]:
@@ -11434,7 +11605,19 @@ shutil.move(str(active), str(archived))
                     return_value=(task_dir / "review-gate.json", gate, []),
                 ),
                 mock.patch.object(gtt, "run", side_effect=fake_external_run),
+                mock.patch.object(gtt, "current_archive_month", side_effect=lambda: archive_month_clock),
             ):
+                if after_archive_hook:
+                    with self.assertRaises(gtt.WorkflowError) as hook_error:
+                        gtt.cmd_finish_work(dry_args)
+                    return {
+                        "failed_state": exact_state(),
+                        "error": str(hook_error.exception),
+                        "error_payload": hook_error.exception.payload,
+                        "sentinel_exists": hook_sentinel.exists(),
+                        "events": transition_attempts,
+                        "reviewed_sha": reviewed_head,
+                    }
                 if failed_stage in {
                     "prepare",
                     "raw-remote-control",
@@ -11490,7 +11673,46 @@ shutil.move(str(active), str(archived))
                     )
                     if failed_stage == "plan-digest":
                         formal_args.expected_plan_digest = "0" * 64
-                    if failed_stage is None:
+                    if formal_month_fault:
+                        archive_month_clock = following_month(archive_month_clock)
+                        with self.assertRaises(gtt.WorkflowError) as month_error:
+                            gtt.cmd_finish_work(formal_args)
+                        return {
+                            "failed_state": exact_state(),
+                            "error": str(month_error.exception),
+                            "error_payload": month_error.exception.payload,
+                            "events": transition_attempts,
+                            "reviewed_sha": reviewed_head,
+                        }
+                    if pre_move_fault is not None:
+                        with self.assertRaises(gtt.WorkflowError) as pre_move_error:
+                            gtt.cmd_finish_work(formal_args)
+                        failed_state = exact_state()
+                        failed_error = str(pre_move_error.exception)
+                        failed_payload = pre_move_error.exception.payload
+                        failed_events = list(transition_attempts)
+                        if not recover_pre_move_fault:
+                            return {
+                                "project_root": str(root),
+                                "failed_state": failed_state,
+                                "error": failed_error,
+                                "error_payload": failed_payload,
+                                "events": failed_events,
+                                "reviewed_sha": reviewed_head,
+                                "evidence_sha": gtt.run_stdout(["git", "rev-parse", "HEAD"], cwd=root),
+                            }
+                        reentry_offset = len(transition_attempts)
+                        replacement_preview = gtt.cmd_finish_work(dry_args)
+                        self.assertNotEqual(
+                            replacement_preview["closeout_plan_digest"],
+                            preview["closeout_plan_digest"],
+                        )
+                        formal_args.expected_plan_digest = replacement_preview["closeout_plan_digest"]
+                        result = gtt.cmd_finish_work(formal_args)
+                        reentry_events = transition_attempts[reentry_offset:]
+                    if recover_pre_move_fault and pre_move_fault is not None:
+                        pass
+                    elif failed_stage is None:
                         result = gtt.cmd_finish_work(formal_args)
                         failed_state = {}
                         reentry_events = []
@@ -11529,6 +11751,27 @@ shutil.move(str(active), str(archived))
                             original_run(["git", "add", str(mismatch)], cwd=root, check=True)
                             original_run(
                                 ["git", "commit", "-qm", "plan-only wrong head"],
+                                cwd=root,
+                                check=True,
+                            )
+                        elif plan_only_boundary_fault in {
+                            "committed-plan-delete",
+                            "committed-plan-invalid",
+                            "committed-plan-symlink",
+                        }:
+                            committed_plan_path = archived_path / gtt.CLOSEOUT_PLAN_ARTIFACT
+                            if plan_only_boundary_fault == "committed-plan-delete":
+                                committed_plan_path.unlink()
+                            elif plan_only_boundary_fault == "committed-plan-invalid":
+                                committed_plan_path.write_text(
+                                    '{"schema_version":"invalid"}\n', encoding="utf-8"
+                                )
+                            else:
+                                committed_plan_path.unlink()
+                                committed_plan_path.symlink_to(root / "README.md")
+                            original_run(["git", "add", "-A", "--", str(committed_plan_path)], cwd=root, check=True)
+                            original_run(
+                                ["git", "commit", "-qm", f"{plan_only_boundary_fault}"],
                                 cwd=root,
                                 check=True,
                             )
@@ -11608,6 +11851,8 @@ shutil.move(str(active), str(archived))
                 "all_transition_attempts": transition_attempts,
                 "reviewed_sha": reviewed_head,
                 "evidence_sha": evidence_head,
+                "evidence_parent_sha": gtt.closeout_commit_parent(root, evidence_head),
+                "evidence_paths": gtt.closeout_commit_paths(root, evidence_head),
                 "archive_sha": local_head,
             }
 
@@ -11628,10 +11873,97 @@ shutil.move(str(active), str(archived))
         self.assertEqual(final["pr_is_draft"], False)
         self.assertEqual(final["pr_state"], "OPEN")
 
+    def test_production_pre_move_continuity_failures_keep_task_active_and_pr_draft(self) -> None:
+        cases = [
+            "tracked-content",
+            "tracked-symlink",
+            "tracked-mode",
+            "unexpected-untracked",
+            "unexpected-staged",
+            "archive-month",
+        ]
+        for fault in cases:
+            with self.subTest(fault=fault):
+                result = self.run_production_finish_case(pre_move_fault=fault)
+                state = result["failed_state"]
+                self.assertEqual(state["active_locator"], ".trellis/tasks/07-11-closeout")
+                self.assertIsNone(state["archive_locator"])
+                self.assertEqual(state["task_status"], "in_progress")
+                self.assertEqual(state["local_sha"], result["evidence_sha"])
+                self.assertEqual(state["remote_sha"], result["evidence_sha"])
+                self.assertEqual(state["pr_head_sha"], result["evidence_sha"])
+                self.assertEqual(state["pr_is_draft"], True)
+                self.assertEqual(state["pr_state"], "OPEN")
+                self.assertNotIn("archive-move", result["events"])
+                self.assertIn(
+                    result["error_payload"].get("stage"),
+                    {"pre-archive-continuity", "archive-month-preflight", None},
+                )
+
+    def test_production_prepare_to_formal_month_change_fails_before_side_effects(self) -> None:
+        result = self.run_production_finish_case(formal_month_fault=True)
+        state = result["failed_state"]
+        self.assertEqual(state["active_locator"], ".trellis/tasks/07-11-closeout")
+        self.assertIsNone(state["archive_locator"])
+        self.assertEqual(state["task_status"], "in_progress")
+        self.assertEqual(state["local_sha"], result["reviewed_sha"])
+        self.assertIsNone(state["remote_sha"])
+        self.assertIsNone(state["pr_number"])
+        self.assertEqual(result["events"], [])
+        self.assertEqual(result["error_payload"].get("failed_stage"), "plan-digest-handshake")
+
+    def test_production_after_archive_hook_is_rejected_before_execution_or_side_effects(self) -> None:
+        result = self.run_production_finish_case(after_archive_hook=True)
+        state = result["failed_state"]
+        self.assertEqual(state["active_locator"], ".trellis/tasks/07-11-closeout")
+        self.assertIsNone(state["archive_locator"])
+        self.assertEqual(state["task_status"], "in_progress")
+        self.assertEqual(state["local_sha"], result["reviewed_sha"])
+        self.assertIsNone(state["remote_sha"])
+        self.assertIsNone(state["pr_number"])
+        self.assertFalse(result["sentinel_exists"])
+        self.assertEqual(result["events"], [])
+        self.assertEqual(result["error_payload"].get("stage"), "after-archive-hook-preflight")
+        self.assertEqual(result["error_payload"].get("hook_executed"), False)
+
+    def test_production_cross_month_reprepare_supersedes_active_evidence_without_rewrite(self) -> None:
+        result = self.run_production_finish_case(
+            pre_move_fault="archive-month",
+            recover_pre_move_fault=True,
+        )
+        failed = result["failed_state"]
+        final = result["final_state"]
+        self.assertEqual(failed["active_locator"], ".trellis/tasks/07-11-closeout")
+        self.assertIsNone(failed["archive_locator"])
+        self.assertEqual(failed["task_status"], "in_progress")
+        self.assertEqual(failed["pr_is_draft"], True)
+        self.assertEqual(result["evidence_parent_sha"], failed["local_sha"])
+        self.assertEqual(
+            result["evidence_paths"],
+            {
+                ".trellis/tasks/07-11-closeout/closeout-plan.json",
+                ".trellis/tasks/07-11-closeout/pr-readiness.json",
+            },
+        )
+        self.assertIsNone(final["active_locator"])
+        self.assertEqual(
+            final["archive_locator"],
+            f".trellis/tasks/archive/{datetime.now().strftime('%Y-%m')}/07-11-closeout",
+        )
+        self.assertEqual(final["task_status"], "completed")
+        self.assertEqual(final["pr_is_draft"], False)
+        self.assertEqual(final["local_sha"], result["archive_sha"])
+        self.assertEqual(final["remote_sha"], result["archive_sha"])
+        self.assertEqual(final["pr_head_sha"], result["archive_sha"])
+
     def test_production_archived_reentry_uses_committed_git_facts_with_damaged_worktree(self) -> None:
         cases = [
             ("archive-push", "delete", None),
             ("ready", "tamper", "completed"),
+            ("ready", "plan-delete-keep-context", "completed"),
+            ("ready", "plan-tamper-keep-context", "completed"),
+            ("ready", "plan-invalid-keep-context", "completed"),
+            ("ready", "plan-symlink-keep-context", "completed"),
         ]
         for failed_stage, damage, expected_task_status in cases:
             with self.subTest(failed_stage=failed_stage, damage=damage):
@@ -11681,6 +12013,9 @@ shutil.move(str(active), str(archived))
             ("head", "exact committed archive transaction"),
             ("locator", "task identity or locator mismatch"),
             ("plan", "expected digest mismatch"),
+            ("committed-plan-delete", "Could not resolve task directory"),
+            ("committed-plan-invalid", "closeout-plan validation failed"),
+            ("committed-plan-symlink", "must be a real directory with a regular closeout plan file"),
         ]
         for fault, expected_error in cases:
             with self.subTest(fault=fault):

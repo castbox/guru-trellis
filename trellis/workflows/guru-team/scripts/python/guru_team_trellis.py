@@ -10917,6 +10917,209 @@ def closeout_input_record(root: Path, path: Path, *, payload: dict[str, Any] | N
     return {"path": repo_relative(root, path), "sha256": digest}
 
 
+def current_archive_month() -> str:
+    """Return the month used by the unmodified official task archive command."""
+    return datetime.now().strftime("%Y-%m")
+
+
+def closeout_archive_month(plan: dict[str, Any]) -> str:
+    parts = Path(str(plan.get("task", {}).get("archive_locator") or "")).parts
+    if len(parts) != 5 or parts[:3] != (".trellis", "tasks", "archive"):
+        raise WorkflowError("Closeout archive locator does not contain one canonical month.", exit_code=2)
+    month = parts[3]
+    if not re.fullmatch(r"\d{4}-\d{2}", month):
+        raise WorkflowError("Closeout archive locator month is invalid.", exit_code=2)
+    return month
+
+
+def assert_closeout_archive_month_current(plan: dict[str, Any]) -> None:
+    planned = closeout_archive_month(plan)
+    actual = current_archive_month()
+    if planned != actual:
+        raise WorkflowError(
+            "Closeout archive month no longer matches the official task.py archive month; the task remains active.",
+            exit_code=2,
+            payload={
+                "stage": "archive-month-preflight",
+                "planned_month": planned,
+                "official_month": actual,
+                "next_action": "rerun trellis-finish-work dry-run and review a new digest before formal closeout",
+            },
+        )
+
+
+def closeout_evidence_parent_head(plan: dict[str, Any]) -> str:
+    git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
+    return str(git.get("evidence_parent_head") or git.get("reviewed_work_head") or "")
+
+
+def normalize_closeout_archive_identity(value: Any, archive_locator: str) -> Any:
+    if isinstance(value, dict):
+        return {
+            key: normalize_closeout_archive_identity(item, archive_locator)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [normalize_closeout_archive_identity(item, archive_locator) for item in value]
+    if isinstance(value, str):
+        if value == archive_locator:
+            return "<archive-locator>"
+        prefix = f"{archive_locator}/"
+        if value.startswith(prefix):
+            return f"<archive-locator>/{value.removeprefix(prefix)}"
+    return value
+
+
+def closeout_month_supersession_errors(
+    previous: dict[str, Any],
+    current: dict[str, Any],
+    *,
+    previous_evidence_head: str,
+    committed: bool,
+) -> list[str]:
+    errors: list[str] = []
+    try:
+        previous_month = closeout_archive_month(previous)
+        current_month = closeout_archive_month(current)
+    except WorkflowError as exc:
+        return [str(exc)]
+    if previous_month == current_month:
+        errors.append("closeout archive month supersession requires a changed month.")
+    if closeout_evidence_parent_head(current) != previous_evidence_head:
+        errors.append("closeout archive month supersession parent does not match prior evidence HEAD.")
+    if committed:
+        expected_paths = sorted(
+            f"{current['task']['active_locator']}/{name}"
+            for name in (CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT)
+        )
+        if current.get("projection", {}).get("evidence_paths") != expected_paths:
+            errors.append("committed archive month supersession must change only plan/readiness evidence paths.")
+
+    normalized: list[dict[str, Any]] = []
+    for plan, locator in (
+        (previous, previous["task"]["archive_locator"]),
+        (current, current["task"]["archive_locator"]),
+    ):
+        candidate = copy.deepcopy(plan)
+        candidate.pop("plan_digest", None)
+        candidate["git"]["evidence_parent_head"] = "<evidence-parent>"
+        candidate["projection"]["evidence_paths"] = []
+        candidate["projection"]["summary_template_sha256"] = "<archive-template-digest>"
+        normalized.append(normalize_closeout_archive_identity(candidate, locator))
+    if normalized[0] != normalized[1]:
+        errors.append("archive month supersession changed immutable facts beyond archive identity and evidence parent.")
+    return errors
+
+
+def official_after_archive_hook_state(root: Path) -> dict[str, Any]:
+    """Reject official after_archive hooks before the archive command can run them."""
+    config_path = root / ".trellis/config.yaml"
+    try:
+        mode = os.lstat(config_path).st_mode
+    except FileNotFoundError:
+        return {"commands": []}
+    except OSError as exc:
+        raise WorkflowError("Could not inspect official Trellis config for after_archive hooks.", exit_code=2) from exc
+    if not stat.S_ISREG(mode):
+        raise WorkflowError(
+            "Official Trellis config must be a regular file before finish-work archive.",
+            exit_code=2,
+            payload={"path": ".trellis/config.yaml", "stage": "after-archive-hook-preflight"},
+        )
+    try:
+        raw = config_path.read_bytes()
+        content = raw.decode("utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise WorkflowError(
+            "Official Trellis config is unreadable for after_archive hook preflight.",
+            exit_code=2,
+            payload={"path": ".trellis/config.yaml", "stage": "after-archive-hook-preflight"},
+        ) from exc
+    if b"\x00" in raw:
+        raise WorkflowError(
+            "Official Trellis config contains an invalid NUL byte.",
+            exit_code=2,
+            payload={"path": ".trellis/config.yaml", "stage": "after-archive-hook-preflight"},
+        )
+
+    parser_path = root / ".trellis/scripts/common/config.py"
+    if not parser_path.is_file() or parser_path.is_symlink():
+        raise WorkflowError(
+            "Official Trellis config parser is unavailable for after_archive hook preflight.",
+            exit_code=2,
+            payload={"stage": "after-archive-hook-preflight"},
+        )
+    parser = (
+        "import json,sys; "
+        "from common.config import parse_simple_yaml; "
+        "print(json.dumps(parse_simple_yaml(open(sys.argv[1], encoding='utf-8').read())))"
+    )
+    proc = run(
+        ["python3", "-c", parser, str(config_path)],
+        cwd=root / ".trellis/scripts",
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Official Trellis config could not be parsed for after_archive hook preflight.",
+            exit_code=2,
+            payload={"stage": "after-archive-hook-preflight"},
+        )
+    try:
+        parsed = json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise WorkflowError(
+            "Official Trellis config parser returned invalid hook state.",
+            exit_code=2,
+            payload={"stage": "after-archive-hook-preflight"},
+        ) from exc
+    if not isinstance(parsed, dict):
+        raise WorkflowError("Official Trellis config root must be a mapping.", exit_code=2)
+    hooks = parsed.get("hooks")
+    declarations = len(re.findall(r"(?m)^[ \t]*after_archive[ \t]*:", content))
+    if hooks is None:
+        if declarations:
+            raise WorkflowError(
+                "Official after_archive hook declaration is outside a parseable hooks mapping.",
+                exit_code=2,
+                payload={"stage": "after-archive-hook-preflight"},
+            )
+        return {"commands": []}
+    if not isinstance(hooks, dict) or declarations > 1:
+        raise WorkflowError(
+            "Official after_archive hook configuration is ambiguous or unparsable.",
+            exit_code=2,
+            payload={"stage": "after-archive-hook-preflight"},
+        )
+    configured_present = "after_archive" in hooks
+    if declarations != (1 if configured_present else 0):
+        raise WorkflowError(
+            "Official after_archive hook declaration is outside the parsed hooks mapping.",
+            exit_code=2,
+            payload={"stage": "after-archive-hook-preflight"},
+        )
+    configured = hooks.get("after_archive", [])
+    if configured in ({}, None):
+        configured = []
+    if not isinstance(configured, list) or any(not isinstance(item, str) for item in configured):
+        raise WorkflowError(
+            "Official after_archive hook configuration must be an empty command list for finish-work.",
+            exit_code=2,
+            payload={"stage": "after-archive-hook-preflight"},
+        )
+    if configured:
+        raise WorkflowError(
+            "Guru Team finish-work does not support non-empty official after_archive hooks because they run after the task move.",
+            exit_code=2,
+            payload={
+                "stage": "after-archive-hook-preflight",
+                "configured_command_count": len(configured),
+                "hook_executed": False,
+            },
+        )
+    return {"commands": []}
+
+
 def closeout_pending_marketplace_evidence(root: Path, task_dir: Path, reviewed_head: str) -> dict[str, Any]:
     return {
         "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
@@ -11043,7 +11246,6 @@ def closeout_plan_errors(plan: Any) -> list[str]:
     projection = plan.get("projection") if isinstance(plan.get("projection"), dict) else {}
     nested_keys = {
         "task": (task, {"id", "title", "source_issue", "active_locator", "archive_locator"}),
-        "git": (git, {"repo", "remote", "base_branch", "head_branch", "reviewed_work_head"}),
         "review": (review, {"gate_locator", "reviewed_head", "changed_paths", "close_issues_reviewed"}),
         "publish": (publish, {"title", "body_sha256", "draft", "draft_to_ready", "match"}),
         "marketplace": (marketplace, {"required", "pending_machine", "verifier_artifact_locator"}),
@@ -11061,6 +11263,9 @@ def closeout_plan_errors(plan: Any) -> list[str]:
     for label, (value, keys) in nested_keys.items():
         if set(value) != keys:
             errors.append(f"closeout plan {label} keys are invalid.")
+    git_keys = {"repo", "remote", "base_branch", "head_branch", "reviewed_work_head"}
+    if frozenset(git) not in {frozenset(git_keys), frozenset(git_keys | {"evidence_parent_head"})}:
+        errors.append("closeout plan git keys are invalid.")
     for label, value in [
         ("task.active_locator", task.get("active_locator")),
         ("task.archive_locator", task.get("archive_locator")),
@@ -11080,6 +11285,8 @@ def closeout_plan_errors(plan: Any) -> list[str]:
         errors.append("closeout git.repo must be a normalized GitHub owner/repository identity.")
     if not re.fullmatch(r"[0-9a-f]{40}", str(git.get("reviewed_work_head") or "")):
         errors.append("closeout reviewed_work_head is invalid.")
+    if not re.fullmatch(r"[0-9a-f]{40}", closeout_evidence_parent_head(plan)):
+        errors.append("closeout evidence_parent_head is invalid.")
     if review.get("reviewed_head") != git.get("reviewed_work_head"):
         errors.append("closeout review HEAD does not match git identity.")
     changed = review.get("changed_paths")
@@ -11257,9 +11464,19 @@ def build_closeout_plan(
         if isinstance(existing_plan.get("projection"), dict)
         else {}
     )
+    reviewed_head_now = current_head(root)
+    archive_month_now = current_archive_month()
+    superseding_committed_month = False
     archive_locator = str(existing_task.get("archive_locator") or "")
+    evidence_parent_head = reviewed_head
+    if archive_locator and closeout_archive_month(existing_plan) != archive_month_now:
+        if reviewed_head_now != reviewed_head:
+            validate_closeout_evidence_commit(root, existing_plan, reviewed_head_now)
+            superseding_committed_month = True
+            evidence_parent_head = reviewed_head_now
+        archive_locator = f".trellis/tasks/archive/{archive_month_now}/{task_dir.name}"
     if not archive_locator:
-        archive_locator = f".trellis/tasks/archive/{datetime.now().strftime('%Y-%m')}/{task_dir.name}"
+        archive_locator = f".trellis/tasks/archive/{archive_month_now}/{task_dir.name}"
     observed_task_files = {
         path.relative_to(task_dir).as_posix()
         for path in task_dir.rglob("*")
@@ -11301,7 +11518,12 @@ def build_closeout_plan(
         {f"{active_locator}/{name}" for name in tracked_move_paths}
         | {f"{archive_locator}/{name}" for name in move_paths}
     )
-    if existing_projection:
+    if existing_projection and superseding_committed_month:
+        evidence_paths = sorted(
+            f"{active_locator}/{name}"
+            for name in (CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT)
+        )
+    elif existing_projection:
         evidence_paths = list(existing_projection.get("evidence_paths", []))
     else:
         current_dirty = set(git_status_paths(root))
@@ -11326,6 +11548,11 @@ def build_closeout_plan(
         ),
         "pr_body": closeout_input_record(root, body_path),
         "finish_summary_index": closeout_input_record(root, finish_summary_index_path),
+        "official_after_archive_hooks": closeout_input_record(
+            root,
+            root / ".trellis/config.yaml",
+            payload=official_after_archive_hook_state(root),
+        ),
     }
     config_path = root / ".trellis/guru-team/config.yml"
     if config_path.is_file():
@@ -11377,6 +11604,7 @@ def build_closeout_plan(
             "base_branch": normalize_ref(base_branch).removeprefix("origin/"),
             "head_branch": head_branch,
             "reviewed_work_head": reviewed_head,
+            "evidence_parent_head": evidence_parent_head,
         },
         "inputs": inputs,
         "review": {
@@ -11425,6 +11653,7 @@ def prepare_closeout(
     task_dir: Path,
     task_context: dict[str, Any],
 ) -> dict[str, Any]:
+    official_after_archive_hook_state(root)
     gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, True)
     if gate_errors:
         raise WorkflowError(
@@ -11505,16 +11734,61 @@ def prepare_closeout(
         repo=repo, remote=remote, base_branch=base, head_branch=branch,
         reviewed_head=reviewed_head, title=title,
     )
+    month_supersession: dict[str, Any] | None = None
     existing = closeout_plan_path(task_dir)
     if existing.is_file():
         persisted = validate_closeout_plan(read_json(existing))
         if persisted != plan:
-            raise WorkflowError(
-                "Persisted closeout plan no longer matches protected inputs.",
-                exit_code=2,
-                payload={"persisted_digest": persisted.get("plan_digest"), "rebuilt_digest": plan.get("plan_digest")},
+            previous_month = closeout_archive_month(persisted)
+            next_month = closeout_archive_month(plan)
+            committed = current_head(root) != reviewed_head
+            supersession_errors = closeout_month_supersession_errors(
+                persisted,
+                plan,
+                previous_evidence_head=current_head(root),
+                committed=committed,
             )
-        plan = persisted
+            if (
+                previous_month == next_month
+                or task.get("status") != "in_progress"
+                or (root / persisted["task"]["archive_locator"]).exists()
+                or supersession_errors
+            ):
+                raise WorkflowError(
+                    "Persisted closeout plan no longer matches protected inputs.",
+                    exit_code=2,
+                    payload={
+                        "persisted_digest": persisted.get("plan_digest"),
+                        "rebuilt_digest": plan.get("plan_digest"),
+                        "month_supersession_errors": supersession_errors,
+                    },
+                )
+            if committed:
+                if not closeout_evidence_is_committed(root, task_dir, persisted, ledger, gate):
+                    raise WorkflowError(
+                        "Committed stale-month plan is not an exact evidence commit and cannot be superseded.",
+                        exit_code=2,
+                    )
+                prior_state = "evidence_pushed"
+            else:
+                prior_state = resolve_closeout_pre_draft_state(
+                    root, task_dir, persisted, ledger, gate
+                )
+                if prior_state not in {"content_pushed", "evidence_ready"}:
+                    raise WorkflowError(
+                        "Uncommitted stale-month plan has no unique reprepare state.",
+                        exit_code=2,
+                        payload={"state": prior_state},
+                    )
+            month_supersession = {
+                "previous_plan": persisted,
+                "previous_month": previous_month,
+                "current_month": next_month,
+                "committed": committed,
+                "prior_state": prior_state,
+            }
+        else:
+            plan = persisted
     return {
         "plan": plan,
         "plan_digest": plan["plan_digest"],
@@ -11527,6 +11801,7 @@ def prepare_closeout(
         "finish_summary_index_path": index_path,
         "body": body,
         "body_source": body_source,
+        "month_supersession": month_supersession,
     }
 
 
@@ -11599,8 +11874,13 @@ def commit_closeout_evidence_metadata(root: Path, task_dir: Path, plan: dict[str
     if staged != expected:
         raise WorkflowError("Closeout evidence staged paths do not match the exact allowlist.", exit_code=2, payload={"staged_paths": sorted(staged), "expected_paths": sorted(expected)})
     parent = current_head(root)
-    if parent != plan["git"]["reviewed_work_head"]:
-        raise WorkflowError("Closeout evidence commit parent drifted from reviewed work HEAD.", exit_code=2)
+    expected_parent = closeout_evidence_parent_head(plan)
+    if parent != expected_parent:
+        raise WorkflowError(
+            "Closeout evidence commit parent drifted from the immutable evidence parent.",
+            exit_code=2,
+            payload={"expected_parent": expected_parent, "actual_parent": parent},
+        )
     run_stdout(["git", "commit", "-m", format_metadata_commit_subject(int(plan["task"]["source_issue"]))], cwd=root)
     commit = current_head(root)
     validate_closeout_evidence_commit(root, plan, commit)
@@ -12119,8 +12399,19 @@ def closeout_commit_tracked_task_paths(
     )
 
 
-def validate_closeout_evidence_commit(root: Path, plan: dict[str, Any], commit: str) -> None:
+def validate_closeout_evidence_commit(
+    root: Path,
+    plan: dict[str, Any],
+    commit: str,
+    *,
+    _seen: set[str] | None = None,
+) -> None:
+    seen = set(_seen or set())
+    if commit in seen or len(seen) >= 24:
+        raise WorkflowError("Closeout evidence supersession chain is cyclic or too deep.", exit_code=2)
+    seen.add(commit)
     parent = closeout_commit_parent(root, commit)
+    expected_parent = closeout_evidence_parent_head(plan)
     paths = closeout_commit_paths(root, commit)
     expected_paths = set(plan["projection"]["evidence_paths"])
     active = plan["task"]["active_locator"]
@@ -12129,7 +12420,7 @@ def validate_closeout_evidence_commit(root: Path, plan: dict[str, Any], commit: 
         f"{active}/{path}" for path in plan["projection"]["tracked_move_paths"]
     }
     if (
-        parent != plan["git"]["reviewed_work_head"]
+        parent != expected_parent
         or paths != expected_paths
         or tracked_paths != expected_tracked_paths
     ):
@@ -12138,7 +12429,7 @@ def validate_closeout_evidence_commit(root: Path, plan: dict[str, Any], commit: 
             exit_code=2,
             payload={
                 "commit": commit,
-                "expected_parent": plan["git"]["reviewed_work_head"],
+                "expected_parent": expected_parent,
                 "actual_parent": parent,
                 "expected_paths": sorted(expected_paths),
                 "actual_paths": sorted(paths),
@@ -12146,6 +12437,33 @@ def validate_closeout_evidence_commit(root: Path, plan: dict[str, Any], commit: 
                 "actual_tracked_paths": sorted(tracked_paths),
             },
         )
+    if expected_parent != plan["git"]["reviewed_work_head"]:
+        previous_path = f"{plan['task']['active_locator']}/{CLOSEOUT_PLAN_ARTIFACT}"
+        previous_bytes = closeout_optional_commit_blob_bytes(root, expected_parent, previous_path)
+        if previous_bytes is None:
+            raise WorkflowError(
+                "Closeout evidence supersession parent is missing its committed active plan.",
+                exit_code=2,
+            )
+        try:
+            previous = validate_closeout_plan(json.loads(previous_bytes.decode("utf-8")))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise WorkflowError(
+                "Closeout evidence supersession parent plan is invalid.", exit_code=2
+            ) from exc
+        supersession_errors = closeout_month_supersession_errors(
+            previous,
+            plan,
+            previous_evidence_head=expected_parent,
+            committed=True,
+        )
+        if supersession_errors:
+            raise WorkflowError(
+                "Closeout evidence supersession lineage is invalid.",
+                exit_code=2,
+                payload={"errors": supersession_errors},
+            )
+        validate_closeout_evidence_commit(root, previous, expected_parent, _seen=seen)
 
 
 def validate_closeout_active_projection(root: Path, task_dir: Path, plan: dict[str, Any]) -> None:
@@ -12162,6 +12480,140 @@ def validate_closeout_active_projection(root: Path, task_dir: Path, plan: dict[s
     read_and_validate_closeout_final_summary(task_dir / FINISH_SUMMARY_ARTIFACT, plan)
     ledger = read_json(task_dir / "issue-scope-ledger.json")
     validate_closeout_marketplace_artifact(root, task_dir, plan, ledger)
+
+
+def closeout_commit_tree_entry(root: Path, commit: str, path: str) -> tuple[str, str, str]:
+    proc = run(["git", "ls-tree", commit, "--", path], cwd=root, check=False)
+    rows = [line for line in proc.stdout.splitlines() if line]
+    if proc.returncode != 0 or len(rows) != 1:
+        raise WorkflowError(
+            "Closeout evidence commit is missing one exact tracked move path.",
+            exit_code=2,
+            payload={"commit": commit, "path": path, "stage": "pre-archive-continuity"},
+        )
+    metadata, separator, actual_path = rows[0].partition("\t")
+    fields = metadata.split()
+    if separator != "\t" or actual_path != path or len(fields) != 3:
+        raise WorkflowError(
+            "Closeout evidence tree entry is ambiguous.",
+            exit_code=2,
+            payload={"commit": commit, "path": path, "stage": "pre-archive-continuity"},
+        )
+    return fields[0], fields[1], fields[2]
+
+
+def closeout_untracked_paths(root: Path) -> set[str]:
+    proc = run(
+        ["git", "ls-files", "--others", "--exclude-standard", "-z"],
+        cwd=root,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise WorkflowError("Could not enumerate pre-archive untracked paths.", exit_code=2)
+    return {path for path in proc.stdout.split("\0") if path}
+
+
+def validate_closeout_pre_move_continuity(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    evidence_commit: str,
+) -> None:
+    """Validate every local archive input before official task.py can mutate it."""
+    assert_closeout_archive_month_current(plan)
+    hook_state = official_after_archive_hook_state(root)
+    hook_input = plan.get("inputs", {}).get("official_after_archive_hooks")
+    if (
+        not isinstance(hook_input, dict)
+        or hook_input.get("path") != ".trellis/config.yaml"
+        or hook_input.get("sha256") != canonical_json_sha256(hook_state)
+    ):
+        raise WorkflowError(
+            "Official after_archive hook state drifted from the immutable closeout plan.",
+            exit_code=2,
+            payload={"stage": "after-archive-hook-preflight", "hook_executed": False},
+        )
+
+    active_locator = plan["task"]["active_locator"]
+    for relative in plan["projection"]["move_paths"]:
+        target = task_dir / relative
+        try:
+            working_mode = os.lstat(target).st_mode
+        except OSError as exc:
+            raise WorkflowError(
+                "Closeout pre-archive move path is missing or unreadable.",
+                exit_code=2,
+                payload={"path": relative, "stage": "pre-archive-continuity"},
+            ) from exc
+        if not stat.S_ISREG(working_mode):
+            raise WorkflowError(
+                "Closeout pre-archive move paths must be regular files; symlinks and special modes are rejected.",
+                exit_code=2,
+                payload={"path": relative, "stage": "pre-archive-continuity"},
+            )
+
+    for relative in plan["projection"]["tracked_move_paths"]:
+        repo_path = f"{active_locator}/{relative}"
+        git_mode, object_type, _object_id = closeout_commit_tree_entry(
+            root, evidence_commit, repo_path
+        )
+        if object_type != "blob" or git_mode not in {"100644", "100755"}:
+            raise WorkflowError(
+                "Closeout tracked move paths must be regular Git blobs, not symlinks, submodules, or special modes.",
+                exit_code=2,
+                payload={
+                    "path": relative,
+                    "git_mode": git_mode,
+                    "object_type": object_type,
+                    "stage": "pre-archive-continuity",
+                },
+            )
+        target = task_dir / relative
+        working_mode = os.lstat(target).st_mode
+        expected_working_mode = "100755" if working_mode & 0o111 else "100644"
+        if expected_working_mode != git_mode:
+            raise WorkflowError(
+                "Closeout tracked file mode differs from the immutable evidence commit.",
+                exit_code=2,
+                payload={
+                    "path": relative,
+                    "expected_mode": git_mode,
+                    "actual_mode": expected_working_mode,
+                    "stage": "pre-archive-continuity",
+                },
+            )
+        before = closeout_commit_blob_bytes(root, evidence_commit, repo_path)
+        if target.read_bytes() != before:
+            raise WorkflowError(
+                "Closeout tracked output differs from the immutable evidence blob before archive.",
+                exit_code=2,
+                payload={"path": relative, "stage": "pre-archive-continuity"},
+            )
+
+    expected_outputs = {
+        f"{active_locator}/{relative}"
+        for relative in plan["projection"]["untracked_archive_outputs"]
+    }
+    dirty = set(git_status_paths(root))
+    staged = set(
+        run_stdout(
+            ["git", "diff", "--cached", "--name-only", "--no-renames"], cwd=root
+        ).splitlines()
+    )
+    untracked = closeout_untracked_paths(root)
+    if dirty != expected_outputs or staged or untracked != expected_outputs:
+        raise WorkflowError(
+            "Closeout pre-archive dirty/staged/untracked paths do not match the immutable final outputs.",
+            exit_code=2,
+            payload={
+                "stage": "pre-archive-continuity",
+                "next_transition": "archive-move",
+                "expected_paths": sorted(expected_outputs),
+                "dirty_paths": sorted(dirty),
+                "staged_paths": sorted(staged),
+                "untracked_paths": sorted(untracked),
+            },
+        )
 
 
 def validate_closeout_archive_move_layout(root: Path, archived: Path, plan: dict[str, Any]) -> None:
@@ -12202,6 +12654,17 @@ def closeout_commit_blob_bytes(root: Path, commit: str, path: str) -> bytes:
             payload={"commit": commit, "path": path},
         )
     return proc.stdout
+
+
+def closeout_optional_commit_blob_bytes(root: Path, commit: str, path: str) -> bytes | None:
+    proc = subprocess.run(
+        ["git", "show", f"{commit}:{path}"],
+        cwd=root,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    return proc.stdout if proc.returncode == 0 else None
 
 
 def validate_closeout_task_json_archive_change(before: bytes, after: bytes) -> None:
@@ -12306,7 +12769,7 @@ def resolve_committed_closeout_archive_transaction(
     }
 
 
-def assert_archived_plan_only_workspace_boundary(
+def assert_archived_committed_workspace_boundary(
     root: Path,
     config: dict[str, Any],
     task_dir: Path,
@@ -12318,7 +12781,7 @@ def assert_archived_plan_only_workspace_boundary(
         task_locator = task_dir.relative_to(root).as_posix()
     except ValueError as exc:
         raise WorkflowError(
-            "Archived plan-only workspace boundary task locator is outside the repository.",
+            "Archived closeout workspace boundary task locator is outside the repository.",
             exit_code=2,
             payload={"repo_root": str(root), "task_dir": str(task_dir)},
         ) from exc
@@ -12326,7 +12789,7 @@ def assert_archived_plan_only_workspace_boundary(
     git_root = Path(run_stdout(["git", "rev-parse", "--show-toplevel"], cwd=root)).resolve()
     if git_root != root:
         raise WorkflowError(
-            "Archived plan-only workspace boundary repository root mismatch.",
+            "Archived closeout workspace boundary repository root mismatch.",
             exit_code=2,
             payload={"expected_root": str(root), "actual_git_root": str(git_root)},
         )
@@ -12335,28 +12798,36 @@ def assert_archived_plan_only_workspace_boundary(
         or not path_within(tasks_root(root) / "archive", task_dir)
     ):
         raise WorkflowError(
-            "Archived plan-only workspace boundary task locator is invalid.",
+            "Archived closeout workspace boundary task locator is invalid.",
             exit_code=2,
             payload={"repo_root": str(root), "task_dir": str(task_dir)},
         )
 
     archive_commit = current_head(root)
-    plan_blob = closeout_commit_blob_bytes(
-        root,
-        archive_commit,
-        f"{task_locator}/{CLOSEOUT_PLAN_ARTIFACT}",
-    )
+    archive_plan_path = f"{task_locator}/{CLOSEOUT_PLAN_ARTIFACT}"
+    plan_blob = closeout_optional_commit_blob_bytes(root, archive_commit, archive_plan_path)
+    plan_source = "archive"
+    if plan_blob is None:
+        active_plan_path = f".trellis/tasks/{task_dir.name}/{CLOSEOUT_PLAN_ARTIFACT}"
+        plan_blob = closeout_optional_commit_blob_bytes(root, archive_commit, active_plan_path)
+        plan_source = "active"
+    if plan_blob is None:
+        raise WorkflowError(
+            "Archived closeout current commit contains neither the exact archive plan nor the evidence-commit active plan.",
+            exit_code=2,
+            payload={"head": archive_commit, "task_dir": task_locator},
+        )
     try:
         raw_plan = json.loads(plan_blob.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise WorkflowError(
-            "Archived plan-only workspace boundary committed plan is invalid JSON.",
+            "Archived closeout committed plan is invalid JSON.",
             exit_code=2,
         ) from exc
     plan = validate_closeout_plan(raw_plan)
     if expected_plan_digest != plan["plan_digest"]:
         raise WorkflowError(
-            "Archived plan-only workspace boundary expected digest mismatch.",
+            "Archived closeout workspace boundary expected digest mismatch.",
             exit_code=2,
             payload={
                 "expected": expected_plan_digest,
@@ -12379,7 +12850,7 @@ def assert_archived_plan_only_workspace_boundary(
         resolved_expected_task_dir = expected_task_dir.resolve(strict=True)
     except (FileNotFoundError, OSError) as exc:
         raise WorkflowError(
-            "Archived plan-only workspace boundary could not resolve the validated task locator.",
+            "Archived closeout workspace boundary could not resolve the validated task locator.",
             exit_code=2,
             payload={"task_dir": str(task_dir), "archive_locator": archive_locator},
         ) from exc
@@ -12407,7 +12878,7 @@ def assert_archived_plan_only_workspace_boundary(
     )
     if not locator_identity_valid:
         raise WorkflowError(
-            "Archived plan-only workspace boundary task identity or locator mismatch.",
+            "Archived closeout workspace boundary task identity or locator mismatch.",
             exit_code=2,
             payload={
                 "task_dir": task_locator,
@@ -12420,7 +12891,7 @@ def assert_archived_plan_only_workspace_boundary(
     configured_repo = normalize_github_repository(configured_repo_value)
     if configured_repo_value and configured_repo != git["repo"]:
         raise WorkflowError(
-            "Archived plan-only workspace boundary configured repository mismatch.",
+            "Archived closeout workspace boundary configured repository mismatch.",
             exit_code=2,
             payload={"expected_repo": git["repo"], "configured_repo": configured_repo},
         )
@@ -12428,28 +12899,39 @@ def assert_archived_plan_only_workspace_boundary(
     actual_branch = current_branch(root)
     if actual_branch != git["head_branch"]:
         raise WorkflowError(
-            "Archived plan-only workspace boundary branch mismatch.",
+            "Archived closeout workspace boundary branch mismatch.",
             exit_code=2,
             payload={"expected_branch": git["head_branch"], "actual_branch": actual_branch},
         )
     base_refs = [git["base_branch"], f"{git['remote']}/{git['base_branch']}"]
     if not any(git_branch_exists(root, ref) for ref in base_refs):
         raise WorkflowError(
-            "Archived plan-only workspace boundary base branch is unavailable.",
+            "Archived closeout workspace boundary base branch is unavailable.",
             exit_code=2,
             payload={"base_branch": git["base_branch"], "checked_refs": base_refs},
         )
 
     transaction = resolve_committed_closeout_archive_transaction(root, plan)
-    if transaction is None:
+    if plan_source == "archive" and transaction is None:
         raise WorkflowError(
-            "Archived plan-only workspace boundary requires the exact committed archive transaction.",
+            "Archived closeout workspace boundary requires the exact committed archive transaction.",
             exit_code=2,
             payload={"head": archive_commit, "task_dir": task_locator},
         )
+    if plan_source == "active":
+        if transaction is not None:
+            raise WorkflowError(
+                "Archived closeout evidence-plan fallback cannot replace an exact archive plan.",
+                exit_code=2,
+            )
+        validate_closeout_evidence_commit(root, plan, archive_commit)
     return {
         "status": "ok",
-        "mode": "archived-plan-only",
+        "mode": (
+            "archived-committed-exact"
+            if transaction is not None
+            else "archived-incomplete-move"
+        ),
         "repo_root": str(root),
         "task_dir": str(task_dir),
         "task_dir_relative": task_locator,
@@ -12467,6 +12949,7 @@ def execute_archive_metadata_transaction(
     evidence_commit = current_head(root)
     validate_closeout_evidence_commit(root, plan, evidence_commit)
     validate_closeout_active_projection(root, task_dir, plan)
+    validate_closeout_pre_move_continuity(root, task_dir, plan, evidence_commit)
     proc = run(
         ["python3", "./.trellis/scripts/task.py", "archive", task_dir.name, "--no-commit"],
         cwd=root,
@@ -12641,6 +13124,56 @@ def resume_archived_closeout(
     }
 
 
+def apply_active_closeout_month_supersession(
+    root: Path,
+    task_dir: Path,
+    prepared: dict[str, Any],
+) -> str:
+    supersession = prepared.get("month_supersession")
+    if not isinstance(supersession, dict):
+        raise WorkflowError("Closeout month supersession state is missing.", exit_code=2)
+    previous = supersession["previous_plan"]
+    plan = prepared["plan"]
+    committed = supersession.get("committed") is True
+    errors = closeout_month_supersession_errors(
+        previous,
+        plan,
+        previous_evidence_head=current_head(root),
+        committed=committed,
+    )
+    if errors:
+        raise WorkflowError(
+            "Closeout archive month supersession is no longer valid.",
+            exit_code=2,
+            payload={"errors": errors, "stage": "archive-month-reprepare"},
+        )
+    assert_closeout_archive_month_current(plan)
+    if (root / previous["task"]["archive_locator"]).exists():
+        raise WorkflowError(
+            "Closeout archive month supersession refuses an already moved task.",
+            exit_code=2,
+            payload={"stage": "archive-month-reprepare"},
+        )
+    summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
+    if summary_path.exists():
+        read_and_validate_closeout_final_summary(summary_path, previous)
+        summary_path.unlink()
+    write_json(closeout_plan_path(task_dir), plan)
+    readiness_path, readiness = build_pr_readiness_snapshot(
+        root,
+        task_dir,
+        repo=plan["git"]["repo"],
+        base_branch=plan["git"]["base_branch"],
+        head_branch=plan["git"]["head_branch"],
+        reviewed_head_sha=plan["git"]["reviewed_work_head"],
+        title=plan["publish"]["title"],
+        draft=True,
+        closeout_plan_digest=plan["plan_digest"],
+    )
+    write_json(readiness_path, readiness)
+    return "evidence_ready" if committed else str(supersession["prior_state"])
+
+
 def resume_active_archive_move(
     root: Path,
     args: argparse.Namespace,
@@ -12666,6 +13199,8 @@ def resume_active_archive_move(
         raise WorkflowError("Archive-move recovery requires the validated final summary.", exit_code=2)
     validate_closeout_active_projection(root, task_dir, plan)
     validate_closeout_evidence_commit(root, plan, current_head(root))
+    assert_closeout_archive_month_current(plan)
+    official_after_archive_hook_state(root)
     require_gh_auth(root)
     pr = resolve_closeout_pull_request(
         root,
@@ -12705,27 +13240,24 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_finish_work_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
-    plan_only_boundary: dict[str, Any] | None = None
-    if task_dir_is_archived(root, task_dir) and not task_context:
-        plan_only_boundary = assert_archived_plan_only_workspace_boundary(
+    if task_dir_is_archived(root, task_dir):
+        if args.dry_run:
+            raise WorkflowError("Archived closeout recovery does not have a new dry-run phase.", exit_code=2)
+        committed_boundary = assert_archived_committed_workspace_boundary(
             root,
             config,
             task_dir,
             str(getattr(args, "expected_plan_digest", "") or ""),
         )
-    else:
-        assert_workspace_boundary(root, config, task_context, task_dir)
-    if task_dir_is_archived(root, task_dir):
-        if args.dry_run:
-            raise WorkflowError("Archived closeout recovery does not have a new dry-run phase.", exit_code=2)
         return resume_archived_closeout(
             root,
             args,
             task_dir,
-            committed_plan=(plan_only_boundary or {}).get("plan"),
-            committed_archive=(plan_only_boundary or {}).get("archive_commit"),
+            committed_plan=committed_boundary["plan"],
+            committed_archive=committed_boundary.get("archive_commit"),
         )
+    task_context = load_task_start_context(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
     if closeout_plan_path(task_dir).is_file() and task_json(task_dir).get("status") == "completed":
         if args.dry_run:
             raise WorkflowError("Interrupted archive move must resume through formal finish-work.", exit_code=2)
@@ -12750,10 +13282,23 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
             payload={"expected": expected_digest, "actual": plan["plan_digest"], "failed_stage": "plan-digest-handshake"},
         )
+    assert_closeout_archive_month_current(plan)
     require_gh_auth(root)
     ledger = load_issue_scope_ledger(task_dir, task_context)
     evidence_commit: dict[str, Any] | None = None
-    entry_state = resolve_closeout_pre_draft_state(root, task_dir, plan, ledger, prepared["gate"])
+    if prepared.get("month_supersession") is not None:
+        supersession = prepared["month_supersession"]
+        if supersession.get("committed") is True:
+            push_closeout_branch_if_needed(root, supersession["previous_plan"])
+        validate_publish_identity_and_remote_head(
+            root, prepared["task"], task_context, plan["git"]["repo"],
+            plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
+        )
+        entry_state = apply_active_closeout_month_supersession(root, task_dir, prepared)
+    else:
+        entry_state = resolve_closeout_pre_draft_state(
+            root, task_dir, plan, ledger, prepared["gate"]
+        )
     if entry_state == "prepared":
         if current_head(root) != plan["git"]["reviewed_work_head"]:
             raise WorkflowError(

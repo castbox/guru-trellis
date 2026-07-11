@@ -716,6 +716,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertIn("verify_installed_closeout.py", verifier)
         self.assertIn("--case initial", verifier)
         self.assertIn("--case after-update", verifier)
+        self.assertIn('payload["after_archive_hook_preflight"] is True', verifier)
         installed_closeout = (
             self.guru_root
             / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py"
@@ -724,6 +725,10 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertIn('.trellis/guru-team/scripts/python/guru_team_trellis.py', installed_closeout)
         self.assertIn('args[:2] == ["remote", "get-url"]', installed_closeout)
         self.assertIn('args[:2] == ["pr", "ready"]', installed_closeout)
+        self.assertIn('after_archive:', installed_closeout)
+        self.assertIn('after-archive-hook-preflight', installed_closeout)
+        self.assertIn('hook_executed', installed_closeout)
+        self.assertIn('installed-after-archive-hook-', installed_closeout)
         self.assertNotIn("copytree", installed_closeout)
 
     def test_generated_trellis_meta_task_system_docs_are_replaced_with_guru_team_overlay(self) -> None:

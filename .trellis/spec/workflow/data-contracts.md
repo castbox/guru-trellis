@@ -693,6 +693,24 @@ verifier pending/failed, verifier passed but evidence uncommitted, and evidence
 committed but unpushed from the exact plan/readiness/evidence/Git/remote facts.
 They retry only the missing transition.
 
+`task.archive_locator` uses the same live `YYYY-MM` that the unmodified official
+archive command will use. Formal checks it before the first side effect and
+again immediately before official move. If a committed plan becomes stale while
+the task is still active, dry-run may produce a replacement plan only when the
+old plan is the exact current evidence commit and neither old nor new archive
+locator exists. The replacement carries `git.evidence_parent_head`, changes
+only archive-derived projection values plus `projection.evidence_paths`, and a
+formal run with the new digest appends an exact plan/readiness evidence commit.
+The predecessor plan and evidence lineage remain in Git and are recursively
+validated. This is plan supersession, not archive-directory migration or
+history rewrite.
+
+`inputs.official_after_archive_hooks.sha256` binds the canonical empty command
+state parsed by the official Trellis config parser. Missing or empty
+`hooks.after_archive` maps to `{"commands":[]}`. Non-empty, ambiguous,
+unreadable, invalid-byte, or symlinked config has no valid digest because
+prepare rejects it without executing any hook command.
+
 Marketplace machine evidence has one deterministic pending identity and one
 deterministic passed identity. Pending and passed use the same fixed machine
 fields; pending uses empty artifact/remote digests and `commands_passed=false`.
@@ -710,8 +728,15 @@ archive completeness, tracked blob continuity, and the official `task.json`
 delta before it may create the commit. Missing or mismatched commit state keeps
 this metadata recovery path fail closed.
 
-When current `HEAD` is the exact planned archive commit, recovery instead
-validates only the immutable plan and Git parent/path/tree/blob lineage.
+Before official move, the same continuity contract applies to the active task:
+the index is empty, untracked paths equal the planned final outputs, every move
+path is a regular file, tracked Git modes are `100644` or `100755` and match the
+working mode, and every working byte equals its evidence blob. This gate also
+rechecks the live archive month and empty official hook state.
+
+When current `HEAD` is the exact planned archive commit, both normal archived
+tasks with context and plan-only damaged tasks load the plan from that commit
+blob and validate only the immutable plan and Git parent/path/tree/blob lineage.
 Archived working-tree deletion, content tampering, and the resulting dirty
 paths are ignored; recovery may only push that exact commit when needed, check
 remote PR identity and three-way HEAD alignment, and retry draft-to-ready. An

@@ -547,11 +547,19 @@ journal/index files. Shared start and installed Codex/Cursor SessionStart hooks
 do not open, enumerate, read, count, or output workspace journals. Before
 archive, closeout recovery validates committed plan/readiness, the active
 locator, repo/base/head, review gate, current/remote HEAD, and exact PR
-identity. After the official move but before the exact archive commit exists,
+identity. Prepare parses `.trellis/config.yaml` with the installed official
+parser and supports only missing/empty `hooks.after_archive`; invalid or
+non-empty hook configuration is rejected without execution. Immediately before
+official move it also checks the live archive month, empty index, exact
+untracked set, regular-file/mode contract, and evidence blob bytes. A stale
+committed month remains active and is recoverable only by a new dry-run digest
+plus an additive plan/readiness supersession commit; no history rewrite or
+directory migration is used. After the official move but before the exact archive commit exists,
 it still requires the complete archived working-tree layout, exact
 dirty/staged paths, blob continuity, and official `task.json` delta; an absent
 or mismatched commit remains fail closed. Once current `HEAD` is the exact
-planned archive commit, the immutable plan and Git parent/path/tree/blob facts
+planned archive commit, both normal and plan-only archived reentry load the plan
+from that commit blob; the immutable plan and Git parent/path/tree/blob facts
 are authoritative, so missing or tampered archived working-tree files do not
 block the exact push, remote title/body check, HEAD alignment, or
 draft-to-ready. A plan-only archived directory is resolvable only by the

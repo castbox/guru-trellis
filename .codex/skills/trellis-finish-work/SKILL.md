@@ -56,10 +56,19 @@ It creates one exact archive metadata commit, pushes it, requires local/remote/P
 HEAD equality, and only then runs draft to ready. After archive it must not
 rebuild or rewrite repo artifacts.
 
-If any stage fails, rerun this same entry with the same expected digest. The
+Prepare permits only missing/empty official `hooks.after_archive`; it rejects
+non-empty or unparsable config without executing the hook. Immediately before
+official move it rechecks the live archive month, regular-file/mode/blob
+continuity, empty index, and exact planned untracked outputs.
+
+If any ordinary stage fails, rerun this same entry with the same expected digest. The
 state machine resumes from committed plan/readiness, active/archive locators,
 Git/remote facts, and the unique PR identity. Multiple matching PRs, protected
 input drift, unexpected metadata paths, or HEAD mismatch fail closed.
+For `archive-month-preflight`, keep the active task/draft PR, rerun dry-run,
+review its new digest, and formalize that digest. The executor may append a
+plan/readiness-only supersession evidence commit; it never rewrites history or
+migrates an archive directory.
 
 After dry-run, run `resolve-human-artifacts.sh --json --task <task-path>`
 against the active task and show the `Markdown 产物 review 表`. After formal finish, run the same resolver against the archived task and include its archived table. The resolver lists only `prd.md`, `design.md`,

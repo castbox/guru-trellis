@@ -423,6 +423,11 @@ PR 发布只发生在显式 `trellis-finish-work` 入口。dry-run 输出完整 
 final archive projection、单次 archive metadata commit/push、三方 HEAD 对齐、draft-to-ready
 推进。裸 `finish-work.sh` 和 `publish-pr.sh` 默认拒绝普通直接调用；中断只重跑同一个
 `trellis-finish-work`，不暴露内部 recovery flag。
+Prepare 使用已安装的官方 config parser，只支持缺失或空 `hooks.after_archive`；
+非空、歧义、不可读、含 NUL 或 symlink 配置在副作用前拒绝，且不会执行 hook。
+official move 前重新核对实时 archive 月份、空 index、精确 untracked 集合、regular-file/mode
+与 tracked evidence blob。已提交 plan 跨月时 task 保持 active；同一 entry 重新 dry-run
+得到新 digest，再追加只更新 plan/readiness 的 evidence commit，不 rewrite history 或迁移目录。
 Gate 后到 finish-work/archive 只允许 Trellis metadata tail；durable docs、`.trellis/spec/`、
 source、tests、schema、config、scripts、preset、overlay、CI/CD、deployment、migration、
 Makefile 等 non-metadata drift 必须回到 Phase 2/3。finish-work dry-run 和正式 finish 都不做
@@ -468,7 +473,8 @@ finish-work 先绑定唯一 draft PR，再在 active task 中一次构建包含 
 metadata tail。同一入口在 archive 前根据 plan/readiness、active locator 与 evidence facts 恢复。
 official move 后、精确 archive commit 尚未形成时，仍校验 archived working-tree 完整布局、
 dirty/staged path、blob continuity 与官方 `task.json` delta；commit 缺失或不匹配继续 fail closed。
-一旦当前 `HEAD` 已是精确 archive commit，则 immutable plan 与 Git parent/path/tree/blob lineage 成为
+一旦当前 `HEAD` 已是精确 archive commit，普通 archived task 与 plan-only recovery 都从该
+commit blob 读取 plan；immutable plan 与 Git parent/path/tree/blob lineage 成为
 权威事实，本地 archived 文件缺失、篡改及其 dirty state 不阻塞 exact push、remote PR title/body
 digest、三方 HEAD 或 draft-to-ready。plan-only archived directory 只由 `trellis-finish-work` 恢复入口
 解析，普通 task 命令仍要求 `task.json`；两条路径均不重新打开 archived artifacts。

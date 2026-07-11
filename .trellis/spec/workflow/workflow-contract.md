@@ -478,15 +478,31 @@ pre-commit state is invalid. If current `HEAD` is absent from or mismatched with
 the planned archive transaction, this metadata recovery path remains fail
 closed.
 
-After current `HEAD` is the exact archive commit, recovery validates the
-immutable plan and Git parent/path/tree/blob lineage instead of archived
+Before official move, the active side is checked earlier: the live official
+archive month still equals the plan, the index is empty, untracked paths equal
+the planned final outputs, every move path is a regular file, tracked modes are
+`100644` or `100755` and match the working mode, and working bytes equal the
+evidence blobs. Prepare uses the installed official config parser to accept only
+missing/empty `hooks.after_archive`; non-empty, ambiguous, unreadable, invalid,
+or symlinked config fails before side effects and no hook command is executed.
+
+If the live month changes while the task remains active, same-entry dry-run may
+replace only an exact old evidence plan with a new-month digest. Formal appends
+a plan/readiness-only evidence commit whose `git.evidence_parent_head` binds the
+previous evidence commit, reuses the existing draft/verifier facts, and
+rechecks the month before move. It does not rewrite history or migrate a moved
+archive directory.
+
+After current `HEAD` is the exact archive commit, every archived reentry reads
+the immutable plan from that commit blob, including normal archived tasks that
+still retain context. It validates Git parent/path/tree/blob lineage instead of archived
 working-tree layout or dirty state. Missing or tampered local archived files do
 not block pushing that exact commit when remote is behind, verifying
 local/remote/PR HEAD, or retrying `gh pr ready`; no task artifact may be built
 or rewritten. A plan-only archived directory is resolvable only through
 `trellis-finish-work`; ordinary task commands still require `task.json`.
-Plan-only recovery reads the immutable plan from the current commit blob and
-uses a dedicated boundary, not an unconditional workspace-boundary skip. Before
+Plan-only recovery uses the same committed authority plus a dedicated boundary,
+not an unconditional workspace-boundary skip. Before
 GitHub access or committed recovery it must match the Git toplevel,
 configured/effective repo, current head branch, available base ref, current
 HEAD transaction, expected plan digest, task identity, and exact active/archive

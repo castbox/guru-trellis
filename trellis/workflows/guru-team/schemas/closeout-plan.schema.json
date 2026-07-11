@@ -28,7 +28,8 @@
         "remote": {"type": "string", "minLength": 1},
         "base_branch": {"type": "string", "minLength": 1},
         "head_branch": {"type": "string", "minLength": 1},
-        "reviewed_work_head": {"$ref": "#/$defs/sha40"}
+        "reviewed_work_head": {"$ref": "#/$defs/sha40"},
+        "evidence_parent_head": {"$ref": "#/$defs/sha40"}
       }
     },
     "inputs": {

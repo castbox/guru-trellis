@@ -420,6 +420,13 @@ final archive projection、单次 archive metadata commit/push、三方 HEAD 对
 推进。裸 `finish-work.sh` 和 `publish-pr.sh` 默认拒绝普通直接调用；中断只重跑同一个
 `trellis-finish-work`，不暴露内部 recovery flag。
 
+prepare 使用已安装的官方 config parser 读取 `.trellis/config.yaml`：只支持缺失或空
+`hooks.after_archive`，非空、歧义、不可读、含 NUL 或 symlink 配置在任何副作用前拒绝，
+且不会执行 hook。official move 前再次核对实时 archive 月份、空 index、精确 untracked
+集合、所有 tracked regular-file/mode/blob continuity；失败时 task 保持 active、PR 保持
+draft。若已提交 plan 跨月，same entry 必须重新 dry-run 并审查新 digest，再以仅更新
+plan/readiness 的 additive evidence commit 显式 supersede；不 rewrite history、不迁移目录。
+
 `finish-work.sh --dry-run --from-trellis-finish-work` 是无副作用 readiness preview：
 通过 `--finish-summary-index-file "{TASK_DIR}/finish-summary-index.json"` 校验 AI 已审查的索引输入，
 并输出 canonical plan、digest、future archive mapping、metadata allowlist 与 transitions；
@@ -439,7 +446,8 @@ transaction 提交，不存在 empty-URL initial summary 或 post-archive metada
 archive 前 recovery 使用 committed plan/readiness/evidence 与 task-local body/summary facts。official
 move 后、精确 archive commit 尚未形成时，仍严格校验 archived working-tree 完整布局、dirty/staged
 path、blob continuity 与官方 `task.json` delta；commit 缺失或不匹配继续 fail closed。一旦当前
-`HEAD` 已是精确 archive commit，则只以 immutable plan 和 Git parent/path/tree/blob lineage 为准，
+`HEAD` 已是精确 archive commit，普通 archived task 和 plan-only recovery 都从该 commit blob
+读取 plan，只以 immutable plan 和 Git parent/path/tree/blob lineage 为准，
 本地 archived 文件缺失、篡改及其 dirty state 不阻塞 exact push、远端 title/body digest、三方 HEAD
 或 draft-to-ready。plan-only archived directory 只允许 `trellis-finish-work` 恢复入口解析，普通 task
 命令仍要求 `task.json`。两条路径都不再读取 archived readiness、body、summary、ledger 或 verifier。

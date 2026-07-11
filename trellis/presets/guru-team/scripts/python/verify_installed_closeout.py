@@ -390,6 +390,56 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
         "--finish-summary-index-file", f"{task_rel}/finish-summary-index.json",
         "--body-file", f"{task_rel}/pr-body.md",
     ]
+    config_path = root / ".trellis/config.yaml"
+    original_config = config_path.read_bytes() if config_path.exists() else None
+    hook_sentinel = root / f"installed-after-archive-hook-{issue}.sentinel"
+    hook_sentinel.unlink(missing_ok=True)
+    try:
+        existing = original_config.decode("utf-8") if original_config is not None else ""
+        if existing and not existing.endswith("\n"):
+            existing += "\n"
+        config_path.write_text(
+            existing
+            + "hooks:\n"
+            + "  after_archive:\n"
+            + f"    - \"touch {hook_sentinel}\"\n",
+            encoding="utf-8",
+        )
+        blocked = subprocess.run(
+            [*common, "--dry-run"],
+            cwd=root,
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if blocked.returncode == 0:
+            raise RuntimeError("installed closeout accepted a non-empty official after_archive hook")
+        try:
+            blocked_payload = json.loads(blocked.stderr)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError("installed hook preflight did not return JSON failure evidence") from exc
+        if (
+            blocked_payload.get("stage") != "after-archive-hook-preflight"
+            or blocked_payload.get("hook_executed") is not False
+        ):
+            raise RuntimeError("installed hook preflight failure evidence is incomplete")
+        if hook_sentinel.exists():
+            raise RuntimeError("installed hook preflight executed the rejected after_archive hook")
+        if not task_dir.is_dir() or json.loads((task_dir / "task.json").read_text(encoding="utf-8"))["status"] != "in_progress":
+            raise RuntimeError("installed hook preflight moved or completed the active task")
+        if git(root, real_git, "rev-parse", "HEAD") != git(root, real_git, "rev-parse", branch):
+            raise RuntimeError("installed hook preflight changed local HEAD")
+        if git(root, real_git, "ls-remote", "--heads", "origin", branch):
+            raise RuntimeError("installed hook preflight pushed the closeout branch")
+        if store.exists():
+            raise RuntimeError("installed hook preflight created or queried a persisted PR")
+    finally:
+        if original_config is None:
+            config_path.unlink(missing_ok=True)
+        else:
+            config_path.write_bytes(original_config)
+
     dry = run([*common, "--dry-run"], root, env=env)
     dry_payload = json.loads(dry.stdout)
     digest = dry_payload["closeout_plan_digest"]
@@ -426,6 +476,7 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
         "pr_head": pr["headRefOid"],
         "pr_url": pr["url"],
         "pr_ready": not pr["isDraft"],
+        "after_archive_hook_preflight": True,
     }
 
 

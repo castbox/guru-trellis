@@ -95,6 +95,14 @@ with immutable readiness. Formal finish never writes an empty-PR summary,
 never invokes upstream `add_session.py`, and never reads/writes
 `.trellis/workspace/**`.
 
+Prepare parses `.trellis/config.yaml` with the installed official
+`parse_simple_yaml` implementation and binds the empty `hooks.after_archive`
+state into protected inputs. Missing or empty configuration is supported;
+non-empty, ambiguous, unreadable, NUL-containing, or symlinked configuration
+fails before push, PR creation, or archive. The companion never executes or
+interprets an `after_archive` command and does not include hook mutations in the
+transaction allowlist.
+
 Prepare must also build and schema-validate the complete future archived
 finish-summary before dry-run/formal diverge. The immutable plan stores that
 template with the fixed maximum-width sentinel PR
@@ -186,10 +194,23 @@ final projection and must not skip the failed transition. After archive
 push it may only recheck identity and retry draft-to-ready; it must not rebuild
 artifacts, rerun the verifier, commit, or push.
 
+Immediately before official `task.py archive`, the executor rechecks the
+official current `YYYY-MM`, the empty `after_archive` state, a clean index, the
+exact planned untracked output set, every tracked path as a regular file, Git
+mode equality (`100644`/`100755`), and working bytes against the evidence blob.
+Any failure leaves the task active and the PR draft; official archive has not
+run.
+
 The plan records sorted `move_paths`, `tracked_move_paths`,
 `untracked_archive_outputs`, and exact pre-draft `evidence_paths`.
-Evidence commit parent must equal `reviewed_work_head`; the archive commit
-parent must equal that validated evidence commit. `tracked_move_paths` require
+Initial evidence commit parent equals `reviewed_work_head`. A task that remains
+active across a month boundary may supersede only an exact committed evidence
+plan: a new dry-run uses the official current month, formal requires its new
+digest, and an additive evidence commit changes only `closeout-plan.json` and
+`pr-readiness.json`. `git.evidence_parent_head` binds that predecessor, whose
+plan/evidence chain is recursively validated; no reset, force-push, directory
+migration, verifier rerun, or PR replacement occurs. The archive commit parent
+must equal the latest validated evidence commit. `tracked_move_paths` require
 both active deletion and archive addition. Outputs created only after the
 evidence commit, currently `finish-summary.json`, are immutable
 `untracked_archive_outputs` and require only the archive addition; an active
@@ -205,7 +226,10 @@ byte-for-byte, except `task.json`, whose only permitted change is the official
 `status=completed` and `completedAt=YYYY-MM-DD` transition. A partial, missing,
 extra, misclassified, or content-tampered pre-commit set is never valid.
 
-Once current `HEAD` is the exact planned archive commit, the immutable plan and
+Once current `HEAD` is the exact planned archive commit, every archived
+finish-work reentry, including a normal task that still has
+`task-start-context.json`, reads the immutable plan from the current commit
+blob. The plan and
 that commit's parent, path set, tree, and blobs are authoritative. Missing or
 tampered archived working-tree files and their dirty status do not block
 pushing that exact commit, remote/PR HEAD checks, or draft-to-ready. If current
