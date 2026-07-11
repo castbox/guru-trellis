@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-11T04:19:06Z",
+  "generated_at": "2026-07-11T04:22:21Z",
   "generator": "guru-team.finish-work",
   "task": {
     "slug": "07-11-100-backfill-finish-summary",
@@ -71,6 +71,7 @@
       ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/check.jsonl",
       ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/design.md",
       ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/finish-summary-index.json",
+      ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/finish-summary.json",
       ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/implement.jsonl",
       ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/implement.md",
       ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/implementation-handoff.md",
@@ -299,6 +300,7 @@
         ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/check.jsonl",
         ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/design.md",
         ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/finish-summary-index.json",
+        ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/finish-summary.json",
         ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/implement.jsonl",
         ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/implement.md",
         ".trellis/tasks/archive/2026-07/07-11-100-backfill-finish-summary/implementation-handoff.md",
