@@ -1,0 +1,28 @@
+{
+  "findings": [
+    {
+      "priority": "P2",
+      "message": "Global workflow SSOT 与 command、prompt、breadcrumb、platform launcher 的入口责任在同一条中表述，可能把 workflow 本身误归为仅加载入口；已拆分全局编排与平台入口责任。",
+      "path": "AGENTS.md",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "Global workflow SSOT 未限定为项目运行时，可能与 marketplace canonical workflow source 混淆；已增加项目运行时限定。",
+      "path": "AGENTS.md",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "强制 skill 化条件与禁止 wrapper 条件可能同时命中纯 route 或单 script 步骤；已明确禁止 wrapper 情形优先排除。",
+      "path": "AGENTS.md",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "#120 是从 #109 拆出的后续独立 Trellis task，不能归入仅表示上下文或部分重叠的 related_issues；已移至 followup_issues 并明确当前 PR 不关闭。",
+      "path": ".trellis/tasks/07-12-109-skill-first-contract/issue-scope-ledger.json",
+      "status": "resolved"
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-12T11:25:34Z",
+  "task_dir": ".trellis/tasks/07-12-109-skill-first-contract",
+  "base_branch": "main",
+  "head": "530a8972576ec85e42354dc67755c1782ea701fe",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    "AGENTS.md",
+    ".trellis/tasks/07-12-109-skill-first-contract/check.jsonl",
+    ".trellis/tasks/07-12-109-skill-first-contract/implement.jsonl",
+    ".trellis/tasks/07-12-109-skill-first-contract/research/proposed-issue-109-body.md",
+    ".trellis/tasks/07-12-109-skill-first-contract/research/proposed-skill-contract-distribution-issue.md",
+    ".trellis/tasks/07-12-109-skill-first-contract/task-start-context.json",
+    ".trellis/tasks/07-12-109-skill-first-contract/task.json"
+  ],
+  "checker": "/root/trellis_check_109",
+  "check_summary": "阶段二检查通过：检查代理完整覆盖 #109 的 R1-R5、全部验收标准、AGENTS.md 与既有章节一致性、Docs SSOT、受控措辞、单文件范围和 issue scope ledger；共发现 4 个 P2（3 个 AGENTS.md 文案边界、1 个 #120 分类），全部修复并经 closure re-check 关闭，最终无未解决 finding。runtime、installer、schema、workflow、preset、overlay 和 #120 基础设施均未改动，throwaway 与 upgrade/update 验证不适用。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-12-109-skill-first-contract/prd.md",
+      "sha256": "965a40defc95f08d9b62995b5b9f654707717c9e42c2a4b30babcceea3a36650",
+      "size_bytes": 5008,
+      "modified_at": "2026-07-12T10:56:54.270936+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-12-109-skill-first-contract/design.md",
+      "sha256": "09b853792874ae8b444f62464076b764bcac8fc60ba0480c7418a960c862fbf1",
+      "size_bytes": 3392,
+      "modified_at": "2026-07-12T10:57:51.817099+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-12-109-skill-first-contract/implement.md",
+      "sha256": "425f668a680a2a1921a1e2525255fc3579f03a24dd76631319125a8f80edec02",
+      "size_bytes": 2220,
+      "modified_at": "2026-07-12T10:57:51.817594+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-12-109-skill-first-contract/planning-approval.json",
+      "sha256": "3c0a2611ba640e36730bf53aee7802ea142a9ad236e7b07e3b3e924be18ced52",
+      "size_bytes": 5503,
+      "modified_at": "2026-07-12T11:00:28.408216+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-12-109-skill-first-contract/issue-scope-ledger.json",
+      "sha256": "adc7bae1891cb6eeb87a0d2b65c3a0996b5b0fe59d4a1908a631d0debc7b06bf",
+      "size_bytes": 1727,
+      "modified_at": "2026-07-12T11:23:59.542421+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-12-109-skill-first-contract/agent-assignment.json",
+      "sha256": "5ef93159cd7d6855b1a857b3c9b8abd04a7117fa2be534bef32e857771722899",
+      "size_bytes": 9891,
+      "modified_at": "2026-07-12T11:15:10.687114+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-12-109-skill-first-contract/phase2-findings.json",
+      "sha256": "e3093536a229044e03b665f2b1dbac94b557c6f228b266ba2dea1f498731f508",
+      "size_bytes": 1202,
+      "modified_at": "2026-07-12T11:23:59.542684+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "67cdf4d26914e254bad4f58a9d1c0b4e37e15358ac3c521fd187e406709da9ab",
+      "size_bytes": 37932,
+      "modified_at": "2026-07-12T10:40:23.600679+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "4cea0a6d02d0eb3ce5c850768560d46d4bc232336040478a9f810bdec7b4077e",
+      "size_bytes": 11606,
+      "modified_at": "2026-07-12T10:40:23.600548+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "cb85dc1d25ce4a3a97f328d3e959eae08868a576beead5e95ca21326b390237b",
+      "size_bytes": 38496,
+      "modified_at": "2026-07-12T10:40:23.600275+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/code-reuse-thinking-guide.md",
+      "sha256": "897b890f3defc06d64b4e717ab958538ffe366df98c321413c44581360700915",
+      "size_bytes": 8099,
+      "modified_at": "2026-07-12T10:40:23.599491+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-12-109-skill-first-contract",
+      "result": "passed, implement/check JSONL each 4 entries"
+    },
+    {
+      "command": "controlled wording scan on added AGENTS.md section",
+      "result": "passed, no hits"
+    },
+    {
+      "command": "git diff --name-only",
+      "result": "passed, AGENTS.md is the only business file"
+    },
+    {
+      "command": "Markdown level-2 heading sequence audit",
+      "result": "passed, sections 1-12 continuous"
+    },
+    {
+      "command": "issue scope ledger assertions",
+      "result": "passed, close=[109], related=[], followup=[120], sets disjoint"
+    }
+  ],
+  "findings": [
+    {
+      "priority": "P2",
+      "message": "Global workflow SSOT 与 command、prompt、breadcrumb、platform launcher 的入口责任在同一条中表述，可能把 workflow 本身误归为仅加载入口；已拆分全局编排与平台入口责任。",
+      "path": "AGENTS.md",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "Global workflow SSOT 未限定为项目运行时，可能与 marketplace canonical workflow source 混淆；已增加项目运行时限定。",
+      "path": "AGENTS.md",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "强制 skill 化条件与禁止 wrapper 条件可能同时命中纯 route 或单 script 步骤；已明确禁止 wrapper 情形优先排除。",
+      "path": "AGENTS.md",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "#120 是从 #109 拆出的后续独立 Trellis task，不能归入仅表示上下文或部分重叠的 related_issues；已移至 followup_issues 并明确当前 PR 不关闭。",
+      "path": ".trellis/tasks/07-12-109-skill-first-contract/issue-scope-ledger.json",
+      "status": "resolved"
+    }
+  ],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

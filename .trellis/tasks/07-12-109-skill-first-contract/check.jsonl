@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"审查新增 AGENTS.md 原则是否与 canonical workflow 合同冲突"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"审查受控措辞、可审核性、范围和验证证据"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"审查 AI 判断与 deterministic script 边界是否一致"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"审查是否产生重复 SSOT 或形式化 wrapper 规则"}

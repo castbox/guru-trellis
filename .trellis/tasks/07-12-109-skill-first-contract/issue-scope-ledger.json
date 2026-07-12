@@ -1,0 +1,35 @@
+{
+  "primary_issue": {
+    "number": 109,
+    "url": "https://github.com/castbox/guru-trellis/issues/109",
+    "title": "建立 Guru Team Skill-first 闭环流程模块化强制规范",
+    "reason": "当前 delivery unit 只修改根 AGENTS.md，建立仓库级 Skill-first 强制原则。",
+    "acceptance_evidence": [
+      "AGENTS.md 第 3 节覆盖 global workflow SSOT、step-local skill SSOT、mandatory invocation、closed-loop、typed exits、拆分判定和公共 API/state boundary。",
+      "phase2-check.json 记录阶段二检查代理完整覆盖 R1-R5 和全部验收标准，所有 findings 已修复关闭，最终无未解决 finding。",
+      "业务 diff 只有 AGENTS.md；git diff --check 与 task validate 通过。"
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 109,
+      "url": "https://github.com/castbox/guru-trellis/issues/109",
+      "title": "建立 Guru Team Skill-first 闭环流程模块化强制规范",
+      "reason": "GitHub live issue 已收敛为 AGENTS.md 单文件原则任务，当前实现和 Phase 2 evidence 完整覆盖其验收标准。",
+      "acceptance_evidence": [
+        "AGENTS.md 第 3 节是本 issue 的 durable SSOT 交付。",
+        "phase2-check.json 结论 passed，最终无未解决 finding。",
+        "根 AGENTS.md 之外没有业务文件变更。"
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": [
+    {
+      "number": 120,
+      "url": "https://github.com/castbox/guru-trellis/issues/120",
+      "title": "建立 Guru Team 闭环 Skill 合同与 Canonical 分发基础设施",
+      "reason": "承接从 #109 拆出的新范围，并将在 #109 完成后作为独立 Trellis task 实施；当前 PR 不关闭。"
+    }
+  ]
+}
