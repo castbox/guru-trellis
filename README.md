@@ -217,7 +217,10 @@ preset，才会获得 `.trellis/guru-team/skills/` 的 audited installed copy、
 shared skill copy 和所选 Codex/Cursor/Claude 平台副本。
 
 Registry 的 `reserved` id 不安装也不参与 mandatory route；只有通过完整
-package/interface/schema/route 验证的 `active` 项才会分发。升级遇到已知
+package/interface/schema/route 验证的 `active` 项才会分发。Active package 的
+`SKILL.md` frontmatter `name`/`description` 必须与 stable id/interface 精确
+一致，`tests[]` 必须是 package-local `tests/<file>` 的真实 regular file，不能
+使用标签、虚构路径、越界路径或 symlink evidence。升级遇到已知
 managed old bytes 时保留 `.bak` 后升级，遇到未知本地改动或无效 provenance
 时保留原文件并写 `.new`，且 fail closed。运行 `trellis update` 后必须重放
 workflow 与 preset，处理全部 sidecar，并运行：

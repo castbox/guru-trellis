@@ -32,7 +32,7 @@
       "properties": {
         "id": {"$ref": "#/$defs/skillId"},
         "state": {"const": "active"},
-        "name": {"type": "string", "minLength": 1},
+        "name": {"$ref": "#/$defs/skillId"},
         "package": {"type": "string", "pattern": "^packages/guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
         "interface": {"type": "string", "pattern": "^packages/guru-[a-z0-9]+(?:-[a-z0-9]+)+/interface\\.json$"},
         "supported_platforms": {

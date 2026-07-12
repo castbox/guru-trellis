@@ -5,7 +5,7 @@
     {
       "id": "guru-example-action",
       "state": "active",
-      "name": "Representative fixture skill",
+      "name": "guru-example-action",
       "package": "packages/guru-example-action",
       "interface": "packages/guru-example-action/interface.json",
       "supported_platforms": ["shared", "codex", "cursor", "claude"],

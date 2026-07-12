@@ -187,6 +187,12 @@ active package 分发到 shared root 与明确选择的 Codex/Cursor/Claude root
 Reserved ids 与 test fixtures 永不安装，未选择的平台 root 不因 skill 分发
 而创建。
 
+每个 active package 的 `SKILL.md` 必须有与 stable id/interface 一致的唯一
+`name`/`description` frontmatter；`tests[]` 必须定位 package-local
+`tests/<file>` regular file。Test evidence 属于 package tree，因此随 installed
+copy 和所选平台副本进入 manifest inventory；标签、虚构、越界、重复或
+symlink-backed test evidence 会在 mutation 前被 source validator 阻断。
+
 Skill 文件按 installed manifest 中的 previous managed hash 更新：missing
 直接安装，canonical-equal 保持 unchanged，known upgrade 先写 `.bak` 再替换，
 unknown/invalid provenance 保留原文件并写 `.new` 后阻塞。完成安装或

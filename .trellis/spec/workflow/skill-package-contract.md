@@ -31,9 +31,14 @@ registries must never contain test fixtures.
 ## Package And Interface
 
 An active package contains a short `SKILL.md`, `interface.json`, and the
-references/scripts/examples declared by its interface. `SKILL.md` contains only
-triggering, routing, execution entry, and fail-closed rules. Long behavior and
-authoring guidance belong in package-local `references/`.
+references/scripts/examples/tests declared by its interface. `SKILL.md` starts
+with exactly one closed `---` frontmatter block containing only `name` and
+`description`. `name` equals the stable `guru-<action>-<object>` id in the
+registry and interface; `description` is non-empty and byte-for-byte equal to
+the interface description. Missing, duplicated, unclosed, ambiguous, or drifted
+frontmatter fails source validation. The Markdown body contains only triggering,
+routing, execution entry, and fail-closed rules. Long behavior and authoring
+guidance belong in package-local `references/`.
 
 `interface.json` is validated by `schemas/skill-interface.schema.json` and
 declares stable identity, workflow and standalone modes, identical entry
@@ -46,6 +51,13 @@ platform destinations. The required stage order is:
 3. conditional human confirmation when the reviewed condition matches;
 4. deterministic recorder/validator;
 5. exactly one declared typed exit.
+
+Every `tests[]` entry is a package-relative `tests/<file>` path. It must be
+unique, lexically safe, resolve to an existing regular file below that active
+package's `tests/` root, and pass the same component-by-component `lstat`
+boundary as other package assets. Labels, missing paths, paths outside
+`tests/`, and symlink-backed evidence are invalid. Package tests are part of the
+installed/package/platform inventories rather than an untracked assertion.
 
 Workflow and standalone execution use the same preconditions and may reuse
 evidence only when its identity and freshness still match. Missing, stale, or
@@ -116,7 +128,8 @@ The stable command is:
 dialect, schema id, and contract digest, then applies every declared constraint
 to production and fixture instances. It also validates ids, paths, required
 package files, parseable package-local artifact schemas, safe existing
-artifact/schema/validator files, workflow markers, and unique exit mappings.
+artifact/schema/validator/test files, strict `SKILL.md` discovery frontmatter,
+workflow markers, and unique exit mappings.
 Every untrusted JSON value is type-checked before set, hash, path, or string
 operations; malformed values return structured `failed` errors without a Python
 traceback. `installed` validates manifest provenance, selected roots, installed

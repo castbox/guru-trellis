@@ -63,6 +63,9 @@ class SourceValidationTests(unittest.TestCase):
     def write_registry(self, payload: dict) -> None:
         (self.root / "registry.json").write_text(json.dumps(payload), encoding="utf-8")
 
+    def write_skill(self, content: str) -> None:
+        (self.root / "packages/guru-example-action/SKILL.md").write_text(content, encoding="utf-8")
+
     def test_production_registry_reserves_only_followup_id(self) -> None:
         result = runtime.validate_skill_source(
             SKILLS_ROOT,
@@ -157,7 +160,10 @@ class SourceValidationTests(unittest.TestCase):
                 self.write_registry(registry)
                 self.write_interface(interface)
                 errors = self.validate()["errors"]
-                self.assertTrue(any("empty name" in item or "minLength" in item for item in errors))
+                self.assertTrue(any(
+                    "name does not match" in item or "violates pattern" in item
+                    for item in errors
+                ))
 
     def test_bad_precondition_id_fails_when_modes_are_synchronized(self) -> None:
         interface = self.read_interface()
@@ -182,6 +188,111 @@ class SourceValidationTests(unittest.TestCase):
         result = self.validate()
         self.assertEqual(result["status"], "failed")
         self.assertTrue(any("wrong type" in item and "tests" in item for item in result["errors"]))
+
+    def test_test_evidence_parent_traversal_fails_schema_validation(self) -> None:
+        interface = self.read_interface()
+        interface["tests"] = ["tests/../outside.py"]
+        self.write_interface(interface)
+        result = self.validate()
+        self.assertEqual(result["status"], "failed")
+        self.assertTrue(any("violates pattern" in item and "tests" in item for item in result["errors"]))
+
+    def test_empty_skill_md_fails_independently(self) -> None:
+        self.write_skill("")
+        result = self.validate()
+        self.assertEqual(result["status"], "failed")
+        self.assertTrue(any("opening frontmatter delimiter" in item for item in result["errors"]))
+
+    def test_fictitious_test_evidence_fails_independently(self) -> None:
+        interface = self.read_interface()
+        interface["tests"] = ["tests/does-not-exist.py"]
+        self.write_interface(interface)
+        result = self.validate()
+        self.assertEqual(result["status"], "failed")
+        self.assertTrue(any("missing test evidence" in item for item in result["errors"]))
+
+    def test_skill_frontmatter_structure_matrix_fails(self) -> None:
+        original = (self.root / "packages/guru-example-action/SKILL.md").read_text(encoding="utf-8")
+        invalid_documents = {
+            "missing": "# No frontmatter\n",
+            "unclosed": "---\nname: guru-example-action\ndescription: missing close\n",
+            "duplicate-delimiter": original + "\n---\n",
+            "duplicate-name": (
+                "---\nname: guru-example-action\nname: guru-example-action\n"
+                "description: Exercises the public closed-loop package contract without becoming a production skill.\n---\n"
+            ),
+            "extra-identity": (
+                "---\nname: guru-example-action\nid: guru-example-action\n"
+                "description: Exercises the public closed-loop package contract without becoming a production skill.\n---\n"
+            ),
+        }
+        for label, content in invalid_documents.items():
+            with self.subTest(label=label):
+                self.write_skill(content)
+                result = self.validate()
+                self.assertEqual(result["status"], "failed")
+                self.assertTrue(any("frontmatter" in item for item in result["errors"]))
+
+    def test_skill_frontmatter_name_and_description_drift_fail(self) -> None:
+        documents = {
+            "name-drift": (
+                "---\nname: guru-other-action\n"
+                "description: Exercises the public closed-loop package contract without becoming a production skill.\n---\n"
+            ),
+            "description-drift": (
+                "---\nname: guru-example-action\ndescription: Drifted discovery description.\n---\n"
+            ),
+            "name-whitespace-drift": (
+                "---\nname: guru-example-action \n"
+                "description: Exercises the public closed-loop package contract without becoming a production skill.\n---\n"
+            ),
+            "description-whitespace-drift": (
+                "---\nname: guru-example-action\n"
+                "description: Exercises the public closed-loop package contract without becoming a production skill. \n---\n"
+            ),
+            "empty-description": "---\nname: guru-example-action\ndescription: \n---\n",
+        }
+        for label, content in documents.items():
+            with self.subTest(label=label):
+                self.write_skill(content)
+                result = self.validate()
+                self.assertEqual(result["status"], "failed")
+                self.assertTrue(any(
+                    phrase in item
+                    for item in result["errors"]
+                    for phrase in ("identity", "description", "frontmatter")
+                ))
+
+    def test_test_evidence_outside_missing_symlink_and_duplicate_fail(self) -> None:
+        original = self.read_interface()
+        for value in ("references/contract.md", "../outside.py", "tests"):
+            with self.subTest(kind="outside", value=value):
+                interface = json.loads(json.dumps(original))
+                interface["tests"] = [value]
+                self.write_interface(interface)
+                errors = self.validate()["errors"]
+                self.assertTrue(any("tests root" in item or "violates pattern" in item for item in errors))
+
+        interface = json.loads(json.dumps(original))
+        interface["tests"] = ["tests/missing.py"]
+        self.write_interface(interface)
+        self.assertTrue(any("missing test evidence" in item for item in self.validate()["errors"]))
+
+        interface = json.loads(json.dumps(original))
+        interface["tests"] = ["tests/test_contract.py", "tests/test_contract.py"]
+        self.write_interface(interface)
+        duplicate_errors = self.validate()["errors"]
+        self.assertTrue(any("uniqueItems" in item or "duplicate test evidence" in item for item in duplicate_errors))
+
+        self.write_interface(original)
+        evidence = self.root / "packages/guru-example-action/tests/test_contract.py"
+        external = Path(self.temp.name) / "external-test.py"
+        external.write_text("external test evidence\n", encoding="utf-8")
+        evidence.unlink()
+        evidence.symlink_to(external)
+        symlink_errors = self.validate()["errors"]
+        self.assertTrue(any("test evidence" in item and "symlink component" in item for item in symlink_errors))
+        self.assertEqual(external.read_text(encoding="utf-8"), "external test evidence\n")
 
     def test_semantically_loose_interface_schema_fails_identity_check(self) -> None:
         schema = self.root / "schemas/skill-interface.schema.json"
@@ -302,10 +413,13 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(result["status"], "ok")
         self.assertTrue((self.repo / ".agents/skills/guru-example-action/SKILL.md").is_file())
         self.assertTrue((self.repo / ".codex/skills/guru-example-action/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".agents/skills/guru-example-action/tests/test_contract.py").is_file())
+        self.assertTrue((self.repo / ".codex/skills/guru-example-action/tests/test_contract.py").is_file())
         self.assertTrue(os.access(self.repo / ".codex/skills/guru-example-action/scripts/validate-fixture-result.sh", os.X_OK))
         self.assertFalse((self.repo / ".cursor/skills/guru-example-action").exists())
         self.assertFalse((self.repo / ".claude/skills/guru-example-action").exists())
         self.assertTrue(all(item["action"] == "installed" for item in result["files"]))
+        self.assertTrue(any(item["source"].endswith("tests/test_contract.py") for item in result["files"]))
 
     def test_unchanged_reapply(self) -> None:
         first = self.install({"codex", "cursor", "claude"})

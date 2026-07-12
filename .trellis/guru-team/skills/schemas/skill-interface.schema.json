@@ -9,7 +9,7 @@
     "$schema": {"const": "../../schemas/skill-interface.schema.json"},
     "schema_version": {"const": "1.0"},
     "id": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
-    "name": {"type": "string", "minLength": 1},
+    "name": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
     "description": {"type": "string", "minLength": 1},
     "state": {"const": "active"},
     "modes": {
@@ -39,7 +39,12 @@
         "stale_behavior": {"const": "fail_closed"}
       }
     },
-    "tests": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "tests": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))tests/.+$"}
+    },
     "platform_destinations": {
       "type": "array",
       "minItems": 1,

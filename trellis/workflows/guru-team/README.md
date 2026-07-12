@@ -52,6 +52,12 @@ workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandato
 由 Guru Team preset 分发。当前 production registry 只有 reserved id 时，
 workflow 不得伪造 active route。
 
+Active package 的 discovery contract 要求 `SKILL.md` 只有一段闭合
+frontmatter，`name` 等于 stable id/registry/interface，`description` 非空且与
+interface 一致；`tests[]` 只引用 package-local `tests/<file>` regular file。
+Source validator 对 missing/drifted frontmatter 与 missing/outside/symlink test
+evidence fail closed。
+
 Trellis workflow marketplace 只负责安装或切换 `.trellis/workflow.md`。
 companion scripts、配置、schema 和团队自有入口 overlay 需要通过 preset installer
 写入目标仓库：

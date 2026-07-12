@@ -2,7 +2,7 @@
   "$schema": "../../schemas/skill-interface.schema.json",
   "schema_version": "1.0",
   "id": "guru-example-action",
-  "name": "Representative fixture skill",
+  "name": "guru-example-action",
   "description": "Exercises the public closed-loop package contract without becoming a production skill.",
   "state": "active",
   "modes": {
@@ -21,6 +21,6 @@
     {"id": "blocked", "evidence": "fixture-result.json", "consumer": {"kind": "stop", "id": "fixture-stop"}}
   ],
   "reentry": {"identity": "fixture input digest", "freshness": "digest still matches", "stale_behavior": "fail_closed"},
-  "tests": ["representative-active"],
+  "tests": ["tests/test_contract.py"],
   "platform_destinations": ["shared", "codex", "cursor", "claude"]
 }

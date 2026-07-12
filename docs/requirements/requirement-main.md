@@ -227,6 +227,10 @@ Production registry 的 `reserved` 项只占用公共 id，不能安装或被 ma
 route 引用；`active` 项必须携带完整 package/interface/schema/validator/test
 和 workflow marker 证据。global workflow 只拥有 mandatory invocation、跨
 skill transition 和 typed exit consumer/stop，step-local 正文只属于 skill。
+Active `SKILL.md` 必须具有唯一闭合 frontmatter，且 `name` 等于 registry、
+interface 与 stable skill id，非空 `description` 与 interface 一致；`tests[]`
+只允许指向 package-local `tests/<file>` 的真实 regular file，并随 package
+inventory 安装，missing/outside/symlink/duplicate evidence 一律 fail closed。
 
 Preset 负责把 active package 安装到 `.trellis/guru-team/skills/`、shared
 root 和已选择的平台 root，并用 previous managed hash 区分 missing、

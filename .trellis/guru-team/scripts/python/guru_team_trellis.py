@@ -9853,11 +9853,11 @@ SKILL_EXIT_RE = re.compile(r"^\s*<!--\s*guru-skill-exit:\s*(\{.*\})\s*-->\s*$")
 SKILL_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
 SKILL_CONTRACT_SCHEMAS = {
     "registry": {
-        "sha256": "b0d2b1318b9665f37168836eb0a8f0ab8f5c9e08c0af04abd840f3e30eb40fa2",
+        "sha256": "8d81f69b02667d77fa5d21dce320de7feac25d7d92702336b89358e1f65cda1b",
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.0.json",
     },
     "interface": {
-        "sha256": "d96ece4f5e83195a34a881ac76ccdd5504180fb6e04c2386ab6e96c7783c595b",
+        "sha256": "e3377ced5638ea486335f174fe9604111aedec57dff196d89d76c99b2042036c",
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.0.json",
     },
 }
@@ -10204,6 +10204,47 @@ def skill_unique_ids(items: Any, label: str, errors: list[str]) -> list[dict[str
     return output
 
 
+def skill_read_frontmatter(path: Path, label: str, errors: list[str]) -> dict[str, str] | None:
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (FileNotFoundError, UnicodeDecodeError):
+        errors.append(f"{label} is missing or invalid UTF-8")
+        return None
+    if not lines or lines[0] != "---":
+        errors.append(f"{label} is missing the opening frontmatter delimiter")
+        return None
+    delimiters = [index for index, line in enumerate(lines) if line == "---"]
+    if len(delimiters) < 2:
+        errors.append(f"{label} has unclosed frontmatter")
+        return None
+    if len(delimiters) != 2:
+        errors.append(f"{label} has duplicate or ambiguous frontmatter delimiters")
+        return None
+    closing = delimiters[1]
+    fields: dict[str, str] = {}
+    valid = True
+    for line in lines[1:closing]:
+        key, separator, value = line.partition(":")
+        if (
+            not separator
+            or key not in {"name", "description"}
+            or not value.startswith(" ")
+            or not value.strip()
+        ):
+            errors.append(f"{label} has invalid or ambiguous frontmatter fields")
+            valid = False
+            continue
+        if key in fields:
+            errors.append(f"{label} has duplicate frontmatter field {key}")
+            valid = False
+            continue
+        fields[key] = value[1:]
+    if set(fields) != {"name", "description"}:
+        errors.append(f"{label} must contain exactly name and description frontmatter")
+        valid = False
+    return fields if valid else None
+
+
 def validate_skill_interface(
     skills_root: Path,
     entry: dict[str, Any],
@@ -10225,8 +10266,8 @@ def validate_skill_interface(
         errors.append(f"active registry entry {skill_id} has non-canonical package/interface paths")
     if entry.get("validator_command") != "check-skill-packages":
         errors.append(f"active registry entry {skill_id} has unknown validator command")
-    if not isinstance(entry.get("name"), str) or not entry["name"].strip():
-        errors.append(f"active registry entry {skill_id} has an empty name")
+    if entry.get("name") != skill_id:
+        errors.append(f"active registry entry {skill_id} name does not match the stable skill id")
     if not SKILL_ROUTE_ID_PATTERN.fullmatch(str(entry.get("workflow_route_id") or "")):
         errors.append(f"active registry entry {skill_id} has invalid workflow route id")
     supported = entry.get("supported_platforms")
@@ -10245,8 +10286,10 @@ def validate_skill_interface(
     if skill_lstat_path(boundary, package, f"active package {skill_id}", errors, kind="directory") is None:
         return None
     package_files = skill_collect_tree_files(boundary, package, f"active package {skill_id}", errors)
-    if skill_lstat_path(boundary, package / "SKILL.md", f"SKILL.md for {skill_id}", errors, kind="file") is None:
-        pass
+    skill_path = package / "SKILL.md"
+    skill_frontmatter = None
+    if skill_lstat_path(boundary, skill_path, f"SKILL.md for {skill_id}", errors, kind="file") is not None:
+        skill_frontmatter = skill_read_frontmatter(skill_path, f"SKILL.md for {skill_id}", errors)
     references = package / "references"
     reference_files = skill_collect_tree_files(boundary, references, f"references for {skill_id}", errors)
     if not reference_files:
@@ -10274,12 +10317,21 @@ def validate_skill_interface(
         errors.append(f"interface for {skill_id} has unknown schema id")
     if interface.get("schema_version") != "1.0" or interface.get("state") != "active":
         errors.append(f"interface for {skill_id} has invalid lifecycle/schema version")
-    if interface.get("id") != skill_id or interface.get("name") != entry.get("name"):
+    if (
+        interface.get("id") != skill_id
+        or interface.get("name") != skill_id
+        or interface.get("name") != entry.get("name")
+    ):
         errors.append(f"interface identity for {skill_id} does not match registry")
     if not isinstance(interface.get("name"), str) or not interface["name"].strip():
         errors.append(f"interface for {skill_id} has an empty name")
-    if not str(interface.get("description") or "").strip():
+    if not isinstance(interface.get("description"), str) or not interface["description"].strip():
         errors.append(f"interface for {skill_id} has empty description")
+    if skill_frontmatter is not None:
+        if skill_frontmatter.get("name") != skill_id:
+            errors.append(f"SKILL.md identity for {skill_id} does not match the stable skill id")
+        if skill_frontmatter.get("description") != interface.get("description"):
+            errors.append(f"SKILL.md description for {skill_id} does not match interface")
     if interface.get("ordered_stages") != SKILL_INTERFACE_STAGES:
         errors.append(f"interface for {skill_id} has invalid closed-loop stage order")
 
@@ -10383,6 +10435,25 @@ def validate_skill_interface(
         or any(not isinstance(item, str) or not item.strip() for item in tests)
     ):
         errors.append(f"interface for {skill_id} has no test evidence")
+    else:
+        test_paths: set[str] = set()
+        for item in tests:
+            rel = skill_safe_relative(item)
+            if rel is None or len(rel.parts) < 2 or rel.parts[0] != "tests":
+                errors.append(f"interface for {skill_id} has test evidence outside the package tests root")
+                continue
+            relative_text = rel.as_posix()
+            if relative_text in test_paths:
+                errors.append(f"interface for {skill_id} has duplicate test evidence path")
+                continue
+            test_paths.add(relative_text)
+            skill_lstat_path(
+                boundary,
+                package / rel,
+                f"test evidence {relative_text} for {skill_id}",
+                errors,
+                kind="file",
+            )
     destinations = interface.get("platform_destinations")
     if not isinstance(destinations, list) or destinations != supported:
         errors.append(f"interface platform destinations for {skill_id} do not match registry")

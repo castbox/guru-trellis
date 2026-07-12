@@ -1,6 +1,6 @@
 ---
 name: guru-example-action
-description: Test-only representative closed-loop workflow skill.
+description: Exercises the public closed-loop package contract without becoming a production skill.
 ---
 
 # Representative Fixture

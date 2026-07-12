@@ -95,11 +95,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-12T15:45:41Z",
+  "installed_at": "2026-07-12T16:56:51Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "feat/120-closed-loop-skill-infrastructure",
-    "commit": "f14f167294154abffc0ef6124e0428911350b25b",
+    "commit": "ea5d5e46686348b3006b9678eab7edfe735c31b3",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -215,14 +215,14 @@
       {
         "path": ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
         "source": "trellis/skills/guru-team/schemas/skill-registry.schema.json",
-        "sha256": "b0d2b1318b9665f37168836eb0a8f0ab8f5c9e08c0af04abd840f3e30eb40fa2",
+        "sha256": "8d81f69b02667d77fa5d21dce320de7feac25d7d92702336b89358e1f65cda1b",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/schemas/skill-interface.schema.json",
         "source": "trellis/skills/guru-team/schemas/skill-interface.schema.json",
-        "sha256": "d96ece4f5e83195a34a881ac76ccdd5504180fb6e04c2386ab6e96c7783c595b",
+        "sha256": "e3377ced5638ea486335f174fe9604111aedec57dff196d89d76c99b2042036c",
         "executable": false,
         "action": "unchanged"
       }
