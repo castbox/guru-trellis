@@ -499,13 +499,13 @@ issue close 语义只在 PR body 中根据
 GitHub reviewer，而不是 Trellis session 内部摘要；应包含具体的 `变更摘要`、
 `影响范围`、`验证结果`、`Review Gate`、`Issue 关闭范围` 和 `安全说明`。禁止用
 “当前 Trellis task”“已提交实现与文档更新”“详见 artifact”作为主要摘要。
-non-draft publish 必须把 AI 审阅后的 Markdown 通过 `--body-file <path>` 传给内部
-publish，或用 `--body-artifact <path>` 传 readiness artifact；脚本只校验客观结构、
-低信息量短语、close/ref 语义和 reviewed source 是否存在，不替代 AI 判断内容是否真实充分。
-这些 readiness/body 文件属于 task metadata，通常写在当前 task 目录，并在 archive 前完成
-全部校验；archive 后 remote-only identity 直接把 GitHub PR body 的 UTF-8 digest 与 plan 比较，
-不再读取归档 task body。脚本生成的 `generated` body 只用于 draft/preview 辅助，不能作为
-non-draft 发布证据。
+`trellis-finish-work` 的唯一 PR body 来源是当前 task-local `pr-body.md`；dry-run 与 formal
+都必须通过 `--body-file <current-task>/pr-body.md` 直接传入。`--body-artifact`、外部同文文件、
+脚本生成的 body fallback，以及从 readiness artifact 相对解析 `body_file` 均不属于 closeout
+合同并 fail closed。脚本只校验客观结构、低信息量短语、close/ref 语义和 reviewed source
+是否存在，不替代 AI 判断内容是否真实充分。`pr-body.md` 属于 task metadata，必须在 archive
+前完成全部校验；archive 后 remote-only identity 直接把 GitHub PR body 的 UTF-8 digest 与
+plan 比较，不再读取归档 task body。
 PR body 还必须包含 `Docs SSOT` / `文档同步` 处理结果：本次策略、durable docs
 更新或 no-update 理由、已 merge 的 task delta、仅保留 task history 的内容，以及
 follow-up / 当前 PR limitation。脚本最多检查 section/key 是否存在，语义充分性仍由 AI

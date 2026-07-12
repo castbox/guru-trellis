@@ -566,15 +566,14 @@ Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gat
 `Issue 关闭范围`, `安全说明`, and `Docs SSOT` / `文档同步`. The Docs SSOT section
 must state the strategy, durable docs updated or no-update reason, task delta
 merged back, task-history-only content, and follow-up or current PR limitation.
-Non-draft publish must receive an AI-reviewed
-`--body-file` or `--body-artifact`; script-generated `generated` bodies are
-preview/draft-only and never count as publish readiness evidence. Reviewed
-body/readiness files are task metadata: they are written and fully validated in
-the active task before `finish-work` performs the official archive move.
-Post-archive ready/recovery hashes the remote PR body against the immutable plan
-and does not reopen these artifacts. If an active readiness artifact
-references a relative `body_file`, resolve it relative to the artifact's own
-directory. `trellis-finish-work` validates objective structure, forbidden
+`trellis-finish-work` accepts exactly one reviewed body source: `--body-file`
+must point directly to the current task-local `pr-body.md`. `--body-artifact`,
+external same-content files, generated body fallbacks, and readiness-relative
+`body_file` resolution are rejected and do not participate in closeout.
+`pr-body.md` is task metadata and is fully validated in the active task before
+`finish-work` performs the official archive move. Post-archive ready/recovery
+hashes the remote PR body against the immutable plan and does not reopen the
+task-local body. `trellis-finish-work` validates objective structure, forbidden
 low-information phrases, reviewed source presence, Docs SSOT section/key
 presence, archive-path resolution, and close/ref issue semantics, but it must
 not decide whether the business explanation is true or sufficient.

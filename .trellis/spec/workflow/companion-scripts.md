@@ -319,12 +319,13 @@ validation / impact / safety content, Docs SSOT section/key presence, and Issue
 Scope Ledger close/ref semantics. They must not decide whether the release
 explanation or Docs SSOT rationale is true or sufficient; that judgment belongs
 to the AI readiness review before
-`trellis-finish-work`. Non-draft publish must require `--body-file` or
-`--body-artifact` inputs that were already reviewed by AI/human; `generated`
-bodies are limited to draft/preview paths. Formal finish binds the reviewed
-task-local `pr-body.md` into `pr-readiness.json.publish_inputs`, including the
-exact repo/base/head/title/raw-body digest/draft/reviewed source and canonical
-snapshot digest. Active-state retries consume the committed readiness artifact;
+`trellis-finish-work`. Formal closeout accepts only `--body-file` pointing
+directly to the current task-local `pr-body.md`; it rejects `--body-artifact`,
+generated body fallbacks, and readiness-relative `body_file` resolution. Formal
+finish binds that reviewed `pr-body.md` into
+`pr-readiness.json.publish_inputs`, including the exact
+repo/base/head/title/raw-body digest/draft/reviewed source and canonical snapshot
+digest. Active-state retries consume the committed readiness artifact;
 after the official archive move, recovery reads only the committed immutable
 plan and uses its title/body digest plus Git/remote facts. Command-line
 title/body/draft/base overrides fail closed.
