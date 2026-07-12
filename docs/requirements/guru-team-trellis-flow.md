@@ -75,7 +75,7 @@ flowchart TD
   PRBody["AI-reviewed pr-body.md<br/>+ finish-summary-index.json"]:::artifact
   Dry["finish-work.sh --dry-run<br/>--from-trellis-finish-work"]:::script
   FW["finish-work.sh<br/>immutable plan + draft + archive transaction"]:::script
-  Pub["publish-pr.sh<br/>verifier + 0/1/&gt;1 recovery + URL tail"]:::script
+  Pub["publish-pr.sh<br/>compatibility-only fail closed"]:::script
 
   U --> H --> W --> B --> R
   R -->|"bootstrap 缺失或显式要求"| S0
@@ -95,7 +95,8 @@ flowchart TD
   GP -->|"否：finding / stale / reviewer-only"| Fix["返回 Phase 2/3 修复并复审"]:::guru
   Fix --> P2
   GP -->|"是"| FWEntry
-  FWEntry --> PRBody --> Dry --> FW --> Pub
+  FWEntry --> PRBody --> Dry --> FW
+  Pub -->|"固定拒绝并指向"| FWEntry
 
   classDef trellis fill:#E8F5E9,stroke:#2E7D32,color:#0B3D1E;
   classDef guru fill:#FFF3E0,stroke:#EF6C00,color:#4A2600;

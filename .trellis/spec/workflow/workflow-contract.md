@@ -99,9 +99,9 @@ numbers, `trellis-continue`, and `trellis-finish-work`. `trellis-start` is a
 fallback orientation entry for disabled hooks, missing startup context, or an
 explicit reload request.
 
-Do not introduce `review-branch`, `check-review-gate`, `finish-work.sh`, or
-`publish-pr` as new user-facing phases. They are companion script subcommands
-used by the workflow entrypoints.
+Do not introduce `review-branch`, `check-review-gate`, or `finish-work.sh` as
+new user-facing phases. They are companion script subcommands used by the
+workflow entrypoints; `publish-pr` is only a compatibility blocker.
 
 The explicit finish entry requires AI-authored task-local
 `finish-summary-index.json`, dry-runs the shared prepare pipeline, and requires
@@ -187,7 +187,7 @@ Commit messages never use close keywords such as `Closes`, `Fixes`,
 `Resolves`, `Close`, `Fix`, or `Resolve`. Closing semantics belong only in the
 PR body and only for issues listed under
 `issue-scope-ledger.json.close_issues`; commit messages use `Refs` for issue
-links. `publish-pr` must output the merge commit subject/body/command payload so
+links. `format-merge-commit` must output the merge commit subject/body/command payload so
 maintainers do not rely on GitHub's default `Merge pull request #xx from ...`
 subject or a Chinese PR title such as `完成：#xx ... (#yy)`.
 
@@ -471,10 +471,11 @@ the gate, dry-run and formal finish fail closed and the task returns to Phase
 2/3 for check and review.
 
 `trellis-continue` must stop at Branch Review Gate and must not push, create a
-PR, invoke `publish-pr`, or invoke `finish-work`. The finish and publish helpers
-are fail-closed: ordinary direct `finish-work.sh` calls are rejected before
-archive/finish-summary/push side effects, and ordinary direct `publish-pr` calls are
-rejected before `git push` / `gh pr create`. Every closeout interruption is
+PR, invoke `publish-pr`, or invoke `finish-work`. The finish helper and publish
+compatibility command are fail-closed: ordinary direct `finish-work.sh` calls
+are rejected before archive/finish-summary/push side effects, and every
+`publish-pr` call is rejected before repo/task resolution, `git push`, or
+`gh pr create`. Every closeout interruption is
 resumed through the same state-aware `trellis-finish-work` entry.
 
 Before the exact archive commit exists, same-entry archive recovery is bound to
@@ -573,7 +574,7 @@ the active task before `finish-work` performs the official archive move.
 Post-archive ready/recovery hashes the remote PR body against the immutable plan
 and does not reopen these artifacts. If an active readiness artifact
 references a relative `body_file`, resolve it relative to the artifact's own
-directory. `publish-pr` validates objective structure, forbidden
+directory. `trellis-finish-work` validates objective structure, forbidden
 low-information phrases, reviewed source presence, Docs SSOT section/key
 presence, archive-path resolution, and close/ref issue semantics, but it must
 not decide whether the business explanation is true or sufficient.

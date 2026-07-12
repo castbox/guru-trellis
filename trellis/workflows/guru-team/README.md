@@ -105,7 +105,7 @@ companion helpers 只做 objective 校验和格式化，不替代 AI review：
 ```
 
 `finish-work` dry-run 会输出合规 metadata commit subject 和 publish 计划；
-`publish-pr` dry-run/formal payload 会输出 `merge_commit.subject`、`merge_commit.body`
+`format-merge-commit` payload 会输出 `merge_commit.subject`、`merge_commit.body`
 和显式 `gh pr merge ... --subject ... --body-file ...` 命令。维护者合并 PR 时不得使用
 GitHub 默认 `Merge pull request #xx from ...` subject，也不得把中文 PR title
 `完成：#xx ... (#yy)` 直接作为 commit subject。
@@ -421,8 +421,8 @@ PR 发布只发生在显式 `trellis-finish-work` 入口。dry-run 输出完整 
 `closeout_plan` 与 `closeout_plan_digest`；正式执行必须原样传入该 digest，并在首个副作用前
 重建校验。随后按 reviewed content push、marketplace evidence/readiness commit、draft PR、
 final archive projection、单次 archive metadata commit/push、三方 HEAD 对齐、draft-to-ready
-推进。裸 `finish-work.sh` 和 `publish-pr.sh` 默认拒绝普通直接调用；中断只重跑同一个
-`trellis-finish-work`，不暴露内部 recovery flag。
+推进。裸 `finish-work.sh` 默认拒绝普通直接调用，`publish-pr.sh` 无条件作为兼容入口
+阻断；中断只重跑同一个 `trellis-finish-work`，不暴露内部 recovery flag。
 Prepare 使用已安装的官方 config parser，只支持缺失或空 `hooks.after_archive`；
 非空、歧义、不可读、含 NUL 或 symlink 配置在副作用前拒绝，且不会执行 hook。
 official move 前重新核对实时 archive 月份、空 index、精确 untracked 集合、regular-file/mode

@@ -73,13 +73,13 @@ Before publish, reject uncommitted non-metadata changes. Metadata-only paths are
 defined by `METADATA_ONLY_PREFIXES` and `METADATA_ONLY_FILES`; update these
 constants deliberately if Trellis metadata ownership changes.
 
-`finish-work.sh` and `publish-pr` are internal helpers, not the normal user
-path. `finish-work.sh` must reject ordinary direct calls before closeout-plan,
+`finish-work.sh` is an internal helper, not the normal user path. It must reject ordinary direct calls before closeout-plan,
 push, draft PR, archive, or publish side effects; only the explicit
 `trellis-finish-work` entrypoint may pass the `--from-trellis-finish-work`
-intent marker. `publish-pr` remains a low-level executor and must reject the
-legacy user-facing `--recovery-after-finish-work` path. Every interruption is
-resumed through the same state-aware `trellis-finish-work` entry.
+intent marker. `publish-pr` is retained only as an unconditional compatibility
+blocker: it performs no repo/task resolution or side effect and points callers
+to `trellis-finish-work`. Every interruption is resumed through that same
+state-aware entry.
 
 Finish-summary separates AI judgment from deterministic facts. The explicit
 finish entry writes task-local `finish-summary-index.json` with reviewed
@@ -178,9 +178,8 @@ final file. It then requires `--body-file` to equal that direct task path,
 reads both source and task-local bytes, requires exact byte equality, and
 decodes strict UTF-8. It rejects `--body-artifact`, external files even when
 their stripped text is equal, final-newline differences, and Markdown
-hard-break space differences. Generic `publish-pr` compatibility may still
-accept a reviewed body artifact, but finish-work never uses that legacy source
-resolver.
+hard-break space differences. The `publish-pr` compatibility command never
+resolves a body file or artifact.
 
 Marketplace machine evidence uses the task-relative locator
 `marketplace-verification.json`, never the active task path. Final projection
@@ -536,11 +535,10 @@ Never print or persist tokens, private keys, signed URLs, `.env` contents,
 database URLs, or sensitive raw records in logs, JSON artifacts, issues, PR
 bodies, or README examples.
 
-When writing temporary PR or issue body files, use `tempfile.NamedTemporaryFile`
-and unlink the file in a `finally` block. Existing examples:
+When writing temporary issue body files, use `tempfile.NamedTemporaryFile`
+and unlink the file in a `finally` block. Existing example:
 
 - `create_issue()`
-- `cmd_publish_pr()`
 
 ## Validation
 

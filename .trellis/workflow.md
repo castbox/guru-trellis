@@ -201,7 +201,7 @@ Refs #{primary_issue}
 
 Do not accept GitHub's default `Merge pull request #xx from ...` subject, and do
 not use a Chinese PR title such as `完成：#73 ... (#91)` directly as a commit
-subject. `publish-pr` outputs a `merge_commit` payload with the subject, body,
+subject. `format-merge-commit` outputs a `merge_commit` payload with the subject, body,
 and explicit `gh pr merge ... --subject ... --body-file ...` command; maintainers
 must use that payload when merging instead of relying on GitHub-generated merge
 text.
@@ -312,8 +312,8 @@ without a Markdown link so the response does not create a dead link.
 
 These are internal workflow helpers. `review-branch.sh` records and validates a
 review that already happened; it is not the reviewer. `publish-pr.sh` is
-intentionally omitted from the normal helper sequence because ordinary direct
-publish calls are blocked; ordinary direct `finish-work.sh` calls are also
+intentionally omitted from the normal helper sequence because it is an
+unconditional compatibility blocker; ordinary direct `finish-work.sh` calls are
 blocked unless the explicit `trellis-finish-work` entrypoint supplies its
 intent marker. That entrypoint pushes reviewed evidence, binds one immutable
 draft PR, builds the final summary, then performs the archive transaction and
@@ -1149,7 +1149,7 @@ The review must include the branch's commit messages and publish readiness
 payloads: work commits must pass the subject/body contract, Trellis metadata
 commits must use the issue-bearing Chinese `chore(trellis)` subject with an
 empty body, PR body close keywords must match `issue-scope-ledger.json`, and the
-planned merge commit must use the `publish-pr` / `format-merge-commit` payload
+planned merge commit must use the `format-merge-commit` payload
 instead of GitHub's default `Merge pull request ...` subject.
 
 Before or immediately after dispatching the independent review, record the reviewer logical role in `agent-assignment.json`:
@@ -1402,7 +1402,7 @@ Phase 2 check and Branch Review can run again.
 
 #### 3.7 Publish PR `[automatic after finish-work]`
 
-Publish is a set of internal closeout transitions, not a user-facing phase or command. `publish-pr.sh` stays a low-level executor; the only recovery entry is the same state-aware `trellis-finish-work` invocation.
+Publish is a set of internal `trellis-finish-work` closeout transitions, not a user-facing phase or separate command. `publish-pr.sh` is retained only as a compatibility blocker that fails closed and points to the same state-aware `trellis-finish-work` invocation.
 
 After `gh pr create` returns a URL, publish sorts and deduplicates the raw final base-to-HEAD paths, filters `.trellis/workspace/**` and `.trellis/.runtime/**`, and writes the safe set to both `git.changed_paths` and search `paths`. If filtering occurred, the recorder appends exactly one fixed `finish-summary protected path filtering` contract fact without path, basename, or count details; if no filtering occurred, that fact is absent. If the initial diff, initial untracked enumeration, or final/recovery diff fails, both path arrays are empty, the filtering fact is absent, and exactly one fixed `finish-summary git path snapshot unavailable` fact is recorded without path, basename, count, stderr, or ref details. Retrieval text is re-derived and path validation remains fail closed.
 
@@ -1419,34 +1419,33 @@ GitHub reviewer who has no Trellis session context. The body is not a task
 artifact summary. It must explain what behavior changed, which modules or
 workflow surfaces are affected, how the change was validated, what Review Gate
 covered, which issues are closed vs only referenced, and the real safety /
-deployment impact. For non-draft publish, pass the reviewed body through
-`--body-file <pr-body.md>` or a readiness artifact passed as
-`--body-artifact <pr-readiness.json>`; `generated` bodies are preview-only and
-are not publish readiness evidence. The reviewed body/readiness files are task
-metadata and should normally live under the current task directory before
+deployment impact. Finish-work requires the exact current task-local
+`pr-body.md` through `--body-file <pr-body.md>`; `--body-artifact` and generated
+fallback bodies are not closeout readiness evidence. The reviewed
+body/readiness files are task metadata under the current task directory before
 finish-work. They are fully validated before archive and are not reopened by
 post-archive recovery or ready steps.
 
 Publish behavior:
 
 - push the current branch;
-- create an open, non-draft GitHub PR;
+- create or reuse one exact draft GitHub PR, then mark it ready only after the archive transaction and three-way HEAD check;
 - target the intake/task `base_branch`, not the GitHub default branch;
 - write the PR title, headings, and body in Chinese;
 - include Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gate`, `Issue 关闭范围`, and `安全说明`;
 - include a reviewer-readable `Docs SSOT` or `文档同步` section that states the plan strategy, durable docs updated or the no-update reason, task artifact deltas merged to durable docs, content retained only as task history, and any follow-up or current PR limitation;
-- require an AI-reviewed `--body-file` / `--body-artifact` for non-draft publish; generated fallback bodies are allowed only for draft/preview paths and must still pass reviewer-readability checks;
+- require the AI-reviewed task-local `pr-body.md` through `--body-file`; reject `--body-artifact` and generated fallback bodies from the closeout path;
 - block non-draft publish if `变更摘要`, `影响范围`, `验证结果`, or `安全说明` are missing, empty, or low-information;
 - never use phrases such as `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact` as the main PR summary;
 - use `Closes #xx` only for `close_issues` in `issue-scope-ledger.json`;
 - use only `Refs #xx` or `Related #xx` semantics for `related_issues`;
 - never close `followup_issues`.
-- output a `merge_commit` payload during dry-run and formal publish. Dry-run may use `<pull_request>` as a placeholder and `ready=false`; formal publish must parse the created PR number and output `ready=true`, `chore(merge): #<pull_request> 合并 #<primary_issue> 中文 PR 摘要`, the fixed merge body, and a `gh pr merge <pull_request> --merge --subject ... --body-file ...` command. Maintainers must use this payload for the final merge and must not rely on GitHub's default merge commit subject.
+- use `format-merge-commit` to produce the final `merge_commit` payload after the PR number is known. Maintainers must use that payload for the final merge and must not rely on GitHub's default merge commit subject.
 
-The PR body quality judgment belongs to the AI readiness review. `publish-pr`
+The PR body quality judgment belongs to the AI readiness review. `trellis-finish-work`
 only validates objective structure, forbidden low-information phrases,
-reviewed body-file/artifact presence, Docs SSOT section/key presence, close/ref
-issue semantics, commit-message payload shape, archive-path resolution, and then executes the GitHub operation. It must not invent
+the exact reviewed task-local body file, Docs SSOT section/key presence, close/ref
+issue semantics, commit-message payload shape, archive-path resolution, and then executes the closeout transitions. It must not invent
 reviewer-facing justification or replace the AI's release judgment with a
 script-generated claim.
 
@@ -1465,7 +1464,7 @@ If any `close_issues` entry lacks acceptance/verification evidence, or the revie
 4. Planning artifacts must be persisted before implementation.
 5. In business projects, `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**` durable docs, `00-bootstrap-guidelines` generated docs SSOT, and workflow artifact human-readable fields are Chinese by default, with English reserved for literal tokens such as commands, paths, config keys, GitHub keywords, and code symbols.
 6. Daily user entry points are natural-language task requests, issue URLs or issue numbers, `trellis-continue`, and `trellis-finish-work`; `trellis-start` remains a fallback / explicit orientation entry for no-auto-injection platforms, disabled hooks, suspected bootstrap failures, or manual context reloads.
-7. `review-branch`, `finish-work.sh`, and `publish-pr` are companion script subcommands, not user-facing phases; ordinary direct `finish-work.sh` and `publish-pr` calls are blocked before archive/push/PR.
+7. `review-branch` and `finish-work.sh` are companion script subcommands, not user-facing phases; `publish-pr` is a compatibility-only blocked command. Ordinary direct `finish-work.sh` and every `publish-pr` call are blocked before archive/push/PR.
 8. Branch Review Gate belongs after commit and before finish-work; do not put it in a non-blocking hook.
 9. Publish PR belongs after successful finish-work; do not ask users to run a separate publish flow.
 10. Hooks are reminders and context injection only; the workflow contract owns the Guru Team process.

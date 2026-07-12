@@ -393,7 +393,8 @@ implementation handoff, `phase2-check.json`, durable docs, task artifacts, and
 the full diff, then report any current-scope Docs SSOT inconsistency as a
 finding. The reviewer does not merge durable docs or patch missing Phase 2 docs
 work.
-`finish-work.sh` and `publish-pr.sh` reject ordinary direct calls so
+`finish-work.sh` rejects ordinary direct calls, while `publish-pr.sh` is an
+unconditional compatibility blocker, so
 `trellis-continue` cannot chain closeout, commit review metadata, push, or
 create a PR before the explicit `trellis-finish-work` entrypoint. Normal PR
 publish is triggered only by `finish-work.sh --from-trellis-finish-work` after
