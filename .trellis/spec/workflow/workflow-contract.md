@@ -521,6 +521,12 @@ finish-summary artifact validator. The original PR must remain the unique open
 repo/head/base candidate; missing, closed, or same-branch replacement PRs fail
 closed. A plan-only archived directory is resolvable only through
 `trellis-finish-work`; ordinary task commands still require `task.json`.
+Final projection, incomplete recovery, and exact recovery use one strict PR URL
+parser. GitHub owner/repository comparison is case-insensitive, consistent with
+remote repository identity, while canonical output preserves the exact valid
+remote casing (for example `microsoft/PowerToys`). Transport, host, path shape,
+positive number, and absence of query/fragment remain strict; a different
+repository never matches.
 Plan-only recovery uses the same committed authority plus a dedicated boundary,
 not an unconditional workspace-boundary skip. Before
 GitHub access or committed recovery it must match the Git toplevel,

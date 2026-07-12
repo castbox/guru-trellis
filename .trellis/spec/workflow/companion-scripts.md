@@ -157,6 +157,12 @@ active task, including exactly one `PR #<number>` ref. A temporary future
 archive projection validates schema, path safety, artifact locators, ledger,
 gate, readiness, and the exact archive allowlist before the official
 `task.py archive --no-commit` move.
+Final projection and both incomplete/exact recovery use the same strict PR URL
+parser. It compares GitHub owner/repository identity case-insensitively against
+normalized `plan.git.repo`, but preserves the exact valid remote URL casing as
+the canonical summary output. It still rejects a different repository,
+non-HTTPS transport, invalid owner/repository component, non-positive or
+leading-zero number, trailing/extra path, query, and fragment.
 
 The finish-work prepare path has its own reviewed-body resolver. It preserves
 the lexical path and rejects paths outside the lexical repo root. The only

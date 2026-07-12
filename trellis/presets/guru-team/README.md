@@ -581,6 +581,11 @@ to recover the original PR number/URL and verify those bytes without invoking
 the general summary artifact validator; it never reads the working-tree
 summary. Missing, closed, or replacement PRs fail closed. Other archived
 artifacts remain unopened for semantic validation.
+Installed final projection, incomplete recovery, and exact recovery share one
+strict PR URL parser. GitHub owner/repository identity is case-insensitive,
+while the canonical summary URL preserves the exact valid casing returned by
+the remote PR (for example `microsoft/PowerToys`). A different repository,
+transport, invalid number, extra path, query, or fragment remains fail closed.
 The plan-only path reads the immutable plan from the current commit blob and
 runs a dedicated fail-closed boundary before GitHub or fast-path actions. Git
 toplevel, configured/effective repository, current head branch, available base

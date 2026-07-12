@@ -10244,17 +10244,49 @@ def publish_recovery_command(
     return command
 
 
-def canonical_pull_request_url(repo: str, number: int, url: Any) -> str:
-    value = str(url or "")
-    match = re.fullmatch(
-        r"https://github\.com/([^/]+)/([^/]+)/pull/([1-9][0-9]*)",
-        value,
-    )
+def parse_canonical_pull_request_url(repo: str, url: Any) -> tuple[str, int]:
+    expected_repo = normalize_github_repository(repo)
+    if not expected_repo or not isinstance(url, str) or not git_remote_config_value_is_safe(url):
+        raise WorkflowError(
+            "Publish recovery open PR lacks a canonical URL for the current repository.",
+            exit_code=2,
+        )
+    try:
+        parsed = urlsplit(url)
+    except ValueError as exc:
+        raise WorkflowError(
+            "Publish recovery open PR lacks a canonical URL for the current repository.",
+            exit_code=2,
+        ) from exc
+    parts = parsed.path.split("/")
     if (
-        match is None
-        or f"{match.group(1)}/{match.group(2)}".casefold() != repo.casefold()
-        or int(match.group(3)) != number
+        parsed.scheme != "https"
+        or parsed.netloc != "github.com"
+        or parsed.query
+        or parsed.fragment
+        or len(parts) != 5
+        or parts[0] != ""
+        or parts[3] != "pull"
+        or not re.fullmatch(r"[1-9][0-9]*", parts[4])
+        or normalize_github_repository(f"{parts[1]}/{parts[2]}") != expected_repo
     ):
+        raise WorkflowError(
+            "Publish recovery open PR lacks a canonical URL for the current repository.",
+            exit_code=2,
+        )
+    try:
+        number = int(parts[4])
+    except ValueError as exc:
+        raise WorkflowError(
+            "Publish recovery open PR lacks a canonical URL for the current repository.",
+            exit_code=2,
+        ) from exc
+    return url, number
+
+
+def canonical_pull_request_url(repo: str, number: int, url: Any) -> str:
+    value, parsed_number = parse_canonical_pull_request_url(repo, url)
+    if isinstance(number, bool) or not isinstance(number, int) or parsed_number != number:
         raise WorkflowError(
             "Publish recovery open PR lacks a canonical URL for the current repository.",
             exit_code=2,
@@ -11296,13 +11328,12 @@ def closeout_summary_runtime_pr_facts_from_bytes(
     index = summary.get("index")
     search_terms = index.get("search_terms") if isinstance(index, dict) else None
     pr_url = github.get("pr_url") if isinstance(github, dict) else None
-    match = re.fullmatch(
-        rf"https://github\.com/{re.escape(plan['git']['repo'])}/pull/([1-9][0-9]*)",
-        str(pr_url or ""),
-    )
-    if match is None:
-        raise WorkflowError("Committed final summary PR URL is not canonical for the immutable repo.", exit_code=2)
-    number = int(match.group(1))
+    try:
+        pr_url, number = parse_canonical_pull_request_url(plan["git"]["repo"], pr_url)
+    except WorkflowError as exc:
+        raise WorkflowError(
+            "Committed final summary PR URL is not canonical for the immutable repo.", exit_code=2
+        ) from exc
     if not isinstance(search_terms, dict) or search_terms.get("pr_refs") != [f"PR #{number}"]:
         raise WorkflowError("Committed final summary PR ref does not match its canonical URL.", exit_code=2)
     runtime_pr = {"number": number, "url": pr_url}
@@ -11352,14 +11383,14 @@ def closeout_summary_template_digest(plan: dict[str, Any], summary: dict[str, An
 
 def validate_closeout_final_summary(plan: dict[str, Any], summary: dict[str, Any]) -> None:
     validate_finish_summary(summary)
-    pr_url = str(summary.get("github", {}).get("pr_url") or "")
-    match = re.fullmatch(
-        rf"https://github\.com/{re.escape(plan['git']['repo'])}/pull/([1-9][0-9]*)",
-        pr_url,
-    )
-    if match is None:
-        raise WorkflowError("Final summary PR URL does not match closeout repo identity.", exit_code=2)
-    expected_ref = [f"PR #{match.group(1)}"]
+    pr_url = summary.get("github", {}).get("pr_url")
+    try:
+        _canonical_url, number = parse_canonical_pull_request_url(plan["git"]["repo"], pr_url)
+    except WorkflowError as exc:
+        raise WorkflowError(
+            "Final summary PR URL does not match closeout repo identity.", exit_code=2
+        ) from exc
+    expected_ref = [f"PR #{number}"]
     if summary.get("index", {}).get("search_terms", {}).get("pr_refs") != expected_ref:
         raise WorkflowError("Final summary PR ref does not match canonical PR identity.", exit_code=2)
     actual = closeout_summary_template_digest(plan, summary)

@@ -16,7 +16,8 @@ from pathlib import Path
 from typing import Any
 
 
-REPO = "owner/repo"
+REPO = "microsoft/powertoys"
+REMOTE_REPO = "microsoft/PowerToys"
 BASE_BRANCH = "main"
 
 
@@ -277,7 +278,7 @@ import sys
 
 args = sys.argv[1:]
 if args[:2] == ["remote", "get-url"]:
-    print("https://github.com/owner/repo.git")
+    print("https://github.com/microsoft/PowerToys.git")
     raise SystemExit(0)
 real_git = os.environ["INSTALLED_CLOSEOUT_REAL_GIT"]
 os.execv(real_git, [real_git, *args])
@@ -333,14 +334,14 @@ if args[:2] == ["pr", "create"]:
     body = Path(value("--body-file")).read_text(encoding="utf-8")
     payload = {
         "number": number,
-        "url": f"https://github.com/owner/repo/pull/{number}",
+        "url": f"https://github.com/microsoft/PowerToys/pull/{number}",
         "title": value("--title"),
         "body": body,
         "isDraft": True,
         "state": "OPEN",
         "headRefOid": remote_head(),
-        "headRepository": {"nameWithOwner": "owner/repo"},
-        "headRepositoryOwner": {"login": "owner"},
+        "headRepository": {"nameWithOwner": "microsoft/PowerToys"},
+        "headRepositoryOwner": {"login": "microsoft"},
         "isCrossRepository": False,
     }
     save(payload)
@@ -548,7 +549,7 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
     if git(root, real_git, "status", "--porcelain"):
         raise RuntimeError("installed closeout left the throwaway repository dirty")
     summary = json.loads((archived / "finish-summary.json").read_text(encoding="utf-8"))
-    expected_url = f"https://github.com/{REPO}/pull/{issue}"
+    expected_url = f"https://github.com/{REMOTE_REPO}/pull/{issue}"
     if summary["github"]["pr_url"] != expected_url:
         raise RuntimeError("installed closeout summary PR URL is not canonical")
     if summary["index"]["search_terms"]["pr_refs"] != [f"PR #{issue}"]:

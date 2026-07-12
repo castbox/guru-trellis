@@ -142,6 +142,16 @@ fail closed. Readiness, body, ledger, and verifier remain unopened after the
 official move, while remote title/body and three-way HEAD checks still come
 from the immutable plan and remote facts.
 
+Final projection, incomplete recovery, and exact recovery share one strict PR
+URL parser. The URL must be exactly
+`https://github.com/<owner>/<repository>/pull/<positive-number>` with no
+alternate transport, leading-zero number, trailing or extra path, query, or
+fragment. GitHub owner/repository identity is compared case-insensitively with
+the normalized `plan.git.repo`, while the canonical output preserves the exact
+valid owner/repository casing returned by the bound remote PR, such as
+`microsoft/PowerToys`. A different repository remains invalid regardless of
+casing.
+
 Archive content identity is not inferred from the no-renames path set. Before
 the exact archive commit exists, each `tracked_move_paths` item binds the
 evidence commit active blob to the archived working-tree file and prospective

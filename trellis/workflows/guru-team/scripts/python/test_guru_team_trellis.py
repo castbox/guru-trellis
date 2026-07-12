@@ -9300,7 +9300,65 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 expected_pr={"number": 106, "url": "https://github.com/owner/repo/pull/106"},
             )
 
-    def build_plan(self) -> dict[str, object]:
+    def test_strict_pr_url_parser_preserves_mixed_case_remote_canonical_url(self) -> None:
+        url = "https://github.com/microsoft/PowerToys/pull/105"
+        self.assertEqual(
+            gtt.parse_canonical_pull_request_url("microsoft/powertoys", url),
+            (url, 105),
+        )
+        for invalid in [
+            "http://github.com/microsoft/PowerToys/pull/105",
+            "https://github.com/microsoft/PowerShell/pull/105",
+            "https://github.com/micro%73oft/PowerToys/pull/105",
+            "https://github.com/microsoft/Power%54oys/pull/105",
+            "https://github.com/microsoft/PowerToys/pull/0105",
+            "https://github.com/microsoft/PowerToys/pull/105/",
+            "https://github.com/microsoft/PowerToys/pull/105/files",
+            "https://github.com/microsoft/PowerToys/pull/105?diff=split",
+            "https://github.com/microsoft/PowerToys/pull/105#discussion",
+            "https://github.com/microsoft/PowerToys/pull/" + "9" * 5000,
+        ]:
+            with self.subTest(invalid=invalid), self.assertRaises(gtt.WorkflowError):
+                gtt.parse_canonical_pull_request_url("microsoft/powertoys", invalid)
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.canonical_pull_request_url(
+                "microsoft/powertoys", 105, "https://github.com/microsoft/PowerToys/pull/106"
+            )
+
+    def test_mixed_case_pr_url_final_projection_uses_remote_canonical_output(self) -> None:
+        plan = self.build_plan(repo="microsoft/powertoys")
+        pr = {"number": 105, "url": "https://github.com/microsoft/PowerToys/pull/105"}
+        summary = gtt.closeout_summary_for_pr(plan, pr)
+        self.assertEqual(summary["github"]["pr_url"], pr["url"])
+        gtt.validate_closeout_final_summary(plan, summary)
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.render_closeout_summary_for_pr(
+                plan,
+                {"number": 105, "url": "https://github.com/microsoft/PowerShell/pull/105"},
+            )
+
+    def test_mixed_case_pr_url_incomplete_and_exact_recovery_share_strict_parser(self) -> None:
+        plan = self.build_plan(repo="microsoft/powertoys")
+        pr = {"number": 105, "url": "https://github.com/microsoft/PowerToys/pull/105"}
+        content = gtt.closeout_json_artifact_bytes(gtt.render_closeout_summary_for_pr(plan, pr))
+        incomplete = gtt.closeout_summary_runtime_pr_facts_from_bytes(
+            plan, content, expected_pr=pr
+        )
+        exact = gtt.closeout_summary_runtime_pr_facts_from_bytes(plan, content)
+        self.assertEqual(incomplete["url"], pr["url"])
+        self.assertEqual(exact["url"], pr["url"])
+
+        wrong_repo = json.loads(content.decode("utf-8"))
+        wrong_repo["github"]["pr_url"] = "https://github.com/microsoft/PowerShell/pull/105"
+        wrong_content = gtt.closeout_json_artifact_bytes(wrong_repo)
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.closeout_summary_runtime_pr_facts_from_bytes(
+                plan, wrong_content, expected_pr=pr
+            )
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.closeout_summary_runtime_pr_facts_from_bytes(plan, wrong_content)
+
+    def build_plan(self, *, repo: str = "owner/repo") -> dict[str, object]:
         def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
             stdout = f"{self.head}\n" if command[:2] == ["git", "rev-list"] else ""
             return mock.Mock(returncode=0, stdout=stdout, stderr="")
@@ -9315,7 +9373,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 self.gate,
                 self.ledger,
                 self.task_dir / "finish-summary-index.json",
-                repo="owner/repo",
+                repo=repo,
                 remote="origin",
                 base_branch="main",
                 head_branch="fix/105-closeout",

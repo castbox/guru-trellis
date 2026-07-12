@@ -81,6 +81,20 @@ if (isThreadEvent(ev)) {
 **Rule**: If the same untyped payload field is read in 2+ places, create a
 shared type guard / normalizer / projection before adding a third reader.
 
+### Pattern 5: Repeated External Identifier Parsing
+
+**Bad**: One stage uses a parser while later validation or recovery stages
+repeat the identifier contract with local regexes. Case normalization, strict
+syntax, and canonical output can then drift independently.
+
+**Good**: Reuse one strict parser across creation, persistence, and recovery.
+The parser must distinguish comparison identity from canonical output policy;
+for example, a case-insensitive repository identity may still preserve the
+exact valid casing returned by the authoritative remote URL.
+
+**Rule**: If the same external identifier crosses 2+ lifecycle stages, define
+its syntax, normalized comparison identity, and canonical output in one parser.
+
 ---
 
 ## When to Abstract
