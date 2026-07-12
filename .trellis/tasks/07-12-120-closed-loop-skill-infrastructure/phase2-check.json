@@ -1,0 +1,192 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-12T16:01:19Z",
+  "task_dir": ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure",
+  "base_branch": "main",
+  "head": "f14f167294154abffc0ef6124e0428911350b25b",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/spec/docs/public-docs.md",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/index.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/guru-team-extension.json",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
+    ".trellis/guru-team/skills/registry.json",
+    ".trellis/guru-team/skills/schemas/skill-interface.schema.json",
+    ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/agent-assignment.json",
+    ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/check.jsonl",
+    ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/implement.jsonl",
+    ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/issue-scope-ledger.json",
+    ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/phase2-findings.json",
+    ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/research/architecture-evidence.md",
+    ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/task-start-context.json",
+    ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/task.json",
+    "trellis/skills/guru-team/registry.json",
+    "trellis/skills/guru-team/schemas/skill-interface.schema.json",
+    "trellis/skills/guru-team/schemas/skill-registry.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/SKILL.md",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/examples/fixture-result.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/interface.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/references/contract.md",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/schemas/fixture-result.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/scripts/validate-fixture-result.sh",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/registry.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-registry.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/workflow.md",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh"
+  ],
+  "checker": "/root/trellis_check_120_replacement",
+  "check_summary": "fresh replacement checker 独立审查 #120 完整未提交 diff，确认三组 P1/P2 findings 已修复关闭，R1-R8、AC1-AC12、Docs SSOT、schema/validator、installer/manifest、跨平台分发、dogfood/update-reapply、throwaway、公共 API、commit contract 与安全边界均通过；当前 findings=0。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/prd.md",
+      "sha256": "654b1a4db75aaafec3097627771d9a106745d6d499576dac7d75ecf339ca3197",
+      "size_bytes": 9581,
+      "modified_at": "2026-07-12T13:48:52.275951+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/design.md",
+      "sha256": "0f21ccd09ee75782423dcb5c695ba51a68b48199166a0871e57c42a911112afe",
+      "size_bytes": 10578,
+      "modified_at": "2026-07-12T13:49:19.015986+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/implement.md",
+      "sha256": "68912b14d38b76a5a9514df6bad5a7e1a4d15c8838aedf03d37892fbc8187f46",
+      "size_bytes": 7057,
+      "modified_at": "2026-07-12T13:48:52.276700+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/planning-approval.json",
+      "sha256": "03cfe3b257093a831064b0898e28734cac27d2b0fb4784c85648aad5b8eefdfd",
+      "size_bytes": 4677,
+      "modified_at": "2026-07-12T13:50:39.254092+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "20a3e43ec9e6fa323768e3b7909b7d345ffa3387f597aacb36190877e80f5fdf",
+      "size_bytes": 38367,
+      "modified_at": "2026-07-12T13:57:27.743068+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "4cea0a6d02d0eb3ce5c850768560d46d4bc232336040478a9f810bdec7b4077e",
+      "size_bytes": 11606,
+      "modified_at": "2026-07-12T13:41:46.057476+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "cb85dc1d25ce4a3a97f328d3e959eae08868a576beead5e95ca21326b390237b",
+      "size_bytes": 38496,
+      "modified_at": "2026-07-12T13:41:46.057198+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "81b3199ebe08e6860becebeee27c8460a7995b5b4e7ea67be4382c9e70ec73d3",
+      "size_bytes": 48839,
+      "modified_at": "2026-07-12T14:22:51.580631+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "d7e7467478e017dd5f2d9115c6c0799f0a39eb606b9202f9d93a00c00bc36c84",
+      "size_bytes": 13611,
+      "modified_at": "2026-07-12T14:59:25.458288+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "1b4f5b42d618a3c4c41402545684a8a8268ad4596366a40e735172b26ef833fe",
+      "size_bytes": 16495,
+      "modified_at": "2026-07-12T13:57:27.743685+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "24aaeca5bc93bb272bd996f144dde860e263823ec16a59647bf5960de4b188fd",
+      "size_bytes": 5140,
+      "modified_at": "2026-07-12T13:57:27.743951+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest skill+preset+companion suites",
+      "result": "468/468 通过"
+    },
+    {
+      "command": "check-skill-packages --mode source 与 --mode installed",
+      "result": "通过"
+    },
+    {
+      "command": "preset apply --all-platforms 二次应用与 check-dogfood-overlay-drift.sh",
+      "result": "幂等且通过"
+    },
+    {
+      "command": "verify-throwaway-install.sh",
+      "result": "init/preview/switch/update/reapply/installed validation/两轮 closeout/零 sidecar 通过"
+    },
+    {
+      "command": "python py_compile、bash -n、JSON、task validate、workspace boundary、git diff --check",
+      "result": "通过"
+    },
+    {
+      "command": "planned work/metadata/merge commit payload validation",
+      "result": "通过"
+    },
+    {
+      "command": "远端 exact feature-ref marketplace verification",
+      "result": "按计划延期到 branch push 后的 finish-work verifier"
+    }
+  ],
+  "findings": [
+    {
+      "priority": "P1",
+      "message": "Public skill installer 与 installed validator 的目标路径边界未逐组件拒绝 symlink，可能越过 repo-relative managed root；已增加 lexical containment、逐组件 lstat、安全写入和 target/ancestor 回归矩阵。",
+      "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P1",
+      "message": "Source/installed validator 未完整应用 registry/interface schema 与双向 inventory，多个无效 schema、interface、manifest 和 sidecar 状态被错误通过；已增加受限 Draft 2020-12 evaluator、schema identity/digest、类型守卫、异常结构化和完整负向回归。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "Selected platform 缩减后 previous-managed stale copies 与 manifest status/remediation 不一致；已实现 known managed cleanup、unknown/invalid conflict 保留、sidecar/removal 证据和准确 status。",
+      "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "status": "resolved"
+    }
+  ],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

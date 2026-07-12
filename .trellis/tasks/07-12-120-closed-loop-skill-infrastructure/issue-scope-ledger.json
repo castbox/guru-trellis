@@ -1,0 +1,20 @@
+{
+  "primary_issue": {
+    "number": 120,
+    "url": "https://github.com/castbox/guru-trellis/issues/120",
+    "title": "建立 Guru Team 闭环 Skill 合同与 Canonical 分发基础设施",
+    "reason": "intake 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 120,
+      "url": "https://github.com/castbox/guru-trellis/issues/120",
+      "title": "建立 Guru Team 闭环 Skill 合同与 Canonical 分发基础设施",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

@@ -1,0 +1,7 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"定义 canonical workflow、phase ownership、平台入口与 mandatory routing 的现有合同。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 deterministic script 只能执行、记录和校验机器事实。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"提供现有 schema、artifact identity、freshness 与 fail-closed 数据合同模式。"}
+{"file":".trellis/spec/preset/installer.md","reason":"定义 preset managed assets、platform selection、update/reapply 与 .new/.bak 现有语义。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"约束平台入口必须回指 workflow/skill SSOT，禁止复制完整流程正文。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"约束 public README、安装命令、升级证据和去敏内容。"}
+{"file":".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/research/architecture-evidence.md","reason":"汇总官方文档、live repo 与 #109 历史决策的 task-local 架构依据。"}

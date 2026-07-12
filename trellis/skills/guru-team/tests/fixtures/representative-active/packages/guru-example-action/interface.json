@@ -1,0 +1,26 @@
+{
+  "$schema": "../../schemas/skill-interface.schema.json",
+  "schema_version": "1.0",
+  "id": "guru-example-action",
+  "name": "Representative fixture skill",
+  "description": "Exercises the public closed-loop package contract without becoming a production skill.",
+  "state": "active",
+  "modes": {
+    "workflow": {"entry_precondition_ids": ["fresh_input"]},
+    "standalone": {"entry_precondition_ids": ["fresh_input"]}
+  },
+  "entry_preconditions": [
+    {"id": "fresh_input", "evidence": "fixture-input.json", "binding": "sha256", "freshness": "current fixture invocation"}
+  ],
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [{"id": "result", "path": "examples/fixture-result.json"}],
+  "schemas": [{"id": "result_schema", "path": "schemas/fixture-result.schema.json"}],
+  "validators": [{"id": "result_validator", "command": "scripts/validate-fixture-result.sh", "objective_scope": "JSON shape and digest only"}],
+  "external_exits": [
+    {"id": "completed", "evidence": "fixture-result.json", "consumer": {"kind": "workflow", "id": "fixture-next"}},
+    {"id": "blocked", "evidence": "fixture-result.json", "consumer": {"kind": "stop", "id": "fixture-stop"}}
+  ],
+  "reentry": {"identity": "fixture input digest", "freshness": "digest still matches", "stale_behavior": "fail_closed"},
+  "tests": ["representative-active"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"]
+}

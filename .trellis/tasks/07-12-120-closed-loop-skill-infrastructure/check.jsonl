@@ -1,0 +1,8 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"复核 global workflow 与 step-local skill 的 ownership、route 和 dogfood 同步。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"复核 Phase 2 全 task scope、测试证据和 fail-closed 质量要求。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"复核 validator/recorder/executor 未越权承担 AI 判断。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"复核 registry/interface/manifest schema、hash、freshness 和错误状态。"}
+{"file":".trellis/spec/preset/installer.md","reason":"复核 deterministic distribution、managed hash、platform selection 和 update/reapply。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"复核 canonical 与 installed/platform copies 没有多重 SSOT。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"复核 README 安装/升级命令、公共 API 和去敏要求。"}
+{"file":".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/research/architecture-evidence.md","reason":"复核实现是否承接 live issue、官方文档和已确认历史边界。"}

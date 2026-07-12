@@ -62,7 +62,7 @@ Chinese documentation contract.
 
 Stable workflow marketplace installs should pin the repo release tag that
 combines the target official Trellis CLI version and Guru Team revision, for
-example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.3`. That release targets
+example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`. That release targets
 official `@mindfoldhq/trellis` `0.6.5`. Unpinned `gh:castbox/guru-trellis/trellis`
 is a latest/canary source and should be reported as mutable provenance.
 
@@ -92,7 +92,7 @@ command.
 ## Apply
 
 ```bash
-git clone --depth 1 --branch v0.6.5-guru.3 \
+git clone --depth 1 --branch v0.6.5-guru.2 \
   https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project \
@@ -116,7 +116,7 @@ Examples:
 
 ## Throwaway Install Verification
 
-Maintainers can verify the stable non-interactive install path with:
+Maintainers can verify the current extension's non-interactive install path with:
 
 ```bash
 ./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh
@@ -136,12 +136,13 @@ asserts target `.trellis/spec/**` and
 `00-bootstrap-guidelines` do not retain known English documentation language
 requirements, and runs `check-env --json` plus `version.sh --json`. Trellis CLI accepts
 `gh:user/repo/path#ref` workflow marketplace sources; the script defaults to
-`TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#v0.6.5-guru.3` for stable
-release verification. When the source is unpinned
-`gh:castbox/guru-trellis/trellis`, the script fails closed on non-`main` branches
+`TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#main` as an explicit
+mutable canary baseline. The unpinned source and `#main` both fail closed on non-`main` branches
 or dirty marketplace workflow files unless
 `TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1` is set. This prevents public remote
 sampling from being reported as current-branch marketplace verification. When
+validating a feature branch or release, set `TRELLIS_WORKFLOW_SOURCE` to the exact
+existing branch/tag ref; only that run is evidence for that ref. When
 it does run, it also exercises the existing-project `trellis workflow
 --create-new` preview, deletes the validated expected preview `.new`, then runs
 forced switch, `trellis update --force`, workflow reapply, and preset reapply.
@@ -178,6 +179,26 @@ committing. A passing drift check is not a replacement for AI review or the
 Branch Review Gate.
 
 ## Installed Files
+
+Preset 是完整 Guru Team extension configurator。除 companion assets 和
+platform overlays 外，它验证 `trellis/skills/guru-team/registry.json`，将
+registry/schema/active packages 安装到 `.trellis/guru-team/skills/`，并把
+active package 分发到 shared root 与明确选择的 Codex/Cursor/Claude roots。
+Reserved ids 与 test fixtures 永不安装，未选择的平台 root 不因 skill 分发
+而创建。
+
+Skill 文件按 installed manifest 中的 previous managed hash 更新：missing
+直接安装，canonical-equal 保持 unchanged，known upgrade 先写 `.bak` 再替换，
+unknown/invalid provenance 保留原文件并写 `.new` 后阻塞。完成安装或
+`trellis update` 后重放时，必须处理所有 sidecar，再运行 source/installed
+`check-skill-packages` 和 dogfood drift 检查。
+
+Manifest 的 `files[]` 是当前完整 inventory；平台选择缩减时，known managed
+旧副本安全删除并进入 `removals[]`，unknown/invalid 副本保留并进入
+`conflicts[]`，`sidecars[]` 必须与磁盘 `.new/.bak` 精确一致。任何 conflict
+都会令 `status=conflict`。所有 skill 路径在读写/删除前逐组件 `lstat`；target
+或 ancestor 的 regular/dangling/internal/external/multilevel symlink 一律拒绝，
+不会沿链接读写 repo 外内容。
 
 Managed Guru Team assets are installed under `.trellis/guru-team/` regardless of
 platform selection:
@@ -273,7 +294,7 @@ Trellis workflow marketplace:
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.3 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.2 \
   --template guru-team
 ```
 

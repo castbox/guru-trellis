@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.0.json",
+  "title": "Guru Team closed-loop workflow skill interface",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schema_version", "id", "name", "description", "state", "modes", "entry_preconditions", "ordered_stages", "artifacts", "schemas", "validators", "external_exits", "reentry", "tests", "platform_destinations"],
+  "properties": {
+    "$schema": {"const": "../../schemas/skill-interface.schema.json"},
+    "schema_version": {"const": "1.0"},
+    "id": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
+    "name": {"type": "string", "minLength": 1},
+    "description": {"type": "string", "minLength": 1},
+    "state": {"const": "active"},
+    "modes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workflow", "standalone"],
+      "properties": {
+        "workflow": {"$ref": "#/$defs/mode"},
+        "standalone": {"$ref": "#/$defs/mode"}
+      }
+    },
+    "entry_preconditions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/precondition"}},
+    "ordered_stages": {
+      "const": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"]
+    },
+    "artifacts": {"type": "array", "items": {"$ref": "#/$defs/pathItem"}},
+    "schemas": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/pathItem"}},
+    "validators": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/validator"}},
+    "external_exits": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/exit"}},
+    "reentry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "freshness", "stale_behavior"],
+      "properties": {
+        "identity": {"type": "string", "minLength": 1},
+        "freshness": {"type": "string", "minLength": 1},
+        "stale_behavior": {"const": "fail_closed"}
+      }
+    },
+    "tests": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "platform_destinations": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"enum": ["shared", "codex", "cursor", "claude"]}
+    }
+  },
+  "$defs": {
+    "mode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_precondition_ids"],
+      "properties": {"entry_precondition_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}}}
+    },
+    "precondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "evidence", "binding", "freshness"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+        "evidence": {"type": "string", "minLength": 1},
+        "binding": {"type": "string", "minLength": 1},
+        "freshness": {"type": "string", "minLength": 1}
+      }
+    },
+    "pathItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+        "path": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"}
+      }
+    },
+    "validator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "command", "objective_scope"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+        "command": {"type": "string", "minLength": 1},
+        "objective_scope": {"type": "string", "minLength": 1}
+      }
+    },
+    "exit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "evidence", "consumer"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "evidence": {"type": "string", "minLength": 1},
+        "consumer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": {"enum": ["workflow", "skill", "stop"]},
+            "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}
+          }
+        }
+      }
+    }
+  }
+}

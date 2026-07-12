@@ -2,6 +2,13 @@
 
 ## Canonical Relationship
 
+Public workflow skill semantics are canonical under
+`trellis/skills/guru-team/`. Generated copies in `.agents/skills/`,
+`.codex/skills/`, `.cursor/skills/`, and `.claude/skills/` are runtime discovery
+copies or format adapters. They must point back to the package/interface and
+must not own or expand the step-local behavior. Workflow marketplace selection
+does not install these copies; preset apply does.
+
 Overlay files are small platform entrypoints. They should point the AI back to
 `.trellis/workflow.md` and the Guru Team companion scripts instead of
 duplicating the full workflow.

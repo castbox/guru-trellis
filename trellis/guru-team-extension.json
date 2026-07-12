@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "extension_id": "guru-team",
   "name": "Guru Team Trellis Extension",
-  "version": "0.6.5-guru.3",
+  "version": "0.6.5-guru.4",
   "workflow_template_id": "guru-team",
   "marketplace_index_schema_version": 1,
   "target_trellis_cli": "0.6.5",
@@ -19,6 +19,11 @@
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "managed_paths": [
       ".trellis/guru-team/",
+      ".trellis/guru-team/skills/",
+      ".agents/skills/guru-*/",
+      ".codex/skills/guru-*/",
+      ".cursor/skills/guru-*/",
+      ".claude/skills/guru-*/",
       ".agents/skills/trellis-start/",
       ".agents/skills/trellis-continue/",
       ".agents/skills/trellis-finish-work/",
@@ -47,11 +52,20 @@
       "marketplace-verification.json",
       "finish-summary.json"
     ],
+    "skill_contracts": {
+      "canonical_root": "trellis/skills/guru-team/",
+      "installed_root": ".trellis/guru-team/skills/",
+      "registry_schema_id": "guru-team-skill-registry-1.0",
+      "interface_schema_id": "guru-team-skill-interface-1.0",
+      "registry_lifecycle": ["reserved", "active"],
+      "workflow_markers": ["guru-skill-invoke", "guru-skill-exit"]
+    },
     "companion_scripts": [
       "check-env",
       "version",
       "prepare-task",
       "check-workspace-boundary",
+      "check-skill-packages",
       "resolve-human-artifacts",
       "record-planning-approval",
       "check-planning-approval",

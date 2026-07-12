@@ -65,6 +65,19 @@ to complete it now or leave it for a separate follow-up.
 
 ## SSOT Rules
 
+Public docs must identify `trellis/skills/guru-team/` as the only canonical
+workflow skill root and distinguish registry lifecycle (`reserved` versus
+`active`), package/interface ownership, workflow marker ownership, generated
+platform copies, and deterministic script limits. They must state that the
+workflow marketplace installs only `.trellis/workflow.md`, while the preset is
+the complete Guru Team extension configurator.
+
+Skill ids, external exit ids, registry/interface/schema ids, stable script
+commands, and lifecycle states are public APIs. Breaking changes require a new
+id or an explicit migration. Upgrade instructions must require workflow and
+preset reapply after `trellis update`, resolution of `.new`/`.bak`, and source,
+installed, and drift validation before claiming success.
+
 When workflow behavior changes, update the docs that users actually read:
 
 - `README.md` for install/upgrade and daily operation

@@ -222,6 +222,20 @@ Canonical 资产：
 
 ## 6. P1：安装、升级与开箱验证
 
+公共 workflow skill 基础设施由 `trellis/skills/guru-team/` 单点定义。
+Production registry 的 `reserved` 项只占用公共 id，不能安装或被 mandatory
+route 引用；`active` 项必须携带完整 package/interface/schema/validator/test
+和 workflow marker 证据。global workflow 只拥有 mandatory invocation、跨
+skill transition 和 typed exit consumer/stop，step-local 正文只属于 skill。
+
+Preset 负责把 active package 安装到 `.trellis/guru-team/skills/`、shared
+root 和已选择的平台 root，并用 previous managed hash 区分 missing、
+unchanged、known managed upgrade 与 unknown local edit。unknown/invalid
+provenance 必须保留原文件、生成 `.new` 并 fail closed；known upgrade 先生成
+`.bak`。`check-skill-packages --mode source|installed` 只校验机器事实，不得
+替代 AI Gate。`trellis update` 后必须重放 workflow 和 preset、处理 sidecar，
+再通过 source/installed/drift 检查。
+
 这类扩展证明 `guru-team` 不是 dogfood 仓库里的局部 patch，而是可以安装、升级、抽样验证的
 团队扩展。
 

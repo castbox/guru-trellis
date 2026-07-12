@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 120,
+    "url": "https://github.com/castbox/guru-trellis/issues/120",
+    "title": "建立 Guru Team 闭环 Skill 合同与 Canonical 分发基础设施",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/120"
+  },
+  "task_slug": "120-closed-loop-skill-infrastructure",
+  "task_title": "#120 建立 Guru Team 闭环 Skill 合同与 Canonical 分发基础设施",
+  "task_artifact_dir": ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure",
+  "branch_name": "feat/120-closed-loop-skill-infrastructure",
+  "base_branch": "main",
+  "base_ref": "main",
+  "base_head_sha": "f14f167294154abffc0ef6124e0428911350b25b",
+  "remote_head_sha": "f14f167294154abffc0ef6124e0428911350b25b",
+  "workspace_slug": "120-closed-loop-skill-infrastructure",
+  "task_workspace_id": "120-closed-loop-skill-infrastructure",
+  "assignee": "wumengye",
+  "actor": {
+    "login": "wumengye"
+  },
+  "issue_scope_ledger_seed": {
+    "primary_issue": {
+      "number": 120,
+      "url": "https://github.com/castbox/guru-trellis/issues/120",
+      "title": "建立 Guru Team 闭环 Skill 合同与 Canonical 分发基础设施",
+      "reason": "intake 主 issue，默认进入 close 候选。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 120,
+        "url": "https://github.com/castbox/guru-trellis/issues/120",
+        "title": "建立 Guru Team 闭环 Skill 合同与 Canonical 分发基础设施",
+        "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": false,
+      "selected_issue": 120
+    },
+    "naming_quality": {
+      "ok": true,
+      "reason": "naming includes enough business tokens",
+      "requires_semantic_name": false,
+      "current_slug": "120-closed-loop-skill-infrastructure",
+      "current_surface": "workspace_slug",
+      "suggested_override_flags": [],
+      "checked_names": {
+        "slug": {
+          "ok": true,
+          "slug": "120-closed-loop-skill-infrastructure",
+          "reason": "ok",
+          "business_tokens": [
+            "closed",
+            "loop",
+            "skill",
+            "infrastructure"
+          ]
+        },
+        "task_slug": {
+          "ok": true,
+          "slug": "120-closed-loop-skill-infrastructure",
+          "reason": "ok",
+          "business_tokens": [
+            "closed",
+            "loop",
+            "skill",
+            "infrastructure"
+          ]
+        },
+        "workspace_slug": {
+          "ok": true,
+          "slug": "120-closed-loop-skill-infrastructure",
+          "reason": "ok",
+          "business_tokens": [
+            "closed",
+            "loop",
+            "skill",
+            "infrastructure"
+          ]
+        },
+        "branch_name": {
+          "ok": true,
+          "slug": "120-closed-loop-skill-infrastructure",
+          "reason": "ok",
+          "business_tokens": [
+            "closed",
+            "loop",
+            "skill",
+            "infrastructure"
+          ]
+        }
+      }
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    }
+  }
+}

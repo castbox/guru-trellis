@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.3",
+    "version": "0.6.5-guru.4",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.5",
@@ -21,6 +21,11 @@
       "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
       "managed_paths": [
         ".trellis/guru-team/",
+        ".trellis/guru-team/skills/",
+        ".agents/skills/guru-*/",
+        ".codex/skills/guru-*/",
+        ".cursor/skills/guru-*/",
+        ".claude/skills/guru-*/",
         ".agents/skills/trellis-start/",
         ".agents/skills/trellis-continue/",
         ".agents/skills/trellis-finish-work/",
@@ -49,11 +54,26 @@
         "marketplace-verification.json",
         "finish-summary.json"
       ],
+      "skill_contracts": {
+        "canonical_root": "trellis/skills/guru-team/",
+        "installed_root": ".trellis/guru-team/skills/",
+        "registry_schema_id": "guru-team-skill-registry-1.0",
+        "interface_schema_id": "guru-team-skill-interface-1.0",
+        "registry_lifecycle": [
+          "reserved",
+          "active"
+        ],
+        "workflow_markers": [
+          "guru-skill-invoke",
+          "guru-skill-exit"
+        ]
+      },
       "companion_scripts": [
         "check-env",
         "version",
         "prepare-task",
         "check-workspace-boundary",
+        "check-skill-packages",
         "resolve-human-artifacts",
         "record-planning-approval",
         "check-planning-approval",
@@ -75,11 +95,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-11T20:28:12Z",
+  "installed_at": "2026-07-12T15:45:41Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "fix/105-finish-work-closeout-transaction",
-    "commit": "d8bde831632c7e0e3141ae005fcea973092d8702",
+    "ref": "feat/120-closed-loop-skill-infrastructure",
+    "commit": "f14f167294154abffc0ef6124e0428911350b25b",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -147,6 +167,7 @@
       ".trellis/guru-team/scripts/bash/check-phase2-check.sh",
       ".trellis/guru-team/scripts/bash/check-planning-approval.sh",
       ".trellis/guru-team/scripts/bash/check-review-gate.sh",
+      ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
       ".trellis/guru-team/scripts/bash/check-subagent-liveness.sh",
       ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
       ".trellis/guru-team/scripts/bash/finish-work.sh",
@@ -167,6 +188,48 @@
     "managed_backups": [],
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
+  },
+  "skill_packages": {
+    "schema_version": "1.0",
+    "status": "ok",
+    "canonical_registry_sha256": "88d3e52221b2a11fad2c2eb16626d714ac4ef4baac908624a8b9f52c05a3777f",
+    "registry_schema_version": "1.0",
+    "reserved_ids": [
+      "guru-create-work-commit"
+    ],
+    "active_ids": [],
+    "selected_platforms": [
+      "claude",
+      "codex",
+      "cursor"
+    ],
+    "packages": [],
+    "files": [
+      {
+        "path": ".trellis/guru-team/skills/registry.json",
+        "source": "trellis/skills/guru-team/registry.json",
+        "sha256": "88d3e52221b2a11fad2c2eb16626d714ac4ef4baac908624a8b9f52c05a3777f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
+        "source": "trellis/skills/guru-team/schemas/skill-registry.schema.json",
+        "sha256": "b0d2b1318b9665f37168836eb0a8f0ab8f5c9e08c0af04abd840f3e30eb40fa2",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-interface.schema.json",
+        "source": "trellis/skills/guru-team/schemas/skill-interface.schema.json",
+        "sha256": "d96ece4f5e83195a34a881ac76ccdd5504180fb6e04c2386ab6e96c7783c595b",
+        "executable": false,
+        "action": "unchanged"
+      }
+    ],
+    "removals": [],
+    "conflicts": [],
+    "sidecars": []
   },
   "notes": "This file records deterministic install provenance for the Guru Team Trellis extension. source.commit and source.tree_state describe the extension source observed at apply time; they are not a claim that this installed manifest is contained in that commit. Upgrade and rollback judgment belongs to AI/human review."
 }

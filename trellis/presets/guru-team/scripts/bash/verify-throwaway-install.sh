@@ -5,7 +5,7 @@ USER_NAME="${TRELLIS_USER:-throwaway}"
 WORK_DIR="${1:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#v0.6.5-guru.3}"
+WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#main}"
 ALLOW_PUBLIC_SAMPLE="${TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE:-0}"
 ENGLISH_LANGUAGE_RULE_PATTERN='All documentation (must|should) be written in .*English'
 STALE_PLANNING_HINT_PATTERN='PRD-only|Lightweight tasks may be PRD-only|Lightweight tasks may have only|Lightweight task can (ask|request)|lightweight task with `?prd\.md`? complete|Missing optional artifacts|skipped for lightweight tasks|optional `?design\.md`? / `?implement\.md`?|optional `?design\.md`?|optional `?implement\.md`?|ask for start review, then run `?task\.py start`?|design\.md if present|implement\.md if present|`?design\.md`?[^[:cntrl:]]*(\(if exists\)|if exists|if present)|`?implement\.md`?[^[:cntrl:]]*(\(if exists\)|if exists|if present)|technical design if present|execution plan if present|technical design \(if exists\)|execution plan \(if exists\)|design\.md / implement\.md if present|when present, design\.md / implement\.md|when those files are present|technical design and implementation plan when present'
@@ -82,7 +82,7 @@ PY
 
 CURRENT_BRANCH="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
 CURRENT_DIRTY="$(git -C "$REPO_ROOT" status --short -- trellis/index.json trellis/workflows/guru-team/workflow.md 2>/dev/null || true)"
-if [[ "$WORKFLOW_SOURCE" == gh:castbox/guru-trellis/trellis && ( "$CURRENT_BRANCH" != "main" || -n "$CURRENT_DIRTY" ) && "$ALLOW_PUBLIC_SAMPLE" != "1" ]]; then
+if [[ ( "$WORKFLOW_SOURCE" == gh:castbox/guru-trellis/trellis || "$WORKFLOW_SOURCE" == gh:castbox/guru-trellis/trellis#main ) && ( "$CURRENT_BRANCH" != "main" || -n "$CURRENT_DIRTY" ) && "$ALLOW_PUBLIC_SAMPLE" != "1" ]]; then
   python3 - <<PY
 import json
 payload = {
@@ -92,7 +92,7 @@ payload = {
   "current_branch": "$CURRENT_BRANCH",
   "dirty_marketplace_paths": [line for line in """$CURRENT_DIRTY""".splitlines() if line.strip()],
   "next_steps": [
-    "push the branch or create the release tag, then rerun with TRELLIS_WORKFLOW_SOURCE pointing at a supported gh: source with #ref, for example gh:castbox/guru-trellis/trellis#v0.6.5-guru.3",
+    "push the branch, then rerun with TRELLIS_WORKFLOW_SOURCE pointing at that exact branch ref; release validation may instead use an existing release tag",
     "or rerun with TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 and report that current-branch marketplace install was not verified",
   ],
 }
@@ -161,13 +161,25 @@ fi
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-env.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/version.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-subagent-liveness.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-commit-messages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/format-merge-commit.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
 test -f "$TARGET/.trellis/guru-team/extension.json"
-python3 -c 'import json, pathlib, sys; manifest_path = pathlib.Path(sys.argv[1]); root = pathlib.Path(sys.argv[2]); payload = json.loads(manifest_path.read_text(encoding="utf-8")); extension = payload["extension"]; install = payload["install"]; api = extension["public_api"]; assets = install["managed_assets"]; assert extension["extension_id"] == "guru-team"; assert extension["version"]; assert extension["target_trellis_cli"] == "0.6.5"; assert assets == sorted(set(assets)); assert len(assets) == 66; assert all((root / path).is_file() for path in assets); assert "agent-assignment.json" in api["artifact_contracts"]; assert "pr-body.md" in api["artifact_contracts"]; assert "closeout-plan.json" in api["artifact_contracts"]; assert "finish-summary.json" in api["artifact_contracts"]; assert "resolve-human-artifacts" in api["companion_scripts"]; assert "record-subagent-liveness-event" in api["companion_scripts"]; assert "check-subagent-liveness" in api["companion_scripts"]; assert "check-commit-messages" in api["companion_scripts"]; assert "format-merge-commit" in api["companion_scripts"]; assert "backfill-finish-summary" in api["companion_scripts"]' "$TARGET/.trellis/guru-team/extension.json" "$TARGET"
+python3 -c 'import json, pathlib, sys; manifest_path = pathlib.Path(sys.argv[1]); root = pathlib.Path(sys.argv[2]); payload = json.loads(manifest_path.read_text(encoding="utf-8")); extension = payload["extension"]; install = payload["install"]; skills = payload["skill_packages"]; api = extension["public_api"]; assets = install["managed_assets"]; assert extension["extension_id"] == "guru-team"; assert extension["version"]; assert extension["target_trellis_cli"] == "0.6.5"; assert assets == sorted(set(assets)); assert len(assets) == 67; assert all((root / path).is_file() for path in assets); assert "agent-assignment.json" in api["artifact_contracts"]; assert "pr-body.md" in api["artifact_contracts"]; assert "closeout-plan.json" in api["artifact_contracts"]; assert "finish-summary.json" in api["artifact_contracts"]; assert "resolve-human-artifacts" in api["companion_scripts"]; assert "record-subagent-liveness-event" in api["companion_scripts"]; assert "check-subagent-liveness" in api["companion_scripts"]; assert "check-commit-messages" in api["companion_scripts"]; assert "format-merge-commit" in api["companion_scripts"]; assert "backfill-finish-summary" in api["companion_scripts"]; assert "check-skill-packages" in api["companion_scripts"]; assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"; assert skills["status"] == "ok"; assert skills["reserved_ids"] == ["guru-create-work-commit"]; assert skills["active_ids"] == []; assert skills["selected_platforms"] == ["codex", "cursor"]; assert skills["sidecars"] == []; assert len(skills["files"]) == 3' "$TARGET/.trellis/guru-team/extension.json" "$TARGET"
+"$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null
+"$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed >/dev/null
+test ! -e "$TARGET/.agents/skills/guru-create-work-commit"
+test ! -e "$TARGET/.codex/skills/guru-create-work-commit"
+test ! -e "$TARGET/.cursor/skills/guru-create-work-commit"
+test ! -e "$TARGET/.claude/skills/guru-create-work-commit"
+test ! -e "$TARGET/.agents/skills/guru-example-action"
+test ! -e "$TARGET/.codex/skills/guru-example-action"
+test ! -e "$TARGET/.cursor/skills/guru-example-action"
+test ! -e "$TARGET/.claude/skills/guru-example-action"
+(cd "$REPO_ROOT" && python3 -m unittest trellis.skills.guru-team.tests.test_skill_packages.DistributionTests.test_unchanged_reapply)
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 mkdir -p "$TARGET/.trellis/tasks/archive"
 BACKFILL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh" --root "$TARGET" --json --dry-run)"
@@ -355,6 +367,8 @@ grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 test -f "$TARGET/.trellis/guru-team/schemas/finish-summary.schema.json"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh"
+"$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed >/dev/null
 BACKFILL_AFTER_UPDATE_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh" --root "$TARGET" --json --dry-run)"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["mode"] == "dry-run"; assert payload["scanned_tasks"] == 1; assert payload["errors"] == []' <<<"$BACKFILL_AFTER_UPDATE_JSON"
 grep -q '^session_auto_commit: false$' "$TARGET/.trellis/config.yaml"

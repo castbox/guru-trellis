@@ -17,6 +17,13 @@ Reference files:
 
 ## Phase Ownership
 
+Public mandatory workflow steps are invoked by stable skill id. The global
+workflow owns only phase order, `guru-skill-invoke` markers, transitions, typed
+exit consumers, and fail-closed stops; the active package under
+`trellis/skills/guru-team/` owns the step-local closed loop. Commands, prompts,
+breadcrumbs, launchers, and workflow prose must not duplicate that loop. See
+[skill-package-contract.md](./skill-package-contract.md).
+
 The workflow has four durable phases:
 
 - Phase 0: issue intake, Git base branch selection, and worktree preflight.

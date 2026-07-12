@@ -480,7 +480,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 71)
+        self.assertEqual(len(managed_assets), 72)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -964,7 +964,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.3")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.4")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         self.assertIn("agent-assignment.json", public_api["artifact_contracts"])
@@ -974,6 +974,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("check-commit-messages", public_api["companion_scripts"])
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("backfill-finish-summary", public_api["companion_scripts"])
+        self.assertIn("check-skill-packages", public_api["companion_scripts"])
+        self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")
         self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.5")
         self.assertEqual(payload["guru_team_extension"]["trellis_cli_compatibility"], "0.6.5")
         self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.5"])
