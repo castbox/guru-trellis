@@ -1,117 +1,88 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-11T07:57:12Z",
+  "generated_at": "2026-07-12T04:46:48Z",
   "task_dir": ".trellis/tasks/07-11-105-finish-work-closeout-transaction",
   "base_branch": "main",
-  "head": "3dec302206783fe4ac1296066e9a1789c995d58b",
+  "head": "1f177cd4a0542191ab645b3107a1502851493a29",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".agents/skills/trellis-finish-work/SKILL.md",
-    ".claude/commands/trellis/finish-work.md",
-    ".codex/prompts/trellis-finish-work.md",
-    ".codex/skills/trellis-finish-work/SKILL.md",
-    ".cursor/commands/trellis-finish-work.md",
-    ".trellis/guru-team/config-template.yml",
-    ".trellis/guru-team/extension.json",
-    ".trellis/guru-team/schemas/finish-summary.schema.json",
-    ".trellis/guru-team/schemas/marketplace-verification.schema.json",
-    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    ".trellis/spec/preset/installer.md",
-    ".trellis/spec/preset/overlay-guidelines.md",
-    ".trellis/spec/workflow/companion-scripts.md",
-    ".trellis/spec/workflow/data-contracts.md",
-    ".trellis/spec/workflow/quality-guidelines.md",
-    ".trellis/spec/workflow/workflow-contract.md",
-    ".trellis/workflow.md",
-    "docs/requirements/guru-team-trellis-flow.md",
-    "trellis/guru-team-extension.json",
-    "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
-    "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
-    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
-    "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
-    "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
-    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
-    "trellis/workflows/guru-team/README.md",
-    "trellis/workflows/guru-team/config-template.yml",
-    "trellis/workflows/guru-team/schemas/finish-summary.schema.json",
-    "trellis/workflows/guru-team/schemas/marketplace-verification.schema.json",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/agent-assignment.json",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/issue-scope-ledger.json",
     "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    "trellis/workflows/guru-team/workflow.md",
-    ".trellis/guru-team/schemas/closeout-plan.schema.json",
-    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/check.jsonl",
-    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/implement.jsonl",
-    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/planning-approval.json",
-    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/task-start-context.json",
-    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/task.json",
-    "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/review-gate.json",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/review.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-01-problem-discovery.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-02-closure.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-03-final-release-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-04-closure-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-05-closure.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-06-final-release-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-07-closure-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-08-closure.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-09-final-release-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-10-closure-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-11-closure-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-12-closure-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-13-closure-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-14-closure-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-15-closure.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-16-final-release-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-17-closure.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-18-final-release-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-19-replacement-closure.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-20-final-release-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-21-closure.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-22-final-release-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-23-closure.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-24-final-release-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-25-closure.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-26-final-release-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-27-closure-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-28-closure.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-29-final-release.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-30-final-release-cleanup-finding.md",
+    ".trellis/tasks/07-11-105-finish-work-closeout-transaction/reviews/round-31-closure-finding.md"
   ],
-  "checker": "/root/trellis_check_105",
-  "check_summary": "阶段二检查代理最终复核通过：四项 P1 均已闭环，需求、设计、实现、测试、spec、Docs SSOT、跨层合同、安装升级与部署影响一致，未发现新的 P0-P3；issue-scope-ledger验收证据仅固化该已完成结论，close范围仍仅#105；当前分支远端 marketplace 与真实 GitHub closeout E2E 由发布阶段 fail-closed verifier 承接。",
+  "checker": "/root/trellis_check_105_deterministic_contract",
+  "check_summary": "Round31 P2 已通过确定性文档合同止损闭环：删除自然语言 matcher，逐文件 exact required/forbidden snippets 与旧正文替换探针通过，测试净删19行。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-11-105-finish-work-closeout-transaction/prd.md",
-      "sha256": "77f2a0e921b4c2e216673d3f401d79cf611e6cb95fdd29959f8d1c50f6cfdd3b",
-      "size_bytes": 12014,
-      "modified_at": "2026-07-11T05:21:38.851903+00:00"
+      "sha256": "6b9b60f9eeb2b0fef02070c0fc31c58f01f7d2895b5c4236a68a543a4faa9f42",
+      "size_bytes": 14819,
+      "modified_at": "2026-07-12T02:54:17.374318+00:00"
     },
     {
       "path": ".trellis/tasks/07-11-105-finish-work-closeout-transaction/design.md",
-      "sha256": "f8f184f26ef300350901ab4a7ccf42f76b72a901a5194a56881a714118c990cf",
-      "size_bytes": 13155,
-      "modified_at": "2026-07-11T05:21:38.852209+00:00"
+      "sha256": "facb31d67381f9237b34b7108fb761cdfee75708879a8b8858425b9ce5db1607",
+      "size_bytes": 16202,
+      "modified_at": "2026-07-12T01:38:50.373136+00:00"
     },
     {
       "path": ".trellis/tasks/07-11-105-finish-work-closeout-transaction/implement.md",
-      "sha256": "17234fae94415dffdf539a1f70a8107e3d1f31c680f171c6ad49ccb83e1e5ecc",
-      "size_bytes": 8114,
-      "modified_at": "2026-07-11T05:21:38.852455+00:00"
+      "sha256": "566f69af1adac088e7183fdc846a31b10ce070efb181253fe7d7a534f5b3b5fb",
+      "size_bytes": 10420,
+      "modified_at": "2026-07-12T01:38:50.373523+00:00"
     },
     {
-      "path": ".trellis/tasks/07-11-105-finish-work-closeout-transaction/agent-assignment.json",
-      "sha256": "d6de2ecf79f6617cca5a1f55a702d65e2468ff0f5820fe1c41ffdeb3a73d721e",
-      "size_bytes": 26486,
-      "modified_at": "2026-07-11T07:50:42.027884+00:00"
-    },
-    {
-      "path": ".trellis/tasks/07-11-105-finish-work-closeout-transaction/issue-scope-ledger.json",
-      "sha256": "6c9af237b3e7b5137dc8afd2f83c8457170f8c5254c4f1653cccacfe3ff01d0c",
-      "size_bytes": 4211,
-      "modified_at": "2026-07-11T07:56:38.731158+00:00"
+      "path": ".trellis/tasks/07-11-105-finish-work-closeout-transaction/planning-approval.json",
+      "sha256": "d7719a9290ec9285136ad668fd297cf0cec3632b93ace39d68c80133dbc11ac8",
+      "size_bytes": 8326,
+      "modified_at": "2026-07-12T03:47:59.545221+00:00"
     }
   ],
   "checked_specs": [
     {
-      "path": ".trellis/spec/workflow/companion-scripts.md",
-      "sha256": "5f9fb266edbbdfbaa8eee703956de882403f6cb143b6202233789648a2dba8f4",
-      "size_bytes": 27043,
-      "modified_at": "2026-07-11T07:37:21.917307+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/data-contracts.md",
-      "sha256": "85f605d615a50ab1ea8aed2b1b29f30af64a241ac8a04b485cfd3187fbcc2673",
-      "size_bytes": 38955,
-      "modified_at": "2026-07-11T07:37:21.917632+00:00"
-    },
-    {
       "path": ".trellis/spec/workflow/workflow-contract.md",
-      "sha256": "6adebdd6bba32d9200d0dc44b89e5646cc14a7472d4996a4a07d1b7961b1c478",
-      "size_bytes": 30195,
-      "modified_at": "2026-07-11T07:32:53.005889+00:00"
+      "sha256": "67cdf4d26914e254bad4f58a9d1c0b4e37e15358ac3c521fd187e406709da9ab",
+      "size_bytes": 37932,
+      "modified_at": "2026-07-12T02:54:17.375272+00:00"
     },
     {
-      "path": ".trellis/spec/preset/installer.md",
-      "sha256": "8b92dc281dba9cd5a64b258dd509c53716484ae03c2929b1a9f35d4d5b041908",
-      "size_bytes": 11436,
-      "modified_at": "2026-07-11T05:31:03.488940+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/quality-guidelines.md",
-      "sha256": "4cea0a6d02d0eb3ce5c850768560d46d4bc232336040478a9f810bdec7b4077e",
-      "size_bytes": 11606,
-      "modified_at": "2026-07-11T07:04:28.032447+00:00"
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "cb85dc1d25ce4a3a97f328d3e959eae08868a576beead5e95ca21326b390237b",
+      "size_bytes": 38496,
+      "modified_at": "2026-07-12T02:54:43.638486+00:00"
     }
   ],
   "coverage": {
@@ -126,75 +97,38 @@
   },
   "validation_commands": [
     {
-      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "result": "359/359 pass"
+      "command": "FinishWorkEntrypointContractTest",
+      "result": "3/3 PASS"
     },
     {
-      "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "result": "36/36 pass"
+      "command": "closeout targeted",
+      "result": "75/75 PASS"
     },
     {
-      "command": "targeted closeout tests",
-      "result": "25/25 pass"
+      "command": "canonical full",
+      "result": "384/384 PASS"
     },
     {
-      "command": "python3 -m py_compile canonical/preset Python scripts",
-      "result": "pass"
+      "command": "preset tests",
+      "result": "36/36 PASS"
     },
     {
-      "command": "bash -n workflow/preset scripts",
-      "result": "pass"
+      "command": "direct suite",
+      "result": "232/232 PASS"
     },
     {
-      "command": "Draft 2020-12 closeout/finish-summary/marketplace schemas",
-      "result": "4 schemas pass"
+      "command": "old body contract replacement probes",
+      "result": "README 2/2, workflow 3/3, companion 2/2 blocked"
     },
     {
-      "command": "python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-11-105-finish-work-closeout-transaction",
-      "result": "pass"
+      "command": "planning/workspace/task/assignment/commit/static/equality/overlay/sidecar",
+      "result": "PASS"
     },
     {
-      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
-      "result": "pass"
-    },
-    {
-      "command": "canonical/dogfood equality checks",
-      "result": "pass"
-    },
-    {
-      "command": "clean throwaway init + workflow preview/switch + trellis update --force + preset reapply",
-      "result": "pass, no sidecars"
-    },
-    {
-      "command": "git diff --check",
-      "result": "pass"
+      "command": "installed initial #105 and update #106 evidence freshness",
+      "result": "PASS: runtime installer workflow overlay smoke bytes unchanged"
     }
   ],
-  "findings": [
-    {
-      "priority": "P1",
-      "message": "dry-run 缺少可确定验证的未来最终 summary 投影；已由 prepare_closeout() 生成最大宽度 sentinel 模板，并以规范化 template digest 约束 formal 仅替换 canonical PR URL/ref。",
-      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-      "status": "resolved"
-    },
-    {
-      "priority": "P1",
-      "message": "marketplace passed evidence 的 active-task 绝对路径在 archive 后失效；已改为 task-relative marketplace-verification.json locator，并同时验证 active/archive 解析与 digest。",
-      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-      "status": "resolved"
-    },
-    {
-      "priority": "P1",
-      "message": "failure injection 未完整断言十二个阶段的 task locator、PR state、local/remote/PR HEAD、dirty/staged paths 与 next transition；已补全矩阵断言。",
-      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "status": "resolved"
-    },
-    {
-      "priority": "P1",
-      "message": "archive 恢复未严格绑定 evidence parent、完整 move 集合以及 tracked/untracked 混合迁移；已区分 tracked_move_paths 与 untracked_archive_outputs，并用真实 Git fixture 验证精确 lineage/tree/recovery。",
-      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-      "status": "resolved"
-    }
-  ],
+  "findings": [],
   "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
 }

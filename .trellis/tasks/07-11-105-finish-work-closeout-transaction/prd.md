@@ -74,7 +74,7 @@
 
 - archive transaction 完成且三方 HEAD 相同后，executor 才能把 draft PR 转为 ready。
 - draft-to-ready 失败时，final remote HEAD 与 draft PR 必须保留。重试同一入口时只能重新执行 remote identity check 和 draft-to-ready，不得重新 verifier、archive、改写 artifact、commit 或 push。
-- `publish-pr` 保持内部 executor；用户路径只暴露 `trellis-finish-work`。
+- `publish-pr` 仅保留无条件兼容性阻断入口，不再是 executor；publish 与 recovery 只由 `trellis-finish-work` 执行。
 - `--skip-archive` 与面向用户的 `--recovery-after-finish-work` 必须退出正常合同。兼容入口若保留，必须 fail closed 并指向同一状态感知入口。
 
 ### R8. Canonical、dogfood 与平台一致性
@@ -83,6 +83,15 @@
 - `.trellis/workflow.md` 与 `.trellis/guru-team/**` dogfood installed copy 必须由 canonical source/preset apply 同步，不得成为唯一源头。
 - Claude、Codex、Cursor 已声明平台的 finish entry 文案必须一致，不得继续展示旧 archive-first、empty summary tail 或内部 recovery flag。
 - preset apply 后必须处理全部 `.new` / `.bak`，overlay drift 必须为零。
+
+### R9. 单一实现与减法收敛
+
+- `trellis-finish-work` 必须是 closeout publish/recovery 的唯一生产实现；不得同时保留另一套可执行的 PR publish、summary tail、marketplace evidence 或 recovery pipeline。
+- `publish-pr.sh` 作为既有公共路径只保留兼容性阻断入口，必须 fail closed 并指向 `trellis-finish-work`；不得保留无生产调用者的完整 executor 实现。
+- 新增 production top-level function 必须存在真实生产调用者，或本身是 `main()` 可达的显式 CLI handler；只有测试调用的 helper 必须删除。
+- 测试必须经过真实 CLI parser 或真实 `finish-work` production entry；不得通过手工构造 parser 不可能产生的 `argparse.Namespace` 来证明 dormant 路径正确。
+- clean throwaway initial/update installed closeout smoke 属于本 issue 明确验收面，必须保留；减法不得以删除开箱即用验证换取行数下降。
+- 本轮只删除重复实现、死代码和对应自证测试，不新增通用 resolver、通用 symlink、remote transport framework、索引格式、schema 或时间框架。
 
 ## 4. 非目标
 
@@ -93,6 +102,7 @@
 - 不修改 Trellis upstream、全局 npm、`node_modules`、官方 `task.py archive` 或官方 task lifecycle。
 - 不恢复 `.trellis/workspace/**`、`add_session.py` 或 developer journal。
 - 不把 issue scope、PR readiness、review finding 或 publish 充分性判断写入 Python/shell。
+- 不以兼容名义保留第二套 publish/recovery 业务实现；兼容入口只允许确定性拒绝。
 
 ## 5. 验收标准
 
@@ -114,6 +124,17 @@
 - [ ] canonical Python/preset tests、compile、shell syntax、JSON/schema、task validation、overlay drift、canonical/dogfood equality 和 `git diff --check` 全部通过。
 - [ ] clean throwaway repo 完成 workflow/preset 安装、dry-run digest、formal draft handshake、archive metadata、PR ready 路径。
 - [ ] throwaway repo 完成 workflow preview/switch、`trellis update`、preset reapply 与递归 sidecar 空扫描，事务语义不漂移。
+- [ ] `cmd_publish_pr` 不再承载 publish/recovery 行为；其专属 production call graph 已删除，`publish-pr.sh` 仅验证兼容性拒绝。
+- [ ] production AST/call graph 不存在只有测试调用的新增 top-level function，已删除 `resolve_closeout_state()` 和审计识别的全部无生产调用代码。
+- [ ] 删除直接测试 dormant publish executor 的用例，只保留真实 parser/CLI 兼容拒绝测试；canonical closeout failure matrix 与 installed smoke 继续通过。
+- [ ] 相对当前 reviewed HEAD，减法修复删除目标不低于约 900 行 production dormant code 与约 1300 行自证测试；最终以职责唯一性和调用可达性为门禁，不以机械行数替代审查。
+
+### Round 18 边界收敛
+
+- 用户于 2026-07-12 明确确认本任务继续修复 Round 18 当前范围 finding，但不得扩展为通用 hook 或时间迁移能力。
+- archive destination 月份与 immutable plan 不一致时，必须在 official move 前失败并保持 task active；同一 `trellis-finish-work` 入口必须生成新 digest 并重新 prepare，不实现跨月 archive 迁移或通用时钟框架。
+- `.trellis/config.yaml` 存在非空、不可确定验证或不可解析的 `after_archive` hook 时，必须在 archive 前 fail closed；本任务不执行、不分析、不支持 hook transaction。
+- 上述两项只用于守住“archive 后不再出现本地可预见失败”的现有验收合同，不新增 Trellis upstream 修改或新的平台能力。
 
 ## 6. Docs SSOT 状态
 

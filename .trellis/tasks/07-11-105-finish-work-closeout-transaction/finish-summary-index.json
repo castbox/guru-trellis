@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Guru Team finish-work 在 archive 后仍执行本地校验、artifact 构建、push 和 PR 发布，失败后需要调用者判断中断阶段并选择内部恢复参数。",
+    "outcome": "收尾流程改为由 trellis-finish-work 唯一编排的 immutable closeout transaction，所有可预见本地失败前移到 archive 前，并保留准确 PR identity 与同入口恢复。",
+    "changed_behavior": [
+      "Dry-run 与 formal finish 共享 prepare_closeout，并通过 closeout_plan_digest 在首个副作用前绑定同一计划。",
+      "Reviewed content、marketplace evidence、唯一 draft PR、最终 archive projection、官方 archive transaction 和 ready transition 按固定状态机执行。",
+      "Archive 后不再构建、校验或改写 repo artifact，只校验 remote identity、三方 HEAD 并恢复 draft-to-ready。",
+      "Active、archived 与 plan-only interrupted state 由同一 trellis-finish-work 入口 fail closed 恢复。",
+      "Task、PR body、archive locator 与 Git remote identity 增加逐组件路径和 raw/effective transport 边界。",
+      "publish-pr.sh 保留为兼容性阻断入口，旧 publish/recovery/summary-tail executor 与 dormant tests 已删除。",
+      "Canonical workflow、preset、overlay、Claude/Codex/Cursor 入口、durable docs 和 installed smoke 已同步。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "workflow",
+        "name": "Guru Team finish-work lifecycle",
+        "paths": [
+          "trellis/workflows/guru-team/workflow.md",
+          ".trellis/workflow.md"
+        ],
+        "change": "定义唯一 finish entry、immutable plan、draft PR handshake、archive transaction 与同入口恢复顺序。"
+      },
+      {
+        "kind": "script",
+        "name": "Closeout companion executor",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "实现共享 prepare、确定性 recorder/validator、Git/GitHub transitions 与 fail-closed recovery，并删除重复 publish executor。"
+      },
+      {
+        "kind": "schema",
+        "name": "Closeout plan 与 marketplace evidence contracts",
+        "paths": [
+          "trellis/workflows/guru-team/schemas/closeout-plan.schema.json",
+          "trellis/workflows/guru-team/schemas/finish-summary.schema.json",
+          "trellis/workflows/guru-team/schemas/marketplace-verification.schema.json"
+        ],
+        "change": "固定 immutable plan、最终 summary 与远端 marketplace verification 的机器合同。"
+      },
+      {
+        "kind": "preset",
+        "name": "Guru Team preset installer",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "安装并验证 canonical runtime、schema、平台入口与 initial/update closeout smoke。"
+      },
+      {
+        "kind": "skill",
+        "name": "多平台 Trellis finish entry",
+        "paths": [
+          ".agents/skills/trellis-finish-work/SKILL.md",
+          ".codex/skills/trellis-finish-work/SKILL.md",
+          ".codex/prompts/trellis-finish-work.md",
+          ".claude/commands/trellis/finish-work.md",
+          ".cursor/commands/trellis-finish-work.md"
+        ],
+        "change": "所有平台只暴露 trellis-finish-work，并要求 AI-reviewed body、summary index 与 dry-run digest handshake。"
+      },
+      {
+        "kind": "docs",
+        "name": "Finish-work durable SSOT",
+        "paths": [
+          "README.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "统一唯一 executor、PR body source、archive 前后边界、恢复语义与减法收敛合同。"
+      },
+      {
+        "kind": "test",
+        "name": "Closeout transaction regression",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "change": "覆盖 75 项 failure matrix、deterministic docs contract、compatibility rejection、preset 与 installed initial/update 路径。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Finish-work transaction boundary",
+        "before": "Archive 位于仍会执行本地 validator、artifact builder、push 和 PR publish 的流水线中间。",
+        "after": "所有可预见本地校验与最终投影在 archive 前完成，archive 后不再改写 repo artifact。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Dry-run 与 formal plan identity",
+        "before": "Dry-run 与 formal finish 未共享完整 prepare，dry-run 通过不能证明正式输入未漂移。",
+        "after": "两者共享 prepare_closeout，formal 必须提交并匹配 dry-run 返回的 closeout_plan_digest。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "PR identity 与 publish readiness",
+        "before": "Ready PR 或 post-archive summary tail 才提供最终 PR URL，形成 archived-but-unpublished 中间态。",
+        "after": "Archive 前创建或复用唯一 draft PR，最终 summary 固定 canonical URL 与唯一 PR ref，三方 HEAD 一致后才转 ready。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Interrupted closeout recovery",
+        "before": "调用者需要在 skip-archive、recovery-after-finish-work 和 publish-pr 之间判断中断阶段。",
+        "after": "trellis-finish-work 根据 committed plan、task locator、Git、remote 与 PR facts 恢复唯一合法 transition。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Publish implementation ownership",
+        "before": "cmd_finish_work 与 cmd_publish_pr 同时保留 publish、recovery、marketplace evidence 和 summary tail 行为。",
+        "after": "cmd_finish_work 是唯一 production executor，publish-pr.sh 与 cmd_publish_pr 只执行 compatibility fail-closed。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Archive 与 PR body locator safety",
+        "before": "Resolve 后的 canonical path 可能丢失 symlink component 与原始 task locator 证据。",
+        "after": "路径在普通 resolve 前逐组件 lstat，只有精确 active/archive/basename 语义可进入 closeout。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "GitHub remote identity",
+        "before": "Remote URL 归一化可能掩盖 rewrite、credential、transport、同名 fork 或大小写差异。",
+        "after": "Raw/effective 两层门禁绑定全部 URL 与 rewrite 来源，仅接受无凭据 GitHub transport 并以大小写不敏感 identity 比较。",
+        "source_artifact": "design.md"
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "trellis-finish-work",
+        "finish-work.sh",
+        "publish-pr.sh"
+      ],
+      "config_keys": [
+        "hooks.after_archive",
+        "closeout_plan_digest"
+      ],
+      "schema_fields": [
+        "closeout-plan.json",
+        "finish-summary.json:github.pr_url",
+        "finish-summary.json:index.search_terms.pr_refs",
+        "pr-readiness.json:publish_inputs"
+      ],
+      "symbols": [
+        "cmd_finish_work",
+        "prepare_closeout",
+        "cmd_publish_pr"
+      ],
+      "phrases": [
+        "finish-work archive 后本地失败",
+        "trellis-finish-work 已完成唯一收尾执行入口",
+        "closeout-plan.json 已完成 immutable digest 握手",
+        "cmd_finish_work 已完成 draft PR 与 archive transaction 编排",
+        "publish-pr.sh 已改为兼容性阻断",
+        "归档后只恢复 remote identity 与 ready transition"
+      ]
+    }
+  }
+}

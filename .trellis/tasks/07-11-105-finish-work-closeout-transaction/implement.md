@@ -40,10 +40,18 @@
 
 - [ ] formal create固定为draft PR。
 - [ ] 实现repo/head/base唯一open PR查询: 0创建、1复用、多于1失败。
-- [ ] 实现 `resolve_closeout_state()`，覆盖active/archive、draft/ready和local/remote HEAD组合。
+- [ ] 删除无生产调用者的 `resolve_closeout_state()`；状态识别由真实 active/archive recovery调用链中的stage-specific resolver承担。
 - [ ] 移除normal path对 `--skip-archive` 与 `--recovery-after-finish-work` 的依赖。
 - [ ] 兼容flags若保留则fail closed并返回同一finish entry提示。
 - [ ] 所有重试从committed readiness与plan digest恢复，不接受title/body/base/draft override。
+
+### 5.1 单一实现减法修复
+
+- [ ] 把 `cmd_publish_pr()` 收敛为兼容性 fail-closed handler；保留command/wrapper路径，不保留第二套executor。
+- [ ] 基于production call graph删除只服务旧 `cmd_publish_pr()` 的helper，目标覆盖旧PR body fallback、marketplace recorder/validator、recovery command、open PR recovery、summary URL rewrite与metadata tail commit。
+- [ ] 删除手工构造`from_finish_work`/`recovery_after_finish_work`并直接调用dormant handler的测试，只保留真实parser/main兼容拒绝测试。
+- [ ] 运行AST/`rg`检查，证明新增production top-level functions均有真实生产调用者或显式CLI handler。
+- [ ] 记录删除前后canonical production/test/installed smoke numstat；installed smoke不得为降低行数而删除。
 
 ## 6. Final projection 与 archive transaction
 
@@ -76,6 +84,17 @@
 - [ ] draft-to-ready失败: archive与remote HEAD不变，只重试ready transition。
 - [ ] 2026-07-03、2026-07-04与#100三类历史失败回归。
 - [ ] 对每个case断言task locator、PR state、local/remote/PR head、dirty paths和next action。
+- [ ] canonical closeout failure matrix继续只走 `cmd_finish_work()`；不得依赖已删除的legacy publish handler。
+- [ ] installed initial/update smoke继续通过真实wrapper、parser、draft/archive/ready路径。
+
+### Round 18 scope cap checklist
+
+- [ ] exact committed archived recovery 在保留 task context 且 working-tree plan 缺失、篡改、symlink 或 invalid 时仍只消费 commit blob；incomplete/nonexact 状态继续 fail closed。
+- [ ] 所有 formal workflow 示例携带 `--expected-plan-digest`，dry-run/preview 不被误判。
+- [ ] official move 前校验 tracked bytes/mode、staged/dirty/untracked allowlist；漂移时 task 保持 active。
+- [ ] archive month 不一致时 official move 前失败，同一入口必须生成新 digest 并重新 prepare；不实现跨月迁移。
+- [ ] 非空或不可解析 `after_archive` hook 在 prepare 阶段失败；不执行或分析 hook。
+- [ ] P1-1 review ledger 由主会话结构化重锚，并在不包含旧 commit object 的 `--no-local` fresh clone 中通过 assignment validator。
 
 ## 9. 验证命令
 
@@ -88,6 +107,10 @@ python3 ./.trellis/scripts/task.py validate .trellis/tasks/07-11-105-finish-work
 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 git diff --check
 ```
+
+- [ ] 运行`publish-pr.sh --json --dry-run`并断言在repo/task解析前固定fail closed，错误指向`trellis-finish-work`。
+- [ ] 运行production AST call graph，确认无仅测试可达的新增函数与legacy publish专属闭包。
+- [ ] 汇总`origin/main...HEAD -- trellis/`与本轮cleanup commit的numstat，说明production、test与installed smoke构成。
 
 - [ ] 运行targeted plan/digest、ledger、draft handshake、final projection和failure injection tests。
 - [ ] 运行full canonical Python suite与preset suite。
