@@ -145,7 +145,13 @@ sampling from being reported as current-branch marketplace verification. When
 it does run, it also exercises the existing-project `trellis workflow
 --create-new` preview, deletes the validated expected preview `.new`, then runs
 forced switch, `trellis update --force`, workflow reapply, and preset reapply.
-A final recursive scan must find no `.new` or `.bak` sidecars. It intentionally lives in this
+A controlled bare remote and fake GitHub adapter drive the already-installed
+`finish-work.sh` through dry-run digest, formal draft binding, official archive,
+three-way HEAD equality, ready transition, and clean-tree assertions once after
+install and once after update/reapply. The fixture uses installed wrappers,
+companion, schemas, config, workflow, and official `task.py`; it does not copy
+canonical runtime assets into the target. A final recursive scan must find no
+`.new` or `.bak` sidecars. It intentionally lives in this
 source repository and is not copied into target business repos as a managed
 companion asset.
 
@@ -179,6 +185,7 @@ platform selection:
 - `.trellis/guru-team/config.yml`
 - `.trellis/guru-team/extension.json`
 - `.trellis/guru-team/schemas/task-start-context.schema.json`
+- `.trellis/guru-team/schemas/closeout-plan.schema.json`
 - `.trellis/guru-team/schemas/finish-summary.schema.json`
 - `.trellis/guru-team/schemas/marketplace-verification.schema.json`
 - `.trellis/guru-team/scripts/bash/check-env.sh`
@@ -386,17 +393,25 @@ implementation handoff, `phase2-check.json`, durable docs, task artifacts, and
 the full diff, then report any current-scope Docs SSOT inconsistency as a
 finding. The reviewer does not merge durable docs or patch missing Phase 2 docs
 work.
-`finish-work.sh` and `publish-pr.sh` reject ordinary direct calls so
+`finish-work.sh` rejects ordinary direct calls, while `publish-pr.sh` is an
+unconditional compatibility blocker, so
 `trellis-continue` cannot chain closeout, commit review metadata, push, or
 create a PR before the explicit `trellis-finish-work` entrypoint. Normal PR
 publish is triggered only by `finish-work.sh --from-trellis-finish-work` after
-archive, task-local initial finish-summary, immutable readiness recording, and
-remaining Trellis metadata-only commit succeed. That
-metadata tail may include `review.md`, `reviews/*.md`, `review-gate.json`, and
-PR readiness files; `check-review-gate` / `finish-work` validate and migrate
-raw report digest paths after archive. Direct
-publish is reserved for explicit recovery/debug after finish-work already
-completed.
+a reviewed dry-run returns an immutable closeout plan digest. Formal finish
+requires the same digest, pushes reviewed content, records marketplace evidence
+and readiness, binds a draft PR, validates the final archive projection, then
+creates one archive metadata commit and marks the PR ready after three-way HEAD
+alignment. Every interruption resumes through the same finish entry.
+Shared prepare lexically `lstat`s each existing archive root, month, and final
+destination component, rejects every symlink including dangling and
+repo-internal targets without following it, and requires the final locator to
+be absent. The identical preflight repeats immediately before official move.
+Missing `task.json.children` means an empty list; otherwise
+it must be `list[str]`. Official active-task exact/suffix lookup blocks only a
+child whose active `task.json` would be rewritten, while an archived child does
+not block its parent.
+
 After a passed gate, finish-work accepts only Trellis metadata tail. Durable
 docs, `.trellis/spec/`, source, tests, schema, config, scripts, preset, overlay,
 CI/CD, deployment, migration, or Makefile drift after the gate must return to
@@ -404,8 +419,8 @@ Phase 2/3; dry-run and formal finish do not perform a first Docs SSOT merge.
 
 `finish-work.sh --dry-run --from-trellis-finish-work` is a side-effect-free
 readiness preview. It validates the gate, dirty state, AI-authored
-`finish-summary-index.json`, and PR body/readiness, then prints the planned
-archive, initial finish-summary, metadata commit, and publish actions
+`finish-summary-index.json`, and PR body/readiness, then prints the immutable
+plan, digest, future archive mapping, metadata allowlist, and transitions
 without moving or writing task files, creating commits, pushing,
 or creating a PR.
 After dry-run, the AI should render the active-task `Markdown 产物 review 表`;
@@ -423,11 +438,13 @@ limitation. Low-information summaries such as
 non-draft publish. Non-draft publish requires reviewed Markdown with
 task-local `--body-file <path>`; formal finish builds
 `pr-readiness.json.publish_inputs` with repo/base/head/reviewed HEAD/title/body
-SHA-256/draft/reviewed source and canonical snapshot SHA-256. Generated fallback
-bodies are preview/draft-only. The readiness/body files are committed before
-the first PR create and read from the archived task artifact. Recovery rejects
-title/body/draft/base overrides and validates Git blob/history and digests before
-PR resolution. The script validates objective structure,
+SHA-256/`draft=true`/reviewed source and `closeout_plan_digest`. Generated fallback
+bodies are preview-only. Finish-work requires the direct task-local
+`pr-body.md` with exact raw UTF-8 bytes and rejects every symlink component
+from repo root through the task parent and final file, including alias,
+dangling, and loop paths. It rejects `--body-artifact` and external or
+whitespace-normalized substitutes. The readiness/body files are committed before the
+draft PR create and moved unchanged by archive. The script validates objective structure,
 reviewed source presence, Docs SSOT section/key presence, and close/ref
 semantics but does not replace AI release judgment.
 
@@ -532,18 +549,70 @@ is missing, and otherwise fails closed with the recovery command
 worktree immediately usable by `get_context.py` and `task.py list --mine`.
 Guru Team finish does not call `add_session.py`.
 
-The installer manages `schemas/finish-summary.schema.json`, writes top-level
+The installer manages `schemas/closeout-plan.schema.json` and
+`schemas/finish-summary.schema.json`, writes top-level
 `session_auto_commit: false` into `.trellis/config.yaml`, adds
 `.trellis/workspace/` to `.gitignore`, and never creates or rewrites workspace
 journal/index files. Shared start and installed Codex/Cursor SessionStart hooks
-do not open, enumerate, read, count, or output workspace journals. PR URL
-recovery validates committed readiness Git blob/history, snapshot/body digest,
-repo/base/head, review gate,
-current/remote HEAD, and any existing passed marketplace evidence before querying
-the current repo/head/base. It reuses one open PR, retries create exactly once
-with the same title/body/draft when none exists, and fails closed without create
-when multiple exist. A failed retry keeps the initial empty URL/refs and returns
-the same recovery command.
+do not open, enumerate, read, count, or output workspace journals. Before
+archive, closeout recovery validates committed plan/readiness, the active
+locator, repo/base/head, review gate, current/remote HEAD, and exact PR
+identity. Prepare parses `.trellis/config.yaml` with the installed official
+parser and supports only missing/empty `hooks.after_archive`; invalid or
+non-empty hook configuration is rejected without execution. Immediately before
+official move it also checks the live archive month, empty index, exact
+untracked set, regular-file/mode contract, and evidence blob bytes. A stale
+committed month remains active and is recoverable only by a new dry-run digest
+plus an additive plan/readiness supersession commit; no history rewrite or
+directory migration is used. After the official move but before the exact archive commit exists,
+it still requires the complete archived working-tree layout, exact
+dirty/staged paths, blob continuity, and official `task.json` delta; an absent
+or mismatched commit remains fail closed. Once current `HEAD` is the exact
+planned archive commit, both normal and plan-only archived reentry load the plan
+from that commit blob; the immutable plan and Git parent/path/tree/blob facts
+are authoritative, so missing or tampered archived working-tree files do not
+block the exact push, remote title/body check, HEAD alignment, or
+draft-to-ready. A plan-only archived directory is resolvable only by the
+`trellis-finish-work` recovery entry; ordinary task commands still require
+`task.json`. The real-PR final summary's deterministic bytes/digest participate
+in pre-move, incomplete-recovery, and exact-commit continuity. The first two
+paths rebuild expected bytes against the already-bound remote PR. Exact
+recovery reads only the immutable archive commit's `finish-summary.json` blob
+to recover the original PR number/URL and verify those bytes without invoking
+the general summary artifact validator; it never reads the working-tree
+summary. Missing, closed, or replacement PRs fail closed. Other archived
+artifacts remain unopened for semantic validation.
+Installed final projection, incomplete recovery, and exact recovery share one
+strict PR URL parser. GitHub owner/repository identity is case-insensitive,
+while the canonical summary URL preserves the exact valid casing returned by
+the remote PR (for example `microsoft/PowerToys`). A different repository,
+transport, invalid number, extra path, query, or fragment remains fail closed.
+The plan-only path reads the immutable plan from the current commit blob and
+runs a dedicated fail-closed boundary before GitHub or fast-path actions. Git
+toplevel, configured/effective repository, current head branch, available base
+ref, current HEAD transaction, expected digest, task identity, and
+active/archive locators must all match. Missing context is never an
+unconditional boundary bypass; ordinary task discovery and commands retain
+their `task.json` and worktree-mode `task-start-context.json` requirements.
+The finish entry validates the raw locator before ordinary resolution or
+canonicalization. Only a basename, exact former active locator, or exact
+archive locator may select plan-only recovery. Path-like input receives
+component-wise `lstat` from the repo root through the final task directory
+before any fallback. Basename input preflights `<repo>/<basename>`, the active
+candidate, the archive root, and archive candidates in ordinary resolver order.
+Every direct or archive candidate first retains only `symlink_component`
+evidence, then uses the ordinary resolver's exact follow-symlink
+`directory + task.json` predicate. A matching alias fails closed, while an
+unmatched alias continues to the next candidate. These checks reject internal/external,
+relative/absolute, ancestor/final, multilevel, dangling, and loop symlinks
+before raw evidence is discarded. The ordinary resolver then preserves
+explicit `task.json`, active task, and normal archived `task.json` precedence.
+Plan-only fallback runs only after ordinary not-found:
+an exact archive locator selects that candidate, while basename/former-active
+fallback requires a unique archive-month match and fails closed on ambiguity.
+The plan-only target must still equal the plan's canonical archive locator.
+Only the verified Darwin `/var` -> `/private/var` system mapping may re-anchor
+an outer path; arbitrary `samefile` and user aliases are never trusted.
 
 Current-checkout direct edits while `no_task` is active are allowed only as an
 explicit user override. The user approval must say this turn should skip
@@ -589,4 +658,4 @@ concrete reason after the final diff is reviewed.
 
 ## Push 后远端 Marketplace 门禁
 
-修改 marketplace/preset/overlay/schema/public API 的发布路径要求 primary/close issue ledger 先保存精确的 `remote_marketplace_verification: pending` 结构，pending 或普通文字不能通过最终 publish。branch push 后、`gh pr create` 前会执行远端分支 `init`、preview、switch 和 preset reapply，生成 schema-valid 的 task-local `marketplace-verification.json`；成功后脚本把真实 artifact path/SHA-256、verified content HEAD、remote HEAD、publish content HEAD 与命令结果回写 ledger，仅允许 artifact + ledger 两个路径形成 metadata tail。metadata push 后重新校验 artifact、ledger、双路径 diff、remote metadata HEAD 与 review gate，缺失、pending、失败、篡改、HEAD 不匹配或 stale 均阻止创建 PR；该门禁不创建 tag，AI 仍负责 close scope 与 PR readiness 判断。
+修改 marketplace/preset/overlay/schema/public API 时，recorder 在 reviewed content push 后从 immutable closeout plan 生成 pending machine evidence；verifier 成功后只替换为 passed。plan、readiness、artifact 与 ledger 形成 exact pre-draft metadata commit，push 并校验 remote HEAD 后才允许绑定 draft PR。缺失、重复、pending、失败、篡改、HEAD 不匹配或 stale 均阻止创建 PR；human reason 不参与 machine identity，该门禁不创建 tag，AI 仍负责 close scope 与 PR readiness 判断。

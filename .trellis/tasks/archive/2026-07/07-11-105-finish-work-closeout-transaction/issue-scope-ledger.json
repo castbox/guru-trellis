@@ -1,0 +1,99 @@
+{
+  "primary_issue": {
+    "number": 105,
+    "url": "https://github.com/castbox/guru-trellis/issues/105",
+    "title": "拆分 #53：重构 Guru Team finish-work 收尾事务，消除 archive 后可预见失败",
+    "reason": "本任务唯一交付目标。",
+    "acceptance_evidence": [
+      "closeout-plan.json schema、canonical digest、dry-run/formal expected digest handshake、future final-summary projection与task-relative marketplace evidence locator已实现。",
+      "finish-work state machine已按 reviewed content push、remote verifier、exact evidence commit、draft PR identity、final archive projection、archive transaction、三方HEAD校验、draft-to-ready顺序重构；同一入口覆盖active/archive中断恢复。",
+      "精确archive commit存在时，恢复只校验immutable plan与Git parent/path/tree/blob lineage，本地archived artifact缺失或篡改不阻塞exact push、remote HEAD与draft-to-ready；commit缺失或不匹配时仍通过working-tree layout、dirty/staged paths、blob continuity、官方task.json delta与lineage fail closed恢复。plan-only archived directory仅由finish-work入口解析，plan从current commit blob读取，专用fail-closed boundary在GitHub/fast-path前校验Git toplevel、配置/effective repo、head branch、base ref、HEAD transaction、expected digest、task identity与active/archive locator；raw locator在普通resolve前只允许basename/原active/精确archive语义，path-like输入从repo root到final dir逐组件lstat；basename输入按ordinary候选顺序预检repo-root同名入口、active candidate、archive root与archive candidates，每个direct/archive candidate均先保留raw symlink_component，再使用普通resolver相同的candidate.is_dir()与task.json.is_file()谓词判断，matching alias fail closed，unmatched alias继续后续普通候选；预检统一拒绝repo内外、relative/absolute、ancestor/final、多层、dangling/loop symlink，再调用普通resolver，保留显式task.json、active task与普通archived task.json优先级，仅ordinary not-found进入plan-only fallback，精确archive只尝试该候选，basename/原active fallback要求唯一archive月份并在多候选时fail closed；plan-only resolved target再绑定plan canonical locator，仅固定Darwin /var到/private/var系统映射可重锚；普通命令继续要求task.json/task-start-context。",
+      "十六阶段failure injection通过生产cmd_finish_work真实解除注入并重入，raw remote control、effective repo mismatch与本地transport均在dry-run首个副作用前失败且远端分支、PR、archive、summary未创建；其余阶段精确覆盖active/archive locator与path、task status、完整dirty/staged path set、local/remote/PR SHA、PR draft/state/number及不重复前序副作用的next transition。",
+      "PR body全链消费task-local原始UTF-8文本；finish-work仅接受当前active task的direct pr-body.md路径，从repo root到task parent与final file逐component执行lexical lstat，拒绝relative/absolute alias、multi-level ancestor、task-dir parent、final、dangling与loop symlink，不用resolve丢失证据；remote identity已实现raw/effective双层校验：NUL+origin读取全部url/pushurl与rewrite base/pattern，拒绝边界空白、Unicode/ASCII control、config NUL、歧义record并校验effective cardinality；strict parser不trim且仅接受credential-free GitHub HTTPS/SSH/scp transport，裸/本地/file/http/git协议、无scheme、credential/token、端口、query/fragment、额外path、多URL mismatch、同名fork均fail closed且不改绑summary。",
+      "all-platform dogfood manifest已恢复claude/codex/cursor、all_platforms=true与71项实际存在的managed assets；用户可编辑config.yml不再被错误声明为managed，fresh/reapply ownership稳定，managed_backups与.new/.bak sidecar均为空。",
+      "canonical 383/383、targeted closeout 75/75、preset 36/36通过；installed closeout initial #105与after-update #106两轮均验证publish-pr compatibility拒绝、after_archive hook与archive ancestor symlink preflight，再完成dry-run digest、formal expected-digest handshake、draft binding、official archive、ready、clean tree、fresh archived recovery及local/remote/PR HEAD一致；Python/Bash/schema/JSONL/task/diff、overlay drift、canonical/dogfood equality、format-merge payload和throwaway init/preview/switch/update/reapply验证通过；固定release tag v0.6.5-guru.3尚不存在，本轮workflow marketplace使用public sample，当前worktree canonical companion由本地preset实际安装执行。",
+      "Round18 scope-cap闭环：所有exact archived recovery无论是否保留task context均以current commit blob plan为权威；formal入口digest扫描覆盖12个canonical/installed命令；official move前绑定tracked regular-file mode、working bytes/evidence blob与精确dirty/staged/untracked集合；跨月旧plan在task active状态通过新digest与additive plan/readiness evidence commit supersede并复用draft/verifier，不迁移目录或重写历史；非空、不可解析、NUL、symlink或dangling after_archive配置在prepare阶段fail closed且hook从不执行。",
+      "减法收敛已删除13个旧cmd_publish_pr专属helper、无生产调用的resolve_closeout_state、43个dormant publish/summary-tail/marketplace自证测试及publish.draft/close_keyword/pr_language无效配置；publish-pr仅保留真实CLI可达的兼容阻断，finish-work是唯一publish/recovery executor。相对origin/main的88个#105新增top-level function全部从main可达；相对cleanup起点的trellis目录净减少2761行，installed closeout smoke 605行完整保留。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "5c14e7eab09426949edfe591cbd07720522a62f93ed1a9b367854f830767743a",
+        "verified_content_head": "3ca1847d70809a7530f59d1cb555388f70f65d47",
+        "remote_head": "3ca1847d70809a7530f59d1cb555388f70f65d47",
+        "publish_head": "3ca1847d70809a7530f59d1cb555388f70f65d47",
+        "commands_passed": true
+      }
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 105,
+      "url": "https://github.com/castbox/guru-trellis/issues/105",
+      "title": "拆分 #53：重构 Guru Team finish-work 收尾事务，消除 archive 后可预见失败",
+      "reason": "实现、测试、Branch Review Gate 与发布证据必须完整覆盖本 issue。",
+      "acceptance_evidence": [
+        "closeout-plan.json schema、canonical digest、dry-run/formal expected digest handshake、future final-summary projection与task-relative marketplace evidence locator已实现。",
+        "finish-work state machine已按 reviewed content push、remote verifier、exact evidence commit、draft PR identity、final archive projection、archive transaction、三方HEAD校验、draft-to-ready顺序重构；同一入口覆盖active/archive中断恢复。",
+        "精确archive commit存在时，恢复只校验immutable plan与Git parent/path/tree/blob lineage，本地archived artifact缺失或篡改不阻塞exact push、remote HEAD与draft-to-ready；commit缺失或不匹配时仍通过working-tree layout、dirty/staged paths、blob continuity、官方task.json delta与lineage fail closed恢复。plan-only archived directory仅由finish-work入口解析，plan从current commit blob读取，专用fail-closed boundary在GitHub/fast-path前校验Git toplevel、配置/effective repo、head branch、base ref、HEAD transaction、expected digest、task identity与active/archive locator；raw locator在普通resolve前只允许basename/原active/精确archive语义，path-like输入从repo root到final dir逐组件lstat；basename输入按ordinary候选顺序预检repo-root同名入口、active candidate、archive root与archive candidates，每个direct/archive candidate均先保留raw symlink_component，再使用普通resolver相同的candidate.is_dir()与task.json.is_file()谓词判断，matching alias fail closed，unmatched alias继续后续普通候选；预检统一拒绝repo内外、relative/absolute、ancestor/final、多层、dangling/loop symlink，再调用普通resolver，保留显式task.json、active task与普通archived task.json优先级，仅ordinary not-found进入plan-only fallback，精确archive只尝试该候选，basename/原active fallback要求唯一archive月份并在多候选时fail closed；plan-only resolved target再绑定plan canonical locator，仅固定Darwin /var到/private/var系统映射可重锚；普通命令继续要求task.json/task-start-context。",
+        "十六阶段failure injection通过生产cmd_finish_work真实解除注入并重入，raw remote control、effective repo mismatch与本地transport均在dry-run首个副作用前失败且远端分支、PR、archive、summary未创建；其余阶段精确覆盖active/archive locator与path、task status、完整dirty/staged path set、local/remote/PR SHA、PR draft/state/number及不重复前序副作用的next transition。",
+        "PR body全链消费task-local原始UTF-8文本；finish-work仅接受当前active task的direct pr-body.md路径，从repo root到task parent与final file逐component执行lexical lstat，拒绝relative/absolute alias、multi-level ancestor、task-dir parent、final、dangling与loop symlink，不用resolve丢失证据；remote identity已实现raw/effective双层校验：NUL+origin读取全部url/pushurl与rewrite base/pattern，拒绝边界空白、Unicode/ASCII control、config NUL、歧义record并校验effective cardinality；strict parser不trim且仅接受credential-free GitHub HTTPS/SSH/scp transport，裸/本地/file/http/git协议、无scheme、credential/token、端口、query/fragment、额外path、多URL mismatch、同名fork均fail closed且不改绑summary。",
+        "all-platform dogfood manifest已恢复claude/codex/cursor、all_platforms=true与71项实际存在的managed assets；用户可编辑config.yml不再被错误声明为managed，fresh/reapply ownership稳定，managed_backups与.new/.bak sidecar均为空。",
+        "canonical 383/383、targeted closeout 75/75、preset 36/36通过；installed closeout initial #105与after-update #106两轮均验证publish-pr compatibility拒绝、after_archive hook与archive ancestor symlink preflight，再完成dry-run digest、formal expected-digest handshake、draft binding、official archive、ready、clean tree、fresh archived recovery及local/remote/PR HEAD一致；Python/Bash/schema/JSONL/task/diff、overlay drift、canonical/dogfood equality、format-merge payload和throwaway init/preview/switch/update/reapply验证通过；固定release tag v0.6.5-guru.3尚不存在，本轮workflow marketplace使用public sample，当前worktree canonical companion由本地preset实际安装执行。",
+        "Round18 scope-cap闭环：所有exact archived recovery无论是否保留task context均以current commit blob plan为权威；formal入口digest扫描覆盖12个canonical/installed命令；official move前绑定tracked regular-file mode、working bytes/evidence blob与精确dirty/staged/untracked集合；跨月旧plan在task active状态通过新digest与additive plan/readiness evidence commit supersede并复用draft/verifier，不迁移目录或重写历史；非空、不可解析、NUL、symlink或dangling after_archive配置在prepare阶段fail closed且hook从不执行。",
+        "减法收敛已删除13个旧cmd_publish_pr专属helper、无生产调用的resolve_closeout_state、43个dormant publish/summary-tail/marketplace自证测试及publish.draft/close_keyword/pr_language无效配置；publish-pr仅保留真实CLI可达的兼容阻断，finish-work是唯一publish/recovery executor。相对origin/main的88个#105新增top-level function全部从main可达；相对cleanup起点的trellis目录净减少2761行，installed closeout smoke 605行完整保留。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "5c14e7eab09426949edfe591cbd07720522a62f93ed1a9b367854f830767743a",
+          "verified_content_head": "3ca1847d70809a7530f59d1cb555388f70f65d47",
+          "remote_head": "3ca1847d70809a7530f59d1cb555388f70f65d47",
+          "publish_head": "3ca1847d70809a7530f59d1cb555388f70f65d47",
+          "commands_passed": true
+        }
+      ]
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 53,
+      "url": "https://github.com/castbox/guru-trellis/issues/53",
+      "reason": "父级拆分来源，只引用，不关闭。"
+    },
+    {
+      "number": 96,
+      "url": "https://github.com/castbox/guru-trellis/issues/96",
+      "reason": "已完成的task runtime边界前置合同，只引用，不关闭。"
+    },
+    {
+      "number": 97,
+      "url": "https://github.com/castbox/guru-trellis/issues/97",
+      "reason": "已完成的finish-summary schema与normal finish基线，只引用，不关闭。"
+    },
+    {
+      "number": 100,
+      "url": "https://github.com/castbox/guru-trellis/issues/100",
+      "reason": "已完成的历史summary回填与本次失败证据来源，只引用，不关闭。"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 98,
+      "url": "https://github.com/castbox/guru-trellis/issues/98",
+      "reason": "消费稳定finish-summary与PR ref的后续历史发现任务。"
+    },
+    {
+      "number": 99,
+      "url": "https://github.com/castbox/guru-trellis/issues/99",
+      "reason": "取消developer identity前置依赖的独立任务。"
+    },
+    {
+      "number": 101,
+      "url": "https://github.com/castbox/guru-trellis/issues/101",
+      "reason": "消费#98 Phase 0 preview的Issue Review Gate任务。"
+    }
+  ]
+}

@@ -42,6 +42,7 @@ MANAGED_CONFIG = Path("config-template.yml")
 MANAGED_ASSET_PATHS = [
     Path("config-template.yml"),
     Path("schemas/task-start-context.schema.json"),
+    Path("schemas/closeout-plan.schema.json"),
     Path("schemas/finish-summary.schema.json"),
     Path("schemas/marketplace-verification.schema.json"),
     Path("scripts/bash/check-env.sh"),
@@ -217,7 +218,7 @@ def build_installed_extension_manifest(
     result: dict[str, Any],
 ) -> dict[str, Any]:
     managed_assets = sorted(
-        set(result["installed"])
+        (set(result["installed"]) - {".trellis/guru-team/config.yml"})
         | set(result["unchanged"])
         | set(result["updated_managed"])
         | set(result["replaced_overlays"])

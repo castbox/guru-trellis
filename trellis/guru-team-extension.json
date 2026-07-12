@@ -43,6 +43,7 @@
       "pr-body.md",
       "review-gate.json",
       "pr-readiness.json",
+      "closeout-plan.json",
       "marketplace-verification.json",
       "finish-summary.json"
     ],

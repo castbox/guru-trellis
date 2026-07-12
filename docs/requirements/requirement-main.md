@@ -155,13 +155,13 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 
 | 能力 | 说明 |
 | --- | --- |
-| Publish after finish | 普通 `publish-pr` 直接调用被阻塞；正常发布只能由 `finish-work.sh --from-trellis-finish-work` 在 archive / initial finish-summary / metadata commit 后内部触发。 |
-| Recovery/debug 明确化 | 直接 publish 只保留显式 recovery/debug 路径，并必须通过 repo/base/head identity、review/readiness、dirty state、issue ledger、current/remote HEAD 与 GitHub auth 校验；marketplace-required recovery 只复用既有 passed verifier evidence。PR query 必须先于 create：1 个 open PR 复用，0 个按同一 title/body/draft 只重试 create 一次，多于 1 个 fail closed；retry 失败保持 initial summary 空 URL/ref 并返回同一 recovery。 |
-| Non-draft body source | non-draft publish 必须传入 AI 审查后的 `--body-file` 或 `--body-artifact`；generated body 只可用于 draft/preview。 |
+| Publish after finish | `publish-pr` 是兼容性阻断入口；正常发布与恢复只由 `finish-work.sh --from-trellis-finish-work` 执行 reviewed content push、draft PR、final projection、archive transaction 与 draft-to-ready。 |
+| Recovery/debug 明确化 | 同一 `trellis-finish-work` 从 committed plan/readiness、active/archive locator、Git/remote 与唯一 PR identity 恢复；不暴露 publish recovery flag，也不生成 initial empty-URL summary 或 URL tail commit。 |
+| Reviewed body source | closeout 必须传入当前 task-local `pr-body.md`；`--body-artifact` 与 generated fallback 不进入 finish-work 事务。 |
 | PR body 质量门禁 | 变更摘要、影响范围、验证结果、Review Gate、Issue 关闭范围、安全说明必须具体，禁止“当前 Trellis task”“详见 artifact”等低信息量短语作为主要摘要。 |
 | Issue close 语义 | `Closes #xx` 只能来自 task-level `issue-scope-ledger.json` 的 `close_issues`，`related_issues` / `followup_issues` 不得被关闭。 |
-| Archive path rewrite | finish-work archive 后，active task 下的 body/readiness path 会重写到 archived task artifact path 再读取。 |
-| Dry-run readiness preview | `finish-work --dry-run --from-trellis-finish-work --finish-summary-index-file <task>/finish-summary-index.json` 校验 readiness 与 AI index，输出 archive / initial finish-summary / publish plan，不移动或写入文件、不 commit、不 push、不创建 PR。 |
+| Final archive projection | finish-work 在 active task 中生成最终 summary，并由 official archive move 原样迁移；archive 后不重写 body/readiness/summary。 |
+| Dry-run readiness preview | `finish-work --dry-run --from-trellis-finish-work --finish-summary-index-file <task>/finish-summary-index.json` 运行与 formal 相同的 prepare/validate，输出 immutable plan/digest，不移动或写入文件、不 commit、不 push、不创建 PR。 |
 | Codex default dispatch | 缺省或非法 `codex.dispatch_mode` 回落到 `sub-agent`，显式 `inline` 保留为调试/降级模式。 |
 
 实现资产：

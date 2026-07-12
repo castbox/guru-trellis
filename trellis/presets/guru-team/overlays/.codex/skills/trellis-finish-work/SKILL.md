@@ -1,41 +1,33 @@
 ---
 name: trellis-finish-work
-description: "Guru Team Trellis finish entry. Use after task work is committed and Branch Review Gate passed; archives task, records finish-summary, then publishes a non-draft PR."
+description: "Guru Team Trellis finish entry. Use after task work is committed and Branch Review Gate passed; binds an immutable closeout plan, creates a draft PR, archives once, then marks the PR ready."
 ---
 
 <!-- guru-team-overlay: v1 -->
 
 # Guru Team Trellis Finish Work
 
-Finish-work is the only user-facing closeout entry. Do not ask the user to remember a separate publish command.
+`trellis-finish-work` is the only user-facing closeout and recovery entry. Do
+not ask the user to choose a publish command, `--skip-archive`, or
+`--recovery-after-finish-work`.
 
-Before reading or writing task-local closeout artifacts, treat `task-start-context.json` as portable identifiers only (`workspace_slug`, `task_workspace_id`, and repo-relative `task_artifact_dir`). Resolve the machine-local task worktree from the current checkout, `.trellis/.runtime/guru-team/**`, and `git worktree list`, then require `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>` to confirm it. Never read an absolute `workspace_path` from committed task context.
+Before reading or writing task artifacts, resolve the portable worktree identity
+from the current checkout, `.trellis/.runtime/guru-team/**`, and
+`git worktree list`, then require:
 
-Before running the helper, generate or review the PR body for GitHub reviewers
-who do not know the Trellis task. The body must be Chinese and self-explanatory:
-`变更摘要`, `影响范围`, `验证结果`, `Review Gate`, `Issue 关闭范围`, and
-`安全说明` must contain concrete content. It must also include a `Docs SSOT` /
-`文档同步` result with the plan strategy, durable docs updates or no-update
-reason, task delta merged back, task-history-only content, and any follow-up or
-current PR limitation. Do not use low-information summaries such as
-`当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact`.
-Write the reviewed Markdown body to the task-local file
-`{TASK_DIR}/pr-body.md` and pass it with `--body-file "{TASK_DIR}/pr-body.md"`.
-A task-local JSON readiness artifact passed with `--body-artifact <path>` is
-also accepted, but the main flow should use the reviewed Markdown file.
-Non-draft publish requires one of these reviewed sources; script-generated
-`generated` bodies are preview/draft-only and do not count as readiness
-evidence. The readiness/body files are Trellis task metadata and publish reads
-the final body from the archived task artifact after archive.
+```bash
+.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
+```
 
-Create and AI-review `{TASK_DIR}/finish-summary-index.json` before dry-run. It
-contains semantic problem/outcome/behavior/surface/contract judgment plus
-non-factual command/config/schema/symbol/phrase search terms; the companion
-injects issue, PR, branch, path, commit, artifact, and time facts.
-The AI input accepts at most 19 `contract_changes`; the final summary accepts
-20 so the recorder can append the fixed protected-path filtering fact.
+Create and AI-review task-local `pr-body.md` and
+`finish-summary-index.json`. The Chinese PR body must contain concrete
+`变更摘要`, `影响范围`, `验证结果`, `Review Gate`,
+`Issue 关闭范围`, `安全说明`, and `Docs SSOT` / `文档同步`.
+Only `close_issues` may use `Closes #xx`. The semantic summary index contains
+judgment and non-factual search terms; the companion injects GitHub, Git, path,
+artifact, and time facts.
 
-Run the internal Guru Team finish helper as a dry-run readiness preview first:
+Run the side-effect-free prepare pipeline first:
 
 ```bash
 .trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
@@ -44,26 +36,41 @@ Run the internal Guru Team finish helper as a dry-run readiness preview first:
   --dry-run
 ```
 
-Only after reviewing the dry-run output, run the formal finish:
+Review the complete `closeout_plan` and save its
+`closeout_plan_digest`. Formal finish must pass that digest unchanged:
 
 ```bash
 .trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work \
   --finish-summary-index-file "{TASK_DIR}/finish-summary-index.json" \
-  --body-file "{TASK_DIR}/pr-body.md"
+  --body-file "{TASK_DIR}/pr-body.md" \
+  --expected-plan-digest "<closeout_plan_digest>"
 ```
 
-After dry-run, run `resolve-human-artifacts.sh` against the active task and
-include an active-task `Markdown 产物 review 表`:
+Dry-run and formal execution share `prepare_closeout()`. Formal finish compares
+the digest before its first side effect, pushes the reviewed content HEAD,
+records deterministic pending/passed marketplace evidence, commits and pushes
+plan/readiness/evidence, creates or reuses one exact draft PR, builds the only
+final summary with canonical PR URL and one `PR #<number>` ref, validates the
+future archive projection, then calls official `task.py archive --no-commit`.
+It creates one exact archive metadata commit, pushes it, requires local/remote/PR
+HEAD equality, and only then runs draft to ready. After archive it must not
+rebuild or rewrite repo artifacts.
 
-```bash
-.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
-```
+Prepare permits only missing/empty official `hooks.after_archive`; it rejects
+non-empty or unparsable config without executing the hook. Immediately before
+official move it rechecks the live archive month, regular-file/mode/blob
+continuity, empty index, and exact planned untracked outputs.
 
-After the formal finish archives the task, run the resolver again against the
-archived task name or archive path and include the archive-path
-`Markdown 产物 review 表` in the final reply. The table lists only `prd.md`,
-`design.md`, `implement.md`, `review.md`, and `pr-body.md`; missing files must
-not be rendered as Markdown links, and JSON artifacts stay out of the standard
-table.
+If any ordinary stage fails, rerun this same entry with the same expected digest. The
+state machine resumes from committed plan/readiness, active/archive locators,
+Git/remote facts, and the unique PR identity. Multiple matching PRs, protected
+input drift, unexpected metadata paths, or HEAD mismatch fail closed.
+For `archive-month-preflight`, keep the active task/draft PR, rerun dry-run,
+review its new digest, and formalize that digest. The executor may append a
+plan/readiness-only supersession evidence commit; it never rewrites history or
+migrates an archive directory.
 
-The `--from-trellis-finish-work` marker proves this explicit entrypoint was invoked; do not add it to `trellis-continue`. The helper validates the gate and AI index, archives the task, writes schema-valid initial `finish-summary.json`, commits task metadata, verifies any remote marketplace change, and creates the PR. It never calls `add_session.py` or reads/writes `.trellis/workspace/**`. After PR creation it rewrites URL, PR ref, and final changed paths, then commits and pushes exactly the archived summary path without reopening Branch Review Gate. Any non-task metadata path fails. A post-PR failure preserves the URL and executable recovery command. Recovery revalidates repo/base/head, reviewed body/readiness, gate, and current/remote HEAD, then queries the current repo/head/base before create: one open PR is reused, zero triggers one same-input create retry, and multiple fail closed without create. A failed retry keeps the initial empty URL/refs and returns the same recovery command. Normal marketplace publish executes the verifier; recovery validates and reuses existing passed verifier evidence instead of rerunning it against a dirty/staged summary. Missing/stale marketplace or review evidence blocks, and no tag is created. Durable docs, source, tests, schema, config, scripts, preset, overlay, CI/CD, deployment, migration, or Makefile drift must return to Phase 2/3.
+After dry-run, run `resolve-human-artifacts.sh --json --task <task-path>`
+against the active task and show the `Markdown 产物 review 表`. After formal finish, run the same resolver against the archived task and include its archived table. The resolver lists only `prd.md`, `design.md`,
+`implement.md`, `review.md`, and `pr-body.md`. Guru Team never calls
+`add_session.py` and never reads or writes `.trellis/workspace/**`.

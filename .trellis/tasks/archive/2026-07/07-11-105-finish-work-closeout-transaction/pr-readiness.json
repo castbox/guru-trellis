@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "fix/105-finish-work-closeout-transaction",
+    "reviewed_head_sha": "3ca1847d70809a7530f59d1cb555388f70f65d47",
+    "title": "完成：#105 拆分 #53：重构 Guru Team finish-work 收尾事务，消除 archive 后可预见失败",
+    "body_source": "pr-body.md",
+    "body_sha256": "c2f0f5dccd213936fd49b7cc9280776860ae79e403e0616632e5972cf9940ee8",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "1d8b902cc492621094dcd24dcade7439a0d86da400e348a92923cba259b0a667"
+  },
+  "publish_inputs_sha256": "bab20587ea1e648ee52feb93f5dd02de19cb59814a754db9e921e5caaaf72135"
+}

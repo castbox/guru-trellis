@@ -107,39 +107,64 @@ may not contain leading or trailing whitespace. Backfill `source_artifacts`
 remain structurally valid without a task directory, but when an archived
 `task_dir` is available every clean source path must name an existing file.
 
-Initial summary uses empty `github.pr_url` and `pr_refs`. Because it is built
-after archive and before the metadata commit, its path snapshot combines a
-NUL-delimited base-to-working-tree diff with NUL-delimited untracked file
-enumeration; archived task metadata is recorded as individual files, never as
-an untracked directory placeholder. The protected-prefix filter and fixed fact
-rules apply to this initial snapshot. If initial diff, initial untracked
-enumeration, or final/recovery diff fails, both path arrays are `[]`, the
+The final pre-archive snapshot combines a NUL-delimited base-to-working-tree
+diff with NUL-delimited untracked file enumeration; task metadata is recorded
+as individual files, never as an untracked directory placeholder. The
+protected-prefix filter and fixed fact rules apply to this snapshot. If the
+required diff snapshot fails, both path arrays are `[]`, the
 filtering fact is removed, and exactly one fixed non-disclosing
 `finish-summary git path snapshot unavailable` fact is recorded before
-`retrieval_text` is re-derived. After PR creation,
-publish sorts and deduplicates raw base-to-HEAD paths, filters workspace/runtime
-protected prefixes, and writes the safe set to both `git.changed_paths` and
-search `paths`. A non-empty filtered set deterministically adds one fixed
+`retrieval_text` is re-derived. After the unique draft PR is bound, the final
+projection sorts and deduplicates raw base-to-HEAD paths, filters
+workspace/runtime protected prefixes, and writes the safe set to both
+`git.changed_paths` and search `paths`. A non-empty filtered set adds one fixed
 `finish-summary protected path filtering` contract fact without path, basename,
 or count details; an empty filtered set adds no such fact. Schema and Python
-validation reject protected prefixes in every path field without a deletion
-exception. Publish then writes URL/PR ref, validates the full summary, and
-refreshes the artifact whitelist from the current archived task before
-committing exactly that archived-task file. This metadata tail does not
-rerun Branch Review Gate. Before the first create, finish-work records and
-commits task-local `pr-readiness.json.publish_inputs` with repo, base/head,
-reviewed HEAD, exact title, `pr-body.md`, body SHA-256, draft, reviewed source,
-and canonical snapshot SHA-256. Recovery accepts only that archived artifact,
-checks clean/staged state, HEAD blobs, one-commit artifact history, digests,
-gate ancestry, and repo/base/head/current/remote identity, and rejects CLI
-title/body/draft/base overrides. Recovery revalidates the gate and
-current/remote HEAD before querying the current repo/head/base. One open PR is
-reused; zero triggers exactly one same-title/body/draft create retry; multiple
-fail closed without create. A failed retry preserves initial empty URL/refs and
-the same recovery command. Marketplace normal publish executes the remote
-verifier; recovery validates and reuses the existing passed verifier artifact,
-ledger evidence, verified/remote/publish HEAD, and review gate, and does not
-rerun the verifier against a dirty or staged summary.
+validation reject protected prefixes in every path field. The final summary is
+built once in the active task after draft PR binding and moves unchanged to the
+archive locator. Readiness binds repo/base/head, reviewed HEAD, exact title,
+`pr-body.md`, body SHA-256, `draft=true`, reviewed source, and
+`closeout_plan_digest`. Active-state recovery consumes committed plan/readiness
+plus Git/remote and PR facts. Reuse and final projection require one exact PR
+number/URL/title/body identity; one matching draft is reused, zero creates one,
+and multiple identities fail closed. The real-PR final summary has one
+deterministic UTF-8 JSON byte representation and digest. Pre-move continuity
+and incomplete post-move recovery rebuild those bytes from the immutable
+summary template plus the already-bound remote PR number/URL, so a summary and
+its PR identity cannot be changed together. After the exact archive commit
+exists, fresh recovery reads only that commit's `finish-summary.json` blob,
+strictly parses the canonical PR URL and unique PR ref, rebuilds the expected
+bytes/digest, and recovers the original number/URL. It does not read the
+archived working-tree summary or invoke the general finish-summary artifact
+validator. The recovered PR must still exist as the unique open repo/head/base
+candidate and match that exact number/URL; missing, closed, or replacement PRs
+fail closed. Readiness, body, ledger, and verifier remain unopened after the
+official move, while remote title/body and three-way HEAD checks still come
+from the immutable plan and remote facts.
+
+Final projection, incomplete recovery, and exact recovery share one strict PR
+URL parser. The URL must be exactly
+`https://github.com/<owner>/<repository>/pull/<positive-number>` with no
+alternate transport, leading-zero number, trailing or extra path, query, or
+fragment. GitHub owner/repository identity is compared case-insensitively with
+the normalized `plan.git.repo`, while the canonical output preserves the exact
+valid owner/repository casing returned by the bound remote PR, such as
+`microsoft/PowerToys`. A different repository remains invalid regardless of
+casing.
+
+Archive content identity is not inferred from the no-renames path set. Before
+the exact archive commit exists, each `tracked_move_paths` item binds the
+evidence commit active blob to the archived working-tree file and prospective
+archive commit blob. All files are byte-identical except `task.json`, where
+only the official `status` and `completedAt` archive fields may change.
+`untracked_archive_outputs` are validated by their existing template/digest
+contracts. Once the exact archive commit exists, its tree and blobs replace the
+archived working tree as the authoritative content source.
+
+Failure-state evidence is read from the real filesystem, Git index/log, bare
+remote, and fake GitHub PR store after invoking production `cmd_finish_work()`.
+Test-owned dictionaries may summarize those observed facts, but must not drive
+or manufacture transition state.
 
 ### Archived Task Backfill Contract
 
@@ -539,7 +564,7 @@ When blocked, the command exits non-zero and returns `status=blocked` with
 `errors[]` entries that include the commit hash, subject, classified kind
 (`work`, `metadata`, `merge`, or `invalid`), and objective validation messages.
 
-`format-merge-commit --json` and `publish-pr` expose a `merge_commit` object:
+`format-merge-commit --json` exposes a `merge_commit` object:
 
 ```json
 {
@@ -552,8 +577,9 @@ When blocked, the command exits non-zero and returns `status=blocked` with
 }
 ```
 
-Dry-run publish may set `ready=false` and use `<pull_request>` as a placeholder.
-Formal publish must parse the created PR number and return `ready=true`.
+When the pull request number is omitted, the formatter sets `ready=false` and
+uses `<pull_request>` as a placeholder; with a real number it returns
+`ready=true`.
 Trellis metadata commit messages generated by finish/publish use
 `chore(trellis): #<primary_issue> 固化任务收尾元数据` and an empty body.
 Commit message payloads must never use close keywords such as `Closes`,
@@ -600,13 +626,183 @@ A failed findings artifact is also invalid recorder evidence when it lacks
 `conclusion.passed` must be `false`; `passed=true` is reserved for explicit
 `--pass` with zero findings.
 
-After `task.py archive`, the archived task is the new task-local boundary.
-Validators may accept a gate whose digest entries still point at the
-pre-archive active task path when the corresponding archived files exist and
-their content digests match. Finish/publish recovery may then rewrite only the
-task path, ledger path, `review_report`, and `agent_assignment` digest metadata
-to the archived task path before committing Trellis metadata. This does not
-change the reviewed code `HEAD` or the AI review conclusion.
+Before `task.py archive`, `prepare_closeout()` fixes both the active and future
+archive locators. The active task remains the task-local boundary until the
+single archive metadata transaction moves it to the prevalidated archive
+locator. Validators may accept gate digest entries that still use the active
+locator when the projected archived files have matching bytes; no artifact is
+rewritten after the archive move.
+
+The future locator must not already exist when prepare builds the plan. The
+archive root, month, and final destination are lexical components: every
+existing component is inspected with `lstat`, any symlink including dangling or
+repo-internal targets is rejected without following it, and the same check is
+repeated immediately before official move.
+`task.json.children` uses the official missing-as-empty convention but must
+otherwise be `list[str]`; active children found by official exact/suffix lookup
+block only when their `task.json` would join the archive mutation, while archived
+children remain valid historical references.
+
+## Closeout Plan
+
+`closeout-plan.json` is schema version `1.0` and is the immutable machine input
+contract shared by dry-run and formal finish. It records portable task and
+repo/base/head identity, protected input SHA-256 values, Branch Review Gate
+coverage, exact draft PR inputs, marketplace pending machine evidence, future
+archive projection, exact metadata allowlist, and the fixed transition list.
+It never records tokens, absolute worktree paths, a real PR URL, verifier
+output, or archive commit SHA. Its projection does record a fixed sentinel PR
+URL/ref and the complete schema-valid finish-summary template so all local
+summary errors are known during prepare.
+
+`git.repo` is the normalized `owner/repository` identity. All effective fetch
+and push URLs of `git.remote` have a raw/effective two-layer contract. Raw
+`remote.<name>.url`, optional `pushurl`, and every `url.*.insteadOf` /
+`pushInsteadOf` base/pattern are read with NUL value boundaries plus origin.
+They reject empty/ambiguous records, leading/trailing whitespace, all control
+characters, unreadable origins, and NUL bytes in relevant config files;
+missing `pushurl` reuses the raw `url` set. Effective output is never trimmed,
+must preserve raw-source cardinality, and after Git rewrite must use
+credential-free `https://github.com/...`,
+`ssh://git@github.com/...`, or `git@github.com:...` transport and normalize to
+this value. HTTP, `git://`, `file://`, relative/absolute filesystem paths,
+scheme-less host/path forms, userinfo/password/token variants, explicit ports,
+query strings, fragments, and extra path segments are invalid. The repo
+identifier normalizer is not a remote URL parser and must never be used as a
+fallback for effective remote values. Every queried PR must include
+`headRepository.nameWithOwner`,
+`headRepositoryOwner.login`, and `isCrossRepository`; the first two must agree
+with each other and with `git.repo`, while `isCrossRepository` must be false.
+Missing/unknown fields or a same-name fork candidate fail closed before PR
+cardinality, final-summary binding, archive, recovery, or ready transition.
+
+`publish.body_sha256` hashes the task-local `pr-body.md` bytes. Those bytes must
+decode as non-empty UTF-8, and the decoded text is the one canonical body value
+used by active readiness recovery, `gh pr create`, unique draft reuse, and final
+projection. Leading/trailing whitespace, trailing newlines, and
+Markdown-sensitive spaces are identity data; validators never trim or add a
+newline before comparing the remote PR body. After archive, the remote body's
+UTF-8 bytes are hashed directly and compared with `publish.body_sha256`; the
+task-local body is not reopened.
+
+`projection.move_paths` is the complete task-relative filesystem set moved by
+the official archive command. `projection.tracked_move_paths` is the subset in
+the Git index after the evidence commit; each requires an active deletion and
+archive addition. `projection.untracked_archive_outputs` is the subset created
+after that commit; currently it is exactly `finish-summary.json`, and Git must
+report only its archive addition. `projection.evidence_paths` is the complete
+active task path set owned by the pre-draft metadata commit. These tracking
+classes are immutable plan facts derived before archive, not inferred from
+post-move status. The evidence commit tree must contain exactly the active
+locator projection of `tracked_move_paths`; this Git-tree check proves the
+classification before final projection writes any untracked output. The
+projection also stores `summary_template`,
+`summary_template_sha256`, the sentinel PR identity, and the exact runtime
+fields that may change. The sentinel uses the
+maximum-width positive 64-bit number so replacing it with a real PR number
+cannot introduce a new string-length validation failure.
+
+`summary_template_sha256` hashes the exact UTF-8 `write_json` encoding: two-space
+indentation, `ensure_ascii=false`, and one trailing newline. Active final
+projection requires that exact byte encoding, then normalizes the two PR
+runtime fields back to the sentinel and compares the template digest before
+the official move. Archived recovery proves continuity through the exact
+path/commit/blob transaction and never reparses the summary.
+
+`plan_digest` is the SHA-256 of canonical JSON with `plan_digest` omitted.
+Dry-run returns the complete plan and digest. First formal execution accepts
+only the same digest through `--expected-plan-digest`; a mismatch or protected
+input drift fails before push or file writes. `pr-readiness.json` binds the same
+digest under `publish_inputs.closeout_plan_digest`. After the first metadata
+commit, retries load the committed plan and validate reachable successor facts;
+passed ledger evidence is never used to reconstruct the initial plan.
+Before draft binding, partial retries distinguish reviewed content pushed,
+verifier pending/failed, verifier passed but evidence uncommitted, and evidence
+committed but unpushed from the exact plan/readiness/evidence/Git/remote facts.
+They retry only the missing transition.
+
+`task.archive_locator` uses the same live `YYYY-MM` that the unmodified official
+archive command will use. Formal checks it before the first side effect and
+again immediately before official move. If a committed plan becomes stale while
+the task is still active, dry-run may produce a replacement plan only when the
+old plan is the exact current evidence commit and neither old nor new archive
+locator exists. The replacement carries `git.evidence_parent_head`, changes
+only archive-derived projection values plus `projection.evidence_paths`, and a
+formal run with the new digest appends an exact plan/readiness evidence commit.
+The predecessor plan and evidence lineage remain in Git and are recursively
+validated. This is plan supersession, not archive-directory migration or
+history rewrite.
+
+`inputs.official_after_archive_hooks.sha256` binds the canonical empty command
+state parsed by the official Trellis config parser. Missing or empty
+`hooks.after_archive` maps to `{"commands":[]}`. Non-empty, ambiguous,
+unreadable, invalid-byte, or symlinked config has no valid digest because
+prepare rejects it without executing any hook command.
+
+Marketplace machine evidence has one deterministic pending identity and one
+deterministic passed identity. Pending and passed use the same fixed machine
+fields; pending uses empty artifact/remote digests and `commands_passed=false`.
+Human scope reasons remain outside this object and do not affect its identity.
+`artifact_path` is exactly task-relative `marketplace-verification.json`, so
+the same locator resolves after the active directory moves to archive.
+Missing, duplicate, altered, path-bound, or digest-mismatched machine fields
+fail closed.
+
+Before the exact archive commit exists, archive recovery accepts only the
+complete mixed no-renames working-tree path set: both sides for every tracked
+move and archive-only for every untracked output. It validates exact
+dirty/staged paths, evidence-commit parent/path identity, active absence,
+archive completeness, tracked blob continuity, and the official `task.json`
+delta before it may create the commit. Missing or mismatched commit state keeps
+this metadata recovery path fail closed.
+
+Before official move, the same continuity contract applies to the active task:
+the index is empty, untracked paths equal the planned final outputs, every move
+path is a regular file, tracked Git modes are `100644` or `100755` and match the
+working mode, and every working byte equals its evidence blob. This gate also
+rechecks the live archive month and empty official hook state.
+
+When current `HEAD` is the exact planned archive commit, both normal archived
+tasks with context and plan-only damaged tasks load the plan from that commit
+blob and validate only the immutable plan and Git parent/path/tree/blob lineage.
+Archived working-tree deletion, content tampering, and the resulting dirty
+paths are ignored; recovery may only push that exact commit when needed, check
+remote PR identity and three-way HEAD alignment, and retry draft-to-ready. An
+archived directory containing only `closeout-plan.json` is resolvable for this
+path only by `trellis-finish-work`; other commands still require `task.json`.
+Neither path parses, rebuilds, validates, or rewrites an archived body, summary,
+ledger, readiness, or marketplace artifact.
+
+Plan-only recovery does not use an empty task context as authorization. It
+loads `closeout-plan.json` from the current commit blob and, before GitHub or
+fast-path side effects, validates canonical digest plus Git toplevel,
+configured/effective repository, current head branch, base ref availability,
+current HEAD transaction, active/archive locator and basename relationship,
+summary task/branch/base/source-issue identity, and the exact task directory.
+Working-tree plan bytes cannot replace the committed plan. Ordinary task
+discovery and workspace-boundary commands do not enable this mode and still
+require the normal `task.json` / `task-start-context.json` contracts.
+The raw finish-work locator is preserved before ordinary resolution. Only a
+basename, exact former active locator, or exact archive locator may select the
+plan-only search. Path-like input is checked component-by-component with
+`lstat` from repo root through the final task directory. Basename input checks
+the raw `<repo>/<basename>` and `.trellis/tasks/<basename>` candidates, then
+checks archive candidates in ordinary resolver order before resolution. Every
+direct or archive candidate first retains only `symlink_component` evidence,
+then uses the ordinary resolver's exact follow-symlink `directory + task.json`
+predicate. A matching alias is rejected; an unmatched alias continues to the
+next candidate. This rejects internal/external, relative/absolute,
+ancestor/final, multilevel, dangling, or loop aliases before raw evidence can
+be discarded. The ordinary resolver then runs and preserves explicit
+`task.json`, active task, and normal archived `task.json` precedence. Only an
+ordinary not-found result enables plan-only fallback. An exact archive locator
+selects only that candidate; basename or
+former-active fallback requires a unique matching archive month and fails
+closed when multiple months match. The verified plan-only target must resolve
+to the same canonical archive locator recorded by `task` and `projection`.
+Only the structurally verified Darwin `/var` -> `/private/var` system mapping
+may re-anchor an outer path; arbitrary `samefile` discovery and user aliases
+are not valid identity.
 
 Branch Review Gate treats every finding priority (`P0`, `P1`, `P2`, `P3`) as
 blocking. `observations[]` are non-blocking notes, and

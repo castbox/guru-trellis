@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "审核state machine、失败恢复与脚本职责边界"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "审核schema、digest、summary与evidence一致性"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "审核canonical/dogfood/platform流程一致性"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "审核throwaway安装、update/reapply与overlay drift"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "审核测试、文档、安全和部署影响"}

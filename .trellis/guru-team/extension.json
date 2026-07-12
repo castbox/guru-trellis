@@ -45,6 +45,7 @@
         "pr-body.md",
         "review-gate.json",
         "pr-readiness.json",
+        "closeout-plan.json",
         "marketplace-verification.json",
         "finish-summary.json"
       ],
@@ -74,11 +75,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-11T03:25:51Z",
+  "installed_at": "2026-07-11T20:28:12Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "feat/100-backfill-finish-summary",
-    "commit": "4398046075ac0432a11e1d4687c39488723d2df0",
+    "ref": "fix/105-finish-work-closeout-transaction",
+    "commit": "d8bde831632c7e0e3141ae005fcea973092d8702",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -135,6 +136,7 @@
       ".trellis/agents/implement.md",
       ".trellis/guru-team/config-template.yml",
       ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/schemas/closeout-plan.schema.json",
       ".trellis/guru-team/schemas/finish-summary.schema.json",
       ".trellis/guru-team/schemas/marketplace-verification.schema.json",
       ".trellis/guru-team/schemas/task-start-context.schema.json",
@@ -162,9 +164,7 @@
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"
     ],
     "new_copies": [],
-    "managed_backups": [
-      ".trellis/guru-team/scripts/python/guru_team_trellis.py.bak"
-    ],
+    "managed_backups": [],
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
   },

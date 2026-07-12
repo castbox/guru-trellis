@@ -83,11 +83,8 @@ review_gate:
   require_head_match: true
   require_deployment_impact_evidence: true
 
-# Publish PR runs after finish-work archives the task and records initial finish-summary metadata.
+# Remote used by the finish-work closeout transaction.
 publish:
-  draft: false
-  close_keyword: Closes
-  pr_language: zh-CN
   remote: origin
 
 # Labels applied when the workflow creates a new issue. Empty list means no labels.

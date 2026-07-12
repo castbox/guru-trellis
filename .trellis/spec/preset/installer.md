@@ -1,5 +1,12 @@
 # Preset Installer
 
+The managed Guru Team assets include `schemas/closeout-plan.schema.json`.
+Fresh install, workflow switch/update, and preset reapply must preserve the
+same finish-work state order, expected-digest flag, draft handshake, and
+single-entry recovery text across shared, Codex, Claude, and Cursor entries.
+Recursive `.new`/`.bak` scans and canonical/dogfood equality include the new
+schema and finish entry content.
+
 ## Boundary
 
 `trellis/presets/guru-team/scripts/bash/apply.sh` is a Bash wrapper. The
@@ -226,6 +233,9 @@ or disposable copy and verify:
 - existing-project `trellis workflow --marketplace ... --create-new` preview
   and forced switch paths can read the Guru Team workflow
 - existing `.trellis/guru-team/config.yml` remains unchanged
+- `config-template.yml` remains managed while user-owned `config.yml` is not
+  listed in `install.managed_assets`; fresh and repeated apply report the same
+  deterministic managed asset set
 - managed companion assets update and produce `.bak`
 - unknown overlay edits produce `.new`
 - known upstream Trellis-generated entries are replaced
@@ -235,6 +245,10 @@ or disposable copy and verify:
 - throwaway validation fails if `.trellis/spec/**` or
   `00-bootstrap-guidelines` still contain known English documentation language
   requirements
+- the already-installed `finish-work.sh` completes dry-run digest, formal draft
+  binding, official archive, local/remote/PR HEAD equality, ready transition,
+  and clean-tree assertions both before and after update/reapply; the verifier
+  must not copy canonical workflow/scripts/schemas into the target fixture
 
 ## Common Mistakes
 

@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 105,
+    "url": "https://github.com/castbox/guru-trellis/issues/105",
+    "title": "拆分 #53：重构 Guru Team finish-work 收尾事务，消除 archive 后可预见失败",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/105"
+  },
+  "task_slug": "105-finish-work-closeout-transaction",
+  "task_title": "#105 拆分 #53：重构 Guru Team finish-work 收尾事务，消除 archive 后可预见失败",
+  "task_artifact_dir": ".trellis/tasks/07-11-105-finish-work-closeout-transaction",
+  "branch_name": "fix/105-finish-work-closeout-transaction",
+  "base_branch": "main",
+  "base_ref": "main",
+  "base_head_sha": "3dec302206783fe4ac1296066e9a1789c995d58b",
+  "remote_head_sha": "3dec302206783fe4ac1296066e9a1789c995d58b",
+  "workspace_slug": "105-finish-work-closeout-transaction",
+  "task_workspace_id": "105-finish-work-closeout-transaction",
+  "assignee": "wumengye",
+  "actor": {
+    "login": "wumengye"
+  },
+  "issue_scope_ledger_seed": {
+    "primary_issue": {
+      "number": 105,
+      "url": "https://github.com/castbox/guru-trellis/issues/105",
+      "title": "拆分 #53：重构 Guru Team finish-work 收尾事务，消除 archive 后可预见失败",
+      "reason": "intake 主 issue，默认进入 close 候选。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 105,
+        "url": "https://github.com/castbox/guru-trellis/issues/105",
+        "title": "拆分 #53：重构 Guru Team finish-work 收尾事务，消除 archive 后可预见失败",
+        "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": false,
+      "selected_issue": 105
+    },
+    "naming_quality": {
+      "ok": true,
+      "reason": "naming includes enough business tokens",
+      "requires_semantic_name": false,
+      "current_slug": "105-finish-work-closeout-transaction",
+      "current_surface": "workspace_slug",
+      "suggested_override_flags": [],
+      "checked_names": {
+        "slug": {
+          "ok": true,
+          "slug": "105-finish-work-closeout-transaction",
+          "reason": "ok",
+          "business_tokens": [
+            "finish",
+            "closeout",
+            "transaction"
+          ]
+        },
+        "task_slug": {
+          "ok": true,
+          "slug": "105-finish-work-closeout-transaction",
+          "reason": "ok",
+          "business_tokens": [
+            "finish",
+            "closeout",
+            "transaction"
+          ]
+        },
+        "workspace_slug": {
+          "ok": true,
+          "slug": "105-finish-work-closeout-transaction",
+          "reason": "ok",
+          "business_tokens": [
+            "finish",
+            "closeout",
+            "transaction"
+          ]
+        },
+        "branch_name": {
+          "ok": true,
+          "slug": "105-finish-work-closeout-transaction",
+          "reason": "ok",
+          "business_tokens": [
+            "finish",
+            "closeout",
+            "transaction"
+          ]
+        }
+      }
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    }
+  }
+}

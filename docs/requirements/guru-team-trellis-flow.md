@@ -74,8 +74,8 @@ flowchart TD
   FWEntry["trellis-finish-work<br/>唯一用户可见 closeout 入口"]:::guru
   PRBody["AI-reviewed pr-body.md<br/>+ finish-summary-index.json"]:::artifact
   Dry["finish-work.sh --dry-run<br/>--from-trellis-finish-work"]:::script
-  FW["finish-work.sh<br/>archive + initial summary + immutable readiness"]:::script
-  Pub["publish-pr.sh<br/>verifier + 0/1/&gt;1 recovery + URL tail"]:::script
+  FW["finish-work.sh<br/>immutable plan + draft + archive transaction"]:::script
+  Pub["publish-pr.sh<br/>compatibility-only fail closed"]:::script
 
   U --> H --> W --> B --> R
   R -->|"bootstrap 缺失或显式要求"| S0
@@ -95,7 +95,8 @@ flowchart TD
   GP -->|"否：finding / stale / reviewer-only"| Fix["返回 Phase 2/3 修复并复审"]:::guru
   Fix --> P2
   GP -->|"是"| FWEntry
-  FWEntry --> PRBody --> Dry --> FW --> Pub
+  FWEntry --> PRBody --> Dry --> FW
+  Pub -->|"固定拒绝并指向"| FWEntry
 
   classDef trellis fill:#E8F5E9,stroke:#2E7D32,color:#0B3D1E;
   classDef guru fill:#FFF3E0,stroke:#EF6C00,color:#4A2600;
@@ -347,24 +348,25 @@ flowchart TD
   Start["用户/session 显式 invokes<br/>trellis-finish-work"]:::guru
   CheckGate["check-review-gate.sh<br/>--allow-metadata-after-gate"]:::script
   Body["AI-reviewed pr-body.md<br/>中文且 reviewer-facing"]:::artifact
-  Dry["finish-work.sh --dry-run<br/>readiness preview"]:::script
+  Dry["finish-work.sh --dry-run<br/>sentinel summary template + plan digest"]:::script
   Index["AI-reviewed finish-summary-index.json<br/>只含语义判断"]:::artifact
-  Readiness["pr-readiness.json.publish_inputs<br/>repo/base/head/title/body digest/draft"]:::artifact
-  Formal["finish-work.sh<br/>--from-trellis-finish-work"]:::script
-  Archive["task.py archive<br/>官方 Trellis task archive"]:::trellis
-  Initial["finish-summary.json<br/>initial empty PR URL/refs"]:::artifact
-  MetaCommit["metadata-only commit<br/>archive / initial summary / readiness"]:::script
-  Verify["remote marketplace verifier<br/>required surfaces only"]:::script
+  Plan["closeout-plan.json<br/>expected digest handshake"]:::artifact
+  Readiness["pr-readiness.json.publish_inputs<br/>repo/base/head/body + plan digest"]:::artifact
+  Formal["finish-work.sh<br/>--expected-plan-digest"]:::script
+  Content["push reviewed content HEAD"]:::script
+  Verify["pending -> verifier -> passed<br/>evidence/readiness commit + push"]:::script
   Resolve{"open PR 数量"}:::guru
-  Reuse["1: 复用 canonical URL"]:::script
-  Create["0: immutable inputs<br/>只 create 一次"]:::script
+  Reuse["1: 复用唯一 draft PR"]:::script
+  Create["0: create draft PR"]:::script
   Block["&gt;1: fail closed"]:::artifact
-  Tail["PR URL + PR ref + safe paths<br/>finish-summary metadata tail"]:::artifact
-  PR["GitHub PR<br/>target intake base branch"]:::artifact
+  Final["inject canonical PR URL/ref<br/>into prevalidated template"]:::artifact
+  Archive["task.py archive --no-commit<br/>官方 Trellis task archive"]:::trellis
+  MetaCommit["single archive metadata commit<br/>push + three-way HEAD check"]:::script
+  PR["gh pr ready<br/>target intake base branch"]:::artifact
 
-  Start --> CheckGate --> Body --> Index --> Dry --> Readiness --> Formal --> Archive --> Initial --> MetaCommit --> Verify --> Resolve
-  Resolve -->|"1"| Reuse --> Tail --> PR
-  Resolve -->|"0"| Create --> Tail
+  Start --> CheckGate --> Body --> Index --> Dry --> Plan --> Formal --> Content --> Verify --> Readiness --> Resolve
+  Resolve -->|"1"| Reuse --> Final --> Archive --> MetaCommit --> PR
+  Resolve -->|"0"| Create --> Final
   Resolve -->|"&gt;1"| Block
 
   classDef trellis fill:#E8F5E9,stroke:#2E7D32,color:#0B3D1E;
@@ -378,15 +380,23 @@ PR readiness 要求：
 | 要求 | 说明 |
 | --- | --- |
 | AI-reviewed body | non-draft publish 必须使用 task-local `pr-body.md`；script-generated `generated` body 只能 preview/draft。 |
-| Immutable readiness | `pr-readiness.json.publish_inputs` 固定 repo/base/head、reviewed HEAD、title、body SHA-256、draft、reviewed source 与 canonical digest，并在首次 create 前提交。 |
-| Recovery preflight | 在 PR query/create 前校验 artifact/body clean/staged、HEAD Git blob、artifact 单次提交历史、snapshot/body digest、review gate、repo/base/head 与 current/remote HEAD；禁止 title/body/draft/base override。 |
+| Immutable plan/readiness | `closeout-plan.json` 固定 protected input SHA-256、repo/base/head、最大宽度 sentinel PR summary template/digest、完整 move/evidence path set 与 allowlist；`pr-readiness.json.publish_inputs` 绑定同一 `closeout_plan_digest`。 |
+| Task-relative verifier | ledger pending/passed 的 `artifact_path` 固定为 `marketplace-verification.json`；artifact/digest 只在 active task 的 final projection 中解析校验，archive 后通过 exact Git move/blob continuity 证明未变化，不重新解析。 |
+| Exact archive lineage | 首个 evidence commit parent 必须是 reviewed work HEAD；active task 跨月 supersession 的 evidence commit 通过 `git.evidence_parent_head` 绑定并递归验证旧 plan/evidence，只允许 plan/readiness 两个 path。archive commit parent 必须是最新 evidence commit。`tracked_move_paths` 必须同时出现 active 删除和 archive 新增；evidence commit 后才生成的 `untracked_archive_outputs` 只能出现 archive 新增。partial、missing、extra、误分类 path 均阻塞。 |
+| Archive blob continuity | 精确 archive commit 形成前，`tracked_move_paths` 的 evidence active blob 必须与 archive working-tree/prospective commit blob 一致；仅 `task.json.status/completedAt` 可按官方 archive 确定性变化。精确 commit 形成后以该 commit tree/blob 为权威，不再依赖 archived working tree。 |
+| Pre-move local gate | official move 前要求实时 archive 月份等于 plan、index 为空、untracked 等于计划输出、所有 move path 为 regular file、tracked Git/working mode 一致且只能 `100644/100755`、working bytes 等于 evidence blob。失败时 task active、PR draft。 |
+| Archive destination / children preflight | shared prepare 从受信 repo 内 archive root 到 month/final destination 对每个既有组件逐层 `lstat`；任何 symlink（含 dangling、repo 内外 target）均不读取/不跟随并立即拒绝，final locator 还必须不存在。official move 前重复同一检查，阻止 prepare-to-move 漂移。`task.json.children` 缺失按空 list，否则严格为 `list[str]`；按官方 active task exact/suffix lookup，仅会被 archive 改写的 active child 阻塞，已归档 child 不阻塞 parent。initial dry-run/formal 均在 Git、GitHub、recorder mutation 前失败。 |
+| Official hook boundary | prepare 使用安装后的官方 parser，只允许缺失/空 `hooks.after_archive`；非空、歧义、不可读、NUL、symlink 配置在副作用前拒绝，不执行/分析 hook，也不纳入 transaction。 |
+| Cross-month reprepare | 已提交旧月 plan 仅在 task 仍 active、旧 evidence commit 精确、archive 尚未 move 时可由同一 entry 重新 dry-run；formal 必须使用新 digest 并追加 plan/readiness-only supersession commit。复用 draft/verifier，不 rewrite history、不迁移 archive 目录，move 前再次校月。 |
+| Production failure matrix | 从生产 `cmd_finish_work()` 进入，使用真实临时 Git、bare remote、official `task.py archive` 和 fake gh/verifier 外部响应；逐阶段读取 locator、status、PR、HEAD、dirty/staged 与 next transition，不 mock closeout transition。 |
+| Same-entry recovery | 同一 finish entry 在 archive 前从 committed plan/readiness/evidence 与 active locator 恢复。real-PR final summary 的 deterministic bytes/digest 纳入 pre-move、incomplete 与 exact continuity：前两者用已绑定 remote PR 重建 expected bytes；精确 archive commit 形成后，只从该 commit 的 `finish-summary.json` blob 恢复原 PR number/URL 并重建校验，不读 working-tree summary、不调用通用 artifact validator。official move 后、精确 archive commit 形成前，仍校验 archived working-tree layout、dirty/staged paths、blob continuity 与官方 `task.json` delta；commit 缺失或不匹配 fail closed。当前 `HEAD` 已是精确 archive commit 后，普通 archived task 和 plan-only damaged task 都从 current commit blob 读取 plan，只校验 immutable plan、Git parent/path/tree/blob lineage 与 remote/PR HEAD facts，本地 archived 文件缺失/篡改不阻塞 push/ready；但原 PR 必须仍是同 number/URL 的唯一 open repo/head/base 候选，missing、closed、replacement 均 fail closed。plan-only archived directory 仅供 finish-work recovery 解析；该入口在GitHub/fast-path前校验Git toplevel、配置/effective repo、head branch、base ref、HEAD transaction、digest、task identity和locators，不无条件跳过boundary。raw locator在普通resolve前只允许basename/原active/精确archive语义；path-like输入先从repo root到final dir逐组件lstat，basename输入按ordinary候选顺序预检`<repo>/<basename>`、active candidate、archive root与archive candidates。每个direct/archive candidate先保留仅`symlink_component`证据，再用普通resolver完全相同的follow-symlink `directory + task.json`谓词判断；matching alias fail closed，unmatched alias继续下一候选。预检拒绝内外部、相对/绝对、ancestor/final、多层、dangling/loop alias，再调用普通resolver以保留显式`task.json`、active和普通archive优先级。只有ordinary not-found才进入plan-only fallback；精确archive只尝试该候选，basename/原active fallback要求唯一archive月份，多候选 fail closed。plan-only resolved target仍须等于plan canonical locator，仅固定Darwin `/var -> /private/var`系统映射可重锚。普通命令仍要求 `task.json`，worktree mode仍要求`task-start-context.json`；不暴露 `--skip-archive`、publish recovery flag 或 artifact override。 |
 | Git path failure | initial diff、initial untracked 或 final/recovery diff 失败时两个 path 数组都为 `[]`，只记录固定 unavailable fact，且不记录 stderr/ref/partial path 或 filtering fact。 |
 | 中文且具体 | 必须包含具体的 `变更摘要`、`影响范围`、`验证结果`、`Review Gate`、`Issue 关闭范围`、`安全说明`。 |
 | Docs SSOT / 文档同步 | 必须说明本次 Docs SSOT 策略、更新的 durable docs 或 no-update 理由、已 merge 的 task delta、仅保留 task history 的内容，以及 follow-up / 当前 PR limitation。 |
 | 低信息阻断 | 禁止把“当前 Trellis task”“已提交实现与文档更新”“详见 artifact”作为主要摘要。 |
 | close/ref 语义 | `Closes #xx` 只能来自 `issue-scope-ledger.json.close_issues`；`related_issues` 只能 refs/related；`followup_issues` 不能关闭。 |
-| dry-run 无副作用 | `finish-work --dry-run --from-trellis-finish-work` 只验证并展示 index/readiness/initial summary/publish 计划，不 archive、不写文件、不 commit、不 push、不 PR。 |
-| direct publish 受限 | 普通直接 `publish-pr.sh` 被阻塞；只有 finish-work 内部调用或已完成 finish-work 后的显式 recovery/debug 才能进入 publish。 |
+| dry-run 无副作用 | `finish-work --dry-run --from-trellis-finish-work` 运行与 formal 相同 prepare/validate，输出完整 plan/digest，不 archive、不写文件、不 commit、不 push、不 PR。 |
+| direct publish 受限 | 普通直接 `publish-pr.sh` 被阻塞；用户只重跑 `trellis-finish-work`。 |
 
 ## 9. Artifact 责任图
 
@@ -408,10 +418,11 @@ PR readiness 要求：
 | `review.md` | Phase 3.5 | Independent review rollup | 中文最终人类入口，链接每轮 raw report；`review-branch.sh` final digest、finish-work readiness。 |
 | `review-gate.json` | Phase 3.5 | Branch Review Gate artifact | `check-review-gate.sh`、finish-work；记录 final `review.md` digest 和 raw `review_reports[]` digest。 |
 | `finish-summary-index.json` | Phase 3.6 前 | AI-reviewed semantic input | recorder 只从该文件读取 problem/outcome/behavior/surface/contract/search terms 判断。 |
-| `finish-summary.json` | finish-work archive 与 publish tail | archived task-local 完成摘要 | #98 历史检索；initial URL/refs 为空，publish 后回写 canonical PR URL/ref 与安全 paths。 |
-| `pr-body.md` | Phase 3.6 前 | AI-reviewed PR body | immutable readiness 的 body source；包含 Docs SSOT / 文档同步结果。 |
-| `pr-readiness.json` | formal finish archive 前 | immutable publish input snapshot | 首次 create 和 recovery 的唯一 title/body/draft/repo/base/head 输入。 |
-| `marketplace-verification.json` | push 后、PR create 前 | deterministic remote verifier evidence | required marketplace/preset/overlay/schema/public API 发布门禁；recovery 只复用 passed evidence。 |
+| `closeout-plan.json` | finish-work dry-run/formal | immutable closeout input | digest handshake、normalized repo、raw config NUL/origin 边界、rewrite base/pattern、effective cardinality 与 strict GitHub transport allowlist、head repository identity、sentinel final-summary template、task-relative verifier locator、完整 move/evidence path snapshot、commit lineage 与状态恢复。 |
+| `finish-summary.json` | draft PR 后、archive 前 | archived task-local 完成摘要 | #98 历史检索；一次生成 canonical PR URL/ref，deterministic bytes/digest 随 archive move 进入终态，并由 exact archive commit blob 为 fresh recovery 恢复原 PR identity。final/incomplete/exact 共用 strict PR URL parser：repo identity 大小写不敏感，canonical output 保留 remote 合法 casing；错误 repo/transport/number/path/query/fragment 拒绝。 |
+| `pr-body.md` | Phase 3.6 前 | AI-reviewed PR body | 原始 UTF-8 文本是 immutable body identity；空白与 Markdown-sensitive spaces 不做 trim/normalize；包含 Docs SSOT / 文档同步结果。 |
+| `pr-readiness.json` | formal finish draft PR 前 | immutable publish input snapshot | title/body/draft/repo/base/head 与 closeout plan digest 绑定。 |
+| `marketplace-verification.json` | reviewed content push 后、draft PR create 前 | deterministic remote verifier evidence | required marketplace/preset/overlay/schema/public API 发布门禁；pending/passed machine identity 由 recorder 管理。 |
 
 ## 10. 演示时的讲解主线
 
@@ -425,9 +436,9 @@ PR readiness 要求：
 6. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出中文 `reviews/*.md` raw reports 与最终中文 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
 7. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，commit 后必须有独立中文 review raw reports、最终中文 `review.md` rollup 和 recorder 生成的 `review-gate.json`；主会话自检、自审或脚本校验通过不能替代这些证据。
 8. 任意 finding 都阻断；发现过问题的 reviewer 只能闭环自己的 finding，最终放行必须是 fresh reviewer。
-9. `trellis-continue` 到 Branch Review Gate 就停；`trellis-finish-work` 才能 archive、写 initial finish-summary、提交 immutable readiness 并自动 publish PR，Guru Team 不调用 `add_session.py`。
+9. `trellis-continue` 到 Branch Review Gate 就停；`trellis-finish-work` 通过 immutable plan/digest、draft handshake、final projection 与单次 archive transaction 自动 publish PR，Guru Team 不调用 `add_session.py`。
 10. shared start 和 Codex/Cursor SessionStart 只组合 phase/packages/task/Git facts，不打开、枚举、读取或输出 workspace journal。
-11. PR create/recovery 只消费已提交的 `pr-readiness.json.publish_inputs`；0/1/>1 open PR 状态机分别 create once、reuse、fail closed，成功后只回写 task-local finish-summary metadata tail。
+11. PR create 与 archive 前 recovery 只消费已提交的 plan/readiness；remote identity 先以 NUL value boundary 与 origin 读取全部 raw `url`/可选 `pushurl` 及 rewrite base/pattern，拒绝空/歧义 record、边界空白、control、不可读 origin 和相关 config file NUL；无 `pushurl` 时复用 raw fetch set。effective output 不做 trim，数量必须等于 raw source，Git 完成 rewrite 后每个 fetch/push URL 必须是无 credential 的 `https://github.com/...`、`ssh://git@github.com/...` 或 `git@github.com:...`，并与 `headRepository.nameWithOwner` 一样 normalize 后等于 immutable repo。HTTP、`git://`、`file://`、本地/裸路径、无 scheme、userinfo/token、端口、query/fragment、额外 path 均 fail closed，不允许回退到 repo identifier normalizer；owner 字段必须一致且 `isCrossRepository=false`。同名 fork 在 0/1/>1 前 fail closed，不能写入或替换 summary。archive 前 PR body 逐字匹配 task-local 原始 UTF-8 文本。official move 后、精确 archive commit 形成前仍以 working-tree layout/dirty/staged/blob/task.json 与已绑定 PR 的 deterministic summary bytes 合同 fail closed 恢复；当前 `HEAD` 已是精确 archive commit 后，忽略本地 archived 文件缺失/篡改，从 immutable commit summary blob 恢复原 PR number/URL 并重建 bytes/digest，不读取 working-tree summary、不调用通用 artifact validator，再按 Git parent/path/tree/blob lineage、remote body、原 PR identity 与三方 HEAD facts 完成 push/ready；原 PR missing/closed/replacement 均 fail closed。archived body、readiness、ledger 或 verifier 仍不打开。plan-only archived directory 只允许 finish-work recovery 解析，从commit blob读取plan并专门校验root/repo/branch/base/HEAD/digest/task/locator boundary；raw locator在任何resolve前执行lexical archive containment和逐组件lstat，resolved target再绑定plan canonical locator，禁止任意samefile/用户alias。普通命令的task context合同不变。
 12. PR body 是给 GitHub reviewer 的发布材料，不是内部 task 摘要；必须包含 Docs SSOT / 文档同步处理结果，关闭 issue 的语义由 `issue-scope-ledger.json` 控制。
 13. `Docs SSOT Plan` 在 planning 阶段先决定 durable docs 状态与同步策略，Phase 2 implementation 必须按策略执行并在 handoff 说明同步结果，Phase 2 check 必须按策略复核 durable docs / task artifacts / code / test 一致性；Phase 3 final reviewer 只验证这些结果，不首次 merge docs 或补 Phase 2 缺口。
 14. 所有脚本都是 executor / validator / recorder，不做 planner / reviewer / product owner 判断；PR body validator 只做 Docs SSOT section/key presence 等客观结构检查。
