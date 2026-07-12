@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/109-skill-first-contract",
+    "reviewed_head_sha": "a97d42fd44cf886e6ccadd07550b949d570203ee",
+    "title": "完成：#109 建立 Guru Team Skill-first 闭环流程模块化强制规范",
+    "body_source": "pr-body.md",
+    "body_sha256": "6383a805e486cf97e68f6476ea4758ce75f91e7b5939ae8c9b8faf12e301ec0f",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "351e11d8b992378b391a0dfb12bbd555d22eea02ec2d434903b5d796052102f5"
+  },
+  "publish_inputs_sha256": "a339578f6a4f3e31585df661e8812be095ef2b1088de48be8aec6fce0cccfb41"
+}

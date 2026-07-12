@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"核对 global workflow SSOT、AI gate 与平台入口责任边界"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"遵守确定性措辞、证据和单一来源质量要求"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"确保新增原则与 executor/validator/recorder 边界一致"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"避免在 AGENTS.md 重复现有完整合同并保持职责单一"}

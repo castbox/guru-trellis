@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Guru Team 缺少仓库级 Skill-first 强制原则，workflow、step-local skill 与平台入口容易重复定义流程，局部步骤也缺少统一的闭环、退出类型和状态边界。",
+    "outcome": "根 AGENTS.md 已成为 Skill-first 原则的 durable SSOT，明确 workflow 编排、skill 行为合同、AI 判断、确定性脚本、typed exits、拆分条件与公共 package 边界。",
+    "changed_behavior": [
+      "项目运行时 workflow 只负责编排，step-local skill 成为可独立执行步骤的行为 SSOT。",
+      "主 workflow 必须通过 stable skill id 显式调用强制 skill，平台入口只负责加载并路由到同一合同。",
+      "闭环步骤按正向行为、AI Gate、条件式确认、recorder/validator 和 typed exit 固定顺序执行。",
+      "workflow mode 与 standalone mode 使用同一门禁，每个 external exit 必须有唯一 consumer 或 fail closed。",
+      "需要范围判断、审查、修订或跨流程复用的步骤强制 skill 化，纯 route、单 script 和重复 SSOT wrapper 被排除。",
+      "公共 skill 使用 guru-<action>-<object> 命名，并区分 pre-task 状态、task-local 状态与 package 私有运行态。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "Guru Trellis Agent 通用原则",
+        "paths": [
+          "AGENTS.md"
+        ],
+        "change": "新增 Skill-first 闭环流程模块化规范，作为后续 workflow、skill、prompt、overlay 与 companion script 设计的仓库级原则。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "#109 规划与审查证据",
+        "paths": [
+          ".trellis/tasks/07-12-109-skill-first-contract/prd.md",
+          ".trellis/tasks/07-12-109-skill-first-contract/design.md",
+          ".trellis/tasks/07-12-109-skill-first-contract/implement.md",
+          ".trellis/tasks/07-12-109-skill-first-contract/phase2-check.json",
+          ".trellis/tasks/07-12-109-skill-first-contract/review.md",
+          ".trellis/tasks/07-12-109-skill-first-contract/review-gate.json"
+        ],
+        "change": "记录单文件业务范围、Docs SSOT 选择、Phase 2 finding closure、四轮独立审查与最终放行证据。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Workflow 与 Skill SSOT 分工",
+        "before": "仓库规则没有强制区分项目运行时全局编排与可独立步骤的局部行为合同。",
+        "after": "项目运行时 workflow 负责 phase、route 和全局 gate，step-local skill 负责单个完整行为闭环。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "强制 Skill 调用与执行一致性",
+        "before": "步骤可能只在 workflow 文案中存在，独立调用时缺少相同的 gate、确认、validator 和退出语义。",
+        "after": "强制步骤由 stable id 显式调用，workflow 与 standalone 入口执行同一闭环合同。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "AI 判断与脚本边界",
+        "before": "局部流程缺少统一规则来约束判断、记录、验证和副作用执行的先后与所有权。",
+        "after": "AI 负责范围、充分性、finding、revision 和 route 判断，脚本仅执行 executor、validator 与 recorder 动作。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Skill 拆分与公共状态边界",
+        "before": "跨流程复用步骤的拆分条件、公共命名、package 状态和 task 状态归属没有统一约束。",
+        "after": "强制拆分条件、禁止 wrapper 条件、guru-<action>-<object> 命名和 pre-task/task-local/package-private 状态边界已固定。",
+        "source_artifact": "design.md"
+      }
+    ],
+    "search_terms": {
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [
+        "mandatory invocation",
+        "typed exits"
+      ],
+      "symbols": [
+        "guru-<action>-<object>"
+      ],
+      "phrases": [
+        "Skill-first 闭环流程模块化原则已完成",
+        "mandatory invocation 与 typed exits 已写入仓库规范",
+        "guru-<action>-<object> 公共 Skill 边界已完成定义",
+        "workflow 与 step-local skill 的 SSOT 分工已固定"
+      ]
+    }
+  }
+}
