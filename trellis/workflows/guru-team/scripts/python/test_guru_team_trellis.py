@@ -6771,11 +6771,50 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
         "trellis/presets/guru-team/README.md",
         "docs/requirements/requirement-main.md",
     ]
-    CLOSEOUT_BODY_CONTRACT_FILES = [
-        "README.md",
-        ".trellis/spec/workflow/workflow-contract.md",
-        ".trellis/spec/workflow/companion-scripts.md",
-    ]
+    CLOSEOUT_DOC_CONTRACTS = {
+        "README.md": {
+            "required": [
+                "`publish-pr` 仅保留为兼容性阻断入口。",
+                "PR 发布只发生在显式 `trellis-finish-work` 入口。",
+                "唯一 PR body 来源是当前 task-local `pr-body.md`",
+                "`--body-file <current-task>/pr-body.md` 直接传入。",
+                "`--body-artifact`、外部同文文件、脚本生成的 body fallback",
+                "相对解析 `body_file` 均不属于 closeout 合同并 fail closed。",
+            ],
+            "forbidden": [
+                "或用 `--body-artifact <path>` 传 readiness artifact；",
+                "脚本生成的 `generated` body 只用于 draft/preview 辅助，不能作为 non-draft 发布证据。",
+            ],
+        },
+        ".trellis/spec/workflow/workflow-contract.md": {
+            "required": [
+                "`trellis-finish-work` is a single resumable transaction entry.",
+                "`publish-pr` is only a compatibility blocker.",
+                "accepts exactly one reviewed body source: `--body-file`",
+                "must point directly to the current task-local `pr-body.md`.",
+                "`--body-artifact`, external same-content files, generated body fallbacks",
+                "readiness-relative `body_file` resolution are rejected and do not participate in closeout.",
+            ],
+            "forbidden": [
+                "`--body-file` or `--body-artifact`;",
+                "script-generated `generated` bodies are preview/draft-only",
+                "resolve it relative to the artifact's own directory.",
+            ],
+        },
+        ".trellis/spec/workflow/companion-scripts.md": {
+            "required": [
+                "`publish-pr` is retained only as an unconditional compatibility blocker",
+                "it performs no repo/task resolution or side effect and points callers to `trellis-finish-work`.",
+                "Every interruption is resumed through that same state-aware entry.",
+                "Formal closeout accepts only `--body-file` pointing directly to the current task-local `pr-body.md`",
+                "it rejects `--body-artifact`, generated body fallbacks, and readiness-relative `body_file` resolution.",
+            ],
+            "forbidden": [
+                "`--body-file` or `--body-artifact` inputs that were already reviewed by AI/human;",
+                "`generated` bodies are limited to draft/preview paths.",
+            ],
+        },
+    }
     BARE_FINISH_COMMAND = ".trellis/guru-team/scripts/bash/finish-work.sh --json --from-trellis-finish-work"
 
     def finish_work_code_blocks(self, content: str) -> list[str]:
@@ -6810,42 +6849,6 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
                 commands.append(" ".join(part.removesuffix("\\").strip() for part in current))
                 current = []
         return commands
-
-    def legacy_body_source_violations(self, content: str) -> list[str]:
-        legacy_source = re.compile(
-            r"--body-artifact|generated.{0,40}\bbod(?:y|ies)\b|"
-            r"脚本生成.{0,40}\bbody\b|readiness.{0,80}`body_file`|"
-            r"`body_file`.{0,80}readiness",
-            flags=re.IGNORECASE | re.DOTALL,
-        )
-        rejection = re.compile(
-            r"reject|does not accept|not accepted|cannot be used|fail closed|"
-            r"拒绝|阻断|不接受|不可用于|不属于",
-            flags=re.IGNORECASE,
-        )
-        authorization = re.compile(
-            r"(?:(?<!not )(?<!does not )\b(?:accepts?|allows?|supports?|uses?|requires?)\b|"
-            r"\bmust receive\b).{0,80}`?--body-artifact`?|"
-            r"(?<!不)(?:接受|允许|支持|使用).{0,40}`?--body-artifact`?|"
-            r"`?--body-artifact`?.{0,40}(?:is (?:an? )?(?:accepted|allowed|supported|valid) "
-            r"(?:source|input)|(?<!不)属于受支持来源|(?<!不)属于合法(?:来源|输入))|"
-            r"(?:generated|脚本生成).{0,40}\bbod(?:y|ies)\b.{0,40}"
-            r"(?:limited to|accepted|allowed|supported|may\b|can\b|used for|只用于|(?<!不)可用于)|"
-            r"(?:resolve|解析).{0,80}(?:readiness|`body_file`).{0,80}(?:relative|相对)",
-            flags=re.IGNORECASE | re.DOTALL,
-        )
-        normalized = " ".join(content.split())
-        clauses = re.split(
-            r"(?<=[.!?。！？])\s+|[;；]|,\s*(?:but|while|whereas)\s+|，\s*(?:但|但是|而)\s*",
-            normalized,
-            flags=re.IGNORECASE,
-        )
-        return [
-            clause
-            for clause in clauses
-            if not rejection.search(clause)
-            and (authorization.search(clause) or legacy_source.search(clause))
-        ]
 
     def test_finish_work_entrypoints_show_reviewed_body_and_dry_run(self) -> None:
         for relpath in self.ENTRYPOINT_FILES:
@@ -6911,36 +6914,14 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
                     f"{relpath} must not show bare finish-work command lines",
                 )
 
-    def test_closeout_docs_reject_legacy_body_sources(self) -> None:
-        for relpath in self.CLOSEOUT_BODY_CONTRACT_FILES:
+    def test_closeout_docs_match_canonical_contract(self) -> None:
+        for relpath, contract in self.CLOSEOUT_DOC_CONTRACTS.items():
             with self.subTest(path=relpath):
-                content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
-                self.assertIn("pr-body.md", content)
-                self.assertIn("--body-file", content)
-                violations = self.legacy_body_source_violations(content)
-                self.assertEqual(violations, [], f"{relpath} reauthorizes a legacy body source")
-
-    def test_closeout_docs_detect_mixed_legacy_body_authorization(self) -> None:
-        counterexamples = [
-            "Formal closeout accepts --body-artifact, but generated body is rejected.",
-            "`--body-artifact` 属于受支持来源；generated body 不属于 closeout 合同。",
-        ]
-        for content in counterexamples:
-            with self.subTest(content=content):
-                violations = self.legacy_body_source_violations(content)
-                self.assertEqual(len(violations), 1)
-                self.assertIn("--body-artifact", violations[0])
-                self.assertNotIn("generated", violations[0])
-
-    def test_closeout_docs_accept_explicit_legacy_body_rejections(self) -> None:
-        rejections = [
-            "Generated body cannot be used for closeout.",
-            "脚本生成 body 不可用于 closeout。",
-            "`--body-artifact` 不属于受支持来源。",
-        ]
-        for content in rejections:
-            with self.subTest(content=content):
-                self.assertEqual(self.legacy_body_source_violations(content), [])
+                content = "".join((self.REPO_ROOT / relpath).read_text(encoding="utf-8").split())
+                for required in contract["required"]:
+                    self.assertIn("".join(required.split()), content)
+                for forbidden in contract["forbidden"]:
+                    self.assertNotIn("".join(forbidden.split()), content)
 
 
 class HumanArtifactReviewTableContractTest(unittest.TestCase):
