@@ -1,9 +1,9 @@
 {
   "schema_version": "1.1",
   "generated_at": "2026-07-12T11:01:43Z",
-  "updated_at": "2026-07-12T11:58:38Z",
+  "updated_at": "2026-07-12T13:02:56Z",
   "task": ".trellis/tasks/07-12-109-skill-first-contract",
-  "head": "0e3f18b8d4740b0e45c0c9bfade6252a787a09df",
+  "head": "a97d42fd44cf886e6ccadd07550b949d570203ee",
   "agents": [
     {
       "logical_role": "实现代理",
@@ -49,6 +49,15 @@
       "assigned_head": "0e3f18b8d4740b0e45c0c9bfade6252a787a09df",
       "reason": "Round 001 P2 已由 Round 002 finding owner closure；派发从未出现于 prior rounds 的 fresh reviewer，审查当前 HEAD 与完整 lifecycle 后决定最终放行。",
       "event_id": "evt-0017-89659a2303"
+    },
+    {
+      "logical_role": "最终放行审查代理",
+      "agent_id": "/root/branch_final_109_round4",
+      "platform_nickname": "",
+      "assigned_at": "2026-07-12T12:56:07Z",
+      "assigned_head": "a97d42fd44cf886e6ccadd07550b949d570203ee",
+      "reason": "纠偏 metadata commit 生成新 HEAD 后，旧 Round 003 reviewer 不能覆盖当前 HEAD；按 fresh final reviewer 规则派发全新代理独立审查 origin/main...a97d42f 全量差异与完整生命周期。",
+      "event_id": "evt-0021-aa03bed701"
     }
   ],
   "liveness": {
@@ -151,6 +160,26 @@
       "pending_status_request_at": null,
       "last_checked_at": "2026-07-12T11:53:21Z",
       "last_decision": "progress_observed"
+    },
+    "/root/branch_final_109_round4": {
+      "progress_anchor_at": "2026-07-12T13:02:05Z",
+      "last_scan_snapshot": {
+        "captured_at": "2026-07-12T13:02:05Z",
+        "task_head": "a97d42fd44cf886e6ccadd07550b949d570203ee",
+        "task_content_status_digest": "fed62d8c05ba87e50f4a7e31c713a96e4d3d56aece084e18216ce3c53d911c4d",
+        "task_content_diff_stat_digest": "6fcd4bbc869a8a7bff65ae3157223ac24d2387cf6a8165894f5bcea56c0b29e5",
+        "task_content_max_mtime": "2026-07-12T13:01:41Z",
+        "source_head": "530a8972576ec85e42354dc67755c1782ea701fe",
+        "source_status_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_diff_stat_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_max_mtime": "2026-07-12T10:40:23Z",
+        "progress_events_count": 0,
+        "progress_events_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "progress_events_newest_event_id": ""
+      },
+      "pending_status_request_at": null,
+      "last_checked_at": "2026-07-12T13:02:05Z",
+      "last_decision": "progress_observed"
     }
   },
   "review_rounds": [
@@ -198,6 +227,21 @@
       "review_report_sha256": "939732d253c67d28fd0a4f22fc4e4e7986c5f4cd2c7e697d90ebeb68cade45c8",
       "review_report_size_bytes": 12218,
       "review_report_modified_at": "2026-07-12T11:56:11.378948+00:00"
+    },
+    {
+      "round": 4,
+      "logical_role": "最终放行审查代理",
+      "agent_id": "/root/branch_final_109_round4",
+      "platform_nickname": "",
+      "reviewed_head": "a97d42fd44cf886e6ccadd07550b949d570203ee",
+      "findings_count": 0,
+      "reuse_policy": "任何旧 reviewer 均不得作为新 HEAD 的最终放行 reviewer；必须使用未参与此前实现、Phase 2、finding 或 closure 的 fresh agent。",
+      "reuse_decision": "new-agent",
+      "recorded_at": "2026-07-12T13:02:56Z",
+      "review_report_path": ".trellis/tasks/07-12-109-skill-first-contract/reviews/round-004-final-pass.md",
+      "review_report_sha256": "192e5a7342c25b9fe896955395369ee52847b2d92d0748e221c7930e1aa16738",
+      "review_report_size_bytes": 12663,
+      "review_report_modified_at": "2026-07-12T13:01:41.347647+00:00"
     }
   ],
   "reuse_decisions": [
@@ -566,6 +610,42 @@
       "head": "0e3f18b8d4740b0e45c0c9bfade6252a787a09df",
       "source": "main-session",
       "evidence": "最终放行审查代理已返回完整 PASS handoff；覆盖 origin/main...HEAD、live #109/#120、全部 task/gate/research artifacts、三轮 lifecycle、Docs SSOT、commit、安全与部署影响，P0/P1/P2/P3 findings 均为 0。",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0021-aa03bed701",
+      "event": "assigned",
+      "agent_id": "/root/branch_final_109_round4",
+      "logical_role": "最终放行审查代理",
+      "platform_nickname": "",
+      "observed_at": "2026-07-12T12:56:07Z",
+      "recorded_at": "2026-07-12T12:56:07Z",
+      "head": "a97d42fd44cf886e6ccadd07550b949d570203ee",
+      "source": "main-session",
+      "evidence": "纠偏 metadata commit 生成新 HEAD 后，旧 Round 003 reviewer 不能覆盖当前 HEAD；按 fresh final reviewer 规则派发全新代理独立审查 origin/main...a97d42f 全量差异与完整生命周期。",
+      "predecessor_agent_id": "",
+      "predecessor_event_id": "",
+      "termination_reason": "",
+      "termination_source_event_id": "",
+      "replacement_reason": "",
+      "handoff_summary": ""
+    },
+    {
+      "event_id": "evt-0022-478a36343d",
+      "event": "completed",
+      "agent_id": "/root/branch_final_109_round4",
+      "logical_role": "最终放行审查代理",
+      "platform_nickname": "",
+      "observed_at": "2026-07-12T13:02:55Z",
+      "recorded_at": "2026-07-12T13:02:55Z",
+      "head": "a97d42fd44cf886e6ccadd07550b949d570203ee",
+      "source": "main-session",
+      "evidence": "Round 004 全新最终放行审查代理已完成 origin/main...a97d42f 全量审查；P0/P1/P2/P3=0，corrective metadata commit 范围受控，Phase 2 ancestor/post-commit audit errors=[]，四轮 raw reports 已由 review.md 完整链接。",
       "predecessor_agent_id": "",
       "predecessor_event_id": "",
       "termination_reason": "",
