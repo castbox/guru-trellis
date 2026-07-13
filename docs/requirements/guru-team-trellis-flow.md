@@ -36,6 +36,17 @@ flowchart LR
 
 ## 2. 全链路总图
 
+公共 mandatory step 采用两层 SSOT：global workflow 通过可解析的
+`guru-skill-invoke` / `guru-skill-exit` marker 拥有调用与出口路由；active
+package 拥有“正向行为 -> AI Review Gate -> 条件 human confirmation ->
+recorder/validator -> typed exit”的完整闭环。Auto-trigger 只辅助发现，不能
+替代 mandatory marker。任何 missing/unknown/multiple/unmapped exit 都必须
+fail closed。
+
+Workflow marketplace 不分发 external skill。Guru Team preset 在 source
+validation 通过后，从 `trellis/skills/guru-team/` 安装 audited registry 和
+active packages，并只为 selected platforms 生成 runtime discovery copy。
+
 ```mermaid
 flowchart TD
   U["用户输入<br/>自然语言任务 / issue URL / trellis-continue / trellis-finish-work"]:::codex

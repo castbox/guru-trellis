@@ -5,10 +5,13 @@ from __future__ import annotations
 
 import argparse
 import filecmp
+import hashlib
 import json
 import os
+import stat
 import shutil
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -49,6 +52,7 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/version.sh"),
     Path("scripts/bash/prepare-task.sh"),
     Path("scripts/bash/check-workspace-boundary.sh"),
+    Path("scripts/bash/check-skill-packages.sh"),
     Path("scripts/bash/resolve-human-artifacts.sh"),
     Path("scripts/bash/verify-marketplace.sh"),
     Path("scripts/bash/record-planning-approval.sh"),
@@ -238,6 +242,7 @@ def build_installed_extension_manifest(
             "workflow_marketplace": WORKFLOW_MARKETPLACE,
             "workflow_template": WORKFLOW_TEMPLATE,
         },
+        "skill_packages": result["skill_packages"],
         "notes": (
             "This file records deterministic install provenance for the Guru Team Trellis extension. "
             "source.commit and source.tree_state describe the extension source observed at apply time; "
@@ -256,6 +261,467 @@ def write_installed_extension_manifest(dst: Path, payload: dict[str, Any]) -> st
 
 def ensure_executable(path: Path) -> None:
     path.chmod(path.stat().st_mode | 0o755)
+
+
+def load_previous_installed_manifest(dst: Path) -> dict[str, Any] | None:
+    path = dst / "extension.json"
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def previous_skill_hashes(manifest: dict[str, Any] | None) -> tuple[dict[str, str], set[str], bool]:
+    if manifest is None:
+        return {}, set(), True
+    skill_packages = manifest.get("skill_packages")
+    if skill_packages is None:
+        return {}, set(), True
+    required_fields = {
+        "schema_version", "status", "canonical_registry_sha256", "registry_schema_version",
+        "reserved_ids", "active_ids", "selected_platforms", "packages", "files", "removals",
+        "conflicts", "sidecars",
+    }
+    if (
+        not isinstance(skill_packages, dict)
+        or set(skill_packages) != required_fields
+        or skill_packages.get("schema_version") != "1.0"
+        or skill_packages.get("status") != "ok"
+        or skill_packages.get("conflicts") != []
+        or skill_packages.get("sidecars") != []
+        or not isinstance(skill_packages.get("packages"), list)
+        or not isinstance(skill_packages.get("removals"), list)
+    ):
+        return {}, set(), False
+    files = skill_packages.get("files")
+    if not isinstance(files, list):
+        return {}, set(), False
+    hashes: dict[str, str] = {}
+    paths: set[str] = set()
+    valid = True
+    for item in files:
+        if not isinstance(item, dict):
+            valid = False
+            continue
+        path = item.get("path")
+        digest = item.get("sha256")
+        if (
+            not isinstance(path, str)
+            or not path
+            or path.startswith("/")
+            or ".." in Path(path).parts
+            or path in paths
+        ):
+            valid = False
+            continue
+        paths.add(path)
+        if not isinstance(digest, str) or not re_full_hex_digest(digest):
+            valid = False
+            continue
+        hashes[path] = digest
+    return hashes, paths, valid
+
+
+def re_full_hex_digest(value: str) -> bool:
+    return len(value) == 64 and all(ch in "0123456789abcdef" for ch in value)
+
+
+def lexical_repo_relative(repo: Path, target: Path) -> Path:
+    repo_abs = Path(os.path.abspath(repo))
+    target_abs = Path(os.path.abspath(target))
+    try:
+        relative = target_abs.relative_to(repo_abs)
+    except ValueError as exc:
+        raise ValueError("target is outside the repository boundary") from exc
+    if not relative.parts or any(part in {"", ".", ".."} for part in relative.parts):
+        raise ValueError("target has an unsafe repository-relative path")
+    return relative
+
+
+def lstat_repo_path(repo: Path, target: Path) -> tuple[Path, os.stat_result | None, str | None]:
+    try:
+        relative = lexical_repo_relative(repo, target)
+    except ValueError as exc:
+        return Path(), None, str(exc)
+    current = Path(os.path.abspath(repo))
+    for index, part in enumerate(relative.parts):
+        current /= part
+        try:
+            current_stat = current.lstat()
+        except FileNotFoundError:
+            return relative, None, None
+        except OSError:
+            return relative, None, "path component cannot be inspected"
+        if stat.S_ISLNK(current_stat.st_mode):
+            return relative, current_stat, "path contains a symlink component"
+        if index < len(relative.parts) - 1 and not stat.S_ISDIR(current_stat.st_mode):
+            return relative, current_stat, "path ancestor is not a directory"
+    return relative, current_stat, None
+
+
+def ensure_safe_repo_parents(repo: Path, target: Path) -> Path:
+    relative = lexical_repo_relative(repo, target)
+    current = Path(os.path.abspath(repo))
+    for part in relative.parts[:-1]:
+        current /= part
+        try:
+            current_stat = current.lstat()
+        except FileNotFoundError:
+            current.mkdir(mode=0o755)
+            current_stat = current.lstat()
+        if stat.S_ISLNK(current_stat.st_mode) or not stat.S_ISDIR(current_stat.st_mode):
+            raise ValueError("target ancestor is not a real directory")
+    return relative
+
+
+def write_safe_repo_file(repo: Path, path: Path, content: bytes, mode: int) -> None:
+    ensure_safe_repo_parents(repo, path)
+    _, current_stat, error = lstat_repo_path(repo, path)
+    if error:
+        raise ValueError(error)
+    if current_stat is not None and not stat.S_ISREG(current_stat.st_mode):
+        raise ValueError("target is not a regular file")
+    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    fd = os.open(path, flags, mode)
+    with os.fdopen(fd, "wb") as handle:
+        handle.write(content)
+    path.chmod(mode)
+
+
+def skill_conflict(
+    path: str,
+    reason: str,
+    *,
+    sidecar: str | None = None,
+    previous_managed_sha256: str | None = None,
+) -> dict[str, Any]:
+    payload = {
+        "path": path,
+        "reason": reason,
+        "remediation": "Review the preserved local path and sidecar, then remove the conflict before reapplying the preset.",
+    }
+    if sidecar:
+        payload["sidecar"] = sidecar
+    if previous_managed_sha256:
+        payload["previous_managed_sha256"] = previous_managed_sha256
+    return payload
+
+
+def copy_skill_managed(
+    source: Path,
+    target: Path,
+    repo: Path,
+    previous_hashes: dict[str, str],
+    provenance_valid: bool,
+) -> dict[str, Any]:
+    try:
+        relative_path = lexical_repo_relative(repo, target)
+    except ValueError:
+        return {"action": "conflict", "path": "<outside-repo>", "reason": "outside_repo_boundary"}
+    relative = relative_path.as_posix()
+    canonical = source.read_bytes()
+    canonical_hash = hashlib.sha256(canonical).hexdigest()
+    executable = bool(source.stat().st_mode & 0o100)
+    target_mode = 0o755 if executable else 0o644
+
+    def write_target(path: Path, content: bytes) -> None:
+        write_safe_repo_file(repo, path, content, target_mode)
+
+    _, target_stat, target_error = lstat_repo_path(repo, target)
+    if target_error:
+        return {"action": "conflict", "path": relative, "reason": "unsafe_path_boundary"}
+    if target_stat is None:
+        try:
+            write_target(target, canonical)
+        except ValueError:
+            return {"action": "conflict", "path": relative, "reason": "unsafe_path_boundary"}
+        return {"action": "installed", "path": relative, "sha256": canonical_hash, "executable": executable}
+    if not stat.S_ISREG(target_stat.st_mode):
+        sidecar = target.with_name(f"{target.name}.new")
+        try:
+            write_target(sidecar, canonical)
+            sidecar_path = lexical_repo_relative(repo, sidecar).as_posix()
+        except ValueError:
+            sidecar_path = None
+        return {
+            "action": "conflict", "path": relative, "sha256": canonical_hash,
+            "executable": executable, "sidecar": sidecar_path,
+            "reason": "target_not_regular_file",
+        }
+    current = target.read_bytes()
+    current_hash = hashlib.sha256(current).hexdigest()
+    if current_hash == canonical_hash:
+        target.chmod(target_mode)
+        return {"action": "unchanged", "path": relative, "sha256": canonical_hash, "executable": executable}
+    previous_hash = previous_hashes.get(relative)
+    if provenance_valid and previous_hash and current_hash == previous_hash:
+        backup = target.with_name(f"{target.name}.bak")
+        try:
+            write_safe_repo_file(repo, backup, current, target_stat.st_mode & 0o777)
+            write_target(target, canonical)
+        except ValueError:
+            return {"action": "conflict", "path": relative, "reason": "unsafe_sidecar_boundary"}
+        return {
+            "action": "updated_managed", "path": relative, "sha256": canonical_hash,
+            "executable": executable, "sidecar": backup.relative_to(repo).as_posix(),
+            "previous_managed_sha256": previous_hash,
+        }
+    sidecar = target.with_name(f"{target.name}.new")
+    try:
+        write_target(sidecar, canonical)
+    except ValueError:
+        return {"action": "conflict", "path": relative, "reason": "unsafe_sidecar_boundary"}
+    return {
+        "action": "conflict", "path": relative, "sha256": canonical_hash,
+        "executable": executable, "sidecar": sidecar.relative_to(repo).as_posix(),
+        "reason": "unknown_local_edit" if provenance_valid else "invalid_provenance",
+        "previous_managed_sha256": previous_hash,
+    }
+
+
+def skill_registry_entries(skills_root: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    try:
+        registry = json.loads((skills_root / "registry.json").read_text(encoding="utf-8"))
+    except (FileNotFoundError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise SystemExit("Canonical Guru Team skill registry is missing or invalid.") from exc
+    if not isinstance(registry, dict) or not isinstance(registry.get("skills"), list):
+        raise SystemExit("Canonical Guru Team skill registry has an invalid structure.")
+    entries = [entry for entry in registry["skills"] if isinstance(entry, dict)]
+    if len(entries) != len(registry["skills"]):
+        raise SystemExit("Canonical Guru Team skill registry contains a non-object entry.")
+    return registry, entries
+
+
+SKILL_MANAGED_ROOTS = (
+    Path(".trellis/guru-team/skills"),
+    Path(".agents/skills"),
+    Path(".codex/skills"),
+    Path(".cursor/skills"),
+    Path(".claude/skills"),
+)
+
+
+def skill_path_is_managed(relative: Path) -> bool:
+    return any(relative == root or root in relative.parents for root in SKILL_MANAGED_ROOTS)
+
+
+def prune_empty_managed_skill_parents(repo: Path, path: Path) -> None:
+    relative = lexical_repo_relative(repo, path)
+    managed_root = next((root for root in SKILL_MANAGED_ROOTS if root in relative.parents), None)
+    if managed_root is None:
+        return
+    current = path.parent
+    stop = Path(os.path.abspath(repo)) / managed_root
+    while current != stop and stop in current.parents:
+        _, current_stat, error = lstat_repo_path(repo, current)
+        if error or current_stat is None or not stat.S_ISDIR(current_stat.st_mode):
+            return
+        try:
+            current.rmdir()
+        except OSError:
+            return
+        current = current.parent
+
+
+def remove_stale_skill_path(
+    repo: Path,
+    relative_text: str,
+    previous_hashes: dict[str, str],
+    provenance_valid: bool,
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None, str | None]:
+    relative = Path(relative_text)
+    if not skill_path_is_managed(relative):
+        return None, skill_conflict(relative_text, "previous_path_outside_skill_roots"), None
+    target = Path(os.path.abspath(repo)) / relative
+    checked_relative, target_stat, error = lstat_repo_path(repo, target)
+    if error or checked_relative != relative:
+        return None, skill_conflict(relative_text, "unsafe_stale_path_boundary"), None
+    if target_stat is None:
+        return {"path": relative_text, "action": "already_missing"}, None, None
+    if not stat.S_ISREG(target_stat.st_mode):
+        return None, skill_conflict(relative_text, "stale_target_not_regular_file"), None
+    current_hash = hashlib.sha256(target.read_bytes()).hexdigest()
+    previous_hash = previous_hashes.get(relative_text)
+    if provenance_valid and previous_hash and current_hash == previous_hash:
+        target.unlink()
+        prune_empty_managed_skill_parents(repo, target)
+        return {
+            "path": relative_text,
+            "action": "removed_managed",
+            "previous_managed_sha256": previous_hash,
+        }, None, None
+    sidecar = target.with_name(f"{target.name}.new")
+    tombstone = (
+        "Guru Team managed removal requested. Review the adjacent preserved local file, "
+        "remove it or migrate its content, then delete this sidecar and reapply the preset.\n"
+    ).encode("utf-8")
+    try:
+        write_safe_repo_file(repo, sidecar, tombstone, 0o644)
+        sidecar_relative = lexical_repo_relative(repo, sidecar).as_posix()
+    except ValueError:
+        sidecar_relative = None
+    reason = "stale_unknown_local_edit" if provenance_valid else "stale_invalid_provenance"
+    return None, skill_conflict(
+        relative_text,
+        reason,
+        sidecar=sidecar_relative,
+        previous_managed_sha256=previous_hash,
+    ), sidecar_relative
+
+
+def run_skill_package_validator(
+    repo: Path,
+    guru_root: Path,
+    mode: str,
+) -> dict[str, Any]:
+    runtime = guru_root / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    proc = subprocess.run(
+        [sys.executable, str(runtime), "check-skill-packages", "--json", "--mode", mode, "--root", str(repo)],
+        cwd=repo,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    raw = proc.stdout if proc.returncode == 0 else proc.stderr
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError:
+        payload = {"status": "failed", "mode": mode, "facts": {}, "errors": ["skill package validator returned invalid JSON"]}
+    if not isinstance(payload, dict):
+        payload = {"status": "failed", "mode": mode, "facts": {}, "errors": ["skill package validator returned a non-object payload"]}
+    payload["returncode"] = proc.returncode
+    return payload
+
+
+def install_skill_packages(
+    repo: Path,
+    guru_root: Path,
+    dst: Path,
+    platforms: set[str],
+    previous_manifest: dict[str, Any] | None,
+) -> dict[str, Any]:
+    canonical_root = guru_root / "trellis/skills/guru-team"
+    registry, entries = skill_registry_entries(canonical_root)
+    previous_hash_map, previous_paths, provenance_valid = previous_skill_hashes(previous_manifest)
+    active_entries = [entry for entry in entries if entry.get("state") == "active"]
+    reserved_ids = sorted(str(entry.get("id")) for entry in entries if entry.get("state") == "reserved")
+    active_ids = sorted(str(entry.get("id")) for entry in active_entries)
+    source_files: list[tuple[Path, Path]] = [
+        (canonical_root / "registry.json", Path("registry.json")),
+        (canonical_root / "schemas/skill-registry.schema.json", Path("schemas/skill-registry.schema.json")),
+        (canonical_root / "schemas/skill-interface.schema.json", Path("schemas/skill-interface.schema.json")),
+    ]
+    packages: list[dict[str, Any]] = []
+    for entry in active_entries:
+        skill_id = str(entry["id"])
+        package_root = canonical_root / str(entry["package"])
+        package_files = sorted(path for path in package_root.rglob("*") if path.is_file() and not path.is_symlink())
+        for source in package_files:
+            source_files.append((source, source.relative_to(canonical_root)))
+        interface_path = canonical_root / str(entry["interface"])
+        tree_hash = hashlib.sha256()
+        for source in package_files:
+            rel = source.relative_to(package_root).as_posix()
+            tree_hash.update(rel.encode("utf-8") + b"\0" + source.read_bytes() + b"\0")
+        packages.append({
+            "id": skill_id,
+            "interface_sha256": hashlib.sha256(interface_path.read_bytes()).hexdigest(),
+            "tree_sha256": tree_hash.hexdigest(),
+        })
+
+    records: list[dict[str, Any]] = []
+    removals: list[dict[str, Any]] = []
+    conflicts: list[dict[str, Any]] = []
+    sidecars: list[str] = []
+
+    if not provenance_valid:
+        conflicts.append(skill_conflict(
+            ".trellis/guru-team/extension.json",
+            "invalid_previous_provenance",
+        ))
+
+    def install_one(source: Path, target: Path) -> None:
+        result = copy_skill_managed(source, target, repo, previous_hash_map, provenance_valid)
+        if result["action"] == "conflict":
+            sidecar = result.get("sidecar")
+            conflict = skill_conflict(
+                result["path"],
+                str(result.get("reason") or "skill_install_conflict"),
+                sidecar=str(sidecar) if sidecar else None,
+                previous_managed_sha256=result.get("previous_managed_sha256"),
+            )
+            conflicts.append(conflict)
+            if sidecar:
+                sidecars.append(str(sidecar))
+            return
+        record = {
+            "path": result["path"],
+            "source": source.relative_to(guru_root).as_posix(),
+            "sha256": result["sha256"],
+            "executable": result["executable"],
+            "action": result["action"],
+        }
+        records.append(record)
+        if result.get("sidecar"):
+            sidecars.append(str(result["sidecar"]))
+
+    desired_files: list[tuple[Path, Path]] = []
+    installed_root = dst / "skills"
+    for source, relative in source_files:
+        desired_files.append((source, installed_root / relative))
+
+    destination_roots = {"shared": Path(".agents/skills")}
+    destination_roots.update({name: PLATFORM_OVERLAY_PREFIXES[name][0] / "skills" for name in platforms})
+    for entry in active_entries:
+        skill_id = str(entry["id"])
+        supported = set(entry.get("supported_platforms") or [])
+        package_root = canonical_root / str(entry["package"])
+        package_files = sorted(path for path in package_root.rglob("*") if path.is_file() and not path.is_symlink())
+        for platform, target_root in destination_roots.items():
+            if platform not in supported:
+                continue
+            for source in package_files:
+                desired_files.append((source, repo / target_root / skill_id / source.relative_to(package_root)))
+
+    desired_paths = {
+        lexical_repo_relative(repo, target).as_posix()
+        for _, target in desired_files
+    }
+    for source, target in desired_files:
+        install_one(source, target)
+    for stale_path in sorted(previous_paths - desired_paths):
+        removal, conflict, sidecar = remove_stale_skill_path(
+            repo,
+            stale_path,
+            previous_hash_map,
+            provenance_valid,
+        )
+        if removal:
+            removals.append(removal)
+        if conflict:
+            conflicts.append(conflict)
+        if sidecar:
+            sidecars.append(sidecar)
+
+    status = "ok" if provenance_valid and not conflicts and not sidecars else "conflict"
+    return {
+        "schema_version": "1.0",
+        "status": status,
+        "canonical_registry_sha256": hashlib.sha256((canonical_root / "registry.json").read_bytes()).hexdigest(),
+        "registry_schema_version": registry.get("schema_version"),
+        "reserved_ids": reserved_ids,
+        "active_ids": active_ids,
+        "selected_platforms": sorted(platforms),
+        "packages": packages,
+        "files": records,
+        "removals": removals,
+        "conflicts": conflicts,
+        "sidecars": sorted(sidecars),
+    }
 
 
 def ensure_runtime_gitignore(repo: Path) -> dict[str, str]:
@@ -656,6 +1122,11 @@ def install_assets(
     if not src.is_dir():
         raise SystemExit(f"Missing source directory: {src}")
 
+    guru_root = guru_root_from_script()
+    source_validation = run_skill_package_validator(guru_root, guru_root, "source")
+    if source_validation.get("returncode") != 0:
+        raise SystemExit("Canonical Guru Team skill package validation failed before preset mutation.")
+    previous_manifest = load_previous_installed_manifest(dst)
     dst.mkdir(parents=True, exist_ok=True)
 
     installed: list[str] = []
@@ -705,6 +1176,7 @@ def install_assets(
         dst / "scripts/bash/version.sh",
         dst / "scripts/bash/prepare-task.sh",
         dst / "scripts/bash/check-workspace-boundary.sh",
+        dst / "scripts/bash/check-skill-packages.sh",
         dst / "scripts/bash/resolve-human-artifacts.sh",
         dst / "scripts/bash/verify-marketplace.sh",
         dst / "scripts/bash/record-planning-approval.sh",
@@ -728,7 +1200,8 @@ def install_assets(
             ensure_executable(script)
 
     selected = platforms or set(DEFAULT_PLATFORMS)
-    overlays = install_overlays(repo, guru_root_from_script(), selected)
+    skill_packages = install_skill_packages(repo, guru_root, dst, selected, previous_manifest)
+    overlays = install_overlays(repo, guru_root, selected)
     installed.extend(overlays["installed"])
     unchanged.extend(overlays["unchanged"])
     new_copies.extend(overlays["new_copies"])
@@ -757,8 +1230,9 @@ def install_assets(
         "language_guidance": language_guidance,
         "platforms": sorted(selected),
         "all_platforms": all_platforms,
+        "skill_packages": skill_packages,
+        "skill_source_validation": source_validation,
     }
-    guru_root = guru_root_from_script()
     manifest = load_extension_manifest(guru_root)
     source = source_provenance(guru_root)
     installed_manifest = build_installed_extension_manifest(manifest, source, result)
@@ -766,6 +1240,7 @@ def install_assets(
     rel_extension = (dst / "extension.json").relative_to(repo).as_posix()
     result["extension_manifest"] = rel_extension
     result["guru_team_extension"] = extension_summary(manifest, source)
+    result["skill_installed_validation"] = run_skill_package_validator(repo, guru_root, "installed")
     return result
 
 
@@ -862,12 +1337,20 @@ def main() -> int:
         "language_guidance": result["language_guidance"],
         "extension_manifest": result["extension_manifest"],
         "guru_team_extension": result["guru_team_extension"],
+        "skill_packages": result["skill_packages"],
+        "skill_source_validation": result["skill_source_validation"],
+        "skill_installed_validation": result["skill_installed_validation"],
         "config": ".trellis/guru-team/config.yml",
         "workflow_marketplace": WORKFLOW_MARKETPLACE,
         "public_workflow_marketplace": WORKFLOW_MARKETPLACE,
         "workflow_template": WORKFLOW_TEMPLATE,
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
+    if (
+        result["skill_packages"]["status"] != "ok"
+        or result["skill_installed_validation"].get("returncode") != 0
+    ):
+        return 2
     return 0
 
 

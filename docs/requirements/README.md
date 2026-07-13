@@ -41,6 +41,20 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
 
 ## Canonical Source
 
+公共 closed-loop workflow skill 的唯一 canonical root 是
+`trellis/skills/guru-team/`。其中 registry 区分只占用 id、不可安装和路由的
+`reserved`，以及具备完整 package/interface/schema/validator/test/route
+证据的 `active`。workflow marketplace 只安装 `.trellis/workflow.md`；完整
+extension 必须再应用 Guru Team preset，由 preset 安装 audited runtime copy、
+selected platform discovery copy 和逐文件 managed-hash provenance。
+
+Active package 的 `SKILL.md` frontmatter 只允许 stable id `name` 与非空
+`description`，并与 registry/interface 精确一致；`tests[]` 只能引用 package-local
+`tests/<file>` regular file，禁止标签、虚构路径、越界路径或 symlink evidence。
+
+Skill id、external exit id、schema/interface id、stable script command 和
+registry lifecycle 都是公共 API；破坏性变更必须新建 id 或给出迁移合同。
+
 本仓库的扩展长期源头位于：
 
 - `trellis/index.json`

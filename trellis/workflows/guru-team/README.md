@@ -18,24 +18,25 @@ provenance 写入目标仓库的 `.trellis/guru-team/extension.json`，并通过
 ```bash
 trellis init -y -u <name> --codex --cursor \
   --workflow guru-team \
-  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.3
+  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.2
 ```
 
 `-y` 是团队默认安装路径的一部分，用于跳过交互式 spec template picker。自动验收、
 throwaway 安装验证和 README 默认命令都必须使用非交互形式；只有用户明确想手动选择
 spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`。
 
-稳定安装 source 使用 repo release tag `#v0.6.5-guru.3`，并要求官方 Trellis CLI 安装到
+稳定安装 source 使用 repo release tag `#v0.6.5-guru.2`，并要求官方 Trellis CLI 安装到
 `0.6.5`。维护者刻意跟随最新 `main` / canary 时可以去掉 `#ref` 或改用其它 branch/tag ref，
 但应在验证和排障报告中说明 source 是否为 mutable ref，以及是否仍以官方 Trellis `0.6.5`
 为目标基线。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
-并与 `trellis/guru-team-extension.json.version` 对应。
+并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 对应。当前已发布
+stable 是 `.2`；本分支 canonical `.4` 在 merge/tag/远端验证完成前不是 stable source。
 
 已有 Trellis 项目切换 active workflow：
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.3 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.2 \
   --template guru-team
 ```
 
@@ -44,12 +45,25 @@ workflow 时，才使用 `--create-new`。
 
 ## Companion Assets
 
+Workflow marketplace 只安装 global `.trellis/workflow.md`，不安装 external
+workflow skills。公共 skill 的唯一源头是 `trellis/skills/guru-team/`；global
+workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandatory
+调用与唯一出口 consumer/stop，不复制 step-local skill 正文。完整运行时资产
+由 Guru Team preset 分发。当前 production registry 只有 reserved id 时，
+workflow 不得伪造 active route。
+
+Active package 的 discovery contract 要求 `SKILL.md` 只有一段闭合
+frontmatter，`name` 等于 stable id/registry/interface，`description` 非空且与
+interface 一致；`tests[]` 只引用 package-local `tests/<file>` regular file。
+Source validator 对 missing/drifted frontmatter 与 missing/outside/symlink test
+evidence fail closed。
+
 Trellis workflow marketplace 只负责安装或切换 `.trellis/workflow.md`。
 companion scripts、配置、schema 和团队自有入口 overlay 需要通过 preset installer
 写入目标仓库：
 
 ```bash
-git clone --depth 1 --branch v0.6.5-guru.3 \
+git clone --depth 1 --branch v0.6.5-guru.2 \
   https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project

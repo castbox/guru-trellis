@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.0.json",
+  "title": "Guru Team workflow skill registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schema_version", "skills"],
+  "properties": {
+    "$schema": {"const": "schemas/skill-registry.schema.json"},
+    "schema_version": {"const": "1.0"},
+    "skills": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/skill"}
+    }
+  },
+  "$defs": {
+    "skillId": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
+    "reserved": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state", "reason"],
+      "properties": {
+        "id": {"$ref": "#/$defs/skillId"},
+        "state": {"const": "reserved"},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "active": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state", "name", "package", "interface", "supported_platforms", "validator_command", "workflow_route_id"],
+      "properties": {
+        "id": {"$ref": "#/$defs/skillId"},
+        "state": {"const": "active"},
+        "name": {"$ref": "#/$defs/skillId"},
+        "package": {"type": "string", "pattern": "^packages/guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
+        "interface": {"type": "string", "pattern": "^packages/guru-[a-z0-9]+(?:-[a-z0-9]+)+/interface\\.json$"},
+        "supported_platforms": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"enum": ["shared", "codex", "cursor", "claude"]}
+        },
+        "validator_command": {"const": "check-skill-packages"},
+        "workflow_route_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}
+      }
+    },
+    "skill": {"oneOf": [{"$ref": "#/$defs/reserved"}, {"$ref": "#/$defs/active"}]}
+  }
+}

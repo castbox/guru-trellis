@@ -1,0 +1,11 @@
+{
+  "$schema": "schemas/skill-registry.schema.json",
+  "schema_version": "1.0",
+  "skills": [
+    {
+      "id": "guru-create-work-commit",
+      "state": "reserved",
+      "reason": "Reserved for implementation by a separate follow-up issue."
+    }
+  ]
+}

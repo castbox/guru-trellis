@@ -20,6 +20,42 @@
 
 ---
 
+## Public Workflow Skill Contract
+
+`trellis/skills/guru-team/` is the canonical registry/package/interface root.
+The workflow marketplace installs this global workflow only; the Guru Team
+preset validates and installs active external skill packages. `reserved`
+registry ids are not installed and must not appear in a production route.
+
+Every mandatory active step is invoked by one stable skill id and one
+machine-readable marker:
+
+```markdown
+<!-- guru-skill-invoke: {"skill":"guru-example-action","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-example-action","exit":"completed","consumer":{"kind":"workflow","id":"phase-3"}} -->
+```
+
+The examples define syntax only and are fenced, not production markers. A real
+mandatory invocation marker must appear as an unfenced standalone HTML comment.
+Every declared external exit has exactly one consumer or explicit stop.
+Missing skills and unknown, duplicate, multiple, or unmapped exits fail closed.
+Frontmatter auto-match may aid discovery but never substitutes for the marker.
+
+The workflow owns only phase order, mandatory invocation, transitions, and
+typed-exit consumers/stops. The package owns entry/freshness/re-entry and the
+complete `forward behavior -> AI Review Gate -> conditional human confirmation
+-> recorder/validator -> typed exit` loop. Commands, prompts, breadcrumbs, and
+platform launchers load the stable skill id and must not copy that loop.
+Deterministic scripts validate structure and evidence only; they do not make
+semantic review or routing judgments.
+
+The production registry currently has no active package, so this workflow has
+no unfenced `guru-skill-invoke` or `guru-skill-exit` marker. New active routes
+must update registry, package/interface, this workflow, tests, preset
+distribution, extension public API, and migration documentation together.
+
+---
+
 ## Guru Team Gate
 
 Before creating a Trellis task or writing task artifacts, run the Guru Team intake and Git preflight.

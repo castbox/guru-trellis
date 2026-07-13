@@ -9832,6 +9832,1255 @@ def execute_marketplace_verification(
     return payload
 
 
+SKILL_ID_PATTERN = re.compile(r"^guru-[a-z0-9]+(?:-[a-z0-9]+)+$")
+SKILL_ROUTE_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+SKILL_INTERFACE_STAGES = [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit",
+]
+SKILL_PLATFORMS = {"shared", "codex", "cursor", "claude"}
+SKILL_PLATFORM_ROOTS = {
+    "shared": Path(".agents/skills"),
+    "codex": Path(".codex/skills"),
+    "cursor": Path(".cursor/skills"),
+    "claude": Path(".claude/skills"),
+}
+SKILL_INVOKE_RE = re.compile(r"^\s*<!--\s*guru-skill-invoke:\s*(\{.*\})\s*-->\s*$")
+SKILL_EXIT_RE = re.compile(r"^\s*<!--\s*guru-skill-exit:\s*(\{.*\})\s*-->\s*$")
+SKILL_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
+SKILL_CONTRACT_SCHEMAS = {
+    "registry": {
+        "sha256": "8d81f69b02667d77fa5d21dce320de7feac25d7d92702336b89358e1f65cda1b",
+        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.0.json",
+    },
+    "interface": {
+        "sha256": "e3377ced5638ea486335f174fe9604111aedec57dff196d89d76c99b2042036c",
+        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.0.json",
+    },
+}
+
+
+def skill_safe_relative(value: Any) -> Path | None:
+    if not isinstance(value, str) or not value or "\\" in value:
+        return None
+    path = Path(value)
+    if path.is_absolute() or any(part in {"", ".", ".."} for part in path.parts):
+        return None
+    return path
+
+
+def skill_lexical_relative(boundary: Path, path: Path) -> Path | None:
+    boundary_abs = Path(os.path.abspath(boundary))
+    path_abs = Path(os.path.abspath(path))
+    try:
+        relative = path_abs.relative_to(boundary_abs)
+    except ValueError:
+        return None
+    if not relative.parts or any(part in {"", ".", ".."} for part in relative.parts):
+        return None
+    return relative
+
+
+def skill_lstat_path(
+    boundary: Path,
+    path: Path,
+    label: str,
+    errors: list[str],
+    *,
+    kind: str,
+    required: bool = True,
+) -> os.stat_result | None:
+    boundary_abs = Path(os.path.abspath(boundary))
+    path_abs = Path(os.path.abspath(path))
+    if path_abs == boundary_abs:
+        try:
+            current_stat = boundary_abs.lstat()
+        except FileNotFoundError:
+            if required:
+                errors.append(f"missing {label}")
+            return None
+        except OSError:
+            errors.append(f"{label} cannot be inspected")
+            return None
+        if stat.S_ISLNK(current_stat.st_mode):
+            errors.append(f"{label} contains a symlink component")
+            return None
+        if kind == "file" and not stat.S_ISREG(current_stat.st_mode):
+            errors.append(f"{label} is not a regular file")
+            return None
+        if kind == "directory" and not stat.S_ISDIR(current_stat.st_mode):
+            errors.append(f"{label} is not a directory")
+            return None
+        return current_stat
+    relative = skill_lexical_relative(boundary, path)
+    if relative is None:
+        errors.append(f"{label} is outside its lexical boundary")
+        return None
+    current = Path(os.path.abspath(boundary))
+    for index, part in enumerate(relative.parts):
+        current /= part
+        try:
+            current_stat = current.lstat()
+        except FileNotFoundError:
+            if required:
+                errors.append(f"missing {label}")
+            return None
+        except OSError:
+            errors.append(f"{label} cannot be inspected")
+            return None
+        if stat.S_ISLNK(current_stat.st_mode):
+            errors.append(f"{label} contains a symlink component")
+            return None
+        if index < len(relative.parts) - 1 and not stat.S_ISDIR(current_stat.st_mode):
+            errors.append(f"{label} has a non-directory ancestor")
+            return None
+    if kind == "file" and not stat.S_ISREG(current_stat.st_mode):
+        errors.append(f"{label} is not a regular file")
+        return None
+    if kind == "directory" and not stat.S_ISDIR(current_stat.st_mode):
+        errors.append(f"{label} is not a directory")
+        return None
+    return current_stat
+
+
+def skill_read_schema(path: Path, label: str, errors: list[str]) -> dict[str, Any] | None:
+    payload = skill_read_json(path, label, errors)
+    if payload is None:
+        return None
+    if not isinstance(payload.get("type"), str) and not any(
+        key in payload for key in ("$ref", "oneOf", "anyOf", "allOf")
+    ):
+        errors.append(f"{label} is not a recognizable JSON schema")
+    schema_uri = payload.get("$schema")
+    if schema_uri is not None and schema_uri not in {
+        "https://json-schema.org/draft/2020-12/schema",
+        "http://json-schema.org/draft-07/schema#",
+    }:
+        errors.append(f"{label} declares an unsupported JSON schema dialect")
+    return payload
+
+
+def skill_collect_tree_files(
+    boundary: Path,
+    directory: Path,
+    label: str,
+    errors: list[str],
+) -> list[Path]:
+    if skill_lstat_path(boundary, directory, label, errors, kind="directory") is None:
+        return []
+    output: list[Path] = []
+    for current_text, dirnames, filenames in os.walk(directory, followlinks=False):
+        current = Path(current_text)
+        safe_dirs: list[str] = []
+        for dirname in sorted(dirnames):
+            child = current / dirname
+            try:
+                child_stat = child.lstat()
+            except OSError:
+                errors.append(f"{label} contains an unreadable directory entry")
+                continue
+            if stat.S_ISLNK(child_stat.st_mode) or not stat.S_ISDIR(child_stat.st_mode):
+                errors.append(f"{label} contains a symlink or non-directory component")
+                continue
+            safe_dirs.append(dirname)
+        dirnames[:] = safe_dirs
+        for filename in sorted(filenames):
+            child = current / filename
+            try:
+                child_stat = child.lstat()
+            except OSError:
+                errors.append(f"{label} contains an unreadable file entry")
+                continue
+            if not stat.S_ISREG(child_stat.st_mode):
+                errors.append(f"{label} contains a symlink or non-regular file")
+                continue
+            output.append(child)
+    return sorted(output)
+
+
+def skill_file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def skill_read_json(path: Path, label: str, errors: list[str]) -> dict[str, Any] | None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        errors.append(f"missing {label}")
+        return None
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        errors.append(f"invalid JSON in {label}")
+        return None
+    if not isinstance(payload, dict):
+        errors.append(f"{label} root must be an object")
+        return None
+    return payload
+
+
+def skill_read_contract_schema(
+    path: Path,
+    label: str,
+    schema_kind: str,
+    errors: list[str],
+) -> dict[str, Any] | None:
+    payload = skill_read_json(path, label, errors)
+    if payload is None:
+        return None
+    identity = SKILL_CONTRACT_SCHEMAS[schema_kind]
+    valid = True
+    if payload.get("$schema") != SKILL_SCHEMA_DIALECT:
+        errors.append(f"{label} has an invalid Draft 2020-12 dialect identity")
+        valid = False
+    if payload.get("$id") != identity["id"]:
+        errors.append(f"{label} has an invalid schema id")
+        valid = False
+    if skill_file_sha256(path) != identity["sha256"]:
+        errors.append(f"{label} does not match the canonical schema contract digest")
+        valid = False
+    return payload if valid else None
+
+
+def skill_json_equal(left: Any, right: Any) -> bool:
+    if isinstance(left, bool) or isinstance(right, bool):
+        return type(left) is type(right) and left == right
+    if isinstance(left, (int, float)) and isinstance(right, (int, float)):
+        return left == right
+    if type(left) is not type(right):
+        return False
+    if isinstance(left, list):
+        return len(left) == len(right) and all(
+            skill_json_equal(left_item, right_item)
+            for left_item, right_item in zip(left, right)
+        )
+    if isinstance(left, dict):
+        return set(left) == set(right) and all(
+            skill_json_equal(left[key], right[key]) for key in left
+        )
+    return left == right
+
+
+def skill_json_schema_validation_errors(
+    instance: Any,
+    schema: dict[str, Any],
+    label: str,
+) -> list[str]:
+    errors: list[str] = []
+
+    def resolve_ref(reference: Any, output: list[str], path: str) -> dict[str, Any] | None:
+        if not isinstance(reference, str) or not reference.startswith("#/"):
+            output.append(f"{label} schema has an unsupported reference at {path}")
+            return None
+        target: Any = schema
+        for encoded_part in reference[2:].split("/"):
+            part = encoded_part.replace("~1", "/").replace("~0", "~")
+            if not isinstance(target, dict) or part not in target:
+                output.append(f"{label} schema has an unresolved reference at {path}")
+                return None
+            target = target[part]
+        if not isinstance(target, dict):
+            output.append(f"{label} schema reference does not resolve to an object at {path}")
+            return None
+        return target
+
+    def type_matches(value: Any, expected: str) -> bool:
+        if expected == "object":
+            return isinstance(value, dict)
+        if expected == "array":
+            return isinstance(value, list)
+        if expected == "string":
+            return isinstance(value, str)
+        if expected == "boolean":
+            return isinstance(value, bool)
+        if expected == "null":
+            return value is None
+        if expected == "integer":
+            return isinstance(value, int) and not isinstance(value, bool)
+        if expected == "number":
+            return isinstance(value, (int, float)) and not isinstance(value, bool)
+        return False
+
+    def validate(value: Any, node: Any, path: str, output: list[str]) -> None:
+        if not isinstance(node, dict):
+            output.append(f"{label} schema node is not an object at {path}")
+            return
+        if "$ref" in node:
+            target = resolve_ref(node.get("$ref"), output, path)
+            if target is not None:
+                validate(value, target, path, output)
+            return
+        options = node.get("oneOf")
+        if options is not None:
+            if not isinstance(options, list) or not options:
+                output.append(f"{label} schema has an invalid oneOf at {path}")
+                return
+            matches = 0
+            for option in options:
+                branch_errors: list[str] = []
+                validate(value, option, path, branch_errors)
+                if not branch_errors:
+                    matches += 1
+            if matches != 1:
+                output.append(f"{label} violates oneOf at {path}")
+            return
+
+        expected_type = node.get("type")
+        if expected_type is not None:
+            if not isinstance(expected_type, str) or not type_matches(value, expected_type):
+                output.append(f"{label} has wrong type at {path}")
+                return
+        if "const" in node and not skill_json_equal(value, node.get("const")):
+            output.append(f"{label} violates const at {path}")
+        enum = node.get("enum")
+        if enum is not None:
+            if not isinstance(enum, list) or not any(skill_json_equal(value, item) for item in enum):
+                output.append(f"{label} violates enum at {path}")
+
+        if isinstance(value, str):
+            minimum = node.get("minLength")
+            if isinstance(minimum, int) and len(value) < minimum:
+                output.append(f"{label} is shorter than minLength at {path}")
+            pattern = node.get("pattern")
+            if isinstance(pattern, str) and re.search(pattern, value) is None:
+                output.append(f"{label} violates pattern at {path}")
+
+        if isinstance(value, list):
+            minimum = node.get("minItems")
+            if isinstance(minimum, int) and len(value) < minimum:
+                output.append(f"{label} has fewer than minItems at {path}")
+            if node.get("uniqueItems") is True:
+                for index, item in enumerate(value):
+                    if any(skill_json_equal(item, previous) for previous in value[:index]):
+                        output.append(f"{label} violates uniqueItems at {path}")
+                        break
+            item_schema = node.get("items")
+            if item_schema is not None:
+                for index, item in enumerate(value):
+                    validate(item, item_schema, f"{path}[{index}]", output)
+
+        if isinstance(value, dict):
+            required = node.get("required")
+            if isinstance(required, list):
+                for key in required:
+                    if isinstance(key, str) and key not in value:
+                        output.append(f"{label} is missing required property at {path}.{key}")
+            properties = node.get("properties")
+            if isinstance(properties, dict):
+                if node.get("additionalProperties") is False:
+                    for key in value:
+                        if key not in properties:
+                            output.append(f"{label} has an additional property at {path}.{key}")
+                for key, child_schema in properties.items():
+                    if key in value:
+                        validate(value[key], child_schema, f"{path}.{key}", output)
+
+    try:
+        validate(instance, schema, "$", errors)
+    except Exception:
+        errors.append(f"{label} schema validation failed safely on malformed input")
+    return errors
+
+
+def skill_unique_ids(items: Any, label: str, errors: list[str]) -> list[dict[str, Any]]:
+    if not isinstance(items, list):
+        errors.append(f"{label} must be an array")
+        return []
+    output: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for index, item in enumerate(items):
+        if not isinstance(item, dict):
+            errors.append(f"{label}[{index}] must be an object")
+            continue
+        item_id = item.get("id")
+        if not isinstance(item_id, str) or not item_id:
+            errors.append(f"{label}[{index}] has invalid id")
+        elif item_id in seen:
+            errors.append(f"{label} contains duplicate id {item_id}")
+        else:
+            seen.add(item_id)
+        output.append(item)
+    return output
+
+
+def skill_read_frontmatter(path: Path, label: str, errors: list[str]) -> dict[str, str] | None:
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (FileNotFoundError, UnicodeDecodeError):
+        errors.append(f"{label} is missing or invalid UTF-8")
+        return None
+    if not lines or lines[0] != "---":
+        errors.append(f"{label} is missing the opening frontmatter delimiter")
+        return None
+    delimiters = [index for index, line in enumerate(lines) if line == "---"]
+    if len(delimiters) < 2:
+        errors.append(f"{label} has unclosed frontmatter")
+        return None
+    if len(delimiters) != 2:
+        errors.append(f"{label} has duplicate or ambiguous frontmatter delimiters")
+        return None
+    closing = delimiters[1]
+    fields: dict[str, str] = {}
+    valid = True
+    for line in lines[1:closing]:
+        key, separator, value = line.partition(":")
+        if (
+            not separator
+            or key not in {"name", "description"}
+            or not value.startswith(" ")
+            or not value.strip()
+        ):
+            errors.append(f"{label} has invalid or ambiguous frontmatter fields")
+            valid = False
+            continue
+        if key in fields:
+            errors.append(f"{label} has duplicate frontmatter field {key}")
+            valid = False
+            continue
+        fields[key] = value[1:]
+    if set(fields) != {"name", "description"}:
+        errors.append(f"{label} must contain exactly name and description frontmatter")
+        valid = False
+    return fields if valid else None
+
+
+def validate_skill_interface(
+    skills_root: Path,
+    entry: dict[str, Any],
+    errors: list[str],
+    *,
+    boundary_root: Path | None = None,
+    interface_schema: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    skill_id = str(entry.get("id") or "")
+    expected_package = f"packages/{skill_id}"
+    expected_interface = f"{expected_package}/interface.json"
+    required_entry = {
+        "id", "state", "name", "package", "interface", "supported_platforms",
+        "validator_command", "workflow_route_id",
+    }
+    if set(entry) != required_entry:
+        errors.append(f"active registry entry {skill_id} has invalid fields")
+    if entry.get("package") != expected_package or entry.get("interface") != expected_interface:
+        errors.append(f"active registry entry {skill_id} has non-canonical package/interface paths")
+    if entry.get("validator_command") != "check-skill-packages":
+        errors.append(f"active registry entry {skill_id} has unknown validator command")
+    if entry.get("name") != skill_id:
+        errors.append(f"active registry entry {skill_id} name does not match the stable skill id")
+    if not SKILL_ROUTE_ID_PATTERN.fullmatch(str(entry.get("workflow_route_id") or "")):
+        errors.append(f"active registry entry {skill_id} has invalid workflow route id")
+    supported = entry.get("supported_platforms")
+    if (
+        not isinstance(supported, list)
+        or not supported
+        or "shared" not in supported
+        or any(not isinstance(item, str) for item in supported)
+        or len(supported) != len(set(item for item in supported if isinstance(item, str)))
+        or any(isinstance(item, str) and item not in SKILL_PLATFORMS for item in supported)
+    ):
+        errors.append(f"active registry entry {skill_id} has invalid supported platforms")
+
+    boundary = boundary_root or skills_root
+    package = skills_root / expected_package
+    if skill_lstat_path(boundary, package, f"active package {skill_id}", errors, kind="directory") is None:
+        return None
+    package_files = skill_collect_tree_files(boundary, package, f"active package {skill_id}", errors)
+    skill_path = package / "SKILL.md"
+    skill_frontmatter = None
+    if skill_lstat_path(boundary, skill_path, f"SKILL.md for {skill_id}", errors, kind="file") is not None:
+        skill_frontmatter = skill_read_frontmatter(skill_path, f"SKILL.md for {skill_id}", errors)
+    references = package / "references"
+    reference_files = skill_collect_tree_files(boundary, references, f"references for {skill_id}", errors)
+    if not reference_files:
+        errors.append(f"active package {skill_id} is missing package-local references")
+
+    if skill_lstat_path(boundary, package / "interface.json", f"interface for {skill_id}", errors, kind="file") is None:
+        return None
+    interface = skill_read_json(package / "interface.json", f"interface for {skill_id}", errors)
+    if interface is None:
+        return None
+    if interface_schema is not None:
+        errors.extend(skill_json_schema_validation_errors(
+            interface,
+            interface_schema,
+            f"interface for {skill_id}",
+        ))
+    required_interface = {
+        "$schema", "schema_version", "id", "name", "description", "state", "modes",
+        "entry_preconditions", "ordered_stages", "artifacts", "schemas", "validators",
+        "external_exits", "reentry", "tests", "platform_destinations",
+    }
+    if set(interface) != required_interface:
+        errors.append(f"interface for {skill_id} has invalid fields")
+    if interface.get("$schema") != "../../schemas/skill-interface.schema.json":
+        errors.append(f"interface for {skill_id} has unknown schema id")
+    if interface.get("schema_version") != "1.0" or interface.get("state") != "active":
+        errors.append(f"interface for {skill_id} has invalid lifecycle/schema version")
+    if (
+        interface.get("id") != skill_id
+        or interface.get("name") != skill_id
+        or interface.get("name") != entry.get("name")
+    ):
+        errors.append(f"interface identity for {skill_id} does not match registry")
+    if not isinstance(interface.get("name"), str) or not interface["name"].strip():
+        errors.append(f"interface for {skill_id} has an empty name")
+    if not isinstance(interface.get("description"), str) or not interface["description"].strip():
+        errors.append(f"interface for {skill_id} has empty description")
+    if skill_frontmatter is not None:
+        if skill_frontmatter.get("name") != skill_id:
+            errors.append(f"SKILL.md identity for {skill_id} does not match the stable skill id")
+        if skill_frontmatter.get("description") != interface.get("description"):
+            errors.append(f"SKILL.md description for {skill_id} does not match interface")
+    if interface.get("ordered_stages") != SKILL_INTERFACE_STAGES:
+        errors.append(f"interface for {skill_id} has invalid closed-loop stage order")
+
+    preconditions = skill_unique_ids(interface.get("entry_preconditions"), f"{skill_id}.entry_preconditions", errors)
+    precondition_ids = {str(item.get("id")) for item in preconditions if isinstance(item.get("id"), str)}
+    for item in preconditions:
+        if set(item) != {"id", "evidence", "binding", "freshness"} or any(
+            not str(item.get(key) or "").strip() for key in ("evidence", "binding", "freshness")
+        ):
+            errors.append(f"interface for {skill_id} has invalid entry precondition")
+    modes = interface.get("modes")
+    if not isinstance(modes, dict) or set(modes) != {"workflow", "standalone"}:
+        errors.append(f"interface for {skill_id} has invalid modes")
+    else:
+        mode_ids: list[list[str]] = []
+        for mode_name in ("workflow", "standalone"):
+            mode = modes.get(mode_name)
+            ids = mode.get("entry_precondition_ids") if isinstance(mode, dict) and set(mode) == {"entry_precondition_ids"} else None
+            valid_ids = (
+                isinstance(ids, list)
+                and bool(ids)
+                and all(isinstance(item, str) for item in ids)
+            )
+            if (
+                not valid_ids
+                or len(ids) != len(set(ids))
+                or set(ids) != precondition_ids
+            ):
+                errors.append(f"interface for {skill_id} has invalid {mode_name} preconditions")
+            else:
+                mode_ids.append(ids)
+        if len(mode_ids) == 2 and mode_ids[0] != mode_ids[1]:
+            errors.append(f"workflow and standalone preconditions differ for {skill_id}")
+
+    artifacts = skill_unique_ids(interface.get("artifacts"), f"{skill_id}.artifacts", errors)
+    artifact_paths: set[str] = set()
+    for item in artifacts:
+        rel = skill_safe_relative(item.get("path"))
+        if set(item) != {"id", "path"} or rel is None:
+            errors.append(f"interface for {skill_id} references an unsafe artifact path")
+            continue
+        if rel.as_posix() in artifact_paths:
+            errors.append(f"interface for {skill_id} contains a duplicate artifact path")
+        artifact_paths.add(rel.as_posix())
+        skill_lstat_path(boundary, package / rel, f"artifact {rel.as_posix()} for {skill_id}", errors, kind="file")
+    schemas = skill_unique_ids(interface.get("schemas"), f"{skill_id}.schemas", errors)
+    if not schemas:
+        errors.append(f"interface for {skill_id} declares no schemas")
+    schema_paths: set[str] = set()
+    for item in schemas:
+        rel = skill_safe_relative(item.get("path"))
+        if set(item) != {"id", "path"} or rel is None:
+            errors.append(f"interface for {skill_id} references a missing or unsafe schema")
+            continue
+        if rel.as_posix() in schema_paths:
+            errors.append(f"interface for {skill_id} contains a duplicate schema path")
+        schema_paths.add(rel.as_posix())
+        schema_path = package / rel
+        if skill_lstat_path(boundary, schema_path, f"schema {rel.as_posix()} for {skill_id}", errors, kind="file") is not None:
+            skill_read_schema(schema_path, f"schema {rel.as_posix()} for {skill_id}", errors)
+    validators = skill_unique_ids(interface.get("validators"), f"{skill_id}.validators", errors)
+    if not validators:
+        errors.append(f"interface for {skill_id} declares no validators")
+    for item in validators:
+        command = skill_safe_relative(item.get("command"))
+        if set(item) != {"id", "command", "objective_scope"} or command is None or not str(item.get("objective_scope") or "").strip():
+            errors.append(f"interface for {skill_id} has invalid validator declaration")
+            continue
+        validator_path = package / command
+        validator_stat = skill_lstat_path(boundary, validator_path, f"validator {command.as_posix()} for {skill_id}", errors, kind="file")
+        if validator_stat is not None and not (validator_stat.st_mode & stat.S_IXUSR):
+            errors.append(f"validator {command.as_posix()} for {skill_id} is not executable")
+    exits = skill_unique_ids(interface.get("external_exits"), f"{skill_id}.external_exits", errors)
+    if not exits:
+        errors.append(f"interface for {skill_id} declares no external exits")
+    for item in exits:
+        consumer = item.get("consumer")
+        if (
+            set(item) != {"id", "evidence", "consumer"}
+            or not SKILL_ROUTE_ID_PATTERN.fullmatch(str(item.get("id") or ""))
+            or not str(item.get("evidence") or "").strip()
+            or not isinstance(consumer, dict)
+            or set(consumer) != {"kind", "id"}
+            or consumer.get("kind") not in {"workflow", "skill", "stop"}
+            or not SKILL_ROUTE_ID_PATTERN.fullmatch(str(consumer.get("id") or ""))
+        ):
+            errors.append(f"interface for {skill_id} has invalid external exit")
+    reentry = interface.get("reentry")
+    if (
+        not isinstance(reentry, dict)
+        or set(reentry) != {"identity", "freshness", "stale_behavior"}
+        or reentry.get("stale_behavior") != "fail_closed"
+        or not str(reentry.get("identity") or "").strip()
+        or not str(reentry.get("freshness") or "").strip()
+    ):
+        errors.append(f"interface for {skill_id} has invalid re-entry contract")
+    tests = interface.get("tests")
+    if (
+        not isinstance(tests, list)
+        or not tests
+        or any(not isinstance(item, str) or not item.strip() for item in tests)
+    ):
+        errors.append(f"interface for {skill_id} has no test evidence")
+    else:
+        test_paths: set[str] = set()
+        for item in tests:
+            rel = skill_safe_relative(item)
+            if rel is None or len(rel.parts) < 2 or rel.parts[0] != "tests":
+                errors.append(f"interface for {skill_id} has test evidence outside the package tests root")
+                continue
+            relative_text = rel.as_posix()
+            if relative_text in test_paths:
+                errors.append(f"interface for {skill_id} has duplicate test evidence path")
+                continue
+            test_paths.add(relative_text)
+            skill_lstat_path(
+                boundary,
+                package / rel,
+                f"test evidence {relative_text} for {skill_id}",
+                errors,
+                kind="file",
+            )
+    destinations = interface.get("platform_destinations")
+    if not isinstance(destinations, list) or destinations != supported:
+        errors.append(f"interface platform destinations for {skill_id} do not match registry")
+    return interface
+
+
+def parse_skill_workflow_markers(
+    workflow: Path,
+    errors: list[str],
+    *,
+    missing_ok: bool = False,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    try:
+        lines = workflow.read_text(encoding="utf-8").splitlines()
+    except FileNotFoundError:
+        if missing_ok:
+            return [], []
+        errors.append("workflow marker source is missing or invalid UTF-8")
+        return [], []
+    except UnicodeDecodeError:
+        errors.append("workflow marker source is missing or invalid UTF-8")
+        return [], []
+    invokes: list[dict[str, Any]] = []
+    exits: list[dict[str, Any]] = []
+    fenced = False
+    for line_number, line in enumerate(lines, 1):
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        match = SKILL_INVOKE_RE.fullmatch(line)
+        kind = "invoke"
+        if match is None:
+            match = SKILL_EXIT_RE.fullmatch(line)
+            kind = "exit"
+        if match is None:
+            if "guru-skill-invoke:" in line or "guru-skill-exit:" in line:
+                errors.append(f"invalid workflow skill marker at line {line_number}")
+            continue
+        try:
+            payload = json.loads(match.group(1))
+        except json.JSONDecodeError:
+            errors.append(f"invalid workflow skill marker JSON at line {line_number}")
+            continue
+        if not isinstance(payload, dict):
+            errors.append(f"workflow skill marker at line {line_number} must be an object")
+            continue
+        payload["_line"] = line_number
+        (invokes if kind == "invoke" else exits).append(payload)
+    return invokes, exits
+
+
+def _validate_skill_source(
+    skills_root: Path,
+    workflow: Path,
+    *,
+    require_workflow: bool = True,
+    boundary_root: Path | None = None,
+) -> dict[str, Any]:
+    errors: list[str] = []
+    boundary = boundary_root or Path(os.path.commonpath([
+        os.path.abspath(skills_root),
+        os.path.abspath(workflow),
+    ]))
+    if skill_lstat_path(boundary, skills_root, "skill root", errors, kind="directory") is None:
+        return {
+            "status": "failed",
+            "mode": "source",
+            "facts": {"schema_version": None, "reserved_ids": [], "active_ids": [], "invoke_markers": 0, "exit_markers": 0},
+            "errors": errors,
+        }
+    registry_stat = skill_lstat_path(boundary, skills_root / "registry.json", "skill registry", errors, kind="file")
+    registry = skill_read_json(skills_root / "registry.json", "skill registry", errors) if registry_stat is not None else None
+    registry_schema_path = skills_root / "schemas/skill-registry.schema.json"
+    interface_schema_path = skills_root / "schemas/skill-interface.schema.json"
+    registry_schema = None
+    interface_schema = None
+    if skill_lstat_path(boundary, registry_schema_path, "skill registry schema", errors, kind="file") is not None:
+        registry_schema = skill_read_contract_schema(
+            registry_schema_path,
+            "skill registry schema",
+            "registry",
+            errors,
+        )
+    if skill_lstat_path(boundary, interface_schema_path, "skill interface schema", errors, kind="file") is not None:
+        interface_schema = skill_read_contract_schema(
+            interface_schema_path,
+            "skill interface schema",
+            "interface",
+            errors,
+        )
+    entries: list[dict[str, Any]] = []
+    reserved: set[str] = set()
+    active: dict[str, dict[str, Any]] = {}
+    interfaces: dict[str, dict[str, Any]] = {}
+    if registry is not None:
+        if registry_schema is not None:
+            errors.extend(skill_json_schema_validation_errors(
+                registry,
+                registry_schema,
+                "skill registry",
+            ))
+        if set(registry) != {"$schema", "schema_version", "skills"}:
+            errors.append("skill registry has invalid fields")
+        if registry.get("$schema") != "schemas/skill-registry.schema.json" or registry.get("schema_version") != "1.0":
+            errors.append("skill registry has unknown schema id/version")
+        entries = skill_unique_ids(registry.get("skills"), "skill registry", errors)
+        for entry in entries:
+            skill_id = str(entry.get("id") or "")
+            if not SKILL_ID_PATTERN.fullmatch(skill_id):
+                errors.append(f"invalid public skill id {skill_id or '<empty>'}")
+            state = entry.get("state")
+            if state == "reserved":
+                if (
+                    set(entry) != {"id", "state", "reason"}
+                    or not isinstance(entry.get("reason"), str)
+                    or not entry["reason"].strip()
+                ):
+                    errors.append(f"reserved registry entry {skill_id} has invalid fields")
+                reserved.add(skill_id)
+            elif state == "active":
+                active[skill_id] = entry
+                interface = validate_skill_interface(
+                    skills_root,
+                    entry,
+                    errors,
+                    boundary_root=boundary,
+                    interface_schema=interface_schema,
+                )
+                if interface is not None:
+                    interfaces[skill_id] = interface
+            else:
+                errors.append(f"registry entry {skill_id} has unknown state")
+
+    workflow_stat = skill_lstat_path(
+        boundary,
+        workflow,
+        "workflow marker source",
+        errors,
+        kind="file",
+        required=require_workflow,
+    )
+    if workflow_stat is None:
+        invokes, exit_markers = [], []
+    else:
+        invokes, exit_markers = parse_skill_workflow_markers(workflow, errors, missing_ok=False)
+    invoke_counts: dict[str, int] = {}
+    for marker in invokes:
+        skill_id = str(marker.get("skill") or "")
+        if set(marker) != {"skill", "required", "_line"} or marker.get("required") is not True:
+            errors.append(f"invalid invoke marker for {skill_id or '<empty>'}")
+        invoke_counts[skill_id] = invoke_counts.get(skill_id, 0) + 1
+        if skill_id in reserved:
+            errors.append(f"reserved skill {skill_id} is referenced by a mandatory route")
+        elif skill_id not in active:
+            errors.append(f"unknown skill {skill_id} is referenced by a mandatory route")
+    for skill_id in active:
+        count = invoke_counts.get(skill_id, 0)
+        if count == 0:
+            errors.append(f"active skill {skill_id} has no mandatory invoke marker")
+        elif count != 1:
+            errors.append(f"active skill {skill_id} has multiple mandatory invoke markers")
+
+    marker_map: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for marker in exit_markers:
+        skill_id = str(marker.get("skill") or "")
+        exit_id = str(marker.get("exit") or "")
+        consumer = marker.get("consumer")
+        if (
+            set(marker) != {"skill", "exit", "consumer", "_line"}
+            or not isinstance(consumer, dict)
+            or set(consumer) != {"kind", "id"}
+            or consumer.get("kind") not in {"workflow", "skill", "stop"}
+            or not SKILL_ROUTE_ID_PATTERN.fullmatch(str(consumer.get("id") or ""))
+        ):
+            errors.append(f"invalid exit marker for {skill_id or '<empty>'}/{exit_id or '<empty>'}")
+        marker_map.setdefault((skill_id, exit_id), []).append(marker)
+        if skill_id in reserved:
+            errors.append(f"reserved skill {skill_id} has an exit route")
+        elif skill_id not in active:
+            errors.append(f"unknown skill {skill_id} has an exit route")
+    declared_exits: set[tuple[str, str]] = set()
+    for skill_id, interface in interfaces.items():
+        raw_exits = interface.get("external_exits")
+        for item in raw_exits if isinstance(raw_exits, list) else []:
+            if not isinstance(item, dict):
+                continue
+            key = (skill_id, str(item.get("id") or ""))
+            declared_exits.add(key)
+            markers = marker_map.get(key, [])
+            if not markers:
+                errors.append(f"external exit {skill_id}/{key[1]} is unmapped")
+            elif len(markers) != 1:
+                errors.append(f"external exit {skill_id}/{key[1]} has multiple consumers")
+            elif markers[0].get("consumer") != item.get("consumer"):
+                errors.append(f"external exit {skill_id}/{key[1]} consumer does not match interface")
+    for key in marker_map:
+        if key not in declared_exits and key[0] in active:
+            errors.append(f"unknown external exit {key[0]}/{key[1]} is mapped")
+    package_root = skills_root / "packages"
+    package_root_stat = skill_lstat_path(boundary, package_root, "skill packages root", errors, kind="directory", required=False)
+    if package_root_stat is not None:
+        expected_packages = set(active)
+        actual_packages: set[str] = set()
+        for path in package_root.iterdir():
+            try:
+                path_stat = path.lstat()
+            except OSError:
+                errors.append("skill packages root contains an unreadable entry")
+                continue
+            if stat.S_ISLNK(path_stat.st_mode) or not stat.S_ISDIR(path_stat.st_mode):
+                errors.append("skill packages root contains a symlink or non-directory entry")
+                continue
+            actual_packages.add(path.name)
+        for extra in sorted(actual_packages - expected_packages):
+            errors.append(f"unregistered active package directory {extra}")
+    return {
+        "status": "passed" if not errors else "failed",
+        "mode": "source",
+        "facts": {
+            "schema_version": registry.get("schema_version") if registry else None,
+            "reserved_ids": sorted(reserved),
+            "active_ids": sorted(active),
+            "invoke_markers": len(invokes),
+            "exit_markers": len(exit_markers),
+        },
+        "errors": errors,
+    }
+
+
+def validate_skill_source(
+    skills_root: Path,
+    workflow: Path,
+    *,
+    require_workflow: bool = True,
+    boundary_root: Path | None = None,
+) -> dict[str, Any]:
+    try:
+        return _validate_skill_source(
+            skills_root,
+            workflow,
+            require_workflow=require_workflow,
+            boundary_root=boundary_root,
+        )
+    except Exception:
+        return {
+            "status": "failed",
+            "mode": "source",
+            "facts": {
+                "schema_version": None,
+                "reserved_ids": [],
+                "active_ids": [],
+                "invoke_markers": 0,
+                "exit_markers": 0,
+            },
+            "errors": ["skill source validation failed safely on malformed input"],
+        }
+
+
+def _validate_skill_installed(root: Path, skills_root: Path, workflow: Path, manifest_path: Path) -> dict[str, Any]:
+    errors: list[str] = []
+    root = Path(os.path.abspath(root))
+    registry_path = skills_root / "registry.json"
+    installed_registry_stat = skill_lstat_path(root, registry_path, "installed skill registry", errors, kind="file")
+    installed_registry = skill_read_json(registry_path, "installed skill registry", errors) if installed_registry_stat is not None else {}
+    installed_registry = installed_registry or {}
+    registry_entries = installed_registry.get("skills") if isinstance(installed_registry.get("skills"), list) else []
+    has_active = any(isinstance(entry, dict) and entry.get("state") == "active" for entry in registry_entries)
+    source_result = validate_skill_source(
+        skills_root,
+        workflow,
+        require_workflow=has_active,
+        boundary_root=root,
+    )
+    errors.extend(source_result["errors"])
+    manifest_stat = skill_lstat_path(root, manifest_path, "installed extension manifest", errors, kind="file")
+    manifest = skill_read_json(manifest_path, "installed extension manifest", errors) if manifest_stat is not None else None
+    skill_manifest = manifest.get("skill_packages") if isinstance(manifest, dict) else None
+    if not isinstance(skill_manifest, dict):
+        errors.append("installed extension manifest has no skill_packages provenance")
+        skill_manifest = {}
+    required = {
+        "schema_version", "status", "canonical_registry_sha256", "registry_schema_version",
+        "reserved_ids", "active_ids", "selected_platforms", "packages", "files", "removals",
+        "conflicts", "sidecars",
+    }
+    if set(skill_manifest) != required:
+        errors.append("installed skill package provenance has invalid fields")
+    if skill_manifest.get("schema_version") != "1.0" or skill_manifest.get("status") != "ok":
+        errors.append("installed skill package provenance is invalid or conflicted")
+    registry_stat = skill_lstat_path(root, registry_path, "installed skill registry", errors, kind="file")
+    expected_registry_sha = skill_file_sha256(registry_path) if registry_stat is not None else ""
+    if skill_manifest.get("canonical_registry_sha256") != expected_registry_sha:
+        errors.append("installed registry digest does not match provenance")
+    facts = source_result["facts"]
+    if skill_manifest.get("reserved_ids") != facts.get("reserved_ids") or skill_manifest.get("active_ids") != facts.get("active_ids"):
+        errors.append("installed registry lifecycle ids do not match provenance")
+    selected = skill_manifest.get("selected_platforms")
+    if (
+        not isinstance(selected, list)
+        or any(not isinstance(item, str) for item in selected)
+        or len(selected) != len(set(item for item in selected if isinstance(item, str)))
+        or any(isinstance(item, str) and item not in {"codex", "cursor", "claude"} for item in selected)
+    ):
+        errors.append("installed selected platform provenance is invalid")
+        selected = []
+    active_entries = {
+        str(entry.get("id")): entry
+        for entry in registry_entries
+        if isinstance(entry, dict) and entry.get("state") == "active"
+    }
+    active_ids = facts.get("active_ids") or []
+    reserved_ids = facts.get("reserved_ids") or []
+    installed_root_rel = skill_lexical_relative(root, skills_root)
+    if installed_root_rel is None:
+        errors.append("installed skill root is outside the repository")
+        installed_root_rel = Path(".trellis/guru-team/skills")
+    expected_records: dict[str, tuple[str, Path]] = {}
+
+    def add_expected(target: Path, source_relative: Path, source_path: Path) -> None:
+        target_relative = skill_lexical_relative(root, target)
+        if target_relative is None:
+            errors.append("derived installed skill path escapes the repository")
+            return
+        expected_records[target_relative.as_posix()] = (
+            (Path("trellis/skills/guru-team") / source_relative).as_posix(),
+            source_path,
+        )
+
+    for relative in (
+        Path("registry.json"),
+        Path("schemas/skill-registry.schema.json"),
+        Path("schemas/skill-interface.schema.json"),
+    ):
+        add_expected(skills_root / relative, relative, skills_root / relative)
+
+    package_files_by_id: dict[str, list[Path]] = {}
+    expected_packages: dict[str, dict[str, Any]] = {}
+    for skill_id, entry in active_entries.items():
+        package_relative = skill_safe_relative(entry.get("package"))
+        interface_relative = skill_safe_relative(entry.get("interface"))
+        if package_relative is None or interface_relative is None:
+            errors.append(f"installed registry paths are invalid for {skill_id}")
+            continue
+        package_root = skills_root / package_relative
+        package_files = skill_collect_tree_files(root, package_root, f"installed package {skill_id}", errors)
+        package_files_by_id[skill_id] = package_files
+        tree_digest = hashlib.sha256()
+        for source_path in package_files:
+            inner = source_path.relative_to(package_root)
+            source_relative = package_relative / inner
+            add_expected(source_path, source_relative, source_path)
+            tree_digest.update(inner.as_posix().encode("utf-8") + b"\0" + source_path.read_bytes() + b"\0")
+        interface_path = skills_root / interface_relative
+        interface_stat = skill_lstat_path(root, interface_path, f"installed interface for {skill_id}", errors, kind="file")
+        expected_packages[skill_id] = {
+            "id": skill_id,
+            "interface_sha256": skill_file_sha256(interface_path) if interface_stat is not None else "",
+            "tree_sha256": tree_digest.hexdigest(),
+        }
+        supported_raw = entry.get("supported_platforms")
+        supported = {
+            item for item in supported_raw
+            if isinstance(item, str)
+        } if isinstance(supported_raw, list) else set()
+        expected_platforms = {"shared"} | ({"codex", "cursor", "claude"} & set(selected) & supported)
+        for platform in expected_platforms:
+            target_root = root / SKILL_PLATFORM_ROOTS[platform] / skill_id
+            target_files = skill_collect_tree_files(root, target_root, f"{platform} runtime copy for {skill_id}", errors)
+            expected_inner = {path.relative_to(package_root).as_posix() for path in package_files}
+            actual_inner = {path.relative_to(target_root).as_posix() for path in target_files}
+            if actual_inner != expected_inner:
+                errors.append(f"{platform} runtime inventory for {skill_id} does not match installed package")
+            for source_path in package_files:
+                inner = source_path.relative_to(package_root)
+                target = target_root / inner
+                add_expected(target, package_relative / inner, source_path)
+                target_stat = skill_lstat_path(root, target, f"{platform} runtime file for {skill_id}", errors, kind="file")
+                if target_stat is not None:
+                    if skill_file_sha256(target) != skill_file_sha256(source_path):
+                        errors.append(f"{platform} runtime file content drift for {skill_id}/{inner.as_posix()}")
+                    if bool(target_stat.st_mode & stat.S_IXUSR) != bool(source_path.stat().st_mode & stat.S_IXUSR):
+                        errors.append(f"{platform} runtime file mode drift for {skill_id}/{inner.as_posix()}")
+
+    packages = skill_manifest.get("packages")
+    if not isinstance(packages, list):
+        errors.append("installed package provenance must be an array")
+        packages = []
+    package_records: dict[str, dict[str, Any]] = {}
+    for index, item in enumerate(packages):
+        if not isinstance(item, dict) or set(item) != {"id", "interface_sha256", "tree_sha256"}:
+            errors.append(f"installed package record {index} is invalid")
+            continue
+        skill_id = str(item.get("id") or "")
+        if skill_id in package_records:
+            errors.append(f"installed package provenance contains duplicate id {skill_id}")
+        package_records[skill_id] = item
+    if set(package_records) != set(expected_packages):
+        errors.append("installed package provenance inventory is incomplete")
+    for skill_id in set(package_records) & set(expected_packages):
+        if package_records[skill_id] != expected_packages[skill_id]:
+            errors.append(f"installed package digest provenance drift for {skill_id}")
+
+    files = skill_manifest.get("files")
+    if not isinstance(files, list):
+        errors.append("installed skill file provenance must be an array")
+        files = []
+    seen_paths: set[str] = set()
+    for index, item in enumerate(files):
+        if not isinstance(item, dict) or set(item) != {"path", "source", "sha256", "executable", "action"}:
+            errors.append(f"installed skill file record {index} is invalid")
+            continue
+        rel = skill_safe_relative(item.get("path"))
+        source_rel = skill_safe_relative(item.get("source"))
+        if rel is None or source_rel is None or str(rel) in seen_paths:
+            errors.append(f"installed skill file record {index} has invalid paths")
+            continue
+        seen_paths.add(rel.as_posix())
+        path = root / rel
+        path_stat = skill_lstat_path(root, path, f"installed skill file {rel.as_posix()}", errors, kind="file")
+        if path_stat is None:
+            continue
+        expected = expected_records.get(rel.as_posix())
+        if expected is None:
+            errors.append(f"installed manifest contains an unexpected file record: {rel.as_posix()}")
+        elif source_rel.as_posix() != expected[0]:
+            errors.append(f"installed skill source provenance drift: {rel.as_posix()}")
+        digest = skill_file_sha256(path)
+        if not re.fullmatch(r"[0-9a-f]{64}", str(item.get("sha256") or "")) or digest != item.get("sha256"):
+            errors.append(f"installed skill file digest drift: {rel.as_posix()}")
+        executable = bool(path_stat.st_mode & stat.S_IXUSR)
+        if item.get("executable") is not executable:
+            errors.append(f"installed skill file mode drift: {rel.as_posix()}")
+    if seen_paths != set(expected_records):
+        errors.append("installed skill file provenance inventory is incomplete")
+
+    removals = skill_manifest.get("removals")
+    if not isinstance(removals, list):
+        errors.append("installed skill removal provenance must be an array")
+        removals = []
+    for index, item in enumerate(removals):
+        if not isinstance(item, dict) or item.get("action") not in {"removed_managed", "already_missing"}:
+            errors.append(f"installed skill removal record {index} is invalid")
+            continue
+        rel = skill_safe_relative(item.get("path"))
+        allowed = {"path", "action"} if item.get("action") == "already_missing" else {"path", "action", "previous_managed_sha256"}
+        if set(item) != allowed or rel is None:
+            errors.append(f"installed skill removal record {index} is invalid")
+        elif skill_lstat_path(root, root / rel, f"removed skill path {rel.as_posix()}", errors, kind="file", required=False) is not None:
+            errors.append(f"removed managed skill path still exists: {rel.as_posix()}")
+
+    conflicts = skill_manifest.get("conflicts")
+    if not isinstance(conflicts, list):
+        errors.append("installed skill conflict provenance must be an array")
+        conflicts = []
+    if conflicts:
+        errors.append("installed skill package has unresolved conflicts")
+    for index, item in enumerate(conflicts):
+        if not isinstance(item, dict) or not str(item.get("reason") or "") or not str(item.get("remediation") or ""):
+            errors.append(f"installed skill conflict record {index} is invalid")
+    sidecars = skill_manifest.get("sidecars")
+    if not isinstance(sidecars, list):
+        errors.append("installed skill sidecar provenance must be an array")
+        sidecars = []
+    if sidecars:
+        errors.append("installed skill package has unresolved sidecars")
+    declared_sidecars: set[str] = set()
+    for sidecar in sidecars:
+        rel = skill_safe_relative(sidecar)
+        if rel is None or rel.as_posix() in declared_sidecars:
+            errors.append("installed skill sidecar provenance is invalid")
+            continue
+        declared_sidecars.add(rel.as_posix())
+        skill_lstat_path(root, root / rel, f"installed skill sidecar {rel.as_posix()}", errors, kind="file")
+
+    actual_sidecars: set[str] = set()
+    for managed_root in [skills_root, *(root / path for path in SKILL_PLATFORM_ROOTS.values())]:
+        managed_stat = skill_lstat_path(root, managed_root, "managed skill root", errors, kind="directory", required=False)
+        if managed_stat is None:
+            continue
+        for path in skill_collect_tree_files(root, managed_root, "managed skill root", errors):
+            if path.name.endswith((".new", ".bak")):
+                relative = skill_lexical_relative(root, path)
+                if relative is not None:
+                    actual_sidecars.add(relative.as_posix())
+    if actual_sidecars != declared_sidecars:
+        errors.append("installed skill sidecar inventory is incomplete")
+
+    supported_by_id: dict[str, set[str]] = {}
+    installed_entries = installed_registry.get("skills")
+    for entry in installed_entries if isinstance(installed_entries, list) else []:
+        if not isinstance(entry, dict) or entry.get("state") != "active":
+            continue
+        supported_raw = entry.get("supported_platforms")
+        supported_by_id[str(entry.get("id"))] = {
+            item for item in supported_raw
+            if isinstance(item, str)
+        } if isinstance(supported_raw, list) else set()
+    for skill_id in reserved_ids:
+        candidates = [skills_root / "packages" / skill_id]
+        candidates.extend(root / platform_root / skill_id for platform_root in SKILL_PLATFORM_ROOTS.values())
+        for path in candidates:
+            if skill_lstat_path(root, path, f"reserved skill path {skill_id}", errors, kind="directory", required=False) is not None:
+                errors.append(f"reserved skill {skill_id} was installed")
+    for skill_id in active_ids:
+        shared = root / SKILL_PLATFORM_ROOTS["shared"] / skill_id
+        if skill_lstat_path(root, shared, f"shared runtime copy for {skill_id}", errors, kind="directory") is None:
+            errors.append(f"active skill {skill_id} is missing shared runtime copy")
+        supported = supported_by_id.get(skill_id, set())
+        for platform in ("codex", "cursor", "claude"):
+            target = root / SKILL_PLATFORM_ROOTS[platform] / skill_id
+            should_exist = platform in selected and platform in supported
+            target_stat = skill_lstat_path(root, target, f"{platform} runtime copy for {skill_id}", errors, kind="directory", required=should_exist)
+            if should_exist and target_stat is None:
+                errors.append(f"active skill {skill_id} is missing selected {platform} runtime copy")
+            if not should_exist and target_stat is not None:
+                errors.append(f"active skill {skill_id} exists in an unselected or unsupported {platform} runtime root")
+
+    expected_ids_by_platform = {
+        "shared": set(active_ids),
+        **{
+            platform: {
+                skill_id for skill_id, supported in supported_by_id.items()
+                if platform in selected and platform in supported
+            }
+            for platform in ("codex", "cursor", "claude")
+        },
+    }
+    for platform, platform_root_relative in SKILL_PLATFORM_ROOTS.items():
+        platform_root = root / platform_root_relative
+        if skill_lstat_path(root, platform_root, f"{platform} skill root", errors, kind="directory", required=False) is None:
+            continue
+        for child in platform_root.iterdir():
+            try:
+                child_stat = child.lstat()
+            except OSError:
+                errors.append(f"{platform} skill root contains an unreadable entry")
+                continue
+            if child.name.startswith("guru-") and (
+                stat.S_ISLNK(child_stat.st_mode)
+                or not stat.S_ISDIR(child_stat.st_mode)
+                or child.name not in expected_ids_by_platform[platform]
+            ):
+                errors.append(f"unknown {platform} workflow skill copy: {child.name}")
+
+    allowed_platform_roots = {
+        *(path.as_posix() for path in SKILL_PLATFORM_ROOTS.values()),
+        "trellis/skills",
+    }
+    for top in root.iterdir():
+        try:
+            top_stat = top.lstat()
+        except OSError:
+            continue
+        if stat.S_ISLNK(top_stat.st_mode) or not stat.S_ISDIR(top_stat.st_mode):
+            continue
+        skills_dir = top / "skills"
+        skills_stat = skill_lstat_path(root, skills_dir, "platform skill discovery root", errors, kind="directory", required=False)
+        if skills_stat is None:
+            continue
+        relative_root = skill_lexical_relative(root, skills_dir)
+        if relative_root is None or relative_root.as_posix() in allowed_platform_roots:
+            continue
+        for child in skills_dir.iterdir():
+            if child.name.startswith("guru-"):
+                errors.append(f"workflow skill copy exists in unknown platform root: {relative_root.as_posix()}/{child.name}")
+    return {
+        "status": "passed" if not errors else "failed",
+        "mode": "installed",
+        "facts": {
+            **facts,
+            "selected_platforms": selected,
+            "managed_file_count": len(files),
+            "sidecar_count": len(sidecars),
+            "removal_count": len(removals),
+            "conflict_count": len(conflicts),
+        },
+        "errors": errors,
+    }
+
+
+def validate_skill_installed(root: Path, skills_root: Path, workflow: Path, manifest_path: Path) -> dict[str, Any]:
+    try:
+        return _validate_skill_installed(root, skills_root, workflow, manifest_path)
+    except Exception:
+        return {
+            "status": "failed",
+            "mode": "installed",
+            "facts": {
+                "schema_version": None,
+                "reserved_ids": [],
+                "active_ids": [],
+                "invoke_markers": 0,
+                "exit_markers": 0,
+                "selected_platforms": [],
+                "managed_file_count": 0,
+                "sidecar_count": 0,
+                "removal_count": 0,
+                "conflict_count": 0,
+            },
+            "errors": ["installed skill validation failed safely on malformed input"],
+        }
+
+
+def cmd_check_skill_packages(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    def argument_path(value: str | None, default: str) -> Path:
+        relative = skill_safe_relative(value or default)
+        if relative is None:
+            raise WorkflowError("Skill validator path arguments must be safe repository-relative paths.", exit_code=2)
+        return root / relative
+
+    if args.mode == "source":
+        skills_root = argument_path(args.skills_root, "trellis/skills/guru-team")
+        workflow = argument_path(args.workflow, "trellis/workflows/guru-team/workflow.md")
+        result = validate_skill_source(skills_root, workflow, boundary_root=root)
+    else:
+        skills_root = argument_path(args.skills_root, ".trellis/guru-team/skills")
+        workflow = argument_path(args.workflow, ".trellis/workflow.md")
+        manifest_path = argument_path(args.manifest, ".trellis/guru-team/extension.json")
+        result = validate_skill_installed(root, skills_root, workflow, manifest_path)
+    if result["errors"]:
+        raise WorkflowError("Skill package validation failed.", exit_code=2, payload=result)
+    return result
+
+
 def cmd_verify_marketplace(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
@@ -12759,6 +14008,14 @@ def build_parser() -> argparse.ArgumentParser:
     boundary.add_argument("--root")
     boundary.add_argument("--json", action="store_true")
     boundary.add_argument("--task")
+
+    skill_packages = sub.add_parser("check-skill-packages")
+    skill_packages.add_argument("--root")
+    skill_packages.add_argument("--json", action="store_true")
+    skill_packages.add_argument("--mode", required=True, choices=["source", "installed"])
+    skill_packages.add_argument("--skills-root", help=argparse.SUPPRESS)
+    skill_packages.add_argument("--workflow", help=argparse.SUPPRESS)
+    skill_packages.add_argument("--manifest", help=argparse.SUPPRESS)
     boundary.add_argument(
         "--allow-source-clean",
         action="store_true",
@@ -13044,6 +14301,8 @@ def main() -> int:
             payload = cmd_version(args)
         elif args.command == "check-workspace-boundary":
             payload = cmd_check_workspace_boundary(args)
+        elif args.command == "check-skill-packages":
+            payload = cmd_check_skill_packages(args)
         elif args.command == "resolve-human-artifacts":
             payload = cmd_resolve_human_artifacts(args)
         elif args.command == "verify-marketplace":

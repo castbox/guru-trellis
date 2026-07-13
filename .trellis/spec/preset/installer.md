@@ -24,6 +24,33 @@ journal/index files.
 
 ## Managed Assets
 
+Public workflow skill packages are a separate managed-hash domain. The preset
+validates `trellis/skills/guru-team/`, installs its registry/schema/active
+packages under `.trellis/guru-team/skills/`, and distributes active package
+bytes to `.agents/skills/<id>/` plus only the selected Codex/Cursor/Claude
+roots. Reserved ids and test fixtures are never installed.
+
+Skill files use the exact previous hash recorded in
+`.trellis/guru-team/extension.json`. Missing files install; canonical-equal
+files stay unchanged; a known managed old version produces `.bak` before the
+new canonical bytes replace it; an unknown edit or invalid/missing provenance
+is preserved and receives `.new`. This path must not call
+`looks_like_trellis_generated_entry()` or any content heuristic. Any conflict,
+drift, invalid provenance, or unresolved sidecar blocks installed validation.
+
+Platform selection may shrink on reapply. A stale platform file whose bytes
+equal its previous managed hash is removed and recorded in `removals[]`; empty
+skill-owned directories may then be pruned without removing the platform skill
+root. A stale unknown edit or invalid-provenance path is preserved, receives a
+deterministic `.new` remediation sidecar when its parent is safe, is recorded in
+`conflicts[]`, and forces `status=conflict`. `files[]` contains only current
+successfully managed files, and installed validation derives the complete
+expected inventory independently.
+
+Before any public skill read/write/remove, validate lexical repo containment
+and use `lstat` on every target component. Any target or ancestor symlink,
+including dangling, internal, external, and multilevel chains, fails closed.
+
 `MANAGED_ASSET_PATHS` is the authoritative list of companion assets copied from
 the workflow source. When adding a companion script, schema, or managed config
 template:
@@ -67,7 +94,7 @@ must not decide whether an upgrade or rollback is semantically safe.
 
 Stable install and upgrade docs must pin workflow marketplace sources to the
 repo release tag that combines the target official Trellis CLI version and Guru
-Team revision, for example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.3`.
+Team revision, for example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`.
 Keep `trellis/index.json.version` as the marketplace index schema version; do
 not reuse it as the Guru Team extension release number. If validation samples unpinned
 `gh:castbox/guru-trellis/trellis`, report it as latest/canary sampling rather

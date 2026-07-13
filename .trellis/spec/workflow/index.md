@@ -20,8 +20,9 @@ Before editing workflow behavior:
 1. Read [workflow-contract.md](./workflow-contract.md).
 2. Read [companion-scripts.md](./companion-scripts.md) when changing Bash or Python helpers.
 3. Read [data-contracts.md](./data-contracts.md) when changing config, task-start-context, runtime boundary, review-gate, issue ledger, or PR payload data.
-4. Read [quality-guidelines.md](./quality-guidelines.md) before validation or commit.
-5. Read shared guides under `.trellis/spec/guides/` when the change touches multiple generated surfaces or payload contracts.
+4. Read [skill-package-contract.md](./skill-package-contract.md) when changing public workflow skills, registry/interface schemas, workflow markers, installation, or typed exits.
+5. Read [quality-guidelines.md](./quality-guidelines.md) before validation or commit.
+6. Read shared guides under `.trellis/spec/guides/` when the change touches multiple generated surfaces or payload contracts.
 
 ## Local Architecture
 
@@ -31,6 +32,7 @@ Before editing workflow behavior:
 - `trellis/workflows/guru-team/config-template.yml` defines default Guru Team behavior.
 - `trellis/workflows/guru-team/scripts/bash/*.sh` are thin executable wrappers.
 - `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py` owns companion behavior.
+- `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - `trellis/workflows/guru-team/schemas/task-start-context.schema.json` documents the portable task-start context JSON shape.
 
 ## Required Validation

@@ -1,0 +1,16 @@
+{
+  "$schema": "schemas/skill-registry.schema.json",
+  "schema_version": "1.0",
+  "skills": [
+    {
+      "id": "guru-example-action",
+      "state": "active",
+      "name": "guru-example-action",
+      "package": "packages/guru-example-action",
+      "interface": "packages/guru-example-action/interface.json",
+      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "fixture-phase"
+    }
+  ]
+}
