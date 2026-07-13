@@ -174,7 +174,21 @@ Canonical implementation 归属 `trellis/workflows/guru-team/scripts/python/guru
 
 - Public registry、package、fixture、manifest 和文档不得包含 secret、客户数据、签名 URL、`.env`、workspace journal、active task state 或本机绝对路径。
 - Platform destination 和 manifest locator 必须为 repo-relative path。
+- 用于验证拒绝逻辑的去身份化绝对路径 fixture 不属于本机状态。Task-local gate evidence 仅为绑定被审查 workspace boundary 时才能记录真实 worktree 绝对路径；该窄例外不扩展到公共 package、fixture、manifest、example、公开文档或其它本机路径。
+- Raw review report 一旦由 `agent-assignment.json` 绑定 digest、size 和 mtime 就保持 immutable。后续检查发现其包含符合本节窄例外的 workspace-boundary path 时保留原证据，不以改写报告消除历史事实。
 - Script 不得根据内容判断 AI Review 是否通过，不得决定 issue close/ref/followup。
+
+### 12.1 绝对路径事件分析
+
+数据流为：审查代理读取 worktree 事实 -> 自行生成 raw Markdown report -> 主会话将 report digest 写入 `agent-assignment.json` -> 后续 checker 按 AC11 复查。现有 workflow 要求编辑工具在不支持显式 `workdir` 时使用 worktree-local absolute path，但没有要求 raw report 持久化该路径；round 1 的“工作树”字段由审查代理自行写入。
+
+当前 recorder 只校验 report path、digest、size、mtime、中文结构和 review round identity，没有在 digest 绑定前判断 Markdown 中的本机路径是否必要。由此得到：
+
+- 固有因素：缺少 pre-bind 内容门禁，任何审查代理都可能把 cwd、worktree 或命令输出中的绝对路径带入 task-local report；
+- 条件性因素：workflow 没有强制“工作树”字段，不同代理或不同轮次不一定输出该字段；
+- 结论：该问题是系统性风险的条件性显现，不是随机文件损坏，也不是 `resolve-human-artifacts`、workspace resolver 或 digest recorder 自动注入路径。
+
+#120 只收敛本任务 AC11 与公共 skill package scope，不新增 Branch Review report sanitizer。后续改进必须在独立 issue 中由 AI 先判断符合 workspace-boundary evidence 合同的路径与应阻断的其它本机路径，再由 deterministic validator 在 digest 绑定前校验已审阅结果；脚本不得自行改写 AI report。
 
 ## 13. 中台知识门禁
 

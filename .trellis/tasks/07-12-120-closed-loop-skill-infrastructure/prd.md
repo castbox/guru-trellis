@@ -115,7 +115,7 @@ Production registry 没有 active skill 时，production workflow 不得伪造 m
 - [ ] AC8：workflow marketplace 和 preset 的文档/命令真实可执行；clean throwaway 完成 update/reapply 后不存在 `.new` / `.bak`。
 - [ ] AC9：canonical workflow、dogfood workflow、canonical preset、dogfood installed assets 和声明平台入口通过一致性检查。
 - [ ] AC10：公共 extension version、managed paths、artifact/script API 清单与新增基础设施一致。
-- [ ] AC11：代码、测试和 task artifact 不包含 secret、本机绝对路径、active workspace journal 或业务私有状态。
+- [ ] AC11：production code、公共 package、fixture、manifest、example 和公开文档不得包含 secret、真实本机绝对路径、active workspace journal 或业务私有状态；用于验证拒绝逻辑的去身份化路径 fixture 不视为本机状态。Task-local gate evidence 仅为绑定被审查 workspace boundary 时才能记录真实 worktree 绝对路径，并且不得记录 secret、客户数据、签名 URL、`.env`、workspace journal 或业务私有状态。
 - [ ] AC12：PR close scope 只能关闭 #120；不得关闭或实现 `guru-create-work-commit`、#98、#115 或其它具体 workflow skill issue。
 
 ## 范围外
@@ -126,6 +126,13 @@ Production registry 没有 active skill 时，production workflow 不得伪造 m
 - 不修改 Trellis upstream、全局 npm package 或 `node_modules`。
 - 不把 active task、workspace journal、平台 prompt、业务私有状态、secret 或本机绝对路径写入公共 package。
 - 不借 #120 修改 #98、#115 或其后续业务 workflow chain。
+
+## Scope clarification（2026-07-13）
+
+- 触发事实：Branch Review round 1 在 immutable raw report 的“工作树”绑定字段中记录了当前 worktree 绝对路径；该报告已由 `agent-assignment.json` 绑定 SHA-256、size 和 mtime，后续不得静默改写。
+- 根因分类：这是 task-local raw report 在 digest 绑定前缺少本机路径语义门禁造成的系统性风险；是否实际写入绝对路径取决于审查代理当轮的报告措辞，因此表现为条件性、非必现。
+- 本任务处置：AC11 按 GitHub issue #120 的公共 skill package 安全边界收敛，并为 task-local workspace-boundary gate evidence 定义上述窄例外；immutable round 1 evidence 原样保留。
+- 后续边界：在 raw report digest 绑定前新增通用去敏/阻断门禁属于 Guru Team Branch Review 基础设施的独立改进，不纳入 #120 的 canonical skill package 实现范围。
 
 ## 阻塞问题
 

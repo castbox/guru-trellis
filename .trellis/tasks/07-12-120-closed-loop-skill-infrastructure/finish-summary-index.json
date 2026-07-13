@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Guru Team 已建立 Skill-first 原则，但缺少公共 workflow skill 的统一 canonical package、registry/interface、typed exit、平台分发、managed hash 与结构门禁，后续具体 skill 容易各自发明临时合同。",
+    "outcome": "Guru Team 已具备可复用、可安装、可升级且可机器校验的闭环 workflow skill 基础设施，后续 active skill 只能复用同一 canonical root、package contract、分发状态机与 fail-closed validator。",
+    "changed_behavior": [
+      "公共 workflow skill 的唯一 canonical root 固定为 trellis/skills/guru-team/。",
+      "Registry 以 reserved 和 active 区分稳定 id 占位与可安装完整 package。",
+      "Active package 必须提供严格 SKILL.md frontmatter、interface、artifact/schema/validator、真实 tests evidence 和 workflow route。",
+      "Global workflow 通过机器 marker 显式调用 mandatory skill，并为每个 typed exit 提供唯一 consumer 或 stop。",
+      "Preset 使用 exact previous managed hashes 分发 installed、shared 与 selected platform copies。",
+      "Unknown local edit、invalid provenance、platform shrink 与 sidecar 状态由确定性 conflict/removal evidence fail closed。",
+      "check-skill-packages 分别校验 canonical source 与 installed runtime 的完整结构、inventory、hash、mode 和 drift。",
+      "Production registry 仅预留 guru-create-work-commit，代表性 active package 保持 fixture-only。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "Guru Team canonical workflow skill packages",
+        "paths": [
+          "trellis/skills/guru-team/registry.json",
+          "trellis/skills/guru-team/schemas/skill-registry.schema.json",
+          "trellis/skills/guru-team/schemas/skill-interface.schema.json"
+        ],
+        "change": "建立 reserved/active registry、package/interface schema、strict discovery identity、真实 tests evidence 与 typed exit 公共合同。"
+      },
+      {
+        "kind": "script",
+        "name": "Skill package deterministic validator",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/bash/check-skill-packages.sh"
+        ],
+        "change": "新增 source/installed 两种校验模式，覆盖 schema、path、frontmatter、tests、marker/exit、installed inventory、hash、mode、drift 与 sidecar。"
+      },
+      {
+        "kind": "preset",
+        "name": "Guru Team skill distribution and managed hashes",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/README.md",
+          "trellis/guru-team-extension.json",
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "从 canonical root 安装 audited runtime copy，并向 shared 与 selected platform roots 执行 exact-hash install、upgrade、conflict 和 shrink。"
+      },
+      {
+        "kind": "docs",
+        "name": "Closed-loop skill durable SSOT",
+        "paths": [
+          "README.md",
+          "docs/requirements/requirement-main.md",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/spec/preset/installer.md",
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "统一 canonical/package/interface/registry ownership、marketplace 与 preset 分工、公共 API、升级重放和冲突处理说明。"
+      },
+      {
+        "kind": "test",
+        "name": "Skill infrastructure regression matrix",
+        "paths": [
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "change": "覆盖 reserved/active、schema/frontmatter/tests、markers/exits、managed hash、symlink/path boundary、platform selection、dogfood 与 throwaway update/reapply。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Canonical package ownership",
+        "before": "公共 workflow skill 没有统一 canonical root，平台副本和首个业务 skill 可能各自成为临时 SSOT。",
+        "after": "trellis/skills/guru-team/ 是唯一 canonical root，installed 与平台 copies 只能由 preset 生成。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Registry lifecycle and discovery identity",
+        "before": "稳定 id 占位、可安装 package、SKILL.md discovery 和 interface identity 没有统一机器合同。",
+        "after": "Reserved 只占用 id，active 必须具备严格 frontmatter、interface、schema/validator、tests 与 route evidence。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Typed exit workflow routing",
+        "before": "Auto-trigger 或自然语言引用可能成为 mandatory step 的唯一发现方式，exit consumer 可能缺失或重复。",
+        "after": "Mandatory invocation 与每个 external exit 使用机器 marker 绑定唯一 consumer 或 fail-closed stop。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Managed distribution state machine",
+        "before": "公共 skill copy 缺少 previous managed hash 与 provenance，升级可能依赖内容启发式或静默覆盖本地修改。",
+        "after": "Missing、unchanged、known upgrade、unknown edit、invalid provenance 与 platform shrink 使用 exact hash、conflict、removal 和 sidecar evidence。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Deterministic structure validation",
+        "before": "安装流程无法统一阻断 missing mandatory skill、schema、test evidence、unknown exit、installed drift 和 sidecar。",
+        "after": "check-skill-packages source/installed 模式只验证机器事实并对全部结构错误返回非零。",
+        "source_artifact": "design.md"
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "check-skill-packages",
+        "trellis update"
+      ],
+      "config_keys": [
+        "selected_platforms",
+        "managed_assets"
+      ],
+      "schema_fields": [
+        "registry.skills[].state",
+        "interface.external_exits",
+        "interface.tests"
+      ],
+      "symbols": [
+        "guru-<action>-<object>",
+        "guru-skill-invoke",
+        "guru-skill-exit"
+      ],
+      "phrases": [
+        "Guru Team 闭环 workflow skill canonical package 已完成",
+        "check-skill-packages 已完成 source 与 installed 结构门禁",
+        "reserved 与 active registry lifecycle 已固定",
+        "exact managed hash 平台分发已完成",
+        "SKILL.md frontmatter 与真实 tests evidence 已纳入 fail-closed 校验"
+      ]
+    }
+  }
+}

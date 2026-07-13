@@ -68,6 +68,8 @@
 
 - [ ] 派发独立 `trellis-check`，覆盖 R1-R8、AC1-AC12、Docs SSOT、公共 API、source/installed validator、platform drift、throwaway、security。
 - [ ] 所有 finding 必须由实现代理修复并由 checker 复验关闭。
+- [ ] 按 2026-07-13 scope clarification 复核 AC11：公共分发资产不得包含真实本机路径；去身份化负向 fixture 与 task-local workspace-boundary evidence 分别按 PRD/design 的明确合同判断，不得互相扩大例外。
+- [ ] 保持 Branch Review round 1 raw report bytes 和 digest 不变；后续闭环报告记录该历史 evidence 的处理依据，不得通过改写 raw report 消除 finding。
 - [ ] 只 stage #120 的 durable docs、canonical package/schema、workflow/preset、dogfood installed copy、tests 和 task evidence。
 - [ ] 不 stage source checkout 文件、其它 worktree 状态、未处理 sidecar 或无关用户改动。
 - [ ] commit/push/PR/issue close 继续按 Phase 3、Branch Review Gate 与 `trellis-finish-work` 执行。

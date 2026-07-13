@@ -17,6 +17,30 @@
       "message": "Selected platform 缩减后 previous-managed stale copies 与 manifest status/remediation 不一致；已实现 known managed cleanup、unknown/invalid conflict 保留、sidecar/removal 证据和准确 status。",
       "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
       "status": "resolved"
+    },
+    {
+      "priority": "P1",
+      "message": "Branch Review round 1 发现 source validator 会放行不符合 discovery identity 的 SKILL.md frontmatter 与虚构 tests[] 证据；已严格绑定 name/description identity，并要求 tests/<file> 为 package-local、真实、regular、非 symlink 文件，完整负向矩阵已通过。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "Branch Review round 1 发现 Phase 2 缺少 ssot_first 的具体 Docs SSOT implementation handoff；implementation-handoff.md 已记录 durable inputs、同步结果、task delta merge、task-history-only、验证、follow-up 与 PR limitation，并经新 Phase 2 checker 复核通过。",
+      "path": ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/implementation-handoff.md",
+      "status": "resolved"
+    },
+    {
+      "priority": "P1",
+      "message": "旧 AC11 将 task artifact 一概纳入本机绝对路径禁令，与 live issue 的公共 package 边界和 immutable workspace-boundary review evidence 冲突；用户已明确批准窄例外并留下 GitHub-visible evidence，规划文档与 approval 已更新，raw report bytes/digest 保持不变。",
+      "path": ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/prd.md",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "Branch Review round 3 发现 phase2-check.json 将实际 Ran 0 tests、exit 5 的 python3 -m unittest discover 错记为 474/474；实现回归本身健康，fresh Phase 2 checker 已用显式 companion+preset suite 420/420 与 skill suite 54/54 独立重跑并通过，recorder evidence 改为两条真实命令及各自计数。",
+      "path": ".trellis/tasks/07-12-120-closed-loop-skill-infrastructure/phase2-check.json",
+      "status": "resolved"
     }
   ]
 }

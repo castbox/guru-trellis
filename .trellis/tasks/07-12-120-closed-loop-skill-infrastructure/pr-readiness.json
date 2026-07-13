@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/120-closed-loop-skill-infrastructure",
+    "reviewed_head_sha": "5a1fb0412b68ef75fe05816c0eb29e1b1d417945",
+    "title": "#120 建立 Guru Team 闭环 Skill 合同与 Canonical 分发基础设施",
+    "body_source": "pr-body.md",
+    "body_sha256": "1813b9512480c9df5543008b17c607e2b58c2ee6db78c0ee5396b86183733a09",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "01d5e1a5fd21f835db19ea0465f77483a7c75ba3952911348defcf4d166937b1"
+  },
+  "publish_inputs_sha256": "219c1de3872ffff3e93c926fae9e0b1e2bb9d373238d9d9efe5214e3b331db6f"
+}
