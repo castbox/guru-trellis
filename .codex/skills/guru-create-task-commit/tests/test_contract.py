@@ -306,6 +306,26 @@ class TaskCommitPackageContractTests(unittest.TestCase):
             [item["id"] for item in self.interface["external_exits"]],
             ["committed", "revision-required", "blocked"],
         )
+        executor = next(
+            item for item in self.interface["validators"] if item["id"] == "exact_executor"
+        )
+        self.assertIn("artifact-authorized ordinary/gitlink/candidate bindings", executor["objective_scope"])
+        self.assertIn("guarded conditional ref/candidate rollback under an index.lock sentinel", executor["objective_scope"])
+        self.assertIn("independent final-index publication", executor["objective_scope"])
+        self.assertIn("final candidate identity-read linearization", executor["objective_scope"])
+        self.assertIn("immutable commit blob/result digest evidence", executor["objective_scope"])
+        contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
+        for phrase in (
+            "isolated transaction",
+            "detached HEAD",
+            "does not replace the candidate entry bytes",
+            "exact executor-published result identity",
+            "final candidate inode/content",
+            "later operation",
+            "committed-result SHA-256",
+        ):
+            self.assertIn(phrase, contract)
+        self.assertNotIn("stages literal exact paths", contract)
 
     def test_skill_triggers_and_thin_wrappers(self) -> None:
         skill = (self.package / "SKILL.md").read_text(encoding="utf-8")
@@ -335,10 +355,40 @@ class TaskCommitPackageContractTests(unittest.TestCase):
             (self.package / "schemas/task-commit-plan.schema.json").read_text(encoding="utf-8")
         )
         Draft202012Validator.check_schema(schema)
+        self.assertIn(
+            "exact index OID authority",
+            schema["$defs"]["snapshotEntry"]["properties"]["gitlink_head"]["description"],
+        )
+        self.assertIn(
+            "exact blob materialization authority",
+            schema["$defs"]["snapshotEntry"]["properties"]["worktree_sha256"]["description"],
+        )
         validator = Draft202012Validator(schema)
         planned = json.loads(
             (self.package / "examples/task-commit-plan.json").read_text(encoding="utf-8")
         )
+        ordinary_legacy = copy.deepcopy(planned)
+        ordinary_entry = ordinary_legacy["dirty_snapshot"]["entries"][0]
+        for field in ("gitlink_head", "gitlink_initialized", "gitlink_dirty"):
+            ordinary_entry.pop(field)
+        self.assertEqual(list(validator.iter_errors(ordinary_legacy)), [])
+
+        gitlink_missing_identity = copy.deepcopy(ordinary_legacy)
+        gitlink_missing_identity["dirty_snapshot"]["entries"][0].update(
+            {"mode": "160000", "worktree_sha256": None}
+        )
+        self.assertTrue(list(validator.iter_errors(gitlink_missing_identity)))
+
+        gitlink_bound = copy.deepcopy(gitlink_missing_identity)
+        gitlink_bound["dirty_snapshot"]["entries"][0].update(
+            {
+                "gitlink_head": "9" * 40,
+                "gitlink_initialized": True,
+                "gitlink_dirty": False,
+            }
+        )
+        self.assertEqual(list(validator.iter_errors(gitlink_bound)), [])
+
         non_blocked_results = [
             {"status": "planned", "exit": None},
             {

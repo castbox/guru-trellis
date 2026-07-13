@@ -100,7 +100,7 @@ class SourceValidationTests(unittest.TestCase):
         self.assertEqual(workflow.count('guru-skill-invoke: {"skill":"guru-create-task-commit"'), 1)
         self.assertEqual(workflow.count('guru-skill-exit: {"skill":"guru-create-task-commit"'), 3)
 
-    def test_platform_entries_only_route_task_commit_skill(self) -> None:
+    def test_platform_entries_and_workflows_only_route_task_commit_skill(self) -> None:
         entries = [
             REPO / "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
             REPO / "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
@@ -114,6 +114,27 @@ class SourceValidationTests(unittest.TestCase):
             self.assertIn("mandatory invoke `guru-create-task-commit`", text, path)
             self.assertIn("Typed-exit route:", text, path)
             for phrase in forbidden:
+                self.assertNotIn(phrase, text, path)
+
+        workflows = [
+            REPO / "trellis/workflows/guru-team/workflow.md",
+            REPO / ".trellis/workflow.md",
+        ]
+        workflow_forbidden = (
+            "Work commit body must include",
+            "背景：",
+            "type` must be one of",
+            "scope` must",
+            "git commit --cleanup=verbatim",
+            "def validate_commit_message",
+            "validate_commit_message(",
+        )
+        for path in workflows:
+            text = path.read_text(encoding="utf-8")
+            self.assertIn('guru-skill-invoke: {"skill":"guru-create-task-commit"', text, path)
+            self.assertIn("`check-commit-messages` shared branch validator", text, path)
+            self.assertNotRegex(text, r"(?i)\bgit\s+commit\b", path)
+            for phrase in workflow_forbidden:
                 self.assertNotIn(phrase, text, path)
 
     def test_representative_active_package_and_routes_pass(self) -> None:

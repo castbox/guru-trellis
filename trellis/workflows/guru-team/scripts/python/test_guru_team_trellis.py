@@ -234,6 +234,13 @@ def assignment_args(**overrides: object) -> argparse.Namespace:
         "workspace_evidence": None,
         "running_command_evidence": None,
         "handoff_summary": None,
+        "invalidate_event_id": None,
+        "correction_reason": None,
+        "correction_evidence": None,
+        "link_failed_event_id": None,
+        "link_termination_event_id": None,
+        "recovery_reason": None,
+        "recovery_evidence": None,
         "dry_run": False,
     }
     values.update(overrides)
@@ -519,6 +526,96 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         gtt.write_json(candidate, plan)
         return candidate
 
+    def task_commit_entry_state(self, candidate: Path) -> dict[str, object]:
+        return {
+            "head": gtt.current_head(self.root),
+            "index": gtt.task_commit_index_preimage(self.root)["bytes"],
+            "candidate": candidate.read_bytes(),
+            "operation": gtt.task_commit_git_operation_state(self.root),
+        }
+
+    def assert_task_commit_entry_state(
+        self,
+        before: dict[str, object],
+        candidate: Path,
+        *,
+        candidate_bytes: bytes | None = None,
+    ) -> None:
+        self.assertEqual(gtt.current_head(self.root), before["head"])
+        self.assertEqual(gtt.task_commit_index_preimage(self.root)["bytes"], before["index"])
+        self.assertEqual(
+            candidate.read_bytes(),
+            before["candidate"] if candidate_bytes is None else candidate_bytes,
+        )
+        self.assertEqual(gtt.task_commit_git_operation_state(self.root), before["operation"])
+        self.assertFalse(Path(str(gtt.task_commit_index_preimage(self.root)["path"]) + ".lock").exists())
+        self.assertFalse(Path(str(candidate) + ".lock").exists())
+
+    def run_task_commit_after_validation_mutation(
+        self,
+        candidate: Path,
+        mutate: object,
+    ) -> gtt.WorkflowError:
+        before = self.task_commit_entry_state(candidate)
+        original = gtt.task_commit_planned_index_bindings
+        candidate_after_mutation: bytes | None = None
+
+        def mutate_before_binding(*args: object, **kwargs: object) -> object:
+            nonlocal candidate_after_mutation
+            assert callable(mutate)
+            mutate()
+            candidate_after_mutation = candidate.read_bytes()
+            return original(*args, **kwargs)
+
+        with mock.patch.object(
+            gtt,
+            "task_commit_planned_index_bindings",
+            side_effect=mutate_before_binding,
+        ):
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assert_task_commit_entry_state(
+            before,
+            candidate,
+            candidate_bytes=candidate_after_mutation,
+        )
+        return raised.exception
+
+    def add_submodule_history(self) -> tuple[Path, str, str, str]:
+        source_tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(source_tmp.cleanup)
+        source = Path(source_tmp.name)
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=source, check=True)
+        subprocess.run(["git", "config", "user.name", "Gitlink Test"], cwd=source, check=True)
+        subprocess.run(["git", "config", "user.email", "gitlink@example.invalid"], cwd=source, check=True)
+        revisions: list[str] = []
+        for label in ("A", "B", "C"):
+            (source / "dependency.txt").write_text(f"revision {label}\n", encoding="utf-8")
+            subprocess.run(["git", "add", "dependency.txt"], cwd=source, check=True)
+            subprocess.run(
+                ["git", "commit", "-q", "-m", f"test(dependency): #122 添加版本 {label}"],
+                cwd=source,
+                check=True,
+            )
+            revisions.append(gtt.current_head(source))
+
+        submodule = self.root / "deps/dependency"
+        subprocess.run(
+            ["git", "-c", "protocol.file.allow=always", "submodule", "add", "-q", str(source), "deps/dependency"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(["git", "-C", str(submodule), "checkout", "-q", revisions[0]], cwd=self.root, check=True)
+        subprocess.run(["git", "add", ".gitmodules", "deps/dependency"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(trellis): #122 添加 gitlink 基线"],
+            cwd=self.root,
+            check=True,
+        )
+        return submodule, revisions[0], revisions[1], revisions[2]
+
     def test_candidate_mode_validates_when_branch_range_is_empty(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
         candidate = self.make_plan(1, ["src/task.txt"])
@@ -530,6 +627,301 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertEqual(payload["mode"], "candidate")
         self.assertEqual(payload["checked_commits"], [])
         self.assertEqual(payload["candidate_validation"]["sequence"], "001")
+
+    def test_git_operation_marker_matrix_is_objective_and_non_mutating(self) -> None:
+        for operation_id, git_path_name in gtt.TASK_COMMIT_GIT_OPERATION_MARKERS:
+            with self.subTest(operation=operation_id):
+                marker = gtt.task_commit_git_path(self.root, git_path_name)
+                if git_path_name in {"sequencer", "rebase-merge", "rebase-apply"}:
+                    marker.mkdir(parents=True)
+                    (marker / "state").write_text(operation_id, encoding="utf-8")
+                else:
+                    marker.parent.mkdir(parents=True, exist_ok=True)
+                    marker.write_text(operation_id, encoding="utf-8")
+                before = marker.lstat()
+
+                state = gtt.task_commit_git_operation_state(self.root)
+
+                self.assertEqual(state["status"], "blocked")
+                self.assertIn(operation_id, [item["id"] for item in state["active"]])
+                self.assertEqual(marker.lstat().st_ino, before.st_ino)
+                if marker.is_dir():
+                    shutil.rmtree(marker)
+                else:
+                    marker.unlink()
+        self.assertEqual(gtt.task_commit_git_operation_state(self.root), {"status": "ordinary", "active": []})
+
+    def test_real_cherry_pick_state_blocks_candidate_and_executor_without_mutation(self) -> None:
+        conflict = self.root / "src/conflict.txt"
+        conflict.write_text("base\n", encoding="utf-8")
+        subprocess.run(["git", "add", "src/conflict.txt"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "test(trellis): #122 添加冲突基线"], cwd=self.root, check=True)
+        task_branch = gtt.current_branch(self.root)
+        subprocess.run(["git", "checkout", "-q", "-b", "cherry-source"], cwd=self.root, check=True)
+        conflict.write_text("source\n", encoding="utf-8")
+        subprocess.run(["git", "add", "src/conflict.txt"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "test(trellis): #122 添加待拣选修改"], cwd=self.root, check=True)
+        source_commit = gtt.current_head(self.root)
+        subprocess.run(["git", "checkout", "-q", task_branch], cwd=self.root, check=True)
+        conflict.write_text("target\n", encoding="utf-8")
+        subprocess.run(["git", "add", "src/conflict.txt"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "test(trellis): #122 添加目标修改"], cwd=self.root, check=True)
+        (self.root / "src/task.txt").write_text("reviewed\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+
+        cherry_pick = subprocess.run(
+            ["git", "cherry-pick", source_commit],
+            cwd=self.root,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertNotEqual(cherry_pick.returncode, 0)
+        marker = gtt.task_commit_git_path(self.root, "CHERRY_PICK_HEAD")
+        self.assertTrue(marker.is_file())
+        before = {
+            "head": gtt.current_head(self.root),
+            "marker": marker.read_bytes(),
+            "index": subprocess.run(["git", "ls-files", "--stage", "-z"], cwd=self.root, check=True, stdout=subprocess.PIPE).stdout,
+            "status": subprocess.run(["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"], cwd=self.root, check=True, stdout=subprocess.PIPE).stdout,
+            "candidate": candidate.read_bytes(),
+        }
+
+        _, facts, errors = gtt.validate_task_commit_candidate(self.root, candidate, self.task_dir)
+        self.assertTrue(any("ordinary Git operation state" in error for error in errors))
+        self.assertEqual(facts["git_operation_state"]["status"], "blocked")
+        with self.assertRaises(gtt.WorkflowError) as validator_error:
+            gtt.cmd_check_commit_messages(
+                argparse.Namespace(
+                    root=str(self.root),
+                    task=self.task_rel,
+                    candidate_artifact=str(candidate),
+                    primary_issue=None,
+                    base_ref=None,
+                    range=None,
+                )
+            )
+        self.assertEqual(validator_error.exception.exit_code, 2)
+        self.assertEqual(validator_error.exception.payload["status"], "blocked")
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertEqual(gtt.current_head(self.root), before["head"])
+        self.assertEqual(marker.read_bytes(), before["marker"])
+        self.assertEqual(subprocess.run(["git", "ls-files", "--stage", "-z"], cwd=self.root, check=True, stdout=subprocess.PIPE).stdout, before["index"])
+        self.assertEqual(subprocess.run(["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"], cwd=self.root, check=True, stdout=subprocess.PIPE).stdout, before["status"])
+        self.assertEqual(candidate.read_bytes(), before["candidate"])
+
+    def test_gitlink_revision_change_makes_candidate_stale_without_staging(self) -> None:
+        submodule, revision_a, revision_b, revision_c = self.add_submodule_history()
+        subprocess.run(["git", "-C", str(submodule), "checkout", "-q", revision_b], cwd=self.root, check=True)
+        candidate = self.make_plan(1, ["deps/dependency"])
+
+        plan, _, errors = gtt.validate_task_commit_candidate(self.root, candidate, self.task_dir)
+        self.assertEqual(errors, [])
+        entry = next(item for item in plan["dirty_snapshot"]["entries"] if item["path"] == "deps/dependency")
+        self.assertEqual(entry["mode"], "160000")
+        self.assertEqual(entry["index_blob"], revision_a)
+        self.assertEqual(entry["gitlink_head"], revision_b)
+        self.assertTrue(entry["gitlink_initialized"])
+        self.assertFalse(entry["gitlink_dirty"])
+
+        subprocess.run(["git", "-C", str(submodule), "checkout", "-q", revision_c], cwd=self.root, check=True)
+        before_head = gtt.current_head(self.root)
+        before_tree = gtt.task_commit_write_tree(self.root)
+        before_status = subprocess.run(["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"], cwd=self.root, check=True, stdout=subprocess.PIPE).stdout
+        before_candidate = candidate.read_bytes()
+
+        _, _, stale_errors = gtt.validate_task_commit_candidate(self.root, candidate, self.task_dir)
+        self.assertTrue(any("dirty_snapshot is stale" in error for error in stale_errors))
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertEqual(gtt.current_head(self.root), before_head)
+        self.assertEqual(gtt.task_commit_write_tree(self.root), before_tree)
+        self.assertEqual(gtt.task_commit_index_identity(self.root, "deps/dependency"), (revision_a, "160000"))
+        self.assertEqual(gtt.task_commit_gitlink_worktree_identity(self.root, "deps/dependency")["gitlink_head"], revision_c)
+        self.assertEqual(subprocess.run(["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"], cwd=self.root, check=True, stdout=subprocess.PIPE).stdout, before_status)
+        self.assertEqual(candidate.read_bytes(), before_candidate)
+
+    def test_gitlink_switch_after_executor_entry_blocks_before_stage_and_never_indexes_c(self) -> None:
+        submodule, revision_a, revision_b, revision_c = self.add_submodule_history()
+        subprocess.run(["git", "-C", str(submodule), "checkout", "-q", revision_b], cwd=self.root, check=True)
+        candidate = self.make_plan(1, ["deps/dependency"])
+        _, _, entry_errors = gtt.validate_task_commit_candidate(
+            self.root, candidate, self.task_dir
+        )
+        self.assertEqual(entry_errors, [])
+        before = {
+            "head": gtt.current_head(self.root),
+            "index": subprocess.run(
+                ["git", "ls-files", "--stage", "-z"],
+                cwd=self.root,
+                check=True,
+                stdout=subprocess.PIPE,
+            ).stdout,
+            "candidate": candidate.read_bytes(),
+            "operation": gtt.task_commit_git_operation_state(self.root),
+        }
+        original_identity = gtt.task_commit_gitlink_worktree_identity
+        identity_calls = 0
+
+        def switch_before_exact_stage(root: Path, path: str) -> dict[str, object]:
+            nonlocal identity_calls
+            identity_calls += 1
+            if identity_calls == 2:
+                subprocess.run(
+                    ["git", "-C", str(submodule), "checkout", "-q", revision_c],
+                    cwd=self.root,
+                    check=True,
+                )
+            return original_identity(root, path)
+
+        with mock.patch.object(
+            gtt,
+            "task_commit_gitlink_worktree_identity",
+            side_effect=switch_before_exact_stage,
+        ):
+            with self.assertRaises(gtt.WorkflowError) as blocked:
+                gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertEqual(blocked.exception.exit_code, 2)
+        self.assertEqual(blocked.exception.payload["status"], "blocked")
+        self.assertIn("worktree HEAD no longer matches", blocked.exception.payload["gitlink_binding_errors"][0])
+        self.assertEqual(identity_calls, 2)
+        self.assertEqual(gtt.current_head(self.root), before["head"])
+        self.assertEqual(
+            subprocess.run(
+                ["git", "ls-files", "--stage", "-z"],
+                cwd=self.root,
+                check=True,
+                stdout=subprocess.PIPE,
+            ).stdout,
+            before["index"],
+        )
+        self.assertEqual(gtt.task_commit_index_identity(self.root, "deps/dependency"), (revision_a, "160000"))
+        self.assertNotEqual(gtt.task_commit_index_identity(self.root, "deps/dependency")[0], revision_c)
+        self.assertEqual(candidate.read_bytes(), before["candidate"])
+        self.assertEqual(gtt.task_commit_git_operation_state(self.root), before["operation"])
+
+        subprocess.run(["git", "-C", str(submodule), "checkout", "-q", revision_b], cwd=self.root, check=True)
+        payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+        self.assertEqual(payload["status"], "committed")
+        self.assertEqual(
+            gtt.task_commit_tree_path_identity(self.root, payload["commit_sha"], "deps/dependency"),
+            (revision_b, "160000"),
+        )
+        self.assertNotEqual(
+            gtt.task_commit_tree_path_identity(self.root, payload["commit_sha"], "deps/dependency")[0],
+            revision_c,
+        )
+
+    def test_gitlink_uninitialized_dirty_and_unborn_states_fail_closed(self) -> None:
+        submodule, _, revision_b, _ = self.add_submodule_history()
+        subprocess.run(["git", "-C", str(submodule), "checkout", "-q", revision_b], cwd=self.root, check=True)
+        (submodule / "dependency.txt").write_text("dirty\n", encoding="utf-8")
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.task_commit_gitlink_worktree_identity(self.root, "deps/dependency")
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.capture_task_commit_snapshot(self.root)
+
+        subprocess.run(["git", "-C", str(submodule), "checkout", "--", "dependency.txt"], cwd=self.root, check=True)
+        subprocess.run(["git", "submodule", "deinit", "-f", "--", "deps/dependency"], cwd=self.root, check=True, stdout=subprocess.PIPE)
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.task_commit_gitlink_worktree_identity(self.root, "deps/dependency")
+
+        subprocess.run(["git", "init", "-q", str(submodule)], cwd=self.root, check=True)
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.task_commit_gitlink_worktree_identity(self.root, "deps/dependency")
+
+    def test_tracked_b_to_c_after_validation_preserves_transaction_preimages(self) -> None:
+        path = self.root / "src/task.txt"
+        path.write_text("reviewed-B\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+
+        self.run_task_commit_after_validation_mutation(
+            candidate,
+            lambda: path.write_text("unreviewed-C\n", encoding="utf-8"),
+        )
+        self.assertEqual(path.read_text(encoding="utf-8"), "unreviewed-C\n")
+
+    def test_symlink_b_to_c_after_validation_preserves_transaction_preimages(self) -> None:
+        link = self.root / "src/reviewed-link"
+        os.symlink("target-B", link)
+        candidate = self.make_plan(1, ["src/reviewed-link"])
+
+        def mutate() -> None:
+            link.unlink()
+            os.symlink("target-C", link)
+
+        self.run_task_commit_after_validation_mutation(candidate, mutate)
+        self.assertEqual(os.readlink(link), "target-C")
+
+    def test_reviewed_delete_recreate_after_validation_never_commits_c(self) -> None:
+        path = self.root / "src/task.txt"
+        path.unlink()
+        candidate = self.make_plan(1, ["src/task.txt"])
+
+        self.run_task_commit_after_validation_mutation(
+            candidate,
+            lambda: path.write_text("unreviewed-C\n", encoding="utf-8"),
+        )
+        self.assertEqual(path.read_text(encoding="utf-8"), "unreviewed-C\n")
+
+    def test_rename_destination_b_to_c_after_validation_never_commits_c(self) -> None:
+        source = "src/task.txt"
+        destination = "src/renamed-task.txt"
+        subprocess.run(["git", "mv", source, destination], cwd=self.root, check=True)
+        target = self.root / destination
+        target.write_text("reviewed-B\n", encoding="utf-8")
+        candidate = self.make_plan(1, [destination])
+
+        self.run_task_commit_after_validation_mutation(
+            candidate,
+            lambda: target.write_text("unreviewed-C\n", encoding="utf-8"),
+        )
+        self.assertEqual(target.read_text(encoding="utf-8"), "unreviewed-C\n")
+
+    def test_multiple_paths_second_b_to_c_after_validation_never_commits_c(self) -> None:
+        first = self.root / "src/first.txt"
+        second = self.root / "src/second.txt"
+        first.write_text("reviewed-B1\n", encoding="utf-8")
+        second.write_text("reviewed-B2\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/first.txt", "src/second.txt"])
+
+        self.run_task_commit_after_validation_mutation(
+            candidate,
+            lambda: second.write_text("unreviewed-C2\n", encoding="utf-8"),
+        )
+        self.assertEqual(first.read_text(encoding="utf-8"), "reviewed-B1\n")
+        self.assertEqual(second.read_text(encoding="utf-8"), "unreviewed-C2\n")
+
+    def test_candidate_self_raw_mutation_after_validation_is_never_published(self) -> None:
+        task_path = self.root / "src/task.txt"
+        task_path.write_text("reviewed-B\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+
+        self.run_task_commit_after_validation_mutation(
+            candidate,
+            lambda: candidate.write_bytes(candidate.read_bytes() + b" \n"),
+        )
+        self.assertTrue(candidate.read_bytes().endswith(b" \n"))
+
+    def test_entry_index_a_worktree_b_then_c_preserves_complete_index_a(self) -> None:
+        path = self.root / "src/task.txt"
+        path.write_text("staged-A\n", encoding="utf-8")
+        subprocess.run(["git", "add", "src/task.txt"], cwd=self.root, check=True)
+        path.write_text("reviewed-B\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+        index_a = gtt.task_commit_index_identity(self.root, "src/task.txt")
+
+        self.run_task_commit_after_validation_mutation(
+            candidate,
+            lambda: path.write_text("unreviewed-C\n", encoding="utf-8"),
+        )
+        self.assertEqual(gtt.task_commit_index_identity(self.root, "src/task.txt"), index_a)
+        self.assertEqual(path.read_text(encoding="utf-8"), "unreviewed-C\n")
 
     def test_exact_executor_commits_only_reviewed_paths_and_preserves_unrelated(self) -> None:
         reviewed = "src/任务 [one]*.txt"
@@ -550,6 +942,19 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertTrue(result["tree_evidence"]["matches"])
         self.assertEqual(result["tree_evidence"]["expected_tree"], result["tree_evidence"]["actual_tree"])
         self.assertEqual(gtt.task_commit_result_validation_errors(self.root, json.loads(candidate.read_text(encoding="utf-8"))), [])
+        self.assertEqual(gtt.current_head(self.root), payload["commit_sha"])
+        self.assertEqual(
+            gtt.task_commit_write_tree(self.root),
+            gtt.task_commit_commit_tree(self.root, payload["commit_sha"]),
+        )
+        committed_candidate = subprocess.run(
+            ["git", "show", f"{payload['commit_sha']}:{candidate.relative_to(self.root).as_posix()}"],
+            cwd=self.root,
+            check=True,
+            stdout=subprocess.PIPE,
+        ).stdout
+        self.assertEqual(json.loads(committed_candidate)["result"], {"status": "planned", "exit": None})
+        self.assertNotEqual(committed_candidate, candidate.read_bytes())
 
         tampered = json.loads(candidate.read_text(encoding="utf-8"))
         tampered["result"]["tree_evidence"]["actual_tree"] = "0" * 40
@@ -708,13 +1113,331 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         (self.root / "unrelated.log").write_text("staged unrelated\n", encoding="utf-8")
         subprocess.run(["git", "add", "unrelated.log"], cwd=self.root, check=True)
         candidate = self.make_plan(1, ["src/task.txt"], ["unrelated.log"])
+        before = self.task_commit_entry_state(candidate)
         with self.assertRaises(gtt.WorkflowError) as raised:
             gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
         self.assertIn("unrelated.log", raised.exception.payload["unexpected_staged_paths"])
         self.assertIn("unrelated.log", gtt.git_nul_path_set(self.root, ["diff", "--cached", "--name-only", "--no-renames", "-z"]))
-        result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
-        self.assertEqual(result["status"], "blocked")
-        self.assertEqual(result["exit"], "blocked")
+        self.assert_task_commit_entry_state(before, candidate)
+        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
+
+    def test_partial_isolated_index_write_preserves_complete_live_index_preimage(self) -> None:
+        first = self.root / "src/first.txt"
+        second = self.root / "src/second.txt"
+        first.write_text("reviewed-one\n", encoding="utf-8")
+        second.write_text("reviewed-two\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/first.txt", "src/second.txt"])
+        before = self.task_commit_entry_state(candidate)
+        original = gtt.stage_task_commit_index_bindings
+
+        def fail_after_one_binding(
+            root: Path,
+            bindings: dict[str, tuple[str | None, str | None]],
+            git_env: dict[str, str],
+        ) -> None:
+            first_path = sorted(bindings)[0]
+            original(root, {first_path: bindings[first_path]}, git_env)
+            raise gtt.WorkflowError("controlled partial isolated index failure", exit_code=2)
+
+        with mock.patch.object(
+            gtt,
+            "stage_task_commit_index_bindings",
+            side_effect=fail_after_one_binding,
+        ):
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assert_task_commit_entry_state(before, candidate)
+        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
+
+    def test_index_publication_failure_rolls_back_real_ref_index_and_candidate(self) -> None:
+        path = self.root / "src/task.txt"
+        path.write_text("reviewed-change\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+        before = self.task_commit_entry_state(candidate)
+
+        with mock.patch.object(
+            gtt,
+            "task_commit_publish_locked_index",
+            side_effect=OSError("controlled index publication failure"),
+        ):
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertIn("exact entry state was restored", str(raised.exception))
+        self.assert_task_commit_entry_state(before, candidate)
+        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
+
+    def test_candidate_publication_failure_holds_index_lock_against_concurrent_git_add(self) -> None:
+        concurrent = self.root / "src/concurrent.txt"
+        concurrent.write_text("base\n", encoding="utf-8")
+        subprocess.run(["git", "add", "src/concurrent.txt"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "test(trellis): #122 添加并发基线"], cwd=self.root, check=True)
+        (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
+        concurrent.write_text("concurrent-C\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"], ["src/concurrent.txt"])
+        before = self.task_commit_entry_state(candidate)
+        original = gtt.task_commit_publish_guarded_candidate
+        add_results: list[subprocess.CompletedProcess[str]] = []
+
+        def publish_then_fail(source: Path, target: Path, preimage: bytes) -> None:
+            add_results.append(
+                subprocess.run(
+                    ["git", "add", "src/concurrent.txt"],
+                    cwd=self.root,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+            )
+            original(source, target, preimage)
+            raise OSError("controlled candidate publication failure")
+
+        with mock.patch.object(gtt, "task_commit_publish_guarded_candidate", side_effect=publish_then_fail):
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertNotEqual(add_results[0].returncode, 0)
+        self.assertIn("exact entry state was restored", str(raised.exception))
+        self.assert_task_commit_entry_state(before, candidate)
+
+    def test_success_window_blocks_git_writers_and_linearizes_at_final_candidate_read(self) -> None:
+        concurrent = self.root / "src/concurrent.txt"
+        concurrent.write_text("base\n", encoding="utf-8")
+        subprocess.run(["git", "add", "src/concurrent.txt"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "test(trellis): #122 添加成功并发基线"], cwd=self.root, check=True)
+        (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
+        concurrent.write_text("concurrent-C\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"], ["src/concurrent.txt"])
+        original_candidate = gtt.task_commit_publish_guarded_candidate
+        original_index = gtt.task_commit_publish_locked_index
+        original_identity = gtt.task_commit_file_matches_identity
+        original_index_match = gtt.task_commit_index_preimage_matches
+        publication_order: list[str] = []
+        add_results: list[subprocess.CompletedProcess[str]] = []
+        ref_results: list[subprocess.CompletedProcess[str]] = []
+        committed_result_bytes: list[bytes] = []
+        published_index_bytes: list[bytes] = []
+        candidate_preimage = candidate.read_bytes()
+        third_party = b'{"third_party":"post-linearization-candidate-C"}\n'
+        linearized = False
+
+        def publish_candidate(source: Path, target: Path, preimage: bytes) -> None:
+            publication_order.append("candidate")
+            current_ref = gtt.current_head(self.root)
+            current_tree = subprocess.run(
+                ["git", "rev-parse", f"{current_ref}^{{tree}}"],
+                cwd=self.root,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            ).stdout.strip()
+            concurrent_ref = subprocess.run(
+                ["git", "commit-tree", current_tree, "-p", current_ref],
+                cwd=self.root,
+                check=True,
+                input="success-window concurrent ref\n",
+                text=True,
+                stdout=subprocess.PIPE,
+            ).stdout.strip()
+            ref_results.append(
+                subprocess.run(
+                    [
+                        "git",
+                        "update-ref",
+                        gtt.task_commit_branch_ref(self.root),
+                        concurrent_ref,
+                        current_ref,
+                    ],
+                    cwd=self.root,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+            )
+            original_candidate(source, target, preimage)
+
+        def publish_index(source_path: Path, index_path: Path) -> None:
+            publication_order.append("index")
+            self.assertTrue(Path(str(index_path) + ".lock").is_file())
+            published_index_bytes.append(source_path.read_bytes())
+            add_results.append(
+                subprocess.run(
+                    ["git", "add", "src/concurrent.txt"],
+                    cwd=self.root,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+            )
+            original_index(source_path, index_path)
+
+        def write_after_final_identity_read(
+            path: Path,
+            identity: dict[str, object],
+            expected_bytes: bytes,
+        ) -> bool:
+            nonlocal linearized
+            matches = original_identity(path, identity, expected_bytes)
+            if path == candidate and expected_bytes != candidate_preimage and matches:
+                self.assertFalse(linearized)
+                self.assertTrue(Path(str(candidate) + ".lock").is_file())
+                index_path = gtt.task_commit_index_preimage(self.root)["path"]
+                self.assertTrue(Path(str(index_path) + ".lock").is_file())
+                ref_path = gtt.task_commit_git_path(
+                    self.root, gtt.task_commit_branch_ref(self.root)
+                )
+                self.assertTrue(Path(str(ref_path) + ".lock").is_file())
+                self.assertEqual(index_path.read_bytes(), published_index_bytes[0])
+                committed_result_bytes.append(expected_bytes)
+                publication_order.append("candidate-identity")
+                linearized = True
+                gtt.task_commit_atomic_replace_bytes(candidate, third_party, 0o600)
+            return matches
+
+        def reject_post_linearization_check(preimage: dict[str, object]) -> bool:
+            if linearized:
+                raise AssertionError("fallible index check ran after success linearization")
+            return original_index_match(preimage)
+
+        with (
+            mock.patch.object(gtt, "task_commit_publish_guarded_candidate", side_effect=publish_candidate),
+            mock.patch.object(gtt, "task_commit_publish_locked_index", side_effect=publish_index),
+            mock.patch.object(gtt, "task_commit_file_matches_identity", side_effect=write_after_final_identity_read),
+            mock.patch.object(gtt, "task_commit_index_preimage_matches", side_effect=reject_post_linearization_check),
+        ):
+            payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        result = json.loads(committed_result_bytes[0].decode("utf-8"))["result"]
+        self.assertNotEqual(add_results[0].returncode, 0)
+        self.assertNotEqual(ref_results[0].returncode, 0)
+        self.assertEqual(publication_order, ["candidate", "index", "candidate-identity"])
+        self.assertEqual(payload["status"], "committed")
+        self.assertEqual(gtt.current_head(self.root), payload["commit_sha"])
+        self.assertEqual(gtt.task_commit_write_tree(self.root), gtt.task_commit_commit_tree(self.root, payload["commit_sha"]))
+        self.assertEqual(candidate.read_bytes(), third_party)
+        self.assertEqual(
+            payload["candidate_result_sha256"],
+            hashlib.sha256(committed_result_bytes[0]).hexdigest(),
+        )
+        self.assertEqual(result["commit_sha"], payload["commit_sha"])
+        self.assertEqual(result["tree_evidence"]["actual_tree"], gtt.task_commit_commit_tree(self.root, payload["commit_sha"]))
+        candidate_rel = gtt.repo_relative(self.root, candidate)
+        committed_candidate_blob, committed_candidate_mode = gtt.task_commit_tree_path_identity(
+            self.root, payload["commit_sha"], candidate_rel
+        )
+        planned_blob = subprocess.run(
+            ["git", "hash-object", "--stdin"],
+            cwd=self.root,
+            check=True,
+            input=candidate_preimage,
+            stdout=subprocess.PIPE,
+        ).stdout.decode("ascii").strip()
+        self.assertEqual((committed_candidate_blob, committed_candidate_mode), (planned_blob, "100644"))
+        index_path = gtt.task_commit_index_preimage(self.root)["path"]
+        ref_path = gtt.task_commit_git_path(self.root, gtt.task_commit_branch_ref(self.root))
+        self.assertFalse(Path(str(candidate) + ".lock").exists())
+        self.assertFalse(Path(str(index_path) + ".lock").exists())
+        self.assertFalse(Path(str(ref_path) + ".lock").exists())
+        self.assertEqual(list(candidate.parent.glob(f".{candidate.name}.*.publication")), [])
+        self.assertEqual(list(index_path.parent.glob(f".{index_path.name}.*.publication")), [])
+
+    def test_candidate_writer_before_final_identity_read_rolls_back_and_is_preserved(self) -> None:
+        (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+        before = self.task_commit_entry_state(candidate)
+        original = gtt.task_commit_publish_locked_index
+        third_party = b'{"third_party":"candidate-C"}\n'
+        guard_observed: list[bool] = []
+        add_results: list[subprocess.CompletedProcess[str]] = []
+
+        def publish_index_after_concurrent_replace(source: Path, target: Path) -> None:
+            guard_observed.append(Path(str(candidate) + ".lock").is_file())
+            guard_observed.append(Path(str(target) + ".lock").is_file())
+            add_results.append(
+                subprocess.run(
+                    ["git", "add", "src/task.txt"],
+                    cwd=self.root,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+            )
+            gtt.task_commit_atomic_replace_bytes(candidate, third_party, 0o600)
+            original(source, target)
+
+        with mock.patch.object(
+            gtt,
+            "task_commit_publish_locked_index",
+            side_effect=publish_index_after_concurrent_replace,
+        ):
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertEqual(guard_observed, [True, True])
+        self.assertNotEqual(add_results[0].returncode, 0)
+        self.assertTrue(
+            any(
+                "third-party candidate state was preserved" in error
+                for error in raised.exception.payload["errors"]
+            )
+        )
+        self.assertEqual(gtt.current_head(self.root), before["head"])
+        self.assertEqual(gtt.task_commit_index_preimage(self.root)["bytes"], before["index"])
+        self.assertEqual(candidate.read_bytes(), third_party)
+        index_path = gtt.task_commit_index_preimage(self.root)["path"]
+        ref_path = gtt.task_commit_git_path(self.root, gtt.task_commit_branch_ref(self.root))
+        self.assertFalse(Path(str(candidate) + ".lock").exists())
+        self.assertFalse(Path(str(index_path) + ".lock").exists())
+        self.assertFalse(Path(str(ref_path) + ".lock").exists())
+        self.assertEqual(list(candidate.parent.glob(f".{candidate.name}.*.publication")), [])
+        self.assertEqual(list(index_path.parent.glob(f".{index_path.name}.*.publication")), [])
+
+    def test_concurrent_ref_update_is_preserved_by_conditional_advance(self) -> None:
+        (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+        before = self.task_commit_entry_state(candidate)
+        original = gtt.task_commit_update_ref
+        concurrent_ref: list[str] = []
+
+        def advance_concurrently(root: Path, ref: str, new_value: str, old_value: str) -> None:
+            if not concurrent_ref:
+                tree = subprocess.run(
+                    ["git", "rev-parse", f"{old_value}^{{tree}}"],
+                    cwd=self.root,
+                    check=True,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                ).stdout.strip()
+                commit = subprocess.run(
+                    ["git", "commit-tree", tree, "-p", old_value],
+                    cwd=self.root,
+                    check=True,
+                    input="concurrent ref\n",
+                    text=True,
+                    stdout=subprocess.PIPE,
+                ).stdout.strip()
+                subprocess.run(["git", "update-ref", ref, commit, old_value], cwd=self.root, check=True)
+                concurrent_ref.append(commit)
+            original(root, ref, new_value, old_value)
+
+        with mock.patch.object(gtt, "task_commit_update_ref", side_effect=advance_concurrently):
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertTrue(
+            any(
+                "third-party ref state was preserved" in error
+                for error in raised.exception.payload["errors"]
+            )
+        )
+        self.assertEqual(gtt.current_head(self.root), concurrent_ref[0])
+        self.assertEqual(gtt.task_commit_index_preimage(self.root)["bytes"], before["index"])
+        self.assertEqual(candidate.read_bytes(), before["candidate"])
 
     def test_candidate_stale_and_message_negative_matrix(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
@@ -792,18 +1515,19 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         _, _, errors = gtt.validate_task_commit_candidate(self.root, candidate, self.task_dir)
         self.assertTrue(any("plan_digest" in error for error in errors))
 
-    def test_hook_extra_path_records_blocked_result(self) -> None:
+    def test_hook_extra_path_blocks_before_real_publication(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
         candidate = self.make_plan(1, ["src/task.txt"])
         hook = self.root / ".git/hooks/pre-commit"
         hook.write_text("#!/usr/bin/env bash\nset -euo pipefail\necho hook > hook-extra.txt\ngit add hook-extra.txt\n", encoding="utf-8")
         hook.chmod(0o755)
+        before = self.task_commit_entry_state(candidate)
         with self.assertRaises(gtt.WorkflowError) as raised:
             gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
-        self.assertIn("committed path set", " ".join(raised.exception.payload["errors"]))
-        result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
-        self.assertEqual(result["status"], "blocked")
-        self.assertEqual(result["exit"], "blocked")
+        self.assertIn("isolated commit path set", " ".join(raised.exception.payload["errors"]))
+        self.assert_task_commit_entry_state(before, candidate)
+        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
+        self.assertTrue((self.root / "hook-extra.txt").is_file())
 
     def test_benign_pre_commit_hook_preserves_expected_tree(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
@@ -818,30 +1542,20 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertFalse(payload["hook_mutation"])
         self.assertTrue(payload["tree_evidence"]["matches"])
 
-    def test_failing_pre_commit_hook_without_mutation_records_exact_facts(self) -> None:
+    def test_failing_pre_commit_hook_preserves_ref_index_and_candidate_preimages(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
         candidate = self.make_plan(1, ["src/task.txt"])
         hook = self.root / ".git/hooks/pre-commit"
         hook.write_text("#!/usr/bin/env bash\nset -euo pipefail\nexit 1\n", encoding="utf-8")
         hook.chmod(0o755)
+        before = self.task_commit_entry_state(candidate)
 
-        with self.assertRaises(gtt.WorkflowError):
+        with self.assertRaises(gtt.WorkflowError) as raised:
             gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
 
-        result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
-        self.assertEqual(result["failure_stage"], "commit")
-        self.assertFalse(result["head_changed"])
-        self.assertFalse(result["hook_mutation"])
-        self.assertEqual(result["unexpected_dirty_paths"], [])
-        self.assertEqual(result["planned_unstaged_paths"], [])
-        self.assertTrue(result["tree_evidence"]["matches"])
-        self.assertEqual(
-            gtt.task_commit_result_validation_errors(
-                self.root,
-                json.loads(candidate.read_text(encoding="utf-8")),
-            ),
-            [],
-        )
+        self.assertIn("isolated git commit failed", str(raised.exception))
+        self.assert_task_commit_entry_state(before, candidate)
+        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
 
     def test_blocked_result_failure_stage_runtime_matrix(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
@@ -891,7 +1605,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
                         "runtime tamper validation must match the canonical non-masked error contract",
                     )
 
-    def test_same_path_hook_content_restage_records_blocked_tree_evidence(self) -> None:
+    def test_same_path_hook_content_restage_never_publishes_unreviewed_tree(self) -> None:
         (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
         candidate = self.make_plan(1, ["src/task.txt"])
         pre_commit_head = gtt.current_head(self.root)
@@ -903,26 +1617,18 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             encoding="utf-8",
         )
         hook.chmod(0o755)
+        before = self.task_commit_entry_state(candidate)
 
-        with self.assertRaises(gtt.WorkflowError):
+        with self.assertRaises(gtt.WorkflowError) as raised:
             gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
 
-        result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
-        self.assertEqual(result["status"], "blocked")
-        self.assertTrue(result["head_changed"])
-        self.assertNotEqual(result["commit_sha"], pre_commit_head)
-        self.assertTrue(result["hook_mutation"])
-        self.assertFalse(result["tree_evidence"]["matches"])
-        self.assertNotEqual(result["tree_evidence"]["expected_tree"], result["tree_evidence"]["actual_tree"])
-        changed = next(item for item in result["tree_evidence"]["paths"] if item["path"] == "src/task.txt")
-        self.assertNotEqual(changed["expected_blob"], changed["actual_blob"])
+        self.assertEqual(pre_commit_head, before["head"])
+        self.assertIn("isolated commit tree", " ".join(raised.exception.payload["errors"]))
+        self.assert_task_commit_entry_state(before, candidate)
         self.assertEqual((self.root / "src/task.txt").read_text(encoding="utf-8"), "hook-mutated\n")
-        self.assertEqual(gtt.task_commit_result_validation_errors(self.root, json.loads(candidate.read_text(encoding="utf-8"))), [])
-        tampered = json.loads(candidate.read_text(encoding="utf-8"))
-        tampered["result"]["hook_mutation"] = False
-        self.assertTrue(gtt.task_commit_result_validation_errors(self.root, tampered))
+        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
 
-    def test_same_path_hook_mode_restage_records_blocked_tree_evidence(self) -> None:
+    def test_same_path_hook_mode_restage_never_publishes_unreviewed_mode(self) -> None:
         (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
         candidate = self.make_plan(1, ["src/task.txt"])
         hook = self.root / ".git/hooks/pre-commit"
@@ -933,17 +1639,15 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             encoding="utf-8",
         )
         hook.chmod(0o755)
+        before = self.task_commit_entry_state(candidate)
 
-        with self.assertRaises(gtt.WorkflowError):
+        with self.assertRaises(gtt.WorkflowError) as raised:
             gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
 
-        result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
-        self.assertTrue(result["hook_mutation"])
-        self.assertFalse(result["tree_evidence"]["matches"])
-        changed = next(item for item in result["tree_evidence"]["paths"] if item["path"] == "src/task.txt")
-        self.assertEqual(changed["expected_mode"], "100644")
-        self.assertEqual(changed["actual_mode"], "100755")
-        self.assertEqual(gtt.task_commit_result_validation_errors(self.root, json.loads(candidate.read_text(encoding="utf-8"))), [])
+        self.assertIn("isolated commit tree", " ".join(raised.exception.payload["errors"]))
+        self.assert_task_commit_entry_state(before, candidate)
+        self.assertTrue((self.root / "src/task.txt").stat().st_mode & stat.S_IXUSR)
+        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
 
     def test_old_plan_cannot_be_reused_after_first_commit(self) -> None:
         (self.root / "src/task.txt").write_text("first\n", encoding="utf-8")
@@ -6649,6 +7353,125 @@ class AgentAssignmentArtifactTest(unittest.TestCase):
         path.write_text("# Raw Review\n\n问题发现审查代理 raw evidence。\n", encoding="utf-8")
         return path
 
+    def repair_status_event(
+        self,
+        event_id: str,
+        event: str,
+        agent_id: str,
+        observed_at: str,
+        **overrides: object,
+    ) -> dict[str, object]:
+        role = "阶段二检查代理"
+        nickname = "Check A" if agent_id == "agent-a" else "Check B"
+        value: dict[str, object] = {
+            "event_id": event_id,
+            "event": event,
+            "agent_id": agent_id,
+            "logical_role": role,
+            "platform_nickname": nickname,
+            "observed_at": observed_at,
+            "recorded_at": observed_at,
+            "head": "abc123",
+            "source": "main-session",
+            "evidence": f"{event} fixture evidence。",
+            "predecessor_agent_id": "",
+            "predecessor_event_id": "",
+            "termination_reason": "",
+            "termination_source_event_id": "",
+            "replacement_reason": "",
+            "handoff_summary": "",
+        }
+        value.update(overrides)
+        return value
+
+    def write_repair_fixture(self, *, schema_version: str = "1.2", include_completed: bool = True) -> Path:
+        events = [
+            self.repair_status_event("evt-a-assigned", "assigned", "agent-a", "2026-07-07T00:00:00Z"),
+            self.repair_status_event("evt-a-failed-1", "failed", "agent-a", "2026-07-07T00:01:00Z"),
+            self.repair_status_event(
+                "evt-a-resume",
+                "resume-same-agent",
+                "agent-a",
+                "2026-07-07T00:02:00Z",
+                predecessor_event_id="evt-a-failed-1",
+                handoff_summary="Resume the same checked scope and remaining validation.",
+            ),
+            self.repair_status_event("evt-a-failed-2", "failed", "agent-a", "2026-07-07T00:03:00Z"),
+            self.repair_status_event(
+                "evt-a-terminated",
+                "terminated-unfinished",
+                "agent-a",
+                "2026-07-07T00:04:00Z",
+                termination_reason="manual_or_platform_terminated_unfinished",
+                handoff_summary="Transfer partial evidence, checked scope, and remaining blockers.",
+            ),
+            self.repair_status_event("evt-b-assigned", "assigned", "agent-b", "2026-07-07T00:05:00Z"),
+            self.repair_status_event(
+                "evt-b-replacement",
+                "replacement-started",
+                "agent-b",
+                "2026-07-07T00:06:00Z",
+                predecessor_agent_id="agent-a",
+                predecessor_event_id="evt-a-terminated",
+                replacement_reason="manual_or_platform_terminated_unfinished",
+                handoff_summary="Replacement accepted exact partial evidence and remaining checks.",
+            ),
+        ]
+        if include_completed:
+            events.append(
+                self.repair_status_event(
+                    "evt-b-completed",
+                    "completed",
+                    "agent-b",
+                    "2026-07-07T00:07:00Z",
+                )
+            )
+        events.append(
+            self.repair_status_event(
+                "evt-a-wrong-provenance",
+                "explicit-message-observed",
+                "agent-a",
+                "2026-07-07T00:08:00Z",
+                evidence="Agent-side recorder incorrectly claimed main-session provenance.",
+            )
+        )
+        payload = {
+            "schema_version": schema_version,
+            "generated_at": "2026-07-07T00:00:00Z",
+            "updated_at": "2026-07-07T00:08:00Z",
+            "task": ".trellis/tasks/07-05-agent-assignment",
+            "head": "abc123",
+            "agents": [
+                {
+                    "logical_role": "阶段二检查代理",
+                    "agent_id": "agent-a",
+                    "platform_nickname": "Check A",
+                    "assigned_at": "2026-07-07T00:00:00Z",
+                    "assigned_head": "abc123",
+                    "reason": "Assign original checker.",
+                    "event_id": "evt-a-assigned",
+                },
+                {
+                    "logical_role": "阶段二检查代理",
+                    "agent_id": "agent-b",
+                    "platform_nickname": "Check B",
+                    "assigned_at": "2026-07-07T00:05:00Z",
+                    "assigned_head": "abc123",
+                    "reason": "Assign replacement checker.",
+                    "event_id": "evt-b-assigned",
+                },
+            ],
+            "liveness": {},
+            "review_rounds": [],
+            "reuse_decisions": [],
+            "status_events": events,
+            "event_corrections": [],
+            "recovery_links": [],
+        }
+        path = self.task_dir / "agent-assignment.json"
+        gtt.write_json(path, payload)
+        return path
+
     def test_record_agent_assignment_writes_agents_entry(self) -> None:
         patches = self.patch_assignment_command()
         for patcher in patches:
@@ -6880,6 +7703,195 @@ class AgentAssignmentArtifactTest(unittest.TestCase):
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn("JSON root must be an object", str(raised.exception))
 
+    def test_append_only_correction_and_recovery_link_restore_machine_gate(self) -> None:
+        self.write_repair_fixture()
+        patches = self.patch_assignment_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            correction = gtt.cmd_record_agent_assignment(
+                assignment_args(
+                    logical_role=None,
+                    reason=None,
+                    invalidate_event_id="evt-a-wrong-provenance",
+                    correction_reason="Invalidate falsely attributed main-session provenance.",
+                    correction_evidence="The technical agent disclosed that it called the recorder itself.",
+                )
+            )
+            recovery = gtt.cmd_record_agent_assignment(
+                assignment_args(
+                    logical_role=None,
+                    reason=None,
+                    link_failed_event_id="evt-a-failed-2",
+                    link_termination_event_id="evt-a-terminated",
+                    recovery_reason="Bind the historical failed-to-termination transition.",
+                    recovery_evidence="The append-only sequence records resume, second failure, termination, replacement, and completion.",
+                )
+            )
+            checked = gtt.cmd_check_agent_assignment(
+                argparse.Namespace(
+                    root=None,
+                    json=True,
+                    task=None,
+                    agent_assignment=None,
+                    require_current_head=False,
+                )
+            )
+            phase2_errors = gtt.phase2_agent_assignment_errors(self.root, self.task_dir)
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        payload = gtt.read_json(self.task_dir / "agent-assignment.json")
+        self.assertEqual(payload["schema_version"], "1.2")
+        self.assertEqual(correction["recorded"]["kind"], "invalidate-provenance")
+        self.assertEqual(recovery["recorded"]["kind"], "failed-to-termination")
+        self.assertEqual(len(payload["status_events"]), 9)
+        self.assertNotIn(
+            "evt-a-wrong-provenance",
+            {item["event_id"] for item in gtt.effective_status_events(payload)},
+        )
+        self.assertEqual(checked["status"], "ok")
+        self.assertEqual(checked["event_corrections_count"], 1)
+        self.assertEqual(checked["recovery_links_count"], 1)
+        self.assertEqual(phase2_errors, [])
+
+    def test_legacy_invalid_recovery_ledger_remains_blocked(self) -> None:
+        self.write_repair_fixture(schema_version="1.1")
+        patches = self.patch_assignment_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_check_agent_assignment(
+                    argparse.Namespace(
+                        root=None,
+                        json=True,
+                        task=None,
+                        agent_assignment=None,
+                        require_current_head=False,
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertTrue(any("failed 后缺少" in error for error in raised.exception.payload["errors"]))
+
+    def test_correction_recovery_validator_rejects_reference_tamper_matrix(self) -> None:
+        self.write_repair_fixture()
+        patches = self.patch_assignment_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_agent_assignment(
+                assignment_args(
+                    logical_role=None,
+                    reason=None,
+                    invalidate_event_id="evt-a-wrong-provenance",
+                    correction_reason="Invalidate false provenance.",
+                    correction_evidence="Agent-side recorder disclosure.",
+                )
+            )
+            gtt.cmd_record_agent_assignment(
+                assignment_args(
+                    logical_role=None,
+                    reason=None,
+                    link_failed_event_id="evt-a-failed-2",
+                    link_termination_event_id="evt-a-terminated",
+                    recovery_reason="Bind missing transition.",
+                    recovery_evidence="Historical ordered sequence evidence.",
+                )
+            )
+            base = gtt.read_json(self.task_dir / "agent-assignment.json")
+            cases: list[tuple[str, object, str]] = []
+
+            def mutate_unknown(value: dict[str, object]) -> None:
+                value["event_corrections"][0]["target_event_id"] = "evt-unknown"
+
+            def mutate_duplicate(value: dict[str, object]) -> None:
+                value["event_corrections"].append(copy.deepcopy(value["event_corrections"][0]))
+
+            def mutate_correction_digest(value: dict[str, object]) -> None:
+                value["event_corrections"][0]["target_event_sha256"] = "0" * 64
+
+            def mutate_cross_agent(value: dict[str, object]) -> None:
+                value["event_corrections"][0]["agent_id"] = "agent-b"
+
+            def mutate_terminal_invalidation(value: dict[str, object]) -> None:
+                completed = next(
+                    item for item in value["status_events"] if item["event_id"] == "evt-b-completed"
+                )
+                value["event_corrections"][0]["target_event_id"] = "evt-b-completed"
+                value["event_corrections"][0]["target_event_sha256"] = gtt.agent_status_event_sha256(completed)
+                value["event_corrections"][0]["agent_id"] = "agent-b"
+
+            def mutate_recovery_unknown(value: dict[str, object]) -> None:
+                value["recovery_links"][0]["termination_event_id"] = "evt-unknown"
+
+            def mutate_recovery_duplicate(value: dict[str, object]) -> None:
+                value["recovery_links"].append(copy.deepcopy(value["recovery_links"][0]))
+
+            def mutate_recovery_digest(value: dict[str, object]) -> None:
+                value["recovery_links"][0]["failed_event_sha256"] = "0" * 64
+
+            def mutate_recovery_cross_agent(value: dict[str, object]) -> None:
+                value["recovery_links"][0]["agent_id"] = "agent-b"
+
+            def mutate_cycle(value: dict[str, object]) -> None:
+                reverse = copy.deepcopy(value["recovery_links"][0])
+                reverse["recovery_id"] = "rec-0002-0123456789"
+                reverse["failed_event_id"], reverse["termination_event_id"] = (
+                    reverse["termination_event_id"],
+                    reverse["failed_event_id"],
+                )
+                value["recovery_links"].append(reverse)
+
+            cases.extend(
+                [
+                    ("unknown correction", mutate_unknown, "未引用已有 event"),
+                    ("duplicate correction", mutate_duplicate, "重复"),
+                    ("correction digest", mutate_correction_digest, "target_event_sha256"),
+                    ("correction cross-agent", mutate_cross_agent, "target event 不一致"),
+                    ("terminal invalidation", mutate_terminal_invalidation, "只能失效 progress/status-request"),
+                    ("unknown recovery", mutate_recovery_unknown, "引用已有"),
+                    ("duplicate recovery", mutate_recovery_duplicate, "重复"),
+                    ("recovery digest", mutate_recovery_digest, "failed_event_sha256"),
+                    ("recovery cross-agent", mutate_recovery_cross_agent, "referenced events 不一致"),
+                    ("recovery cycle", mutate_cycle, "cycle"),
+                ]
+            )
+            for label, mutator, expected in cases:
+                with self.subTest(label=label):
+                    value = copy.deepcopy(base)
+                    mutator(value)
+                    errors = gtt.validate_agent_assignment_payload(self.root, self.task_dir, value)
+                    self.assertIn(expected, "\n".join(errors))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+    def test_recovery_link_without_replacement_completion_remains_blocked(self) -> None:
+        self.write_repair_fixture(include_completed=False)
+        patches = self.patch_assignment_command()
+        for patcher in patches:
+            patcher.start()
+        try:
+            gtt.cmd_record_agent_assignment(
+                assignment_args(
+                    logical_role=None,
+                    reason=None,
+                    link_failed_event_id="evt-a-failed-2",
+                    link_termination_event_id="evt-a-terminated",
+                    recovery_reason="Bind missing transition.",
+                    recovery_evidence="Historical ordered sequence evidence.",
+                )
+            )
+            errors = gtt.validate_agent_assignment(self.root, self.task_dir)[2]
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertTrue(any("completed" in error or "完整恢复链" in error for error in errors))
+
 
 class SubagentLivenessStateMachineTest(unittest.TestCase):
     def setUp(self) -> None:
@@ -6973,7 +7985,7 @@ class SubagentLivenessStateMachineTest(unittest.TestCase):
         payload = self.run_with_patches(scenario)
         recorded = gtt.read_json(self.task_dir / "agent-assignment.json")
         self.assertTrue(str(payload["event_id"]).startswith("evt-"))
-        self.assertEqual(recorded["schema_version"], "1.1")
+        self.assertEqual(recorded["schema_version"], "1.2")
         self.assertEqual(recorded["agents"][0]["assigned_at"], "2026-07-07T00:00:00Z")
         self.assertEqual(recorded["agents"][0]["assigned_head"], "abc123")
         self.assertEqual(recorded["agents"][0]["reason"], "分配实现代理。")

@@ -6,8 +6,8 @@
   "description": "Create a reviewed Trellis task work commit after Phase 2, including finding-fix and revision commits, with exact staging and fresh evidence.",
   "state": "active",
   "modes": {
-    "workflow": {"entry_precondition_ids": ["workspace_boundary", "task_identity", "planning_approval", "phase2_check", "issue_scope_ledger", "pre_commit_head", "dirty_snapshot", "commit_authorization"]},
-    "standalone": {"entry_precondition_ids": ["workspace_boundary", "task_identity", "planning_approval", "phase2_check", "issue_scope_ledger", "pre_commit_head", "dirty_snapshot", "commit_authorization"]}
+    "workflow": {"entry_precondition_ids": ["workspace_boundary", "task_identity", "planning_approval", "phase2_check", "issue_scope_ledger", "pre_commit_head", "git_operation_state", "dirty_snapshot", "commit_authorization"]},
+    "standalone": {"entry_precondition_ids": ["workspace_boundary", "task_identity", "planning_approval", "phase2_check", "issue_scope_ledger", "pre_commit_head", "git_operation_state", "dirty_snapshot", "commit_authorization"]}
   },
   "entry_preconditions": [
     {"id": "workspace_boundary", "evidence": "task-start-context.json plus local runtime/worktree facts", "binding": "actual repository root equals the mapped task worktree", "freshness": "checked for the current invocation"},
@@ -16,7 +16,8 @@
     {"id": "phase2_check", "evidence": "phase2-check.json", "binding": "passed check, checked artifact digests, dirty paths and pre-commit HEAD", "freshness": "candidate self artifact is the only permitted post-check delta"},
     {"id": "issue_scope_ledger", "evidence": "issue-scope-ledger.json", "binding": "primary issue and ledger SHA-256", "freshness": "current bytes and primary issue match"},
     {"id": "pre_commit_head", "evidence": "Git HEAD and candidate git object", "binding": "exact commit id", "freshness": "unchanged immediately before execution"},
-    {"id": "dirty_snapshot", "evidence": "NUL-delimited Git status and content identities", "binding": "complete staged, unstaged, untracked, delete and rename facts", "freshness": "current snapshot digest still matches"},
+    {"id": "git_operation_state", "evidence": "Git operation and sequencer markers", "binding": "ordinary state without merge, cherry-pick, revert, rebase, sequencer or am markers", "freshness": "checked during candidate validation, before staging and immediately before commit"},
+    {"id": "dirty_snapshot", "evidence": "NUL-delimited Git status and content identities", "binding": "complete staged, unstaged, untracked, delete and rename facts; ordinary SHA-256/mode/delete and initialized clean gitlink HEAD are exact index authorities", "freshness": "current snapshot, candidate raw bytes, complete live index preimage and operation state still match through isolated validation; index.lock remains a sentinel and ref/index/candidate guards remain owned through the final candidate identity-read linearization point"},
     {"id": "commit_authorization", "evidence": "candidate authorization object", "binding": "explicit authorized flag, source and evidence", "freshness": "authorization applies to this exact stage/message plan"}
   ],
   "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
@@ -24,7 +25,7 @@
   "schemas": [{"id": "task_commit_plan_schema", "path": "schemas/task-commit-plan.schema.json"}],
   "validators": [
     {"id": "candidate_validator", "command": "scripts/check-task-commit-plan.sh", "objective_scope": "schema, identity, evidence, freshness, snapshot, exact paths, shared parser and authorization facts"},
-    {"id": "exact_executor", "command": "scripts/create-task-commit.sh", "objective_scope": "literal exact staging, pre-hook index tree/blob/mode binding, commit side effect, strict result recording and raw commit postconditions"}
+    {"id": "exact_executor", "command": "scripts/create-task-commit.sh", "objective_scope": "artifact-authorized ordinary/gitlink/candidate bindings, isolated index and detached commit validation, guarded conditional ref/candidate rollback under an index.lock sentinel, independent final-index publication, final candidate identity-read linearization, immutable commit blob/result digest evidence, and raw commit postconditions"}
   ],
   "external_exits": [
     {"id": "committed", "evidence": "task commit plan result and current Git HEAD", "consumer": {"kind": "workflow", "id": "branch-review-or-finding-closure"}},

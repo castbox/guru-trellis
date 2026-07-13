@@ -203,7 +203,36 @@ not ask for manual approval of a planned work message. After a fresh final Phase
 2 pass, Phase 3.4 mandatory invokes `guru-create-task-commit`. The skill owns
 candidate construction, AI review, conditional confirmation and re-entry; its
 candidate mode calls the shared `validate_commit_message()` parser, and its
-exact executor validates the resulting commit. Branch Review Gate reviews
+exact executor validates the resulting commit. Candidate validation, executor
+entry before staging, and the boundary immediately before `git commit` each
+fail closed while merge, cherry-pick, revert, rebase, sequencer, or `git am`
+state is active; scripts only observe that state and do not consume or clear it.
+Mode `160000` dirty entries bind an initialized, clean submodule worktree HEAD,
+so changing the gitlink revision after AI review makes the candidate stale.
+Immediately before exact staging, the executor compares that worktree HEAD
+again. It then writes the reviewed `gitlink_head` directly as the mode `160000`
+index OID instead of asking `git add` to read the mutable submodule worktree.
+The staged index identity must equal the artifact identity before commit; an
+unreviewed revision can never become the expected index tree.
+Ordinary files, modes, symlinks, deletes and rename sides use their existing
+artifact SHA-256/mode/delete identity the same way, and candidate self uses
+deterministic bytes from the validated in-memory plan. Hooks and exact staging
+run against an isolated index plus detached transaction HEAD. The real branch,
+live index and committed candidate result are published only after the commit
+object and current worktree/candidate/operation/index preconditions all match;
+the real `index.lock` remains owned through candidate publication and rollback,
+the conditionally advanced loose ref and candidate writes are guard-bound, and
+an independent final-index temporary file is published to the live index while
+the `index.lock` sentinel still exists. With ref/index guards still held and
+the ref, index and candidate result already in transaction state, one final
+candidate inode/content identity read is the success linearization point. A
+candidate replacement before that read blocks, rolls back the owned ref/index
+and preserves the replacement; a replacement after the read is a later
+operation and does not retroactively block or overwrite the committed result.
+Ref/candidate rollback is conditional and never overwrites third-party state;
+after the successful final read only best-effort guard/temp cleanup and return
+may occur.
+Branch Review Gate reviews
 committed messages and publish readiness payloads. Finish-work metadata commits
 and publish merge payloads remain on the same objective formatter/validator
 contract.
@@ -446,6 +475,12 @@ Passing the gate requires:
   `reuse_decision: replace` before any fresh final round can pass. This closure
   proves the finding is closed and does not need to be repeated for every later
   HEAD
+- schema 1.2 append-only provenance corrections must digest-bind an existing
+  same-agent correctable event; invalidated events remain in raw history but
+  are excluded from liveness/gate projection. Recovery links may only connect
+  an earlier same-agent `failed` event to a later manual/platform
+  `terminated-unfinished`; the validator must then traverse the existing
+  replacement chain to a real `completed`
 - the final `最终放行审查代理` review round must be fresh and last: reviewed code
   HEAD, `findings_count: 0`, `reuse_decision: new-agent`, and a technical
   `agent_id` that did not own any earlier finding round

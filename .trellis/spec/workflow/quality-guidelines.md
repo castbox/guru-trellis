@@ -126,6 +126,11 @@ The old `record-agent-assignment.sh --status-event`, `wait-timeout`,
 `progress-observed`, `continue-waiting`, `supersedes_agent_id`,
 periodic heartbeat, daemon/sidecar/long-command wrapper, and
 `agent-progress.jsonl` contracts must not appear as active workflow paths.
+Schema 1.2 correction/recovery tests must cover a positive corrected ledger and
+reject unknown targets, duplicate correction/link ids or targets, cycles or
+backward links, cross-agent links, immutable target digest tampering,
+invalidated pass evidence, and a link whose replacement chain never reaches
+`completed`.
 
 ## Review Focus
 
@@ -155,7 +160,28 @@ cannot pass the gate. Include:
   fresh task/issue/Phase 2/HEAD/snapshot binding, exhaustive single-category
   path review, exact staging, shared-parser candidate validation, raw message
   bytes, postconditions, unrelated preservation, hook mutation and fresh
-  sequence on finding-fix re-entry
+  sequence on finding-fix re-entry; real regressions must prove active Git
+  operation/sequencer state is preserved and blocked, and gitlink A/B/C changes,
+  uninitialized/dirty/ambiguous boundaries are fail closed; the gitlink race
+  regression must switch B to C after executor entry validation but before exact
+  staging, prove the candidate/HEAD/operation state is preserved, and prove C
+  is absent from both the index and commit; ordinary tracked, symlink, delete,
+  delete/add rename, multiple-path, candidate-self and entry-index A/worktree B
+  races must prove the same artifact authority; partial cache writes, rejecting
+  or mutating hooks, operation drift, candidate publication failure, candidate
+  writer contention, success-window concurrent `git add`, index publication
+  failure and concurrent ref update must preserve transaction-owned preimages
+  or third-party state without overwrite. Publication regressions must prove
+  the real `index.lock` remains a sentinel while an independent final-index
+  temporary is published, so real `git add` is still blocked. A normal-return
+  candidate C writer injected at final-index publication must be detected by
+  the later final candidate identity read, roll back owned ref/index and
+  preserve C. A writer injected immediately after that successful read must be
+  preserved as a later operation while the executor remains committed. The
+  positive path proves guarded ref, commit tree, live index and candidate
+  result agree at that final identity-read linearization point, returned commit
+  blob/result digest evidence is exact, cleanup leaks no guard/temp, and no
+  later fallible success branch exists
 - commit message contract: work commit subject/body, Trellis metadata commit
   subject with empty body, `Refs` in commit messages, PR body-only close keywords,
   and publish/merge payload command that avoids GitHub's default merge subject

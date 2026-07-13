@@ -90,7 +90,28 @@ before every task work stage/commit side effect. It exposes only `committed`,
 `revision-required`, and `blocked`: Branch Review/finding closure consumes the
 first, the skill re-enters on the second, and the workflow stops on the third.
 Finding-fix task work returns through implementation and full Phase 2 before a
-new plan sequence may invoke the skill again.
+new plan sequence may invoke the skill again. Workflow and standalone entry
+preconditions include ordinary Git operation state. Gitlink snapshot identity
+is conditional on index mode `160000` and binds an initialized, clean worktree
+HEAD; for non-deleted gitlinks that artifact HEAD is also the exact index OID,
+not a hint for `git add` to reread from the worktree. Ordinary legacy plan
+entries do not require gitlink-only fields. Their existing SHA-256/mode/delete/
+rename facts are nevertheless the only ordinary exact-index authority. The
+validated in-memory plan is the only candidate-self byte authority. Executor
+staging and hooks run on an isolated index/detached transaction HEAD; only a
+fully validated commit/index/result is published. The executor retains the
+real Git index lock through conditional ref/candidate publication and rollback,
+immediately guards and verifies the conditionally advanced loose ref, uses a
+candidate guard plus exact published-result identity for candidate
+rollback, keeps `index.lock` as a sentinel while an independent temporary file
+publishes the live index, and linearizes success at the final candidate
+inode/content identity read after ref/index/result publication. A candidate
+writer before that read forces owned ref/index rollback while preserving its
+bytes; a writer after it is a preserved later operation and immutable commit
+blob/result digest evidence remains committed.
+A failed stage, hook, operation, postcondition or publication preserves exact
+transaction-owned preimages; loss of conditional ref/candidate ownership
+preserves third-party state and fails closed without claiming exact restore.
 
 ## Distribution And Managed Hashes
 

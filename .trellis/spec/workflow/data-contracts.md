@@ -351,6 +351,36 @@ ledger/task evidence digests, the complete staged/unstaged/untracked/delete/
 rename snapshot, unique path classifications, exact stage paths, exact UTF-8
 message bytes/digest, AI review, authorization, freshness and result.
 
+Snapshot entries whose index mode is `160000` additionally require
+`gitlink_head`, `gitlink_initialized=true`, and `gitlink_dirty=false`.
+`gitlink_head` is the unique commit checked out by the submodule rooted at the
+exact worktree path. Uninitialized, dirty, unborn, or root-mismatched submodules
+cannot produce a safe candidate. These fields are conditional: existing plan
+entries for ordinary files, symlinks, deletes, and renames remain valid without
+them. Candidate validation and executor revalidation compare the current
+gitlink identity, so a reviewed B revision changed to C before exact staging is
+stale before any index mutation. For non-deleted mode `160000` paths,
+`gitlink_head` is also the exact index-content authority: the executor writes
+that OID through `git update-index --cacheinfo` rather than reading the mutable
+submodule worktree through `git add`, then verifies the staged mode/OID and the
+current worktree identity. Consequently a later B-to-C race cannot place C in
+the index or commit. A deliberate gitlink delete keeps the conditional deletion
+identity and ordinary literal delete behavior.
+
+For every non-gitlink snapshot entry, `worktree_sha256`, `mode`, `deleted`, and
+`renamed_from` form the ordinary content authority. A non-delete path must
+still expose the exact reviewed bytes and mode when the executor materializes
+its Git blob; a delete or rename source is an exact index absence. The
+candidate self path is authorized by the already validated in-memory plan and
+its deterministic JSON bytes, not by re-reading mutable raw file bytes. These
+rules are additive to the existing schema 1.0 fields, so legacy ordinary plans
+remain structurally valid while receiving the stronger executor behavior.
+
+Repository operation state is immediate runtime evidence rather than a plan
+field. Candidate validation and executor checks before staging and immediately
+before `git commit` reject active merge, cherry-pick, revert, rebase, sequencer,
+or `git am` state. The detector never clears or rewrites operation markers.
+
 Every dirty path belongs to exactly one of `task-reviewed`,
 `unrelated-preserved`, `unreviewed-blocking`, or `ambiguous-blocking`. The plan
 self path uses explicit `skill-artifact` coverage and is excluded from the
@@ -366,7 +396,9 @@ Execution requires `result.status=planned`, no blocking classifications, fresh
 evidence/HEAD/snapshot/message digest, and exact index equality. Post-commit
 result uses a closed `planned` / `revision-required` / `blocked` / `committed`
 state machine with exact status/exit pairing and no undeclared fields. The
-executor binds the complete pre-hook index tree and each exact path's blob/mode,
+executor first revalidates planned gitlinks before any stage side effect, binds
+their artifact OIDs into the exact index, and then binds the complete pre-hook
+index tree and each exact path's blob/mode,
 then records the real commit SHA, parent, message/path evidence, expected/actual
 tree and per-path blob/mode evidence, preservation/hook checks and exactly one
 external exit. `committed` requires matching tree evidence and
@@ -379,6 +411,121 @@ staged are not mutation evidence. The runtime validates a constructed terminal
 result against the public schema and rejects cross-field contradictions before
 writing it. A later finding-fix commit requires a new
 sequence and fresh Phase 2 evidence; a prior plan cannot be replayed.
+
+### Scenario: artifact-authorized exact-index transaction
+
+#### 1. Scope / Trigger
+
+This contract applies whenever `create-task-commit --candidate-artifact
+<task-commit-plans/NNN.json>` consumes one reviewed plan containing ordinary
+paths, gitlinks, candidate self, or any mixture of those identities.
+
+#### 2. Signatures
+
+- Input command: `create-task-commit --candidate-artifact <repo-relative-plan>`.
+- Artifact input: schema `guru-task-commit-plan-1.0`.
+- Success output: `status=committed`, `exit=committed`, exact commit/tree facts.
+- Failure output: exit code 2 with blocked transaction evidence; the plan file
+  remains at its exact entry bytes because failure is not published.
+
+#### 3. Contracts
+
+- Ordinary non-delete: artifact SHA-256 + mode authorizes one persisted blob.
+- Ordinary delete/rename source: artifact authorizes exact index absence.
+- Gitlink non-delete: `gitlink_head` + mode `160000` authorizes one cache entry.
+- Candidate self: deterministic serialization of the validated in-memory plan
+  authorizes the planned blob; raw post-validation bytes have no authority.
+- Transaction: staging and hooks run against an isolated index/detached HEAD;
+  real branch/index/candidate publication occurs only after every validation.
+- Publication ownership: the executor keeps the real Git `index.lock` from
+  executor entry through candidate publication and every rollback. It also
+  holds a candidate guard, then immediately acquires and verifies the Git
+  loose-ref lock after conditional branch advance. The `index.lock` is a
+  sentinel, not the final index file; an independent same-directory temporary
+  file carries final index bytes and is renamed to the live index while the
+  sentinel remains present. Ref and candidate guards remain held through that
+  publication.
+- Success linearization: after candidate result and live index publication, the
+  executor verifies the guarded ref/index transaction state, then performs one
+  final candidate inode/content identity read while both guards still hold.
+  That read is the linearization point. At that point the ref names the validated
+  commit, the commit tree and live index share the exact artifact-authorized
+  tree, and candidate bytes match the committed result whose digest is returned
+  as executor evidence.
+- Conditional rollback: a candidate C published before the final identity read
+  makes the read fail. While the index sentinel still blocks Git writers, the
+  executor restores its owned live-index preimage, releases its owned ref guard
+  only for compare-and-swap ref rollback, preserves C, and returns blocked.
+  Candidate rollback is permitted only while the candidate guard and exact
+  executor-published result identity still match. Loss of any ownership
+  preserves the third-party state and reports incomplete rollback instead of
+  overwriting it or claiming exact restoration.
+- Post-linearization writer: a candidate C published after the successful final
+  identity read is a later independent operation. It is preserved and cannot
+  retroactively change `committed` to `blocked`; immutable commit blob and
+  returned result digest evidence remain authoritative. Mutable candidate bytes
+  are required to be exact at linearization, not at every later instant.
+- Success cleanup: after the successful final candidate read, only best-effort
+  closure/removal of ref, candidate and index guards and transaction temporary
+  files may occur. Cleanup failure cannot change the committed/blocked result.
+
+#### 4. Validation & Error Matrix
+
+| Condition | Required result |
+| --- | --- |
+| B changes to C before blob materialization | block; real HEAD/index/candidate unchanged |
+| B changes to C after materialization or a hook restages C | isolated commit/tree mismatch blocks; C never reaches real HEAD/index |
+| partial cache write or rejecting hook | block; exact live index preimage remains |
+| operation marker appears before publication | block; marker and real Git state remain |
+| isolated parent/message/path/tree mismatch | block before real ref update |
+| candidate publication fails while index lock is held | conditionally roll back the ref; live index remains its entry preimage and no concurrent `git add` can be overwritten |
+| live index publication fails after candidate publication | while the index sentinel and ref/candidate guards remain held, conditionally roll back owned ref/index and restore candidate only from the exact executor-published identity; preserve third-party state on ownership loss |
+| candidate writer publishes C before final identity read | final read fails; roll back owned ref/index, preserve C, return blocked |
+| candidate writer publishes C after final identity read | preserve C as a later operation; return committed using immutable commit blob/result digest evidence |
+| existing candidate guard | block before publication; every compliant companion writer must honor the guard |
+| concurrent branch writer | initial conditional ref advance or immediate ref-guard acquisition blocks; rollback preserves any third-party ref instead of forcing the task ref |
+| every identity and publish precondition matches | publish one exact commit and committed result; no later fallible blocked check |
+
+#### 5. Good/Base/Bad Cases
+
+- Good: reviewed B becomes the exact blob/mode in the commit and live index;
+  `result.status=committed` names that commit.
+- Base: entry index A plus reviewed worktree B commits B while preserving every
+  non-task index entry and unrelated worktree path.
+- Bad: live `git add` re-reads C, or real HEAD advances before a fallible
+  postcondition. Both patterns violate the transaction contract.
+
+#### 6. Tests Required
+
+- Real tracked, symlink, delete, delete/add rename, multi-path, candidate-self,
+  entry-index A/worktree B, Unicode/pathspec, gitlink and deliberate gitlink
+  delete cases assert the exact commit blob/mode/delete identities.
+- Controlled B-to-C windows assert either no-side-effect blocked or an
+  artifact-authorized B commit, never C.
+- Partial staging, rejecting/mutating hook, operation drift, candidate
+  publication failure, index publication failure, concurrent candidate writer,
+  concurrent `git add`, and concurrent ref writer assert either exact entry
+  preimages or preserved third-party state according to conditional ownership;
+  rollback must never overwrite the third party or falsely report exact restore.
+- A pre-linearization writer injected at final live-index publication must
+  return normally, replace the candidate with C, then be detected by the final
+  identity read; ref/index roll back, C is preserved, the index sentinel blocks
+  real `git add`, and no guard/temp leaks.
+- A post-linearization writer injected immediately after the successful final
+  candidate read is preserved as a later operation while the executor returns
+  committed; the immutable candidate plan blob in the commit and returned
+  committed-result digest remain exact. Positive publication proves guarded
+  ref/commit tree/live index/candidate-result equality at that read, with no
+  fallible success check afterward.
+
+#### 7. Wrong vs Correct
+
+Wrong: call `git add` on reviewed paths, derive `expected_tree` from that live
+index, and run postconditions only after real HEAD moved.
+
+Correct: materialize artifact-authorized blobs, build and validate an isolated
+index/commit, then publish the already validated commit/index/result as one
+recoverable transaction.
 
 Blocked evidence follows one failure-stage matrix, shared by the public schema,
 runtime validator and package tests:
@@ -440,14 +587,43 @@ check / Branch Review Gate pass. It must not decide which sub-agent should be
 used, whether implementation is sufficient, whether reviewer reuse is
 semantically acceptable, or whether a final release review is sufficient.
 
-`agent-assignment.json` schema version `1.1` is additive over the prior review
-round ledger. It keeps `agents[]`, `review_rounds[]`, and
-`reuse_decisions[]`, adds `liveness[agent_id]`, and replaces active coarse
-status events with the #76 liveness contract. Older artifacts that omit
+`agent-assignment.json` schema version `1.2` is additive over the prior review
+round ledger. It keeps `agents[]`, `review_rounds[]`, `reuse_decisions[]`,
+`liveness[agent_id]`, and `status_events[]`, and adds append-only
+`event_corrections[]` plus `recovery_links[]`. Older artifacts that omit
 `liveness` or `status_events[]` are normalized for reading, but old
 `wait-timeout`, `continue-waiting`, coarse `progress-observed`, and
 unstructured stale/replacement records are not active progress, stale, or pass
 evidence.
+
+`event_corrections[]` has one narrow meaning: invalidate a prior observational
+or status-request event whose recorded provenance is not valid. Each entry has
+a unique `correction_id`, fixed `kind=invalidate-provenance`,
+`target_event_id`, target `agent_id`, canonical `target_event_sha256`, current
+resolvable `head`, UTC `recorded_at`, `source=main-session`, non-placeholder
+`reason`, and concrete `evidence`. The target must already exist, belong to the
+same agent, and be a progress or status-request event; terminal, assignment,
+stale, resume, termination, replacement, completion, failure, and workspace
+boundary events cannot be invalidated. A target may be invalidated once.
+Effective liveness progress/status projection and all pass gates exclude the
+invalidated target while retaining its raw append-only row for audit. Unknown
+targets, duplicate ids/targets, cross-agent entries, or digest mismatch fail
+closed.
+
+`recovery_links[]` has one narrow meaning: append the missing same-agent edge
+from an earlier `failed` event to a later
+`terminated-unfinished termination_reason=manual_or_platform_terminated_unfinished`
+event. Each entry has a unique `recovery_id`, fixed
+`kind=failed-to-termination`, `failed_event_id`, `termination_event_id`, same
+`agent_id`, canonical SHA-256 for both immutable target event objects, current
+resolvable `head`, UTC `recorded_at`, `source=main-session`, reason, and
+evidence. Both events must already exist, remain non-invalidated, have matching
+digests, use the same agent, and occur in forward order. A failed event may
+have at most one recovery link. Unknown/duplicate/cyclic/backward, cross-agent,
+wrong-kind, or tampered links fail closed. Recovery traversal follows the linked
+termination into the existing `replacement-started` predecessor edge and
+requires the active replacement chain to reach `completed`; a link alone never
+supplies completion evidence.
 
 `liveness[agent_id].last_scan_snapshot` records:
 

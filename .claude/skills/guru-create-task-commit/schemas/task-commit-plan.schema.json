@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
   "title": "Guru Team task work commit plan",
+  "description": "The planned/terminal evidence shape; publication keeps index.lock as a sentinel through conditional ref/index/candidate rollback, publishes final index bytes from an independent temporary, and linearizes success at the final candidate inode/content identity read.",
   "type": "object",
   "additionalProperties": false,
   "required": ["$schema", "schema_version", "skill_id", "sequence", "task", "issue", "git", "evidence", "dirty_snapshot", "path_classifications", "exact_stage_paths", "message", "ai_review", "authorization", "freshness", "result"],
@@ -58,9 +59,38 @@
       "properties": {
         "path": {"$ref": "#/$defs/repoPath"}, "index_status": {"type": "string", "maxLength": 1}, "worktree_status": {"type": "string", "maxLength": 1},
         "untracked": {"type": "boolean"}, "deleted": {"type": "boolean"}, "renamed_from": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/repoPath"}]},
-        "index_blob": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/gitSha"}]}, "worktree_sha256": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
-        "mode": {"anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-7]{6}$"}]}
-      }
+        "index_blob": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/gitSha"}]}, "worktree_sha256": {"description": "For a non-deleted ordinary entry, the reviewed bytes and exact blob materialization authority.", "anyOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
+        "mode": {"description": "Reviewed exact index mode; with worktree_sha256 or delete identity it authorizes the ordinary cache entry.", "anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-7]{6}$"}]},
+        "gitlink_head": {"description": "For a non-deleted mode 160000 entry, the reviewed submodule HEAD and exact index OID authority.", "anyOf": [{"type": "null"}, {"$ref": "#/$defs/gitSha"}]},
+        "gitlink_initialized": {"anyOf": [{"type": "null"}, {"type": "boolean"}]},
+        "gitlink_dirty": {"anyOf": [{"type": "null"}, {"type": "boolean"}]}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"mode": {"const": "160000"}, "deleted": {"const": false}}, "required": ["mode", "deleted"]},
+          "then": {
+            "required": ["gitlink_head", "gitlink_initialized", "gitlink_dirty"],
+            "properties": {
+              "worktree_sha256": {"type": "null"},
+              "gitlink_head": {"$ref": "#/$defs/gitSha"},
+              "gitlink_initialized": {"const": true},
+              "gitlink_dirty": {"const": false}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"mode": {"const": "160000"}, "deleted": {"const": true}}, "required": ["mode", "deleted"]},
+          "then": {
+            "required": ["gitlink_head", "gitlink_initialized", "gitlink_dirty"],
+            "properties": {
+              "worktree_sha256": {"type": "null"},
+              "gitlink_head": {"type": "null"},
+              "gitlink_initialized": {"const": false},
+              "gitlink_dirty": {"type": "null"}
+            }
+          }
+        }
+      ]
     },
     "snapshot": {
       "type": "object", "additionalProperties": false,

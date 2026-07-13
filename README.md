@@ -415,6 +415,12 @@ unfinished termination 使用 `termination_reason=manual_or_platform_terminated_
 failed、stale、unfinished 或 replacement partial output 未恢复到后续 `completed` 前，不能
 作为实现完成、Phase 2 check pass 或 Branch Review Gate pass 证据。旧
 `record-agent-assignment.sh --status-event` 状态路径 fail closed。
+`agent-assignment.json` schema 1.2 额外提供 append-only
+`event_corrections[]` 与 `recovery_links[]`：前者用目标 event canonical digest 显式失效
+错误 provenance 的 progress/status-request 记录，后者只补同 agent `failed` 到后续
+manual/platform `terminated-unfinished` 的结构边。Validator 拒绝 unknown、duplicate、
+cross-agent、cycle/backward 和 tampered target，并且仍要求 replacement 链真实到达
+`completed`；自然语言说明本身不能修复 machine gate。
 `phase2-check.json` 是 Guru Team 固化 `trellis-check` AI check 结论、覆盖范围、
 验证结果、findings 和 `dirty_paths` 的 artifact，不是 Trellis 原生步骤本身，也不是
 脚本替代 AI check 的入口。
@@ -528,7 +534,23 @@ Task work commit 不再由 Phase 3.4 直接 stage/commit。Fresh final Phase 2 c
 `task-commit-plans/<sequence>.json`，由 AI 审查 scope、exact paths、消息与授权，再由
 candidate validator 复用统一 parser，最后由 `create-task-commit` exact executor 仅提交
 计划路径并验证 parent、raw message bytes、path set、unrelated preservation 与 hook
-mutation。`committed` 进入 Branch Review，`revision-required` 重入 skill，`blocked`
+mutation。Candidate、stage 与 commit 边界会拒绝 merge/cherry-pick/revert/rebase/
+sequencer/am 等非普通 Git state；mode `160000` 的 snapshot 会绑定 initialized、clean
+submodule 的 worktree HEAD。Executor 在 exact stage 前重验该 HEAD，并将 artifact
+OID 直接写入 mode `160000` index entry，而不是由 `git add` 从可变 worktree 重新
+读取；普通文件、symlink、delete、rename 也只从 artifact SHA-256/mode/delete
+identity 构造 isolated exact index，candidate self 只使用 validated in-memory plan
+的 deterministic bytes。真实 hook chain 在 detached transaction HEAD 上完成，全部
+commit/postcondition 与 live preimage 校验通过后才发布 branch/index/result。Executor
+持有真实 `index.lock` sentinel 穿过 conditional ref、candidate/live-index publication
+和 rollback；final index bytes 通过独立 temp 在 sentinel 仍存在时发布，真实 `git add`
+持续被阻断。CAS 后立即持有/复核 loose-ref guard，并用 candidate guard/精确 result
+identity 做条件恢复；ref/index/result 已发布且 guards 仍持有时，最后一次 candidate
+inode/content identity read 才是线性化点。该 read 前写入 C 会触发 ref/index rollback
+并保留 C；read 后写入 C 是独立 later operation，executor 仍以 immutable commit blob
+与 returned result digest 返回 `committed`，且不覆盖 C。
+并发 ref/candidate ownership 丢失时保留第三方状态，不覆盖后再声称 exact restore。
+因此未审查 C 不会进入真实 index/commit。`committed` 进入 Branch Review，`revision-required` 重入 skill，`blocked`
 fail closed；finding fix 必须先重跑完整 Phase 2，并使用新的 plan sequence。
 
 发布前 AI 必须生成或审查 PR body readiness。PR body 面向不了解 Trellis task 的
