@@ -273,8 +273,8 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.4`；在对应 merge commit 创建并验证
-release tag 前，不得把 `.4` 写成已发布 stable source。
+manifest 已递增到下一待发布版本 `0.6.5-guru.5`；在对应 merge commit 创建并验证
+release tag 前，不得把 `.5` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录
 extension version、target Trellis CLI、workflow template id、source repo/ref/commit、source
@@ -522,6 +522,14 @@ issue close 语义只在 PR body 中根据
 `issue-scope-ledger.json.close_issues` 表达。可用
 `.trellis/guru-team/scripts/bash/check-commit-messages.sh --json --task <task-path>`
 执行 objective subject/body 校验。
+
+Task work commit 不再由 Phase 3.4 直接 stage/commit。Fresh final Phase 2 check
+通过后，workflow mandatory invoke `guru-create-task-commit`；该 skill 写入独立
+`task-commit-plans/<sequence>.json`，由 AI 审查 scope、exact paths、消息与授权，再由
+candidate validator 复用统一 parser，最后由 `create-task-commit` exact executor 仅提交
+计划路径并验证 parent、raw message bytes、path set、unrelated preservation 与 hook
+mutation。`committed` 进入 Branch Review，`revision-required` 重入 skill，`blocked`
+fail closed；finding fix 必须先重跑完整 Phase 2，并使用新的 plan sequence。
 
 发布前 AI 必须生成或审查 PR body readiness。PR body 面向不了解 Trellis task 的
 GitHub reviewer，而不是 Trellis session 内部摘要；应包含具体的 `变更摘要`、

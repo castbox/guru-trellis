@@ -49,8 +49,9 @@ Workflow marketplace 只安装 global `.trellis/workflow.md`，不安装 externa
 workflow skills。公共 skill 的唯一源头是 `trellis/skills/guru-team/`；global
 workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandatory
 调用与唯一出口 consumer/stop，不复制 step-local skill 正文。完整运行时资产
-由 Guru Team preset 分发。当前 production registry 只有 reserved id 时，
-workflow 不得伪造 active route。
+由 Guru Team preset 分发。Production registry 保留
+`guru-create-work-commit` reserved tombstone，并激活
+`guru-create-task-commit`；workflow 不得为 reserved id 伪造 route。
 
 Active package 的 discovery contract 要求 `SKILL.md` 只有一段闭合
 frontmatter，`name` 等于 stable id/registry/interface，`description` 非空且与
@@ -117,6 +118,13 @@ companion helpers 只做 objective 校验和格式化，不替代 AI review：
   --pull-request <pr-number> \
   --summary "中文 PR 摘要"
 ```
+
+Fresh final Phase 2 check 后，canonical workflow mandatory invoke
+`guru-create-task-commit`。Skill 为每次提交生成独立 task-local plan，AI 负责 scope/
+message/authorization review；candidate validator 复用同一 parser，exact executor 只
+stage 计划路径并验证真实 commit。`committed`、`revision-required`、`blocked` 分别由
+Branch Review/finding closure、skill re-entry、fail-closed stop 唯一消费；finding fix
+必须先返回完整 Phase 2，并创建新 sequence。
 
 `finish-work` dry-run 会输出合规 metadata commit subject 和 publish 计划；
 `format-merge-commit` payload 会输出 `merge_commit.subject`、`merge_commit.body`

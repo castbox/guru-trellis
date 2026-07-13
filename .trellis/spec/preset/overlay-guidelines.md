@@ -98,6 +98,15 @@ Continue entries must:
   Phase 2: implementation handoff records strategy execution and docs sync
   outcome, while `trellis-check` verifies durable docs / task artifacts /
   code/API/schema/config/deploy/test consistency by strategy
+- after a fresh final Phase 2 pass, load and mandatory invoke the stable
+  `guru-create-task-commit` id, then consume only its declared typed exit;
+  continue/command/prompt/launcher entries must not copy candidate fields, AI
+  review criteria, confirmation policy, executor steps, message template or
+  postconditions
+- route `committed` to Branch Review/finding closure,
+  `revision-required` back to the same skill, and `blocked` to fail-closed stop;
+  non-metadata finding fixes return through implementation and full Phase 2
+  before another invocation
 - state that default `sub-agent` mode requires the main session to dispatch
   `trellis-implement` / channel `implement`, then `trellis-check` / channel
   `check`, and later a Branch Review review sub-agent; the main session cannot

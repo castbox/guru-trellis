@@ -52,6 +52,7 @@ bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/
 python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
 python3 ./.trellis/scripts/task.py validate <task-dir>
 trellis/workflows/guru-team/scripts/bash/check-commit-messages.sh --json --task <task-dir>
+trellis/workflows/guru-team/scripts/bash/check-commit-messages.sh --json --candidate-artifact <task-commit-plan>
 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 git diff --check
 ```
@@ -150,9 +151,14 @@ cannot pass the gate. Include:
 - companion scripts
 - schemas and config templates
 - preset installer and overlays
+- task work commit contract: mandatory `guru-create-task-commit` invocation,
+  fresh task/issue/Phase 2/HEAD/snapshot binding, exhaustive single-category
+  path review, exact staging, shared-parser candidate validation, raw message
+  bytes, postconditions, unrelated preservation, hook mutation and fresh
+  sequence on finding-fix re-entry
 - commit message contract: work commit subject/body, Trellis metadata commit
-  subject with empty body, `Refs` in commit messages, PR body-only close keywords, and
-  publish/merge payload command that avoids GitHub's default merge subject
+  subject with empty body, `Refs` in commit messages, PR body-only close keywords,
+  and publish/merge payload command that avoids GitHub's default merge subject
 - Trellis task artifacts
 - generated or installed-copy expectations
 - Phase 0 handoff/preflight evidence, or explicit no-task direct-edit override

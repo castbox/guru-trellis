@@ -229,6 +229,7 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh`
 - `.trellis/guru-team/scripts/bash/check-subagent-liveness.sh`
 - `.trellis/guru-team/scripts/bash/check-commit-messages.sh`
+- `.trellis/guru-team/scripts/bash/create-task-commit.sh`
 - `.trellis/guru-team/scripts/bash/format-merge-commit.sh`
 - `.trellis/guru-team/scripts/bash/review-branch.sh`
 - `.trellis/guru-team/scripts/bash/check-review-gate.sh`
@@ -236,6 +237,12 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/finish-work.sh`
 - `.trellis/guru-team/scripts/bash/backfill-finish-summary.sh`
 - `.trellis/guru-team/scripts/python/guru_team_trellis.py`
+
+Production skill registry 同时保留 reserved `guru-create-work-commit` 与 active
+`guru-create-task-commit`。Preset 将 active package（含 interface、artifact schema、
+example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
+root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
+`.new`/`.bak`，再通过 source/installed package validation 与 dogfood drift。
 
 Shared overlays are always installed:
 

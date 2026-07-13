@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import hashlib
 import importlib.util
 import json
 import os
@@ -360,6 +361,368 @@ Refs #92
         self.assertEqual([], gtt.validate_merge_commit_body(body, primary_issue=73, pull_request=91))
         self.assertTrue(gtt.validate_merge_commit_body(body.replace("PR: #91", "PR: #90"), primary_issue=73, pull_request=91))
         self.assertTrue(gtt.validate_merge_commit_body(body.replace("Refs #73", "Closes #73"), primary_issue=73, pull_request=91))
+
+
+class TaskCommitCandidateExecutorTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.root, check=True)
+        subprocess.run(["git", "config", "user.name", "Task Commit Test"], cwd=self.root, check=True)
+        subprocess.run(["git", "config", "user.email", "task-commit@example.invalid"], cwd=self.root, check=True)
+        self.task_rel = ".trellis/tasks/example-task"
+        self.task_dir = self.root / self.task_rel
+        self.task_dir.mkdir(parents=True)
+        (self.root / ".trellis/guru-team").mkdir(parents=True)
+        (self.root / "src").mkdir()
+        (self.root / "src/task.txt").write_text("base\n", encoding="utf-8")
+        self.task = {
+            "id": "example-task", "name": "example-task", "title": "Example task",
+            "status": "in_progress", "branch": "feat/example-task", "base_branch": "main",
+        }
+        self.context = {
+            "schema_version": "1.0", "task_artifact_dir": self.task_rel,
+            "task_slug": "example-task", "workspace_slug": "example-task",
+            "task_title": "Example task", "task_workspace_id": "example-task",
+            "branch_name": "feat/example-task", "base_branch": "main",
+            "base_ref": "main", "base_head_sha": "", "remote_head_sha": "",
+            "source_issue": {"number": 122},
+            "source_repo": {"repo": "owner/repo", "url": ""},
+            "assignee": "tester", "actor": {"login": "tester"},
+            "issue_scope_ledger_seed": {},
+            "intake_summary": {"duplicate_decision": {}, "naming_quality": {}, "confirmation": {}},
+        }
+        self.ledger = {
+            "schema_version": "1.0",
+            "primary_issue": {"number": 122},
+            "close_issues": [{"number": 122}],
+            "related_issues": [], "followup_issues": [],
+        }
+        gtt.write_json(self.task_dir / "task.json", self.task)
+        gtt.write_json(self.task_dir / "task-start-context.json", self.context)
+        gtt.write_json(self.task_dir / "planning-approval.json", {"schema_version": "1.2"})
+        gtt.write_json(self.task_dir / "phase2-check.json", {"schema_version": "1.0"})
+        gtt.write_json(self.task_dir / "issue-scope-ledger.json", self.ledger)
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "chore(test): #122 初始化测试仓库"], cwd=self.root, check=True)
+        subprocess.run(["git", "checkout", "-q", "-b", "feat/example-task"], cwd=self.root, check=True)
+        self.phase2 = {"head": gtt.current_head(self.root), "dirty_paths": [], "checked_artifacts": []}
+        schema = (
+            Path(gtt.__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json"
+        )
+        self.patches = [
+            mock.patch.object(gtt, "assert_workspace_boundary", return_value={"status": "ok"}),
+            mock.patch.object(gtt, "validate_planning_approval", side_effect=lambda root, task_dir: (task_dir / "planning-approval.json", {}, [])),
+            mock.patch.object(
+                gtt,
+                "validate_phase2_check",
+                side_effect=lambda root, task_dir, **kwargs: (task_dir / "phase2-check.json", self.phase2, []),
+            ),
+            mock.patch.object(gtt, "task_commit_schema_path", return_value=schema),
+        ]
+        for patcher in self.patches:
+            patcher.start()
+
+    def tearDown(self) -> None:
+        for patcher in reversed(self.patches):
+            patcher.stop()
+        self.tmp.cleanup()
+
+    def make_plan(
+        self,
+        sequence: int,
+        reviewed_paths: list[str],
+        unrelated_paths: list[str] | None = None,
+    ) -> Path:
+        candidate = self.task_dir / gtt.TASK_COMMIT_PLAN_DIR / f"{sequence:03d}.json"
+        candidate_rel = candidate.relative_to(self.root).as_posix()
+        snapshot = gtt.capture_task_commit_snapshot(self.root, {candidate_rel})
+        self.phase2 = {
+            "head": gtt.current_head(self.root),
+            "dirty_paths": list(reviewed_paths),
+            "checked_artifacts": [],
+        }
+        classifications = [
+            {
+                "path": path,
+                "category": "task-reviewed" if path in reviewed_paths else "unrelated-preserved",
+                "reason": "Covered by the current Phase 2 report." if path in reviewed_paths else "Preserve unrelated test state.",
+                "coverage_source": "phase2-check.json" if path in reviewed_paths else "AI scope review",
+            }
+            for path in [str(item["path"]) for item in snapshot["entries"]]
+        ]
+        classifications.append({
+            "path": candidate_rel, "category": "task-reviewed",
+            "reason": "Current skill evidence.", "coverage_source": "skill-artifact",
+        })
+        exact_paths = set(reviewed_paths) | {candidate_rel}
+        snapshot_by_path = {str(item["path"]): item for item in snapshot["entries"]}
+        for path in reviewed_paths:
+            renamed_from = snapshot_by_path.get(path, {}).get("renamed_from")
+            if renamed_from:
+                exact_paths.add(str(renamed_from))
+        body = (
+            "背景：\n需要验证 task commit 闭环。\n\n"
+            "变更：\n提交精确测试路径。\n\n"
+            "边界：\n保留无关工作区状态。\n\n"
+            "验证：\n运行 task commit 单元测试。\n\n"
+            "Refs #122"
+        )
+        subject = "feat(trellis): #122 增加任务提交闭环"
+        message_bytes = f"{subject}\n\n{body}\n"
+        evidence = {
+            "planning_approval": gtt.task_commit_file_evidence(self.root, self.task_dir / "planning-approval.json"),
+            "phase2_check": gtt.task_commit_file_evidence(self.root, self.task_dir / "phase2-check.json"),
+            "issue_scope_ledger": gtt.task_commit_file_evidence(self.root, self.task_dir / "issue-scope-ledger.json"),
+            "task": gtt.task_commit_file_evidence(self.root, self.task_dir / "task.json"),
+        }
+        plan = {
+            "$schema": gtt.TASK_COMMIT_PLAN_SCHEMA_ID,
+            "schema_version": "1.0", "skill_id": gtt.TASK_COMMIT_SKILL_ID,
+            "sequence": f"{sequence:03d}",
+            "task": {"id": "example-task", "path": self.task_rel, "status": "in_progress", "branch": "feat/example-task"},
+            "issue": {
+                "primary_issue": 122,
+                "ledger_sha256": hashlib.sha256((self.task_dir / "issue-scope-ledger.json").read_bytes()).hexdigest(),
+            },
+            "git": {"base_branch": "main", "base_ref": gtt.diff_base_ref(self.root, "main"), "pre_commit_head": gtt.current_head(self.root)},
+            "evidence": evidence, "dirty_snapshot": snapshot,
+            "path_classifications": classifications,
+            "exact_stage_paths": sorted(exact_paths),
+            "message": {"subject": subject, "body": body, "bytes": message_bytes, "sha256": hashlib.sha256(message_bytes.encode("utf-8")).hexdigest()},
+            "ai_review": {"status": "passed", "reviewer": "task-commit-test", "summary": "Reviewed exact test scope.", "evidence": ["Phase 2 covers each task-reviewed path."]},
+            "authorization": {"authorized": True, "source": "explicit-test-authorization", "evidence": "Authorize this exact test plan."},
+            "freshness": {"captured_at": gtt.now_iso(), "plan_digest": ""},
+            "result": {"status": "planned", "exit": None},
+        }
+        plan["freshness"]["plan_digest"] = gtt.task_commit_plan_digest(plan)
+        gtt.write_json(candidate, plan)
+        return candidate
+
+    def test_candidate_mode_validates_when_branch_range_is_empty(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+        payload = gtt.cmd_check_commit_messages(argparse.Namespace(
+            root=str(self.root), task=self.task_rel, candidate_artifact=str(candidate),
+            primary_issue=None, base_ref=None, range=None,
+        ))
+        self.assertEqual(payload["status"], "ok")
+        self.assertEqual(payload["mode"], "candidate")
+        self.assertEqual(payload["checked_commits"], [])
+        self.assertEqual(payload["candidate_validation"]["sequence"], "001")
+
+    def test_exact_executor_commits_only_reviewed_paths_and_preserves_unrelated(self) -> None:
+        reviewed = "src/任务 [one]*.txt"
+        (self.root / reviewed).write_text("reviewed\n", encoding="utf-8")
+        (self.root / "unrelated.log").write_text("keep\n", encoding="utf-8")
+        self.assertIn(reviewed, gtt.git_status_paths(self.root))
+        candidate = self.make_plan(1, [reviewed], ["unrelated.log"])
+
+        payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertEqual(payload["status"], "committed")
+        self.assertEqual(set(payload["committed_paths"]), {reviewed, candidate.relative_to(self.root).as_posix()})
+        self.assertEqual((self.root / "unrelated.log").read_text(encoding="utf-8"), "keep\n")
+        self.assertIn("unrelated.log", gtt.git_status_paths(self.root))
+        result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
+        self.assertEqual(result["status"], "committed")
+        self.assertEqual(result["parent"], payload["pre_commit_head"])
+
+    def test_exact_executor_restages_current_candidate_bytes(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+        candidate_rel = candidate.relative_to(self.root).as_posix()
+        subprocess.run(["git", "add", "--", candidate_rel], cwd=self.root, check=True)
+
+        plan = json.loads(candidate.read_text(encoding="utf-8"))
+        plan["ai_review"]["summary"] = "Review updated after the candidate was first staged."
+        plan["freshness"]["plan_digest"] = gtt.task_commit_plan_digest(plan)
+        gtt.write_json(candidate, plan)
+
+        payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        committed = subprocess.run(
+            ["git", "show", f"{payload['commit_sha']}:{candidate_rel}"],
+            cwd=self.root,
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+        ).stdout
+        committed_plan = json.loads(committed)
+        self.assertEqual(
+            committed_plan["ai_review"]["summary"],
+            "Review updated after the candidate was first staged.",
+        )
+        self.assertEqual(committed_plan["result"], {"status": "planned", "exit": None})
+
+    def test_exact_executor_stages_reviewed_delete_without_broad_add(self) -> None:
+        reviewed = "src/task.txt"
+        (self.root / reviewed).unlink()
+        candidate = self.make_plan(1, [reviewed])
+
+        payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertEqual(
+            set(payload["committed_paths"]),
+            {reviewed, candidate.relative_to(self.root).as_posix()},
+        )
+        self.assertFalse((self.root / reviewed).exists())
+
+    def test_exact_executor_preserves_rename_source_and_destination(self) -> None:
+        source = "src/task.txt"
+        destination = "src/重命名 [two]*.txt"
+        subprocess.run(["git", "mv", source, destination], cwd=self.root, check=True)
+        candidate = self.make_plan(1, [destination])
+
+        payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertEqual(
+            set(payload["committed_paths"]),
+            {source, destination, candidate.relative_to(self.root).as_posix()},
+        )
+        self.assertFalse((self.root / source).exists())
+        self.assertTrue((self.root / destination).is_file())
+
+    def test_fresh_phase2_self_artifact_is_reviewable_without_recursive_digest(self) -> None:
+        reviewed = "src/task.txt"
+        phase2 = f"{self.task_rel}/phase2-check.json"
+        (self.root / reviewed).write_text("changed\n", encoding="utf-8")
+        gtt.write_json(self.task_dir / "phase2-check.json", {"schema_version": "1.0", "round": 1})
+
+        candidate = self.make_plan(1, [reviewed, phase2])
+        plan, _, errors = gtt.validate_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertEqual(errors, [])
+        self.assertIn(phase2, plan["exact_stage_paths"])
+
+    def test_unrelated_staged_path_blocks_without_unstage(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        (self.root / "unrelated.log").write_text("staged unrelated\n", encoding="utf-8")
+        subprocess.run(["git", "add", "unrelated.log"], cwd=self.root, check=True)
+        candidate = self.make_plan(1, ["src/task.txt"], ["unrelated.log"])
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+        self.assertIn("unrelated.log", raised.exception.payload["unexpected_staged_paths"])
+        self.assertIn("unrelated.log", gtt.git_nul_path_set(self.root, ["diff", "--cached", "--name-only", "--no-renames", "-z"]))
+        result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
+        self.assertEqual(result["status"], "blocked")
+        self.assertEqual(result["exit"], "blocked")
+
+    def test_candidate_stale_and_message_negative_matrix(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+        original = json.loads(candidate.read_text(encoding="utf-8"))
+
+        def set_body(plan: dict[str, object], body: str) -> None:
+            message = plan["message"]
+            assert isinstance(message, dict)
+            subject = str(message["subject"])
+            value = f"{subject}\n\n{body}\n"
+            message.update({"body": body, "bytes": value, "sha256": hashlib.sha256(value.encode("utf-8")).hexdigest()})
+
+        def stale_planning(plan: dict[str, object]) -> None:
+            plan["evidence"]["planning_approval"]["sha256"] = "0" * 64
+
+        def stale_phase2(plan: dict[str, object]) -> None:
+            plan["evidence"]["phase2_check"]["sha256"] = "0" * 64
+
+        def stale_ledger(plan: dict[str, object]) -> None:
+            plan["issue"]["ledger_sha256"] = "0" * 64
+
+        def stale_head(plan: dict[str, object]) -> None:
+            plan["git"]["pre_commit_head"] = "0" * 40
+
+        def stale_snapshot(plan: dict[str, object]) -> None:
+            plan["dirty_snapshot"]["digest"] = "0" * 64
+
+        def stale_message_digest(plan: dict[str, object]) -> None:
+            plan["message"]["sha256"] = "0" * 64
+
+        def wrong_issue(plan: dict[str, object]) -> None:
+            plan["issue"]["primary_issue"] = 999
+
+        def wrong_order(plan: dict[str, object]) -> None:
+            body = str(plan["message"]["body"])
+            set_body(plan, body.replace("变更：", "TEMP：").replace("边界：", "变更：").replace("TEMP：", "边界："))
+
+        def missing_section(plan: dict[str, object]) -> None:
+            body = str(plan["message"]["body"])
+            set_body(plan, body.replace("\n验证：\n运行 task commit 单元测试。", ""))
+
+        def placeholder(plan: dict[str, object]) -> None:
+            body = str(plan["message"]["body"])
+            set_body(plan, body.replace("需要验证 task commit 闭环。", "TODO"))
+
+        def close_keyword(plan: dict[str, object]) -> None:
+            set_body(plan, str(plan["message"]["body"]).replace("Refs #122", "Closes #122"))
+
+        mutations = {
+            "stale planning": stale_planning,
+            "stale Phase 2": stale_phase2,
+            "stale ledger": stale_ledger,
+            "stale HEAD": stale_head,
+            "stale snapshot": stale_snapshot,
+            "stale message digest": stale_message_digest,
+            "wrong issue": wrong_issue,
+            "wrong body order": wrong_order,
+            "missing body section": missing_section,
+            "placeholder body": placeholder,
+            "close keyword": close_keyword,
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(label=label):
+                plan = json.loads(json.dumps(original, ensure_ascii=False))
+                mutate(plan)
+                plan["freshness"]["plan_digest"] = gtt.task_commit_plan_digest(plan)
+                gtt.write_json(candidate, plan)
+                _, _, errors = gtt.validate_task_commit_candidate(self.root, candidate, self.task_dir)
+                self.assertTrue(errors, label)
+
+        stale_digest = json.loads(json.dumps(original, ensure_ascii=False))
+        stale_digest["freshness"]["plan_digest"] = "0" * 64
+        gtt.write_json(candidate, stale_digest)
+        _, _, errors = gtt.validate_task_commit_candidate(self.root, candidate, self.task_dir)
+        self.assertTrue(any("plan_digest" in error for error in errors))
+
+    def test_hook_extra_path_records_blocked_result(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+        hook = self.root / ".git/hooks/pre-commit"
+        hook.write_text("#!/usr/bin/env bash\nset -euo pipefail\necho hook > hook-extra.txt\ngit add hook-extra.txt\n", encoding="utf-8")
+        hook.chmod(0o755)
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+        self.assertIn("committed path set", " ".join(raised.exception.payload["errors"]))
+        result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
+        self.assertEqual(result["status"], "blocked")
+        self.assertEqual(result["exit"], "blocked")
+
+    def test_old_plan_cannot_be_reused_after_first_commit(self) -> None:
+        (self.root / "src/task.txt").write_text("first\n", encoding="utf-8")
+        first = self.make_plan(1, ["src/task.txt"])
+        gtt.execute_task_commit_candidate(self.root, first, self.task_dir)
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.execute_task_commit_candidate(self.root, first, self.task_dir)
+
+        (self.root / "src/task.txt").write_text("second\n", encoding="utf-8")
+        second = self.make_plan(2, ["src/task.txt"])
+        plan, facts, errors = gtt.validate_task_commit_candidate(self.root, second, self.task_dir)
+        self.assertEqual(errors, [])
+        self.assertEqual(plan["sequence"], "002")
+        self.assertEqual(facts["pre_commit_head"], gtt.current_head(self.root))
+
+        reused = self.make_plan(1, ["src/task.txt"])
+        _, _, reuse_errors = gtt.validate_task_commit_candidate(self.root, reused, self.task_dir)
+        self.assertTrue(any("already exists at pre_commit_head" in error for error in reuse_errors))
+
+    def test_sequence_must_be_next_unused(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        candidate = self.make_plan(2, ["src/task.txt"])
+
+        _, _, errors = gtt.validate_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertTrue(any("next unused contiguous sequence" in error for error in errors))
 
 
 class PrepareSideEffectBoundaryTest(unittest.TestCase):
@@ -8487,13 +8850,19 @@ shutil.move(str(active), str(archived))
         mutation.assert_not_called()
 
     def test_git_status_expands_untracked_and_disables_rename_detection(self) -> None:
-        proc = mock.Mock(returncode=0, stdout=" D src/runtime.py\n?? .trellis/tasks/07-11-closeout/runtime.py\n")
-        with mock.patch.object(gtt, "run", return_value=proc) as run:
+        proc = mock.Mock(
+            returncode=0,
+            stdout=b" D src/runtime.py\0?? .trellis/tasks/07-11-closeout/runtime.py\0",
+            stderr=b"",
+        )
+        with mock.patch.object(gtt.subprocess, "run", return_value=proc) as run:
             paths = gtt.git_status_paths(self.root)
         self.assertEqual(paths, ["src/runtime.py", ".trellis/tasks/07-11-closeout/runtime.py"])
         run.assert_called_once_with(
-            ["git", "status", "--porcelain", "--untracked-files=all", "--no-renames"],
-            cwd=self.root,
+            ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all", "--no-renames"],
+            cwd=str(self.root),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             check=False,
         )
 

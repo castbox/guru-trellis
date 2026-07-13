@@ -78,6 +78,13 @@ id or an explicit migration. Upgrade instructions must require workflow and
 preset reapply after `trellis update`, resolution of `.new`/`.bak`, and source,
 installed, and drift validation before claiming success.
 
+Public docs that describe task work commits must name
+`guru-create-task-commit` as the active closed-loop owner, retain
+`guru-create-work-commit` only as a reserved tombstone, distinguish AI review
+from deterministic candidate/executor checks, and document fresh-sequence
+re-entry after finding fixes. Platform entry docs should reference the stable
+skill and typed exits instead of repeating its step-local contract.
+
 When workflow behavior changes, update the docs that users actually read:
 
 - `README.md` for install/upgrade and daily operation

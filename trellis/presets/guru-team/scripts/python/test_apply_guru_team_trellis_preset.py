@@ -38,6 +38,12 @@ def assert_required_planning_context(testcase: unittest.TestCase, text: str) -> 
         testcase.assertNotIn(stale_hint, text)
 
 
+def install_canonical_workflow(repo: Path) -> None:
+    source = preset.guru_root_from_script() / "trellis/workflows/guru-team/workflow.md"
+    target = repo / ".trellis/workflow.md"
+    target.write_bytes(source.read_bytes())
+
+
 class CodexDispatchModeInstallerTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -138,6 +144,7 @@ class LanguageGuidanceInstallerTest(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.repo = Path(self.tmp.name)
         (self.repo / ".trellis").mkdir()
+        install_canonical_workflow(self.repo)
         self.guru_root = preset.guru_root_from_script()
         self.workflow_src = self.guru_root / "trellis/workflows/guru-team"
         self.install_dst = self.repo / ".trellis/guru-team"
@@ -257,6 +264,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.repo = Path(self.tmp.name)
         (self.repo / ".trellis").mkdir()
+        install_canonical_workflow(self.repo)
         self.guru_root = preset.guru_root_from_script()
         self.workflow_src = self.guru_root / "trellis/workflows/guru-team"
         self.install_dst = self.repo / ".trellis/guru-team"
@@ -480,7 +488,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 72)
+        self.assertEqual(len(managed_assets), 73)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -949,6 +957,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.repo = Path(self.tmp.name)
         (self.repo / ".trellis").mkdir()
+        install_canonical_workflow(self.repo)
         self.guru_root = preset.guru_root_from_script()
         self.workflow_src = self.guru_root / "trellis/workflows/guru-team"
         self.install_dst = self.repo / ".trellis/guru-team"
@@ -964,7 +973,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.4")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.5")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         self.assertIn("agent-assignment.json", public_api["artifact_contracts"])
@@ -972,6 +981,10 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("record-subagent-liveness-event", public_api["companion_scripts"])
         self.assertIn("check-subagent-liveness", public_api["companion_scripts"])
         self.assertIn("check-commit-messages", public_api["companion_scripts"])
+        self.assertIn("create-task-commit", public_api["companion_scripts"])
+        self.assertIn("task-commit-plans/*.json", public_api["artifact_contracts"])
+        self.assertEqual(public_api["skill_contracts"]["active_skill_ids"], ["guru-create-task-commit"])
+        self.assertEqual(public_api["skill_contracts"]["reserved_skill_ids"], ["guru-create-work-commit"])
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("backfill-finish-summary", public_api["companion_scripts"])
         self.assertIn("check-skill-packages", public_api["companion_scripts"])

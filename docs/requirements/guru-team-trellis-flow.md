@@ -308,6 +308,18 @@ evidence。
 
 ## 7. Phase 3：Commit 后 Branch Review Gate
 
+Final Phase 2 check 通过后，global workflow 不再直接规划 stage/commit，而是按 stable
+id mandatory invoke `guru-create-task-commit`。该 skill 对每次提交创建独立
+`task-commit-plans/<sequence>.json`：AI 负责 dirty path 分类、exact stage scope、中文
+Conventional Commit 语义、授权与 review gate；统一 candidate validator 与 exact executor
+只校验/执行确定性事实。`committed` 的唯一 consumer 是 Branch Review 或 finding closure，
+`revision-required` 唯一重入同一 skill，`blocked` 唯一 fail closed。
+
+Branch Review finding 产生非 metadata task work 时，流程必须返回实现与完整 Phase 2；
+下一次 commit 使用新的 sequence、fresh Phase 2 digest、fresh pre-commit `HEAD` 和 dirty
+snapshot，旧 plan 不可复用。Platform continue/launcher 只加载 stable skill id 和消费
+typed exit，不复制 step-local contract。
+
 Branch Review Gate 是 Guru Team 最重的质量门禁。它发生在 task work commit 之后、
 `trellis-finish-work` 之前。
 
@@ -425,6 +437,7 @@ PR readiness 要求：
 | `implement.jsonl` / `check.jsonl` | Phase 1.3 | Trellis sub-agent context manifest | `trellis-implement` / `trellis-check`。 |
 | `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity/status ledger | review closure/fresh final reviewer 和 unfinished termination recovery-chain 校验。 |
 | `phase2-check.json` | Phase 2.2 | Guru Team check evidence | 固化 `trellis-check` AI check 的覆盖范围、验证结果、findings 和 dirty paths；commit 前 gate、Branch Review Gate post-commit audit。 |
+| `task-commit-plans/<sequence>.json` | Phase 3.4，可重复进入 | `guru-create-task-commit` task-local evidence | 绑定 task/base/issue、evidence digests、pre-commit HEAD、完整 dirty snapshot、唯一 path 分类、exact stage paths、message bytes、AI review、authorization、freshness 与真实 post-commit result；只保存 repo-relative path/digest/结构化事实。 |
 | `reviews/*.md` | Phase 3.5 | Per-round raw review reports | 中文 human-readable artifact；`agent-assignment.json.review_rounds[]` flat digest fields、`review-gate.json.verification_evidence.review_reports[]`、archive path migration。 |
 | `review.md` | Phase 3.5 | Independent review rollup | 中文最终人类入口，链接每轮 raw report；`review-branch.sh` final digest、finish-work readiness。 |
 | `review-gate.json` | Phase 3.5 | Branch Review Gate artifact | `check-review-gate.sh`、finish-work；记录 final `review.md` digest 和 raw `review_reports[]` digest。 |
@@ -445,7 +458,10 @@ PR readiness 要求：
 4. tracked `task-start-context.json` 只保存 portable workspace/task identifiers；worktree mode 下的机器写入边界由当前 checkout、`.trellis/.runtime/guru-team/**`、`git worktree list` 推导为 `expected_workspace`，并由 `check-workspace-boundary --task` fail closed 校验。该 helper 不替 AI 判断 stale、迁移 patch 或清理 source checkout；#76 liveness checker 在此基础上把 source checkout 新变化视为 workspace boundary progress。
 5. `task.py create/start/archive` 仍是官方 Trellis lifecycle，但 Guru Team 在 start 前要求 `prd.md` / `design.md` / `implement.md` 定位同一个 `Docs SSOT Plan`，展示三份文档链接并得到 explicit post-planning confirmation，Phase 0 handoff 确认不能替代。
 6. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出中文 `reviews/*.md` raw reports 与最终中文 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
-7. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，commit 后必须有独立中文 review raw reports、最终中文 `review.md` rollup 和 recorder 生成的 `review-gate.json`；主会话自检、自审或脚本校验通过不能替代这些证据。
+7. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，并由
+   `guru-create-task-commit` 生成 fresh candidate plan、完成 AI Review，再通过 exact
+   executor 提交；commit 后必须有独立中文 review raw reports、最终中文 `review.md`
+   rollup 和 recorder 生成的 `review-gate.json`。脚本校验通过不能替代 AI 判断。
 8. 任意 finding 都阻断；发现过问题的 reviewer 只能闭环自己的 finding，最终放行必须是 fresh reviewer。
 9. `trellis-continue` 到 Branch Review Gate 就停；`trellis-finish-work` 通过 immutable plan/digest、draft handshake、final projection 与单次 archive transaction 自动 publish PR，Guru Team 不调用 `add_session.py`。
 10. shared start 和 Codex/Cursor SessionStart 只组合 phase/packages/task/Git facts，不打开、枚举、读取或输出 workspace journal。

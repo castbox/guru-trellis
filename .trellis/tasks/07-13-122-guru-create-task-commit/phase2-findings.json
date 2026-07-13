@@ -1,0 +1,34 @@
+{
+  "findings": [
+    {
+      "priority": "P1",
+      "message": "Task commit executor 使用被禁止的 git add -A；已改为 literal exact git add -- <paths>，并用 add/delete/rename、Unicode、pathspec metachar、unrelated staged 与真实 throwaway commit 覆盖。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P1",
+      "message": "非 NUL porcelain/name-only 解析会损坏 Unicode 与特殊字符路径；已统一为 NUL-delimited bytes path 集合，并保留 rename source/destination 后按 no-renames 比较提交路径。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P1",
+      "message": "Candidate sequence/history freshness 未强制 next-unused 且允许 candidate path 已存在于 pre-commit HEAD；已增加 contiguous sequence 与 HEAD history gate，并覆盖旧 plan 拒绝。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "Unexpected staged 或 exact stage/index 前置失败未回写 blocked typed-exit evidence；已统一回写 blocked result，并保留 Git 现场与错误证据。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P1",
+      "message": "Candidate artifact 先 stage 后修改时可能提交旧 index bytes；executor 现无条件重新 stage 当前 validated candidate bytes，并新增 staged-old-bytes 回归测试。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "status": "resolved"
+    }
+  ]
+}

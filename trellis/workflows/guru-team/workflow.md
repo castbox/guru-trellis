@@ -966,7 +966,7 @@ transition; it is not planning review evidence.
 Flow: `trellis-implement` -> `trellis-check` -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; closeout is owned by the explicit `trellis-finish-work` entrypoint, which binds the draft and final summary before archive and marks that same PR ready only after archive HEAD alignment.
 Before dispatching `trellis-implement` / channel `implement` or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, missing or non-passed `ambiguity_review`, or changed `prd.md`/`design.md`/`implement.md` content blocks Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
-Before commit, record and check `phase2-check.json`; it records completed `trellis-check` AI evidence, and validation commands or recorder success alone are not a complete check. The check must cover the Commit Message Contract for planned work commits, Trellis metadata commits, and merge commit payloads.
+Before task work commit, record and check `phase2-check.json`; it records completed `trellis-check` AI evidence, and validation commands or recorder success alone are not a complete check. Message candidate review is owned later by mandatory `guru-create-task-commit`; Phase 2 still checks compatibility with the shared commit-message, metadata, and merge payload contracts.
 Main-session default on dispatch platforms: dispatch `trellis-implement` / channel `implement`, wait for an implementation handoff, then dispatch `trellis-check` / channel `check`. Dispatch prompt starts with `Active task: <task path from task.py current>`. The main session may coordinate and record evidence, but it must not directly implement or directly check in default `sub-agent` mode.
 After dispatching an implement/check sub-agent, record `assigned` for `实现代理` or `阶段二检查代理` with `record-subagent-liveness-event.sh` so `agent-assignment.json` contains `agents[]`, `status_events[]`, and `liveness[agent_id]` baseline. Then run `check-subagent-liveness.sh` at `progress_scan_interval=120s` or the checker-provided `next_wait_ms`. A wait timeout is only a wait-window result; record visible progress first, let checker return the single decision, and follow `status_request_required` / `continue_waiting_no_repeat_ping` / `stale_allowed` / progress decisions exactly. Old `record-agent-assignment.sh --status-event` status paths are deprecated and fail closed.
 Sub-agent self-exemption: if already running as `trellis-implement` or `trellis-check`, do the work directly, do not spawn another Trellis implement/check agent, and return the role-specific handoff/report as artifact evidence. Main-session inline/self-exemption needs explicit artifact evidence; otherwise missing sub-agent evidence fails closed.
@@ -979,7 +979,7 @@ Every Phase 2 or Phase 3 stop/completion reply must first run `resolve-human-art
 Flow: `trellis-before-dev` -> edit -> `trellis-check` -> validation -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; closeout is owned by the explicit `trellis-finish-work` entrypoint, which binds the draft and final summary before archive and marks that same PR ready only after archive HEAD alignment.
 Before editing or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, missing or non-passed `ambiguity_review`, or changed `prd.md`/`design.md`/`implement.md` content blocks inline Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
-Before commit, record and check `phase2-check.json`; validation commands alone are not a complete `trellis-check`. The check must cover the Commit Message Contract for planned work commits, Trellis metadata commits, and merge commit payloads.
+Before task work commit, record and check `phase2-check.json`; validation commands alone are not a complete `trellis-check`. Message candidate review is owned later by mandatory `guru-create-task-commit`; Phase 2 still checks compatibility with the shared commit-message, metadata, and merge payload contracts.
 Do not dispatch implement/check sub-agents in inline mode.
 Before edits, confirm knowledge gate and the `Docs SSOT Plan` from artifacts. Inline Phase 2 still consumes the plan: implementation records strategy execution and docs sync handoff, and the later check verifies durable docs, task artifacts, code/API/schema/config/deploy/test, and validation evidence against that strategy.
 Read context: `prd.md` -> `design.md` -> `implement.md`, plus relevant spec/research loaded by skills.
@@ -1047,10 +1047,10 @@ Phase 2 check must consume the approved `Docs SSOT Plan` and verify the implemen
 - `bootstrap_or_repair_docs` completed the minimum repair, or records a bounded follow-up and current PR limitation;
 - `no_docs_update_needed` still has a concrete reason after reviewing the final diff.
 
-Phase 2 check must also review the Commit Message Contract. Before a passing
-check is recorded, the checker must confirm the planned work commit subject/body
-uses `{type}({scope}): #{primary_issue} 中文描述`, fixed body sections, and
-`Refs #<primary_issue>` without close keywords; Trellis metadata commits use
+Phase 2 check must also review compatibility with the Commit Message Contract,
+but it must not draft or request human approval for a planned work message.
+The later `guru-create-task-commit` AI Review Gate owns the exact work candidate
+and validates it through the shared parser. The checker confirms Trellis metadata commits use
 `chore(trellis): #{primary_issue} 中文动作` with an empty body; and publish/merge
 readiness will produce `chore(merge): #{pull_request} 合并 #{primary_issue} 中文
 PR 摘要` plus the fixed merge body.
@@ -1138,25 +1138,27 @@ Run Docs SSOT reconciliation before committing task work:
 
 This reconciliation may live in `implement.md`, `review-gate.json` evidence, the final report, or a task research note, but Branch Review Gate must later record coverage for the outcome.
 
-#### 3.4 Commit changes `[required · once]`
+#### 3.4 Create task work commit `[required · repeatable]`
 
-Before staging or committing, run:
+After the final Phase 2 report passes and before any task work stage/commit side
+effect, load and invoke the active public skill by stable id:
 
-```bash
-.trellis/guru-team/scripts/bash/check-phase2-check.sh --json
-.trellis/guru-team/scripts/bash/check-commit-messages.sh --json --task <task-path>
-```
+<!-- guru-skill-invoke: {"skill":"guru-create-task-commit","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"committed","consumer":{"kind":"workflow","id":"branch-review-or-finding-closure"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"revision-required","consumer":{"kind":"skill","id":"guru-create-task-commit"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"blocked","consumer":{"kind":"stop","id":"task-commit-blocked"}} -->
 
-If the report is missing, stale, lacks full coverage, lacks validation evidence, or contains unresolved P0/P1/P2 findings, return to Phase 2.2 and run the full check again.
-If commit message validation fails for any commit already in the checked range,
-or if the planned task work commit message does not follow the Commit Message
-Contract, fix the commit plan before staging. This validator only checks
-objective subject/body shape; it does not decide whether implementation or
-review coverage is sufficient.
+The package owns entry checks, candidate construction, AI Review Gate,
+conditional human confirmation, deterministic validator/executor,
+postconditions and typed-exit evidence. This global workflow owns only the
+mandatory invocation, the three unique consumers above, and the repeat route.
+Do not reproduce the step-local contract here or perform a parallel direct
+task work commit path.
 
-Inspect dirty state, separate this task's changes from unrelated changes, draft a commit plan, and wait for user confirmation before committing.
-
-The commit must include task work and relevant artifact updates through `prd.md`, `design.md`, `implement.md`, `issue-scope-ledger.json`, code, tests, config, scripts, schema, or preset installer changes. Do not include unrelated parallel work. The work commit subject/body must follow the Commit Message Contract and use `Refs #<primary_issue>` instead of close keywords such as `Closes #<issue>`.
+`committed` proceeds to Phase 3.5. `revision-required` re-enters the same skill
+without guessing another route. `blocked`, unknown, multiple or unmapped exits
+stop fail closed. Frontmatter auto-match is standalone discovery only and does
+not satisfy this mandatory invocation.
 
 #### 3.5 Branch Review Gate `[required · repeatable]`
 
@@ -1232,6 +1234,13 @@ an unbounded `bootstrap_or_repair_docs` limitation, or a
 `no_docs_update_needed` reason that no longer matches the final diff. Only
 scope-outside docs improvements or explicitly bounded follow-up work may be
 recorded as `followup_candidate`.
+
+When a finding requires non-metadata task work, return to Phase 2.1, complete
+the implementation fix and the full Phase 2.2 check, then invoke Phase 3.4
+again. The new invocation must use a new plan sequence bound to the new Phase 2
+digest, pre-commit `HEAD` and dirty snapshot; an earlier plan cannot be reused.
+Metadata-only review evidence continues through the existing gate/finish tail
+and does not create a second task work commit path.
 
 Persist each independent review round in the conversation and in a task-local
 raw report under `{TASK_DIR}/reviews/*.md`. Raw reports are human-readable task

@@ -341,6 +341,34 @@ or publish-specific validators before pass or publish. This exception does not
 allow source, config, script, docs, schema, preset, overlay, or other
 non-metadata drift.
 
+## Task Commit Plan Artifact
+
+Each `guru-create-task-commit` invocation owns one task-local
+`task-commit-plans/<sequence>.json`, where `sequence` is a fresh three-digit
+increasing id. Schema `guru-task-commit-plan-1.0` binds task/branch/status,
+primary issue and ledger digest, base ref, pre-commit HEAD, planning/Phase 2/
+ledger/task evidence digests, the complete staged/unstaged/untracked/delete/
+rename snapshot, unique path classifications, exact stage paths, exact UTF-8
+message bytes/digest, AI review, authorization, freshness and result.
+
+Every dirty path belongs to exactly one of `task-reviewed`,
+`unrelated-preserved`, `unreviewed-blocking`, or `ambiguous-blocking`. The plan
+self path uses explicit `skill-artifact` coverage and is excluded from the
+snapshot content digest to avoid self-hash recursion. Public artifacts store
+only repo-relative paths, digests and structured facts, never file bodies,
+credentials, signed URLs, customer data or machine-local absolute paths.
+The fresh `phase2-check.json` recorder output may use task-reviewed coverage
+through the candidate's evidence digest because the Phase 2 artifact cannot
+recursively list its own final bytes in `checked_artifacts`; this exception does
+not cover any other task, source, docs, schema, preset or overlay path.
+
+Execution requires `result.status=planned`, no blocking classifications, fresh
+evidence/HEAD/snapshot/message digest, and exact index equality. Post-commit
+result records the real commit SHA, parent, message/path evidence,
+preservation/hook checks and exactly one external exit. A later finding-fix
+commit requires a new sequence and fresh Phase 2 evidence; a prior plan cannot
+be replayed.
+
 ## Agent Assignment Artifact
 
 `agent-assignment.json` is required for Branch Review Gate pass and expected for

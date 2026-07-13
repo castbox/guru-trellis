@@ -73,6 +73,17 @@ Before publish, reject uncommitted non-metadata changes. Metadata-only paths are
 defined by `METADATA_ONLY_PREFIXES` and `METADATA_ONLY_FILES`; update these
 constants deliberately if Trellis metadata ownership changes.
 
+Task work commits use two deterministic entrypoints. `check-commit-messages
+--candidate-artifact <task-local-path>` validates schema/evidence/freshness,
+then calls the existing `validate_commit_message()` parser even when the branch
+range contains no commits. `create-task-commit --candidate-artifact
+<task-local-path>` consumes only a passed AI-reviewed and authorized plan,
+stages literal exact paths, uses `git commit --cleanup=verbatim -F`, and checks
+parent, raw message bytes, committed paths, unrelated preservation and hook
+mutation. Neither command classifies scope, authors message semantics, chooses
+a route, pushes, or rewrites history; broad `git add`, automatic reset, stash,
+amend, rebase and force operations are prohibited.
+
 `finish-work.sh` is an internal helper, not the normal user path. It must reject ordinary direct calls before closeout-plan,
 push, draft PR, archive, or publish side effects; only the explicit
 `trellis-finish-work` entrypoint may pass the `--from-trellis-finish-work`

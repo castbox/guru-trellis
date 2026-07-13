@@ -28,6 +28,11 @@ Activating, renaming, or retiring an id is a public API change. A breaking
 change requires a new id or an explicit migration contract. Production
 registries must never contain test fixtures.
 
+The task work commit migration keeps `guru-create-work-commit` reserved as a
+compatibility tombstone and activates `guru-create-task-commit`. The reserved
+reason identifies the active replacement; the old id must never acquire a
+different package or route meaning.
+
 ## Package And Interface
 
 An active package contains a short `SKILL.md`, `interface.json`, and the
@@ -79,6 +84,13 @@ external exit has exactly one workflow/skill consumer or one explicit
 fail-closed stop. Unknown, duplicate, multiple, or unmapped markers fail source
 validation. Reserved ids must not appear in markers. Frontmatter auto-match is
 discovery assistance only and never replaces mandatory invocation markers.
+
+`guru-create-task-commit` is mandatory after a fresh final Phase 2 pass and
+before every task work stage/commit side effect. It exposes only `committed`,
+`revision-required`, and `blocked`: Branch Review/finding closure consumes the
+first, the skill re-enters on the second, and the workflow stops on the third.
+Finding-fix task work returns through implementation and full Phase 2 before a
+new plan sequence may invoke the skill again.
 
 ## Distribution And Managed Hashes
 

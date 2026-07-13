@@ -122,6 +122,17 @@ PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS = [
     "external_quotes_are_labeled_non_contract",
 ]
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
+TASK_COMMIT_SKILL_ID = "guru-create-task-commit"
+TASK_COMMIT_PLAN_SCHEMA_VERSION = "1.0"
+TASK_COMMIT_PLAN_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json"
+TASK_COMMIT_PLAN_DIR = "task-commit-plans"
+TASK_COMMIT_PLAN_CATEGORIES = {
+    "task-reviewed",
+    "unrelated-preserved",
+    "unreviewed-blocking",
+    "ambiguous-blocking",
+}
+TASK_COMMIT_BLOCKING_CATEGORIES = {"unreviewed-blocking", "ambiguous-blocking"}
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 REVIEW_REPORT_ARTIFACT = "review.md"
 MARKETPLACE_VERIFICATION_ARTIFACT = "marketplace-verification.json"
@@ -3180,20 +3191,22 @@ def git_dirty(root: Path) -> bool:
 
 
 def git_status_paths(root: Path) -> list[str]:
-    lines = run(
-        ["git", "status", "--porcelain", "--untracked-files=all", "--no-renames"],
-        cwd=root,
+    proc = subprocess.run(
+        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all", "--no-renames"],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         check=False,
-    ).stdout.splitlines()
+    )
+    if proc.returncode != 0:
+        return []
     paths: list[str] = []
-    for line in lines:
-        if not line.strip():
+    for record in proc.stdout.split(b"\0"):
+        if not record:
             continue
-        path = line[3:].strip()
-        if " -> " in path:
-            path = path.split(" -> ", 1)[1]
-        if path:
-            paths.append(path)
+        if len(record) < 4:
+            continue
+        paths.append(record[3:].decode("utf-8", "strict"))
     return paths
 
 
@@ -7316,10 +7329,58 @@ def phase2_agent_assignment_errors(root: Path, task_dir: Path) -> list[str]:
     return []
 
 
+def task_commit_candidate_dirty_exclusions(root: Path, task_dir: Path) -> set[str]:
+    plan_dir = task_dir / TASK_COMMIT_PLAN_DIR
+    if not plan_dir.is_dir():
+        return set()
+    candidates: list[str] = []
+    for path in sorted(plan_dir.glob("[0-9][0-9][0-9].json")):
+        payload, error = read_optional_json(path)
+        if error or payload is None:
+            continue
+        relative = repo_relative(root, path)
+        task = payload.get("task") if isinstance(payload.get("task"), dict) else {}
+        git = payload.get("git") if isinstance(payload.get("git"), dict) else {}
+        result = payload.get("result") if isinstance(payload.get("result"), dict) else {}
+        classifications = payload.get("path_classifications")
+        self_classification = next(
+            (
+                item
+                for item in classifications
+                if isinstance(item, dict) and item.get("path") == relative
+            ),
+            None,
+        ) if isinstance(classifications, list) else None
+        schema_errors: list[str] = []
+        try:
+            schema = skill_read_json(task_commit_schema_path(root), "task commit plan schema", schema_errors)
+        except WorkflowError:
+            schema = None
+        if schema is not None:
+            schema_errors.extend(skill_json_schema_validation_errors(payload, schema, "task commit plan"))
+        if (
+            not schema_errors
+            and payload.get("schema_version") == TASK_COMMIT_PLAN_SCHEMA_VERSION
+            and payload.get("skill_id") == TASK_COMMIT_SKILL_ID
+            and payload.get("sequence") == path.stem
+            and task.get("path") == repo_relative(root, task_dir)
+            and git.get("pre_commit_head") == current_head(root)
+            and result.get("status") == "planned"
+            and relative in (payload.get("exact_stage_paths") or [])
+            and isinstance(self_classification, dict)
+            and self_classification.get("category") == "task-reviewed"
+            and self_classification.get("coverage_source") == "skill-artifact"
+            and payload.get("freshness", {}).get("plan_digest") == task_commit_plan_digest(payload)
+        ):
+            candidates.append(relative)
+    return set(candidates) if len(candidates) == 1 else set()
+
+
 def validate_phase2_check(
     root: Path,
     task_dir: Path,
     allow_committed_head: bool = False,
+    additional_dirty_excluded: set[str] | None = None,
 ) -> tuple[Path, dict[str, Any], list[str]]:
     path = phase2_check_path(task_dir)
     if not path.exists():
@@ -7362,6 +7423,7 @@ def validate_phase2_check(
             errors.append(f"phase2-check.json 记录的 HEAD {recorded_head or '(missing)'} 与当前 HEAD {head} 不一致。")
     dirty_excluded = {repo_relative(root, phase2_check_path(task_dir))}
     dirty_excluded.update(recorded_digest_paths(payload.get("checked_artifacts")))
+    dirty_excluded.update(additional_dirty_excluded or task_commit_candidate_dirty_exclusions(root, task_dir))
     dirty_now = dirty_paths_excluding(root, dirty_excluded)
     recorded_dirty = payload.get("dirty_paths")
     if not isinstance(recorded_dirty, list):
@@ -7846,7 +7908,10 @@ def section_line_positions(body: str, required_sections: list[str]) -> tuple[dic
 
 
 def section_has_content(lines: list[str], start: int, end: int) -> bool:
-    return any(line.strip() for line in lines[start + 1 : end])
+    return any(
+        line.strip() and line.strip().lower() not in PLACEHOLDER_EVIDENCE_VALUES
+        for line in lines[start + 1 : end]
+    )
 
 
 def footer_line_index(body: str, pattern: re.Pattern[str]) -> tuple[int | None, re.Match[str] | None]:
@@ -9521,8 +9586,642 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def task_commit_schema_path(root: Path) -> Path:
+    candidates = [
+        root / "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+        root / ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+    ]
+    for path in candidates:
+        if path.is_file():
+            return path
+    raise WorkflowError("guru-create-task-commit schema is not installed.", exit_code=2)
+
+
+def task_commit_repo_path_errors(value: Any, label: str) -> list[str]:
+    if not isinstance(value, str) or not value or "\x00" in value:
+        return [f"{label} must be a non-empty repo-relative path."]
+    path = Path(value)
+    if path.is_absolute() or ".." in path.parts:
+        return [f"{label} must stay repo-relative without parent traversal."]
+    return []
+
+
+def task_commit_canonical_digest(payload: Any) -> str:
+    encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def task_commit_plan_digest(payload: dict[str, Any]) -> str:
+    normalized = copy.deepcopy(payload)
+    freshness = normalized.get("freshness")
+    if isinstance(freshness, dict):
+        freshness["plan_digest"] = ""
+    return task_commit_canonical_digest(normalized)
+
+
+def task_commit_file_evidence(root: Path, path: Path) -> dict[str, Any]:
+    content = path.read_bytes()
+    return {
+        "path": repo_relative(root, path),
+        "sha256": hashlib.sha256(content).hexdigest(),
+        "size": len(content),
+    }
+
+
+def task_commit_evidence_errors(root: Path, expected: Any, path: Path, label: str) -> list[str]:
+    if not isinstance(expected, dict):
+        return [f"task commit plan evidence.{label} must be an object."]
+    if not path.is_file():
+        return [f"task commit plan evidence.{label} file is missing."]
+    actual = task_commit_file_evidence(root, path)
+    errors: list[str] = []
+    for key in ("path", "sha256", "size"):
+        if expected.get(key) != actual[key]:
+            errors.append(f"task commit plan evidence.{label}.{key} is stale or mismatched.")
+    return errors
+
+
+def task_commit_index_identity(root: Path, path: str) -> tuple[str | None, str | None]:
+    proc = subprocess.run(
+        ["git", "ls-files", "-s", "-z", "--", path],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0 or not proc.stdout:
+        return None, None
+    record = proc.stdout.split(b"\0", 1)[0]
+    metadata = record.split(b"\t", 1)[0].decode("ascii", "strict").split()
+    if len(metadata) < 2:
+        return None, None
+    return metadata[1], metadata[0]
+
+
+def task_commit_worktree_identity(root: Path, path: str) -> tuple[str | None, str | None]:
+    target = root / path
+    try:
+        metadata = target.lstat()
+    except FileNotFoundError:
+        return None, None
+    if stat.S_ISLNK(metadata.st_mode):
+        content = os.fsencode(os.readlink(target))
+        return hashlib.sha256(content).hexdigest(), "120000"
+    if not stat.S_ISREG(metadata.st_mode):
+        return None, None
+    mode = "100755" if metadata.st_mode & stat.S_IXUSR else "100644"
+    return hashlib.sha256(target.read_bytes()).hexdigest(), mode
+
+
+def capture_task_commit_snapshot(root: Path, excluded: set[str] | None = None) -> dict[str, Any]:
+    proc = subprocess.run(
+        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Could not capture the task commit Git snapshot.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    fields = proc.stdout.split(b"\0")
+    entries: list[dict[str, Any]] = []
+    index = 0
+    while index < len(fields):
+        field = fields[index]
+        index += 1
+        if not field:
+            continue
+        if len(field) < 4:
+            raise WorkflowError("Git returned an invalid porcelain status record.", exit_code=2)
+        status_text = field[:2].decode("ascii", "strict")
+        path = field[3:].decode("utf-8", "strict")
+        renamed_from: str | None = None
+        if "R" in status_text or "C" in status_text:
+            if index >= len(fields) or not fields[index]:
+                raise WorkflowError("Git returned an incomplete rename status record.", exit_code=2)
+            renamed_from = fields[index].decode("utf-8", "strict")
+            index += 1
+        if path in (excluded or set()):
+            continue
+        index_status = "" if status_text[0] == " " else status_text[0]
+        worktree_status = "" if status_text[1] == " " else status_text[1]
+        untracked = status_text == "??"
+        index_blob, index_mode = task_commit_index_identity(root, path)
+        worktree_sha256, worktree_mode = task_commit_worktree_identity(root, path)
+        entries.append(
+            {
+                "path": path,
+                "index_status": index_status,
+                "worktree_status": worktree_status,
+                "untracked": untracked,
+                "deleted": "D" in status_text,
+                "renamed_from": renamed_from,
+                "index_blob": index_blob,
+                "worktree_sha256": worktree_sha256,
+                "mode": worktree_mode or index_mode,
+            }
+        )
+    entries.sort(key=lambda item: (str(item["path"]), str(item.get("renamed_from") or "")))
+    return {"entries": entries, "digest": task_commit_canonical_digest(entries)}
+
+
+def task_commit_message_parts(message_bytes: str) -> tuple[str, str]:
+    if "\r" in message_bytes or not message_bytes.endswith("\n"):
+        return "", ""
+    content = message_bytes[:-1]
+    subject, separator, body = content.partition("\n\n")
+    return (subject, body) if separator else ("", "")
+
+
+def resolve_task_commit_candidate(root: Path, value: str) -> tuple[Path, Path]:
+    raw = Path(value).expanduser()
+    path = raw if raw.is_absolute() else root / raw
+    path = path.resolve()
+    tasks = (root / ".trellis/tasks").resolve()
+    try:
+        path.relative_to(tasks)
+    except ValueError as exc:
+        raise WorkflowError("--candidate-artifact must stay inside .trellis/tasks/.", exit_code=2) from exc
+    if path.parent.name != TASK_COMMIT_PLAN_DIR or path.suffix != ".json" or not re.fullmatch(r"[0-9]{3}", path.stem):
+        raise WorkflowError("--candidate-artifact must match task-commit-plans/<three-digit-sequence>.json.", exit_code=2)
+    return path, path.parent.parent
+
+
+def validate_task_commit_candidate(
+    root: Path,
+    candidate_path: Path,
+    task_dir: Path,
+) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
+    errors: list[str] = []
+    plan = read_json(candidate_path)
+    schema_errors: list[str] = []
+    schema = skill_read_json(task_commit_schema_path(root), "task commit plan schema", schema_errors)
+    errors.extend(schema_errors)
+    if schema is not None:
+        errors.extend(skill_json_schema_validation_errors(plan, schema, "task commit plan"))
+
+    config = load_config(root)
+    task_context = load_task_start_context(task_dir, config)
+    boundary = assert_workspace_boundary(root, config, task_context, task_dir)
+    task = task_json(task_dir)
+    task_relative = repo_relative(root, task_dir)
+    candidate_relative = repo_relative(root, candidate_path)
+    current = current_head(root)
+    current_branch_name = current_branch(root)
+
+    if plan.get("$schema") != TASK_COMMIT_PLAN_SCHEMA_ID:
+        errors.append("task commit plan has the wrong $schema identity.")
+    if plan.get("schema_version") != TASK_COMMIT_PLAN_SCHEMA_VERSION:
+        errors.append("task commit plan schema_version must be 1.0.")
+    if plan.get("skill_id") != TASK_COMMIT_SKILL_ID:
+        errors.append("task commit plan skill_id must be guru-create-task-commit.")
+    if plan.get("sequence") != candidate_path.stem:
+        errors.append("task commit plan sequence does not match its filename.")
+    sequence_text = plan.get("sequence")
+    if isinstance(sequence_text, str) and re.fullmatch(r"[0-9]{3}", sequence_text):
+        sequence_number = int(sequence_text)
+        occupied_sequences = {
+            int(path.stem)
+            for path in candidate_path.parent.glob("[0-9][0-9][0-9].json")
+            if path != candidate_path
+        }
+        expected_prior = set(range(1, sequence_number))
+        if sequence_number < 1 or occupied_sequences != expected_prior:
+            errors.append("task commit plan sequence must be the next unused contiguous sequence.")
+        tracked_candidate = subprocess.run(
+            ["git", "--literal-pathspecs", "ls-tree", "-z", "--name-only", "HEAD", "--", candidate_relative],
+            cwd=str(root),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if tracked_candidate.returncode != 0:
+            errors.append("task commit plan could not verify sequence history at pre_commit_head.")
+        elif tracked_candidate.stdout:
+            errors.append("task commit plan candidate already exists at pre_commit_head; use the next unused sequence.")
+
+    task_plan = plan.get("task") if isinstance(plan.get("task"), dict) else {}
+    if task_plan.get("id") != task.get("id") or task_plan.get("path") != task_relative:
+        errors.append("task commit plan task identity does not match the current task.")
+    if task.get("status") != "in_progress" or task_plan.get("status") != "in_progress":
+        errors.append("task commit plan requires an in_progress task.")
+    if task_plan.get("branch") != current_branch_name or task.get("branch") != current_branch_name:
+        errors.append("task commit plan branch does not match the current branch.")
+
+    git_plan = plan.get("git") if isinstance(plan.get("git"), dict) else {}
+    if git_plan.get("pre_commit_head") != current:
+        errors.append("task commit plan pre_commit_head is stale.")
+    base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, task_context)
+    if git_plan.get("base_branch") != base_branch:
+        errors.append("task commit plan base_branch does not match task evidence.")
+    expected_base_ref = diff_base_ref(root, base_branch)
+    if git_plan.get("base_ref") != expected_base_ref:
+        errors.append("task commit plan base_ref does not match the current Git base.")
+
+    ledger_path = issue_scope_ledger_path(task_dir)
+    ledger = load_issue_scope_ledger(task_dir, task_context)
+    primary_issue = primary_issue_number_from_ledger(ledger)
+    issue_plan = plan.get("issue") if isinstance(plan.get("issue"), dict) else {}
+    ledger_digest = hashlib.sha256(ledger_path.read_bytes()).hexdigest()
+    if issue_plan.get("primary_issue") != primary_issue or issue_plan.get("ledger_sha256") != ledger_digest:
+        errors.append("task commit plan issue identity or ledger digest is stale.")
+
+    evidence = plan.get("evidence") if isinstance(plan.get("evidence"), dict) else {}
+    evidence_paths = {
+        "planning_approval": planning_approval_path(task_dir),
+        "phase2_check": phase2_check_path(task_dir),
+        "issue_scope_ledger": ledger_path,
+        "task": task_dir / "task.json",
+    }
+    for label, path in evidence_paths.items():
+        errors.extend(task_commit_evidence_errors(root, evidence.get(label), path, label))
+    _, _, planning_errors = validate_planning_approval(root, task_dir)
+    errors.extend(f"planning approval: {item}" for item in planning_errors)
+    _, phase2, phase2_errors = validate_phase2_check(
+        root,
+        task_dir,
+        additional_dirty_excluded={candidate_relative},
+    )
+    errors.extend(f"Phase 2 check: {item}" for item in phase2_errors)
+    if str(phase2.get("head") or "") != current:
+        errors.append("task commit plan requires Phase 2 evidence recorded at pre_commit_head.")
+
+    current_snapshot = capture_task_commit_snapshot(root, {candidate_relative})
+    snapshot = plan.get("dirty_snapshot") if isinstance(plan.get("dirty_snapshot"), dict) else {}
+    if snapshot != current_snapshot:
+        errors.append("task commit plan dirty_snapshot is stale or incomplete.")
+
+    classifications = plan.get("path_classifications")
+    classification_by_path: dict[str, dict[str, Any]] = {}
+    if not isinstance(classifications, list):
+        errors.append("task commit plan path_classifications must be an array.")
+    else:
+        for index, item in enumerate(classifications):
+            if not isinstance(item, dict):
+                errors.append(f"task commit plan path_classifications[{index}] must be an object.")
+                continue
+            path_value = item.get("path")
+            errors.extend(task_commit_repo_path_errors(path_value, f"path_classifications[{index}].path"))
+            if isinstance(path_value, str):
+                if path_value in classification_by_path:
+                    errors.append(f"task commit plan classifies {path_value} more than once.")
+                classification_by_path[path_value] = item
+            if item.get("category") not in TASK_COMMIT_PLAN_CATEGORIES:
+                errors.append(f"task commit plan has an unknown category for {path_value}.")
+            if not str(item.get("reason") or "").strip() or not str(item.get("coverage_source") or "").strip():
+                errors.append(f"task commit plan classification for {path_value} lacks AI evidence.")
+    snapshot_entries = current_snapshot["entries"]
+    snapshot_paths = {str(item["path"]) for item in snapshot_entries}
+    expected_classified_paths = snapshot_paths | {candidate_relative}
+    if set(classification_by_path) != expected_classified_paths:
+        errors.append("task commit plan classifications do not exactly cover the dirty snapshot and candidate artifact.")
+    self_classification = classification_by_path.get(candidate_relative, {})
+    if (
+        self_classification.get("category") != "task-reviewed"
+        or self_classification.get("coverage_source") != "skill-artifact"
+    ):
+        errors.append("task commit plan candidate self path must use task-reviewed/skill-artifact coverage.")
+    if any(item.get("category") in TASK_COMMIT_BLOCKING_CATEGORIES for item in classification_by_path.values()):
+        errors.append("task commit plan contains a blocking path classification.")
+
+    reviewed_paths = {
+        path for path, item in classification_by_path.items() if item.get("category") == "task-reviewed"
+    }
+    phase2_covered_paths = {
+        str(item) for item in phase2.get("dirty_paths", []) if isinstance(item, str)
+    }
+    phase2_covered_paths.update(recorded_digest_paths(phase2.get("checked_artifacts")))
+    # The recorder cannot include its own final bytes in checked_artifacts
+    # without creating a recursive digest. Candidate evidence binds those bytes.
+    phase2_covered_paths.add(repo_relative(root, phase2_check_path(task_dir)))
+    uncovered_reviewed = sorted(reviewed_paths - {candidate_relative} - phase2_covered_paths)
+    if uncovered_reviewed:
+        errors.append(
+            "task-reviewed paths are not covered by fresh Phase 2 evidence: "
+            + ", ".join(uncovered_reviewed)
+        )
+    snapshot_by_path = {str(item["path"]): item for item in snapshot_entries}
+    expected_stage_paths = set(reviewed_paths)
+    for path in list(reviewed_paths):
+        renamed_from = snapshot_by_path.get(path, {}).get("renamed_from")
+        if isinstance(renamed_from, str) and renamed_from:
+            expected_stage_paths.add(renamed_from)
+    stage_paths = plan.get("exact_stage_paths")
+    if not isinstance(stage_paths, list) or any(not isinstance(item, str) for item in stage_paths):
+        errors.append("task commit plan exact_stage_paths must be a string array.")
+        stage_paths = []
+    for index, path_value in enumerate(stage_paths):
+        errors.extend(task_commit_repo_path_errors(path_value, f"exact_stage_paths[{index}]"))
+    if len(stage_paths) != len(set(stage_paths)) or set(stage_paths) != expected_stage_paths:
+        errors.append("task commit plan exact_stage_paths do not equal the reviewed literal path set.")
+
+    message = plan.get("message") if isinstance(plan.get("message"), dict) else {}
+    message_bytes = message.get("bytes")
+    if not isinstance(message_bytes, str):
+        errors.append("task commit plan message.bytes must be a string.")
+        message_bytes = ""
+    subject, body = task_commit_message_parts(message_bytes)
+    if not subject or not body or message.get("subject") != subject or message.get("body") != body:
+        errors.append("task commit plan message subject/body do not match exact bytes.")
+    message_digest = hashlib.sha256(message_bytes.encode("utf-8")).hexdigest()
+    if message.get("sha256") != message_digest:
+        errors.append("task commit plan message digest is stale.")
+    kind, message_errors = validate_commit_message(subject, body, primary_issue=primary_issue)
+    if kind != "work":
+        errors.append("task commit plan message must be a work commit.")
+    errors.extend(f"candidate message: {item}" for item in message_errors)
+
+    ai_review = plan.get("ai_review") if isinstance(plan.get("ai_review"), dict) else {}
+    if (
+        ai_review.get("status") != "passed"
+        or not str(ai_review.get("reviewer") or "").strip()
+        or not str(ai_review.get("summary") or "").strip()
+        or not isinstance(ai_review.get("evidence"), list)
+        or not ai_review.get("evidence")
+    ):
+        errors.append("task commit plan requires a concrete passed AI Review Gate.")
+    authorization = plan.get("authorization") if isinstance(plan.get("authorization"), dict) else {}
+    if (
+        authorization.get("authorized") is not True
+        or not str(authorization.get("source") or "").strip()
+        or not str(authorization.get("evidence") or "").strip()
+    ):
+        errors.append("task commit plan lacks commit side-effect authorization.")
+    result = plan.get("result") if isinstance(plan.get("result"), dict) else {}
+    if result.get("status") != "planned" or result.get("exit") is not None:
+        errors.append("task commit plan is not in the unexecuted planned state.")
+    freshness = plan.get("freshness") if isinstance(plan.get("freshness"), dict) else {}
+    if not str(freshness.get("captured_at") or "").strip():
+        errors.append("task commit plan freshness.captured_at is missing.")
+    if freshness.get("plan_digest") != task_commit_plan_digest(plan):
+        errors.append("task commit plan plan_digest is stale.")
+
+    facts = {
+        "task_dir": task_relative,
+        "candidate_artifact": candidate_relative,
+        "sequence": plan.get("sequence"),
+        "pre_commit_head": current,
+        "primary_issue": primary_issue,
+        "snapshot_digest": current_snapshot["digest"],
+        "message_sha256": message_digest,
+        "exact_stage_paths": stage_paths,
+        "unrelated_preserved_paths": sorted(
+            path for path, item in classification_by_path.items() if item.get("category") == "unrelated-preserved"
+        ),
+        "workspace_boundary": boundary,
+    }
+    return plan, facts, errors
+
+
+def git_nul_path_set(root: Path, args: list[str]) -> set[str]:
+    proc = subprocess.run(
+        ["git", *args], cwd=str(root), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False
+    )
+    if proc.returncode != 0:
+        raise WorkflowError(
+            f"Git path query failed: {shlex.join(['git', *args])}",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    return {
+        item.decode("utf-8", "strict")
+        for item in proc.stdout.split(b"\0")
+        if item
+    }
+
+
+def task_commit_raw_message(root: Path, commit: str) -> bytes:
+    proc = subprocess.run(
+        ["git", "cat-file", "commit", commit],
+        cwd=str(root), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+    )
+    if proc.returncode != 0 or b"\n\n" not in proc.stdout:
+        raise WorkflowError("Could not read the raw task commit object.", exit_code=2)
+    return proc.stdout.split(b"\n\n", 1)[1]
+
+
+def record_task_commit_result(
+    candidate_path: Path,
+    plan: dict[str, Any],
+    status: str,
+    exit_id: str,
+    **facts: Any,
+) -> None:
+    plan["result"] = {
+        "status": status,
+        "exit": exit_id,
+        "recorded_at": now_iso(),
+        **facts,
+    }
+    write_json(candidate_path, plan)
+
+
+def execute_task_commit_candidate(
+    root: Path,
+    candidate_path: Path,
+    task_dir: Path,
+) -> dict[str, Any]:
+    plan, facts, errors = validate_task_commit_candidate(root, candidate_path, task_dir)
+    if errors:
+        raise WorkflowError(
+            "Task commit candidate validation failed.",
+            exit_code=2,
+            payload={"status": "blocked", "candidate_validation": facts, "errors": errors},
+        )
+    exact_paths = set(facts["exact_stage_paths"])
+    staged_before = git_nul_path_set(root, ["diff", "--cached", "--name-only", "--no-renames", "-z"])
+    unexpected_staged = sorted(staged_before - exact_paths)
+    if unexpected_staged:
+        record_task_commit_result(
+            candidate_path,
+            plan,
+            "blocked",
+            "blocked",
+            commit_sha=current_head(root),
+            errors=["staged paths exist outside the exact task commit plan"],
+            unexpected_staged_paths=unexpected_staged,
+        )
+        raise WorkflowError(
+            "Task commit executor found staged paths outside the exact plan.",
+            exit_code=2,
+            payload={"status": "blocked", "unexpected_staged_paths": unexpected_staged},
+        )
+
+    snapshot_entries = {
+        str(item["path"]): item
+        for item in plan["dirty_snapshot"]["entries"]
+        if isinstance(item, dict)
+    }
+    classifications = {
+        str(item["path"]): item
+        for item in plan["path_classifications"]
+        if isinstance(item, dict)
+    }
+    unrelated_before = {
+        path: snapshot_entries[path]
+        for path, item in classifications.items()
+        if item.get("category") == "unrelated-preserved" and path in snapshot_entries
+    }
+    pre_commit_head = current_head(root)
+    try:
+        paths_to_stage = set(exact_paths - staged_before)
+        paths_to_stage.update(
+            path
+            for path, entry in snapshot_entries.items()
+            if path in exact_paths and (entry.get("worktree_status") or entry.get("untracked"))
+        )
+        # The candidate is excluded from the recursive dirty snapshot, so it
+        # must always be refreshed in the index from its validated bytes.
+        paths_to_stage.add(str(facts["candidate_artifact"]))
+        if paths_to_stage:
+            stage_proc = run(
+                ["git", "--literal-pathspecs", "add", "--", *sorted(paths_to_stage)],
+                cwd=root,
+                check=False,
+            )
+            if stage_proc.returncode != 0:
+                raise WorkflowError(
+                    "Task commit executor could not stage the exact path set.",
+                    exit_code=2,
+                    payload={"stderr": stage_proc.stderr.strip()},
+                )
+        staged_after = git_nul_path_set(root, ["diff", "--cached", "--name-only", "--no-renames", "-z"])
+        if staged_after != exact_paths:
+            raise WorkflowError(
+                "Task commit executor index does not equal the exact path set.",
+                exit_code=2,
+                payload={"expected": sorted(exact_paths), "actual": sorted(staged_after)},
+            )
+
+        message_bytes = plan["message"]["bytes"].encode("utf-8")
+        fd, name = tempfile.mkstemp(prefix=".guru-task-commit-", suffix=".msg")
+        message_path = Path(name)
+        try:
+            os.fchmod(fd, 0o600)
+            with os.fdopen(fd, "wb") as handle:
+                handle.write(message_bytes)
+                handle.flush()
+                os.fsync(handle.fileno())
+            commit_proc = run(
+                ["git", "commit", "--cleanup=verbatim", "-F", str(message_path)],
+                cwd=root,
+                check=False,
+            )
+        finally:
+            message_path.unlink(missing_ok=True)
+        if commit_proc.returncode != 0:
+            raise WorkflowError(
+                "git commit failed; the executor preserved the current Git state.",
+                exit_code=2,
+                payload={"stderr": commit_proc.stderr.strip(), "stdout": commit_proc.stdout.strip()},
+            )
+
+        commit_sha = current_head(root)
+        parents = run_stdout(["git", "show", "-s", "--format=%P", commit_sha], cwd=root).split()
+        committed_paths = git_nul_path_set(
+            root,
+            ["diff-tree", "--root", "--no-commit-id", "--name-only", "--no-renames", "-r", "-z", commit_sha],
+        )
+        raw_message = task_commit_raw_message(root, commit_sha)
+        post_snapshot = capture_task_commit_snapshot(root)
+        post_by_path = {str(item["path"]): item for item in post_snapshot["entries"]}
+        unrelated_after = {path: post_by_path.get(path) for path in unrelated_before}
+        remaining_staged = git_nul_path_set(root, ["diff", "--cached", "--name-only", "--no-renames", "-z"])
+        post_errors: list[str] = []
+        if parents != [pre_commit_head]:
+            post_errors.append("committed parent does not equal pre_commit_head")
+        if raw_message != message_bytes:
+            post_errors.append("raw committed message bytes do not equal the candidate bytes")
+        if committed_paths != exact_paths:
+            post_errors.append("committed path set does not equal exact_stage_paths")
+        subject, body = task_commit_message_parts(raw_message.decode("utf-8", "strict"))
+        _, parser_errors = validate_commit_message(subject, body, primary_issue=int(facts["primary_issue"]))
+        post_errors.extend(f"committed message: {item}" for item in parser_errors)
+        if unrelated_after != unrelated_before:
+            post_errors.append("unrelated-preserved path state changed")
+        extra_dirty = sorted(set(post_by_path) - set(unrelated_before))
+        if extra_dirty:
+            post_errors.append("hook or commit result introduced unplanned dirty paths: " + ", ".join(extra_dirty))
+        if remaining_staged:
+            post_errors.append("hook or commit result left staged paths: " + ", ".join(sorted(remaining_staged)))
+        if post_errors:
+            record_task_commit_result(
+                candidate_path,
+                plan,
+                "blocked",
+                "blocked",
+                commit_sha=commit_sha,
+                parent=parents[0] if len(parents) == 1 else None,
+                message_sha256=hashlib.sha256(raw_message).hexdigest(),
+                committed_paths=sorted(committed_paths),
+                unrelated_preserved=unrelated_after == unrelated_before,
+                hook_mutation=bool(extra_dirty or remaining_staged or committed_paths != exact_paths),
+                errors=post_errors,
+            )
+            raise WorkflowError(
+                "Task commit postcondition validation failed; Git state was preserved.",
+                exit_code=2,
+                payload={"status": "blocked", "commit_sha": commit_sha, "errors": post_errors},
+            )
+        record_task_commit_result(
+            candidate_path,
+            plan,
+            "committed",
+            "committed",
+            commit_sha=commit_sha,
+            parent=pre_commit_head,
+            message_sha256=hashlib.sha256(raw_message).hexdigest(),
+            committed_paths=sorted(committed_paths),
+            unrelated_preserved=True,
+            hook_mutation=False,
+        )
+        return {
+            "status": "committed",
+            "exit": "committed",
+            "candidate_artifact": repo_relative(root, candidate_path),
+            "sequence": plan["sequence"],
+            "pre_commit_head": pre_commit_head,
+            "commit_sha": commit_sha,
+            "message_sha256": hashlib.sha256(raw_message).hexdigest(),
+            "committed_paths": sorted(committed_paths),
+            "unrelated_preserved_paths": sorted(unrelated_before),
+        }
+    except WorkflowError as exc:
+        if plan.get("result", {}).get("status") == "planned":
+            record_task_commit_result(
+                candidate_path,
+                plan,
+                "blocked",
+                "blocked",
+                commit_sha=current_head(root),
+                errors=[str(exc)],
+            )
+        raise
+
+
 def cmd_check_commit_messages(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
+    if getattr(args, "candidate_artifact", None):
+        candidate_path, candidate_task_dir = resolve_task_commit_candidate(root, args.candidate_artifact)
+        if getattr(args, "task", None):
+            requested_task = resolve_task_dir(root, args.task)
+            if requested_task.resolve() != candidate_task_dir.resolve():
+                raise WorkflowError("--task and --candidate-artifact resolve to different tasks.", exit_code=2)
+        plan, facts, errors = validate_task_commit_candidate(root, candidate_path, candidate_task_dir)
+        payload = {
+            "status": "ok" if not errors else "blocked",
+            "mode": "candidate",
+            "candidate_validation": facts,
+            "checked_commits": [],
+            "errors": errors,
+        }
+        if errors:
+            raise WorkflowError("Task commit candidate validation failed.", exit_code=2, payload=payload)
+        return payload
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
     task_context = load_task_start_context(task_dir, config) if getattr(args, "task", None) else None
@@ -9566,6 +10265,16 @@ def cmd_check_commit_messages(args: argparse.Namespace) -> dict[str, Any]:
     if errors:
         raise WorkflowError("Commit message validation failed.", exit_code=2, payload=payload)
     return payload
+
+
+def cmd_create_task_commit(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    candidate_path, task_dir = resolve_task_commit_candidate(root, args.candidate_artifact)
+    if getattr(args, "task", None):
+        requested_task = resolve_task_dir(root, args.task)
+        if requested_task.resolve() != task_dir.resolve():
+            raise WorkflowError("--task and --candidate-artifact resolve to different tasks.", exit_code=2)
+    return execute_task_commit_candidate(root, candidate_path, task_dir)
 
 
 def cmd_format_merge_commit(args: argparse.Namespace) -> dict[str, Any]:
@@ -9985,6 +10694,8 @@ def skill_collect_tree_files(
             if stat.S_ISLNK(child_stat.st_mode) or not stat.S_ISDIR(child_stat.st_mode):
                 errors.append(f"{label} contains a symlink or non-directory component")
                 continue
+            if dirname == "__pycache__":
+                continue
             safe_dirs.append(dirname)
         dirnames[:] = safe_dirs
         for filename in sorted(filenames):
@@ -9996,6 +10707,8 @@ def skill_collect_tree_files(
                 continue
             if not stat.S_ISREG(child_stat.st_mode):
                 errors.append(f"{label} contains a symlink or non-regular file")
+                continue
+            if child.suffix in {".pyc", ".pyo"}:
                 continue
             output.append(child)
     return sorted(output)
@@ -14216,7 +14929,15 @@ def build_parser() -> argparse.ArgumentParser:
     check_commits.add_argument("--task")
     check_commits.add_argument("--primary-issue", type=int)
     check_commits.add_argument("--base-ref", help="Git ref used as the start of the checked range. Defaults to the task base branch.")
-    check_commits.add_argument("--range", help="Explicit git log range, for example origin/main..HEAD.")
+    check_commit_mode = check_commits.add_mutually_exclusive_group()
+    check_commit_mode.add_argument("--range", help="Explicit git log range, for example origin/main..HEAD.")
+    check_commit_mode.add_argument("--candidate-artifact", help="Task-local task-commit-plans/<sequence>.json to validate independently of branch history.")
+
+    create_commit = sub.add_parser("create-task-commit")
+    create_commit.add_argument("--root")
+    create_commit.add_argument("--json", action="store_true")
+    create_commit.add_argument("--task")
+    create_commit.add_argument("--candidate-artifact", required=True)
 
     merge_commit = sub.add_parser("format-merge-commit")
     merge_commit.add_argument("--root")
@@ -14331,6 +15052,8 @@ def main() -> int:
             payload = cmd_check_review_gate(args)
         elif args.command == "check-commit-messages":
             payload = cmd_check_commit_messages(args)
+        elif args.command == "create-task-commit":
+            payload = cmd_create_task_commit(args)
         elif args.command == "format-merge-commit":
             payload = cmd_format_merge_commit(args)
         elif args.command == "publish-pr":

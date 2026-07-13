@@ -1,0 +1,49 @@
+{
+  "primary_issue": {
+    "number": 122,
+    "url": "https://github.com/castbox/guru-trellis/issues/122",
+    "title": "实现 guru-create-task-commit 闭环 Skill 并收敛 Task work commit SSOT",
+    "reason": "Primary issue；当前 task 的唯一 close 候选。",
+    "acceptance_evidence": [
+      {
+        "type": "remote_marketplace_verification",
+        "status": "pending",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。"
+      }
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 122,
+      "url": "https://github.com/castbox/guru-trellis/issues/122",
+      "title": "实现 guru-create-task-commit 闭环 Skill 并收敛 Task work commit SSOT",
+      "reason": "实现、Phase 2、Branch Review 与 remote verifier 完整覆盖后关闭 #122。",
+      "acceptance_evidence": [
+        {
+          "type": "remote_marketplace_verification",
+          "status": "pending",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。"
+        }
+      ]
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 92,
+      "url": "https://github.com/castbox/guru-trellis/issues/92",
+      "title": "强制 guru-team workflow 使用中文 Conventional Commits 提交规范",
+      "reason": "提供现有唯一 commit message parser/validator 合同；当前 PR 不关闭 #92。"
+    },
+    {
+      "number": 120,
+      "url": "https://github.com/castbox/guru-trellis/issues/120",
+      "title": "建立 Guru Team 闭环 Skill 合同与 Canonical 分发基础设施",
+      "reason": "提供 canonical package、registry/interface、typed exits 与 managed-hash distribution；当前 PR 不关闭 #120。"
+    }
+  ],
+  "followup_issues": []
+}

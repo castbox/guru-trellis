@@ -198,11 +198,20 @@ links. `format-merge-commit` must output the merge commit subject/body/command p
 maintainers do not rely on GitHub's default `Merge pull request #xx from ...`
 subject or a Chinese PR title such as `完成：#xx ... (#yy)`.
 
-Phase 2 check must verify planned work/metadata/merge commit message coverage.
-Phase 3.4 runs `check-commit-messages.sh` before commit planning proceeds.
-Branch Review Gate reviews committed messages and publish readiness payloads.
-Finish-work metadata commits and publish merge payloads must be generated from
-the same objective formatter/validator contract.
+Phase 2 check verifies implementation and message-relevant evidence, but it does
+not ask for manual approval of a planned work message. After a fresh final Phase
+2 pass, Phase 3.4 mandatory invokes `guru-create-task-commit`. The skill owns
+candidate construction, AI review, conditional confirmation and re-entry; its
+candidate mode calls the shared `validate_commit_message()` parser, and its
+exact executor validates the resulting commit. Branch Review Gate reviews
+committed messages and publish readiness payloads. Finish-work metadata commits
+and publish merge payloads remain on the same objective formatter/validator
+contract.
+
+The global workflow owns only the invocation point, finding-fix repeat
+condition, and the unique consumers for `committed`, `revision-required`, and
+`blocked`. Candidate fields, exact staging, confirmation policy, executor steps,
+and postconditions belong only to the canonical skill package.
 
 ## Branch Review Gate
 
