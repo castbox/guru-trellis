@@ -348,7 +348,7 @@ Each `guru-create-task-commit` invocation owns one task-local
 increasing id. Schema `guru-task-commit-plan-1.0` binds task/branch/status,
 primary issue and ledger digest, base ref, pre-commit HEAD, planning/Phase 2/
 ledger/task evidence digests, the complete staged/unstaged/untracked/delete/
-rename snapshot, unique path classifications, exact stage paths, exact UTF-8
+rename/copy snapshot, unique path classifications, exact stage paths, exact UTF-8
 message bytes/digest, AI review, authorization, freshness and result.
 
 Snapshot entries whose index mode is `160000` additionally require
@@ -357,7 +357,10 @@ Snapshot entries whose index mode is `160000` additionally require
 exact worktree path. Uninitialized, dirty, unborn, or root-mismatched submodules
 cannot produce a safe candidate. These fields are conditional: existing plan
 entries for ordinary files, symlinks, deletes, and renames remain valid without
-them. Candidate validation and executor revalidation compare the current
+them. The additive optional `copied_from` field likewise keeps historical
+schema 1.0 ordinary plans structurally valid; current snapshot producers always
+emit it, using a repo path only for copy destinations and `null` otherwise.
+Candidate validation and executor revalidation compare the current
 gitlink identity, so a reviewed B revision changed to C before exact staging is
 stale before any index mutation. For non-deleted mode `160000` paths,
 `gitlink_head` is also the exact index-content authority: the executor writes
@@ -367,11 +370,17 @@ current worktree identity. Consequently a later B-to-C race cannot place C in
 the index or commit. A deliberate gitlink delete keeps the conditional deletion
 identity and ordinary literal delete behavior.
 
-For every non-gitlink snapshot entry, `worktree_sha256`, `mode`, `deleted`, and
-`renamed_from` form the ordinary content authority. A non-delete path must
-still expose the exact reviewed bytes and mode when the executor materializes
-its Git blob; a delete or rename source is an exact index absence. The
-candidate self path is authorized by the already validated in-memory plan and
+For every non-gitlink snapshot entry, `worktree_sha256`, `mode`, and `deleted`
+form the path's ordinary content authority. `renamed_from` and `copied_from`
+are mutually exclusive relation fields: only `renamed_from` grants the reviewed
+destination authority to remove and exact-stage its source. `copied_from`
+records provenance only and never grants source deletion or staging authority.
+If a copy source has its own staged, unstaged or untracked state, it appears as
+an independent snapshot entry and requires its own classification and Phase 2
+coverage; unrelated staged source content blocks, while a clean source is not
+added to the plan. A non-delete path must still expose the exact reviewed bytes
+and mode when the executor materializes its Git blob; a delete or rename source
+is an exact index absence. The candidate self path is authorized by the already validated in-memory plan and
 its deterministic JSON bytes, not by re-reading mutable raw file bytes. These
 rules are additive to the existing schema 1.0 fields, so legacy ordinary plans
 remain structurally valid while receiving the stronger executor behavior.
@@ -432,6 +441,8 @@ paths, gitlinks, candidate self, or any mixture of those identities.
 
 - Ordinary non-delete: artifact SHA-256 + mode authorizes one persisted blob.
 - Ordinary delete/rename source: artifact authorizes exact index absence.
+- Copy destination: artifact authorizes the destination blob only;
+  `copied_from` never authorizes or stages the source.
 - Gitlink non-delete: `gitlink_head` + mode `160000` authorizes one cache entry.
 - Candidate self: deterministic serialization of the validated in-memory plan
   authorizes the planned blob; raw post-validation bytes have no authority.

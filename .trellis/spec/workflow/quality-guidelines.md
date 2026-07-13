@@ -167,7 +167,12 @@ cannot pass the gate. Include:
   staging, prove the candidate/HEAD/operation state is preserved, and prove C
   is absent from both the index and commit; ordinary tracked, symlink, delete,
   delete/add rename, multiple-path, candidate-self and entry-index A/worktree B
-  races must prove the same artifact authority; partial cache writes, rejecting
+  races must prove the same artifact authority. A real repository configured
+  with `status.renames=copies` must prove that a clean copy source is not staged,
+  and that an independently dirty/staged source classified as
+  `unrelated-preserved` blocks or remains byte-for-byte/index-identical without
+  entering the commit; the test must still fail if copy and rename relation
+  handling is collapsed. Partial cache writes, rejecting
   or mutating hooks, operation drift, candidate publication failure, candidate
   writer contention, success-window concurrent `git add`, index publication
   failure and concurrent ref update must preserve transaction-owned preimages

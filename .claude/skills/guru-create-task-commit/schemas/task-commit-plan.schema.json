@@ -58,7 +58,9 @@
       "required": ["path", "index_status", "worktree_status", "untracked", "deleted", "renamed_from", "index_blob", "worktree_sha256", "mode"],
       "properties": {
         "path": {"$ref": "#/$defs/repoPath"}, "index_status": {"type": "string", "maxLength": 1}, "worktree_status": {"type": "string", "maxLength": 1},
-        "untracked": {"type": "boolean"}, "deleted": {"type": "boolean"}, "renamed_from": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/repoPath"}]},
+        "untracked": {"type": "boolean"}, "deleted": {"type": "boolean"},
+        "renamed_from": {"description": "Rename source only; authorizes exact source deletion when the destination is reviewed.", "anyOf": [{"type": "null"}, {"$ref": "#/$defs/repoPath"}]},
+        "copied_from": {"description": "Optional additive copy provenance. It never authorizes source deletion or automatic exact staging; new producers emit null for non-copy entries.", "anyOf": [{"type": "null"}, {"$ref": "#/$defs/repoPath"}]},
         "index_blob": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/gitSha"}]}, "worktree_sha256": {"description": "For a non-deleted ordinary entry, the reviewed bytes and exact blob materialization authority.", "anyOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
         "mode": {"description": "Reviewed exact index mode; with worktree_sha256 or delete identity it authorizes the ordinary cache entry.", "anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-7]{6}$"}]},
         "gitlink_head": {"description": "For a non-deleted mode 160000 entry, the reviewed submodule HEAD and exact index OID authority.", "anyOf": [{"type": "null"}, {"$ref": "#/$defs/gitSha"}]},
@@ -66,6 +68,15 @@
         "gitlink_dirty": {"anyOf": [{"type": "null"}, {"type": "boolean"}]}
       },
       "allOf": [
+        {
+          "not": {
+            "properties": {
+              "renamed_from": {"type": "string"},
+              "copied_from": {"type": "string"}
+            },
+            "required": ["renamed_from", "copied_from"]
+          }
+        },
         {
           "if": {"properties": {"mode": {"const": "160000"}, "deleted": {"const": false}}, "required": ["mode", "deleted"]},
           "then": {

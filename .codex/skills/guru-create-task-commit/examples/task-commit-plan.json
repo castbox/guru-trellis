@@ -12,7 +12,7 @@
     "issue_scope_ledger": {"path": ".trellis/tasks/example-task/issue-scope-ledger.json", "sha256": "4444444444444444444444444444444444444444444444444444444444444444", "size": 100},
     "task": {"path": ".trellis/tasks/example-task/task.json", "sha256": "5555555555555555555555555555555555555555555555555555555555555555", "size": 100}
   },
-  "dirty_snapshot": {"entries": [{"path": "src/example.txt", "index_status": "", "worktree_status": "M", "untracked": false, "deleted": false, "renamed_from": null, "index_blob": "6666666666666666666666666666666666666666", "worktree_sha256": "7777777777777777777777777777777777777777777777777777777777777777", "mode": "100644", "gitlink_head": null, "gitlink_initialized": null, "gitlink_dirty": null}], "digest": "8888888888888888888888888888888888888888888888888888888888888888"},
+  "dirty_snapshot": {"entries": [{"path": "src/example.txt", "index_status": "", "worktree_status": "M", "untracked": false, "deleted": false, "renamed_from": null, "copied_from": null, "index_blob": "6666666666666666666666666666666666666666", "worktree_sha256": "7777777777777777777777777777777777777777777777777777777777777777", "mode": "100644", "gitlink_head": null, "gitlink_initialized": null, "gitlink_dirty": null}], "digest": "8888888888888888888888888888888888888888888888888888888888888888"},
   "path_classifications": [
     {"path": "src/example.txt", "category": "task-reviewed", "reason": "Fresh Phase 2 evidence covers the task change.", "coverage_source": "phase2-check.json"},
     {"path": ".trellis/tasks/example-task/task-commit-plans/001.json", "category": "task-reviewed", "reason": "This invocation's candidate evidence.", "coverage_source": "skill-artifact"}
@@ -21,6 +21,6 @@
   "message": {"subject": "feat(example): #123 增加示例能力", "body": "背景：\n需要演示提交合同。\n\n变更：\n增加去身份化示例。\n\n边界：\n不包含业务数据。\n\n验证：\n通过合同测试。\n\nRefs #123", "bytes": "feat(example): #123 增加示例能力\n\n背景：\n需要演示提交合同。\n\n变更：\n增加去身份化示例。\n\n边界：\n不包含业务数据。\n\n验证：\n通过合同测试。\n\nRefs #123\n", "sha256": "e9e4b611441a6acff58145bc99403c77b6140dcb8853e51ee0a2466bb1455b45"},
   "ai_review": {"status": "passed", "reviewer": "example-reviewer", "summary": "Reviewed the example scope, artifact identities, isolated index transaction, and message.", "evidence": ["The exact paths and artifact-bound identities match the index.lock sentinel, independent final-index publication, and final candidate identity-read contract."]},
   "authorization": {"authorized": true, "source": "example-explicit-authorization", "evidence": "Authorization applies to this exact example plan."},
-  "freshness": {"captured_at": "2026-01-01T00:00:00Z", "plan_digest": "74301b2e23e784479f00a3e703520f489f94f695f6090e63134b5133a7761d03"},
+  "freshness": {"captured_at": "2026-01-01T00:00:00Z", "plan_digest": "801ccb60d5994730c5e0e3e895cf61b432ec06c5ee76057ffd98d4db0b351048"},
   "result": {"status": "planned", "exit": null}
 }

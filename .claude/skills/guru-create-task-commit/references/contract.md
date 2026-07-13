@@ -23,15 +23,19 @@ Create the next unused three-digit task-local
 The candidate self path uses `skill-artifact` coverage. The fresh
 `phase2-check.json` recorder output is covered by its candidate evidence digest;
 it cannot recursively include its own final bytes in `checked_artifacts`. Only
-`task-reviewed` paths and the candidate self path may appear in
-`exact_stage_paths`.
+`task-reviewed` paths, a rename source inherited from its task-reviewed
+destination, and the candidate self path may appear in `exact_stage_paths`.
+Copy provenance never creates this exception.
 
 For an index entry with mode `160000`, bind the unique HEAD of the initialized,
 clean submodule rooted at that exact path. Record `gitlink_head`,
 `gitlink_initialized=true`, and `gitlink_dirty=false`; a deliberate gitlink
 delete records the conditional deletion state instead. Uninitialized, dirty,
 unborn, or root-mismatched submodules fail closed. Ordinary legacy snapshot
-entries remain valid without gitlink-only fields. Changing reviewed revision B
+entries remain valid without gitlink-only or copy-relation fields. New snapshot
+entries always include optional `copied_from`: `renamed_from` names only a
+rename source, `copied_from` names only a copy source, and both are otherwise
+null. Changing reviewed revision B
 to C changes the snapshot. Immediately before exact staging, re-read each
 planned gitlink and block before any index mutation if it no longer equals the
 artifact. For a non-deleted mode `160000` path, do not use `git add` to derive
@@ -47,8 +51,14 @@ regular file, executable, or symlink, the snapshot's `worktree_sha256` and
 `mode` authorize one exact Git blob/mode. The executor may re-read those bytes
 once to materialize that blob only when SHA-256 and mode still match; it must
 not let `git add` choose content later. A reviewed delete or rename source
-authorizes exact absence. Existing schema 1.0 ordinary entries already contain
-these fields and remain compatible. Candidate self is different only because
+authorizes exact absence. Only `renamed_from` makes the source inherit the
+reviewed destination's deletion/exact-stage authority. `copied_from` is
+provenance only and never stages or removes the source. If the copy source is
+itself dirty, the snapshot contains a separate source entry that requires its
+own classification and Phase 2 coverage; unrelated staged source content must
+block before the transaction. A clean copy source remains outside exact stage.
+Existing schema 1.0 ordinary entries remain compatible because `copied_from`
+is additive and optional. Candidate self is different only because
 of recursion: its exact planned blob is deterministic JSON serialization of
 the validated in-memory plan, never a later raw file read.
 
@@ -85,7 +95,8 @@ missing.
 Then run `scripts/create-task-commit.sh --json --candidate-artifact <path>`.
 The executor revalidates the candidate, repeats the ordinary-operation check,
 rejects artifact-external staged paths, materializes every ordinary/gitlink/
-candidate binding from artifact authority, and builds a literal exact index in
+candidate binding from artifact authority, applies source deletion only for
+`renamed_from`, and builds a literal exact index in
 an isolated transaction. The transaction uses a detached HEAD sharing the
 repository object/config/hook store, so the real `git commit
 --cleanup=verbatim -F` hook chain executes without moving the live branch or

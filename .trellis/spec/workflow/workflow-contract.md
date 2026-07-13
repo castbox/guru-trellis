@@ -214,8 +214,13 @@ again. It then writes the reviewed `gitlink_head` directly as the mode `160000`
 index OID instead of asking `git add` to read the mutable submodule worktree.
 The staged index identity must equal the artifact identity before commit; an
 unreviewed revision can never become the expected index tree.
-Ordinary files, modes, symlinks, deletes and rename sides use their existing
-artifact SHA-256/mode/delete identity the same way, and candidate self uses
+Ordinary files, modes, symlinks and deletes use their existing artifact
+SHA-256/mode/delete identity the same way. Snapshot producers write
+`renamed_from` only for rename destinations and `copied_from` only for copy
+destinations. Only a rename source inherits the reviewed destination's exact
+stage and deletion authority. A copy source never enters exact stage because
+of the relation; when it is itself dirty, it is a separate snapshot path that
+must be classified and reviewed independently. Candidate self uses
 deterministic bytes from the validated in-memory plan. Hooks and exact staging
 run against an isolated index plus detached transaction HEAD. The real branch,
 live index and committed candidate result are published only after the commit

@@ -96,14 +96,20 @@ worktree HEAD. A B-to-C change before exact staging therefore blocks before
 index mutation; a later change cannot place C in the index because the index
 content comes from the artifact rather than the mutable worktree. Deliberate
 gitlink deletion remains on the ordinary literal delete path.
-The same authority applies to ordinary files, executable modes, symlinks,
-deletes, and both sides of a rename. The executor re-reads each ordinary path
-once, requires its bytes/mode to match the artifact's SHA-256/mode/delete
-identity, writes the matching blob to the object database, and constructs the
-index with exact cache entries. It never delegates reviewed content choice to
-live `git add`. Candidate self bytes come from the already validated in-memory
-plan using deterministic JSON serialization; raw bytes appended after
-validation are never staged.
+The same authority applies to ordinary files, executable modes, symlinks and
+deletes. Snapshot capture maps a rename destination to `renamed_from` and a
+copy destination to `copied_from`; the fields are mutually exclusive. The
+executor treats only `renamed_from` as authority to remove and exact-stage the
+source. `copied_from` is provenance only: it never authorizes source removal or
+automatic staging. A dirty copy source appears as its own snapshot entry and
+must pass its own classification/Phase 2 coverage; unrelated staged source
+content blocks before the isolated transaction. The executor re-reads each
+authorized ordinary path once, requires its bytes/mode to match the artifact's
+SHA-256/mode/delete identity, writes the matching blob to the object database,
+and constructs the index with exact cache entries. It never delegates reviewed
+content choice to live `git add`. Candidate self bytes come from the already
+validated in-memory plan using deterministic JSON serialization; raw bytes
+appended after validation are never staged.
 
 Staging and hook execution use an isolated index plus a detached transaction
 HEAD that shares the repository object/config/hook store. `git commit

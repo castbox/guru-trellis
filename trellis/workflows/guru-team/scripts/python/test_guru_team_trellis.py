@@ -1096,6 +1096,138 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertFalse((self.root / source).exists())
         self.assertTrue((self.root / destination).is_file())
 
+    def test_copy_relation_never_stages_unrelated_modified_source(self) -> None:
+        source = "src/task.txt"
+        destination = "src/z-copy.txt"
+        subprocess.run(
+            ["git", "config", "status.renames", "copies"],
+            cwd=self.root,
+            check=True,
+        )
+        (self.root / destination).write_bytes((self.root / source).read_bytes())
+        subprocess.run(["git", "add", "--", destination], cwd=self.root, check=True)
+        (self.root / source).write_text("unrelated staged source\n", encoding="utf-8")
+        subprocess.run(["git", "add", "--", source], cwd=self.root, check=True)
+
+        candidate = self.make_plan(1, [destination], [source])
+        plan = json.loads(candidate.read_text(encoding="utf-8"))
+        by_path = {
+            str(item["path"]): item for item in plan["dirty_snapshot"]["entries"]
+        }
+        self.assertEqual(by_path[destination]["renamed_from"], None)
+        self.assertEqual(by_path[destination]["copied_from"], source)
+        self.assertEqual(by_path[source]["renamed_from"], None)
+        self.assertEqual(by_path[source]["copied_from"], None)
+        self.assertNotIn(source, plan["exact_stage_paths"])
+        _, _, validation_errors = gtt.validate_task_commit_candidate(
+            self.root, candidate, self.task_dir
+        )
+        self.assertEqual(validation_errors, [])
+
+        before = self.task_commit_entry_state(candidate)
+        source_tree_identity = gtt.task_commit_tree_path_identity(
+            self.root, before["head"], source
+        )
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertIn(source, raised.exception.payload["unexpected_staged_paths"])
+        self.assert_task_commit_entry_state(before, candidate)
+        self.assertEqual(
+            gtt.task_commit_tree_path_identity(self.root, before["head"], source),
+            source_tree_identity,
+        )
+        self.assertEqual(
+            gtt.task_commit_tree_path_identity(self.root, before["head"], destination),
+            (None, None),
+        )
+        self.assertEqual(
+            (self.root / source).read_text(encoding="utf-8"),
+            "unrelated staged source\n",
+        )
+
+    def test_copy_config_with_clean_source_commits_only_destination(self) -> None:
+        source = "src/task.txt"
+        destination = "src/clean-copy.txt"
+        subprocess.run(
+            ["git", "config", "status.renames", "copies"],
+            cwd=self.root,
+            check=True,
+        )
+        source_head_identity = gtt.task_commit_tree_path_identity(self.root, "HEAD", source)
+        (self.root / destination).write_bytes((self.root / source).read_bytes())
+        subprocess.run(["git", "add", "--", destination], cwd=self.root, check=True)
+        candidate = self.make_plan(1, [destination])
+
+        payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        candidate_rel = candidate.relative_to(self.root).as_posix()
+        self.assertEqual(
+            set(payload["committed_paths"]),
+            {destination, candidate_rel},
+        )
+        self.assertEqual(
+            gtt.task_commit_tree_path_identity(
+                self.root, payload["commit_sha"], source
+            ),
+            source_head_identity,
+        )
+        self.assertNotEqual(
+            gtt.task_commit_tree_path_identity(
+                self.root, payload["commit_sha"], destination
+            ),
+            (None, None),
+        )
+        self.assertEqual((self.root / source).read_text(encoding="utf-8"), "base\n")
+
+    def test_independently_reviewed_copy_source_is_updated_not_deleted(self) -> None:
+        source = "src/task.txt"
+        destination = "src/z-reviewed-copy.txt"
+        subprocess.run(
+            ["git", "config", "status.renames", "copies"],
+            cwd=self.root,
+            check=True,
+        )
+        (self.root / destination).write_bytes((self.root / source).read_bytes())
+        subprocess.run(["git", "add", "--", destination], cwd=self.root, check=True)
+        (self.root / source).write_text("reviewed source update\n", encoding="utf-8")
+        subprocess.run(["git", "add", "--", source], cwd=self.root, check=True)
+        candidate = self.make_plan(1, [source, destination])
+        plan = json.loads(candidate.read_text(encoding="utf-8"))
+        by_path = {
+            str(item["path"]): item for item in plan["dirty_snapshot"]["entries"]
+        }
+        self.assertEqual(by_path[destination]["copied_from"], source)
+        self.assertEqual(by_path[destination]["renamed_from"], None)
+
+        payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        candidate_rel = candidate.relative_to(self.root).as_posix()
+        self.assertEqual(
+            set(payload["committed_paths"]),
+            {source, destination, candidate_rel},
+        )
+        source_blob, source_mode = gtt.task_commit_tree_path_identity(
+            self.root, payload["commit_sha"], source
+        )
+        self.assertIsNotNone(source_blob)
+        self.assertEqual(source_mode, "100644")
+        self.assertEqual(
+            subprocess.run(
+                ["git", "show", f"{payload['commit_sha']}:{source}"],
+                cwd=self.root,
+                check=True,
+                stdout=subprocess.PIPE,
+            ).stdout,
+            b"reviewed source update\n",
+        )
+        self.assertNotEqual(
+            gtt.task_commit_tree_path_identity(
+                self.root, payload["commit_sha"], destination
+            ),
+            (None, None),
+        )
+
     def test_fresh_phase2_self_artifact_is_reviewable_without_recursive_digest(self) -> None:
         reviewed = "src/task.txt"
         phase2 = f"{self.task_rel}/phase2-check.json"

@@ -10553,11 +10553,23 @@ def capture_task_commit_snapshot(root: Path, excluded: set[str] | None = None) -
         status_text = field[:2].decode("ascii", "strict")
         path = field[3:].decode("utf-8", "strict")
         renamed_from: str | None = None
-        if "R" in status_text or "C" in status_text:
+        copied_from: str | None = None
+        relation_kinds = {item for item in status_text if item in {"R", "C"}}
+        if len(relation_kinds) > 1:
+            raise WorkflowError(
+                "Git returned an ambiguous rename/copy status record.", exit_code=2
+            )
+        if relation_kinds:
             if index >= len(fields) or not fields[index]:
-                raise WorkflowError("Git returned an incomplete rename status record.", exit_code=2)
-            renamed_from = fields[index].decode("utf-8", "strict")
+                raise WorkflowError(
+                    "Git returned an incomplete rename/copy status record.", exit_code=2
+                )
+            relation_source = fields[index].decode("utf-8", "strict")
             index += 1
+            if relation_kinds == {"R"}:
+                renamed_from = relation_source
+            else:
+                copied_from = relation_source
         if path in (excluded or set()):
             continue
         index_status = "" if status_text[0] == " " else status_text[0]
@@ -10573,6 +10585,7 @@ def capture_task_commit_snapshot(root: Path, excluded: set[str] | None = None) -
             "untracked": untracked,
             "deleted": deleted,
             "renamed_from": renamed_from,
+            "copied_from": copied_from,
             "index_blob": index_blob,
             "worktree_sha256": worktree_sha256,
             "mode": worktree_mode or index_mode,
@@ -10589,7 +10602,13 @@ def capture_task_commit_snapshot(root: Path, excluded: set[str] | None = None) -
             else:
                 entry.update(task_commit_gitlink_worktree_identity(root, path))
         entries.append(entry)
-    entries.sort(key=lambda item: (str(item["path"]), str(item.get("renamed_from") or "")))
+    entries.sort(
+        key=lambda item: (
+            str(item["path"]),
+            str(item.get("renamed_from") or ""),
+            str(item.get("copied_from") or ""),
+        )
+    )
     return {"entries": entries, "digest": task_commit_canonical_digest(entries)}
 
 
@@ -10761,6 +10780,30 @@ def validate_task_commit_candidate(
                 errors.append(f"task commit plan classification for {path_value} lacks AI evidence.")
     snapshot_entries = current_snapshot["entries"]
     snapshot_paths = {str(item["path"]) for item in snapshot_entries}
+    for index, item in enumerate(snapshot_entries):
+        path_value = item.get("path")
+        renamed_from = item.get("renamed_from")
+        copied_from = item.get("copied_from")
+        if isinstance(renamed_from, str) and isinstance(copied_from, str):
+            errors.append(
+                f"task commit snapshot entry {path_value} cannot be both rename and copy."
+            )
+        for field_name, relation_source in (
+            ("renamed_from", renamed_from),
+            ("copied_from", copied_from),
+        ):
+            if relation_source is None:
+                continue
+            errors.extend(
+                task_commit_repo_path_errors(
+                    relation_source,
+                    f"dirty_snapshot.entries[{index}].{field_name}",
+                )
+            )
+            if relation_source == path_value:
+                errors.append(
+                    f"task commit snapshot entry {path_value} has a self-referential {field_name}."
+                )
     expected_classified_paths = snapshot_paths | {candidate_relative}
     if set(classification_by_path) != expected_classified_paths:
         errors.append("task commit plan classifications do not exactly cover the dirty snapshot and candidate artifact.")

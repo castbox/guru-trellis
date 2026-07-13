@@ -314,6 +314,7 @@ class TaskCommitPackageContractTests(unittest.TestCase):
         self.assertIn("independent final-index publication", executor["objective_scope"])
         self.assertIn("final candidate identity-read linearization", executor["objective_scope"])
         self.assertIn("immutable commit blob/result digest evidence", executor["objective_scope"])
+        self.assertIn("deletion inheritance limited to rename sources", executor["objective_scope"])
         contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
         for phrase in (
             "isolated transaction",
@@ -323,6 +324,7 @@ class TaskCommitPackageContractTests(unittest.TestCase):
             "final candidate inode/content",
             "later operation",
             "committed-result SHA-256",
+            "provenance only and never stages or removes the source",
         ):
             self.assertIn(phrase, contract)
         self.assertNotIn("stages literal exact paths", contract)
@@ -369,9 +371,22 @@ class TaskCommitPackageContractTests(unittest.TestCase):
         )
         ordinary_legacy = copy.deepcopy(planned)
         ordinary_entry = ordinary_legacy["dirty_snapshot"]["entries"][0]
-        for field in ("gitlink_head", "gitlink_initialized", "gitlink_dirty"):
+        for field in (
+            "gitlink_head",
+            "gitlink_initialized",
+            "gitlink_dirty",
+            "copied_from",
+        ):
             ordinary_entry.pop(field)
         self.assertEqual(list(validator.iter_errors(ordinary_legacy)), [])
+
+        copy_relation = copy.deepcopy(planned)
+        copy_relation["dirty_snapshot"]["entries"][0]["copied_from"] = "src/source.txt"
+        self.assertEqual(list(validator.iter_errors(copy_relation)), [])
+
+        ambiguous_relation = copy.deepcopy(copy_relation)
+        ambiguous_relation["dirty_snapshot"]["entries"][0]["renamed_from"] = "src/old.txt"
+        self.assertTrue(list(validator.iter_errors(ambiguous_relation)))
 
         gitlink_missing_identity = copy.deepcopy(ordinary_legacy)
         gitlink_missing_identity["dirty_snapshot"]["entries"][0].update(

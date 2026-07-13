@@ -538,9 +538,12 @@ mutation。Candidate、stage 与 commit 边界会拒绝 merge/cherry-pick/revert
 sequencer/am 等非普通 Git state；mode `160000` 的 snapshot 会绑定 initialized、clean
 submodule 的 worktree HEAD。Executor 在 exact stage 前重验该 HEAD，并将 artifact
 OID 直接写入 mode `160000` index entry，而不是由 `git add` 从可变 worktree 重新
-读取；普通文件、symlink、delete、rename 也只从 artifact SHA-256/mode/delete
-identity 构造 isolated exact index，candidate self 只使用 validated in-memory plan
-的 deterministic bytes。真实 hook chain 在 detached transaction HEAD 上完成，全部
+读取；普通文件、symlink、delete 也只从 artifact SHA-256/mode/delete
+identity 构造 isolated exact index。Snapshot 以 `renamed_from` 和 `copied_from`
+分开 rename/copy；只有 rename source 继承 destination 的删除/exact-stage
+authority，copy source 不会因 relation 自动入 stage，自身 dirty 时必须独立
+分类。Candidate self 只使用 validated in-memory plan 的 deterministic bytes。
+真实 hook chain 在 detached transaction HEAD 上完成，全部
 commit/postcondition 与 live preimage 校验通过后才发布 branch/index/result。Executor
 持有真实 `index.lock` sentinel 穿过 conditional ref、candidate/live-index publication
 和 rollback；final index bytes 通过独立 temp 在 sentinel 仍存在时发布，真实 `git add`

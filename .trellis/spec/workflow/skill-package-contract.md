@@ -95,9 +95,13 @@ preconditions include ordinary Git operation state. Gitlink snapshot identity
 is conditional on index mode `160000` and binds an initialized, clean worktree
 HEAD; for non-deleted gitlinks that artifact HEAD is also the exact index OID,
 not a hint for `git add` to reread from the worktree. Ordinary legacy plan
-entries do not require gitlink-only fields. Their existing SHA-256/mode/delete/
-rename facts are nevertheless the only ordinary exact-index authority. The
-validated in-memory plan is the only candidate-self byte authority. Executor
+entries do not require gitlink-only or copy-relation fields. New snapshot
+producers distinguish rename and copy with mutually exclusive `renamed_from`
+and `copied_from`. Only a rename source inherits destination deletion/exact-
+stage authority; copy provenance never stages its source, and a dirty copy
+source requires an independent classification. Existing SHA-256/mode/delete/
+rename facts remain the ordinary exact-index authority for historical plans.
+The validated in-memory plan is the only candidate-self byte authority. Executor
 staging and hooks run on an isolated index/detached transaction HEAD; only a
 fully validated commit/index/result is published. The executor retains the
 real Git index lock through conditional ref/candidate publication and rollback,

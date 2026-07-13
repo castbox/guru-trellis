@@ -322,7 +322,11 @@ mode `160000` 的 snapshot 绑定 initialized、clean submodule 的 worktree HEA
 gitlink HEAD 变化会使 candidate stale；executor 在 exact stage 前再次读取该 HEAD，并把
 artifact `gitlink_head` 直接写成 mode `160000` index OID，因此未审查的 C 不会从可变
 worktree 进入 index 或 commit。普通 path 同样只从 artifact SHA-256/mode/delete identity
-构造 cache entry，candidate self 只从 validated in-memory plan 构造 deterministic bytes。
+构造 cache entry。Snapshot 对 rename destination 记录 `renamed_from`，对 copy destination
+记录 `copied_from`；只有 rename source 随 destination 继承删除/exact-stage authority。
+Copy source 绝不因 relation 自动入 stage；若它自身 dirty，则作为独立 snapshot
+path 必须自行分类与受审。Candidate self 只从 validated in-memory plan 构造
+deterministic bytes。
 真实 hooks/commit 在 isolated index/detached transaction HEAD 上完成；commit、当前
 worktree/candidate/operation 与 live index preimage 全部验证后，才 recoverable publish
 真实 branch/index/result。真实 `index.lock` 作为 sentinel 持有到 transaction 结束，
@@ -456,7 +460,7 @@ PR readiness 要求：
 | `implement.jsonl` / `check.jsonl` | Phase 1.3 | Trellis sub-agent context manifest | `trellis-implement` / `trellis-check`。 |
 | `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity/status ledger | review closure/fresh final reviewer 和 unfinished termination recovery-chain 校验。 |
 | `phase2-check.json` | Phase 2.2 | Guru Team check evidence | 固化 `trellis-check` AI check 的覆盖范围、验证结果、findings 和 dirty paths；commit 前 gate、Branch Review Gate post-commit audit。 |
-| `task-commit-plans/<sequence>.json` | Phase 3.4，可重复进入 | `guru-create-task-commit` task-local evidence | 绑定 task/base/issue、evidence digests、pre-commit HEAD、完整 dirty snapshot（ordinary SHA-256/mode/delete/rename 与 gitlink initialized clean HEAD/OID 都是 exact-index authority）、唯一 path 分类、exact stage paths、message bytes、AI review、authorization、freshness 与真实 committed result；candidate self 由 validated plan deterministic bytes 授权，失败 transaction 不发布 plan result；只保存 repo-relative path/digest/结构化事实。 |
+| `task-commit-plans/<sequence>.json` | Phase 3.4，可重复进入 | `guru-create-task-commit` task-local evidence | 绑定 task/base/issue、evidence digests、pre-commit HEAD、完整 dirty snapshot（ordinary SHA-256/mode/delete，显式分离的 `renamed_from` / `copied_from`，以及 gitlink initialized clean HEAD/OID）、唯一 path 分类、exact stage paths、message bytes、AI review、authorization、freshness 与真实 committed result；只有 rename source 继承 deletion/exact-stage authority，copy source 必须按自身 dirty 记录独立分类；candidate self 由 validated plan deterministic bytes 授权，失败 transaction 不发布 plan result；只保存 repo-relative path/digest/结构化事实。 |
 | `reviews/*.md` | Phase 3.5 | Per-round raw review reports | 中文 human-readable artifact；`agent-assignment.json.review_rounds[]` flat digest fields、`review-gate.json.verification_evidence.review_reports[]`、archive path migration。 |
 | `review.md` | Phase 3.5 | Independent review rollup | 中文最终人类入口，链接每轮 raw report；`review-branch.sh` final digest、finish-work readiness。 |
 | `review-gate.json` | Phase 3.5 | Branch Review Gate artifact | `check-review-gate.sh`、finish-work；记录 final `review.md` digest 和 raw `review_reports[]` digest。 |
