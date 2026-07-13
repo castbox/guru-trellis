@@ -364,10 +364,21 @@ not cover any other task, source, docs, schema, preset or overlay path.
 
 Execution requires `result.status=planned`, no blocking classifications, fresh
 evidence/HEAD/snapshot/message digest, and exact index equality. Post-commit
-result records the real commit SHA, parent, message/path evidence,
-preservation/hook checks and exactly one external exit. A later finding-fix
-commit requires a new sequence and fresh Phase 2 evidence; a prior plan cannot
-be replayed.
+result uses a closed `planned` / `revision-required` / `blocked` / `committed`
+state machine with exact status/exit pairing and no undeclared fields. The
+executor binds the complete pre-hook index tree and each exact path's blob/mode,
+then records the real commit SHA, parent, message/path evidence, expected/actual
+tree and per-path blob/mode evidence, preservation/hook checks and exactly one
+external exit. `committed` requires matching tree evidence and
+`hook_mutation=false`; every `blocked` branch requires a failure stage,
+current-or-created commit identity, non-empty errors and explicit preservation/
+hook facts, including unexpected staged/dirty paths and planned-path unstaged
+drift. A hook that rejects without changing the bound index, worktree, or
+unrelated state records `hook_mutation=false`; planned paths merely remaining
+staged are not mutation evidence. The runtime validates a constructed terminal
+result against the public schema and rejects cross-field contradictions before
+writing it. A later finding-fix commit requires a new
+sequence and fresh Phase 2 evidence; a prior plan cannot be replayed.
 
 ## Agent Assignment Artifact
 

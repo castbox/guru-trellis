@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-import json
+import copy
 import hashlib
+import importlib.util
+import json
 import unittest
 from pathlib import Path
 
@@ -40,6 +42,112 @@ class TaskCommitPackageContractTests(unittest.TestCase):
         normalized["freshness"]["plan_digest"] = ""
         encoded = json.dumps(normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
         self.assertEqual(hashlib.sha256(encoded).hexdigest(), plan["freshness"]["plan_digest"])
+
+    def test_public_result_schema_state_machine(self) -> None:
+        if importlib.util.find_spec("jsonschema") is None:
+            self.skipTest("optional jsonschema dependency is not installed")
+        from jsonschema import Draft202012Validator
+
+        schema = json.loads(
+            (self.package / "schemas/task-commit-plan.schema.json").read_text(encoding="utf-8")
+        )
+        Draft202012Validator.check_schema(schema)
+        validator = Draft202012Validator(schema)
+        planned = json.loads(
+            (self.package / "examples/task-commit-plan.json").read_text(encoding="utf-8")
+        )
+        exact_paths = planned["exact_stage_paths"]
+        tree_paths = [
+            {
+                "path": path,
+                "expected_blob": "a" * 40,
+                "expected_mode": "100644",
+                "actual_blob": "a" * 40,
+                "actual_mode": "100644",
+                "matches": True,
+            }
+            for path in exact_paths
+        ]
+        tree_evidence = {
+            "expected_tree": "b" * 40,
+            "actual_tree": "b" * 40,
+            "actual_source": "commit",
+            "matches": True,
+            "paths": tree_paths,
+        }
+        positive_results = [
+            {"status": "planned", "exit": None},
+            {
+                "status": "revision-required",
+                "exit": "revision-required",
+                "recorded_at": "2026-01-01T00:00:00Z",
+                "errors": ["Candidate message requires revision."],
+            },
+            {
+                "status": "blocked",
+                "exit": "blocked",
+                "recorded_at": "2026-01-01T00:00:00Z",
+                "failure_stage": "pre-commit",
+                "pre_commit_head": "1" * 40,
+                "commit_sha": "1" * 40,
+                "head_changed": False,
+                "parent": None,
+                "message_sha256": None,
+                "committed_paths": [],
+                "unrelated_preserved": True,
+                "hook_mutation": False,
+                "unexpected_staged_paths": ["unrelated.txt"],
+                "unexpected_dirty_paths": [],
+                "planned_unstaged_paths": [],
+                "tree_evidence": None,
+                "errors": ["Unexpected staged path."],
+            },
+            {
+                "status": "committed",
+                "exit": "committed",
+                "recorded_at": "2026-01-01T00:00:00Z",
+                "commit_sha": "2" * 40,
+                "parent": planned["git"]["pre_commit_head"],
+                "message_sha256": planned["message"]["sha256"],
+                "committed_paths": exact_paths,
+                "unrelated_preserved": True,
+                "hook_mutation": False,
+                "tree_evidence": tree_evidence,
+            },
+        ]
+        for result in positive_results:
+            with self.subTest(status=result["status"]):
+                payload = copy.deepcopy(planned)
+                payload["result"] = result
+                self.assertEqual(list(validator.iter_errors(payload)), [])
+
+        invalid_results = [
+            {"status": "blocked", "exit": "committed"},
+            {"status": "committed", "exit": "committed"},
+            {"status": "planned", "exit": None, "unexpected": True},
+            {**positive_results[2], "errors": []},
+            {**positive_results[2], "hook_mutation": True},
+            {**positive_results[3], "hook_mutation": True},
+            {key: value for key, value in positive_results[3].items() if key != "tree_evidence"},
+        ]
+        mismatched_tree = copy.deepcopy(tree_evidence)
+        mismatched_tree["actual_tree"] = "c" * 40
+        mismatched_tree["matches"] = False
+        mismatched_tree["paths"][0]["actual_blob"] = "d" * 40
+        mismatched_tree["paths"][0]["matches"] = False
+        invalid_results.append(
+            {
+                **positive_results[2],
+                "failure_stage": "commit",
+                "hook_mutation": False,
+                "tree_evidence": mismatched_tree,
+            }
+        )
+        for result in invalid_results:
+            with self.subTest(result=result):
+                payload = copy.deepcopy(planned)
+                payload["result"] = result
+                self.assertTrue(list(validator.iter_errors(payload)))
 
 
 if __name__ == "__main__":

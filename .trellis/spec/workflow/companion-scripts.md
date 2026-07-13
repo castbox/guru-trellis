@@ -78,11 +78,20 @@ Task work commits use two deterministic entrypoints. `check-commit-messages
 then calls the existing `validate_commit_message()` parser even when the branch
 range contains no commits. `create-task-commit --candidate-artifact
 <task-local-path>` consumes only a passed AI-reviewed and authorized plan,
-stages literal exact paths, uses `git commit --cleanup=verbatim -F`, and checks
-parent, raw message bytes, committed paths, unrelated preservation and hook
-mutation. Neither command classifies scope, authors message semantics, chooses
-a route, pushes, or rewrites history; broad `git add`, automatic reset, stash,
-amend, rebase and force operations are prohibited.
+stages literal exact paths, binds the full expected index tree and each exact
+path's blob/mode before hooks run, uses `git commit --cleanup=verbatim -F`, and
+checks parent, raw message bytes, committed paths, real commit tree/blob/mode,
+unrelated preservation and hook mutation. Path-bearing identity queries use
+literal pathspecs and require zero or one exact NUL-delimited record. Same-path
+content or mode mutation is a blocked postcondition with preserved Git state.
+Blocked evidence distinguishes planned paths that merely remain staged after an
+unchanged hook rejects the commit from real mutation: the former records
+`hook_mutation=false`, while unexpected dirty paths, planned-path unstaged
+drift, tree/blob/mode drift, unrelated drift, or unexpected staged paths are
+recorded explicitly and make hook mutation true only after hook execution.
+Neither command classifies scope, authors message semantics, chooses a route,
+pushes, or rewrites history; broad `git add`, automatic reset, stash, amend,
+rebase and force operations are prohibited.
 
 `finish-work.sh` is an internal helper, not the normal user path. It must reject ordinary direct calls before closeout-plan,
 push, draft PR, archive, or publish side effects; only the explicit

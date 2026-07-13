@@ -528,6 +528,94 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
         self.assertEqual(result["status"], "committed")
         self.assertEqual(result["parent"], payload["pre_commit_head"])
+        self.assertTrue(result["tree_evidence"]["matches"])
+        self.assertEqual(result["tree_evidence"]["expected_tree"], result["tree_evidence"]["actual_tree"])
+        self.assertEqual(gtt.task_commit_result_validation_errors(self.root, json.loads(candidate.read_text(encoding="utf-8"))), [])
+
+        tampered = json.loads(candidate.read_text(encoding="utf-8"))
+        tampered["result"]["tree_evidence"]["actual_tree"] = "0" * 40
+        self.assertTrue(gtt.task_commit_result_validation_errors(self.root, tampered))
+
+    def test_index_identity_uses_literal_exact_record_for_metacharacter_paths(self) -> None:
+        literal = "src/[0]*.txt"
+        decoy = "src/0foo.txt"
+        (self.root / literal).write_text("literal tracked\n", encoding="utf-8")
+        (self.root / decoy).write_text("decoy tracked\n", encoding="utf-8")
+        subprocess.run(
+            ["git", "--literal-pathspecs", "add", "--", literal, decoy],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(trellis): #122 添加字面路径测试"],
+            cwd=self.root,
+            check=True,
+        )
+
+        tracked_blob = subprocess.run(
+            ["git", "hash-object", literal],
+            cwd=self.root,
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+        ).stdout.strip()
+        self.assertEqual(gtt.task_commit_index_identity(self.root, literal), (tracked_blob, "100644"))
+        self.assertEqual(gtt.task_commit_tree_path_identity(self.root, "HEAD", literal), (tracked_blob, "100644"))
+
+        (self.root / literal).write_text("literal staged\n", encoding="utf-8")
+        subprocess.run(["git", "--literal-pathspecs", "add", "--", literal], cwd=self.root, check=True)
+        staged_blob = subprocess.run(
+            ["git", "hash-object", literal],
+            cwd=self.root,
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+        ).stdout.strip()
+        self.assertEqual(gtt.task_commit_index_identity(self.root, literal), (staged_blob, "100644"))
+
+        (self.root / literal).unlink()
+        self.assertEqual(gtt.task_commit_index_identity(self.root, literal), (staged_blob, "100644"))
+        subprocess.run(["git", "--literal-pathspecs", "add", "--", literal], cwd=self.root, check=True)
+        self.assertEqual(gtt.task_commit_index_identity(self.root, literal), (None, None))
+
+    def test_index_identity_rejects_unmerged_literal_path(self) -> None:
+        path = "src/conflicted [0]*.txt"
+        (self.root / path).write_text("base\n", encoding="utf-8")
+        subprocess.run(["git", "--literal-pathspecs", "add", "--", path], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(trellis): #122 添加冲突路径基线"],
+            cwd=self.root,
+            check=True,
+        )
+        base_branch = gtt.current_branch(self.root)
+        subprocess.run(["git", "checkout", "-q", "-b", "conflict-side"], cwd=self.root, check=True)
+        (self.root / path).write_text("side\n", encoding="utf-8")
+        subprocess.run(["git", "--literal-pathspecs", "add", "--", path], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(trellis): #122 修改冲突路径侧支"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(["git", "checkout", "-q", base_branch], cwd=self.root, check=True)
+        (self.root / path).write_text("main\n", encoding="utf-8")
+        subprocess.run(["git", "--literal-pathspecs", "add", "--", path], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(trellis): #122 修改冲突路径主支"],
+            cwd=self.root,
+            check=True,
+        )
+        merge = subprocess.run(
+            ["git", "merge", "--no-edit", "conflict-side"],
+            cwd=self.root,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertNotEqual(merge.returncode, 0)
+
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.task_commit_index_identity(self.root, path)
 
     def test_exact_executor_restages_current_candidate_bytes(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
@@ -697,6 +785,98 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
         self.assertEqual(result["status"], "blocked")
         self.assertEqual(result["exit"], "blocked")
+
+    def test_benign_pre_commit_hook_preserves_expected_tree(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+        hook = self.root / ".git/hooks/pre-commit"
+        hook.write_text("#!/usr/bin/env bash\nset -euo pipefail\nexit 0\n", encoding="utf-8")
+        hook.chmod(0o755)
+
+        payload = gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        self.assertEqual(payload["status"], "committed")
+        self.assertFalse(payload["hook_mutation"])
+        self.assertTrue(payload["tree_evidence"]["matches"])
+
+    def test_failing_pre_commit_hook_without_mutation_records_exact_facts(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+        hook = self.root / ".git/hooks/pre-commit"
+        hook.write_text("#!/usr/bin/env bash\nset -euo pipefail\nexit 1\n", encoding="utf-8")
+        hook.chmod(0o755)
+
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
+        self.assertEqual(result["failure_stage"], "commit")
+        self.assertFalse(result["head_changed"])
+        self.assertFalse(result["hook_mutation"])
+        self.assertEqual(result["unexpected_dirty_paths"], [])
+        self.assertEqual(result["planned_unstaged_paths"], [])
+        self.assertTrue(result["tree_evidence"]["matches"])
+        self.assertEqual(
+            gtt.task_commit_result_validation_errors(
+                self.root,
+                json.loads(candidate.read_text(encoding="utf-8")),
+            ),
+            [],
+        )
+
+    def test_same_path_hook_content_restage_records_blocked_tree_evidence(self) -> None:
+        (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+        pre_commit_head = gtt.current_head(self.root)
+        hook = self.root / ".git/hooks/pre-commit"
+        hook.write_text(
+            "#!/usr/bin/env bash\nset -euo pipefail\n"
+            "printf 'hook-mutated\\n' > src/task.txt\n"
+            "git --literal-pathspecs add -- src/task.txt\n",
+            encoding="utf-8",
+        )
+        hook.chmod(0o755)
+
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
+        self.assertEqual(result["status"], "blocked")
+        self.assertTrue(result["head_changed"])
+        self.assertNotEqual(result["commit_sha"], pre_commit_head)
+        self.assertTrue(result["hook_mutation"])
+        self.assertFalse(result["tree_evidence"]["matches"])
+        self.assertNotEqual(result["tree_evidence"]["expected_tree"], result["tree_evidence"]["actual_tree"])
+        changed = next(item for item in result["tree_evidence"]["paths"] if item["path"] == "src/task.txt")
+        self.assertNotEqual(changed["expected_blob"], changed["actual_blob"])
+        self.assertEqual((self.root / "src/task.txt").read_text(encoding="utf-8"), "hook-mutated\n")
+        self.assertEqual(gtt.task_commit_result_validation_errors(self.root, json.loads(candidate.read_text(encoding="utf-8"))), [])
+        tampered = json.loads(candidate.read_text(encoding="utf-8"))
+        tampered["result"]["hook_mutation"] = False
+        self.assertTrue(gtt.task_commit_result_validation_errors(self.root, tampered))
+
+    def test_same_path_hook_mode_restage_records_blocked_tree_evidence(self) -> None:
+        (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+        hook = self.root / ".git/hooks/pre-commit"
+        hook.write_text(
+            "#!/usr/bin/env bash\nset -euo pipefail\n"
+            "chmod +x src/task.txt\n"
+            "git --literal-pathspecs add -- src/task.txt\n",
+            encoding="utf-8",
+        )
+        hook.chmod(0o755)
+
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+
+        result = json.loads(candidate.read_text(encoding="utf-8"))["result"]
+        self.assertTrue(result["hook_mutation"])
+        self.assertFalse(result["tree_evidence"]["matches"])
+        changed = next(item for item in result["tree_evidence"]["paths"] if item["path"] == "src/task.txt")
+        self.assertEqual(changed["expected_mode"], "100644")
+        self.assertEqual(changed["actual_mode"], "100755")
+        self.assertEqual(gtt.task_commit_result_validation_errors(self.root, json.loads(candidate.read_text(encoding="utf-8"))), [])
 
     def test_old_plan_cannot_be_reused_after_first_commit(self) -> None:
         (self.root / "src/task.txt").write_text("first\n", encoding="utf-8")

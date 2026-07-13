@@ -24,7 +24,7 @@
   "schemas": [{"id": "task_commit_plan_schema", "path": "schemas/task-commit-plan.schema.json"}],
   "validators": [
     {"id": "candidate_validator", "command": "scripts/check-task-commit-plan.sh", "objective_scope": "schema, identity, evidence, freshness, snapshot, exact paths, shared parser and authorization facts"},
-    {"id": "exact_executor", "command": "scripts/create-task-commit.sh", "objective_scope": "literal exact staging, commit side effect, raw commit postconditions and result recording"}
+    {"id": "exact_executor", "command": "scripts/create-task-commit.sh", "objective_scope": "literal exact staging, pre-hook index tree/blob/mode binding, commit side effect, strict result recording and raw commit postconditions"}
   ],
   "external_exits": [
     {"id": "committed", "evidence": "task commit plan result and current Git HEAD", "consumer": {"kind": "workflow", "id": "branch-review-or-finding-closure"}},

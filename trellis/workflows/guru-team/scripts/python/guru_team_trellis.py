@@ -9643,19 +9643,126 @@ def task_commit_evidence_errors(root: Path, expected: Any, path: Path, label: st
 
 def task_commit_index_identity(root: Path, path: str) -> tuple[str | None, str | None]:
     proc = subprocess.run(
-        ["git", "ls-files", "-s", "-z", "--", path],
+        ["git", "--literal-pathspecs", "ls-files", "-s", "-z", "--", path],
         cwd=str(root),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         check=False,
     )
-    if proc.returncode != 0 or not proc.stdout:
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Could not read the literal task commit index identity.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    records = [record for record in proc.stdout.split(b"\0") if record]
+    if not records:
         return None, None
-    record = proc.stdout.split(b"\0", 1)[0]
-    metadata = record.split(b"\t", 1)[0].decode("ascii", "strict").split()
-    if len(metadata) < 2:
-        return None, None
+    if len(records) != 1:
+        raise WorkflowError("Task commit index identity is ambiguous for a literal path.", exit_code=2)
+    metadata_raw, separator, record_path = records[0].partition(b"\t")
+    if not separator or record_path.decode("utf-8", "strict") != path:
+        raise WorkflowError("Task commit index identity did not return the exact literal path.", exit_code=2)
+    metadata = metadata_raw.decode("ascii", "strict").split()
+    if len(metadata) != 3 or metadata[2] != "0":
+        raise WorkflowError("Task commit index identity has an invalid or unmerged record.", exit_code=2)
     return metadata[1], metadata[0]
+
+
+def task_commit_tree_path_identity(root: Path, tree: str, path: str) -> tuple[str | None, str | None]:
+    proc = subprocess.run(
+        ["git", "--literal-pathspecs", "ls-tree", "-z", tree, "--", path],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Could not read the literal task commit tree identity.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    records = [record for record in proc.stdout.split(b"\0") if record]
+    if not records:
+        return None, None
+    if len(records) != 1:
+        raise WorkflowError("Task commit tree identity is ambiguous for a literal path.", exit_code=2)
+    metadata_raw, separator, record_path = records[0].partition(b"\t")
+    if not separator or record_path.decode("utf-8", "strict") != path:
+        raise WorkflowError("Task commit tree identity did not return the exact literal path.", exit_code=2)
+    metadata = metadata_raw.decode("ascii", "strict").split()
+    if len(metadata) != 3:
+        raise WorkflowError("Task commit tree identity has an invalid record.", exit_code=2)
+    return metadata[2], metadata[0]
+
+
+def task_commit_write_tree(root: Path) -> str:
+    proc = subprocess.run(
+        ["git", "write-tree"],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    tree = proc.stdout.decode("ascii", "strict").strip() if proc.returncode == 0 else ""
+    if proc.returncode != 0 or re.fullmatch(r"[0-9a-f]{40,64}", tree) is None:
+        raise WorkflowError(
+            "Could not bind the complete task commit index tree.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    return tree
+
+
+def task_commit_commit_tree(root: Path, commit: str) -> str:
+    proc = subprocess.run(
+        ["git", "rev-parse", "--verify", f"{commit}^{{tree}}"],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    tree = proc.stdout.decode("ascii", "strict").strip() if proc.returncode == 0 else ""
+    if proc.returncode != 0 or re.fullmatch(r"[0-9a-f]{40,64}", tree) is None:
+        raise WorkflowError(
+            "Could not read the real task commit tree.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    return tree
+
+
+def task_commit_tree_evidence(
+    root: Path,
+    expected_tree: str,
+    actual_tree: str,
+    exact_paths: set[str],
+    *,
+    actual_source: str,
+) -> dict[str, Any]:
+    paths: list[dict[str, Any]] = []
+    for path in sorted(exact_paths):
+        expected_blob, expected_mode = task_commit_tree_path_identity(root, expected_tree, path)
+        actual_blob, actual_mode = task_commit_tree_path_identity(root, actual_tree, path)
+        matches = expected_blob == actual_blob and expected_mode == actual_mode
+        paths.append(
+            {
+                "path": path,
+                "expected_blob": expected_blob,
+                "expected_mode": expected_mode,
+                "actual_blob": actual_blob,
+                "actual_mode": actual_mode,
+                "matches": matches,
+            }
+        )
+    return {
+        "expected_tree": expected_tree,
+        "actual_tree": actual_tree,
+        "actual_source": actual_source,
+        "matches": expected_tree == actual_tree and all(item["matches"] for item in paths),
+        "paths": paths,
+    }
 
 
 def task_commit_worktree_identity(root: Path, path: str) -> tuple[str | None, str | None]:
@@ -9792,16 +9899,12 @@ def validate_task_commit_candidate(
         expected_prior = set(range(1, sequence_number))
         if sequence_number < 1 or occupied_sequences != expected_prior:
             errors.append("task commit plan sequence must be the next unused contiguous sequence.")
-        tracked_candidate = subprocess.run(
-            ["git", "--literal-pathspecs", "ls-tree", "-z", "--name-only", "HEAD", "--", candidate_relative],
-            cwd=str(root),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-        )
-        if tracked_candidate.returncode != 0:
+        try:
+            tracked_candidate_blob, _ = task_commit_tree_path_identity(root, "HEAD", candidate_relative)
+        except WorkflowError:
             errors.append("task commit plan could not verify sequence history at pre_commit_head.")
-        elif tracked_candidate.stdout:
+            tracked_candidate_blob = None
+        if tracked_candidate_blob is not None:
             errors.append("task commit plan candidate already exists at pre_commit_head; use the next unused sequence.")
 
     task_plan = plan.get("task") if isinstance(plan.get("task"), dict) else {}
@@ -10004,7 +10107,79 @@ def task_commit_raw_message(root: Path, commit: str) -> bytes:
     return proc.stdout.split(b"\n\n", 1)[1]
 
 
+def task_commit_result_validation_errors(root: Path, plan: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    schema_errors: list[str] = []
+    schema = skill_read_json(task_commit_schema_path(root), "task commit plan schema", schema_errors)
+    errors.extend(schema_errors)
+    if schema is not None:
+        errors.extend(skill_json_schema_validation_errors(plan, schema, "task commit plan result"))
+
+    result = plan.get("result") if isinstance(plan.get("result"), dict) else {}
+    status = result.get("status")
+    exact_paths = {
+        path for path in plan.get("exact_stage_paths", []) if isinstance(path, str)
+    }
+    if status == "committed":
+        if result.get("parent") != plan.get("git", {}).get("pre_commit_head"):
+            errors.append("committed result parent does not match the planned pre_commit_head.")
+        if result.get("message_sha256") != plan.get("message", {}).get("sha256"):
+            errors.append("committed result message digest does not match the planned message.")
+        if set(result.get("committed_paths", [])) != exact_paths:
+            errors.append("committed result paths do not match exact_stage_paths.")
+    if status == "blocked":
+        pre_commit_head = result.get("pre_commit_head")
+        commit_sha = result.get("commit_sha")
+        if result.get("head_changed") != (commit_sha != pre_commit_head):
+            errors.append("blocked result head_changed does not match its commit identities.")
+
+    tree_evidence = result.get("tree_evidence")
+    if isinstance(tree_evidence, dict):
+        path_entries = tree_evidence.get("paths")
+        if not isinstance(path_entries, list) or {
+            item.get("path") for item in path_entries if isinstance(item, dict)
+        } != exact_paths:
+            errors.append("task commit result tree evidence does not cover exact_stage_paths.")
+        path_matches = bool(path_entries) and all(
+            isinstance(item, dict)
+            and item.get("matches") is True
+            and item.get("expected_blob") == item.get("actual_blob")
+            and item.get("expected_mode") == item.get("actual_mode")
+            for item in (path_entries or [])
+        )
+        expected_match = (
+            tree_evidence.get("expected_tree") == tree_evidence.get("actual_tree")
+            and path_matches
+        )
+        if tree_evidence.get("matches") is not expected_match:
+            errors.append("task commit result tree match flag contradicts tree/blob/mode evidence.")
+        if status == "committed" and not expected_match:
+            errors.append("committed result requires identical expected and actual tree evidence.")
+    elif status == "committed":
+        errors.append("committed result requires tree evidence.")
+    if status == "blocked":
+        failure_stage = result.get("failure_stage")
+        if failure_stage == "pre-commit":
+            expected_hook_mutation = False
+        else:
+            expected_hook_mutation = bool(
+                isinstance(tree_evidence, dict) and tree_evidence.get("matches") is not True
+                or result.get("unrelated_preserved") is not True
+                or result.get("unexpected_staged_paths")
+                or result.get("unexpected_dirty_paths")
+                or result.get("planned_unstaged_paths")
+                or (
+                    result.get("head_changed") is True
+                    and set(result.get("committed_paths", [])) != exact_paths
+                )
+            )
+        if result.get("hook_mutation") is not expected_hook_mutation:
+            errors.append("blocked result hook_mutation contradicts its recorded mutation evidence.")
+    return errors
+
+
 def record_task_commit_result(
+    root: Path,
     candidate_path: Path,
     plan: dict[str, Any],
     status: str,
@@ -10017,7 +10192,85 @@ def record_task_commit_result(
         "recorded_at": now_iso(),
         **facts,
     }
+    errors = task_commit_result_validation_errors(root, plan)
+    if errors:
+        raise WorkflowError(
+            "Task commit post-result does not satisfy the public schema.",
+            exit_code=2,
+            payload={"status": "blocked", "errors": errors},
+        )
     write_json(candidate_path, plan)
+
+
+def task_commit_blocked_observation(
+    root: Path,
+    *,
+    pre_commit_head: str,
+    failure_stage: str,
+    exact_paths: set[str],
+    unrelated_before: dict[str, Any],
+    expected_tree: str | None,
+    errors: list[str],
+) -> dict[str, Any]:
+    commit_sha = current_head(root)
+    head_changed = commit_sha != pre_commit_head
+    parent: str | None = None
+    message_sha256: str | None = None
+    committed_paths: set[str] = set()
+    if head_changed:
+        parents = run_stdout(["git", "show", "-s", "--format=%P", commit_sha], cwd=root).split()
+        parent = parents[0] if len(parents) == 1 else None
+        raw_message = task_commit_raw_message(root, commit_sha)
+        message_sha256 = hashlib.sha256(raw_message).hexdigest()
+        committed_paths = git_nul_path_set(
+            root,
+            ["diff-tree", "--root", "--no-commit-id", "--name-only", "--no-renames", "-r", "-z", commit_sha],
+        )
+
+    tree_evidence: dict[str, Any] | None = None
+    if expected_tree is not None:
+        actual_tree = task_commit_commit_tree(root, commit_sha) if head_changed else task_commit_write_tree(root)
+        tree_evidence = task_commit_tree_evidence(
+            root,
+            expected_tree,
+            actual_tree,
+            exact_paths,
+            actual_source="commit" if head_changed else "index",
+        )
+
+    post_snapshot = capture_task_commit_snapshot(root)
+    post_by_path = {str(item["path"]): item for item in post_snapshot["entries"]}
+    unrelated_after = {path: post_by_path.get(path) for path in unrelated_before}
+    unrelated_preserved = unrelated_after == unrelated_before
+    unexpected_dirty = sorted(set(post_by_path) - set(unrelated_before) - exact_paths)
+    unstaged_now = git_nul_path_set(root, ["diff", "--name-only", "--no-renames", "-z"])
+    planned_unstaged = sorted(unstaged_now & exact_paths)
+    staged_now = git_nul_path_set(root, ["diff", "--cached", "--name-only", "--no-renames", "-z"])
+    unexpected_staged = sorted(staged_now - exact_paths)
+    hook_mutation = failure_stage in {"commit", "postcondition"} and bool(
+        (tree_evidence is not None and not tree_evidence["matches"])
+        or unexpected_dirty
+        or planned_unstaged
+        or not unrelated_preserved
+        or unexpected_staged
+        or (head_changed and committed_paths != exact_paths)
+    )
+    return {
+        "failure_stage": failure_stage,
+        "pre_commit_head": pre_commit_head,
+        "commit_sha": commit_sha,
+        "head_changed": head_changed,
+        "parent": parent,
+        "message_sha256": message_sha256,
+        "committed_paths": sorted(committed_paths),
+        "unrelated_preserved": unrelated_preserved,
+        "hook_mutation": hook_mutation,
+        "unexpected_staged_paths": unexpected_staged,
+        "unexpected_dirty_paths": unexpected_dirty,
+        "planned_unstaged_paths": planned_unstaged,
+        "tree_evidence": tree_evidence,
+        "errors": errors,
+    }
 
 
 def execute_task_commit_candidate(
@@ -10033,17 +10286,30 @@ def execute_task_commit_candidate(
             payload={"status": "blocked", "candidate_validation": facts, "errors": errors},
         )
     exact_paths = set(facts["exact_stage_paths"])
+    pre_commit_head = current_head(root)
     staged_before = git_nul_path_set(root, ["diff", "--cached", "--name-only", "--no-renames", "-z"])
     unexpected_staged = sorted(staged_before - exact_paths)
     if unexpected_staged:
         record_task_commit_result(
+            root,
             candidate_path,
             plan,
             "blocked",
             "blocked",
-            commit_sha=current_head(root),
+            failure_stage="pre-commit",
+            pre_commit_head=pre_commit_head,
+            commit_sha=pre_commit_head,
+            head_changed=False,
+            parent=None,
+            message_sha256=None,
+            committed_paths=[],
+            unrelated_preserved=True,
+            hook_mutation=False,
             errors=["staged paths exist outside the exact task commit plan"],
             unexpected_staged_paths=unexpected_staged,
+            unexpected_dirty_paths=[],
+            planned_unstaged_paths=[],
+            tree_evidence=None,
         )
         raise WorkflowError(
             "Task commit executor found staged paths outside the exact plan.",
@@ -10066,7 +10332,8 @@ def execute_task_commit_candidate(
         for path, item in classifications.items()
         if item.get("category") == "unrelated-preserved" and path in snapshot_entries
     }
-    pre_commit_head = current_head(root)
+    expected_tree: str | None = None
+    failure_stage = "pre-commit"
     try:
         paths_to_stage = set(exact_paths - staged_before)
         paths_to_stage.update(
@@ -10096,6 +10363,7 @@ def execute_task_commit_candidate(
                 exit_code=2,
                 payload={"expected": sorted(exact_paths), "actual": sorted(staged_after)},
             )
+        expected_tree = task_commit_write_tree(root)
 
         message_bytes = plan["message"]["bytes"].encode("utf-8")
         fd, name = tempfile.mkstemp(prefix=".guru-task-commit-", suffix=".msg")
@@ -10106,6 +10374,7 @@ def execute_task_commit_candidate(
                 handle.write(message_bytes)
                 handle.flush()
                 os.fsync(handle.fileno())
+            failure_stage = "commit"
             commit_proc = run(
                 ["git", "commit", "--cleanup=verbatim", "-F", str(message_path)],
                 cwd=root,
@@ -10120,17 +10389,29 @@ def execute_task_commit_candidate(
                 payload={"stderr": commit_proc.stderr.strip(), "stdout": commit_proc.stdout.strip()},
             )
 
+        failure_stage = "postcondition"
         commit_sha = current_head(root)
         parents = run_stdout(["git", "show", "-s", "--format=%P", commit_sha], cwd=root).split()
         committed_paths = git_nul_path_set(
             root,
             ["diff-tree", "--root", "--no-commit-id", "--name-only", "--no-renames", "-r", "-z", commit_sha],
         )
+        actual_tree = task_commit_commit_tree(root, commit_sha)
+        tree_evidence = task_commit_tree_evidence(
+            root,
+            expected_tree,
+            actual_tree,
+            exact_paths,
+            actual_source="commit",
+        )
         raw_message = task_commit_raw_message(root, commit_sha)
         post_snapshot = capture_task_commit_snapshot(root)
         post_by_path = {str(item["path"]): item for item in post_snapshot["entries"]}
         unrelated_after = {path: post_by_path.get(path) for path in unrelated_before}
         remaining_staged = git_nul_path_set(root, ["diff", "--cached", "--name-only", "--no-renames", "-z"])
+        unstaged_after = git_nul_path_set(root, ["diff", "--name-only", "--no-renames", "-z"])
+        unexpected_dirty = sorted(set(post_by_path) - set(unrelated_before) - exact_paths)
+        planned_unstaged = sorted(unstaged_after & exact_paths)
         post_errors: list[str] = []
         if parents != [pre_commit_head]:
             post_errors.append("committed parent does not equal pre_commit_head")
@@ -10138,6 +10419,8 @@ def execute_task_commit_candidate(
             post_errors.append("raw committed message bytes do not equal the candidate bytes")
         if committed_paths != exact_paths:
             post_errors.append("committed path set does not equal exact_stage_paths")
+        if not tree_evidence["matches"]:
+            post_errors.append("real commit tree/blob/mode identity does not equal the pre-hook index tree")
         subject, body = task_commit_message_parts(raw_message.decode("utf-8", "strict"))
         _, parser_errors = validate_commit_message(subject, body, primary_issue=int(facts["primary_issue"]))
         post_errors.extend(f"committed message: {item}" for item in parser_errors)
@@ -10148,18 +10431,33 @@ def execute_task_commit_candidate(
             post_errors.append("hook or commit result introduced unplanned dirty paths: " + ", ".join(extra_dirty))
         if remaining_staged:
             post_errors.append("hook or commit result left staged paths: " + ", ".join(sorted(remaining_staged)))
+        hook_mutation = bool(
+            not tree_evidence["matches"]
+            or extra_dirty
+            or remaining_staged
+            or committed_paths != exact_paths
+            or unrelated_after != unrelated_before
+        )
         if post_errors:
             record_task_commit_result(
+                root,
                 candidate_path,
                 plan,
                 "blocked",
                 "blocked",
+                failure_stage="postcondition",
+                pre_commit_head=pre_commit_head,
                 commit_sha=commit_sha,
+                head_changed=commit_sha != pre_commit_head,
                 parent=parents[0] if len(parents) == 1 else None,
                 message_sha256=hashlib.sha256(raw_message).hexdigest(),
                 committed_paths=sorted(committed_paths),
                 unrelated_preserved=unrelated_after == unrelated_before,
-                hook_mutation=bool(extra_dirty or remaining_staged or committed_paths != exact_paths),
+                hook_mutation=hook_mutation,
+                unexpected_staged_paths=sorted(remaining_staged - exact_paths),
+                unexpected_dirty_paths=unexpected_dirty,
+                planned_unstaged_paths=planned_unstaged,
+                tree_evidence=tree_evidence,
                 errors=post_errors,
             )
             raise WorkflowError(
@@ -10168,6 +10466,7 @@ def execute_task_commit_candidate(
                 payload={"status": "blocked", "commit_sha": commit_sha, "errors": post_errors},
             )
         record_task_commit_result(
+            root,
             candidate_path,
             plan,
             "committed",
@@ -10178,6 +10477,7 @@ def execute_task_commit_candidate(
             committed_paths=sorted(committed_paths),
             unrelated_preserved=True,
             hook_mutation=False,
+            tree_evidence=tree_evidence,
         )
         return {
             "status": "committed",
@@ -10189,16 +10489,27 @@ def execute_task_commit_candidate(
             "message_sha256": hashlib.sha256(raw_message).hexdigest(),
             "committed_paths": sorted(committed_paths),
             "unrelated_preserved_paths": sorted(unrelated_before),
+            "tree_evidence": tree_evidence,
+            "hook_mutation": False,
         }
     except WorkflowError as exc:
         if plan.get("result", {}).get("status") == "planned":
+            blocked_facts = task_commit_blocked_observation(
+                root,
+                pre_commit_head=pre_commit_head,
+                failure_stage=failure_stage,
+                exact_paths=exact_paths,
+                unrelated_before=unrelated_before,
+                expected_tree=expected_tree,
+                errors=[str(exc)],
+            )
             record_task_commit_result(
+                root,
                 candidate_path,
                 plan,
                 "blocked",
                 "blocked",
-                commit_sha=current_head(root),
-                errors=[str(exc)],
+                **blocked_facts,
             )
         raise
 

@@ -53,14 +53,33 @@ missing.
 
 Then run `scripts/create-task-commit.sh --json --candidate-artifact <path>`.
 The executor revalidates the candidate, rejects artifact-external staged paths,
-stages literal exact paths, requires exact index equality, commits with
-`--cleanup=verbatim -F`, and validates parent, raw message bytes, committed path
-set, shared parser, unrelated preservation, remaining index and hook mutation.
-It never pushes, rewrites history, resets, stashes or guesses a correction.
+stages literal exact paths, requires exact index equality, and records the
+complete expected index tree plus each exact path's blob and mode. It commits
+with `--cleanup=verbatim -F`, then compares the real commit tree and per-path
+blob/mode identities with that pre-hook evidence in addition to validating
+parent, raw message bytes, committed path set, shared parser, unrelated
+preservation and remaining index. Every Git query that accepts a path uses
+literal pathspecs and accepts only zero or one exact NUL-delimited record.
+Same-path content, mode or index mutation by a hook returns `blocked`, records
+`hook_mutation=true` with expected/actual tree evidence, and preserves the Git
+state. A hook that only rejects the commit without changing the bound index,
+planned-path worktree state, unrelated paths, or other staged/dirty paths
+records `hook_mutation=false`; planned paths that remain staged after rejection
+are not themselves mutation evidence. Blocked results record unexpected dirty
+paths and planned-path unstaged drift separately. The executor never pushes,
+rewrites history, resets, stashes or guesses a correction.
 
 The executor atomically updates the working-tree plan result. The committed
 tree intentionally contains the pre-commit `planned` bytes; the current
 task-local file contains the real post-commit result for later metadata capture.
+The public result schema is a closed four-state machine. `planned` has no exit;
+`revision-required`, `blocked` and `committed` pair with their same-named exit.
+Recorded terminal results require a timestamp and auditable evidence;
+`committed` requires commit/parent/message/path/preservation/hook and tree/blob
+evidence, while every `blocked` branch requires its failure stage, current or
+created commit identity, errors and explicit preservation/hook facts. The
+runtime validates the constructed post-result against this public schema before
+writing it.
 
 ## Typed Exits And Re-entry
 
