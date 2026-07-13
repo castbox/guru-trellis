@@ -202,6 +202,14 @@ def task_commit_runtime_tamper_matrix(
     def changed(label: str, **updates: object) -> dict[str, object]:
         return {**copy.deepcopy(rows[label]), **updates}
 
+    def tamper(
+        result: dict[str, object], *expected_errors: str
+    ) -> dict[str, object]:
+        return {
+            "result": result,
+            "expected_errors": list(expected_errors),
+        }
+
     duplicate_path = changed("postcondition non-tree error")
     duplicate_paths = duplicate_path["tree_evidence"]["paths"]
     duplicate_paths.append(copy.deepcopy(duplicate_paths[0]))
@@ -209,11 +217,11 @@ def task_commit_runtime_tamper_matrix(
     missing_path = changed("postcondition non-tree error")
     missing_path["tree_evidence"]["paths"].pop()
 
-    blob_flag_conflict = changed("postcondition non-tree error")
-    blob_flag_conflict["tree_evidence"]["paths"][0]["actual_blob"] = "d" * 40
+    path_flag_conflict = changed("postcondition non-tree error")
+    path_flag_conflict["tree_evidence"]["paths"][0]["matches"] = False
 
     aggregate_flag_conflict = changed("postcondition non-tree error")
-    aggregate_flag_conflict["tree_evidence"]["actual_tree"] = "b" * 40
+    aggregate_flag_conflict["tree_evidence"]["matches"] = False
 
     mode_mutation_flag_conflict = changed("postcondition non-tree error")
     mode_mutation_flag_conflict["tree_evidence"]["paths"][0]["actual_mode"] = "100755"
@@ -221,42 +229,65 @@ def task_commit_runtime_tamper_matrix(
     mode_mutation_flag_conflict["tree_evidence"]["matches"] = False
 
     return {
-        "pre-commit mismatched tree with hook false": changed(
-            "pre-commit after tree binding",
-            tree_evidence=task_commit_tree_evidence(
-                exact_paths, source="index", matches=False
+        "pre-commit mismatched tree with hook false": tamper(
+            changed(
+                "pre-commit after tree binding",
+                tree_evidence=task_commit_tree_evidence(
+                    exact_paths, source="index", matches=False
+                ),
             ),
+            "pre-commit blocked result tree evidence must be a matching index observation.",
         ),
-        "commit null tree": changed(
-            "commit unchanged HEAD without mutation", tree_evidence=None
+        "commit null tree": tamper(
+            changed("commit unchanged HEAD without mutation", tree_evidence=None),
+            "commit-stage blocked result requires tree evidence.",
         ),
-        "postcondition null tree with unchanged HEAD": changed(
-            "postcondition non-tree error",
-            commit_sha=pre_commit_head,
-            head_changed=False,
-            tree_evidence=None,
+        "postcondition null tree": tamper(
+            changed("postcondition non-tree error", tree_evidence=None),
+            "postcondition blocked result requires tree evidence.",
         ),
-        "commit unchanged HEAD wrong source": changed(
-            "commit unchanged HEAD without mutation",
-            tree_evidence=task_commit_tree_evidence(
-                exact_paths, source="commit", matches=True
+        "commit unchanged HEAD wrong source": tamper(
+            changed(
+                "commit unchanged HEAD without mutation",
+                tree_evidence=task_commit_tree_evidence(
+                    exact_paths, source="commit", matches=True
+                ),
             ),
+            "commit-stage unchanged-HEAD tree evidence must come from the index.",
         ),
-        "postcondition clean evidence with hook true": changed(
-            "postcondition non-tree error",
-            hook_mutation=True,
+        "postcondition clean evidence with hook true": tamper(
+            changed("postcondition non-tree error", hook_mutation=True),
+            "blocked result hook_mutation contradicts its recorded mutation evidence.",
         ),
-        "pre-commit HEAD identity contradiction": changed(
-            "pre-commit before tree binding", commit_sha="f" * 40
+        "pre-commit HEAD identity contradiction": tamper(
+            changed("pre-commit before tree binding", commit_sha="f" * 40),
+            "blocked result head_changed does not match its commit identities.",
+            "pre-commit blocked result commit identity must remain at pre_commit_head.",
         ),
-        "postcondition HEAD identity contradiction": changed(
-            "postcondition non-tree error", commit_sha=pre_commit_head
+        "postcondition HEAD identity contradiction": tamper(
+            changed("postcondition non-tree error", commit_sha=pre_commit_head),
+            "blocked result head_changed does not match its commit identities.",
         ),
-        "duplicate tree path": duplicate_path,
-        "missing tree path": missing_path,
-        "path match flag contradicts blob equality": blob_flag_conflict,
-        "aggregate tree match flag contradicts tree facts": aggregate_flag_conflict,
-        "postcondition mode evidence requires hook mutation": mode_mutation_flag_conflict,
+        "duplicate tree path": tamper(
+            duplicate_path,
+            "task commit result tree evidence does not cover exact_stage_paths.",
+        ),
+        "missing tree path": tamper(
+            missing_path,
+            "task commit result tree evidence does not cover exact_stage_paths.",
+        ),
+        "path match flag contradicts blob equality": tamper(
+            path_flag_conflict,
+            "task commit result path match flag contradicts blob/mode evidence.",
+        ),
+        "aggregate tree match flag contradicts tree facts": tamper(
+            aggregate_flag_conflict,
+            "task commit result tree match flag contradicts tree/blob/mode evidence.",
+        ),
+        "postcondition mode evidence requires hook mutation": tamper(
+            mode_mutation_flag_conflict,
+            "blocked result hook_mutation contradicts its recorded mutation evidence.",
+        ),
     }
 
 

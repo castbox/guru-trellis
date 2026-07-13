@@ -876,14 +876,19 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
 
         runtime_tampers = task_commit_contract_tests.task_commit_runtime_tamper_matrix(plan)
         self.assertEqual(len(runtime_tampers), 12)
-        for label, result in runtime_tampers.items():
+        for label, tamper in runtime_tampers.items():
             with self.subTest(schema_bypass_tamper=label):
+                result = tamper["result"]
+                expected_errors = tamper["expected_errors"]
+                self.assertTrue(expected_errors)
+                self.assertEqual(len(expected_errors), len(set(expected_errors)))
                 payload = copy.deepcopy(plan)
                 payload["result"] = result
                 with mock.patch.object(gtt, "skill_json_schema_validation_errors", return_value=[]):
-                    self.assertTrue(
+                    self.assertEqual(
                         gtt.task_commit_result_validation_errors(self.root, payload),
-                        "runtime tamper validation must reject independently of JSON Schema",
+                        expected_errors,
+                        "runtime tamper validation must match the canonical non-masked error contract",
                     )
 
     def test_same_path_hook_content_restage_records_blocked_tree_evidence(self) -> None:
