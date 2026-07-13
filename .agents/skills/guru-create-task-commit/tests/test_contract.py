@@ -75,6 +75,61 @@ class TaskCommitPackageContractTests(unittest.TestCase):
             "matches": True,
             "paths": tree_paths,
         }
+        index_tree_evidence = copy.deepcopy(tree_evidence)
+        index_tree_evidence["actual_source"] = "index"
+        mismatched_index_tree = copy.deepcopy(index_tree_evidence)
+        mismatched_index_tree["actual_tree"] = "c" * 40
+        mismatched_index_tree["matches"] = False
+        mismatched_index_tree["paths"][0]["actual_blob"] = "d" * 40
+        mismatched_index_tree["paths"][0]["matches"] = False
+        mismatched_commit_tree = copy.deepcopy(mismatched_index_tree)
+        mismatched_commit_tree["actual_source"] = "commit"
+        blocked_base = {
+            "status": "blocked",
+            "exit": "blocked",
+            "recorded_at": "2026-01-01T00:00:00Z",
+            "failure_stage": "pre-commit",
+            "pre_commit_head": planned["git"]["pre_commit_head"],
+            "commit_sha": planned["git"]["pre_commit_head"],
+            "head_changed": False,
+            "parent": None,
+            "message_sha256": None,
+            "committed_paths": [],
+            "unrelated_preserved": True,
+            "hook_mutation": False,
+            "unexpected_staged_paths": [],
+            "unexpected_dirty_paths": [],
+            "planned_unstaged_paths": [],
+            "tree_evidence": None,
+            "errors": ["Objective task commit failure."],
+        }
+        pre_commit_with_index = copy.deepcopy(blocked_base)
+        pre_commit_with_index["tree_evidence"] = index_tree_evidence
+        commit_without_mutation = copy.deepcopy(blocked_base)
+        commit_without_mutation.update(
+            {"failure_stage": "commit", "tree_evidence": index_tree_evidence}
+        )
+        commit_with_mutation = copy.deepcopy(commit_without_mutation)
+        commit_with_mutation.update(
+            {"hook_mutation": True, "tree_evidence": mismatched_index_tree}
+        )
+        postcondition_non_tree_error = copy.deepcopy(blocked_base)
+        postcondition_non_tree_error.update(
+            {
+                "failure_stage": "postcondition",
+                "commit_sha": "2" * 40,
+                "head_changed": True,
+                "parent": planned["git"]["pre_commit_head"],
+                "message_sha256": planned["message"]["sha256"],
+                "committed_paths": exact_paths,
+                "tree_evidence": tree_evidence,
+                "errors": ["Committed message parser rejected a non-tree postcondition."],
+            }
+        )
+        postcondition_with_mutation = copy.deepcopy(postcondition_non_tree_error)
+        postcondition_with_mutation.update(
+            {"hook_mutation": True, "tree_evidence": mismatched_commit_tree}
+        )
         positive_results = [
             {"status": "planned", "exit": None},
             {
@@ -83,25 +138,12 @@ class TaskCommitPackageContractTests(unittest.TestCase):
                 "recorded_at": "2026-01-01T00:00:00Z",
                 "errors": ["Candidate message requires revision."],
             },
-            {
-                "status": "blocked",
-                "exit": "blocked",
-                "recorded_at": "2026-01-01T00:00:00Z",
-                "failure_stage": "pre-commit",
-                "pre_commit_head": "1" * 40,
-                "commit_sha": "1" * 40,
-                "head_changed": False,
-                "parent": None,
-                "message_sha256": None,
-                "committed_paths": [],
-                "unrelated_preserved": True,
-                "hook_mutation": False,
-                "unexpected_staged_paths": ["unrelated.txt"],
-                "unexpected_dirty_paths": [],
-                "planned_unstaged_paths": [],
-                "tree_evidence": None,
-                "errors": ["Unexpected staged path."],
-            },
+            blocked_base,
+            pre_commit_with_index,
+            commit_without_mutation,
+            commit_with_mutation,
+            postcondition_non_tree_error,
+            postcondition_with_mutation,
             {
                 "status": "committed",
                 "exit": "committed",
@@ -125,22 +167,26 @@ class TaskCommitPackageContractTests(unittest.TestCase):
             {"status": "blocked", "exit": "committed"},
             {"status": "committed", "exit": "committed"},
             {"status": "planned", "exit": None, "unexpected": True},
-            {**positive_results[2], "errors": []},
-            {**positive_results[2], "hook_mutation": True},
-            {**positive_results[3], "hook_mutation": True},
-            {key: value for key, value in positive_results[3].items() if key != "tree_evidence"},
+            {**blocked_base, "errors": []},
+            {**blocked_base, "hook_mutation": True},
+            {**positive_results[-1], "hook_mutation": True},
+            {key: value for key, value in positive_results[-1].items() if key != "tree_evidence"},
+            {**blocked_base, "tree_evidence": mismatched_index_tree},
+            {**commit_without_mutation, "tree_evidence": None},
+            {
+                **blocked_base,
+                "failure_stage": "postcondition",
+                "tree_evidence": None,
+            },
+            {**commit_without_mutation, "tree_evidence": tree_evidence},
+            {**postcondition_non_tree_error, "tree_evidence": index_tree_evidence},
         ]
-        mismatched_tree = copy.deepcopy(tree_evidence)
-        mismatched_tree["actual_tree"] = "c" * 40
-        mismatched_tree["matches"] = False
-        mismatched_tree["paths"][0]["actual_blob"] = "d" * 40
-        mismatched_tree["paths"][0]["matches"] = False
         invalid_results.append(
             {
-                **positive_results[2],
+                **commit_without_mutation,
                 "failure_stage": "commit",
                 "hook_mutation": False,
-                "tree_evidence": mismatched_tree,
+                "tree_evidence": mismatched_index_tree,
             }
         )
         for result in invalid_results:

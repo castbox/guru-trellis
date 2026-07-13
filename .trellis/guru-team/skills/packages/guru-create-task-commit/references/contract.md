@@ -81,6 +81,22 @@ created commit identity, errors and explicit preservation/hook facts. The
 runtime validates the constructed post-result against this public schema before
 writing it.
 
+`blocked.failure_stage` owns this closed evidence matrix:
+
+| Failure stage | HEAD / commit identity | Tree evidence | Hook mutation |
+| --- | --- | --- | --- |
+| `pre-commit` | `HEAD` and `commit_sha` remain at `pre_commit_head`; parent, message and committed paths are absent | `null` before tree binding, otherwise a matching `actual_source=index` observation | always `false`; a mismatched tree is not a legal pre-hook result |
+| `commit`, unchanged HEAD | no created parent/message/path identity | required `actual_source=index` observation of the bound tree after `git commit` failed | derived from tree, index, worktree and unrelated-path drift; an unchanged rejecting hook is `false` |
+| `commit`, changed HEAD | created message/path identity is present; parent may be `null` only to preserve invalid parent-cardinality evidence | required `actual_source=commit` observation | derived from tree/path/index/worktree/unrelated evidence |
+| `postcondition` | HEAD changed and created message/path identity is present; parent may be `null` only to preserve invalid parent-cardinality evidence | required `actual_source=commit` observation | derived from the same mutation evidence; a non-tree postcondition error may remain `false` |
+
+For `commit` and `postcondition`, any tree/blob/mode mismatch, unexpected
+staged or dirty path, planned-path unstaged drift, unrelated-path drift, or
+changed-HEAD committed path-set drift requires `hook_mutation=true`. Schema and
+runtime validation both reject missing tree evidence, the wrong
+`actual_source`, impossible HEAD/identity combinations, and mutation flags that
+contradict their facts.
+
 ## Typed Exits And Re-entry
 
 Return exactly one exit declared by the interface. `committed` proceeds to

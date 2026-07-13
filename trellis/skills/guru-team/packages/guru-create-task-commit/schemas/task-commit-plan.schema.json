@@ -132,6 +132,29 @@
         "paths": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/treePathEvidence"}}
       }
     },
+    "indexTreeEvidence": {
+      "allOf": [
+        {"$ref": "#/$defs/treeEvidence"},
+        {"properties": {"actual_source": {"const": "index"}}}
+      ]
+    },
+    "commitTreeEvidence": {
+      "allOf": [
+        {"$ref": "#/$defs/treeEvidence"},
+        {"properties": {"actual_source": {"const": "commit"}}}
+      ]
+    },
+    "matchingIndexTreeEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["expected_tree", "actual_tree", "actual_source", "matches", "paths"],
+      "properties": {
+        "expected_tree": {"$ref": "#/$defs/gitSha"},
+        "actual_tree": {"$ref": "#/$defs/gitSha"},
+        "actual_source": {"const": "index"},
+        "matches": {"const": true},
+        "paths": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/committedTreePathEvidence"}}
+      }
+    },
     "committedTreeEvidence": {
       "type": "object", "additionalProperties": false,
       "required": ["expected_tree", "actual_tree", "actual_source", "matches", "paths"],
@@ -183,7 +206,61 @@
       "allOf": [
         {
           "if": {"properties": {"failure_stage": {"const": "pre-commit"}}, "required": ["failure_stage"]},
-          "then": {"properties": {"hook_mutation": {"const": false}}}
+          "then": {
+            "properties": {
+              "head_changed": {"const": false},
+              "parent": {"type": "null"},
+              "message_sha256": {"type": "null"},
+              "committed_paths": {"maxItems": 0},
+              "hook_mutation": {"const": false},
+              "tree_evidence": {
+                "oneOf": [
+                  {"type": "null"},
+                  {"$ref": "#/$defs/matchingIndexTreeEvidence"}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"failure_stage": {"const": "commit"}}, "required": ["failure_stage"]},
+          "then": {
+            "properties": {"tree_evidence": {"$ref": "#/$defs/treeEvidence"}},
+            "allOf": [
+              {
+                "if": {"properties": {"head_changed": {"const": false}}, "required": ["head_changed"]},
+                "then": {
+                  "properties": {
+                    "parent": {"type": "null"},
+                    "message_sha256": {"type": "null"},
+                    "committed_paths": {"maxItems": 0},
+                    "tree_evidence": {"$ref": "#/$defs/indexTreeEvidence"}
+                  }
+                }
+              },
+              {
+                "if": {"properties": {"head_changed": {"const": true}}, "required": ["head_changed"]},
+                "then": {
+                  "properties": {
+                    "message_sha256": {"$ref": "#/$defs/sha256"},
+                    "committed_paths": {"minItems": 1},
+                    "tree_evidence": {"$ref": "#/$defs/commitTreeEvidence"}
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {"properties": {"failure_stage": {"const": "postcondition"}}, "required": ["failure_stage"]},
+          "then": {
+            "properties": {
+              "head_changed": {"const": true},
+              "message_sha256": {"$ref": "#/$defs/sha256"},
+              "committed_paths": {"minItems": 1},
+              "tree_evidence": {"$ref": "#/$defs/commitTreeEvidence"}
+            }
+          }
         },
         {
           "if": {
@@ -192,6 +269,19 @@
               "tree_evidence": {"type": "object", "properties": {"matches": {"const": false}}, "required": ["matches"]}
             },
             "required": ["failure_stage", "tree_evidence"]
+          },
+          "then": {"properties": {"hook_mutation": {"const": true}}}
+        },
+        {
+          "if": {
+            "properties": {"failure_stage": {"enum": ["commit", "postcondition"]}},
+            "required": ["failure_stage"],
+            "anyOf": [
+              {"properties": {"unrelated_preserved": {"const": false}}, "required": ["unrelated_preserved"]},
+              {"properties": {"unexpected_staged_paths": {"minItems": 1}}, "required": ["unexpected_staged_paths"]},
+              {"properties": {"unexpected_dirty_paths": {"minItems": 1}}, "required": ["unexpected_dirty_paths"]},
+              {"properties": {"planned_unstaged_paths": {"minItems": 1}}, "required": ["planned_unstaged_paths"]}
+            ]
           },
           "then": {"properties": {"hook_mutation": {"const": true}}}
         }

@@ -288,6 +288,36 @@ When a CLI auto-detects a mode by probing a remote resource (e.g., checking if `
 
 ---
 
+## Tagged Result State-Machine Matrix
+
+When an artifact has a discriminator such as `status`, `stage`, `kind`, or
+`failure_stage`, derive the complete legal state matrix before writing schema
+conditionals or runtime validation.
+
+### Checklist
+
+- [ ] List every discriminator value and every secondary branch that changes
+      field reachability, such as `head_changed`.
+- [ ] For each row, declare required, nullable, forbidden, derived, and
+      source-tagged fields.
+- [ ] Trace each row to a real producer branch; reject rows no producer can
+      create instead of preserving them as hypothetical flexibility.
+- [ ] Make the public schema and runtime cross-field validator consume the same
+      matrix; document which equality/set relations require runtime checks.
+- [ ] Test the full positive/negative cross-product, including at least one
+      non-primary error for every stage.
+- [ ] When a derived boolean summarizes evidence, test both directions:
+      evidence requiring `true`, and clean evidence requiring `false`.
+
+**Real-world example**: A blocked task-commit result initially constrained only
+tree mismatch to `hook_mutation=true`. It still accepted pre-hook mismatches and
+postcondition records with no tree or created commit identity. The fix was to
+derive `pre-commit`, `commit` (unchanged/changed HEAD), and `postcondition` rows
+from the executor, then enforce the same matrix in schema, runtime, contract,
+and tests.
+
+---
+
 ## When to Create Flow Documentation
 
 Create detailed flow docs when:

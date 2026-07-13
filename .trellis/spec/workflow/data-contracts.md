@@ -380,6 +380,24 @@ result against the public schema and rejects cross-field contradictions before
 writing it. A later finding-fix commit requires a new
 sequence and fresh Phase 2 evidence; a prior plan cannot be replayed.
 
+Blocked evidence follows one failure-stage matrix, shared by the public schema,
+runtime validator and package tests:
+
+| `failure_stage` | Required HEAD/identity state | Required tree state |
+| --- | --- | --- |
+| `pre-commit` | unchanged HEAD; `commit_sha=pre_commit_head`; null parent/message and empty committed paths; `hook_mutation=false` | `null` before the expected tree exists, otherwise matching `actual_source=index`; mismatch is forbidden |
+| `commit` with unchanged HEAD | null parent/message and empty committed paths | non-null `actual_source=index`; matching tree with no other drift represents a non-mutating rejecting hook |
+| `commit` with changed HEAD | created message and non-empty path evidence; parent remains nullable only to record invalid parent cardinality | non-null `actual_source=commit` |
+| `postcondition` | changed HEAD plus created message and non-empty path evidence; parent remains nullable only to record invalid parent cardinality | non-null `actual_source=commit`; matching tree remains legal for a non-tree error |
+
+For `commit` and `postcondition`, tree/blob/mode mismatch, unexpected
+staged/dirty paths, planned-path unstaged drift, unrelated drift, or a changed
+HEAD with a divergent committed path set derives `hook_mutation=true`. The
+boolean is evidence output, not caller-selected state. JSON Schema constrains
+the public shape; runtime validation additionally checks identity equality,
+tree/path match flags, exact path coverage and cross-object set equality. Both
+layers fail closed on every combination they can evaluate.
+
 ## Agent Assignment Artifact
 
 `agent-assignment.json` is required for Branch Review Gate pass and expected for

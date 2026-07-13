@@ -89,6 +89,16 @@ unchanged hook rejects the commit from real mutation: the former records
 `hook_mutation=false`, while unexpected dirty paths, planned-path unstaged
 drift, tree/blob/mode drift, unrelated drift, or unexpected staged paths are
 recorded explicitly and make hook mutation true only after hook execution.
+The blocked recorder and validator use the failure-stage state matrix from
+`data-contracts.md`: `pre-commit` has unchanged HEAD and either no tree or a
+matching index tree; `commit` always has tree evidence sourced from the index
+when HEAD is unchanged and from the commit when HEAD changed; `postcondition`
+always has changed HEAD, created message/path identity and commit-sourced tree
+evidence. A missing tree, wrong source, impossible HEAD/identity combination,
+pre-commit mismatch, or mutation flag inconsistent with recorded drift fails
+before result bytes are written. Package schema tests and runtime tests must
+carry the same positive and negative cross-product rather than adding one-off
+conditions for individual payloads.
 Neither command classifies scope, authors message semantics, chooses a route,
 pushes, or rewrites history; broad `git add`, automatic reset, stash, amend,
 rebase and force operations are prohibited.

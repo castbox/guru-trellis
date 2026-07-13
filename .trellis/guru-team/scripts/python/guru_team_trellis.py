@@ -10134,36 +10134,81 @@ def task_commit_result_validation_errors(root: Path, plan: dict[str, Any]) -> li
             errors.append("blocked result head_changed does not match its commit identities.")
 
     tree_evidence = result.get("tree_evidence")
+    tree_matches: bool | None = None
     if isinstance(tree_evidence, dict):
         path_entries = tree_evidence.get("paths")
-        if not isinstance(path_entries, list) or {
-            item.get("path") for item in path_entries if isinstance(item, dict)
-        } != exact_paths:
+        evidence_paths = [
+            item.get("path") for item in path_entries or [] if isinstance(item, dict)
+        ] if isinstance(path_entries, list) else []
+        if (
+            not isinstance(path_entries, list)
+            or len(evidence_paths) != len(exact_paths)
+            or set(evidence_paths) != exact_paths
+        ):
             errors.append("task commit result tree evidence does not cover exact_stage_paths.")
-        path_matches = bool(path_entries) and all(
-            isinstance(item, dict)
-            and item.get("matches") is True
-            and item.get("expected_blob") == item.get("actual_blob")
-            and item.get("expected_mode") == item.get("actual_mode")
-            for item in (path_entries or [])
-        )
-        expected_match = (
+        path_match_facts: list[bool] = []
+        for item in path_entries or []:
+            if not isinstance(item, dict):
+                path_match_facts.append(False)
+                continue
+            identity_matches = (
+                item.get("expected_blob") == item.get("actual_blob")
+                and item.get("expected_mode") == item.get("actual_mode")
+            )
+            path_match_facts.append(identity_matches)
+            if item.get("matches") is not identity_matches:
+                errors.append(
+                    "task commit result path match flag contradicts blob/mode evidence."
+                )
+        path_matches = bool(path_entries) and all(path_match_facts)
+        tree_matches = (
             tree_evidence.get("expected_tree") == tree_evidence.get("actual_tree")
             and path_matches
         )
-        if tree_evidence.get("matches") is not expected_match:
+        if tree_evidence.get("matches") is not tree_matches:
             errors.append("task commit result tree match flag contradicts tree/blob/mode evidence.")
-        if status == "committed" and not expected_match:
+        if status == "committed" and not tree_matches:
             errors.append("committed result requires identical expected and actual tree evidence.")
     elif status == "committed":
         errors.append("committed result requires tree evidence.")
     if status == "blocked":
         failure_stage = result.get("failure_stage")
         if failure_stage == "pre-commit":
+            if result.get("head_changed") is not False:
+                errors.append("pre-commit blocked result requires an unchanged HEAD.")
+            if result.get("commit_sha") != result.get("pre_commit_head"):
+                errors.append("pre-commit blocked result commit identity must remain at pre_commit_head.")
+            if result.get("parent") is not None or result.get("message_sha256") is not None:
+                errors.append("pre-commit blocked result cannot contain created commit identity evidence.")
+            if result.get("committed_paths") != []:
+                errors.append("pre-commit blocked result cannot contain committed paths.")
+            if isinstance(tree_evidence, dict):
+                if tree_evidence.get("actual_source") != "index" or tree_matches is not True:
+                    errors.append(
+                        "pre-commit blocked result tree evidence must be a matching index observation."
+                    )
+            elif tree_evidence is not None:
+                errors.append("pre-commit blocked result tree evidence must be null or an object.")
             expected_hook_mutation = False
-        else:
+        elif failure_stage == "commit":
+            if not isinstance(tree_evidence, dict):
+                errors.append("commit-stage blocked result requires tree evidence.")
+            if result.get("head_changed") is True:
+                if isinstance(tree_evidence, dict) and tree_evidence.get("actual_source") != "commit":
+                    errors.append("commit-stage changed-HEAD tree evidence must come from the commit.")
+                if not isinstance(result.get("message_sha256"), str):
+                    errors.append("commit-stage changed-HEAD result requires message identity evidence.")
+                if not result.get("committed_paths"):
+                    errors.append("commit-stage changed-HEAD result requires committed path evidence.")
+            else:
+                if isinstance(tree_evidence, dict) and tree_evidence.get("actual_source") != "index":
+                    errors.append("commit-stage unchanged-HEAD tree evidence must come from the index.")
+                if result.get("parent") is not None or result.get("message_sha256") is not None:
+                    errors.append("commit-stage unchanged-HEAD result cannot contain created commit identity evidence.")
+                if result.get("committed_paths") != []:
+                    errors.append("commit-stage unchanged-HEAD result cannot contain committed paths.")
             expected_hook_mutation = bool(
-                isinstance(tree_evidence, dict) and tree_evidence.get("matches") is not True
+                isinstance(tree_evidence, dict) and tree_matches is not True
                 or result.get("unrelated_preserved") is not True
                 or result.get("unexpected_staged_paths")
                 or result.get("unexpected_dirty_paths")
@@ -10173,6 +10218,30 @@ def task_commit_result_validation_errors(root: Path, plan: dict[str, Any]) -> li
                     and set(result.get("committed_paths", [])) != exact_paths
                 )
             )
+        elif failure_stage == "postcondition":
+            if result.get("head_changed") is not True:
+                errors.append("postcondition blocked result requires a changed HEAD.")
+            if not isinstance(result.get("message_sha256"), str):
+                errors.append("postcondition blocked result requires message identity evidence.")
+            if not result.get("committed_paths"):
+                errors.append("postcondition blocked result requires committed path evidence.")
+            if not isinstance(tree_evidence, dict):
+                errors.append("postcondition blocked result requires tree evidence.")
+            elif tree_evidence.get("actual_source") != "commit":
+                errors.append("postcondition blocked result tree evidence must come from the commit.")
+            expected_hook_mutation = bool(
+                isinstance(tree_evidence, dict) and tree_matches is not True
+                or result.get("unrelated_preserved") is not True
+                or result.get("unexpected_staged_paths")
+                or result.get("unexpected_dirty_paths")
+                or result.get("planned_unstaged_paths")
+                or (
+                    result.get("head_changed") is True
+                    and set(result.get("committed_paths", [])) != exact_paths
+                )
+            )
+        else:
+            expected_hook_mutation = False
         if result.get("hook_mutation") is not expected_hook_mutation:
             errors.append("blocked result hook_mutation contradicts its recorded mutation evidence.")
     return errors
