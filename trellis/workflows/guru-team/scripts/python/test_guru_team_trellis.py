@@ -26,6 +26,24 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import guru_team_trellis as gtt
 
 
+def load_task_commit_contract_test_helpers() -> object:
+    helper_path = (
+        Path(__file__).resolve().parents[5]
+        / "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "guru_create_task_commit_contract_test_helpers", helper_path
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Could not load task commit contract test helpers: {helper_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+task_commit_contract_tests = load_task_commit_contract_test_helpers()
+
+
 def prepare_args(**overrides: object) -> argparse.Namespace:
     values: dict[str, object] = {
         "root": None,
@@ -829,107 +847,22 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
         candidate = self.make_plan(1, ["src/task.txt"])
         plan = json.loads(candidate.read_text(encoding="utf-8"))
-        exact_paths = sorted(plan["exact_stage_paths"])
-        pre_commit_head = plan["git"]["pre_commit_head"]
-
-        def tree_evidence(*, source: str, matches: bool) -> dict[str, object]:
-            actual_tree = "a" * 40 if matches else "b" * 40
-            return {
-                "expected_tree": "a" * 40,
-                "actual_tree": actual_tree,
-                "actual_source": source,
-                "matches": matches,
-                "paths": [
-                    {
-                        "path": path,
-                        "expected_blob": "c" * 40,
-                        "expected_mode": "100644",
-                        "actual_blob": "c" * 40 if matches else "d" * 40,
-                        "actual_mode": "100644",
-                        "matches": matches,
-                    }
-                    for path in exact_paths
-                ],
-            }
-
-        blocked_base = {
-            "status": "blocked",
-            "exit": "blocked",
-            "recorded_at": "2026-01-01T00:00:00Z",
-            "failure_stage": "pre-commit",
-            "pre_commit_head": pre_commit_head,
-            "commit_sha": pre_commit_head,
-            "head_changed": False,
-            "parent": None,
-            "message_sha256": None,
-            "committed_paths": [],
-            "unrelated_preserved": True,
-            "hook_mutation": False,
-            "unexpected_staged_paths": [],
-            "unexpected_dirty_paths": [],
-            "planned_unstaged_paths": [],
-            "tree_evidence": None,
-            "errors": ["Objective task commit failure."],
-        }
-        valid_results = {
-            "pre-commit before tree binding": blocked_base,
-            "pre-commit after tree binding": {
-                **blocked_base,
-                "tree_evidence": tree_evidence(source="index", matches=True),
-            },
-            "failing hook without mutation": {
-                **blocked_base,
-                "failure_stage": "commit",
-                "tree_evidence": tree_evidence(source="index", matches=True),
-            },
-            "failing hook with index mutation": {
-                **blocked_base,
-                "failure_stage": "commit",
-                "hook_mutation": True,
-                "tree_evidence": tree_evidence(source="index", matches=False),
-            },
-            "postcondition non-tree error": {
-                **blocked_base,
-                "failure_stage": "postcondition",
-                "commit_sha": "e" * 40,
-                "head_changed": True,
-                "parent": pre_commit_head,
-                "message_sha256": plan["message"]["sha256"],
-                "committed_paths": exact_paths,
-                "tree_evidence": tree_evidence(source="commit", matches=True),
-            },
-            "postcondition hook mutation": {
-                **blocked_base,
-                "failure_stage": "postcondition",
-                "commit_sha": "e" * 40,
-                "head_changed": True,
-                "parent": pre_commit_head,
-                "message_sha256": plan["message"]["sha256"],
-                "committed_paths": exact_paths,
-                "hook_mutation": True,
-                "tree_evidence": tree_evidence(source="commit", matches=False),
-            },
-        }
+        valid_results = task_commit_contract_tests.task_commit_blocked_producer_matrix(plan)
+        self.assertEqual(len(valid_results), 7)
         for label, result in valid_results.items():
             with self.subTest(label=label):
                 payload = copy.deepcopy(plan)
                 payload["result"] = result
                 self.assertEqual(gtt.task_commit_result_validation_errors(self.root, payload), [])
+                with mock.patch.object(gtt, "skill_json_schema_validation_errors", return_value=[]):
+                    self.assertEqual(
+                        gtt.task_commit_result_validation_errors(self.root, payload),
+                        [],
+                        "runtime producer-row validation must pass independently of JSON Schema",
+                    )
 
-        invalid_results = {
-            "pre-commit mismatched tree with hook false": {
-                **blocked_base,
-                "tree_evidence": tree_evidence(source="index", matches=False),
-            },
-            "commit missing tree with unchanged HEAD": {
-                **blocked_base,
-                "failure_stage": "commit",
-            },
-            "postcondition missing tree with unchanged HEAD": {
-                **blocked_base,
-                "failure_stage": "postcondition",
-            },
-        }
+        invalid_results = task_commit_contract_tests.task_commit_schema_negative_matrix(plan)
+        self.assertEqual(len(invalid_results), 15)
         for label, result in invalid_results.items():
             with self.subTest(label=label):
                 payload = copy.deepcopy(plan)
@@ -939,6 +872,18 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
                     self.assertTrue(
                         gtt.task_commit_result_validation_errors(self.root, payload),
                         "runtime cross-field validation must reject independently of JSON Schema",
+                    )
+
+        runtime_tampers = task_commit_contract_tests.task_commit_runtime_tamper_matrix(plan)
+        self.assertEqual(len(runtime_tampers), 12)
+        for label, result in runtime_tampers.items():
+            with self.subTest(schema_bypass_tamper=label):
+                payload = copy.deepcopy(plan)
+                payload["result"] = result
+                with mock.patch.object(gtt, "skill_json_schema_validation_errors", return_value=[]):
+                    self.assertTrue(
+                        gtt.task_commit_result_validation_errors(self.root, payload),
+                        "runtime tamper validation must reject independently of JSON Schema",
                     )
 
     def test_same_path_hook_content_restage_records_blocked_tree_evidence(self) -> None:
