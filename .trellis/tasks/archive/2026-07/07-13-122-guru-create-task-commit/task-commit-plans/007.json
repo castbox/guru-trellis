@@ -1,0 +1,1941 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "007",
+  "task": {
+    "id": "122-guru-create-task-commit",
+    "path": ".trellis/tasks/07-13-122-guru-create-task-commit",
+    "status": "in_progress",
+    "branch": "feat/122-guru-create-task-commit"
+  },
+  "issue": {
+    "primary_issue": 122,
+    "ledger_sha256": "0eabbf034e061f5636d8b6f660888545956d7787e223a4dbe472d62affef1360"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "005c41fa755d4fea2d7c4f2bd8463041ffc7fe32"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/planning-approval.json",
+      "sha256": "1c769812fab740cb73ba4cdd1d56973278e193e716e27b4e5c99ea1c82e35825",
+      "size": 4615
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check.json",
+      "sha256": "d6cc6c9d7777154af01e4606e743e2834bc7d9a158938c7e72aec2a7267b1627",
+      "size": 12425
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/issue-scope-ledger.json",
+      "sha256": "0eabbf034e061f5636d8b6f660888545956d7787e223a4dbe472d62affef1360",
+      "size": 1969
+    },
+    "task": {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task.json",
+      "sha256": "2eab6971b1940bc781e3432160800c35831e80baff03f2b1625cb57a01693ead",
+      "size": 705
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".agents/skills/guru-create-task-commit/examples/task-commit-plan.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5c7ca962538cf1b49204cecef5e210d02c6d018b",
+        "worktree_sha256": "89a3de2235eed74f1fbbb51d8b7db67fb51c1953ee314e9898dc4c62735c4954",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "23023bccc6e8cad51e4b540dc21ce814852c52da",
+        "worktree_sha256": "237e2395128aae16748ee5ea1002cd15b9dc4666c9803d17b9eac768a2315152",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab5073c06f1b64d7c99610a7b63b2423eca50d51",
+        "worktree_sha256": "d125236e341c5c33cb6d791065f07a8abd5131f04aa2fb634d89f0658adcf35d",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d7c5e6559230ecbf689627158f57c9802b7bb5ef",
+        "worktree_sha256": "8a7f2dce07f7f4b2723ac9ccae23d41636c362e5daa699c2afaca6fa570514e3",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "416592764140d44a5f6defca19be3facbbc9d295",
+        "worktree_sha256": "0f8015a0bf07208bcd06a6221e4b6fff2017afc91031783215da9e7a335780cb",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/examples/task-commit-plan.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5c7ca962538cf1b49204cecef5e210d02c6d018b",
+        "worktree_sha256": "89a3de2235eed74f1fbbb51d8b7db67fb51c1953ee314e9898dc4c62735c4954",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "23023bccc6e8cad51e4b540dc21ce814852c52da",
+        "worktree_sha256": "237e2395128aae16748ee5ea1002cd15b9dc4666c9803d17b9eac768a2315152",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab5073c06f1b64d7c99610a7b63b2423eca50d51",
+        "worktree_sha256": "d125236e341c5c33cb6d791065f07a8abd5131f04aa2fb634d89f0658adcf35d",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d7c5e6559230ecbf689627158f57c9802b7bb5ef",
+        "worktree_sha256": "8a7f2dce07f7f4b2723ac9ccae23d41636c362e5daa699c2afaca6fa570514e3",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "416592764140d44a5f6defca19be3facbbc9d295",
+        "worktree_sha256": "0f8015a0bf07208bcd06a6221e4b6fff2017afc91031783215da9e7a335780cb",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/examples/task-commit-plan.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5c7ca962538cf1b49204cecef5e210d02c6d018b",
+        "worktree_sha256": "89a3de2235eed74f1fbbb51d8b7db67fb51c1953ee314e9898dc4c62735c4954",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "23023bccc6e8cad51e4b540dc21ce814852c52da",
+        "worktree_sha256": "237e2395128aae16748ee5ea1002cd15b9dc4666c9803d17b9eac768a2315152",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab5073c06f1b64d7c99610a7b63b2423eca50d51",
+        "worktree_sha256": "d125236e341c5c33cb6d791065f07a8abd5131f04aa2fb634d89f0658adcf35d",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d7c5e6559230ecbf689627158f57c9802b7bb5ef",
+        "worktree_sha256": "8a7f2dce07f7f4b2723ac9ccae23d41636c362e5daa699c2afaca6fa570514e3",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "416592764140d44a5f6defca19be3facbbc9d295",
+        "worktree_sha256": "0f8015a0bf07208bcd06a6221e4b6fff2017afc91031783215da9e7a335780cb",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/examples/task-commit-plan.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5c7ca962538cf1b49204cecef5e210d02c6d018b",
+        "worktree_sha256": "89a3de2235eed74f1fbbb51d8b7db67fb51c1953ee314e9898dc4c62735c4954",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "23023bccc6e8cad51e4b540dc21ce814852c52da",
+        "worktree_sha256": "237e2395128aae16748ee5ea1002cd15b9dc4666c9803d17b9eac768a2315152",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab5073c06f1b64d7c99610a7b63b2423eca50d51",
+        "worktree_sha256": "d125236e341c5c33cb6d791065f07a8abd5131f04aa2fb634d89f0658adcf35d",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d7c5e6559230ecbf689627158f57c9802b7bb5ef",
+        "worktree_sha256": "8a7f2dce07f7f4b2723ac9ccae23d41636c362e5daa699c2afaca6fa570514e3",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "416592764140d44a5f6defca19be3facbbc9d295",
+        "worktree_sha256": "0f8015a0bf07208bcd06a6221e4b6fff2017afc91031783215da9e7a335780cb",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3e4ffb06d021b098dad4fe2228923dc346891eed",
+        "worktree_sha256": "0e2b51ead574eec2b4aec7ae805b2e2788a079e6197c89a0ed2e0a380c4f80a9",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "16c7c5156f0e6e546226ae40b6dfe0961660c996",
+        "worktree_sha256": "383ccbb80b73dbfbb6bae8a6b0dad9b0559a3c998cddb29a3dcc13f2e908d252",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/task-commit-plan.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5c7ca962538cf1b49204cecef5e210d02c6d018b",
+        "worktree_sha256": "89a3de2235eed74f1fbbb51d8b7db67fb51c1953ee314e9898dc4c62735c4954",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "23023bccc6e8cad51e4b540dc21ce814852c52da",
+        "worktree_sha256": "237e2395128aae16748ee5ea1002cd15b9dc4666c9803d17b9eac768a2315152",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab5073c06f1b64d7c99610a7b63b2423eca50d51",
+        "worktree_sha256": "d125236e341c5c33cb6d791065f07a8abd5131f04aa2fb634d89f0658adcf35d",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d7c5e6559230ecbf689627158f57c9802b7bb5ef",
+        "worktree_sha256": "8a7f2dce07f7f4b2723ac9ccae23d41636c362e5daa699c2afaca6fa570514e3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "416592764140d44a5f6defca19be3facbbc9d295",
+        "worktree_sha256": "0f8015a0bf07208bcd06a6221e4b6fff2017afc91031783215da9e7a335780cb",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f7e7855421b6d662588299f66e03cebcd6e33e0a",
+        "worktree_sha256": "f3286a79e5015a7562d799768f425442553bfe67c7a260e96fe67be921971897",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "55c65525468cc39f418a39b65808cace1d2d279e",
+        "worktree_sha256": "fd24616cef0b03f5f9546d70457b3e6be058ca0d72ebce53ad925882b40c1cbc",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4529ba634672e2f8a876f0971253e4eb2e5fad88",
+        "worktree_sha256": "26657a65a95654bb2d466748eef879c598404c60f193de1c7a566f7e902a61a8",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6e4ce24870eab14e6336a65c8a456c1f4dc76b89",
+        "worktree_sha256": "b3af490a30e418682075f3e47a0d7c5c55bb15b2e629af6be8fc9998e5511568",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "93a5e7bf72d351e732f211760be4facac2dca703",
+        "worktree_sha256": "cd5817d3d2eb119f384c8e231e8d96a6d01ba3dce873eaa0a26045893630de45",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8b59f5c8f33af1a4cfe90e2cb9f0247e864666df",
+        "worktree_sha256": "6f4699bb2ecdcb338aef5b6c4d7f4dfa6e5578fec74158c702dd355f55089695",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/implementation-handoff.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "95ef88aa4d95fb4a0f089a49e8951e950cb78641",
+        "worktree_sha256": "70b3c77e5243deba6d596c8c0a2cbbc7db5d0d7e15f6664e0346e78d0e4e0c09",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-001-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "da8bae3c5d2e0c8c60b72fba51be6e0353b111b58e308c8608298e11cc4f59e5",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-002-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "b7b18d8862f1c36eb1707faec0f0300398b015f1feaece1697fbcb84f9503d3d",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-003-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "f0a8a401a8d42d1cb941eb3d39ca550016512b41f23b5da92b789360815cbbcb",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-004-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "fbf68eea4e117a6f694ac26a326777540c5862a37ab5c8793274ba4ee1b96a6c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-006-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "b719c532590adbf83979af8332c4e067ea4ceab5673b8c34f8861ee9021d8f40",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-007-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "297603101c3f700f7ab906cb0d0229ddcd8229b0ff5b0035e9854b55bb5c23fd",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-008-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "66109dbf84fa091d73b97accc1c0248e2308b31a2e0585133aec911117e770e3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-009-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "0e6225e1280bdb123569e5feed766acb7de5cff8b30a5282af23d681f1caba1b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-010-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "5f9cb1acceb3bf11a990c9f57984d5119df4022de4831d5587022319b57816fe",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-011-fix.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "08478c784a66f16636ae8215d61d6dcb4b4465b49d5064ca9ed6991bbe9e7608",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "697a9109a996723b6f64416e0f0209dddf31a9f1",
+        "worktree_sha256": "d6cc6c9d7777154af01e4606e743e2834bc7d9a158938c7e72aec2a7267b1627",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-findings-round-001-fix.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "715a4839e9f4c8be1ed408fd26b5e45ebdf3aedb28d1bc9b5fef9ac7fc28ef8c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-findings-round-002-fix.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "dc683f80eb557187f39db1d2c7e08bc9eabe456ef81350c17a83f8ff6b09a3e0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/review-findings-round-001.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "fceafae220d1164e93b995c23a1ba95c602e19f7465c66bbe4bf89f8e3da28ec",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/review-findings-round-002.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "553b542642023a799d7fe0ce0584e7758faadaf4e8c580817e5f533240211e9d",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/review-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "7dc92323d377bb1fd79f86afb443f33a4f158f339b113bc62e4e9718f6f0ffc0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "98c651271355d85e1f76bb51060e2d08291199ed0dcccd2cc6babc37461cc638",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-001-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "759e138797e52b6d7771f2d6be79ae428b191caf994013d9519f0e1db94eb029",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-002-finding-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2a1e2a58e683fd5da59f54bef192e98977ff015a063baa0ab4cbd099d431d0a0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-003-finding-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "d475ac180bc00f4ba25201c9accf3f192bea944a6c36cf43c3b474e3a40a71fc",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-004-finding-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "1fec7e4c661d29af09019c017ba6eb77ac119bed120aa118cd2de96a61166146",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-005-finding-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "9926d898c3bb5176a3d3e532ca86d7ea035a22f296b1b4e35fdac3a993029480",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-006-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "b7d3d50e7f3e69f3860900a75a53a8b2408bb1f8a6921c5061919877d8e658c3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-007-finding-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "93dae6b73bc6c61f46ea132ae34d87b7ada773b3d3a9bc96a9434c64222ca7dd",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-008-final-release.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "594155adefa79f19b7c54cd15c85d8e83be7c32308f22a27b839fd9158b6c9d8",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/001.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8b4693d11c41faf16a46c6f8472b3834d94b7430",
+        "worktree_sha256": "a6229cfa7be2f8d08acc3da66dd692e2644dd9b51b360897861b620ded1a76ca",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/002.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dfd1f9d9a02b04903e7e5dd339b0aa630cde1265",
+        "worktree_sha256": "3354d148887e2c9c66bd845de4c2dead5aac6335f9481aa7eecd8165f0e44933",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/003.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "652a15fee87bf25c090a92ee305a830b2713cfb4",
+        "worktree_sha256": "98da80d9fc068a050912e71e7f1afd8e4b7867a76194e1df468caf8dd9d916ea",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/004.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8a13244d97e0c0f97d6886d8c0c1e1b0ec7d4c7e",
+        "worktree_sha256": "53f50c8b98e14b67b0ff8cfeccf90975b2ffebcd5897d571e8c629e7dd2ec8a5",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/005.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "533350df14683b4c94e6c69799a49bfbed1bb7f1",
+        "worktree_sha256": "fa0da1c7e856b6be1a8580cec02bf7e7edabf812118273eda8d74dc3f1b30597",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/006.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "57c2fde78f71b502dfa56830b95d5d4b8cec5538",
+        "worktree_sha256": "ebd792e95be3dd9c7f0ae8325b45356d7211960b5bb5fb09468a3075f0a70a7e",
+        "mode": "100644"
+      },
+      {
+        "path": "README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "7e027af2bc720688079a75f3fdc3ad31b26f772c",
+        "worktree_sha256": "2b0052184a9df0a9c38e4f1a4fe9ed14912604db3f996dad11f581648218eac7",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8f85ce27fc4da3b0f1ddfdd9738e3283aae3aba6",
+        "worktree_sha256": "896f70ac050231b6b5bba3560257964b29a56c2c7a16f56f5163f6c9d0da984c",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "63e0b9e2d3e1388810a975e2423776fcfef5bc73",
+        "worktree_sha256": "dda6825f9a680db0fb9293335fdecdb72672032abc002ad18a5c69f85d1686d6",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d7802b41054915627bc0450a4cf79d9dad5ff9f4",
+        "worktree_sha256": "1d34c9111734f5734b947a0c1655cf0844270f9173256dc021c716752fccf7cb",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/task-commit-plan.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5c7ca962538cf1b49204cecef5e210d02c6d018b",
+        "worktree_sha256": "89a3de2235eed74f1fbbb51d8b7db67fb51c1953ee314e9898dc4c62735c4954",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "23023bccc6e8cad51e4b540dc21ce814852c52da",
+        "worktree_sha256": "237e2395128aae16748ee5ea1002cd15b9dc4666c9803d17b9eac768a2315152",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "ab5073c06f1b64d7c99610a7b63b2423eca50d51",
+        "worktree_sha256": "d125236e341c5c33cb6d791065f07a8abd5131f04aa2fb634d89f0658adcf35d",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d7c5e6559230ecbf689627158f57c9802b7bb5ef",
+        "worktree_sha256": "8a7f2dce07f7f4b2723ac9ccae23d41636c362e5daa699c2afaca6fa570514e3",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "416592764140d44a5f6defca19be3facbbc9d295",
+        "worktree_sha256": "0f8015a0bf07208bcd06a6221e4b6fff2017afc91031783215da9e7a335780cb",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3b41d7ecdb7b522510d74e5f7a4b79ae47e7a524",
+        "worktree_sha256": "2c005bf442fea7af4fc8e3f6396d13452bbbbf40b6b6f19463885365df437588",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "16c7c5156f0e6e546226ae40b6dfe0961660c996",
+        "worktree_sha256": "383ccbb80b73dbfbb6bae8a6b0dad9b0559a3c998cddb29a3dcc13f2e908d252",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e9432e995cf1df7f751fb7c8701fcbb08c4c70fa",
+        "worktree_sha256": "b36a286df53ab67bb3638d0b60cd3db2687268fe16a648e6939e35a30228fae7",
+        "mode": "100644"
+      }
+    ],
+    "digest": "38ea1e562382e7ae3840916b0a1ac99cd0382fc3c44d924ff66a52d2d66e98e5"
+  },
+  "path_classifications": [
+    {
+      "path": ".agents/skills/guru-create-task-commit/examples/task-commit-plan.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-create-task-commit/interface.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-create-task-commit/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-create-task-commit/examples/task-commit-plan.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-create-task-commit/interface.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-create-task-commit/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-create-task-commit/examples/task-commit-plan.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-create-task-commit/interface.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-create-task-commit/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-create-task-commit/examples/task-commit-plan.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-create-task-commit/interface.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-create-task-commit/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/task-commit-plan.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/agent-assignment.json",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/implementation-handoff.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-001-fix.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-002-fix.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-003-fix.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-004-fix.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-006-fix.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-007-fix.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-008-fix.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-009-fix.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-010-fix.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check-report-round-011-fix.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-check.json",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-findings-round-001-fix.json",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/phase2-findings-round-002-fix.json",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/review-findings-round-001.json",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/review-findings-round-002.json",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/review-gate.json",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/review.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-001-final-release.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-002-finding-closure.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-003-finding-closure.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-004-finding-closure.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-005-finding-closure.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-006-final-release.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-007-finding-closure.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/reviews/round-008-final-release.md",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/001.json",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/002.json",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/003.json",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/004.json",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/005.json",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/006.json",
+      "category": "unrelated-preserved",
+      "reason": "Task-local Phase 2, review, liveness, handoff or prior-plan metadata remains outside this work commit and is preserved for later gate or finish-work metadata capture.",
+      "coverage_source": "preserved-outside-task-commit"
+    },
+    {
+      "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/007.json",
+      "category": "task-reviewed",
+      "reason": "Sequence 007 candidate is the reviewed task-local skill artifact and is staged from its deterministic planned bytes.",
+      "coverage_source": "skill-artifact"
+    },
+    {
+      "path": "README.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "docs/requirements/README.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "docs/requirements/guru-team-trellis-flow.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "docs/requirements/requirement-main.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/task-commit-plan.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "Fresh Round 11 Phase 2 evidence covers this #122 copy/rename authority runtime, contract, schema, docs, distribution, manifest or regression-test work path.",
+      "coverage_source": "phase2-check.json"
+    }
+  ],
+  "exact_stage_paths": [
+    ".agents/skills/guru-create-task-commit/examples/task-commit-plan.json",
+    ".agents/skills/guru-create-task-commit/interface.json",
+    ".agents/skills/guru-create-task-commit/references/contract.md",
+    ".agents/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+    ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+    ".claude/skills/guru-create-task-commit/examples/task-commit-plan.json",
+    ".claude/skills/guru-create-task-commit/interface.json",
+    ".claude/skills/guru-create-task-commit/references/contract.md",
+    ".claude/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+    ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+    ".codex/skills/guru-create-task-commit/examples/task-commit-plan.json",
+    ".codex/skills/guru-create-task-commit/interface.json",
+    ".codex/skills/guru-create-task-commit/references/contract.md",
+    ".codex/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+    ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+    ".cursor/skills/guru-create-task-commit/examples/task-commit-plan.json",
+    ".cursor/skills/guru-create-task-commit/interface.json",
+    ".cursor/skills/guru-create-task-commit/references/contract.md",
+    ".cursor/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+    ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/task-commit-plan.json",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/007.json",
+    "README.md",
+    "docs/requirements/README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/examples/task-commit-plan.json",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(trellis): #122 区分复制与重命名路径权限",
+    "body": "背景：\nRound 8 最终审查发现 `status.renames=copies` 会把 copy source 错当成 rename source，使未授权的 source 内容进入 exact stage 和 commit。\n\n变更：\n为 snapshot 增加可选 `copied_from`，并与 `renamed_from` 建立互斥关系；只有 rename source 继承 deletion 和 exact-stage authority。\n要求 copy source 独立分类并接受 Phase 2 覆盖：clean source 不 stage，unrelated staged source 在事务前阻断；schema 1.0 旧 plan 保持兼容。\n同步 canonical runtime、公共 skill package、五个安装/平台根、manifest、durable docs 和真实 Git copy 回归测试。\n\n边界：\n本提交只包含 44 个 fresh Phase 2 已审查 work paths 与 sequence 007 candidate，保留 33 个 Phase 2、review、liveness、handoff 和旧 plan 元数据未提交。\n不 push、不创建 PR、不关闭 issue；不修改 CI、容器、Kubernetes、数据库 migration 或 Makefile。远端 exact feature-ref marketplace 验证保留到 finish-work。\n\n验证：\nCopy/rename targeted 8/8、mutation probes 2/2 rejected、transaction 39/39、assignment/liveness 30/30、六 roots 24/24、完整 suite 525/525 通过。\nClean throwaway exit 0；schema 1.0 runtime compatibility 5/5；历史提交 6/6、tree rows 123/123；source checkout、dogfood drift、update/reapply、安全与部署检查通过。\n\nRefs #122",
+    "bytes": "fix(trellis): #122 区分复制与重命名路径权限\n\n背景：\nRound 8 最终审查发现 `status.renames=copies` 会把 copy source 错当成 rename source，使未授权的 source 内容进入 exact stage 和 commit。\n\n变更：\n为 snapshot 增加可选 `copied_from`，并与 `renamed_from` 建立互斥关系；只有 rename source 继承 deletion 和 exact-stage authority。\n要求 copy source 独立分类并接受 Phase 2 覆盖：clean source 不 stage，unrelated staged source 在事务前阻断；schema 1.0 旧 plan 保持兼容。\n同步 canonical runtime、公共 skill package、五个安装/平台根、manifest、durable docs 和真实 Git copy 回归测试。\n\n边界：\n本提交只包含 44 个 fresh Phase 2 已审查 work paths 与 sequence 007 candidate，保留 33 个 Phase 2、review、liveness、handoff 和旧 plan 元数据未提交。\n不 push、不创建 PR、不关闭 issue；不修改 CI、容器、Kubernetes、数据库 migration 或 Makefile。远端 exact feature-ref marketplace 验证保留到 finish-work。\n\n验证：\nCopy/rename targeted 8/8、mutation probes 2/2 rejected、transaction 39/39、assignment/liveness 30/30、六 roots 24/24、完整 suite 525/525 通过。\nClean throwaway exit 0；schema 1.0 runtime compatibility 5/5；历史提交 6/6、tree rows 123/123；source checkout、dogfood drift、update/reapply、安全与部署检查通过。\n\nRefs #122\n",
+    "sha256": "54fcbf28cbfce47f8f164b28aa84887dfdcb5cf9d08fdf87267f4403e0fd82da"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "codex-main-session",
+    "summary": "已审查当前 77 个 dirty path 与 sequence 007 candidate：44 个任务工作文件由 fresh Round 11 Phase 2 覆盖，33 个 task-local metadata/history 文件保持未提交；copy/rename 权限、message、issue refs、upgrade、安全、部署和 remote verifier 边界与 live diff 一致。",
+    "evidence": [
+      "check-phase2-check.sh status=ok，checker=trellis_check_122_round11_fix，findings_count=0，phase2-check SHA-256=d6cc6c9d7777154af01e4606e743e2834bc7d9a158938c7e72aec2a7267b1627。",
+      "Exact stage 只含 44 个 Phase 2 已覆盖 work paths 与 candidate self；当前 index 为空，完整 dirty snapshot digest=38ea1e562382e7ae3840916b0a1ac99cd0382fc3c44d924ff66a52d2d66e98e5。",
+      "33 个 task-local Phase 2、review、liveness、handoff 与 sequence 001-006 metadata/history paths 分类为 unrelated-preserved，不进入本次 work commit。",
+      "Issue Scope Ledger 的唯一 close candidate 为 #122；#92 与 #120 仅 related，message 只使用 Refs #122 且没有 close keyword。",
+      "Branch+dirty union 不包含 CI、Docker/Compose、Kubernetes/Kustomize、database migration 或 Makefile；remote exact feature-ref verifier 按合同保留到 reviewed content push 后的 finish-work。"
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "user-explicit-workflow-continuation",
+    "evidence": "用户在当前 #122 任务中明确回复“继续”，授权主会话按已确认的 Trellis 闭环创建 fresh sequence 007 exact task work commit 并进入 Branch Review Gate；本计划只提交已说明的 44 个 reviewed work paths 与 candidate self，保留 33 个 task metadata paths，不 push、不创建 PR、不关闭 issue。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-13T23:51:05.303027Z",
+    "plan_digest": "1e5c401b83baee8e52005b6f2987c842b366816e8fd0ebe32b8232b62f7d7343"
+  },
+  "result": {
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-13T23:51:40Z",
+    "commit_sha": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+    "parent": "005c41fa755d4fea2d7c4f2bd8463041ffc7fe32",
+    "message_sha256": "54fcbf28cbfce47f8f164b28aa84887dfdcb5cf9d08fdf87267f4403e0fd82da",
+    "committed_paths": [
+      ".agents/skills/guru-create-task-commit/examples/task-commit-plan.json",
+      ".agents/skills/guru-create-task-commit/interface.json",
+      ".agents/skills/guru-create-task-commit/references/contract.md",
+      ".agents/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+      ".claude/skills/guru-create-task-commit/examples/task-commit-plan.json",
+      ".claude/skills/guru-create-task-commit/interface.json",
+      ".claude/skills/guru-create-task-commit/references/contract.md",
+      ".claude/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+      ".codex/skills/guru-create-task-commit/examples/task-commit-plan.json",
+      ".codex/skills/guru-create-task-commit/interface.json",
+      ".codex/skills/guru-create-task-commit/references/contract.md",
+      ".codex/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+      ".cursor/skills/guru-create-task-commit/examples/task-commit-plan.json",
+      ".cursor/skills/guru-create-task-commit/interface.json",
+      ".cursor/skills/guru-create-task-commit/references/contract.md",
+      ".cursor/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/task-commit-plan.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/007.json",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/examples/task-commit-plan.json",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "e99abef2135ef54b62ef0013d1f11cdf1fde1ca4",
+      "actual_tree": "e99abef2135ef54b62ef0013d1f11cdf1fde1ca4",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".agents/skills/guru-create-task-commit/examples/task-commit-plan.json",
+          "expected_blob": "1f0bd8182cf88a2c186f69685764a268e780865a",
+          "expected_mode": "100644",
+          "actual_blob": "1f0bd8182cf88a2c186f69685764a268e780865a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-commit/interface.json",
+          "expected_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+          "expected_mode": "100644",
+          "actual_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-commit/references/contract.md",
+          "expected_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+          "expected_mode": "100644",
+          "actual_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+          "expected_blob": "d10363946ae06e0ca01df3e6a7ab4c8f5c24ce37",
+          "expected_mode": "100644",
+          "actual_blob": "d10363946ae06e0ca01df3e6a7ab4c8f5c24ce37",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+          "expected_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+          "expected_mode": "100644",
+          "actual_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-commit/examples/task-commit-plan.json",
+          "expected_blob": "1f0bd8182cf88a2c186f69685764a268e780865a",
+          "expected_mode": "100644",
+          "actual_blob": "1f0bd8182cf88a2c186f69685764a268e780865a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-commit/interface.json",
+          "expected_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+          "expected_mode": "100644",
+          "actual_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-commit/references/contract.md",
+          "expected_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+          "expected_mode": "100644",
+          "actual_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+          "expected_blob": "d10363946ae06e0ca01df3e6a7ab4c8f5c24ce37",
+          "expected_mode": "100644",
+          "actual_blob": "d10363946ae06e0ca01df3e6a7ab4c8f5c24ce37",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+          "expected_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+          "expected_mode": "100644",
+          "actual_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-commit/examples/task-commit-plan.json",
+          "expected_blob": "1f0bd8182cf88a2c186f69685764a268e780865a",
+          "expected_mode": "100644",
+          "actual_blob": "1f0bd8182cf88a2c186f69685764a268e780865a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-commit/interface.json",
+          "expected_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+          "expected_mode": "100644",
+          "actual_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-commit/references/contract.md",
+          "expected_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+          "expected_mode": "100644",
+          "actual_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+          "expected_blob": "d10363946ae06e0ca01df3e6a7ab4c8f5c24ce37",
+          "expected_mode": "100644",
+          "actual_blob": "d10363946ae06e0ca01df3e6a7ab4c8f5c24ce37",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+          "expected_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+          "expected_mode": "100644",
+          "actual_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-commit/examples/task-commit-plan.json",
+          "expected_blob": "1f0bd8182cf88a2c186f69685764a268e780865a",
+          "expected_mode": "100644",
+          "actual_blob": "1f0bd8182cf88a2c186f69685764a268e780865a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-commit/interface.json",
+          "expected_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+          "expected_mode": "100644",
+          "actual_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-commit/references/contract.md",
+          "expected_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+          "expected_mode": "100644",
+          "actual_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+          "expected_blob": "d10363946ae06e0ca01df3e6a7ab4c8f5c24ce37",
+          "expected_mode": "100644",
+          "actual_blob": "d10363946ae06e0ca01df3e6a7ab4c8f5c24ce37",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+          "expected_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+          "expected_mode": "100644",
+          "actual_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "cacd53697aed627ddbbf5dadf066b7324ca8a1aa",
+          "expected_mode": "100644",
+          "actual_blob": "cacd53697aed627ddbbf5dadf066b7324ca8a1aa",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "99fb5d65c6ede980708ce0df4fb82b8c4b24c797",
+          "expected_mode": "100755",
+          "actual_blob": "99fb5d65c6ede980708ce0df4fb82b8c4b24c797",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/task-commit-plan.json",
+          "expected_blob": "1f0bd8182cf88a2c186f69685764a268e780865a",
+          "expected_mode": "100644",
+          "actual_blob": "1f0bd8182cf88a2c186f69685764a268e780865a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+          "expected_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+          "expected_mode": "100644",
+          "actual_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+          "expected_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+          "expected_mode": "100644",
+          "actual_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+          "expected_blob": "d10363946ae06e0ca01df3e6a7ab4c8f5c24ce37",
+          "expected_mode": "100644",
+          "actual_blob": "d10363946ae06e0ca01df3e6a7ab4c8f5c24ce37",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+          "expected_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+          "expected_mode": "100644",
+          "actual_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/companion-scripts.md",
+          "expected_blob": "97eaebc87ffa08ab129419ca20d3fe5b1b663adc",
+          "expected_mode": "100644",
+          "actual_blob": "97eaebc87ffa08ab129419ca20d3fe5b1b663adc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/data-contracts.md",
+          "expected_blob": "81319fc361e446f2c5c722c0159d34509936b4dd",
+          "expected_mode": "100644",
+          "actual_blob": "81319fc361e446f2c5c722c0159d34509936b4dd",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/quality-guidelines.md",
+          "expected_blob": "4aaaecbbcbc759694c5608ecd6d972de6deeeef9",
+          "expected_mode": "100644",
+          "actual_blob": "4aaaecbbcbc759694c5608ecd6d972de6deeeef9",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/skill-package-contract.md",
+          "expected_blob": "f8f98c34c48d9c1c1febd6fc786c6566eb4ef481",
+          "expected_mode": "100644",
+          "actual_blob": "f8f98c34c48d9c1c1febd6fc786c6566eb4ef481",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/workflow-contract.md",
+          "expected_blob": "947c07ebbc732034303aa9c08305f16de396848d",
+          "expected_mode": "100644",
+          "actual_blob": "947c07ebbc732034303aa9c08305f16de396848d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-13-122-guru-create-task-commit/task-commit-plans/007.json",
+          "expected_blob": "aeaf166d7aed3416c7f0adc7c23b4151d6a7c5f4",
+          "expected_mode": "100644",
+          "actual_blob": "aeaf166d7aed3416c7f0adc7c23b4151d6a7c5f4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "README.md",
+          "expected_blob": "3eab6e1bed750ac64bc72adeb301478c0a046206",
+          "expected_mode": "100644",
+          "actual_blob": "3eab6e1bed750ac64bc72adeb301478c0a046206",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/README.md",
+          "expected_blob": "158b50b87244834f6c230fd268f678fdb402825f",
+          "expected_mode": "100644",
+          "actual_blob": "158b50b87244834f6c230fd268f678fdb402825f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/guru-team-trellis-flow.md",
+          "expected_blob": "6cd7c8935f0176ee70135d1308b9da4549cc2849",
+          "expected_mode": "100644",
+          "actual_blob": "6cd7c8935f0176ee70135d1308b9da4549cc2849",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/requirement-main.md",
+          "expected_blob": "90af9a478ddd6203c5a531f5afb740b1d39fb514",
+          "expected_mode": "100644",
+          "actual_blob": "90af9a478ddd6203c5a531f5afb740b1d39fb514",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/task-commit-plan.json",
+          "expected_blob": "1f0bd8182cf88a2c186f69685764a268e780865a",
+          "expected_mode": "100644",
+          "actual_blob": "1f0bd8182cf88a2c186f69685764a268e780865a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+          "expected_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+          "expected_mode": "100644",
+          "actual_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
+          "expected_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+          "expected_mode": "100644",
+          "actual_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+          "expected_blob": "d10363946ae06e0ca01df3e6a7ab4c8f5c24ce37",
+          "expected_mode": "100644",
+          "actual_blob": "d10363946ae06e0ca01df3e6a7ab4c8f5c24ce37",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+          "expected_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+          "expected_mode": "100644",
+          "actual_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/README.md",
+          "expected_blob": "cc4cd872cfc0ce63c6e0f77a4476d68469c62870",
+          "expected_mode": "100644",
+          "actual_blob": "cc4cd872cfc0ce63c6e0f77a4476d68469c62870",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "99fb5d65c6ede980708ce0df4fb82b8c4b24c797",
+          "expected_mode": "100755",
+          "actual_blob": "99fb5d65c6ede980708ce0df4fb82b8c4b24c797",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "2309114c081ba554deebde0cb1ae3220b4bfa536",
+          "expected_mode": "100644",
+          "actual_blob": "2309114c081ba554deebde0cb1ae3220b4bfa536",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
+  }
+}

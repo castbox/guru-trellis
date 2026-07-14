@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/122-guru-create-task-commit",
+    "reviewed_head_sha": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+    "title": "完成：#122 实现 guru-create-task-commit 闭环 Skill 并收敛 Task work commit SSOT",
+    "body_source": "pr-body.md",
+    "body_sha256": "a36432f68a8863187736c45a0193ef57fc7da63437dc0c4f1896a8fe5177325e",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "cdac38c8153de8747ccd222c8c16d3c6fa2c264080e5833df5dd207945fe9db2"
+  },
+  "publish_inputs_sha256": "fa9e5c621c1f990ce73378bc49bd620307f1037da01627c8eb0044c58fe03665"
+}

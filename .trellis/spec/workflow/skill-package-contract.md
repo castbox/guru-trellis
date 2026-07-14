@@ -28,6 +28,11 @@ Activating, renaming, or retiring an id is a public API change. A breaking
 change requires a new id or an explicit migration contract. Production
 registries must never contain test fixtures.
 
+The task work commit migration keeps `guru-create-work-commit` reserved as a
+compatibility tombstone and activates `guru-create-task-commit`. The reserved
+reason identifies the active replacement; the old id must never acquire a
+different package or route meaning.
+
 ## Package And Interface
 
 An active package contains a short `SKILL.md`, `interface.json`, and the
@@ -79,6 +84,38 @@ external exit has exactly one workflow/skill consumer or one explicit
 fail-closed stop. Unknown, duplicate, multiple, or unmapped markers fail source
 validation. Reserved ids must not appear in markers. Frontmatter auto-match is
 discovery assistance only and never replaces mandatory invocation markers.
+
+`guru-create-task-commit` is mandatory after a fresh final Phase 2 pass and
+before every task work stage/commit side effect. It exposes only `committed`,
+`revision-required`, and `blocked`: Branch Review/finding closure consumes the
+first, the skill re-enters on the second, and the workflow stops on the third.
+Finding-fix task work returns through implementation and full Phase 2 before a
+new plan sequence may invoke the skill again. Workflow and standalone entry
+preconditions include ordinary Git operation state. Gitlink snapshot identity
+is conditional on index mode `160000` and binds an initialized, clean worktree
+HEAD; for non-deleted gitlinks that artifact HEAD is also the exact index OID,
+not a hint for `git add` to reread from the worktree. Ordinary legacy plan
+entries do not require gitlink-only or copy-relation fields. New snapshot
+producers distinguish rename and copy with mutually exclusive `renamed_from`
+and `copied_from`. Only a rename source inherits destination deletion/exact-
+stage authority; copy provenance never stages its source, and a dirty copy
+source requires an independent classification. Existing SHA-256/mode/delete/
+rename facts remain the ordinary exact-index authority for historical plans.
+The validated in-memory plan is the only candidate-self byte authority. Executor
+staging and hooks run on an isolated index/detached transaction HEAD; only a
+fully validated commit/index/result is published. The executor retains the
+real Git index lock through conditional ref/candidate publication and rollback,
+immediately guards and verifies the conditionally advanced loose ref, uses a
+candidate guard plus exact published-result identity for candidate
+rollback, keeps `index.lock` as a sentinel while an independent temporary file
+publishes the live index, and linearizes success at the final candidate
+inode/content identity read after ref/index/result publication. A candidate
+writer before that read forces owned ref/index rollback while preserving its
+bytes; a writer after it is a preserved later operation and immutable commit
+blob/result digest evidence remains committed.
+A failed stage, hook, operation, postcondition or publication preserves exact
+transaction-owned preimages; loss of conditional ref/candidate ownership
+preserves third-party state and fails closed without claiming exact restore.
 
 ## Distribution And Managed Hashes
 

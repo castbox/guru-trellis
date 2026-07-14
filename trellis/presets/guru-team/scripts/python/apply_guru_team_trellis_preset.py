@@ -64,6 +64,7 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/record-subagent-liveness-event.sh"),
     Path("scripts/bash/check-subagent-liveness.sh"),
     Path("scripts/bash/check-commit-messages.sh"),
+    Path("scripts/bash/create-task-commit.sh"),
     Path("scripts/bash/format-merge-commit.sh"),
     Path("scripts/bash/review-branch.sh"),
     Path("scripts/bash/check-review-gate.sh"),
@@ -597,6 +598,17 @@ def run_skill_package_validator(
     return payload
 
 
+def skill_package_source_files(package_root: Path) -> list[Path]:
+    return sorted(
+        path
+        for path in package_root.rglob("*")
+        if path.is_file()
+        and not path.is_symlink()
+        and "__pycache__" not in path.relative_to(package_root).parts
+        and path.suffix not in {".pyc", ".pyo"}
+    )
+
+
 def install_skill_packages(
     repo: Path,
     guru_root: Path,
@@ -619,7 +631,7 @@ def install_skill_packages(
     for entry in active_entries:
         skill_id = str(entry["id"])
         package_root = canonical_root / str(entry["package"])
-        package_files = sorted(path for path in package_root.rglob("*") if path.is_file() and not path.is_symlink())
+        package_files = skill_package_source_files(package_root)
         for source in package_files:
             source_files.append((source, source.relative_to(canonical_root)))
         interface_path = canonical_root / str(entry["interface"])
@@ -680,7 +692,7 @@ def install_skill_packages(
         skill_id = str(entry["id"])
         supported = set(entry.get("supported_platforms") or [])
         package_root = canonical_root / str(entry["package"])
-        package_files = sorted(path for path in package_root.rglob("*") if path.is_file() and not path.is_symlink())
+        package_files = skill_package_source_files(package_root)
         for platform, target_root in destination_roots.items():
             if platform not in supported:
                 continue
@@ -1188,6 +1200,7 @@ def install_assets(
         dst / "scripts/bash/record-subagent-liveness-event.sh",
         dst / "scripts/bash/check-subagent-liveness.sh",
         dst / "scripts/bash/check-commit-messages.sh",
+        dst / "scripts/bash/create-task-commit.sh",
         dst / "scripts/bash/format-merge-commit.sh",
         dst / "scripts/bash/review-branch.sh",
         dst / "scripts/bash/check-review-gate.sh",

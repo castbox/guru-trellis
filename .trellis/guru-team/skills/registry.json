@@ -5,7 +5,17 @@
     {
       "id": "guru-create-work-commit",
       "state": "reserved",
-      "reason": "Reserved for implementation by a separate follow-up issue."
+      "reason": "Reserved compatibility tombstone; use the active guru-create-task-commit entry instead."
+    },
+    {
+      "id": "guru-create-task-commit",
+      "state": "active",
+      "name": "guru-create-task-commit",
+      "package": "packages/guru-create-task-commit",
+      "interface": "packages/guru-create-task-commit/interface.json",
+      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "phase-3-task-commit"
     }
   ]
 }

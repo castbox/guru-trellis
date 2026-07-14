@@ -51,6 +51,19 @@ Before any public skill read/write/remove, validate lexical repo containment
 and use `lstat` on every target component. Any target or ancestor symlink,
 including dangling, internal, external, and multilevel chains, fails closed.
 
+The production registry keeps `guru-create-work-commit` reserved and installs
+the active `guru-create-task-commit` package to the audited runtime root and
+selected shared/Codex/Cursor/Claude discovery roots. Its artifact schema,
+package thin wrappers and package tests are part of the managed tree. The
+companion `scripts/bash/create-task-commit.sh` is a managed executable asset;
+source/installed validation and the manifest inventory must prove its bytes and
+mode.
+
+Generated Python `__pycache__` directories and `.pyc` / `.pyo` bytecode are not
+public package assets. Package source validation, tree digests, installer
+inventory and installed validation exclude them; reapply removes an older
+managed cache entry by its recorded previous hash instead of redistributing it.
+
 `MANAGED_ASSET_PATHS` is the authoritative list of companion assets copied from
 the workflow source. When adding a companion script, schema, or managed config
 template:

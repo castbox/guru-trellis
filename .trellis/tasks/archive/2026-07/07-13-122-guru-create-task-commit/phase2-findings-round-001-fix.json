@@ -1,0 +1,34 @@
+{
+  "findings": [
+    {
+      "priority": "P1",
+      "message": "同路径 pre-commit hook 可改写已审查内容或 mode 并重新 stage；现已在 hook 前绑定完整 index tree 与逐路径 blob/mode，commit 后比较真实 tree identity，content/mode mutation 均 fail closed 且记录 hook_mutation=true。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "Path identity 查询可能把含 metacharacter 的 literal path 绑定到 decoy；现已统一使用 literal pathspec、NUL records 与唯一 exact match，并对真实 unmerged index fail closed。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "Public result schema 曾接受缺少 postcondition evidence 或 status/exit 冲突的结果；现已收敛为 closed four-state oneOf，并在 runtime atomic write 前执行 schema 与跨字段 post-result validation。",
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "仅 exit 1 且未修改 index/worktree 的 pre-commit hook 曾被误报 hook_mutation=true；现只按 tree/unrelated/unexpected dirty/planned unstaged 等真实差异推导 mutation，并补 failing-without-mutation 回归。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "Blocked result 曾允许 tree_evidence.matches=false 与 hook_mutation=false 的矛盾组合；schema conditional 与 runtime cross-field validation 现均拒绝该组合并补负向回归。",
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+      "status": "resolved"
+    }
+  ]
+}

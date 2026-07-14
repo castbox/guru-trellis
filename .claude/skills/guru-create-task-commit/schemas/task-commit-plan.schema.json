@@ -1,0 +1,356 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "title": "Guru Team task work commit plan",
+  "description": "The planned/terminal evidence shape; publication keeps index.lock as a sentinel through conditional ref/index/candidate rollback, publishes final index bytes from an independent temporary, and linearizes success at the final candidate inode/content identity read.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schema_version", "skill_id", "sequence", "task", "issue", "git", "evidence", "dirty_snapshot", "path_classifications", "exact_stage_paths", "message", "ai_review", "authorization", "freshness", "result"],
+  "properties": {
+    "$schema": {"const": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json"},
+    "schema_version": {"const": "1.0"},
+    "skill_id": {"const": "guru-create-task-commit"},
+    "sequence": {"type": "string", "pattern": "^[0-9]{3}$"},
+    "task": {"$ref": "#/$defs/task"},
+    "issue": {"$ref": "#/$defs/issue"},
+    "git": {"$ref": "#/$defs/git"},
+    "evidence": {"$ref": "#/$defs/evidence"},
+    "dirty_snapshot": {"$ref": "#/$defs/snapshot"},
+    "path_classifications": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/classification"}},
+    "exact_stage_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/repoPath"}},
+    "message": {"$ref": "#/$defs/message"},
+    "ai_review": {"$ref": "#/$defs/aiReview"},
+    "authorization": {"$ref": "#/$defs/authorization"},
+    "freshness": {"$ref": "#/$defs/freshness"},
+    "result": {"$ref": "#/$defs/result"}
+  },
+  "$defs": {
+    "repoPath": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "gitSha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "task": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "path", "status", "branch"],
+      "properties": {"id": {"type": "string", "minLength": 1}, "path": {"$ref": "#/$defs/repoPath"}, "status": {"const": "in_progress"}, "branch": {"type": "string", "minLength": 1}}
+    },
+    "issue": {
+      "type": "object", "additionalProperties": false,
+      "required": ["primary_issue", "ledger_sha256"],
+      "properties": {"primary_issue": {"type": "integer", "minimum": 1}, "ledger_sha256": {"$ref": "#/$defs/sha256"}}
+    },
+    "git": {
+      "type": "object", "additionalProperties": false,
+      "required": ["base_branch", "base_ref", "pre_commit_head"],
+      "properties": {"base_branch": {"type": "string", "minLength": 1}, "base_ref": {"type": "string", "minLength": 1}, "pre_commit_head": {"$ref": "#/$defs/gitSha"}}
+    },
+    "fileEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "sha256", "size"],
+      "properties": {"path": {"$ref": "#/$defs/repoPath"}, "sha256": {"$ref": "#/$defs/sha256"}, "size": {"type": "integer", "minimum": 0}}
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["planning_approval", "phase2_check", "issue_scope_ledger", "task"],
+      "properties": {"planning_approval": {"$ref": "#/$defs/fileEvidence"}, "phase2_check": {"$ref": "#/$defs/fileEvidence"}, "issue_scope_ledger": {"$ref": "#/$defs/fileEvidence"}, "task": {"$ref": "#/$defs/fileEvidence"}}
+    },
+    "snapshotEntry": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "index_status", "worktree_status", "untracked", "deleted", "renamed_from", "index_blob", "worktree_sha256", "mode"],
+      "properties": {
+        "path": {"$ref": "#/$defs/repoPath"}, "index_status": {"type": "string", "maxLength": 1}, "worktree_status": {"type": "string", "maxLength": 1},
+        "untracked": {"type": "boolean"}, "deleted": {"type": "boolean"},
+        "renamed_from": {"description": "Rename source only; authorizes exact source deletion when the destination is reviewed.", "anyOf": [{"type": "null"}, {"$ref": "#/$defs/repoPath"}]},
+        "copied_from": {"description": "Optional additive copy provenance. It never authorizes source deletion or automatic exact staging; new producers emit null for non-copy entries.", "anyOf": [{"type": "null"}, {"$ref": "#/$defs/repoPath"}]},
+        "index_blob": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/gitSha"}]}, "worktree_sha256": {"description": "For a non-deleted ordinary entry, the reviewed bytes and exact blob materialization authority.", "anyOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
+        "mode": {"description": "Reviewed exact index mode; with worktree_sha256 or delete identity it authorizes the ordinary cache entry.", "anyOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-7]{6}$"}]},
+        "gitlink_head": {"description": "For a non-deleted mode 160000 entry, the reviewed submodule HEAD and exact index OID authority.", "anyOf": [{"type": "null"}, {"$ref": "#/$defs/gitSha"}]},
+        "gitlink_initialized": {"anyOf": [{"type": "null"}, {"type": "boolean"}]},
+        "gitlink_dirty": {"anyOf": [{"type": "null"}, {"type": "boolean"}]}
+      },
+      "allOf": [
+        {
+          "not": {
+            "properties": {
+              "renamed_from": {"type": "string"},
+              "copied_from": {"type": "string"}
+            },
+            "required": ["renamed_from", "copied_from"]
+          }
+        },
+        {
+          "if": {"properties": {"mode": {"const": "160000"}, "deleted": {"const": false}}, "required": ["mode", "deleted"]},
+          "then": {
+            "required": ["gitlink_head", "gitlink_initialized", "gitlink_dirty"],
+            "properties": {
+              "worktree_sha256": {"type": "null"},
+              "gitlink_head": {"$ref": "#/$defs/gitSha"},
+              "gitlink_initialized": {"const": true},
+              "gitlink_dirty": {"const": false}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"mode": {"const": "160000"}, "deleted": {"const": true}}, "required": ["mode", "deleted"]},
+          "then": {
+            "required": ["gitlink_head", "gitlink_initialized", "gitlink_dirty"],
+            "properties": {
+              "worktree_sha256": {"type": "null"},
+              "gitlink_head": {"type": "null"},
+              "gitlink_initialized": {"const": false},
+              "gitlink_dirty": {"type": "null"}
+            }
+          }
+        }
+      ]
+    },
+    "snapshot": {
+      "type": "object", "additionalProperties": false,
+      "required": ["entries", "digest"],
+      "properties": {"entries": {"type": "array", "items": {"$ref": "#/$defs/snapshotEntry"}}, "digest": {"$ref": "#/$defs/sha256"}}
+    },
+    "classification": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "category", "reason", "coverage_source"],
+      "properties": {
+        "path": {"$ref": "#/$defs/repoPath"},
+        "category": {"enum": ["task-reviewed", "unrelated-preserved", "unreviewed-blocking", "ambiguous-blocking"]},
+        "reason": {"type": "string", "minLength": 1}, "coverage_source": {"type": "string", "minLength": 1}
+      }
+    },
+    "message": {
+      "type": "object", "additionalProperties": false,
+      "required": ["subject", "body", "bytes", "sha256"],
+      "properties": {"subject": {"type": "string", "minLength": 1}, "body": {"type": "string", "minLength": 1}, "bytes": {"type": "string", "minLength": 1}, "sha256": {"$ref": "#/$defs/sha256"}}
+    },
+    "aiReview": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "reviewer", "summary", "evidence"],
+      "properties": {"status": {"enum": ["passed", "revision-required", "blocked"]}, "reviewer": {"type": "string", "minLength": 1}, "summary": {"type": "string", "minLength": 1}, "evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}}
+    },
+    "authorization": {
+      "type": "object", "additionalProperties": false,
+      "required": ["authorized", "source", "evidence"],
+      "properties": {"authorized": {"type": "boolean"}, "source": {"type": "string", "minLength": 1}, "evidence": {"type": "string", "minLength": 1}}
+    },
+    "freshness": {
+      "type": "object", "additionalProperties": false,
+      "required": ["captured_at", "plan_digest"],
+      "properties": {"captured_at": {"type": "string", "minLength": 1}, "plan_digest": {"$ref": "#/$defs/sha256"}}
+    },
+    "gitMode": {"type": "string", "pattern": "^[0-7]{6}$"},
+    "treePathEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "expected_blob", "expected_mode", "actual_blob", "actual_mode", "matches"],
+      "properties": {
+        "path": {"$ref": "#/$defs/repoPath"},
+        "expected_blob": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/gitSha"}]},
+        "expected_mode": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/gitMode"}]},
+        "actual_blob": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/gitSha"}]},
+        "actual_mode": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/gitMode"}]},
+        "matches": {"type": "boolean"}
+      }
+    },
+    "committedTreePathEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "expected_blob", "expected_mode", "actual_blob", "actual_mode", "matches"],
+      "properties": {
+        "path": {"$ref": "#/$defs/repoPath"},
+        "expected_blob": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/gitSha"}]},
+        "expected_mode": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/gitMode"}]},
+        "actual_blob": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/gitSha"}]},
+        "actual_mode": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/gitMode"}]},
+        "matches": {"const": true}
+      }
+    },
+    "treeEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["expected_tree", "actual_tree", "actual_source", "matches", "paths"],
+      "properties": {
+        "expected_tree": {"$ref": "#/$defs/gitSha"},
+        "actual_tree": {"$ref": "#/$defs/gitSha"},
+        "actual_source": {"enum": ["index", "commit"]},
+        "matches": {"type": "boolean"},
+        "paths": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/treePathEvidence"}}
+      }
+    },
+    "indexTreeEvidence": {
+      "allOf": [
+        {"$ref": "#/$defs/treeEvidence"},
+        {"properties": {"actual_source": {"const": "index"}}}
+      ]
+    },
+    "commitTreeEvidence": {
+      "allOf": [
+        {"$ref": "#/$defs/treeEvidence"},
+        {"properties": {"actual_source": {"const": "commit"}}}
+      ]
+    },
+    "matchingIndexTreeEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["expected_tree", "actual_tree", "actual_source", "matches", "paths"],
+      "properties": {
+        "expected_tree": {"$ref": "#/$defs/gitSha"},
+        "actual_tree": {"$ref": "#/$defs/gitSha"},
+        "actual_source": {"const": "index"},
+        "matches": {"const": true},
+        "paths": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/committedTreePathEvidence"}}
+      }
+    },
+    "committedTreeEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["expected_tree", "actual_tree", "actual_source", "matches", "paths"],
+      "properties": {
+        "expected_tree": {"$ref": "#/$defs/gitSha"},
+        "actual_tree": {"$ref": "#/$defs/gitSha"},
+        "actual_source": {"const": "commit"},
+        "matches": {"const": true},
+        "paths": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/committedTreePathEvidence"}}
+      }
+    },
+    "plannedResult": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "exit"],
+      "properties": {"status": {"const": "planned"}, "exit": {"type": "null"}}
+    },
+    "revisionRequiredResult": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "exit", "recorded_at", "errors"],
+      "properties": {
+        "status": {"const": "revision-required"},
+        "exit": {"const": "revision-required"},
+        "recorded_at": {"type": "string", "minLength": 1},
+        "errors": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "blockedResult": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "exit", "recorded_at", "failure_stage", "pre_commit_head", "commit_sha", "head_changed", "parent", "message_sha256", "committed_paths", "unrelated_preserved", "hook_mutation", "unexpected_staged_paths", "unexpected_dirty_paths", "planned_unstaged_paths", "tree_evidence", "errors"],
+      "properties": {
+        "status": {"const": "blocked"},
+        "exit": {"const": "blocked"},
+        "recorded_at": {"type": "string", "minLength": 1},
+        "failure_stage": {"enum": ["pre-commit", "commit", "postcondition"]},
+        "pre_commit_head": {"$ref": "#/$defs/gitSha"},
+        "commit_sha": {"$ref": "#/$defs/gitSha"},
+        "head_changed": {"type": "boolean"},
+        "parent": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/gitSha"}]},
+        "message_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
+        "committed_paths": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/repoPath"}},
+        "unrelated_preserved": {"type": "boolean"},
+        "hook_mutation": {"type": "boolean"},
+        "unexpected_staged_paths": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/repoPath"}},
+        "unexpected_dirty_paths": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/repoPath"}},
+        "planned_unstaged_paths": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/repoPath"}},
+        "tree_evidence": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/treeEvidence"}]},
+        "errors": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"failure_stage": {"const": "pre-commit"}}, "required": ["failure_stage"]},
+          "then": {
+            "properties": {
+              "head_changed": {"const": false},
+              "parent": {"type": "null"},
+              "message_sha256": {"type": "null"},
+              "committed_paths": {"maxItems": 0},
+              "hook_mutation": {"const": false},
+              "tree_evidence": {
+                "oneOf": [
+                  {"type": "null"},
+                  {"$ref": "#/$defs/matchingIndexTreeEvidence"}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"failure_stage": {"const": "commit"}}, "required": ["failure_stage"]},
+          "then": {
+            "properties": {"tree_evidence": {"$ref": "#/$defs/treeEvidence"}},
+            "allOf": [
+              {
+                "if": {"properties": {"head_changed": {"const": false}}, "required": ["head_changed"]},
+                "then": {
+                  "properties": {
+                    "parent": {"type": "null"},
+                    "message_sha256": {"type": "null"},
+                    "committed_paths": {"maxItems": 0},
+                    "tree_evidence": {"$ref": "#/$defs/indexTreeEvidence"}
+                  }
+                }
+              },
+              {
+                "if": {"properties": {"head_changed": {"const": true}}, "required": ["head_changed"]},
+                "then": {
+                  "properties": {
+                    "message_sha256": {"$ref": "#/$defs/sha256"},
+                    "committed_paths": {"minItems": 1},
+                    "tree_evidence": {"$ref": "#/$defs/commitTreeEvidence"}
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {"properties": {"failure_stage": {"const": "postcondition"}}, "required": ["failure_stage"]},
+          "then": {
+            "properties": {
+              "head_changed": {"const": true},
+              "message_sha256": {"$ref": "#/$defs/sha256"},
+              "committed_paths": {"minItems": 1},
+              "tree_evidence": {"$ref": "#/$defs/commitTreeEvidence"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "failure_stage": {"enum": ["commit", "postcondition"]},
+              "tree_evidence": {"type": "object", "properties": {"matches": {"const": false}}, "required": ["matches"]}
+            },
+            "required": ["failure_stage", "tree_evidence"]
+          },
+          "then": {"properties": {"hook_mutation": {"const": true}}}
+        },
+        {
+          "if": {
+            "properties": {"failure_stage": {"enum": ["commit", "postcondition"]}},
+            "required": ["failure_stage"],
+            "anyOf": [
+              {"properties": {"unrelated_preserved": {"const": false}}, "required": ["unrelated_preserved"]},
+              {"properties": {"unexpected_staged_paths": {"minItems": 1}}, "required": ["unexpected_staged_paths"]},
+              {"properties": {"unexpected_dirty_paths": {"minItems": 1}}, "required": ["unexpected_dirty_paths"]},
+              {"properties": {"planned_unstaged_paths": {"minItems": 1}}, "required": ["planned_unstaged_paths"]}
+            ]
+          },
+          "then": {"properties": {"hook_mutation": {"const": true}}}
+        }
+      ]
+    },
+    "committedResult": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "exit", "recorded_at", "commit_sha", "parent", "message_sha256", "committed_paths", "unrelated_preserved", "hook_mutation", "tree_evidence"],
+      "properties": {
+        "status": {"const": "committed"},
+        "exit": {"const": "committed"},
+        "recorded_at": {"type": "string", "minLength": 1},
+        "commit_sha": {"$ref": "#/$defs/gitSha"},
+        "parent": {"$ref": "#/$defs/gitSha"},
+        "message_sha256": {"$ref": "#/$defs/sha256"},
+        "committed_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/repoPath"}},
+        "unrelated_preserved": {"const": true},
+        "hook_mutation": {"const": false},
+        "tree_evidence": {"$ref": "#/$defs/committedTreeEvidence"}
+      }
+    },
+    "result": {
+      "oneOf": [
+        {"$ref": "#/$defs/plannedResult"},
+        {"$ref": "#/$defs/revisionRequiredResult"},
+        {"$ref": "#/$defs/blockedResult"},
+        {"$ref": "#/$defs/committedResult"}
+      ]
+    }
+  }
+}

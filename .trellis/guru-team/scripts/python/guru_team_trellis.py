@@ -122,6 +122,26 @@ PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS = [
     "external_quotes_are_labeled_non_contract",
 ]
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
+TASK_COMMIT_SKILL_ID = "guru-create-task-commit"
+TASK_COMMIT_PLAN_SCHEMA_VERSION = "1.0"
+TASK_COMMIT_PLAN_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json"
+TASK_COMMIT_PLAN_DIR = "task-commit-plans"
+TASK_COMMIT_PLAN_CATEGORIES = {
+    "task-reviewed",
+    "unrelated-preserved",
+    "unreviewed-blocking",
+    "ambiguous-blocking",
+}
+TASK_COMMIT_BLOCKING_CATEGORIES = {"unreviewed-blocking", "ambiguous-blocking"}
+TASK_COMMIT_GIT_OPERATION_MARKERS = (
+    ("merge", "MERGE_HEAD"),
+    ("cherry-pick", "CHERRY_PICK_HEAD"),
+    ("revert", "REVERT_HEAD"),
+    ("rebase-head", "REBASE_HEAD"),
+    ("sequencer", "sequencer"),
+    ("rebase-merge", "rebase-merge"),
+    ("rebase-or-am", "rebase-apply"),
+)
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 REVIEW_REPORT_ARTIFACT = "review.md"
 MARKETPLACE_VERIFICATION_ARTIFACT = "marketplace-verification.json"
@@ -327,7 +347,7 @@ FORBIDDEN_REVIEW_REPORT_ENGLISH_TEMPLATE_HEADINGS = [
     "Verification Results",
     "Summary",
 ]
-AGENT_ASSIGNMENT_SCHEMA_VERSION = "1.1"
+AGENT_ASSIGNMENT_SCHEMA_VERSION = "1.2"
 ALLOWED_LOGICAL_ROLES = [
     "实现代理",
     "阶段二检查代理",
@@ -378,6 +398,12 @@ AGENT_TERMINATION_REASONS = {
     "manual_or_platform_terminated_unfinished",
 }
 AGENT_STATUS_EVENT_SOURCES = {"main-session", "recorder", "checker"}
+AGENT_CORRECTABLE_EVENTS = AGENT_PROGRESS_EVENTS | {
+    "status-requested",
+    "status-request-failed",
+}
+AGENT_CORRECTION_KIND = "invalidate-provenance"
+AGENT_RECOVERY_LINK_KIND = "failed-to-termination"
 AGENT_PROGRESS_SOURCE_KINDS = {
     "task_head",
     "task_status",
@@ -2063,13 +2089,30 @@ class WorkflowError(RuntimeError):
         self.payload = payload or {}
 
 
-def run(cmd: list[str], cwd: Path | None = None, check: bool = True) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(cmd, cwd=str(cwd) if cwd else None, text=True, capture_output=True, check=check)
+def run(
+    cmd: list[str],
+    cwd: Path | None = None,
+    check: bool = True,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    process_env = None if env is None else {**os.environ, **env}
+    return subprocess.run(
+        cmd,
+        cwd=str(cwd) if cwd else None,
+        text=True,
+        capture_output=True,
+        check=check,
+        env=process_env,
+    )
 
 
-def run_stdout(cmd: list[str], cwd: Path | None = None) -> str:
+def run_stdout(
+    cmd: list[str], cwd: Path | None = None, env: dict[str, str] | None = None
+) -> str:
     try:
-        return run(cmd, cwd=cwd).stdout.strip()
+        if env is None:
+            return run(cmd, cwd=cwd).stdout.strip()
+        return run(cmd, cwd=cwd, env=env).stdout.strip()
     except subprocess.CalledProcessError as exc:
         stderr = exc.stderr.strip()
         raise WorkflowError(f"Command failed: {shlex.join(cmd)}\n{stderr}") from exc
@@ -3180,20 +3223,22 @@ def git_dirty(root: Path) -> bool:
 
 
 def git_status_paths(root: Path) -> list[str]:
-    lines = run(
-        ["git", "status", "--porcelain", "--untracked-files=all", "--no-renames"],
-        cwd=root,
+    proc = subprocess.run(
+        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all", "--no-renames"],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         check=False,
-    ).stdout.splitlines()
+    )
+    if proc.returncode != 0:
+        return []
     paths: list[str] = []
-    for line in lines:
-        if not line.strip():
+    for record in proc.stdout.split(b"\0"):
+        if not record:
             continue
-        path = line[3:].strip()
-        if " -> " in path:
-            path = path.split(" -> ", 1)[1]
-        if path:
-            paths.append(path)
+        if len(record) < 4:
+            continue
+        paths.append(record[3:].decode("utf-8", "strict"))
     return paths
 
 
@@ -3734,7 +3779,7 @@ def read_json(path: Path) -> dict[str, Any]:
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    content = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    content = json_document_bytes(payload).decode("utf-8")
     fd, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent))
     tmp_path = Path(tmp_name)
     try:
@@ -3743,6 +3788,10 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
         tmp_path.replace(path)
     finally:
         tmp_path.unlink(missing_ok=True)
+
+
+def json_document_bytes(payload: dict[str, Any]) -> bytes:
+    return (json.dumps(payload, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
 
 
 def read_optional_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
@@ -4769,6 +4818,8 @@ def default_agent_assignment_payload(root: Path, task_dir: Path) -> dict[str, An
         "review_rounds": [],
         "reuse_decisions": [],
         "status_events": [],
+        "event_corrections": [],
+        "recovery_links": [],
         "notes": "agent-assignment.json 是 task-local recorder artifact：AI/human 决定 sub-agent 分配、复用、更换或状态处理；脚本只记录和校验客观字段、HEAD、digest 与枚举值。",
     }
 
@@ -4788,6 +4839,10 @@ def load_agent_assignment(root: Path, task_dir: Path) -> dict[str, Any]:
         payload["reuse_decisions"] = []
     if not isinstance(payload.get("status_events"), list):
         payload["status_events"] = []
+    if not isinstance(payload.get("event_corrections"), list):
+        payload["event_corrections"] = []
+    if not isinstance(payload.get("recovery_links"), list):
+        payload["recovery_links"] = []
     payload["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
     payload.setdefault("task", repo_relative(root, task_dir))
     payload.setdefault("head", current_head(root))
@@ -4890,6 +4945,84 @@ def digest_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
+def agent_status_event_sha256(event: dict[str, Any]) -> str:
+    return digest_text(
+        json.dumps(
+            event,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+
+
+def verified_invalidated_status_event_ids(payload: dict[str, Any]) -> set[str]:
+    events = payload.get("status_events")
+    corrections = payload.get("event_corrections")
+    if not isinstance(events, list) or not isinstance(corrections, list):
+        return set()
+    events_by_id = {
+        str(item.get("event_id") or "").strip(): item
+        for item in events
+        if isinstance(item, dict) and str(item.get("event_id") or "").strip()
+    }
+    invalidated: set[str] = set()
+    for item in corrections:
+        if not isinstance(item, dict) or item.get("kind") != AGENT_CORRECTION_KIND:
+            continue
+        target_id = str(item.get("target_event_id") or "").strip()
+        target = events_by_id.get(target_id)
+        if not isinstance(target, dict):
+            continue
+        if str(target.get("event") or "").strip() not in AGENT_CORRECTABLE_EVENTS:
+            continue
+        if str(item.get("agent_id") or "").strip() != str(target.get("agent_id") or "").strip():
+            continue
+        if str(item.get("target_event_sha256") or "").strip() != agent_status_event_sha256(target):
+            continue
+        invalidated.add(target_id)
+    return invalidated
+
+
+def effective_status_events(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    events = payload.get("status_events")
+    if not isinstance(events, list):
+        return []
+    invalidated = verified_invalidated_status_event_ids(payload)
+    return [
+        item
+        for item in events
+        if isinstance(item, dict)
+        and str(item.get("event_id") or "").strip() not in invalidated
+    ]
+
+
+def rebuild_corrected_agent_liveness_projection(payload: dict[str, Any], agent_id: str) -> None:
+    assigned = agent_record(payload, agent_id)
+    anchor = str(assigned.get("assigned_at") or "") if isinstance(assigned, dict) else ""
+    pending: str | None = None
+    for item in effective_status_events(payload):
+        if str(item.get("agent_id") or "").strip() != agent_id:
+            continue
+        event = str(item.get("event") or "").strip()
+        observed = str(item.get("observed_at") or "").strip()
+        if event in AGENT_PROGRESS_EVENTS:
+            anchor = max_iso(anchor, observed)
+            pending = None
+        elif event == "status-requested":
+            pending = observed
+        elif event in AGENT_TERMINAL_EVENTS or event == "terminated-unfinished":
+            pending = None
+    entry = ensure_liveness_entry(payload, agent_id)
+    entry["progress_anchor_at"] = anchor
+    entry["pending_status_request_at"] = pending
+    entry["last_checked_at"] = ""
+    entry["last_decision"] = ""
+    snapshot = entry.get("last_scan_snapshot")
+    if isinstance(snapshot, dict):
+        snapshot.update(progress_events_digest(payload, agent_id))
+
+
 def digest_lines(lines: list[str]) -> str:
     return digest_text("\n".join(lines))
 
@@ -4940,14 +5073,10 @@ def max_file_mtime_iso(root: Path, excluded_paths: set[str]) -> str:
 
 
 def progress_events_for_agent(payload: dict[str, Any], agent_id: str) -> list[dict[str, Any]]:
-    events = payload.get("status_events")
-    if not isinstance(events, list):
-        return []
     return [
         item
-        for item in events
-        if isinstance(item, dict)
-        and str(item.get("agent_id") or "").strip() == agent_id
+        for item in effective_status_events(payload)
+        if str(item.get("agent_id") or "").strip() == agent_id
         and str(item.get("event") or "").strip() in AGENT_PROGRESS_EVENTS
     ]
 
@@ -5216,6 +5345,114 @@ def event_by_id(payload: dict[str, Any], event_id: str) -> dict[str, Any] | None
         if isinstance(item, dict) and str(item.get("event_id") or "").strip() == event_id:
             return item
     return None
+
+
+def next_agent_repair_id(payload: dict[str, Any], collection: str, prefix: str) -> str:
+    items = payload.get(collection)
+    count = len(items) + 1 if isinstance(items, list) else 1
+    seed = f"{collection}|{now_iso()}|{count}"
+    return f"{prefix}-{count:04d}-{hashlib.sha1(seed.encode('utf-8')).hexdigest()[:10]}"
+
+
+def append_agent_event_correction(
+    payload: dict[str, Any],
+    root: Path,
+    *,
+    target_event_id: str,
+    reason: str,
+    evidence: str,
+) -> dict[str, Any]:
+    target = event_by_id(payload, target_event_id)
+    if not isinstance(target, dict):
+        raise WorkflowError("event correction target_event_id must reference an existing status event.", exit_code=2)
+    target_kind = str(target.get("event") or "").strip()
+    if target_kind not in AGENT_CORRECTABLE_EVENTS:
+        raise WorkflowError(
+            "event correction may invalidate only progress or status-request evidence.",
+            exit_code=2,
+        )
+    corrections = payload.setdefault("event_corrections", [])
+    if not isinstance(corrections, list):
+        raise WorkflowError("agent-assignment.json event_corrections must be an array.", exit_code=2)
+    if any(
+        isinstance(item, dict)
+        and str(item.get("target_event_id") or "").strip() == target_event_id
+        for item in corrections
+    ):
+        raise WorkflowError("event correction target_event_id is already invalidated.", exit_code=2)
+    correction = {
+        "correction_id": next_agent_repair_id(payload, "event_corrections", "cor"),
+        "kind": AGENT_CORRECTION_KIND,
+        "target_event_id": target_event_id,
+        "target_event_sha256": agent_status_event_sha256(target),
+        "agent_id": str(target.get("agent_id") or "").strip(),
+        "recorded_at": now_iso(),
+        "head": current_head(root),
+        "source": "main-session",
+        "reason": validate_event_evidence(reason),
+        "evidence": validate_event_evidence(evidence),
+    }
+    corrections.append(correction)
+    rebuild_corrected_agent_liveness_projection(payload, correction["agent_id"])
+    return correction
+
+
+def append_agent_recovery_link(
+    payload: dict[str, Any],
+    root: Path,
+    *,
+    failed_event_id: str,
+    termination_event_id: str,
+    reason: str,
+    evidence: str,
+) -> dict[str, Any]:
+    failed = event_by_id(payload, failed_event_id)
+    termination = event_by_id(payload, termination_event_id)
+    if not isinstance(failed, dict) or not isinstance(termination, dict):
+        raise WorkflowError("recovery link must reference existing failed and termination events.", exit_code=2)
+    failed_agent = str(failed.get("agent_id") or "").strip()
+    termination_agent = str(termination.get("agent_id") or "").strip()
+    if failed_agent != termination_agent:
+        raise WorkflowError("recovery link events must belong to the same agent.", exit_code=2)
+    if str(failed.get("event") or "").strip() != "failed":
+        raise WorkflowError("recovery link failed_event_id must reference failed.", exit_code=2)
+    if (
+        str(termination.get("event") or "").strip() != "terminated-unfinished"
+        or str(termination.get("termination_reason") or "").strip()
+        != "manual_or_platform_terminated_unfinished"
+    ):
+        raise WorkflowError(
+            "recovery link termination_event_id must reference manual_or_platform_terminated_unfinished.",
+            exit_code=2,
+        )
+    events = payload.get("status_events")
+    if not isinstance(events, list) or events.index(failed) >= events.index(termination):
+        raise WorkflowError("recovery link must point forward from failed to termination.", exit_code=2)
+    links = payload.setdefault("recovery_links", [])
+    if not isinstance(links, list):
+        raise WorkflowError("agent-assignment.json recovery_links must be an array.", exit_code=2)
+    if any(
+        isinstance(item, dict)
+        and str(item.get("failed_event_id") or "").strip() == failed_event_id
+        for item in links
+    ):
+        raise WorkflowError("recovery link failed_event_id already has a link.", exit_code=2)
+    link = {
+        "recovery_id": next_agent_repair_id(payload, "recovery_links", "rec"),
+        "kind": AGENT_RECOVERY_LINK_KIND,
+        "failed_event_id": failed_event_id,
+        "failed_event_sha256": agent_status_event_sha256(failed),
+        "termination_event_id": termination_event_id,
+        "termination_event_sha256": agent_status_event_sha256(termination),
+        "agent_id": failed_agent,
+        "recorded_at": now_iso(),
+        "head": current_head(root),
+        "source": "main-session",
+        "reason": validate_event_evidence(reason),
+        "evidence": validate_event_evidence(evidence),
+    }
+    links.append(link)
+    return link
 
 
 def latest_progress_observed_at(payload: dict[str, Any], agent_id: str) -> str:
@@ -5631,6 +5868,137 @@ def validate_review_round_report_digest(root: Path, task_dir: Path, item: dict[s
     return errors
 
 
+def validate_agent_assignment_repair_errors(root: Path, payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    events = payload.get("status_events")
+    if not isinstance(events, list):
+        return ["agent-assignment.json status_events 必须是数组。"]
+    events_by_id: dict[str, dict[str, Any]] = {}
+    event_indexes: dict[str, int] = {}
+    for index, item in enumerate(events):
+        if not isinstance(item, dict):
+            continue
+        event_id = str(item.get("event_id") or "").strip()
+        if event_id and event_id not in events_by_id:
+            events_by_id[event_id] = item
+            event_indexes[event_id] = index
+
+    corrections = payload.get("event_corrections")
+    if not isinstance(corrections, list):
+        errors.append("agent-assignment.json event_corrections 必须是数组。")
+        corrections = []
+    seen_correction_ids: set[str] = set()
+    seen_targets: set[str] = set()
+    for index, item in enumerate(corrections):
+        label = f"agent-assignment.json event_corrections[{index}]"
+        if not isinstance(item, dict):
+            errors.append(f"{label} 必须是对象。")
+            continue
+        correction_id = str(item.get("correction_id") or "").strip()
+        target_id = str(item.get("target_event_id") or "").strip()
+        if not re.fullmatch(r"cor-[0-9]{4}-[0-9a-f]{10}", correction_id):
+            errors.append(f"{label}.correction_id 非法。")
+        elif correction_id in seen_correction_ids:
+            errors.append(f"{label}.correction_id 重复: {correction_id}。")
+        seen_correction_ids.add(correction_id)
+        if target_id in seen_targets:
+            errors.append(f"{label}.target_event_id 重复失效: {target_id}。")
+        seen_targets.add(target_id)
+        if item.get("kind") != AGENT_CORRECTION_KIND:
+            errors.append(f"{label}.kind 必须是 {AGENT_CORRECTION_KIND}。")
+        target = events_by_id.get(target_id)
+        if not isinstance(target, dict):
+            errors.append(f"{label}.target_event_id 未引用已有 event: {target_id or '(missing)'}。")
+        else:
+            if str(target.get("event") or "").strip() not in AGENT_CORRECTABLE_EVENTS:
+                errors.append(f"{label} 只能失效 progress/status-request event。")
+            if str(item.get("agent_id") or "").strip() != str(target.get("agent_id") or "").strip():
+                errors.append(f"{label}.agent_id 与 target event 不一致。")
+            if str(item.get("target_event_sha256") or "").strip() != agent_status_event_sha256(target):
+                errors.append(f"{label}.target_event_sha256 与 immutable target event 不一致。")
+        validate_head_field(root, item.get("head"), f"event_corrections[{index}].head", errors)
+        validate_timestamp_field(item.get("recorded_at"), f"event_corrections[{index}].recorded_at", errors)
+        if str(item.get("source") or "").strip() != "main-session":
+            errors.append(f"{label}.source 必须是 main-session。")
+        for field in ("reason", "evidence"):
+            if evidence_is_placeholder(str(item.get(field) or "")):
+                errors.append(f"{label}.{field} 必须是非占位证据。")
+
+    links = payload.get("recovery_links")
+    if not isinstance(links, list):
+        errors.append("agent-assignment.json recovery_links 必须是数组。")
+        links = []
+    invalidated = verified_invalidated_status_event_ids(payload)
+    seen_recovery_ids: set[str] = set()
+    seen_failed_ids: set[str] = set()
+    graph: dict[str, str] = {}
+    for index, item in enumerate(links):
+        label = f"agent-assignment.json recovery_links[{index}]"
+        if not isinstance(item, dict):
+            errors.append(f"{label} 必须是对象。")
+            continue
+        recovery_id = str(item.get("recovery_id") or "").strip()
+        failed_id = str(item.get("failed_event_id") or "").strip()
+        termination_id = str(item.get("termination_event_id") or "").strip()
+        if not re.fullmatch(r"rec-[0-9]{4}-[0-9a-f]{10}", recovery_id):
+            errors.append(f"{label}.recovery_id 非法。")
+        elif recovery_id in seen_recovery_ids:
+            errors.append(f"{label}.recovery_id 重复: {recovery_id}。")
+        seen_recovery_ids.add(recovery_id)
+        if failed_id in seen_failed_ids:
+            errors.append(f"{label}.failed_event_id 重复链接: {failed_id}。")
+        seen_failed_ids.add(failed_id)
+        if item.get("kind") != AGENT_RECOVERY_LINK_KIND:
+            errors.append(f"{label}.kind 必须是 {AGENT_RECOVERY_LINK_KIND}。")
+        failed = events_by_id.get(failed_id)
+        termination = events_by_id.get(termination_id)
+        if not isinstance(failed, dict) or not isinstance(termination, dict):
+            errors.append(f"{label} 必须引用已有 failed/termination events。")
+        else:
+            failed_agent = str(failed.get("agent_id") or "").strip()
+            termination_agent = str(termination.get("agent_id") or "").strip()
+            if str(failed.get("event") or "").strip() != "failed":
+                errors.append(f"{label}.failed_event_id 必须引用 failed。")
+            if (
+                str(termination.get("event") or "").strip() != "terminated-unfinished"
+                or str(termination.get("termination_reason") or "").strip()
+                != "manual_or_platform_terminated_unfinished"
+            ):
+                errors.append(f"{label}.termination_event_id 必须引用 manual/platform termination。")
+            if not failed_agent or failed_agent != termination_agent:
+                errors.append(f"{label} 必须是 same-agent recovery link。")
+            if str(item.get("agent_id") or "").strip() != failed_agent:
+                errors.append(f"{label}.agent_id 与 referenced events 不一致。")
+            if event_indexes.get(failed_id, len(events)) >= event_indexes.get(termination_id, -1):
+                errors.append(f"{label} 必须从 earlier failed 指向 later termination。")
+            if failed_id in invalidated or termination_id in invalidated:
+                errors.append(f"{label} 不得引用 invalidated event。")
+            if str(item.get("failed_event_sha256") or "").strip() != agent_status_event_sha256(failed):
+                errors.append(f"{label}.failed_event_sha256 与 immutable event 不一致。")
+            if str(item.get("termination_event_sha256") or "").strip() != agent_status_event_sha256(termination):
+                errors.append(f"{label}.termination_event_sha256 与 immutable event 不一致。")
+        validate_head_field(root, item.get("head"), f"recovery_links[{index}].head", errors)
+        validate_timestamp_field(item.get("recorded_at"), f"recovery_links[{index}].recorded_at", errors)
+        if str(item.get("source") or "").strip() != "main-session":
+            errors.append(f"{label}.source 必须是 main-session。")
+        for field in ("reason", "evidence"):
+            if evidence_is_placeholder(str(item.get(field) or "")):
+                errors.append(f"{label}.{field} 必须是非占位证据。")
+        if failed_id and termination_id:
+            graph[failed_id] = termination_id
+
+    for start in graph:
+        visited: set[str] = set()
+        cursor = start
+        while cursor in graph:
+            if cursor in visited:
+                errors.append(f"agent-assignment.json recovery_links 存在 cycle: {start}。")
+                break
+            visited.add(cursor)
+            cursor = graph[cursor]
+    return errors
+
+
 def validate_liveness_payload_errors(root: Path, payload: dict[str, Any], enforce_recovery_chains: bool = True) -> list[str]:
     errors: list[str] = []
     liveness = payload.get("liveness")
@@ -5846,6 +6214,7 @@ def validate_agent_assignment_payload(
                         f"agent-assignment.json reuse_decisions[{index}].{round_field} 必须是正 strict int。"
                     )
             validate_head_field(root, item.get("head"), f"reuse_decisions[{index}].head", errors)
+    errors.extend(validate_agent_assignment_repair_errors(root, payload))
     errors.extend(validate_liveness_payload_errors(root, payload, enforce_recovery_chains=enforce_recovery_chains))
     return errors
 
@@ -5864,6 +6233,10 @@ def normalize_agent_assignment_for_task(root: Path, task_dir: Path, payload: dic
         normalized["reuse_decisions"] = []
     if not isinstance(normalized.get("status_events"), list):
         normalized["status_events"] = []
+    if not isinstance(normalized.get("event_corrections"), list):
+        normalized["event_corrections"] = []
+    if not isinstance(normalized.get("recovery_links"), list):
+        normalized["recovery_links"] = []
     return normalized
 
 
@@ -5900,6 +6273,9 @@ def summarize_agent_assignment(root: Path, task_dir: Path, path: Path, payload: 
         "review_rounds_count": len(payload.get("review_rounds", [])) if isinstance(payload.get("review_rounds"), list) else 0,
         "reuse_decisions_count": len(payload.get("reuse_decisions", [])) if isinstance(payload.get("reuse_decisions"), list) else 0,
         "status_events_count": len(payload.get("status_events", [])) if isinstance(payload.get("status_events"), list) else 0,
+        "effective_status_events_count": len(effective_status_events(payload)),
+        "event_corrections_count": len(payload.get("event_corrections", [])) if isinstance(payload.get("event_corrections"), list) else 0,
+        "recovery_links_count": len(payload.get("recovery_links", [])) if isinstance(payload.get("recovery_links"), list) else 0,
         "task": repo_relative(root, task_dir),
         "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。",
     }
@@ -6361,14 +6737,28 @@ def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head
 
 
 def status_event_completion_errors(payload: dict[str, Any]) -> list[str]:
-    status_events = payload.get("status_events")
-    if not isinstance(status_events, list):
+    raw_status_events = payload.get("status_events")
+    if not isinstance(raw_status_events, list):
         return ["agent-assignment.json status_events 必须是数组。"]
+    status_events = effective_status_events(payload)
     errors: list[str] = []
     events_by_id = {
         str(item.get("event_id") or ""): item
         for item in status_events
         if isinstance(item, dict) and str(item.get("event_id") or "")
+    }
+    event_indexes_by_id = {
+        str(item.get("event_id") or "").strip(): index
+        for index, item in enumerate(status_events)
+        if str(item.get("event_id") or "").strip()
+    }
+    recovery_targets = {
+        str(item.get("failed_event_id") or "").strip(): str(item.get("termination_event_id") or "").strip()
+        for item in payload.get("recovery_links", [])
+        if isinstance(item, dict)
+        and item.get("kind") == AGENT_RECOVERY_LINK_KIND
+        and str(item.get("failed_event_id") or "").strip()
+        and str(item.get("termination_event_id") or "").strip()
     }
 
     def recovery_completed_from(index: int, original_agent: str, predecessor_event_id: str, allow_resume: bool) -> bool:
@@ -6404,6 +6794,22 @@ def status_event_completion_errors(payload: dict[str, Any]) -> list[str]:
             if key in visited:
                 return False
             visited.add(key)
+            linked_termination_id = recovery_targets.get(source_event_id)
+            linked_termination = events_by_id.get(linked_termination_id or "")
+            linked_index = event_indexes_by_id.get(linked_termination_id or "")
+            if (
+                isinstance(linked_termination, dict)
+                and linked_index is not None
+                and linked_index > start_index
+                and str(linked_termination.get("agent_id") or "").strip() == source_agent
+                and recover_from_event(
+                    linked_index,
+                    source_agent,
+                    linked_termination_id or "",
+                    allow_same_agent_resume=True,
+                )
+            ):
+                return True
             for later_index, later in enumerate(status_events[start_index + 1:], start=start_index + 1):
                 if not isinstance(later, dict):
                     continue
@@ -6670,7 +7076,15 @@ def valid_agent_assignment_summary_fields(
         invalid_roles = [str(role) for role in roles if str(role) not in ALLOWED_LOGICAL_ROLES]
         if invalid_roles:
             errors.append("Branch Review Gate agent_assignment roles 存在非法中文逻辑角色: " + ", ".join(invalid_roles) + "。")
-    for key in ["agents_count", "review_rounds_count", "reuse_decisions_count", "status_events_count"]:
+    for key in [
+        "agents_count",
+        "review_rounds_count",
+        "reuse_decisions_count",
+        "status_events_count",
+        "effective_status_events_count",
+        "event_corrections_count",
+        "recovery_links_count",
+    ]:
         if key in agent_assignment and (not isinstance(agent_assignment.get(key), int) or agent_assignment[key] < 0):
             errors.append(f"Branch Review Gate agent_assignment.{key} 必须是非负整数。")
     return errors
@@ -7306,7 +7720,8 @@ def phase2_agent_assignment_errors(root: Path, task_dir: Path) -> list[str]:
     if not status_events and not liveness:
         return []
     payload = normalize_agent_assignment_for_task(root, task_dir, raw_payload)
-    errors = validate_liveness_payload_errors(root, payload, enforce_recovery_chains=True)
+    errors = validate_agent_assignment_repair_errors(root, payload)
+    errors.extend(validate_liveness_payload_errors(root, payload, enforce_recovery_chains=True))
     if errors:
         return [
             "phase2-check.json 不能在 agent-assignment.json 存在未闭环 sub-agent liveness/recovery evidence 时通过: "
@@ -7316,10 +7731,58 @@ def phase2_agent_assignment_errors(root: Path, task_dir: Path) -> list[str]:
     return []
 
 
+def task_commit_candidate_dirty_exclusions(root: Path, task_dir: Path) -> set[str]:
+    plan_dir = task_dir / TASK_COMMIT_PLAN_DIR
+    if not plan_dir.is_dir():
+        return set()
+    candidates: list[str] = []
+    for path in sorted(plan_dir.glob("[0-9][0-9][0-9].json")):
+        payload, error = read_optional_json(path)
+        if error or payload is None:
+            continue
+        relative = repo_relative(root, path)
+        task = payload.get("task") if isinstance(payload.get("task"), dict) else {}
+        git = payload.get("git") if isinstance(payload.get("git"), dict) else {}
+        result = payload.get("result") if isinstance(payload.get("result"), dict) else {}
+        classifications = payload.get("path_classifications")
+        self_classification = next(
+            (
+                item
+                for item in classifications
+                if isinstance(item, dict) and item.get("path") == relative
+            ),
+            None,
+        ) if isinstance(classifications, list) else None
+        schema_errors: list[str] = []
+        try:
+            schema = skill_read_json(task_commit_schema_path(root), "task commit plan schema", schema_errors)
+        except WorkflowError:
+            schema = None
+        if schema is not None:
+            schema_errors.extend(skill_json_schema_validation_errors(payload, schema, "task commit plan"))
+        if (
+            not schema_errors
+            and payload.get("schema_version") == TASK_COMMIT_PLAN_SCHEMA_VERSION
+            and payload.get("skill_id") == TASK_COMMIT_SKILL_ID
+            and payload.get("sequence") == path.stem
+            and task.get("path") == repo_relative(root, task_dir)
+            and git.get("pre_commit_head") == current_head(root)
+            and result.get("status") == "planned"
+            and relative in (payload.get("exact_stage_paths") or [])
+            and isinstance(self_classification, dict)
+            and self_classification.get("category") == "task-reviewed"
+            and self_classification.get("coverage_source") == "skill-artifact"
+            and payload.get("freshness", {}).get("plan_digest") == task_commit_plan_digest(payload)
+        ):
+            candidates.append(relative)
+    return set(candidates) if len(candidates) == 1 else set()
+
+
 def validate_phase2_check(
     root: Path,
     task_dir: Path,
     allow_committed_head: bool = False,
+    additional_dirty_excluded: set[str] | None = None,
 ) -> tuple[Path, dict[str, Any], list[str]]:
     path = phase2_check_path(task_dir)
     if not path.exists():
@@ -7362,6 +7825,7 @@ def validate_phase2_check(
             errors.append(f"phase2-check.json 记录的 HEAD {recorded_head or '(missing)'} 与当前 HEAD {head} 不一致。")
     dirty_excluded = {repo_relative(root, phase2_check_path(task_dir))}
     dirty_excluded.update(recorded_digest_paths(payload.get("checked_artifacts")))
+    dirty_excluded.update(additional_dirty_excluded or task_commit_candidate_dirty_exclusions(root, task_dir))
     dirty_now = dirty_paths_excluding(root, dirty_excluded)
     recorded_dirty = payload.get("dirty_paths")
     if not isinstance(recorded_dirty, list):
@@ -7846,7 +8310,10 @@ def section_line_positions(body: str, required_sections: list[str]) -> tuple[dic
 
 
 def section_has_content(lines: list[str], start: int, end: int) -> bool:
-    return any(line.strip() for line in lines[start + 1 : end])
+    return any(
+        line.strip() and line.strip().lower() not in PLACEHOLDER_EVIDENCE_VALUES
+        for line in lines[start + 1 : end]
+    )
 
 
 def footer_line_index(body: str, pattern: re.Pattern[str]) -> tuple[int | None, re.Match[str] | None]:
@@ -9122,6 +9589,22 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
     platform_nickname = clean_optional_text(args.platform_nickname)
     recorded: dict[str, Any] | None = None
     status_event = clean_optional_text(getattr(args, "status_event", None))
+    invalidate_event_id = clean_optional_text(getattr(args, "invalidate_event_id", None))
+    link_failed_event_id = clean_optional_text(getattr(args, "link_failed_event_id", None))
+    link_termination_event_id = clean_optional_text(getattr(args, "link_termination_event_id", None))
+    if bool(link_failed_event_id) != bool(link_termination_event_id):
+        raise WorkflowError(
+            "recovery link requires both --link-failed-event-id and --link-termination-event-id.",
+            exit_code=2,
+        )
+    repair_modes = int(bool(invalidate_event_id)) + int(bool(link_failed_event_id))
+    if repair_modes > 1:
+        raise WorkflowError("record one correction or recovery link per invocation.", exit_code=2)
+    if repair_modes and (status_event or args.review_round is not None or args.reuse_decision):
+        raise WorkflowError(
+            "correction/recovery mode cannot be combined with status, review-round, or reuse-decision mode.",
+            exit_code=2,
+        )
     if status_event and args.review_round is not None:
         raise WorkflowError("--status-event cannot be combined with --review-round.", exit_code=2)
     if status_event and getattr(args, "reuse_decision", None):
@@ -9131,6 +9614,23 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
             "record-agent-assignment.sh --status-event is deprecated and fails closed. "
             "Use record-subagent-liveness-event.sh for assigned/progress/status/stale/resume/replacement/terminal events.",
             exit_code=2,
+        )
+    elif invalidate_event_id:
+        recorded = append_agent_event_correction(
+            payload,
+            root,
+            target_event_id=invalidate_event_id,
+            reason=clean_optional_text(getattr(args, "correction_reason", None)),
+            evidence=clean_optional_text(getattr(args, "correction_evidence", None)),
+        )
+    elif link_failed_event_id:
+        recorded = append_agent_recovery_link(
+            payload,
+            root,
+            failed_event_id=link_failed_event_id,
+            termination_event_id=link_termination_event_id,
+            reason=clean_optional_text(getattr(args, "recovery_reason", None)),
+            evidence=clean_optional_text(getattr(args, "recovery_evidence", None)),
         )
     elif args.review_round is not None:
         recorded = append_agent_review_round(
@@ -9203,7 +9703,7 @@ def cmd_record_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
         "artifact_path": str(path),
         "recorded": recorded,
         "summary": summary,
-        "notes": "record-agent-assignment 只记录 AI/human 已做出的分配、复用或状态处理判断，不决定应使用哪个 sub-agent、是否 stale 或是否应终止。",
+        "notes": "record-agent-assignment 只记录 AI/human 已做出的分配、复用或 append-only correction/recovery 判断，不决定应使用哪个 sub-agent、是否 stale 或是否应终止。",
     }
 
 
@@ -9349,6 +9849,9 @@ def cmd_check_agent_assignment(args: argparse.Namespace) -> dict[str, Any]:
         "review_rounds_count": len(payload.get("review_rounds", [])) if isinstance(payload.get("review_rounds"), list) else 0,
         "reuse_decisions_count": len(payload.get("reuse_decisions", [])) if isinstance(payload.get("reuse_decisions"), list) else 0,
         "status_events_count": len(payload.get("status_events", [])) if isinstance(payload.get("status_events"), list) else 0,
+        "effective_status_events_count": len(effective_status_events(payload)),
+        "event_corrections_count": len(payload.get("event_corrections", [])) if isinstance(payload.get("event_corrections"), list) else 0,
+        "recovery_links_count": len(payload.get("recovery_links", [])) if isinstance(payload.get("recovery_links"), list) else 0,
     }
 
 
@@ -9521,8 +10024,1935 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def task_commit_schema_path(root: Path) -> Path:
+    candidates = [
+        root / "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+        root / ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+    ]
+    for path in candidates:
+        if path.is_file():
+            return path
+    raise WorkflowError("guru-create-task-commit schema is not installed.", exit_code=2)
+
+
+def task_commit_repo_path_errors(value: Any, label: str) -> list[str]:
+    if not isinstance(value, str) or not value or "\x00" in value:
+        return [f"{label} must be a non-empty repo-relative path."]
+    path = Path(value)
+    if path.is_absolute() or ".." in path.parts:
+        return [f"{label} must stay repo-relative without parent traversal."]
+    return []
+
+
+def task_commit_canonical_digest(payload: Any) -> str:
+    encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def task_commit_plan_digest(payload: dict[str, Any]) -> str:
+    normalized = copy.deepcopy(payload)
+    freshness = normalized.get("freshness")
+    if isinstance(freshness, dict):
+        freshness["plan_digest"] = ""
+    return task_commit_canonical_digest(normalized)
+
+
+def task_commit_file_evidence(root: Path, path: Path) -> dict[str, Any]:
+    content = path.read_bytes()
+    return {
+        "path": repo_relative(root, path),
+        "sha256": hashlib.sha256(content).hexdigest(),
+        "size": len(content),
+    }
+
+
+def task_commit_evidence_errors(root: Path, expected: Any, path: Path, label: str) -> list[str]:
+    if not isinstance(expected, dict):
+        return [f"task commit plan evidence.{label} must be an object."]
+    if not path.is_file():
+        return [f"task commit plan evidence.{label} file is missing."]
+    actual = task_commit_file_evidence(root, path)
+    errors: list[str] = []
+    for key in ("path", "sha256", "size"):
+        if expected.get(key) != actual[key]:
+            errors.append(f"task commit plan evidence.{label}.{key} is stale or mismatched.")
+    return errors
+
+
+def task_commit_index_identity(
+    root: Path, path: str, git_env: dict[str, str] | None = None
+) -> tuple[str | None, str | None]:
+    proc = subprocess.run(
+        ["git", "--literal-pathspecs", "ls-files", "-s", "-z", "--", path],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        env=None if git_env is None else {**os.environ, **git_env},
+    )
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Could not read the literal task commit index identity.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    records = [record for record in proc.stdout.split(b"\0") if record]
+    if not records:
+        return None, None
+    if len(records) != 1:
+        raise WorkflowError("Task commit index identity is ambiguous for a literal path.", exit_code=2)
+    metadata_raw, separator, record_path = records[0].partition(b"\t")
+    if not separator or record_path.decode("utf-8", "strict") != path:
+        raise WorkflowError("Task commit index identity did not return the exact literal path.", exit_code=2)
+    metadata = metadata_raw.decode("ascii", "strict").split()
+    if len(metadata) != 3 or metadata[2] != "0":
+        raise WorkflowError("Task commit index identity has an invalid or unmerged record.", exit_code=2)
+    return metadata[1], metadata[0]
+
+
+def task_commit_tree_path_identity(root: Path, tree: str, path: str) -> tuple[str | None, str | None]:
+    proc = subprocess.run(
+        ["git", "--literal-pathspecs", "ls-tree", "-z", tree, "--", path],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Could not read the literal task commit tree identity.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    records = [record for record in proc.stdout.split(b"\0") if record]
+    if not records:
+        return None, None
+    if len(records) != 1:
+        raise WorkflowError("Task commit tree identity is ambiguous for a literal path.", exit_code=2)
+    metadata_raw, separator, record_path = records[0].partition(b"\t")
+    if not separator or record_path.decode("utf-8", "strict") != path:
+        raise WorkflowError("Task commit tree identity did not return the exact literal path.", exit_code=2)
+    metadata = metadata_raw.decode("ascii", "strict").split()
+    if len(metadata) != 3:
+        raise WorkflowError("Task commit tree identity has an invalid record.", exit_code=2)
+    return metadata[2], metadata[0]
+
+
+def task_commit_write_tree(
+    root: Path, git_env: dict[str, str] | None = None
+) -> str:
+    proc = subprocess.run(
+        ["git", "write-tree"],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        env=None if git_env is None else {**os.environ, **git_env},
+    )
+    tree = proc.stdout.decode("ascii", "strict").strip() if proc.returncode == 0 else ""
+    if proc.returncode != 0 or re.fullmatch(r"[0-9a-f]{40,64}", tree) is None:
+        raise WorkflowError(
+            "Could not bind the complete task commit index tree.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    return tree
+
+
+def task_commit_commit_tree(root: Path, commit: str) -> str:
+    proc = subprocess.run(
+        ["git", "rev-parse", "--verify", f"{commit}^{{tree}}"],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    tree = proc.stdout.decode("ascii", "strict").strip() if proc.returncode == 0 else ""
+    if proc.returncode != 0 or re.fullmatch(r"[0-9a-f]{40,64}", tree) is None:
+        raise WorkflowError(
+            "Could not read the real task commit tree.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    return tree
+
+
+def task_commit_tree_evidence(
+    root: Path,
+    expected_tree: str,
+    actual_tree: str,
+    exact_paths: set[str],
+    *,
+    actual_source: str,
+) -> dict[str, Any]:
+    paths: list[dict[str, Any]] = []
+    for path in sorted(exact_paths):
+        expected_blob, expected_mode = task_commit_tree_path_identity(root, expected_tree, path)
+        actual_blob, actual_mode = task_commit_tree_path_identity(root, actual_tree, path)
+        matches = expected_blob == actual_blob and expected_mode == actual_mode
+        paths.append(
+            {
+                "path": path,
+                "expected_blob": expected_blob,
+                "expected_mode": expected_mode,
+                "actual_blob": actual_blob,
+                "actual_mode": actual_mode,
+                "matches": matches,
+            }
+        )
+    return {
+        "expected_tree": expected_tree,
+        "actual_tree": actual_tree,
+        "actual_source": actual_source,
+        "matches": expected_tree == actual_tree and all(item["matches"] for item in paths),
+        "paths": paths,
+    }
+
+
+def task_commit_git_path(root: Path, name: str) -> Path:
+    proc = subprocess.run(
+        ["git", "rev-parse", "--git-path", name],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    value = proc.stdout.decode("utf-8", "strict").rstrip("\n") if proc.returncode == 0 else ""
+    if proc.returncode != 0 or not value or "\n" in value or "\r" in value:
+        raise WorkflowError(
+            "Could not resolve the task commit Git operation state path.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    path = Path(value)
+    return path if path.is_absolute() else root / path
+
+
+def task_commit_git_operation_state(root: Path) -> dict[str, Any]:
+    active: list[dict[str, str]] = []
+    for operation_id, git_path_name in TASK_COMMIT_GIT_OPERATION_MARKERS:
+        path = task_commit_git_path(root, git_path_name)
+        try:
+            metadata = path.lstat()
+        except FileNotFoundError:
+            continue
+        active.append(
+            {
+                "id": operation_id,
+                "git_path": git_path_name,
+                "kind": "directory" if stat.S_ISDIR(metadata.st_mode) else "marker",
+            }
+        )
+    return {"status": "blocked" if active else "ordinary", "active": active}
+
+
+def require_ordinary_task_commit_git_state(root: Path) -> dict[str, Any]:
+    state = task_commit_git_operation_state(root)
+    if state["active"]:
+        raise WorkflowError(
+            "Task commit requires an ordinary Git operation state.",
+            exit_code=2,
+            payload={"status": "blocked", "git_operation_state": state},
+        )
+    return state
+
+
+def task_commit_gitlink_worktree_identity(root: Path, path: str) -> dict[str, Any]:
+    target = root / path
+    try:
+        metadata = target.lstat()
+    except FileNotFoundError as exc:
+        raise WorkflowError(
+            "Task commit gitlink worktree is not initialized.", exit_code=2
+        ) from exc
+    if not stat.S_ISDIR(metadata.st_mode):
+        raise WorkflowError(
+            "Task commit gitlink worktree is not an exact directory.", exit_code=2
+        )
+
+    top_proc = subprocess.run(
+        ["git", "-C", str(target), "rev-parse", "--show-toplevel"],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    top_value = top_proc.stdout.decode("utf-8", "strict").rstrip("\n") if top_proc.returncode == 0 else ""
+    try:
+        exact_root = target.resolve(strict=True)
+        reported_root = Path(top_value).resolve(strict=True) if top_value else None
+    except (OSError, RuntimeError) as exc:
+        raise WorkflowError(
+            "Task commit gitlink worktree root is ambiguous.", exit_code=2
+        ) from exc
+    if top_proc.returncode != 0 or reported_root != exact_root:
+        raise WorkflowError(
+            "Task commit gitlink worktree is uninitialized or root-mismatched.", exit_code=2
+        )
+
+    head_proc = subprocess.run(
+        ["git", "-C", str(target), "rev-parse", "--verify", "HEAD^{commit}"],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    head = head_proc.stdout.decode("ascii", "strict").strip() if head_proc.returncode == 0 else ""
+    if head_proc.returncode != 0 or re.fullmatch(r"[0-9a-f]{40,64}", head) is None:
+        raise WorkflowError(
+            "Task commit gitlink worktree HEAD is missing or ambiguous.", exit_code=2
+        )
+
+    status_proc = subprocess.run(
+        [
+            "git", "-C", str(target), "status", "--porcelain=v1", "-z",
+            "--untracked-files=all", "--ignore-submodules=none",
+        ],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if status_proc.returncode != 0:
+        raise WorkflowError(
+            "Could not inspect the task commit gitlink worktree state.", exit_code=2
+        )
+    if status_proc.stdout:
+        raise WorkflowError(
+            "Task commit gitlink worktree must be clean before candidate capture.", exit_code=2
+        )
+    return {
+        "gitlink_head": head,
+        "gitlink_initialized": True,
+        "gitlink_dirty": False,
+    }
+
+
+def task_commit_planned_gitlink_heads(
+    plan: dict[str, Any], exact_paths: set[str]
+) -> dict[str, str]:
+    snapshot = plan.get("dirty_snapshot")
+    entries = snapshot.get("entries") if isinstance(snapshot, dict) else None
+    if not isinstance(entries, list):
+        raise WorkflowError("Task commit plan lacks a usable dirty snapshot.", exit_code=2)
+    bindings: dict[str, str] = {}
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        path = entry.get("path")
+        if path not in exact_paths or entry.get("mode") != "160000" or entry.get("deleted") is True:
+            continue
+        head = entry.get("gitlink_head")
+        if (
+            not isinstance(path, str)
+            or not isinstance(head, str)
+            or re.fullmatch(r"[0-9a-f]{40,64}", head) is None
+            or entry.get("gitlink_initialized") is not True
+            or entry.get("gitlink_dirty") is not False
+            or path in bindings
+        ):
+            raise WorkflowError(
+                "Task commit plan has an invalid exact gitlink binding.", exit_code=2
+            )
+        bindings[path] = head
+    return bindings
+
+
+def require_task_commit_gitlink_bindings(
+    root: Path,
+    bindings: dict[str, str],
+    *,
+    require_index: bool,
+) -> None:
+    errors: list[str] = []
+    for path, reviewed_head in sorted(bindings.items()):
+        try:
+            identity = task_commit_gitlink_worktree_identity(root, path)
+        except WorkflowError as exc:
+            errors.append(f"{path}: {exc}")
+            continue
+        if identity.get("gitlink_head") != reviewed_head:
+            errors.append(f"{path}: worktree HEAD no longer matches the reviewed gitlink_head")
+        if require_index:
+            index_blob, index_mode = task_commit_index_identity(root, path)
+            if index_blob != reviewed_head or index_mode != "160000":
+                errors.append(f"{path}: index mode/OID does not match the reviewed gitlink_head")
+    if errors:
+        raise WorkflowError(
+            "Task commit gitlink binding changed during exact staging.",
+            exit_code=2,
+            payload={"status": "blocked", "gitlink_binding_errors": errors},
+        )
+
+
+def task_commit_worktree_content(
+    root: Path, path: str
+) -> tuple[bytes | None, str | None, str | None]:
+    target = root / path
+    try:
+        metadata = target.lstat()
+    except FileNotFoundError:
+        return None, None, None
+    if stat.S_ISLNK(metadata.st_mode):
+        content = os.fsencode(os.readlink(target))
+        return content, hashlib.sha256(content).hexdigest(), "120000"
+    if not stat.S_ISREG(metadata.st_mode):
+        return None, None, None
+    mode = "100755" if metadata.st_mode & stat.S_IXUSR else "100644"
+    content = target.read_bytes()
+    return content, hashlib.sha256(content).hexdigest(), mode
+
+
+def task_commit_worktree_identity(root: Path, path: str) -> tuple[str | None, str | None]:
+    _, content_sha256, mode = task_commit_worktree_content(root, path)
+    return content_sha256, mode
+
+
+def task_commit_persist_blob(root: Path, content: bytes) -> str:
+    proc = subprocess.run(
+        ["git", "hash-object", "-w", "--stdin"],
+        cwd=str(root),
+        input=content,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    blob = proc.stdout.decode("ascii", "strict").strip() if proc.returncode == 0 else ""
+    if proc.returncode != 0 or re.fullmatch(r"[0-9a-f]{40,64}", blob) is None:
+        raise WorkflowError(
+            "Task commit executor could not persist an artifact-authorized blob.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    return blob
+
+
+def task_commit_planned_index_bindings(
+    root: Path,
+    plan: dict[str, Any],
+    exact_paths: set[str],
+    candidate_relative: str,
+) -> tuple[dict[str, tuple[str | None, str | None]], bytes]:
+    bindings: dict[str, tuple[str | None, str | None]] = {}
+    entries = plan.get("dirty_snapshot", {}).get("entries", [])
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        path = entry.get("path")
+        if not isinstance(path, str) or path not in exact_paths:
+            continue
+        if entry.get("deleted") is True:
+            bindings[path] = (None, None)
+        elif entry.get("mode") == "160000":
+            head = entry.get("gitlink_head")
+            if not isinstance(head, str):
+                raise WorkflowError(
+                    "Task commit plan lacks an artifact-authorized gitlink OID.", exit_code=2
+                )
+            bindings[path] = (head, "160000")
+        else:
+            content, content_sha256, mode = task_commit_worktree_content(root, path)
+            if (
+                content is None
+                or content_sha256 != entry.get("worktree_sha256")
+                or mode != entry.get("mode")
+                or mode not in {"100644", "100755", "120000"}
+            ):
+                raise WorkflowError(
+                    "Task commit ordinary path no longer matches its artifact bytes/mode authority.",
+                    exit_code=2,
+                    payload={"status": "blocked", "path": path},
+                )
+            bindings[path] = (task_commit_persist_blob(root, content), mode)
+        renamed_from = entry.get("renamed_from")
+        if isinstance(renamed_from, str) and renamed_from in exact_paths:
+            existing = bindings.get(renamed_from)
+            if existing not in {None, (None, None)}:
+                raise WorkflowError(
+                    "Task commit rename source has conflicting artifact authority.", exit_code=2
+                )
+            bindings[renamed_from] = (None, None)
+
+    candidate_bytes = json_document_bytes(plan)
+    bindings[candidate_relative] = (
+        task_commit_persist_blob(root, candidate_bytes),
+        "100644",
+    )
+    if set(bindings) != exact_paths:
+        raise WorkflowError(
+            "Task commit plan cannot authorize every exact index path.",
+            exit_code=2,
+            payload={
+                "expected": sorted(exact_paths),
+                "authorized": sorted(bindings),
+            },
+        )
+    return bindings, candidate_bytes
+
+
+def stage_task_commit_index_bindings(
+    root: Path,
+    bindings: dict[str, tuple[str | None, str | None]],
+    git_env: dict[str, str],
+) -> None:
+    for path, (blob, mode) in sorted(bindings.items()):
+        if blob is None:
+            command = ["git", "--literal-pathspecs", "update-index", "--force-remove", "--", path]
+        else:
+            command = ["git", "update-index", "--add", "--cacheinfo", str(mode), blob, path]
+        proc = run(command, cwd=root, check=False, env=git_env)
+        if proc.returncode != 0:
+            raise WorkflowError(
+                "Task commit executor could not construct the artifact-authorized index.",
+                exit_code=2,
+                payload={"path": path, "stderr": proc.stderr.strip()},
+            )
+
+
+def require_task_commit_index_bindings(
+    root: Path,
+    bindings: dict[str, tuple[str | None, str | None]],
+    git_env: dict[str, str],
+) -> None:
+    errors: list[str] = []
+    for path, expected in sorted(bindings.items()):
+        if task_commit_index_identity(root, path, git_env) != expected:
+            errors.append(path)
+    if errors:
+        raise WorkflowError(
+            "Task commit isolated index does not equal artifact authority.",
+            exit_code=2,
+            payload={"status": "blocked", "paths": errors},
+        )
+
+
+def capture_task_commit_snapshot(root: Path, excluded: set[str] | None = None) -> dict[str, Any]:
+    proc = subprocess.run(
+        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Could not capture the task commit Git snapshot.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    fields = proc.stdout.split(b"\0")
+    entries: list[dict[str, Any]] = []
+    index = 0
+    while index < len(fields):
+        field = fields[index]
+        index += 1
+        if not field:
+            continue
+        if len(field) < 4:
+            raise WorkflowError("Git returned an invalid porcelain status record.", exit_code=2)
+        status_text = field[:2].decode("ascii", "strict")
+        path = field[3:].decode("utf-8", "strict")
+        renamed_from: str | None = None
+        copied_from: str | None = None
+        relation_kinds = {item for item in status_text if item in {"R", "C"}}
+        if len(relation_kinds) > 1:
+            raise WorkflowError(
+                "Git returned an ambiguous rename/copy status record.", exit_code=2
+            )
+        if relation_kinds:
+            if index >= len(fields) or not fields[index]:
+                raise WorkflowError(
+                    "Git returned an incomplete rename/copy status record.", exit_code=2
+                )
+            relation_source = fields[index].decode("utf-8", "strict")
+            index += 1
+            if relation_kinds == {"R"}:
+                renamed_from = relation_source
+            else:
+                copied_from = relation_source
+        if path in (excluded or set()):
+            continue
+        index_status = "" if status_text[0] == " " else status_text[0]
+        worktree_status = "" if status_text[1] == " " else status_text[1]
+        untracked = status_text == "??"
+        index_blob, index_mode = task_commit_index_identity(root, path)
+        worktree_sha256, worktree_mode = task_commit_worktree_identity(root, path)
+        deleted = "D" in status_text
+        entry = {
+            "path": path,
+            "index_status": index_status,
+            "worktree_status": worktree_status,
+            "untracked": untracked,
+            "deleted": deleted,
+            "renamed_from": renamed_from,
+            "copied_from": copied_from,
+            "index_blob": index_blob,
+            "worktree_sha256": worktree_sha256,
+            "mode": worktree_mode or index_mode,
+        }
+        if index_mode == "160000":
+            if deleted and not (root / path).exists():
+                entry.update(
+                    {
+                        "gitlink_head": None,
+                        "gitlink_initialized": False,
+                        "gitlink_dirty": None,
+                    }
+                )
+            else:
+                entry.update(task_commit_gitlink_worktree_identity(root, path))
+        entries.append(entry)
+    entries.sort(
+        key=lambda item: (
+            str(item["path"]),
+            str(item.get("renamed_from") or ""),
+            str(item.get("copied_from") or ""),
+        )
+    )
+    return {"entries": entries, "digest": task_commit_canonical_digest(entries)}
+
+
+def task_commit_message_parts(message_bytes: str) -> tuple[str, str]:
+    if "\r" in message_bytes or not message_bytes.endswith("\n"):
+        return "", ""
+    content = message_bytes[:-1]
+    subject, separator, body = content.partition("\n\n")
+    return (subject, body) if separator else ("", "")
+
+
+def resolve_task_commit_candidate(root: Path, value: str) -> tuple[Path, Path]:
+    raw = Path(value).expanduser()
+    path = raw if raw.is_absolute() else root / raw
+    path = path.resolve()
+    tasks = (root / ".trellis/tasks").resolve()
+    try:
+        path.relative_to(tasks)
+    except ValueError as exc:
+        raise WorkflowError("--candidate-artifact must stay inside .trellis/tasks/.", exit_code=2) from exc
+    if path.parent.name != TASK_COMMIT_PLAN_DIR or path.suffix != ".json" or not re.fullmatch(r"[0-9]{3}", path.stem):
+        raise WorkflowError("--candidate-artifact must match task-commit-plans/<three-digit-sequence>.json.", exit_code=2)
+    return path, path.parent.parent
+
+
+def validate_task_commit_candidate(
+    root: Path,
+    candidate_path: Path,
+    task_dir: Path,
+) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
+    errors: list[str] = []
+    candidate_raw_bytes = candidate_path.read_bytes()
+    try:
+        plan = json.loads(candidate_raw_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise WorkflowError(f"Invalid JSON file: {candidate_path}\n{exc}", exit_code=2) from exc
+    if not isinstance(plan, dict):
+        raise WorkflowError(
+            f"Invalid JSON file: {candidate_path}\nJSON root must be an object.", exit_code=2
+        )
+    candidate_raw_sha256 = hashlib.sha256(candidate_raw_bytes).hexdigest()
+    schema_errors: list[str] = []
+    schema = skill_read_json(task_commit_schema_path(root), "task commit plan schema", schema_errors)
+    errors.extend(schema_errors)
+    if schema is not None:
+        errors.extend(skill_json_schema_validation_errors(plan, schema, "task commit plan"))
+
+    config = load_config(root)
+    task_context = load_task_start_context(task_dir, config)
+    boundary = assert_workspace_boundary(root, config, task_context, task_dir)
+    task = task_json(task_dir)
+    task_relative = repo_relative(root, task_dir)
+    candidate_relative = repo_relative(root, candidate_path)
+    current = current_head(root)
+    current_branch_name = current_branch(root)
+    git_operation_state = task_commit_git_operation_state(root)
+    if git_operation_state["active"]:
+        active_ids = ", ".join(item["id"] for item in git_operation_state["active"])
+        errors.append(
+            "task commit candidate requires an ordinary Git operation state; active: "
+            + active_ids
+        )
+        return plan, {
+            "task_dir": task_relative,
+            "candidate_artifact": candidate_relative,
+            "sequence": plan.get("sequence"),
+            "pre_commit_head": current,
+            "candidate_raw_sha256": candidate_raw_sha256,
+            "candidate_raw_size": len(candidate_raw_bytes),
+            "git_operation_state": git_operation_state,
+        }, errors
+
+    if plan.get("$schema") != TASK_COMMIT_PLAN_SCHEMA_ID:
+        errors.append("task commit plan has the wrong $schema identity.")
+    if plan.get("schema_version") != TASK_COMMIT_PLAN_SCHEMA_VERSION:
+        errors.append("task commit plan schema_version must be 1.0.")
+    if plan.get("skill_id") != TASK_COMMIT_SKILL_ID:
+        errors.append("task commit plan skill_id must be guru-create-task-commit.")
+    if plan.get("sequence") != candidate_path.stem:
+        errors.append("task commit plan sequence does not match its filename.")
+    sequence_text = plan.get("sequence")
+    if isinstance(sequence_text, str) and re.fullmatch(r"[0-9]{3}", sequence_text):
+        sequence_number = int(sequence_text)
+        occupied_sequences = {
+            int(path.stem)
+            for path in candidate_path.parent.glob("[0-9][0-9][0-9].json")
+            if path != candidate_path
+        }
+        expected_prior = set(range(1, sequence_number))
+        if sequence_number < 1 or occupied_sequences != expected_prior:
+            errors.append("task commit plan sequence must be the next unused contiguous sequence.")
+        try:
+            tracked_candidate_blob, _ = task_commit_tree_path_identity(root, "HEAD", candidate_relative)
+        except WorkflowError:
+            errors.append("task commit plan could not verify sequence history at pre_commit_head.")
+            tracked_candidate_blob = None
+        if tracked_candidate_blob is not None:
+            errors.append("task commit plan candidate already exists at pre_commit_head; use the next unused sequence.")
+
+    task_plan = plan.get("task") if isinstance(plan.get("task"), dict) else {}
+    if task_plan.get("id") != task.get("id") or task_plan.get("path") != task_relative:
+        errors.append("task commit plan task identity does not match the current task.")
+    if task.get("status") != "in_progress" or task_plan.get("status") != "in_progress":
+        errors.append("task commit plan requires an in_progress task.")
+    if task_plan.get("branch") != current_branch_name or task.get("branch") != current_branch_name:
+        errors.append("task commit plan branch does not match the current branch.")
+
+    git_plan = plan.get("git") if isinstance(plan.get("git"), dict) else {}
+    if git_plan.get("pre_commit_head") != current:
+        errors.append("task commit plan pre_commit_head is stale.")
+    base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, task_context)
+    if git_plan.get("base_branch") != base_branch:
+        errors.append("task commit plan base_branch does not match task evidence.")
+    expected_base_ref = diff_base_ref(root, base_branch)
+    if git_plan.get("base_ref") != expected_base_ref:
+        errors.append("task commit plan base_ref does not match the current Git base.")
+
+    ledger_path = issue_scope_ledger_path(task_dir)
+    ledger = load_issue_scope_ledger(task_dir, task_context)
+    primary_issue = primary_issue_number_from_ledger(ledger)
+    issue_plan = plan.get("issue") if isinstance(plan.get("issue"), dict) else {}
+    ledger_digest = hashlib.sha256(ledger_path.read_bytes()).hexdigest()
+    if issue_plan.get("primary_issue") != primary_issue or issue_plan.get("ledger_sha256") != ledger_digest:
+        errors.append("task commit plan issue identity or ledger digest is stale.")
+
+    evidence = plan.get("evidence") if isinstance(plan.get("evidence"), dict) else {}
+    evidence_paths = {
+        "planning_approval": planning_approval_path(task_dir),
+        "phase2_check": phase2_check_path(task_dir),
+        "issue_scope_ledger": ledger_path,
+        "task": task_dir / "task.json",
+    }
+    for label, path in evidence_paths.items():
+        errors.extend(task_commit_evidence_errors(root, evidence.get(label), path, label))
+    _, _, planning_errors = validate_planning_approval(root, task_dir)
+    errors.extend(f"planning approval: {item}" for item in planning_errors)
+    _, phase2, phase2_errors = validate_phase2_check(
+        root,
+        task_dir,
+        additional_dirty_excluded={candidate_relative},
+    )
+    errors.extend(f"Phase 2 check: {item}" for item in phase2_errors)
+    if str(phase2.get("head") or "") != current:
+        errors.append("task commit plan requires Phase 2 evidence recorded at pre_commit_head.")
+
+    current_snapshot = capture_task_commit_snapshot(root, {candidate_relative})
+    snapshot = plan.get("dirty_snapshot") if isinstance(plan.get("dirty_snapshot"), dict) else {}
+    if snapshot != current_snapshot:
+        errors.append("task commit plan dirty_snapshot is stale or incomplete.")
+
+    classifications = plan.get("path_classifications")
+    classification_by_path: dict[str, dict[str, Any]] = {}
+    if not isinstance(classifications, list):
+        errors.append("task commit plan path_classifications must be an array.")
+    else:
+        for index, item in enumerate(classifications):
+            if not isinstance(item, dict):
+                errors.append(f"task commit plan path_classifications[{index}] must be an object.")
+                continue
+            path_value = item.get("path")
+            errors.extend(task_commit_repo_path_errors(path_value, f"path_classifications[{index}].path"))
+            if isinstance(path_value, str):
+                if path_value in classification_by_path:
+                    errors.append(f"task commit plan classifies {path_value} more than once.")
+                classification_by_path[path_value] = item
+            if item.get("category") not in TASK_COMMIT_PLAN_CATEGORIES:
+                errors.append(f"task commit plan has an unknown category for {path_value}.")
+            if not str(item.get("reason") or "").strip() or not str(item.get("coverage_source") or "").strip():
+                errors.append(f"task commit plan classification for {path_value} lacks AI evidence.")
+    snapshot_entries = current_snapshot["entries"]
+    snapshot_paths = {str(item["path"]) for item in snapshot_entries}
+    for index, item in enumerate(snapshot_entries):
+        path_value = item.get("path")
+        renamed_from = item.get("renamed_from")
+        copied_from = item.get("copied_from")
+        if isinstance(renamed_from, str) and isinstance(copied_from, str):
+            errors.append(
+                f"task commit snapshot entry {path_value} cannot be both rename and copy."
+            )
+        for field_name, relation_source in (
+            ("renamed_from", renamed_from),
+            ("copied_from", copied_from),
+        ):
+            if relation_source is None:
+                continue
+            errors.extend(
+                task_commit_repo_path_errors(
+                    relation_source,
+                    f"dirty_snapshot.entries[{index}].{field_name}",
+                )
+            )
+            if relation_source == path_value:
+                errors.append(
+                    f"task commit snapshot entry {path_value} has a self-referential {field_name}."
+                )
+    expected_classified_paths = snapshot_paths | {candidate_relative}
+    if set(classification_by_path) != expected_classified_paths:
+        errors.append("task commit plan classifications do not exactly cover the dirty snapshot and candidate artifact.")
+    self_classification = classification_by_path.get(candidate_relative, {})
+    if (
+        self_classification.get("category") != "task-reviewed"
+        or self_classification.get("coverage_source") != "skill-artifact"
+    ):
+        errors.append("task commit plan candidate self path must use task-reviewed/skill-artifact coverage.")
+    if any(item.get("category") in TASK_COMMIT_BLOCKING_CATEGORIES for item in classification_by_path.values()):
+        errors.append("task commit plan contains a blocking path classification.")
+
+    reviewed_paths = {
+        path for path, item in classification_by_path.items() if item.get("category") == "task-reviewed"
+    }
+    phase2_covered_paths = {
+        str(item) for item in phase2.get("dirty_paths", []) if isinstance(item, str)
+    }
+    phase2_covered_paths.update(recorded_digest_paths(phase2.get("checked_artifacts")))
+    # The recorder cannot include its own final bytes in checked_artifacts
+    # without creating a recursive digest. Candidate evidence binds those bytes.
+    phase2_covered_paths.add(repo_relative(root, phase2_check_path(task_dir)))
+    uncovered_reviewed = sorted(reviewed_paths - {candidate_relative} - phase2_covered_paths)
+    if uncovered_reviewed:
+        errors.append(
+            "task-reviewed paths are not covered by fresh Phase 2 evidence: "
+            + ", ".join(uncovered_reviewed)
+        )
+    snapshot_by_path = {str(item["path"]): item for item in snapshot_entries}
+    expected_stage_paths = set(reviewed_paths)
+    for path in list(reviewed_paths):
+        renamed_from = snapshot_by_path.get(path, {}).get("renamed_from")
+        if isinstance(renamed_from, str) and renamed_from:
+            expected_stage_paths.add(renamed_from)
+    stage_paths = plan.get("exact_stage_paths")
+    if not isinstance(stage_paths, list) or any(not isinstance(item, str) for item in stage_paths):
+        errors.append("task commit plan exact_stage_paths must be a string array.")
+        stage_paths = []
+    for index, path_value in enumerate(stage_paths):
+        errors.extend(task_commit_repo_path_errors(path_value, f"exact_stage_paths[{index}]"))
+    if len(stage_paths) != len(set(stage_paths)) or set(stage_paths) != expected_stage_paths:
+        errors.append("task commit plan exact_stage_paths do not equal the reviewed literal path set.")
+
+    message = plan.get("message") if isinstance(plan.get("message"), dict) else {}
+    message_bytes = message.get("bytes")
+    if not isinstance(message_bytes, str):
+        errors.append("task commit plan message.bytes must be a string.")
+        message_bytes = ""
+    subject, body = task_commit_message_parts(message_bytes)
+    if not subject or not body or message.get("subject") != subject or message.get("body") != body:
+        errors.append("task commit plan message subject/body do not match exact bytes.")
+    message_digest = hashlib.sha256(message_bytes.encode("utf-8")).hexdigest()
+    if message.get("sha256") != message_digest:
+        errors.append("task commit plan message digest is stale.")
+    kind, message_errors = validate_commit_message(subject, body, primary_issue=primary_issue)
+    if kind != "work":
+        errors.append("task commit plan message must be a work commit.")
+    errors.extend(f"candidate message: {item}" for item in message_errors)
+
+    ai_review = plan.get("ai_review") if isinstance(plan.get("ai_review"), dict) else {}
+    if (
+        ai_review.get("status") != "passed"
+        or not str(ai_review.get("reviewer") or "").strip()
+        or not str(ai_review.get("summary") or "").strip()
+        or not isinstance(ai_review.get("evidence"), list)
+        or not ai_review.get("evidence")
+    ):
+        errors.append("task commit plan requires a concrete passed AI Review Gate.")
+    authorization = plan.get("authorization") if isinstance(plan.get("authorization"), dict) else {}
+    if (
+        authorization.get("authorized") is not True
+        or not str(authorization.get("source") or "").strip()
+        or not str(authorization.get("evidence") or "").strip()
+    ):
+        errors.append("task commit plan lacks commit side-effect authorization.")
+    result = plan.get("result") if isinstance(plan.get("result"), dict) else {}
+    if result.get("status") != "planned" or result.get("exit") is not None:
+        errors.append("task commit plan is not in the unexecuted planned state.")
+    freshness = plan.get("freshness") if isinstance(plan.get("freshness"), dict) else {}
+    if not str(freshness.get("captured_at") or "").strip():
+        errors.append("task commit plan freshness.captured_at is missing.")
+    if freshness.get("plan_digest") != task_commit_plan_digest(plan):
+        errors.append("task commit plan plan_digest is stale.")
+
+    facts = {
+        "task_dir": task_relative,
+        "candidate_artifact": candidate_relative,
+        "sequence": plan.get("sequence"),
+        "pre_commit_head": current,
+        "primary_issue": primary_issue,
+        "snapshot_digest": current_snapshot["digest"],
+        "message_sha256": message_digest,
+        "candidate_raw_sha256": candidate_raw_sha256,
+        "candidate_raw_size": len(candidate_raw_bytes),
+        "exact_stage_paths": stage_paths,
+        "unrelated_preserved_paths": sorted(
+            path for path, item in classification_by_path.items() if item.get("category") == "unrelated-preserved"
+        ),
+        "git_operation_state": git_operation_state,
+        "workspace_boundary": boundary,
+    }
+    return plan, facts, errors
+
+
+def git_nul_path_set(
+    root: Path, args: list[str], git_env: dict[str, str] | None = None
+) -> set[str]:
+    proc = subprocess.run(
+        ["git", *args],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        env=None if git_env is None else {**os.environ, **git_env},
+    )
+    if proc.returncode != 0:
+        raise WorkflowError(
+            f"Git path query failed: {shlex.join(['git', *args])}",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    return {
+        item.decode("utf-8", "strict")
+        for item in proc.stdout.split(b"\0")
+        if item
+    }
+
+
+def task_commit_raw_message(root: Path, commit: str) -> bytes:
+    proc = subprocess.run(
+        ["git", "cat-file", "commit", commit],
+        cwd=str(root), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+    )
+    if proc.returncode != 0 or b"\n\n" not in proc.stdout:
+        raise WorkflowError("Could not read the raw task commit object.", exit_code=2)
+    return proc.stdout.split(b"\n\n", 1)[1]
+
+
+def task_commit_result_validation_errors(root: Path, plan: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    schema_errors: list[str] = []
+    schema = skill_read_json(task_commit_schema_path(root), "task commit plan schema", schema_errors)
+    errors.extend(schema_errors)
+    if schema is not None:
+        errors.extend(skill_json_schema_validation_errors(plan, schema, "task commit plan result"))
+
+    result = plan.get("result") if isinstance(plan.get("result"), dict) else {}
+    status = result.get("status")
+    exact_paths = {
+        path for path in plan.get("exact_stage_paths", []) if isinstance(path, str)
+    }
+    if status == "committed":
+        if result.get("parent") != plan.get("git", {}).get("pre_commit_head"):
+            errors.append("committed result parent does not match the planned pre_commit_head.")
+        if result.get("message_sha256") != plan.get("message", {}).get("sha256"):
+            errors.append("committed result message digest does not match the planned message.")
+        if set(result.get("committed_paths", [])) != exact_paths:
+            errors.append("committed result paths do not match exact_stage_paths.")
+    if status == "blocked":
+        pre_commit_head = result.get("pre_commit_head")
+        commit_sha = result.get("commit_sha")
+        if result.get("head_changed") != (commit_sha != pre_commit_head):
+            errors.append("blocked result head_changed does not match its commit identities.")
+
+    tree_evidence = result.get("tree_evidence")
+    tree_matches: bool | None = None
+    if isinstance(tree_evidence, dict):
+        path_entries = tree_evidence.get("paths")
+        evidence_paths = [
+            item.get("path") for item in path_entries or [] if isinstance(item, dict)
+        ] if isinstance(path_entries, list) else []
+        if (
+            not isinstance(path_entries, list)
+            or len(evidence_paths) != len(exact_paths)
+            or set(evidence_paths) != exact_paths
+        ):
+            errors.append("task commit result tree evidence does not cover exact_stage_paths.")
+        path_match_facts: list[bool] = []
+        for item in path_entries or []:
+            if not isinstance(item, dict):
+                path_match_facts.append(False)
+                continue
+            identity_matches = (
+                item.get("expected_blob") == item.get("actual_blob")
+                and item.get("expected_mode") == item.get("actual_mode")
+            )
+            path_match_facts.append(identity_matches)
+            if item.get("matches") is not identity_matches:
+                errors.append(
+                    "task commit result path match flag contradicts blob/mode evidence."
+                )
+        path_matches = bool(path_entries) and all(path_match_facts)
+        tree_matches = (
+            tree_evidence.get("expected_tree") == tree_evidence.get("actual_tree")
+            and path_matches
+        )
+        if tree_evidence.get("matches") is not tree_matches:
+            errors.append("task commit result tree match flag contradicts tree/blob/mode evidence.")
+        if status == "committed" and not tree_matches:
+            errors.append("committed result requires identical expected and actual tree evidence.")
+    elif status == "committed":
+        errors.append("committed result requires tree evidence.")
+    if status == "blocked":
+        failure_stage = result.get("failure_stage")
+        if failure_stage == "pre-commit":
+            if result.get("head_changed") is not False:
+                errors.append("pre-commit blocked result requires an unchanged HEAD.")
+            if result.get("commit_sha") != result.get("pre_commit_head"):
+                errors.append("pre-commit blocked result commit identity must remain at pre_commit_head.")
+            if result.get("parent") is not None or result.get("message_sha256") is not None:
+                errors.append("pre-commit blocked result cannot contain created commit identity evidence.")
+            if result.get("committed_paths") != []:
+                errors.append("pre-commit blocked result cannot contain committed paths.")
+            if isinstance(tree_evidence, dict):
+                if tree_evidence.get("actual_source") != "index" or tree_matches is not True:
+                    errors.append(
+                        "pre-commit blocked result tree evidence must be a matching index observation."
+                    )
+            elif tree_evidence is not None:
+                errors.append("pre-commit blocked result tree evidence must be null or an object.")
+            expected_hook_mutation = False
+        elif failure_stage == "commit":
+            if not isinstance(tree_evidence, dict):
+                errors.append("commit-stage blocked result requires tree evidence.")
+            if result.get("head_changed") is True:
+                if isinstance(tree_evidence, dict) and tree_evidence.get("actual_source") != "commit":
+                    errors.append("commit-stage changed-HEAD tree evidence must come from the commit.")
+                if not isinstance(result.get("message_sha256"), str):
+                    errors.append("commit-stage changed-HEAD result requires message identity evidence.")
+                if not result.get("committed_paths"):
+                    errors.append("commit-stage changed-HEAD result requires committed path evidence.")
+            else:
+                if isinstance(tree_evidence, dict) and tree_evidence.get("actual_source") != "index":
+                    errors.append("commit-stage unchanged-HEAD tree evidence must come from the index.")
+                if result.get("parent") is not None or result.get("message_sha256") is not None:
+                    errors.append("commit-stage unchanged-HEAD result cannot contain created commit identity evidence.")
+                if result.get("committed_paths") != []:
+                    errors.append("commit-stage unchanged-HEAD result cannot contain committed paths.")
+            expected_hook_mutation = bool(
+                isinstance(tree_evidence, dict) and tree_matches is not True
+                or result.get("unrelated_preserved") is not True
+                or result.get("unexpected_staged_paths")
+                or result.get("unexpected_dirty_paths")
+                or result.get("planned_unstaged_paths")
+                or (
+                    result.get("head_changed") is True
+                    and set(result.get("committed_paths", [])) != exact_paths
+                )
+            )
+        elif failure_stage == "postcondition":
+            if result.get("head_changed") is not True:
+                errors.append("postcondition blocked result requires a changed HEAD.")
+            if not isinstance(result.get("message_sha256"), str):
+                errors.append("postcondition blocked result requires message identity evidence.")
+            if not result.get("committed_paths"):
+                errors.append("postcondition blocked result requires committed path evidence.")
+            if not isinstance(tree_evidence, dict):
+                errors.append("postcondition blocked result requires tree evidence.")
+            elif tree_evidence.get("actual_source") != "commit":
+                errors.append("postcondition blocked result tree evidence must come from the commit.")
+            expected_hook_mutation = bool(
+                isinstance(tree_evidence, dict) and tree_matches is not True
+                or result.get("unrelated_preserved") is not True
+                or result.get("unexpected_staged_paths")
+                or result.get("unexpected_dirty_paths")
+                or result.get("planned_unstaged_paths")
+                or (
+                    result.get("head_changed") is True
+                    and set(result.get("committed_paths", [])) != exact_paths
+                )
+            )
+        else:
+            expected_hook_mutation = False
+        if result.get("hook_mutation") is not expected_hook_mutation:
+            errors.append("blocked result hook_mutation contradicts its recorded mutation evidence.")
+    return errors
+
+
+def record_task_commit_result(
+    root: Path,
+    candidate_path: Path,
+    plan: dict[str, Any],
+    status: str,
+    exit_id: str,
+    **facts: Any,
+) -> None:
+    plan["result"] = {
+        "status": status,
+        "exit": exit_id,
+        "recorded_at": now_iso(),
+        **facts,
+    }
+    errors = task_commit_result_validation_errors(root, plan)
+    if errors:
+        raise WorkflowError(
+            "Task commit post-result does not satisfy the public schema.",
+            exit_code=2,
+            payload={"status": "blocked", "errors": errors},
+        )
+    write_json(candidate_path, plan)
+
+
+def task_commit_blocked_observation(
+    root: Path,
+    *,
+    pre_commit_head: str,
+    failure_stage: str,
+    exact_paths: set[str],
+    unrelated_before: dict[str, Any],
+    expected_tree: str | None,
+    errors: list[str],
+) -> dict[str, Any]:
+    commit_sha = current_head(root)
+    head_changed = commit_sha != pre_commit_head
+    parent: str | None = None
+    message_sha256: str | None = None
+    committed_paths: set[str] = set()
+    if head_changed:
+        parents = run_stdout(["git", "show", "-s", "--format=%P", commit_sha], cwd=root).split()
+        parent = parents[0] if len(parents) == 1 else None
+        raw_message = task_commit_raw_message(root, commit_sha)
+        message_sha256 = hashlib.sha256(raw_message).hexdigest()
+        committed_paths = git_nul_path_set(
+            root,
+            ["diff-tree", "--root", "--no-commit-id", "--name-only", "--no-renames", "-r", "-z", commit_sha],
+        )
+
+    tree_evidence: dict[str, Any] | None = None
+    if expected_tree is not None:
+        actual_tree = task_commit_commit_tree(root, commit_sha) if head_changed else task_commit_write_tree(root)
+        tree_evidence = task_commit_tree_evidence(
+            root,
+            expected_tree,
+            actual_tree,
+            exact_paths,
+            actual_source="commit" if head_changed else "index",
+        )
+
+    post_snapshot = capture_task_commit_snapshot(root)
+    post_by_path = {str(item["path"]): item for item in post_snapshot["entries"]}
+    unrelated_after = {path: post_by_path.get(path) for path in unrelated_before}
+    unrelated_preserved = unrelated_after == unrelated_before
+    unexpected_dirty = sorted(set(post_by_path) - set(unrelated_before) - exact_paths)
+    unstaged_now = git_nul_path_set(root, ["diff", "--name-only", "--no-renames", "-z"])
+    planned_unstaged = sorted(unstaged_now & exact_paths)
+    staged_now = git_nul_path_set(root, ["diff", "--cached", "--name-only", "--no-renames", "-z"])
+    unexpected_staged = sorted(staged_now - exact_paths)
+    hook_mutation = failure_stage in {"commit", "postcondition"} and bool(
+        (tree_evidence is not None and not tree_evidence["matches"])
+        or unexpected_dirty
+        or planned_unstaged
+        or not unrelated_preserved
+        or unexpected_staged
+        or (head_changed and committed_paths != exact_paths)
+    )
+    return {
+        "failure_stage": failure_stage,
+        "pre_commit_head": pre_commit_head,
+        "commit_sha": commit_sha,
+        "head_changed": head_changed,
+        "parent": parent,
+        "message_sha256": message_sha256,
+        "committed_paths": sorted(committed_paths),
+        "unrelated_preserved": unrelated_preserved,
+        "hook_mutation": hook_mutation,
+        "unexpected_staged_paths": unexpected_staged,
+        "unexpected_dirty_paths": unexpected_dirty,
+        "planned_unstaged_paths": planned_unstaged,
+        "tree_evidence": tree_evidence,
+        "errors": errors,
+    }
+
+
+def task_commit_common_git_dir(root: Path) -> Path:
+    value = run_stdout(["git", "rev-parse", "--git-common-dir"], cwd=root)
+    path = Path(value)
+    path = path if path.is_absolute() else root / path
+    try:
+        resolved = path.resolve(strict=True)
+    except OSError as exc:
+        raise WorkflowError("Could not resolve the common Git directory.", exit_code=2) from exc
+    if not resolved.is_dir():
+        raise WorkflowError("The common Git directory is not a directory.", exit_code=2)
+    return resolved
+
+
+def task_commit_index_preimage(root: Path) -> dict[str, Any]:
+    path = task_commit_git_path(root, "index")
+    try:
+        metadata = path.lstat()
+    except FileNotFoundError:
+        return {"path": path, "exists": False, "bytes": b"", "mode": 0o600}
+    if not stat.S_ISREG(metadata.st_mode):
+        raise WorkflowError("Task commit live index is not a regular file.", exit_code=2)
+    return {
+        "path": path,
+        "exists": True,
+        "bytes": path.read_bytes(),
+        "mode": stat.S_IMODE(metadata.st_mode),
+    }
+
+
+def task_commit_index_preimage_matches(preimage: dict[str, Any]) -> bool:
+    path = preimage["path"]
+    try:
+        metadata = path.lstat()
+    except FileNotFoundError:
+        return preimage["exists"] is False
+    return (
+        preimage["exists"] is True
+        and stat.S_ISREG(metadata.st_mode)
+        and path.read_bytes() == preimage["bytes"]
+    )
+
+
+def task_commit_acquire_index_lock(preimage: dict[str, Any]) -> tuple[int, Path]:
+    lock_path = Path(str(preimage["path"]) + ".lock")
+    try:
+        fd = os.open(lock_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError as exc:
+        raise WorkflowError(
+            "Task commit live index is already locked by another Git operation.", exit_code=2
+        ) from exc
+    return fd, lock_path
+
+
+def task_commit_write_locked_file(fd: int, content: bytes, mode: int) -> None:
+    os.ftruncate(fd, 0)
+    os.lseek(fd, 0, os.SEEK_SET)
+    offset = 0
+    while offset < len(content):
+        offset += os.write(fd, content[offset:])
+    os.fchmod(fd, mode)
+    os.fsync(fd)
+
+
+def task_commit_publish_locked_index(source_path: Path, index_path: Path) -> None:
+    os.replace(source_path, index_path)
+
+
+def task_commit_atomic_replace_bytes(path: Path, content: bytes, mode: int) -> None:
+    fd, name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".transaction", dir=str(path.parent))
+    tmp_path = Path(name)
+    try:
+        task_commit_write_locked_file(fd, content, mode)
+        os.close(fd)
+        fd = -1
+        os.replace(tmp_path, path)
+    finally:
+        if fd >= 0:
+            os.close(fd)
+        tmp_path.unlink(missing_ok=True)
+
+
+def task_commit_restore_index_preimage(preimage: dict[str, Any]) -> None:
+    path = preimage["path"]
+    if preimage["exists"]:
+        task_commit_atomic_replace_bytes(path, preimage["bytes"], preimage["mode"])
+    else:
+        path.unlink(missing_ok=True)
+
+
+def task_commit_transaction_git_env(
+    root: Path,
+    transaction_dir: Path,
+    pre_commit_head: str,
+    index_preimage: dict[str, Any],
+) -> tuple[dict[str, str], Path]:
+    transaction_dir.mkdir(mode=0o700, exist_ok=True)
+    (transaction_dir / "HEAD").write_text(pre_commit_head + "\n", encoding="ascii")
+    index_path = transaction_dir / "index"
+    env = {
+        "GIT_DIR": str(transaction_dir),
+        "GIT_COMMON_DIR": str(task_commit_common_git_dir(root)),
+        "GIT_WORK_TREE": str(root),
+        "GIT_INDEX_FILE": str(index_path),
+        "GIT_OPTIONAL_LOCKS": "0",
+    }
+    if index_preimage["exists"]:
+        index_path.write_bytes(index_preimage["bytes"])
+        index_path.chmod(index_preimage["mode"])
+    else:
+        proc = run(["git", "read-tree", pre_commit_head], cwd=root, check=False, env=env)
+        if proc.returncode != 0:
+            raise WorkflowError(
+                "Task commit executor could not initialize its isolated index.",
+                exit_code=2,
+                payload={"stderr": proc.stderr.strip()},
+            )
+    return env, index_path
+
+
+def task_commit_branch_ref(root: Path) -> str:
+    proc = run(["git", "symbolic-ref", "-q", "HEAD"], cwd=root, check=False)
+    value = proc.stdout.strip()
+    if proc.returncode != 0 or re.fullmatch(r"refs/heads/[^\x00\r\n]+", value) is None:
+        raise WorkflowError("Task commit requires a symbolic local branch HEAD.", exit_code=2)
+    return value
+
+
+def task_commit_update_ref(root: Path, ref: str, new_value: str, old_value: str) -> None:
+    proc = run(["git", "update-ref", ref, new_value, old_value], cwd=root, check=False)
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Task commit could not conditionally update the real branch ref.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.strip()},
+        )
+
+
+def task_commit_acquire_ref_guard(root: Path, ref: str, expected_value: str) -> tuple[int, Path]:
+    ref_path = task_commit_git_path(root, ref)
+    guard_path = Path(str(ref_path) + ".lock")
+    try:
+        fd = os.open(guard_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError as exc:
+        raise WorkflowError(
+            "Task commit real branch ref is already locked by another Git operation.",
+            exit_code=2,
+        ) from exc
+    try:
+        token = f"guru-task-commit-ref-guard {expected_value}\n".encode("ascii")
+        task_commit_write_locked_file(fd, token, 0o600)
+        actual = run_stdout(["git", "rev-parse", "--verify", ref], cwd=root)
+        if actual != expected_value:
+            raise WorkflowError(
+                "Task commit real branch changed before ref guard ownership was established.",
+                exit_code=2,
+            )
+        return fd, guard_path
+    except Exception:
+        os.close(fd)
+        guard_path.unlink(missing_ok=True)
+        raise
+
+
+def task_commit_file_identity(path: Path, expected_bytes: bytes) -> dict[str, Any]:
+    metadata = path.lstat()
+    if not stat.S_ISREG(metadata.st_mode):
+        raise WorkflowError(f"Task commit transaction path is not a regular file: {path.name}", exit_code=2)
+    actual = path.read_bytes()
+    if actual != expected_bytes:
+        raise WorkflowError(f"Task commit transaction bytes changed: {path.name}", exit_code=2)
+    return {
+        "device": metadata.st_dev,
+        "inode": metadata.st_ino,
+        "sha256": hashlib.sha256(actual).hexdigest(),
+        "size": len(actual),
+    }
+
+
+def task_commit_file_matches_identity(path: Path, identity: dict[str, Any], expected_bytes: bytes) -> bool:
+    try:
+        metadata = path.lstat()
+        actual = path.read_bytes()
+    except OSError:
+        return False
+    return (
+        stat.S_ISREG(metadata.st_mode)
+        and metadata.st_dev == identity.get("device")
+        and metadata.st_ino == identity.get("inode")
+        and len(actual) == identity.get("size")
+        and hashlib.sha256(actual).hexdigest() == identity.get("sha256")
+        and actual == expected_bytes
+    )
+
+
+def task_commit_candidate_guard_matches(path: Path, identity: dict[str, Any]) -> bool:
+    try:
+        metadata = path.lstat()
+    except OSError:
+        return False
+    return (
+        stat.S_ISREG(metadata.st_mode)
+        and metadata.st_dev == identity.get("device")
+        and metadata.st_ino == identity.get("inode")
+    )
+
+
+def task_commit_open_guard_matches(fd: int, path: Path | None) -> bool:
+    if fd < 0 or path is None:
+        return False
+    try:
+        open_metadata = os.fstat(fd)
+        path_metadata = path.lstat()
+    except OSError:
+        return False
+    return (
+        stat.S_ISREG(open_metadata.st_mode)
+        and stat.S_ISREG(path_metadata.st_mode)
+        and open_metadata.st_dev == path_metadata.st_dev
+        and open_metadata.st_ino == path_metadata.st_ino
+    )
+
+
+def task_commit_publish_guarded_candidate(
+    source: Path,
+    candidate_path: Path,
+    candidate_preimage: bytes,
+) -> None:
+    if candidate_path.read_bytes() != candidate_preimage:
+        raise WorkflowError(
+            "Task commit candidate changed inside the guarded publication boundary.",
+            exit_code=2,
+        )
+    os.replace(source, candidate_path)
+
+
+def task_commit_publish_validated_transaction(
+    root: Path,
+    *,
+    candidate_path: Path,
+    candidate_preimage: bytes,
+    candidate_mode: int,
+    candidate_result_bytes: bytes,
+    index_preimage: dict[str, Any],
+    index_lock_fd: int,
+    index_lock_path: Path,
+    final_index_bytes: bytes,
+    branch_ref: str,
+    pre_commit_head: str,
+    commit_sha: str,
+) -> None:
+    candidate_guard_path = Path(str(candidate_path) + ".lock")
+    candidate_guard_fd = -1
+    candidate_guard_identity: dict[str, Any] = {}
+    candidate_result_fd = -1
+    candidate_result_path: Path | None = None
+    candidate_result_identity: dict[str, Any] = {}
+    final_index_fd = -1
+    final_index_path: Path | None = None
+    final_index_identity: dict[str, Any] = {}
+    ref_guard_fd = -1
+    ref_guard_path: Path | None = None
+    ref_guard_owned = False
+    ref_advanced = False
+    candidate_published = False
+    try:
+        candidate_guard_fd = os.open(
+            candidate_guard_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600
+        )
+        guard_token = hashlib.sha256(candidate_preimage).hexdigest().encode("ascii") + b"\n"
+        task_commit_write_locked_file(candidate_guard_fd, guard_token, 0o600)
+        candidate_guard_identity = task_commit_file_identity(candidate_guard_path, guard_token)
+        if candidate_path.read_bytes() != candidate_preimage:
+            raise WorkflowError(
+                "Task commit candidate raw bytes changed before publication.", exit_code=2
+            )
+        candidate_result_fd, candidate_result_name = tempfile.mkstemp(
+            prefix=f".{candidate_path.name}.",
+            suffix=".publication",
+            dir=str(candidate_path.parent),
+        )
+        candidate_result_path = Path(candidate_result_name)
+        task_commit_write_locked_file(candidate_result_fd, candidate_result_bytes, candidate_mode)
+        os.close(candidate_result_fd)
+        candidate_result_fd = -1
+        candidate_result_identity = task_commit_file_identity(
+            candidate_result_path, candidate_result_bytes
+        )
+        final_index_fd, final_index_name = tempfile.mkstemp(
+            prefix=f".{index_preimage['path'].name}.",
+            suffix=".publication",
+            dir=str(index_preimage["path"].parent),
+        )
+        final_index_path = Path(final_index_name)
+        task_commit_write_locked_file(
+            final_index_fd, final_index_bytes, index_preimage["mode"]
+        )
+        os.close(final_index_fd)
+        final_index_fd = -1
+        final_index_identity = task_commit_file_identity(
+            final_index_path, final_index_bytes
+        )
+
+        task_commit_update_ref(root, branch_ref, commit_sha, pre_commit_head)
+        ref_advanced = True
+        ref_guard_fd, ref_guard_path = task_commit_acquire_ref_guard(
+            root, branch_ref, commit_sha
+        )
+        ref_guard_owned = True
+        if not task_commit_candidate_guard_matches(candidate_guard_path, candidate_guard_identity):
+            raise WorkflowError("Task commit candidate guard ownership changed before publication.", exit_code=2)
+        if candidate_path.read_bytes() != candidate_preimage:
+            raise WorkflowError("Task commit candidate changed while its publication guard was held.", exit_code=2)
+        task_commit_publish_guarded_candidate(
+            candidate_result_path, candidate_path, candidate_preimage
+        )
+        candidate_published = True
+        task_commit_publish_locked_index(final_index_path, index_preimage["path"])
+
+        if not task_commit_open_guard_matches(index_lock_fd, index_lock_path):
+            raise WorkflowError(
+                "Task commit live index sentinel ownership changed before success linearization.",
+                exit_code=2,
+            )
+        if not task_commit_open_guard_matches(ref_guard_fd, ref_guard_path):
+            raise WorkflowError(
+                "Task commit real branch guard ownership changed before success linearization.",
+                exit_code=2,
+            )
+        if current_head(root) != commit_sha:
+            raise WorkflowError(
+                "Task commit real branch changed before success linearization.",
+                exit_code=2,
+            )
+        if not task_commit_file_matches_identity(
+            index_preimage["path"], final_index_identity, final_index_bytes
+        ):
+            raise WorkflowError(
+                "Task commit live index publication identity mismatch.",
+                exit_code=2,
+            )
+        if not task_commit_candidate_guard_matches(
+            candidate_guard_path, candidate_guard_identity
+        ):
+            raise WorkflowError(
+                "Task commit candidate guard ownership changed before success linearization.",
+                exit_code=2,
+            )
+
+        # This final candidate inode/content read is the success linearization
+        # point. Only best-effort guard/temp cleanup and return follow it.
+        if not task_commit_file_matches_identity(
+            candidate_path, candidate_result_identity, candidate_result_bytes
+        ):
+            raise WorkflowError(
+                "Task commit candidate result changed before success linearization.",
+                exit_code=2,
+            )
+    except Exception as exc:
+        rollback_errors: list[str] = []
+        if not candidate_published and task_commit_file_matches_identity(
+            candidate_path, candidate_result_identity, candidate_result_bytes
+        ):
+            candidate_published = True
+        if candidate_published:
+            if not task_commit_candidate_guard_matches(candidate_guard_path, candidate_guard_identity):
+                rollback_errors.append("candidate guard ownership was lost; third-party candidate state was preserved")
+            elif not task_commit_file_matches_identity(
+                candidate_path, candidate_result_identity, candidate_result_bytes
+            ):
+                rollback_errors.append("candidate result ownership was lost; third-party candidate state was preserved")
+            else:
+                try:
+                    task_commit_atomic_replace_bytes(
+                        candidate_path, candidate_preimage, candidate_mode
+                    )
+                except Exception as rollback_exc:
+                    rollback_errors.append(f"candidate rollback failed: {rollback_exc}")
+        else:
+            try:
+                candidate_unchanged = candidate_path.read_bytes() == candidate_preimage
+            except OSError:
+                candidate_unchanged = False
+            if not candidate_unchanged:
+                rollback_errors.append(
+                    "candidate ownership was lost before publication; third-party candidate state was preserved"
+                )
+        if task_commit_file_matches_identity(
+            index_preimage["path"], final_index_identity, final_index_bytes
+        ):
+            try:
+                task_commit_restore_index_preimage(index_preimage)
+            except Exception as rollback_exc:
+                rollback_errors.append(f"live index rollback failed: {rollback_exc}")
+        elif not task_commit_index_preimage_matches(index_preimage):
+            rollback_errors.append(
+                "live index ownership was lost; third-party index state was preserved"
+            )
+        if ref_guard_owned:
+            ref_guard_released = True
+            try:
+                os.close(ref_guard_fd)
+            except OSError:
+                pass
+            ref_guard_fd = -1
+            try:
+                if ref_guard_path is not None:
+                    ref_guard_path.unlink(missing_ok=True)
+            except OSError as rollback_exc:
+                rollback_errors.append(f"ref guard release failed: {rollback_exc}")
+                ref_guard_released = False
+            ref_guard_owned = not ref_guard_released
+        try:
+            if ref_advanced:
+                task_commit_update_ref(root, branch_ref, pre_commit_head, commit_sha)
+        except Exception as rollback_exc:
+            rollback_errors.append(f"ref rollback failed: {rollback_exc}")
+
+        if current_head(root) != pre_commit_head:
+            rollback_errors.append("real ref ownership was lost; third-party ref state was preserved")
+        if not task_commit_index_preimage_matches(index_preimage):
+            rollback_errors.append("live index ownership was lost; third-party index state was preserved")
+        if candidate_published:
+            try:
+                candidate_restored = candidate_path.read_bytes() == candidate_preimage
+            except OSError:
+                candidate_restored = False
+            if not candidate_restored:
+                rollback_errors.append("candidate did not return to its exact preimage")
+        if rollback_errors:
+            raise WorkflowError(
+                "Task commit publication rollback could not restore the exact entry state.",
+                exit_code=2,
+                payload={"status": "blocked", "errors": rollback_errors},
+            ) from exc
+        raise WorkflowError(
+            "Task commit publication failed and the exact entry state was restored.",
+            exit_code=2,
+            payload={"status": "blocked", "errors": [str(exc)]},
+        ) from exc
+    finally:
+        if candidate_result_fd >= 0:
+            try:
+                os.close(candidate_result_fd)
+            except OSError:
+                pass
+        if final_index_fd >= 0:
+            try:
+                os.close(final_index_fd)
+            except OSError:
+                pass
+        if candidate_guard_fd >= 0:
+            try:
+                os.close(candidate_guard_fd)
+            except OSError:
+                pass
+        if ref_guard_fd >= 0:
+            try:
+                os.close(ref_guard_fd)
+            except OSError:
+                pass
+        if index_lock_fd >= 0:
+            try:
+                os.close(index_lock_fd)
+            except OSError:
+                pass
+        cleanup_paths = [
+            candidate_result_path,
+            final_index_path,
+            candidate_guard_path,
+            index_lock_path,
+        ]
+        if ref_guard_owned:
+            cleanup_paths.append(ref_guard_path)
+        for cleanup_path in cleanup_paths:
+            if cleanup_path is None:
+                continue
+            try:
+                cleanup_path.unlink(missing_ok=True)
+            except OSError:
+                pass
+
+
+def execute_task_commit_candidate(
+    root: Path,
+    candidate_path: Path,
+    task_dir: Path,
+) -> dict[str, Any]:
+    plan, facts, errors = validate_task_commit_candidate(root, candidate_path, task_dir)
+    if errors:
+        raise WorkflowError(
+            "Task commit candidate validation failed.",
+            exit_code=2,
+            payload={"status": "blocked", "candidate_validation": facts, "errors": errors},
+        )
+    candidate_preimage = candidate_path.read_bytes()
+    if (
+        hashlib.sha256(candidate_preimage).hexdigest() != facts["candidate_raw_sha256"]
+        or len(candidate_preimage) != facts["candidate_raw_size"]
+    ):
+        raise WorkflowError(
+            "Task commit candidate bytes changed after validation.", exit_code=2
+        )
+    candidate_metadata = candidate_path.lstat()
+    if not stat.S_ISREG(candidate_metadata.st_mode):
+        raise WorkflowError("Task commit candidate is not a regular file.", exit_code=2)
+    candidate_mode = stat.S_IMODE(candidate_metadata.st_mode)
+    require_ordinary_task_commit_git_state(root)
+    exact_paths = set(facts["exact_stage_paths"])
+    pre_commit_head = current_head(root)
+    branch_ref = task_commit_branch_ref(root)
+    staged_before = git_nul_path_set(root, ["diff", "--cached", "--name-only", "--no-renames", "-z"])
+    unexpected_staged = sorted(staged_before - exact_paths)
+    if unexpected_staged:
+        raise WorkflowError(
+            "Task commit executor found staged paths outside the exact plan.",
+            exit_code=2,
+            payload={"status": "blocked", "unexpected_staged_paths": unexpected_staged},
+        )
+
+    snapshot_entries = {
+        str(item["path"]): item
+        for item in plan["dirty_snapshot"]["entries"]
+        if isinstance(item, dict)
+    }
+    classifications = {
+        str(item["path"]): item
+        for item in plan["path_classifications"]
+        if isinstance(item, dict)
+    }
+    unrelated_before = {
+        path: snapshot_entries[path]
+        for path, item in classifications.items()
+        if item.get("category") == "unrelated-preserved" and path in snapshot_entries
+    }
+    gitlink_bindings = task_commit_planned_gitlink_heads(plan, exact_paths)
+    require_task_commit_gitlink_bindings(
+        root, gitlink_bindings, require_index=False
+    )
+    index_preimage = task_commit_index_preimage(root)
+    index_lock_fd, index_lock_path = task_commit_acquire_index_lock(index_preimage)
+    try:
+        bindings, _ = task_commit_planned_index_bindings(
+            root,
+            plan,
+            exact_paths,
+            str(facts["candidate_artifact"]),
+        )
+        transaction_owner = tempfile.TemporaryDirectory(prefix="guru-task-commit-gitdir-")
+        with transaction_owner as transaction_name:
+            transaction_dir = Path(transaction_name)
+            git_env, transaction_index = task_commit_transaction_git_env(
+                root,
+                transaction_dir,
+                pre_commit_head,
+                index_preimage,
+            )
+            stage_task_commit_index_bindings(root, bindings, git_env)
+            staged_after = git_nul_path_set(
+                root,
+                ["diff", "--cached", "--name-only", "--no-renames", "-z", pre_commit_head],
+                git_env,
+            )
+            if staged_after != exact_paths:
+                raise WorkflowError(
+                    "Task commit isolated index path set does not equal the exact plan.",
+                    exit_code=2,
+                    payload={"expected": sorted(exact_paths), "actual": sorted(staged_after)},
+                )
+            require_task_commit_index_bindings(root, bindings, git_env)
+            require_task_commit_gitlink_bindings(
+                root, gitlink_bindings, require_index=False
+            )
+            expected_tree = task_commit_write_tree(root, git_env)
+
+            message_bytes = plan["message"]["bytes"].encode("utf-8")
+            fd, name = tempfile.mkstemp(prefix=".guru-task-commit-", suffix=".msg")
+            message_path = Path(name)
+            try:
+                os.fchmod(fd, 0o600)
+                with os.fdopen(fd, "wb") as handle:
+                    handle.write(message_bytes)
+                    handle.flush()
+                    os.fsync(handle.fileno())
+                require_ordinary_task_commit_git_state(root)
+                require_task_commit_index_bindings(root, bindings, git_env)
+                require_task_commit_gitlink_bindings(
+                    root, gitlink_bindings, require_index=False
+                )
+                commit_proc = run(
+                    ["git", "commit", "--cleanup=verbatim", "-F", str(message_path)],
+                    cwd=root,
+                    check=False,
+                    env=git_env,
+                )
+            finally:
+                message_path.unlink(missing_ok=True)
+            if commit_proc.returncode != 0:
+                raise WorkflowError(
+                    "isolated git commit failed; the real ref/index/candidate were not published.",
+                    exit_code=2,
+                    payload={
+                        "status": "blocked",
+                        "stderr": commit_proc.stderr.strip(),
+                        "stdout": commit_proc.stdout.strip(),
+                    },
+                )
+
+            commit_sha = run_stdout(
+                ["git", "rev-parse", "--verify", "HEAD^{commit}"], cwd=root, env=git_env
+            )
+            parents = run_stdout(
+                ["git", "show", "-s", "--format=%P", commit_sha], cwd=root
+            ).split()
+            committed_paths = git_nul_path_set(
+                root,
+                [
+                    "diff-tree", "--root", "--no-commit-id", "--name-only",
+                    "--no-renames", "-r", "-z", commit_sha,
+                ],
+            )
+            actual_tree = task_commit_commit_tree(root, commit_sha)
+            tree_evidence = task_commit_tree_evidence(
+                root,
+                expected_tree,
+                actual_tree,
+                exact_paths,
+                actual_source="commit",
+            )
+            raw_message = task_commit_raw_message(root, commit_sha)
+            post_errors: list[str] = []
+            if parents != [pre_commit_head]:
+                post_errors.append("isolated commit parent does not equal pre_commit_head")
+            if raw_message != message_bytes:
+                post_errors.append("isolated commit message bytes do not equal candidate bytes")
+            if committed_paths != exact_paths:
+                post_errors.append("isolated commit path set does not equal exact_stage_paths")
+            if not tree_evidence["matches"]:
+                post_errors.append("isolated commit tree does not equal artifact authority")
+            subject, body = task_commit_message_parts(raw_message.decode("utf-8", "strict"))
+            _, parser_errors = validate_commit_message(
+                subject, body, primary_issue=int(facts["primary_issue"])
+            )
+            post_errors.extend(f"committed message: {item}" for item in parser_errors)
+            if task_commit_write_tree(root, git_env) != expected_tree:
+                post_errors.append("isolated index changed during hook/commit execution")
+            if git_nul_path_set(
+                root,
+                ["diff", "--cached", "--name-only", "--no-renames", "-z", commit_sha],
+                git_env,
+            ):
+                post_errors.append("isolated index remains staged after commit")
+            if capture_task_commit_snapshot(
+                root, {str(facts["candidate_artifact"])}
+            ) != plan["dirty_snapshot"]:
+                post_errors.append("worktree snapshot changed during isolated execution")
+            if candidate_path.read_bytes() != candidate_preimage:
+                post_errors.append("candidate raw bytes changed during isolated execution")
+            if current_head(root) != pre_commit_head:
+                post_errors.append("real HEAD changed before transaction publication")
+            if task_commit_branch_ref(root) != branch_ref:
+                post_errors.append("real branch ref changed before transaction publication")
+            if not task_commit_index_preimage_matches(index_preimage):
+                post_errors.append("live index changed before transaction publication")
+            if task_commit_git_operation_state(root)["active"]:
+                post_errors.append("Git operation state changed before transaction publication")
+            if post_errors:
+                raise WorkflowError(
+                    "Task commit isolated transaction validation failed before publication.",
+                    exit_code=2,
+                    payload={"status": "blocked", "errors": post_errors},
+                )
+
+            final_plan = copy.deepcopy(plan)
+            final_plan["result"] = {
+                "status": "committed",
+                "exit": "committed",
+                "recorded_at": now_iso(),
+                "commit_sha": commit_sha,
+                "parent": pre_commit_head,
+                "message_sha256": hashlib.sha256(raw_message).hexdigest(),
+                "committed_paths": sorted(committed_paths),
+                "unrelated_preserved": True,
+                "hook_mutation": False,
+                "tree_evidence": tree_evidence,
+            }
+            result_errors = task_commit_result_validation_errors(root, final_plan)
+            if result_errors:
+                raise WorkflowError(
+                    "Task commit committed result does not satisfy the public schema.",
+                    exit_code=2,
+                    payload={"status": "blocked", "errors": result_errors},
+                )
+            candidate_result_bytes = json_document_bytes(final_plan)
+            final_index_bytes = transaction_index.read_bytes()
+            committed_payload = {
+                "status": "committed",
+                "exit": "committed",
+                "candidate_artifact": repo_relative(root, candidate_path),
+                "sequence": plan["sequence"],
+                "pre_commit_head": pre_commit_head,
+                "commit_sha": commit_sha,
+                "message_sha256": hashlib.sha256(raw_message).hexdigest(),
+                "candidate_result_sha256": hashlib.sha256(candidate_result_bytes).hexdigest(),
+                "committed_paths": sorted(committed_paths),
+                "unrelated_preserved_paths": sorted(unrelated_before),
+                "tree_evidence": tree_evidence,
+                "hook_mutation": False,
+            }
+
+            require_ordinary_task_commit_git_state(root)
+            if capture_task_commit_snapshot(
+                root, {str(facts["candidate_artifact"])}
+            ) != plan["dirty_snapshot"]:
+                raise WorkflowError(
+                    "Task commit worktree changed at the publication boundary.", exit_code=2
+                )
+            if candidate_path.read_bytes() != candidate_preimage:
+                raise WorkflowError(
+                    "Task commit candidate changed at the publication boundary.", exit_code=2
+                )
+            if not task_commit_index_preimage_matches(index_preimage):
+                raise WorkflowError(
+                    "Task commit live index changed at the publication boundary.", exit_code=2
+                )
+            # All temporary transaction cleanup that may fail occurs before
+            # real publication. The context-manager exit is a no-op afterward.
+            transaction_owner.cleanup()
+            try:
+                task_commit_publish_validated_transaction(
+                    root,
+                    candidate_path=candidate_path,
+                    candidate_preimage=candidate_preimage,
+                    candidate_mode=candidate_mode,
+                    candidate_result_bytes=candidate_result_bytes,
+                    index_preimage=index_preimage,
+                    index_lock_fd=index_lock_fd,
+                    index_lock_path=index_lock_path,
+                    final_index_bytes=final_index_bytes,
+                    branch_ref=branch_ref,
+                    pre_commit_head=pre_commit_head,
+                    commit_sha=commit_sha,
+                )
+            finally:
+                index_lock_fd = -1
+            return committed_payload
+    finally:
+        if index_lock_fd >= 0:
+            try:
+                os.close(index_lock_fd)
+            except OSError:
+                pass
+        try:
+            index_lock_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
 def cmd_check_commit_messages(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
+    if getattr(args, "candidate_artifact", None):
+        candidate_path, candidate_task_dir = resolve_task_commit_candidate(root, args.candidate_artifact)
+        if getattr(args, "task", None):
+            requested_task = resolve_task_dir(root, args.task)
+            if requested_task.resolve() != candidate_task_dir.resolve():
+                raise WorkflowError("--task and --candidate-artifact resolve to different tasks.", exit_code=2)
+        plan, facts, errors = validate_task_commit_candidate(root, candidate_path, candidate_task_dir)
+        payload = {
+            "status": "ok" if not errors else "blocked",
+            "mode": "candidate",
+            "candidate_validation": facts,
+            "checked_commits": [],
+            "errors": errors,
+        }
+        if errors:
+            raise WorkflowError("Task commit candidate validation failed.", exit_code=2, payload=payload)
+        return payload
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
     task_context = load_task_start_context(task_dir, config) if getattr(args, "task", None) else None
@@ -9566,6 +11996,16 @@ def cmd_check_commit_messages(args: argparse.Namespace) -> dict[str, Any]:
     if errors:
         raise WorkflowError("Commit message validation failed.", exit_code=2, payload=payload)
     return payload
+
+
+def cmd_create_task_commit(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    candidate_path, task_dir = resolve_task_commit_candidate(root, args.candidate_artifact)
+    if getattr(args, "task", None):
+        requested_task = resolve_task_dir(root, args.task)
+        if requested_task.resolve() != task_dir.resolve():
+            raise WorkflowError("--task and --candidate-artifact resolve to different tasks.", exit_code=2)
+    return execute_task_commit_candidate(root, candidate_path, task_dir)
 
 
 def cmd_format_merge_commit(args: argparse.Namespace) -> dict[str, Any]:
@@ -9985,6 +12425,8 @@ def skill_collect_tree_files(
             if stat.S_ISLNK(child_stat.st_mode) or not stat.S_ISDIR(child_stat.st_mode):
                 errors.append(f"{label} contains a symlink or non-directory component")
                 continue
+            if dirname == "__pycache__":
+                continue
             safe_dirs.append(dirname)
         dirnames[:] = safe_dirs
         for filename in sorted(filenames):
@@ -9996,6 +12438,8 @@ def skill_collect_tree_files(
                 continue
             if not stat.S_ISREG(child_stat.st_mode):
                 errors.append(f"{label} contains a symlink or non-regular file")
+                continue
+            if child.suffix in {".pyc", ".pyo"}:
                 continue
             output.append(child)
     return sorted(output)
@@ -14142,7 +16586,7 @@ def build_parser() -> argparse.ArgumentParser:
     assignment.add_argument("--root")
     assignment.add_argument("--json", action="store_true")
     assignment.add_argument("--task")
-    assignment.add_argument("--logical-role", required=True, choices=ALLOWED_LOGICAL_ROLES)
+    assignment.add_argument("--logical-role", choices=ALLOWED_LOGICAL_ROLES, help="Required for assignment, review-round, and reuse-decision modes; omitted for correction/recovery mode.")
     assignment.add_argument("--agent-id", default="", help="Technical platform agent id. Use empty string when unavailable and explain in --reason.")
     assignment.add_argument("--platform-nickname", default="", help="Display-only platform nickname; never used for gate decisions.")
     assignment.add_argument("--reason", help="Chinese AI/human assignment rationale for agents[].")
@@ -14164,6 +16608,13 @@ def build_parser() -> argparse.ArgumentParser:
     assignment.add_argument("--running-command-evidence", help="Deprecated with --status-event.")
     assignment.add_argument("--supersedes-agent-id", help="Deprecated with --status-event.")
     assignment.add_argument("--handoff-summary", help="Deprecated with --status-event.")
+    assignment.add_argument("--invalidate-event-id", help="Append schema 1.2 provenance invalidation for one existing progress/status-request event.")
+    assignment.add_argument("--correction-reason", help="AI/main-session rationale for --invalidate-event-id.")
+    assignment.add_argument("--correction-evidence", help="Concrete evidence proving the target provenance is invalid.")
+    assignment.add_argument("--link-failed-event-id", help="Append schema 1.2 recovery link from this failed event.")
+    assignment.add_argument("--link-termination-event-id", help="Same-agent later manual/platform terminated-unfinished target for the recovery link.")
+    assignment.add_argument("--recovery-reason", help="AI/main-session rationale for the recovery link.")
+    assignment.add_argument("--recovery-evidence", help="Concrete evidence that the historical failed-to-termination transition occurred.")
     assignment.add_argument("--dry-run", action="store_true")
 
     check_assignment = sub.add_parser("check-agent-assignment")
@@ -14216,7 +16667,15 @@ def build_parser() -> argparse.ArgumentParser:
     check_commits.add_argument("--task")
     check_commits.add_argument("--primary-issue", type=int)
     check_commits.add_argument("--base-ref", help="Git ref used as the start of the checked range. Defaults to the task base branch.")
-    check_commits.add_argument("--range", help="Explicit git log range, for example origin/main..HEAD.")
+    check_commit_mode = check_commits.add_mutually_exclusive_group()
+    check_commit_mode.add_argument("--range", help="Explicit git log range, for example origin/main..HEAD.")
+    check_commit_mode.add_argument("--candidate-artifact", help="Task-local task-commit-plans/<sequence>.json to validate independently of branch history.")
+
+    create_commit = sub.add_parser("create-task-commit")
+    create_commit.add_argument("--root")
+    create_commit.add_argument("--json", action="store_true")
+    create_commit.add_argument("--task")
+    create_commit.add_argument("--candidate-artifact", required=True)
 
     merge_commit = sub.add_parser("format-merge-commit")
     merge_commit.add_argument("--root")
@@ -14331,6 +16790,8 @@ def main() -> int:
             payload = cmd_check_review_gate(args)
         elif args.command == "check-commit-messages":
             payload = cmd_check_commit_messages(args)
+        elif args.command == "create-task-commit":
+            payload = cmd_create_task_commit(args)
         elif args.command == "format-merge-commit":
             payload = cmd_format_merge_commit(args)
         elif args.command == "publish-pr":

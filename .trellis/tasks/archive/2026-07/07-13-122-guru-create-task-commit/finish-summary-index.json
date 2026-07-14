@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Task work commit 可绕过 candidate 校验，finding 修复可能复用过期证据，且 workflow、prompt、script 重复定义 step-local 规则。",
+    "outcome": "guru-create-task-commit 已成为初次与 finding-fix work commit 的唯一闭环 Skill，精确绑定 AI scope、Phase 2、message bytes、Git authority、事务 postcondition 和 typed exit。",
+    "changed_behavior": [
+      "Workflow 在每次 Task work commit 前强制调用 guru-create-task-commit，并对异常 exit fail closed。",
+      "AI 分类完整 dirty snapshot 并审查 exact paths/message，validator 校验 task、issue、Phase 2、HEAD、digest 与授权。",
+      "Executor 从 artifact 内容与 mode 构造隔离 index，运行真实 hooks 后校验 parent、message、path 和完整 tree。",
+      "index.lock、ref/index/candidate guards、条件回滚和最终 identity read 固定事务线性化边界。",
+      "renamed_from 与 copied_from 已分离，只有 rename source 继承删除和 exact-stage authority。",
+      "Canonical、dogfood、六个 package roots、preset manifest、durable docs 和回归测试已同步。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "guru-create-task-commit 公共 Skill",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-create-task-commit/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md"
+        ],
+        "change": "新增同门禁、AI Review、candidate contract、typed exits 与历史兼容规则。"
+      },
+      {
+        "kind": "script",
+        "name": "Task commit validator 与 executor",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/bash/create-task-commit.sh"
+        ],
+        "change": "实现 snapshot、Git object authority、isolated hook、事务发布和 postcondition。"
+      },
+      {
+        "kind": "workflow",
+        "name": "Mandatory invocation 与 re-entry",
+        "paths": [
+          "trellis/workflows/guru-team/workflow.md",
+          ".trellis/workflow.md"
+        ],
+        "change": "只保留 mandatory invocation、finding-fix re-entry、typed exit routing 和 fail-closed stop。"
+      },
+      {
+        "kind": "preset",
+        "name": "Installer 与多平台分发",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "安装并验证 canonical package、runtime、schema、managed hash 和平台副本。"
+      },
+      {
+        "kind": "docs",
+        "name": "Task commit durable SSOT",
+        "paths": [
+          "README.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          ".trellis/spec/workflow/data-contracts.md"
+        ],
+        "change": "记录 Skill owner、AI/脚本边界、artifact authority、copy/rename 与安装升级合同。"
+      },
+      {
+        "kind": "test",
+        "name": "永久回归与 throwaway",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "change": "覆盖 copy/rename、failure matrix、并发 guard、六 roots、真实提交和 update/reapply。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Task work commit ownership",
+        "before": "主会话临场生成 message 并直接 stage/commit。",
+        "after": "每次 work commit 都由 guru-create-task-commit 绑定 fresh evidence 并返回唯一 typed exit。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Path 与内容 authority",
+        "before": "Dirty classification、bytes、mode、gitlink 和 candidate 未绑定为同一计划。",
+        "after": "Artifact 以 SHA、mode、delete、gitlink OID 和 deterministic candidate bytes 独占 index authority。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Rename 与 copy 权限",
+        "before": "Copy source 可错误继承 rename source 的 stage/delete authority。",
+        "after": "renamed_from 与 copied_from 互斥，copy source 必须独立分类和覆盖。",
+        "source_artifact": "review.md"
+      },
+      {
+        "contract": "Git transaction linearization",
+        "before": "Ref、index 与 candidate result 之间存在并发发布和回滚覆盖窗口。",
+        "after": "index.lock sentinel、所有权 guard、条件回滚和最终 candidate identity read 固定成功边界。",
+        "source_artifact": "design.md"
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "guru-create-task-commit",
+        "check-task-commit-plan.sh",
+        "create-task-commit.sh"
+      ],
+      "config_keys": [
+        "status.renames"
+      ],
+      "schema_fields": [
+        "exact_stage_paths",
+        "renamed_from",
+        "copied_from",
+        "blocked.failure_stage"
+      ],
+      "symbols": [
+        "capture_task_commit_snapshot",
+        "validate_task_commit_candidate",
+        "execute_task_commit_candidate"
+      ],
+      "phrases": [
+        "guru-create-task-commit 强制闭环已完成",
+        "copied_from 与 renamed_from 权限分离已完成",
+        "index.lock 与 exact_stage_paths 事务合同已完成",
+        "check-task-commit-plan.sh 多平台分发已完成"
+      ]
+    }
+  }
+}

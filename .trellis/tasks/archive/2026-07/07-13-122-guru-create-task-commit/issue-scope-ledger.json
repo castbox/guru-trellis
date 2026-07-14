@@ -1,0 +1,63 @@
+{
+  "primary_issue": {
+    "number": 122,
+    "url": "https://github.com/castbox/guru-trellis/issues/122",
+    "title": "实现 guru-create-task-commit 闭环 Skill 并收敛 Task work commit SSOT",
+    "reason": "Primary issue；当前 task 的唯一 close 候选。",
+    "acceptance_evidence": [
+      "Canonical workflow、guru-create-task-commit package/runtime/schema、六个分发 roots、preset manifest、README、requirements 与 workflow specs 已实现并同步 R1-R10、AC1-AC14。",
+      "Fresh Round 11 phase2-check.json 由 trellis_check_122_round11_fix 记录 findings=0；copy/rename 8/8、mutation 2/2 rejected、transaction 39/39、assignment/liveness 30/30、六 roots 24/24、完整 suite 525/525 与 clean throwaway 通过。",
+      "Branch Review Gate 绑定 HEAD 9135d6e3414597bd75a5b5a13b4656a0bd0bfd89，Round 10 fresh final reviewer 覆盖完整 origin/main...HEAD 并给出 findings_count=0、final release pass。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "380b25fa3335c6a765575bcb6b8f953975fceffc250e1a5ecb69c118a6dd9b30",
+        "verified_content_head": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+        "remote_head": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+        "publish_head": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+        "commands_passed": true
+      }
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 122,
+      "url": "https://github.com/castbox/guru-trellis/issues/122",
+      "title": "实现 guru-create-task-commit 闭环 Skill 并收敛 Task work commit SSOT",
+      "reason": "实现、Phase 2、Branch Review 与 remote verifier 完整覆盖后关闭 #122。",
+      "acceptance_evidence": [
+        "Canonical workflow、guru-create-task-commit package/runtime/schema、六个分发 roots、preset manifest、README、requirements 与 workflow specs 已实现并同步 R1-R10、AC1-AC14。",
+        "Fresh Round 11 phase2-check.json 由 trellis_check_122_round11_fix 记录 findings=0；copy/rename 8/8、mutation 2/2 rejected、transaction 39/39、assignment/liveness 30/30、六 roots 24/24、完整 suite 525/525 与 clean throwaway 通过。",
+        "Branch Review Gate 绑定 HEAD 9135d6e3414597bd75a5b5a13b4656a0bd0bfd89，Round 10 fresh final reviewer 覆盖完整 origin/main...HEAD 并给出 findings_count=0、final release pass。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "380b25fa3335c6a765575bcb6b8f953975fceffc250e1a5ecb69c118a6dd9b30",
+          "verified_content_head": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+          "remote_head": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+          "publish_head": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+          "commands_passed": true
+        }
+      ]
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 92,
+      "url": "https://github.com/castbox/guru-trellis/issues/92",
+      "title": "强制 guru-team workflow 使用中文 Conventional Commits 提交规范",
+      "reason": "提供现有唯一 commit message parser/validator 合同；当前 PR 不关闭 #92。"
+    },
+    {
+      "number": 120,
+      "url": "https://github.com/castbox/guru-trellis/issues/120",
+      "title": "建立 Guru Team 闭环 Skill 合同与 Canonical 分发基础设施",
+      "reason": "提供 canonical package、registry/interface、typed exits 与 managed-hash distribution；当前 PR 不关闭 #120。"
+    }
+  ],
+  "followup_issues": []
+}

@@ -297,6 +297,10 @@ termination_source_event_id=<stale-assessed.event_id>`，再记录 replacement `
 termination 使用 `termination_reason=manual_or_platform_terminated_unfinished`。failed、stale、
 unfinished 或 replacement partial output 未恢复到后续 `completed` 前，不能作为 Phase 2 pass
 evidence。
+Schema 1.2 的 `event_corrections[]` 以 immutable target digest 显式失效错误 provenance
+progress/status-request，`recovery_links[]` 只补同 agent `failed` 到后续 manual/platform
+termination 的结构边；两者 append-only，且 validator 仍要求 replacement 链到达真实
+`completed`，拒绝 unknown/duplicate/cycle/cross-agent/tampered 引用。
 
 | 字段/内容 | 目的 |
 | --- | --- |
@@ -307,6 +311,37 @@ evidence。
 | `dirty_paths` | 记录 commit 前被 Phase 2 check 覆盖的非 metadata 变更，供后续 Branch Review Gate 做 post-commit audit。 |
 
 ## 7. Phase 3：Commit 后 Branch Review Gate
+
+Final Phase 2 check 通过后，global workflow 不再直接规划 stage/commit，而是按 stable
+id mandatory invoke `guru-create-task-commit`。该 skill 对每次提交创建独立
+`task-commit-plans/<sequence>.json`：AI 负责 dirty path 分类、exact stage scope、中文
+Conventional Commit 语义、授权与 review gate；统一 candidate validator 与 exact executor
+只校验/执行确定性事实。Validator/executor 在 candidate、任何 stage 副作用前和紧邻
+`git commit` 前拒绝 merge/cherry-pick/revert/rebase/sequencer/am 等非普通 Git state；
+mode `160000` 的 snapshot 绑定 initialized、clean submodule 的 worktree HEAD，review 后
+gitlink HEAD 变化会使 candidate stale；executor 在 exact stage 前再次读取该 HEAD，并把
+artifact `gitlink_head` 直接写成 mode `160000` index OID，因此未审查的 C 不会从可变
+worktree 进入 index 或 commit。普通 path 同样只从 artifact SHA-256/mode/delete identity
+构造 cache entry。Snapshot 对 rename destination 记录 `renamed_from`，对 copy destination
+记录 `copied_from`；只有 rename source 随 destination 继承删除/exact-stage authority。
+Copy source 绝不因 relation 自动入 stage；若它自身 dirty，则作为独立 snapshot
+path 必须自行分类与受审。Candidate self 只从 validated in-memory plan 构造
+deterministic bytes。
+真实 hooks/commit 在 isolated index/detached transaction HEAD 上完成；commit、当前
+worktree/candidate/operation 与 live index preimage 全部验证后，才 recoverable publish
+真实 branch/index/result。真实 `index.lock` 作为 sentinel 持有到 transaction 结束，
+final index bytes 使用独立 temp 并在 sentinel 仍存在时发布；CAS 后立即持有/复核
+loose-ref guard，candidate guard 与 exact result identity 约束恢复。Ref/index/result 已是
+transaction state 且 guards 仍持有时，最终 candidate inode/content identity read 是
+线性化点：read 前 C 触发 owned ref/index rollback 并被保留，read 后 C 是 later operation，
+immutable commit blob/returned result digest 仍授权 `committed`；ownership
+丢失时保留并发 writer 状态。`committed` 的唯一 consumer 是 Branch Review 或 finding closure，
+`revision-required` 唯一重入同一 skill，`blocked` 唯一 fail closed。
+
+Branch Review finding 产生非 metadata task work 时，流程必须返回实现与完整 Phase 2；
+下一次 commit 使用新的 sequence、fresh Phase 2 digest、fresh pre-commit `HEAD` 和 dirty
+snapshot，旧 plan 不可复用。Platform continue/launcher 只加载 stable skill id 和消费
+typed exit，不复制 step-local contract。
 
 Branch Review Gate 是 Guru Team 最重的质量门禁。它发生在 task work commit 之后、
 `trellis-finish-work` 之前。
@@ -415,7 +450,7 @@ PR readiness 要求：
 | --- | --- | --- | --- |
 | `.trellis/tasks/<task-slug>/task-start-context.json` | Phase 0 executor | Guru Team intake provenance | Phase 1 task seed、debug、issue/worktree provenance。 |
 | workspace boundary snapshot | Phase 1/2/3 recorder 前 | Guru Team deterministic fact layer | `check-workspace-boundary.sh` 输出 expected workspace、actual repo root、source checkout/task worktree status、suspicious source artifacts；recorder/validator fail-closed；#76 liveness checker 复用 source/task 双侧事实层，source checkout 新变化是 progress/boundary violation，不是 stale 证据。 |
-| `agent-assignment.json` liveness ledger | Phase 2/3 sub-agent wait loop | Guru Team recorder/checker evidence | 单一 task-local ledger，包含 `agents[]`、`status_events[]`、`liveness[agent_id].last_scan_snapshot`、review rounds 和 reuse decisions；`record-subagent-liveness-event.sh` 写事件，`check-subagent-liveness.sh` 单次采样并返回 decision，旧 `record-agent-assignment.sh --status-event` fail closed。 |
+| `agent-assignment.json` liveness ledger | Phase 2/3 sub-agent wait loop | Guru Team recorder/checker evidence | schema 1.2 单一 task-local ledger，包含 `agents[]`、`status_events[]`、`liveness[agent_id].last_scan_snapshot`、review rounds、reuse decisions、digest-bound `event_corrections[]` 和 `recovery_links[]`；effective projection 排除 invalidated event，recovery gate 仍须完成 replacement chain。 |
 | `issue-scope-ledger.json` | Phase 1 起持续维护 | Guru Team issue close/ref/followup SSOT | Branch Review Gate、PR body、publish close keyword validator。 |
 | `prd.md` | Phase 1 | Guru Team planning artifact | Implement/check/review/publish。 |
 | `design.md` | Phase 1 | Guru Team planning artifact | Implement/check/review。 |
@@ -425,6 +460,7 @@ PR readiness 要求：
 | `implement.jsonl` / `check.jsonl` | Phase 1.3 | Trellis sub-agent context manifest | `trellis-implement` / `trellis-check`。 |
 | `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity/status ledger | review closure/fresh final reviewer 和 unfinished termination recovery-chain 校验。 |
 | `phase2-check.json` | Phase 2.2 | Guru Team check evidence | 固化 `trellis-check` AI check 的覆盖范围、验证结果、findings 和 dirty paths；commit 前 gate、Branch Review Gate post-commit audit。 |
+| `task-commit-plans/<sequence>.json` | Phase 3.4，可重复进入 | `guru-create-task-commit` task-local evidence | 绑定 task/base/issue、evidence digests、pre-commit HEAD、完整 dirty snapshot（ordinary SHA-256/mode/delete，显式分离的 `renamed_from` / `copied_from`，以及 gitlink initialized clean HEAD/OID）、唯一 path 分类、exact stage paths、message bytes、AI review、authorization、freshness 与真实 committed result；只有 rename source 继承 deletion/exact-stage authority，copy source 必须按自身 dirty 记录独立分类；candidate self 由 validated plan deterministic bytes 授权，失败 transaction 不发布 plan result；只保存 repo-relative path/digest/结构化事实。 |
 | `reviews/*.md` | Phase 3.5 | Per-round raw review reports | 中文 human-readable artifact；`agent-assignment.json.review_rounds[]` flat digest fields、`review-gate.json.verification_evidence.review_reports[]`、archive path migration。 |
 | `review.md` | Phase 3.5 | Independent review rollup | 中文最终人类入口，链接每轮 raw report；`review-branch.sh` final digest、finish-work readiness。 |
 | `review-gate.json` | Phase 3.5 | Branch Review Gate artifact | `check-review-gate.sh`、finish-work；记录 final `review.md` digest 和 raw `review_reports[]` digest。 |
@@ -445,7 +481,10 @@ PR readiness 要求：
 4. tracked `task-start-context.json` 只保存 portable workspace/task identifiers；worktree mode 下的机器写入边界由当前 checkout、`.trellis/.runtime/guru-team/**`、`git worktree list` 推导为 `expected_workspace`，并由 `check-workspace-boundary --task` fail closed 校验。该 helper 不替 AI 判断 stale、迁移 patch 或清理 source checkout；#76 liveness checker 在此基础上把 source checkout 新变化视为 workspace boundary progress。
 5. `task.py create/start/archive` 仍是官方 Trellis lifecycle，但 Guru Team 在 start 前要求 `prd.md` / `design.md` / `implement.md` 定位同一个 `Docs SSOT Plan`，展示三份文档链接并得到 explicit post-planning confirmation，Phase 0 handoff 确认不能替代。
 6. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出中文 `reviews/*.md` raw reports 与最终中文 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
-7. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，commit 后必须有独立中文 review raw reports、最终中文 `review.md` rollup 和 recorder 生成的 `review-gate.json`；主会话自检、自审或脚本校验通过不能替代这些证据。
+7. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，并由
+   `guru-create-task-commit` 生成 fresh candidate plan、完成 AI Review，再通过 exact
+   executor 提交；commit 后必须有独立中文 review raw reports、最终中文 `review.md`
+   rollup 和 recorder 生成的 `review-gate.json`。脚本校验通过不能替代 AI 判断。
 8. 任意 finding 都阻断；发现过问题的 reviewer 只能闭环自己的 finding，最终放行必须是 fresh reviewer。
 9. `trellis-continue` 到 Branch Review Gate 就停；`trellis-finish-work` 通过 immutable plan/digest、draft handshake、final projection 与单次 archive transaction 自动 publish PR，Guru Team 不调用 `add_session.py`。
 10. shared start 和 Codex/Cursor SessionStart 只组合 phase/packages/task/Git facts，不打开、枚举、读取或输出 workspace journal。

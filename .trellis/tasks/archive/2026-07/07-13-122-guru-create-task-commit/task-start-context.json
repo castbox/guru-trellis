@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 122,
+    "url": "https://github.com/castbox/guru-trellis/issues/122",
+    "title": "实现 guru-create-task-commit 闭环 Skill 并收敛 Task work commit SSOT",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/122"
+  },
+  "task_slug": "122-guru-create-task-commit",
+  "task_title": "#122 实现 guru-create-task-commit 闭环 Skill 并收敛 Task work commit SSOT",
+  "task_artifact_dir": ".trellis/tasks/07-13-122-guru-create-task-commit",
+  "branch_name": "feat/122-guru-create-task-commit",
+  "base_branch": "main",
+  "base_ref": "main",
+  "base_head_sha": "6b9495a17dc953c7a54c105e39c23a786edcd8a7",
+  "remote_head_sha": "6b9495a17dc953c7a54c105e39c23a786edcd8a7",
+  "workspace_slug": "122-guru-create-task-commit",
+  "task_workspace_id": "122-guru-create-task-commit",
+  "assignee": "wumengye",
+  "actor": {
+    "login": "wumengye"
+  },
+  "issue_scope_ledger_seed": {
+    "primary_issue": {
+      "number": 122,
+      "url": "https://github.com/castbox/guru-trellis/issues/122",
+      "title": "实现 guru-create-task-commit 闭环 Skill 并收敛 Task work commit SSOT",
+      "reason": "intake 主 issue，默认进入 close 候选。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 122,
+        "url": "https://github.com/castbox/guru-trellis/issues/122",
+        "title": "实现 guru-create-task-commit 闭环 Skill 并收敛 Task work commit SSOT",
+        "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": false,
+      "selected_issue": 122
+    },
+    "naming_quality": {
+      "ok": true,
+      "reason": "naming includes enough business tokens",
+      "requires_semantic_name": false,
+      "current_slug": "122-guru-create-task-commit",
+      "current_surface": "workspace_slug",
+      "suggested_override_flags": [],
+      "checked_names": {
+        "slug": {
+          "ok": true,
+          "slug": "guru-create-task-commit",
+          "reason": "ok",
+          "business_tokens": [
+            "guru",
+            "create",
+            "commit"
+          ]
+        },
+        "task_slug": {
+          "ok": true,
+          "slug": "122-guru-create-task-commit",
+          "reason": "ok",
+          "business_tokens": [
+            "guru",
+            "create",
+            "commit"
+          ]
+        },
+        "workspace_slug": {
+          "ok": true,
+          "slug": "122-guru-create-task-commit",
+          "reason": "ok",
+          "business_tokens": [
+            "guru",
+            "create",
+            "commit"
+          ]
+        },
+        "branch_name": {
+          "ok": true,
+          "slug": "122-guru-create-task-commit",
+          "reason": "ok",
+          "business_tokens": [
+            "guru",
+            "create",
+            "commit"
+          ]
+        }
+      }
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    }
+  }
+}

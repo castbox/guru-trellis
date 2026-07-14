@@ -198,11 +198,54 @@ links. `format-merge-commit` must output the merge commit subject/body/command p
 maintainers do not rely on GitHub's default `Merge pull request #xx from ...`
 subject or a Chinese PR title such as `完成：#xx ... (#yy)`.
 
-Phase 2 check must verify planned work/metadata/merge commit message coverage.
-Phase 3.4 runs `check-commit-messages.sh` before commit planning proceeds.
-Branch Review Gate reviews committed messages and publish readiness payloads.
-Finish-work metadata commits and publish merge payloads must be generated from
-the same objective formatter/validator contract.
+Phase 2 check verifies implementation and message-relevant evidence, but it does
+not ask for manual approval of a planned work message. After a fresh final Phase
+2 pass, Phase 3.4 mandatory invokes `guru-create-task-commit`. The skill owns
+candidate construction, AI review, conditional confirmation and re-entry; its
+candidate mode calls the shared `validate_commit_message()` parser, and its
+exact executor validates the resulting commit. Candidate validation, executor
+entry before staging, and the boundary immediately before `git commit` each
+fail closed while merge, cherry-pick, revert, rebase, sequencer, or `git am`
+state is active; scripts only observe that state and do not consume or clear it.
+Mode `160000` dirty entries bind an initialized, clean submodule worktree HEAD,
+so changing the gitlink revision after AI review makes the candidate stale.
+Immediately before exact staging, the executor compares that worktree HEAD
+again. It then writes the reviewed `gitlink_head` directly as the mode `160000`
+index OID instead of asking `git add` to read the mutable submodule worktree.
+The staged index identity must equal the artifact identity before commit; an
+unreviewed revision can never become the expected index tree.
+Ordinary files, modes, symlinks and deletes use their existing artifact
+SHA-256/mode/delete identity the same way. Snapshot producers write
+`renamed_from` only for rename destinations and `copied_from` only for copy
+destinations. Only a rename source inherits the reviewed destination's exact
+stage and deletion authority. A copy source never enters exact stage because
+of the relation; when it is itself dirty, it is a separate snapshot path that
+must be classified and reviewed independently. Candidate self uses
+deterministic bytes from the validated in-memory plan. Hooks and exact staging
+run against an isolated index plus detached transaction HEAD. The real branch,
+live index and committed candidate result are published only after the commit
+object and current worktree/candidate/operation/index preconditions all match;
+the real `index.lock` remains owned through candidate publication and rollback,
+the conditionally advanced loose ref and candidate writes are guard-bound, and
+an independent final-index temporary file is published to the live index while
+the `index.lock` sentinel still exists. With ref/index guards still held and
+the ref, index and candidate result already in transaction state, one final
+candidate inode/content identity read is the success linearization point. A
+candidate replacement before that read blocks, rolls back the owned ref/index
+and preserves the replacement; a replacement after the read is a later
+operation and does not retroactively block or overwrite the committed result.
+Ref/candidate rollback is conditional and never overwrites third-party state;
+after the successful final read only best-effort guard/temp cleanup and return
+may occur.
+Branch Review Gate reviews
+committed messages and publish readiness payloads. Finish-work metadata commits
+and publish merge payloads remain on the same objective formatter/validator
+contract.
+
+The global workflow owns only the invocation point, finding-fix repeat
+condition, and the unique consumers for `committed`, `revision-required`, and
+`blocked`. Candidate fields, exact staging, confirmation policy, executor steps,
+and postconditions belong only to the canonical skill package.
 
 ## Branch Review Gate
 
@@ -437,6 +480,12 @@ Passing the gate requires:
   `reuse_decision: replace` before any fresh final round can pass. This closure
   proves the finding is closed and does not need to be repeated for every later
   HEAD
+- schema 1.2 append-only provenance corrections must digest-bind an existing
+  same-agent correctable event; invalidated events remain in raw history but
+  are excluded from liveness/gate projection. Recovery links may only connect
+  an earlier same-agent `failed` event to a later manual/platform
+  `terminated-unfinished`; the validator must then traverse the existing
+  replacement chain to a real `completed`
 - the final `最终放行审查代理` review round must be fresh and last: reviewed code
   HEAD, `findings_count: 0`, `reuse_decision: new-agent`, and a technical
   `agent_id` that did not own any earlier finding round

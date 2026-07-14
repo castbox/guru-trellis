@@ -73,6 +73,100 @@ Before publish, reject uncommitted non-metadata changes. Metadata-only paths are
 defined by `METADATA_ONLY_PREFIXES` and `METADATA_ONLY_FILES`; update these
 constants deliberately if Trellis metadata ownership changes.
 
+Task work commits use two deterministic entrypoints. `check-commit-messages
+--candidate-artifact <task-local-path>` validates schema/evidence/freshness,
+then calls the existing `validate_commit_message()` parser even when the branch
+range contains no commits. `create-task-commit --candidate-artifact
+<task-local-path>` consumes only a passed AI-reviewed and authorized plan,
+stages literal exact paths, binds the full expected index tree and each exact
+path's blob/mode before hooks run, uses `git commit --cleanup=verbatim -F`, and
+checks parent, raw message bytes, committed paths, real commit tree/blob/mode,
+unrelated preservation and hook mutation. Candidate validation, executor entry
+before staging, and the
+check immediately before `git commit` reject active merge, cherry-pick, revert,
+rebase, sequencer, or `git am` state without consuming markers or changing
+HEAD/index/worktree. Snapshot capture recognizes index mode `160000`, requires
+an initialized and clean submodule rooted at the exact path, and records its
+worktree HEAD; uninitialized, dirty, unborn, or ambiguous gitlinks fail closed.
+The executor revalidates every planned gitlink immediately before staging. It
+does not pass a non-deleted gitlink to `git add`: it writes the artifact's
+reviewed `gitlink_head` to the exact mode `160000` index entry with
+`git update-index --cacheinfo`, then verifies both the index OID and current
+worktree HEAD. A B-to-C change before exact staging therefore blocks before
+index mutation; a later change cannot place C in the index because the index
+content comes from the artifact rather than the mutable worktree. Deliberate
+gitlink deletion remains on the ordinary literal delete path.
+The same authority applies to ordinary files, executable modes, symlinks and
+deletes. Snapshot capture maps a rename destination to `renamed_from` and a
+copy destination to `copied_from`; the fields are mutually exclusive. The
+executor treats only `renamed_from` as authority to remove and exact-stage the
+source. `copied_from` is provenance only: it never authorizes source removal or
+automatic staging. A dirty copy source appears as its own snapshot entry and
+must pass its own classification/Phase 2 coverage; unrelated staged source
+content blocks before the isolated transaction. The executor re-reads each
+authorized ordinary path once, requires its bytes/mode to match the artifact's
+SHA-256/mode/delete identity, writes the matching blob to the object database,
+and constructs the index with exact cache entries. It never delegates reviewed
+content choice to live `git add`. Candidate self bytes come from the already
+validated in-memory plan using deterministic JSON serialization; raw bytes
+appended after validation are never staged.
+
+Staging and hook execution use an isolated index plus a detached transaction
+HEAD that shares the repository object/config/hook store. `git commit
+--cleanup=verbatim -F` therefore runs the real hook chain without changing the
+live branch or index. Parent/message/path/tree/blob/mode, full worktree
+snapshot, candidate bytes, operation state, branch ref and complete live index
+preimage are revalidated before publication. The executor holds the real Git
+`index.lock` as a sentinel across the conditional ref advance, candidate
+publication, final live-index publication and every rollback. The sentinel is
+never renamed into the live index: final index bytes use an independent
+same-directory temporary file and are published while the sentinel still
+blocks real Git writers. A separate candidate guard prevents a compliant
+candidate writer from racing publication. Immediately after conditional ref
+advance, the executor acquires the corresponding loose-ref lock and verifies
+the advanced value; a concurrent `update-ref` either wins before that guard and
+is preserved, or fails while the guard is held. Rollback may restore candidate
+bytes only while that guard and the exact executor-published result identity
+still match. Only a fully validated commit is published to the real branch,
+live index and committed candidate result. A
+partial cache write, rejecting or mutating hook, operation-state change,
+postcondition mismatch, or candidate/index publication failure restores or
+keeps transaction-owned entry state and returns blocked. Ref rollback is
+compare-and-swap; ownership loss preserves a concurrent ref/candidate state and
+reports incomplete rollback rather than overwriting it. After candidate result
+and live index publication, while the ref guard and index sentinel still hold,
+the executor validates the guarded ref/index transaction state and performs one
+final candidate inode/content identity read. That read is the success
+linearization point. A bypassing atomic/editor candidate writer that publishes
+C before the read is detected; the executor conditionally rolls back ref/index,
+preserves C and returns blocked. A writer after the read is a later operation;
+the executor returns immutable commit blob/result digest evidence, never
+overwrites C, and performs no later fallible success check. Candidate guards
+remain mandatory for every project companion candidate writer, while this
+ordering handles writers that bypass the guard without claiming impossible
+cross-file atomicity.
+Path-bearing identity queries use
+literal pathspecs and require zero or one exact NUL-delimited record. Same-path
+content or mode mutation is a blocked postcondition with preserved Git state.
+Blocked evidence distinguishes planned paths that merely remain staged after an
+unchanged hook rejects the commit from real mutation: the former records
+`hook_mutation=false`, while unexpected dirty paths, planned-path unstaged
+drift, tree/blob/mode drift, unrelated drift, or unexpected staged paths are
+recorded explicitly and make hook mutation true only after hook execution.
+The blocked recorder and validator use the failure-stage state matrix from
+`data-contracts.md`: `pre-commit` has unchanged HEAD and either no tree or a
+matching index tree; `commit` always has tree evidence sourced from the index
+when HEAD is unchanged and from the commit when HEAD changed; `postcondition`
+always has changed HEAD, created message/path identity and commit-sourced tree
+evidence. A missing tree, wrong source, impossible HEAD/identity combination,
+pre-commit mismatch, or mutation flag inconsistent with recorded drift fails
+before result bytes are written. Package schema tests and runtime tests must
+carry the same positive and negative cross-product rather than adding one-off
+conditions for individual payloads.
+Neither command classifies scope, authors message semantics, chooses a route,
+pushes, or rewrites history; broad `git add`, automatic reset, stash, amend,
+rebase and force operations are prohibited.
+
 `finish-work.sh` is an internal helper, not the normal user path. It must reject ordinary direct calls before closeout-plan,
 push, draft PR, archive, or publish side effects; only the explicit
 `trellis-finish-work` entrypoint may pass the `--from-trellis-finish-work`
@@ -390,14 +484,22 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   watches, sleeps, reads platform UI, sends status requests, terminates agents,
   or judges implementation quality.
 - `record-agent-assignment.sh` remains for non-liveness review round and reuse
-  decision evidence. Its old `--status-event` path must fail closed and point
-  callers to `record-subagent-liveness-event.sh`; it must not maintain a second
-  active status event enum.
+  decision evidence. It also owns the two append-only schema 1.2 repair records:
+  `--invalidate-event-id` appends one digest-bound provenance invalidation, and
+  `--link-failed-event-id` plus `--link-termination-event-id` appends one
+  digest-bound same-agent failed-to-termination recovery edge. The AI/main
+  session supplies reason/evidence after making the correction judgment; the
+  recorder only verifies target identity and writes it. Its old `--status-event`
+  path must fail closed and point callers to
+  `record-subagent-liveness-event.sh`; it must not maintain a second active
+  status event enum.
 - `check-agent-assignment.sh` validates JSON structure, Chinese logical-role
   enum values, required fields, HEAD resolvability, optional current-HEAD
   freshness, liveness snapshot fields, status event enum/evidence fields,
-  recovery-chain completeness, and digest metadata; it must not judge semantic
-  reuse quality or review sufficiency.
+  correction/link unique ids and target digests, forward same-agent recovery
+  graph, recovery-chain completion, and digest metadata. Its effective
+  projection excludes invalidated progress/status-request rows; raw history is
+  never deleted. It must not judge semantic reuse quality or review sufficiency.
 
 Workspace boundary helpers are deterministic validators and fact snapshots:
 
@@ -485,6 +587,17 @@ cannot close the chain. This is only ledger-completeness validation. The script
 must not decide whether a `wait_agent` timeout means stale, whether a running
 agent should be stopped, or whether a failed/stale/unfinished partial output is
 acceptable.
+
+When an append-only ledger already contains an incorrect observational
+provenance row, natural-language correction text is disclosure only. A main
+session must append a schema 1.2 `event_corrections[]` record bound to the exact
+target event digest before the machine gate can exclude it. When a historical
+`failed` row resumed, failed again, was terminated, and then handed to a
+replacement, but the failed-to-termination edge was not recorded, the main
+session may append one schema 1.2 `recovery_links[]` edge. The validator must
+still traverse the existing resume/replacement predecessors through a real
+later `completed`; correction/link rows cannot invent, rewrite, or delete any
+status event.
 
 When a review round has findings, including a previous final-review round that
 found a new issue, it must later be closed by one of three explicit forms: the
