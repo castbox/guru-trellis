@@ -285,7 +285,59 @@
     "plan_digest": "5bb6196d807a7808228b1455595fdd0a7f932797e5753e7f2168cea332c6e9a9"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-14T03:33:36Z",
+    "commit_sha": "93d9a416bd6b34a87844dde5d4d9da363af729c2",
+    "parent": "e4937dfe19c9e3d889144ca5ef9d7afd42a429b5",
+    "message_sha256": "a3413dfa7824765c1f4776400d76d716a27d8eda4242f3a79451998690cd1edc",
+    "committed_paths": [
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task-commit-plans/002.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "c1b266b32447db3a6513224d9597376ee4002e48",
+      "actual_tree": "c1b266b32447db3a6513224d9597376ee4002e48",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "9ee384fceb79716d420ac2dbee6d7673a68f6a77",
+          "expected_mode": "100755",
+          "actual_blob": "9ee384fceb79716d420ac2dbee6d7673a68f6a77",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task-commit-plans/002.json",
+          "expected_blob": "42ee2dced9ee51cd03614aac03f86280a4ea82ae",
+          "expected_mode": "100644",
+          "actual_blob": "42ee2dced9ee51cd03614aac03f86280a4ea82ae",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "expected_blob": "06fce6ef1c02a74bfd23b0166d23fa976d1ef391",
+          "expected_mode": "100644",
+          "actual_blob": "06fce6ef1c02a74bfd23b0166d23fa976d1ef391",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "9ee384fceb79716d420ac2dbee6d7673a68f6a77",
+          "expected_mode": "100755",
+          "actual_blob": "9ee384fceb79716d420ac2dbee6d7673a68f6a77",
+          "actual_mode": "100755",
+          "matches": true
+        }
+      ]
+    }
   }
 }
