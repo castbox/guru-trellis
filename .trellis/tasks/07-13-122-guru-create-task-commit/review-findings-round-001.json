@@ -1,0 +1,19 @@
+{
+  "findings": [
+    {
+      "priority": "P1",
+      "message": "同路径 pre-commit hook 可改写已审查内容并重新 stage，executor 仍返回 committed 且记录 hook_mutation=false；必须绑定 hook 前 exact index/tree blob identities，并在 commit 后逐路径比较内容与 mode。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    },
+    {
+      "priority": "P2",
+      "message": "task_commit_index_identity 未启用 literal pathspec，metacharacter path 与 decoy collision 时可能绑定错误 blob；所有 path identity 查询必须使用 literal pathspec 并要求唯一 exact record。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    },
+    {
+      "priority": "P2",
+      "message": "Public task commit result schema 接受缺少 postcondition evidence 或 status/exit 冲突的结果；必须按 planned/revision-required/blocked/committed 收敛 oneOf 与 required/const 字段并补负向测试。",
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json"
+    }
+  ]
+}

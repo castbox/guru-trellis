@@ -5,12 +5,19 @@
     "title": "实现 guru-create-task-commit 闭环 Skill 并收敛 Task work commit SSOT",
     "reason": "Primary issue；当前 task 的唯一 close 候选。",
     "acceptance_evidence": [
+      "Canonical workflow、guru-create-task-commit package/runtime/schema、六个分发 roots、preset manifest、README、requirements 与 workflow specs 已实现并同步 R1-R10、AC1-AC14。",
+      "Fresh Round 11 phase2-check.json 由 trellis_check_122_round11_fix 记录 findings=0；copy/rename 8/8、mutation 2/2 rejected、transaction 39/39、assignment/liveness 30/30、六 roots 24/24、完整 suite 525/525 与 clean throwaway 通过。",
+      "Branch Review Gate 绑定 HEAD 9135d6e3414597bd75a5b5a13b4656a0bd0bfd89，Round 10 fresh final reviewer 覆盖完整 origin/main...HEAD 并给出 findings_count=0、final release pass。",
       {
         "type": "remote_marketplace_verification",
-        "status": "pending",
+        "status": "passed",
         "required": true,
         "artifact_path": "marketplace-verification.json",
-        "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。"
+        "artifact_sha256": "380b25fa3335c6a765575bcb6b8f953975fceffc250e1a5ecb69c118a6dd9b30",
+        "verified_content_head": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+        "remote_head": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+        "publish_head": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+        "commands_passed": true
       }
     ]
   },
@@ -21,12 +28,19 @@
       "title": "实现 guru-create-task-commit 闭环 Skill 并收敛 Task work commit SSOT",
       "reason": "实现、Phase 2、Branch Review 与 remote verifier 完整覆盖后关闭 #122。",
       "acceptance_evidence": [
+        "Canonical workflow、guru-create-task-commit package/runtime/schema、六个分发 roots、preset manifest、README、requirements 与 workflow specs 已实现并同步 R1-R10、AC1-AC14。",
+        "Fresh Round 11 phase2-check.json 由 trellis_check_122_round11_fix 记录 findings=0；copy/rename 8/8、mutation 2/2 rejected、transaction 39/39、assignment/liveness 30/30、六 roots 24/24、完整 suite 525/525 与 clean throwaway 通过。",
+        "Branch Review Gate 绑定 HEAD 9135d6e3414597bd75a5b5a13b4656a0bd0bfd89，Round 10 fresh final reviewer 覆盖完整 origin/main...HEAD 并给出 findings_count=0、final release pass。",
         {
           "type": "remote_marketplace_verification",
-          "status": "pending",
+          "status": "passed",
           "required": true,
           "artifact_path": "marketplace-verification.json",
-          "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。"
+          "artifact_sha256": "380b25fa3335c6a765575bcb6b8f953975fceffc250e1a5ecb69c118a6dd9b30",
+          "verified_content_head": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+          "remote_head": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+          "publish_head": "9135d6e3414597bd75a5b5a13b4656a0bd0bfd89",
+          "commands_passed": true
         }
       ]
     }

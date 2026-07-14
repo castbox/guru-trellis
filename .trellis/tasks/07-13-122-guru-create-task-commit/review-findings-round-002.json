@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "priority": "P2",
+      "message": "Blocked result 的 failure_stage 跨字段条件仍不完整：pre-commit 可携带 mismatched tree 且 hook_mutation=false；commit/postcondition 可使用 tree_evidence=null 且 head_changed=false。Public schema 与 runtime 必须拒绝这些不可能状态，并补齐覆盖每个 failure stage 的正负组合回归。",
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json"
+    }
+  ]
+}
