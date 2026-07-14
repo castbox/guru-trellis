@@ -1,0 +1,291 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "002",
+  "task": {
+    "id": "125-skill-standalone-runtime-dependency",
+    "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency",
+    "status": "in_progress",
+    "branch": "feat/125-skill-standalone-runtime-dependency"
+  },
+  "issue": {
+    "primary_issue": 125,
+    "ledger_sha256": "23d01589a3318e14814737ed46ada49d58bdf1400af2694a5021b257f8b50a7c"
+  },
+  "git": {
+    "base_branch": "feat/122-guru-create-task-commit",
+    "base_ref": "origin/feat/122-guru-create-task-commit",
+    "pre_commit_head": "e4937dfe19c9e3d889144ca5ef9d7afd42a429b5"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/planning-approval.json",
+      "sha256": "3462301e5fc1a856f3e5b7d728e5378c79c890ef1f1a9db2af3f15b70ab12488",
+      "size": 4558
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-check.json",
+      "sha256": "4e66a9e3abd584da993763f369d7b8501758682fc2c9b705f68354b7d6f22e96",
+      "size": 5681
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/issue-scope-ledger.json",
+      "sha256": "23d01589a3318e14814737ed46ada49d58bdf1400af2694a5021b257f8b50a7c",
+      "size": 1038
+    },
+    "task": {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task.json",
+      "sha256": "2da59eb2ceb32095bc6e9ab880bf9dfd2ee4c46331311a29b8952e2b65b44927",
+      "size": 758
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "960da29dbb80d421c263b2557eb1c4519506be4e",
+        "worktree_sha256": "5aabb34d22b6b3b2feb3c346b03acf0b58455d4aa83844531476bc951b7d7355",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dbb9099ed9854a7fb653fb873427193c3d03a86e",
+        "worktree_sha256": "c2e3af33b4f7e92cb520edf52aa2808860eff83ebda56472b9da16e080d42ab1",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/finding-fix-handoff-001.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "1df29d48ff657c0e93160f9ae4b9146a834b62ff5369b51cd5936ae55b68a95f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-check-report-f001.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "b161422f35ee2bc4f1787bddc663711b042efd7c56033bee1603a5045a5126fe",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b910f98b5d6083545d41558df72009a2e2689bb5",
+        "worktree_sha256": "4e66a9e3abd584da993763f369d7b8501758682fc2c9b705f68354b7d6f22e96",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/review-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "88e35598d5612cf65edbe35441b85a42ae092e1b6f6142618072957fcdbf6cfa",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "c953cc50fc4b82b443d30a9b200a2214dff8033ffe56239c963adce1d3d80bcc",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/reviews/001-final-review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "38df040fd7307f94b0ce614aaa04607150f7a9b304970a9f26f460e7b60bc40d",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task-commit-plans/001.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "915f68535f2ce4efe3d5aaf58de5a3c246b8d2d9",
+        "worktree_sha256": "f28ed13d5f9ba7e1016844ce57384a8ac5ed163aee2929799dca6fb745e23446",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f4f56b973e30d24f7af8e93d2f6518f6feb2d33b",
+        "worktree_sha256": "a85251b0785e95d57977a96e2fd94304723f316b15c11ee853398ad1334810ef",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "960da29dbb80d421c263b2557eb1c4519506be4e",
+        "worktree_sha256": "5aabb34d22b6b3b2feb3c346b03acf0b58455d4aa83844531476bc951b7d7355",
+        "mode": "100755"
+      }
+    ],
+    "digest": "568d36865bf28ba10a8161b524828404a492595eb950d2a46ae22766634f4a76"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "Fresh F-001 Phase 2 evidence 已覆盖该功能修复路径。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/agent-assignment.json",
+      "category": "unrelated-preserved",
+      "reason": "该路径是已审查的 task-local commit/review/Phase 2 metadata tail，不属于本次 revision work commit 的功能 staging scope，必须原样保留给后续 closure/final review/finish-work。",
+      "coverage_source": "metadata-tail-preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/finding-fix-handoff-001.md",
+      "category": "unrelated-preserved",
+      "reason": "该路径是已审查的 task-local commit/review/Phase 2 metadata tail，不属于本次 revision work commit 的功能 staging scope，必须原样保留给后续 closure/final review/finish-work。",
+      "coverage_source": "metadata-tail-preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-check-report-f001.md",
+      "category": "unrelated-preserved",
+      "reason": "该路径是已审查的 task-local commit/review/Phase 2 metadata tail，不属于本次 revision work commit 的功能 staging scope，必须原样保留给后续 closure/final review/finish-work。",
+      "coverage_source": "metadata-tail-preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-check.json",
+      "category": "unrelated-preserved",
+      "reason": "该路径是已审查的 task-local commit/review/Phase 2 metadata tail，不属于本次 revision work commit 的功能 staging scope，必须原样保留给后续 closure/final review/finish-work。",
+      "coverage_source": "metadata-tail-preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/review-gate.json",
+      "category": "unrelated-preserved",
+      "reason": "该路径是已审查的 task-local commit/review/Phase 2 metadata tail，不属于本次 revision work commit 的功能 staging scope，必须原样保留给后续 closure/final review/finish-work。",
+      "coverage_source": "metadata-tail-preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/review.md",
+      "category": "unrelated-preserved",
+      "reason": "该路径是已审查的 task-local commit/review/Phase 2 metadata tail，不属于本次 revision work commit 的功能 staging scope，必须原样保留给后续 closure/final review/finish-work。",
+      "coverage_source": "metadata-tail-preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/reviews/001-final-review.md",
+      "category": "unrelated-preserved",
+      "reason": "该路径是已审查的 task-local commit/review/Phase 2 metadata tail，不属于本次 revision work commit 的功能 staging scope，必须原样保留给后续 closure/final review/finish-work。",
+      "coverage_source": "metadata-tail-preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task-commit-plans/001.json",
+      "category": "unrelated-preserved",
+      "reason": "该路径是已审查的 task-local commit/review/Phase 2 metadata tail，不属于本次 revision work commit 的功能 staging scope，必须原样保留给后续 closure/final review/finish-work。",
+      "coverage_source": "metadata-tail-preservation"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task-commit-plans/002.json",
+      "category": "task-reviewed",
+      "reason": "本次 mandatory skill re-entry 的 task-local candidate evidence。",
+      "coverage_source": "skill-artifact"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "category": "task-reviewed",
+      "reason": "Fresh F-001 Phase 2 evidence 已覆盖该功能修复路径。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "Fresh F-001 Phase 2 evidence 已覆盖该功能修复路径。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task-commit-plans/002.json",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(trellis): #125 拒绝 runtime dispatcher 自指映射",
+    "body": "背景：\nRound 001 发现 source validator 会接受 runtime resolver 明确拒绝的 dispatcher self-mapping，导致确定不可调用的 package 可以通过验证和分发。\n\n变更：\n新增共享 dispatcher self-mapping 判定，source validator 与 runtime resolver 复用同一规则；补充唯一错误断言的永久 negative regression，并同步 dogfood runtime。\n\n边界：\nProduction validator mapping、interface schema、extension manifest、installer、public docs 与部署资产均不变；Round 001 review 和 fresh Phase 2 证据作为 task metadata tail 保留，不进入本次 revision commit。\n\n验证：\n5 package、65 skill、36 installer、275 runtime，共 381 tests passed；source/installed validation、dogfood drift、static checks、direct discovery probe、git diff check 与 sidecar scan 通过。\n\nRefs #125",
+    "bytes": "fix(trellis): #125 拒绝 runtime dispatcher 自指映射\n\n背景：\nRound 001 发现 source validator 会接受 runtime resolver 明确拒绝的 dispatcher self-mapping，导致确定不可调用的 package 可以通过验证和分发。\n\n变更：\n新增共享 dispatcher self-mapping 判定，source validator 与 runtime resolver 复用同一规则；补充唯一错误断言的永久 negative regression，并同步 dogfood runtime。\n\n边界：\nProduction validator mapping、interface schema、extension manifest、installer、public docs 与部署资产均不变；Round 001 review 和 fresh Phase 2 证据作为 task metadata tail 保留，不进入本次 revision commit。\n\n验证：\n5 package、65 skill、36 installer、275 runtime，共 381 tests passed；source/installed validation、dogfood drift、static checks、direct discovery probe、git diff check 与 sidecar scan 通过。\n\nRefs #125\n",
+    "sha256": "a3413dfa7824765c1f4776400d76d716a27d8eda4242f3a79451998690cd1edc"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "Codex main session /root",
+    "summary": "已审查 F-001 revision candidate 的 3 个功能路径、metadata tail 保留、提交语义、Docs SSOT、issue scope、安全/部署与 fresh Phase 2 evidence；candidate 可进入确定性 validator/executor。",
+    "evidence": [
+      "Fresh phase2-check.json 在 HEAD e4937dfe 覆盖 canonical/dogfood runtime、source regression、完整 #125 scope 与 Round 001 F-001，381 tests 和 source/installed/dogfood/static/sidecar gate 全部通过。",
+      "精确 staging 仅包含 canonical runtime、dogfood runtime、source negative regression 与 candidate 002；agent assignment、sequence 001 result、handoff、Phase 2 report/JSON、raw review、review.md 和 failed review-gate.json 均分类为 unrelated-preserved metadata tail。",
+      "Commit message 为中文 Conventional Commit，准确说明 F-001 root cause、共享判定、边界和验证，只使用 Refs #125；ledger 保持 #125 close candidate、#122 related-only。",
+      "Docs SSOT no-change judgment 成立：修复只承接既有 command mismatch fail-closed 合同，不改变 public mode、schema、runtime API、installer、remediation、upgrade 或部署语义。",
+      "未涉及 secret、客户数据、服务/API、数据库 migration、容器、Kubernetes、CI/CD 或 Makefile；操作不 amend/rebase/reset/force/push，不需要额外 human confirmation。"
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "explicit-user-confirmation-and-continue",
+    "evidence": "用户已连续确认并明确要求继续完成 #125；本授权仅适用于 candidate 002 的 4 条 exact_stage_paths、所列 revision commit message 与单次非改写 commit，不含 metadata tail、push、PR、archive 或 issue closure。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-14T03:32:45Z",
+    "plan_digest": "5bb6196d807a7808228b1455595fdd0a7f932797e5753e7f2168cea332c6e9a9"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

@@ -279,6 +279,22 @@ class SourceValidationTests(unittest.TestCase):
                 self.assertEqual(result["status"], "failed")
                 self.assertTrue(result["errors"])
 
+    def test_validator_runtime_command_cannot_self_map_to_dispatcher(self) -> None:
+        interface = self.read_interface()
+        interface["validators"][0]["runtime_command"] = interface["runtime_dependency"]["dispatcher"]
+        self.write_interface(interface)
+
+        result = self.validate()
+
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(
+            result["errors"],
+            [
+                "interface for guru-example-action validator result_validator runtime_command "
+                "must not equal runtime_dependency.dispatcher"
+            ],
+        )
+
     def test_extension_runtime_capability_drift_fails(self) -> None:
         extension_path = self.root / "extension.json"
         extension = json.loads(extension_path.read_text(encoding="utf-8"))

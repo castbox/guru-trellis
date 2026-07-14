@@ -12762,6 +12762,14 @@ def skill_default_extension_manifest_path(skills_root: Path, boundary: Path) -> 
     return candidates[-1]
 
 
+def skill_runtime_command_maps_to_dispatcher(runtime_command: Any, dependency: Any) -> bool:
+    return (
+        isinstance(runtime_command, str)
+        and isinstance(dependency, dict)
+        and runtime_command == dependency.get("dispatcher")
+    )
+
+
 def validate_skill_interface(
     skills_root: Path,
     entry: dict[str, Any],
@@ -12939,6 +12947,11 @@ def validate_skill_interface(
             continue
         if runtime_commands is not None and runtime_command not in runtime_commands:
             errors.append(f"interface for {skill_id} references an unpublished runtime command")
+        if skill_runtime_command_maps_to_dispatcher(runtime_command, dependency):
+            errors.append(
+                f"interface for {skill_id} validator {item.get('id')} runtime_command must not equal "
+                "runtime_dependency.dispatcher"
+            )
         validator_path = package / command
         validator_stat = skill_lstat_path(boundary, validator_path, f"validator {command.as_posix()} for {skill_id}", errors, kind="file")
         if validator_stat is not None and not (validator_stat.st_mode & stat.S_IXUSR):
@@ -13753,7 +13766,7 @@ def resolve_skill_runtime_command(
     if (
         not isinstance(runtime_command, str)
         or not SKILL_ROUTE_ID_PATTERN.fullmatch(runtime_command)
-        or runtime_command == SKILL_RUNTIME_DEPENDENCY["dispatcher"]
+        or skill_runtime_command_maps_to_dispatcher(runtime_command, interface.get("runtime_dependency"))
         or runtime_command not in runtime_commands
     ):
         raise skill_runtime_block("The requested Skill validator has an incompatible runtime command mapping.")
