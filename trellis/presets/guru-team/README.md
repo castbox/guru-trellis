@@ -549,6 +549,22 @@ Prepare requires the prior AI-reviewed external resolution file and expected
 digest. It preserves config/remote-default/fallback provenance and reruns an
 independent adjacent guard before GitHub, worktree, and task mutation; the task
 guard is after worktree/identity setup and before `task.py create`.
+`check-base-sync` consumes and deletes result evidence. Standalone releases all
+evidence before return; workflow `synced` transfers the exact external
+resolution file/raw-byte/digest lease to its unique Phase 0 consumer. The same
+lease covers planner and mutation guards, remains active while user
+confirmation is pending, and is released on task-created, blocked, aborted, or
+superseded terminal routes with:
+
+```bash
+.trellis/guru-team/scripts/bash/sync-base.sh --json --mode workflow \
+  --release-resolution-evidence \
+  --resolution-file <reviewed-resolution-file> \
+  --expected-resolution-sha256 <reviewed-resolution-sha256>
+```
+
+Lease path/digest is never persisted to task artifacts, repo runtime, shared
+cache, or review evidence. Missing/released lease means invoke the Skill again.
 The AI must show the
 proposed title/body and duplicate evidence, then rerun with
 `--create-issue-confirmed --issue-title ... --issue-body-file ...` only after

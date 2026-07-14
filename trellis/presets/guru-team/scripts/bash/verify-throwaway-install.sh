@@ -575,7 +575,128 @@ SYNC_VALIDATION_JSON="$(
     --evidence-file "$SYNC_RESULT_FILE"
 )"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "validated"; assert payload["selected_base"] == "main"' <<<"$SYNC_VALIDATION_JSON"
-rm -f "$SYNC_RESOLUTION_FILE" "$SYNC_RESULT_FILE"
+test ! -e "$SYNC_RESULT_FILE"
+SYNC_RELEASE_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+    --root "$TARGET" \
+    --mode standalone \
+    --release-resolution-evidence \
+    --resolution-file "$SYNC_RESOLUTION_FILE" \
+    --expected-resolution-sha256 "$SYNC_RESOLUTION_DIGEST"
+)"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "released"; assert payload["mode"] == "standalone"' <<<"$SYNC_RELEASE_JSON"
+test ! -e "$SYNC_RESOLUTION_FILE"
+test ! -e "$SYNC_RESULT_FILE"
+
+PHASE0_FAKE_BIN="$WORK_DIR/phase0-fake-bin"
+mkdir -p "$PHASE0_FAKE_BIN"
+cat >"$PHASE0_FAKE_BIN/gh" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "auth" && "${2:-}" == "status" ]]; then
+  exit 0
+fi
+if [[ "${1:-}" == "issue" && "${2:-}" == "view" ]]; then
+  printf '%s\n' '{"number":110,"title":"Fix Phase 0 resolution lease lifecycle","url":"https://github.com/castbox/guru-trellis-throwaway/issues/110","body":"Exercise the installed workflow resolution lease across planner and mutation guards.","comments":[],"state":"OPEN"}'
+  exit 0
+fi
+printf 'unexpected fake gh invocation: %s\n' "$*" >&2
+exit 2
+SH
+chmod +x "$PHASE0_FAKE_BIN/gh"
+
+PHASE0_RESOLUTION_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+    --root "$TARGET" \
+    --mode workflow \
+    --resolve-only \
+    --base main \
+    --remote sync-origin \
+    --resolution-file "$SYNC_RESOLUTION_FILE"
+)"
+PHASE0_RESOLUTION_DIGEST="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["resolution_sha256"])' <<<"$PHASE0_RESOLUTION_JSON")"
+PHASE0_RESOLUTION_RAW_SHA="$(python3 -c 'import hashlib, pathlib, sys; print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())' "$SYNC_RESOLUTION_FILE")"
+PHASE0_RESULT_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+    --root "$TARGET" \
+    --mode workflow \
+    --execute \
+    --resolution-file "$SYNC_RESOLUTION_FILE" \
+    --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST" \
+    --result-file "$SYNC_RESULT_FILE"
+)"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True' <<<"$PHASE0_RESULT_JSON"
+PHASE0_VALIDATION_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/check-base-sync.sh" \
+    --root "$TARGET" \
+    --mode workflow \
+    --evidence-file "$SYNC_RESULT_FILE"
+)"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "validated"; assert payload["mode"] == "workflow"' <<<"$PHASE0_VALIDATION_JSON"
+test ! -e "$SYNC_RESULT_FILE"
+test -f "$SYNC_RESOLUTION_FILE"
+
+PHASE0_BRANCH="chore/110-phase0-resolution-lease"
+PHASE0_ISSUE_URL="https://github.com/castbox/guru-trellis-throwaway/issues/110"
+PHASE0_PLANNER_JSON="$(
+  PATH="$PHASE0_FAKE_BIN:$PATH" \
+  "$TARGET/.trellis/guru-team/scripts/bash/prepare-task.sh" \
+    --root "$TARGET" \
+    --json \
+    --resolution-file "$SYNC_RESOLUTION_FILE" \
+    --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST" \
+    --base-branch main \
+    --branch "$PHASE0_BRANCH" \
+    --short-name "110-phase0-resolution-lease" \
+    --workspace-slug "110-phase0-resolution-lease" \
+    --task-slug "110-phase0-resolution-lease" \
+    --assignee throwaway \
+    "$PHASE0_ISSUE_URL"
+)"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); freshness = payload["preflight"]["base_freshness"]; assert payload["source_issue"]["number"] == 110; assert payload["workspace_ready"] is False; assert freshness["reviewed_resolution_sha256"] == sys.argv[1]; assert freshness["three_way_equal"] is True' "$PHASE0_RESOLUTION_DIGEST" <<<"$PHASE0_PLANNER_JSON"
+test "$(python3 -c 'import hashlib, pathlib, sys; print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())' "$SYNC_RESOLUTION_FILE")" = "$PHASE0_RESOLUTION_RAW_SHA"
+
+PHASE0_EXECUTOR_JSON="$(
+  PATH="$PHASE0_FAKE_BIN:$PATH" \
+  "$TARGET/.trellis/guru-team/scripts/bash/prepare-task.sh" \
+    --root "$TARGET" \
+    --json \
+    --resolution-file "$SYNC_RESOLUTION_FILE" \
+    --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST" \
+    --base-branch main \
+    --branch "$PHASE0_BRANCH" \
+    --short-name "110-phase0-resolution-lease" \
+    --workspace-slug "110-phase0-resolution-lease" \
+    --task-slug "110-phase0-resolution-lease" \
+    --assignee throwaway \
+    --create-worktree \
+    "$PHASE0_ISSUE_URL"
+)"
+PHASE0_WORKTREE="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["workspace_ready"] is True; assert payload["preflight"]["base_freshness"]["reviewed_resolution_sha256"] == sys.argv[1]; print(payload["workspace_path"])' "$PHASE0_RESOLUTION_DIGEST" <<<"$PHASE0_EXECUTOR_JSON")"
+test "$(python3 -c 'import hashlib, pathlib, sys; print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())' "$SYNC_RESOLUTION_FILE")" = "$PHASE0_RESOLUTION_RAW_SHA"
+git -C "$TARGET" worktree remove --force "$PHASE0_WORKTREE"
+git -C "$TARGET" branch -D "$PHASE0_BRANCH" >/dev/null
+
+PHASE0_RELEASE_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+    --root "$TARGET" \
+    --mode workflow \
+    --release-resolution-evidence \
+    --resolution-file "$SYNC_RESOLUTION_FILE" \
+    --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST"
+)"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "released"; assert payload["mode"] == "workflow"' <<<"$PHASE0_RELEASE_JSON"
+PHASE0_REPEAT_RELEASE_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+    --root "$TARGET" \
+    --mode workflow \
+    --release-resolution-evidence \
+    --resolution-file "$SYNC_RESOLUTION_FILE" \
+    --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST"
+)"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "already_released"' <<<"$PHASE0_REPEAT_RELEASE_JSON"
+test ! -e "$SYNC_RESOLUTION_FILE"
+test ! -e "$SYNC_RESULT_FILE"
 TASK_BRANCH="feat/122-installed-task-commit"
 TASK_REL=".trellis/tasks/07-13-122-installed-task-commit"
 git -C "$TARGET" switch -q -c "$TASK_BRANCH"

@@ -21,6 +21,8 @@
 - AI Review Gate 必须审查 invocation scope、selected-base evidence、Git facts 与真实副作用；deterministic validator 只校验 schema、digest、Git identity 与 freshness。
 - 外部出口固定为 `synced`、`skipped`、`blocked`，每个出口只有一个 consumer。
 - `prepare-task` planner 与 executor 必须复用同一 base resolver/sync contract；executor 在 issue/worktree/task 副作用前重跑 freshness。
+- Workflow `synced` 必须把 repo-external resolution file 与 digest 作为受控 Phase 0 lease 转移给唯一 consumer；同一 lease 必须贯穿后续所有 `prepare-task` planner/executor freshness guard，直到 Phase 0 成功、阻塞、放弃或被新 invocation 取代后确定性释放。
+- Standalone 不得转移 resolution lease；result evidence 与 resolution evidence 必须在返回 typed exit 前清理。Workflow mode 的 result evidence 同样必须在 `synced` 前清理，只有 resolution lease 能跨越 typed exit。
 - Canonical workflow、preset installer、声明平台、dogfood 副本、durable docs/spec、README、throwaway install 与 `trellis update`/preset reapply 验证必须同步。
 
 ### 2.2 不做
@@ -52,6 +54,7 @@
 
 - Forward behavior 只产生 `git fetch`、安全 `git merge --ff-only` 与临时 evidence 文件。
 - Evidence 文件必须位于 repository root 之外；公共 package、repo runtime 与 pre-task tracked 路径不得保存本机 evidence。
+- Workflow resolution lease 只能保存在当前 AI invocation 的临时 handoff 中，不得写入 task artifact、repo runtime、shared cache、README example 或 tracked/review log；lease release executor 必须校验外部路径、symlink/component boundary 与 expected digest 后删除并确认无残留。
 - AI Gate 或 validator 失败后不得出现 GitHub mutation、history read/write、worktree 创建或 Trellis task 创建。
 
 ## 4. 验收标准
@@ -65,8 +68,9 @@
 - [ ] Dirty、missing local、missing remote、fetch failure、ambiguous fallback、diverged、unsafe fast-forward 与 HEAD mismatch 测试全部通过。
 - [ ] Success evidence 通过 Draft 2020-12 schema、digest 与 live Git freshness validator。
 - [ ] `prepare-task` planner 在 issue 读取前复用 sync contract，executor 在副作用前重跑。
+- [ ] Workflow `synced -> prepare-task` 使用同一 resolution lease；所有 Phase 0 terminal route 都调用确定性 release，standalone 返回前完成 cleanup，且不存在 repo/runtime/task evidence 残留。
 - [ ] Source、installed、package、dispatcher、preset、all-platform dogfood 与 drift validation 通过。
-- [ ] 干净 throwaway repo 完成 marketplace workflow 安装、preset 安装、standalone invocation、workflow route、`trellis update`、workflow reapply、preset reapply与零 `.new`/`.bak` 验证。
+- [ ] 干净 throwaway repo 完成 marketplace workflow 安装、preset 安装、standalone invocation、真实 `synced -> prepare-task` planner/mutation guard/release 链、`trellis update`、workflow reapply、preset reapply、零 evidence 残留与零 `.new`/`.bak` 验证。
 - [ ] 三份 public README、requirements 与 `.trellis/spec/` 与实现一致。
 - [ ] 安全检查确认 package/example/artifact/log 不含 secret、`.env`、签名 URL、客户数据或本机绝对路径。
 

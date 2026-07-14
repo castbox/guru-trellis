@@ -250,6 +250,12 @@ checkout HEAD、local base HEAD 与 remote-tracking HEAD 三方相等且 checkou
 core。`standalone` 可直接发现该 Skill，但仍要求完整 preset/runtime，workflow-only
 `skipped` recorder 不向 standalone 暴露。对应 result schema 是
 `guru-base-sync-result-1.0`，managed commands 是 `sync-base` 与 `check-base-sync`。
+Validator 消费后清理 result evidence；standalone 返回前释放 resolution。Workflow
+`synced` 只把同一个 external resolution file/raw-byte/digest lease 交给唯一 Phase 0
+consumer。所有 `prepare-task` guard 复用该 lease；用户确认 pending 时保留，task-created、
+blocked、aborted 或 superseded 终态用 additive
+`sync-base --release-resolution-evidence` 释放。Lease path/digest 不写入 task artifact、
+repo runtime、shared cache 或 review evidence。
 
 Skill id、external exit id、schema/interface id、stable command 和 registry
 lifecycle 是公共 API；破坏性变更必须使用新 id 或提供明确迁移合同。
@@ -361,6 +367,19 @@ branch 或 Trellis task 前阻断。
 上用 `git merge --ff-only` 安全推进本地 base。Wrong checkout、dirty、missing ref、fetch
 失败、divergence、resolution drift 或 freshness 无法确认都会阻塞，不会从 stale ref 创建
 任务分支。
+
+Result validator 已在 Skill 内删除 result evidence。Phase 0 期间保持 resolution lease，
+并在 task 创建成功、流程阻塞、用户放弃或新 invocation 取代旧 lease 时运行：
+
+```bash
+.trellis/guru-team/scripts/bash/sync-base.sh --json --mode workflow \
+  --release-resolution-evidence \
+  --resolution-file <reviewed-resolution-file> \
+  --expected-resolution-sha256 <reviewed-resolution-sha256>
+```
+
+等待 duplicate/proposed issue/handoff 用户确认不是终态，不提前释放；已经释放或缺失的
+lease 不得继续 `prepare-task`，必须重新调用 `guru-sync-base`。
 
 executor 完成后，tracked `task-start-context.json` 只提供 portable
 `workspace_slug`、`task_workspace_id` 和 `task_artifact_dir`，不得包含或读取 absolute

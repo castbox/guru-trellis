@@ -600,6 +600,30 @@ runtime evidence stop fail closed. Do not run `check-env`, `prepare-task`, issue
 reads, duplicate search, or repository history/docs/code/test discovery before
 this route returns `synced`.
 
+The Skill consumes and removes result evidence before every typed exit.
+Workflow `synced` transfers the exact repo-external resolution file, canonical
+raw bytes, and digest as one active Phase 0 lease to this unique consumer. Keep
+that lease only in the current AI invocation/handoff; never write its path or
+digest to task artifacts, `.trellis/.runtime/**`, shared cache, README examples,
+or review evidence. Pass the same file/digest to every `prepare-task` call.
+
+After `synced`, use this deterministic release command on task-created,
+blocked, aborted, or superseded terminal routes:
+
+```bash
+.trellis/guru-team/scripts/bash/sync-base.sh --json --mode workflow \
+  --release-resolution-evidence \
+  --resolution-file <reviewed-resolution-file> \
+  --expected-resolution-sha256 <reviewed-resolution-sha256>
+```
+
+`released` and `already_released` are objective cleanup results, not external
+Skill exits. A duplicate/proposed-issue/handoff review waiting for user
+confirmation is non-terminal and keeps the lease active. If the user rejects
+or abandons the route, a prepare/check step blocks terminally, or a new
+`guru-sync-base` invocation supersedes the current resolution, release first.
+A missing/released lease cannot resume prepare; start a new Skill invocation.
+
 #### 0.1 Environment check `[required · once]`
 
 Run:
@@ -608,7 +632,8 @@ Run:
 .trellis/guru-team/scripts/bash/check-env.sh --json
 ```
 
-Stop if `gh` is missing or unauthenticated. Tell the user to install GitHub CLI and run `gh auth login`.
+If `gh` is missing or unauthenticated, release the active resolution lease,
+stop, and tell the user to install GitHub CLI and run `gh auth login`.
 
 #### 0.2 GitHub issue intake `[required · once]`
 
@@ -634,6 +659,10 @@ If the command returns `proposed_issue` / `requires_confirmation`, stop before a
   --issue-body-file <reviewed-issue-body.md> \
   "<user request>"
 ```
+
+Both confirmation routes retain the active lease. Any non-retryable prepare
+failure, explicit user abandonment, or replacement invocation releases it
+before the workflow stops or restarts.
 
 #### 0.3 Git base branch and worktree preflight `[required · once]`
 
@@ -684,6 +713,10 @@ Only after this is clear, create the Trellis task in the chosen workspace. When
   --create-task \
   "<source issue URL or approved request>"
 ```
+
+After the executor confirms task creation, immediately run the Phase 0 release
+command above and require `released` or `already_released` before entering
+planning. If the executor blocks, release before stopping.
 
 Do not run bare `python3 ./.trellis/scripts/task.py create ...` in the source
 checkout for issue-backed or file-changing Guru Team worktree tasks.
@@ -746,6 +779,11 @@ When `workspace_mode: worktree`, prefer the single controlled executor path:
   --create-task \
   "<source issue URL or approved request>"
 ```
+
+This rerun consumes the same still-active Phase 0 lease. On successful task
+creation, release it before continuing; on blocked/aborted/superseded terminal
+routes, release it before stopping. User-confirmation pending remains the only
+route that retains the lease.
 
 This creates or reuses the chosen workspace, creates the branch and Trellis task
 there, and writes `.trellis/tasks/<task-slug>/task-start-context.json` inside that workspace.

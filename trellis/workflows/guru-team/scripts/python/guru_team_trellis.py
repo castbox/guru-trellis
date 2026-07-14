@@ -3476,6 +3476,77 @@ def write_base_sync_evidence(root: Path, value: Any, label: str, payload: dict[s
     return path
 
 
+def remove_base_sync_evidence(path: Path, label: str, expected_raw: bytes) -> None:
+    try:
+        mode = os.lstat(path).st_mode
+        current_raw = path.read_bytes()
+    except OSError as exc:
+        raise WorkflowError(f"{label} could not be revalidated before cleanup.", exit_code=2) from exc
+    if stat.S_ISLNK(mode) or not stat.S_ISREG(mode):
+        raise WorkflowError(f"{label} changed type before cleanup.", exit_code=2)
+    if current_raw != expected_raw:
+        raise WorkflowError(f"{label} changed bytes before cleanup.", exit_code=2)
+    try:
+        path.unlink()
+    except OSError as exc:
+        raise WorkflowError(f"{label} could not be removed.", exit_code=2) from exc
+    if path.exists() or path.is_symlink():
+        raise WorkflowError(f"{label} cleanup left evidence residue.", exit_code=2)
+
+
+def release_base_resolution_evidence(
+    root: Path,
+    resolution_file: Any,
+    expected_resolution_sha256: Any,
+    *,
+    mode: str,
+) -> dict[str, Any]:
+    expected_digest = str(expected_resolution_sha256 or "")
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_digest):
+        raise WorkflowError("Expected resolution digest is invalid for release.", exit_code=2)
+    path = base_sync_evidence_path(
+        root,
+        resolution_file,
+        "Resolution evidence file",
+        for_write=True,
+    )
+    if not path.exists():
+        payload: dict[str, Any] = {
+            "schema_version": BASE_SYNC_SCHEMA_VERSION,
+            "skill_id": BASE_SYNC_SKILL_ID,
+            "status": "already_released",
+            "mode": mode,
+            "resolution_sha256": expected_digest,
+        }
+        payload["facts_sha256"] = canonical_json_sha256(payload)
+        return payload
+
+    _path, resolution, raw = read_base_sync_evidence(
+        root,
+        os.fspath(path),
+        "Resolution evidence file",
+    )
+    errors = base_resolution_errors(root, resolution)
+    if resolution.get("resolution_sha256") != expected_digest:
+        errors.append("reviewed resolution digest does not match release identity")
+    if errors:
+        raise WorkflowError(
+            "Resolution evidence release identity is invalid.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    remove_base_sync_evidence(path, "Resolution evidence file", raw)
+    payload = {
+        "schema_version": BASE_SYNC_SCHEMA_VERSION,
+        "skill_id": BASE_SYNC_SKILL_ID,
+        "status": "released",
+        "mode": mode,
+        "resolution_sha256": expected_digest,
+    }
+    payload["facts_sha256"] = canonical_json_sha256(payload)
+    return payload
+
+
 def base_sync_schema(root: Path) -> dict[str, Any]:
     candidates = [
         root / ".trellis/guru-team/skills/packages/guru-sync-base/schemas/base-sync-result.schema.json",
@@ -3533,6 +3604,24 @@ def validate_live_base_sync_result(root: Path, result: dict[str, Any]) -> list[s
 def cmd_sync_base(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     require_tool("git")
+    if args.release_resolution_evidence:
+        if args.base or args.result_file:
+            raise WorkflowError(
+                "Resolution evidence release does not accept base or result evidence arguments.",
+                exit_code=2,
+            )
+        if not args.resolution_file or not args.expected_resolution_sha256:
+            raise WorkflowError(
+                "sync-base --release-resolution-evidence requires --resolution-file and --expected-resolution-sha256.",
+                exit_code=2,
+            )
+        return release_base_resolution_evidence(
+            root,
+            args.resolution_file,
+            args.expected_resolution_sha256,
+            mode=args.mode,
+        )
+
     config = load_config(root)
     if args.resolve_only:
         if args.resolution_file is None:
@@ -3589,10 +3678,13 @@ def cmd_check_base_sync(args: argparse.Namespace) -> dict[str, Any]:
         return payload
     if not args.evidence_file:
         raise WorkflowError("check-base-sync requires --evidence-file or --record-skipped.", exit_code=2)
-    _path, result, _raw = read_base_sync_evidence(
+    path, result, raw = read_base_sync_evidence(
         root, args.evidence_file, "Base sync result evidence file"
     )
-    errors = validate_live_base_sync_result(root, result)
+    try:
+        errors = validate_live_base_sync_result(root, result)
+    finally:
+        remove_base_sync_evidence(path, "Base sync result evidence file", raw)
     if errors:
         raise WorkflowError("Base sync result validation failed.", exit_code=2, payload={"errors": errors})
     return {
@@ -17339,6 +17431,7 @@ def build_parser() -> argparse.ArgumentParser:
     sync_mode = sync_base.add_mutually_exclusive_group(required=True)
     sync_mode.add_argument("--resolve-only", action="store_true")
     sync_mode.add_argument("--execute", action="store_true")
+    sync_mode.add_argument("--release-resolution-evidence", action="store_true")
     sync_base.add_argument("--base")
     sync_base.add_argument("--remote", default="origin")
     sync_base.add_argument("--resolution-file")

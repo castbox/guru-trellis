@@ -62,7 +62,9 @@ class BaseSyncPackageContractTests(unittest.TestCase):
         self.assertIn(
             "resolve-only -> AI selected-base review -> conditional conflict confirmation "
             "-> digest-bound execute -> mandatory post-execution AI Review Gate "
-            "-> objective result validation -> evidence cleanup -> typed exit",
+            "-> objective result validation + result cleanup "
+            "-> standalone resolution cleanup | workflow resolution lease transfer "
+            "-> typed exit",
             normalized_contract,
         )
         for phrase in (
@@ -73,9 +75,16 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             "decision checkout HEAD == local selected-base HEAD == remote-tracking HEAD",
             "--expected-resolution-sha256",
             "must never turn config, remote-default, or fallback provenance into explicit",
+            "--release-resolution-evidence",
+            "user-confirmation-pending route is non-terminal",
+            "No result or lease path/digest is written",
             "run-skill-command",
         ):
             self.assertIn(phrase, contract)
+        self.assertIn(
+            "task-created, blocked, aborted, or superseded terminal routes",
+            normalized_contract,
+        )
         self.assertLess(
             contract.index("## AI Selected-Base Review"),
             contract.index("## Digest-Bound Execution"),
@@ -95,6 +104,11 @@ class BaseSyncPackageContractTests(unittest.TestCase):
         )
         self.assertIn("prepare-task", selected["binding"])
         self.assertIn("each GitHub/worktree/task mutation", selected["freshness"])
+        self.assertIn("terminal release", selected["freshness"])
+        synced = next(
+            item for item in self.interface["external_exits"] if item["id"] == "synced"
+        )
+        self.assertIn("active external resolution raw-byte/digest lease", synced["evidence"])
 
     def test_wrappers_are_dispatcher_only(self) -> None:
         for name, validator in (

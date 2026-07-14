@@ -51,8 +51,8 @@
     {
       "id": "selected_base_resolution",
       "evidence": "canonical resolve-only JSON bytes/file and expected resolution_sha256",
-      "binding": "explicit, config-single, remote-default or unique-fallback source identity reused by sync-base and prepare-task",
-      "freshness": "raw bytes, digest and source-preserving identity recomputation match before initial reads and independently before each GitHub/worktree/task mutation"
+      "binding": "explicit, config-single, remote-default or unique-fallback source identity reused by sync-base and every prepare-task guard through one invocation-local workflow lease",
+      "freshness": "raw bytes, digest and source-preserving identity recomputation match before initial reads and independently before each GitHub/worktree/task mutation; terminal release removes the exact lease"
     },
     {
       "id": "clean_checkout",
@@ -105,13 +105,13 @@
       "id": "result_validator",
       "command": "scripts/check-base-sync.sh",
       "runtime_command": "check-base-sync",
-      "objective_scope": "evidence boundary, Draft 2020-12 schema, facts digest, selected refs, clean checkout and live decision/local/remote HEAD equality"
+      "objective_scope": "evidence boundary, Draft 2020-12 schema, facts digest, selected refs, clean checkout, live decision/local/remote HEAD equality and deterministic result-evidence cleanup"
     }
   ],
   "external_exits": [
     {
       "id": "synced",
-      "evidence": "AI-reviewed and validator-passed fresh base sync result",
+      "evidence": "AI-reviewed and validator-passed fresh base sync result with result evidence cleaned; workflow mode transfers one active external resolution raw-byte/digest lease",
       "consumer": {
         "kind": "workflow",
         "id": "guru-discover-change-context"
@@ -135,8 +135,8 @@
     }
   ],
   "reentry": {
-    "identity": "invocation intent, repository identity, decision checkout, resolution source/base/remote/candidates, raw bytes and resolution_sha256",
-    "freshness": "resolution recomputes identically and result still matches clean live Git facts",
+    "identity": "invocation intent, repository identity, decision checkout, resolution source/base/remote/candidates, raw bytes, resolution_sha256 and active/released lease state",
+    "freshness": "resolution recomputes identically, result matches clean live Git facts, and an active lease exists until its unique consumer reaches a terminal route",
     "stale_behavior": "fail_closed"
   },
   "tests": [

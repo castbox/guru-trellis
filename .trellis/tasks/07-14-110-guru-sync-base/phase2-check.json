@@ -1,61 +1,87 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-14T17:52:28Z",
+  "generated_at": "2026-07-14T19:55:49Z",
   "task_dir": ".trellis/tasks/07-14-110-guru-sync-base",
   "base_branch": "main",
-  "head": "f8e9f09280220ebce6ef22f10382867b5e6d2770",
+  "head": "420602b34759b7299861a7ab5b1a3a9876873419",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
+    ".agents/skills/guru-sync-base/SKILL.md",
+    ".agents/skills/guru-sync-base/interface.json",
     ".agents/skills/guru-sync-base/references/contract.md",
     ".agents/skills/guru-sync-base/tests/test_contract.py",
+    ".claude/skills/guru-sync-base/SKILL.md",
+    ".claude/skills/guru-sync-base/interface.json",
     ".claude/skills/guru-sync-base/references/contract.md",
     ".claude/skills/guru-sync-base/tests/test_contract.py",
+    ".codex/skills/guru-sync-base/SKILL.md",
+    ".codex/skills/guru-sync-base/interface.json",
     ".codex/skills/guru-sync-base/references/contract.md",
     ".codex/skills/guru-sync-base/tests/test_contract.py",
+    ".cursor/skills/guru-sync-base/SKILL.md",
+    ".cursor/skills/guru-sync-base/interface.json",
     ".cursor/skills/guru-sync-base/references/contract.md",
     ".cursor/skills/guru-sync-base/tests/test_contract.py",
     ".trellis/guru-team/extension.json",
     ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/packages/guru-sync-base/SKILL.md",
+    ".trellis/guru-team/skills/packages/guru-sync-base/interface.json",
     ".trellis/guru-team/skills/packages/guru-sync-base/references/contract.md",
     ".trellis/guru-team/skills/packages/guru-sync-base/tests/test_contract.py",
+    ".trellis/spec/docs/public-docs.md",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/spec/preset/overlay-guidelines.md",
     ".trellis/spec/workflow/companion-scripts.md",
     ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
     ".trellis/spec/workflow/workflow-contract.md",
-    ".trellis/tasks/07-14-110-guru-sync-base/task-commit-plans/001.json",
+    ".trellis/tasks/07-14-110-guru-sync-base/task-commit-plans/002.json",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/README.md",
     "docs/requirements/guru-team-trellis-flow.md",
     "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/skills/guru-team/packages/guru-sync-base/SKILL.md",
+    "trellis/skills/guru-team/packages/guru-sync-base/interface.json",
     "trellis/skills/guru-team/packages/guru-sync-base/references/contract.md",
     "trellis/skills/guru-team/packages/guru-sync-base/tests/test_contract.py",
-    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/README.md",
     "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-14-110-guru-sync-base/review-gate.json",
+    ".trellis/tasks/07-14-110-guru-sync-base/review.md",
+    ".trellis/tasks/07-14-110-guru-sync-base/reviews/001-final-review.md",
+    ".trellis/tasks/07-14-110-guru-sync-base/reviews/002-closure-review.md"
   ],
-  "checker": "/root/phase2_check_110_after_reapproval",
-  "check_summary": "已从头独立复核 #110 的需求、重新批准的设计、完整 origin/main...HEAD 与当前 dirty diff、Docs SSOT、公共 Skill/runtime/workflow/preset/平台分发和测试；F-001 至 F-005 全部闭环，当前零开放 finding，可重新进入 finding-fix task commit 门禁。",
+  "checker": "/root/trellis_check_110_f006",
+  "check_summary": "已独立覆盖 #110 完整 committed diff 与 F-006 当前未提交修复，controlled resolution lease、result consume-and-clean、全部 Phase 0 终态 release、真实 throwaway/update/reapply、ssot_first Docs SSOT、安全/残留/部署均一致；397 项验证通过，findings_count=0，可进入新的 finding-fix task commit。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-14-110-guru-sync-base/prd.md",
-      "sha256": "b13b5ad63a7ed8cf66de34cbdbe319b2570c88b83186ba61e9452dabbf37f568",
-      "size_bytes": 6290,
-      "modified_at": "2026-07-14T09:50:03.603838+00:00"
+      "sha256": "ea46a9ea5c621e78fbb5a387fb22d6c9c94702edd0e85209509bf57024791971",
+      "size_bytes": 7441,
+      "modified_at": "2026-07-14T18:33:44.258406+00:00"
     },
     {
       "path": ".trellis/tasks/07-14-110-guru-sync-base/design.md",
-      "sha256": "6d94705b9cfdb66cbd1895a55e309cab6a3126bd62deb0c87b12987e4e5a6cd1",
-      "size_bytes": 13632,
-      "modified_at": "2026-07-14T14:40:09.470524+00:00"
+      "sha256": "f7208aa2f14068708935ca9613020c3929b412cd9c97c659be9661d9cb39e6a1",
+      "size_bytes": 17039,
+      "modified_at": "2026-07-14T18:34:58.142577+00:00"
     },
     {
       "path": ".trellis/tasks/07-14-110-guru-sync-base/implement.md",
-      "sha256": "4baf4d296eb77f3cc1e7f35d3158bfeace55dfd4bc4ad98ffb7d2e371fc0573d",
-      "size_bytes": 5955,
-      "modified_at": "2026-07-14T09:49:03.295239+00:00"
+      "sha256": "3859f116d38cd6d8d249406db8595582c958a02a375507beb10df08e30c6d94b",
+      "size_bytes": 7268,
+      "modified_at": "2026-07-14T18:34:58.142845+00:00"
     },
     {
       "path": ".trellis/tasks/07-14-110-guru-sync-base/planning-approval.json",
-      "sha256": "1af06fd2a130f7dc26df310bc3ec006c547c7f8941e1c978a1cd79b44d529ccb",
-      "size_bytes": 5565,
-      "modified_at": "2026-07-14T17:26:26.103673+00:00"
+      "sha256": "c89f3eada38956c6f5bdc26e7aa96584052eacf9aeaee4621b3e368b352fc685",
+      "size_bytes": 4932,
+      "modified_at": "2026-07-14T18:55:33.227326+00:00"
     },
     {
       "path": ".trellis/tasks/07-14-110-guru-sync-base/issue-scope-ledger.json",
@@ -65,27 +91,15 @@
     },
     {
       "path": ".trellis/tasks/07-14-110-guru-sync-base/agent-assignment.json",
-      "sha256": "7b255f6753145a0ae7fe25083bb0000b67e1a3ed0ec2deaa5eceada1b6e7d90c",
-      "size_bytes": 89773,
-      "modified_at": "2026-07-14T17:51:31.226860+00:00"
+      "sha256": "b712c61240ec5b1bc7d0ef1740b6a661fc1e71702d5c108005ffb2012febfe06",
+      "size_bytes": 124237,
+      "modified_at": "2026-07-14T19:53:36.675015+00:00"
     },
     {
-      "path": ".trellis/tasks/07-14-110-guru-sync-base/review.md",
-      "sha256": "7c79a5b4fb89a5bdde334165cbc62f8eea4fa3a4f9d3aaa3d603e754251a25b3",
-      "size_bytes": 3737,
-      "modified_at": "2026-07-14T13:56:25.472467+00:00"
-    },
-    {
-      "path": ".trellis/tasks/07-14-110-guru-sync-base/reviews/001-final-review.md",
-      "sha256": "1d7b4371ff22774394bb9e52d74e93b7a1258a1ca2d6ea37587da26577e2ebba",
-      "size_bytes": 10796,
-      "modified_at": "2026-07-14T13:52:15.916962+00:00"
-    },
-    {
-      "path": ".trellis/tasks/07-14-110-guru-sync-base/review-gate.json",
-      "sha256": "779cf39e725f21a642d33c38f1cb56b870e7d545910ea29e7f5f94f83f8ffbb1",
-      "size_bytes": 28335,
-      "modified_at": "2026-07-14T13:57:12.466897+00:00"
+      "path": ".trellis/tasks/07-14-110-guru-sync-base/reviews/003-final-review.md",
+      "sha256": "f312f549c8c96c339bbf6885827a307ce32b2ee05c11351d1b54721abd8084cb",
+      "size_bytes": 5662,
+      "modified_at": "2026-07-14T18:25:41.807698+00:00"
     }
   ],
   "checked_specs": [
@@ -97,27 +111,27 @@
     },
     {
       "path": ".trellis/spec/workflow/workflow-contract.md",
-      "sha256": "34eef8575269e03740fcfda87fb808620eb7d3b35b4e86e94dd25da13253eb1f",
-      "size_bytes": 42822,
-      "modified_at": "2026-07-14T14:04:32.940141+00:00"
+      "sha256": "ffdd12c9c2634d0c16de8dbb81ad36aa3414837f36327c53018f83c6614c1188",
+      "size_bytes": 43546,
+      "modified_at": "2026-07-14T19:05:48.899451+00:00"
     },
     {
       "path": ".trellis/spec/workflow/skill-package-contract.md",
-      "sha256": "16a05645488a0bcb6353f8d60def65124a58552313564531744e9514251ad687",
-      "size_bytes": 13419,
-      "modified_at": "2026-07-14T10:13:54.772033+00:00"
+      "sha256": "bbc66c1725130a8c036d238d82f9c6cfe5b28db73f237526a59ed3048ae3dee0",
+      "size_bytes": 13933,
+      "modified_at": "2026-07-14T19:05:48.899738+00:00"
     },
     {
       "path": ".trellis/spec/workflow/companion-scripts.md",
-      "sha256": "7936d65a6de515bf9ce1039cbde8220c09e03347f8178561caac853c801cbc25",
-      "size_bytes": 51134,
-      "modified_at": "2026-07-14T17:33:44.206877+00:00"
+      "sha256": "cb7ebd40a463800d32e8f119db0f5331e1db04a88cf2af12e7574941bd5d8cde",
+      "size_bytes": 52129,
+      "modified_at": "2026-07-14T19:05:48.900146+00:00"
     },
     {
       "path": ".trellis/spec/workflow/data-contracts.md",
-      "sha256": "42cdb1485ae16fa16924e851e2023ccae663026e0a7e6b46c24153eae6448aad",
-      "size_bytes": 67675,
-      "modified_at": "2026-07-14T17:33:44.207179+00:00"
+      "sha256": "e9e944968a9051537158f1b42a6c95b5100595aa44acbda887a0a0590951555f",
+      "size_bytes": 68198,
+      "modified_at": "2026-07-14T19:05:48.900414+00:00"
     },
     {
       "path": ".trellis/spec/workflow/quality-guidelines.md",
@@ -127,21 +141,21 @@
     },
     {
       "path": ".trellis/spec/preset/installer.md",
-      "sha256": "cb34b55997657cc41738ee18ef8dfc7c3da84b36b5523cbc261d34f7f2c15dfe",
-      "size_bytes": 16321,
-      "modified_at": "2026-07-14T10:13:54.772965+00:00"
+      "sha256": "d861fe5106ef9d21cb31bd02ed19b6a4a5dbb735f376490837764f3cc26f2d47",
+      "size_bytes": 16494,
+      "modified_at": "2026-07-14T19:05:48.900605+00:00"
     },
     {
       "path": ".trellis/spec/preset/overlay-guidelines.md",
-      "sha256": "08196a52e4a2e6bbdd497f8a6d79e4db4c7fdbd94f37e2e0c1107c4d300449ca",
-      "size_bytes": 17362,
-      "modified_at": "2026-07-14T10:13:54.773293+00:00"
+      "sha256": "5c228234e05e3dfadde110e92bdec2af215d431d531fa36cb8618d0c48eba19f",
+      "size_bytes": 17492,
+      "modified_at": "2026-07-14T19:05:48.900918+00:00"
     },
     {
       "path": ".trellis/spec/docs/public-docs.md",
-      "sha256": "90ed18b3c05a112cb01f09c41557985c5c193816909d8f550582bd87abd96a3b",
-      "size_bytes": 6869,
-      "modified_at": "2026-07-14T12:24:47.389082+00:00"
+      "sha256": "9f2b29de842d6da3d06121ef35fc72bdf4b512ae05ff95411581f53171e714eb",
+      "size_bytes": 7191,
+      "modified_at": "2026-07-14T19:05:48.901224+00:00"
     },
     {
       "path": ".trellis/spec/guides/code-reuse-thinking-guide.md",
@@ -169,7 +183,7 @@
   "validation_commands": [
     {
       "command": "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "result": "289 passed"
+      "result": "290 passed"
     },
     {
       "command": "python3 -m unittest trellis.skills.guru-team.tests.test_skill_packages",
@@ -181,27 +195,23 @@
     },
     {
       "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "result": "36 passed；合计 396 tests"
+      "result": "36 passed；合计 397 tests"
     },
     {
-      "command": "F-005 focused BaseSyncRuntimeTest",
-      "result": "12 passed，覆盖 explicit/scalar lazy precedence"
+      "command": "source/installed skill validation and dogfood drift",
+      "result": "83 managed files，0 conflict/removal/sidecar，canonical/installed/platform/dogfood 一致"
     },
     {
-      "command": "JSON/Bash/Python static checks",
-      "result": "30 JSON、17 Bash、16 Python 与 git diff --check 通过"
+      "command": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "result": "真实 synced->prepare planner/mutation->release、零 resolution/result residue、trellis update/reapply 与 zero .new/.bak 通过"
     },
     {
-      "command": "source/installed validators and dogfood drift",
-      "result": "2 invokes、6 exits、83 managed files、0 conflict/removal/sidecar，canonical/installed/platform digests 一致"
+      "command": "JSON parse, bash -n, Python compile, task validate, git diff --check",
+      "result": "全部通过"
     },
     {
-      "command": "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh",
-      "result": "fresh init、workflow preview/switch、preset、standalone/workflow、trellis update、reapply、finish-work dry-run、zero-sidecar 通过；真实远端分支安装留 push 后 gate"
-    },
-    {
-      "command": "planning/workspace/task/source/security/deployment checks",
-      "result": "planning approval、task validate、workspace boundary、source clean、zero .new/.bak、安全扫描与部署影响审计通过"
+      "command": "workspace/source/security/runtime-residue/deployment review",
+      "result": "source checkout 干净，无 secret 与 base-sync evidence 残留，无 CI/CD/容器/K8s/DB/Makefile 变更需求"
     }
   ],
   "findings": [],

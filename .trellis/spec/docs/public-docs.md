@@ -100,7 +100,11 @@ selected-base closed-loop owner, list stable exits `synced` / `skipped` /
 resolution order, prohibit current-branch implicit fallback, require
 decision/local/remote HEAD equality, and explain that `prepare-task` consumes
 the reviewed resolution file/digest, preserves source provenance, and reuses
-the same core before semantic reads and each mutation boundary. All three
+the same raw-byte/digest lease before semantic reads and each mutation boundary.
+They must state that Skill validation cleans result evidence, standalone cleans
+all evidence before return, workflow `synced` transfers only the resolution
+lease, pending user confirmation retains it, and task-created/blocked/aborted/
+superseded terminal routes release it without persisting path/digest. All three
 README files must list the active id, result schema,
 runtime commands, full-preset requirement, update/reapply steps, and
 missing/drift/sidecar remediation without duplicating the complete Skill loop.

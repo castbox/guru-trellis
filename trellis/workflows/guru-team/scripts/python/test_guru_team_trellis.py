@@ -1950,6 +1950,7 @@ class BaseSyncRuntimeTest(unittest.TestCase):
             "mode": "standalone",
             "resolve_only": True,
             "execute": False,
+            "release_resolution_evidence": False,
             "base": None,
             "remote": "origin",
             "resolution_file": str(self.resolution_file),
@@ -1982,6 +1983,20 @@ class BaseSyncRuntimeTest(unittest.TestCase):
                 expected_resolution_sha256=resolution["resolution_sha256"],
                 result_file=str(self.result_file),
             )
+        )
+
+    def release(self, resolution: dict[str, object], **overrides: object) -> dict[str, object]:
+        values: dict[str, object] = {
+            "resolve_only": False,
+            "execute": False,
+            "release_resolution_evidence": True,
+            "resolution_file": str(self.resolution_file),
+            "expected_resolution_sha256": resolution["resolution_sha256"],
+            "result_file": None,
+        }
+        values.update(overrides)
+        return gtt.cmd_sync_base(
+            self.sync_args(**values)
         )
 
     def advance_remote(self, text: str = "two\n") -> str:
@@ -2064,6 +2079,44 @@ class BaseSyncRuntimeTest(unittest.TestCase):
         validated = gtt.cmd_check_base_sync(self.check_args())
         self.assertEqual(validated["status"], "validated")
         self.assertEqual(validated["facts_sha256"], result["facts_sha256"])
+        self.assertFalse(self.result_file.exists())
+        self.assertTrue(self.resolution_file.exists())
+        released = self.release(resolution)
+        self.assertEqual(released["status"], "released")
+        self.assertFalse(self.resolution_file.exists())
+        already_released = self.release(resolution)
+        self.assertEqual(already_released["status"], "already_released")
+
+    def test_release_resolution_evidence_is_identity_bound_and_safe(self) -> None:
+        resolution = self.resolve()
+        with self.assertRaises(gtt.WorkflowError) as mismatch:
+            self.release(resolution, expected_resolution_sha256="f" * 64)
+        self.assertIn("digest", " ".join(mismatch.exception.payload["errors"]))
+        self.assertTrue(self.resolution_file.exists())
+
+        unrelated = self.base / "unrelated.json"
+        unrelated.write_text("{}\n", encoding="utf-8")
+        with self.assertRaises(gtt.WorkflowError):
+            self.release(resolution, resolution_file=str(unrelated))
+        self.assertTrue(unrelated.exists())
+        self.assertTrue(self.resolution_file.exists())
+
+        inside = self.local / "resolution-copy.json"
+        shutil.copy2(self.resolution_file, inside)
+        with self.assertRaises(gtt.WorkflowError) as inside_error:
+            self.release(resolution, resolution_file=str(inside))
+        self.assertIn("outside", str(inside_error.exception))
+        self.assertTrue(inside.exists())
+
+        link = self.base / "resolution-link.json"
+        link.symlink_to(self.resolution_file)
+        with self.assertRaises(gtt.WorkflowError) as link_error:
+            self.release(resolution, resolution_file=str(link))
+        self.assertIn("symbolic-link", str(link_error.exception))
+        self.assertTrue(self.resolution_file.exists())
+
+        self.release(resolution)
+        self.assertFalse(self.resolution_file.exists())
 
     def test_execute_fast_forwards_only_selected_base_checkout(self) -> None:
         resolution = self.resolve()
@@ -2175,13 +2228,17 @@ class BaseSyncRuntimeTest(unittest.TestCase):
         gtt.write_json(self.result_file, tampered)
         with self.assertRaises(gtt.WorkflowError):
             gtt.cmd_check_base_sync(self.check_args())
+        self.assertFalse(self.result_file.exists())
 
         gtt.write_json(self.result_file, result)
         (self.local / "untracked.txt").write_text("drift\n", encoding="utf-8")
         with self.assertRaises(gtt.WorkflowError) as stale:
             gtt.cmd_check_base_sync(self.check_args())
         self.assertIn("not clean", " ".join(stale.exception.payload["errors"]))
+        self.assertFalse(self.result_file.exists())
         (self.local / "untracked.txt").unlink()
+
+        gtt.write_json(self.result_file, result)
 
         symlink = self.base / "result-link.json"
         symlink.symlink_to(self.result_file)
@@ -2235,6 +2292,22 @@ class BaseSyncRuntimeTest(unittest.TestCase):
             )
         self.assertIn("identity became stale", str(mismatch.exception))
         self.assertFalse(any(command[:2] == ["git", "fetch"] for command in commands))
+
+        self.resolution_file.unlink()
+        commands.clear()
+        with (
+            mock.patch.object(gtt, "run", side_effect=recording_run),
+            self.assertRaises(gtt.WorkflowError) as missing_lease,
+        ):
+            gtt.ensure_base_freshness(
+                self.local,
+                None,
+                resolution_file=str(self.resolution_file),
+                expected_resolution_sha256=str(resolution["resolution_sha256"]),
+            )
+        self.assertIn("Resolution evidence file", str(missing_lease.exception))
+        self.assertFalse(any(command[:2] == ["git", "fetch"] for command in commands))
+        gtt.write_json(self.resolution_file, resolution)
 
         commands.clear()
         with (

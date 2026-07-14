@@ -55,7 +55,7 @@ flowchart TD
   B["注入上下文<br/>trellis-bootstrap / codex-mode / workflow-state"]:::codex
 
   R{"AI 判断入口"}:::guru
-  SB["mandatory guru-sync-base<br/>resolve -> AI confirm -> execute -> review -> validate"]:::guru
+  SB["mandatory guru-sync-base<br/>resolve -> AI confirm -> execute -> review -> validate<br/>result cleanup -> resolution lease transfer"]:::guru
   BS["sync-base / check-base-sync<br/>digest-bound fetch + ff-only + 3-way equality"]:::script
   S0["trellis-start fallback<br/>phase + packages + current task + Git facts"]:::guru
   P0["Phase 0: Pre-task intake<br/>不直接 task.py create"]:::guru
@@ -148,10 +148,14 @@ sequenceDiagram
     Script-->>AI: base-sync result + facts_sha256
     AI->>AI: mandatory post-execution AI Review Gate<br/>审查 scope / selected base / actual side effects / before-after facts
     AI->>Script: check-base-sync --evidence-file ...
-    Script-->>AI: schema / digest / live Git equality passed
+    Script-->>AI: schema / digest / live Git equality passed + result evidence cleaned
+    AI->>AI: synced transfers the exact resolution file/raw bytes/digest lease
     AI->>Script: check-env.sh --json
     AI->>Script: prepare-task.sh --json --resolution-file ... --expected-resolution-sha256 ... "<request>"
     Script-->>AI: stdout JSON planner output
+    AI->>Script: later prepare-task mutation guard reuses the same lease
+    AI->>Script: terminal route calls sync-base --release-resolution-evidence
+    Script-->>AI: released / already_released with zero resolution residue
     AI-->>User: 展示 duplicate / proposed issue / base / branch / worktree / naming
   else 只是对话或轻量查询
     AI-->>User: 直接回答或询问是否创建 Trellis task
@@ -166,7 +170,7 @@ sequenceDiagram
 | --- | --- | --- |
 | Codex hook | Trellis 支持 `UserPromptSubmit` workflow-state nudge，hook 从 `workflow.md` 读取状态块。 | Guru Team 在 no_task 状态下注入 Phase 0 intake 规则，并给 Codex 注入 `codex.dispatch_mode` 说明。 |
 | Request triage | Trellis 原生允许 AI 按 workflow 和 task 状态执行。 | Guru Team 要求 issue-backed、task-like、file-changing 请求的 first hop 是 `guru-sync-base`；只有 `synced` 后才运行 `check-env` + `prepare-task`。`skipped` 仅限 tool-free classification 已证明无需 repo/network action 的 workflow route，不得裸 `task.py create`。 |
-| Base sync closed loop | 官方 Trellis 不替 Guru Team 选择或刷新业务 base。 | Tool-free route 后 mandatory invoke `guru-sync-base`；repo-changing route 只有在 resolve-only evidence 经 AI 确认、digest-bound executor 完成、AI Review Gate 通过且 validator 证明三方 equality 后才继续。 |
+| Base sync closed loop | 官方 Trellis 不替 Guru Team 选择或刷新业务 base。 | Tool-free route 后 mandatory invoke `guru-sync-base`；repo-changing route 只有在 resolve-only evidence 经 AI 确认、digest-bound executor 完成、AI Review Gate 通过且 validator 证明三方 equality 后才继续。Validator 清理 result evidence；`synced` 把 resolution lease 交给唯一 Phase 0 consumer，同一 lease 覆盖 planner/mutation guard，并在 task-created/blocked/aborted/superseded 终态释放。 |
 | Pre-task planner | 官方 Trellis task 尚未创建。 | `prepare-task.sh --json` 默认无副作用，只输出 intake plan，不创建 GitHub issue、worktree、branch、task 或 handoff 文件。 |
 | Handoff review | 无固定官方 gate。 | AI 必须展示 duplicate、proposed issue、naming quality、base freshness、branch、workspace、命令，并等待用户批准。 |
 

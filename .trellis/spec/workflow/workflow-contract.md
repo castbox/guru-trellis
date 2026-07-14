@@ -42,8 +42,14 @@ must not pre-implement its step-local Skill.
 
 `guru-sync-base` owns resolve-only evidence, AI selected-base review, conditional
 conflict confirmation before fetch/fast-forward, digest-bound execution,
-mandatory post-execution AI Review Gate, objective validation, evidence cleanup,
-standalone parity, and typed exit.
+mandatory post-execution AI Review Gate, objective validation, result-evidence
+cleanup, standalone resolution cleanup, workflow resolution-lease transfer, and
+typed exit. The `synced` consumer reuses the same external resolution raw bytes
+and digest for every `prepare-task` guard, keeps the lease active while user
+confirmation is pending, and calls `sync-base --release-resolution-evidence`
+on task-created, blocked, aborted, or superseded terminal routes. The lease path
+or digest is invocation-local handoff only and never enters task artifacts,
+repo runtime, shared cache, or review evidence.
 Unknown, missing, duplicate, multiple, or unmapped markers fail closed. A
 current checkout branch is never an implicit base fallback.
 
@@ -105,7 +111,10 @@ executor flag such as `--create-issue-confirmed` plus reviewed title/body input.
 plan review and user approval. `--create-worktree` may write only the gitignored
 local runtime workspace mapping; `--create-task` additionally writes tracked
 task-local `task-start-context.json` after task creation. Ordinary intake does
-not dirty the source checkout.
+not dirty the source checkout. Every invocation receives the active resolution
+lease; no planner or executor guard may re-resolve a second provenance. A
+retryable human-confirmation stop keeps that lease active, while every Phase 0
+terminal stop releases it before return.
 
 When there is no active task and the current turn requires file changes,
 current-checkout direct edits are an explicit override, not a silent shortcut.

@@ -237,6 +237,22 @@ provenance. GitHub, worktree, and task mutation boundaries each get an
 independent adjacent guard; the task guard runs after workspace/identity setup
 and before `task.py create`.
 
+`check-base-sync` consumes and removes result evidence. Standalone releases
+resolution before return. Workflow `synced` transfers one active external
+resolution file/raw-byte/digest lease to the unique Phase 0 consumer. Planner
+and every mutation guard reuse that lease. User-confirmation pending retains
+it; task-created, blocked, aborted, or superseded terminal routes call:
+
+```bash
+.trellis/guru-team/scripts/bash/sync-base.sh --json --mode workflow \
+  --release-resolution-evidence \
+  --resolution-file <reviewed-resolution-file> \
+  --expected-resolution-sha256 <reviewed-resolution-sha256>
+```
+
+Lease path/digest never enters task artifacts, repo runtime, shared cache, or
+review evidence. Missing/released leases require a new Skill invocation.
+
 `naming_quality` 是 slug / branch / worktree / task 命名质量门禁。AI 读完 issue 后
 应生成语义英文 short-name，并通过 `--short-name`、`--workspace-slug`、`--task-slug`
 传给脚本；需要特殊分支名时再显式传 `--branch`。推荐 worktree/task slug 格式为

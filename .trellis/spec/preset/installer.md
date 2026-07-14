@@ -72,8 +72,10 @@ Fresh install and update/reapply verification must exercise a selected-platform
 standalone wrapper with the full preset runtime. Missing runtime, runtime drift,
 or unresolved sidecars must block before fetch. A package-only copy must never
 appear to work. The throwaway path also verifies workflow route markers,
-standalone sync, `trellis update`, workflow re-selection, preset reapply, and a
-final recursive zero-sidecar scan.
+standalone cleanup, the real workflow `synced -> prepare-task` planner/mutation
+guard chain using one resolution raw-byte/digest lease, terminal release with
+zero result/resolution residue, `trellis update`, workflow re-selection, preset
+reapply, and a final recursive zero-sidecar scan.
 
 The shared `scripts/bash/run-skill-command.sh` dispatcher is also a managed
 executable asset and stable companion script id. The canonical extension

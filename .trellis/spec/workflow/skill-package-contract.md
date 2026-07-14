@@ -150,7 +150,13 @@ package contract, not the runtime, owns invocation scope, selected-base
 confirmation, semantic review, conflict-triggered human confirmation, and
 route choice. Resolution ambiguity or stale digest is objective `blocked`
 evidence and starts a new explicit invocation; a script never chooses among
-multiple candidates.
+multiple candidates. `check-base-sync` consumes and deterministically removes
+valid external result evidence after validation. Standalone invokes additive
+`sync-base --release-resolution-evidence` before either terminal exit. Workflow
+`synced` transfers only the external resolution file/raw-byte/digest lease to
+its unique consumer; the consumer reuses it for all prepare guards and releases
+it on task-created, blocked, aborted, or superseded terminal routes. A pending
+human confirmation is non-terminal and keeps the lease active.
 
 ## Distribution And Managed Hashes
 

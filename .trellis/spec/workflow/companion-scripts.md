@@ -115,12 +115,24 @@ fetch failure, divergence, wrong checkout, or post-sync mismatch blocks. It
 must not use `git branch -f`, reset, checkout, stash, rebase, force fetch, or a
 current-branch fallback.
 
-`check-base-sync` is read-only. It validates component/symlink boundaries,
+`check-base-sync` does not mutate Git. It validates component/symlink boundaries,
 Draft 2020-12 schema identity, `facts_sha256`, selected refs, clean state, and
 decision/local/remote full-SHA equality against live Git. It does not fetch,
-merge, decide scope, judge semantic pass, or choose a route. Its workflow-only
+merge, decide scope, judge semantic pass, or choose a route. After consuming a
+valid external result-evidence path, it deterministically removes that file on
+both pass and validation failure and confirms no residue before returning. Its workflow-only
 `--record-skipped` path emits stdout-only machine facts after the AI has
 reviewed a non-repo route; standalone rejects that path.
+
+`sync-base --release-resolution-evidence` is the only resolution-lease release
+executor. It requires the external resolution file and expected digest,
+revalidates path/component/symlink boundaries plus canonical raw bytes and
+resolution identity, deletes only that exact file, and confirms absence.
+Repeated release of an already absent safe path returns structured
+`already_released`; it never searches for or deletes another file. Workflow
+uses it for task-created, blocked, aborted, and superseded Phase 0 terminal
+routes, while standalone uses it before returning. Pending user confirmation
+keeps the lease active.
 
 `prepare-task` requires the prior AI-reviewed external resolution file and
 expected digest. It calls the shared raw-byte/digest/source-identity verifier
@@ -131,6 +143,9 @@ immediately before `task.py create`. `--base-branch` can assert equality but
 cannot rewrite config/remote-default/fallback provenance as explicit. The
 legacy planner/executor freshness functions remain adapters only. A stale
 planner result is blocking, not permission to continue planning.
+The exact same lease identity is reused across planner and mutation guards.
+Neither prepare output nor task-start context may persist its path/digest; the
+workflow consumer owns terminal release.
 
 Always gate GitHub operations with `gh auth status` through `require_gh_auth()`.
 Do not assume the GitHub CLI is configured just because `gh` exists.

@@ -8,7 +8,9 @@ This package owns the complete step-local loop:
 ```text
 resolve-only -> AI selected-base review -> conditional conflict confirmation
 -> digest-bound execute -> mandatory post-execution AI Review Gate
--> objective result validation -> evidence cleanup -> typed exit
+-> objective result validation + result cleanup
+-> standalone resolution cleanup | workflow resolution lease transfer
+-> typed exit
 ```
 
 Workflow and standalone modes use identical preconditions. Workflow may use
@@ -98,18 +100,34 @@ Run `result_validator --evidence-file <external-result>` after the AI Review
 Gate. The validator reads only objective facts: component/symlink boundary,
 schema identity, closed field shape, facts digest, selected refs, clean state,
 and live three-way equality. It never fetches or mutates Git.
+After consuming a valid external result-evidence path, it removes that exact
+file on validation pass or failure and confirms there is no result residue.
 
-- `synced`: AI Review Gate passed and the result validator passed; workflow
-  continues to `guru-discover-change-context`.
+- `synced`: AI Review Gate passed and the result validator passed. Standalone
+  first releases resolution evidence. Workflow transfers the exact external
+  resolution file/raw bytes/digest as an active lease to
+  `guru-discover-change-context`.
 - `skipped`: workflow-only AI route review passed and
   `result_validator --mode workflow --record-skipped <route-id>` returned
   stdout-only facts; workflow returns to `original-request-route`.
 - `blocked`: resolution, Git, AI review, confirmation, or validator evidence
   cannot prove the contract; stop at `base-sync-blocked`.
 
-Delete temporary resolution/result evidence before returning. No result is
-written to the repo root, task artifacts, package, installed runtime, or shared
-cache.
+Workflow passes that same lease to every later `prepare-task` planner/executor
+guard. The unique consumer calls
+`sync_executor --release-resolution-evidence --resolution-file <external> \
+--expected-resolution-sha256 <digest>` on task-created, blocked, aborted, or
+superseded terminal routes. A user-confirmation-pending route is non-terminal
+and keeps the lease active. Standalone and every non-`synced` terminal route
+release resolution before return. Release revalidates the safe external path,
+canonical raw bytes, and expected digest, deletes only the exact file, confirms
+absence, and returns structured `already_released` for a repeated safe-path
+release.
+
+No result or lease path/digest is written to the repo root, task artifacts,
+repo runtime, package, installed runtime, shared cache, README example, or
+review evidence. A missing/released lease cannot continue prepare; start a new
+explicit Skill invocation instead.
 
 ## Runtime Dependency
 

@@ -69,7 +69,11 @@ explicit base、single-value repo config、remote default、unique fallback cand
 四级解析，禁止 current branch implicit fallback；外部出口固定为 `synced`、`skipped`、
 `blocked`。`sync-base` 与 `check-base-sync` 是共享 deterministic runtime command，
 `guru-base-sync-result-1.0` 是结果 schema id。`prepare-task` 复用同一 resolver/sync core，
-不能另维护 planner/executor base 语义。
+不能另维护 planner/executor base 语义。Workflow `synced` 只把 repo-external resolution
+file/raw bytes/digest 作为当前 Phase 0 invocation 的受控 lease 交给唯一 consumer；result
+evidence 由 Skill 在 validator 消费后清理。Planner 与各 mutation guard 复用同一 lease，
+task created、blocked、aborted 或 superseded 终态调用
+`sync-base --release-resolution-evidence`，用户确认 pending 时保持 lease active。
 
 本仓库的扩展长期源头位于：
 

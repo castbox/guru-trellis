@@ -44,7 +44,13 @@ Resolution evidence and result evidence are temporary invocation files outside
 the repository; neither task-start context, public package, installed runtime,
 nor repo root stores them. Component-wise `lstat` rejects evidence at or under
 the repo, any symlinked component, schema tampering, digest tampering, or stale
-live Git facts.
+live Git facts. `check-base-sync` consumes and removes valid result evidence.
+Standalone releases resolution before return. Workflow `synced` transfers the
+same resolution file/raw-byte/digest as an invocation-local Phase 0 lease;
+every prepare guard consumes it read-only, and the unique consumer releases it
+on task-created, blocked, aborted, or superseded terminal routes. Pending human
+confirmation retains the lease. No lease path/digest is a legal task artifact,
+repo runtime, shared cache, review-evidence, or public example field.
 
 `prepare-task.preflight.base_freshness` remains a compatibility projection and
 adds resolution source/digest, decision checkout, local/remote refs, and
