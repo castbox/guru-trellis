@@ -7,10 +7,10 @@
 ```text
 tool-free route
   -> guru-sync-base resolve-only evidence
-  -> AI invocation/selected-base confirmation
+  -> AI invocation/selected-base review
+  -> conditional conflict confirmation when triggered
   -> digest-bound sync executor
-  -> AI Review Gate
-  -> conditional confirmation stage
+  -> mandatory post-execution AI Review Gate
   -> result schema/digest/live Git validator
   -> synced | skipped | blocked
 ```

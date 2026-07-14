@@ -146,6 +146,7 @@ sequenceDiagram
     AI->>AI: 审查 invocation intent / source / selected base
     AI->>Script: sync-base --execute --resolution-file ... --expected-resolution-sha256 ...
     Script-->>AI: base-sync result + facts_sha256
+    AI->>AI: mandatory post-execution AI Review Gate<br/>审查 scope / selected base / actual side effects / before-after facts
     AI->>Script: check-base-sync --evidence-file ...
     Script-->>AI: schema / digest / live Git equality passed
     AI->>Script: check-env.sh --json
@@ -164,7 +165,7 @@ sequenceDiagram
 | 步骤 | 官方 Trellis 原生部分 | Guru Team 扩展部分 |
 | --- | --- | --- |
 | Codex hook | Trellis 支持 `UserPromptSubmit` workflow-state nudge，hook 从 `workflow.md` 读取状态块。 | Guru Team 在 no_task 状态下注入 Phase 0 intake 规则，并给 Codex 注入 `codex.dispatch_mode` 说明。 |
-| Request triage | Trellis 原生允许 AI 按 workflow 和 task 状态执行。 | Guru Team 要求 issue-backed、task-like、file-changing 请求先跑 `check-env` + `prepare-task`，而不是裸 `task.py create`。 |
+| Request triage | Trellis 原生允许 AI 按 workflow 和 task 状态执行。 | Guru Team 要求 issue-backed、task-like、file-changing 请求的 first hop 是 `guru-sync-base`；只有 `synced` 后才运行 `check-env` + `prepare-task`。`skipped` 仅限 tool-free classification 已证明无需 repo/network action 的 workflow route，不得裸 `task.py create`。 |
 | Base sync closed loop | 官方 Trellis 不替 Guru Team 选择或刷新业务 base。 | Tool-free route 后 mandatory invoke `guru-sync-base`；repo-changing route 只有在 resolve-only evidence 经 AI 确认、digest-bound executor 完成、AI Review Gate 通过且 validator 证明三方 equality 后才继续。 |
 | Pre-task planner | 官方 Trellis task 尚未创建。 | `prepare-task.sh --json` 默认无副作用，只输出 intake plan，不创建 GitHub issue、worktree、branch、task 或 handoff 文件。 |
 | Handoff review | 无固定官方 gate。 | AI 必须展示 duplicate、proposed issue、naming quality、base freshness、branch、workspace、命令，并等待用户批准。 |

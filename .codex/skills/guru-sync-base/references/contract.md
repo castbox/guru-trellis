@@ -6,8 +6,8 @@ The global workflow owns the mandatory invocation and typed-exit consumers.
 This package owns the complete step-local loop:
 
 ```text
-resolve-only -> AI selected-base review -> digest-bound execute
--> AI Review Gate -> conditional conflict confirmation
+resolve-only -> AI selected-base review -> conditional conflict confirmation
+-> digest-bound execute -> mandatory post-execution AI Review Gate
 -> objective result validation -> evidence cleanup -> typed exit
 ```
 
@@ -84,7 +84,7 @@ The executor emits a closed `guru-base-sync-result-1.0` object and
 `facts_sha256`, and may write the exact result to a repository-external
 temporary file.
 
-## AI Review Gate
+## Mandatory Post-Execution AI Review Gate
 
 The AI reviews the result tool output, not a script's return code as semantic
 proof. It checks invocation scope, selected-base evidence, actual fetch/

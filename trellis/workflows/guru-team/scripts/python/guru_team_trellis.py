@@ -3155,7 +3155,6 @@ def resolve_base_selection(
     remote: str = "origin",
 ) -> dict[str, Any]:
     remote = validate_base_remote_name(root, remote)
-    configured = configured_base_candidates(root, config)
     if explicit is not None and str(explicit).strip():
         selected = validate_base_branch_name(root, explicit, "Explicit base")
         return resolution_payload(
@@ -3172,6 +3171,7 @@ def resolve_base_selection(
         return resolution_payload(
             root, source="config", selected_base=selected, remote=remote, candidates=[selected]
         )
+    configured = configured_base_candidates(root, config)
     if len(configured) == 1:
         selected = configured[0]
         return resolution_payload(

@@ -22,7 +22,12 @@ selected-base source. For backward compatibility, a deduplicated
 `base_branch_candidates` list with exactly one value has the same config-single
 meaning; a multi-value list participates only in remote-default/fallback
 resolution. Empty scalar means not configured. No config shape authorizes a
-current-branch fallback.
+current-branch fallback. Resolver validation is lazy by precedence: selected
+explicit input is not rejected by malformed lower-priority scalar/candidate
+config, and selected scalar input is not rejected by malformed candidate
+config. When neither source is selected, candidate shape and branch validation
+still fail closed before config-single, remote-default, or fallback evidence is
+produced.
 
 ## Base Sync Result
 

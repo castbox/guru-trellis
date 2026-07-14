@@ -56,11 +56,19 @@ class BaseSyncPackageContractTests(unittest.TestCase):
     def test_skill_and_contract_keep_ai_script_boundary(self) -> None:
         skill = (self.package / "SKILL.md").read_text(encoding="utf-8")
         contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
+        normalized_contract = " ".join(contract.split())
         for phrase in ("Resolve first", "AI Review Gate", "not self-contained or portable"):
             self.assertIn(phrase, skill)
+        self.assertIn(
+            "resolve-only -> AI selected-base review -> conditional conflict confirmation "
+            "-> digest-bound execute -> mandatory post-execution AI Review Gate "
+            "-> objective result validation -> evidence cleanup -> typed exit",
+            normalized_contract,
+        )
         for phrase in (
             "never consults current branch as a fallback",
             "AI Selected-Base Review",
+            "Mandatory Post-Execution AI Review Gate",
             "git merge --ff-only",
             "decision checkout HEAD == local selected-base HEAD == remote-tracking HEAD",
             "--expected-resolution-sha256",
@@ -68,6 +76,18 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             "run-skill-command",
         ):
             self.assertIn(phrase, contract)
+        self.assertLess(
+            contract.index("## AI Selected-Base Review"),
+            contract.index("## Digest-Bound Execution"),
+        )
+        self.assertLess(
+            contract.index("## Digest-Bound Execution"),
+            contract.index("## Mandatory Post-Execution AI Review Gate"),
+        )
+        self.assertLess(
+            contract.index("## Mandatory Post-Execution AI Review Gate"),
+            contract.index("## Objective Validation And Exits"),
+        )
         self.assertIn("It never\nuses `git branch -f`", contract)
         selected = next(
             item for item in self.interface["entry_preconditions"]

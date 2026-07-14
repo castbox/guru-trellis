@@ -91,7 +91,11 @@ from `git ls-remote --symref <remote> HEAD`, then exactly one existing local or
 remote-tracking fallback candidate. Validate every candidate with
 `git check-ref-format --branch`. Remote-default failure proceeds only to the
 fallback cardinality gate; zero or multiple candidates block. Never fall back
-to the current branch.
+to the current branch. Evaluate and validate sources in precedence order: once
+a higher-priority explicit or scalar source is selected, malformed
+lower-priority scalar or candidate input must not reject that selection.
+Candidate validation still fails closed before config-single,
+remote-default/fallback evidence is produced when neither source is selected.
 
 `--resolve-only` emits canonical resolution JSON and SHA-256 before fetch. It
 may write a caller-selected temporary resolution file only when the lexical

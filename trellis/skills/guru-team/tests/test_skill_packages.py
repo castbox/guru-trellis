@@ -149,6 +149,38 @@ class SourceValidationTests(unittest.TestCase):
             'prepare-task.sh --json --resolution-file ... --expected-resolution-sha256 ... "<request>"',
             flow,
         )
+        result_offset = flow.index("Script-->>AI: base-sync result + facts_sha256")
+        review_offset = flow.index(
+            "AI->>AI: mandatory post-execution AI Review Gate",
+            result_offset,
+        )
+        validator_offset = flow.index(
+            "AI->>Script: check-base-sync --evidence-file ...",
+            review_offset,
+        )
+        self.assertLess(result_offset, review_offset)
+        self.assertLess(review_offset, validator_offset)
+        self.assertIn(
+            "请求的 first hop 是 `guru-sync-base`；只有 `synced` 后才运行 "
+            "`check-env` + `prepare-task`",
+            flow,
+        )
+        self.assertIn(
+            "`skipped` 仅限 tool-free classification 已证明无需 repo/network action 的 "
+            "workflow route",
+            flow,
+        )
+
+        workflow_contract = (REPO / ".trellis/spec/workflow/workflow-contract.md").read_text(
+            encoding="utf-8"
+        )
+        normalized_contract = " ".join(workflow_contract.split())
+        self.assertIn(
+            "AI selected-base review, conditional conflict confirmation before "
+            "fetch/fast-forward, digest-bound execution, mandatory post-execution "
+            "AI Review Gate, objective validation",
+            normalized_contract,
+        )
 
     def test_platform_entries_and_workflows_only_route_task_commit_skill(self) -> None:
         entries = [

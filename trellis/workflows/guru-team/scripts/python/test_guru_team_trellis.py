@@ -2034,6 +2034,26 @@ class BaseSyncRuntimeTest(unittest.TestCase):
                     {"base_branch": "", "base_branch_candidates": ["main", "master"]},
                 )
 
+    def test_resolver_does_not_validate_malformed_lower_priority_sources(self) -> None:
+        explicit = gtt.resolve_base_selection(
+            self.local,
+            {"base_branch": 7, "base_branch_candidates": "not-a-list"},
+            "release",
+        )
+        self.assertEqual((explicit["source"], explicit["selected_base"]), ("explicit", "release"))
+
+        scalar = gtt.resolve_base_selection(
+            self.local,
+            {"base_branch": "develop", "base_branch_candidates": "not-a-list"},
+        )
+        self.assertEqual((scalar["source"], scalar["selected_base"]), ("config", "develop"))
+
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.resolve_base_selection(
+                self.local,
+                {"base_branch": "", "base_branch_candidates": ["invalid branch", "main"]},
+            )
+
     def test_resolve_execute_validate_and_external_evidence(self) -> None:
         resolution = self.resolve()
         self.assertEqual(resolution["source"], "config")

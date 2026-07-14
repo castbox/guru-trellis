@@ -40,9 +40,10 @@ unique consumers: `synced` -> workflow route `guru-discover-change-context`,
 `base-sync-blocked`. The first route remains inline until #111; this contract
 must not pre-implement its step-local Skill.
 
-`guru-sync-base` owns resolve-only evidence, AI selected-base confirmation,
-digest-bound execution, AI Review Gate, conditional conflict confirmation,
-objective validation, evidence cleanup, standalone parity, and typed exit.
+`guru-sync-base` owns resolve-only evidence, AI selected-base review, conditional
+conflict confirmation before fetch/fast-forward, digest-bound execution,
+mandatory post-execution AI Review Gate, objective validation, evidence cleanup,
+standalone parity, and typed exit.
 Unknown, missing, duplicate, multiple, or unmapped markers fail closed. A
 current checkout branch is never an implicit base fallback.
 
