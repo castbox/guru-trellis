@@ -78,6 +78,14 @@ id or an explicit migration. Upgrade instructions must require workflow and
 preset reapply after `trellis update`, resolution of `.new`/`.bak`, and source,
 installed, and drift validation before claiming success.
 
+All three public README files must use the same Skill mode/runtime wording:
+`workflow` means mandatory global workflow routing, while `standalone` means
+direct platform discovery without that routing. Both modes require a complete,
+compatible Guru Team preset and shared extension runtime; a Skill directory is
+not a self-contained or portable package. The docs must name
+`run-skill-command` as the shared dispatcher, describe fail-closed full-preset
+install/upgrade remediation, and list its installed executable path.
+
 Public docs that describe task work commits must name
 `guru-create-task-commit` as the active closed-loop owner, retain
 `guru-create-work-commit` only as a reserved tombstone, distinguish AI review

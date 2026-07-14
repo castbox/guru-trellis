@@ -281,6 +281,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertEqual(payload["platforms"], ["codex", "cursor"])
         self.assertFalse(payload["all_platforms"])
         self.assertIn(Path("scripts/bash/check-workspace-boundary.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/run-skill-command.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/resolve-human-artifacts.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/record-subagent-liveness-event.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-subagent-liveness.sh"), preset.MANAGED_ASSET_PATHS)
@@ -289,6 +290,8 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertIn(Path("scripts/bash/backfill-finish-summary.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("schemas/finish-summary.schema.json"), preset.MANAGED_ASSET_PATHS)
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh").is_file())
+        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh").is_file())
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh", os.X_OK))
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh", os.X_OK))
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh").is_file())
@@ -488,7 +491,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 73)
+        self.assertEqual(len(managed_assets), 74)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -973,7 +976,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.5")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.6")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         self.assertIn("agent-assignment.json", public_api["artifact_contracts"])
@@ -982,8 +985,18 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("check-subagent-liveness", public_api["companion_scripts"])
         self.assertIn("check-commit-messages", public_api["companion_scripts"])
         self.assertIn("create-task-commit", public_api["companion_scripts"])
+        self.assertIn("run-skill-command", public_api["companion_scripts"])
+        self.assertEqual(
+            public_api["skill_runtime"],
+            {
+                "api_version": "1.0",
+                "dispatcher": "run-skill-command",
+                "manifest_path": ".trellis/guru-team/extension.json",
+            },
+        )
         self.assertIn("task-commit-plans/*.json", public_api["artifact_contracts"])
         self.assertEqual(public_api["skill_contracts"]["active_skill_ids"], ["guru-create-task-commit"])
+        self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.1")
         self.assertEqual(public_api["skill_contracts"]["reserved_skill_ids"], ["guru-create-work-commit"])
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("backfill-finish-summary", public_api["companion_scripts"])

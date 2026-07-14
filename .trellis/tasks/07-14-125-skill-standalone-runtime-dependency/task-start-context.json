@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 125,
+    "url": "https://github.com/castbox/guru-trellis/issues/125",
+    "title": "明确 Guru Team Skill standalone 模式的 runtime 依赖语义",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/125"
+  },
+  "task_slug": "125-skill-standalone-runtime-dependency",
+  "task_title": "#125 明确 Guru Team Skill standalone 模式的 runtime 依赖语义",
+  "task_artifact_dir": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency",
+  "branch_name": "feat/125-skill-standalone-runtime-dependency",
+  "base_branch": "feat/122-guru-create-task-commit",
+  "base_ref": "feat/122-guru-create-task-commit",
+  "base_head_sha": "49bf572e6a89bff9c63416bea64254cda0c20bf0",
+  "remote_head_sha": "49bf572e6a89bff9c63416bea64254cda0c20bf0",
+  "workspace_slug": "125-skill-standalone-runtime-dependency",
+  "task_workspace_id": "125-skill-standalone-runtime-dependency",
+  "assignee": "wumengye",
+  "actor": {
+    "login": "wumengye"
+  },
+  "issue_scope_ledger_seed": {
+    "primary_issue": {
+      "number": 125,
+      "url": "https://github.com/castbox/guru-trellis/issues/125",
+      "title": "明确 Guru Team Skill standalone 模式的 runtime 依赖语义",
+      "reason": "intake 主 issue，默认进入 close 候选。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 125,
+        "url": "https://github.com/castbox/guru-trellis/issues/125",
+        "title": "明确 Guru Team Skill standalone 模式的 runtime 依赖语义",
+        "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": false,
+      "selected_issue": 125
+    },
+    "naming_quality": {
+      "ok": true,
+      "reason": "naming includes enough business tokens",
+      "requires_semantic_name": false,
+      "current_slug": "125-skill-standalone-runtime-dependency",
+      "current_surface": "workspace_slug",
+      "suggested_override_flags": [],
+      "checked_names": {
+        "slug": {
+          "ok": true,
+          "slug": "skill-standalone-runtime-dependency",
+          "reason": "ok",
+          "business_tokens": [
+            "skill",
+            "standalone",
+            "runtime",
+            "dependency"
+          ]
+        },
+        "task_slug": {
+          "ok": true,
+          "slug": "125-skill-standalone-runtime-dependency",
+          "reason": "ok",
+          "business_tokens": [
+            "skill",
+            "standalone",
+            "runtime",
+            "dependency"
+          ]
+        },
+        "workspace_slug": {
+          "ok": true,
+          "slug": "125-skill-standalone-runtime-dependency",
+          "reason": "ok",
+          "business_tokens": [
+            "skill",
+            "standalone",
+            "runtime",
+            "dependency"
+          ]
+        },
+        "branch_name": {
+          "ok": true,
+          "slug": "125-skill-standalone-runtime-dependency",
+          "reason": "ok",
+          "business_tokens": [
+            "skill",
+            "standalone",
+            "runtime",
+            "dependency"
+          ]
+        }
+      }
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    }
+  }
+}

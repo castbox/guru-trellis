@@ -1,21 +1,22 @@
 {
   "$schema": "../../schemas/skill-interface.schema.json",
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "id": "guru-example-action",
   "name": "guru-example-action",
   "description": "Exercises the public closed-loop package contract without becoming a production skill.",
   "state": "active",
   "modes": {
-    "workflow": {"entry_precondition_ids": ["fresh_input"]},
-    "standalone": {"entry_precondition_ids": ["fresh_input"]}
+    "workflow": {"routing": "global_workflow", "entry_precondition_ids": ["fresh_input"]},
+    "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["fresh_input"]}
   },
   "entry_preconditions": [
     {"id": "fresh_input", "evidence": "fixture-input.json", "binding": "sha256", "freshness": "current fixture invocation"}
   ],
+  "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
   "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
   "artifacts": [{"id": "result", "path": "examples/fixture-result.json"}],
   "schemas": [{"id": "result_schema", "path": "schemas/fixture-result.schema.json"}],
-  "validators": [{"id": "result_validator", "command": "scripts/validate-fixture-result.sh", "objective_scope": "JSON shape and digest only"}],
+  "validators": [{"id": "result_validator", "command": "scripts/validate-fixture-result.sh", "runtime_command": "fixture-runtime-command", "objective_scope": "JSON shape and digest only"}],
   "external_exits": [
     {"id": "completed", "evidence": "fixture-result.json", "consumer": {"kind": "workflow", "id": "fixture-next"}},
     {"id": "blocked", "evidence": "fixture-result.json", "consumer": {"kind": "stop", "id": "fixture-stop"}}

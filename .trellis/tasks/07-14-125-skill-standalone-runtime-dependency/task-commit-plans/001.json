@@ -1,0 +1,1553 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "001",
+  "task": {
+    "id": "125-skill-standalone-runtime-dependency",
+    "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency",
+    "status": "in_progress",
+    "branch": "feat/125-skill-standalone-runtime-dependency"
+  },
+  "issue": {
+    "primary_issue": 125,
+    "ledger_sha256": "23d01589a3318e14814737ed46ada49d58bdf1400af2694a5021b257f8b50a7c"
+  },
+  "git": {
+    "base_branch": "feat/122-guru-create-task-commit",
+    "base_ref": "origin/feat/122-guru-create-task-commit",
+    "pre_commit_head": "49bf572e6a89bff9c63416bea64254cda0c20bf0"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/planning-approval.json",
+      "sha256": "3462301e5fc1a856f3e5b7d728e5378c79c890ef1f1a9db2af3f15b70ab12488",
+      "size": 4558
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-check.json",
+      "sha256": "eddbc6fc4710af2b2a2ee0cfce8273cb6246399f428b53d2c43261f87b33c8c7",
+      "size": 11861
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/issue-scope-ledger.json",
+      "sha256": "23d01589a3318e14814737ed46ada49d58bdf1400af2694a5021b257f8b50a7c",
+      "size": 1038
+    },
+    "task": {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task.json",
+      "sha256": "2da59eb2ceb32095bc6e9ab880bf9dfd2ee4c46331311a29b8952e2b65b44927",
+      "size": 758
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".agents/skills/guru-create-task-commit/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0b01ebf5652d53bd4658d270c4d3b145cfa951ec",
+        "worktree_sha256": "0e0f900ed88c851e2ef479c981dcff5de07227b0b83a010be9384628da13227b",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+        "worktree_sha256": "2f305505c599305bd2d674234f502f3b9090fb73cea9a1317f0aa555a559c154",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+        "worktree_sha256": "1ddd68c10c3865e0dd81b5eb184a81efbda11256b3933c446196322c39008a3e",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f46016f866ddba95db25b5e24f909ed223b784e0",
+        "worktree_sha256": "6a12fb83a9bf6cfe50f48ffed8952c2843065eda9ba0cd9ecd7c15436d253de4",
+        "mode": "100755"
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/scripts/create-task-commit.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b4e7ba1eb39ded29e31f59c66aa9411b1716fdc2",
+        "worktree_sha256": "78a3d50d2a2e20a150b36faec670f5ffc1d919c77bfa9a9a4d3e542e5216447a",
+        "mode": "100755"
+      },
+      {
+        "path": ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+        "worktree_sha256": "88b513e427a60bc4469d4e92ba2594bede9f183d51bcf27f066855e67fa7ad56",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0b01ebf5652d53bd4658d270c4d3b145cfa951ec",
+        "worktree_sha256": "0e0f900ed88c851e2ef479c981dcff5de07227b0b83a010be9384628da13227b",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+        "worktree_sha256": "2f305505c599305bd2d674234f502f3b9090fb73cea9a1317f0aa555a559c154",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+        "worktree_sha256": "1ddd68c10c3865e0dd81b5eb184a81efbda11256b3933c446196322c39008a3e",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f46016f866ddba95db25b5e24f909ed223b784e0",
+        "worktree_sha256": "6a12fb83a9bf6cfe50f48ffed8952c2843065eda9ba0cd9ecd7c15436d253de4",
+        "mode": "100755"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/scripts/create-task-commit.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b4e7ba1eb39ded29e31f59c66aa9411b1716fdc2",
+        "worktree_sha256": "78a3d50d2a2e20a150b36faec670f5ffc1d919c77bfa9a9a4d3e542e5216447a",
+        "mode": "100755"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+        "worktree_sha256": "88b513e427a60bc4469d4e92ba2594bede9f183d51bcf27f066855e67fa7ad56",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0b01ebf5652d53bd4658d270c4d3b145cfa951ec",
+        "worktree_sha256": "0e0f900ed88c851e2ef479c981dcff5de07227b0b83a010be9384628da13227b",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+        "worktree_sha256": "2f305505c599305bd2d674234f502f3b9090fb73cea9a1317f0aa555a559c154",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+        "worktree_sha256": "1ddd68c10c3865e0dd81b5eb184a81efbda11256b3933c446196322c39008a3e",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f46016f866ddba95db25b5e24f909ed223b784e0",
+        "worktree_sha256": "6a12fb83a9bf6cfe50f48ffed8952c2843065eda9ba0cd9ecd7c15436d253de4",
+        "mode": "100755"
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/scripts/create-task-commit.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b4e7ba1eb39ded29e31f59c66aa9411b1716fdc2",
+        "worktree_sha256": "78a3d50d2a2e20a150b36faec670f5ffc1d919c77bfa9a9a4d3e542e5216447a",
+        "mode": "100755"
+      },
+      {
+        "path": ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+        "worktree_sha256": "88b513e427a60bc4469d4e92ba2594bede9f183d51bcf27f066855e67fa7ad56",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0b01ebf5652d53bd4658d270c4d3b145cfa951ec",
+        "worktree_sha256": "0e0f900ed88c851e2ef479c981dcff5de07227b0b83a010be9384628da13227b",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+        "worktree_sha256": "2f305505c599305bd2d674234f502f3b9090fb73cea9a1317f0aa555a559c154",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+        "worktree_sha256": "1ddd68c10c3865e0dd81b5eb184a81efbda11256b3933c446196322c39008a3e",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f46016f866ddba95db25b5e24f909ed223b784e0",
+        "worktree_sha256": "6a12fb83a9bf6cfe50f48ffed8952c2843065eda9ba0cd9ecd7c15436d253de4",
+        "mode": "100755"
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b4e7ba1eb39ded29e31f59c66aa9411b1716fdc2",
+        "worktree_sha256": "78a3d50d2a2e20a150b36faec670f5ffc1d919c77bfa9a9a4d3e542e5216447a",
+        "mode": "100755"
+      },
+      {
+        "path": ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+        "worktree_sha256": "88b513e427a60bc4469d4e92ba2594bede9f183d51bcf27f066855e67fa7ad56",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cacd53697aed627ddbbf5dadf066b7324ca8a1aa",
+        "worktree_sha256": "3b8436f79078e807fb425b00ea84768a388775f7fbfdbc4f558edb5bc3d84f02",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/bash/run-skill-command.sh",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "0b94522b2976ceee287f0c61e87605eb84b27047ea6de713591d35cc0018e392",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "99fb5d65c6ede980708ce0df4fb82b8c4b24c797",
+        "worktree_sha256": "5adf05c18e50325aec96c801119ae498de56966b221c2a97ca6b844ef07227b2",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0b01ebf5652d53bd4658d270c4d3b145cfa951ec",
+        "worktree_sha256": "0e0f900ed88c851e2ef479c981dcff5de07227b0b83a010be9384628da13227b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+        "worktree_sha256": "2f305505c599305bd2d674234f502f3b9090fb73cea9a1317f0aa555a559c154",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+        "worktree_sha256": "1ddd68c10c3865e0dd81b5eb184a81efbda11256b3933c446196322c39008a3e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f46016f866ddba95db25b5e24f909ed223b784e0",
+        "worktree_sha256": "6a12fb83a9bf6cfe50f48ffed8952c2843065eda9ba0cd9ecd7c15436d253de4",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/scripts/create-task-commit.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b4e7ba1eb39ded29e31f59c66aa9411b1716fdc2",
+        "worktree_sha256": "78a3d50d2a2e20a150b36faec670f5ffc1d919c77bfa9a9a4d3e542e5216447a",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+        "worktree_sha256": "88b513e427a60bc4469d4e92ba2594bede9f183d51bcf27f066855e67fa7ad56",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/schemas/skill-interface.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9ed21a5ef2e444311fa129a616f399797cfb7dce",
+        "worktree_sha256": "42f639b5014720fa95c6150bea909ca27acc9bbc301c5ac763d20faa0610d30e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/docs/public-docs.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "451079168f5faa6c731f25d8b89b4a21541446c7",
+        "worktree_sha256": "8b8684fd1ac806b533495497f9b02d2a17a58de8bfeb54350a39297c2ee512f5",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/preset/installer.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "51225ecdc91bc5e77c9ffd1f01f37916bb60748e",
+        "worktree_sha256": "9e543fb458c28741eeacb7edc9326e57234cfcfe0001d6ee7841b6c3cfa39273",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "97eaebc87ffa08ab129419ca20d3fe5b1b663adc",
+        "worktree_sha256": "5f58bb5e980a02c34cfe6789571333208122acc964f270aad33b29f6fa660c03",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f8f98c34c48d9c1c1febd6fc786c6566eb4ef481",
+        "worktree_sha256": "edc02195d601f2580118f91e72cb824e189e7878ad12ac71e286d5af466d26d3",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/agent-assignment.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "694941875b5477e4f1326ce25cbd583cd9fadfb94197bc33bea4d4d1e4086d6a",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/check.jsonl",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "ee7594d71df943cf0ae0bf0f913eb45d35ae776983e8988785d4422bcebd3e44",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/design.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "7f259a55b8094e857369e699bbd6caed9e9c43a1b607bd595232320ee63ce76f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/implement.jsonl",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "91860481649f5d35fb50d1333b94ae9dafa98eab120649b507a3d4cf4f1da5e0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/implement.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "107107c0193497c5c05b9f3a3ae454cac257004c6e6884cf8ec8569051ec28ea",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/implementation-handoff.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "a26eabcad321bd59883000502ee7809daa2e105dd25414b3da22c23acd4e02ec",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/issue-scope-ledger.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "23d01589a3318e14814737ed46ada49d58bdf1400af2694a5021b257f8b50a7c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-check-report.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "661b0a9c3523079476d1f0cbfe4490b08c0f18341d97ea0e7f3aea0579daba5f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-check.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "eddbc6fc4710af2b2a2ee0cfce8273cb6246399f428b53d2c43261f87b33c8c7",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-findings.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2b13e7e8f7459c02dc49736de83c33d2573e57bd3c80d08dddf18aa3d085c179",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/planning-approval.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "3462301e5fc1a856f3e5b7d728e5378c79c890ef1f1a9db2af3f15b70ab12488",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/prd.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "dc2a1b5771eb274df9dca3fadbce110c56e6242aeab1389e4411a08784d342dc",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task-start-context.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "5d4c1abf78e23faff019bbc1f2b4b8b2d0d9d325810bcc147d1eb107eb571bb7",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2da59eb2ceb32095bc6e9ab880bf9dfd2ee4c46331311a29b8952e2b65b44927",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/workflow.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5d5726262fdb8920076b9fed50df7ef23cb67e8d",
+        "worktree_sha256": "b12eca88167a1fb1fc00280bad69c69913e43934532e4999e006821869f12d83",
+        "mode": "100644"
+      },
+      {
+        "path": "README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3eab6e1bed750ac64bc72adeb301478c0a046206",
+        "worktree_sha256": "a7855548b2a4678093d653b2f3096ee333f6b6a770a674a1e7a1605ea24cda60",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "158b50b87244834f6c230fd268f678fdb402825f",
+        "worktree_sha256": "875e00c4f65ee49f30d6fbe183be5601fc71731aa26b70813ac301d2e13bad21",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6cd7c8935f0176ee70135d1308b9da4549cc2849",
+        "worktree_sha256": "c04dbd09266105ba02e3eebdd3fc2b3446bdc9fd8006763d64ca3dada1378bc6",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "90af9a478ddd6203c5a531f5afb740b1d39fb514",
+        "worktree_sha256": "197afaf76a26e3f412d316d8f58af7e916de23bfbcd6ff10607db0f6e3b94dbe",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/guru-team-extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f7f8c8d8545132cd94586efcaca60acb7f1b8975",
+        "worktree_sha256": "06e6f16b71adfc2e0eee449c513603fdff07756520be7cefe475ea09ad223dda",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "bffe1e499e878dbed877e0bff60d34deeff03f16",
+        "worktree_sha256": "14e5ce0813f813b3373cd50969d167c2e151a64218791ba584135571fac31d53",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4463e0e44badd7e3b9154bbdbc450fddbb34806b",
+        "worktree_sha256": "a52bb166c694d090c053bb4f972477dcbf7da9e6b6d3df110fcaa4aa3991db9c",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "516325a0318e61fb8c64538d8f062227b96c233b",
+        "worktree_sha256": "1bfe6b5fc66fbabe9557e11a62d2899a38ed83ddd432657e66e35ba266b72740",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "7a1f6f82826cc77a8219e574efe5e9063e115144",
+        "worktree_sha256": "d083f1fc7ba602579a42fc5011261d73a287cd4a80948d910e65890513f527d8",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "0b01ebf5652d53bd4658d270c4d3b145cfa951ec",
+        "worktree_sha256": "0e0f900ed88c851e2ef479c981dcff5de07227b0b83a010be9384628da13227b",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cff30ea1949b3cc55cfee1eaf1563c22cb8ab584",
+        "worktree_sha256": "2f305505c599305bd2d674234f502f3b9090fb73cea9a1317f0aa555a559c154",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fa4fc70b1f7e8cd073ab0e99b19255174a72f35a",
+        "worktree_sha256": "1ddd68c10c3865e0dd81b5eb184a81efbda11256b3933c446196322c39008a3e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f46016f866ddba95db25b5e24f909ed223b784e0",
+        "worktree_sha256": "6a12fb83a9bf6cfe50f48ffed8952c2843065eda9ba0cd9ecd7c15436d253de4",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/scripts/create-task-commit.sh",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b4e7ba1eb39ded29e31f59c66aa9411b1716fdc2",
+        "worktree_sha256": "78a3d50d2a2e20a150b36faec670f5ffc1d919c77bfa9a9a4d3e542e5216447a",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "c36832dff9f499ef328c3f312dbc15f70dff623f",
+        "worktree_sha256": "88b513e427a60bc4469d4e92ba2594bede9f183d51bcf27f066855e67fa7ad56",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/schemas/skill-interface.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9ed21a5ef2e444311fa129a616f399797cfb7dce",
+        "worktree_sha256": "42f639b5014720fa95c6150bea909ca27acc9bbc301c5ac763d20faa0610d30e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "09b342e901ecfe7e6f332f9b7e3f09a7c78fbf0cc5302347e2b4eb1da5701896",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f630e22ce88b827d3ed33ef57af8e840b4d917a2",
+        "worktree_sha256": "349ad0515fb252a86644b4fb519e28d3bdd85cf82d6d11c82f9482e899ca833e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9ed21a5ef2e444311fa129a616f399797cfb7dce",
+        "worktree_sha256": "42f639b5014720fa95c6150bea909ca27acc9bbc301c5ac763d20faa0610d30e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "89338c6e9c740fedbd41a927aed279b45f667bc2",
+        "worktree_sha256": "467ced9647e129387b89563c4972625e58bac65903950cb5d33bbac191e9943c",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "cc4cd872cfc0ce63c6e0f77a4476d68469c62870",
+        "worktree_sha256": "668df7275de9887c98b977246c15417874fd3f8fdc03e639b8e1d5890dbd0077",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/bash/run-skill-command.sh",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "0b94522b2976ceee287f0c61e87605eb84b27047ea6de713591d35cc0018e392",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "99fb5d65c6ede980708ce0df4fb82b8c4b24c797",
+        "worktree_sha256": "5adf05c18e50325aec96c801119ae498de56966b221c2a97ca6b844ef07227b2",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/workflow.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5d5726262fdb8920076b9fed50df7ef23cb67e8d",
+        "worktree_sha256": "b12eca88167a1fb1fc00280bad69c69913e43934532e4999e006821869f12d83",
+        "mode": "100644"
+      }
+    ],
+    "digest": "8e77ca330d8fb3face84ec9587cf1c931927fef8c93fc6d26484c6bf5d9ba356"
+  },
+  "path_classifications": [
+    {
+      "path": ".agents/skills/guru-create-task-commit/interface.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".agents/skills/guru-create-task-commit/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".agents/skills/guru-create-task-commit/scripts/create-task-commit.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".agents/skills/guru-create-task-commit/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".claude/skills/guru-create-task-commit/interface.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".claude/skills/guru-create-task-commit/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".claude/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".claude/skills/guru-create-task-commit/scripts/create-task-commit.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".claude/skills/guru-create-task-commit/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".codex/skills/guru-create-task-commit/interface.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".codex/skills/guru-create-task-commit/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".codex/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".codex/skills/guru-create-task-commit/scripts/create-task-commit.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".codex/skills/guru-create-task-commit/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".cursor/skills/guru-create-task-commit/interface.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".cursor/skills/guru-create-task-commit/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".cursor/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".cursor/skills/guru-create-task-commit/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/bash/run-skill-command.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/scripts/create-task-commit.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/guru-team/skills/schemas/skill-interface.schema.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/agent-assignment.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 checked_artifacts 已绑定该 task-scope 产物。",
+      "coverage_source": "phase2-check.json:checked_artifacts"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/check.jsonl",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/design.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 checked_artifacts 已绑定该 task-scope 产物。",
+      "coverage_source": "phase2-check.json:checked_artifacts"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/implement.jsonl",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/implement.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 checked_artifacts 已绑定该 task-scope 产物。",
+      "coverage_source": "phase2-check.json:checked_artifacts"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/implementation-handoff.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 checked_artifacts 已绑定该 task-scope 产物。",
+      "coverage_source": "phase2-check.json:checked_artifacts"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/issue-scope-ledger.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 checked_artifacts 已绑定该 task-scope 产物。",
+      "coverage_source": "phase2-check.json:checked_artifacts"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-check-report.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 checked_artifacts 已绑定该 task-scope 产物。",
+      "coverage_source": "phase2-check.json:checked_artifacts"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 checked_artifacts 已绑定该 task-scope 产物。",
+      "coverage_source": "phase2-check.json:checked_artifacts"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-findings.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/planning-approval.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/prd.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 checked_artifacts 已绑定该 task-scope 产物。",
+      "coverage_source": "phase2-check.json:checked_artifacts"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task-commit-plans/001.json",
+      "category": "task-reviewed",
+      "reason": "本次 mandatory skill invocation 的 task-local candidate evidence。",
+      "coverage_source": "skill-artifact"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task-start-context.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": ".trellis/workflow.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "docs/requirements/guru-team-trellis-flow.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "docs/requirements/README.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "docs/requirements/requirement-main.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "README.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/guru-team-extension.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/presets/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/scripts/create-task-commit.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/skills/guru-team/schemas/skill-interface.schema.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/interface.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface.schema.json",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/workflows/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/bash/run-skill-command.sh",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    },
+    {
+      "path": "trellis/workflows/guru-team/workflow.md",
+      "category": "task-reviewed",
+      "reason": "Phase 2 检查的 dirty_paths 已覆盖该 task-scope 变更。",
+      "coverage_source": "phase2-check.json:dirty_paths"
+    }
+  ],
+  "exact_stage_paths": [
+    ".agents/skills/guru-create-task-commit/SKILL.md",
+    ".agents/skills/guru-create-task-commit/interface.json",
+    ".agents/skills/guru-create-task-commit/references/contract.md",
+    ".agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+    ".agents/skills/guru-create-task-commit/scripts/create-task-commit.sh",
+    ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+    ".claude/skills/guru-create-task-commit/SKILL.md",
+    ".claude/skills/guru-create-task-commit/interface.json",
+    ".claude/skills/guru-create-task-commit/references/contract.md",
+    ".claude/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+    ".claude/skills/guru-create-task-commit/scripts/create-task-commit.sh",
+    ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+    ".codex/skills/guru-create-task-commit/SKILL.md",
+    ".codex/skills/guru-create-task-commit/interface.json",
+    ".codex/skills/guru-create-task-commit/references/contract.md",
+    ".codex/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+    ".codex/skills/guru-create-task-commit/scripts/create-task-commit.sh",
+    ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+    ".cursor/skills/guru-create-task-commit/SKILL.md",
+    ".cursor/skills/guru-create-task-commit/interface.json",
+    ".cursor/skills/guru-create-task-commit/references/contract.md",
+    ".cursor/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+    ".cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh",
+    ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/bash/run-skill-command.sh",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/scripts/create-task-commit.sh",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+    ".trellis/guru-team/skills/schemas/skill-interface.schema.json",
+    ".trellis/spec/docs/public-docs.md",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/agent-assignment.json",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/check.jsonl",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/design.md",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/implement.jsonl",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/implement.md",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/implementation-handoff.md",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/issue-scope-ledger.json",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-check-report.md",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-check.json",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-findings.json",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/planning-approval.json",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/prd.md",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task-commit-plans/001.json",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task-start-context.json",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task.json",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/guru-team-extension.json",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/SKILL.md",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/scripts/create-task-commit.sh",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+    "trellis/skills/guru-team/schemas/skill-interface.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/interface.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface.schema.json",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/bash/run-skill-command.sh",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "message": {
+    "subject": "feat(trellis): #125 明确 Skill standalone runtime 依赖",
+    "body": "背景：\nIssue #125 需要明确 Guru Team Skill standalone 模式的 runtime 依赖，避免将 direct discovery 误解为单目录可移植。\n\n变更：\n升级 Skill interface schema 至 1.1，新增 shared run-skill-command dispatcher、runtime capability 校验与 fail-closed remediation，并同步 canonical、dogfood、平台副本、installer、workflow 和 durable docs。\n\n边界：\n保留 workflow/standalone stable mode id；两种模式都依赖完整兼容 preset/runtime。#125 stacked 于 #122，未修改服务、数据库、容器、CI/CD 或部署资产。\n\n验证：\n380 tests passed；source/installed package validation、dogfood drift、clean throwaway/update-reapply、static checks 和 sidecar scan 通过。Exact feature-ref remote marketplace verification 留待 reviewed content push 后由 finish-work 执行。\n\nRefs #125",
+    "bytes": "feat(trellis): #125 明确 Skill standalone runtime 依赖\n\n背景：\nIssue #125 需要明确 Guru Team Skill standalone 模式的 runtime 依赖，避免将 direct discovery 误解为单目录可移植。\n\n变更：\n升级 Skill interface schema 至 1.1，新增 shared run-skill-command dispatcher、runtime capability 校验与 fail-closed remediation，并同步 canonical、dogfood、平台副本、installer、workflow 和 durable docs。\n\n边界：\n保留 workflow/standalone stable mode id；两种模式都依赖完整兼容 preset/runtime。#125 stacked 于 #122，未修改服务、数据库、容器、CI/CD 或部署资产。\n\n验证：\n380 tests passed；source/installed package validation、dogfood drift、clean throwaway/update-reapply、static checks 和 sidecar scan 通过。Exact feature-ref remote marketplace verification 留待 reviewed content push 后由 finish-work 执行。\n\nRefs #125\n",
+    "sha256": "e4adb1160e2365fc568a02da84542ee443372fb4e50d96c6409e5503a80a89f5"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "Codex main session /root",
+    "summary": "已审查 #125 的精确 staging、提交语义、Docs SSOT、issue ledger、安全/部署边界、证据 freshness 与无关改动保留；candidate 可进入确定性 validator/executor。",
+    "evidence": [
+      "当前 snapshot 的 64 个 dirty path 均由 fresh phase2-check.json 的 dirty_paths 或 checked_artifacts 覆盖；candidate self 是唯一 skill-artifact path，未发现 unreviewed/ambiguous/unrelated dirty path。",
+      "Phase 3.3 已确认四份 .trellis/spec、durable requirements、canonical workflow/package contract 与三份 public README 已承接 mode routing、runtime dependency、dispatcher、installer/update-reapply、fail-closed remediation；无需追加 spec。",
+      "commit message 为中文 Conventional Commit，仅使用 Refs #125；issue-scope-ledger.json 保持 #125 close candidate、#122 related-only，不在 work commit 使用 close keyword。",
+      "变更未涉及 secret、客户数据、服务/API、数据库 migration、容器、Kubernetes、CI/CD 或 Makefile；exact feature-ref remote marketplace verification 明确留待 reviewed content push 后的 finish-work gate。",
+      "工作树没有 #122 archive diff、workspace journal、review/PR/publish artifact 或 .new/.bak；本 skill 不 amend/rebase/reset/force/push，未发现需要额外 human confirmation 的危险操作。"
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "explicit-user-confirmation-and-continue",
+    "evidence": "用户在本任务 handoff 后连续两次明确“确认”，并在当前 turn 要求“继续”；授权仅适用于本 candidate 的 exact_stage_paths、所列 commit message 与单次非改写 task work commit，不含 push、PR、archive 或 issue closure。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-14T02:29:13Z",
+    "plan_digest": "107b975b1eb22ee8cb0db984ba566ce06e26a453e68f177af472224a6bc4bf4e"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

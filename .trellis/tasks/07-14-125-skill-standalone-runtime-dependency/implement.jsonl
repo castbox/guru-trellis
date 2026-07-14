@@ -1,0 +1,7 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "实现 public Skill mode、runtime dependency、distribution 与 typed-exit 合同"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "实现 shared dispatcher 且保持 AI 判断与确定性脚本边界"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "实现 managed asset、extension manifest、upgrade 与 throwaway 安装合同"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "同步三份 public README 的 standalone/runtime 语义"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "核对 interface、manifest、runtime、installer 与平台副本的跨层数据流"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "禁止复制 parser、task/gate 与 Git transaction 逻辑"}

@@ -54,6 +54,32 @@ missing source directory because it is a small installer script. If adding more
 complex failure modes there, preserve JSON output for normal success and avoid
 printing secrets or local-only data.
 
+## Shared Skill Runtime Dispatcher
+
+`scripts/bash/run-skill-command.sh` is the only public dispatcher for active
+Guru Team Skill package validators. The Bash file remains a thin wrapper around
+the Python `run-skill-command` subcommand. Package wrappers pass only
+`--package-root`, one fixed `--validator` id, and the original arguments after
+`--`; they never select a runtime path or call a companion command directly.
+
+Before the target companion command runs, the Python dispatcher must derive the
+repository root from its audited installed location and component-wise `lstat`
+the dispatcher, package root, package interface, installed extension manifest,
+installed package inventory, and selected discovery copy. It must then validate
+interface schema 1.1, `runtime_dependency`, extension/runtime API identity,
+dispatcher identity, distribution/portability, installed package drift, the
+fixed validator id, and its declared `runtime_command`. The command must be a
+published extension `companion_scripts` id and map to the managed executable
+`.trellis/guru-team/scripts/bash/<runtime-command>.sh`.
+
+Any missing manifest/dispatcher/package, incompatible API, dependency or
+command mismatch, unmanaged discovery copy, sidecar, or drift exits 2 before
+the companion command. The error must say that the Skill package is not
+self-contained/portable, instruct the caller to install or upgrade the complete
+Guru Team preset, resolve `.new` / `.bak`, rerun source and installed package
+validation, and retry. There is no legacy-command fallback. Runtime compatibility
+is an objective precondition only and never becomes an AI Review Gate pass.
+
 ## GitHub and Git Operations
 
 Always gate GitHub operations with `gh auth status` through `require_gh_auth()`.

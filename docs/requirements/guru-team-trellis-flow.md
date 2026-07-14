@@ -338,6 +338,15 @@ immutable commit blob/returned result digest 仍授权 `committed`；ownership
 丢失时保留并发 writer 状态。`committed` 的唯一 consumer 是 Branch Review 或 finding closure，
 `revision-required` 唯一重入同一 skill，`blocked` 唯一 fail closed。
 
+该 public Skill 的 `workflow` / `standalone` mode id 只区分 global workflow mandatory
+routing 与平台 direct discovery。两种 mode 使用相同 entry preconditions 和 closed-loop
+阶段，并都依赖完整且兼容的 Guru Team extension runtime；复制单个 Skill 目录不构成
+self-contained/portable 分发。Package wrapper 只能定位 shared `run-skill-command`
+dispatcher、传递固定 validator id 并转发参数。Dispatcher 在目标 companion command 之前
+校验 interface schema 1.1 dependency、installed extension manifest/API、managed package
+inventory、discovery copy drift 与 `runtime_command` membership；任一不匹配都 fail closed，
+提示安装或升级完整 preset、处理 sidecar 并重新验证后重试。
+
 Branch Review finding 产生非 metadata task work 时，流程必须返回实现与完整 Phase 2；
 下一次 commit 使用新的 sequence、fresh Phase 2 digest、fresh pre-commit `HEAD` 和 dirty
 snapshot，旧 plan 不可复用。Platform continue/launcher 只加载 stable skill id 和消费

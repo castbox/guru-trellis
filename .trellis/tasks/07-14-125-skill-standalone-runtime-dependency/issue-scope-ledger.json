@@ -1,0 +1,28 @@
+{
+  "primary_issue": {
+    "number": 125,
+    "url": "https://github.com/castbox/guru-trellis/issues/125",
+    "title": "明确 Guru Team Skill standalone 模式的 runtime 依赖语义",
+    "reason": "intake 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 125,
+      "url": "https://github.com/castbox/guru-trellis/issues/125",
+      "title": "明确 Guru Team Skill standalone 模式的 runtime 依赖语义",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 122,
+      "url": "https://github.com/castbox/guru-trellis/issues/122",
+      "title": "将 task work commit 拆分为可复用 closed-loop skill",
+      "reason": "#125 以 #122 / PR #124 的实现 HEAD 为 stacked 基线，只引用其 package/runtime 事实，不改变 #122 close 语义。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": []
+}

@@ -12291,14 +12291,34 @@ SKILL_PLATFORM_ROOTS = {
 SKILL_INVOKE_RE = re.compile(r"^\s*<!--\s*guru-skill-invoke:\s*(\{.*\})\s*-->\s*$")
 SKILL_EXIT_RE = re.compile(r"^\s*<!--\s*guru-skill-exit:\s*(\{.*\})\s*-->\s*$")
 SKILL_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
+SKILL_INTERFACE_SCHEMA_VERSION = "1.1"
+SKILL_INTERFACE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.1.json"
+SKILL_RUNTIME_DEPENDENCY = {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained",
+}
+SKILL_RUNTIME_CAPABILITY = {
+    "api_version": "1.0",
+    "dispatcher": "run-skill-command",
+    "manifest_path": ".trellis/guru-team/extension.json",
+}
+SKILL_RUNTIME_REMEDIATION = (
+    "Guru Team Skill packages are not self-contained or portable. Install or upgrade the complete "
+    "Guru Team preset, resolve every .new/.bak sidecar, run source and installed Skill package "
+    "validation, then retry."
+)
 SKILL_CONTRACT_SCHEMAS = {
     "registry": {
         "sha256": "8d81f69b02667d77fa5d21dce320de7feac25d7d92702336b89358e1f65cda1b",
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.0.json",
     },
     "interface": {
-        "sha256": "e3377ced5638ea486335f174fe9604111aedec57dff196d89d76c99b2042036c",
-        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.0.json",
+        "sha256": "42f639b5014720fa95c6150bea909ca27acc9bbc301c5ac763d20faa0610d30e",
+        "id": SKILL_INTERFACE_SCHEMA_ID,
     },
 }
 
@@ -12689,6 +12709,59 @@ def skill_read_frontmatter(path: Path, label: str, errors: list[str]) -> dict[st
     return fields if valid else None
 
 
+def skill_extension_runtime_contract(
+    manifest: dict[str, Any] | None,
+    label: str,
+    errors: list[str],
+    *,
+    installed: bool,
+) -> tuple[dict[str, Any] | None, set[str]]:
+    extension = manifest.get("extension") if installed and isinstance(manifest, dict) else manifest
+    if not isinstance(extension, dict):
+        errors.append(f"{label} has no extension contract")
+        return None, set()
+    if extension.get("extension_id") != SKILL_RUNTIME_DEPENDENCY["extension_id"]:
+        errors.append(f"{label} has an incompatible extension id")
+    public_api = extension.get("public_api")
+    if not isinstance(public_api, dict):
+        errors.append(f"{label} has no public API contract")
+        return None, set()
+    skill_contracts = public_api.get("skill_contracts")
+    if (
+        not isinstance(skill_contracts, dict)
+        or skill_contracts.get("interface_schema_id") != "guru-team-skill-interface-1.1"
+    ):
+        errors.append(f"{label} has an incompatible Skill interface schema id")
+    runtime = public_api.get("skill_runtime")
+    if not isinstance(runtime, dict) or runtime != SKILL_RUNTIME_CAPABILITY:
+        errors.append(f"{label} has an incompatible Skill runtime capability")
+        runtime = None
+    commands = public_api.get("companion_scripts")
+    if (
+        not isinstance(commands, list)
+        or any(not isinstance(item, str) or not SKILL_ROUTE_ID_PATTERN.fullmatch(item) for item in commands)
+        or len(commands) != len(set(commands))
+    ):
+        errors.append(f"{label} has an invalid companion script inventory")
+        command_ids: set[str] = set()
+    else:
+        command_ids = set(commands)
+        if SKILL_RUNTIME_DEPENDENCY["dispatcher"] not in command_ids:
+            errors.append(f"{label} does not publish the Skill runtime dispatcher")
+    return runtime, command_ids
+
+
+def skill_default_extension_manifest_path(skills_root: Path, boundary: Path) -> Path:
+    candidates = [boundary / "trellis/guru-team-extension.json"]
+    if len(skills_root.parents) > 1:
+        candidates.append(skills_root.parents[1] / "guru-team-extension.json")
+    candidates.append(skills_root / "extension.json")
+    for candidate in candidates:
+        if skill_lexical_relative(boundary, candidate) is not None and os.path.lexists(candidate):
+            return candidate
+    return candidates[-1]
+
+
 def validate_skill_interface(
     skills_root: Path,
     entry: dict[str, Any],
@@ -12696,6 +12769,8 @@ def validate_skill_interface(
     *,
     boundary_root: Path | None = None,
     interface_schema: dict[str, Any] | None = None,
+    runtime_capability: dict[str, Any] | None = None,
+    runtime_commands: set[str] | None = None,
 ) -> dict[str, Any] | None:
     skill_id = str(entry.get("id") or "")
     expected_package = f"packages/{skill_id}"
@@ -12752,14 +12827,14 @@ def validate_skill_interface(
         ))
     required_interface = {
         "$schema", "schema_version", "id", "name", "description", "state", "modes",
-        "entry_preconditions", "ordered_stages", "artifacts", "schemas", "validators",
+        "entry_preconditions", "runtime_dependency", "ordered_stages", "artifacts", "schemas", "validators",
         "external_exits", "reentry", "tests", "platform_destinations",
     }
     if set(interface) != required_interface:
         errors.append(f"interface for {skill_id} has invalid fields")
     if interface.get("$schema") != "../../schemas/skill-interface.schema.json":
         errors.append(f"interface for {skill_id} has unknown schema id")
-    if interface.get("schema_version") != "1.0" or interface.get("state") != "active":
+    if interface.get("schema_version") != SKILL_INTERFACE_SCHEMA_VERSION or interface.get("state") != "active":
         errors.append(f"interface for {skill_id} has invalid lifecycle/schema version")
     if (
         interface.get("id") != skill_id
@@ -12779,6 +12854,15 @@ def validate_skill_interface(
     if interface.get("ordered_stages") != SKILL_INTERFACE_STAGES:
         errors.append(f"interface for {skill_id} has invalid closed-loop stage order")
 
+    dependency = interface.get("runtime_dependency")
+    if not isinstance(dependency, dict) or dependency != SKILL_RUNTIME_DEPENDENCY:
+        errors.append(f"interface for {skill_id} has an incompatible runtime dependency")
+    elif runtime_capability is not None and any(
+        dependency[key] != runtime_capability[key]
+        for key in ("api_version", "dispatcher", "manifest_path")
+    ):
+        errors.append(f"interface for {skill_id} runtime dependency does not match the extension capability")
+
     preconditions = skill_unique_ids(interface.get("entry_preconditions"), f"{skill_id}.entry_preconditions", errors)
     precondition_ids = {str(item.get("id")) for item in preconditions if isinstance(item.get("id"), str)}
     for item in preconditions:
@@ -12793,7 +12877,8 @@ def validate_skill_interface(
         mode_ids: list[list[str]] = []
         for mode_name in ("workflow", "standalone"):
             mode = modes.get(mode_name)
-            ids = mode.get("entry_precondition_ids") if isinstance(mode, dict) and set(mode) == {"entry_precondition_ids"} else None
+            expected_routing = "global_workflow" if mode_name == "workflow" else "direct_discovery"
+            ids = mode.get("entry_precondition_ids") if isinstance(mode, dict) and set(mode) == {"routing", "entry_precondition_ids"} else None
             valid_ids = (
                 isinstance(ids, list)
                 and bool(ids)
@@ -12801,6 +12886,7 @@ def validate_skill_interface(
             )
             if (
                 not valid_ids
+                or mode.get("routing") != expected_routing
                 or len(ids) != len(set(ids))
                 or set(ids) != precondition_ids
             ):
@@ -12841,9 +12927,18 @@ def validate_skill_interface(
         errors.append(f"interface for {skill_id} declares no validators")
     for item in validators:
         command = skill_safe_relative(item.get("command"))
-        if set(item) != {"id", "command", "objective_scope"} or command is None or not str(item.get("objective_scope") or "").strip():
+        runtime_command = item.get("runtime_command")
+        if (
+            set(item) != {"id", "command", "runtime_command", "objective_scope"}
+            or command is None
+            or not isinstance(runtime_command, str)
+            or not SKILL_ROUTE_ID_PATTERN.fullmatch(runtime_command)
+            or not str(item.get("objective_scope") or "").strip()
+        ):
             errors.append(f"interface for {skill_id} has invalid validator declaration")
             continue
+        if runtime_commands is not None and runtime_command not in runtime_commands:
+            errors.append(f"interface for {skill_id} references an unpublished runtime command")
         validator_path = package / command
         validator_stat = skill_lstat_path(boundary, validator_path, f"validator {command.as_posix()} for {skill_id}", errors, kind="file")
         if validator_stat is not None and not (validator_stat.st_mode & stat.S_IXUSR):
@@ -12957,6 +13052,8 @@ def _validate_skill_source(
     *,
     require_workflow: bool = True,
     boundary_root: Path | None = None,
+    extension_manifest_path: Path | None = None,
+    installed_extension: bool = False,
 ) -> dict[str, Any]:
     errors: list[str] = []
     boundary = boundary_root or Path(os.path.commonpath([
@@ -12990,6 +13087,16 @@ def _validate_skill_source(
             "interface",
             errors,
         )
+    extension_path = extension_manifest_path or skill_default_extension_manifest_path(skills_root, boundary)
+    extension_manifest = None
+    if skill_lstat_path(boundary, extension_path, "Skill runtime extension manifest", errors, kind="file") is not None:
+        extension_manifest = skill_read_json(extension_path, "Skill runtime extension manifest", errors)
+    runtime_capability, runtime_commands = skill_extension_runtime_contract(
+        extension_manifest,
+        "Skill runtime extension manifest",
+        errors,
+        installed=installed_extension,
+    )
     entries: list[dict[str, Any]] = []
     reserved: set[str] = set()
     active: dict[str, dict[str, Any]] = {}
@@ -13027,24 +13134,29 @@ def _validate_skill_source(
                     errors,
                     boundary_root=boundary,
                     interface_schema=interface_schema,
+                    runtime_capability=runtime_capability,
+                    runtime_commands=runtime_commands,
                 )
                 if interface is not None:
                     interfaces[skill_id] = interface
             else:
                 errors.append(f"registry entry {skill_id} has unknown state")
 
-    workflow_stat = skill_lstat_path(
-        boundary,
-        workflow,
-        "workflow marker source",
-        errors,
-        kind="file",
-        required=require_workflow,
-    )
-    if workflow_stat is None:
+    workflow_stat = None
+    if not require_workflow:
         invokes, exit_markers = [], []
     else:
-        invokes, exit_markers = parse_skill_workflow_markers(workflow, errors, missing_ok=False)
+        workflow_stat = skill_lstat_path(
+            boundary,
+            workflow,
+            "workflow marker source",
+            errors,
+            kind="file",
+        )
+        if workflow_stat is None:
+            invokes, exit_markers = [], []
+        else:
+            invokes, exit_markers = parse_skill_workflow_markers(workflow, errors, missing_ok=False)
     invoke_counts: dict[str, int] = {}
     for marker in invokes:
         skill_id = str(marker.get("skill") or "")
@@ -13056,6 +13168,8 @@ def _validate_skill_source(
         elif skill_id not in active:
             errors.append(f"unknown skill {skill_id} is referenced by a mandatory route")
     for skill_id in active:
+        if workflow_stat is None:
+            continue
         count = invoke_counts.get(skill_id, 0)
         if count == 0:
             errors.append(f"active skill {skill_id} has no mandatory invoke marker")
@@ -13082,6 +13196,8 @@ def _validate_skill_source(
             errors.append(f"unknown skill {skill_id} has an exit route")
     declared_exits: set[tuple[str, str]] = set()
     for skill_id, interface in interfaces.items():
+        if workflow_stat is None:
+            continue
         raw_exits = interface.get("external_exits")
         for item in raw_exits if isinstance(raw_exits, list) else []:
             if not isinstance(item, dict):
@@ -13135,6 +13251,8 @@ def validate_skill_source(
     *,
     require_workflow: bool = True,
     boundary_root: Path | None = None,
+    extension_manifest_path: Path | None = None,
+    installed_extension: bool = False,
 ) -> dict[str, Any]:
     try:
         return _validate_skill_source(
@@ -13142,6 +13260,8 @@ def validate_skill_source(
             workflow,
             require_workflow=require_workflow,
             boundary_root=boundary_root,
+            extension_manifest_path=extension_manifest_path,
+            installed_extension=installed_extension,
         )
     except Exception:
         return {
@@ -13158,7 +13278,14 @@ def validate_skill_source(
         }
 
 
-def _validate_skill_installed(root: Path, skills_root: Path, workflow: Path, manifest_path: Path) -> dict[str, Any]:
+def _validate_skill_installed(
+    root: Path,
+    skills_root: Path,
+    workflow: Path,
+    manifest_path: Path,
+    *,
+    require_workflow: bool | None = None,
+) -> dict[str, Any]:
     errors: list[str] = []
     root = Path(os.path.abspath(root))
     registry_path = skills_root / "registry.json"
@@ -13170,8 +13297,10 @@ def _validate_skill_installed(root: Path, skills_root: Path, workflow: Path, man
     source_result = validate_skill_source(
         skills_root,
         workflow,
-        require_workflow=has_active,
+        require_workflow=has_active if require_workflow is None else require_workflow,
         boundary_root=root,
+        extension_manifest_path=manifest_path,
+        installed_extension=True,
     )
     errors.extend(source_result["errors"])
     manifest_stat = skill_lstat_path(root, manifest_path, "installed extension manifest", errors, kind="file")
@@ -13480,9 +13609,22 @@ def _validate_skill_installed(root: Path, skills_root: Path, workflow: Path, man
     }
 
 
-def validate_skill_installed(root: Path, skills_root: Path, workflow: Path, manifest_path: Path) -> dict[str, Any]:
+def validate_skill_installed(
+    root: Path,
+    skills_root: Path,
+    workflow: Path,
+    manifest_path: Path,
+    *,
+    require_workflow: bool | None = None,
+) -> dict[str, Any]:
     try:
-        return _validate_skill_installed(root, skills_root, workflow, manifest_path)
+        return _validate_skill_installed(
+            root,
+            skills_root,
+            workflow,
+            manifest_path,
+            require_workflow=require_workflow,
+        )
     except Exception:
         return {
             "status": "failed",
@@ -13501,6 +13643,144 @@ def validate_skill_installed(root: Path, skills_root: Path, workflow: Path, mani
             },
             "errors": ["installed skill validation failed safely on malformed input"],
         }
+
+
+def skill_runtime_block(reason: str) -> WorkflowError:
+    return WorkflowError(f"{reason} {SKILL_RUNTIME_REMEDIATION}", exit_code=2)
+
+
+def resolve_skill_runtime_command(
+    package_root_value: str,
+    validator_id: str,
+    *,
+    runtime_file: Path | None = None,
+) -> tuple[Path, list[str]]:
+    runtime_path = Path(os.path.abspath(runtime_file or Path(__file__)))
+    expected_runtime_relative = Path(".trellis/guru-team/scripts/python/guru_team_trellis.py")
+    if len(runtime_path.parents) < 5:
+        raise skill_runtime_block("The shared Skill runtime is not installed in its audited layout.")
+    root = runtime_path.parents[4]
+    if skill_lexical_relative(root, runtime_path) != expected_runtime_relative:
+        raise skill_runtime_block("The shared Skill runtime is not installed in its audited layout.")
+
+    runtime_errors: list[str] = []
+    if skill_lstat_path(root, runtime_path, "installed Skill runtime", runtime_errors, kind="file") is None:
+        raise skill_runtime_block("The installed Skill runtime path is unsafe or missing.")
+    dispatcher_path = root / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+    dispatcher_stat = skill_lstat_path(
+        root,
+        dispatcher_path,
+        "installed Skill runtime dispatcher",
+        runtime_errors,
+        kind="file",
+    )
+    if dispatcher_stat is None or not (dispatcher_stat.st_mode & stat.S_IXUSR):
+        raise skill_runtime_block("The installed Skill runtime dispatcher is unsafe, missing, or not executable.")
+
+    raw_package = Path(package_root_value)
+    if (
+        not package_root_value
+        or "\\" in package_root_value
+        or not raw_package.is_absolute()
+        or any(part in {"", ".", ".."} for part in raw_package.parts[1:])
+    ):
+        raise skill_runtime_block("The Skill package root is not a safe absolute package path.")
+    package_root = Path(os.path.abspath(raw_package))
+    package_relative = skill_lexical_relative(root, package_root)
+    if package_relative is None:
+        raise skill_runtime_block("The Skill package root is outside the installed repository.")
+    parts = package_relative.parts
+    platform = ""
+    if len(parts) == 5 and parts[:4] == (".trellis", "guru-team", "skills", "packages"):
+        platform = "installed"
+    elif len(parts) == 3 and parts[1] == "skills":
+        platform_by_root = {
+            ".agents": "shared",
+            ".codex": "codex",
+            ".cursor": "cursor",
+            ".claude": "claude",
+        }
+        platform = platform_by_root.get(parts[0], "")
+    if not platform or not SKILL_ID_PATTERN.fullmatch(parts[-1]):
+        raise skill_runtime_block("The Skill package root is not an audited installed or discovery layout.")
+    skill_id = parts[-1]
+    if skill_lstat_path(root, package_root, "invoked Skill package", runtime_errors, kind="directory") is None:
+        raise skill_runtime_block("The invoked Skill package is unsafe or missing.")
+
+    manifest_path = root / SKILL_RUNTIME_DEPENDENCY["manifest_path"]
+    installed_result = validate_skill_installed(
+        root,
+        root / ".trellis/guru-team/skills",
+        root / ".trellis/workflow.md",
+        manifest_path,
+        require_workflow=False,
+    )
+    if installed_result.get("status") != "passed":
+        raise skill_runtime_block("The installed Guru Team Skill inventory is missing, incompatible, or drifted.")
+
+    manifest_errors: list[str] = []
+    manifest = skill_read_json(manifest_path, "installed extension manifest", manifest_errors)
+    capability, runtime_commands = skill_extension_runtime_contract(
+        manifest,
+        "installed extension manifest",
+        manifest_errors,
+        installed=True,
+    )
+    if manifest_errors or capability is None:
+        raise skill_runtime_block("The installed Guru Team extension manifest is incompatible.")
+
+    interface_path = package_root / "interface.json"
+    if skill_lstat_path(root, interface_path, "invoked Skill interface", runtime_errors, kind="file") is None:
+        raise skill_runtime_block("The invoked Skill interface is unsafe or missing.")
+    interface = skill_read_json(interface_path, "invoked Skill interface", runtime_errors)
+    if interface is None or interface.get("id") != skill_id:
+        raise skill_runtime_block("The invoked Skill interface identity is invalid.")
+    if interface.get("runtime_dependency") != SKILL_RUNTIME_DEPENDENCY:
+        raise skill_runtime_block("The invoked Skill runtime dependency is incompatible.")
+    if any(
+        interface["runtime_dependency"][key] != capability[key]
+        for key in ("api_version", "dispatcher", "manifest_path")
+    ):
+        raise skill_runtime_block("The invoked Skill runtime dependency does not match the installed extension API.")
+
+    validators = interface.get("validators")
+    matches = [
+        item for item in validators if isinstance(item, dict) and item.get("id") == validator_id
+    ] if isinstance(validators, list) else []
+    if len(matches) != 1:
+        raise skill_runtime_block("The requested Skill validator id is missing or ambiguous.")
+    runtime_command = matches[0].get("runtime_command")
+    if (
+        not isinstance(runtime_command, str)
+        or not SKILL_ROUTE_ID_PATTERN.fullmatch(runtime_command)
+        or runtime_command == SKILL_RUNTIME_DEPENDENCY["dispatcher"]
+        or runtime_command not in runtime_commands
+    ):
+        raise skill_runtime_block("The requested Skill validator has an incompatible runtime command mapping.")
+
+    command_path = root / f".trellis/guru-team/scripts/bash/{runtime_command}.sh"
+    command_stat = skill_lstat_path(
+        root,
+        command_path,
+        "Skill runtime command",
+        runtime_errors,
+        kind="file",
+    )
+    if command_stat is None or not (command_stat.st_mode & stat.S_IXUSR):
+        raise skill_runtime_block("The mapped Skill runtime command is unsafe, missing, or not executable.")
+    return command_path, [platform, skill_id]
+
+
+def cmd_run_skill_command(args: argparse.Namespace) -> dict[str, Any]:
+    command_path, _ = resolve_skill_runtime_command(args.package_root, args.validator)
+    forwarded = list(args.runtime_args)
+    if forwarded[:1] == ["--"]:
+        forwarded = forwarded[1:]
+    try:
+        os.execv(command_path, [str(command_path), *forwarded])
+    except OSError as exc:
+        raise skill_runtime_block("The mapped Skill runtime command could not be executed.") from exc
+    raise skill_runtime_block("The mapped Skill runtime command could not be executed.")
 
 
 def cmd_check_skill_packages(args: argparse.Namespace) -> dict[str, Any]:
@@ -16460,6 +16740,11 @@ def build_parser() -> argparse.ArgumentParser:
     skill_packages.add_argument("--skills-root", help=argparse.SUPPRESS)
     skill_packages.add_argument("--workflow", help=argparse.SUPPRESS)
     skill_packages.add_argument("--manifest", help=argparse.SUPPRESS)
+
+    skill_runtime = sub.add_parser("run-skill-command")
+    skill_runtime.add_argument("--package-root", required=True)
+    skill_runtime.add_argument("--validator", required=True)
+    skill_runtime.add_argument("runtime_args", nargs=argparse.REMAINDER)
     boundary.add_argument(
         "--allow-source-clean",
         action="store_true",
@@ -16762,6 +17047,8 @@ def main() -> int:
             payload = cmd_check_workspace_boundary(args)
         elif args.command == "check-skill-packages":
             payload = cmd_check_skill_packages(args)
+        elif args.command == "run-skill-command":
+            payload = cmd_run_skill_command(args)
         elif args.command == "resolve-human-artifacts":
             payload = cmd_resolve_human_artifacts(args)
         elif args.command == "verify-marketplace":
