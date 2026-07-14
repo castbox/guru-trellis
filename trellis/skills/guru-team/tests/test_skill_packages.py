@@ -66,16 +66,19 @@ class SourceValidationTests(unittest.TestCase):
     def write_skill(self, content: str) -> None:
         (self.root / "packages/guru-example-action/SKILL.md").write_text(content, encoding="utf-8")
 
-    def test_production_registry_preserves_tombstone_and_activates_task_commit(self) -> None:
+    def test_production_registry_preserves_tombstone_and_activates_public_skills(self) -> None:
         result = runtime.validate_skill_source(
             SKILLS_ROOT,
             REPO / "trellis/workflows/guru-team/workflow.md",
         )
         self.assertEqual(result["status"], "passed", result["errors"])
         self.assertEqual(result["facts"]["reserved_ids"], ["guru-create-work-commit"])
-        self.assertEqual(result["facts"]["active_ids"], ["guru-create-task-commit"])
-        self.assertEqual(result["facts"]["invoke_markers"], 1)
-        self.assertEqual(result["facts"]["exit_markers"], 3)
+        self.assertEqual(
+            result["facts"]["active_ids"],
+            ["guru-create-task-commit", "guru-sync-base"],
+        )
+        self.assertEqual(result["facts"]["invoke_markers"], 2)
+        self.assertEqual(result["facts"]["exit_markers"], 6)
 
     def test_production_task_commit_package_contract(self) -> None:
         package = SKILLS_ROOT / "packages/guru-create-task-commit"
@@ -107,6 +110,45 @@ class SourceValidationTests(unittest.TestCase):
         self.assertNotIn("def validate_commit_message", contract)
         self.assertEqual(workflow.count('guru-skill-invoke: {"skill":"guru-create-task-commit"'), 1)
         self.assertEqual(workflow.count('guru-skill-exit: {"skill":"guru-create-task-commit"'), 3)
+
+    def test_sync_base_entrypoints_bind_prepare_to_reviewed_resolution(self) -> None:
+        start_paths = [
+            REPO / "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+            REPO / "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+            REPO / "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+        ]
+        entry_paths = [
+            REPO / ".trellis/workflow.md",
+            REPO / "trellis/workflows/guru-team/workflow.md",
+            *start_paths,
+        ]
+        command = ".trellis/guru-team/scripts/bash/prepare-task.sh --json"
+        for path in entry_paths:
+            text = path.read_text(encoding="utf-8")
+            offsets = []
+            start = 0
+            while (offset := text.find(command, start)) >= 0:
+                offsets.append(offset)
+                start = offset + len(command)
+            self.assertTrue(offsets, path)
+            for offset in offsets:
+                command_window = text[offset:offset + 320]
+                self.assertIn("--resolution-file", command_window, path)
+                self.assertIn("--expected-resolution-sha256", command_window, path)
+
+        for path in start_paths:
+            text = path.read_text(encoding="utf-8")
+            route_offset = text.find("mandatory invoke `guru-sync-base`")
+            context_offset = text.find("python3 ./.trellis/scripts/get_context.py")
+            self.assertGreaterEqual(route_offset, 0, path)
+            self.assertGreaterEqual(context_offset, 0, path)
+            self.assertLess(route_offset, context_offset, path)
+
+        flow = (REPO / "docs/requirements/guru-team-trellis-flow.md").read_text(encoding="utf-8")
+        self.assertIn(
+            'prepare-task.sh --json --resolution-file ... --expected-resolution-sha256 ... "<request>"',
+            flow,
+        )
 
     def test_platform_entries_and_workflows_only_route_task_commit_skill(self) -> None:
         entries = [
@@ -948,7 +990,7 @@ class ReservedInstalledValidationTests(unittest.TestCase):
 
 
 class ProductionDistributionTests(unittest.TestCase):
-    def test_active_task_commit_package_installs_to_all_selected_roots(self) -> None:
+    def test_active_packages_install_to_all_selected_roots(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             repo = Path(temp)
             (repo / ".trellis").mkdir()
@@ -959,13 +1001,17 @@ class ProductionDistributionTests(unittest.TestCase):
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["reserved_ids"], ["guru-create-work-commit"])
-            self.assertEqual(result["active_ids"], ["guru-create-task-commit"])
+            self.assertEqual(result["active_ids"], ["guru-create-task-commit", "guru-sync-base"])
             self.assertFalse((repo / ".agents/skills/guru-create-work-commit").exists())
             for root in (".agents", ".codex", ".cursor", ".claude"):
-                package = repo / root / "skills/guru-create-task-commit"
-                self.assertTrue((package / "SKILL.md").is_file())
-                self.assertTrue((package / "schemas/task-commit-plan.schema.json").is_file())
-                self.assertTrue(os.access(package / "scripts/create-task-commit.sh", os.X_OK))
+                task_commit = repo / root / "skills/guru-create-task-commit"
+                self.assertTrue((task_commit / "SKILL.md").is_file())
+                self.assertTrue((task_commit / "schemas/task-commit-plan.schema.json").is_file())
+                self.assertTrue(os.access(task_commit / "scripts/create-task-commit.sh", os.X_OK))
+                sync_base = repo / root / "skills/guru-sync-base"
+                self.assertTrue((sync_base / "SKILL.md").is_file())
+                self.assertTrue((sync_base / "schemas/base-sync-result.schema.json").is_file())
+                self.assertTrue(os.access(sync_base / "scripts/sync-base.sh", os.X_OK))
 
             manifest = dst / "extension.json"
             manifest.write_text(json.dumps({

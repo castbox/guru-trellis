@@ -55,6 +55,8 @@ flowchart TD
   B["注入上下文<br/>trellis-bootstrap / codex-mode / workflow-state"]:::codex
 
   R{"AI 判断入口"}:::guru
+  SB["mandatory guru-sync-base<br/>resolve -> AI confirm -> execute -> review -> validate"]:::guru
+  BS["sync-base / check-base-sync<br/>digest-bound fetch + ff-only + 3-way equality"]:::script
   S0["trellis-start fallback<br/>phase + packages + current task + Git facts"]:::guru
   P0["Phase 0: Pre-task intake<br/>不直接 task.py create"]:::guru
   CE["check-env.sh --json<br/>GitHub CLI / auth / repo 环境"]:::script
@@ -90,7 +92,9 @@ flowchart TD
 
   U --> H --> W --> B --> R
   R -->|"bootstrap 缺失或显式要求"| S0
-  R -->|"无 active task 且任务会改文件"| P0
+  R -->|"无 active task 且任务会改文件"| SB --> BS -->|"synced"| P0
+  SB -->|"skipped"| SkipRoute["original non-repo route"]:::guru
+  SB -->|"blocked"| StopBase["停止：base sync blocked"]:::artifact
   R -->|"已有 active task 或显式 continue"| P1
   R -->|"显式 finish-work"| FWEntry
 
@@ -137,8 +141,15 @@ sequenceDiagram
   Hook-->>Codex: 注入 trellis-bootstrap / codex-mode / workflow-state
   Codex->>AI: 读取当前状态并分类请求
   alt 无 active task 且会产生文件变更
+    AI->>Script: sync-base --resolve-only
+    Script-->>AI: selected-base resolution + resolution_sha256
+    AI->>AI: 审查 invocation intent / source / selected base
+    AI->>Script: sync-base --execute --resolution-file ... --expected-resolution-sha256 ...
+    Script-->>AI: base-sync result + facts_sha256
+    AI->>Script: check-base-sync --evidence-file ...
+    Script-->>AI: schema / digest / live Git equality passed
     AI->>Script: check-env.sh --json
-    AI->>Script: prepare-task.sh --json "<request>"
+    AI->>Script: prepare-task.sh --json --resolution-file ... --expected-resolution-sha256 ... "<request>"
     Script-->>AI: stdout JSON planner output
     AI-->>User: 展示 duplicate / proposed issue / base / branch / worktree / naming
   else 只是对话或轻量查询
@@ -154,18 +165,24 @@ sequenceDiagram
 | --- | --- | --- |
 | Codex hook | Trellis 支持 `UserPromptSubmit` workflow-state nudge，hook 从 `workflow.md` 读取状态块。 | Guru Team 在 no_task 状态下注入 Phase 0 intake 规则，并给 Codex 注入 `codex.dispatch_mode` 说明。 |
 | Request triage | Trellis 原生允许 AI 按 workflow 和 task 状态执行。 | Guru Team 要求 issue-backed、task-like、file-changing 请求先跑 `check-env` + `prepare-task`，而不是裸 `task.py create`。 |
+| Base sync closed loop | 官方 Trellis 不替 Guru Team 选择或刷新业务 base。 | Tool-free route 后 mandatory invoke `guru-sync-base`；repo-changing route 只有在 resolve-only evidence 经 AI 确认、digest-bound executor 完成、AI Review Gate 通过且 validator 证明三方 equality 后才继续。 |
 | Pre-task planner | 官方 Trellis task 尚未创建。 | `prepare-task.sh --json` 默认无副作用，只输出 intake plan，不创建 GitHub issue、worktree、branch、task 或 handoff 文件。 |
 | Handoff review | 无固定官方 gate。 | AI 必须展示 duplicate、proposed issue、naming quality、base freshness、branch、workspace、命令，并等待用户批准。 |
 
 ## 4. Phase 0：Pre-task intake
 
-Phase 0 是 Guru Team 加在官方 Trellis task 创建之前的门禁。它解决四个问题：
+Phase 0 是 Guru Team 加在官方 Trellis task 创建之前的门禁。任何 repo-changing
+semantic read 先经过 `guru-sync-base`：explicit base、single-value config、remote default、
+unique fallback candidate 四级解析；不允许 current branch implicit fallback。成功后进入稳定
+`guru-discover-change-context` inline route，#111 才会替换该 route 的内部实现。
+
+它解决以下问题：
 
 | 问题 | Guru Team 规则 | 确定性资产 |
 | --- | --- | --- |
 | 任务是否应绑定 GitHub issue | AI 读取用户请求、issue body/comment 和 duplicate candidates 后判断；无 issue 时先提出 neutral issue draft。 | `prepare-task.sh --json` 只读取/搜索/输出候选；创建 issue 必须带 `--create-issue-confirmed`。 |
 | Intake clarity / 需求是否足够清晰 | AI 判断 issue body/comment 或自然语言请求是否足以进入 planning；范围、验收、close/ref 语义或实现目标模糊时，先进入 `trellis-brainstorm`，并把澄清结论同步到 issue comment/body 或 reviewed proposed issue body。 | 脚本只提供 issue/comment/duplicate 等原始事实，不决定需求是否充分。 |
-| 分支和 worktree 从哪里来 | AI 审查 base branch、workspace path、branch name、current checkout、dirty state。 | executor 创建 worktree 前重新 fetch base，只在安全时 fast-forward，本地/远端分叉时 fail closed。 |
+| 分支和 worktree 从哪里来 | AI 审查 invocation intent、resolution source、selected base、workspace path、branch name、current checkout、dirty state。 | shared core 只执行显式 refspec fetch；只有 decision checkout 正位于 selected base 且 local 是 remote ancestor 时执行 `merge --ff-only`。成功必须证明 decision/local/remote 三方 SHA equality。 |
 | 命名是否足够语义化 | AI 读 issue 后决定英文 short-name，低信息名称不得进入 executor。 | `naming_quality` 和 `--short-name` / `--workspace-slug` / `--task-slug` / `--branch`。 |
 
 Phase 0 输出被写入 worktree 内的 `.trellis/tasks/<task-slug>/task-start-context.json`，但只有 executor 路径会写。
@@ -181,6 +198,16 @@ source checkout 中可疑同名 task artifact / review metadata；它不判断 s
 不清理 source checkout。#76 liveness checker 在这层事实快照之上比较 source/task 双侧变化；
 source checkout 出现新 `HEAD` / dirty status / diff stat / mtime 变化时是
 `workspace_boundary_violation_progress`，不是 stale 证据。
+
+`prepare-task` 不拥有另一套 base 规则。它必须消费前序 AI-reviewed repository-external
+resolution file 与 expected digest，在 `gh auth status`、issue read 和 duplicate search
+前调用 shared raw-bytes/digest/source-identity verifier 与 sync core，并分别在
+create-issue、worktree、task mutation 前独立重跑；task guard 位于 worktree/identity
+mutation 之后、`task.py create` 之前。`--base-branch` 只能做一致性断言，不能把
+config/remote-default/fallback provenance 改写为 explicit；
+兼容字段 `preflight.base_freshness` 增加 resolution、decision checkout 与三方 equality facts。
+task-start context 只保存 portable base/local/remote SHA，不保存临时 resolution/result 文件、
+完整 pre-task payload 或本机绝对路径。
 
 ## 5. Phase 1：Plan
 

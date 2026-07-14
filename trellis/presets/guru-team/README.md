@@ -221,6 +221,8 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh`
 - `.trellis/guru-team/scripts/bash/check-skill-packages.sh`
 - `.trellis/guru-team/scripts/bash/run-skill-command.sh`
+- `.trellis/guru-team/scripts/bash/sync-base.sh`
+- `.trellis/guru-team/scripts/bash/check-base-sync.sh`
 - `.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh`
 - `.trellis/guru-team/scripts/bash/record-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
@@ -241,7 +243,9 @@ platform selection:
 - `.trellis/guru-team/scripts/python/guru_team_trellis.py`
 
 Production skill registry 同时保留 reserved `guru-create-work-commit` 与 active
-`guru-create-task-commit`。Preset 将 active package（含 interface、artifact schema、
+`guru-sync-base`、`guru-create-task-commit`。当前 canonical extension version 是待发布的
+`0.6.5-guru.7`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
+（含 interface、artifact schema、
 example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
 root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
 `.new`/`.bak`，再通过 source/installed package validation 与 dogfood drift。
@@ -513,11 +517,21 @@ normal finish-work path remains unchanged.
 ## Workflow Guardrails
 
 For `no_task` issue-backed, task-like, or file-changing requests in a Guru Team
-project, the first hop is Guru Team intake, not bare `task.py create`:
+project, tool-free classification is followed by mandatory `guru-sync-base`, not
+bare `task.py create`. The Skill resolves explicit `--base`, scalar
+`base_branch` (or one-value compatibility candidates), remote default, then
+exactly one existing fallback candidate; the current branch is never an implicit
+base. AI reviews intent/source/selection before digest-bound execution. A
+`synced` result requires a clean checkout and equal decision/local/remote HEADs;
+`skipped` returns to the original request, while `blocked` stops fail closed.
+Only `synced` enters Guru Team intake:
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
-.trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request or issue URL>"
+.trellis/guru-team/scripts/bash/prepare-task.sh --json \
+  --resolution-file <reviewed-resolution-file> \
+  --expected-resolution-sha256 <reviewed-resolution-sha256> \
+  "<user request or issue URL>"
 ```
 
 `prepare-task.sh --json` is an intake/preflight planner by default. It may read
@@ -525,11 +539,17 @@ an explicit issue and search duplicates, but it does not create a GitHub issue,
 worktree, branch, Trellis task, or `.trellis/tasks/<task-slug>/task-start-context.json`. Freeform
 requests without a source issue return `proposed_issue`, `requires_confirmation`,
 `naming_quality`, `preflight.base_freshness`, and `no task context/runtime write` in
-stdout JSON. Planner output fetches or explicitly confirms the selected remote
-base before reporting freshness; `fetch_performed: false` must not be treated as
-`fresh: true` evidence. When local base is behind remote, planner output reports
-`fresh: false`, `status: stale`, keeps `fast_forwarded: false`, and leaves
-`local_head_before` / `local_head_after` unchanged. The AI must show the
+stdout JSON. Before `gh auth status`, issue reads, or duplicate search,
+`prepare-task` reuses the same strict resolution/sync core used by
+`guru-sync-base`; `fetch_performed: false` or unequal decision/local/remote HEADs
+cannot be `fresh: true`. A behind local base advances only on the selected-base
+checkout via `git merge --ff-only`; wrong checkout, dirty state, missing refs,
+fetch failure, divergence, resolution drift, or post-sync mismatch fail closed.
+Prepare requires the prior AI-reviewed external resolution file and expected
+digest. It preserves config/remote-default/fallback provenance and reruns an
+independent adjacent guard before GitHub, worktree, and task mutation; the task
+guard is after worktree/identity setup and before `task.py create`.
+The AI must show the
 proposed title/body and duplicate evidence, then rerun with
 `--create-issue-confirmed --issue-title ... --issue-body-file ...` only after
 approval. A confirmed source issue still remains stdout-only until the user
@@ -577,12 +597,12 @@ boundary helper. The #76 liveness checker uses this source/task fact
 layer: source checkout `HEAD`, dirty status, diff stat, or mtime changes are
 `workspace_boundary_violation_progress`, not stale evidence.
 
-When executor paths create or reuse a worktree, they refresh the selected base
-branch again with `git fetch`, keep `preflight.base_freshness` in the current
-planner/executor result only, fast-forward the local base only when safe, and fail closed when
-the local base diverges from the remote. Planner refresh evidence does not
-replace the executor's create-time guard; this prevents new task branches from
-silently starting from a stale local base.
+`--create-issue-confirmed` reruns the shared core before GitHub mutation;
+`--create-worktree` / `--create-task` rerun it before worktree/task mutation.
+Each run keeps `preflight.base_freshness` in the current result only and requires
+clean decision/local/remote equality. Planner evidence never replaces either
+mutation-time guard, preventing new task branches from starting from a stale
+local base.
 
 After the worktree exists, the executor ensures the target workspace has
 Trellis developer identity before writing task context or creating a task. It copies

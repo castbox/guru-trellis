@@ -1,0 +1,151 @@
+{
+  "$schema": "../../schemas/skill-interface.schema.json",
+  "schema_version": "1.1",
+  "id": "guru-sync-base",
+  "name": "guru-sync-base",
+  "description": "Resolve, review, safely synchronize, and validate the selected Git base before Guru Team reads repository task context or starts intake side effects.",
+  "state": "active",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "invocation_intent",
+        "runtime_dependency",
+        "decision_checkout",
+        "selected_base_resolution",
+        "clean_checkout",
+        "result_evidence"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "invocation_intent",
+        "runtime_dependency",
+        "decision_checkout",
+        "selected_base_resolution",
+        "clean_checkout",
+        "result_evidence"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "invocation_intent",
+      "evidence": "tool-free workflow route or explicit standalone refresh/verify request",
+      "binding": "repo-changing workflow invocation or explicit standalone base operation",
+      "freshness": "reviewed for this invocation before any repository or network semantic read"
+    },
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed extension manifest, dispatcher, managed package inventory and runtime commands",
+      "binding": "complete compatible Guru Team preset runtime",
+      "freshness": "validated by run-skill-command before each command"
+    },
+    {
+      "id": "decision_checkout",
+      "evidence": "Git toplevel, current branch and HEAD",
+      "binding": "the repository and checkout whose base freshness gates this invocation",
+      "freshness": "unchanged from resolution through execution"
+    },
+    {
+      "id": "selected_base_resolution",
+      "evidence": "canonical resolve-only JSON bytes/file and expected resolution_sha256",
+      "binding": "explicit, config-single, remote-default or unique-fallback source identity reused by sync-base and prepare-task",
+      "freshness": "raw bytes, digest and source-preserving identity recomputation match before initial reads and independently before each GitHub/worktree/task mutation"
+    },
+    {
+      "id": "clean_checkout",
+      "evidence": "NUL-safe Git status before and after synchronization",
+      "binding": "decision checkout has no tracked, untracked or staged changes",
+      "freshness": "checked before fetch, before fast-forward and after synchronization"
+    },
+    {
+      "id": "result_evidence",
+      "evidence": "guru-base-sync-result-1.0 JSON, facts_sha256 and live Git facts",
+      "binding": "decision checkout, local base and remote-tracking base identity",
+      "freshness": "objective validator matches current clean Git state"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "base_sync_result_example",
+      "path": "examples/base-sync-result.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "base_sync_result_schema",
+      "path": "schemas/base-sync-result.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "sync_executor",
+      "command": "scripts/sync-base.sh",
+      "runtime_command": "sync-base",
+      "objective_scope": "strict four-level resolution, canonical resolution digest binding, explicit refspec fetch, selected-checkout ff-only execution and three-way equality facts"
+    },
+    {
+      "id": "result_validator",
+      "command": "scripts/check-base-sync.sh",
+      "runtime_command": "check-base-sync",
+      "objective_scope": "evidence boundary, Draft 2020-12 schema, facts digest, selected refs, clean checkout and live decision/local/remote HEAD equality"
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "synced",
+      "evidence": "AI-reviewed and validator-passed fresh base sync result",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-discover-change-context"
+      }
+    },
+    {
+      "id": "skipped",
+      "evidence": "AI-reviewed non-repo route plus stdout-only skipped recorder facts",
+      "consumer": {
+        "kind": "workflow",
+        "id": "original-request-route"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "resolution, Git, AI review or objective validation failure",
+      "consumer": {
+        "kind": "stop",
+        "id": "base-sync-blocked"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "invocation intent, repository identity, decision checkout, resolution source/base/remote/candidates, raw bytes and resolution_sha256",
+    "freshness": "resolution recomputes identically and result still matches clean live Git facts",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "codex",
+    "cursor",
+    "claude"
+  ]
+}

@@ -31,6 +31,21 @@ The workflow has four durable phases:
 - Phase 2: implementation and quality check.
 - Phase 3: spec decision, commit, Branch Review Gate, finish-work, and automatic publish.
 
+Phase 0 begins with tool-free request classification. Before `check-env`,
+`prepare-task`, issue/duplicate reads, Docs/code/tests/history reads, or any
+other repo/network semantic action, repo-changing routes mandatory invoke the
+stable `guru-sync-base` id. The workflow owns only that invocation and these
+unique consumers: `synced` -> workflow route `guru-discover-change-context`,
+`skipped` -> workflow route `original-request-route`, and `blocked` -> stop
+`base-sync-blocked`. The first route remains inline until #111; this contract
+must not pre-implement its step-local Skill.
+
+`guru-sync-base` owns resolve-only evidence, AI selected-base confirmation,
+digest-bound execution, AI Review Gate, conditional conflict confirmation,
+objective validation, evidence cleanup, standalone parity, and typed exit.
+Unknown, missing, duplicate, multiple, or unmapped markers fail closed. A
+current checkout branch is never an implicit base fallback.
+
 `trellis-finish-work` is a single resumable transaction entry. Its mandatory
 order is: shared prepare/digest preview, expected-digest handshake, reviewed
 content push, deterministic marketplace evidence and readiness commit/push,

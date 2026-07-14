@@ -54,6 +54,8 @@ def prepare_args(**overrides: object) -> argparse.Namespace:
         "create_issue_confirmed": False,
         "issue_title": None,
         "issue_body_file": None,
+        "resolution_file": "/tmp/reviewed-base-resolution.json",
+        "expected_resolution_sha256": "b" * 64,
         "base_branch": None,
         "branch": None,
         "task_slug": None,
@@ -69,6 +71,75 @@ def prepare_args(**overrides: object) -> argparse.Namespace:
     }
     values.update(overrides)
     return argparse.Namespace(**values)
+
+
+def fresh_base_sync_projection(sha: str = "a" * 40) -> dict[str, object]:
+    return {
+        "remote": "origin",
+        "base_branch": "main",
+        "base_ref": "main",
+        "remote_ref": "origin/main",
+        "local_head_before": sha,
+        "local_head_after": sha,
+        "remote_head": sha,
+        "remote_head_source": "fetched",
+        "fetch_attempted": True,
+        "fetch_performed": True,
+        "fast_forwarded": False,
+        "fresh": True,
+        "status": "fresh",
+        "base_ref_for_worktree": "main",
+        "resolution": {
+            "source": "explicit",
+            "selected_base": "main",
+            "remote": "origin",
+            "candidates": ["main"],
+            "resolution_sha256": "b" * 64,
+        },
+        "decision_checkout": {
+            "branch": "main",
+            "head_before": sha,
+            "head_after": sha,
+            "clean_before": True,
+            "clean_after": True,
+        },
+        "three_way_equal": True,
+        "facts_sha256": "c" * 64,
+    }
+
+
+def fresh_base_sync_result(sha: str = "a" * 40) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "schema_version": "1.0",
+        "skill_id": "guru-sync-base",
+        "status": "synced",
+        "resolution": {
+            "source": "explicit",
+            "selected_base": "main",
+            "remote": "origin",
+            "candidates": ["main"],
+            "resolution_sha256": "b" * 64,
+        },
+        "decision_checkout": {
+            "branch": "main",
+            "head_before": sha,
+            "head_after": sha,
+            "clean_before": True,
+            "clean_after": True,
+        },
+        "git": {
+            "local_ref": "refs/heads/main",
+            "remote_ref": "refs/remotes/origin/main",
+            "local_head_before": sha,
+            "local_head_after": sha,
+            "remote_head_after": sha,
+            "fetch_performed": True,
+            "fast_forwarded": False,
+        },
+        "fresh": True,
+    }
+    payload["facts_sha256"] = gtt.canonical_json_sha256(payload)
+    return payload
 
 
 def finish_args(**overrides: object) -> argparse.Namespace:
@@ -1808,6 +1879,375 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertTrue(any("next unused contiguous sequence" in error for error in errors))
 
 
+class BaseSyncRuntimeTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.base = Path(self.tmp.name)
+        self.remote = self.base / "remote.git"
+        self.seed = self.base / "seed"
+        self.local = self.base / "local"
+        subprocess.run(
+            ["git", "init", "--bare", str(self.remote)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        subprocess.run(
+            ["git", "init", "-b", "main", str(self.seed)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        self.git(self.seed, "config", "user.email", "test@example.com")
+        self.git(self.seed, "config", "user.name", "Test User")
+        (self.seed / "README.md").write_text("one\n", encoding="utf-8")
+        config = self.seed / ".trellis/guru-team/config.yml"
+        config.parent.mkdir(parents=True)
+        config.write_text("base_branch: main\nbase_branch_candidates: [main, master]\n", encoding="utf-8")
+        schema_source = (
+            Path(__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-sync-base/schemas/base-sync-result.schema.json"
+        )
+        schema_target = (
+            self.seed
+            / ".trellis/guru-team/skills/packages/guru-sync-base/schemas/base-sync-result.schema.json"
+        )
+        schema_target.parent.mkdir(parents=True)
+        shutil.copy2(schema_source, schema_target)
+        self.git(self.seed, "add", ".")
+        self.git(self.seed, "commit", "-qm", "initial")
+        self.git(self.seed, "remote", "add", "origin", str(self.remote))
+        self.git(self.seed, "push", "-u", "origin", "main")
+        self.git(self.remote, "symbolic-ref", "HEAD", "refs/heads/main")
+        subprocess.run(
+            ["git", "clone", str(self.remote), str(self.local)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        self.git(self.local, "config", "user.email", "test@example.com")
+        self.git(self.local, "config", "user.name", "Test User")
+        self.resolution_file = self.base / "resolution.json"
+        self.result_file = self.base / "result.json"
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def git(self, cwd: Path, *args: str) -> str:
+        return subprocess.run(
+            ["git", *args],
+            cwd=cwd,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        ).stdout.strip()
+
+    def sync_args(self, **overrides: object) -> argparse.Namespace:
+        values: dict[str, object] = {
+            "root": str(self.local),
+            "json": True,
+            "mode": "standalone",
+            "resolve_only": True,
+            "execute": False,
+            "base": None,
+            "remote": "origin",
+            "resolution_file": str(self.resolution_file),
+            "expected_resolution_sha256": None,
+            "result_file": None,
+        }
+        values.update(overrides)
+        return argparse.Namespace(**values)
+
+    def check_args(self, **overrides: object) -> argparse.Namespace:
+        values: dict[str, object] = {
+            "root": str(self.local),
+            "json": True,
+            "mode": "standalone",
+            "evidence_file": str(self.result_file),
+            "record_skipped": None,
+        }
+        values.update(overrides)
+        return argparse.Namespace(**values)
+
+    def resolve(self, *, base: str | None = None) -> dict[str, object]:
+        return gtt.cmd_sync_base(self.sync_args(base=base))
+
+    def execute(self, resolution: dict[str, object]) -> dict[str, object]:
+        return gtt.cmd_sync_base(
+            self.sync_args(
+                resolve_only=False,
+                execute=True,
+                resolution_file=str(self.resolution_file),
+                expected_resolution_sha256=resolution["resolution_sha256"],
+                result_file=str(self.result_file),
+            )
+        )
+
+    def advance_remote(self, text: str = "two\n") -> str:
+        (self.seed / "README.md").write_text(text, encoding="utf-8")
+        self.git(self.seed, "commit", "-am", f"update-{text.strip()}")
+        self.git(self.seed, "push", "origin", "main")
+        return self.git(self.seed, "rev-parse", "HEAD")
+
+    def test_resolver_precedence_and_fallback_cardinality(self) -> None:
+        explicit = gtt.resolve_base_selection(
+            self.local,
+            {"base_branch": "develop", "base_branch_candidates": ["master"]},
+            "release",
+        )
+        self.assertEqual((explicit["source"], explicit["selected_base"]), ("explicit", "release"))
+        scalar = gtt.resolve_base_selection(
+            self.local,
+            {"base_branch": "develop", "base_branch_candidates": ["master"]},
+        )
+        self.assertEqual((scalar["source"], scalar["selected_base"]), ("config", "develop"))
+        single = gtt.resolve_base_selection(
+            self.local,
+            {"base_branch": "", "base_branch_candidates": ["main", "main"]},
+        )
+        self.assertEqual((single["source"], single["selected_base"]), ("config", "main"))
+        remote_default = gtt.resolve_base_selection(
+            self.local,
+            {"base_branch": "", "base_branch_candidates": ["develop", "master"]},
+        )
+        self.assertEqual(
+            (remote_default["source"], remote_default["selected_base"]),
+            ("remote-default", "main"),
+        )
+
+        with mock.patch.object(gtt, "remote_default_branch", return_value=None):
+            fallback = gtt.resolve_base_selection(
+                self.local,
+                {"base_branch": "", "base_branch_candidates": ["ghost", "main"]},
+            )
+            self.assertEqual((fallback["source"], fallback["selected_base"]), ("fallback", "main"))
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.resolve_base_selection(
+                    self.local,
+                    {"base_branch": "", "base_branch_candidates": ["ghost", "missing"]},
+                )
+            self.git(self.local, "branch", "master")
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.resolve_base_selection(
+                    self.local,
+                    {"base_branch": "", "base_branch_candidates": ["main", "master"]},
+                )
+
+    def test_resolve_execute_validate_and_external_evidence(self) -> None:
+        resolution = self.resolve()
+        self.assertEqual(resolution["source"], "config")
+        self.assertEqual(self.resolution_file.read_bytes(), gtt.json_document_bytes(resolution))
+        result = self.execute(resolution)
+        self.assertTrue(result["fresh"])
+        self.assertEqual(result["decision_checkout"]["head_after"], result["git"]["remote_head_after"])
+        validated = gtt.cmd_check_base_sync(self.check_args())
+        self.assertEqual(validated["status"], "validated")
+        self.assertEqual(validated["facts_sha256"], result["facts_sha256"])
+
+    def test_execute_fast_forwards_only_selected_base_checkout(self) -> None:
+        resolution = self.resolve()
+        remote_head = self.advance_remote()
+        result = self.execute(resolution)
+        self.assertTrue(result["git"]["fast_forwarded"])
+        self.assertEqual(self.git(self.local, "rev-parse", "HEAD"), remote_head)
+
+        self.git(self.local, "checkout", "-qb", "feature")
+        second_resolution = self.resolve(base="main")
+        self.advance_remote("three\n")
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            self.execute(second_resolution)
+        self.assertIn("not on that base", str(raised.exception))
+
+    def test_resolve_blocks_dirty_and_missing_local_base(self) -> None:
+        (self.local / "dirty.txt").write_text("dirty\n", encoding="utf-8")
+        with self.assertRaises(gtt.WorkflowError) as dirty:
+            self.resolve()
+        self.assertIn("not clean", " ".join(dirty.exception.payload["errors"]))
+        (self.local / "dirty.txt").unlink()
+
+        self.git(self.local, "checkout", "-qb", "feature")
+        self.git(self.local, "branch", "-D", "main")
+        with self.assertRaises(gtt.WorkflowError) as missing:
+            self.resolve(base="main")
+        self.assertIn("does not exist", " ".join(missing.exception.payload["errors"]))
+
+    def test_execute_blocks_stale_resolution_before_fetch(self) -> None:
+        resolution = self.resolve()
+        alternate = {"base_branch": "develop", "base_branch_candidates": ["develop"]}
+        calls: list[list[str]] = []
+        original_run = gtt.run
+
+        def recording_run(cmd: list[str], *args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+            calls.append(cmd)
+            return original_run(cmd, *args, **kwargs)
+
+        with (
+            mock.patch.object(gtt, "load_config", return_value=alternate),
+            mock.patch.object(gtt, "run", side_effect=recording_run),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            self.execute(resolution)
+        self.assertIn("stale", str(raised.exception))
+        self.assertFalse(any(command[:2] == ["git", "fetch"] for command in calls))
+
+    def test_execute_blocks_divergence_and_fetch_failure(self) -> None:
+        resolution = self.resolve()
+        (self.local / "local.txt").write_text("local\n", encoding="utf-8")
+        self.git(self.local, "add", "local.txt")
+        self.git(self.local, "commit", "-qm", "local divergence")
+        self.advance_remote()
+        stale_resolution = self.resolve()
+        with self.assertRaises(gtt.WorkflowError) as diverged:
+            self.execute(stale_resolution)
+        self.assertIn("diverged", str(diverged.exception))
+
+        self.git(self.local, "reset", "--hard", resolution["decision_checkout"]["head"])
+        clean_resolution = self.resolve()
+        self.git(self.local, "remote", "set-url", "origin", str(self.base / "missing.git"))
+        with self.assertRaises(gtt.WorkflowError) as fetch_failed:
+            self.execute(clean_resolution)
+        self.assertIn("fetch failed", str(fetch_failed.exception))
+
+    def test_invalid_branch_and_missing_remote_fail_closed(self) -> None:
+        with self.assertRaises(gtt.WorkflowError) as invalid:
+            self.resolve(base="-invalid")
+        self.assertIn("valid Git branch", str(invalid.exception))
+
+        resolution = gtt.cmd_sync_base(self.sync_args(base="main", remote="missing"))
+        with self.assertRaises(gtt.WorkflowError) as missing_remote:
+            self.execute(resolution)
+        self.assertIn("fetch failed", str(missing_remote.exception))
+
+    def test_post_sync_identity_mismatch_blocks_result(self) -> None:
+        resolution = self.resolve()
+        real_ref_head = gtt.ref_head
+        remote_reads = 0
+
+        def drifting_ref_head(root: Path, ref: str) -> str | None:
+            nonlocal remote_reads
+            value = real_ref_head(root, ref)
+            if ref == "refs/remotes/origin/main":
+                remote_reads += 1
+                if remote_reads == 2:
+                    return "f" * 40
+            return value
+
+        with (
+            mock.patch.object(gtt, "ref_head", side_effect=drifting_ref_head),
+            self.assertRaises(gtt.WorkflowError) as mismatch,
+        ):
+            self.execute(resolution)
+        self.assertIn("did not prove", str(mismatch.exception))
+        self.assertFalse(self.result_file.exists())
+
+    def test_evidence_boundary_tamper_and_live_validator(self) -> None:
+        inside = self.local / "resolution.json"
+        with self.assertRaises(gtt.WorkflowError) as inside_error:
+            self.resolve()
+            gtt.write_base_sync_evidence(self.local, str(inside), "inside", {"ok": True})
+        self.assertIn("outside", str(inside_error.exception))
+
+        resolution = self.resolve()
+        result = self.execute(resolution)
+        tampered = copy.deepcopy(result)
+        tampered["fresh"] = False
+        gtt.write_json(self.result_file, tampered)
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.cmd_check_base_sync(self.check_args())
+
+        gtt.write_json(self.result_file, result)
+        (self.local / "untracked.txt").write_text("drift\n", encoding="utf-8")
+        with self.assertRaises(gtt.WorkflowError) as stale:
+            gtt.cmd_check_base_sync(self.check_args())
+        self.assertIn("not clean", " ".join(stale.exception.payload["errors"]))
+        (self.local / "untracked.txt").unlink()
+
+        symlink = self.base / "result-link.json"
+        symlink.symlink_to(self.result_file)
+        with self.assertRaises(gtt.WorkflowError) as symlink_error:
+            gtt.cmd_check_base_sync(self.check_args(evidence_file=str(symlink)))
+        self.assertIn("symbolic-link", str(symlink_error.exception))
+
+        real_parent = self.base / "real-evidence"
+        real_parent.mkdir()
+        component_link = self.base / "evidence-component-link"
+        component_link.symlink_to(real_parent, target_is_directory=True)
+        component_result = component_link / "result.json"
+        shutil.copy2(self.result_file, real_parent / "result.json")
+        with self.assertRaises(gtt.WorkflowError) as component_error:
+            gtt.cmd_check_base_sync(self.check_args(evidence_file=str(component_result)))
+        self.assertIn("symbolic-link components", str(component_error.exception))
+
+    def test_prepare_binding_preserves_provenance_and_mismatch_does_not_fetch(self) -> None:
+        resolution = self.resolve()
+        self.assertEqual(resolution["source"], "config")
+        projection = gtt.ensure_base_freshness(
+            self.local,
+            None,
+            resolution_file=str(self.resolution_file),
+            expected_resolution_sha256=str(resolution["resolution_sha256"]),
+        )
+        self.assertEqual(projection["resolution"]["source"], "config")
+        self.assertEqual(
+            projection["reviewed_resolution_sha256"],
+            resolution["resolution_sha256"],
+        )
+
+        commands: list[list[str]] = []
+        real_run = gtt.run
+
+        def recording_run(cmd: list[str], *args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+            commands.append(cmd)
+            return real_run(cmd, *args, **kwargs)
+
+        changed_config = {"base_branch": "develop", "base_branch_candidates": ["develop"]}
+        with (
+            mock.patch.object(gtt, "load_config", return_value=changed_config),
+            mock.patch.object(gtt, "run", side_effect=recording_run),
+            self.assertRaises(gtt.WorkflowError) as mismatch,
+        ):
+            gtt.ensure_base_freshness(
+                self.local,
+                None,
+                resolution_file=str(self.resolution_file),
+                expected_resolution_sha256=str(resolution["resolution_sha256"]),
+            )
+        self.assertIn("identity became stale", str(mismatch.exception))
+        self.assertFalse(any(command[:2] == ["git", "fetch"] for command in commands))
+
+        commands.clear()
+        with (
+            mock.patch.object(gtt, "run", side_effect=recording_run),
+            self.assertRaises(gtt.WorkflowError) as base_mismatch,
+        ):
+            gtt.ensure_base_freshness(
+                self.local,
+                "develop",
+                resolution_file=str(self.resolution_file),
+                expected_resolution_sha256=str(resolution["resolution_sha256"]),
+            )
+        self.assertIn("base assertion", " ".join(base_mismatch.exception.payload["errors"]))
+        self.assertFalse(any(command[:2] == ["git", "fetch"] for command in commands))
+
+    def test_skipped_recorder_is_workflow_only_and_stdout_only(self) -> None:
+        skipped = gtt.cmd_check_base_sync(
+            self.check_args(
+                mode="workflow",
+                evidence_file=None,
+                record_skipped="original-request-route",
+            )
+        )
+        self.assertEqual(skipped["status"], "skipped")
+        unsigned = dict(skipped)
+        digest = unsigned.pop("facts_sha256")
+        self.assertEqual(digest, gtt.canonical_json_sha256(unsigned))
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.cmd_check_base_sync(
+                self.check_args(evidence_file=None, record_skipped="original-request-route")
+            )
+
+
 class PrepareSideEffectBoundaryTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -1819,6 +2259,8 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             encoding="utf-8",
         )
 
+        self.real_ensure_base_freshness = gtt.ensure_base_freshness
+        self.real_refresh_base_freshness_for_planner = gtt.refresh_base_freshness_for_planner
         self.patches = [
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={
@@ -1831,6 +2273,11 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "require_gh_auth"),
             mock.patch.object(gtt, "duplicate_search", return_value=[]),
             mock.patch.object(gtt, "resolve_base_branch", return_value=("main", ["main", "origin/main"])),
+            mock.patch.object(
+                gtt,
+                "ensure_base_freshness",
+                side_effect=lambda *_args, **_kwargs: fresh_base_sync_projection(),
+            ),
             mock.patch.object(gtt, "current_branch", return_value="main"),
             mock.patch.object(gtt, "git_dirty", return_value=False),
             mock.patch.object(gtt, "worktree_lines", return_value=[]),
@@ -2009,42 +2456,77 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
 
         self.assertEqual(payload["branch_name"], "custom/slug")
 
-    def test_prepare_planner_refreshes_base_without_executor_fast_forward(self) -> None:
+    def test_prepare_planner_uses_shared_sync_before_issue_read(self) -> None:
         existing_issue = {
             "number": 52,
             "url": "https://github.com/owner/repo/issues/52",
             "title": "Add resume detail inline attachment preview",
         }
-        freshness = {
-            "remote": "origin",
-            "base_branch": "main",
-            "base_ref": "main",
-            "remote_ref": "origin/main",
-            "local_head_before": "old",
-            "local_head_after": "old",
-            "remote_head": "new",
-            "remote_head_source": "fetched",
-            "fetch_attempted": True,
-            "fetch_performed": True,
-            "fast_forwarded": False,
-            "fresh": False,
-            "status": "stale",
-            "base_ref_for_worktree": "origin/main",
-        }
+        freshness = fresh_base_sync_projection("d" * 40)
+        order: list[str] = []
         with (
-            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "refresh_base_freshness_for_planner", return_value=freshness) as refresh,
-            mock.patch.object(gtt, "ensure_base_freshness") as ensure_base_freshness,
+            mock.patch.object(
+                gtt, "issue_view", side_effect=lambda *_args: order.append("issue") or existing_issue
+            ),
+            mock.patch.object(
+                gtt, "require_gh_auth", side_effect=lambda *_args: order.append("gh-auth")
+            ),
+            mock.patch.object(gtt, "refresh_base_freshness_for_planner") as refresh,
+            mock.patch.object(
+                gtt,
+                "ensure_base_freshness",
+                side_effect=lambda *_args, **_kwargs: order.append("sync") or freshness,
+            ) as ensure_base_freshness,
         ):
             payload = gtt.cmd_prepare(prepare_args(requirement=["#52"]))
 
-        refresh.assert_called_once_with(self.root, "main")
-        ensure_base_freshness.assert_not_called()
+        ensure_base_freshness.assert_called_once_with(
+            self.root,
+            None,
+            resolution_file="/tmp/reviewed-base-resolution.json",
+            expected_resolution_sha256="b" * 64,
+        )
+        refresh.assert_not_called()
+        self.assertEqual(order, ["sync", "gh-auth", "issue"])
         self.assertEqual(payload["preflight"]["base_freshness"]["fetch_performed"], True)
         self.assertEqual(payload["preflight"]["base_freshness"]["fast_forwarded"], False)
-        self.assertEqual(payload["preflight"]["base_freshness"]["status"], "stale")
-        self.assertEqual(payload["preflight"]["base_freshness"]["local_head_before"], "old")
-        self.assertEqual(payload["preflight"]["base_freshness"]["local_head_after"], "old")
+        self.assertEqual(payload["preflight"]["base_freshness"]["status"], "fresh")
+        self.assertTrue(payload["preflight"]["base_freshness"]["three_way_equal"])
+
+    def test_prepare_reruns_sync_immediately_before_confirmed_issue_mutation(self) -> None:
+        body_path = self.root / "reviewed-body.md"
+        body_path.write_text("Reviewed body\n", encoding="utf-8")
+        order: list[str] = []
+        created = {
+            "number": 52,
+            "url": "https://github.com/owner/repo/issues/52",
+            "title": "Add confirmed issue mutation boundary",
+        }
+        with (
+            mock.patch.object(
+                gtt,
+                "ensure_base_freshness",
+                side_effect=lambda *_args, **_kwargs: order.append("sync") or fresh_base_sync_projection(),
+            ) as sync,
+            mock.patch.object(
+                gtt, "require_gh_auth", side_effect=lambda *_args: order.append("gh-auth")
+            ),
+            mock.patch.object(
+                gtt, "create_issue", side_effect=lambda *_args: order.append("create-issue") or created
+            ),
+        ):
+            payload = gtt.cmd_prepare(
+                prepare_args(
+                    requirement=["Add confirmed issue mutation boundary"],
+                    create_issue_confirmed=True,
+                    issue_title="Add confirmed issue mutation boundary",
+                    issue_body_file=str(body_path),
+                )
+            )
+
+        self.assertEqual(sync.call_count, 2)
+        self.assertEqual(order, ["sync", "gh-auth", "sync", "create-issue"])
+        self.assertEqual(payload["source_issue"]["number"], 52)
 
     def test_prepare_chinese_issue_title_marks_naming_quality_without_side_effects(self) -> None:
         existing_issue = {
@@ -2086,7 +2568,12 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         ):
             gtt.cmd_prepare(prepare_args(requirement=["#52"], create_worktree=True))
 
-        ensure_base_freshness.assert_not_called()
+        ensure_base_freshness.assert_called_once_with(
+            self.root,
+            None,
+            resolution_file="/tmp/reviewed-base-resolution.json",
+            expected_resolution_sha256="b" * 64,
+        )
         prepare_workspace.assert_not_called()
         create_task.assert_not_called()
         self.assertEqual(raised.exception.exit_code, 2)
@@ -2128,7 +2615,12 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             )
 
         create_issue.assert_not_called()
-        ensure_base_freshness.assert_not_called()
+        ensure_base_freshness.assert_called_once_with(
+            self.root,
+            None,
+            resolution_file="/tmp/reviewed-base-resolution.json",
+            expected_resolution_sha256="b" * 64,
+        )
         prepare_workspace.assert_not_called()
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertFalse(raised.exception.payload["naming_quality"]["ok"])
@@ -2142,20 +2634,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         workspace = self.worktree_root / "052-resume-detail-inline-attachment-preview"
         with (
             mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness", return_value={
-                "remote": "origin",
-                "base_branch": "main",
-                "base_ref": "main",
-                "remote_ref": "origin/main",
-                "local_head_before": "abc",
-                "local_head_after": "abc",
-                "remote_head": "abc",
-                "fetch_performed": True,
-                "fast_forwarded": False,
-                "fresh": True,
-                "status": "fresh",
-                "base_ref_for_worktree": "main",
-            }),
+            mock.patch.object(gtt, "ensure_base_freshness", return_value=fresh_base_sync_projection()),
             mock.patch.object(gtt, "prepare_workspace", return_value=("worktree", workspace, True)) as prepare_workspace,
             mock.patch.object(gtt, "ensure_workspace_developer_identity", return_value={
                 "status": "copied",
@@ -2193,20 +2672,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         workspace = self.worktree_root / "052-resume-detail-inline-attachment-preview"
         with (
             mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness", return_value={
-                "remote": "origin",
-                "base_branch": "main",
-                "base_ref": "main",
-                "remote_ref": "origin/main",
-                "local_head_before": "abc",
-                "local_head_after": "abc",
-                "remote_head": "abc",
-                "fetch_performed": True,
-                "fast_forwarded": False,
-                "fresh": True,
-                "status": "fresh",
-                "base_ref_for_worktree": "main",
-            }),
+            mock.patch.object(gtt, "ensure_base_freshness", return_value=fresh_base_sync_projection()),
             mock.patch.object(gtt, "prepare_workspace", return_value=("worktree", workspace, True)),
             mock.patch.object(gtt, "ensure_workspace_developer_identity", return_value={
                 "status": "copied",
@@ -2252,7 +2718,12 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
                 )
             )
 
-        ensure_base_freshness.assert_not_called()
+        ensure_base_freshness.assert_called_once_with(
+            self.root,
+            None,
+            resolution_file="/tmp/reviewed-base-resolution.json",
+            expected_resolution_sha256="b" * 64,
+        )
         prepare_workspace.assert_not_called()
         self.assertFalse(raised.exception.payload["naming_quality"]["ok"])
         self.assertEqual(raised.exception.payload["naming_quality"]["current_surface"], "slug")
@@ -2278,7 +2749,12 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
                 )
             )
 
-        ensure_base_freshness.assert_not_called()
+        ensure_base_freshness.assert_called_once_with(
+            self.root,
+            None,
+            resolution_file="/tmp/reviewed-base-resolution.json",
+            expected_resolution_sha256="b" * 64,
+        )
         prepare_workspace.assert_not_called()
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertFalse(raised.exception.payload["naming_quality"]["ok"])
@@ -2345,20 +2821,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
 
         with (
             mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness", return_value={
-                "remote": "origin",
-                "base_branch": "main",
-                "base_ref": "main",
-                "remote_ref": "origin/main",
-                "local_head_before": "abc",
-                "local_head_after": "abc",
-                "remote_head": "abc",
-                "fetch_performed": True,
-                "fast_forwarded": False,
-                "fresh": True,
-                "status": "fresh",
-                "base_ref_for_worktree": "main",
-            }),
+            mock.patch.object(gtt, "ensure_base_freshness", return_value=fresh_base_sync_projection()),
             mock.patch.object(gtt, "run_stdout") as run_stdout,
         ):
             payload = gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
@@ -2402,20 +2865,11 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         }
         with (
             mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness", return_value={
-                "remote": "origin",
-                "base_branch": "main",
-                "base_ref": "main",
-                "remote_ref": "origin/main",
-                "local_head_before": "old",
-                "local_head_after": "new",
-                "remote_head": "new",
-                "fetch_performed": True,
-                "fast_forwarded": True,
-                "fresh": True,
-                "status": "fresh",
-                "base_ref_for_worktree": "main",
-            }) as refresh,
+            mock.patch.object(
+                gtt,
+                "ensure_base_freshness",
+                return_value={**fresh_base_sync_projection("d" * 40), "fast_forwarded": True},
+            ) as refresh,
             mock.patch.object(gtt, "refresh_base_freshness_for_planner") as planner_refresh,
             mock.patch.object(gtt, "prepare_workspace", return_value=("worktree", self.worktree_root / "42-resume-attachment-preview", True)) as prepare_workspace,
             mock.patch.object(gtt, "ensure_workspace_developer_identity", return_value={
@@ -2425,12 +2879,61 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         ):
             payload = gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
 
-        refresh.assert_called_once_with(self.root, "main")
+        guard_call = mock.call(
+            self.root,
+            None,
+            resolution_file="/tmp/reviewed-base-resolution.json",
+            expected_resolution_sha256="b" * 64,
+        )
+        self.assertEqual(refresh.call_args_list, [guard_call, guard_call])
         planner_refresh.assert_not_called()
         prepare_workspace.assert_called_once()
         ensure_identity.assert_called_once_with(self.root, self.worktree_root / "42-resume-attachment-preview", "tester")
         self.assertEqual(payload["preflight"]["base_freshness"]["fetch_performed"], True)
-        self.assertEqual(payload["preflight"]["base_freshness"]["remote_head"], "new")
+        self.assertEqual(payload["preflight"]["base_freshness"]["remote_head"], "d" * 40)
+
+    def test_create_task_has_independent_third_guard_and_no_task_mutation_on_failure(self) -> None:
+        existing_issue = {
+            "number": 42,
+            "url": "https://github.com/owner/repo/issues/42",
+            "title": "Resume attachment preview",
+        }
+        workspace = self.worktree_root / "42-resume-attachment-preview"
+        order: list[str] = []
+        guard_count = 0
+
+        def guard(*_args: object, **_kwargs: object) -> dict[str, object]:
+            nonlocal guard_count
+            guard_count += 1
+            order.append(f"guard-{guard_count}")
+            if guard_count == 3:
+                raise gtt.WorkflowError("reviewed resolution drifted before task mutation", exit_code=2)
+            return fresh_base_sync_projection()
+
+        with (
+            mock.patch.object(gtt, "issue_view", side_effect=lambda *_args: order.append("issue") or existing_issue),
+            mock.patch.object(gtt, "ensure_base_freshness", side_effect=guard),
+            mock.patch.object(
+                gtt,
+                "prepare_workspace",
+                side_effect=lambda *_args: order.append("worktree") or ("worktree", workspace, True),
+            ),
+            mock.patch.object(
+                gtt,
+                "ensure_workspace_developer_identity",
+                side_effect=lambda *_args: order.append("identity") or {"status": "copied", "developer": "tester"},
+            ),
+            mock.patch.object(gtt, "create_task") as create_task,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.cmd_prepare(prepare_args(requirement=["#42"], create_task=True))
+
+        self.assertEqual(
+            order,
+            ["guard-1", "issue", "guard-2", "worktree", "identity", "guard-3"],
+        )
+        self.assertIn("before task mutation", str(raised.exception))
+        create_task.assert_not_called()
 
     def test_infer_assignee_reads_developer_name_field(self) -> None:
         self.assertEqual(gtt.infer_assignee(self.root, None), "tester")
@@ -2453,20 +2956,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
 
         with (
             mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness", return_value={
-                "remote": "origin",
-                "base_branch": "main",
-                "base_ref": "main",
-                "remote_ref": "origin/main",
-                "local_head_before": "abc",
-                "local_head_after": "abc",
-                "remote_head": "abc",
-                "fetch_performed": True,
-                "fast_forwarded": False,
-                "fresh": True,
-                "status": "fresh",
-                "base_ref_for_worktree": "main",
-            }),
+            mock.patch.object(gtt, "ensure_base_freshness", return_value=fresh_base_sync_projection()),
         ):
             payload = gtt.cmd_prepare(
                 prepare_args(
@@ -2494,20 +2984,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
 
         with (
             mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness", return_value={
-                "remote": "origin",
-                "base_branch": "main",
-                "base_ref": "main",
-                "remote_ref": "origin/main",
-                "local_head_before": "abc",
-                "local_head_after": "abc",
-                "remote_head": "abc",
-                "fetch_performed": True,
-                "fast_forwarded": False,
-                "fresh": True,
-                "status": "fresh",
-                "base_ref_for_worktree": "main",
-            }),
+            mock.patch.object(gtt, "ensure_base_freshness", return_value=fresh_base_sync_projection()),
             self.assertRaises(gtt.WorkflowError) as raised,
         ):
             gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
@@ -2517,37 +2994,34 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertIn("init_developer.py <name>", raised.exception.payload["recovery_command"])
         self.assertFalse((workspace / ".trellis/.developer").exists())
 
-    def test_ensure_base_freshness_fast_forwards_current_base(self) -> None:
-        fetch_result = mock.Mock(returncode=0, stdout="", stderr="")
+    def test_ensure_base_freshness_adapter_uses_shared_core(self) -> None:
+        result = fresh_base_sync_result()
         with (
-            mock.patch.object(gtt, "ref_head", side_effect=["old", "new", "new"]),
-            mock.patch.object(gtt, "run", return_value=fetch_result) as run,
-            mock.patch.object(gtt, "is_ancestor", return_value=True),
-            mock.patch.object(gtt, "current_branch", return_value="main"),
-            mock.patch.object(gtt, "git_dirty", return_value=False),
-            mock.patch.object(gtt, "run_stdout") as run_stdout,
+            mock.patch.object(gtt, "resolve_base_selection", return_value={"selected_base": "main"}) as resolve,
+            mock.patch.object(gtt, "execute_base_sync", return_value=result) as execute,
         ):
-            payload = gtt.ensure_base_freshness(self.root, "main")
+            payload = self.real_ensure_base_freshness(self.root, "main")
 
-        run.assert_called_once_with(["git", "fetch", "origin", "main"], cwd=self.root, check=False)
-        run_stdout.assert_called_once_with(["git", "merge", "--ff-only", "origin/main"], cwd=self.root)
+        resolve.assert_called_once_with(self.root, mock.ANY, "main", "origin")
+        execute.assert_called_once_with(self.root, {"selected_base": "main"})
         self.assertTrue(payload["fresh"])
-        self.assertTrue(payload["fast_forwarded"])
+        self.assertTrue(payload["three_way_equal"])
         self.assertEqual(payload["base_ref_for_worktree"], "main")
 
     def test_ensure_base_freshness_rejects_diverged_base(self) -> None:
-        fetch_result = mock.Mock(returncode=0, stdout="", stderr="")
         with (
-            mock.patch.object(gtt, "ref_head", side_effect=["local", "remote"]),
-            mock.patch.object(gtt, "run", return_value=fetch_result),
-            mock.patch.object(gtt, "is_ancestor", return_value=False),
+            mock.patch.object(gtt, "resolve_base_selection", return_value={"selected_base": "main"}),
+            mock.patch.object(
+                gtt,
+                "execute_base_sync",
+                side_effect=gtt.WorkflowError("Local selected base diverged from the fetched remote base.", exit_code=2),
+            ),
             self.assertRaises(gtt.WorkflowError) as raised,
         ):
-            gtt.ensure_base_freshness(self.root, "main")
+            self.real_ensure_base_freshness(self.root, "main")
 
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn("diverged", str(raised.exception))
-        self.assertEqual(raised.exception.payload["remote_ref"], "origin/main")
 
     def test_ensure_base_freshness_fetches_remote_tracking_ref(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -2573,7 +3047,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             subprocess.run(["git", "push", "origin", "main"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             remote_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=seed, text=True).strip()
 
-            payload = gtt.ensure_base_freshness(local, "main")
+            payload = self.real_ensure_base_freshness(local, "main")
 
             self.assertTrue(payload["fetch_performed"])
             self.assertTrue(payload["fast_forwarded"])
@@ -2582,7 +3056,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             self.assertEqual(gtt.ref_head(local, "main"), remote_head)
             self.assertEqual(gtt.ref_head(local, "origin/main"), remote_head)
 
-    def test_planner_refresh_base_freshness_fetches_without_fast_forwarding_local_base(self) -> None:
+    def test_planner_refresh_base_freshness_uses_same_strict_executor(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             remote = tmp_path / "remote.git"
@@ -2608,60 +3082,47 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             subprocess.run(["git", "push", "origin", "main"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             remote_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=seed, text=True).strip()
 
-            payload = gtt.refresh_base_freshness_for_planner(local, "main")
+            payload = self.real_refresh_base_freshness_for_planner(local, "main")
 
             self.assertTrue(payload["fetch_attempted"])
             self.assertTrue(payload["fetch_performed"])
-            self.assertFalse(payload["fast_forwarded"])
-            self.assertFalse(payload["fresh"])
-            self.assertEqual(payload["status"], "stale")
+            self.assertTrue(payload["fast_forwarded"])
+            self.assertTrue(payload["fresh"])
+            self.assertEqual(payload["status"], "fresh")
             self.assertEqual(payload["local_head_before"], local_head_before)
-            self.assertEqual(payload["local_head_after"], local_head_before)
+            self.assertEqual(payload["local_head_after"], remote_head)
             self.assertEqual(payload["remote_head"], remote_head)
-            self.assertEqual(payload["base_ref_for_worktree"], "origin/main")
-            self.assertEqual(gtt.ref_head(local, "main"), local_head_before)
+            self.assertEqual(payload["base_ref_for_worktree"], "main")
+            self.assertEqual(gtt.ref_head(local, "main"), remote_head)
             self.assertEqual(gtt.ref_head(local, "origin/main"), remote_head)
 
-    def test_planner_refresh_base_freshness_reports_diverged(self) -> None:
-        fetch_result = mock.Mock(returncode=0, stdout="", stderr="")
+    def test_planner_refresh_base_freshness_blocks_diverged(self) -> None:
         with (
-            mock.patch.object(gtt, "ref_head", side_effect=["local", "remote", "local"]),
-            mock.patch.object(gtt, "run", return_value=fetch_result) as run,
-            mock.patch.object(gtt, "is_ancestor", return_value=False) as is_ancestor,
+            mock.patch.object(gtt, "resolve_base_selection", return_value={"selected_base": "main"}),
+            mock.patch.object(
+                gtt,
+                "execute_base_sync",
+                side_effect=gtt.WorkflowError("Local selected base diverged from the fetched remote base.", exit_code=2),
+            ),
+            self.assertRaises(gtt.WorkflowError) as raised,
         ):
-            payload = gtt.refresh_base_freshness_for_planner(self.root, "main")
+            self.real_refresh_base_freshness_for_planner(self.root, "main")
 
-        run.assert_called_once_with(["git", "fetch", "origin", "main"], cwd=self.root, check=False)
-        is_ancestor.assert_called_once_with(self.root, "local", "origin/main")
-        self.assertTrue(payload["fetch_performed"])
-        self.assertFalse(payload["fresh"])
-        self.assertEqual(payload["fast_forwarded"], False)
-        self.assertEqual(payload["status"], "diverged")
-        self.assertEqual(payload["local_head_before"], "local")
-        self.assertEqual(payload["local_head_after"], "local")
-        self.assertEqual(payload["remote_head"], "remote")
+        self.assertIn("diverged", str(raised.exception))
 
-    def test_planner_refresh_base_freshness_reports_fetch_failed(self) -> None:
-        fetch_result = mock.Mock(returncode=128, stdout="", stderr="network unavailable\n")
+    def test_planner_refresh_base_freshness_blocks_fetch_failure(self) -> None:
         with (
-            mock.patch.object(gtt, "ref_head", side_effect=["local-before", "local-after"]),
-            mock.patch.object(gtt, "run", return_value=fetch_result) as run,
-            mock.patch.object(gtt, "is_ancestor") as is_ancestor,
+            mock.patch.object(gtt, "resolve_base_selection", return_value={"selected_base": "main"}),
+            mock.patch.object(
+                gtt,
+                "execute_base_sync",
+                side_effect=gtt.WorkflowError("Explicit selected-base fetch failed.", exit_code=2),
+            ),
+            self.assertRaises(gtt.WorkflowError) as raised,
         ):
-            payload = gtt.refresh_base_freshness_for_planner(self.root, "main")
+            self.real_refresh_base_freshness_for_planner(self.root, "main")
 
-        run.assert_called_once_with(["git", "fetch", "origin", "main"], cwd=self.root, check=False)
-        is_ancestor.assert_not_called()
-        self.assertTrue(payload["fetch_attempted"])
-        self.assertFalse(payload["fetch_performed"])
-        self.assertFalse(payload["fast_forwarded"])
-        self.assertFalse(payload["fresh"])
-        self.assertEqual(payload["status"], "fetch_failed")
-        self.assertEqual(payload["remote_head_source"], "unconfirmed")
-        self.assertEqual(payload["fetch_error"], "network unavailable")
-        self.assertEqual(payload["local_head_before"], "local-before")
-        self.assertEqual(payload["local_head_after"], "local-after")
-        self.assertIsNone(payload["remote_head"])
+        self.assertIn("fetch failed", str(raised.exception))
 
     def test_confirmed_issue_creation_requires_reviewed_title(self) -> None:
         body_path = self.root / "reviewed-issue.md"

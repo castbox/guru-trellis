@@ -93,6 +93,18 @@ from deterministic candidate/executor checks, and document fresh-sequence
 re-entry after finding fixes. Platform entry docs should reference the stable
 skill and typed exits instead of repeating its step-local contract.
 
+Public docs that describe Phase 0 must name `guru-sync-base` as the active
+selected-base closed-loop owner, list stable exits `synced` / `skipped` /
+`blocked`, and distinguish AI selected-base review from deterministic
+`sync-base` / `check-base-sync` facts. They must state the four-level
+resolution order, prohibit current-branch implicit fallback, require
+decision/local/remote HEAD equality, and explain that `prepare-task` consumes
+the reviewed resolution file/digest, preserves source provenance, and reuses
+the same core before semantic reads and each mutation boundary. All three
+README files must list the active id, result schema,
+runtime commands, full-preset requirement, update/reapply steps, and
+missing/drift/sidecar remediation without duplicating the complete Skill loop.
+
 When workflow behavior changes, update the docs that users actually read:
 
 - `README.md` for install/upgrade and daily operation

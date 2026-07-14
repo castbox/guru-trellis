@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-sync-base",
+  "status": "synced",
+  "resolution": {
+    "source": "remote-default",
+    "selected_base": "main",
+    "remote": "origin",
+    "candidates": [
+      "main"
+    ],
+    "resolution_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "decision_checkout": {
+    "branch": "main",
+    "head_before": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "head_after": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "clean_before": true,
+    "clean_after": true
+  },
+  "git": {
+    "local_ref": "refs/heads/main",
+    "remote_ref": "refs/remotes/origin/main",
+    "local_head_before": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "local_head_after": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "remote_head_after": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "fetch_performed": true,
+    "fast_forwarded": false
+  },
+  "fresh": true,
+  "facts_sha256": "15e3f69cb32cef0240cdb51b45ffbe60ddd23dca00c3aa40be0ad3714ea32b15"
+}

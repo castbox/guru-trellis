@@ -233,6 +233,12 @@ apply_local_workflow_sample() {
 mkdir "$TARGET"
 git -C "$TARGET" init -q
 git -C "$TARGET" remote add origin https://github.com/castbox/guru-trellis-throwaway.git
+git -C "$TARGET" config user.name "Guru Team Throwaway Bootstrap"
+git -C "$TARGET" config user.email "guru-team-throwaway-bootstrap@example.invalid"
+git -C "$TARGET" branch -M main
+printf '%s\n' 'throwaway repository baseline' >"$TARGET/.throwaway-baseline"
+git -C "$TARGET" add .throwaway-baseline
+git -C "$TARGET" commit -q -m "chore: initialize throwaway repository"
 
 (
   cd "$TARGET"
@@ -281,6 +287,7 @@ grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 grep -q 'Guru Team implementation tasks require `prd.md`, `design.md`, and `implement.md`' "$TARGET/.trellis/workflow.md"
 grep -q "record-subagent-liveness-event.sh" "$TARGET/.trellis/workflow.md"
 grep -q "check-subagent-liveness.sh" "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-invoke: {"skill":"guru-sync-base","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q "dispatch_mode: sub-agent" "$TARGET/.trellis/config.yaml"
 fail_if_english_language_rule ".trellis/spec" "$TARGET/.trellis/spec"
 WORKSPACE_TREE_DIGEST_AFTER="$(workspace_tree_digest "$TARGET/.trellis/workspace")"
@@ -296,6 +303,8 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/version.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-command.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/sync-base.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-base-sync.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-subagent-liveness.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-commit-messages.sh"
@@ -317,10 +326,10 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.6"
+assert extension["version"] == "0.6.5-guru.7"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 69
+assert len(assets) == 71
 assert all((root / path).is_file() for path in assets)
 for artifact in (
     "agent-assignment.json", "pr-body.md", "closeout-plan.json",
@@ -330,12 +339,14 @@ for artifact in (
 for command in (
     "resolve-human-artifacts", "record-subagent-liveness-event",
     "check-subagent-liveness", "check-commit-messages",
-    "create-task-commit", "run-skill-command", "format-merge-commit",
+    "create-task-commit", "run-skill-command", "sync-base", "check-base-sync",
+    "format-merge-commit",
     "backfill-finish-summary", "check-skill-packages",
 ):
     assert command in api["companion_scripts"]
 assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"
-assert api["skill_contracts"]["active_skill_ids"] == ["guru-create-task-commit"]
+assert api["skill_contracts"]["active_skill_ids"] == ["guru-create-task-commit", "guru-sync-base"]
+assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.1"
 assert api["skill_runtime"] == {
     "api_version": "1.0",
@@ -344,10 +355,10 @@ assert api["skill_runtime"] == {
 }
 assert skills["status"] == "ok"
 assert skills["reserved_ids"] == ["guru-create-work-commit"]
-assert skills["active_ids"] == ["guru-create-task-commit"]
+assert skills["active_ids"] == ["guru-create-task-commit", "guru-sync-base"]
 assert skills["selected_platforms"] == ["codex", "cursor"]
 assert skills["sidecars"] == []
-assert len(skills["files"]) == 35
+assert len(skills["files"]) == 67
 PY
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed >/dev/null
@@ -362,6 +373,12 @@ test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-comm
 test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 test -x "$TARGET/.cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 test ! -e "$TARGET/.claude/skills/guru-create-task-commit"
+test -f "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/SKILL.md"
+test -x "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh"
+test -x "$TARGET/.agents/skills/guru-sync-base/scripts/check-base-sync.sh"
+test -x "$TARGET/.codex/skills/guru-sync-base/scripts/sync-base.sh"
+test -x "$TARGET/.cursor/skills/guru-sync-base/scripts/sync-base.sh"
+test ! -e "$TARGET/.claude/skills/guru-sync-base"
 test ! -e "$TARGET/.agents/skills/guru-example-action"
 test ! -e "$TARGET/.codex/skills/guru-example-action"
 test ! -e "$TARGET/.cursor/skills/guru-example-action"
@@ -524,6 +541,41 @@ git -C "$TARGET" branch -M main
 git -C "$TARGET" add -A
 git -C "$TARGET" commit -q -m "chore: install Guru Team throwaway baseline"
 BASELINE_HEAD="$(git -C "$TARGET" rev-parse HEAD)"
+SYNC_REMOTE="$WORK_DIR/base-sync-remote.git"
+git init -q --bare "$SYNC_REMOTE"
+git -C "$SYNC_REMOTE" symbolic-ref HEAD refs/heads/main
+git -C "$TARGET" remote add sync-origin "$SYNC_REMOTE"
+git -C "$TARGET" push -q sync-origin main
+SYNC_RESOLUTION_FILE="$WORK_DIR/base-sync-resolution.json"
+SYNC_RESULT_FILE="$WORK_DIR/base-sync-result.json"
+SYNC_RESOLUTION_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+    --root "$TARGET" \
+    --mode standalone \
+    --resolve-only \
+    --base main \
+    --remote sync-origin \
+    --resolution-file "$SYNC_RESOLUTION_FILE"
+)"
+SYNC_RESOLUTION_DIGEST="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["resolution_sha256"])' <<<"$SYNC_RESOLUTION_JSON")"
+SYNC_RESULT_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+    --root "$TARGET" \
+    --mode standalone \
+    --execute \
+    --resolution-file "$SYNC_RESOLUTION_FILE" \
+    --expected-resolution-sha256 "$SYNC_RESOLUTION_DIGEST" \
+    --result-file "$SYNC_RESULT_FILE"
+)"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True; assert payload["decision_checkout"]["head_after"] == payload["git"]["local_head_after"] == payload["git"]["remote_head_after"]' <<<"$SYNC_RESULT_JSON"
+SYNC_VALIDATION_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/check-base-sync.sh" \
+    --root "$TARGET" \
+    --mode standalone \
+    --evidence-file "$SYNC_RESULT_FILE"
+)"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "validated"; assert payload["selected_base"] == "main"' <<<"$SYNC_VALIDATION_JSON"
+rm -f "$SYNC_RESOLUTION_FILE" "$SYNC_RESULT_FILE"
 TASK_BRANCH="feat/122-installed-task-commit"
 TASK_REL=".trellis/tasks/07-13-122-installed-task-commit"
 git -C "$TARGET" switch -q -c "$TASK_BRANCH"
@@ -747,12 +799,18 @@ test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-command.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/sync-base.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-base-sync.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/create-task-commit.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md"
+test -f "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/SKILL.md"
 test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" --help >/dev/null
 test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 test -x "$TARGET/.cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+test -x "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh"
+test -x "$TARGET/.codex/skills/guru-sync-base/scripts/sync-base.sh"
+test -x "$TARGET/.cursor/skills/guru-sync-base/scripts/sync-base.sh"
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed >/dev/null
 "$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"

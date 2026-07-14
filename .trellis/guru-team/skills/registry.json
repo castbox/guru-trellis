@@ -16,6 +16,21 @@
       "supported_platforms": ["shared", "codex", "cursor", "claude"],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "phase-3-task-commit"
+    },
+    {
+      "id": "guru-sync-base",
+      "state": "active",
+      "name": "guru-sync-base",
+      "package": "packages/guru-sync-base",
+      "interface": "packages/guru-sync-base/interface.json",
+      "supported_platforms": [
+        "shared",
+        "codex",
+        "cursor",
+        "claude"
+      ],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "phase-0-base-sync"
     }
   ]
 }

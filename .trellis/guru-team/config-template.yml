@@ -33,9 +33,13 @@ branch_prefix: ""
 # chore, revert.
 branch_type_default: chore
 
-# Preferred base branch candidates, in order. The workflow selects the first local
-# or origin branch that exists. If the current branch is not the selected base,
-# the AI must report candidates and ask the user before proceeding.
+# Optional single base branch. A non-empty value wins after an explicit --base.
+# Leave empty to use remote default discovery and the exact fallback gate below.
+base_branch: ""
+
+# Compatibility fallback candidates. A deduplicated single value is treated as
+# config selection. Multiple values are consulted only after remote default
+# discovery fails, and exactly one exact local/remote-tracking ref must exist.
 base_branch_candidates:
   - dev
   - develop

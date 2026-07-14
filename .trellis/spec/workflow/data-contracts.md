@@ -17,6 +17,39 @@ When adding a config field:
    behavior.
 5. Update README or workflow text if users must know the field.
 
+`base_branch` is an optional scalar. A non-empty value is the second-level
+selected-base source. For backward compatibility, a deduplicated
+`base_branch_candidates` list with exactly one value has the same config-single
+meaning; a multi-value list participates only in remote-default/fallback
+resolution. Empty scalar means not configured. No config shape authorizes a
+current-branch fallback.
+
+## Base Sync Result
+
+Schema `guru-base-sync-result-1.0` is a closed Draft 2020-12 object for a
+successful `guru-sync-base` execution. It records stable skill/status identity,
+resolution source/base/remote/candidates and resolution digest, decision
+checkout branch/HEAD/clean before and after, local and remote refs/HEADs, fetch
+and fast-forward facts, `fresh=true`, and `facts_sha256`. The facts digest is
+SHA-256 over canonical JSON with `facts_sha256` omitted.
+
+Success requires full 40-hex commit ids and exact equality across decision
+checkout HEAD after, local base HEAD after, and remote-tracking base HEAD.
+Resolution evidence and result evidence are temporary invocation files outside
+the repository; neither task-start context, public package, installed runtime,
+nor repo root stores them. Component-wise `lstat` rejects evidence at or under
+the repo, any symlinked component, schema tampering, digest tampering, or stale
+live Git facts.
+
+`prepare-task.preflight.base_freshness` remains a compatibility projection and
+adds resolution source/digest, decision checkout, local/remote refs, and
+three-way equality facts from the same core. It also exposes
+`reviewed_resolution_sha256`, while `resolution.source` remains the reviewed
+`explicit`, `config`, `remote-default`, or `fallback` provenance rather than a
+prepare-generated explicit override. Task-start context persists only
+portable base branch and local/remote SHA identity; it excludes resolution
+bytes, result payloads, process output, and machine paths.
+
 The YAML parser in `load_config()` is intentionally small. It supports simple
 scalars, lists, and one level of nested dictionaries used by the current config.
 Do not introduce complex YAML structures without replacing or extending the

@@ -134,6 +134,24 @@ A failed stage, hook, operation, postcondition or publication preserves exact
 transaction-owned preimages; loss of conditional ref/candidate ownership
 preserves third-party state and fails closed without claiming exact restore.
 
+`guru-sync-base` is mandatory immediately after tool-free Phase 0 request
+classification and before the first repo/network semantic read. Its workflow
+and standalone modes have identical entry preconditions:
+`invocation_intent`, `runtime_dependency`, `decision_checkout`,
+`selected_base_resolution`, `clean_checkout`, and `result_evidence`.
+Standalone requires an explicit refresh/verify request and cannot return
+`skipped`. Workflow exits are exactly `synced` to
+`guru-discover-change-context`, `skipped` to `original-request-route`, and
+`blocked` to `base-sync-blocked`.
+
+The package declares `sync-base` and `check-base-sync` runtime commands and
+schema `guru-base-sync-result-1.0`. Its wrappers remain dispatcher-only. The
+package contract, not the runtime, owns invocation scope, selected-base
+confirmation, semantic review, conflict-triggered human confirmation, and
+route choice. Resolution ambiguity or stale digest is objective `blocked`
+evidence and starts a new explicit invocation; a script never chooses among
+multiple candidates.
+
 ## Distribution And Managed Hashes
 
 The preset installs an audited canonical registry/schema/package copy under

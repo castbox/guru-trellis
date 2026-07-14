@@ -11,7 +11,20 @@ Use this entry as fallback / explicit orientation. In normal auto-bootstrap plat
 
 Run this start entry when the platform has no automatic session/startup injection, hooks are disabled or unapproved, bootstrap appears not to have run, or the user asks for a full context report / reload.
 
-1. Load only the fixed Guru Team no-workspace context set:
+1. Before any context command, classify from the user's request and already
+   injected control-plane state only. If the request clearly opens new
+   issue-backed, task-like, or file-changing work and no injected state proves
+   that an active task already owns it, read `.trellis/workflow.md` and
+   mandatory invoke `guru-sync-base` by its stable id. Do not use
+   `get_context.py`, `task.py`, Git, issue, Docs, code, test, or history reads to
+   make this route decision. Consume exactly one declared workflow exit:
+   `synced` enters `guru-discover-change-context`, `skipped` returns to
+   `original-request-route`, and `blocked` stops fail closed. Missing, unknown,
+   multiple, or unmapped exits also stop.
+
+2. Only after that new-work route returns `synced`, or when the tool-free route
+   proves this invocation is only active-task orientation or a non-new-work
+   route, load the fixed Guru Team no-workspace context set:
 
 ```bash
 python3 ./.trellis/scripts/get_context.py --mode phase
@@ -25,11 +38,15 @@ Do not run bare `get_context.py` in this entry. Do not open, enumerate, read,
 count, summarize, or output `.trellis/workspace/**`; workspace journals are not
 Guru Team startup or context evidence.
 
-2. If there is no active task and the user's natural-language request is issue-backed, task-like, or requires file changes, the first priority is Guru Team Phase 0 intake, not bare `task.py create` in the current checkout. Do not silently edit the current checkout. Run:
+If the route entered new work, do not silently edit the current checkout.
+After `synced` and change-context discovery, run:
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
-.trellis/guru-team/scripts/bash/prepare-task.sh --json "<user request, issue number, or issue URL>"
+.trellis/guru-team/scripts/bash/prepare-task.sh --json \
+  --resolution-file <reviewed-resolution-file> \
+  --expected-resolution-sha256 <reviewed-resolution-sha256> \
+  "<user request, issue number, or issue URL>"
 ```
 
 3. Treat default `prepare-task` as intake/preflight planning only. Show duplicate candidates, proposed title/body when present, naming quality result, base branch, branch name, workspace path, and the confirmed command. If `naming_quality.ok=false` or `requires_semantic_name=true`, read the issue and choose a semantic English short-name, then pass it explicitly with `--short-name`, `--workspace-slug`, `--task-slug`, and `--branch`; do not rely on Chinese transliteration or low-information names such as `issue-52`. If prepare returns `proposed_issue` / `requires_confirmation`, stop until the user approves GitHub issue creation. Only then rerun with `--create-issue-confirmed --issue-title "<reviewed title>" --issue-body-file <reviewed-body-file>`.

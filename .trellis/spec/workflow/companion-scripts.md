@@ -82,6 +82,52 @@ is an objective precondition only and never becomes an AI Review Gate pass.
 
 ## GitHub and Git Operations
 
+### Shared Base Resolution And Sync
+
+`sync-base` is the only deterministic owner of selected-base resolution and
+safe refresh. The fixed precedence is explicit `--base`, non-empty scalar
+`base_branch` or a single unique `base_branch_candidates` value, remote default
+from `git ls-remote --symref <remote> HEAD`, then exactly one existing local or
+remote-tracking fallback candidate. Validate every candidate with
+`git check-ref-format --branch`. Remote-default failure proceeds only to the
+fallback cardinality gate; zero or multiple candidates block. Never fall back
+to the current branch.
+
+`--resolve-only` emits canonical resolution JSON and SHA-256 before fetch. It
+may write a caller-selected temporary resolution file only when the lexical
+and resolved file path is outside the repository. `--execute` requires those
+exact bytes and expected digest, recomputes resolution at the execution
+boundary, and blocks before fetch if bytes, digest, checkout identity, or
+resolution changed. The executor uses only:
+
+```text
+git fetch --no-tags <remote> refs/heads/<base>:refs/remotes/<remote>/<base>
+git merge --ff-only <remote>/<base>
+```
+
+The merge is legal only when the clean decision checkout is the selected base
+and local base is an ancestor of remote. Missing local/remote refs, dirty state,
+fetch failure, divergence, wrong checkout, or post-sync mismatch blocks. It
+must not use `git branch -f`, reset, checkout, stash, rebase, force fetch, or a
+current-branch fallback.
+
+`check-base-sync` is read-only. It validates component/symlink boundaries,
+Draft 2020-12 schema identity, `facts_sha256`, selected refs, clean state, and
+decision/local/remote full-SHA equality against live Git. It does not fetch,
+merge, decide scope, judge semantic pass, or choose a route. Its workflow-only
+`--record-skipped` path emits stdout-only machine facts after the AI has
+reviewed a non-repo route; standalone rejects that path.
+
+`prepare-task` requires the prior AI-reviewed external resolution file and
+expected digest. It calls the shared raw-byte/digest/source-identity verifier
+and sync core before `gh auth status`, issue read, and duplicate search, then
+reruns an independent guard immediately before each GitHub, worktree, and task
+mutation boundary. The task guard occurs after worktree/identity setup and
+immediately before `task.py create`. `--base-branch` can assert equality but
+cannot rewrite config/remote-default/fallback provenance as explicit. The
+legacy planner/executor freshness functions remain adapters only. A stale
+planner result is blocking, not permission to continue planning.
+
 Always gate GitHub operations with `gh auth status` through `require_gh_auth()`.
 Do not assume the GitHub CLI is configured just because `gh` exists.
 

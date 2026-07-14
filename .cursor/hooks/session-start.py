@@ -333,7 +333,8 @@ def _get_task_status(trellis_dir: Path, input_data: dict) -> str:
         return (
             "Status: NO ACTIVE TASK\n"
             "Next-Action: Follow the per-turn workflow-state before creating any Trellis task. "
-            "In Guru Team projects, issue-backed, task-like, or file-changing requests run "
+            "In Guru Team projects, issue-backed, task-like, or file-changing requests mandatory invoke "
+            "`guru-sync-base` from `.trellis/workflow.md`; only `synced` may run "
             "`check-env.sh --json` and `prepare-task.sh --json` before task creation; "
             "task creation consent is not current-checkout direct-edit consent."
         )
