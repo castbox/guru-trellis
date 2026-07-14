@@ -7,6 +7,14 @@ Read the current task planning files, durable Docs SSOT, fresh Phase 2 report,
 Issue Scope Ledger and complete Git state. Reading dirty files discovers facts;
 it does not grant commit authorization.
 
+The modes differ only in routing. `workflow.routing=global_workflow` enters
+through the global mandatory invocation marker;
+`standalone.routing=direct_discovery` enters through a selected platform Skill
+root without global workflow routing. Both require the complete Guru Team
+preset, compatible extension runtime API, installed manifest, shared dispatcher
+and managed package inventory. Copying this directory alone is unsupported: the
+package is not self-contained or portable.
+
 Require an ordinary Git operation state. Candidate validation, executor entry
 before staging, and the check immediately before `git commit` each reject active
 merge, cherry-pick, revert, rebase, sequencer, or `git am` state. The runtime
@@ -91,6 +99,16 @@ Run `scripts/check-task-commit-plan.sh --json --candidate-artifact <path>` only
 after AI review and any required confirmation. It must call the shared commit
 message parser `validate_commit_message()` and fail if the branch range is empty but candidate facts are
 missing.
+
+Both package scripts are thin wrappers over the installed
+`run-skill-command` dispatcher. They pass only the package root, their fixed
+validator id and original arguments. Before calling `check-commit-messages` or
+`create-task-commit`, the dispatcher validates interface schema 1.1,
+`runtime_dependency`, installed extension API, managed inventory and discovery
+copy freshness. It never falls back to direct legacy companion paths. Missing,
+incompatible or drifted runtime state returns `blocked` before business side
+effects and instructs the caller to install or upgrade the full preset, resolve
+sidecars, rerun source/installed validation and retry.
 
 Then run `scripts/create-task-commit.sh --json --candidate-artifact <path>`.
 The executor revalidates the candidate, repeats the ordinary-operation check,

@@ -219,6 +219,8 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/version.sh`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh`
 - `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh`
+- `.trellis/guru-team/scripts/bash/check-skill-packages.sh`
+- `.trellis/guru-team/scripts/bash/run-skill-command.sh`
 - `.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh`
 - `.trellis/guru-team/scripts/bash/record-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
@@ -243,6 +245,14 @@ Production skill registry 同时保留 reserved `guru-create-work-commit` 与 ac
 example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
 root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
 `.new`/`.bak`，再通过 source/installed package validation 与 dogfood drift。
+
+Interface schema 1.1 中 `workflow` 表示 global mandatory routing，`standalone` 表示
+所选平台 direct discovery。两种 mode 都依赖完整 compatible Guru Team runtime；单独
+复制 Skill 目录不是 self-contained/portable 安装。Preset 因此同时安装
+`.trellis/guru-team/scripts/bash/run-skill-command.sh`、extension runtime capability、
+audited package inventory 与 discovery copies。Wrapper 只能经过该 dispatcher；旧 runtime、
+缺失 manifest/dispatcher、API/command mismatch 或 managed drift 会在 companion command
+之前 fail closed，并提示安装/升级完整 preset、处理 `.new` / `.bak`、重跑验证。
 
 Shared overlays are always installed:
 

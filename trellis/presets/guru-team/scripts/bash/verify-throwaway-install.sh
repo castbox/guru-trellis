@@ -295,6 +295,7 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/check-env.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/version.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-command.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-subagent-liveness.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-commit-messages.sh"
@@ -316,10 +317,10 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.5"
+assert extension["version"] == "0.6.5-guru.6"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 68
+assert len(assets) == 69
 assert all((root / path).is_file() for path in assets)
 for artifact in (
     "agent-assignment.json", "pr-body.md", "closeout-plan.json",
@@ -329,12 +330,18 @@ for artifact in (
 for command in (
     "resolve-human-artifacts", "record-subagent-liveness-event",
     "check-subagent-liveness", "check-commit-messages",
-    "create-task-commit", "format-merge-commit",
+    "create-task-commit", "run-skill-command", "format-merge-commit",
     "backfill-finish-summary", "check-skill-packages",
 ):
     assert command in api["companion_scripts"]
 assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"
 assert api["skill_contracts"]["active_skill_ids"] == ["guru-create-task-commit"]
+assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.1"
+assert api["skill_runtime"] == {
+    "api_version": "1.0",
+    "dispatcher": "run-skill-command",
+    "manifest_path": ".trellis/guru-team/extension.json",
+}
 assert skills["status"] == "ok"
 assert skills["reserved_ids"] == ["guru-create-work-commit"]
 assert skills["active_ids"] == ["guru-create-task-commit"]
@@ -351,6 +358,7 @@ test ! -e "$TARGET/.claude/skills/guru-create-work-commit"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md"
 test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh"
 test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+"$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" --help >/dev/null
 test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 test -x "$TARGET/.cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 test ! -e "$TARGET/.claude/skills/guru-create-task-commit"
@@ -738,9 +746,11 @@ test -f "$TARGET/.trellis/guru-team/schemas/finish-summary.schema.json"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-command.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/create-task-commit.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md"
 test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+"$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" --help >/dev/null
 test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 test -x "$TARGET/.cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null

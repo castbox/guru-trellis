@@ -1,13 +1,13 @@
 {
   "$schema": "../../schemas/skill-interface.schema.json",
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "id": "guru-create-task-commit",
   "name": "guru-create-task-commit",
   "description": "Create a reviewed Trellis task work commit after Phase 2, including finding-fix and revision commits, with exact staging and fresh evidence.",
   "state": "active",
   "modes": {
-    "workflow": {"entry_precondition_ids": ["workspace_boundary", "task_identity", "planning_approval", "phase2_check", "issue_scope_ledger", "pre_commit_head", "git_operation_state", "dirty_snapshot", "commit_authorization"]},
-    "standalone": {"entry_precondition_ids": ["workspace_boundary", "task_identity", "planning_approval", "phase2_check", "issue_scope_ledger", "pre_commit_head", "git_operation_state", "dirty_snapshot", "commit_authorization"]}
+    "workflow": {"routing": "global_workflow", "entry_precondition_ids": ["workspace_boundary", "task_identity", "planning_approval", "phase2_check", "issue_scope_ledger", "pre_commit_head", "git_operation_state", "dirty_snapshot", "commit_authorization"]},
+    "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["workspace_boundary", "task_identity", "planning_approval", "phase2_check", "issue_scope_ledger", "pre_commit_head", "git_operation_state", "dirty_snapshot", "commit_authorization"]}
   },
   "entry_preconditions": [
     {"id": "workspace_boundary", "evidence": "task-start-context.json plus local runtime/worktree facts", "binding": "actual repository root equals the mapped task worktree", "freshness": "checked for the current invocation"},
@@ -20,12 +20,13 @@
     {"id": "dirty_snapshot", "evidence": "NUL-delimited Git status and content identities", "binding": "complete staged, unstaged, untracked, delete and explicit rename/copy facts; ordinary SHA-256/mode/delete and initialized clean gitlink HEAD are exact index authorities, while only rename sources inherit deletion/exact-stage authority", "freshness": "current snapshot, candidate raw bytes, complete live index preimage and operation state still match through isolated validation; index.lock remains a sentinel and ref/index/candidate guards remain owned through the final candidate identity-read linearization point"},
     {"id": "commit_authorization", "evidence": "candidate authorization object", "binding": "explicit authorized flag, source and evidence", "freshness": "authorization applies to this exact stage/message plan"}
   ],
+  "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
   "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
   "artifacts": [{"id": "task_commit_plan_example", "path": "examples/task-commit-plan.json"}],
   "schemas": [{"id": "task_commit_plan_schema", "path": "schemas/task-commit-plan.schema.json"}],
   "validators": [
-    {"id": "candidate_validator", "command": "scripts/check-task-commit-plan.sh", "objective_scope": "schema, identity, evidence, freshness, explicit rename/copy relations, independently classified copy sources, exact paths, shared parser and authorization facts"},
-    {"id": "exact_executor", "command": "scripts/create-task-commit.sh", "objective_scope": "artifact-authorized ordinary/gitlink/candidate bindings with deletion inheritance limited to rename sources, isolated index and detached commit validation, guarded conditional ref/candidate rollback under an index.lock sentinel, independent final-index publication, final candidate identity-read linearization, immutable commit blob/result digest evidence, and raw commit postconditions"}
+    {"id": "candidate_validator", "command": "scripts/check-task-commit-plan.sh", "runtime_command": "check-commit-messages", "objective_scope": "schema, identity, evidence, freshness, explicit rename/copy relations, independently classified copy sources, exact paths, shared parser and authorization facts"},
+    {"id": "exact_executor", "command": "scripts/create-task-commit.sh", "runtime_command": "create-task-commit", "objective_scope": "artifact-authorized ordinary/gitlink/candidate bindings with deletion inheritance limited to rename sources, isolated index and detached commit validation, guarded conditional ref/candidate rollback under an index.lock sentinel, independent final-index publication, final candidate identity-read linearization, immutable commit blob/result digest evidence, and raw commit postconditions"}
   ],
   "external_exits": [
     {"id": "committed", "evidence": "task commit plan result and current Git HEAD", "consumer": {"kind": "workflow", "id": "branch-review-or-finding-closure"}},

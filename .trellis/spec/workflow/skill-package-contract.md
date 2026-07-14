@@ -70,6 +70,23 @@ ambiguous evidence fails closed. A deterministic script may execute, record, or
 validate machine facts, but never decides scope, sufficiency, findings,
 revision action, human-confirmation need, semantic pass, or route intent.
 
+`workflow` and `standalone` are stable routing mode ids, not package formats.
+`workflow.routing=global_workflow` means the global workflow loads the package
+through its mandatory marker. `standalone.routing=direct_discovery` means a
+selected platform may discover and invoke the package without global workflow
+routing. Both modes still require the complete, compatible Guru Team preset,
+extension runtime, shared dispatcher, companion scripts, installed manifest,
+and managed package inventory. `standalone` never means that one copied Skill
+directory is self-contained or portable outside that installation.
+
+Every active interface declares the closed `runtime_dependency` object with
+extension id, runtime API version, installed manifest path, shared dispatcher
+id, preset distribution id, and package portability. Each validator declares a
+stable `runtime_command` that the extension manifest publishes. Source and
+installed validation bind those fields to the extension capability, and reject
+missing fields, wrong routing, dependency drift, unknown commands, or different
+workflow/standalone preconditions before a package command can run.
+
 ## Workflow Markers And Typed Exits
 
 Mandatory routing is machine-readable HTML-comment JSON:
@@ -151,6 +168,16 @@ to the repository. Before any read, write, removal, chmod, or digest, the
 installer/validator walks every component with `lstat`. A regular, dangling,
 internal, external, or multilevel symlink at the target or any ancestor fails
 closed; no asset may be read from or written through it.
+
+Package command files are thin wrappers. They locate only the managed
+`run-skill-command` dispatcher, pass their package root and fixed validator id,
+and forward the original arguments. They must not locate an old companion
+command directly, parse task/gate evidence, validate commit messages, stage Git
+content, or implement transaction/rollback behavior. Missing or incompatible
+runtime state fails before the target companion command and reports that the
+package is not self-contained/portable, that the complete Guru Team preset must
+be installed or upgraded, and that unresolved `.new` / `.bak` sidecars and
+source/installed validation must be handled before retry.
 
 ## Deterministic Validation
 

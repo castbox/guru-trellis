@@ -1,0 +1,58 @@
+{
+  "primary_issue": {
+    "number": 125,
+    "url": "https://github.com/castbox/guru-trellis/issues/125",
+    "title": "明确 Guru Team Skill standalone 模式的 runtime 依赖语义",
+    "reason": "intake 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "实现与 Docs SSOT 已完成：interface schema 1.1、extension skill_runtime capability、shared run-skill-command dispatcher、thin wrappers、preset installer、managed platform copies、durable requirements、四份 .trellis/spec 合同与三份 public README 已同步，standalone 明确定义为 routing independence 而非 self-contained package。",
+      "Fresh Phase 2 已覆盖六项需求与完整 stacked-base diff：5 package tests、65 skill package tests、36 installer tests、275 runtime tests，共 381 tests passed；source/installed validation、direct discovery、dogfood drift、static、sidecar、clean throwaway 与 update-reapply 全部通过，.new/.bak=0。",
+      "Branch Review Gate 已绑定 reviewed HEAD 93d9a416bd6b34a87844dde5d4d9da363af729c2：Round 001 的 P2 F-001 dispatcher 自指映射问题已由 revision commit 修复，Round 002 closure findings=0，fresh Round 003 final review findings=0。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "750024c0ada27ac16e58fa1034239cb646df77a56f89465814c4d45a90f4fc5c",
+        "verified_content_head": "93d9a416bd6b34a87844dde5d4d9da363af729c2",
+        "remote_head": "93d9a416bd6b34a87844dde5d4d9da363af729c2",
+        "publish_head": "93d9a416bd6b34a87844dde5d4d9da363af729c2",
+        "commands_passed": true
+      }
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 125,
+      "url": "https://github.com/castbox/guru-trellis/issues/125",
+      "title": "明确 Guru Team Skill standalone 模式的 runtime 依赖语义",
+      "reason": "当前 task 已完整覆盖 Issue #125 六项需求、验收矩阵、Docs SSOT 与 Branch Review Gate，因此由本 PR 关闭。",
+      "acceptance_evidence": [
+        "实现与 Docs SSOT 已完成：interface schema 1.1、extension skill_runtime capability、shared run-skill-command dispatcher、thin wrappers、preset installer、managed platform copies、durable requirements、四份 .trellis/spec 合同与三份 public README 已同步，standalone 明确定义为 routing independence 而非 self-contained package。",
+        "Fresh Phase 2 已覆盖六项需求与完整 stacked-base diff：5 package tests、65 skill package tests、36 installer tests、275 runtime tests，共 381 tests passed；source/installed validation、direct discovery、dogfood drift、static、sidecar、clean throwaway 与 update-reapply 全部通过，.new/.bak=0。",
+        "Branch Review Gate 已绑定 reviewed HEAD 93d9a416bd6b34a87844dde5d4d9da363af729c2：Round 001 的 P2 F-001 dispatcher 自指映射问题已由 revision commit 修复，Round 002 closure findings=0，fresh Round 003 final review findings=0。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "750024c0ada27ac16e58fa1034239cb646df77a56f89465814c4d45a90f4fc5c",
+          "verified_content_head": "93d9a416bd6b34a87844dde5d4d9da363af729c2",
+          "remote_head": "93d9a416bd6b34a87844dde5d4d9da363af729c2",
+          "publish_head": "93d9a416bd6b34a87844dde5d4d9da363af729c2",
+          "commands_passed": true
+        }
+      ]
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 122,
+      "url": "https://github.com/castbox/guru-trellis/issues/122",
+      "title": "将 task work commit 拆分为可复用 closed-loop skill",
+      "reason": "#125 以 #122 / PR #124 的实现 HEAD 为 stacked 基线，只引用其 package/runtime 事实，不改变 #122 close 语义。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": []
+}

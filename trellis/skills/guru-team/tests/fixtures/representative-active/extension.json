@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "extension_id": "guru-team",
+  "version": "fixture",
+  "public_api": {
+    "skill_contracts": {
+      "interface_schema_id": "guru-team-skill-interface-1.1"
+    },
+    "skill_runtime": {
+      "api_version": "1.0",
+      "dispatcher": "run-skill-command",
+      "manifest_path": ".trellis/guru-team/extension.json"
+    },
+    "companion_scripts": [
+      "fixture-runtime-command",
+      "run-skill-command"
+    ]
+  }
+}

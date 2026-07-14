@@ -1117,6 +1117,13 @@ mandatory invocation, the three unique consumers above, and the repeat route.
 Do not reproduce the step-local contract here or perform a parallel direct
 task work commit path.
 
+The stable `workflow` mode means this mandatory global route. Stable
+`standalone` mode means selected-platform direct discovery without the global
+route; it does not make the package self-contained or portable. Both modes
+require the complete compatible Guru Team preset and extension runtime, use the
+same entry preconditions and closed-loop behavior, and dispatch objective
+commands through the shared `run-skill-command` runtime.
+
 `committed` proceeds to Phase 3.5. `revision-required` re-enters the same skill
 without guessing another route. `blocked`, unknown, multiple or unmapped exits
 stop fail closed. Frontmatter auto-match is standalone discovery only and does

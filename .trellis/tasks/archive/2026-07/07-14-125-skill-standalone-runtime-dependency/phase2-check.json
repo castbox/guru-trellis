@@ -1,0 +1,130 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-14T03:31:30Z",
+  "task_dir": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency",
+  "base_branch": "feat/122-guru-create-task-commit",
+  "head": "e4937dfe19c9e3d889144ca5ef9d7afd42a429b5",
+  "diff_range": "origin/feat/122-guru-create-task-commit...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/agent-assignment.json",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+  ],
+  "checker": "/root/trellis_check_125_f001",
+  "check_summary": "F-001 修复后的 fresh Phase 2 已覆盖 Issue #125 六项需求、完整 stacked-base diff、finding fix、Docs SSOT、schema/runtime/installer/platform copies/tests/upgrade/security/deployment；self-mapping semantic drift 已关闭，381 tests 与全部门禁通过，findings=0。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/finding-fix-handoff-001.md",
+      "sha256": "1df29d48ff657c0e93160f9ae4b9146a834b62ff5369b51cd5936ae55b68a95f",
+      "size_bytes": 7651,
+      "modified_at": "2026-07-14T03:20:33.445483+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/phase2-check-report-f001.md",
+      "sha256": "b161422f35ee2bc4f1787bddc663711b042efd7c56033bee1603a5045a5126fe",
+      "size_bytes": 12821,
+      "modified_at": "2026-07-14T03:30:18.854616+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/reviews/001-final-review.md",
+      "sha256": "38df040fd7307f94b0ce614aaa04607150f7a9b304970a9f26f460e7b60bc40d",
+      "size_bytes": 12542,
+      "modified_at": "2026-07-14T02:59:04.833524+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/review.md",
+      "sha256": "c953cc50fc4b82b443d30a9b200a2214dff8033ffe56239c963adce1d3d80bcc",
+      "size_bytes": 3379,
+      "modified_at": "2026-07-14T03:02:24.293744+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/review-gate.json",
+      "sha256": "88e35598d5612cf65edbe35441b85a42ae092e1b6f6142618072957fcdbf6cfa",
+      "size_bytes": 27131,
+      "modified_at": "2026-07-14T03:02:59.241505+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/implementation-handoff.md",
+      "sha256": "a26eabcad321bd59883000502ee7809daa2e105dd25414b3da22c23acd4e02ec",
+      "size_bytes": 10250,
+      "modified_at": "2026-07-14T01:55:59.559239+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/issue-scope-ledger.json",
+      "sha256": "23d01589a3318e14814737ed46ada49d58bdf1400af2694a5021b257f8b50a7c",
+      "size_bytes": 1038,
+      "modified_at": "2026-07-14T01:24:55.868746+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-14-125-skill-standalone-runtime-dependency/task-commit-plans/001.json",
+      "sha256": "f28ed13d5f9ba7e1016844ce57384a8ac5ed163aee2929799dca6fb745e23446",
+      "size_bytes": 100518,
+      "modified_at": "2026-07-14T02:39:47.957086+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "edc02195d601f2580118f91e72cb824e189e7878ad12ac71e286d5af466d26d3",
+      "size_bytes": 12374,
+      "modified_at": "2026-07-14T01:34:48.893404+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "5f58bb5e980a02c34cfe6789571333208122acc964f270aad33b29f6fa660c03",
+      "size_bytes": 48201,
+      "modified_at": "2026-07-14T01:34:48.893851+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "9e543fb458c28741eeacb7edc9326e57234cfcfe0001d6ee7841b6c3cfa39273",
+      "size_bytes": 15375,
+      "modified_at": "2026-07-14T01:34:48.894140+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "8b8684fd1ac806b533495497f9b02d2a17a58de8bfeb54350a39297c2ee512f5",
+      "size_bytes": 6080,
+      "modified_at": "2026-07-14T01:34:48.894414+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+      "result": "5 tests passed"
+    },
+    {
+      "command": "python3 -m unittest discover -s trellis/skills/guru-team/tests -p 'test_*.py'",
+      "result": "65 tests passed；F-001 精确 self-mapping regression passed"
+    },
+    {
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "36 tests passed"
+    },
+    {
+      "command": "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "275 tests passed"
+    },
+    {
+      "command": "check-skill-packages --mode source/installed",
+      "result": "passed；43 managed files，三平台，0 sidecar/removal/conflict"
+    },
+    {
+      "command": "check-dogfood-overlay-drift.sh；canonical/dogfood cmp；JSON/Bash/Python static；git diff --check；recursive sidecar scan",
+      "result": "全部通过；.new/.bak=0"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

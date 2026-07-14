@@ -1,0 +1,10 @@
+{
+  "findings": [
+    {
+      "priority": "P3",
+      "message": "Workflow README 的待发布 canonical 版本仍写 0.6.5-guru.4，与本任务 extension manifest 的 0.6.5-guru.6 不一致；Phase 2 检查代理已同步为 .6，并完成残留版本声明搜索与全量复验。",
+      "path": "trellis/workflows/guru-team/README.md",
+      "status": "resolved"
+    }
+  ]
+}

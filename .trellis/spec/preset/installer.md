@@ -59,6 +59,15 @@ companion `scripts/bash/create-task-commit.sh` is a managed executable asset;
 source/installed validation and the manifest inventory must prove its bytes and
 mode.
 
+The shared `scripts/bash/run-skill-command.sh` dispatcher is also a managed
+executable asset and stable companion script id. The canonical extension
+manifest publishes `public_api.skill_runtime` with the runtime API version,
+dispatcher id, and installed manifest path. Preset apply must install the
+dispatcher before package discovery copies are usable, include it in
+`MANAGED_ASSET_PATHS`, executable handling and the installed managed-asset
+inventory, and preserve the exact capability metadata in
+`.trellis/guru-team/extension.json`.
+
 Generated Python `__pycache__` directories and `.pyc` / `.pyo` bytecode are not
 public package assets. Package source validation, tree digests, installer
 inventory and installed validation exclude them; reapply removes an older
@@ -73,6 +82,13 @@ template:
 3. Add executable permission handling if it is a script.
 4. Update `trellis/presets/guru-team/README.md` installed-file list.
 5. Validate a temporary install or upgrade path.
+
+For public Skill runtime changes, the temporary path must invoke a wrapper from
+the selected shared discovery root after full preset installation, then repeat
+the probe after `trellis update`, workflow re-selection, and preset reapply. A
+package-only copy, missing dispatcher/manifest, incompatible API, command drift,
+or managed-copy drift must fail before the target companion command with the
+documented full-preset install/upgrade remediation.
 
 `scripts/bash/backfill-finish-summary.sh` is a managed executable asset. Fresh
 install and preset reapply/update validation must prove that the wrapper and

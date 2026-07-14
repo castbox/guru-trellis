@@ -12,9 +12,17 @@ Read `references/contract.md` completely. Validate every declared entry
 precondition in workflow and standalone mode, then execute the ordered
 closed-loop stages exactly once for the current plan sequence.
 
+`workflow` means mandatory global workflow routing. `standalone` means direct
+platform discovery without that routing; it still requires the complete,
+compatible Guru Team preset and extension runtime. This Skill directory is not
+a self-contained or portable package.
+
 Use `scripts/check-task-commit-plan.sh` for objective candidate validation and
 `scripts/create-task-commit.sh` for the exact deterministic side effect. These
-commands never replace AI scope/message review or required human confirmation.
+thin wrappers dispatch through the shared `run-skill-command` runtime and never
+replace AI scope/message review or required human confirmation. Missing or
+incompatible runtime state fails closed with full-preset install/upgrade
+remediation before a task/Git side effect.
 
 Return exactly one declared exit: `committed`, `revision-required`, or
 `blocked`. Unknown, multiple, stale, or unmapped results fail closed.

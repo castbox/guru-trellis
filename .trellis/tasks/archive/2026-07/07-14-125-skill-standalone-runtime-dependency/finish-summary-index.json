@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Public Skill 的 standalone mode 只声明可直接发现，却未明确完整 Guru Team runtime 依赖，容易被误解为单目录可独立分发，并让 source 与 runtime 对无效 command mapping 得出不同结论。",
+    "outcome": "已把 standalone 收敛为 routing independence，使用机器可校验的 runtime dependency、共享 dispatcher、thin wrapper 与 fail-closed 安装边界，并同步 canonical、preset、平台副本、测试和文档合同。",
+    "changed_behavior": [
+      "workflow 与 standalone 继续作为稳定 mode id，并分别声明 global workflow 与 direct discovery routing。",
+      "两种 mode 都绑定完整兼容的 Guru Team preset、extension runtime、shared dispatcher 和 managed inventory。",
+      "Active Skill interface 新增闭集 runtime dependency，validator 显式映射 extension 发布的 runtime command。",
+      "Package wrapper 改为只定位 shared dispatcher、传递固定 identity 并转发参数，不再直接定位旧 companion command。",
+      "缺失或不兼容 runtime、package-only copy、managed drift 与 dispatcher 自指映射都会在业务副作用前 fail closed。",
+      "Preset、dogfood 和所选平台副本已同步安装 runtime capability、dispatcher、schema 与 active package。",
+      "Durable requirements、spec 与 public README 已完成 standalone runtime dependency 语义同步。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "Public Skill interface 与 package wrapper",
+        "paths": [],
+        "change": "声明 routing 和 runtime dependency，并通过 thin wrapper 进入共享 dispatcher。"
+      },
+      {
+        "kind": "script",
+        "name": "Guru Team shared runtime dispatcher",
+        "paths": [],
+        "change": "在调用目标 companion command 前验证 manifest、API、inventory、copy drift 与 command mapping。"
+      },
+      {
+        "kind": "schema",
+        "name": "Skill interface schema 1.1",
+        "paths": [],
+        "change": "新增闭集 mode routing、runtime_dependency 与 runtime_command 机器合同。"
+      },
+      {
+        "kind": "preset",
+        "name": "Guru Team preset 分发与升级",
+        "paths": [],
+        "change": "安装 dispatcher、extension capability、schema、active package 和 managed platform discovery copies。"
+      },
+      {
+        "kind": "docs",
+        "name": "Standalone runtime dependency durable contracts",
+        "paths": [],
+        "change": "统一 mode、non-portable boundary、remediation、安装清单与 update-reapply 语义。"
+      },
+      {
+        "kind": "test",
+        "name": "Runtime dependency 与分发回归",
+        "paths": [],
+        "change": "覆盖缺失 runtime、package-only copy、自指 mapping、direct discovery、平台同步与 clean throwaway。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Standalone mode 语义",
+        "before": "Standalone 可直接发现，但 routing independence 与 package/runtime independence 未明确区分。",
+        "after": "Standalone 只移除 global workflow routing dependency，仍要求完整兼容的 Guru Team runtime。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Runtime dependency identity",
+        "before": "Skill interface 没有闭集字段绑定 extension、API、manifest、dispatcher、distribution 和 portability。",
+        "after": "Active interface 以 runtime_dependency 与 runtime_command 绑定 extension capability 和目标 command。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Package execution boundary",
+        "before": "Package wrapper 直接寻找共享 companion command，无法统一证明完整 runtime 安装与兼容性。",
+        "after": "Package wrapper 只能经 shared dispatcher 校验安装事实后进入既有共享 companion command。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Fail-closed remediation",
+        "before": "单目录复制、旧 runtime 或 managed drift 的错误边界和修复提示不完整。",
+        "after": "不兼容状态在业务副作用前失败，并提示安装或升级完整 preset、处理 sidecar 和重跑验证。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Command mapping 一致性",
+        "before": "Source validator 可接受 dispatcher 自指 mapping，而 runtime resolver 会拒绝调用。",
+        "after": "Source validation 与 runtime resolution 共用自指判定并由精确 regression 保证一致。",
+        "source_artifact": ""
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "run-skill-command",
+        "check-skill-packages",
+        "verify-throwaway-install"
+      ],
+      "config_keys": [
+        "modes.standalone.routing",
+        "skill_runtime.api_version",
+        "runtime_dependency.package_portability"
+      ],
+      "schema_fields": [
+        "runtime_dependency",
+        "runtime_command",
+        "package_portability",
+        "direct_discovery"
+      ],
+      "symbols": [
+        "SKILL_RUNTIME_DEPENDENCY",
+        "skill_runtime_command_maps_to_dispatcher",
+        "cmd_run_skill_command"
+      ],
+      "phrases": [
+        "standalone 模式 runtime 依赖不明确",
+        "run-skill-command 已完成共享 dispatcher 校验",
+        "单目录 Skill package 不可独立分发",
+        "direct discovery 仍依赖完整 preset",
+        "dispatcher 自指 mapping 已修复",
+        "source 与 installed package validation 已通过"
+      ]
+    }
+  }
+}

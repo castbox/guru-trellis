@@ -85,6 +85,9 @@ class SourceValidationTests(unittest.TestCase):
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
 
         self.assertEqual(interface["id"], "guru-create-task-commit")
+        self.assertEqual(interface["schema_version"], "1.1")
+        self.assertEqual(interface["modes"]["workflow"]["routing"], "global_workflow")
+        self.assertEqual(interface["modes"]["standalone"]["routing"], "direct_discovery")
         self.assertEqual(
             interface["modes"]["workflow"]["entry_precondition_ids"],
             interface["modes"]["standalone"]["entry_precondition_ids"],
@@ -92,6 +95,11 @@ class SourceValidationTests(unittest.TestCase):
         self.assertEqual(
             [item["id"] for item in interface["external_exits"]],
             ["committed", "revision-required", "blocked"],
+        )
+        self.assertEqual(interface["runtime_dependency"], runtime.SKILL_RUNTIME_DEPENDENCY)
+        self.assertEqual(
+            {item["id"]: item["runtime_command"] for item in interface["validators"]},
+            {"candidate_validator": "check-commit-messages", "exact_executor": "create-task-commit"},
         )
         for phrase in ("creating a task commit", "committing Phase 2 changes", "finding fix", "revision commit"):
             self.assertIn(phrase, skill)
@@ -133,9 +141,25 @@ class SourceValidationTests(unittest.TestCase):
             text = path.read_text(encoding="utf-8")
             self.assertIn('guru-skill-invoke: {"skill":"guru-create-task-commit"', text, path)
             self.assertIn("`check-commit-messages` shared branch validator", text, path)
+            self.assertIn("selected-platform direct discovery", text, path)
+            self.assertIn("does not make the package self-contained or portable", text, path)
+            self.assertIn("`run-skill-command` runtime", text, path)
             self.assertNotRegex(text, r"(?i)\bgit\s+commit\b", path)
             for phrase in workflow_forbidden:
                 self.assertNotIn(phrase, text, path)
+
+    def test_public_readmes_share_standalone_runtime_semantics(self) -> None:
+        readmes = [
+            REPO / "README.md",
+            REPO / "trellis/workflows/guru-team/README.md",
+            REPO / "trellis/presets/guru-team/README.md",
+        ]
+        for path in readmes:
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("standalone", text, path)
+            self.assertIn("self-contained/portable", text, path)
+            self.assertIn("run-skill-command", text, path)
+            self.assertIn("完整", text, path)
 
     def test_representative_active_package_and_routes_pass(self) -> None:
         result = self.validate()
@@ -235,6 +259,49 @@ class SourceValidationTests(unittest.TestCase):
         self.write_interface(interface)
         errors = self.validate()["errors"]
         self.assertTrue(any("violates pattern" in item and "entry_preconditions" in item for item in errors))
+
+    def test_runtime_dependency_and_mode_routing_matrix_fail(self) -> None:
+        original = self.read_interface()
+        mutations = {
+            "missing-dependency": lambda value: value.pop("runtime_dependency"),
+            "bad-api": lambda value: value["runtime_dependency"].__setitem__("api_version", "2.0"),
+            "bad-dispatcher": lambda value: value["runtime_dependency"].__setitem__("dispatcher", "other-dispatcher"),
+            "workflow-routing": lambda value: value["modes"]["workflow"].__setitem__("routing", "direct_discovery"),
+            "standalone-routing": lambda value: value["modes"]["standalone"].__setitem__("routing", "global_workflow"),
+            "runtime-command": lambda value: value["validators"][0].__setitem__("runtime_command", "unknown-command"),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(label=label):
+                interface = json.loads(json.dumps(original))
+                mutate(interface)
+                self.write_interface(interface)
+                result = self.validate()
+                self.assertEqual(result["status"], "failed")
+                self.assertTrue(result["errors"])
+
+    def test_validator_runtime_command_cannot_self_map_to_dispatcher(self) -> None:
+        interface = self.read_interface()
+        interface["validators"][0]["runtime_command"] = interface["runtime_dependency"]["dispatcher"]
+        self.write_interface(interface)
+
+        result = self.validate()
+
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(
+            result["errors"],
+            [
+                "interface for guru-example-action validator result_validator runtime_command "
+                "must not equal runtime_dependency.dispatcher"
+            ],
+        )
+
+    def test_extension_runtime_capability_drift_fails(self) -> None:
+        extension_path = self.root / "extension.json"
+        extension = json.loads(extension_path.read_text(encoding="utf-8"))
+        extension["public_api"]["skill_runtime"]["api_version"] = "2.0"
+        extension_path.write_text(json.dumps(extension), encoding="utf-8")
+        errors = self.validate()["errors"]
+        self.assertTrue(any("incompatible Skill runtime capability" in item for item in errors))
 
     def test_bad_artifact_id_fails_schema_validation(self) -> None:
         interface = self.read_interface()
@@ -452,7 +519,8 @@ class DistributionTests(unittest.TestCase):
         return preset.install_skill_packages(self.repo, self.guru_root, self.dst, platforms, previous)
 
     def manifest(self, result: dict) -> dict:
-        return {"skill_packages": result}
+        extension = json.loads((FIXTURE / "extension.json").read_text(encoding="utf-8"))
+        return {"extension": extension, "skill_packages": result}
 
     def write_installed_manifest(self, result: dict) -> Path:
         canonical = self.guru_root / "trellis/skills/guru-team"
@@ -518,7 +586,7 @@ class DistributionTests(unittest.TestCase):
         self.assertFalse((self.repo / ".cursor/skills/guru-example-action").exists())
         (self.repo / ".trellis/workflow.md").write_bytes((canonical / "workflow.md").read_bytes())
         manifest_path = self.dst / "extension.json"
-        manifest_path.write_text(json.dumps({"skill_packages": result}), encoding="utf-8")
+        manifest_path.write_text(json.dumps(self.manifest(result)), encoding="utf-8")
         valid = runtime.validate_skill_installed(
             self.repo, self.dst / "skills", self.repo / ".trellis/workflow.md", manifest_path
         )
@@ -741,6 +809,94 @@ class DistributionTests(unittest.TestCase):
         self.assertFalse(any("invalid JSON" in item for item in errors))
 
 
+class RuntimeDispatcherTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.temp.name) / "target"
+        (self.repo / ".trellis").mkdir(parents=True)
+        (self.repo / ".trellis/workflow.md").write_bytes(
+            (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes()
+        )
+        preset.install_assets(
+            REPO / "trellis/workflows/guru-team",
+            self.repo / ".trellis/guru-team",
+            self.repo,
+            {"codex"},
+        )
+        self.runtime_file = self.repo / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        self.package_root = self.repo / ".agents/skills/guru-create-task-commit"
+        self.manifest_path = self.repo / ".trellis/guru-team/extension.json"
+
+    def tearDown(self) -> None:
+        self.temp.cleanup()
+
+    def assert_runtime_blocked(self, validator: str = "candidate_validator") -> None:
+        with self.assertRaises(runtime.WorkflowError) as raised:
+            runtime.resolve_skill_runtime_command(
+                str(self.package_root),
+                validator,
+                runtime_file=self.runtime_file,
+            )
+        self.assertEqual(raised.exception.exit_code, 2)
+        self.assertIn("not self-contained or portable", str(raised.exception))
+        self.assertIn("Install or upgrade the complete Guru Team preset", str(raised.exception))
+
+    def test_full_install_resolves_standalone_discovery_command(self) -> None:
+        (self.repo / ".trellis/workflow.md").write_text("# Unrelated active workflow\n", encoding="utf-8")
+        installed_gate = runtime.validate_skill_installed(
+            self.repo,
+            self.repo / ".trellis/guru-team/skills",
+            self.repo / ".trellis/workflow.md",
+            self.manifest_path,
+        )
+        self.assertEqual(installed_gate["status"], "failed")
+        self.assertTrue(any("mandatory invoke" in item for item in installed_gate["errors"]))
+        command, identity = runtime.resolve_skill_runtime_command(
+            str(self.package_root),
+            "candidate_validator",
+            runtime_file=self.runtime_file,
+        )
+        self.assertEqual(command, self.repo / ".trellis/guru-team/scripts/bash/check-commit-messages.sh")
+        self.assertEqual(identity, ["shared", "guru-create-task-commit"])
+
+    def test_missing_manifest_and_dispatcher_fail_closed(self) -> None:
+        self.manifest_path.unlink()
+        self.assert_runtime_blocked()
+
+        preset.install_assets(
+            REPO / "trellis/workflows/guru-team",
+            self.repo / ".trellis/guru-team",
+            self.repo,
+            {"codex"},
+        )
+        (self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh").unlink()
+        self.assert_runtime_blocked()
+
+    def test_api_dependency_command_and_discovery_drift_fail_closed(self) -> None:
+        original_manifest = self.manifest_path.read_bytes()
+        manifest = json.loads(original_manifest.decode("utf-8"))
+        manifest["extension"]["public_api"]["skill_runtime"]["api_version"] = "2.0"
+        self.manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        self.assert_runtime_blocked()
+
+        self.manifest_path.write_bytes(original_manifest)
+        interface_path = self.package_root / "interface.json"
+        original_interface = interface_path.read_bytes()
+        interface = json.loads(original_interface.decode("utf-8"))
+        interface["runtime_dependency"]["extension_id"] = "other-extension"
+        interface_path.write_text(json.dumps(interface), encoding="utf-8")
+        self.assert_runtime_blocked()
+
+        interface_path.write_bytes(original_interface)
+        interface = json.loads(original_interface.decode("utf-8"))
+        interface["validators"][0]["runtime_command"] = "unknown-command"
+        interface_path.write_text(json.dumps(interface), encoding="utf-8")
+        self.assert_runtime_blocked()
+
+        interface_path.write_bytes(original_interface + b"\n")
+        self.assert_runtime_blocked()
+
+
 class ReservedInstalledValidationTests(unittest.TestCase):
     def test_reserved_runtime_copy_fails_installed_validation(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -780,7 +936,10 @@ class ReservedInstalledValidationTests(unittest.TestCase):
                 "sidecars": [],
             }
             manifest = repo / ".trellis/guru-team/extension.json"
-            manifest.write_text(json.dumps({"skill_packages": skill_manifest}), encoding="utf-8")
+            manifest.write_text(json.dumps({
+                "extension": json.loads((REPO / "trellis/guru-team-extension.json").read_text(encoding="utf-8")),
+                "skill_packages": skill_manifest,
+            }), encoding="utf-8")
             forbidden = repo / ".agents/skills/guru-create-work-commit/SKILL.md"
             forbidden.parent.mkdir(parents=True)
             forbidden.write_text("reserved must not install\n", encoding="utf-8")
@@ -809,7 +968,10 @@ class ProductionDistributionTests(unittest.TestCase):
                 self.assertTrue(os.access(package / "scripts/create-task-commit.sh", os.X_OK))
 
             manifest = dst / "extension.json"
-            manifest.write_text(json.dumps({"skill_packages": result}), encoding="utf-8")
+            manifest.write_text(json.dumps({
+                "extension": json.loads((REPO / "trellis/guru-team-extension.json").read_text(encoding="utf-8")),
+                "skill_packages": result,
+            }), encoding="utf-8")
             validation = runtime.validate_skill_installed(repo, dst / "skills", workflow, manifest)
             self.assertEqual(validation["status"], "passed", validation["errors"])
 

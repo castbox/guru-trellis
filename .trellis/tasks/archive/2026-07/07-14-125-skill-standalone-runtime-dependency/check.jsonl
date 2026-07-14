@@ -1,0 +1,9 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "检查 stable mode id、runtime dependency、schema 与 package contract 一致性"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查 dispatcher fail-closed、共享 runtime SSOT 与脚本职责边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "执行 schema、source、installed、dogfood、throwaway 与 Branch Review 验证"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查 fresh install、update/reapply、managed inventory、sidecar 与平台选择"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 canonical package 与 shared/Codex/Cursor/Claude discovery copies 无漂移"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查 durable requirements 与三份 public README 语义一致"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查 interface 到 installed runtime 的跨层合同完整性"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查 package 未复制共享 parser、task/gate 或 Git transaction 能力"}

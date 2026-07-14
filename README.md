@@ -230,6 +230,14 @@ workflow 与 preset，处理全部 sidecar，并运行：
 .trellis/guru-team/scripts/bash/check-skill-packages.sh --json --mode installed
 ```
 
+Public Skill 的 `workflow` / `standalone` 是稳定 routing mode id：前者由 global
+workflow mandatory invoke，后者允许所选平台直接发现并调用。`standalone` 不表示复制单个
+Skill 目录即可 self-contained/portable 运行；两种 mode 都要求完整且兼容的 Guru Team
+preset、extension manifest、shared runtime 与 managed package inventory。Package wrapper
+统一经 `.trellis/guru-team/scripts/bash/run-skill-command.sh` 校验 runtime API 和 drift 后
+调用 companion command；缺失或不兼容时会在业务副作用前失败，并提示安装或升级完整
+preset、处理 `.new` / `.bak`、重跑 source/installed validation 后再试。
+
 Skill id、external exit id、schema/interface id、stable command 和 registry
 lifecycle 是公共 API；破坏性变更必须使用新 id 或提供明确迁移合同。
 
@@ -273,8 +281,8 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.5`；在对应 merge commit 创建并验证
-release tag 前，不得把 `.5` 写成已发布 stable source。
+manifest 已递增到下一待发布版本 `0.6.5-guru.6`；在对应 merge commit 创建并验证
+release tag 前，不得把 `.6` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录
 extension version、target Trellis CLI、workflow template id、source repo/ref/commit、source

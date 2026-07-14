@@ -4,6 +4,9 @@ import copy
 import hashlib
 import importlib.util
 import json
+import shutil
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -298,6 +301,9 @@ class TaskCommitPackageContractTests(unittest.TestCase):
 
     def test_identity_modes_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-create-task-commit")
+        self.assertEqual(self.interface["schema_version"], "1.1")
+        self.assertEqual(self.interface["modes"]["workflow"]["routing"], "global_workflow")
+        self.assertEqual(self.interface["modes"]["standalone"]["routing"], "direct_discovery")
         self.assertEqual(
             self.interface["modes"]["workflow"]["entry_precondition_ids"],
             self.interface["modes"]["standalone"]["entry_precondition_ids"],
@@ -305,6 +311,17 @@ class TaskCommitPackageContractTests(unittest.TestCase):
         self.assertEqual(
             [item["id"] for item in self.interface["external_exits"]],
             ["committed", "revision-required", "blocked"],
+        )
+        self.assertEqual(
+            self.interface["runtime_dependency"],
+            {
+                "extension_id": "guru-team",
+                "api_version": "1.0",
+                "manifest_path": ".trellis/guru-team/extension.json",
+                "dispatcher": "run-skill-command",
+                "distribution": "guru-team-preset",
+                "package_portability": "not-self-contained",
+            },
         )
         executor = next(
             item for item in self.interface["validators"] if item["id"] == "exact_executor"
@@ -325,6 +342,8 @@ class TaskCommitPackageContractTests(unittest.TestCase):
             "later operation",
             "committed-result SHA-256",
             "provenance only and never stages or removes the source",
+            "not self-contained or portable",
+            "run-skill-command",
         ):
             self.assertIn(phrase, contract)
         self.assertNotIn("stages literal exact paths", contract)
@@ -335,9 +354,28 @@ class TaskCommitPackageContractTests(unittest.TestCase):
             self.assertIn(phrase, skill)
         for name in ("check-task-commit-plan.sh", "create-task-commit.sh"):
             wrapper = (self.package / "scripts" / name).read_text(encoding="utf-8")
-            self.assertIn("exec \"$RUNTIME\"", wrapper)
+            self.assertIn("run-skill-command.sh", wrapper)
+            self.assertIn("--package-root \"$PACKAGE_ROOT\" --validator", wrapper)
             self.assertNotIn("validate_commit_message", wrapper)
             self.assertNotIn("git add", wrapper)
+            self.assertNotIn("check-commit-messages.sh", wrapper)
+
+    def test_package_only_copy_fails_with_full_preset_remediation(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            copied = Path(temp) / "guru-create-task-commit"
+            shutil.copytree(self.package, copied)
+            for name in ("check-task-commit-plan.sh", "create-task-commit.sh"):
+                result = subprocess.run(
+                    [str(copied / "scripts" / name), "--help"],
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 2, result)
+                self.assertIn("not self-contained or portable", result.stderr)
+                self.assertIn("Install or upgrade the complete Guru Team preset", result.stderr)
+                self.assertIn("source and installed Skill package validation", result.stderr)
 
     def test_example_message_and_plan_digests_match(self) -> None:
         plan = json.loads((self.package / "examples/task-commit-plan.json").read_text(encoding="utf-8"))

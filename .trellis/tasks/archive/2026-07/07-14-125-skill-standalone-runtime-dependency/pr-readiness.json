@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "feat/122-guru-create-task-commit",
+    "head_branch": "feat/125-skill-standalone-runtime-dependency",
+    "reviewed_head_sha": "93d9a416bd6b34a87844dde5d4d9da363af729c2",
+    "title": "完成：#125 明确 Skill standalone runtime 依赖并收敛分发校验",
+    "body_source": "pr-body.md",
+    "body_sha256": "6fe6281f1968505fbb015711a18a2efc83f1d8391f062c4c43f2272a2c335fea",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "74e5d1b544d0425ff88fe3097ea7238477595ae98b94314a9c0ee465b8d5c5ab"
+  },
+  "publish_inputs_sha256": "79f58e4e238ae3b6f7952875fa5ef023681604e39e768d74da8e55a80a3d8631"
+}

@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.1.json",
   "title": "Guru Team closed-loop workflow skill interface",
   "type": "object",
   "additionalProperties": false,
-  "required": ["$schema", "schema_version", "id", "name", "description", "state", "modes", "entry_preconditions", "ordered_stages", "artifacts", "schemas", "validators", "external_exits", "reentry", "tests", "platform_destinations"],
+  "required": ["$schema", "schema_version", "id", "name", "description", "state", "modes", "entry_preconditions", "runtime_dependency", "ordered_stages", "artifacts", "schemas", "validators", "external_exits", "reentry", "tests", "platform_destinations"],
   "properties": {
     "$schema": {"const": "../../schemas/skill-interface.schema.json"},
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "1.1"},
     "id": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
     "name": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
     "description": {"type": "string", "minLength": 1},
@@ -17,11 +17,12 @@
       "additionalProperties": false,
       "required": ["workflow", "standalone"],
       "properties": {
-        "workflow": {"$ref": "#/$defs/mode"},
-        "standalone": {"$ref": "#/$defs/mode"}
+        "workflow": {"$ref": "#/$defs/workflowMode"},
+        "standalone": {"$ref": "#/$defs/standaloneMode"}
       }
     },
     "entry_preconditions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/precondition"}},
+    "runtime_dependency": {"$ref": "#/$defs/runtimeDependency"},
     "ordered_stages": {
       "const": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"]
     },
@@ -53,11 +54,36 @@
     }
   },
   "$defs": {
-    "mode": {
+    "workflowMode": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["entry_precondition_ids"],
-      "properties": {"entry_precondition_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}}}
+      "required": ["routing", "entry_precondition_ids"],
+      "properties": {
+        "routing": {"const": "global_workflow"},
+        "entry_precondition_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}}
+      }
+    },
+    "standaloneMode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["routing", "entry_precondition_ids"],
+      "properties": {
+        "routing": {"const": "direct_discovery"},
+        "entry_precondition_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}}
+      }
+    },
+    "runtimeDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["extension_id", "api_version", "manifest_path", "dispatcher", "distribution", "package_portability"],
+      "properties": {
+        "extension_id": {"const": "guru-team"},
+        "api_version": {"const": "1.0"},
+        "manifest_path": {"const": ".trellis/guru-team/extension.json"},
+        "dispatcher": {"const": "run-skill-command"},
+        "distribution": {"const": "guru-team-preset"},
+        "package_portability": {"const": "not-self-contained"}
+      }
     },
     "precondition": {
       "type": "object",
@@ -82,10 +108,11 @@
     "validator": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "command", "objective_scope"],
+      "required": ["id", "command", "runtime_command", "objective_scope"],
       "properties": {
         "id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
         "command": {"type": "string", "minLength": 1},
+        "runtime_command": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
         "objective_scope": {"type": "string", "minLength": 1}
       }
     },
