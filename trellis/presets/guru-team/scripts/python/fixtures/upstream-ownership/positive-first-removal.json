@@ -1,0 +1,9 @@
+{
+  "id": "positive-first-removal",
+  "mutation": {
+    "type": "first_removal",
+    "path": ".agents/skills/trellis-start/SKILL.md"
+  },
+  "expected_status": "ok",
+  "expected_error_codes": []
+}

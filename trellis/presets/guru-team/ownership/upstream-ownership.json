@@ -8,8 +8,10 @@
     "frozen_path_count": 43,
     "sorted_path_set_sha256": "56874019bb93b6669aaeb36b7ca9506aed9127a28ef9f81637ea428a6b0a838b",
     "active_payload_aggregate_sha256": "52dfb4036828865e070002f89712fc2bcd802d1f50263da5d9ef58e6edf5c5f0",
+    "frozen_legacy_identity_sha256": "0ca84016a32cd496c4a9ff2a6bdc6637a1e6393abd3d60f3bf3388657ebf8350",
     "path_set_digest_contract": "sorted-relative-path-newline-v1",
     "payload_digest_contract": "sorted-relative-path-nul-payload-nul-v1",
+    "legacy_identity_digest_contract": "sorted-path-baseline-sha256-canonical-json-v1",
     "clean_init": {
       "command": "trellis init -y -u ownership-audit --claude --codex --cursor",
       "trellis_cli": "0.6.5",

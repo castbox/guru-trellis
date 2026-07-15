@@ -1,0 +1,15 @@
+{
+  "id": "negative-malformed-inventory-member",
+  "mutation": {
+    "type": "set_ownership_categories",
+    "value": [
+      {"invalid": "object"},
+      "guru_owned",
+      "transitional_legacy",
+      "unclassified"
+    ]
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["schema_type_mismatch"],
+  "assert_cli_json": true
+}

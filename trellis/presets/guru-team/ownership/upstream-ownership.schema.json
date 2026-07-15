@@ -78,8 +78,10 @@
         "frozen_path_count",
         "sorted_path_set_sha256",
         "active_payload_aggregate_sha256",
+        "frozen_legacy_identity_sha256",
         "path_set_digest_contract",
         "payload_digest_contract",
+        "legacy_identity_digest_contract",
         "clean_init"
       ],
       "properties": {
@@ -88,8 +90,10 @@
         "frozen_path_count": {"const": 43},
         "sorted_path_set_sha256": {"$ref": "#/$defs/sha256"},
         "active_payload_aggregate_sha256": {"$ref": "#/$defs/sha256"},
+        "frozen_legacy_identity_sha256": {"$ref": "#/$defs/sha256"},
         "path_set_digest_contract": {"const": "sorted-relative-path-newline-v1"},
         "payload_digest_contract": {"const": "sorted-relative-path-nul-payload-nul-v1"},
+        "legacy_identity_digest_contract": {"const": "sorted-path-baseline-sha256-canonical-json-v1"},
         "clean_init": {"$ref": "#/$defs/cleanInit"}
       }
     },

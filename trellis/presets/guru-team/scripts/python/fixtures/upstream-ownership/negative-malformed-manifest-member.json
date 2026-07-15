@@ -1,0 +1,10 @@
+{
+  "id": "negative-malformed-manifest-member",
+  "mutation": {
+    "type": "set_manifest_active_skill_ids",
+    "value": ["guru-create-task-commit", 128]
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["extension_manifest_contract_invalid"],
+  "assert_cli_json": true
+}

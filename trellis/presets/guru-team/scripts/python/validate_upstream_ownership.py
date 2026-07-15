@@ -24,6 +24,7 @@ BASE_COMMIT = "291b57b6c02872320a4dce0626a2f718399b8f56"
 FROZEN_PATH_COUNT = 43
 FROZEN_PATH_SET_SHA256 = "56874019bb93b6669aaeb36b7ca9506aed9127a28ef9f81637ea428a6b0a838b"
 BASELINE_PAYLOAD_AGGREGATE_SHA256 = "52dfb4036828865e070002f89712fc2bcd802d1f50263da5d9ef58e6edf5c5f0"
+FROZEN_LEGACY_IDENTITY_SHA256 = "0ca84016a32cd496c4a9ff2a6bdc6637a1e6393abd3d60f3bf3388657ebf8350"
 OWNERSHIP_CATEGORIES = {
     "upstream_owned",
     "guru_owned",
@@ -54,8 +55,10 @@ BASELINE_KEYS = {
     "frozen_path_count",
     "sorted_path_set_sha256",
     "active_payload_aggregate_sha256",
+    "frozen_legacy_identity_sha256",
     "path_set_digest_contract",
     "payload_digest_contract",
+    "legacy_identity_digest_contract",
     "clean_init",
 }
 CLEAN_INIT_KEYS = {
@@ -176,6 +179,33 @@ def payload_aggregate_sha256(overlay_root: Path, paths: list[str]) -> str:
     return digest.hexdigest()
 
 
+def frozen_legacy_identity(entries_by_path: dict[str, dict[str, Any]]) -> list[dict[str, str]]:
+    identity: list[dict[str, str]] = []
+    for path in sorted(entries_by_path):
+        digest = entries_by_path[path].get("baseline_sha256")
+        if isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
+            identity.append({"path": path, "baseline_sha256": digest})
+    return identity
+
+
+def normalize_string_array(
+    value: Any,
+    path: str,
+    errors: list[dict[str, str]],
+    code: str = "schema_type_mismatch",
+) -> list[str]:
+    if not isinstance(value, list):
+        errors.append(ownership_error(code, path, "expected array"))
+        return []
+    normalized: list[str] = []
+    for index, item in enumerate(value):
+        if not isinstance(item, str):
+            errors.append(ownership_error(code, f"{path}[{index}]", "expected string"))
+            continue
+        normalized.append(item)
+    return normalized
+
+
 def read_json(path: Path, label: str, errors: list[dict[str, str]]) -> Any:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -234,7 +264,7 @@ def validate_schema_node(
     allowed_types = {"array", "boolean", "integer", "null", "number", "object", "string"}
     if schema_type is not None:
         values = schema_type if isinstance(schema_type, list) else [schema_type]
-        if not values or any(item not in allowed_types for item in values):
+        if not values or any(not isinstance(item, str) or item not in allowed_types for item in values):
             errors.append(ownership_error("schema_contract_invalid", f"{path}.type", "invalid JSON Schema type"))
     properties = node.get("properties")
     if properties is not None:
@@ -297,7 +327,16 @@ def validate_schema_contract(schema: Any, errors: list[dict[str, str]]) -> None:
         errors.append(ownership_error("schema_contract_invalid", "$.$schema", "expected Draft 2020-12"))
     if schema.get("type") != "object" or schema.get("additionalProperties") is not False:
         errors.append(ownership_error("schema_contract_invalid", "$", "root must be a closed object"))
-    if set(schema.get("required", [])) != TOP_LEVEL_KEYS or set(schema.get("properties", {})) != TOP_LEVEL_KEYS:
+    required = schema.get("required")
+    properties = schema.get("properties")
+    fixed_root_keys = (
+        isinstance(required, list)
+        and all(isinstance(item, str) for item in required)
+        and isinstance(properties, dict)
+        and set(required) == TOP_LEVEL_KEYS
+        and set(properties) == TOP_LEVEL_KEYS
+    )
+    if not fixed_root_keys:
         errors.append(ownership_error("schema_contract_invalid", "$", "root required/properties must match the fixed inventory keys"))
 
 
@@ -367,7 +406,7 @@ def extract_managed_assets(installer_path: Path, errors: list[dict[str, str]]) -
     return values
 
 
-def validate_repository(repo: Path | str) -> dict[str, Any]:
+def _validate_repository(repo: Path | str) -> dict[str, Any]:
     repo_root = Path(repo).resolve()
     errors: list[dict[str, str]] = []
     schema = read_json(repo_root / SCHEMA_RELATIVE, "ownership_schema", errors)
@@ -389,8 +428,8 @@ def validate_repository(repo: Path | str) -> dict[str, Any]:
             errors.append(ownership_error("inventory_identity_mismatch", "$.inventory_id", "unexpected inventory id"))
         if inventory.get("target_trellis_cli") != "0.6.5":
             errors.append(ownership_error("target_trellis_cli_mismatch", "$.target_trellis_cli", "expected 0.6.5"))
-        categories = inventory.get("ownership_categories")
-        if not isinstance(categories, list) or len(categories) != 4 or set(categories) != OWNERSHIP_CATEGORIES:
+        categories = normalize_string_array(inventory.get("ownership_categories"), "$.ownership_categories", errors)
+        if len(categories) != 4 or set(categories) != OWNERSHIP_CATEGORIES:
             errors.append(ownership_error("ownership_category_set_mismatch", "$.ownership_categories", "expected exactly four mutually exclusive categories"))
         baseline_value = inventory.get("baseline")
         if require_exact_keys(baseline_value, BASELINE_KEYS, "$.baseline", errors):
@@ -401,8 +440,10 @@ def validate_repository(repo: Path | str) -> dict[str, Any]:
                 "frozen_path_count": FROZEN_PATH_COUNT,
                 "sorted_path_set_sha256": FROZEN_PATH_SET_SHA256,
                 "active_payload_aggregate_sha256": BASELINE_PAYLOAD_AGGREGATE_SHA256,
+                "frozen_legacy_identity_sha256": FROZEN_LEGACY_IDENTITY_SHA256,
                 "path_set_digest_contract": "sorted-relative-path-newline-v1",
                 "payload_digest_contract": "sorted-relative-path-nul-payload-nul-v1",
+                "legacy_identity_digest_contract": "sorted-path-baseline-sha256-canonical-json-v1",
             }
             for key, expected in expected_baseline.items():
                 if baseline.get(key) != expected:
@@ -458,13 +499,17 @@ def validate_repository(repo: Path | str) -> dict[str, Any]:
         entry_by_path[entry_path] = entry
         category = entry.get("category")
         state = entry.get("migration_state")
+        if not isinstance(category, str):
+            errors.append(ownership_error("schema_type_mismatch", f"$.legacy_entries[{index}].category", "expected string"))
+        if not isinstance(state, str):
+            errors.append(ownership_error("schema_type_mismatch", f"$.legacy_entries[{index}].migration_state", "expected string"))
         if category == "unclassified":
             errors.append(ownership_error("unclassified_path", entry_path, "legacy entry has no reviewed ownership category"))
         if state == "active" and category != "transitional_legacy":
             errors.append(ownership_error("migration_state_category_mismatch", entry_path, "active requires transitional_legacy"))
         if state == "removed" and category != "upstream_owned":
             errors.append(ownership_error("migration_state_category_mismatch", entry_path, "removed requires upstream_owned"))
-        if state not in {"active", "removed"}:
+        if isinstance(state, str) and state not in {"active", "removed"}:
             errors.append(ownership_error("invalid_migration_state", entry_path, "expected active or removed"))
         replacement_owners = entry.get("replacement_owners")
         if not isinstance(replacement_owners, list) or not replacement_owners:
@@ -527,6 +572,16 @@ def validate_repository(repo: Path | str) -> dict[str, Any]:
     frozen_paths = sorted(entry_by_path)
     if path_set_sha256(frozen_paths) != FROZEN_PATH_SET_SHA256:
         errors.append(ownership_error("frozen_path_set_mismatch", "$.legacy_entries", "sorted path-set digest differs from the issue 128 baseline"))
+    inventory_identity = frozen_legacy_identity(entry_by_path)
+    inventory_identity_sha256 = canonical_sha256(inventory_identity)
+    if inventory_identity_sha256 != FROZEN_LEGACY_IDENTITY_SHA256:
+        errors.append(
+            ownership_error(
+                "frozen_legacy_identity_mismatch",
+                "$.legacy_entries",
+                f"expected={FROZEN_LEGACY_IDENTITY_SHA256} actual={inventory_identity_sha256}",
+            )
+        )
     generated_count = sum(entry.get("generated_in_clean_init") is True for entry in entries)
     if generated_count != 37 or len(entries) - generated_count != 6:
         errors.append(ownership_error("clean_init_count_mismatch", "$.legacy_entries", f"generated={generated_count} legacy_not_generated={len(entries) - generated_count}"))
@@ -568,6 +623,7 @@ def validate_repository(repo: Path | str) -> dict[str, Any]:
         if actual != expected:
             errors.append(ownership_error("active_payload_hash_mismatch", path, f"expected={expected} actual={actual}"))
     actual_payload_aggregate = None
+    materialized_identity_sha256 = None
     if (
         active_paths
         and set(active_paths) == set(actual_overlay_paths)
@@ -576,6 +632,33 @@ def validate_repository(repo: Path | str) -> dict[str, Any]:
         actual_payload_aggregate = payload_aggregate_sha256(overlay_root, active_paths)
         if not removed_paths and actual_payload_aggregate != BASELINE_PAYLOAD_AGGREGATE_SHA256:
             errors.append(ownership_error("active_payload_aggregate_mismatch", OVERLAY_ROOT_RELATIVE.as_posix(), f"actual={actual_payload_aggregate}"))
+    materialized_identity: list[dict[str, str]] = []
+    materialized_identity_complete = len(entry_by_path) == FROZEN_PATH_COUNT
+    for path in frozen_paths:
+        entry = entry_by_path[path]
+        state = entry.get("migration_state")
+        digest: Any = None
+        overlay_path = overlay_root / path
+        if state == "active" and path in actual_overlay_paths and not overlay_path.is_symlink() and overlay_path.is_file():
+            digest = sha256_file(overlay_path)
+        elif state == "removed":
+            digest = entry.get("baseline_sha256")
+        else:
+            materialized_identity_complete = False
+        if isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
+            materialized_identity.append({"path": path, "baseline_sha256": digest})
+        else:
+            materialized_identity_complete = False
+    if materialized_identity_complete and len(materialized_identity) == FROZEN_PATH_COUNT:
+        materialized_identity_sha256 = canonical_sha256(materialized_identity)
+        if materialized_identity_sha256 != FROZEN_LEGACY_IDENTITY_SHA256:
+            errors.append(
+                ownership_error(
+                    "materialized_frozen_identity_mismatch",
+                    OVERLAY_ROOT_RELATIVE.as_posix(),
+                    f"expected={FROZEN_LEGACY_IDENTITY_SHA256} actual={materialized_identity_sha256}",
+                )
+            )
 
     claim_by_path: dict[str, dict[str, Any]] = {}
     rule_by_id = {str(rule.get("id")): rule for rule in rules}
@@ -636,8 +719,15 @@ def validate_repository(repo: Path | str) -> dict[str, Any]:
                 if len(values) != len(set(values)):
                     errors.append(ownership_error("duplicate_extension_managed_path", "public_api.managed_paths", "paths must be unique"))
             contracts = public_api.get("skill_contracts")
-            if isinstance(contracts, dict) and isinstance(contracts.get("active_skill_ids"), list):
-                manifest_active_ids = contracts["active_skill_ids"]
+            if not isinstance(contracts, dict):
+                errors.append(ownership_error("extension_manifest_contract_invalid", "public_api.skill_contracts", "expected object"))
+            else:
+                manifest_active_ids = normalize_string_array(
+                    contracts.get("active_skill_ids"),
+                    "public_api.skill_contracts.active_skill_ids",
+                    errors,
+                    "extension_manifest_contract_invalid",
+                )
     for path in sorted(set(manifest_paths) - set(claim_by_path)):
         errors.append(ownership_error("unclassified_managed_claim", path, "extension manifest path is absent from ownership inventory"))
     for path in sorted(set(claim_by_path) - set(manifest_paths)):
@@ -653,7 +743,14 @@ def validate_repository(repo: Path | str) -> dict[str, Any]:
     active_skill_ids: list[str] = []
     if isinstance(registry, dict) and isinstance(registry.get("skills"), list):
         for index, skill in enumerate(registry["skills"]):
-            if not isinstance(skill, dict) or skill.get("state") != "active":
+            if not isinstance(skill, dict):
+                errors.append(ownership_error("skill_registry_contract_invalid", f"skills[{index}]", "expected object"))
+                continue
+            state = skill.get("state")
+            if not isinstance(state, str) or state not in {"active", "reserved"}:
+                errors.append(ownership_error("skill_registry_contract_invalid", f"skills[{index}].state", "expected active or reserved"))
+                continue
+            if state != "active":
                 continue
             skill_id = skill.get("id")
             if not isinstance(skill_id, str):
@@ -672,8 +769,13 @@ def validate_repository(repo: Path | str) -> dict[str, Any]:
                     errors.append(ownership_error("active_skill_path_not_guru_owned", canonical_path, f"invalid {field} classification"))
             platform_map = {"shared": ".agents", "codex": ".codex", "cursor": ".cursor", "claude": ".claude"}
             platforms = skill.get("supported_platforms")
-            if isinstance(platforms, list):
-                for platform in platforms:
+            if not isinstance(platforms, list):
+                errors.append(ownership_error("active_skill_platform_invalid", f"skills[{index}].supported_platforms", "expected array"))
+            else:
+                for platform_index, platform in enumerate(platforms):
+                    if not isinstance(platform, str):
+                        errors.append(ownership_error("active_skill_platform_invalid", f"skills[{index}].supported_platforms[{platform_index}]", "expected string"))
+                        continue
                     root = platform_map.get(platform)
                     if root is None:
                         errors.append(ownership_error("active_skill_platform_invalid", skill_id, f"unsupported platform {platform!r}"))
@@ -696,6 +798,8 @@ def validate_repository(repo: Path | str) -> dict[str, Any]:
         "guru_owned_rules_sha256": canonical_sha256(rules),
         "managed_path_claims_sha256": canonical_sha256(claims),
         "legacy_entries_sha256": canonical_sha256(entries),
+        "frozen_legacy_identity_sha256": inventory_identity_sha256,
+        "materialized_frozen_identity_sha256": materialized_identity_sha256,
         "frozen_count": len(entries),
         "active_count": len(active_paths),
         "removed_count": len(removed_paths),
@@ -718,6 +822,20 @@ def validate_repository(repo: Path | str) -> dict[str, Any]:
         "facts_sha256": canonical_sha256(facts),
         "errors": errors,
     }
+
+
+def validate_repository(repo: Path | str) -> dict[str, Any]:
+    try:
+        return _validate_repository(repo)
+    except Exception as exc:
+        error = ownership_error("validator_internal_error", "$", type(exc).__name__)
+        return {
+            "status": "error",
+            "schema_path": SCHEMA_RELATIVE.as_posix(),
+            "inventory_path": INVENTORY_RELATIVE.as_posix(),
+            "facts_sha256": canonical_sha256({"error": error}),
+            "errors": [error],
+        }
 
 
 def render_text(payload: dict[str, Any]) -> str:
