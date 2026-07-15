@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.6",
+    "version": "0.6.5-guru.7",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.5",
@@ -59,12 +59,14 @@
         "canonical_root": "trellis/skills/guru-team/",
         "installed_root": ".trellis/guru-team/skills/",
         "registry_schema_id": "guru-team-skill-registry-1.0",
-        "interface_schema_id": "guru-team-skill-interface-1.1",
+        "interface_schema_id": "guru-team-skill-interface-1.2",
         "artifact_schema_ids": [
+          "guru-base-sync-result-1.0",
           "guru-task-commit-plan-1.0"
         ],
         "active_skill_ids": [
-          "guru-create-task-commit"
+          "guru-create-task-commit",
+          "guru-sync-base"
         ],
         "reserved_skill_ids": [
           "guru-create-work-commit"
@@ -90,6 +92,8 @@
         "check-workspace-boundary",
         "check-skill-packages",
         "run-skill-command",
+        "sync-base",
+        "check-base-sync",
         "resolve-human-artifacts",
         "record-planning-approval",
         "check-planning-approval",
@@ -112,11 +116,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-14T01:53:35Z",
+  "installed_at": "2026-07-15T05:41:10Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "feat/125-skill-standalone-runtime-dependency",
-    "commit": "49bf572e6a89bff9c63416bea64254cda0c20bf0",
+    "ref": "feat/110-guru-sync-base",
+    "commit": "2def8b748dae986e6f9e4d2912c2f8e6d617917a",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -179,6 +183,7 @@
       ".trellis/guru-team/schemas/task-start-context.schema.json",
       ".trellis/guru-team/scripts/bash/backfill-finish-summary.sh",
       ".trellis/guru-team/scripts/bash/check-agent-assignment.sh",
+      ".trellis/guru-team/scripts/bash/check-base-sync.sh",
       ".trellis/guru-team/scripts/bash/check-commit-messages.sh",
       ".trellis/guru-team/scripts/bash/check-env.sh",
       ".trellis/guru-team/scripts/bash/check-phase2-check.sh",
@@ -199,6 +204,7 @@
       ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh",
       ".trellis/guru-team/scripts/bash/review-branch.sh",
       ".trellis/guru-team/scripts/bash/run-skill-command.sh",
+      ".trellis/guru-team/scripts/bash/sync-base.sh",
       ".trellis/guru-team/scripts/bash/verify-marketplace.sh",
       ".trellis/guru-team/scripts/bash/version.sh",
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"
@@ -211,13 +217,14 @@
   "skill_packages": {
     "schema_version": "1.0",
     "status": "ok",
-    "canonical_registry_sha256": "d736a6a3412637d1d69571d5c5099591cd629a1f1cf8e4721f556aa5650c83a3",
+    "canonical_registry_sha256": "f7d3c7218c01b697b8b57c4a81df8f237c429005a1d56518951942e9190049ab",
     "registry_schema_version": "1.0",
     "reserved_ids": [
       "guru-create-work-commit"
     ],
     "active_ids": [
-      "guru-create-task-commit"
+      "guru-create-task-commit",
+      "guru-sync-base"
     ],
     "selected_platforms": [
       "claude",
@@ -227,15 +234,20 @@
     "packages": [
       {
         "id": "guru-create-task-commit",
-        "interface_sha256": "2f305505c599305bd2d674234f502f3b9090fb73cea9a1317f0aa555a559c154",
-        "tree_sha256": "39c1fe2fcfbacb4dbc024c1f68da47591f3a617cee1d08d219f784f755da59f2"
+        "interface_sha256": "41258cd9abd1dc0f6a207e611d48d5020c9558cb58ba423f07b5a7c2eb81ebcf",
+        "tree_sha256": "1a2ad60b6f45a9be35933dfdb9d28a161616019bd51b526e572f37450a6e68f8"
+      },
+      {
+        "id": "guru-sync-base",
+        "interface_sha256": "f928e434ce31bd30a1309ba168f300665081a13c2886367cabd0353512449965",
+        "tree_sha256": "a3cae76a7be94f74e3550958be0637a469df9b0ce7571e04e2eb6dd99e38e021"
       }
     ],
     "files": [
       {
         "path": ".trellis/guru-team/skills/registry.json",
         "source": "trellis/skills/guru-team/registry.json",
-        "sha256": "d736a6a3412637d1d69571d5c5099591cd629a1f1cf8e4721f556aa5650c83a3",
+        "sha256": "f7d3c7218c01b697b8b57c4a81df8f237c429005a1d56518951942e9190049ab",
         "executable": false,
         "action": "unchanged"
       },
@@ -249,7 +261,7 @@
       {
         "path": ".trellis/guru-team/skills/schemas/skill-interface.schema.json",
         "source": "trellis/skills/guru-team/schemas/skill-interface.schema.json",
-        "sha256": "42f639b5014720fa95c6150bea909ca27acc9bbc301c5ac763d20faa0610d30e",
+        "sha256": "c9ce038617d0dba0f2e16ef4e5388dbfa6268de56fbdea52a224883025802a77",
         "executable": false,
         "action": "unchanged"
       },
@@ -270,7 +282,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
-        "sha256": "2f305505c599305bd2d674234f502f3b9090fb73cea9a1317f0aa555a559c154",
+        "sha256": "41258cd9abd1dc0f6a207e611d48d5020c9558cb58ba423f07b5a7c2eb81ebcf",
         "executable": false,
         "action": "unchanged"
       },
@@ -305,7 +317,63 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
-        "sha256": "88b513e427a60bc4469d4e92ba2594bede9f183d51bcf27f066855e67fa7ad56",
+        "sha256": "191415b5de7b6400799126e92230f6377da2f2a017498edb06beb441f0e2fdd0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-sync-base/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/SKILL.md",
+        "sha256": "1f2db52db9827ab17ebd7a5bc075d488bc8a41802c57732c3478e36e80b464bb",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-sync-base/examples/base-sync-result.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/examples/base-sync-result.json",
+        "sha256": "5c3471066388e855cce70df085cd0e3931ec77286d87d4aa7c9de92faee33c22",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-sync-base/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/interface.json",
+        "sha256": "f928e434ce31bd30a1309ba168f300665081a13c2886367cabd0353512449965",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-sync-base/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/references/contract.md",
+        "sha256": "9b6edfbedf559ec1a85df2ccff1f5a1dd855f0eed9d9d10d73e421b088755e26",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-sync-base/schemas/base-sync-result.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/schemas/base-sync-result.schema.json",
+        "sha256": "43ada5e4115172aa255bf223dbc1fa04d268a766c3fa92c064af940fa0a8958b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-sync-base/scripts/check-base-sync.sh",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/scripts/check-base-sync.sh",
+        "sha256": "b36de3beb344a53560d4232bdd59df1a472a0b190dcbba5046a6fa459d6967fd",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-sync-base/scripts/sync-base.sh",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/scripts/sync-base.sh",
+        "sha256": "c17e68a9cd5025331a424e4a6048758573b1d1a981de22149618e003d1947cc7",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-sync-base/tests/test_contract.py",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/tests/test_contract.py",
+        "sha256": "4ade6c0fbdb17a5687e86feb8d2105c9530efb1db0e72c10c921a5827006ce5b",
         "executable": false,
         "action": "unchanged"
       },
@@ -326,7 +394,7 @@
       {
         "path": ".agents/skills/guru-create-task-commit/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
-        "sha256": "2f305505c599305bd2d674234f502f3b9090fb73cea9a1317f0aa555a559c154",
+        "sha256": "41258cd9abd1dc0f6a207e611d48d5020c9558cb58ba423f07b5a7c2eb81ebcf",
         "executable": false,
         "action": "unchanged"
       },
@@ -361,7 +429,7 @@
       {
         "path": ".agents/skills/guru-create-task-commit/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
-        "sha256": "88b513e427a60bc4469d4e92ba2594bede9f183d51bcf27f066855e67fa7ad56",
+        "sha256": "191415b5de7b6400799126e92230f6377da2f2a017498edb06beb441f0e2fdd0",
         "executable": false,
         "action": "unchanged"
       },
@@ -382,7 +450,7 @@
       {
         "path": ".codex/skills/guru-create-task-commit/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
-        "sha256": "2f305505c599305bd2d674234f502f3b9090fb73cea9a1317f0aa555a559c154",
+        "sha256": "41258cd9abd1dc0f6a207e611d48d5020c9558cb58ba423f07b5a7c2eb81ebcf",
         "executable": false,
         "action": "unchanged"
       },
@@ -417,9 +485,65 @@
       {
         "path": ".codex/skills/guru-create-task-commit/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
-        "sha256": "88b513e427a60bc4469d4e92ba2594bede9f183d51bcf27f066855e67fa7ad56",
+        "sha256": "191415b5de7b6400799126e92230f6377da2f2a017498edb06beb441f0e2fdd0",
         "executable": false,
         "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/SKILL.md",
+        "sha256": "0e0f900ed88c851e2ef479c981dcff5de07227b0b83a010be9384628da13227b",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/examples/task-commit-plan.json",
+        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/task-commit-plan.json",
+        "sha256": "89a3de2235eed74f1fbbb51d8b7db67fb51c1953ee314e9898dc4c62735c4954",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+        "sha256": "41258cd9abd1dc0f6a207e611d48d5020c9558cb58ba423f07b5a7c2eb81ebcf",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
+        "sha256": "1ddd68c10c3865e0dd81b5eb184a81efbda11256b3933c446196322c39008a3e",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+        "sha256": "8a7f2dce07f7f4b2723ac9ccae23d41636c362e5daa699c2afaca6fa570514e3",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/scripts/check-task-commit-plan.sh",
+        "sha256": "6a12fb83a9bf6cfe50f48ffed8952c2843065eda9ba0cd9ecd7c15436d253de4",
+        "executable": true,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/scripts/create-task-commit.sh",
+        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/scripts/create-task-commit.sh",
+        "sha256": "78a3d50d2a2e20a150b36faec670f5ffc1d919c77bfa9a9a4d3e542e5216447a",
+        "executable": true,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+        "sha256": "191415b5de7b6400799126e92230f6377da2f2a017498edb06beb441f0e2fdd0",
+        "executable": false,
+        "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-create-task-commit/SKILL.md",
@@ -438,7 +562,7 @@
       {
         "path": ".cursor/skills/guru-create-task-commit/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
-        "sha256": "2f305505c599305bd2d674234f502f3b9090fb73cea9a1317f0aa555a559c154",
+        "sha256": "41258cd9abd1dc0f6a207e611d48d5020c9558cb58ba423f07b5a7c2eb81ebcf",
         "executable": false,
         "action": "unchanged"
       },
@@ -473,63 +597,231 @@
       {
         "path": ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
-        "sha256": "88b513e427a60bc4469d4e92ba2594bede9f183d51bcf27f066855e67fa7ad56",
+        "sha256": "191415b5de7b6400799126e92230f6377da2f2a017498edb06beb441f0e2fdd0",
         "executable": false,
         "action": "unchanged"
       },
       {
-        "path": ".claude/skills/guru-create-task-commit/SKILL.md",
-        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/SKILL.md",
-        "sha256": "0e0f900ed88c851e2ef479c981dcff5de07227b0b83a010be9384628da13227b",
+        "path": ".agents/skills/guru-sync-base/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/SKILL.md",
+        "sha256": "1f2db52db9827ab17ebd7a5bc075d488bc8a41802c57732c3478e36e80b464bb",
         "executable": false,
         "action": "unchanged"
       },
       {
-        "path": ".claude/skills/guru-create-task-commit/examples/task-commit-plan.json",
-        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/examples/task-commit-plan.json",
-        "sha256": "89a3de2235eed74f1fbbb51d8b7db67fb51c1953ee314e9898dc4c62735c4954",
+        "path": ".agents/skills/guru-sync-base/examples/base-sync-result.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/examples/base-sync-result.json",
+        "sha256": "5c3471066388e855cce70df085cd0e3931ec77286d87d4aa7c9de92faee33c22",
         "executable": false,
         "action": "unchanged"
       },
       {
-        "path": ".claude/skills/guru-create-task-commit/interface.json",
-        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
-        "sha256": "2f305505c599305bd2d674234f502f3b9090fb73cea9a1317f0aa555a559c154",
+        "path": ".agents/skills/guru-sync-base/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/interface.json",
+        "sha256": "f928e434ce31bd30a1309ba168f300665081a13c2886367cabd0353512449965",
         "executable": false,
         "action": "unchanged"
       },
       {
-        "path": ".claude/skills/guru-create-task-commit/references/contract.md",
-        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
-        "sha256": "1ddd68c10c3865e0dd81b5eb184a81efbda11256b3933c446196322c39008a3e",
+        "path": ".agents/skills/guru-sync-base/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/references/contract.md",
+        "sha256": "9b6edfbedf559ec1a85df2ccff1f5a1dd855f0eed9d9d10d73e421b088755e26",
         "executable": false,
         "action": "unchanged"
       },
       {
-        "path": ".claude/skills/guru-create-task-commit/schemas/task-commit-plan.schema.json",
-        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
-        "sha256": "8a7f2dce07f7f4b2723ac9ccae23d41636c362e5daa699c2afaca6fa570514e3",
+        "path": ".agents/skills/guru-sync-base/schemas/base-sync-result.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/schemas/base-sync-result.schema.json",
+        "sha256": "43ada5e4115172aa255bf223dbc1fa04d268a766c3fa92c064af940fa0a8958b",
         "executable": false,
         "action": "unchanged"
       },
       {
-        "path": ".claude/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh",
-        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/scripts/check-task-commit-plan.sh",
-        "sha256": "6a12fb83a9bf6cfe50f48ffed8952c2843065eda9ba0cd9ecd7c15436d253de4",
+        "path": ".agents/skills/guru-sync-base/scripts/check-base-sync.sh",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/scripts/check-base-sync.sh",
+        "sha256": "b36de3beb344a53560d4232bdd59df1a472a0b190dcbba5046a6fa459d6967fd",
         "executable": true,
         "action": "unchanged"
       },
       {
-        "path": ".claude/skills/guru-create-task-commit/scripts/create-task-commit.sh",
-        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/scripts/create-task-commit.sh",
-        "sha256": "78a3d50d2a2e20a150b36faec670f5ffc1d919c77bfa9a9a4d3e542e5216447a",
+        "path": ".agents/skills/guru-sync-base/scripts/sync-base.sh",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/scripts/sync-base.sh",
+        "sha256": "c17e68a9cd5025331a424e4a6048758573b1d1a981de22149618e003d1947cc7",
         "executable": true,
         "action": "unchanged"
       },
       {
-        "path": ".claude/skills/guru-create-task-commit/tests/test_contract.py",
-        "source": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
-        "sha256": "88b513e427a60bc4469d4e92ba2594bede9f183d51bcf27f066855e67fa7ad56",
+        "path": ".agents/skills/guru-sync-base/tests/test_contract.py",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/tests/test_contract.py",
+        "sha256": "4ade6c0fbdb17a5687e86feb8d2105c9530efb1db0e72c10c921a5827006ce5b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-sync-base/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/SKILL.md",
+        "sha256": "1f2db52db9827ab17ebd7a5bc075d488bc8a41802c57732c3478e36e80b464bb",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-sync-base/examples/base-sync-result.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/examples/base-sync-result.json",
+        "sha256": "5c3471066388e855cce70df085cd0e3931ec77286d87d4aa7c9de92faee33c22",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-sync-base/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/interface.json",
+        "sha256": "f928e434ce31bd30a1309ba168f300665081a13c2886367cabd0353512449965",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-sync-base/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/references/contract.md",
+        "sha256": "9b6edfbedf559ec1a85df2ccff1f5a1dd855f0eed9d9d10d73e421b088755e26",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-sync-base/schemas/base-sync-result.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/schemas/base-sync-result.schema.json",
+        "sha256": "43ada5e4115172aa255bf223dbc1fa04d268a766c3fa92c064af940fa0a8958b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-sync-base/scripts/check-base-sync.sh",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/scripts/check-base-sync.sh",
+        "sha256": "b36de3beb344a53560d4232bdd59df1a472a0b190dcbba5046a6fa459d6967fd",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-sync-base/scripts/sync-base.sh",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/scripts/sync-base.sh",
+        "sha256": "c17e68a9cd5025331a424e4a6048758573b1d1a981de22149618e003d1947cc7",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-sync-base/tests/test_contract.py",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/tests/test_contract.py",
+        "sha256": "4ade6c0fbdb17a5687e86feb8d2105c9530efb1db0e72c10c921a5827006ce5b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-sync-base/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/SKILL.md",
+        "sha256": "1f2db52db9827ab17ebd7a5bc075d488bc8a41802c57732c3478e36e80b464bb",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-sync-base/examples/base-sync-result.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/examples/base-sync-result.json",
+        "sha256": "5c3471066388e855cce70df085cd0e3931ec77286d87d4aa7c9de92faee33c22",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-sync-base/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/interface.json",
+        "sha256": "f928e434ce31bd30a1309ba168f300665081a13c2886367cabd0353512449965",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-sync-base/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/references/contract.md",
+        "sha256": "9b6edfbedf559ec1a85df2ccff1f5a1dd855f0eed9d9d10d73e421b088755e26",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-sync-base/schemas/base-sync-result.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/schemas/base-sync-result.schema.json",
+        "sha256": "43ada5e4115172aa255bf223dbc1fa04d268a766c3fa92c064af940fa0a8958b",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-sync-base/scripts/check-base-sync.sh",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/scripts/check-base-sync.sh",
+        "sha256": "b36de3beb344a53560d4232bdd59df1a472a0b190dcbba5046a6fa459d6967fd",
+        "executable": true,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-sync-base/scripts/sync-base.sh",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/scripts/sync-base.sh",
+        "sha256": "c17e68a9cd5025331a424e4a6048758573b1d1a981de22149618e003d1947cc7",
+        "executable": true,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-sync-base/tests/test_contract.py",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/tests/test_contract.py",
+        "sha256": "4ade6c0fbdb17a5687e86feb8d2105c9530efb1db0e72c10c921a5827006ce5b",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-sync-base/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/SKILL.md",
+        "sha256": "1f2db52db9827ab17ebd7a5bc075d488bc8a41802c57732c3478e36e80b464bb",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-sync-base/examples/base-sync-result.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/examples/base-sync-result.json",
+        "sha256": "5c3471066388e855cce70df085cd0e3931ec77286d87d4aa7c9de92faee33c22",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-sync-base/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/interface.json",
+        "sha256": "f928e434ce31bd30a1309ba168f300665081a13c2886367cabd0353512449965",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-sync-base/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/references/contract.md",
+        "sha256": "9b6edfbedf559ec1a85df2ccff1f5a1dd855f0eed9d9d10d73e421b088755e26",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-sync-base/schemas/base-sync-result.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/schemas/base-sync-result.schema.json",
+        "sha256": "43ada5e4115172aa255bf223dbc1fa04d268a766c3fa92c064af940fa0a8958b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-sync-base/scripts/check-base-sync.sh",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/scripts/check-base-sync.sh",
+        "sha256": "b36de3beb344a53560d4232bdd59df1a472a0b190dcbba5046a6fa459d6967fd",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-sync-base/scripts/sync-base.sh",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/scripts/sync-base.sh",
+        "sha256": "c17e68a9cd5025331a424e4a6048758573b1d1a981de22149618e003d1947cc7",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-sync-base/tests/test_contract.py",
+        "source": "trellis/skills/guru-team/packages/guru-sync-base/tests/test_contract.py",
+        "sha256": "4ade6c0fbdb17a5687e86feb8d2105c9530efb1db0e72c10c921a5827006ce5b",
         "executable": false,
         "action": "unchanged"
       }

@@ -32,6 +32,9 @@ Before editing workflow behavior:
 - `trellis/workflows/guru-team/config-template.yml` defines default Guru Team behavior.
 - `trellis/workflows/guru-team/scripts/bash/*.sh` are thin executable wrappers.
 - `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py` owns companion behavior.
+- Phase 0 base selection/sync is owned by the active `guru-sync-base` package plus
+  shared `sync-base` / `check-base-sync` runtime commands; `prepare-task` reuses
+  that core and does not define a second resolver.
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - `trellis/workflows/guru-team/schemas/task-start-context.schema.json` documents the portable task-start context JSON shape.
 

@@ -17,6 +17,53 @@ When adding a config field:
    behavior.
 5. Update README or workflow text if users must know the field.
 
+Selected-base resolution uses one fixed precedence: explicit `--base`, non-empty
+scalar `base_branch`, the first existing exact local or remote-tracking ref in
+deduplicated `base_branch_candidates` order, then remote default when no
+configured candidate exists. The candidate default is `dev`, `develop`, `main`,
+`master`. A one-value candidate list still records `source=config-candidate`;
+it is not scalar config. Empty scalar means not configured, multiple existing
+candidates follow declared order rather than creating ambiguity, and no config
+shape authorizes a current-branch fallback. Resolver validation is lazy by
+precedence: selected explicit input is not rejected by malformed lower-priority
+scalar/candidate config, and selected scalar input is not rejected by malformed
+candidate config. When neither source is selected, candidate shape and branch
+validation fail closed before candidate or remote-default facts are produced.
+
+## Base Sync Result
+
+Schema `guru-base-sync-result-1.0` is a closed Draft 2020-12 object for a
+successful `guru-sync-base` execution. It records stable skill/status identity,
+resolution source/base/remote/candidates and pre-sync resolution digest,
+decision checkout branch/HEAD/clean before and after, local and remote
+refs/HEADs, fetch and fast-forward facts, the complete synchronized
+`post_sync_resolution` with `post_sync_resolution_sha256`, `fresh=true`, and
+`facts_sha256`. The facts digest is SHA-256 over canonical JSON with
+`facts_sha256` omitted.
+
+Success requires full 40-hex commit ids and exact equality across decision
+checkout HEAD after, local base HEAD after, and remote-tracking base HEAD.
+Resolution and result facts are canonical JSON transported on stdout only;
+neither task-start context, public package, installed runtime, repo root nor a
+repo-external temporary file stores them. The pre-sync digest binds only
+resolve-to-execute. `check-base-sync --result-json` validates schema, facts
+digest, both resolution identities, and stale live Git facts, then returns the
+post-sync digest to the next consumer. Already-equal execution may have equal
+pre/post digests; fast-forward execution must not.
+Workflow and standalone create no evidence file, lease, release command or
+cleanup state.
+
+`prepare-task.preflight.base_freshness` remains a compatibility projection and
+adds pre-sync resolution source/digest, post-sync resolution/digest, decision
+checkout, local/remote refs, and three-way equality facts from the same core.
+It also exposes `reviewed_resolution_sha256` as the digest consumed by the
+current guard and `post_sync_resolution_sha256` as the digest to pass to the
+next guard, while `resolution.source` remains the
+`explicit`, `config`, `config-candidate`, or `remote-default` provenance rather than a
+prepare-generated explicit override. Task-start context persists only
+portable base branch and local/remote SHA identity; it excludes resolution
+bytes, result payloads, process output, and machine paths.
+
 The YAML parser in `load_config()` is intentionally small. It supports simple
 scalars, lists, and one level of nested dictionaries used by the current config.
 Do not introduce complex YAML structures without replacing or extending the

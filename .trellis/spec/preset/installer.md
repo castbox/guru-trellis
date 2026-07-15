@@ -59,6 +59,24 @@ companion `scripts/bash/create-task-commit.sh` is a managed executable asset;
 source/installed validation and the manifest inventory must prove its bytes and
 mode.
 
+The production registry also installs active `guru-sync-base` to the audited
+runtime root and selected shared/Codex/Cursor/Claude discovery roots. Managed
+inventory includes its `SKILL.md`, interface, contract, example, result schema,
+tests, and executable thin wrappers. Companion managed assets include
+executable `sync-base.sh` and `check-base-sync.sh`; the extension manifest
+publishes active id `guru-sync-base`, schema id
+`guru-base-sync-result-1.0`, and runtime command ids `sync-base` and
+`check-base-sync`.
+
+Fresh install and update/reapply verification must exercise a selected-platform
+standalone wrapper with the full preset runtime. Missing runtime, runtime drift,
+or unresolved sidecars must block before fetch. A package-only copy must never
+appear to work. The throwaway path also verifies workflow route markers,
+stdout-only standalone resolution/result facts, the real workflow
+`synced -> prepare-task` planner/mutation guard chain using rolling post-sync
+resolution digests and the shared resolver/sync core, `trellis update`,
+workflow re-selection, preset reapply, and a final recursive zero-sidecar scan.
+
 The shared `scripts/bash/run-skill-command.sh` dispatcher is also a managed
 executable asset and stable companion script id. The canonical extension
 manifest publishes `public_api.skill_runtime` with the runtime API version,

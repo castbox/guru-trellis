@@ -1,0 +1,11 @@
+{"file":".trellis/spec/workflow/index.md","reason":"复核 workflow 资产范围与 required validation"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"复核 Phase 0 mandatory invocation 与 fail-closed transitions"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"复核 package/interface/typed exits/runtime/distribution 完整性"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"复核 AI/script ownership 与 Git side-effect boundary"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"复核 schema、digest、freshness 与 portable artifact 边界"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"复核 test、docs、dogfood、upgrade/update 与发布门禁"}
+{"file":".trellis/spec/preset/installer.md","reason":"复核 installed inventory、managed hashes 与 platform copies"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"复核 canonical/dogfood drift 与 sidecar 处理"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"复核 README、version matrix、安装与 remediation 文案"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"检查 base sync 是否只有一个 deterministic core"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查 docs/workflow/package/runtime/preset/tests 跨层承接"}

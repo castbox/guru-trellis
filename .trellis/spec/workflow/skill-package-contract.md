@@ -47,15 +47,21 @@ guidance belong in package-local `references/`.
 
 `interface.json` is validated by `schemas/skill-interface.schema.json` and
 declares stable identity, workflow and standalone modes, identical entry
-preconditions, evidence identity and freshness, ordered stages, artifacts,
+preconditions, evidence identity and freshness, `judgment_mode`, ordered stages, artifacts,
 schemas, objective validators, external exits, re-entry behavior, tests, and
-platform destinations. The required stage order is:
+platform destinations. The stage profile is exact:
 
-1. forward behavior;
-2. AI Review Gate;
-3. conditional human confirmation when the reviewed condition matches;
-4. deterministic recorder/validator;
-5. exactly one declared typed exit.
+1. `semantic`: forward behavior, AI Review Gate, conditional human
+   confirmation, deterministic recorder/validator, exactly one typed exit;
+2. `deterministic`: forward behavior, deterministic recorder/validator,
+   exactly one typed exit.
+
+Only a Skill whose inputs, state transitions, side effects, and pass/block
+conditions are completely machine-verifiable may declare `deterministic`, and
+only when its boundary contains no scope, sufficiency, finding, revision,
+user-choice, or route-intent judgment. Caller-side AI route classification can
+precede invocation but is not a Skill-internal post-execution Gate. Any semantic
+judgment or human confirmation forces the `semantic` profile.
 
 Every `tests[]` entry is a package-relative `tests/<file>` path. It must be
 unique, lexically safe, resolve to an existing regular file below that active
@@ -133,6 +139,29 @@ blob/result digest evidence remains committed.
 A failed stage, hook, operation, postcondition or publication preserves exact
 transaction-owned preimages; loss of conditional ref/candidate ownership
 preserves third-party state and fails closed without claiming exact restore.
+
+`guru-sync-base` is mandatory immediately after tool-free Phase 0 request
+classification and before the first repo/network semantic read. It declares
+`judgment_mode=deterministic`; its workflow and standalone modes have identical
+entry preconditions: `runtime_dependency`, `decision_checkout`,
+`selected_base_resolution`, `clean_checkout`, and `result_facts`.
+Standalone requires an explicit refresh/verify request and cannot return
+`skipped`. Workflow exits are exactly `synced` to
+`guru-discover-change-context`, `skipped` to `original-request-route`, and
+`blocked` to `base-sync-blocked`.
+
+The package declares `sync-base` and `check-base-sync` runtime commands and
+schema `guru-base-sync-result-1.0`. Its wrappers remain dispatcher-only. The
+caller owns tool-free route classification and standalone intent recognition.
+The runtime deterministically selects the first existing configured candidate;
+multiple existing candidates follow config order and are not ambiguous.
+Resolution/result facts remain on stdout. The executor preserves
+`resolution_sha256` as the pre-sync resolve-to-execute identity and emits
+`post_sync_resolution` plus `post_sync_resolution_sha256` after synchronization.
+`check-base-sync` validates both identities, schema, facts digest, and live Git
+equality without mutation, then returns the post-sync digest. `prepare-task`
+reuses the same resolver/sync core; each semantic-read or mutation guard
+consumes the previous post-sync digest and returns the next one.
 
 ## Distribution And Managed Hashes
 

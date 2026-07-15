@@ -36,6 +36,7 @@ DEFAULTS: dict[str, Any] = {
     "duplicate_high_similarity_action": "confirm",
     "branch_prefix": "",
     "branch_type_default": "chore",
+    "base_branch": "",
     "base_branch_candidates": ["dev", "develop", "main", "master"],
     "workspace_mode": "worktree",
     "worktree_root": "",
@@ -123,6 +124,9 @@ PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS = [
 ]
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
 TASK_COMMIT_SKILL_ID = "guru-create-task-commit"
+BASE_SYNC_SKILL_ID = "guru-sync-base"
+BASE_SYNC_SCHEMA_VERSION = "1.0"
+BASE_SYNC_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-base-sync-result-1.0.json"
 TASK_COMMIT_PLAN_SCHEMA_VERSION = "1.0"
 TASK_COMMIT_PLAN_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json"
 TASK_COMMIT_PLAN_DIR = "task-commit-plans"
@@ -2863,6 +2867,7 @@ def confirmed_issue_prepare_command(
     title: str,
     requirement: str,
     force_new: bool | None = None,
+    expected_resolution_sha256: str | None = None,
 ) -> list[str]:
     cmd = [
         "python3",
@@ -2890,6 +2895,11 @@ def confirmed_issue_prepare_command(
         value = getattr(args, attr, None)
         if value:
             cmd.extend([option, str(value)])
+    resolution_sha256 = expected_resolution_sha256 or getattr(
+        args, "expected_resolution_sha256", None
+    )
+    if resolution_sha256:
+        cmd.extend(["--expected-resolution-sha256", str(resolution_sha256)])
     should_force_new = getattr(args, "force_new", False) if force_new is None else force_new
     if should_force_new:
         cmd.append("--force-new")
@@ -3059,149 +3069,747 @@ def inspect_base_freshness(root: Path, base_ref: str, remote: str = "origin") ->
     }
 
 
-def refresh_base_freshness_for_planner(root: Path, base_ref: str, remote: str = "origin") -> dict[str, Any]:
-    base = base_short_name(base_ref)
-    remote_ref = f"{remote}/{base}"
-    local_head_before = ref_head(root, base)
-    fetch_proc = run(["git", "fetch", remote, base], cwd=root, check=False)
+def base_sync_clean(root: Path) -> bool:
+    proc = run(["git", "status", "--porcelain=v1", "-z"], cwd=root, check=False)
+    if proc.returncode != 0:
+        raise WorkflowError("Could not inspect decision checkout status for base synchronization.", exit_code=2)
+    return proc.stdout == ""
+
+
+def validate_base_branch_name(root: Path, value: Any, label: str) -> str:
+    if not isinstance(value, str) or not value.strip() or value != value.strip():
+        raise WorkflowError(f"{label} is missing or has boundary whitespace.", exit_code=2)
+    branch = base_short_name(value)
+    proc = run(["git", "check-ref-format", "--branch", branch], cwd=root, check=False)
+    if proc.returncode != 0:
+        raise WorkflowError(f"{label} is not a valid Git branch name.", exit_code=2)
+    return branch
+
+
+def validate_base_remote_name(root: Path, value: Any) -> str:
+    if not isinstance(value, str) or not value.strip() or value != value.strip():
+        raise WorkflowError("Base sync remote is missing or has boundary whitespace.", exit_code=2)
+    remote = value
+    if remote.startswith("-") or any(ord(character) < 32 or ord(character) == 127 for character in remote):
+        raise WorkflowError("Base sync remote contains an unsafe command-line value.", exit_code=2)
+    proc = run(["git", "check-ref-format", f"refs/remotes/{remote}/probe"], cwd=root, check=False)
+    if proc.returncode != 0:
+        raise WorkflowError("Base sync remote cannot form a valid remote-tracking ref.", exit_code=2)
+    return remote
+
+
+def configured_base_candidates(root: Path, config: dict[str, Any]) -> list[str]:
+    raw = config.get("base_branch_candidates")
+    if raw is None:
+        raw = DEFAULTS["base_branch_candidates"]
+    if not isinstance(raw, list) or any(not isinstance(item, str) for item in raw):
+        raise WorkflowError("base_branch_candidates must be a list of branch names.", exit_code=2)
+    candidates: list[str] = []
+    for item in raw:
+        if not item:
+            continue
+        branch = validate_base_branch_name(root, item, "Configured base candidate")
+        if branch not in candidates:
+            candidates.append(branch)
+    return candidates
+
+
+def remote_default_branch(root: Path, remote: str) -> str | None:
+    proc = run(["git", "ls-remote", "--symref", remote, "HEAD"], cwd=root, check=False)
+    if proc.returncode != 0:
+        return None
+    matches: list[str] = []
+    for line in proc.stdout.splitlines():
+        match = re.fullmatch(r"ref: refs/heads/([^\t]+)\tHEAD", line)
+        if match:
+            branch = validate_base_branch_name(root, match.group(1), "Remote default branch")
+            if branch not in matches:
+                matches.append(branch)
+    return matches[0] if len(matches) == 1 else None
+
+
+def resolution_identity(
+    *,
+    source: str,
+    selected_base: str,
+    remote: str,
+    candidates: list[str],
+    decision_branch: str,
+    decision_head: str,
+    decision_clean: bool,
+) -> dict[str, Any]:
+    return {
+        "schema_version": BASE_SYNC_SCHEMA_VERSION,
+        "skill_id": BASE_SYNC_SKILL_ID,
+        "status": "resolved",
+        "source": source,
+        "selected_base": selected_base,
+        "remote": remote,
+        "candidates": candidates,
+        "decision_checkout": {
+            "branch": decision_branch,
+            "head": decision_head,
+            "clean": decision_clean,
+        },
+    }
+
+
+def resolution_payload(
+    root: Path,
+    *,
+    source: str,
+    selected_base: str,
+    remote: str,
+    candidates: list[str],
+) -> dict[str, Any]:
+    payload = resolution_identity(
+        source=source,
+        selected_base=selected_base,
+        remote=remote,
+        candidates=candidates,
+        decision_branch=current_branch(root),
+        decision_head=current_head(root),
+        decision_clean=base_sync_clean(root),
+    )
+    payload["resolution_sha256"] = canonical_json_sha256(payload)
+    return payload
+
+
+def resolve_base_selection(
+    root: Path,
+    config: dict[str, Any],
+    explicit: str | None = None,
+    remote: str = "origin",
+) -> dict[str, Any]:
+    remote = validate_base_remote_name(root, remote)
+    if explicit is not None and str(explicit).strip():
+        selected = validate_base_branch_name(root, explicit, "Explicit base")
+        return resolution_payload(
+            root, source="explicit", selected_base=selected, remote=remote, candidates=[selected]
+        )
+
+    scalar = config.get("base_branch", "")
+    if scalar is None:
+        scalar = ""
+    if not isinstance(scalar, str):
+        raise WorkflowError("base_branch must be a scalar branch name or empty.", exit_code=2)
+    if scalar:
+        selected = validate_base_branch_name(root, scalar, "Configured base_branch")
+        return resolution_payload(
+            root, source="config", selected_base=selected, remote=remote, candidates=[selected]
+        )
+    configured = configured_base_candidates(root, config)
+    for candidate in configured:
+        if (
+            ref_head(root, f"refs/heads/{candidate}") is not None
+            or ref_head(root, f"refs/remotes/{remote}/{candidate}") is not None
+        ):
+            return resolution_payload(
+                root,
+                source="config-candidate",
+                selected_base=candidate,
+                remote=remote,
+                candidates=configured,
+            )
+
+    default = remote_default_branch(root, remote)
+    if default is not None:
+        candidates = [*configured, *([] if default in configured else [default])]
+        return resolution_payload(
+            root,
+            source="remote-default",
+            selected_base=default,
+            remote=remote,
+            candidates=candidates,
+        )
+
+    raise WorkflowError(
+        "Base resolution could not select an explicit, scalar config, ordered existing candidate, or remote default branch.",
+        exit_code=2,
+        payload={"source": "blocked", "remote": remote, "candidates": configured},
+    )
+
+
+def base_resolution_errors(root: Path, resolution: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if set(resolution) != {
+        "schema_version", "skill_id", "status", "source", "selected_base",
+        "remote", "candidates", "decision_checkout", "resolution_sha256",
+    }:
+        errors.append("resolution has invalid fields")
+    if resolution.get("schema_version") != BASE_SYNC_SCHEMA_VERSION:
+        errors.append("resolution schema_version is invalid")
+    if resolution.get("skill_id") != BASE_SYNC_SKILL_ID or resolution.get("status") != "resolved":
+        errors.append("resolution identity is invalid")
+    if resolution.get("source") not in {"explicit", "config", "config-candidate", "remote-default"}:
+        errors.append("resolution source is invalid")
+    selected = resolution.get("selected_base")
+    remote = resolution.get("remote")
+    try:
+        validate_base_branch_name(root, selected, "Resolved base")
+        validate_base_remote_name(root, remote)
+    except WorkflowError as exc:
+        errors.append(str(exc))
+    candidates = resolution.get("candidates")
+    if not isinstance(candidates, list) or not candidates or len(candidates) != len(set(candidates)):
+        errors.append("resolution candidates are invalid")
+    elif selected not in candidates:
+        errors.append("resolution selected base is absent from candidates")
+    else:
+        for candidate in candidates:
+            try:
+                validate_base_branch_name(root, candidate, "Resolution candidate")
+            except WorkflowError as exc:
+                errors.append(str(exc))
+    decision = resolution.get("decision_checkout")
+    if not isinstance(decision, dict) or set(decision) != {"branch", "head", "clean"}:
+        errors.append("resolution decision checkout is invalid")
+    else:
+        try:
+            validate_base_branch_name(root, decision.get("branch"), "Decision checkout branch")
+        except WorkflowError as exc:
+            errors.append(str(exc))
+        if not re.fullmatch(r"[0-9a-f]{40}", str(decision.get("head") or "")):
+            errors.append("resolution decision HEAD is invalid")
+        if decision.get("clean") is not True:
+            errors.append("resolution decision checkout is not clean")
+    digest = resolution.get("resolution_sha256")
+    identity = dict(resolution)
+    identity.pop("resolution_sha256", None)
+    if not isinstance(digest, str) or digest != canonical_json_sha256(identity):
+        errors.append("resolution digest is invalid")
+    return errors
+
+
+def base_sync_result_errors(result: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    expected_keys = {
+        "schema_version", "skill_id", "status", "resolution", "post_sync_resolution",
+        "post_sync_resolution_sha256", "decision_checkout", "git", "fresh", "facts_sha256",
+    }
+    if set(result) != expected_keys:
+        errors.append("base sync result has invalid fields")
+    if result.get("schema_version") != BASE_SYNC_SCHEMA_VERSION:
+        errors.append("base sync result schema_version is invalid")
+    if result.get("skill_id") != BASE_SYNC_SKILL_ID or result.get("status") != "synced":
+        errors.append("base sync result identity is invalid")
+    if result.get("fresh") is not True:
+        errors.append("base sync result is not fresh")
+    unsigned = dict(result)
+    digest = unsigned.pop("facts_sha256", None)
+    if not isinstance(digest, str) or digest != canonical_json_sha256(unsigned):
+        errors.append("base sync result facts digest is invalid")
+    resolution = result.get("resolution")
+    post_sync_resolution = result.get("post_sync_resolution")
+    post_sync_digest = result.get("post_sync_resolution_sha256")
+    if not isinstance(resolution, dict) or set(resolution) != {
+        "source", "selected_base", "remote", "candidates", "resolution_sha256"
+    }:
+        errors.append("base sync result resolution is invalid")
+    elif (
+        resolution.get("source") not in {"explicit", "config", "config-candidate", "remote-default"}
+        or not isinstance(resolution.get("selected_base"), str)
+        or not isinstance(resolution.get("remote"), str)
+        or not isinstance(resolution.get("candidates"), list)
+        or not resolution["candidates"]
+        or len(resolution["candidates"]) != len(set(resolution["candidates"]))
+        or resolution.get("selected_base") not in resolution["candidates"]
+        or not re.fullmatch(r"[0-9a-f]{64}", str(resolution.get("resolution_sha256") or ""))
+    ):
+        errors.append("base sync result resolution values are invalid")
+    if not isinstance(post_sync_resolution, dict) or set(post_sync_resolution) != {
+        "schema_version", "skill_id", "status", "source", "selected_base",
+        "remote", "candidates", "decision_checkout",
+    }:
+        errors.append("base sync result post-sync resolution is invalid")
+    if not isinstance(post_sync_digest, str) or not re.fullmatch(
+        r"[0-9a-f]{64}", post_sync_digest
+    ):
+        errors.append("base sync result post-sync resolution digest is invalid")
+    decision = result.get("decision_checkout")
+    git = result.get("git")
+    if not isinstance(decision, dict) or set(decision) != {
+        "branch", "head_before", "head_after", "clean_before", "clean_after"
+    }:
+        errors.append("base sync decision checkout is invalid")
+    if not isinstance(git, dict) or set(git) != {
+        "local_ref", "remote_ref", "local_head_before", "local_head_after",
+        "remote_head_after", "fetch_performed", "fast_forwarded",
+    }:
+        errors.append("base sync Git facts are invalid")
+    if isinstance(decision, dict) and isinstance(git, dict):
+        commits = [
+            decision.get("head_before"), decision.get("head_after"),
+            git.get("local_head_before"), git.get("local_head_after"), git.get("remote_head_after"),
+        ]
+        if any(not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{40}", value) for value in commits):
+            errors.append("base sync result contains an invalid commit id")
+        if not (
+            decision.get("head_after") == git.get("local_head_after") == git.get("remote_head_after")
+        ):
+            errors.append("base sync result does not prove decision/local/remote HEAD equality")
+        if decision.get("clean_before") is not True or decision.get("clean_after") is not True:
+            errors.append("base sync result does not prove a clean checkout")
+        if git.get("fetch_performed") is not True or not isinstance(git.get("fast_forwarded"), bool):
+            errors.append("base sync fetch/fast-forward facts are invalid")
+        if isinstance(resolution, dict):
+            base = resolution.get("selected_base")
+            remote = resolution.get("remote")
+            if git.get("local_ref") != f"refs/heads/{base}":
+                errors.append("base sync local ref does not match the selected base")
+            if git.get("remote_ref") != f"refs/remotes/{remote}/{base}":
+                errors.append("base sync remote ref does not match the selected base")
+            pre_sync_identity = resolution_identity(
+                source=resolution.get("source"),
+                selected_base=base,
+                remote=remote,
+                candidates=resolution.get("candidates"),
+                decision_branch=decision.get("branch"),
+                decision_head=decision.get("head_before"),
+                decision_clean=decision.get("clean_before"),
+            )
+            if resolution.get("resolution_sha256") != canonical_json_sha256(pre_sync_identity):
+                errors.append("base sync result resolution digest is invalid")
+            expected_post_sync_identity = resolution_identity(
+                source=resolution.get("source"),
+                selected_base=base,
+                remote=remote,
+                candidates=resolution.get("candidates"),
+                decision_branch=decision.get("branch"),
+                decision_head=decision.get("head_after"),
+                decision_clean=decision.get("clean_after"),
+            )
+            if post_sync_resolution != expected_post_sync_identity:
+                errors.append("base sync result post-sync resolution identity is invalid")
+            if post_sync_digest != canonical_json_sha256(expected_post_sync_identity):
+                errors.append("base sync result post-sync resolution digest is invalid")
+
+            pre_sync_digest = resolution.get("resolution_sha256")
+            before_heads_equal = (
+                decision.get("head_before") == git.get("local_head_before")
+            )
+            if not before_heads_equal:
+                errors.append("base sync result pre-sync decision/local HEADs differ")
+            if git.get("fast_forwarded") is True:
+                if decision.get("head_before") == decision.get("head_after"):
+                    errors.append("fast-forwarded base sync did not change HEAD")
+                if pre_sync_digest == post_sync_digest:
+                    errors.append("fast-forwarded base sync did not change resolution digest")
+            elif git.get("fast_forwarded") is False:
+                if decision.get("head_before") != decision.get("head_after"):
+                    errors.append("already-equal base sync changed HEAD")
+                if pre_sync_digest != post_sync_digest:
+                    errors.append("already-equal base sync changed resolution digest")
+    return errors
+
+
+def base_sync_schema(root: Path) -> dict[str, Any]:
+    candidates = [
+        root / ".trellis/guru-team/skills/packages/guru-sync-base/schemas/base-sync-result.schema.json",
+        root / "trellis/skills/guru-team/packages/guru-sync-base/schemas/base-sync-result.schema.json",
+    ]
+    schema_path = next((path for path in candidates if path.is_file() and not path.is_symlink()), None)
+    if schema_path is None:
+        raise WorkflowError(
+            "Base sync result schema is missing from the compatible Guru Team runtime.",
+            exit_code=2,
+        )
+    errors: list[str] = []
+    schema = skill_read_json(schema_path, "base sync result schema", errors)
+    if (
+        errors
+        or schema is None
+        or schema.get("$schema") != SKILL_SCHEMA_DIALECT
+        or schema.get("$id") != BASE_SYNC_SCHEMA_ID
+    ):
+        raise WorkflowError(
+            "Base sync result schema identity is invalid.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return schema
+
+
+def validate_live_base_sync_result(root: Path, result: dict[str, Any]) -> list[str]:
+    errors = base_sync_result_errors(result)
+    if errors:
+        return errors
+    schema_errors = skill_json_schema_validation_errors(
+        result,
+        base_sync_schema(root),
+        "base sync result",
+    )
+    errors.extend(schema_errors)
+    if schema_errors:
+        return errors
+    resolution = result["resolution"]
+    decision = result["decision_checkout"]
+    git = result["git"]
+    try:
+        base = validate_base_branch_name(root, resolution["selected_base"], "Result selected base")
+        remote = validate_base_remote_name(root, resolution["remote"])
+    except WorkflowError as exc:
+        errors.append(str(exc))
+        return errors
+    if decision["branch"] != current_branch(root):
+        errors.append("live decision checkout branch does not match result facts")
+    if not base_sync_clean(root):
+        errors.append("live decision checkout is not clean")
+    live_decision = current_head(root)
+    live_local = ref_head(root, f"refs/heads/{base}")
+    live_remote = ref_head(root, f"refs/remotes/{remote}/{base}")
+    expected = git["remote_head_after"]
+    if live_decision != decision["head_after"] or live_decision != expected:
+        errors.append("live decision HEAD does not match result facts")
+    if live_local != git["local_head_after"] or live_local != expected:
+        errors.append("live local base HEAD does not match result facts")
+    if live_remote != expected:
+        errors.append("live remote-tracking base HEAD does not match result facts")
+    return errors
+
+
+def parse_base_sync_result_json(value: Any) -> dict[str, Any]:
+    if isinstance(value, dict):
+        return copy.deepcopy(value)
+    if not isinstance(value, str) or not value:
+        raise WorkflowError(
+            "check-base-sync requires non-empty --result-json or --record-skipped.",
+            exit_code=2,
+        )
+    try:
+        payload = json.loads(value)
+    except json.JSONDecodeError as exc:
+        raise WorkflowError(
+            "Base sync result facts must be valid JSON.",
+            exit_code=2,
+        ) from exc
+    if not isinstance(payload, dict):
+        raise WorkflowError("Base sync result JSON root must be an object.", exit_code=2)
+    return payload
+
+
+def cmd_sync_base(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    require_tool("git")
+    config = load_config(root)
+    resolution = resolve_base_selection(root, config, args.base, args.remote)
+    errors = base_resolution_errors(root, resolution)
+    if ref_head(root, f"refs/heads/{resolution['selected_base']}") is None:
+        errors.append("selected local base branch does not exist")
+    if errors:
+        raise WorkflowError(
+            "Base resolution failed closed.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+
+    if args.resolve_only:
+        if args.expected_resolution_sha256:
+            raise WorkflowError(
+                "sync-base --resolve-only does not accept --expected-resolution-sha256.",
+                exit_code=2,
+            )
+        return resolution
+
+    expected = str(args.expected_resolution_sha256 or "")
+    if not re.fullmatch(r"[0-9a-f]{64}", expected):
+        raise WorkflowError(
+            "sync-base --execute requires --expected-resolution-sha256.",
+            exit_code=2,
+        )
+    if resolution["resolution_sha256"] != expected:
+        raise WorkflowError(
+            "Base resolution digest changed before execution.",
+            exit_code=2,
+            payload={
+                "expected_resolution_sha256": expected,
+                "actual_resolution_sha256": resolution["resolution_sha256"],
+            },
+        )
+    return execute_base_sync(root, resolution)
+
+
+def cmd_check_base_sync(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    require_tool("git")
+    if args.record_skipped is not None:
+        if args.mode != "workflow":
+            raise WorkflowError("Standalone base sync cannot return skipped.", exit_code=2)
+        if args.result_json or args.expected_resolution_sha256:
+            raise WorkflowError(
+                "Skipped recorder does not accept sync result facts.",
+                exit_code=2,
+            )
+        route_id = str(args.record_skipped)
+        if route_id != "original-request-route":
+            raise WorkflowError(
+                "Skipped base sync route id is not a declared consumer.",
+                exit_code=2,
+            )
+        payload: dict[str, Any] = {
+            "schema_version": BASE_SYNC_SCHEMA_VERSION,
+            "skill_id": BASE_SYNC_SKILL_ID,
+            "status": "skipped",
+            "mode": "workflow",
+            "route_id": route_id,
+        }
+        payload["facts_sha256"] = canonical_json_sha256(payload)
+        return payload
+
+    result = parse_base_sync_result_json(args.result_json)
+    expected = str(args.expected_resolution_sha256 or "")
+    if not re.fullmatch(r"[0-9a-f]{64}", expected):
+        raise WorkflowError(
+            "check-base-sync requires --expected-resolution-sha256.",
+            exit_code=2,
+        )
+    actual = (
+        result.get("resolution", {}).get("resolution_sha256")
+        if isinstance(result.get("resolution"), dict)
+        else None
+    )
+    if actual != expected:
+        raise WorkflowError(
+            "Base sync result resolution digest does not match the expected digest.",
+            exit_code=2,
+        )
+    errors = validate_live_base_sync_result(root, result)
+    if errors:
+        raise WorkflowError(
+            "Base sync result validation failed.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return {
+        "schema_version": BASE_SYNC_SCHEMA_VERSION,
+        "skill_id": BASE_SYNC_SKILL_ID,
+        "status": "validated",
+        "mode": args.mode,
+        "post_sync_resolution_sha256": result["post_sync_resolution_sha256"],
+        "facts_sha256": result["facts_sha256"],
+        "selected_base": result["resolution"]["selected_base"],
+        "head": result["git"]["remote_head_after"],
+    }
+
+
+def execute_base_sync(root: Path, resolution: dict[str, Any]) -> dict[str, Any]:
+    resolution_errors = base_resolution_errors(root, resolution)
+    if resolution_errors:
+        raise WorkflowError("Base resolution evidence is invalid.", exit_code=2, payload={"errors": resolution_errors})
+    decision = resolution["decision_checkout"]
+    if decision["branch"] != current_branch(root) or decision["head"] != current_head(root):
+        raise WorkflowError("Decision checkout changed after base resolution.", exit_code=2)
+    if decision["clean"] is not True or not base_sync_clean(root):
+        raise WorkflowError("Decision checkout must be clean before base synchronization.", exit_code=2)
+
+    base = str(resolution["selected_base"])
+    remote = str(resolution["remote"])
+    local_ref = f"refs/heads/{base}"
+    remote_ref = f"refs/remotes/{remote}/{base}"
+    local_head_before = ref_head(root, local_ref)
+    if local_head_before is None:
+        raise WorkflowError("Selected local base branch does not exist.", exit_code=2)
+
+    fetch_proc = run(
+        [
+            "git", "fetch", "--no-tags", remote,
+            f"refs/heads/{base}:refs/remotes/{remote}/{base}",
+        ],
+        cwd=root,
+        check=False,
+    )
     if fetch_proc.returncode != 0:
-        local_head_after = ref_head(root, base)
-        return {
+        raise WorkflowError("Explicit selected-base fetch failed.", exit_code=2)
+    remote_head = ref_head(root, remote_ref)
+    if remote_head is None:
+        raise WorkflowError("Fetched remote-tracking base ref is missing.", exit_code=2)
+
+    fast_forwarded = False
+    if local_head_before != remote_head:
+        if not is_ancestor(root, local_head_before, remote_ref):
+            raise WorkflowError("Local selected base diverged from the fetched remote base.", exit_code=2)
+        if current_branch(root) != base:
+            raise WorkflowError(
+                "Selected base is behind, but the decision checkout is not on that base; refusing an out-of-checkout ref update.",
+                exit_code=2,
+            )
+        if not base_sync_clean(root):
+            raise WorkflowError("Decision checkout became dirty before fast-forward.", exit_code=2)
+        merge_proc = run(["git", "merge", "--ff-only", remote_ref], cwd=root, check=False)
+        if merge_proc.returncode != 0:
+            raise WorkflowError("Selected base fast-forward failed.", exit_code=2)
+        fast_forwarded = True
+
+    local_head_after = ref_head(root, local_ref)
+    remote_head_after = ref_head(root, remote_ref)
+    decision_head_after = current_head(root)
+    clean_after = base_sync_clean(root)
+    fresh = bool(
+        clean_after
+        and re.fullmatch(r"[0-9a-f]{40}", decision_head_after)
+        and decision_head_after == local_head_after == remote_head_after
+    )
+    if not fresh:
+        raise WorkflowError(
+            "Base synchronization did not prove clean decision/local/remote HEAD equality.",
+            exit_code=2,
+        )
+
+    result: dict[str, Any] = {
+        "schema_version": BASE_SYNC_SCHEMA_VERSION,
+        "skill_id": BASE_SYNC_SKILL_ID,
+        "status": "synced",
+        "resolution": {
+            "source": resolution["source"],
+            "selected_base": base,
             "remote": remote,
-            "base_branch": base,
-            "base_ref": base_ref,
+            "candidates": resolution["candidates"],
+            "resolution_sha256": resolution["resolution_sha256"],
+        },
+        "post_sync_resolution": resolution_identity(
+            source=resolution["source"],
+            selected_base=base,
+            remote=remote,
+            candidates=resolution["candidates"],
+            decision_branch=decision["branch"],
+            decision_head=decision_head_after,
+            decision_clean=clean_after,
+        ),
+        "decision_checkout": {
+            "branch": decision["branch"],
+            "head_before": decision["head"],
+            "head_after": decision_head_after,
+            "clean_before": True,
+            "clean_after": clean_after,
+        },
+        "git": {
+            "local_ref": local_ref,
             "remote_ref": remote_ref,
             "local_head_before": local_head_before,
             "local_head_after": local_head_after,
-            "remote_head": None,
-            "remote_head_source": "unconfirmed",
-            "fetch_attempted": True,
-            "fetch_performed": False,
-            "fast_forwarded": False,
-            "fresh": False,
-            "status": "fetch_failed",
-            "fetch_error": fetch_proc.stderr.strip(),
-            "base_ref_for_worktree": base_ref,
-        }
+            "remote_head_after": remote_head_after,
+            "fetch_performed": True,
+            "fast_forwarded": fast_forwarded,
+        },
+        "fresh": fresh,
+    }
+    result["post_sync_resolution_sha256"] = canonical_json_sha256(
+        result["post_sync_resolution"]
+    )
+    result["facts_sha256"] = canonical_json_sha256(result)
+    errors = base_sync_result_errors(result)
+    if errors:
+        raise WorkflowError("Constructed base sync result is invalid.", exit_code=2, payload={"errors": errors})
+    return result
 
-    remote_head = ref_head(root, remote_ref)
-    local_head_after = ref_head(root, base)
-    fresh = False
-    status = "remote_ref_missing"
-    base_ref_for_worktree = base_ref
-    if remote_head:
-        if not local_head_after:
-            fresh = True
-            status = "remote_only"
-            base_ref_for_worktree = remote_ref
-        elif local_head_after == remote_head:
-            fresh = True
-            status = "fresh"
-            base_ref_for_worktree = base
-        elif is_ancestor(root, local_head_after, remote_ref):
-            status = "stale"
-            base_ref_for_worktree = remote_ref
-        else:
-            status = "diverged"
-            base_ref_for_worktree = remote_ref
 
+def base_sync_freshness_projection(
+    result: dict[str, Any],
+    reviewed_resolution_sha256: str | None = None,
+) -> dict[str, Any]:
+    resolution = result["resolution"]
+    decision = result["decision_checkout"]
+    git = result["git"]
+    base = resolution["selected_base"]
+    remote = resolution["remote"]
     return {
         "remote": remote,
         "base_branch": base,
-        "base_ref": base_ref,
-        "remote_ref": remote_ref,
-        "local_head_before": local_head_before,
-        "local_head_after": local_head_after,
-        "remote_head": remote_head,
-        "remote_head_source": "fetched" if remote_head else "missing",
+        "base_ref": base,
+        "remote_ref": f"{remote}/{base}",
+        "local_head_before": git["local_head_before"],
+        "local_head_after": git["local_head_after"],
+        "remote_head": git["remote_head_after"],
+        "remote_head_source": "fetched",
         "fetch_attempted": True,
         "fetch_performed": True,
-        "fast_forwarded": False,
-        "fresh": fresh,
-        "status": status,
-        "base_ref_for_worktree": base_ref_for_worktree,
+        "fast_forwarded": git["fast_forwarded"],
+        "fresh": True,
+        "status": "fresh",
+        "base_ref_for_worktree": base,
+        "resolution": resolution,
+        "reviewed_resolution_sha256": reviewed_resolution_sha256 or resolution["resolution_sha256"],
+        "post_sync_resolution": result["post_sync_resolution"],
+        "post_sync_resolution_sha256": result["post_sync_resolution_sha256"],
+        "decision_checkout": decision,
+        "three_way_equal": True,
+        "facts_sha256": result["facts_sha256"],
     }
 
 
-def ensure_base_freshness(root: Path, base_ref: str, remote: str = "origin") -> dict[str, Any]:
-    base = base_short_name(base_ref)
-    remote_ref = f"{remote}/{base}"
-    local_head_before = ref_head(root, base)
-    fetch_proc = run(["git", "fetch", remote, base], cwd=root, check=False)
-    if fetch_proc.returncode != 0:
-        raise WorkflowError(
-            f"Could not refresh base branch before worktree creation: git fetch {remote} {base}\n{fetch_proc.stderr.strip()}",
-            exit_code=2,
-        )
-    remote_head = ref_head(root, remote_ref)
-    if not remote_head:
-        raise WorkflowError(
-            f"Remote base ref not found after fetch: {remote_ref}",
-            exit_code=2,
-            payload={"remote": remote, "base_branch": base, "remote_ref": remote_ref},
-        )
+def refresh_base_freshness_for_planner(root: Path, base_ref: str, remote: str = "origin") -> dict[str, Any]:
+    config = load_config(root)
+    resolution = resolve_base_selection(root, config, base_short_name(base_ref), remote)
+    return base_sync_freshness_projection(execute_base_sync(root, resolution))
 
-    fast_forwarded = False
-    if local_head_before:
-        if local_head_before == remote_head:
+
+def ensure_base_freshness(
+    root: Path,
+    base_ref: str | None,
+    remote: str = "origin",
+    *,
+    expected_resolution_sha256: str | None = None,
+) -> dict[str, Any]:
+    config = load_config(root)
+    if expected_resolution_sha256 is not None:
+        expected = str(expected_resolution_sha256)
+        if not re.fullmatch(r"[0-9a-f]{64}", expected):
+            raise WorkflowError("Base freshness guard received an invalid resolution digest.", exit_code=2)
+
+        base_assertion = (
+            validate_base_branch_name(root, base_ref, "prepare --base-branch assertion")
+            if base_ref
+            else None
+        )
+        resolution: dict[str, Any] | None = None
+        actual_digest = ""
+        try:
+            source_preserving = resolve_base_selection(root, config, None, remote)
+            actual_digest = str(source_preserving["resolution_sha256"])
+            if actual_digest == expected:
+                resolution = source_preserving
+        except WorkflowError:
+            # A reviewed explicit resolution remains valid even when a lower-priority
+            # config source is malformed; its digest must still prove that provenance.
             pass
-        elif is_ancestor(root, local_head_before, remote_ref):
-            if current_branch(root) == base:
-                if git_dirty(root):
-                    raise WorkflowError(
-                        f"Base branch {base} is behind {remote_ref}, but the checkout is dirty and cannot be fast-forwarded safely.",
-                        exit_code=2,
-                    )
-                run_stdout(["git", "merge", "--ff-only", remote_ref], cwd=root)
-            else:
-                run_stdout(["git", "branch", "-f", base, remote_ref], cwd=root)
-            fast_forwarded = True
-        else:
+
+        if resolution is None and base_assertion is not None:
+            explicit = resolve_base_selection(root, config, base_assertion, remote)
+            actual_digest = str(explicit["resolution_sha256"])
+            if actual_digest == expected:
+                resolution = explicit
+
+        if resolution is None:
             raise WorkflowError(
-                f"Local base branch {base} diverged from {remote_ref}; cannot create task worktree from stale base.",
+                "Base resolution digest changed before the freshness guard.",
                 exit_code=2,
                 payload={
-                    "base_branch": base,
-                    "local_head": local_head_before,
-                    "remote_head": remote_head,
-                    "remote_ref": remote_ref,
+                    "expected_resolution_sha256": expected,
+                    "actual_resolution_sha256": actual_digest,
                 },
             )
-
-    local_head_after = ref_head(root, base)
-    fresh = local_head_after == remote_head if local_head_after else True
-    status = "fresh" if local_head_after and fresh else "remote_only"
-    return {
-        "remote": remote,
-        "base_branch": base,
-        "base_ref": base_ref,
-        "remote_ref": remote_ref,
-        "local_head_before": local_head_before,
-        "local_head_after": local_head_after,
-        "remote_head": remote_head,
-        "fetch_performed": True,
-        "fast_forwarded": fast_forwarded,
-        "fresh": fresh,
-        "status": status,
-        "base_ref_for_worktree": base if fresh and local_head_after else remote_ref,
-    }
+        if base_assertion is not None and resolution["selected_base"] != base_assertion:
+            raise WorkflowError(
+                "prepare --base-branch assertion does not match the reviewed selected base.",
+                exit_code=2,
+                payload={
+                    "asserted_base_branch": base_assertion,
+                    "selected_base_branch": resolution["selected_base"],
+                },
+            )
+    else:
+        explicit = base_short_name(base_ref) if base_ref else None
+        resolution = resolve_base_selection(root, config, explicit, remote)
+    result = execute_base_sync(root, resolution)
+    return base_sync_freshness_projection(
+        result,
+        reviewed_resolution_sha256=expected_resolution_sha256,
+    )
 
 
 def resolve_base_branch(root: Path, config: dict[str, Any], explicit: str | None = None) -> tuple[str, list[str]]:
-    candidates = [explicit] if explicit else list(config.get("base_branch_candidates") or DEFAULTS["base_branch_candidates"])
-    discovered: list[str] = []
-    for candidate in candidates:
-        if not candidate:
-            continue
-        candidate = str(candidate)
-        refs = [candidate, f"origin/{candidate}"] if not candidate.startswith("origin/") else [candidate]
-        for ref in refs:
-            if git_branch_exists(root, ref):
-                discovered.append(ref)
-    if discovered:
-        return discovered[0], discovered
-    current = current_branch(root)
-    return current, [current]
+    resolution = resolve_base_selection(root, config, explicit)
+    return str(resolution["selected_base"]), list(resolution["candidates"])
 
 
 def current_branch(root: Path) -> str:
@@ -9160,9 +9768,6 @@ def validate_task_start_context(payload: dict[str, Any]) -> None:
 def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    repo = str(config.get("github_repo") or "").strip() or infer_github_repo(root)
-    if not repo:
-        raise WorkflowError("Could not resolve GitHub repo. Configure github_repo in .trellis/guru-team/config.yml.")
     if args.create_issue_confirmed and not str(args.issue_title or "").strip():
         raise WorkflowError(
             "--create-issue-confirmed requires --issue-title containing the AI/human reviewed issue title.",
@@ -9170,11 +9775,35 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
         )
 
     require_tool("git")
-    require_gh_auth(root)
-
     requirement = " ".join(args.requirement).strip()
     if not requirement:
         raise WorkflowError("No requirement description provided.")
+    if not args.expected_resolution_sha256:
+        raise WorkflowError(
+            "prepare requires --expected-resolution-sha256 from the preceding base-sync validator or prepare guard.",
+            exit_code=2,
+        )
+
+    next_resolution_sha256 = str(args.expected_resolution_sha256)
+
+    def rerun_reviewed_base_guard() -> dict[str, Any]:
+        nonlocal next_resolution_sha256
+        freshness = ensure_base_freshness(
+            root,
+            args.base_branch,
+            expected_resolution_sha256=next_resolution_sha256,
+        )
+        next_resolution_sha256 = str(freshness["post_sync_resolution_sha256"])
+        return freshness
+
+    base_freshness = rerun_reviewed_base_guard()
+    base_ref = str(base_freshness["resolution"]["selected_base"])
+    base_candidates = list(base_freshness["resolution"]["candidates"])
+
+    repo = str(config.get("github_repo") or "").strip() or infer_github_repo(root)
+    if not repo:
+        raise WorkflowError("Could not resolve GitHub repo. Configure github_repo in .trellis/guru-team/config.yml.")
+    require_gh_auth(root)
 
     provided = parse_issue_ref(requirement, repo)
     duplicates: list[dict[str, Any]] = []
@@ -9218,7 +9847,13 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
                             "body": proposed_body,
                             "labels": list(config.get("created_issue_labels") or []),
                             "body_reviewed": False,
-                            "create_issue_command": confirmed_issue_prepare_command(args, proposed_title, requirement, force_new=True),
+                            "create_issue_command": confirmed_issue_prepare_command(
+                                args,
+                                proposed_title,
+                                requirement,
+                                force_new=True,
+                                expected_resolution_sha256=next_resolution_sha256,
+                            ),
                         },
                         "requires_confirmation": {
                             "reuse_issue_or_force_new": True,
@@ -9234,7 +9869,12 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
             "body": proposed_body,
             "labels": list(config.get("created_issue_labels") or []),
             "body_reviewed": bool(args.create_issue_confirmed),
-            "create_issue_command": confirmed_issue_prepare_command(args, proposed_title, requirement),
+            "create_issue_command": confirmed_issue_prepare_command(
+                args,
+                proposed_title,
+                requirement,
+                expected_resolution_sha256=next_resolution_sha256,
+            ),
         }
         if config.get("auto_create_issue", False):
             proposed_issue["legacy_auto_create_issue_config_ignored"] = True
@@ -9252,6 +9892,7 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
                     f"{proposed_title}\n{proposed_body}",
                 )
                 ensure_naming_quality_for_create({**pre_create_naming, "proposed_issue": proposed_issue})
+            base_freshness = rerun_reviewed_base_guard()
             issue = create_issue(repo, proposed_title, proposed_body, root, list(config.get("created_issue_labels") or []))
             created_by_workflow = True
         else:
@@ -9301,12 +9942,8 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
         ensure_naming_quality_for_create(naming_payload)
     title_prefix = f"#{issue_number_for_slug}" if issue is not None else "[proposed-issue]"
     task_title = args.title or f"{title_prefix} {issue_title_for_planning}"
-    base_ref, base_candidates = resolve_base_branch(root, config, args.base_branch)
-    base_freshness = (
-        ensure_base_freshness(root, base_ref)
-        if should_create_worktree
-        else refresh_base_freshness_for_planner(root, base_ref)
-    )
+    if should_create_worktree:
+        base_freshness = rerun_reviewed_base_guard()
     workspace_base_ref = str(base_freshness.get("base_ref_for_worktree") or base_ref)
     workspace_mode, workspace_path, workspace_ready = prepare_workspace(
         root,
@@ -9407,6 +10044,9 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
                 exit_code=2,
                 payload={"proposed_issue": proposed_issue, "requires_confirmation": confirmation_required},
             )
+        base_freshness = rerun_reviewed_base_guard()
+        payload["base_freshness"] = base_freshness
+        payload["preflight"]["base_freshness"] = base_freshness
         payload["task_dir"] = create_task(root, payload, args)
         run(["python3", "./.trellis/scripts/task.py", "set-branch", payload["task_dir"], branch_name], cwd=workspace_path, check=False)
         run(["python3", "./.trellis/scripts/task.py", "set-base-branch", payload["task_dir"], base_ref], cwd=workspace_path, check=False)
@@ -12274,13 +12914,20 @@ def execute_marketplace_verification(
 
 SKILL_ID_PATTERN = re.compile(r"^guru-[a-z0-9]+(?:-[a-z0-9]+)+$")
 SKILL_ROUTE_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-SKILL_INTERFACE_STAGES = [
-    "forward_behavior",
-    "ai_review_gate",
-    "conditional_human_confirmation",
-    "recorder_validator",
-    "typed_exit",
-]
+SKILL_INTERFACE_STAGE_PROFILES = {
+    "semantic": [
+        "forward_behavior",
+        "ai_review_gate",
+        "conditional_human_confirmation",
+        "recorder_validator",
+        "typed_exit",
+    ],
+    "deterministic": [
+        "forward_behavior",
+        "recorder_validator",
+        "typed_exit",
+    ],
+}
 SKILL_PLATFORMS = {"shared", "codex", "cursor", "claude"}
 SKILL_PLATFORM_ROOTS = {
     "shared": Path(".agents/skills"),
@@ -12291,8 +12938,8 @@ SKILL_PLATFORM_ROOTS = {
 SKILL_INVOKE_RE = re.compile(r"^\s*<!--\s*guru-skill-invoke:\s*(\{.*\})\s*-->\s*$")
 SKILL_EXIT_RE = re.compile(r"^\s*<!--\s*guru-skill-exit:\s*(\{.*\})\s*-->\s*$")
 SKILL_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
-SKILL_INTERFACE_SCHEMA_VERSION = "1.1"
-SKILL_INTERFACE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.1.json"
+SKILL_INTERFACE_SCHEMA_VERSION = "1.2"
+SKILL_INTERFACE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.2.json"
 SKILL_RUNTIME_DEPENDENCY = {
     "extension_id": "guru-team",
     "api_version": "1.0",
@@ -12317,7 +12964,7 @@ SKILL_CONTRACT_SCHEMAS = {
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.0.json",
     },
     "interface": {
-        "sha256": "42f639b5014720fa95c6150bea909ca27acc9bbc301c5ac763d20faa0610d30e",
+        "sha256": "c9ce038617d0dba0f2e16ef4e5388dbfa6268de56fbdea52a224883025802a77",
         "id": SKILL_INTERFACE_SCHEMA_ID,
     },
 }
@@ -12729,7 +13376,7 @@ def skill_extension_runtime_contract(
     skill_contracts = public_api.get("skill_contracts")
     if (
         not isinstance(skill_contracts, dict)
-        or skill_contracts.get("interface_schema_id") != "guru-team-skill-interface-1.1"
+        or skill_contracts.get("interface_schema_id") != "guru-team-skill-interface-1.2"
     ):
         errors.append(f"{label} has an incompatible Skill interface schema id")
     runtime = public_api.get("skill_runtime")
@@ -12834,7 +13481,7 @@ def validate_skill_interface(
             f"interface for {skill_id}",
         ))
     required_interface = {
-        "$schema", "schema_version", "id", "name", "description", "state", "modes",
+        "$schema", "schema_version", "id", "name", "description", "state", "judgment_mode", "modes",
         "entry_preconditions", "runtime_dependency", "ordered_stages", "artifacts", "schemas", "validators",
         "external_exits", "reentry", "tests", "platform_destinations",
     }
@@ -12859,7 +13506,11 @@ def validate_skill_interface(
             errors.append(f"SKILL.md identity for {skill_id} does not match the stable skill id")
         if skill_frontmatter.get("description") != interface.get("description"):
             errors.append(f"SKILL.md description for {skill_id} does not match interface")
-    if interface.get("ordered_stages") != SKILL_INTERFACE_STAGES:
+    judgment_mode = interface.get("judgment_mode")
+    expected_stages = SKILL_INTERFACE_STAGE_PROFILES.get(judgment_mode)
+    if expected_stages is None:
+        errors.append(f"interface for {skill_id} has invalid judgment_mode")
+    elif interface.get("ordered_stages") != expected_stages:
         errors.append(f"interface for {skill_id} has invalid closed-loop stage order")
 
     dependency = interface.get("runtime_dependency")
@@ -16737,6 +17388,25 @@ def build_parser() -> argparse.ArgumentParser:
     check_env.add_argument("--root")
     check_env.add_argument("--json", action="store_true")
 
+    sync_base = sub.add_parser("sync-base")
+    sync_base.add_argument("--root")
+    sync_base.add_argument("--json", action="store_true")
+    sync_base.add_argument("--mode", required=True, choices=["workflow", "standalone"])
+    sync_mode = sync_base.add_mutually_exclusive_group(required=True)
+    sync_mode.add_argument("--resolve-only", action="store_true")
+    sync_mode.add_argument("--execute", action="store_true")
+    sync_base.add_argument("--base")
+    sync_base.add_argument("--remote", default="origin")
+    sync_base.add_argument("--expected-resolution-sha256")
+
+    check_base = sub.add_parser("check-base-sync")
+    check_base.add_argument("--root")
+    check_base.add_argument("--json", action="store_true")
+    check_base.add_argument("--mode", required=True, choices=["workflow", "standalone"])
+    check_base.add_argument("--result-json")
+    check_base.add_argument("--expected-resolution-sha256")
+    check_base.add_argument("--record-skipped")
+
     version = sub.add_parser("version")
     version.add_argument("--root")
     version.add_argument("--json", action="store_true")
@@ -16786,6 +17456,11 @@ def build_parser() -> argparse.ArgumentParser:
     prepare.add_argument("--create-issue-confirmed", action="store_true", help="Create a GitHub issue only after AI/human review confirmed the proposed title/body.")
     prepare.add_argument("--issue-title", help="Reviewed issue title used with --create-issue-confirmed.")
     prepare.add_argument("--issue-body-file", help="Path to reviewed issue body used with --create-issue-confirmed.")
+    prepare.add_argument(
+        "--expected-resolution-sha256",
+        required=True,
+        help="Expected post-sync digest from the preceding base-sync validator or prepare guard.",
+    )
     prepare.add_argument("--base-branch")
     prepare.add_argument("--branch")
     prepare.add_argument("--task-slug")
@@ -17054,6 +17729,10 @@ def main() -> int:
     try:
         if args.command == "check-env":
             payload = check_env_payload(Path(args.root or os.getcwd()))
+        elif args.command == "sync-base":
+            payload = cmd_sync_base(args)
+        elif args.command == "check-base-sync":
+            payload = cmd_check_base_sync(args)
         elif args.command == "version":
             payload = cmd_version(args)
         elif args.command == "check-workspace-boundary":

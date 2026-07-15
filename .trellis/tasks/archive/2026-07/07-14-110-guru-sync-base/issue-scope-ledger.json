@@ -1,0 +1,66 @@
+{
+  "primary_issue": {
+    "number": 110,
+    "url": "https://github.com/castbox/guru-trellis/issues/110",
+    "title": "拆分 #98：实现 guru-sync-base 闭环 Skill",
+    "reason": "intake 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": [
+      "Fresh Phase 2 独立检查覆盖需求、设计、代码、测试、Docs SSOT、分发与部署影响，findings_count=0。",
+      "Round 7 独立最终放行审查绑定 HEAD ed5fa7baed955f8ba5f84119f4bc177ad170c2d7，F-001 至 F-007 均闭环，P0/P1/P2/P3 均为 0。",
+      "Runtime 292、Skill registry/package 67、canonical contract 5、Preset 37 共 401 项通过；clean throwaway、trellis update/reapply、83 managed files 与 76 assets 验证通过。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "0ff64fe392118eef099d080fed98fd103f22408b4d8ad24ce97539bced2b8cc1",
+        "verified_content_head": "ed5fa7baed955f8ba5f84119f4bc177ad170c2d7",
+        "remote_head": "ed5fa7baed955f8ba5f84119f4bc177ad170c2d7",
+        "publish_head": "ed5fa7baed955f8ba5f84119f4bc177ad170c2d7",
+        "commands_passed": true
+      }
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 110,
+      "url": "https://github.com/castbox/guru-trellis/issues/110",
+      "title": "拆分 #98：实现 guru-sync-base 闭环 Skill",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": [
+        "Fresh Phase 2 独立检查覆盖需求、设计、代码、测试、Docs SSOT、分发与部署影响，findings_count=0。",
+        "Round 7 独立最终放行审查绑定 HEAD ed5fa7baed955f8ba5f84119f4bc177ad170c2d7，F-001 至 F-007 均闭环，P0/P1/P2/P3 均为 0。",
+        "Runtime 292、Skill registry/package 67、canonical contract 5、Preset 37 共 401 项通过；clean throwaway、trellis update/reapply、83 managed files 与 76 assets 验证通过。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "0ff64fe392118eef099d080fed98fd103f22408b4d8ad24ce97539bced2b8cc1",
+          "verified_content_head": "ed5fa7baed955f8ba5f84119f4bc177ad170c2d7",
+          "remote_head": "ed5fa7baed955f8ba5f84119f4bc177ad170c2d7",
+          "publish_head": "ed5fa7baed955f8ba5f84119f4bc177ad170c2d7",
+          "commands_passed": true
+        }
+      ]
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 98,
+      "url": "https://github.com/castbox/guru-trellis/issues/98",
+      "title": "拆分 #53：变更 Intake Skills 跨 Skill 编排与并行安全集成 umbrella",
+      "reason": "#110 的 parent umbrella，只记录架构与集成上下文，本任务不关闭。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 111,
+      "url": "https://github.com/castbox/guru-trellis/issues/111",
+      "title": "拆分 #98：实现 guru-discover-change-context 闭环 Skill",
+      "reason": "#110 明示阻塞的后续独立 Skill，本任务只保留稳定 route consumer，不实现或关闭 #111。",
+      "acceptance_evidence": []
+    }
+  ]
+}

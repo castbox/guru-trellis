@@ -60,6 +60,11 @@ All Guru Team overlays should include the marker:
 
 Continue entries must:
 
+- preserve the global workflow's Phase 0 mandatory `guru-sync-base` route:
+  tool-free classification first, `synced` to `guru-discover-change-context`,
+  `skipped` to the original non-repo route, and `blocked` to a fail-closed stop;
+  platform entry text must not copy resolution/executor/validator internals;
+
 - run `python3 ./.trellis/scripts/get_context.py`
 - run `python3 ./.trellis/scripts/get_context.py --mode phase`
 - route by task status

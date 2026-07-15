@@ -4,7 +4,7 @@
   "version": "fixture",
   "public_api": {
     "skill_contracts": {
-      "interface_schema_id": "guru-team-skill-interface-1.1"
+      "interface_schema_id": "guru-team-skill-interface-1.2"
     },
     "skill_runtime": {
       "api_version": "1.0",

@@ -1,10 +1,11 @@
 {
   "$schema": "../../schemas/skill-interface.schema.json",
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "id": "guru-create-task-commit",
   "name": "guru-create-task-commit",
   "description": "Create a reviewed Trellis task work commit after Phase 2, including finding-fix and revision commits, with exact staging and fresh evidence.",
   "state": "active",
+  "judgment_mode": "semantic",
   "modes": {
     "workflow": {"routing": "global_workflow", "entry_precondition_ids": ["workspace_boundary", "task_identity", "planning_approval", "phase2_check", "issue_scope_ledger", "pre_commit_head", "git_operation_state", "dirty_snapshot", "commit_authorization"]},
     "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["workspace_boundary", "task_identity", "planning_approval", "phase2_check", "issue_scope_ledger", "pre_commit_head", "git_operation_state", "dirty_snapshot", "commit_authorization"]}

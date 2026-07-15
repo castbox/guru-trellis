@@ -28,6 +28,7 @@ PLATFORM_OVERLAY_PREFIXES = {
     "claude": (Path(".claude"),),
 }
 ALL_PLATFORMS = tuple(PLATFORM_OVERLAY_PREFIXES)
+SKILL_DESTINATION_PLATFORM_ORDER = ("shared", "codex", "claude", "cursor")
 ALWAYS_OVERLAY_PREFIXES = (Path(".agents"), Path(".trellis/agents"))
 CODEX_ONLY_SHARED_OVERLAY_PREFIXES = (Path(".agents/skills/trellis-meta"),)
 CODEX_DISPATCH_HEADER = """#-------------------------------------------------------------------------------
@@ -54,6 +55,8 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/check-workspace-boundary.sh"),
     Path("scripts/bash/check-skill-packages.sh"),
     Path("scripts/bash/run-skill-command.sh"),
+    Path("scripts/bash/sync-base.sh"),
+    Path("scripts/bash/check-base-sync.sh"),
     Path("scripts/bash/resolve-human-artifacts.sh"),
     Path("scripts/bash/verify-marketplace.sh"),
     Path("scripts/bash/record-planning-approval.sh"),
@@ -687,14 +690,22 @@ def install_skill_packages(
     for source, relative in source_files:
         desired_files.append((source, installed_root / relative))
 
-    destination_roots = {"shared": Path(".agents/skills")}
-    destination_roots.update({name: PLATFORM_OVERLAY_PREFIXES[name][0] / "skills" for name in platforms})
+    destination_roots = [
+        (
+            platform,
+            Path(".agents/skills")
+            if platform == "shared"
+            else PLATFORM_OVERLAY_PREFIXES[platform][0] / "skills",
+        )
+        for platform in SKILL_DESTINATION_PLATFORM_ORDER
+        if platform == "shared" or platform in platforms
+    ]
     for entry in active_entries:
         skill_id = str(entry["id"])
         supported = set(entry.get("supported_platforms") or [])
         package_root = canonical_root / str(entry["package"])
         package_files = skill_package_source_files(package_root)
-        for platform, target_root in destination_roots.items():
+        for platform, target_root in destination_roots:
             if platform not in supported:
                 continue
             for source in package_files:
@@ -1191,6 +1202,8 @@ def install_assets(
         dst / "scripts/bash/check-workspace-boundary.sh",
         dst / "scripts/bash/check-skill-packages.sh",
         dst / "scripts/bash/run-skill-command.sh",
+        dst / "scripts/bash/sync-base.sh",
+        dst / "scripts/bash/check-base-sync.sh",
         dst / "scripts/bash/resolve-human-artifacts.sh",
         dst / "scripts/bash/verify-marketplace.sh",
         dst / "scripts/bash/record-planning-approval.sh",

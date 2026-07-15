@@ -1,0 +1,11 @@
+{"file":".trellis/spec/workflow/index.md","reason":"Workflow 资产索引、pre-development checklist 与验证入口"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"Phase 0 顺序、AI gate、typed route 与 task lifecycle 主合同"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Public closed-loop Skill registry、interface、runtime dependency 与分发合同"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Deterministic Git executor/validator 与 prepare-task 边界"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"Base sync result、task-start context 与 evidence freshness 数据合同"}
+{"file":".trellis/spec/preset/index.md","reason":"Preset 层索引与安装验证入口"}
+{"file":".trellis/spec/preset/installer.md","reason":"Canonical package、managed hash、platform distribution 与 update/reapply 合同"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"Dogfood overlay 同步、drift 与 sidecar 门禁"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"三份 README 的 public API、version 与 upgrade 文案要求"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"复用既有 base freshness core，避免 planner/executor/standalone 并行实现"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Workflow、package、runtime、preset、docs 与 tests 跨层一致性"}

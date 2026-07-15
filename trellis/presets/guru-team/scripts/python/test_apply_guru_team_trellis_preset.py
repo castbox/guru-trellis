@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import subprocess
 import tempfile
 import importlib.util
 import types
@@ -275,6 +276,89 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
     def install(self, platforms: set[str] | None = None, all_platforms: bool = False) -> dict[str, object]:
         return preset.install_assets(self.workflow_src, self.install_dst, self.repo, platforms, all_platforms=all_platforms)
 
+    def test_skill_manifest_file_order_is_stable_across_hash_seeds_and_reapply(self) -> None:
+        module_path = Path(preset.__file__).resolve()
+        guru_root = preset.guru_root_from_script()
+        script = """
+import importlib.util
+import json
+import sys
+from pathlib import Path
+
+module_path = Path(sys.argv[1])
+repo = Path(sys.argv[2])
+guru_root = Path(sys.argv[3])
+spec = importlib.util.spec_from_file_location("guru_preset_seeded", module_path)
+module = importlib.util.module_from_spec(spec)
+assert spec.loader is not None
+spec.loader.exec_module(module)
+repo.mkdir(parents=True, exist_ok=True)
+dst = repo / ".trellis/guru-team"
+manifest_path = repo / "previous-extension.json"
+previous = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else None
+result = module.install_skill_packages(
+    repo,
+    guru_root,
+    dst,
+    {"claude", "codex", "cursor"},
+    previous,
+)
+manifest_path.write_text(
+    json.dumps({"skill_packages": result}, ensure_ascii=False, indent=2) + "\\n",
+    encoding="utf-8",
+)
+sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(",", ":")))
+"""
+
+        outputs: list[tuple[bytes, bytes]] = []
+        for first_seed, second_seed in (("1", "2"), ("777", "999")):
+            repo = self.repo / f"seed-{first_seed}"
+            seeded: list[bytes] = []
+            for seed in (first_seed, second_seed):
+                process = subprocess.run(
+                    [sys.executable, "-c", script, str(module_path), str(repo), str(guru_root)],
+                    check=True,
+                    capture_output=True,
+                    env={**os.environ, "PYTHONHASHSEED": seed},
+                )
+                seeded.append(process.stdout)
+            outputs.append((seeded[0], seeded[1]))
+
+        self.assertEqual(outputs[0][0], outputs[1][0])
+        self.assertEqual(outputs[0][1], outputs[1][1])
+        fresh_paths = [record["path"] for record in json.loads(outputs[0][0])]
+        reapplied_paths = [record["path"] for record in json.loads(outputs[0][1])]
+        self.assertEqual(fresh_paths, reapplied_paths)
+        group_order: list[str] = []
+        for path in fresh_paths:
+            group = next(
+                label
+                for prefix, label in (
+                    (".trellis/guru-team/skills/", "installed"),
+                    (".agents/skills/", "shared"),
+                    (".codex/skills/", "codex"),
+                    (".claude/skills/", "claude"),
+                    (".cursor/skills/", "cursor"),
+                )
+                if path.startswith(prefix)
+            )
+            if not group_order or group_order[-1] != group:
+                group_order.append(group)
+        self.assertEqual(
+            group_order,
+            [
+                "installed",
+                "shared",
+                "codex",
+                "claude",
+                "cursor",
+                "shared",
+                "codex",
+                "claude",
+                "cursor",
+            ],
+        )
+
     def test_default_platforms_install_codex_cursor_and_shared_overlays(self) -> None:
         payload = self.install()
 
@@ -282,6 +366,8 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertFalse(payload["all_platforms"])
         self.assertIn(Path("scripts/bash/check-workspace-boundary.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/run-skill-command.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/sync-base.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-base-sync.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/resolve-human-artifacts.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/record-subagent-liveness-event.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-subagent-liveness.sh"), preset.MANAGED_ASSET_PATHS)
@@ -292,6 +378,8 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh").is_file())
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh", os.X_OK))
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/sync-base.sh", os.X_OK))
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-base-sync.sh", os.X_OK))
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh", os.X_OK))
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh").is_file())
@@ -491,7 +579,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 74)
+        self.assertEqual(len(managed_assets), 76)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -669,11 +757,15 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         ).read_text(encoding="utf-8")
 
         command_block = re.search(
-            r"Load only the fixed Guru Team no-workspace context set:\n\n```bash\n(.*?)\n```",
+            r"load the fixed Guru Team no-workspace context set:\n\n```bash\n(.*?)\n```",
             skill,
             re.DOTALL,
         )
         self.assertIsNotNone(command_block)
+        self.assertLess(
+            skill.index("mandatory invoke `guru-sync-base`"),
+            command_block.start(),
+        )
         commands = [line.strip() for line in command_block.group(1).splitlines() if line.strip()]
         self.assertEqual(commands, [
             "python3 ./.trellis/scripts/get_context.py --mode phase",
@@ -976,7 +1068,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.6")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.7")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         self.assertIn("agent-assignment.json", public_api["artifact_contracts"])
@@ -986,6 +1078,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("check-commit-messages", public_api["companion_scripts"])
         self.assertIn("create-task-commit", public_api["companion_scripts"])
         self.assertIn("run-skill-command", public_api["companion_scripts"])
+        self.assertIn("sync-base", public_api["companion_scripts"])
+        self.assertIn("check-base-sync", public_api["companion_scripts"])
         self.assertEqual(
             public_api["skill_runtime"],
             {
@@ -995,8 +1089,15 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         self.assertIn("task-commit-plans/*.json", public_api["artifact_contracts"])
-        self.assertEqual(public_api["skill_contracts"]["active_skill_ids"], ["guru-create-task-commit"])
-        self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.1")
+        self.assertEqual(
+            public_api["skill_contracts"]["active_skill_ids"],
+            ["guru-create-task-commit", "guru-sync-base"],
+        )
+        self.assertIn(
+            "guru-base-sync-result-1.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.2")
         self.assertEqual(public_api["skill_contracts"]["reserved_skill_ids"], ["guru-create-work-commit"])
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("backfill-finish-summary", public_api["companion_scripts"])

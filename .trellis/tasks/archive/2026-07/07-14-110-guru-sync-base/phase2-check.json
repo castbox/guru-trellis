@@ -1,0 +1,258 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-15T05:48:02Z",
+  "task_dir": ".trellis/tasks/07-14-110-guru-sync-base",
+  "base_branch": "main",
+  "head": "2def8b748dae986e6f9e4d2912c2f8e6d617917a",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/guru-create-task-commit/interface.json",
+    ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+    ".agents/skills/guru-sync-base/SKILL.md",
+    ".agents/skills/guru-sync-base/examples/base-sync-result.json",
+    ".agents/skills/guru-sync-base/interface.json",
+    ".agents/skills/guru-sync-base/references/contract.md",
+    ".agents/skills/guru-sync-base/schemas/base-sync-result.schema.json",
+    ".agents/skills/guru-sync-base/tests/test_contract.py",
+    ".agents/skills/trellis-start/SKILL.md",
+    ".claude/skills/guru-create-task-commit/interface.json",
+    ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+    ".claude/skills/guru-sync-base/SKILL.md",
+    ".claude/skills/guru-sync-base/examples/base-sync-result.json",
+    ".claude/skills/guru-sync-base/interface.json",
+    ".claude/skills/guru-sync-base/references/contract.md",
+    ".claude/skills/guru-sync-base/schemas/base-sync-result.schema.json",
+    ".claude/skills/guru-sync-base/tests/test_contract.py",
+    ".codex/prompts/trellis-start.md",
+    ".codex/skills/guru-create-task-commit/interface.json",
+    ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+    ".codex/skills/guru-sync-base/SKILL.md",
+    ".codex/skills/guru-sync-base/examples/base-sync-result.json",
+    ".codex/skills/guru-sync-base/interface.json",
+    ".codex/skills/guru-sync-base/references/contract.md",
+    ".codex/skills/guru-sync-base/schemas/base-sync-result.schema.json",
+    ".codex/skills/guru-sync-base/tests/test_contract.py",
+    ".codex/skills/trellis-start/SKILL.md",
+    ".cursor/skills/guru-create-task-commit/interface.json",
+    ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+    ".cursor/skills/guru-sync-base/SKILL.md",
+    ".cursor/skills/guru-sync-base/examples/base-sync-result.json",
+    ".cursor/skills/guru-sync-base/interface.json",
+    ".cursor/skills/guru-sync-base/references/contract.md",
+    ".cursor/skills/guru-sync-base/schemas/base-sync-result.schema.json",
+    ".cursor/skills/guru-sync-base/tests/test_contract.py",
+    ".trellis/guru-team/config-template.yml",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+    ".trellis/guru-team/skills/packages/guru-sync-base/SKILL.md",
+    ".trellis/guru-team/skills/packages/guru-sync-base/examples/base-sync-result.json",
+    ".trellis/guru-team/skills/packages/guru-sync-base/interface.json",
+    ".trellis/guru-team/skills/packages/guru-sync-base/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-sync-base/schemas/base-sync-result.schema.json",
+    ".trellis/guru-team/skills/packages/guru-sync-base/tests/test_contract.py",
+    ".trellis/guru-team/skills/schemas/skill-interface.schema.json",
+    ".trellis/spec/docs/public-docs.md",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/tasks/07-14-110-guru-sync-base/task-commit-plans/003.json",
+    ".trellis/workflow.md",
+    "AGENTS.md",
+    "README.md",
+    "docs/requirements/README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/guru-team-extension.json",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
+    "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
+    "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+    "trellis/skills/guru-team/packages/guru-sync-base/SKILL.md",
+    "trellis/skills/guru-team/packages/guru-sync-base/examples/base-sync-result.json",
+    "trellis/skills/guru-team/packages/guru-sync-base/interface.json",
+    "trellis/skills/guru-team/packages/guru-sync-base/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-sync-base/schemas/base-sync-result.schema.json",
+    "trellis/skills/guru-team/packages/guru-sync-base/tests/test_contract.py",
+    "trellis/skills/guru-team/schemas/skill-interface.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/extension.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/packages/guru-example-action/interface.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface.schema.json",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/config-template.yml",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-14-110-guru-sync-base/review-gate.json",
+    ".trellis/tasks/07-14-110-guru-sync-base/review.md",
+    ".trellis/tasks/07-14-110-guru-sync-base/reviews/001-final-review.md",
+    ".trellis/tasks/07-14-110-guru-sync-base/reviews/002-closure-review.md",
+    ".trellis/tasks/07-14-110-guru-sync-base/reviews/003-final-review.md",
+    ".trellis/tasks/07-14-110-guru-sync-base/reviews/004-closure-review.md",
+    ".trellis/tasks/07-14-110-guru-sync-base/reviews/005-final-review.md"
+  ],
+  "checker": "/root/trellis_check_110_f004",
+  "check_summary": "独立 Phase 2 已覆盖 #110 完整 origin/main 到 HEAD 加当前 working tree、F-004 pre/post rolling digest、真实 behind fast-forward 到 validate/prepare、F-001/F-002/F-003 回归、ssot_first Docs SSOT、四平台 package、83 managed files、throwaway/update/reapply 与部署影响；修正两项机械文案/测试覆盖后 findings_count=0，可进入新的 task commit。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-14-110-guru-sync-base/prd.md",
+      "sha256": "106ed604f9584795003db3c4449a9d370bacd9d5c06805d60dffba1173f1e20a",
+      "size_bytes": 12861,
+      "modified_at": "2026-07-15T04:44:43.510646+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-14-110-guru-sync-base/design.md",
+      "sha256": "a46aff7283ae0ee5810ad1388bb7b60bdbe407fa50a1afb56f6fa57c6363e20f",
+      "size_bytes": 18182,
+      "modified_at": "2026-07-15T04:44:43.511196+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-14-110-guru-sync-base/implement.md",
+      "sha256": "44b9311a20b0f2868ca744ca06ef68ab7d792098dd0f96fa244c2d768d2a2b59",
+      "size_bytes": 10362,
+      "modified_at": "2026-07-15T04:44:43.511538+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-14-110-guru-sync-base/planning-approval.json",
+      "sha256": "bfe1c4f03b0765170f08351c20197f6e9f9f4910794b2ad6540e7acee73b0cce",
+      "size_bytes": 10122,
+      "modified_at": "2026-07-15T04:46:28.178795+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-14-110-guru-sync-base/issue-scope-ledger.json",
+      "sha256": "06e90eb90610c7fb53ac46acc333f068663d7152188abd3548a0bedc8541e6ae",
+      "size_bytes": 1325,
+      "modified_at": "2026-07-14T09:50:25.679954+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-14-110-guru-sync-base/agent-assignment.json",
+      "sha256": "60b36d20946d1f6795bf2bc214866a297998d4a9348c4419b71db0ae2cfe9d64",
+      "size_bytes": 282051,
+      "modified_at": "2026-07-15T05:47:01.767671+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/index.md",
+      "sha256": "be474d03fad4a4855af27bbd4a551a2cb90d827281258151cec60465e523a69e",
+      "size_bytes": 3375,
+      "modified_at": "2026-07-14T10:12:41.585637+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "78d0e3af7ac5f4533c1a6b96e7d501a6da97d4561f8a7ca86670c4db1649524e",
+      "size_bytes": 43823,
+      "modified_at": "2026-07-15T04:57:46.382771+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "584dfd47c55d0dee3c2d7f5685f2035ef894478e553376e9b428413bb056f8cd",
+      "size_bytes": 14388,
+      "modified_at": "2026-07-15T04:57:46.384034+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "de2f7134481dac49f47ec07417a0902eb033f1c1197983e24f1833249b301f7d",
+      "size_bytes": 52109,
+      "modified_at": "2026-07-15T04:57:46.383221+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "eb1b7b9bedb657c3d0167d69f3c498a1c743386dfd3bbc65e12b6c33c132fe05",
+      "size_bytes": 68367,
+      "modified_at": "2026-07-15T04:57:46.383674+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "26657a65a95654bb2d466748eef879c598404c60f193de1c7a566f7e902a61a8",
+      "size_bytes": 14361,
+      "modified_at": "2026-07-14T09:20:27.521386+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "3901e62b1d0b283d9b7b376d96398ef08b05a2e187baaae41290bb3085fc3da5",
+      "size_bytes": 16502,
+      "modified_at": "2026-07-15T04:57:46.384765+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "30f70e2519a40ee5e8e093ffb4306cf3b8af0fbf8dac26f5dbd89fe5141b63c3",
+      "size_bytes": 17365,
+      "modified_at": "2026-07-15T02:43:14.562482+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "51c4e5337677ae240d91e4909e736b3acc3a815fcf6076785c8024bd6ebfdc46",
+      "size_bytes": 7187,
+      "modified_at": "2026-07-15T04:57:46.385202+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/code-reuse-thinking-guide.md",
+      "sha256": "897b890f3defc06d64b4e717ab958538ffe366df98c321413c44581360700915",
+      "size_bytes": 8099,
+      "modified_at": "2026-07-14T09:20:27.519531+00:00"
+    },
+    {
+      "path": ".trellis/spec/guides/cross-layer-thinking-guide.md",
+      "sha256": "f518e6d0f99cb25a0cdcd982faec437155187bca22e77fedf5ee4431de6740c5",
+      "size_bytes": 16429,
+      "modified_at": "2026-07-14T09:20:27.519717+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "292 passed"
+    },
+    {
+      "command": "python3 -m unittest trellis.skills.guru-team.tests.test_skill_packages",
+      "result": "67 passed"
+    },
+    {
+      "command": "python3 trellis/skills/guru-team/packages/guru-sync-base/tests/test_contract.py",
+      "result": "5 passed"
+    },
+    {
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "37 passed；合计 401 tests"
+    },
+    {
+      "command": "source/installed skill validation and dogfood drift",
+      "result": "83 managed files，0 conflict/removal/sidecar，canonical/installed/platform/dogfood 一致"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "result": "fresh install、preview/switch、behind fast-forward、already-equal、rolling digest、trellis update/reapply 与 zero .new/.bak 通过"
+    },
+    {
+      "command": "JSON parse, bash -n, Python compile, task validate, git diff --check",
+      "result": "JSON 43、Bash 17、Python 22，全部通过"
+    },
+    {
+      "command": "workspace/source/sensitive-pattern/runtime-residue/deployment review",
+      "result": "source checkout 干净，无 credential、本机 durable path 或 base-sync runtime residue；无 CI/CD/容器/K8s/DB migration/Makefile 变更需求"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

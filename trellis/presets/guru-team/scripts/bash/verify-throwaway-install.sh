@@ -233,6 +233,12 @@ apply_local_workflow_sample() {
 mkdir "$TARGET"
 git -C "$TARGET" init -q
 git -C "$TARGET" remote add origin https://github.com/castbox/guru-trellis-throwaway.git
+git -C "$TARGET" config user.name "Guru Team Throwaway Bootstrap"
+git -C "$TARGET" config user.email "guru-team-throwaway-bootstrap@example.invalid"
+git -C "$TARGET" branch -M main
+printf '%s\n' 'throwaway repository baseline' >"$TARGET/.throwaway-baseline"
+git -C "$TARGET" add .throwaway-baseline
+git -C "$TARGET" commit -q -m "chore: initialize throwaway repository"
 
 (
   cd "$TARGET"
@@ -281,6 +287,7 @@ grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 grep -q 'Guru Team implementation tasks require `prd.md`, `design.md`, and `implement.md`' "$TARGET/.trellis/workflow.md"
 grep -q "record-subagent-liveness-event.sh" "$TARGET/.trellis/workflow.md"
 grep -q "check-subagent-liveness.sh" "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-invoke: {"skill":"guru-sync-base","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q "dispatch_mode: sub-agent" "$TARGET/.trellis/config.yaml"
 fail_if_english_language_rule ".trellis/spec" "$TARGET/.trellis/spec"
 WORKSPACE_TREE_DIGEST_AFTER="$(workspace_tree_digest "$TARGET/.trellis/workspace")"
@@ -296,6 +303,8 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/version.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-command.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/sync-base.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-base-sync.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-subagent-liveness.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-commit-messages.sh"
@@ -317,10 +326,10 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.6"
+assert extension["version"] == "0.6.5-guru.7"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 69
+assert len(assets) == 71
 assert all((root / path).is_file() for path in assets)
 for artifact in (
     "agent-assignment.json", "pr-body.md", "closeout-plan.json",
@@ -330,13 +339,15 @@ for artifact in (
 for command in (
     "resolve-human-artifacts", "record-subagent-liveness-event",
     "check-subagent-liveness", "check-commit-messages",
-    "create-task-commit", "run-skill-command", "format-merge-commit",
+    "create-task-commit", "run-skill-command", "sync-base", "check-base-sync",
+    "format-merge-commit",
     "backfill-finish-summary", "check-skill-packages",
 ):
     assert command in api["companion_scripts"]
 assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"
-assert api["skill_contracts"]["active_skill_ids"] == ["guru-create-task-commit"]
-assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.1"
+assert api["skill_contracts"]["active_skill_ids"] == ["guru-create-task-commit", "guru-sync-base"]
+assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.2"
 assert api["skill_runtime"] == {
     "api_version": "1.0",
     "dispatcher": "run-skill-command",
@@ -344,10 +355,10 @@ assert api["skill_runtime"] == {
 }
 assert skills["status"] == "ok"
 assert skills["reserved_ids"] == ["guru-create-work-commit"]
-assert skills["active_ids"] == ["guru-create-task-commit"]
+assert skills["active_ids"] == ["guru-create-task-commit", "guru-sync-base"]
 assert skills["selected_platforms"] == ["codex", "cursor"]
 assert skills["sidecars"] == []
-assert len(skills["files"]) == 35
+assert len(skills["files"]) == 67
 PY
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed >/dev/null
@@ -362,6 +373,12 @@ test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-comm
 test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 test -x "$TARGET/.cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 test ! -e "$TARGET/.claude/skills/guru-create-task-commit"
+test -f "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/SKILL.md"
+test -x "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh"
+test -x "$TARGET/.agents/skills/guru-sync-base/scripts/check-base-sync.sh"
+test -x "$TARGET/.codex/skills/guru-sync-base/scripts/sync-base.sh"
+test -x "$TARGET/.cursor/skills/guru-sync-base/scripts/sync-base.sh"
+test ! -e "$TARGET/.claude/skills/guru-sync-base"
 test ! -e "$TARGET/.agents/skills/guru-example-action"
 test ! -e "$TARGET/.codex/skills/guru-example-action"
 test ! -e "$TARGET/.cursor/skills/guru-example-action"
@@ -523,6 +540,156 @@ git -C "$TARGET" config user.email "installed-task-commit@example.invalid"
 git -C "$TARGET" branch -M main
 git -C "$TARGET" add -A
 git -C "$TARGET" commit -q -m "chore: install Guru Team throwaway baseline"
+SYNC_REMOTE="$WORK_DIR/base-sync-remote.git"
+git init -q --bare "$SYNC_REMOTE"
+git -C "$SYNC_REMOTE" symbolic-ref HEAD refs/heads/main
+git -C "$TARGET" remote set-url origin "$SYNC_REMOTE"
+SYNC_CONFIG_BACKUP="$WORK_DIR/base-sync-config.yml"
+cp "$TARGET/.trellis/guru-team/config.yml" "$SYNC_CONFIG_BACKUP"
+python3 - "$TARGET/.trellis/guru-team/config.yml" <<'PY'
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+lines = path.read_text(encoding="utf-8").splitlines()
+updated = False
+for index, line in enumerate(lines):
+    if line.startswith("github_repo:"):
+        lines[index] = 'github_repo: "castbox/guru-trellis-throwaway"'
+        updated = True
+        break
+if not updated:
+    raise SystemExit("throwaway Guru Team config is missing github_repo")
+path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+PY
+git -C "$TARGET" add .trellis/guru-team/config.yml
+git -C "$TARGET" commit -q -m "chore: configure throwaway base remote"
+git -C "$TARGET" push -q origin main
+SYNC_RESOLUTION_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+    --root "$TARGET" \
+    --mode standalone \
+    --resolve-only \
+    --base main \
+    --remote origin
+)"
+SYNC_RESOLUTION_DIGEST="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["resolution_sha256"])' <<<"$SYNC_RESOLUTION_JSON")"
+SYNC_RESULT_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+    --root "$TARGET" \
+    --mode standalone \
+    --execute \
+    --expected-resolution-sha256 "$SYNC_RESOLUTION_DIGEST" \
+    --base main \
+    --remote origin
+)"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True; assert payload["git"]["fast_forwarded"] is False; assert payload["resolution"]["resolution_sha256"] == payload["post_sync_resolution_sha256"]; assert payload["decision_checkout"]["head_after"] == payload["git"]["local_head_after"] == payload["git"]["remote_head_after"]' <<<"$SYNC_RESULT_JSON"
+SYNC_VALIDATION_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/check-base-sync.sh" \
+    --root "$TARGET" \
+    --mode standalone \
+    --result-json "$SYNC_RESULT_JSON" \
+    --expected-resolution-sha256 "$SYNC_RESOLUTION_DIGEST"
+)"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "validated"; assert payload["selected_base"] == "main"; assert payload["post_sync_resolution_sha256"] == sys.argv[1]' "$SYNC_RESOLUTION_DIGEST" <<<"$SYNC_VALIDATION_JSON"
+
+PHASE0_FAKE_BIN="$WORK_DIR/phase0-fake-bin"
+mkdir -p "$PHASE0_FAKE_BIN"
+cat >"$PHASE0_FAKE_BIN/gh" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "auth" && "${2:-}" == "status" ]]; then
+  exit 0
+fi
+if [[ "${1:-}" == "issue" && "${2:-}" == "view" ]]; then
+  printf '%s\n' '{"number":110,"title":"Verify Phase 0 stdout base facts","url":"https://github.com/castbox/guru-trellis-throwaway/issues/110","body":"Exercise installed workflow base synchronization across planner and mutation guards.","comments":[],"state":"OPEN"}'
+  exit 0
+fi
+printf 'unexpected fake gh invocation: %s\n' "$*" >&2
+exit 2
+SH
+chmod +x "$PHASE0_FAKE_BIN/gh"
+
+PHASE0_RESOLUTION_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+    --root "$TARGET" \
+    --mode workflow \
+    --resolve-only \
+    --base main \
+    --remote origin
+)"
+PHASE0_RESOLUTION_DIGEST="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["resolution_sha256"])' <<<"$PHASE0_RESOLUTION_JSON")"
+SYNC_UPSTREAM="$WORK_DIR/base-sync-upstream"
+git clone -q "$SYNC_REMOTE" "$SYNC_UPSTREAM"
+git -C "$SYNC_UPSTREAM" config user.name "Throwaway Base Upstream"
+git -C "$SYNC_UPSTREAM" config user.email "throwaway-base-upstream@example.invalid"
+printf '%s\n' "remote advanced after workflow resolution" >"$SYNC_UPSTREAM/phase0-behind.txt"
+git -C "$SYNC_UPSTREAM" add phase0-behind.txt
+git -C "$SYNC_UPSTREAM" commit -q -m "test: advance throwaway base after resolution"
+git -C "$SYNC_UPSTREAM" push -q origin main
+PHASE0_RESULT_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+    --root "$TARGET" \
+    --mode workflow \
+    --execute \
+    --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST" \
+    --base main \
+    --remote origin
+)"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True; assert payload["git"]["fast_forwarded"] is True; assert payload["resolution"]["resolution_sha256"] == sys.argv[1]; assert payload["post_sync_resolution_sha256"] != sys.argv[1]' "$PHASE0_RESOLUTION_DIGEST" <<<"$PHASE0_RESULT_JSON"
+PHASE0_VALIDATION_JSON="$(
+  "$TARGET/.agents/skills/guru-sync-base/scripts/check-base-sync.sh" \
+    --root "$TARGET" \
+    --mode workflow \
+    --result-json "$PHASE0_RESULT_JSON" \
+    --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST"
+)"
+PHASE0_POST_DIGEST="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "validated"; assert payload["mode"] == "workflow"; print(payload["post_sync_resolution_sha256"])' <<<"$PHASE0_VALIDATION_JSON")"
+if [[ "$PHASE0_POST_DIGEST" == "$PHASE0_RESOLUTION_DIGEST" ]]; then
+  echo "Fast-forwarded workflow validation did not return a new post-sync digest" >&2
+  exit 2
+fi
+
+PHASE0_BRANCH="chore/110-phase0-stdout-facts"
+PHASE0_ISSUE_URL="https://github.com/castbox/guru-trellis-throwaway/issues/110"
+PHASE0_PLANNER_JSON="$(
+  PATH="$PHASE0_FAKE_BIN:$PATH" \
+  "$TARGET/.trellis/guru-team/scripts/bash/prepare-task.sh" \
+    --root "$TARGET" \
+    --json \
+    --expected-resolution-sha256 "$PHASE0_POST_DIGEST" \
+    --base-branch main \
+    --branch "$PHASE0_BRANCH" \
+    --short-name "110-phase0-stdout-facts" \
+    --workspace-slug "110-phase0-stdout-facts" \
+    --task-slug "110-phase0-stdout-facts" \
+    --assignee throwaway \
+    "$PHASE0_ISSUE_URL"
+)"
+PHASE0_PLANNER_POST_DIGEST="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); freshness = payload["preflight"]["base_freshness"]; assert payload["source_issue"]["number"] == 110; assert payload["workspace_ready"] is False; assert freshness["reviewed_resolution_sha256"] == sys.argv[1]; assert freshness["three_way_equal"] is True; print(freshness["post_sync_resolution_sha256"])' "$PHASE0_POST_DIGEST" <<<"$PHASE0_PLANNER_JSON")"
+
+PHASE0_EXECUTOR_JSON="$(
+  PATH="$PHASE0_FAKE_BIN:$PATH" \
+  "$TARGET/.trellis/guru-team/scripts/bash/prepare-task.sh" \
+    --root "$TARGET" \
+    --json \
+    --expected-resolution-sha256 "$PHASE0_PLANNER_POST_DIGEST" \
+    --base-branch main \
+    --branch "$PHASE0_BRANCH" \
+    --short-name "110-phase0-stdout-facts" \
+    --workspace-slug "110-phase0-stdout-facts" \
+    --task-slug "110-phase0-stdout-facts" \
+    --assignee throwaway \
+    --create-worktree \
+    "$PHASE0_ISSUE_URL"
+)"
+PHASE0_WORKTREE="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["workspace_ready"] is True; assert payload["preflight"]["base_freshness"]["reviewed_resolution_sha256"] == sys.argv[1]; print(payload["workspace_path"])' "$PHASE0_PLANNER_POST_DIGEST" <<<"$PHASE0_EXECUTOR_JSON")"
+git -C "$TARGET" worktree remove --force "$PHASE0_WORKTREE"
+git -C "$TARGET" branch -D "$PHASE0_BRANCH" >/dev/null
+cp "$SYNC_CONFIG_BACKUP" "$TARGET/.trellis/guru-team/config.yml"
+git -C "$TARGET" add .trellis/guru-team/config.yml
+git -C "$TARGET" commit -q -m "chore: restore throwaway preset config"
+git -C "$TARGET" push -q origin main
 BASELINE_HEAD="$(git -C "$TARGET" rev-parse HEAD)"
 TASK_BRANCH="feat/122-installed-task-commit"
 TASK_REL=".trellis/tasks/07-13-122-installed-task-commit"
@@ -747,12 +914,18 @@ test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/run-skill-command.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/sync-base.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-base-sync.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/create-task-commit.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md"
+test -f "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/SKILL.md"
 test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" --help >/dev/null
 test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 test -x "$TARGET/.cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+test -x "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh"
+test -x "$TARGET/.codex/skills/guru-sync-base/scripts/sync-base.sh"
+test -x "$TARGET/.cursor/skills/guru-sync-base/scripts/sync-base.sh"
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed >/dev/null
 "$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"

@@ -1,0 +1,142 @@
+{
+  "$schema": "../../schemas/skill-interface.schema.json",
+  "schema_version": "1.2",
+  "id": "guru-sync-base",
+  "name": "guru-sync-base",
+  "description": "Resolve, safely synchronize, and deterministically validate the selected Git base before Guru Team reads repository task context or starts intake side effects.",
+  "state": "active",
+  "judgment_mode": "deterministic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "decision_checkout",
+        "selected_base_resolution",
+        "clean_checkout",
+        "result_facts"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "decision_checkout",
+        "selected_base_resolution",
+        "clean_checkout",
+        "result_facts"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed extension manifest, dispatcher, managed package inventory and runtime commands",
+      "binding": "complete compatible Guru Team preset runtime",
+      "freshness": "validated by run-skill-command before each command"
+    },
+    {
+      "id": "decision_checkout",
+      "evidence": "Git toplevel, current branch and HEAD",
+      "binding": "the repository and checkout whose base freshness gates this invocation",
+      "freshness": "unchanged from resolution through execution"
+    },
+    {
+      "id": "selected_base_resolution",
+      "evidence": "canonical resolve-only stdout JSON facts, pre-sync resolution_sha256 and post_sync_resolution_sha256",
+      "binding": "explicit, scalar config, ordered existing candidate or remote-default resolution inputs reused by sync-base and prepare-task",
+      "freshness": "pre-sync digest match before fetch; each prepare guard reruns immediately before each GitHub/worktree/task mutation and returns the post-sync digest consumed by the next boundary"
+    },
+    {
+      "id": "clean_checkout",
+      "evidence": "NUL-safe Git status before and after synchronization",
+      "binding": "decision checkout has no tracked, untracked or staged changes",
+      "freshness": "checked before fetch, before fast-forward and after synchronization"
+    },
+    {
+      "id": "result_facts",
+      "evidence": "guru-base-sync-result-1.0 stdout JSON, pre/post resolution digests, facts_sha256 and live Git facts",
+      "binding": "decision checkout, local base and remote-tracking base identity",
+      "freshness": "objective validator matches current clean Git state"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "base_sync_result_example",
+      "path": "examples/base-sync-result.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "base_sync_result_schema",
+      "path": "schemas/base-sync-result.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "sync_executor",
+      "command": "scripts/sync-base.sh",
+      "runtime_command": "sync-base",
+      "objective_scope": "strict four-level resolution, pre-sync digest binding, explicit refspec fetch, selected-checkout ff-only execution, post-sync resolution generation and three-way equality facts"
+    },
+    {
+      "id": "result_validator",
+      "command": "scripts/check-base-sync.sh",
+      "runtime_command": "check-base-sync",
+      "objective_scope": "Draft 2020-12 schema, pre/post resolution digests, facts digest, selected refs, clean checkout and live decision/local/remote HEAD equality"
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "synced",
+      "evidence": "validator-passed fresh stdout result facts carrying the post-sync resolution digest",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-discover-change-context"
+      }
+    },
+    {
+      "id": "skipped",
+      "evidence": "caller-classified non-repo route plus validated stdout-only skipped recorder facts",
+      "consumer": {
+        "kind": "workflow",
+        "id": "original-request-route"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "resolution, Git or objective validation failure",
+      "consumer": {
+        "kind": "stop",
+        "id": "base-sync-blocked"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "invocation mode, route id, repository identity, decision checkout, resolution source/base/remote/candidates, pre-sync resolution_sha256 and post_sync_resolution_sha256",
+    "freshness": "each boundary consumes the preceding post-sync identity, emits the next identity, and matches clean live Git facts",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "codex",
+    "cursor",
+    "claude"
+  ]
+}

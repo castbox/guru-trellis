@@ -66,7 +66,8 @@ Before the target companion command runs, the Python dispatcher must derive the
 repository root from its audited installed location and component-wise `lstat`
 the dispatcher, package root, package interface, installed extension manifest,
 installed package inventory, and selected discovery copy. It must then validate
-interface schema 1.1, `runtime_dependency`, extension/runtime API identity,
+interface schema 1.2, its exact `semantic` or `deterministic` stage profile,
+`runtime_dependency`, extension/runtime API identity,
 dispatcher identity, distribution/portability, installed package drift, the
 fixed validator id, and its declared `runtime_command`. The command must be a
 published extension `companion_scripts` id and map to the managed executable
@@ -81,6 +82,70 @@ validation, and retry. There is no legacy-command fallback. Runtime compatibilit
 is an objective precondition only and never becomes an AI Review Gate pass.
 
 ## GitHub and Git Operations
+
+### Shared Base Resolution And Sync
+
+`sync-base` is the only deterministic owner of selected-base resolution and
+safe refresh. The fixed precedence is explicit `--base`, non-empty scalar
+`base_branch`, the first existing exact local or remote-tracking ref in
+`base_branch_candidates` order (default `dev`, `develop`, `main`, `master`), then
+remote default from `git ls-remote --symref <remote> HEAD` when no candidate
+exists. Multiple existing candidates are ordered, not ambiguous. Validate every
+candidate with `git check-ref-format --branch`. Remote-default failure blocks.
+Never fall back to the current branch. Evaluate and validate sources in
+precedence order: once a higher-priority explicit or scalar source is selected, malformed
+lower-priority scalar or candidate input must not reject that selection.
+Candidate validation still fails closed before config-candidate or
+remote-default facts are produced when neither higher-priority source is selected.
+
+`--resolve-only` emits canonical resolution JSON and SHA-256 before fetch. The
+digest covers the complete resolution object, including decision checkout
+branch, HEAD and clean state. It
+does not write a resolution file. `--execute` requires the expected digest,
+recomputes resolution at the execution boundary, and blocks before fetch if
+digest, checkout identity, or
+resolution changed. The executor uses only:
+
+```text
+git fetch --no-tags <remote> refs/heads/<base>:refs/remotes/<remote>/<base>
+git merge --ff-only <remote>/<base>
+```
+
+The merge is legal only when the clean decision checkout is the selected base
+and local base is an ancestor of remote. Missing local/remote refs, dirty state,
+fetch failure, divergence, wrong checkout, or post-sync mismatch blocks. It
+must not use `git branch -f`, reset, checkout, stash, rebase, force fetch, or a
+current-branch fallback.
+
+After synchronization, the executor rebuilds the same source/base/remote/
+candidate resolution identity with the synchronized decision checkout and emits
+it as `post_sync_resolution` plus `post_sync_resolution_sha256`. The original
+`resolution.resolution_sha256` remains the pre-sync identity that binds only
+resolve to execute. Already-equal execution may produce equal pre/post digests;
+a fast-forward must produce a different post-sync digest.
+
+`check-base-sync` does not mutate Git. It consumes `--result-json` and validates
+Draft 2020-12 schema identity, `facts_sha256`, the pre-sync resolution digest,
+the post-sync resolution object/digest, selected refs, clean state, and
+decision/local/remote full-SHA equality against live Git. Its successful typed
+output carries `post_sync_resolution_sha256` for the next consumer instead of
+re-exporting the pre-sync digest. It does not fetch, merge, decide scope, judge
+semantic pass, choose a route, or manage evidence files. Its workflow-only
+`--record-skipped` path emits stdout-only machine facts after the AI has
+reviewed a non-repo route; standalone rejects that path.
+
+`prepare-task` requires the prior validator/guard
+`post_sync_resolution_sha256` and the same resolver inputs. It calls the shared
+resolver/sync core before `gh auth status`, issue read, and duplicate search,
+then reruns an independent guard immediately before each GitHub, worktree, and
+task mutation boundary. The task guard occurs after worktree/identity setup and
+immediately before `task.py create`. `--base-branch` can assert equality but
+cannot rewrite config/config-candidate/remote-default provenance as explicit.
+The legacy planner/executor freshness functions remain adapters only. A stale
+planner result is blocking, not permission to continue planning. Each guard
+consumes the preceding guard's post-sync digest and returns its own post-sync
+digest for the next boundary. Neither prepare output nor task-start context
+persists the complete resolution/result stdout payloads.
 
 Always gate GitHub operations with `gh auth status` through `require_gh_auth()`.
 Do not assume the GitHub CLI is configured just because `gh` exists.
