@@ -35,10 +35,11 @@ Phase 0 begins with tool-free request classification. Before `check-env`,
 `prepare-task`, issue/duplicate reads, Docs/code/tests/history reads, or any
 other repo/network semantic action, repo-changing routes mandatory invoke the
 stable `guru-sync-base` id. The workflow owns only that invocation and these
-unique consumers: `synced` -> workflow route `guru-discover-change-context`,
-`skipped` -> workflow route `original-request-route`, and `blocked` -> stop
-`base-sync-blocked`. The first route remains inline until #111; this contract
-must not pre-implement its step-local Skill.
+unique consumers: `synced` -> Skill `guru-discover-change-context`, `skipped` ->
+workflow route `original-request-route`, and `blocked` -> stop
+`base-sync-blocked`. The change-context Skill owns its complete semantic loop;
+the global workflow contains only its mandatory invocation and typed-exit
+transitions.
 
 `guru-sync-base` declares `judgment_mode=deterministic`; its deterministic
 profile owns stdout resolution facts, pre-sync digest-bound execution,
@@ -57,6 +58,79 @@ pre-sync digest is never reused after a fast-forward. No cross-step
 result/resolution file or lifecycle is part of this contract.
 Unknown, missing, duplicate, multiple, or unmapped markers fail closed. A
 current checkout branch is never an implicit base fallback.
+
+`guru-discover-change-context` declares `judgment_mode=semantic`. Workflow and
+standalone modes use the same entry preconditions and freshness bindings. The
+positive behavior order is fixed: validate fresh base evidence; read the live
+issue or form a side-effect-free proposed draft; search open duplicate facts;
+AI-review updated-base Docs; AI-review code/API/config/schema/ownership;
+AI-review tests/fixtures/throwaway/update evidence; produce current-state
+observations and canonical query clues; execute exactly one archived
+finish-summary preview; AI-select one to three candidates when candidates
+exist and deep-read explicit evidence, or record an empty selection; execute
+the AI Review Gate; record/validate the reviewed payload; emit one typed exit.
+
+Duplicate reuse/new-target choice remains owned by
+`guru-clarify-requirements`. Conditional human confirmation is recorded as
+`not_required` with reason
+`decision_owned_by_guru-clarify-requirements`. Stable exits are
+`context_ready` -> workflow route `guru-clarify-requirements`, `refresh_base` -> Skill
+`guru-sync-base`, and `blocked` -> stop `change-context-blocked`. A stale base,
+issue, reviewed blob, canonical query, or archive manifest forces complete
+re-entry through `guru-sync-base`; the workflow cannot resume from history or
+the AI Gate. Recorder/checker validate the caller-authored `refresh_base`
+against deterministic live stale codes and return that typed exit; they never
+infer or replace AI route intent. `context_ready` rejects the same stale facts.
+At both production command entries, closed schema/digest/security/semantic-shape
+validation is pure and fails before live access. The next gate reads only base
+facts. Base stale returns after matching refresh codes and superseded digests.
+For `refresh_base`, both production entries first require repeatable external
+`context_ready` ancestor snapshots plus expected digests in oldest-to-direct-
+prior order, one pair per refresh entry. A chain with `N` refresh entries also
+requires `N-1` independently retained prior `refresh_base` receipts plus their
+expected snapshot digests in oldest-to-newest hop order; the one-refresh,
+one-ancestor CLI remains compatible without a receipt. They recompute every
+identity, bind chain length/order/history prefixes and all superseded links,
+require each receipt to be the unique canonical projection that appended its
+complete entry to the preceding ancestor, and require that receipt history to
+equal the next `context_ready` ancestor history byte-for-byte. The current
+candidate must remain the one-step projection from the direct prior. Missing,
+duplicate, reordered, skipped, rewritten, or non-parent ancestors/receipts fail
+closed. Ancestor and receipt bytes are re-read after task recording and are not
+persisted. A receipt is authoritative only when it was retained independently
+from the preceding production recorder/checker result with its digest; evidence
+generated from the current candidate chain cannot authorize itself. After this pure gate,
+repository-bound locators, issue/blob/history evidence are checked only after a
+fresh base. Both modes require at least one non-empty `change_input` clue array.
+
+Fresh-base evidence includes the complete validator-passed
+`guru-base-sync-result-1.0` identity and provenance, not only matching HEADs.
+The selected remote must resolve to the same normalized GitHub repository, and
+Git status read failure fails closed. A proposed draft that later names a
+created issue remains bound to the original draft digest and must prove the
+live issue body digest is identical before recording.
+
+The pre-task invocation is stdout-only. After task creation, the recorder may
+write only the byte-identical expected snapshot to
+`{TASK_DIR}/context-discovery.json`. Before writing and again after writing, the
+recorder, and every task-local checker invocation, must prove that this exact
+repo-relative target is not ignored via `git check-ignore --quiet --no-index --
+<target>`. This covers repository `.gitignore`, `.git/info/exclude`, and
+`core.excludesFile`, including an already tracked target. Ignored or unreadable
+trackability fails closed as `context_discovery_target_ignored` or
+`context_discovery_target_trackability_unreadable`; stdout-only pre-task mode
+does not run this target gate. Neither mode reads or writes
+`.trellis/workspace/**`, repo-level history indexes/caches, or shared handoff
+state.
+
+Workflow and stop consumers are declared by one unfenced
+`guru-workflow-target` or `guru-stop-target` marker at the actual continuation
+or fail-closed stop. Source and installed validators require every Skill
+consumer to resolve to an active registry entry and every workflow/stop target
+to have exactly one matching-kind declaration; missing, multiple,
+kind-mismatched, or dangling targets fail closed. `guru-clarify-requirements`
+remains the stable id of the existing Phase 0 clarification/check-env/
+prepare-task workflow route; this contract does not activate the #113 package.
 
 `trellis-finish-work` is a single resumable transaction entry. Its mandatory
 order is: shared prepare/digest preview, expected-digest handshake, reviewed

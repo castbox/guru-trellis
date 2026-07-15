@@ -71,6 +71,15 @@ Continue entries must:
   tool-free classification first, `synced` to `guru-discover-change-context`,
   `skipped` to the original non-repo route, and `blocked` to a fail-closed stop;
   platform entry text must not copy resolution/executor/validator internals;
+- preserve the subsequent mandatory semantic Skill route:
+  `guru-discover-change-context:context_ready` to
+  `guru-clarify-requirements`, `refresh_base` to `guru-sync-base`, and
+  `blocked` to `change-context-blocked`; platform entry text must load the
+  stable id and must not copy current/history/Gate internals;
+- keep `guru-clarify-requirements` described as the existing Phase 0 workflow
+  continuation, not an active public Skill package; the canonical workflow's
+  `guru-workflow-target` / `guru-stop-target` declarations are validated at
+  source and installed runtime and must not be copied into platform overlays;
 
 - run `python3 ./.trellis/scripts/get_context.py`
 - run `python3 ./.trellis/scripts/get_context.py --mode phase`

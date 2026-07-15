@@ -1,0 +1,429 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-context-discovery-1.0.json",
+  "title": "Guru Team change context discovery result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "skill_id", "generated_at", "mode", "typed_exit",
+    "repository", "base_evidence", "change_input", "live_change",
+    "duplicate_search", "current_state", "canonical_query", "history_preview",
+    "history_review", "mem_review", "ai_review_gate", "human_confirmation",
+    "refresh_history", "snapshot_identity", "error"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "skill_id": {"const": "guru-discover-change-context"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "typed_exit": {"enum": ["context_ready", "refresh_base", "blocked"]},
+    "repository": {"$ref": "#/$defs/repository"},
+    "base_evidence": {"$ref": "#/$defs/baseEvidence"},
+    "change_input": {"$ref": "#/$defs/changeInput"},
+    "live_change": {"$ref": "#/$defs/liveChange"},
+    "duplicate_search": {"$ref": "#/$defs/duplicateSearch"},
+    "current_state": {"$ref": "#/$defs/currentState"},
+    "canonical_query": {"$ref": "#/$defs/canonicalQuery"},
+    "history_preview": {"$ref": "#/$defs/historyPreview"},
+    "history_review": {"$ref": "#/$defs/historyReview"},
+    "mem_review": {"$ref": "#/$defs/memReview"},
+    "ai_review_gate": {"$ref": "#/$defs/aiGate"},
+    "human_confirmation": {"$ref": "#/$defs/humanConfirmation"},
+    "refresh_history": {"type": "array", "items": {"$ref": "#/$defs/refreshEntry"}},
+    "snapshot_identity": {"$ref": "#/$defs/snapshotIdentity"},
+    "error": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/error"}]}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"typed_exit": {"const": "context_ready"}}, "required": ["typed_exit"]},
+      "then": {
+        "properties": {
+          "current_state": {
+            "properties": {
+              "docs": {"minItems": 1},
+              "code_contracts": {"minItems": 1},
+              "tests": {"minItems": 1}
+            }
+          },
+          "ai_review_gate": {"properties": {"status": {"const": "passed"}}},
+          "error": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "refresh_base"}}, "required": ["typed_exit"]},
+      "then": {"properties": {"refresh_history": {"minItems": 1}}}
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "blocked"}}, "required": ["typed_exit"]},
+      "then": {"properties": {"error": {"$ref": "#/$defs/error"}}}
+    },
+    {
+      "if": {
+        "properties": {
+          "live_change": {"properties": {"kind": {"const": "draft"}}, "required": ["kind"]},
+          "change_input": {"properties": {"issue_refs": {"minItems": 1}}, "required": ["issue_refs"]}
+        },
+        "required": ["live_change", "change_input"]
+      },
+      "then": {"properties": {"live_change": {"properties": {"issue_binding": {"$ref": "#/$defs/issueBinding"}}}}}
+    },
+    {
+      "if": {
+        "properties": {
+          "live_change": {"properties": {"kind": {"const": "draft"}}, "required": ["kind"]},
+          "change_input": {"properties": {"issue_refs": {"maxItems": 0}}, "required": ["issue_refs"]}
+        },
+        "required": ["live_change", "change_input"]
+      },
+      "then": {"properties": {"live_change": {"properties": {"issue_binding": {"type": "null"}}}}}
+    },
+    {
+      "if": {
+        "properties": {
+          "history_preview": {
+            "properties": {"candidates": {"maxItems": 0}},
+            "required": ["candidates"]
+          }
+        },
+        "required": ["history_preview"]
+      },
+      "then": {
+        "properties": {
+          "history_review": {
+            "properties": {
+              "selected_candidates": {"maxItems": 0},
+              "excluded_candidates": {"maxItems": 0},
+              "deep_reads": {"maxItems": 0}
+            }
+          },
+          "mem_review": {"properties": {"status": {"const": "not_needed"}}}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "nonEmpty": {"type": "string", "minLength": 1, "maxLength": 4096, "pattern": "^[^\\u0000-\\u001f\\u007f]+$"},
+    "portablePath": {"type": "string", "minLength": 1, "maxLength": 4096, "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!\\.trellis/(?:workspace|\\.runtime)(?:/|$))(?!.*\\\\).+$"},
+    "stringList": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonEmpty"}},
+    "repository": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repo", "selected_base", "decision_branch"],
+      "properties": {
+        "repo": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "selected_base": {"$ref": "#/$defs/nonEmpty"},
+        "decision_branch": {"$ref": "#/$defs/nonEmpty"}
+      }
+    },
+    "baseEvidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_id", "sync_result", "remote", "base_head", "decision_head", "local_head", "remote_head", "post_sync_resolution_sha256", "clean"],
+      "properties": {
+        "schema_id": {"const": "guru-base-sync-result-1.0"},
+        "sync_result": {"$ref": "#/$defs/baseSyncResult"},
+        "remote": {"type": "string", "minLength": 1, "maxLength": 255},
+        "base_head": {"$ref": "#/$defs/commit"},
+        "decision_head": {"$ref": "#/$defs/commit"},
+        "local_head": {"$ref": "#/$defs/commit"},
+        "remote_head": {"$ref": "#/$defs/commit"},
+        "post_sync_resolution_sha256": {"$ref": "#/$defs/sha256"},
+        "clean": {"const": true}
+      }
+    },
+    "baseResolution": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source", "selected_base", "remote", "candidates", "resolution_sha256"],
+      "properties": {
+        "source": {"enum": ["explicit", "config", "config-candidate", "remote-default"]},
+        "selected_base": {"$ref": "#/$defs/nonEmpty"},
+        "remote": {"type": "string", "minLength": 1, "maxLength": 255},
+        "candidates": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonEmpty"}},
+        "resolution_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "baseResolutionIdentity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "skill_id", "status", "source", "selected_base", "remote", "candidates", "decision_checkout"],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "skill_id": {"const": "guru-sync-base"},
+        "status": {"const": "resolved"},
+        "source": {"enum": ["explicit", "config", "config-candidate", "remote-default"]},
+        "selected_base": {"$ref": "#/$defs/nonEmpty"},
+        "remote": {"type": "string", "minLength": 1, "maxLength": 255},
+        "candidates": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonEmpty"}},
+        "decision_checkout": {
+          "type": "object", "additionalProperties": false,
+          "required": ["branch", "head", "clean"],
+          "properties": {"branch": {"$ref": "#/$defs/nonEmpty"}, "head": {"$ref": "#/$defs/commit"}, "clean": {"const": true}}
+        }
+      }
+    },
+    "baseDecisionCheckout": {
+      "type": "object", "additionalProperties": false,
+      "required": ["branch", "head_before", "head_after", "clean_before", "clean_after"],
+      "properties": {
+        "branch": {"$ref": "#/$defs/nonEmpty"},
+        "head_before": {"$ref": "#/$defs/commit"},
+        "head_after": {"$ref": "#/$defs/commit"},
+        "clean_before": {"const": true},
+        "clean_after": {"const": true}
+      }
+    },
+    "baseGitFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["local_ref", "remote_ref", "local_head_before", "local_head_after", "remote_head_after", "fetch_performed", "fast_forwarded"],
+      "properties": {
+        "local_ref": {"type": "string", "pattern": "^refs/heads/.+$"},
+        "remote_ref": {"type": "string", "pattern": "^refs/remotes/.+$"},
+        "local_head_before": {"$ref": "#/$defs/commit"},
+        "local_head_after": {"$ref": "#/$defs/commit"},
+        "remote_head_after": {"$ref": "#/$defs/commit"},
+        "fetch_performed": {"const": true},
+        "fast_forwarded": {"type": "boolean"}
+      }
+    },
+    "baseSyncResult": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "skill_id", "status", "resolution", "post_sync_resolution", "post_sync_resolution_sha256", "decision_checkout", "git", "fresh", "facts_sha256"],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "skill_id": {"const": "guru-sync-base"},
+        "status": {"const": "synced"},
+        "resolution": {"$ref": "#/$defs/baseResolution"},
+        "post_sync_resolution": {"$ref": "#/$defs/baseResolutionIdentity"},
+        "post_sync_resolution_sha256": {"$ref": "#/$defs/sha256"},
+        "decision_checkout": {"$ref": "#/$defs/baseDecisionCheckout"},
+        "git": {"$ref": "#/$defs/baseGitFacts"},
+        "fresh": {"const": true},
+        "facts_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "changeInput": {
+      "type": "object", "additionalProperties": false,
+      "required": ["issue_refs", "pr_refs", "branches", "paths", "commands", "config_keys", "schema_fields", "symbols", "terms", "queries"],
+      "anyOf": [
+        {"properties": {"issue_refs": {"minItems": 1}}, "required": ["issue_refs"]},
+        {"properties": {"pr_refs": {"minItems": 1}}, "required": ["pr_refs"]},
+        {"properties": {"branches": {"minItems": 1}}, "required": ["branches"]},
+        {"properties": {"paths": {"minItems": 1}}, "required": ["paths"]},
+        {"properties": {"commands": {"minItems": 1}}, "required": ["commands"]},
+        {"properties": {"config_keys": {"minItems": 1}}, "required": ["config_keys"]},
+        {"properties": {"schema_fields": {"minItems": 1}}, "required": ["schema_fields"]},
+        {"properties": {"symbols": {"minItems": 1}}, "required": ["symbols"]},
+        {"properties": {"terms": {"minItems": 1}}, "required": ["terms"]},
+        {"properties": {"queries": {"minItems": 1}}, "required": ["queries"]}
+      ],
+      "properties": {
+        "issue_refs": {"$ref": "#/$defs/stringList"},
+        "pr_refs": {"$ref": "#/$defs/stringList"},
+        "branches": {"$ref": "#/$defs/stringList"},
+        "paths": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/portablePath"}},
+        "commands": {"$ref": "#/$defs/stringList"},
+        "config_keys": {"$ref": "#/$defs/stringList"},
+        "schema_fields": {"$ref": "#/$defs/stringList"},
+        "symbols": {"$ref": "#/$defs/stringList"},
+        "terms": {"$ref": "#/$defs/stringList"},
+        "queries": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "liveChange": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "identity", "state", "updated_at", "body_sha256", "facts_sha256", "issue_binding"],
+      "properties": {
+        "kind": {"enum": ["issue", "draft"]},
+        "identity": {"$ref": "#/$defs/nonEmpty"},
+        "state": {"enum": ["open", "closed", "draft"]},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "body_sha256": {"$ref": "#/$defs/sha256"},
+        "facts_sha256": {"$ref": "#/$defs/sha256"},
+        "issue_binding": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/issueBinding"}]}
+      },
+      "allOf": [
+        {"if": {"properties": {"kind": {"const": "issue"}}, "required": ["kind"]}, "then": {"properties": {"state": {"enum": ["open", "closed"]}, "issue_binding": {"type": "null"}}}},
+        {"if": {"properties": {"kind": {"const": "draft"}}, "required": ["kind"]}, "then": {"properties": {"state": {"const": "draft"}, "identity": {"pattern": "^draft:[0-9a-f]{64}$"}}}}
+      ]
+    },
+    "issueBinding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repo", "number", "url", "state", "updated_at", "body_sha256", "facts_sha256"],
+      "properties": {
+        "repo": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "number": {"type": "integer", "minimum": 1},
+        "url": {"type": "string", "format": "uri"},
+        "state": {"const": "open"},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "body_sha256": {"$ref": "#/$defs/sha256"},
+        "facts_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "duplicateCandidate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["identity", "url", "state", "updated_at", "facts_sha256", "reason", "observation"],
+      "properties": {
+        "identity": {"$ref": "#/$defs/nonEmpty"}, "url": {"type": "string", "format": "uri"},
+        "state": {"const": "open"},
+        "updated_at": {"type": "string", "format": "date-time"}, "facts_sha256": {"$ref": "#/$defs/sha256"},
+        "reason": {"$ref": "#/$defs/nonEmpty"}, "observation": {"$ref": "#/$defs/nonEmpty"}
+      }
+    },
+    "duplicateSearch": {
+      "type": "object", "additionalProperties": false,
+      "required": ["query", "checked_at", "scope", "candidates"],
+      "properties": {
+        "query": {"$ref": "#/$defs/nonEmpty"}, "checked_at": {"type": "string", "format": "date-time"},
+        "scope": {"const": "open_issues"}, "candidates": {"type": "array", "items": {"$ref": "#/$defs/duplicateCandidate"}}
+      }
+    },
+    "evidenceRow": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "blob_or_content_sha256", "purpose", "observation", "query_clues"],
+      "properties": {
+        "path": {"$ref": "#/$defs/portablePath"}, "blob_or_content_sha256": {"type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"},
+        "purpose": {"$ref": "#/$defs/nonEmpty"}, "observation": {"$ref": "#/$defs/nonEmpty"}, "query_clues": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "currentState": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sequence_trace", "docs", "code_contracts", "tests", "observations"],
+      "properties": {
+        "sequence_trace": {"const": ["fresh_base", "live_change", "duplicates", "docs", "code_contracts", "tests", "query_clues", "history_preview"]},
+        "docs": {"type": "array", "items": {"$ref": "#/$defs/evidenceRow"}},
+        "code_contracts": {"type": "array", "items": {"$ref": "#/$defs/evidenceRow"}},
+        "tests": {"type": "array", "items": {"$ref": "#/$defs/evidenceRow"}},
+        "observations": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "canonicalQuery": {
+      "type": "object", "additionalProperties": false,
+      "required": ["issue_refs", "pr_refs", "branches", "paths", "commands", "config_keys", "schema_fields", "symbols", "terms", "queries", "tokens", "query_sha256"],
+      "properties": {
+        "issue_refs": {"$ref": "#/$defs/stringList"}, "pr_refs": {"$ref": "#/$defs/stringList"},
+        "branches": {"$ref": "#/$defs/stringList"}, "paths": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/portablePath"}},
+        "commands": {"$ref": "#/$defs/stringList"}, "config_keys": {"$ref": "#/$defs/stringList"},
+        "schema_fields": {"$ref": "#/$defs/stringList"}, "symbols": {"$ref": "#/$defs/stringList"},
+        "terms": {"$ref": "#/$defs/stringList"}, "queries": {"$ref": "#/$defs/stringList"},
+        "tokens": {"$ref": "#/$defs/stringList"}, "query_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "manifestValid": {
+      "type": "object", "additionalProperties": false, "required": ["path", "status", "index_sha256"],
+      "properties": {"path": {"$ref": "#/$defs/portablePath"}, "status": {"const": "valid"}, "index_sha256": {"$ref": "#/$defs/sha256"}}
+    },
+    "manifestInvalid": {
+      "type": "object", "additionalProperties": false, "required": ["path", "status", "error_code"],
+      "properties": {"path": {"$ref": "#/$defs/portablePath"}, "status": {"const": "invalid"}, "error_code": {"enum": ["unsafe_path", "not_regular_file", "symlink", "invalid_json", "missing_index", "invalid_index_shape"]}}
+    },
+    "candidate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidate_id", "finish_summary_path", "index_sha256", "score", "matched_clues", "index_projection"],
+      "properties": {
+        "candidate_id": {"$ref": "#/$defs/sha256"}, "finish_summary_path": {"$ref": "#/$defs/portablePath"}, "index_sha256": {"$ref": "#/$defs/sha256"},
+        "score": {"type": "object", "additionalProperties": false, "required": ["total", "exact", "token", "exact_match_count", "token_match_count"], "properties": {"total": {"type": "integer", "minimum": 1}, "exact": {"type": "integer", "minimum": 0}, "token": {"type": "integer", "minimum": 0, "maximum": 99}, "exact_match_count": {"type": "integer", "minimum": 0}, "token_match_count": {"type": "integer", "minimum": 0}}},
+        "matched_clues": {"type": "object"}, "index_projection": {"type": "object"}
+      }
+    },
+    "historyPreview": {
+      "type": "object", "additionalProperties": false,
+      "required": ["algorithm_id", "canonical_query", "query_sha256", "archive_manifest_sha256", "preview_sha256", "limit", "manifest", "candidates", "invalid"],
+      "properties": {
+        "algorithm_id": {"const": "guru-context-history-score-1.0"}, "query_sha256": {"$ref": "#/$defs/sha256"},
+        "canonical_query": {"$ref": "#/$defs/canonicalQuery"},
+        "archive_manifest_sha256": {"$ref": "#/$defs/sha256"}, "preview_sha256": {"$ref": "#/$defs/sha256"}, "limit": {"const": 20},
+        "manifest": {"type": "array", "items": {"oneOf": [{"$ref": "#/$defs/manifestValid"}, {"$ref": "#/$defs/manifestInvalid"}]}},
+        "candidates": {"type": "array", "maxItems": 20, "items": {"$ref": "#/$defs/candidate"}},
+        "invalid": {"type": "array", "items": {"$ref": "#/$defs/manifestInvalid"}}
+      }
+    },
+    "selection": {
+      "type": "object", "additionalProperties": false, "required": ["candidate_id", "reason"],
+      "properties": {"candidate_id": {"$ref": "#/$defs/sha256"}, "reason": {"$ref": "#/$defs/nonEmpty"}}
+    },
+    "deepRead": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["candidate_id", "source", "locator", "purpose", "conclusion"],
+          "properties": {
+            "candidate_id": {"$ref": "#/$defs/sha256"},
+            "source": {"const": "task_artifact"},
+            "locator": {"$ref": "#/$defs/portablePath"},
+            "purpose": {"$ref": "#/$defs/nonEmpty"},
+            "conclusion": {"$ref": "#/$defs/nonEmpty"}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["candidate_id", "source", "locator", "purpose", "conclusion"],
+          "properties": {
+            "candidate_id": {"$ref": "#/$defs/sha256"},
+            "source": {"const": "github"},
+            "locator": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/(?:issues|pull)/[1-9][0-9]*$"},
+            "purpose": {"$ref": "#/$defs/nonEmpty"},
+            "conclusion": {"$ref": "#/$defs/nonEmpty"}
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["candidate_id", "source", "locator", "purpose", "conclusion"],
+          "properties": {
+            "candidate_id": {"$ref": "#/$defs/sha256"},
+            "source": {"const": "git"},
+            "locator": {"type": "string", "pattern": "^git:(?:object:[0-9a-f]{40}|ref:refs/[A-Za-z0-9._/-]+@[0-9a-f]{40})$"},
+            "purpose": {"$ref": "#/$defs/nonEmpty"},
+            "conclusion": {"$ref": "#/$defs/nonEmpty"}
+          }
+        }
+      ]
+    },
+    "historyReview": {
+      "type": "object", "additionalProperties": false, "required": ["selected_candidates", "excluded_candidates", "deep_reads"],
+      "properties": {"selected_candidates": {"type": "array", "maxItems": 3, "items": {"$ref": "#/$defs/selection"}}, "excluded_candidates": {"type": "array", "items": {"$ref": "#/$defs/selection"}}, "deep_reads": {"type": "array", "items": {"$ref": "#/$defs/deepRead"}}}
+    },
+    "memReview": {
+      "type": "object", "additionalProperties": false, "required": ["status", "reason", "load_bearing_question", "exhausted_sources", "summary"],
+      "properties": {"status": {"enum": ["not_needed", "used"]}, "reason": {"$ref": "#/$defs/nonEmpty"}, "load_bearing_question": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/nonEmpty"}]}, "exhausted_sources": {"type": "object", "additionalProperties": false, "required": ["task_artifacts", "current_docs_code_tests", "github", "git_history"], "properties": {"task_artifacts": {"type": "boolean"}, "current_docs_code_tests": {"type": "boolean"}, "github": {"type": "boolean"}, "git_history": {"type": "boolean"}}}, "summary": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/nonEmpty"}]}},
+      "allOf": [{
+        "if": {"properties": {"status": {"const": "used"}}, "required": ["status"]},
+        "then": {"properties": {
+          "load_bearing_question": {"$ref": "#/$defs/nonEmpty"},
+          "summary": {"$ref": "#/$defs/nonEmpty"},
+          "exhausted_sources": {"properties": {"task_artifacts": {"const": true}, "current_docs_code_tests": {"const": true}, "github": {"const": true}, "git_history": {"const": true}}}
+        }},
+        "else": {"properties": {
+          "load_bearing_question": {"type": "null"},
+          "summary": {"type": "null"},
+          "exhausted_sources": {"properties": {"task_artifacts": {"const": false}, "current_docs_code_tests": {"const": false}, "github": {"const": false}, "git_history": {"const": false}}}
+        }}
+      }]
+    },
+    "finding": {
+      "type": "object", "additionalProperties": false, "required": ["severity", "status", "summary", "evidence_refs"],
+      "properties": {"severity": {"enum": ["P0", "P1", "P2", "P3"]}, "status": {"enum": ["open", "resolved"]}, "summary": {"$ref": "#/$defs/nonEmpty"}, "evidence_refs": {"$ref": "#/$defs/stringList"}}
+    },
+    "aiGate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "reviewer", "reviewed_scope", "excluded_scope", "relevance", "sufficiency", "conflicts", "reusable", "not_reusable", "load_bearing_conclusions", "findings", "reason"],
+      "properties": {"status": {"enum": ["passed", "blocked"]}, "reviewer": {"$ref": "#/$defs/nonEmpty"}, "reviewed_scope": {"$ref": "#/$defs/stringList"}, "excluded_scope": {"$ref": "#/$defs/stringList"}, "relevance": {"$ref": "#/$defs/nonEmpty"}, "sufficiency": {"$ref": "#/$defs/nonEmpty"}, "conflicts": {"$ref": "#/$defs/stringList"}, "reusable": {"$ref": "#/$defs/stringList"}, "not_reusable": {"$ref": "#/$defs/stringList"}, "load_bearing_conclusions": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["conclusion", "evidence_refs"], "properties": {"conclusion": {"$ref": "#/$defs/nonEmpty"}, "evidence_refs": {"$ref": "#/$defs/stringList"}}}}, "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}}, "reason": {"$ref": "#/$defs/nonEmpty"}},
+      "allOf": [{"if": {"properties": {"status": {"const": "passed"}}, "required": ["status"]}, "then": {"properties": {"reviewed_scope": {"minItems": 1}, "load_bearing_conclusions": {"minItems": 1}}}}]
+    },
+    "humanConfirmation": {
+      "type": "object", "additionalProperties": false, "required": ["status", "reason"],
+      "properties": {"status": {"const": "not_required"}, "reason": {"const": "decision_owned_by_guru-clarify-requirements"}}
+    },
+    "refreshEntry": {
+      "type": "object", "additionalProperties": false, "required": ["reason", "error_codes", "superseded_query_sha256", "superseded_snapshot_sha256", "detected_at"],
+      "properties": {"reason": {"$ref": "#/$defs/nonEmpty"}, "error_codes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}}, "superseded_query_sha256": {"$ref": "#/$defs/sha256"}, "superseded_snapshot_sha256": {"$ref": "#/$defs/sha256"}, "detected_at": {"type": "string", "format": "date-time"}}
+    },
+    "snapshotIdentity": {
+      "type": "object", "additionalProperties": false, "required": ["query_sha256", "archive_manifest_sha256", "live_change_sha256", "base_head", "base_sync_facts_sha256", "post_sync_resolution_sha256", "payload_sha256", "snapshot_sha256"],
+      "properties": {"query_sha256": {"$ref": "#/$defs/sha256"}, "archive_manifest_sha256": {"$ref": "#/$defs/sha256"}, "live_change_sha256": {"$ref": "#/$defs/sha256"}, "base_head": {"$ref": "#/$defs/commit"}, "base_sync_facts_sha256": {"$ref": "#/$defs/sha256"}, "post_sync_resolution_sha256": {"$ref": "#/$defs/sha256"}, "payload_sha256": {"$ref": "#/$defs/sha256"}, "snapshot_sha256": {"$ref": "#/$defs/sha256"}}
+    },
+    "error": {
+      "type": "object", "additionalProperties": false, "required": ["codes", "summary"],
+      "properties": {"codes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}}, "summary": {"$ref": "#/$defs/nonEmpty"}}
+    }
+  }
+}

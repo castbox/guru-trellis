@@ -69,6 +69,148 @@ scalars, lists, and one level of nested dictionaries used by the current config.
 Do not introduce complex YAML structures without replacing or extending the
 parser and validating older configs.
 
+## Change Context Discovery Result
+
+Schema `guru-context-discovery-1.0` is a closed Draft 2020-12 union whose
+`typed_exit` is exactly `context_ready`, `refresh_base`, or `blocked`. Common
+identity embeds the complete validator-passed `guru-base-sync-result-1.0`
+payload and binds its facts digest, post-sync resolution digest, selected Git
+remote, decision checkout, refs/HEADs, and normalized GitHub remote repository
+identity. Every projection field must equal the embedded result and current
+live Git. A Git status read failure is unknown freshness and fails closed; it
+is never treated as an empty clean path set. Common identity also binds
+normalized change input, live
+issue/proposed-draft facts, duplicate facts, current Docs/code/tests evidence,
+canonical query, history preview, AI history review, mem decision, AI Review
+Gate, human-confirmation status, refresh history, and snapshot identity.
+The normalized `change_input` object contains the same ten clue-array kinds as
+the canonical query source and requires at least one non-empty array in both the
+published schema and runtime precondition gate. Neither `issue_binding` nor a
+separately populated `canonical_query` counts as change input.
+An issue used as the source change may be live `open` or `closed`; the runtime
+normalizes the exact supported GitHub state spelling to lowercase before
+binding it. This does not weaken the independently open-only duplicate search
+or the open-only issue binding created from a reviewed draft.
+
+A proposed draft keeps its original body and facts digest. When its normalized
+change input contains a created issue ref, `live_change.issue_binding` is
+required and binds repo, number, canonical URL, state, update time, body digest,
+and live facts digest. Recorder/checker must read that exact issue and prove the
+live body digest equals the reviewed draft body digest. A missing, mismatched,
+or unreadable binding fails closed; no issue ref requires a null binding and no
+GitHub read.
+
+Canonical query arrays are `issue_refs`, `pr_refs`, `branches`, `paths`,
+`commands`, `config_keys`, `schema_fields`, `symbols`, `terms`, `queries`, and
+derived `tokens`. Text uses NFKC, casefold, trimmed/collapsed whitespace and
+byte-sorted deduplication; path exact identity preserves case/punctuation and
+rejects absolute, parent-traversal, symlink-backed and protected paths. The
+newline-terminated compact sorted-key JSON digest is `query_sha256`.
+
+History algorithm `guru-context-history-score-1.0` enumerates only
+`.trellis/tasks/archive/**/finish-summary.json`, validates each path by lexical
+containment plus component `lstat`, and represents symlinked or unreadable
+subtrees as portable invalid rows instead of silently skipping them. It parses
+only top-level `index` and never
+consumes sibling fields. Exact weights are issue 1000, PR 900, branch 800, path
+700, command/config/schema/symbol 600, term 400 and query 300. Token points
+equal `min(99, unique query tokens present)`. Sort is total score, exact count
+and token count descending, then summary path UTF-8 bytes ascending; only
+positive-score first 20 rows are projected.
+
+Manifest rows are path-sorted `{path,status,index_sha256}` valid facts or
+`{path,status,error_code}` invalid facts. Invalid rows are isolated from valid
+scoring and never contain raw exceptions/content or absolute paths.
+`archive_manifest_sha256` covers all manifest rows; `preview_sha256` binds
+algorithm, query, manifest, limit, candidate projections and invalid rows.
+
+When candidates exist, AI history review selects one to three and gives every
+unselected candidate an exclusion reason. A zero-candidate preview requires an
+empty selected/excluded partition, empty deep reads, and
+`mem_review.status=not_needed`; its load-bearing question and summary are null
+and every exhausted-source flag is false. It remains successful and cannot
+trigger `trellis mem` or any substitute history source. For a candidate preview,
+`mem_review.status=used` is valid only when task artifacts, current
+Docs/code/tests, GitHub and Git history are each recorded insufficient for one
+named load-bearing question and `summary` is a non-empty conclusion; otherwise
+status is the same consistent `not_needed` shape. A passed AI Review Gate
+requires at least one reviewed-scope row and at least one evidence-bound
+load-bearing conclusion. These are structural completeness checks only; scripts
+do not author or judge the semantic content.
+
+Each deep read uses a source-discriminated locator: `task_artifact` is a
+repo-relative regular file inside the selected archived task, `github` is a
+canonical GitHub issue/PR URL without query/fragment, and `git` is an exact
+`git:object:<oid>` or `git:ref:<full-ref>@<oid>` identity validated against live
+Git. The schema and runtime both reject cross-kind locator substitution.
+
+Pre-task recording emits the reviewed snapshot on stdout without repository
+writes. Post-task recording requires `--task` and
+`--expected-snapshot-sha256`, validates the same query/manifest/base/live facts
+and reviewed blob identities, and writes only a direct active
+`{TASK_DIR}/context-discovery.json`; archived, completed, and other non-active
+tasks are rejected. The recorder reopens the just-written artifact, compares
+exact canonical bytes and snapshot identity, then reruns required live
+freshness before returning success. Both recorder and checker execute the
+published closed Draft 2020-12 schema. Base evidence preserves the complete
+sync result and selected remote. Pre-task/standalone live validation requires
+the decision checkout branch. Direct active task mode permits the current
+checkout to be the feature branch created after the pre-task snapshot only when
+it equals `task.json.branch`; the HEAD must remain the snapshot base HEAD, the
+selected local/remote base refs and repository identity must remain bound, and
+all dirty paths must be task-local. Any base error short-circuits before live
+issue/draft, reviewed-blob, or archive-preview reads. A caller-authored
+`refresh_base` result is valid only when its latest refresh entry lists the
+exact stable refreshable live-error set and is bound to the actual pre-refresh
+snapshot. Both recorder and checker require one repeatable
+`--prior-snapshot-input` plus independently retained
+`--expected-prior-snapshot-sha256` pair for every refresh-history entry, ordered
+from the oldest `context_ready` ancestor through the direct prior. A history of
+length `N` additionally requires `N-1` repeatable
+`--prior-refresh-receipt-input` plus independently retained
+`--expected-prior-refresh-receipt-sha256` pairs in oldest-to-newest hop order.
+The existing one-ancestor-pair CLI remains valid for a single refresh and uses
+no receipt. They require exact counts and distinct ordered evidence, recompute
+every ancestor and receipt identity, require each ancestor history to equal the
+current history prefix at that depth, and bind every superseded query/snapshot
+digest to the preceding real snapshot. Receipt `i` must be the unique canonical
+`refresh_base` projection of ancestor `i`: change `typed_exit`, append exactly
+entry `i`, and recompute identity. Its full history must equal ancestor `i+1`'s
+history byte-for-byte. The current payload must be the same one-step projection
+from the direct prior with the latest entry. Missing, duplicate, reordered,
+skipped, rewritten, or non-parent ancestor/receipt evidence fails closed.
+Receipts are authoritative only when their bytes and digests were retained
+independently from the preceding production result, not generated from the
+current candidate. All evidence bytes remain external, are re-read after task
+recording to detect semantic drift, and are never persisted in the new artifact.
+Recorder/checker then return the authored typed exit without generating route
+intent.
+That set includes `task_branch_stale` for real feature-worktree task branch
+drift; malformed task branch, locator, or state facts remain non-refreshable.
+Every 40-character reviewed Git identity is resolved again from `HEAD:<path>`
+and its object type must be exactly `blob`. A tree, gitlink commit, tag,
+missing object, or mismatched blob cannot satisfy any Docs, code/contracts, or
+tests evidence group; 64-character content evidence retains its exact byte
+digest freshness check.
+The same stale evidence rejects `context_ready`. Before task-local recording,
+after the write, and during every task-local check, the exact repo-relative
+target must be non-ignored under `git check-ignore --quiet --no-index --`. This
+covers `.gitignore`, `.git/info/exclude`, and `core.excludesFile`, including a
+tracked file. Ignored or unreadable trackability fails closed with
+`context_discovery_target_ignored` or
+`context_discovery_target_trackability_unreadable`; pre-task stdout-only mode
+does not run this target gate. Existing target inspection
+uses `lexists` plus `lstat`; every symlink including dangling links, directory,
+device, FIFO, or other non-regular target fails closed, while only a
+byte-identical regular file is idempotent. Existing different bytes, stale
+identity, non-task tracked dirty paths, workspace/runtime/cache targets,
+macOS/Linux home paths, GitHub/Bearer tokens, private keys, database URLs, or
+digest mismatch fail without overwrite, sidecar, or raw-secret error output.
+The same whole-payload string gate covers duplicate facts/URLs, observations,
+deep reads, findings, and errors; it rejects POSIX/Windows/UNC/home/temp
+machine-local absolute paths plus AWS/GCS/Azure SAS and generic signed-query
+credentials while preserving ordinary URLs and repo-relative paths.
+
 ## Extension Version Manifest
 
 `trellis/guru-team-extension.json` defines the reusable Guru Team extension

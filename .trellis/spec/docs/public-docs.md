@@ -109,6 +109,42 @@ README files must list the active id, result schema,
 runtime commands, full-preset requirement, update/reapply steps, and
 missing/drift/sidecar remediation without duplicating the complete Skill loop.
 
+Public Phase 0 docs must also name active semantic
+`guru-discover-change-context` as the only `guru-sync-base:synced` consumer.
+They state the fixed current-state-before-history order, workflow/standalone
+freshness parity, archived `finish-summary.json:index.*`-only reader,
+`guru-context-history-score-1.0`, stable query/manifest/preview digests, invalid
+isolation, 1-3 candidate deep-read, zero-candidate success with empty
+selection/deep reads and consistent `mem_review=not_needed`, candidate-present
+four-source mem insufficiency gate, stdout-only pre-task result, and exact
+same-snapshot task-local persistence. Public docs distinguish pre-task/
+standalone decision-branch binding from direct active task-mode
+`task.json.branch` feature-worktree binding at the unchanged snapshot HEAD; all
+sync provenance, selected base refs, repository identity, active task and
+task-local dirty-scope checks remain mandatory. They list exits `context_ready` / `refresh_base` /
+`blocked`, schema `guru-context-discovery-1.0`, all three runtime commands, and
+the no-workspace/no-runtime/no-repo-cache boundary. Docs must not imply that
+the Skill chooses duplicate reuse/new target or that a script performs its AI
+Review Gate.
+They also identify `guru-clarify-requirements` as the existing Phase 0 workflow
+route rather than an active #113 package, document source-specific task/GitHub/
+Git deep-read locators, refreshable `task_branch_stale`, and the whole-payload
+machine-path/signed-query credential gate. Workflow and stop route markers must
+be described as validator-resolved target declarations, not new Skill packages.
+Refresh documentation must state that record/check receive one repeatable
+external `context_ready` snapshot/expected-digest pair per refresh entry in
+oldest-to-direct-prior order plus `N-1` independently retained prior
+`refresh_base` receipt/expected-digest pairs for a history of length `N`, while
+the single-refresh form stays compatible without a receipt. It must describe
+count/order/history-prefix and superseded-link validation, every receipt's
+unique preceding-ancestor projection and exact next-ancestor-prefix binding,
+the current direct-prior one-entry projection, post-write evidence re-read,
+fail-closed missing/duplicate/reordered/skipped/rewritten/non-parent evidence,
+and the rule that external bytes are never persisted. It must also state that
+task-local recorder/checker prove the exact target is not ignored by repository,
+`.git/info/exclude`, or global Git exclude rules using `--no-index`, while
+pre-task stdout mode does not run that target gate.
+
 When workflow behavior changes, update the docs that users actually read:
 
 - `README.md` for install/upgrade and daily operation

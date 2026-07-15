@@ -63,6 +63,9 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/run-skill-command.sh"),
     Path("scripts/bash/sync-base.sh"),
     Path("scripts/bash/check-base-sync.sh"),
+    Path("scripts/bash/preview-change-context-history.sh"),
+    Path("scripts/bash/record-context-discovery.sh"),
+    Path("scripts/bash/check-context-discovery.sh"),
     Path("scripts/bash/resolve-human-artifacts.sh"),
     Path("scripts/bash/verify-marketplace.sh"),
     Path("scripts/bash/record-planning-approval.sh"),
@@ -296,12 +299,14 @@ def load_previous_installed_manifest(dst: Path) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
-def previous_skill_hashes(manifest: dict[str, Any] | None) -> tuple[dict[str, str], set[str], bool]:
+def previous_skill_hashes(
+    manifest: dict[str, Any] | None,
+) -> tuple[dict[str, str], set[str], bool, set[str]]:
     if manifest is None:
-        return {}, set(), True
+        return {}, set(), True, set()
     skill_packages = manifest.get("skill_packages")
     if skill_packages is None:
-        return {}, set(), True
+        return {}, set(), True, set()
     required_fields = {
         "schema_version", "status", "canonical_registry_sha256", "registry_schema_version",
         "reserved_ids", "active_ids", "selected_platforms", "packages", "files", "removals",
@@ -311,16 +316,25 @@ def previous_skill_hashes(manifest: dict[str, Any] | None) -> tuple[dict[str, st
         not isinstance(skill_packages, dict)
         or set(skill_packages) != required_fields
         or skill_packages.get("schema_version") != "1.0"
-        or skill_packages.get("status") != "ok"
-        or skill_packages.get("conflicts") != []
-        or skill_packages.get("sidecars") != []
         or not isinstance(skill_packages.get("packages"), list)
         or not isinstance(skill_packages.get("removals"), list)
     ):
-        return {}, set(), False
+        return {}, set(), False, set()
+    status = skill_packages.get("status")
+    conflicts = skill_packages.get("conflicts")
+    sidecars = skill_packages.get("sidecars")
+    clean = status == "ok" and conflicts == [] and sidecars == []
+    recovering_backups = (
+        status == "conflict"
+        and conflicts == []
+        and isinstance(sidecars, list)
+        and bool(sidecars)
+    )
+    if not clean and not recovering_backups:
+        return {}, set(), False, set()
     files = skill_packages.get("files")
     if not isinstance(files, list):
-        return {}, set(), False
+        return {}, set(), False, set()
     hashes: dict[str, str] = {}
     paths: set[str] = set()
     valid = True
@@ -344,7 +358,23 @@ def previous_skill_hashes(manifest: dict[str, Any] | None) -> tuple[dict[str, st
             valid = False
             continue
         hashes[path] = digest
-    return hashes, paths, valid
+    recoverable_sidecars: set[str] = set()
+    if recovering_backups:
+        for sidecar in sidecars:
+            relative = Path(sidecar) if isinstance(sidecar, str) else None
+            if (
+                relative is None
+                or not sidecar.endswith(".bak")
+                or sidecar.startswith("/")
+                or ".." in relative.parts
+                or relative.as_posix() != sidecar
+                or sidecar in recoverable_sidecars
+                or sidecar[:-4] not in paths
+            ):
+                valid = False
+                continue
+            recoverable_sidecars.add(sidecar)
+    return hashes, paths, valid, recoverable_sidecars
 
 
 def re_full_hex_digest(value: str) -> bool:
@@ -641,7 +671,24 @@ def install_skill_packages(
 ) -> dict[str, Any]:
     canonical_root = guru_root / "trellis/skills/guru-team"
     registry, entries = skill_registry_entries(canonical_root)
-    previous_hash_map, previous_paths, provenance_valid = previous_skill_hashes(previous_manifest)
+    previous_hash_map, previous_paths, provenance_valid, recoverable_sidecars = previous_skill_hashes(
+        previous_manifest
+    )
+    pending_recovery_sidecars: list[str] = []
+    if provenance_valid:
+        for sidecar_text in sorted(recoverable_sidecars):
+            sidecar = Path(os.path.abspath(repo)) / Path(sidecar_text)
+            checked_relative, sidecar_stat, sidecar_error = lstat_repo_path(repo, sidecar)
+            if (
+                sidecar_error
+                or checked_relative.as_posix() != sidecar_text
+                or (sidecar_stat is not None and not stat.S_ISREG(sidecar_stat.st_mode))
+            ):
+                provenance_valid = False
+                pending_recovery_sidecars = []
+                break
+            if sidecar_stat is not None:
+                pending_recovery_sidecars.append(sidecar_text)
     active_entries = [entry for entry in entries if entry.get("state") == "active"]
     reserved_ids = sorted(str(entry.get("id")) for entry in entries if entry.get("state") == "reserved")
     active_ids = sorted(str(entry.get("id")) for entry in active_entries)
@@ -671,7 +718,7 @@ def install_skill_packages(
     records: list[dict[str, Any]] = []
     removals: list[dict[str, Any]] = []
     conflicts: list[dict[str, Any]] = []
-    sidecars: list[str] = []
+    sidecars: list[str] = list(pending_recovery_sidecars)
 
     if not provenance_valid:
         conflicts.append(skill_conflict(
@@ -1224,6 +1271,9 @@ def install_assets(
         dst / "scripts/bash/run-skill-command.sh",
         dst / "scripts/bash/sync-base.sh",
         dst / "scripts/bash/check-base-sync.sh",
+        dst / "scripts/bash/preview-change-context-history.sh",
+        dst / "scripts/bash/record-context-discovery.sh",
+        dst / "scripts/bash/check-context-discovery.sh",
         dst / "scripts/bash/resolve-human-artifacts.sh",
         dst / "scripts/bash/verify-marketplace.sh",
         dst / "scripts/bash/record-planning-approval.sh",

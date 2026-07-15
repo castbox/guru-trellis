@@ -1,0 +1,87 @@
+{
+  "primary_issue": {
+    "number": 111,
+    "url": "https://github.com/castbox/guru-trellis/issues/111",
+    "title": "拆分 #98：实现 guru-discover-change-context 闭环 Skill",
+    "reason": "本 task 的 intake 与完整验收边界。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 111,
+      "url": "https://github.com/castbox/guru-trellis/issues/111",
+      "title": "拆分 #98：实现 guru-discover-change-context 闭环 Skill",
+      "reason": "本 task 明确承诺完成并由 Branch Review Gate 覆盖的唯一 issue；publish 前补齐验收证据。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 53,
+      "url": "https://github.com/castbox/guru-trellis/issues/53",
+      "title": "多个并行的 Trellis 任务有没有可能不要让他们产出冲突的结果",
+      "reason": "提供 no-workspace、no-shared-index 与并行 task-local 写入边界。"
+    },
+    {
+      "number": 96,
+      "url": "https://github.com/castbox/guru-trellis/issues/96",
+      "title": "拆分 #53：移除 Guru Team 原 handoff 概念，重建任务启动上下文与本机运行态边界",
+      "reason": "已完成的 task/runtime portable boundary 合同，本 task 只消费。"
+    },
+    {
+      "number": 97,
+      "url": "https://github.com/castbox/guru-trellis/issues/97",
+      "title": "拆分 #53：用 task-local finish-summary 替代 workspace journal/add_session",
+      "reason": "已完成的 archived finish-summary history SSOT，本 task 只消费 index。"
+    },
+    {
+      "number": 98,
+      "url": "https://github.com/castbox/guru-trellis/issues/98",
+      "title": "拆分 #53：变更 Intake Skills 跨 Skill 编排与并行安全集成 umbrella",
+      "reason": "父 issue 与跨 Skill 编排上下文，不由本 task 关闭。"
+    },
+    {
+      "number": 100,
+      "url": "https://github.com/castbox/guru-trellis/issues/100",
+      "title": "拆分 #53：为既有 archived tasks 回填 finish-summary 历史索引",
+      "reason": "已完成的既有 archive backfill 合同，本 task 必须兼容。"
+    },
+    {
+      "number": 101,
+      "url": "https://github.com/castbox/guru-trellis/issues/101",
+      "title": "拆分 #98：实现 guru-review-change-request 闭环 Skill",
+      "reason": "被 #111 阻塞的后续 Skill；本 task 不实现。"
+    },
+    {
+      "number": 105,
+      "url": "https://github.com/castbox/guru-trellis/issues/105",
+      "title": "拆分 #53：重构 Guru Team finish-work 收尾事务，消除 archive 后可预见失败",
+      "reason": "已完成的 canonical PR URL 与 pr_refs finish-summary 合同，本 task 只消费。"
+    },
+    {
+      "number": 109,
+      "url": "https://github.com/castbox/guru-trellis/issues/109",
+      "title": "建立 Guru Team Skill-first 闭环流程模块化强制规范",
+      "reason": "已完成的 Skill-first 强制规范与 semantic profile 前置合同。"
+    },
+    {
+      "number": 110,
+      "url": "https://github.com/castbox/guru-trellis/issues/110",
+      "title": "拆分 #98：实现 guru-sync-base 闭环 Skill",
+      "reason": "已完成的 fresh base producer 与上游 typed exit 合同。"
+    },
+    {
+      "number": 112,
+      "url": "https://github.com/castbox/guru-trellis/issues/112",
+      "title": "拆分 #98：实现 guru-create-task-workspace 并集成变更 Intake Skills",
+      "reason": "后续消费 same-snapshot recorder 并写 task-local artifact 的 workspace Skill；本 task 只提供上游合同。"
+    },
+    {
+      "number": 113,
+      "url": "https://github.com/castbox/guru-trellis/issues/113",
+      "title": "按 Skill-first 重实现 #55：guru-clarify-requirements",
+      "reason": "context_ready 的下游 route；本 task 不实现。"
+    }
+  ],
+  "followup_issues": []
+}

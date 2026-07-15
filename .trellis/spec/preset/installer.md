@@ -43,6 +43,12 @@ new canonical bytes replace it; an unknown edit or invalid/missing provenance
 is preserved and receives `.new`. This path must not call
 `looks_like_trellis_generated_entry()` or any content heuristic. Any conflict,
 drift, invalid provenance, or unresolved sidecar blocks installed validation.
+The only recoverable conflict provenance is a known managed upgrade with empty
+`conflicts[]` and declared `.bak` sidecars adjacent to current managed
+`files[]`. Reapply must preserve and continue reporting backups that still
+exist; once the user removes all declared backups, the next reapply may promote
+the manifest to `status=ok`. Unknown edits, `.new` sidecars, malformed paths,
+and semantic conflicts remain invalid previous provenance.
 
 Platform selection may shrink on reapply. A stale platform file whose bytes
 equal its previous managed hash is removed and recorded in `removals[]`; empty
@@ -56,6 +62,12 @@ expected inventory independently.
 Before any public skill read/write/remove, validate lexical repo containment
 and use `lstat` on every target component. Any target or ancestor symlink,
 including dangling, internal, external, and multilevel chains, fails closed.
+
+Installed package validation parses the installed workflow target declarations
+as well as invoke/exit markers. Every `skill` consumer must resolve to an active
+installed registry id; every `workflow` / `stop` consumer must resolve to one
+matching-kind `guru-workflow-target` / `guru-stop-target` marker. Missing,
+multiple, kind-mismatched, or dangling targets block installation/runtime use.
 
 The production registry keeps `guru-create-work-commit` reserved and installs
 the active `guru-create-task-commit` package to the audited runtime root and
@@ -74,12 +86,25 @@ publishes active id `guru-sync-base`, schema id
 `guru-base-sync-result-1.0`, and runtime command ids `sync-base` and
 `check-base-sync`.
 
+The registry also installs active semantic `guru-discover-change-context` to
+the audited runtime root and selected shared/Codex/Cursor/Claude discovery
+roots. Its managed tree includes `SKILL.md`, interface, contract, example,
+`guru-context-discovery-1.0` schema, tests, and executable dispatcher-only
+wrappers. Managed companion assets include
+`preview-change-context-history.sh`, `record-context-discovery.sh`, and
+`check-context-discovery.sh`; the extension manifest publishes the active id,
+artifact schema id, and all three runtime command ids. Installed validation
+must prove exact bytes, executable modes, package/interface/tree digests and
+selected-platform inventory before direct discovery may run.
+
 Fresh install and update/reapply verification must exercise a selected-platform
 standalone wrapper with the full preset runtime. Missing runtime, runtime drift,
 or unresolved sidecars must block before fetch. A package-only copy must never
 appear to work. The throwaway path also verifies workflow route markers,
 stdout-only standalone resolution/result facts, the real workflow
-`synced -> prepare-task` planner/mutation guard chain using rolling post-sync
+`synced -> guru-discover-change-context -> context_ready -> clarification/intake`
+chain, direct zero/candidate history preview, same-snapshot task-local
+record/check, and the prepare-task planner/mutation guard chain using rolling post-sync
 resolution digests and the shared resolver/sync core, `trellis update`,
 workflow re-selection, preset reapply, and a final recursive zero-sidecar scan.
 

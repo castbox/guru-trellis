@@ -104,7 +104,7 @@
       "id": "synced",
       "evidence": "validator-passed fresh stdout result facts carrying the post-sync resolution digest",
       "consumer": {
-        "kind": "workflow",
+        "kind": "skill",
         "id": "guru-discover-change-context"
       }
     },
