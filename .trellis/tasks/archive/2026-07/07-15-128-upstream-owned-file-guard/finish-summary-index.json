@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Guru Team preset 长期覆盖 Trellis upstream 生成文件，却没有机器可验证的 ownership SSOT、冻结身份和 no-new-patch 门禁，导致 legacy overlay 可能继续扩张、同步改写或在 update/upgrade 后漂移。",
+    "outcome": "已建立严格 upstream ownership inventory/schema/source validator，把 43 个 legacy overlay 固定为不可扩张身份，并将 fail-closed 检查接入 installer、dogfood 与 throwaway update/reapply 验证链，同时保持现有 workflow、Skill 和 overlay runtime 行为不变。",
+    "changed_behavior": [
+      "43 个 legacy overlay 现在必须逐条匹配冻结的 path 与 baseline_sha256，且不得扩张集合。",
+      "Active 与 removed 条目分别校验当前 payload 和历史 materialized baseline，首次 removal 不能改写身份。",
+      "新增 upstream-owned overlay、缺少 replacement/removal owner、unclassified 或 managed claim 冲突都会 fail closed。",
+      "Preset installer 在目标 mutation 前执行 ownership preflight，失败不会留下部分安装状态。",
+      "Dogfood 与 clean throwaway 在 initial、update 和 reapply checkpoint 都执行相同 ownership gate。",
+      "Malformed inventory、manifest 和 Skill registry 统一返回稳定 JSON error，不再 traceback 或静默通过。",
+      "现有 workflow、public Skill、platform routing 和 43 个 overlay payload 保持不变，removal 延后到 #132。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "schema",
+        "name": "Upstream ownership inventory contract",
+        "paths": [
+          "trellis/presets/guru-team/ownership/upstream-ownership.json",
+          "trellis/presets/guru-team/ownership/upstream-ownership.schema.json"
+        ],
+        "change": "定义闭集分类、冻结 baseline identity、replacement/removal owner 和 update/upgrade 状态。"
+      },
+      {
+        "kind": "script",
+        "name": "Source-only ownership validator",
+        "paths": [
+          "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
+          "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py"
+        ],
+        "change": "校验 inventory、manifest、active/removed projection 与稳定结构化错误，不执行语义判断。"
+      },
+      {
+        "kind": "preset",
+        "name": "Preset install and drift checkpoints",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "change": "在 installer mutation 前和 dogfood/throwaway initial-update-reapply 链执行同一 ownership gate。"
+      },
+      {
+        "kind": "test",
+        "name": "Ownership and installer regressions",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "change": "覆盖 frozen expansion、removal identity、payload drift、malformed JSON 和 pre-mutation failure。"
+      },
+      {
+        "kind": "docs",
+        "name": "Ownership durable SSOT and public guidance",
+        "paths": [
+          ".trellis/spec/preset/upstream-ownership.md",
+          ".trellis/spec/preset/index.md",
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/preset/overlay-guidelines.md",
+          "README.md",
+          "trellis/presets/guru-team/README.md",
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "记录分类、脚本边界、no-new-patch、removal prerequisite 与 upgrade/update 恢复合同。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Legacy overlay ownership",
+        "before": "43 个 upstream-owned overlay 没有统一、机器可验证的分类和迁移事实 SSOT。",
+        "after": "每个 path 只能属于一个闭集分类，transitional 条目必须记录 replacement/removal 责任和 prerequisite。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Frozen overlay identity",
+        "before": "Legacy overlay 集合、payload baseline 和首次 removal 后的历史身份可被同步改写。",
+        "after": "固定 43 条 path+baseline_sha256，并分别验证 inventory projection 与 active/removed materialized projection。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "No-new-upstream-patch gate",
+        "before": "Preset overlay 或 managed manifest 新增 upstream-owned path 时缺少统一阻塞机制。",
+        "after": "集合扩张、unclassified、missing owner/issue 和 upstream managed claim 在 source validation 中 fail closed。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Installer mutation boundary",
+        "before": "Ownership 违规没有专门保证在目标仓库 mutation 前被拒绝。",
+        "after": "Installer 先完成 source-only ownership preflight，通过后才允许写入目标仓库。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Malformed input error contract",
+        "before": "错误 inventory/manifest/registry 成员可能触发 traceback 或被静默忽略。",
+        "after": "所有已覆盖的 malformed 输入都以非零退出和稳定 code/path/detail JSON fail closed。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Existing invocation non-regression",
+        "before": "Ownership 架构门禁若侵入 workflow/runtime，可能意外改变现有调用行为。",
+        "after": "Validator 只进入 preset/source/dogfood/throwaway validation，现有 workflow、Skill、platform routing 和 overlay payload 保持不变。",
+        "source_artifact": ""
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "check-upstream-ownership.sh",
+        "validate_upstream_ownership.py",
+        "check-dogfood-overlay-drift.sh",
+        "verify-throwaway-install.sh"
+      ],
+      "config_keys": [
+        "ownership.upstream_owned",
+        "ownership.guru_owned",
+        "ownership.transitional_legacy",
+        "frozen_overlay_set"
+      ],
+      "schema_fields": [
+        "classification",
+        "baseline_sha256",
+        "upstream_producer",
+        "replacement_owner",
+        "blocking_issue",
+        "removal_issue",
+        "removal_prerequisites"
+      ],
+      "symbols": [
+        "overlay_not_in_frozen_baseline",
+        "frozen_baseline_expanded",
+        "active_payload_hash_mismatch",
+        "missing_replacement_owner",
+        "missing_removal_issue",
+        "unclassified_path",
+        "upstream_owned_managed_claim"
+      ],
+      "phrases": [
+        "upstream ownership 清单缺失导致 legacy overlay 扩张",
+        "check-upstream-ownership.sh 已完成 frozen identity 校验",
+        "43 个 transitional legacy overlay 已固定",
+        "首次 removal 不再允许同步改写 baseline",
+        "installer mutation 前已新增 ownership preflight",
+        "malformed registry 已改为稳定 JSON fail closed",
+        "trellis update 后 ownership gate 已通过",
+        "现有 workflow 和 Skill routing 保持不变"
+      ]
+    }
+  }
+}

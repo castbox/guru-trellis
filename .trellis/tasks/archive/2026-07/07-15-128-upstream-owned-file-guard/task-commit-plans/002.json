@@ -1,0 +1,569 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "002",
+  "task": {
+    "id": "128-upstream-owned-file-guard",
+    "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard",
+    "status": "in_progress",
+    "branch": "fix/128-upstream-owned-file-guard"
+  },
+  "issue": {
+    "primary_issue": 128,
+    "ledger_sha256": "1c9bedfe0a2617d7ffd0707bb5078c055248816e4acbd8bbb2362aeea878d1f5"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "80367449554307768290af555155612358a3cf40"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/planning-approval.json",
+      "sha256": "17620552bf3c5313712ff9ca5081dd563f70d70d0d78f8ce8ade602e22a71468",
+      "size": 4464
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-check.json",
+      "sha256": "29d8a5cd19f578c85a0a9aeb94e93b63fcf78edccbb60a956261839cf697c879",
+      "size": 8773
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/issue-scope-ledger.json",
+      "sha256": "1c9bedfe0a2617d7ffd0707bb5078c055248816e4acbd8bbb2362aeea878d1f5",
+      "size": 2369
+    },
+    "task": {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/task.json",
+      "sha256": "46c5c54a057378c3bbf97b4106abfe5a6d3775623b166bfe2176190897a36724",
+      "size": 702
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "364e36333225f3f112a32dd868d3713be0df9cad",
+        "worktree_sha256": "c52f79f391f678362e95a35f7b058e9c5a6606415f617a25e0d086619ed0a6d5",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b7cc04f3bee4fb0d8180c6a26d732f5d73564c16",
+        "worktree_sha256": "b888792aa8e05f94def3b7f09520784bfe84b7a406918c5a2b7e03a999c1bbbc",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d8c8d0b471628ed8d9983a9eef982c35757cb5ac",
+        "worktree_sha256": "29d8a5cd19f578c85a0a9aeb94e93b63fcf78edccbb60a956261839cf697c879",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings-round-002-fix.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "e3c6b7b24b8ead33359e2c9e3e11553bf832182ff311cecdb16f12610ea7b616",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/review-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "1e6f94b4dcab2b11feaca3c8dd980e71505c09e9a6785f49f80ee4fc84d5cb34",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2756bdf1dcc335fc2523922dcfc190fff843d771630661e7b997b37a4c525ecb",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/reviews/001-findings-review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "66f14be0521d7cee526fba20a7d1085dc1f8f2d962e5b9ed06acd4ad438328c7",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/001.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1ed81f86dfe5da46793610c31ba3ac3f1ade0250",
+        "worktree_sha256": "7349ce4449a92623e34bc3771d9750968e6065c82c6751bcda9d6e7bd91174f1",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3e33614638e941f5a7b1c04c8109cfd235727ce8",
+        "worktree_sha256": "c323973ab31640dd70081be2faa9b8b6b0ef573f6aec25f3b320a435b7eef9fc",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1e5a3c6a6855e5541ed095dce8f0956cc75625ff",
+        "worktree_sha256": "b7e7f9bc8ccdf145905d259576696d5c5ef2763f9062d172ce7d5c64e25da9e0",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-first-removal-synchronized-drift.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "26f1591e543706cc8876d019296c9ae0c351b14d522f6ed52d3918b2bc146f7d",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-inventory-member.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "7ad2e1fca8ca62e05cbbd9aa1913b1112d14789405619a8922f841224735c226",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-manifest-member.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "0620992485aa0399f6dce925bd744b4d68748b74419ee8c84ea76f5706f2a86a",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-registry-member.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "d097494a58a223331d5327a8dbd161a247084617acd4fea022a2222defd053f8",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-removed-baseline-rewrite.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "64802f423f7eef97844924bcd791a25afbcb3933563e41dd917f61238178e9b4",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-first-removal.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "deb06d32a6c5e51b9af199b9c982ecc9fe0b3b59feb2f1fe298e88185af6c3a3",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8b3cace93bd84d8128faee58b9fa7da13878b62a",
+        "worktree_sha256": "6228dc4f9e93f12ab96d580aa6d00c790fd0c821f2dce14c8ce282c9c33ccfe1",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "d994c6d832d63481e4d08533f0dd53252dceb9e6",
+        "worktree_sha256": "b2289ad42b1c788cbc9aa2bb1c5754f9ee47267bf29898bb8a42da59f6dd19bc",
+        "mode": "100644"
+      }
+    ],
+    "digest": "2be3d2054674eb2a461019e5040b82b27d72c4b9e28a521cef6ed3707e0464f9"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/spec/preset/upstream-ownership.md",
+      "category": "task-reviewed",
+      "reason": "fresh finding-fix Phase 2 evidence 覆盖该 durable spec、ownership contract、validator、test/fixture 或 Phase 2 artifact。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "fresh finding-fix Phase 2 evidence 覆盖该 durable spec、ownership contract、validator、test/fixture 或 Phase 2 artifact。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings-round-002-fix.json",
+      "category": "task-reviewed",
+      "reason": "fresh finding-fix Phase 2 evidence 覆盖该 durable spec、ownership contract、validator、test/fixture 或 Phase 2 artifact。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+      "category": "task-reviewed",
+      "reason": "fresh finding-fix Phase 2 evidence 覆盖该 durable spec、ownership contract、validator、test/fixture 或 Phase 2 artifact。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+      "category": "task-reviewed",
+      "reason": "fresh finding-fix Phase 2 evidence 覆盖该 durable spec、ownership contract、validator、test/fixture 或 Phase 2 artifact。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-first-removal-synchronized-drift.json",
+      "category": "task-reviewed",
+      "reason": "fresh finding-fix Phase 2 evidence 覆盖该 durable spec、ownership contract、validator、test/fixture 或 Phase 2 artifact。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-inventory-member.json",
+      "category": "task-reviewed",
+      "reason": "fresh finding-fix Phase 2 evidence 覆盖该 durable spec、ownership contract、validator、test/fixture 或 Phase 2 artifact。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-manifest-member.json",
+      "category": "task-reviewed",
+      "reason": "fresh finding-fix Phase 2 evidence 覆盖该 durable spec、ownership contract、validator、test/fixture 或 Phase 2 artifact。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-registry-member.json",
+      "category": "task-reviewed",
+      "reason": "fresh finding-fix Phase 2 evidence 覆盖该 durable spec、ownership contract、validator、test/fixture 或 Phase 2 artifact。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-removed-baseline-rewrite.json",
+      "category": "task-reviewed",
+      "reason": "fresh finding-fix Phase 2 evidence 覆盖该 durable spec、ownership contract、validator、test/fixture 或 Phase 2 artifact。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-first-removal.json",
+      "category": "task-reviewed",
+      "reason": "fresh finding-fix Phase 2 evidence 覆盖该 durable spec、ownership contract、validator、test/fixture 或 Phase 2 artifact。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "category": "task-reviewed",
+      "reason": "fresh finding-fix Phase 2 evidence 覆盖该 durable spec、ownership contract、validator、test/fixture 或 Phase 2 artifact。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+      "category": "task-reviewed",
+      "reason": "fresh finding-fix Phase 2 evidence 覆盖该 durable spec、ownership contract、validator、test/fixture 或 Phase 2 artifact。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/agent-assignment.json",
+      "category": "unrelated-preserved",
+      "reason": "该 task-local liveness、旧 commit result 或 Branch Review metadata 留待后续 review transaction，不进入 finding-fix work commit。",
+      "coverage_source": "trellis-continue-metadata-tail"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/review-gate.json",
+      "category": "unrelated-preserved",
+      "reason": "该 task-local liveness、旧 commit result 或 Branch Review metadata 留待后续 review transaction，不进入 finding-fix work commit。",
+      "coverage_source": "trellis-continue-metadata-tail"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/review.md",
+      "category": "unrelated-preserved",
+      "reason": "该 task-local liveness、旧 commit result 或 Branch Review metadata 留待后续 review transaction，不进入 finding-fix work commit。",
+      "coverage_source": "trellis-continue-metadata-tail"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/reviews/001-findings-review.md",
+      "category": "unrelated-preserved",
+      "reason": "该 task-local liveness、旧 commit result 或 Branch Review metadata 留待后续 review transaction，不进入 finding-fix work commit。",
+      "coverage_source": "trellis-continue-metadata-tail"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/001.json",
+      "category": "unrelated-preserved",
+      "reason": "该 task-local liveness、旧 commit result 或 Branch Review metadata 留待后续 review transaction，不进入 finding-fix work commit。",
+      "coverage_source": "trellis-continue-metadata-tail"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/002.json",
+      "category": "task-reviewed",
+      "reason": "本次 invocation 的 candidate evidence 由 guru-create-task-commit 自身拥有。",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/spec/preset/upstream-ownership.md",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-check.json",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings-round-002-fix.json",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/002.json",
+    "trellis/presets/guru-team/ownership/upstream-ownership.json",
+    "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-first-removal-synchronized-drift.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-inventory-member.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-manifest-member.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-registry-member.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-removed-baseline-rewrite.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-first-removal.json",
+    "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+    "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py"
+  ],
+  "message": {
+    "subject": "fix(preset): #128 固化 removal 身份与错误合同",
+    "body": "背景：\n首轮 Branch Review 发现首次 removal 后 immutable baseline 可被同步改写，malformed ownership source 也可能破坏稳定 JSON 错误合同。\n\n变更：\n固定 43 条 path + baseline_sha256 canonical identity，并持续校验 inventory projection 与 active bytes/removed history materialized projection。对 inventory、manifest、Skill registry 输入先做类型归一并 fail closed。\n\n边界：\n本次只修改 ownership durable spec、schema/inventory、validator 与 tests/fixtures，不修改两个 workflow、43 个 overlay payload 或既有 guru-sync-base/guru-create-task-commit 公共合同；不涉及 CI/CD、容器、Kubernetes、数据库 migration、Makefile、secret 或业务数据。\n\n验证：\nOwnership 6 个测试方法覆盖 14 个结构化 fixture；installer 39、workflow 292、skill package 67 项测试通过。dogfood 和完整 throwaway 的 initial/update/reapply/finish 链通过且无 .new/.bak；exact remote branch marketplace 验证保留到 publish 阶段。\n\nRefs #128",
+    "bytes": "fix(preset): #128 固化 removal 身份与错误合同\n\n背景：\n首轮 Branch Review 发现首次 removal 后 immutable baseline 可被同步改写，malformed ownership source 也可能破坏稳定 JSON 错误合同。\n\n变更：\n固定 43 条 path + baseline_sha256 canonical identity，并持续校验 inventory projection 与 active bytes/removed history materialized projection。对 inventory、manifest、Skill registry 输入先做类型归一并 fail closed。\n\n边界：\n本次只修改 ownership durable spec、schema/inventory、validator 与 tests/fixtures，不修改两个 workflow、43 个 overlay payload 或既有 guru-sync-base/guru-create-task-commit 公共合同；不涉及 CI/CD、容器、Kubernetes、数据库 migration、Makefile、secret 或业务数据。\n\n验证：\nOwnership 6 个测试方法覆盖 14 个结构化 fixture；installer 39、workflow 292、skill package 67 项测试通过。dogfood 和完整 throwaway 的 initial/update/reapply/finish 链通过且无 .new/.bak；exact remote branch marketplace 验证保留到 publish 阶段。\n\nRefs #128\n",
+    "sha256": "373f1e04c15afbe402e4b5c2e4548e777e4d4ee5ce5fbd6b82d4ca6a9412551b"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "codex-main-session",
+    "summary": "已吸收 validator 对固定 commit body 小节的 revision-required 反馈；重新审查当前 18 个 dirty path 与 sequence 002 candidate 后，13 个 finding-fix/Phase 2 path 被 fresh evidence 覆盖，5 个 review/liveness/旧 plan metadata path 保持未提交。",
+    "evidence": [
+      "初次 candidate 未执行 staging/commit；修正后的正文按 背景/变更/边界/验证 固定顺序，message 仅使用 Refs #128。",
+      "Exact stage 仅含 13 个 durable spec、ownership schema/inventory、validator、tests/fixtures、fresh Phase 2 artifacts 与 candidate self；live index 当前为空。",
+      "agent-assignment.json、task-commit-plans/001.json、review.md、reviews/001-findings-review.md 与失败 review-gate.json 分类为 unrelated-preserved。",
+      "Issue Scope Ledger 只关闭 #128；#127/#112/#119 为 related，#129-#132 为 follow-up；commit message 仅使用 Refs #128。",
+      "变更不触及 workflow、43 个 overlay payload、CI/CD、容器、Kubernetes、数据库 migration、Makefile、secret 或业务数据；remote exact branch verifier 保留到 push 后 publish。"
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "explicit-user-confirmation-current-turn",
+    "evidence": "用户在已展示 #128 worktree、branch、task、提交与 Branch Review 收尾计划后明确回复“确认”；本 candidate 不 amend/rebase/reset/force，不触碰已发布历史或范围外并行改动。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-15T09:18:27Z",
+    "plan_digest": "b1aed7be7394274d45f86901648c81f16f6411ac39191ab8a58fbd7637e80855"
+  },
+  "result": {
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-15T09:19:29Z",
+    "commit_sha": "78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5",
+    "parent": "80367449554307768290af555155612358a3cf40",
+    "message_sha256": "373f1e04c15afbe402e4b5c2e4548e777e4d4ee5ce5fbd6b82d4ca6a9412551b",
+    "committed_paths": [
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-check.json",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings-round-002-fix.json",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/002.json",
+      "trellis/presets/guru-team/ownership/upstream-ownership.json",
+      "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-first-removal-synchronized-drift.json",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-inventory-member.json",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-manifest-member.json",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-registry-member.json",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-removed-baseline-rewrite.json",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-first-removal.json",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "0aa67b6503cb2af7ef88b54a7ca5ef6929bac6df",
+      "actual_tree": "0aa67b6503cb2af7ef88b54a7ca5ef6929bac6df",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/spec/preset/upstream-ownership.md",
+          "expected_blob": "d41e20039710112c426e4610c522c22df804083d",
+          "expected_mode": "100644",
+          "actual_blob": "d41e20039710112c426e4610c522c22df804083d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-check.json",
+          "expected_blob": "0c2a72eb50004012d2b3fa80c8dcc979b33f191e",
+          "expected_mode": "100644",
+          "actual_blob": "0c2a72eb50004012d2b3fa80c8dcc979b33f191e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings-round-002-fix.json",
+          "expected_blob": "9f2560a02aef90ff0a17eb991b03bc52c6324346",
+          "expected_mode": "100644",
+          "actual_blob": "9f2560a02aef90ff0a17eb991b03bc52c6324346",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/002.json",
+          "expected_blob": "c3546426531d2153114b75aed68ab04b3a75e6d1",
+          "expected_mode": "100644",
+          "actual_blob": "c3546426531d2153114b75aed68ab04b3a75e6d1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+          "expected_blob": "dc6ee8bd2e9b57dff9c90f2050540e24479b7b01",
+          "expected_mode": "100644",
+          "actual_blob": "dc6ee8bd2e9b57dff9c90f2050540e24479b7b01",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+          "expected_blob": "8144fb88b5e38f6754738e09dcc1b2827340a409",
+          "expected_mode": "100644",
+          "actual_blob": "8144fb88b5e38f6754738e09dcc1b2827340a409",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-first-removal-synchronized-drift.json",
+          "expected_blob": "192e572521eb53b05395fc7705e48af47f2abfdf",
+          "expected_mode": "100644",
+          "actual_blob": "192e572521eb53b05395fc7705e48af47f2abfdf",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-inventory-member.json",
+          "expected_blob": "619beeba11c1ad35a5495a279f3e0904f3fc9c69",
+          "expected_mode": "100644",
+          "actual_blob": "619beeba11c1ad35a5495a279f3e0904f3fc9c69",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-manifest-member.json",
+          "expected_blob": "97f2f77910b87747c9b9fc6790ad5ac38205e99d",
+          "expected_mode": "100644",
+          "actual_blob": "97f2f77910b87747c9b9fc6790ad5ac38205e99d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-registry-member.json",
+          "expected_blob": "3bcbeb227707db20b0f90607bae09a900dc27ea6",
+          "expected_mode": "100644",
+          "actual_blob": "3bcbeb227707db20b0f90607bae09a900dc27ea6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-removed-baseline-rewrite.json",
+          "expected_blob": "0130265039bb97a9c0924484cacc17c086964c80",
+          "expected_mode": "100644",
+          "actual_blob": "0130265039bb97a9c0924484cacc17c086964c80",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-first-removal.json",
+          "expected_blob": "699cb2d7ed5e007d134e8090f794e9be706f4a3c",
+          "expected_mode": "100644",
+          "actual_blob": "699cb2d7ed5e007d134e8090f794e9be706f4a3c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+          "expected_blob": "3438b7c78f8d85fb9e8234169e13f6d68a8583e8",
+          "expected_mode": "100644",
+          "actual_blob": "3438b7c78f8d85fb9e8234169e13f6d68a8583e8",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+          "expected_blob": "5d57bff003cc936dcccc2a67649e6193c2af92b0",
+          "expected_mode": "100644",
+          "actual_blob": "5d57bff003cc936dcccc2a67649e6193c2af92b0",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
+  }
+}

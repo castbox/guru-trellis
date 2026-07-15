@@ -1,0 +1,183 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-15T09:15:29Z",
+  "task_dir": ".trellis/tasks/07-15-128-upstream-owned-file-guard",
+  "base_branch": "main",
+  "head": "80367449554307768290af555155612358a3cf40",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/spec/preset/upstream-ownership.md",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/001.json",
+    "trellis/presets/guru-team/ownership/upstream-ownership.json",
+    "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+    "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+    "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-first-removal-synchronized-drift.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-inventory-member.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-manifest-member.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-registry-member.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-removed-baseline-rewrite.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-first-removal.json"
+  ],
+  "checker": "/root/trellis_check_findings_issue128",
+  "check_summary": "fresh Phase 2 已完整审查 #128 的规划、实现 handoff、首轮 Branch Review findings、origin/main...HEAD 全量 diff 与当前 finding-fix delta；BR-001/BR-002 及同范围 malformed registry 缺口均已关闭，ssot_first 文档承接、不可变 ownership 身份、稳定 JSON 错误合同、update/upgrade 与非回归面均通过。唯一保留限制为 push 后执行 exact remote branch marketplace 验证。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/prd.md",
+      "sha256": "5e7355481e4715234e683e31226ca7002dcc8977475b9d7a34a148b227f1d920",
+      "size_bytes": 7554,
+      "modified_at": "2026-07-15T07:18:01.063294+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/design.md",
+      "sha256": "02a78fbe905bbc0a370c7d6681eae26c9873b2affcbc5849e58b21af7b023e67",
+      "size_bytes": 10866,
+      "modified_at": "2026-07-15T07:18:01.063541+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/implement.md",
+      "sha256": "f1b839b27f82b1f28be8d450a237391feb2fafe9d66aa5d880e7e4cb40f78825",
+      "size_bytes": 6453,
+      "modified_at": "2026-07-15T07:18:01.063689+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/research/upstream-ownership-evidence.md",
+      "sha256": "46fa0351a0c58a22e342e00bf0f2a383219d6471c62d81a90157ab9563284770",
+      "size_bytes": 2795,
+      "modified_at": "2026-07-15T07:18:01.063897+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/issue-scope-ledger.json",
+      "sha256": "1c9bedfe0a2617d7ffd0707bb5078c055248816e4acbd8bbb2362aeea878d1f5",
+      "size_bytes": 2369,
+      "modified_at": "2026-07-15T07:18:01.064850+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/planning-approval.json",
+      "sha256": "17620552bf3c5313712ff9ca5081dd563f70d70d0d78f8ce8ade602e22a71468",
+      "size_bytes": 4464,
+      "modified_at": "2026-07-15T07:21:38.931555+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/agent-assignment.json",
+      "sha256": "b888792aa8e05f94def3b7f09520784bfe84b7a406918c5a2b7e03a999c1bbbc",
+      "size_bytes": 34176,
+      "modified_at": "2026-07-15T09:14:49.326765+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/review-gate.json",
+      "sha256": "1e6f94b4dcab2b11feaca3c8dd980e71505c09e9a6785f49f80ee4fc84d5cb34",
+      "size_bytes": 19411,
+      "modified_at": "2026-07-15T08:43:34.437137+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/review.md",
+      "sha256": "2756bdf1dcc335fc2523922dcfc190fff843d771630661e7b997b37a4c525ecb",
+      "size_bytes": 2460,
+      "modified_at": "2026-07-15T08:43:01.364289+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/reviews/001-findings-review.md",
+      "sha256": "66f14be0521d7cee526fba20a7d1085dc1f8f2d962e5b9ed06acd4ad438328c7",
+      "size_bytes": 11079,
+      "modified_at": "2026-07-15T08:41:04.206869+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings-round-002-fix.json",
+      "sha256": "e3c6b7b24b8ead33359e2c9e3e11553bf832182ff311cecdb16f12610ea7b616",
+      "size_bytes": 1265,
+      "modified_at": "2026-07-15T09:15:03.716026+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/preset/index.md",
+      "sha256": "eb10c8f4ef82e4a99eb7ab69c16da7d9786b5a78d8ac10dbe776d6cec60f80d3",
+      "size_bytes": 1858,
+      "modified_at": "2026-07-15T07:28:38.133842+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "be85e4cc1efd94ae0a4abbb315cd948ed48b33c820cfb685338c51135666a722",
+      "size_bytes": 17528,
+      "modified_at": "2026-07-15T07:28:38.134484+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "14ba5987c991c4fd01dad3aea3f06e99606ea05a9dfad182b5d005efc7b2a74f",
+      "size_bytes": 17970,
+      "modified_at": "2026-07-15T07:28:38.134826+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/upstream-ownership.md",
+      "sha256": "c52f79f391f678362e95a35f7b058e9c5a6606415f617a25e0d086619ed0a6d5",
+      "size_bytes": 8957,
+      "modified_at": "2026-07-15T09:01:12.894217+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "result": "6 test methods passed; 14 structured fixtures"
+    },
+    {
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "39 tests passed"
+    },
+    {
+      "command": "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "292 tests passed"
+    },
+    {
+      "command": "python3 -m unittest discover -s trellis/skills/guru-team/tests -p 'test_*.py'",
+      "result": "67 tests passed"
+    },
+    {
+      "command": "check-upstream-ownership.sh --json",
+      "result": "passed; 43/43/0 ownership facts and 37/6 clean-init distribution"
+    },
+    {
+      "command": "check-dogfood-overlay-drift.sh",
+      "result": "passed; canonical/installed overlay zero drift"
+    },
+    {
+      "command": "verify-throwaway-install.sh",
+      "result": "passed; initial install, trellis update --force, workflow/preset reapply, ownership checkpoints, finish fixture, zero .new/.bak"
+    },
+    {
+      "command": "JSON Schema Draft 2020-12, bash -n, Python compile, JSON parse, git diff --check",
+      "result": "all passed"
+    }
+  ],
+  "findings": [
+    {
+      "priority": "P1",
+      "message": "BR-001 指出首条 removal 后可同步改写 active payload、inventory hash 或 removed 历史 hash；现已固定 43 条 path + baseline_sha256 canonical identity，并分别校验 inventory projection 与 active bytes/removed history materialized projection。",
+      "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "BR-002 指出 malformed inventory 或 extension manifest 成员会触发 TypeError traceback；现已在 set、sorted 和 mapping lookup 前完成类型归一，并保证 CLI 返回非零、可解析 JSON 与稳定 code/path/detail。",
+      "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "fresh Phase 2 发现 malformed Skill registry member 或 supported_platforms 会被静默跳过并错误返回 status=ok；现已改为 fail closed，并新增 CLI JSON 回归覆盖。",
+      "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-registry-member.json",
+      "status": "resolved"
+    }
+  ],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

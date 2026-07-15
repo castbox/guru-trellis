@@ -1,0 +1,15 @@
+{
+  "id": "negative-malformed-registry-member",
+  "mutation": {
+    "type": "malform_skill_registry",
+    "appended_member": 128,
+    "active_skill_id": "guru-create-task-commit",
+    "supported_platforms": {"invalid": "object"}
+  },
+  "expected_status": "error",
+  "expected_error_codes": [
+    "skill_registry_contract_invalid",
+    "active_skill_platform_invalid"
+  ],
+  "assert_cli_json": true
+}

@@ -22,6 +22,12 @@ It also installs the managed finish-summary schema, materializes top-level
 `.gitignore`. It does not create, scan, translate, or rewrite workspace
 journal/index files.
 
+Before `install_assets()` creates the target `.trellis/guru-team/` directory or
+performs any other target mutation, it must run the source ownership validator
+defined in [upstream-ownership.md](./upstream-ownership.md). The validator is
+read-only and source-repository scoped; it is not installed into business
+repositories or exposed as a workflow/Skill runtime command.
+
 ## Managed Assets
 
 Public workflow skill packages are a separate managed-hash domain. The preset
@@ -183,6 +189,13 @@ unknown document should be translated.
 
 ## Overlay Conflict Handling
 
+The overlay path set is a frozen transitional exception, not a general-purpose
+extension surface. `upstream-ownership.json` retains exactly 43 baseline paths,
+and every active payload must match its recorded SHA-256. Do not add another
+Trellis-owned prompt, command, skill, agent, hook, or meta reference to the
+overlay tree. Reviewed removals keep their inventory entries as
+`upstream_owned/removed` audit history.
+
 Use `copy_overlay()` behavior:
 
 - install missing overlay files
@@ -204,6 +217,9 @@ still carry standard Trellis task context signals. Guru Team
 replaces those generated surfaces so new installs do not keep stale `PRD-only`,
 lightweight-PRD-only, or optional design/implement planning hints after the
 canonical workflow has a stricter post-planning approval gate.
+
+That detection describes target conflict handling for the frozen set only. It
+does not classify ownership and cannot authorize a new canonical overlay.
 
 Do not overwrite unknown platform command, prompt, skill, or agent edits. The
 target repo owner must inspect `.new` when local customization exists.
@@ -293,6 +309,7 @@ apply.sh --repo "$PWD" --platform codex --platform cursor
 At minimum:
 
 ```bash
+trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
 bash -n trellis/presets/guru-team/scripts/bash/apply.sh
 python3 -m py_compile trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
 ```

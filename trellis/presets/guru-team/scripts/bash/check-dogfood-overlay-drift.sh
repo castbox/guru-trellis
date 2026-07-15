@@ -9,9 +9,10 @@ usage() {
   cat <<'USAGE'
 Usage: check-dogfood-overlay-drift.sh [--repo <path>]
 
-Compare canonical Guru Team preset overlays with installed dogfood copies in
-this repository. The command is read-only and exits non-zero when any overlay
-copy is missing or different.
+Validate the frozen upstream ownership inventory, then compare canonical Guru
+Team preset overlays with installed dogfood copies in this repository. The
+command is read-only and exits non-zero on ownership failure or when any
+overlay copy is missing or different.
 USAGE
 }
 
@@ -39,6 +40,14 @@ done
 
 REPO_ROOT="$(cd "$REPO_ROOT" && pwd)"
 OVERLAY_ROOT="$REPO_ROOT/trellis/presets/guru-team/overlays"
+OWNERSHIP_CHECK="$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
+
+if [[ ! -x "$OWNERSHIP_CHECK" ]]; then
+  echo "Missing executable ownership validator: $OWNERSHIP_CHECK" >&2
+  exit 2
+fi
+
+"$OWNERSHIP_CHECK" --repo "$REPO_ROOT" --json
 
 if [[ ! -d "$OVERLAY_ROOT" ]]; then
   echo "Missing overlay root: $OVERLAY_ROOT" >&2

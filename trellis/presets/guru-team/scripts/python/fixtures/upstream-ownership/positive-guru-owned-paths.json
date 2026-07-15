@@ -1,0 +1,18 @@
+{
+  "id": "positive-guru-owned-paths",
+  "mutation": {
+    "type": "classify_guru_paths",
+    "cases": [
+      {"path": ".trellis/guru-team/scripts/bash/check-env.sh", "expected_rule": "installed-runtime"},
+      {"path": "trellis/workflows/guru-team/workflow.md", "expected_rule": "canonical-workflow-root"},
+      {"path": "trellis/skills/guru-team/packages/guru-sync-base/SKILL.md", "expected_rule": "canonical-skill-root"},
+      {"path": "guru-sync-base", "expected_rule": "canonical-skill-id"},
+      {"path": ".agents/skills/guru-sync-base/SKILL.md", "expected_rule": "shared-skill-discovery"},
+      {"path": ".codex/skills/guru-sync-base/SKILL.md", "expected_rule": "codex-skill-discovery"},
+      {"path": ".cursor/skills/guru-sync-base/SKILL.md", "expected_rule": "cursor-skill-discovery"},
+      {"path": ".claude/skills/guru-sync-base/SKILL.md", "expected_rule": "claude-skill-discovery"}
+    ]
+  },
+  "expected_status": "ok",
+  "expected_error_codes": []
+}

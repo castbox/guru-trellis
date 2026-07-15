@@ -1,0 +1,22 @@
+{
+  "findings": [
+    {
+      "priority": "P2",
+      "message": "guru_owned_rules 未覆盖 canonical workflow source，合法的 trellis/workflows/guru-team/** 会被误判；已增加 canonical-workflow-root 分类并补回归覆盖。",
+      "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "43 条 inventory 使用不存在的 guru-start-task replacement owner，且未精确绑定 live issue owner；已改为 #112/#129/#130/#131/#119 定义的真实 stable skill owner 并校验 owner/issue 绑定。",
+      "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "facts_sha256 主要绑定计数，不能充分证明 ownership 合同内容；已纳入 schema、inventory、Guru-owned rules、managed claims 与 legacy entries digest。",
+      "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+      "status": "resolved"
+    }
+  ]
+}

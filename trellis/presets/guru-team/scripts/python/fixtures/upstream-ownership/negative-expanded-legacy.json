@@ -1,0 +1,10 @@
+{
+  "id": "negative-expanded-legacy",
+  "mutation": {
+    "type": "append_legacy_clone",
+    "source_path": ".codex/prompts/trellis-start.md",
+    "new_path": ".codex/prompts/trellis-unreviewed.md"
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["frozen_baseline_expanded"]
+}

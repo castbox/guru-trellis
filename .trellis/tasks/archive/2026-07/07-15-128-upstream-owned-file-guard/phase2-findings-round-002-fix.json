@@ -1,0 +1,22 @@
+{
+  "findings": [
+    {
+      "priority": "P1",
+      "message": "BR-001 指出首条 removal 后可同步改写 active payload、inventory hash 或 removed 历史 hash；现已固定 43 条 path + baseline_sha256 canonical identity，并分别校验 inventory projection 与 active bytes/removed history materialized projection。",
+      "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "BR-002 指出 malformed inventory 或 extension manifest 成员会触发 TypeError traceback；现已在 set、sorted 和 mapping lookup 前完成类型归一，并保证 CLI 返回非零、可解析 JSON 与稳定 code/path/detail。",
+      "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "fresh Phase 2 发现 malformed Skill registry member 或 supported_platforms 会被静默跳过并错误返回 status=ok；现已改为 fail closed，并新增 CLI JSON 回归覆盖。",
+      "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-registry-member.json",
+      "status": "resolved"
+    }
+  ]
+}

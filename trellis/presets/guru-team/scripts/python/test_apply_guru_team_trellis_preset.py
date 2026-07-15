@@ -273,6 +273,32 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
+    def test_upstream_ownership_failure_precedes_every_target_mutation(self) -> None:
+        before = {
+            path.relative_to(self.repo).as_posix(): path.read_bytes()
+            for path in self.repo.rglob("*")
+            if path.is_file()
+        }
+        with mock.patch.object(
+            preset,
+            "run_upstream_ownership_validator",
+            side_effect=SystemExit("fixture ownership failure"),
+        ):
+            with self.assertRaisesRegex(SystemExit, "fixture ownership failure"):
+                preset.install_assets(
+                    self.workflow_src,
+                    self.install_dst,
+                    self.repo,
+                    {"codex", "cursor"},
+                )
+        after = {
+            path.relative_to(self.repo).as_posix(): path.read_bytes()
+            for path in self.repo.rglob("*")
+            if path.is_file()
+        }
+        self.assertEqual(after, before)
+        self.assertFalse(self.install_dst.exists())
+
     def install(self, platforms: set[str] | None = None, all_platforms: bool = False) -> dict[str, object]:
         return preset.install_assets(self.workflow_src, self.install_dst, self.repo, platforms, all_platforms=all_platforms)
 
@@ -801,6 +827,19 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             workflow_reapply,
         )
         final_scan = verifier.index('FINAL_SIDECARS="$(find "$TARGET"', preset_reapply)
+        initial_ownership = verifier.index('ownership_checkpoint "initial-init-before-preset-apply"')
+        initial_apply = verifier.index(
+            '"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh"',
+            initial_ownership,
+        )
+        post_update_ownership = verifier.index(
+            'ownership_checkpoint "post-update-before-workflow-and-preset-reapply"',
+            update,
+        )
+        post_reapply_ownership = verifier.index(
+            'ownership_checkpoint "post-preset-reapply-before-final-checks"',
+            preset_reapply,
+        )
 
         self.assertLess(preview_assert, preview_remove)
         self.assertLess(preview_remove, initial_switch)
@@ -808,6 +847,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertLess(update, workflow_reapply)
         self.assertLess(workflow_reapply, preset_reapply)
         self.assertLess(preset_reapply, final_scan)
+        self.assertLess(initial_ownership, initial_apply)
+        self.assertLess(update, post_update_ownership)
+        self.assertLess(post_update_ownership, workflow_reapply)
+        self.assertLess(preset_reapply, post_reapply_ownership)
+        self.assertLess(post_reapply_ownership, final_scan)
+        self.assertEqual(verifier.count('ownership_checkpoint "'), 3)
         self.assertIn('WORKSPACE_SENTINEL="$TARGET/.trellis/workspace/private/shared-start-secret-journal.md"', verifier)
         self.assertIn('event not in {"open", "os.listdir", "os.scandir"}', verifier)
         self.assertIn("os._exit(91)", verifier)
@@ -833,6 +878,17 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('hook_executed', installed_closeout)
         self.assertIn('installed-after-archive-hook-', installed_closeout)
         self.assertNotIn("copytree", installed_closeout)
+
+    def test_dogfood_drift_checks_ownership_before_payload_bytes(self) -> None:
+        checker = (
+            self.guru_root
+            / "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
+        ).read_text(encoding="utf-8")
+
+        ownership_gate = checker.index('"$OWNERSHIP_CHECK" --repo "$REPO_ROOT" --json')
+        payload_loop = checker.index('while IFS= read -r source; do')
+        self.assertLess(ownership_gate, payload_loop)
+        self.assertIn("Missing executable ownership validator", checker)
 
     def test_generated_trellis_meta_task_system_docs_are_replaced_with_guru_team_overlay(self) -> None:
         shared_meta = self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md"
@@ -1012,6 +1068,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertEqual(exit_code, 0)
         self.assertIn('"platforms": [', stdout.getvalue())
         self.assertIn('"all_platforms": false', stdout.getvalue())
+        self.assertIn('"upstream_ownership_validation": {', stdout.getvalue())
 
     def test_main_rejects_platform_with_all_platforms(self) -> None:
         with mock.patch(

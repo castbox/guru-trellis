@@ -1,0 +1,10 @@
+{
+  "id": "negative-payload-drift",
+  "mutation": {
+    "type": "append_overlay_bytes",
+    "path": ".agents/skills/trellis-start/SKILL.md",
+    "content": "\nfixture drift\n"
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["active_payload_hash_mismatch"]
+}

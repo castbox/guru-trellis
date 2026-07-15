@@ -1,0 +1,14 @@
+{
+  "id": "negative-first-removal-synchronized-drift",
+  "mutation": {
+    "type": "first_removal_with_synchronized_active_drift",
+    "removed_path": ".agents/skills/trellis-start/SKILL.md",
+    "active_path": ".agents/skills/trellis-before-dev/SKILL.md",
+    "content": "\nfixture synchronized drift\n"
+  },
+  "expected_status": "error",
+  "expected_error_codes": [
+    "frozen_legacy_identity_mismatch",
+    "materialized_frozen_identity_mismatch"
+  ]
+}

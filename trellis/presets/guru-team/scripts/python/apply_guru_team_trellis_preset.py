@@ -16,6 +16,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+SCRIPT_MODULE_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_MODULE_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_MODULE_DIR))
+
+from validate_upstream_ownership import validate_repository as validate_upstream_ownership_repository
+
 
 GURU_OVERLAY_MARKER = "guru-team-overlay:"
 EXTENSION_MANIFEST = Path("trellis/guru-team-extension.json")
@@ -151,6 +157,19 @@ def load_extension_manifest(guru_root: Path) -> dict[str, Any]:
     for key in ["schema_version", "extension_id", "version", "workflow_template_id"]:
         if not str(payload.get(key) or "").strip():
             raise SystemExit(f"Guru Team extension manifest missing required field: {key}")
+    return payload
+
+
+def run_upstream_ownership_validator(guru_root: Path) -> dict[str, Any]:
+    payload = validate_upstream_ownership_repository(guru_root)
+    if payload.get("status") != "ok":
+        first_error = next(iter(payload.get("errors") or []), {})
+        code = str(first_error.get("code") or "ownership_validation_failed")
+        path = str(first_error.get("path") or "unknown")
+        raise SystemExit(
+            "Canonical upstream ownership validation failed before preset mutation: "
+            f"{code} {path}"
+        )
     return payload
 
 
@@ -1147,6 +1166,7 @@ def install_assets(
         raise SystemExit(f"Missing source directory: {src}")
 
     guru_root = guru_root_from_script()
+    upstream_ownership_validation = run_upstream_ownership_validator(guru_root)
     source_validation = run_skill_package_validator(guru_root, guru_root, "source")
     if source_validation.get("returncode") != 0:
         raise SystemExit("Canonical Guru Team skill package validation failed before preset mutation.")
@@ -1260,6 +1280,7 @@ def install_assets(
         "all_platforms": all_platforms,
         "skill_packages": skill_packages,
         "skill_source_validation": source_validation,
+        "upstream_ownership_validation": upstream_ownership_validation,
     }
     manifest = load_extension_manifest(guru_root)
     source = source_provenance(guru_root)
@@ -1367,6 +1388,7 @@ def main() -> int:
         "guru_team_extension": result["guru_team_extension"],
         "skill_packages": result["skill_packages"],
         "skill_source_validation": result["skill_source_validation"],
+        "upstream_ownership_validation": result["upstream_ownership_validation"],
         "skill_installed_validation": result["skill_installed_validation"],
         "config": ".trellis/guru-team/config.yml",
         "workflow_marketplace": WORKFLOW_MARKETPLACE,

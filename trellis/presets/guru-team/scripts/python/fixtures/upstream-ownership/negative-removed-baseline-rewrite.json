@@ -1,0 +1,13 @@
+{
+  "id": "negative-removed-baseline-rewrite",
+  "mutation": {
+    "type": "rewrite_removed_baseline",
+    "path": ".agents/skills/trellis-start/SKILL.md",
+    "baseline_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "expected_status": "error",
+  "expected_error_codes": [
+    "frozen_legacy_identity_mismatch",
+    "materialized_frozen_identity_mismatch"
+  ]
+}
