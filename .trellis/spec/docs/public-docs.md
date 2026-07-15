@@ -95,16 +95,16 @@ skill and typed exits instead of repeating its step-local contract.
 
 Public docs that describe Phase 0 must name `guru-sync-base` as the active
 selected-base closed-loop owner, list stable exits `synced` / `skipped` /
-`blocked`, and distinguish AI selected-base review from deterministic
-`sync-base` / `check-base-sync` facts. They must state the four-level
-resolution order, prohibit current-branch implicit fallback, require
-decision/local/remote HEAD equality, and explain that `prepare-task` consumes
-the reviewed resolution file/digest, preserves source provenance, and reuses
-the same raw-byte/digest lease before semantic reads and each mutation boundary.
-They must state that Skill validation cleans result evidence, standalone cleans
-all evidence before return, workflow `synced` transfers only the resolution
-lease, pending user confirmation retains it, and task-created/blocked/aborted/
-superseded terminal routes release it without persisting path/digest. All three
+`blocked`, and state that the package uses the deterministic schema 1.2 profile
+without selected-base or post-execution AI review gates. They must state the
+four-level order: explicit, scalar config, first existing ordered candidate
+(default `dev`, `develop`, `main`, `master`), then remote default; prohibit
+current-branch implicit fallback; require decision/local/remote HEAD equality;
+and explain that resolution/result facts stay on stdout, the executor emits a
+post-sync resolution digest, the validator passes only that digest forward,
+and each `prepare-task` guard consumes the previous post-sync digest and returns
+the next one before reads or mutation boundaries. They must not describe
+evidence files, leases, release, or cleanup APIs. All three
 README files must list the active id, result schema,
 runtime commands, full-preset requirement, update/reapply steps, and
 missing/drift/sidecar remediation without duplicating the complete Skill loop.

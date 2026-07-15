@@ -38,8 +38,9 @@ flowchart LR
 
 公共 mandatory step 采用两层 SSOT：global workflow 通过可解析的
 `guru-skill-invoke` / `guru-skill-exit` marker 拥有调用与出口路由；active
-package 拥有“正向行为 -> AI Review Gate -> 条件 human confirmation ->
-recorder/validator -> typed exit”的完整闭环。Auto-trigger 只辅助发现，不能
+package 按 interface schema 1.2 的 `judgment_mode` 独占完整闭环：semantic 使用
+“正向行为 -> AI Review Gate -> 条件 human confirmation -> recorder/validator -> typed
+exit”，deterministic 使用“正向行为 -> recorder/validator -> typed exit”。Auto-trigger 只辅助发现，不能
 替代 mandatory marker。任何 missing/unknown/multiple/unmapped exit 都必须
 fail closed。
 
@@ -55,7 +56,7 @@ flowchart TD
   B["注入上下文<br/>trellis-bootstrap / codex-mode / workflow-state"]:::codex
 
   R{"AI 判断入口"}:::guru
-  SB["mandatory guru-sync-base<br/>resolve -> AI confirm -> execute -> review -> validate<br/>result cleanup -> resolution lease transfer"]:::guru
+  SB["mandatory guru-sync-base<br/>resolve -> execute -> validate -> typed exit<br/>deterministic stdout facts"]:::guru
   BS["sync-base / check-base-sync<br/>digest-bound fetch + ff-only + 3-way equality"]:::script
   S0["trellis-start fallback<br/>phase + packages + current task + Git facts"]:::guru
   P0["Phase 0: Pre-task intake<br/>不直接 task.py create"]:::guru
@@ -143,19 +144,14 @@ sequenceDiagram
   alt 无 active task 且会产生文件变更
     AI->>Script: sync-base --resolve-only
     Script-->>AI: selected-base resolution + resolution_sha256
-    AI->>AI: 审查 invocation intent / source / selected base
-    AI->>Script: sync-base --execute --resolution-file ... --expected-resolution-sha256 ...
-    Script-->>AI: base-sync result + facts_sha256
-    AI->>AI: mandatory post-execution AI Review Gate<br/>审查 scope / selected base / actual side effects / before-after facts
-    AI->>Script: check-base-sync --evidence-file ...
-    Script-->>AI: schema / digest / live Git equality passed + result evidence cleaned
-    AI->>AI: synced transfers the exact resolution file/raw bytes/digest lease
+    AI->>Script: sync-base --execute --expected-resolution-sha256 ...
+    Script-->>AI: base-sync result + post_sync_resolution_sha256 + facts_sha256
+    AI->>Script: check-base-sync --result-json ... --expected-resolution-sha256 ...
+    Script-->>AI: schema / pre+post digest / live Git equality passed + post-sync digest
     AI->>Script: check-env.sh --json
-    AI->>Script: prepare-task.sh --json --resolution-file ... --expected-resolution-sha256 ... "<request>"
-    Script-->>AI: stdout JSON planner output
-    AI->>Script: later prepare-task mutation guard reuses the same lease
-    AI->>Script: terminal route calls sync-base --release-resolution-evidence
-    Script-->>AI: released / already_released with zero resolution residue
+    AI->>Script: prepare-task.sh --json --expected-resolution-sha256 ... "<request>"
+    Script-->>AI: stdout JSON planner output + next post-sync digest
+    AI->>Script: later prepare-task mutation guards consume the previous post-sync digest
     AI-->>User: 展示 duplicate / proposed issue / base / branch / worktree / naming
   else 只是对话或轻量查询
     AI-->>User: 直接回答或询问是否创建 Trellis task
@@ -170,15 +166,16 @@ sequenceDiagram
 | --- | --- | --- |
 | Codex hook | Trellis 支持 `UserPromptSubmit` workflow-state nudge，hook 从 `workflow.md` 读取状态块。 | Guru Team 在 no_task 状态下注入 Phase 0 intake 规则，并给 Codex 注入 `codex.dispatch_mode` 说明。 |
 | Request triage | Trellis 原生允许 AI 按 workflow 和 task 状态执行。 | Guru Team 要求 issue-backed、task-like、file-changing 请求的 first hop 是 `guru-sync-base`；只有 `synced` 后才运行 `check-env` + `prepare-task`。`skipped` 仅限 tool-free classification 已证明无需 repo/network action 的 workflow route，不得裸 `task.py create`。 |
-| Base sync closed loop | 官方 Trellis 不替 Guru Team 选择或刷新业务 base。 | Tool-free route 后 mandatory invoke `guru-sync-base`；repo-changing route 只有在 resolve-only evidence 经 AI 确认、digest-bound executor 完成、AI Review Gate 通过且 validator 证明三方 equality 后才继续。Validator 清理 result evidence；`synced` 把 resolution lease 交给唯一 Phase 0 consumer，同一 lease 覆盖 planner/mutation guard，并在 task-created/blocked/aborted/superseded 终态释放。 |
+| Base sync closed loop | 官方 Trellis 不替 Guru Team 选择或刷新业务 base。 | Tool-free route 后 mandatory invoke deterministic `guru-sync-base`；repo-changing route 只有在 pre-sync digest-bound executor 生成 post-sync digest且 validator 证明双 digest 与三方 equality 后才继续。Resolution/result facts 只走 stdout；`prepare-task` 每个 planner/mutation guard 消费上一 guard 的 post-sync digest并输出下一 digest，不创建 evidence lease/release/cleanup API。 |
 | Pre-task planner | 官方 Trellis task 尚未创建。 | `prepare-task.sh --json` 默认无副作用，只输出 intake plan，不创建 GitHub issue、worktree、branch、task 或 handoff 文件。 |
 | Handoff review | 无固定官方 gate。 | AI 必须展示 duplicate、proposed issue、naming quality、base freshness、branch、workspace、命令，并等待用户批准。 |
 
 ## 4. Phase 0：Pre-task intake
 
 Phase 0 是 Guru Team 加在官方 Trellis task 创建之前的门禁。任何 repo-changing
-semantic read 先经过 `guru-sync-base`：explicit base、single-value config、remote default、
-unique fallback candidate 四级解析；不允许 current branch implicit fallback。成功后进入稳定
+semantic read 先经过 `guru-sync-base`：explicit base、non-empty scalar config、ordered
+candidates 中首个 existing ref（缺省 `dev -> develop -> main -> master`）、候选均不存在时
+remote default 四级解析；多个 candidates 按声明顺序选择，不允许 current branch implicit fallback。成功后进入稳定
 `guru-discover-change-context` inline route，#111 才会替换该 route 的内部实现。
 
 它解决以下问题：
@@ -204,12 +201,12 @@ source checkout 中可疑同名 task artifact / review metadata；它不判断 s
 source checkout 出现新 `HEAD` / dirty status / diff stat / mtime 变化时是
 `workspace_boundary_violation_progress`，不是 stale 证据。
 
-`prepare-task` 不拥有另一套 base 规则。它必须消费前序 AI-reviewed repository-external
-resolution file 与 expected digest，在 `gh auth status`、issue read 和 duplicate search
-前调用 shared raw-bytes/digest/source-identity verifier 与 sync core，并分别在
-create-issue、worktree、task mutation 前独立重跑；task guard 位于 worktree/identity
-mutation 之后、`task.py create` 之前。`--base-branch` 只能做一致性断言，不能把
-config/remote-default/fallback provenance 改写为 explicit；
+`prepare-task` 不拥有另一套 base 规则。它必须消费前序 stdout resolution 的 expected
+digest，在 `gh auth status`、issue read 和 duplicate search 前重新解析完整 resolution
+并调用 shared sync core；完整 resolution digest 必须绑定 decision checkout branch、HEAD
+与 clean state。create-issue、worktree、task mutation 前分别独立重跑，task guard 位于
+worktree/identity mutation 之后、`task.py create` 之前。`--base-branch` 只能做一致性断言，
+不能把 config/config-candidate/remote-default provenance 改写为 explicit；
 兼容字段 `preflight.base_freshness` 增加 resolution、decision checkout 与三方 equality facts。
 task-start context 只保存 portable base/local/remote SHA，不保存临时 resolution/result 文件、
 完整 pre-task payload 或本机绝对路径。
@@ -375,7 +372,7 @@ routing 与平台 direct discovery。两种 mode 使用相同 entry precondition
 阶段，并都依赖完整且兼容的 Guru Team extension runtime；复制单个 Skill 目录不构成
 self-contained/portable 分发。Package wrapper 只能定位 shared `run-skill-command`
 dispatcher、传递固定 validator id 并转发参数。Dispatcher 在目标 companion command 之前
-校验 interface schema 1.1 dependency、installed extension manifest/API、managed package
+校验 interface schema 1.2 dependency、installed extension manifest/API、managed package
 inventory、discovery copy drift 与 `runtime_command` membership；任一不匹配都 fail closed，
 提示安装或升级完整 preset、处理 sidecar 并重新验证后重试。
 

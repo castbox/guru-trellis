@@ -54,7 +54,6 @@ def prepare_args(**overrides: object) -> argparse.Namespace:
         "create_issue_confirmed": False,
         "issue_title": None,
         "issue_body_file": None,
-        "resolution_file": "/tmp/reviewed-base-resolution.json",
         "expected_resolution_sha256": "b" * 64,
         "base_branch": None,
         "branch": None,
@@ -73,7 +72,27 @@ def prepare_args(**overrides: object) -> argparse.Namespace:
     return argparse.Namespace(**values)
 
 
-def fresh_base_sync_projection(sha: str = "a" * 40) -> dict[str, object]:
+def fresh_base_sync_projection(
+    sha: str = "a" * 40,
+    *,
+    resolution_sha256: str = "b" * 64,
+    post_sync_resolution_sha256: str | None = None,
+) -> dict[str, object]:
+    post_digest = post_sync_resolution_sha256 or resolution_sha256
+    post_resolution = {
+        "schema_version": "1.0",
+        "skill_id": "guru-sync-base",
+        "status": "resolved",
+        "source": "explicit",
+        "selected_base": "main",
+        "remote": "origin",
+        "candidates": ["main"],
+        "decision_checkout": {
+            "branch": "main",
+            "head": sha,
+            "clean": True,
+        },
+    }
     return {
         "remote": "origin",
         "base_branch": "main",
@@ -94,8 +113,11 @@ def fresh_base_sync_projection(sha: str = "a" * 40) -> dict[str, object]:
             "selected_base": "main",
             "remote": "origin",
             "candidates": ["main"],
-            "resolution_sha256": "b" * 64,
+            "resolution_sha256": resolution_sha256,
         },
+        "post_sync_resolution": post_resolution,
+        "post_sync_resolution_sha256": post_digest,
+        "reviewed_resolution_sha256": resolution_sha256,
         "decision_checkout": {
             "branch": "main",
             "head_before": sha,
@@ -109,6 +131,16 @@ def fresh_base_sync_projection(sha: str = "a" * 40) -> dict[str, object]:
 
 
 def fresh_base_sync_result(sha: str = "a" * 40) -> dict[str, object]:
+    resolution = gtt.resolution_identity(
+        source="explicit",
+        selected_base="main",
+        remote="origin",
+        candidates=["main"],
+        decision_branch="main",
+        decision_head=sha,
+        decision_clean=True,
+    )
+    resolution_sha256 = gtt.canonical_json_sha256(resolution)
     payload: dict[str, object] = {
         "schema_version": "1.0",
         "skill_id": "guru-sync-base",
@@ -118,8 +150,10 @@ def fresh_base_sync_result(sha: str = "a" * 40) -> dict[str, object]:
             "selected_base": "main",
             "remote": "origin",
             "candidates": ["main"],
-            "resolution_sha256": "b" * 64,
+            "resolution_sha256": resolution_sha256,
         },
+        "post_sync_resolution": resolution,
+        "post_sync_resolution_sha256": resolution_sha256,
         "decision_checkout": {
             "branch": "main",
             "head_before": sha,
@@ -1903,7 +1937,10 @@ class BaseSyncRuntimeTest(unittest.TestCase):
         (self.seed / "README.md").write_text("one\n", encoding="utf-8")
         config = self.seed / ".trellis/guru-team/config.yml"
         config.parent.mkdir(parents=True)
-        config.write_text("base_branch: main\nbase_branch_candidates: [main, master]\n", encoding="utf-8")
+        config.write_text(
+            "base_branch: main\nbase_branch_candidates: [dev, develop, main, master]\n",
+            encoding="utf-8",
+        )
         schema_source = (
             Path(__file__).resolve().parents[5]
             / "trellis/skills/guru-team/packages/guru-sync-base/schemas/base-sync-result.schema.json"
@@ -1927,8 +1964,6 @@ class BaseSyncRuntimeTest(unittest.TestCase):
         )
         self.git(self.local, "config", "user.email", "test@example.com")
         self.git(self.local, "config", "user.name", "Test User")
-        self.resolution_file = self.base / "resolution.json"
-        self.result_file = self.base / "result.json"
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
@@ -1950,12 +1985,9 @@ class BaseSyncRuntimeTest(unittest.TestCase):
             "mode": "standalone",
             "resolve_only": True,
             "execute": False,
-            "release_resolution_evidence": False,
             "base": None,
             "remote": "origin",
-            "resolution_file": str(self.resolution_file),
             "expected_resolution_sha256": None,
-            "result_file": None,
         }
         values.update(overrides)
         return argparse.Namespace(**values)
@@ -1965,7 +1997,8 @@ class BaseSyncRuntimeTest(unittest.TestCase):
             "root": str(self.local),
             "json": True,
             "mode": "standalone",
-            "evidence_file": str(self.result_file),
+            "result_json": None,
+            "expected_resolution_sha256": None,
             "record_skipped": None,
         }
         values.update(overrides)
@@ -1974,29 +2007,31 @@ class BaseSyncRuntimeTest(unittest.TestCase):
     def resolve(self, *, base: str | None = None) -> dict[str, object]:
         return gtt.cmd_sync_base(self.sync_args(base=base))
 
-    def execute(self, resolution: dict[str, object]) -> dict[str, object]:
+    def execute(
+        self,
+        resolution: dict[str, object],
+        *,
+        base: str | None = None,
+        remote: str = "origin",
+    ) -> dict[str, object]:
         return gtt.cmd_sync_base(
             self.sync_args(
                 resolve_only=False,
                 execute=True,
-                resolution_file=str(self.resolution_file),
+                base=base,
+                remote=remote,
                 expected_resolution_sha256=resolution["resolution_sha256"],
-                result_file=str(self.result_file),
             )
         )
 
-    def release(self, resolution: dict[str, object], **overrides: object) -> dict[str, object]:
-        values: dict[str, object] = {
-            "resolve_only": False,
-            "execute": False,
-            "release_resolution_evidence": True,
-            "resolution_file": str(self.resolution_file),
-            "expected_resolution_sha256": resolution["resolution_sha256"],
-            "result_file": None,
-        }
-        values.update(overrides)
-        return gtt.cmd_sync_base(
-            self.sync_args(**values)
+    def validate(self, result: dict[str, object]) -> dict[str, object]:
+        resolution = result["resolution"]
+        assert isinstance(resolution, dict)
+        return gtt.cmd_check_base_sync(
+            self.check_args(
+                result_json=result,
+                expected_resolution_sha256=resolution["resolution_sha256"],
+            )
         )
 
     def advance_remote(self, text: str = "two\n") -> str:
@@ -2005,51 +2040,7 @@ class BaseSyncRuntimeTest(unittest.TestCase):
         self.git(self.seed, "push", "origin", "main")
         return self.git(self.seed, "rev-parse", "HEAD")
 
-    def test_resolver_precedence_and_fallback_cardinality(self) -> None:
-        explicit = gtt.resolve_base_selection(
-            self.local,
-            {"base_branch": "develop", "base_branch_candidates": ["master"]},
-            "release",
-        )
-        self.assertEqual((explicit["source"], explicit["selected_base"]), ("explicit", "release"))
-        scalar = gtt.resolve_base_selection(
-            self.local,
-            {"base_branch": "develop", "base_branch_candidates": ["master"]},
-        )
-        self.assertEqual((scalar["source"], scalar["selected_base"]), ("config", "develop"))
-        single = gtt.resolve_base_selection(
-            self.local,
-            {"base_branch": "", "base_branch_candidates": ["main", "main"]},
-        )
-        self.assertEqual((single["source"], single["selected_base"]), ("config", "main"))
-        remote_default = gtt.resolve_base_selection(
-            self.local,
-            {"base_branch": "", "base_branch_candidates": ["develop", "master"]},
-        )
-        self.assertEqual(
-            (remote_default["source"], remote_default["selected_base"]),
-            ("remote-default", "main"),
-        )
-
-        with mock.patch.object(gtt, "remote_default_branch", return_value=None):
-            fallback = gtt.resolve_base_selection(
-                self.local,
-                {"base_branch": "", "base_branch_candidates": ["ghost", "main"]},
-            )
-            self.assertEqual((fallback["source"], fallback["selected_base"]), ("fallback", "main"))
-            with self.assertRaises(gtt.WorkflowError):
-                gtt.resolve_base_selection(
-                    self.local,
-                    {"base_branch": "", "base_branch_candidates": ["ghost", "missing"]},
-                )
-            self.git(self.local, "branch", "master")
-            with self.assertRaises(gtt.WorkflowError):
-                gtt.resolve_base_selection(
-                    self.local,
-                    {"base_branch": "", "base_branch_candidates": ["main", "master"]},
-                )
-
-    def test_resolver_does_not_validate_malformed_lower_priority_sources(self) -> None:
+    def test_resolver_precedence_is_explicit_scalar_ordered_candidate_then_remote_default(self) -> None:
         explicit = gtt.resolve_base_selection(
             self.local,
             {"base_branch": 7, "base_branch_candidates": "not-a-list"},
@@ -2063,74 +2054,326 @@ class BaseSyncRuntimeTest(unittest.TestCase):
         )
         self.assertEqual((scalar["source"], scalar["selected_base"]), ("config", "develop"))
 
-        with self.assertRaises(gtt.WorkflowError):
-            gtt.resolve_base_selection(
-                self.local,
-                {"base_branch": "", "base_branch_candidates": ["invalid branch", "main"]},
-            )
+        self.git(self.local, "branch", "dev")
+        ordered = gtt.resolve_base_selection(
+            self.local,
+            {"base_branch": "", "base_branch_candidates": ["dev", "main"]},
+        )
+        self.assertEqual(
+            (ordered["source"], ordered["selected_base"]),
+            ("config-candidate", "dev"),
+        )
 
-    def test_resolve_execute_validate_and_external_evidence(self) -> None:
+        self.git(self.local, "branch", "-D", "dev")
+        remote_default = gtt.resolve_base_selection(
+            self.local,
+            {"base_branch": "", "base_branch_candidates": ["develop", "master"]},
+        )
+        self.assertEqual(
+            (remote_default["source"], remote_default["selected_base"]),
+            ("remote-default", "main"),
+        )
+
+    def test_ordered_candidates_choose_first_existing_without_ambiguity(self) -> None:
+        cases = [
+            (["dev", "main"], ["dev"], "dev"),
+            (["develop", "main"], ["develop"], "develop"),
+            (["main", "master"], ["master"], "main"),
+            (["main", "dev"], ["dev"], "main"),
+        ]
+        for index, (candidates, create, expected) in enumerate(cases):
+            with self.subTest(index=index, candidates=candidates):
+                for branch in ("dev", "develop", "master"):
+                    subprocess.run(
+                        ["git", "branch", "-D", branch],
+                        cwd=self.local,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        check=False,
+                    )
+                for branch in create:
+                    self.git(self.local, "branch", branch)
+                resolution = gtt.resolve_base_selection(
+                    self.local,
+                    {"base_branch": "", "base_branch_candidates": candidates},
+                )
+                self.assertEqual(resolution["source"], "config-candidate")
+                self.assertEqual(resolution["selected_base"], expected)
+
+    def test_candidate_dedup_custom_order_and_blocked_fallback(self) -> None:
+        self.git(self.local, "branch", "dev")
+        resolution = gtt.resolve_base_selection(
+            self.local,
+            {"base_branch": "", "base_branch_candidates": ["main", "dev", "main"]},
+        )
+        self.assertEqual(resolution["candidates"], ["main", "dev"])
+        self.assertEqual(resolution["selected_base"], "main")
+
+        with mock.patch.object(gtt, "remote_default_branch", return_value=None):
+            with self.assertRaises(gtt.WorkflowError) as blocked:
+                gtt.resolve_base_selection(
+                    self.local,
+                    {"base_branch": "", "base_branch_candidates": ["ghost", "missing"]},
+                )
+        self.assertEqual(blocked.exception.payload["source"], "blocked")
+
+    def test_resolve_execute_validate_use_stdout_facts_and_digests(self) -> None:
         resolution = self.resolve()
         self.assertEqual(resolution["source"], "config")
-        self.assertEqual(self.resolution_file.read_bytes(), gtt.json_document_bytes(resolution))
+        self.assertEqual(
+            resolution["resolution_sha256"],
+            gtt.canonical_json_sha256({
+                key: value
+                for key, value in resolution.items()
+                if key != "resolution_sha256"
+            }),
+        )
         result = self.execute(resolution)
         self.assertTrue(result["fresh"])
-        self.assertEqual(result["decision_checkout"]["head_after"], result["git"]["remote_head_after"])
-        validated = gtt.cmd_check_base_sync(self.check_args())
+        self.assertEqual(
+            result["resolution"]["resolution_sha256"],
+            result["post_sync_resolution_sha256"],
+        )
+        self.assertEqual(
+            result["post_sync_resolution_sha256"],
+            gtt.canonical_json_sha256(result["post_sync_resolution"]),
+        )
+        self.assertEqual(
+            result["decision_checkout"]["head_after"],
+            result["git"]["remote_head_after"],
+        )
+        validated = self.validate(result)
         self.assertEqual(validated["status"], "validated")
         self.assertEqual(validated["facts_sha256"], result["facts_sha256"])
-        self.assertFalse(self.result_file.exists())
-        self.assertTrue(self.resolution_file.exists())
-        released = self.release(resolution)
-        self.assertEqual(released["status"], "released")
-        self.assertFalse(self.resolution_file.exists())
-        already_released = self.release(resolution)
-        self.assertEqual(already_released["status"], "already_released")
+        self.assertEqual(
+            validated["post_sync_resolution_sha256"],
+            result["post_sync_resolution_sha256"],
+        )
+        self.assertFalse(any(path.name in {"resolution.json", "result.json"} for path in self.base.iterdir()))
 
-    def test_release_resolution_evidence_is_identity_bound_and_safe(self) -> None:
-        resolution = self.resolve()
-        with self.assertRaises(gtt.WorkflowError) as mismatch:
-            self.release(resolution, expected_resolution_sha256="f" * 64)
-        self.assertIn("digest", " ".join(mismatch.exception.payload["errors"]))
-        self.assertTrue(self.resolution_file.exists())
+    def test_prepare_base_assertion_preserves_reviewed_resolution_source_and_digest(self) -> None:
+        issue = {
+            "number": 110,
+            "url": "https://github.com/owner/repo/issues/110",
+            "title": "Add reusable base synchronization skill",
+            "body": "Keep prepare base assertions source preserving.",
+        }
+        cases = [
+            (
+                "config-scalar",
+                {"base_branch": "main", "base_branch_candidates": ["dev", "main"]},
+                None,
+                "config",
+            ),
+            (
+                "config-candidate-single",
+                {"base_branch": "", "base_branch_candidates": ["main"]},
+                None,
+                "config-candidate",
+            ),
+            (
+                "remote-default",
+                {"base_branch": "", "base_branch_candidates": ["missing"]},
+                None,
+                "remote-default",
+            ),
+            (
+                "explicit",
+                {"base_branch": 7, "base_branch_candidates": "not-a-list"},
+                "main",
+                "explicit",
+            ),
+        ]
 
-        unrelated = self.base / "unrelated.json"
-        unrelated.write_text("{}\n", encoding="utf-8")
-        with self.assertRaises(gtt.WorkflowError):
-            self.release(resolution, resolution_file=str(unrelated))
-        self.assertTrue(unrelated.exists())
-        self.assertTrue(self.resolution_file.exists())
+        for name, base_config, explicit, expected_source in cases:
+            with self.subTest(name=name):
+                config = {
+                    **gtt.DEFAULTS,
+                    **base_config,
+                    "github_repo": "owner/repo",
+                }
+                reviewed = gtt.resolve_base_selection(
+                    self.local,
+                    config,
+                    explicit,
+                )
+                with (
+                    mock.patch.object(gtt, "load_config", return_value=config),
+                    mock.patch.object(gtt, "require_tool"),
+                    mock.patch.object(gtt, "require_gh_auth"),
+                    mock.patch.object(gtt, "issue_view", return_value=issue),
+                ):
+                    payload = gtt.cmd_prepare(
+                        prepare_args(
+                            root=str(self.local),
+                            requirement=["#110"],
+                            base_branch="main",
+                            expected_resolution_sha256=reviewed["resolution_sha256"],
+                        )
+                    )
 
-        inside = self.local / "resolution-copy.json"
-        shutil.copy2(self.resolution_file, inside)
-        with self.assertRaises(gtt.WorkflowError) as inside_error:
-            self.release(resolution, resolution_file=str(inside))
-        self.assertIn("outside", str(inside_error.exception))
-        self.assertTrue(inside.exists())
+                preserved = payload["base_freshness"]["resolution"]
+                self.assertEqual(preserved["source"], expected_source)
+                self.assertEqual(preserved["selected_base"], "main")
+                self.assertEqual(
+                    preserved["resolution_sha256"],
+                    reviewed["resolution_sha256"],
+                )
+                self.assertEqual(
+                    payload["base_freshness"]["reviewed_resolution_sha256"],
+                    reviewed["resolution_sha256"],
+                )
 
-        link = self.base / "resolution-link.json"
-        link.symlink_to(self.resolution_file)
-        with self.assertRaises(gtt.WorkflowError) as link_error:
-            self.release(resolution, resolution_file=str(link))
-        self.assertIn("symbolic-link", str(link_error.exception))
-        self.assertTrue(self.resolution_file.exists())
+    def test_prepare_base_assertion_mismatch_and_digest_drift_block_before_fetch(self) -> None:
+        config = {"base_branch": "main", "base_branch_candidates": ["main"]}
+        reviewed = gtt.resolve_base_selection(self.local, config)
+        calls: list[list[str]] = []
+        original_run = gtt.run
 
-        self.release(resolution)
-        self.assertFalse(self.resolution_file.exists())
+        def recording_run(cmd: list[str], *args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+            calls.append(cmd)
+            return original_run(cmd, *args, **kwargs)
+
+        with (
+            mock.patch.object(gtt, "load_config", return_value=config),
+            mock.patch.object(gtt, "run", side_effect=recording_run),
+            self.assertRaises(gtt.WorkflowError) as mismatch,
+        ):
+            gtt.ensure_base_freshness(
+                self.local,
+                "develop",
+                expected_resolution_sha256=reviewed["resolution_sha256"],
+            )
+        self.assertIn("assertion does not match", str(mismatch.exception))
+        self.assertFalse(any(command[:2] == ["git", "fetch"] for command in calls))
+
+        calls.clear()
+        with (
+            mock.patch.object(
+                gtt,
+                "load_config",
+                return_value={"base_branch": "develop", "base_branch_candidates": ["main"]},
+            ),
+            mock.patch.object(gtt, "run", side_effect=recording_run),
+            self.assertRaises(gtt.WorkflowError) as drift,
+        ):
+            gtt.ensure_base_freshness(
+                self.local,
+                "main",
+                expected_resolution_sha256=reviewed["resolution_sha256"],
+            )
+        self.assertIn("digest changed", str(drift.exception))
+        self.assertFalse(any(command[:2] == ["git", "fetch"] for command in calls))
+
+    def test_prepare_base_assertion_checkout_drift_blocks_before_fetch(self) -> None:
+        config = {"base_branch": "main", "base_branch_candidates": ["main"]}
+        reviewed = gtt.resolve_base_selection(self.local, config)
+        remote_ref = "refs/remotes/origin/main"
+        remote_tracking_before = self.git(self.local, "rev-parse", remote_ref)
+        self.git(self.local, "checkout", "-qb", "feature")
+        calls: list[list[str]] = []
+        original_run = gtt.run
+
+        def recording_run(cmd: list[str], *args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+            calls.append(cmd)
+            return original_run(cmd, *args, **kwargs)
+
+        with (
+            mock.patch.object(gtt, "load_config", return_value=config),
+            mock.patch.object(gtt, "run", side_effect=recording_run),
+            self.assertRaises(gtt.WorkflowError) as drift,
+        ):
+            gtt.ensure_base_freshness(
+                self.local,
+                "main",
+                expected_resolution_sha256=reviewed["resolution_sha256"],
+            )
+
+        self.assertIn("digest changed", str(drift.exception))
+        self.assertFalse(any(command[:2] == ["git", "fetch"] for command in calls))
+        self.assertEqual(
+            self.git(self.local, "rev-parse", remote_ref),
+            remote_tracking_before,
+        )
 
     def test_execute_fast_forwards_only_selected_base_checkout(self) -> None:
         resolution = self.resolve()
         remote_head = self.advance_remote()
         result = self.execute(resolution)
         self.assertTrue(result["git"]["fast_forwarded"])
+        self.assertNotEqual(
+            result["resolution"]["resolution_sha256"],
+            result["post_sync_resolution_sha256"],
+        )
+        self.assertEqual(result["post_sync_resolution"]["decision_checkout"]["head"], remote_head)
         self.assertEqual(self.git(self.local, "rev-parse", "HEAD"), remote_head)
 
         self.git(self.local, "checkout", "-qb", "feature")
-        second_resolution = self.resolve(base="main")
+        explicit = self.resolve(base="main")
         self.advance_remote("three\n")
         with self.assertRaises(gtt.WorkflowError) as raised:
-            self.execute(second_resolution)
+            self.execute(explicit, base="main")
         self.assertIn("not on that base", str(raised.exception))
+
+    def test_behind_sync_validator_digest_feeds_prepare_and_pre_sync_digest_is_stale(self) -> None:
+        resolution = self.resolve()
+        remote_head = self.advance_remote()
+        result = self.execute(resolution)
+        validated = self.validate(result)
+        post_digest = str(validated["post_sync_resolution_sha256"])
+
+        calls: list[list[str]] = []
+        original_run = gtt.run
+
+        def recording_run(cmd: list[str], *args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+            calls.append(cmd)
+            return original_run(cmd, *args, **kwargs)
+
+        with (
+            mock.patch.object(gtt, "run", side_effect=recording_run),
+            self.assertRaises(gtt.WorkflowError) as stale,
+        ):
+            gtt.ensure_base_freshness(
+                self.local,
+                "main",
+                expected_resolution_sha256=str(resolution["resolution_sha256"]),
+            )
+        self.assertIn("digest changed", str(stale.exception))
+        self.assertFalse(any(command[:2] == ["git", "fetch"] for command in calls))
+
+        issue = {
+            "number": 110,
+            "url": "https://github.com/owner/repo/issues/110",
+            "title": "Add reusable base synchronization skill",
+            "body": "Reuse the synchronized base identity.",
+        }
+        config = {
+            **gtt.DEFAULTS,
+            "base_branch": "main",
+            "base_branch_candidates": ["dev", "develop", "main", "master"],
+            "github_repo": "owner/repo",
+        }
+        with (
+            mock.patch.object(gtt, "load_config", return_value=config),
+            mock.patch.object(gtt, "require_tool"),
+            mock.patch.object(gtt, "require_gh_auth"),
+            mock.patch.object(gtt, "issue_view", return_value=issue),
+        ):
+            payload = gtt.cmd_prepare(
+                prepare_args(
+                    root=str(self.local),
+                    requirement=["#110"],
+                    base_branch="main",
+                    expected_resolution_sha256=post_digest,
+                )
+            )
+
+        self.assertEqual(payload["base_freshness"]["reviewed_resolution_sha256"], post_digest)
+        self.assertEqual(
+            payload["base_freshness"]["post_sync_resolution_sha256"],
+            post_digest,
+        )
+        self.assertEqual(payload["base_freshness"]["remote_head"], remote_head)
 
     def test_resolve_blocks_dirty_and_missing_local_base(self) -> None:
         (self.local / "dirty.txt").write_text("dirty\n", encoding="utf-8")
@@ -2145,9 +2388,9 @@ class BaseSyncRuntimeTest(unittest.TestCase):
             self.resolve(base="main")
         self.assertIn("does not exist", " ".join(missing.exception.payload["errors"]))
 
-    def test_execute_blocks_stale_resolution_before_fetch(self) -> None:
+    def test_execute_recomputes_resolution_and_blocks_digest_drift_before_fetch(self) -> None:
         resolution = self.resolve()
-        alternate = {"base_branch": "develop", "base_branch_candidates": ["develop"]}
+        self.git(self.local, "branch", "develop")
         calls: list[list[str]] = []
         original_run = gtt.run
 
@@ -2156,23 +2399,53 @@ class BaseSyncRuntimeTest(unittest.TestCase):
             return original_run(cmd, *args, **kwargs)
 
         with (
-            mock.patch.object(gtt, "load_config", return_value=alternate),
+            mock.patch.object(
+                gtt,
+                "load_config",
+                return_value={"base_branch": "develop", "base_branch_candidates": ["develop"]},
+            ),
             mock.patch.object(gtt, "run", side_effect=recording_run),
             self.assertRaises(gtt.WorkflowError) as raised,
         ):
             self.execute(resolution)
-        self.assertIn("stale", str(raised.exception))
+        self.assertIn("digest changed", str(raised.exception))
         self.assertFalse(any(command[:2] == ["git", "fetch"] for command in calls))
 
-    def test_execute_blocks_divergence_and_fetch_failure(self) -> None:
+    def test_execute_rejects_decision_checkout_drift_before_remote_tracking_mutation(self) -> None:
+        resolution = self.resolve()
+        remote_ref = "refs/remotes/origin/main"
+        remote_tracking_before = self.git(self.local, "rev-parse", remote_ref)
+        self.advance_remote()
+        self.git(self.local, "checkout", "-qb", "feature")
+        calls: list[list[str]] = []
+        original_run = gtt.run
+
+        def recording_run(cmd: list[str], *args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+            calls.append(cmd)
+            return original_run(cmd, *args, **kwargs)
+
+        with (
+            mock.patch.object(gtt, "run", side_effect=recording_run),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            self.execute(resolution)
+
+        self.assertIn("digest changed", str(raised.exception))
+        self.assertFalse(any(command[:2] == ["git", "fetch"] for command in calls))
+        self.assertEqual(
+            self.git(self.local, "rev-parse", remote_ref),
+            remote_tracking_before,
+        )
+
+    def test_execute_blocks_divergence_fetch_failure_and_post_sync_mismatch(self) -> None:
         resolution = self.resolve()
         (self.local / "local.txt").write_text("local\n", encoding="utf-8")
         self.git(self.local, "add", "local.txt")
         self.git(self.local, "commit", "-qm", "local divergence")
         self.advance_remote()
-        stale_resolution = self.resolve()
+        diverged_resolution = self.resolve()
         with self.assertRaises(gtt.WorkflowError) as diverged:
-            self.execute(stale_resolution)
+            self.execute(diverged_resolution)
         self.assertIn("diverged", str(diverged.exception))
 
         self.git(self.local, "reset", "--hard", resolution["decision_checkout"]["head"])
@@ -2182,18 +2455,8 @@ class BaseSyncRuntimeTest(unittest.TestCase):
             self.execute(clean_resolution)
         self.assertIn("fetch failed", str(fetch_failed.exception))
 
-    def test_invalid_branch_and_missing_remote_fail_closed(self) -> None:
-        with self.assertRaises(gtt.WorkflowError) as invalid:
-            self.resolve(base="-invalid")
-        self.assertIn("valid Git branch", str(invalid.exception))
-
-        resolution = gtt.cmd_sync_base(self.sync_args(base="main", remote="missing"))
-        with self.assertRaises(gtt.WorkflowError) as missing_remote:
-            self.execute(resolution)
-        self.assertIn("fetch failed", str(missing_remote.exception))
-
-    def test_post_sync_identity_mismatch_blocks_result(self) -> None:
-        resolution = self.resolve()
+        self.git(self.local, "remote", "set-url", "origin", str(self.remote))
+        mismatch_resolution = self.resolve()
         real_ref_head = gtt.ref_head
         remote_reads = 0
 
@@ -2210,124 +2473,69 @@ class BaseSyncRuntimeTest(unittest.TestCase):
             mock.patch.object(gtt, "ref_head", side_effect=drifting_ref_head),
             self.assertRaises(gtt.WorkflowError) as mismatch,
         ):
-            self.execute(resolution)
+            self.execute(mismatch_resolution)
         self.assertIn("did not prove", str(mismatch.exception))
-        self.assertFalse(self.result_file.exists())
 
-    def test_evidence_boundary_tamper_and_live_validator(self) -> None:
-        inside = self.local / "resolution.json"
-        with self.assertRaises(gtt.WorkflowError) as inside_error:
-            self.resolve()
-            gtt.write_base_sync_evidence(self.local, str(inside), "inside", {"ok": True})
-        self.assertIn("outside", str(inside_error.exception))
-
+    def test_validator_rejects_tamper_digest_mismatch_and_live_git_drift(self) -> None:
         resolution = self.resolve()
         result = self.execute(resolution)
+
         tampered = copy.deepcopy(result)
         tampered["fresh"] = False
-        gtt.write_json(self.result_file, tampered)
         with self.assertRaises(gtt.WorkflowError):
-            gtt.cmd_check_base_sync(self.check_args())
-        self.assertFalse(self.result_file.exists())
+            self.validate(tampered)
 
-        gtt.write_json(self.result_file, result)
+        tampered_checkout = copy.deepcopy(result)
+        tampered_checkout["decision_checkout"]["head_before"] = "f" * 40
+        unsigned = dict(tampered_checkout)
+        unsigned.pop("facts_sha256")
+        tampered_checkout["facts_sha256"] = gtt.canonical_json_sha256(unsigned)
+        with self.assertRaises(gtt.WorkflowError) as checkout_digest:
+            self.validate(tampered_checkout)
+        self.assertIn(
+            "resolution digest is invalid",
+            " ".join(checkout_digest.exception.payload["errors"]),
+        )
+
+        tampered_post = copy.deepcopy(result)
+        tampered_post["post_sync_resolution"]["decision_checkout"]["head"] = "f" * 40
+        unsigned = dict(tampered_post)
+        unsigned.pop("facts_sha256")
+        tampered_post["facts_sha256"] = gtt.canonical_json_sha256(unsigned)
+        with self.assertRaises(gtt.WorkflowError) as post_digest:
+            self.validate(tampered_post)
+        self.assertIn(
+            "post-sync resolution",
+            " ".join(post_digest.exception.payload["errors"]),
+        )
+
+        with self.assertRaises(gtt.WorkflowError) as digest_mismatch:
+            gtt.cmd_check_base_sync(
+                self.check_args(
+                    result_json=result,
+                    expected_resolution_sha256="f" * 64,
+                )
+            )
+        self.assertIn("does not match", str(digest_mismatch.exception))
+
         (self.local / "untracked.txt").write_text("drift\n", encoding="utf-8")
         with self.assertRaises(gtt.WorkflowError) as stale:
-            gtt.cmd_check_base_sync(self.check_args())
+            self.validate(result)
         self.assertIn("not clean", " ".join(stale.exception.payload["errors"]))
-        self.assertFalse(self.result_file.exists())
-        (self.local / "untracked.txt").unlink()
 
-        gtt.write_json(self.result_file, result)
+    def test_invalid_branch_missing_remote_and_skipped_route_fail_closed(self) -> None:
+        with self.assertRaises(gtt.WorkflowError) as invalid:
+            self.resolve(base="-invalid")
+        self.assertIn("valid Git branch", str(invalid.exception))
 
-        symlink = self.base / "result-link.json"
-        symlink.symlink_to(self.result_file)
-        with self.assertRaises(gtt.WorkflowError) as symlink_error:
-            gtt.cmd_check_base_sync(self.check_args(evidence_file=str(symlink)))
-        self.assertIn("symbolic-link", str(symlink_error.exception))
+        missing_remote = gtt.cmd_sync_base(self.sync_args(base="main", remote="missing"))
+        with self.assertRaises(gtt.WorkflowError) as failed:
+            self.execute(missing_remote, base="main", remote="missing")
+        self.assertIn("fetch failed", str(failed.exception))
 
-        real_parent = self.base / "real-evidence"
-        real_parent.mkdir()
-        component_link = self.base / "evidence-component-link"
-        component_link.symlink_to(real_parent, target_is_directory=True)
-        component_result = component_link / "result.json"
-        shutil.copy2(self.result_file, real_parent / "result.json")
-        with self.assertRaises(gtt.WorkflowError) as component_error:
-            gtt.cmd_check_base_sync(self.check_args(evidence_file=str(component_result)))
-        self.assertIn("symbolic-link components", str(component_error.exception))
-
-    def test_prepare_binding_preserves_provenance_and_mismatch_does_not_fetch(self) -> None:
-        resolution = self.resolve()
-        self.assertEqual(resolution["source"], "config")
-        projection = gtt.ensure_base_freshness(
-            self.local,
-            None,
-            resolution_file=str(self.resolution_file),
-            expected_resolution_sha256=str(resolution["resolution_sha256"]),
-        )
-        self.assertEqual(projection["resolution"]["source"], "config")
-        self.assertEqual(
-            projection["reviewed_resolution_sha256"],
-            resolution["resolution_sha256"],
-        )
-
-        commands: list[list[str]] = []
-        real_run = gtt.run
-
-        def recording_run(cmd: list[str], *args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
-            commands.append(cmd)
-            return real_run(cmd, *args, **kwargs)
-
-        changed_config = {"base_branch": "develop", "base_branch_candidates": ["develop"]}
-        with (
-            mock.patch.object(gtt, "load_config", return_value=changed_config),
-            mock.patch.object(gtt, "run", side_effect=recording_run),
-            self.assertRaises(gtt.WorkflowError) as mismatch,
-        ):
-            gtt.ensure_base_freshness(
-                self.local,
-                None,
-                resolution_file=str(self.resolution_file),
-                expected_resolution_sha256=str(resolution["resolution_sha256"]),
-            )
-        self.assertIn("identity became stale", str(mismatch.exception))
-        self.assertFalse(any(command[:2] == ["git", "fetch"] for command in commands))
-
-        self.resolution_file.unlink()
-        commands.clear()
-        with (
-            mock.patch.object(gtt, "run", side_effect=recording_run),
-            self.assertRaises(gtt.WorkflowError) as missing_lease,
-        ):
-            gtt.ensure_base_freshness(
-                self.local,
-                None,
-                resolution_file=str(self.resolution_file),
-                expected_resolution_sha256=str(resolution["resolution_sha256"]),
-            )
-        self.assertIn("Resolution evidence file", str(missing_lease.exception))
-        self.assertFalse(any(command[:2] == ["git", "fetch"] for command in commands))
-        gtt.write_json(self.resolution_file, resolution)
-
-        commands.clear()
-        with (
-            mock.patch.object(gtt, "run", side_effect=recording_run),
-            self.assertRaises(gtt.WorkflowError) as base_mismatch,
-        ):
-            gtt.ensure_base_freshness(
-                self.local,
-                "develop",
-                resolution_file=str(self.resolution_file),
-                expected_resolution_sha256=str(resolution["resolution_sha256"]),
-            )
-        self.assertIn("base assertion", " ".join(base_mismatch.exception.payload["errors"]))
-        self.assertFalse(any(command[:2] == ["git", "fetch"] for command in commands))
-
-    def test_skipped_recorder_is_workflow_only_and_stdout_only(self) -> None:
         skipped = gtt.cmd_check_base_sync(
             self.check_args(
                 mode="workflow",
-                evidence_file=None,
                 record_skipped="original-request-route",
             )
         )
@@ -2337,7 +2545,7 @@ class BaseSyncRuntimeTest(unittest.TestCase):
         self.assertEqual(digest, gtt.canonical_json_sha256(unsigned))
         with self.assertRaises(gtt.WorkflowError):
             gtt.cmd_check_base_sync(
-                self.check_args(evidence_file=None, record_skipped="original-request-route")
+                self.check_args(record_skipped="original-request-route")
             )
 
 
@@ -2576,7 +2784,6 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         ensure_base_freshness.assert_called_once_with(
             self.root,
             None,
-            resolution_file="/tmp/reviewed-base-resolution.json",
             expected_resolution_sha256="b" * 64,
         )
         refresh.assert_not_called()
@@ -2595,11 +2802,26 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             "url": "https://github.com/owner/repo/issues/52",
             "title": "Add confirmed issue mutation boundary",
         }
+
+        def rolling_guard(*_args: object, **kwargs: object) -> dict[str, object]:
+            expected = str(kwargs["expected_resolution_sha256"])
+            order.append("sync")
+            if expected == "b" * 64:
+                return fresh_base_sync_projection(
+                    resolution_sha256=expected,
+                    post_sync_resolution_sha256="d" * 64,
+                )
+            self.assertEqual(expected, "d" * 64)
+            return fresh_base_sync_projection(
+                resolution_sha256=expected,
+                post_sync_resolution_sha256=expected,
+            )
+
         with (
             mock.patch.object(
                 gtt,
                 "ensure_base_freshness",
-                side_effect=lambda *_args, **_kwargs: order.append("sync") or fresh_base_sync_projection(),
+                side_effect=rolling_guard,
             ) as sync,
             mock.patch.object(
                 gtt, "require_gh_auth", side_effect=lambda *_args: order.append("gh-auth")
@@ -2618,6 +2840,10 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             )
 
         self.assertEqual(sync.call_count, 2)
+        self.assertEqual(
+            [call.kwargs["expected_resolution_sha256"] for call in sync.call_args_list],
+            ["b" * 64, "d" * 64],
+        )
         self.assertEqual(order, ["sync", "gh-auth", "sync", "create-issue"])
         self.assertEqual(payload["source_issue"]["number"], 52)
 
@@ -2664,7 +2890,6 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         ensure_base_freshness.assert_called_once_with(
             self.root,
             None,
-            resolution_file="/tmp/reviewed-base-resolution.json",
             expected_resolution_sha256="b" * 64,
         )
         prepare_workspace.assert_not_called()
@@ -2711,7 +2936,6 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         ensure_base_freshness.assert_called_once_with(
             self.root,
             None,
-            resolution_file="/tmp/reviewed-base-resolution.json",
             expected_resolution_sha256="b" * 64,
         )
         prepare_workspace.assert_not_called()
@@ -2814,7 +3038,6 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         ensure_base_freshness.assert_called_once_with(
             self.root,
             None,
-            resolution_file="/tmp/reviewed-base-resolution.json",
             expected_resolution_sha256="b" * 64,
         )
         prepare_workspace.assert_not_called()
@@ -2845,7 +3068,6 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         ensure_base_freshness.assert_called_once_with(
             self.root,
             None,
-            resolution_file="/tmp/reviewed-base-resolution.json",
             expected_resolution_sha256="b" * 64,
         )
         prepare_workspace.assert_not_called()
@@ -2862,6 +3084,13 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         }
         with (
             mock.patch.object(gtt, "duplicate_search", return_value=[duplicate]),
+            mock.patch.object(
+                gtt,
+                "ensure_base_freshness",
+                return_value=fresh_base_sync_projection(
+                    post_sync_resolution_sha256="d" * 64,
+                ),
+            ),
             self.assertRaises(gtt.WorkflowError) as raised,
         ):
             gtt.cmd_prepare(prepare_args())
@@ -2869,7 +3098,10 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         payload = raised.exception.payload
         self.assertEqual(payload["duplicates"], [duplicate])
         self.assertEqual(payload["proposed_issue"]["title"], "Add default side-effect-free intake planning for freeform requests")
-        self.assertIn("--force-new", payload["proposed_issue"]["create_issue_command"])
+        create_command = payload["proposed_issue"]["create_issue_command"]
+        self.assertIn("--force-new", create_command)
+        digest_index = create_command.index("--expected-resolution-sha256")
+        self.assertEqual(create_command[digest_index + 1], "d" * 64)
         self.assertTrue(payload["requires_confirmation"]["reuse_issue_or_force_new"])
 
     def test_confirmed_issue_creation_uses_reviewed_body(self) -> None:
@@ -2975,7 +3207,6 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         guard_call = mock.call(
             self.root,
             None,
-            resolution_file="/tmp/reviewed-base-resolution.json",
             expected_resolution_sha256="b" * 64,
         )
         self.assertEqual(refresh.call_args_list, [guard_call, guard_call])
@@ -2994,14 +3225,20 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         workspace = self.worktree_root / "42-resume-attachment-preview"
         order: list[str] = []
         guard_count = 0
+        guard_digests: list[str] = []
 
-        def guard(*_args: object, **_kwargs: object) -> dict[str, object]:
+        def guard(*_args: object, **kwargs: object) -> dict[str, object]:
             nonlocal guard_count
             guard_count += 1
+            guard_digests.append(str(kwargs["expected_resolution_sha256"]))
             order.append(f"guard-{guard_count}")
             if guard_count == 3:
                 raise gtt.WorkflowError("reviewed resolution drifted before task mutation", exit_code=2)
-            return fresh_base_sync_projection()
+            consumed = guard_digests[-1]
+            return fresh_base_sync_projection(
+                resolution_sha256=consumed,
+                post_sync_resolution_sha256="d" * 64,
+            )
 
         with (
             mock.patch.object(gtt, "issue_view", side_effect=lambda *_args: order.append("issue") or existing_issue),
@@ -3025,6 +3262,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             order,
             ["guard-1", "issue", "guard-2", "worktree", "identity", "guard-3"],
         )
+        self.assertEqual(guard_digests, ["b" * 64, "d" * 64, "d" * 64])
         self.assertIn("before task mutation", str(raised.exception))
         create_task.assert_not_called()
 

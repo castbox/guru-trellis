@@ -88,7 +88,8 @@ class SourceValidationTests(unittest.TestCase):
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
 
         self.assertEqual(interface["id"], "guru-create-task-commit")
-        self.assertEqual(interface["schema_version"], "1.1")
+        self.assertEqual(interface["schema_version"], "1.2")
+        self.assertEqual(interface["judgment_mode"], "semantic")
         self.assertEqual(interface["modes"]["workflow"]["routing"], "global_workflow")
         self.assertEqual(interface["modes"]["standalone"]["routing"], "direct_discovery")
         self.assertEqual(
@@ -133,8 +134,8 @@ class SourceValidationTests(unittest.TestCase):
             self.assertTrue(offsets, path)
             for offset in offsets:
                 command_window = text[offset:offset + 320]
-                self.assertIn("--resolution-file", command_window, path)
                 self.assertIn("--expected-resolution-sha256", command_window, path)
+                self.assertNotIn("--resolution-file", command_window, path)
 
         for path in start_paths:
             text = path.read_text(encoding="utf-8")
@@ -146,20 +147,18 @@ class SourceValidationTests(unittest.TestCase):
 
         flow = (REPO / "docs/requirements/guru-team-trellis-flow.md").read_text(encoding="utf-8")
         self.assertIn(
-            'prepare-task.sh --json --resolution-file ... --expected-resolution-sha256 ... "<request>"',
+            'prepare-task.sh --json --expected-resolution-sha256 ... "<request>"',
             flow,
         )
-        result_offset = flow.index("Script-->>AI: base-sync result + facts_sha256")
-        review_offset = flow.index(
-            "AI->>AI: mandatory post-execution AI Review Gate",
-            result_offset,
+        result_offset = flow.index(
+            "Script-->>AI: base-sync result + post_sync_resolution_sha256 + facts_sha256"
         )
         validator_offset = flow.index(
-            "AI->>Script: check-base-sync --evidence-file ...",
-            review_offset,
+            "AI->>Script: check-base-sync --result-json ...",
+            result_offset,
         )
-        self.assertLess(result_offset, review_offset)
-        self.assertLess(review_offset, validator_offset)
+        self.assertLess(result_offset, validator_offset)
+        self.assertNotIn("mandatory post-execution AI Review Gate", flow)
         self.assertIn(
             "请求的 first hop 是 `guru-sync-base`；只有 `synced` 后才运行 "
             "`check-env` + `prepare-task`",
@@ -176,9 +175,9 @@ class SourceValidationTests(unittest.TestCase):
         )
         normalized_contract = " ".join(workflow_contract.split())
         self.assertIn(
-            "AI selected-base review, conditional conflict confirmation before "
-            "fetch/fast-forward, digest-bound execution, mandatory post-execution "
-            "AI Review Gate, objective validation",
+            "deterministic profile owns stdout resolution facts, pre-sync digest-bound "
+            "execution, post-sync resolution generation, objective live Git validation, "
+            "and typed exit",
             normalized_contract,
         )
 
@@ -343,6 +342,46 @@ class SourceValidationTests(unittest.TestCase):
             "workflow-routing": lambda value: value["modes"]["workflow"].__setitem__("routing", "direct_discovery"),
             "standalone-routing": lambda value: value["modes"]["standalone"].__setitem__("routing", "global_workflow"),
             "runtime-command": lambda value: value["validators"][0].__setitem__("runtime_command", "unknown-command"),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(label=label):
+                interface = json.loads(json.dumps(original))
+                mutate(interface)
+                self.write_interface(interface)
+                result = self.validate()
+                self.assertEqual(result["status"], "failed")
+                self.assertTrue(result["errors"])
+
+    def test_judgment_mode_and_exact_stage_profiles(self) -> None:
+        original = self.read_interface()
+        semantic_stages = [
+            "forward_behavior",
+            "ai_review_gate",
+            "conditional_human_confirmation",
+            "recorder_validator",
+            "typed_exit",
+        ]
+        deterministic_stages = [
+            "forward_behavior",
+            "recorder_validator",
+            "typed_exit",
+        ]
+
+        deterministic = json.loads(json.dumps(original))
+        deterministic["judgment_mode"] = "deterministic"
+        deterministic["ordered_stages"] = deterministic_stages
+        self.write_interface(deterministic)
+        self.assertEqual(self.validate()["status"], "passed")
+
+        mutations = {
+            "missing-mode": lambda value: value.pop("judgment_mode"),
+            "unknown-mode": lambda value: value.__setitem__("judgment_mode", "automatic"),
+            "semantic-three-stage": lambda value: value.__setitem__("ordered_stages", deterministic_stages),
+            "deterministic-five-stage": lambda value: (
+                value.__setitem__("judgment_mode", "deterministic"),
+                value.__setitem__("ordered_stages", semantic_stages),
+            ),
+            "old-schema": lambda value: value.__setitem__("schema_version", "1.1"),
         }
         for label, mutate in mutations.items():
             with self.subTest(label=label):

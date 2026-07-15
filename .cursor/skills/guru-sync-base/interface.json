@@ -1,41 +1,34 @@
 {
   "$schema": "../../schemas/skill-interface.schema.json",
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "id": "guru-sync-base",
   "name": "guru-sync-base",
-  "description": "Resolve, review, safely synchronize, and validate the selected Git base before Guru Team reads repository task context or starts intake side effects.",
+  "description": "Resolve, safely synchronize, and deterministically validate the selected Git base before Guru Team reads repository task context or starts intake side effects.",
   "state": "active",
+  "judgment_mode": "deterministic",
   "modes": {
     "workflow": {
       "routing": "global_workflow",
       "entry_precondition_ids": [
-        "invocation_intent",
         "runtime_dependency",
         "decision_checkout",
         "selected_base_resolution",
         "clean_checkout",
-        "result_evidence"
+        "result_facts"
       ]
     },
     "standalone": {
       "routing": "direct_discovery",
       "entry_precondition_ids": [
-        "invocation_intent",
         "runtime_dependency",
         "decision_checkout",
         "selected_base_resolution",
         "clean_checkout",
-        "result_evidence"
+        "result_facts"
       ]
     }
   },
   "entry_preconditions": [
-    {
-      "id": "invocation_intent",
-      "evidence": "tool-free workflow route or explicit standalone refresh/verify request",
-      "binding": "repo-changing workflow invocation or explicit standalone base operation",
-      "freshness": "reviewed for this invocation before any repository or network semantic read"
-    },
     {
       "id": "runtime_dependency",
       "evidence": "installed extension manifest, dispatcher, managed package inventory and runtime commands",
@@ -50,9 +43,9 @@
     },
     {
       "id": "selected_base_resolution",
-      "evidence": "canonical resolve-only JSON bytes/file and expected resolution_sha256",
-      "binding": "explicit, config-single, remote-default or unique-fallback source identity reused by sync-base and every prepare-task guard through one invocation-local workflow lease",
-      "freshness": "raw bytes, digest and source-preserving identity recomputation match before initial reads and independently before each GitHub/worktree/task mutation; terminal release removes the exact lease"
+      "evidence": "canonical resolve-only stdout JSON facts, pre-sync resolution_sha256 and post_sync_resolution_sha256",
+      "binding": "explicit, scalar config, ordered existing candidate or remote-default resolution inputs reused by sync-base and prepare-task",
+      "freshness": "pre-sync digest match before fetch; each prepare guard reruns immediately before each GitHub/worktree/task mutation and returns the post-sync digest consumed by the next boundary"
     },
     {
       "id": "clean_checkout",
@@ -61,8 +54,8 @@
       "freshness": "checked before fetch, before fast-forward and after synchronization"
     },
     {
-      "id": "result_evidence",
-      "evidence": "guru-base-sync-result-1.0 JSON, facts_sha256 and live Git facts",
+      "id": "result_facts",
+      "evidence": "guru-base-sync-result-1.0 stdout JSON, pre/post resolution digests, facts_sha256 and live Git facts",
       "binding": "decision checkout, local base and remote-tracking base identity",
       "freshness": "objective validator matches current clean Git state"
     }
@@ -77,8 +70,6 @@
   },
   "ordered_stages": [
     "forward_behavior",
-    "ai_review_gate",
-    "conditional_human_confirmation",
     "recorder_validator",
     "typed_exit"
   ],
@@ -99,19 +90,19 @@
       "id": "sync_executor",
       "command": "scripts/sync-base.sh",
       "runtime_command": "sync-base",
-      "objective_scope": "strict four-level resolution, canonical resolution digest binding, explicit refspec fetch, selected-checkout ff-only execution and three-way equality facts"
+      "objective_scope": "strict four-level resolution, pre-sync digest binding, explicit refspec fetch, selected-checkout ff-only execution, post-sync resolution generation and three-way equality facts"
     },
     {
       "id": "result_validator",
       "command": "scripts/check-base-sync.sh",
       "runtime_command": "check-base-sync",
-      "objective_scope": "evidence boundary, Draft 2020-12 schema, facts digest, selected refs, clean checkout, live decision/local/remote HEAD equality and deterministic result-evidence cleanup"
+      "objective_scope": "Draft 2020-12 schema, pre/post resolution digests, facts digest, selected refs, clean checkout and live decision/local/remote HEAD equality"
     }
   ],
   "external_exits": [
     {
       "id": "synced",
-      "evidence": "AI-reviewed and validator-passed fresh base sync result with result evidence cleaned; workflow mode transfers one active external resolution raw-byte/digest lease",
+      "evidence": "validator-passed fresh stdout result facts carrying the post-sync resolution digest",
       "consumer": {
         "kind": "workflow",
         "id": "guru-discover-change-context"
@@ -119,7 +110,7 @@
     },
     {
       "id": "skipped",
-      "evidence": "AI-reviewed non-repo route plus stdout-only skipped recorder facts",
+      "evidence": "caller-classified non-repo route plus validated stdout-only skipped recorder facts",
       "consumer": {
         "kind": "workflow",
         "id": "original-request-route"
@@ -127,7 +118,7 @@
     },
     {
       "id": "blocked",
-      "evidence": "resolution, Git, AI review or objective validation failure",
+      "evidence": "resolution, Git or objective validation failure",
       "consumer": {
         "kind": "stop",
         "id": "base-sync-blocked"
@@ -135,8 +126,8 @@
     }
   ],
   "reentry": {
-    "identity": "invocation intent, repository identity, decision checkout, resolution source/base/remote/candidates, raw bytes, resolution_sha256 and active/released lease state",
-    "freshness": "resolution recomputes identically, result matches clean live Git facts, and an active lease exists until its unique consumer reaches a terminal route",
+    "identity": "invocation mode, route id, repository identity, decision checkout, resolution source/base/remote/candidates, pre-sync resolution_sha256 and post_sync_resolution_sha256",
+    "freshness": "each boundary consumes the preceding post-sync identity, emits the next identity, and matches clean live Git facts",
     "stale_behavior": "fail_closed"
   },
   "tests": [

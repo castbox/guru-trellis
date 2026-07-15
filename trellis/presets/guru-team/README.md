@@ -250,7 +250,7 @@ example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并
 root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
 `.new`/`.bak`，再通过 source/installed package validation 与 dogfood drift。
 
-Interface schema 1.1 中 `workflow` 表示 global mandatory routing，`standalone` 表示
+Interface schema 1.2 中 `workflow` 表示 global mandatory routing，`standalone` 表示
 所选平台 direct discovery。两种 mode 都依赖完整 compatible Guru Team runtime；单独
 复制 Skill 目录不是 self-contained/portable 安装。Preset 因此同时安装
 `.trellis/guru-team/scripts/bash/run-skill-command.sh`、extension runtime capability、
@@ -519,9 +519,11 @@ normal finish-work path remains unchanged.
 For `no_task` issue-backed, task-like, or file-changing requests in a Guru Team
 project, tool-free classification is followed by mandatory `guru-sync-base`, not
 bare `task.py create`. The Skill resolves explicit `--base`, scalar
-`base_branch` (or one-value compatibility candidates), remote default, then
-exactly one existing fallback candidate; the current branch is never an implicit
-base. AI reviews intent/source/selection before digest-bound execution. A
+`base_branch`, the first existing branch in configured `base_branch_candidates`
+order (default `dev`, `develop`, `main`, `master`), then remote default when no
+candidate exists; the current branch is never an implicit base. Multiple existing
+candidates are ordered, not ambiguous. The deterministic Skill performs
+digest-bound execution without a selected-base or post-execution AI gate. A
 `synced` result requires a clean checkout and equal decision/local/remote HEADs;
 `skipped` returns to the original request, while `blocked` stops fail closed.
 Only `synced` enters Guru Team intake:
@@ -529,8 +531,7 @@ Only `synced` enters Guru Team intake:
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
 .trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --resolution-file <reviewed-resolution-file> \
-  --expected-resolution-sha256 <reviewed-resolution-sha256> \
+  --expected-resolution-sha256 <post-sync-resolution-sha256> \
   "<user request or issue URL>"
 ```
 
@@ -545,26 +546,15 @@ stdout JSON. Before `gh auth status`, issue reads, or duplicate search,
 cannot be `fresh: true`. A behind local base advances only on the selected-base
 checkout via `git merge --ff-only`; wrong checkout, dirty state, missing refs,
 fetch failure, divergence, resolution drift, or post-sync mismatch fail closed.
-Prepare requires the prior AI-reviewed external resolution file and expected
-digest. It preserves config/remote-default/fallback provenance and reruns an
+Prepare requires the preceding validator/guard post-sync resolution digest and
+the same resolver inputs. It preserves explicit/config/config-candidate/remote-default provenance and reruns an
 independent adjacent guard before GitHub, worktree, and task mutation; the task
 guard is after worktree/identity setup and before `task.py create`.
-`check-base-sync` consumes and deletes result evidence. Standalone releases all
-evidence before return; workflow `synced` transfers the exact external
-resolution file/raw-byte/digest lease to its unique Phase 0 consumer. The same
-lease covers planner and mutation guards, remains active while user
-confirmation is pending, and is released on task-created, blocked, aborted, or
-superseded terminal routes with:
-
-```bash
-.trellis/guru-team/scripts/bash/sync-base.sh --json --mode workflow \
-  --release-resolution-evidence \
-  --resolution-file <reviewed-resolution-file> \
-  --expected-resolution-sha256 <reviewed-resolution-sha256>
-```
-
-Lease path/digest is never persisted to task artifacts, repo runtime, shared
-cache, or review evidence. Missing/released lease means invoke the Skill again.
+Resolution and result facts are stdout-only. Neither standalone nor workflow
+mode creates resolution/result evidence files, leases, release commands, or
+cleanup state. Every planner/mutation guard consumes the preceding post-sync
+digest, reruns the shared core, and returns the next post-sync digest;
+identity/digest drift requires a fresh Skill invocation.
 The AI must show the
 proposed title/body and duplicate evidence, then rerun with
 `--create-issue-confirmed --issue-title ... --issue-body-file ...` only after

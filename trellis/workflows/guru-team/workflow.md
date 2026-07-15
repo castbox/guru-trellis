@@ -43,9 +43,11 @@ Frontmatter auto-match may aid discovery but never substitutes for the marker.
 
 The workflow owns only phase order, mandatory invocation, transitions, and
 typed-exit consumers/stops. The package owns entry/freshness/re-entry and the
-complete `forward behavior -> AI Review Gate -> conditional human confirmation
--> recorder/validator -> typed exit` loop. Commands, prompts, breadcrumbs, and
-platform launchers load the stable skill id and must not copy that loop.
+exact stage profile selected by its `judgment_mode`: semantic packages use
+`forward behavior -> AI Review Gate -> conditional human confirmation ->
+recorder/validator -> typed exit`; deterministic packages use `forward behavior
+-> recorder/validator -> typed exit`. Commands, prompts, breadcrumbs, and
+platform launchers load the stable skill id and must not copy either loop.
 Deterministic scripts validate structure and evidence only; they do not make
 semantic review or routing judgments.
 
@@ -66,8 +68,7 @@ GitHub intake, and worktree commands below.
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
 .trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --resolution-file <reviewed-resolution-file> \
-  --expected-resolution-sha256 <reviewed-resolution-sha256> \
+  --expected-resolution-sha256 <post-sync-resolution-sha256> \
   "<user request, issue number, or issue URL>"
 ```
 
@@ -110,11 +111,13 @@ The companion scripts live under `.trellis/guru-team/` and are installed by the 
 ### Git Preflight Rules
 
 - `gh` must exist and `gh auth status` must pass before any GitHub read/write operation.
-- Resolve base by explicit value, scalar/single-value config, remote default,
-  then exactly-one existing fallback. Never use the current branch as an
-  implicit fallback.
-- If invocation intent or selected base conflicts with the user request, the
-  `guru-sync-base` AI confirmation stage owns that choice before execution.
+- Resolve base by explicit value, non-empty scalar config, the first existing
+  configured candidate in declared order (default `dev -> develop -> main ->
+  master`), then remote default only when no candidate exists. Never use the
+  current branch as an implicit fallback.
+- Caller-side AI classification resolves any user-intent conflict before Skill
+  invocation. The deterministic `guru-sync-base` package does not ask the user
+  to confirm its machine-selected base.
 - Default workspace is a Git worktree under `../<repo-name>-worktrees`.
 - Report current checkout path, current branch, base branch, worktree path, branch name, dirty state, and existing worktrees.
 - Slugs, branch names, worktree names, and task names must include an issue number or another unique id plus semantic English business tokens. Do not rely on Trellis date prefixes or auto-increment-like names for parallel work.
@@ -419,7 +422,7 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - Simple conversation or non-file-changing small task: ask only whether this turn should create a Trellis task. If the user says no, skip Trellis for this session.
 - Issue-backed, task-like, or file-changing request: first mandatory invoke `guru-sync-base`; after its `synced` exit, run Guru Team issue intake and Git base/worktree preflight before task creation. This includes pasted issue URLs, issue numbers, and clear development tasks. The next commands are:
   - `.trellis/guru-team/scripts/bash/check-env.sh --json`
-  - `.trellis/guru-team/scripts/bash/prepare-task.sh --json --resolution-file <reviewed-resolution-file> --expected-resolution-sha256 <reviewed-resolution-sha256> "<user request, issue number, or issue URL>"`
+  - `.trellis/guru-team/scripts/bash/prepare-task.sh --json --expected-resolution-sha256 <post-sync-resolution-sha256> "<user request, issue number, or issue URL>"`
 - File-changing request with no active task: do not silently edit the current
   checkout. A current-checkout direct-edit override is allowed only after the
   user explicitly approves skipping GitHub issue, Trellis task, worktree, and
@@ -565,7 +568,7 @@ Repos with `no_docs`, `partial_docs`, or `stale_docs` must still record one expl
 [workflow-state:no_task]
 No active task. First classify the user's natural-language request; do not require the user to explicitly run `trellis-start`.
 If the request includes an issue URL, issue number, clear development task, or file change, the first priority is the mandatory Phase 0 `guru-sync-base` invocation, not `check-env`, `prepare-task`, semantic repository reads, or bare `task.py create`.
-Only the `synced` exit enters `guru-discover-change-context` and then runs `.trellis/guru-team/scripts/bash/check-env.sh --json` plus `prepare-task` with the exact reviewed resolution file and digest from `guru-sync-base`.
+Only the `synced` exit enters `guru-discover-change-context` and then runs `.trellis/guru-team/scripts/bash/check-env.sh --json` plus `prepare-task` with the validator-passed post-sync resolution digest from `guru-sync-base` stdout facts.
 The `skipped` exit returns to `original-request-route`; `blocked`, unknown, multiple, or unmapped exits stop fail closed.
 Default `prepare-task` is planner-only. After intake plan review and user approval in `workspace_mode: worktree`, create the execution environment with `prepare-task --create-worktree --create-task` or an equivalent controlled Guru Team executor.
 Do not silently edit the current checkout. Direct edits require explicit user approval to skip GitHub issue, Trellis task, worktree, and branch for this turn.
@@ -591,38 +594,48 @@ semantic read, load and mandatory invoke the active public Skill by stable id:
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"skipped","consumer":{"kind":"workflow","id":"original-request-route"}} -->
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"blocked","consumer":{"kind":"stop","id":"base-sync-blocked"}} -->
 
-The package owns the complete step-local loop and identical workflow/
-standalone preconditions. This workflow consumes only one declared exit:
-`synced` enters the existing inline `guru-discover-change-context` route and
-then Phase 0.1; `skipped` returns to the original non-repository request route;
-`blocked` stops. Unknown, multiple, or unmapped exits and missing package/
-runtime evidence stop fail closed. Do not run `check-env`, `prepare-task`, issue
-reads, duplicate search, or repository history/docs/code/test discovery before
-this route returns `synced`.
+The caller-side AI classification decides only whether this invocation is a
+repo-changing refresh or an allowed non-repository skip. The package declares
+`judgment_mode=deterministic` and owns stdout-only selected-base resolution,
+digest-bound fetch/fast-forward, objective live Git validation, and one typed
+exit. It does not perform selected-base AI confirmation, a post-execution AI
+Review Gate, or conditional human confirmation.
 
-The Skill consumes and removes result evidence before every typed exit.
-Workflow `synced` transfers the exact repo-external resolution file, canonical
-raw bytes, and digest as one active Phase 0 lease to this unique consumer. Keep
-that lease only in the current AI invocation/handoff; never write its path or
-digest to task artifacts, `.trellis/.runtime/**`, shared cache, README examples,
-or review evidence. Pass the same file/digest to every `prepare-task` call.
-
-After `synced`, use this deterministic release command on task-created,
-blocked, aborted, or superseded terminal routes:
+For a repo-changing route, run the package wrappers in this order:
 
 ```bash
-.trellis/guru-team/scripts/bash/sync-base.sh --json --mode workflow \
-  --release-resolution-evidence \
-  --resolution-file <reviewed-resolution-file> \
-  --expected-resolution-sha256 <reviewed-resolution-sha256>
+.trellis/guru-team/skills/packages/guru-sync-base/scripts/sync-base.sh \
+  --json --mode workflow --resolve-only [--base <explicit-base>]
+.trellis/guru-team/skills/packages/guru-sync-base/scripts/sync-base.sh \
+  --json --mode workflow --execute [--base <same-explicit-base>] \
+  --expected-resolution-sha256 <pre-sync-resolution-sha256>
+.trellis/guru-team/skills/packages/guru-sync-base/scripts/check-base-sync.sh \
+  --json --mode workflow --result-json '<executor-result-json>' \
+  --expected-resolution-sha256 <pre-sync-resolution-sha256>
 ```
 
-`released` and `already_released` are objective cleanup results, not external
-Skill exits. A duplicate/proposed-issue/handoff review waiting for user
-confirmation is non-terminal and keeps the lease active. If the user rejects
-or abandons the route, a prepare/check step blocks terminally, or a new
-`guru-sync-base` invocation supersedes the current resolution, release first.
-A missing/released lease cannot resume prepare; start a new Skill invocation.
+The resolver order is exact: explicit `--base`; non-empty scalar
+`base_branch`; first existing `base_branch_candidates` entry in configured
+order (default `dev -> develop -> main -> master`); remote default only when no
+candidate exists; otherwise `blocked`. Multiple existing candidates are not
+ambiguous. Resolution and result facts remain on stdout; no cross-step evidence
+file, lease, release, quarantine, replacement-cleanup, or terminal-residue
+contract exists.
+
+The execute command retains `resolution_sha256` as the pre-sync identity and
+adds `post_sync_resolution` plus `post_sync_resolution_sha256` after the fetch /
+fast-forward. The validator checks both identities and returns the post-sync
+digest as the only digest passed to `prepare-task`. Already-equal execution may
+produce equal digests; fast-forward execution must produce different digests.
+
+This workflow consumes exactly one declared exit: `synced` enters the existing
+inline `guru-discover-change-context` route and then Phase 0.1; `skipped`
+returns to the original non-repository request route; `blocked` stops. Unknown,
+multiple, or unmapped exits and missing package/runtime evidence stop fail
+closed. Do not run `check-env`, `prepare-task`, issue reads, duplicate search,
+or repository history/docs/code/test discovery before this route returns
+`synced`.
+
 
 #### 0.1 Environment check `[required · once]`
 
@@ -632,8 +645,8 @@ Run:
 .trellis/guru-team/scripts/bash/check-env.sh --json
 ```
 
-If `gh` is missing or unauthenticated, release the active resolution lease,
-stop, and tell the user to install GitHub CLI and run `gh auth login`.
+If `gh` is missing or unauthenticated, stop and tell the user to install GitHub
+CLI and run `gh auth login`.
 
 #### 0.2 GitHub issue intake `[required · once]`
 
@@ -641,8 +654,7 @@ Run:
 
 ```bash
 .trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --resolution-file <reviewed-resolution-file> \
-  --expected-resolution-sha256 <reviewed-resolution-sha256> \
+  --expected-resolution-sha256 <post-sync-resolution-sha256> \
   "<user request, issue number, or issue URL>"
 ```
 
@@ -652,17 +664,17 @@ If the command returns `proposed_issue` / `requires_confirmation`, stop before a
 
 ```bash
 .trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --resolution-file <reviewed-resolution-file> \
-  --expected-resolution-sha256 <reviewed-resolution-sha256> \
+  --expected-resolution-sha256 <latest-prepare-post-sync-resolution-sha256> \
   --create-issue-confirmed \
   --issue-title "<reviewed issue title>" \
   --issue-body-file <reviewed-issue-body.md> \
   "<user request>"
 ```
 
-Both confirmation routes retain the active lease. Any non-retryable prepare
-failure, explicit user abandonment, or replacement invocation releases it
-before the workflow stops or restarts.
+Every retry reruns the same resolver/sync core with the latest post-sync
+resolution digest returned by the preceding validator or prepare guard. Any
+source, base, candidate, remote, config, or digest drift blocks before the next
+semantic read or mutation.
 
 #### 0.3 Git base branch and worktree preflight `[required · once]`
 
@@ -674,16 +686,17 @@ used by `guru-sync-base`: explicit refspec fetch, selected-base checkout-only
 remote-tracking base HEAD equality. `fetch_performed: false`, `fresh: false`,
 `three_way_equal: false`, divergence, wrong checkout, or unknown freshness is a
 blocked result, not stale planner output that may continue. Executor paths
-rerun the same reviewed-resolution digest and freshness guard independently and
-immediately before GitHub, worktree, and task mutations. A config,
-remote-default, fallback candidate, selected-base, source, raw-byte, or digest
-change blocks before fetch or semantic reads; `--base-branch` is only an
-optional equality assertion and cannot rewrite provenance to `explicit`. Do
-not create a task branch from stale or unequal base evidence.
+rerun the freshness guard independently and immediately before GitHub,
+worktree, and task mutations. Each guard consumes the prior guard's post-sync
+digest and returns the next one. A config,
+ordered candidate, remote-default, selected-base, source, or digest change
+blocks before fetch or semantic reads. Pass `--base-branch` only when the
+original resolver invocation used the same explicit base input. Do not create
+a task branch from stale or unequal base facts.
 
 Report the resolution source, selected base, candidates, decision checkout,
-and equality facts. Ambiguous fallback cardinality fails closed; an actual
-user-intent conflict returns through the Skill confirmation stage.
+and equality facts. Multiple existing candidates follow configured order; they
+do not create an ambiguity prompt.
 
 Default to worktree mode. If the need for a new worktree is uncertain, ask the user before writing task files.
 
@@ -707,16 +720,11 @@ Only after this is clear, create the Trellis task in the chosen workspace. When
 
 ```bash
 .trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --resolution-file <reviewed-resolution-file> \
-  --expected-resolution-sha256 <reviewed-resolution-sha256> \
+  --expected-resolution-sha256 <latest-prepare-post-sync-resolution-sha256> \
   --create-worktree \
   --create-task \
   "<source issue URL or approved request>"
 ```
-
-After the executor confirms task creation, immediately run the Phase 0 release
-command above and require `released` or `already_released` before entering
-planning. If the executor blocks, release before stopping.
 
 Do not run bare `python3 ./.trellis/scripts/task.py create ...` in the source
 checkout for issue-backed or file-changing Guru Team worktree tasks.
@@ -773,17 +781,14 @@ When `workspace_mode: worktree`, prefer the single controlled executor path:
 
 ```bash
 .trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --resolution-file <reviewed-resolution-file> \
-  --expected-resolution-sha256 <reviewed-resolution-sha256> \
+  --expected-resolution-sha256 <latest-prepare-post-sync-resolution-sha256> \
   --create-worktree \
   --create-task \
   "<source issue URL or approved request>"
 ```
 
-This rerun consumes the same still-active Phase 0 lease. On successful task
-creation, release it before continuing; on blocked/aborted/superseded terminal
-routes, release it before stopping. User-confirmation pending remains the only
-route that retains the lease.
+This rerun recomputes the same resolution identity and digest immediately
+before filesystem/task mutations; drift blocks before those side effects.
 
 This creates or reuses the chosen workspace, creates the branch and Trellis task
 there, and writes `.trellis/tasks/<task-slug>/task-start-context.json` inside that workspace.

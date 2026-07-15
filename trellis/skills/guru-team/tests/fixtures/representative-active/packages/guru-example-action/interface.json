@@ -1,10 +1,11 @@
 {
   "$schema": "../../schemas/skill-interface.schema.json",
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "id": "guru-example-action",
   "name": "guru-example-action",
   "description": "Exercises the public closed-loop package contract without becoming a production skill.",
   "state": "active",
+  "judgment_mode": "semantic",
   "modes": {
     "workflow": {"routing": "global_workflow", "entry_precondition_ids": ["fresh_input"]},
     "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["fresh_input"]}

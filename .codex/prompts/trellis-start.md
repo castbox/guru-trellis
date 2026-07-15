@@ -37,8 +37,7 @@ After `synced` and change-context discovery, run:
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
 .trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --resolution-file <reviewed-resolution-file> \
-  --expected-resolution-sha256 <reviewed-resolution-sha256> \
+  --expected-resolution-sha256 <resolution-sha256> \
   "<user request, issue number, or issue URL>"
 ```
 

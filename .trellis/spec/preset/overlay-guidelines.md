@@ -63,9 +63,7 @@ Continue entries must:
 - preserve the global workflow's Phase 0 mandatory `guru-sync-base` route:
   tool-free classification first, `synced` to `guru-discover-change-context`,
   `skipped` to the original non-repo route, and `blocked` to a fail-closed stop;
-  `synced` also carries the invocation-local resolution lease/release obligation
-  owned by the unique workflow consumer; platform entry text must not copy
-  resolution/executor/review/cleanup internals;
+  platform entry text must not copy resolution/executor/validator internals;
 
 - run `python3 ./.trellis/scripts/get_context.py`
 - run `python3 ./.trellis/scripts/get_context.py --mode phase`

@@ -40,16 +40,21 @@ unique consumers: `synced` -> workflow route `guru-discover-change-context`,
 `base-sync-blocked`. The first route remains inline until #111; this contract
 must not pre-implement its step-local Skill.
 
-`guru-sync-base` owns resolve-only evidence, AI selected-base review, conditional
-conflict confirmation before fetch/fast-forward, digest-bound execution,
-mandatory post-execution AI Review Gate, objective validation, result-evidence
-cleanup, standalone resolution cleanup, workflow resolution-lease transfer, and
-typed exit. The `synced` consumer reuses the same external resolution raw bytes
-and digest for every `prepare-task` guard, keeps the lease active while user
-confirmation is pending, and calls `sync-base --release-resolution-evidence`
-on task-created, blocked, aborted, or superseded terminal routes. The lease path
-or digest is invocation-local handoff only and never enters task artifacts,
-repo runtime, shared cache, or review evidence.
+`guru-sync-base` declares `judgment_mode=deterministic`; its deterministic
+profile owns stdout resolution facts, pre-sync digest-bound execution,
+post-sync resolution generation, objective live Git validation, and typed exit.
+Its exact stage order is `forward_behavior -> recorder_validator -> typed_exit`;
+it does not perform selected-base AI confirmation, conditional human
+confirmation, or a post-execution AI Review Gate. Resolver order is explicit
+base, non-empty scalar config, first existing configured candidate in declared
+order (default `dev -> develop -> main -> master`), then remote default when no
+candidate exists. The validator returns only the successful result's
+`post_sync_resolution_sha256` to the next consumer. `prepare-task` receives that
+digest and reuses the same resolver/sync core before semantic reads and again
+before each GitHub/worktree/task mutation. Every guard consumes the preceding
+post-sync digest and returns its own post-sync digest for the next guard; a
+pre-sync digest is never reused after a fast-forward. No cross-step
+result/resolution file or lifecycle is part of this contract.
 Unknown, missing, duplicate, multiple, or unmapped markers fail closed. A
 current checkout branch is never an implicit base fallback.
 
@@ -111,10 +116,9 @@ executor flag such as `--create-issue-confirmed` plus reviewed title/body input.
 plan review and user approval. `--create-worktree` may write only the gitignored
 local runtime workspace mapping; `--create-task` additionally writes tracked
 task-local `task-start-context.json` after task creation. Ordinary intake does
-not dirty the source checkout. Every invocation receives the active resolution
-lease; no planner or executor guard may re-resolve a second provenance. A
-retryable human-confirmation stop keeps that lease active, while every Phase 0
-terminal stop releases it before return.
+not dirty the source checkout. Every invocation receives the expected
+resolution digest; each planner or executor guard must reproduce the same
+provenance before it may continue.
 
 When there is no active task and the current turn requires file changes,
 current-checkout direct edits are an explicit override, not a silent shortcut.

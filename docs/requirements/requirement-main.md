@@ -51,7 +51,7 @@ Canonical 资产：
 | 能力 | 说明 |
 | --- | --- |
 | 固定 marketplace id | `trellis/index.json` 暴露 `guru-team` workflow，稳定安装使用 `trellis init --workflow guru-team --workflow-source gh:castbox/guru-trellis/trellis#vX.Y.Z`，latest/canary 才使用不带 `#ref` 的 source。 |
-| Phase 0 intake | AI 先在 tool-free 阶段分类 request；repo-changing route mandatory invoke `guru-sync-base`，通过 selected-base confirmation 与三方 HEAD equality 后才进入 `guru-discover-change-context`、issue intake、duplicate search 和 worktree preflight。non-repo route 经 AI review 后返回 `skipped`；`blocked` 立即停止。默认 planner 不写 task artifact。 |
+| Phase 0 intake | AI 先在 tool-free 阶段分类 request；repo-changing route mandatory invoke deterministic `guru-sync-base`，通过 digest-bound executor、validator 与三方 HEAD equality 后才进入 `guru-discover-change-context`、issue intake、duplicate search 和 worktree preflight。Skill 内不执行 selected-base/post-execution AI Gate；non-repo route 由 caller classification 后记录 `skipped`，`blocked` 立即停止。默认 planner 不写 task artifact。 |
 | Intake clarity / scope evolution | AI 读取 issue body/comment 或自然语言请求后，必须判断是否需要 `trellis-brainstorm`；澄清结果应回写 issue comment/body 或 proposed issue body。任务中新增需求或引用其他 issue 时，先确认纳入当前 task、related，还是 follow-up/new issue，并同步 `issue-scope-ledger.json`。 |
 | 业务项目中文文档默认规则 | 业务项目 `.trellis/spec/**`、`.trellis/tasks/**`（含 `reviews/*.md` raw reports 与 `review.md` rollup）、`docs/**` durable docs、`00-bootstrap-guidelines` 生成或补齐的 docs SSOT，以及 workflow artifact human-readable 字段默认中文；literal token 可保留英文。 |
 | Phase 1 planning | Trellis task 创建后写中文 `prd.md` / `design.md` / `implement.md`，并定位同一个 `Docs SSOT Plan`；主会话必须显式展示三份 task-local 规划文档链接并等待用户 post-planning 确认；Phase 0 handoff 确认不能替代 planning approval。 |
@@ -95,10 +95,10 @@ issue、worktree、branch、task 创建和当前 checkout 直改上。
 | Confirmed issue creation | 创建 GitHub issue 必须使用 `--create-issue-confirmed --issue-title ... --issue-body-file ...`，标题和正文来自 AI/human 已审阅内容。 |
 | Worktree executor boundary | `--create-worktree` / `--create-task` 只在 intake plan review 和用户确认后使用，并把 handoff 写入选定 workspace。 |
 | Workspace boundary guard | worktree mode 下 `local runtime workspace mapping` 是 task artifact 写入边界；`check-workspace-boundary.sh --json --task <task>` 输出 expected workspace、actual repo root、source checkout status、task worktree status 和 source checkout 可疑同名 artifact/review metadata，并让 recorder/validator 在错误 cwd 或错误 artifact path 下 fail closed。 |
-| Base resolution | 固定顺序为 explicit `--base`、non-empty scalar `base_branch` 或 single-value `base_branch_candidates`、remote default branch、去重后唯一 existing fallback candidate；resolver 只能在需要当前优先级时解析并校验该来源，已选高优先级来源不得被 malformed 低优先级输入阻断；branch name 必须通过 `git check-ref-format --branch`，零个/多个 fallback 均 blocked，禁止 current branch implicit fallback。 |
-| Base sync | `sync-base --resolve-only` 在 fetch 前输出无绝对路径的 resolution bytes/digest；AI 确认 invocation intent、source、selected base 后，`--execute` 必须重算并绑定原始 bytes/digest。只允许显式 refspec fetch 和 selected-base checkout 上的 `git merge --ff-only`；dirty、missing ref、fetch failure、diverged、wrong checkout、stale resolution 或 post-sync mismatch 均 blocked。 |
+| Base resolution | 固定顺序为 explicit `--base`、non-empty scalar `base_branch`、按 `base_branch_candidates` 声明顺序选择首个 existing local 或 remote-tracking ref（缺省 `dev -> develop -> main -> master`）、候选均不存在时的 remote default branch；resolver 只能在需要当前优先级时解析并校验该来源，已选高优先级来源不得被 malformed 低优先级输入阻断；多个候选同时存在按配置顺序选择，不是歧义；branch name 必须通过 `git check-ref-format --branch`，所有来源均失败时 blocked，禁止 current branch implicit fallback。 |
+| Base sync | `sync-base --resolve-only` 在 fetch 前输出无绝对路径的 stdout resolution facts/pre-sync digest；`--execute` 必须重算并绑定该 digest，成功后输出绑定同步后 checkout 的 `post_sync_resolution` / `post_sync_resolution_sha256`。只允许显式 refspec fetch 和 selected-base checkout 上的 `git merge --ff-only`；dirty、missing ref、fetch failure、diverged、wrong checkout、stale resolution 或 post-sync mismatch 均 blocked。 |
 | Fresh equality | 成功必须同时证明 checkout clean，decision checkout HEAD、local base HEAD、remote-tracking base HEAD 三者是完整 commit SHA 且完全相等；validator 只校验 schema/digest/live Git facts，不判断 scope、semantic pass 或 route。 |
-| Phase 0 resolution lease | Skill 的 result validator 消费并清理 result evidence；workflow `synced` 只转移同一个 repo-external resolution file/raw-byte/digest lease。每次 `prepare-task` planner/mutation guard 复用该 lease，task created、blocked、aborted 或 superseded 终态必须调用 `sync-base --release-resolution-evidence`，用户确认 pending 时不得提前释放；lease path/digest 不进入 task artifact、repo runtime、shared cache 或 review evidence。 |
+| Phase 0 stdout facts | Resolution/result facts 只经 stdout 传递，不创建 repo-external evidence file、lease、release 或 cleanup API。Validator 向后只传 post-sync digest；`prepare-task` planner/mutation guard 每次接收上一 guard 的 post-sync digest，在 issue/history 读取和各 mutation 边界前重跑 shared resolver/sync core，并把新的 post-sync digest 传给下一 guard；identity/digest 漂移立即 blocked。 |
 | Naming quality gate | planner 输出 `naming_quality`；中文、非 ASCII 或低信息自动 slug（如 `issue-52`、`52-issue-52`、纯编号、仅通用词）不得静默进入 create 路径，agent 必须在读完 issue 后显式传入语义英文 `--short-name` / `--workspace-slug` / `--task-slug`，需要特殊分支名时才传 `--branch`。未显式传 `--branch` 时，branch 格式为 `<branch-type>/<slug>`，类型只能是 `feat` / `fix` / `refactor` / `perf` / `test` / `docs` / `style` / `build` / `ci` / `chore` / `revert`，未知语义 fallback 为 `chore`。 |
 | Developer identity | 新 worktree 优先复制 source checkout 的 gitignored `.trellis/.developer`；缺失但有 `--assignee` 时初始化；两者都没有则阻塞并给恢复命令。 |
 | no_task direct edit override | 当前 checkout 直改必须由用户明确批准跳过 issue、Trellis task、worktree 和 branch；批准不包含 commit、push、PR 或 issue close。 |
@@ -266,8 +266,10 @@ provenance 必须保留原文件、生成 `.new` 并 fail closed；known upgrade
 
 `workflow.routing=global_workflow` 由 mandatory marker 触发；
 `standalone.routing=direct_discovery` 允许所选平台直接发现同一个 package。后者不承诺
-单目录 self-contained 或 portable。两种 mode 的 entry preconditions、AI Review Gate、
-human confirmation、recorder/validator 与 typed exits 必须一致，且 package wrapper 只能
+单目录 self-contained 或 portable。Interface schema 1.2 要求显式 `judgment_mode`：
+`semantic` 固定 forward/AI Gate/conditional confirmation/recorder-validator/typed-exit 五阶段，
+`deterministic` 固定 forward/recorder-validator/typed-exit 三阶段；两种 mode 的 entry
+preconditions 和同一 profile 行为必须一致，且 package wrapper 只能
 把固定 validator id 交给 `.trellis/guru-team/scripts/bash/run-skill-command.sh`。Dispatcher
 校验 interface dependency、installed extension runtime API、managed inventory 与公开
 `runtime_command` 后才调用共享 companion command；任何缺失、不兼容或 drift 都必须在
@@ -366,7 +368,7 @@ discovery、task 或 worktree 创建。
 | #78 | open | 当前任务 | Branch Review raw reports / `review.md` 继承 #57 中文 artifact 规则；workflow / overlay / docs / spec / validator 防止英文模板标题复发。 |
 | #83 | open | #93 的 baseline | Planning artifact ambiguity review gate：展示三份 planning docs 前完成 AI 语义审查，`planning-approval.json` schema 1.2 记录 passed `ambiguity_review`、受控词表和七个审查维度；recorder/validator 只校验结构化 evidence。 |
 | #93 | open | 当前任务 | Planning ambiguity scanner hardening：v2 受控词表、固定扫描 `prd.md` / `design.md` / `implement.md`、记录全部 `hits[]`、阻塞未分类命中和 `contract_violation`，并保持脚本不替代 AI 语义审查。 |
-| #110 | open | 当前任务 | `guru-sync-base` public closed loop：四级 base resolution、AI confirmation、digest-bound ff-only sync、三方 equality、typed exits、prepare-task reuse、preset/platform distribution。#98 只 related，#111 是 follow-up。 |
+| #110 | open | 当前任务 | `guru-sync-base` public deterministic closed loop：ordered-candidate-first 四级 base resolution、digest-bound ff-only sync、三方 equality、stdout facts、typed exits、prepare-task reuse、interface schema 1.2 双 profile与 preset/platform distribution。#98 只 related，#111 是 follow-up。 |
 
 ## 9. 当前扩展边界
 

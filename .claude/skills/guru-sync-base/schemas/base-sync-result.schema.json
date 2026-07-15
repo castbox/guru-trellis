@@ -9,6 +9,8 @@
     "skill_id",
     "status",
     "resolution",
+    "post_sync_resolution",
+    "post_sync_resolution_sha256",
     "decision_checkout",
     "git",
     "fresh",
@@ -19,6 +21,8 @@
     "skill_id": {"const": "guru-sync-base"},
     "status": {"const": "synced"},
     "resolution": {"$ref": "#/$defs/resolution"},
+    "post_sync_resolution": {"$ref": "#/$defs/resolutionIdentity"},
+    "post_sync_resolution_sha256": {"$ref": "#/$defs/sha256"},
     "decision_checkout": {"$ref": "#/$defs/decisionCheckout"},
     "git": {"$ref": "#/$defs/gitFacts"},
     "fresh": {"const": true},
@@ -33,7 +37,7 @@
       "additionalProperties": false,
       "required": ["source", "selected_base", "remote", "candidates", "resolution_sha256"],
       "properties": {
-        "source": {"enum": ["explicit", "config", "remote-default", "fallback"]},
+        "source": {"enum": ["explicit", "config", "config-candidate", "remote-default"]},
         "selected_base": {"$ref": "#/$defs/branch"},
         "remote": {"type": "string", "minLength": 1, "maxLength": 255},
         "candidates": {
@@ -43,6 +47,44 @@
           "items": {"$ref": "#/$defs/branch"}
         },
         "resolution_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "resolutionIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "skill_id",
+        "status",
+        "source",
+        "selected_base",
+        "remote",
+        "candidates",
+        "decision_checkout"
+      ],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "skill_id": {"const": "guru-sync-base"},
+        "status": {"const": "resolved"},
+        "source": {"enum": ["explicit", "config", "config-candidate", "remote-default"]},
+        "selected_base": {"$ref": "#/$defs/branch"},
+        "remote": {"type": "string", "minLength": 1, "maxLength": 255},
+        "candidates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/branch"}
+        },
+        "decision_checkout": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["branch", "head", "clean"],
+          "properties": {
+            "branch": {"$ref": "#/$defs/branch"},
+            "head": {"$ref": "#/$defs/commit"},
+            "clean": {"const": true}
+          }
+        }
       }
     },
     "decisionCheckout": {

@@ -1,17 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.1.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.2.json",
   "title": "Guru Team closed-loop workflow skill interface",
   "type": "object",
   "additionalProperties": false,
-  "required": ["$schema", "schema_version", "id", "name", "description", "state", "modes", "entry_preconditions", "runtime_dependency", "ordered_stages", "artifacts", "schemas", "validators", "external_exits", "reentry", "tests", "platform_destinations"],
+  "required": ["$schema", "schema_version", "id", "name", "description", "state", "judgment_mode", "modes", "entry_preconditions", "runtime_dependency", "ordered_stages", "artifacts", "schemas", "validators", "external_exits", "reentry", "tests", "platform_destinations"],
   "properties": {
     "$schema": {"const": "../../schemas/skill-interface.schema.json"},
-    "schema_version": {"const": "1.1"},
+    "schema_version": {"const": "1.2"},
     "id": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
     "name": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
     "description": {"type": "string", "minLength": 1},
     "state": {"const": "active"},
+    "judgment_mode": {"enum": ["semantic", "deterministic"]},
     "modes": {
       "type": "object",
       "additionalProperties": false,
@@ -23,9 +24,7 @@
     },
     "entry_preconditions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/precondition"}},
     "runtime_dependency": {"$ref": "#/$defs/runtimeDependency"},
-    "ordered_stages": {
-      "const": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"]
-    },
+    "ordered_stages": {"type": "array", "items": {"type": "string"}},
     "artifacts": {"type": "array", "items": {"$ref": "#/$defs/pathItem"}},
     "schemas": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/pathItem"}},
     "validators": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/validator"}},
@@ -53,6 +52,16 @@
       "items": {"enum": ["shared", "codex", "cursor", "claude"]}
     }
   },
+  "allOf": [
+    {
+      "if": {"properties": {"judgment_mode": {"const": "semantic"}}, "required": ["judgment_mode"]},
+      "then": {"properties": {"ordered_stages": {"const": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"]}}}
+    },
+    {
+      "if": {"properties": {"judgment_mode": {"const": "deterministic"}}, "required": ["judgment_mode"]},
+      "then": {"properties": {"ordered_stages": {"const": ["forward_behavior", "recorder_validator", "typed_exit"]}}}
+    }
+  ],
   "$defs": {
     "workflowMode": {
       "type": "object",

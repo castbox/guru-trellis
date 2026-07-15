@@ -347,7 +347,7 @@ for command in (
 assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"
 assert api["skill_contracts"]["active_skill_ids"] == ["guru-create-task-commit", "guru-sync-base"]
 assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
-assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.1"
+assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.2"
 assert api["skill_runtime"] == {
     "api_version": "1.0",
     "dispatcher": "run-skill-command",
@@ -540,22 +540,38 @@ git -C "$TARGET" config user.email "installed-task-commit@example.invalid"
 git -C "$TARGET" branch -M main
 git -C "$TARGET" add -A
 git -C "$TARGET" commit -q -m "chore: install Guru Team throwaway baseline"
-BASELINE_HEAD="$(git -C "$TARGET" rev-parse HEAD)"
 SYNC_REMOTE="$WORK_DIR/base-sync-remote.git"
 git init -q --bare "$SYNC_REMOTE"
 git -C "$SYNC_REMOTE" symbolic-ref HEAD refs/heads/main
-git -C "$TARGET" remote add sync-origin "$SYNC_REMOTE"
-git -C "$TARGET" push -q sync-origin main
-SYNC_RESOLUTION_FILE="$WORK_DIR/base-sync-resolution.json"
-SYNC_RESULT_FILE="$WORK_DIR/base-sync-result.json"
+git -C "$TARGET" remote set-url origin "$SYNC_REMOTE"
+SYNC_CONFIG_BACKUP="$WORK_DIR/base-sync-config.yml"
+cp "$TARGET/.trellis/guru-team/config.yml" "$SYNC_CONFIG_BACKUP"
+python3 - "$TARGET/.trellis/guru-team/config.yml" <<'PY'
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+lines = path.read_text(encoding="utf-8").splitlines()
+updated = False
+for index, line in enumerate(lines):
+    if line.startswith("github_repo:"):
+        lines[index] = 'github_repo: "castbox/guru-trellis-throwaway"'
+        updated = True
+        break
+if not updated:
+    raise SystemExit("throwaway Guru Team config is missing github_repo")
+path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+PY
+git -C "$TARGET" add .trellis/guru-team/config.yml
+git -C "$TARGET" commit -q -m "chore: configure throwaway base remote"
+git -C "$TARGET" push -q origin main
 SYNC_RESOLUTION_JSON="$(
   "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
     --root "$TARGET" \
     --mode standalone \
     --resolve-only \
     --base main \
-    --remote sync-origin \
-    --resolution-file "$SYNC_RESOLUTION_FILE"
+    --remote origin
 )"
 SYNC_RESOLUTION_DIGEST="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["resolution_sha256"])' <<<"$SYNC_RESOLUTION_JSON")"
 SYNC_RESULT_JSON="$(
@@ -563,30 +579,19 @@ SYNC_RESULT_JSON="$(
     --root "$TARGET" \
     --mode standalone \
     --execute \
-    --resolution-file "$SYNC_RESOLUTION_FILE" \
     --expected-resolution-sha256 "$SYNC_RESOLUTION_DIGEST" \
-    --result-file "$SYNC_RESULT_FILE"
+    --base main \
+    --remote origin
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True; assert payload["decision_checkout"]["head_after"] == payload["git"]["local_head_after"] == payload["git"]["remote_head_after"]' <<<"$SYNC_RESULT_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True; assert payload["git"]["fast_forwarded"] is False; assert payload["resolution"]["resolution_sha256"] == payload["post_sync_resolution_sha256"]; assert payload["decision_checkout"]["head_after"] == payload["git"]["local_head_after"] == payload["git"]["remote_head_after"]' <<<"$SYNC_RESULT_JSON"
 SYNC_VALIDATION_JSON="$(
   "$TARGET/.agents/skills/guru-sync-base/scripts/check-base-sync.sh" \
     --root "$TARGET" \
     --mode standalone \
-    --evidence-file "$SYNC_RESULT_FILE"
-)"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "validated"; assert payload["selected_base"] == "main"' <<<"$SYNC_VALIDATION_JSON"
-test ! -e "$SYNC_RESULT_FILE"
-SYNC_RELEASE_JSON="$(
-  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
-    --root "$TARGET" \
-    --mode standalone \
-    --release-resolution-evidence \
-    --resolution-file "$SYNC_RESOLUTION_FILE" \
+    --result-json "$SYNC_RESULT_JSON" \
     --expected-resolution-sha256 "$SYNC_RESOLUTION_DIGEST"
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "released"; assert payload["mode"] == "standalone"' <<<"$SYNC_RELEASE_JSON"
-test ! -e "$SYNC_RESOLUTION_FILE"
-test ! -e "$SYNC_RESULT_FILE"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "validated"; assert payload["selected_base"] == "main"; assert payload["post_sync_resolution_sha256"] == sys.argv[1]' "$SYNC_RESOLUTION_DIGEST" <<<"$SYNC_VALIDATION_JSON"
 
 PHASE0_FAKE_BIN="$WORK_DIR/phase0-fake-bin"
 mkdir -p "$PHASE0_FAKE_BIN"
@@ -597,7 +602,7 @@ if [[ "${1:-}" == "auth" && "${2:-}" == "status" ]]; then
   exit 0
 fi
 if [[ "${1:-}" == "issue" && "${2:-}" == "view" ]]; then
-  printf '%s\n' '{"number":110,"title":"Fix Phase 0 resolution lease lifecycle","url":"https://github.com/castbox/guru-trellis-throwaway/issues/110","body":"Exercise the installed workflow resolution lease across planner and mutation guards.","comments":[],"state":"OPEN"}'
+  printf '%s\n' '{"number":110,"title":"Verify Phase 0 stdout base facts","url":"https://github.com/castbox/guru-trellis-throwaway/issues/110","body":"Exercise installed workflow base synchronization across planner and mutation guards.","comments":[],"state":"OPEN"}'
   exit 0
 fi
 printf 'unexpected fake gh invocation: %s\n' "$*" >&2
@@ -611,92 +616,81 @@ PHASE0_RESOLUTION_JSON="$(
     --mode workflow \
     --resolve-only \
     --base main \
-    --remote sync-origin \
-    --resolution-file "$SYNC_RESOLUTION_FILE"
+    --remote origin
 )"
 PHASE0_RESOLUTION_DIGEST="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["resolution_sha256"])' <<<"$PHASE0_RESOLUTION_JSON")"
-PHASE0_RESOLUTION_RAW_SHA="$(python3 -c 'import hashlib, pathlib, sys; print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())' "$SYNC_RESOLUTION_FILE")"
+SYNC_UPSTREAM="$WORK_DIR/base-sync-upstream"
+git clone -q "$SYNC_REMOTE" "$SYNC_UPSTREAM"
+git -C "$SYNC_UPSTREAM" config user.name "Throwaway Base Upstream"
+git -C "$SYNC_UPSTREAM" config user.email "throwaway-base-upstream@example.invalid"
+printf '%s\n' "remote advanced after workflow resolution" >"$SYNC_UPSTREAM/phase0-behind.txt"
+git -C "$SYNC_UPSTREAM" add phase0-behind.txt
+git -C "$SYNC_UPSTREAM" commit -q -m "test: advance throwaway base after resolution"
+git -C "$SYNC_UPSTREAM" push -q origin main
 PHASE0_RESULT_JSON="$(
   "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
     --root "$TARGET" \
     --mode workflow \
     --execute \
-    --resolution-file "$SYNC_RESOLUTION_FILE" \
     --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST" \
-    --result-file "$SYNC_RESULT_FILE"
+    --base main \
+    --remote origin
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True' <<<"$PHASE0_RESULT_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True; assert payload["git"]["fast_forwarded"] is True; assert payload["resolution"]["resolution_sha256"] == sys.argv[1]; assert payload["post_sync_resolution_sha256"] != sys.argv[1]' "$PHASE0_RESOLUTION_DIGEST" <<<"$PHASE0_RESULT_JSON"
 PHASE0_VALIDATION_JSON="$(
   "$TARGET/.agents/skills/guru-sync-base/scripts/check-base-sync.sh" \
     --root "$TARGET" \
     --mode workflow \
-    --evidence-file "$SYNC_RESULT_FILE"
+    --result-json "$PHASE0_RESULT_JSON" \
+    --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST"
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "validated"; assert payload["mode"] == "workflow"' <<<"$PHASE0_VALIDATION_JSON"
-test ! -e "$SYNC_RESULT_FILE"
-test -f "$SYNC_RESOLUTION_FILE"
+PHASE0_POST_DIGEST="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "validated"; assert payload["mode"] == "workflow"; print(payload["post_sync_resolution_sha256"])' <<<"$PHASE0_VALIDATION_JSON")"
+if [[ "$PHASE0_POST_DIGEST" == "$PHASE0_RESOLUTION_DIGEST" ]]; then
+  echo "Fast-forwarded workflow validation did not return a new post-sync digest" >&2
+  exit 2
+fi
 
-PHASE0_BRANCH="chore/110-phase0-resolution-lease"
+PHASE0_BRANCH="chore/110-phase0-stdout-facts"
 PHASE0_ISSUE_URL="https://github.com/castbox/guru-trellis-throwaway/issues/110"
 PHASE0_PLANNER_JSON="$(
   PATH="$PHASE0_FAKE_BIN:$PATH" \
   "$TARGET/.trellis/guru-team/scripts/bash/prepare-task.sh" \
     --root "$TARGET" \
     --json \
-    --resolution-file "$SYNC_RESOLUTION_FILE" \
-    --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST" \
+    --expected-resolution-sha256 "$PHASE0_POST_DIGEST" \
     --base-branch main \
     --branch "$PHASE0_BRANCH" \
-    --short-name "110-phase0-resolution-lease" \
-    --workspace-slug "110-phase0-resolution-lease" \
-    --task-slug "110-phase0-resolution-lease" \
+    --short-name "110-phase0-stdout-facts" \
+    --workspace-slug "110-phase0-stdout-facts" \
+    --task-slug "110-phase0-stdout-facts" \
     --assignee throwaway \
     "$PHASE0_ISSUE_URL"
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); freshness = payload["preflight"]["base_freshness"]; assert payload["source_issue"]["number"] == 110; assert payload["workspace_ready"] is False; assert freshness["reviewed_resolution_sha256"] == sys.argv[1]; assert freshness["three_way_equal"] is True' "$PHASE0_RESOLUTION_DIGEST" <<<"$PHASE0_PLANNER_JSON"
-test "$(python3 -c 'import hashlib, pathlib, sys; print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())' "$SYNC_RESOLUTION_FILE")" = "$PHASE0_RESOLUTION_RAW_SHA"
+PHASE0_PLANNER_POST_DIGEST="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); freshness = payload["preflight"]["base_freshness"]; assert payload["source_issue"]["number"] == 110; assert payload["workspace_ready"] is False; assert freshness["reviewed_resolution_sha256"] == sys.argv[1]; assert freshness["three_way_equal"] is True; print(freshness["post_sync_resolution_sha256"])' "$PHASE0_POST_DIGEST" <<<"$PHASE0_PLANNER_JSON")"
 
 PHASE0_EXECUTOR_JSON="$(
   PATH="$PHASE0_FAKE_BIN:$PATH" \
   "$TARGET/.trellis/guru-team/scripts/bash/prepare-task.sh" \
     --root "$TARGET" \
     --json \
-    --resolution-file "$SYNC_RESOLUTION_FILE" \
-    --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST" \
+    --expected-resolution-sha256 "$PHASE0_PLANNER_POST_DIGEST" \
     --base-branch main \
     --branch "$PHASE0_BRANCH" \
-    --short-name "110-phase0-resolution-lease" \
-    --workspace-slug "110-phase0-resolution-lease" \
-    --task-slug "110-phase0-resolution-lease" \
+    --short-name "110-phase0-stdout-facts" \
+    --workspace-slug "110-phase0-stdout-facts" \
+    --task-slug "110-phase0-stdout-facts" \
     --assignee throwaway \
     --create-worktree \
     "$PHASE0_ISSUE_URL"
 )"
-PHASE0_WORKTREE="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["workspace_ready"] is True; assert payload["preflight"]["base_freshness"]["reviewed_resolution_sha256"] == sys.argv[1]; print(payload["workspace_path"])' "$PHASE0_RESOLUTION_DIGEST" <<<"$PHASE0_EXECUTOR_JSON")"
-test "$(python3 -c 'import hashlib, pathlib, sys; print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())' "$SYNC_RESOLUTION_FILE")" = "$PHASE0_RESOLUTION_RAW_SHA"
+PHASE0_WORKTREE="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["workspace_ready"] is True; assert payload["preflight"]["base_freshness"]["reviewed_resolution_sha256"] == sys.argv[1]; print(payload["workspace_path"])' "$PHASE0_PLANNER_POST_DIGEST" <<<"$PHASE0_EXECUTOR_JSON")"
 git -C "$TARGET" worktree remove --force "$PHASE0_WORKTREE"
 git -C "$TARGET" branch -D "$PHASE0_BRANCH" >/dev/null
-
-PHASE0_RELEASE_JSON="$(
-  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
-    --root "$TARGET" \
-    --mode workflow \
-    --release-resolution-evidence \
-    --resolution-file "$SYNC_RESOLUTION_FILE" \
-    --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST"
-)"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "released"; assert payload["mode"] == "workflow"' <<<"$PHASE0_RELEASE_JSON"
-PHASE0_REPEAT_RELEASE_JSON="$(
-  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
-    --root "$TARGET" \
-    --mode workflow \
-    --release-resolution-evidence \
-    --resolution-file "$SYNC_RESOLUTION_FILE" \
-    --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST"
-)"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "already_released"' <<<"$PHASE0_REPEAT_RELEASE_JSON"
-test ! -e "$SYNC_RESOLUTION_FILE"
-test ! -e "$SYNC_RESULT_FILE"
+cp "$SYNC_CONFIG_BACKUP" "$TARGET/.trellis/guru-team/config.yml"
+git -C "$TARGET" add .trellis/guru-team/config.yml
+git -C "$TARGET" commit -q -m "chore: restore throwaway preset config"
+git -C "$TARGET" push -q origin main
+BASELINE_HEAD="$(git -C "$TARGET" rev-parse HEAD)"
 TASK_BRANCH="feat/122-installed-task-commit"
 TASK_REL=".trellis/tasks/07-13-122-installed-task-commit"
 git -C "$TARGET" switch -q -c "$TASK_BRANCH"

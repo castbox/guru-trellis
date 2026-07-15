@@ -57,7 +57,7 @@
       "canonical_root": "trellis/skills/guru-team/",
       "installed_root": ".trellis/guru-team/skills/",
       "registry_schema_id": "guru-team-skill-registry-1.0",
-      "interface_schema_id": "guru-team-skill-interface-1.1",
+      "interface_schema_id": "guru-team-skill-interface-1.2",
       "artifact_schema_ids": ["guru-base-sync-result-1.0", "guru-task-commit-plan-1.0"],
       "active_skill_ids": ["guru-create-task-commit", "guru-sync-base"],
       "reserved_skill_ids": ["guru-create-work-commit"],

@@ -34,12 +34,12 @@ branch_prefix: ""
 branch_type_default: chore
 
 # Optional single base branch. A non-empty value wins after an explicit --base.
-# Leave empty to use remote default discovery and the exact fallback gate below.
+# Leave empty to select the first existing candidate below, then remote default.
 base_branch: ""
 
-# Compatibility fallback candidates. A deduplicated single value is treated as
-# config selection. Multiple values are consulted only after remote default
-# discovery fails, and exactly one exact local/remote-tracking ref must exist.
+# Preferred base branch candidates, in order. The first exact local or
+# remote-tracking ref that exists wins; multiple existing candidates are not
+# ambiguous. Remote default is consulted only when none exists.
 base_branch_candidates:
   - dev
   - develop
