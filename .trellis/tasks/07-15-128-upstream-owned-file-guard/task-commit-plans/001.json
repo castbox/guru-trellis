@@ -787,7 +787,365 @@
     "plan_digest": "eb9f4bb38b35f63ab3687cd54387f942d493118909f87a78caf66e9d557e61d1"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-15T08:28:43Z",
+    "commit_sha": "80367449554307768290af555155612358a3cf40",
+    "parent": "291b57b6c02872320a4dce0626a2f718399b8f56",
+    "message_sha256": "6ad346036ceb2c59fed4feb1262c92ef518bba8308637a64fba8a4befd15ed0f",
+    "committed_paths": [
+      ".trellis/spec/preset/index.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/agent-assignment.json",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/check.jsonl",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/design.md",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/implement.jsonl",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/implement.md",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/issue-scope-ledger.json",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-check.json",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings.json",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/planning-approval.json",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/prd.md",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/research/upstream-ownership-evidence.md",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/001.json",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-start-context.json",
+      ".trellis/tasks/07-15-128-upstream-owned-file-guard/task.json",
+      "README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/ownership/upstream-ownership.json",
+      "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+      "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-expanded-legacy.json",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-missing-removal-owner.json",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-new-upstream-overlay.json",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-payload-drift.json",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-unclassified.json",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-upstream-managed-claim.json",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-baseline.json",
+      "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-guru-owned-paths.json",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+      "trellis/workflows/guru-team/README.md"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "3f82812e7b08554304aead73e224abaa75aec9d4",
+      "actual_tree": "3f82812e7b08554304aead73e224abaa75aec9d4",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/spec/preset/index.md",
+          "expected_blob": "bdb47fedc34119fc025072497b4d7cf03080bad7",
+          "expected_mode": "100644",
+          "actual_blob": "bdb47fedc34119fc025072497b4d7cf03080bad7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/preset/installer.md",
+          "expected_blob": "01edcf51928674de89d4e9c33855f21c86287040",
+          "expected_mode": "100644",
+          "actual_blob": "01edcf51928674de89d4e9c33855f21c86287040",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/preset/overlay-guidelines.md",
+          "expected_blob": "15ff71b451c89acf0fe1096f671c2ff856fd9df9",
+          "expected_mode": "100644",
+          "actual_blob": "15ff71b451c89acf0fe1096f671c2ff856fd9df9",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/preset/upstream-ownership.md",
+          "expected_blob": "364e36333225f3f112a32dd868d3713be0df9cad",
+          "expected_mode": "100644",
+          "actual_blob": "364e36333225f3f112a32dd868d3713be0df9cad",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/agent-assignment.json",
+          "expected_blob": "b7cc04f3bee4fb0d8180c6a26d732f5d73564c16",
+          "expected_mode": "100644",
+          "actual_blob": "b7cc04f3bee4fb0d8180c6a26d732f5d73564c16",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/check.jsonl",
+          "expected_blob": "4992eff52301c516c87438b9fe0ce7036654ae60",
+          "expected_mode": "100644",
+          "actual_blob": "4992eff52301c516c87438b9fe0ce7036654ae60",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/design.md",
+          "expected_blob": "a84f591ffd25ce7f299b7e22d349846ca7f643ef",
+          "expected_mode": "100644",
+          "actual_blob": "a84f591ffd25ce7f299b7e22d349846ca7f643ef",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/implement.jsonl",
+          "expected_blob": "4ac8d2e9d4cabc416c2417bcd57e5738f17c4686",
+          "expected_mode": "100644",
+          "actual_blob": "4ac8d2e9d4cabc416c2417bcd57e5738f17c4686",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/implement.md",
+          "expected_blob": "9e33f27bcb0839ab3b31952b0d4992b20a84db40",
+          "expected_mode": "100644",
+          "actual_blob": "9e33f27bcb0839ab3b31952b0d4992b20a84db40",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/issue-scope-ledger.json",
+          "expected_blob": "eb4bc1af232953a79d04835e7ddf02d0dcef7f2e",
+          "expected_mode": "100644",
+          "actual_blob": "eb4bc1af232953a79d04835e7ddf02d0dcef7f2e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-check.json",
+          "expected_blob": "d8c8d0b471628ed8d9983a9eef982c35757cb5ac",
+          "expected_mode": "100644",
+          "actual_blob": "d8c8d0b471628ed8d9983a9eef982c35757cb5ac",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings.json",
+          "expected_blob": "4eb8edec2b78283ebd04427ba0407f0933d1b7e7",
+          "expected_mode": "100644",
+          "actual_blob": "4eb8edec2b78283ebd04427ba0407f0933d1b7e7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/planning-approval.json",
+          "expected_blob": "b0b9dd136b6bb5d45037014c7937612123522201",
+          "expected_mode": "100644",
+          "actual_blob": "b0b9dd136b6bb5d45037014c7937612123522201",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/prd.md",
+          "expected_blob": "6cda412bd165b73747b90d8d9803ea062c34562c",
+          "expected_mode": "100644",
+          "actual_blob": "6cda412bd165b73747b90d8d9803ea062c34562c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/research/upstream-ownership-evidence.md",
+          "expected_blob": "339ca3b3d7cf948cd1dc1b74dce52249ade6bb3a",
+          "expected_mode": "100644",
+          "actual_blob": "339ca3b3d7cf948cd1dc1b74dce52249ade6bb3a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/001.json",
+          "expected_blob": "1ed81f86dfe5da46793610c31ba3ac3f1ade0250",
+          "expected_mode": "100644",
+          "actual_blob": "1ed81f86dfe5da46793610c31ba3ac3f1ade0250",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-start-context.json",
+          "expected_blob": "d9b92b1ca9a91f3d7b5600bfc73b6dd4e025e6fd",
+          "expected_mode": "100644",
+          "actual_blob": "d9b92b1ca9a91f3d7b5600bfc73b6dd4e025e6fd",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/task.json",
+          "expected_blob": "3dc2d5db93db753fdc82cf4bbb218ab2a29f78da",
+          "expected_mode": "100644",
+          "actual_blob": "3dc2d5db93db753fdc82cf4bbb218ab2a29f78da",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "README.md",
+          "expected_blob": "0235fb84c768a7cafb65c0608d30223632719f64",
+          "expected_mode": "100644",
+          "actual_blob": "0235fb84c768a7cafb65c0608d30223632719f64",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/README.md",
+          "expected_blob": "1cef8715ccf1cf6f3c1872e0552248676a7e76b7",
+          "expected_mode": "100644",
+          "actual_blob": "1cef8715ccf1cf6f3c1872e0552248676a7e76b7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+          "expected_blob": "3e33614638e941f5a7b1c04c8109cfd235727ce8",
+          "expected_mode": "100644",
+          "actual_blob": "3e33614638e941f5a7b1c04c8109cfd235727ce8",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+          "expected_blob": "1e5a3c6a6855e5541ed095dce8f0956cc75625ff",
+          "expected_mode": "100644",
+          "actual_blob": "1e5a3c6a6855e5541ed095dce8f0956cc75625ff",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+          "expected_blob": "490e0db6a5100b2820de73948a973bc408b2e8ff",
+          "expected_mode": "100755",
+          "actual_blob": "490e0db6a5100b2820de73948a973bc408b2e8ff",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
+          "expected_blob": "7b6f1bc379caeb6b804195385c46b5e6e57b2abf",
+          "expected_mode": "100755",
+          "actual_blob": "7b6f1bc379caeb6b804195385c46b5e6e57b2abf",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "expected_blob": "2b78499049c900a565caf376432f64720c70d0e2",
+          "expected_mode": "100755",
+          "actual_blob": "2b78499049c900a565caf376432f64720c70d0e2",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "expected_blob": "6ac877f84a5f7b9942573ea0aa447c44afb8dc09",
+          "expected_mode": "100755",
+          "actual_blob": "6ac877f84a5f7b9942573ea0aa447c44afb8dc09",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-expanded-legacy.json",
+          "expected_blob": "1d38864b6ba9abb1f1db7848f08e70b7227e8081",
+          "expected_mode": "100644",
+          "actual_blob": "1d38864b6ba9abb1f1db7848f08e70b7227e8081",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-missing-removal-owner.json",
+          "expected_blob": "f6b1543845e20887294257552aa1ad9bed61630c",
+          "expected_mode": "100644",
+          "actual_blob": "f6b1543845e20887294257552aa1ad9bed61630c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-new-upstream-overlay.json",
+          "expected_blob": "bc4f69232b7f2c864ec4e57be082d104cdf126c2",
+          "expected_mode": "100644",
+          "actual_blob": "bc4f69232b7f2c864ec4e57be082d104cdf126c2",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-payload-drift.json",
+          "expected_blob": "199b7796067f312920b0811a8d1804cf553ae3a3",
+          "expected_mode": "100644",
+          "actual_blob": "199b7796067f312920b0811a8d1804cf553ae3a3",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-unclassified.json",
+          "expected_blob": "07023148605290cda99526e58f22ab5d96512aff",
+          "expected_mode": "100644",
+          "actual_blob": "07023148605290cda99526e58f22ab5d96512aff",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-upstream-managed-claim.json",
+          "expected_blob": "8de28049d0449701b2e12468edc30ed1837d172c",
+          "expected_mode": "100644",
+          "actual_blob": "8de28049d0449701b2e12468edc30ed1837d172c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-baseline.json",
+          "expected_blob": "e6ee9a8b95e79c3f6f4075b2cfb5f6a976b25e0b",
+          "expected_mode": "100644",
+          "actual_blob": "e6ee9a8b95e79c3f6f4075b2cfb5f6a976b25e0b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-guru-owned-paths.json",
+          "expected_blob": "ad56da5bf164c722f9bf10a6d1bc069afc6e6613",
+          "expected_mode": "100644",
+          "actual_blob": "ad56da5bf164c722f9bf10a6d1bc069afc6e6613",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "expected_blob": "9bf676e0a9acfeca6bda22dae791281649fabb94",
+          "expected_mode": "100644",
+          "actual_blob": "9bf676e0a9acfeca6bda22dae791281649fabb94",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+          "expected_blob": "8b3cace93bd84d8128faee58b9fa7da13878b62a",
+          "expected_mode": "100644",
+          "actual_blob": "8b3cace93bd84d8128faee58b9fa7da13878b62a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+          "expected_blob": "d994c6d832d63481e4d08533f0dd53252dceb9e6",
+          "expected_mode": "100644",
+          "actual_blob": "d994c6d832d63481e4d08533f0dd53252dceb9e6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/README.md",
+          "expected_blob": "27e136bd159238336e08e099d32c2091db0bddf7",
+          "expected_mode": "100644",
+          "actual_blob": "27e136bd159238336e08e099d32c2091db0bddf7",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

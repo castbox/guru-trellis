@@ -1,0 +1,389 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-15T09:45:47Z",
+  "task_dir": ".trellis/tasks/07-15-128-upstream-owned-file-guard",
+  "base_branch": "main",
+  "base_ref": "origin/main",
+  "head_branch": "fix/128-upstream-owned-file-guard",
+  "head": "78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5",
+  "diff_range": "origin/main...HEAD",
+  "changed_files": [
+    ".trellis/spec/preset/index.md",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/preset/upstream-ownership.md",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/agent-assignment.json",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/check.jsonl",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/design.md",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/implement.jsonl",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/implement.md",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/issue-scope-ledger.json",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-check.json",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings-round-002-fix.json",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings.json",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/planning-approval.json",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/prd.md",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/research/upstream-ownership-evidence.md",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/001.json",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/002.json",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-start-context.json",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/task.json",
+    "README.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/ownership/upstream-ownership.json",
+    "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+    "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+    "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-expanded-legacy.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-first-removal-synchronized-drift.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-inventory-member.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-manifest-member.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-registry-member.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-missing-removal-owner.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-new-upstream-overlay.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-payload-drift.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-removed-baseline-rewrite.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-unclassified.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-upstream-managed-claim.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-baseline.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-first-removal.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-guru-owned-paths.json",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+    "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+    "trellis/workflows/guru-team/README.md"
+  ],
+  "review_scope": [
+    "文档",
+    "代码",
+    "测试",
+    "Trellis artifacts",
+    "配置",
+    "脚本",
+    "schema",
+    "CI/CD workflow 与发布自动化",
+    "Dockerfile / Docker Compose / 容器启动脚本",
+    "Kubernetes YAML / Helm values / Kustomize base 和 overlay",
+    "数据库 schema / migration / seed / backfill 脚本",
+    "各目录下本次变更涉及的 Makefile",
+    "preset installer"
+  ],
+  "command": [
+    "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/128-upstream-owned-file-guard/.trellis/guru-team/scripts/bash/../python/guru_team_trellis.py",
+    "review-branch",
+    "--json",
+    "--task",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard",
+    "--base-branch",
+    "main",
+    "--pass",
+    "--review-source",
+    "independent-agent",
+    "--reviewer",
+    "/root/branch_review_final_issue128",
+    "--review-report",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/review.md",
+    "--agent-assignment",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/agent-assignment.json",
+    "--summary",
+    "全新最终放行审查代理已独立覆盖 origin/main...78006a7 的完整 46-path diff；BR-001/BR-002 生命周期闭合，需求、设计、代码、测试、Docs SSOT、开箱即用、upgrade/update、部署安全与 Issue Scope 均通过，P0/P1/P2/P3 为 0。",
+    "--evidence",
+    "round 001 finding owner 已在 round 002 以 reuse-for-closure 复核 current HEAD，BR-001/BR-002 均关闭；round 003 使用 fresh technical agent，reviewed HEAD=78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5。",
+    "--evidence",
+    "fresh phase2-check.json 在父提交审查完整 finding-fix dirty delta；commit plan 002 精确绑定 14 个 committed path，11 个 non-metadata path 全部覆盖，tree/blob/mode 匹配且当前仅有 task/review metadata dirty。",
+    "--evidence",
+    "ownership 6 个 test method/14 fixtures、installer 39、workflow 292、Skill package 67 全部通过；43 条 inventory/materialized identity 与 removal/malformed JSON 回归均符合合同。",
+    "--evidence",
+    "dogfood drift 通过；完整 throwaway 覆盖 initial install、trellis update --force、workflow/preset reapply、ownership checkpoints、finish fixture，最终无 .new/.bak。",
+    "--evidence",
+    "ssot_first durable ownership spec 与 schema/inventory/validator/tests/README 一致；两个 workflow、43 overlay payload、guru-sync-base、guru-create-task-commit 零 diff。",
+    "--evidence",
+    "变更不涉及 CI/CD、容器、Kubernetes/Kustomize、数据库 migration、Makefile 或业务配置部署，未发现 secret/客户数据；仅 #128 为 close issue，#127/#112/#119 related，#129-#132 follow-up。",
+    "--observation",
+    "exact remote branch marketplace verification 必须在 branch push 后的 publish readiness 阶段针对精确远端 ref 补证；当前没有把本地 throwaway 结果表述为远端 branch pass。|.trellis/tasks/07-15-128-upstream-owned-file-guard/issue-scope-ledger.json"
+  ],
+  "conclusion": {
+    "passed": true,
+    "summary": "全新最终放行审查代理已独立覆盖 origin/main...78006a7 的完整 46-path diff；BR-001/BR-002 生命周期闭合，需求、设计、代码、测试、Docs SSOT、开箱即用、upgrade/update、部署安全与 Issue Scope 均通过，P0/P1/P2/P3 为 0。",
+    "block_priorities": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "blocking_findings_count": 0,
+    "findings_count": 0,
+    "observations_count": 1,
+    "followup_candidates_count": 0
+  },
+  "findings": [],
+  "observations": [
+    {
+      "kind": "observation",
+      "message": "exact remote branch marketplace verification 必须在 branch push 后的 publish readiness 阶段针对精确远端 ref 补证；当前没有把本地 throwaway 结果表述为远端 branch pass。",
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/issue-scope-ledger.json"
+    }
+  ],
+  "followup_candidates": [],
+  "issue_scope": {
+    "ledger_path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/issue-scope-ledger.json",
+    "close_issues_reviewed": [
+      {
+        "number": 128,
+        "url": "https://github.com/castbox/guru-trellis/issues/128",
+        "title": "建立 Trellis upstream ownership 清单与禁止新增覆盖门禁",
+        "reason": "本 task 完整实现 ownership inventory、validator 与 validation chain 后关闭。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [
+      {
+        "number": 127,
+        "url": "https://github.com/castbox/guru-trellis/issues/127",
+        "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+        "reason": "Umbrella 架构上下文；本 PR 不关闭。"
+      },
+      {
+        "number": 112,
+        "url": "https://github.com/castbox/guru-trellis/issues/112",
+        "title": "拆分 #98：实现 guru-create-task-workspace 并集成变更 Intake Skills",
+        "reason": "Intake replacement owner；本 PR 不实现、不关闭。"
+      },
+      {
+        "number": 119,
+        "url": "https://github.com/castbox/guru-trellis/issues/119",
+        "title": "拆分 #115：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
+        "reason": "Finish replacement owner；本 PR 不实现、不关闭。"
+      }
+    ],
+    "followup_issues": [
+      {
+        "number": 129,
+        "url": "https://github.com/castbox/guru-trellis/issues/129",
+        "title": "实现 guru-approve-task-plan 闭环 Skill",
+        "reason": "Planning replacement owner。"
+      },
+      {
+        "number": 130,
+        "url": "https://github.com/castbox/guru-trellis/issues/130",
+        "title": "实现 guru-check-task 闭环 Skill",
+        "reason": "Phase 2 replacement owner。"
+      },
+      {
+        "number": 131,
+        "url": "https://github.com/castbox/guru-trellis/issues/131",
+        "title": "实现 guru-review-branch 闭环 Skill",
+        "reason": "Branch Review replacement owner。"
+      },
+      {
+        "number": 132,
+        "url": "https://github.com/castbox/guru-trellis/issues/132",
+        "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+        "reason": "43 个 frozen legacy overlay 的唯一 removal issue。"
+      }
+    ]
+  },
+  "verification_evidence": {
+    "base_head": "origin/main...78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5",
+    "changed_file_count": 46,
+    "reviewer": "/root/branch_review_final_issue128",
+    "review_source": "independent-agent",
+    "review_report": {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/review.md",
+      "sha256": "f1b82ba375df9b19ef074fd222ae9e2d9476d00e10ea2ac36e527cef187b5a46",
+      "size_bytes": 4983,
+      "modified_at": "2026-07-15T09:44:45.176534+00:00"
+    },
+    "agent_assignment": {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/agent-assignment.json",
+      "sha256": "a9ada7d15d66c9773d702d36344aa415365d28406a4d5937097c1775b6e9d79e",
+      "size_bytes": 44385,
+      "modified_at": "2026-07-15T09:45:03.183610+00:00",
+      "schema_version": "1.2",
+      "artifact_head": "78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5",
+      "roles": [
+        "实现代理",
+        "最终放行审查代理",
+        "问题发现审查代理",
+        "问题闭环审查代理",
+        "阶段二检查代理"
+      ],
+      "agents_count": 6,
+      "review_rounds_count": 3,
+      "reuse_decisions_count": 2,
+      "status_events_count": 33,
+      "effective_status_events_count": 33,
+      "event_corrections_count": 0,
+      "recovery_links_count": 0,
+      "task": ".trellis/tasks/07-15-128-upstream-owned-file-guard",
+      "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。"
+    },
+    "review_reports": [
+      {
+        "round": 1,
+        "logical_role": "问题发现审查代理",
+        "agent_id": "/root/branch_review_findings_issue128",
+        "reviewed_head": "80367449554307768290af555155612358a3cf40",
+        "findings_count": 2,
+        "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/reviews/001-findings-review.md",
+        "sha256": "66f14be0521d7cee526fba20a7d1085dc1f8f2d962e5b9ed06acd4ad438328c7",
+        "size_bytes": 11079,
+        "modified_at": "2026-07-15T08:41:04.206869+00:00"
+      },
+      {
+        "round": 2,
+        "logical_role": "问题闭环审查代理",
+        "agent_id": "/root/branch_review_findings_issue128",
+        "reviewed_head": "78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/reviews/002-closure-review.md",
+        "sha256": "3010de23b55ef9dc5b306139d9fa3d89be282b3169cc31241458976b75fb53c2",
+        "size_bytes": 9169,
+        "modified_at": "2026-07-15T09:30:16.269737+00:00"
+      },
+      {
+        "round": 3,
+        "logical_role": "最终放行审查代理",
+        "agent_id": "/root/branch_review_final_issue128",
+        "reviewed_head": "78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5",
+        "findings_count": 0,
+        "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/reviews/003-final-review.md",
+        "sha256": "5737d9c7416c60819f6b98a81cf5dcc02801e6597b351564b35440a886c40029",
+        "size_bytes": 9374,
+        "modified_at": "2026-07-15T09:44:45.176326+00:00"
+      }
+    ],
+    "evidence": [
+      "round 001 finding owner 已在 round 002 以 reuse-for-closure 复核 current HEAD，BR-001/BR-002 均关闭；round 003 使用 fresh technical agent，reviewed HEAD=78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5。",
+      "fresh phase2-check.json 在父提交审查完整 finding-fix dirty delta；commit plan 002 精确绑定 14 个 committed path，11 个 non-metadata path 全部覆盖，tree/blob/mode 匹配且当前仅有 task/review metadata dirty。",
+      "ownership 6 个 test method/14 fixtures、installer 39、workflow 292、Skill package 67 全部通过；43 条 inventory/materialized identity 与 removal/malformed JSON 回归均符合合同。",
+      "dogfood drift 通过；完整 throwaway 覆盖 initial install、trellis update --force、workflow/preset reapply、ownership checkpoints、finish fixture，最终无 .new/.bak。",
+      "ssot_first durable ownership spec 与 schema/inventory/validator/tests/README 一致；两个 workflow、43 overlay payload、guru-sync-base、guru-create-task-commit 零 diff。",
+      "变更不涉及 CI/CD、容器、Kubernetes/Kustomize、数据库 migration、Makefile 或业务配置部署，未发现 secret/客户数据；仅 #128 为 close issue，#127/#112/#119 related，#129-#132 follow-up。"
+    ],
+    "notes": "review-branch 是 recorder / validator：记录已经完成的 AI/human review 结论、diff 范围和审查证据；它不执行 review 判断。"
+  },
+  "deployment_impact": {
+    "changed_file_categories": {
+      "docs": [
+        ".trellis/spec/preset/index.md",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/preset/upstream-ownership.md",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/design.md",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/implement.md",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/prd.md",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/research/upstream-ownership-evidence.md",
+        "README.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "tests": [
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py"
+      ],
+      "trellis_artifacts": [
+        ".trellis/spec/preset/index.md",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/preset/overlay-guidelines.md",
+        ".trellis/spec/preset/upstream-ownership.md",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/agent-assignment.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/check.jsonl",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/design.md",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/implement.jsonl",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/implement.md",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/issue-scope-ledger.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-check.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings-round-002-fix.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/planning-approval.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/prd.md",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/research/upstream-ownership-evidence.md",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/001.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/002.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-start-context.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/task.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/ownership/upstream-ownership.json",
+        "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+        "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+        "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-expanded-legacy.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-first-removal-synchronized-drift.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-inventory-member.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-manifest-member.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-registry-member.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-missing-removal-owner.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-new-upstream-overlay.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-payload-drift.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-removed-baseline-rewrite.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-unclassified.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-upstream-managed-claim.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-baseline.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-first-removal.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-guru-owned-paths.json",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "config": [
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/agent-assignment.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/issue-scope-ledger.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-check.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings-round-002-fix.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/planning-approval.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/001.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-commit-plans/002.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-start-context.json",
+        ".trellis/tasks/07-15-128-upstream-owned-file-guard/task.json",
+        "trellis/presets/guru-team/ownership/upstream-ownership.json",
+        "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-expanded-legacy.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-first-removal-synchronized-drift.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-inventory-member.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-manifest-member.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-malformed-registry-member.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-missing-removal-owner.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-new-upstream-overlay.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-payload-drift.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-removed-baseline-rewrite.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-unclassified.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-upstream-managed-claim.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-baseline.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-first-removal.json",
+        "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-guru-owned-paths.json"
+      ],
+      "scripts": [
+        "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+        "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py"
+      ],
+      "schemas": [
+        "trellis/presets/guru-team/ownership/upstream-ownership.schema.json"
+      ],
+      "code": [
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py"
+      ]
+    },
+    "deployment_asset_categories": {},
+    "changed_deployment_assets": [],
+    "probable_runtime_changes_without_deployment_asset_change": [
+      "trellis/presets/guru-team/ownership/upstream-ownership.schema.json"
+    ],
+    "needs_deployment_impact_review": true,
+    "review_instruction": "当本次 diff 改变部署资产，或业务/API/CLI/worker/runtime 形态可能变化但部署资产未改时，review evidence 必须说明 CI/CD、容器、Compose、K8s/Kustomize、migration、Makefile 是否需要同步调整；如果不需要，必须给出不需要的理由。"
+  }
+}

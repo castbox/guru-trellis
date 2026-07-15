@@ -4,7 +4,22 @@
     "url": "https://github.com/castbox/guru-trellis/issues/128",
     "title": "建立 Trellis upstream ownership 清单与禁止新增覆盖门禁",
     "reason": "本 task 的唯一交付 issue。",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "实现与 Docs SSOT 已完成：严格 ownership schema、43 条 path+baseline_sha256 frozen inventory、source-only validator、installer/dogfood/throwaway checkpoints、fixtures/tests 和三份 public README 已同步；两个 workflow、43 个 overlay payload 及既有 public Skill 相对 issue base 保持不变。",
+      "Fresh Phase 2 与验证链已覆盖完整 scope：ownership 6 个 test method/14 fixtures、installer 39 tests、workflow 292 tests、public Skill package 67 tests 全部通过；dogfood 和 clean throwaway initial/update/reapply/finish 通过，.new/.bak=0。",
+      "Branch Review Gate 已绑定 HEAD 78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5：Round 001 的 P1 BR-001 与 P2 BR-002 已由 revision commit 修复，Round 002 closure findings=0，fresh Round 003 final review 的 P0/P1/P2/P3 均为 0。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "b52130759bb66f7005e0b7459ace0628dac2a96bdb469360813c1dcba2689913",
+        "verified_content_head": "78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5",
+        "remote_head": "78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5",
+        "publish_head": "78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -12,7 +27,22 @@
       "url": "https://github.com/castbox/guru-trellis/issues/128",
       "title": "建立 Trellis upstream ownership 清单与禁止新增覆盖门禁",
       "reason": "本 task 完整实现 ownership inventory、validator 与 validation chain 后关闭。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "实现与 Docs SSOT 已完成：严格 ownership schema、43 条 path+baseline_sha256 frozen inventory、source-only validator、installer/dogfood/throwaway checkpoints、fixtures/tests 和三份 public README 已同步；两个 workflow、43 个 overlay payload 及既有 public Skill 相对 issue base 保持不变。",
+        "Fresh Phase 2 与验证链已覆盖完整 scope：ownership 6 个 test method/14 fixtures、installer 39 tests、workflow 292 tests、public Skill package 67 tests 全部通过；dogfood 和 clean throwaway initial/update/reapply/finish 通过，.new/.bak=0。",
+        "Branch Review Gate 已绑定 HEAD 78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5：Round 001 的 P1 BR-001 与 P2 BR-002 已由 revision commit 修复，Round 002 closure findings=0，fresh Round 003 final review 的 P0/P1/P2/P3 均为 0。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "b52130759bb66f7005e0b7459ace0628dac2a96bdb469360813c1dcba2689913",
+          "verified_content_head": "78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5",
+          "remote_head": "78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5",
+          "publish_head": "78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5",
+          "commands_passed": true
+        }
+      ]
     }
   ],
   "related_issues": [

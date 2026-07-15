@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "fix/128-upstream-owned-file-guard",
+    "reviewed_head_sha": "78006a7b643708bf6ecaa7d9f5a1b8ab8a935eb5",
+    "title": "完成：#128 建立 Trellis upstream ownership 清单与禁止新增覆盖门禁",
+    "body_source": "pr-body.md",
+    "body_sha256": "bfe0439f78f763776962cebf9b0dd8a23efc3df10781ba597b57116cf6f265cf",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "19e53bdd05bca79f9fd34a99e7bbcba7d8f1b05adecb33b169bdf6e77575d31a"
+  },
+  "publish_inputs_sha256": "7b3f2acf260c858e1009dbd198c4bfb780b6d9e2c6037104f38ff9672b1d8fb1"
+}
