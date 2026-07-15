@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Guru Team Phase 0 缺少可复用的 base 同步 Skill，selected base 解析、safe fast-forward 与 freshness 证明分散在入口和 prepare-task 中，语义读取可能建立在过期 base 上。",
+    "outcome": "已交付 deterministic `guru-sync-base` 闭环，以有序 base resolution、pre/post rolling digest、explicit fetch、ff-only 和 live Git validator 统一 workflow、standalone 与 prepare-task freshness。",
+    "changed_behavior": [
+      "Repo-changing intake 的第一条 repo/network action 显式调用 guru-sync-base。",
+      "Base 按 explicit、scalar config、ordered existing candidates、remote default 固定顺序解析。",
+      "缺省 candidate 优先级保持 dev、develop、main、master，current branch 不参与 fallback。",
+      "Resolve-to-execute 使用 pre-sync digest，validator 与后续 mutation guards 使用滚动 post-sync digest。",
+      "Safe sync 只允许 explicit refspec fetch 和 selected-base checkout 上的 git merge --ff-only。",
+      "Interface schema 1.2 显式区分 semantic 五阶段与 deterministic 三阶段。",
+      "Canonical、preset、四平台副本、dogfood、durable docs 与 throwaway/update 验证已同步。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "guru-sync-base public Skill package",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-sync-base/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-sync-base/interface.json",
+          "trellis/skills/guru-team/packages/guru-sync-base/references/contract.md"
+        ],
+        "change": "新增 workflow/standalone 同合同的 deterministic base freshness 闭环与 typed exits。"
+      },
+      {
+        "kind": "workflow",
+        "name": "Guru Team Phase 0 routing",
+        "paths": [
+          "trellis/workflows/guru-team/workflow.md",
+          ".trellis/workflow.md"
+        ],
+        "change": "Repo-changing route 首先 mandatory invoke guru-sync-base，并唯一消费 synced、skipped、blocked。"
+      },
+      {
+        "kind": "script",
+        "name": "Base resolution and sync runtime",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/bash/sync-base.sh",
+          "trellis/workflows/guru-team/scripts/bash/check-base-sync.sh"
+        ],
+        "change": "统一 ordered resolver、digest-bound executor、live validator 与 prepare-task rolling guards。"
+      },
+      {
+        "kind": "schema",
+        "name": "Skill interface and base result schemas",
+        "paths": [
+          "trellis/skills/guru-team/schemas/skill-interface.schema.json",
+          "trellis/skills/guru-team/packages/guru-sync-base/schemas/base-sync-result.schema.json"
+        ],
+        "change": "引入 judgment_mode stage profiles，并定义 stdout-only base sync result/digest 合同。"
+      },
+      {
+        "kind": "preset",
+        "name": "Guru Team distribution and upgrade inventory",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/guru-team-extension.json",
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "安装 active package、runtime commands、schema 与平台副本，并校验 managed drift 和 update/reapply。"
+      },
+      {
+        "kind": "docs",
+        "name": "Base sync and deterministic Skill durable contracts",
+        "paths": [
+          "AGENTS.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          "README.md"
+        ],
+        "change": "同步 Skill-first 分层、deterministic 例外、base 顺序、rolling identity 与发布边界。"
+      },
+      {
+        "kind": "test",
+        "name": "Runtime, package, preset and throwaway regressions",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "change": "覆盖 401 项测试、真实 behind 链、滚动 digest、平台分发、dogfood 与 update/reapply。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Base resolution precedence",
+        "before": "Issue 初始描述把 remote default 放在 ordered fallback candidate 之前，未保留 prepare-task 原有候选优先级。",
+        "after": "固定为 explicit、scalar base_branch、首个 existing ordered candidate、remote default；缺省 dev、develop、main、master。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Closed-loop judgment profile",
+        "before": "公共 Skill interface 只允许带 AI Review Gate 的 semantic 五阶段合同。",
+        "after": "Schema 1.2 显式区分 semantic 五阶段与完全机器可验证的 deterministic 三阶段，既有语义门禁不降级。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Base freshness identity",
+        "before": "Prepare 与 sync 没有统一的连续状态转换 identity，fast-forward 前后的同一 digest 无法同时保持真实。",
+        "after": "Pre-sync digest 只绑定 resolve-to-execute；executor 生成 post-sync digest，validator 和每个 mutation guard 逐次滚动消费。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Workflow and standalone parity",
+        "before": "Base refresh 主要是 prepare-task 内部逻辑，没有稳定 public Skill、typed exits 与 direct discovery 合同。",
+        "after": "guru-sync-base 独占 step-local behavior，workflow 只路由，standalone 复用相同 resolver、executor 和 validator。",
+        "source_artifact": "design.md"
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "sync-base.sh",
+        "check-base-sync.sh",
+        "prepare-task.sh",
+        "verify-throwaway-install.sh"
+      ],
+      "config_keys": [
+        "base_branch",
+        "base_branch_candidates",
+        "skill_runtime.commands.guru_sync_base"
+      ],
+      "schema_fields": [
+        "judgment_mode",
+        "resolution_sha256",
+        "post_sync_resolution_sha256",
+        "facts_sha256"
+      ],
+      "symbols": [
+        "resolve_base_selection",
+        "execute_base_sync",
+        "validate_live_base_sync_result",
+        "ensure_base_freshness"
+      ],
+      "phrases": [
+        "guru-sync-base 闭环 Skill 已完成",
+        "dev develop main master 有序 base resolution 已通过",
+        "post_sync_resolution_sha256 滚动 freshness 合同已完成",
+        "deterministic judgment_mode 三阶段 interface 已启用",
+        "prepare-task 共享 base sync core 已完成集成",
+        "remote marketplace branch-pinned 验证由 finish-work 执行"
+      ]
+    }
+  }
+}

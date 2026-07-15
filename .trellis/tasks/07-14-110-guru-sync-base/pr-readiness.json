@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/110-guru-sync-base",
+    "reviewed_head_sha": "ed5fa7baed955f8ba5f84119f4bc177ad170c2d7",
+    "title": "完成：#110 拆分 #98：实现 guru-sync-base 闭环 Skill",
+    "body_source": "pr-body.md",
+    "body_sha256": "455d7dc9ee80ade7fb2f99bb88966e6ee1fe6ca623333c3ce158024700d81a3d",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "9ea23024dbc3093d1c0029b245d9ae43fc59de26af4e9f150f12da11c52feed1"
+  },
+  "publish_inputs_sha256": "cf9619c3de3c55df9375c9e89204bdc4ec966a7e544520407b3e33967c6f5194"
+}
