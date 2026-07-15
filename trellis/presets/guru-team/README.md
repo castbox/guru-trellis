@@ -66,6 +66,36 @@ example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`. That release targets
 official `@mindfoldhq/trellis` `0.6.5`. Unpinned `gh:castbox/guru-trellis/trellis`
 is a latest/canary source and should be reported as mutable provenance.
 
+## Upstream Ownership Freeze
+
+The overlay tree is a frozen transitional migration surface, not an open-ended
+way to patch Trellis-owned entries. The strict inventory and schema live at:
+
+- `trellis/presets/guru-team/ownership/upstream-ownership.json`
+- `trellis/presets/guru-team/ownership/upstream-ownership.schema.json`
+
+The inventory retains exactly 43 paths from base commit
+`291b57b6c02872320a4dce0626a2f718399b8f56`, including a SHA-256 for every
+payload, 37 Trellis `0.6.5` clean-init entries, and six historical Codex
+prompt/skill entries that clean init no longer generates. Every active entry is
+`transitional_legacy`; future issue #132 removal keeps the same record as
+`upstream_owned/removed` rather than erasing audit history.
+
+Before any target mutation, `apply_guru_team_trellis_preset.py` validates the
+source inventory, overlay bytes, public managed claims, `MANAGED_ASSET_PATHS`,
+active Skill ids, and anchored Guru discovery namespaces. Maintainers can run
+the same read-only gate directly:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
+python3 ./trellis/presets/guru-team/scripts/python/test_upstream_ownership.py
+```
+
+The validator and its positive/negative fixtures are source-only assets; they
+are not copied into target business repositories. The validator reports path,
+schema, category, hash, owner, prerequisite, manifest, and namespace facts. AI
+review still owns whether a proposed owner or migration is semantically valid.
+
 ## Commit Message Helpers
 
 The preset installs objective helpers for the Guru Team Chinese Conventional
@@ -146,6 +176,10 @@ existing branch/tag ref; only that run is evidence for that ref. When
 it does run, it also exercises the existing-project `trellis workflow
 --create-new` preview, deletes the validated expected preview `.new`, then runs
 forced switch, `trellis update --force`, workflow reapply, and preset reapply.
+It records ownership-gate JSON at three checkpoints: before the initial preset
+apply, after `trellis update` before workflow/preset reapply, and after preset
+reapply before final drift/sidecar checks. The installer itself repeats the
+pre-mutation gate for both apply operations.
 A controlled bare remote and fake GitHub adapter drive the already-installed
 `finish-work.sh` through dry-run digest, formal draft binding, official archive,
 three-way HEAD equality, ready transition, and clean-tree assertions once after
@@ -169,10 +203,11 @@ dogfood copies still match the canonical overlays:
 ./trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 ```
 
-`check-dogfood-overlay-drift.sh` is read-only. It compares canonical overlay
-files with same-path installed copies in this repository and exits non-zero for
-missing or changed copies. It is a source-repository maintainer check and is not
-installed into target business repositories as a managed companion asset.
+`check-dogfood-overlay-drift.sh` is read-only. It first runs the ownership gate,
+then compares canonical overlay files with same-path installed copies in this
+repository and exits non-zero for ownership failure, missing copies, or changed
+copies. It is a source-repository maintainer check and is not installed into
+target business repositories as a managed companion asset.
 
 If `apply.sh` creates `.new` or `.bak` files, inspect and resolve them before
 committing. A passing drift check is not a replacement for AI review or the

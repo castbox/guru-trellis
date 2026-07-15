@@ -1,0 +1,6 @@
+{"file":".trellis/spec/preset/index.md","reason":"定位 preset 检查入口；Phase 2 还必须直接审查本 task 新增的 durable ownership SSOT。"}
+{"file":".trellis/spec/preset/installer.md","reason":"检查 pre-mutation gate、managed assets 与 update/reapply 接入。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"检查 43 个 overlay path/payload 与 platform semantics 非回归。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"检查 Python/Bash 未承担 AI semantic judgment。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"执行完整 preset、schema、dogfood、throwaway 与 cross-layer 验证。"}
+{"file":".trellis/tasks/07-15-128-upstream-owned-file-guard/research/upstream-ownership-evidence.md","reason":"核对 base identity、clean init 37/6 结果和 replacement issue owners。"}

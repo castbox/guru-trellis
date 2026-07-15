@@ -1,0 +1,10 @@
+{
+  "id": "negative-unclassified",
+  "mutation": {
+    "type": "set_legacy_category",
+    "path": ".agents/skills/trellis-start/SKILL.md",
+    "category": "unclassified"
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["unclassified_path"]
+}

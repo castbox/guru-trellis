@@ -13,6 +13,13 @@ Overlay files are small platform entrypoints. They should point the AI back to
 `.trellis/workflow.md` and the Guru Team companion scripts instead of
 duplicating the full workflow.
 
+The current overlay tree is also a frozen migration surface. Its exact 43 paths
+and payload hashes are recorded in
+`trellis/presets/guru-team/ownership/upstream-ownership.json`; no new
+upstream-owned path may be added. New reusable behavior belongs in Markdown
+workflow contracts or canonical `guru-*` packages. Reviewed removal keeps an
+`upstream_owned/removed` inventory tombstone instead of deleting audit history.
+
 Reference overlay groups:
 
 - `.agents/skills/trellis-start/SKILL.md`
@@ -285,6 +292,7 @@ After canonical overlay edits, re-apply the preset to this source repository and
 run the dogfood drift check:
 
 ```bash
+trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
 trellis/presets/guru-team/scripts/bash/apply.sh --repo .
 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 ```
@@ -302,3 +310,5 @@ Keep platform-specific command names only where needed, such as
   `trellis/workflows/guru-team/workflow.md`.
 - Omitting the overlay marker, which makes installer conflict detection weaker.
 - Mentioning publish as a separate user-facing step.
+- Adding an upstream namespace overlay or managed-path claim outside the frozen
+  ownership inventory.

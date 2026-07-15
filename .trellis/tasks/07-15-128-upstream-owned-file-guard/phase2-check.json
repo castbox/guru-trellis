@@ -1,0 +1,176 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-15T08:19:18Z",
+  "task_dir": ".trellis/tasks/07-15-128-upstream-owned-file-guard",
+  "base_branch": "main",
+  "head": "291b57b6c02872320a4dce0626a2f718399b8f56",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/spec/preset/index.md",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    "README.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/workflows/guru-team/README.md",
+    ".trellis/spec/preset/upstream-ownership.md",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/check.jsonl",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/implement.jsonl",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/phase2-findings.json",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/task-start-context.json",
+    ".trellis/tasks/07-15-128-upstream-owned-file-guard/task.json",
+    "trellis/presets/guru-team/ownership/upstream-ownership.json",
+    "trellis/presets/guru-team/ownership/upstream-ownership.schema.json",
+    "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-expanded-legacy.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-missing-removal-owner.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-new-upstream-overlay.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-payload-drift.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-unclassified.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-upstream-managed-claim.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-baseline.json",
+    "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/positive-guru-owned-paths.json",
+    "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+    "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py"
+  ],
+  "checker": "/root/trellis_check_phase2_issue128",
+  "check_summary": "已完整审查 #128 的 6 条 curated context、三份规划、research、实现 handoff 与未提交全 diff；三项 P2 ownership 合同缺口均已修复，ssot_first 文档同步、确定性脚本边界、43 条冻结清单、update/upgrade、测试和非回归面均通过。唯一限制是 exact remote branch marketplace 验证必须在 publish 阶段 push 后补证。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/prd.md",
+      "sha256": "5e7355481e4715234e683e31226ca7002dcc8977475b9d7a34a148b227f1d920",
+      "size_bytes": 7554,
+      "modified_at": "2026-07-15T07:18:01.063294+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/design.md",
+      "sha256": "02a78fbe905bbc0a370c7d6681eae26c9873b2affcbc5849e58b21af7b023e67",
+      "size_bytes": 10866,
+      "modified_at": "2026-07-15T07:18:01.063541+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/implement.md",
+      "sha256": "f1b839b27f82b1f28be8d450a237391feb2fafe9d66aa5d880e7e4cb40f78825",
+      "size_bytes": 6453,
+      "modified_at": "2026-07-15T07:18:01.063689+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/research/upstream-ownership-evidence.md",
+      "sha256": "46fa0351a0c58a22e342e00bf0f2a383219d6471c62d81a90157ab9563284770",
+      "size_bytes": 2795,
+      "modified_at": "2026-07-15T07:18:01.063897+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/issue-scope-ledger.json",
+      "sha256": "1c9bedfe0a2617d7ffd0707bb5078c055248816e4acbd8bbb2362aeea878d1f5",
+      "size_bytes": 2369,
+      "modified_at": "2026-07-15T07:18:01.064850+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/planning-approval.json",
+      "sha256": "17620552bf3c5313712ff9ca5081dd563f70d70d0d78f8ce8ade602e22a71468",
+      "size_bytes": 4464,
+      "modified_at": "2026-07-15T07:21:38.931555+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-128-upstream-owned-file-guard/agent-assignment.json",
+      "sha256": "62d82fdfe90890fc24968a9d6a42c937352f1c7b9fe30e245a03e47fc68678f1",
+      "size_bytes": 17157,
+      "modified_at": "2026-07-15T08:18:38.025975+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/preset/index.md",
+      "sha256": "eb10c8f4ef82e4a99eb7ab69c16da7d9786b5a78d8ac10dbe776d6cec60f80d3",
+      "size_bytes": 1858,
+      "modified_at": "2026-07-15T07:28:38.133842+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "be85e4cc1efd94ae0a4abbb315cd948ed48b33c820cfb685338c51135666a722",
+      "size_bytes": 17528,
+      "modified_at": "2026-07-15T07:28:38.134484+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "14ba5987c991c4fd01dad3aea3f06e99606ea05a9dfad182b5d005efc7b2a74f",
+      "size_bytes": 17970,
+      "modified_at": "2026-07-15T07:28:38.134826+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/upstream-ownership.md",
+      "sha256": "2e69e391c985698b3020cdff5d7fc543457c6218e617c60d0ece7bec2caaa9a3",
+      "size_bytes": 8002,
+      "modified_at": "2026-07-15T08:12:21.229221+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "result": "6 tests passed"
+    },
+    {
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "39 tests passed"
+    },
+    {
+      "command": "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "292 tests passed"
+    },
+    {
+      "command": "python3 -m unittest discover -s trellis/skills/guru-team/tests -p 'test_*.py'",
+      "result": "67 tests passed"
+    },
+    {
+      "command": "check-upstream-ownership.sh --json",
+      "result": "passed; frozen/active/overlay=43/43/43, generated/legacy-not-generated=37/6, no errors"
+    },
+    {
+      "command": "check-dogfood-overlay-drift.sh",
+      "result": "passed; unchanged, zero conflict/sidecar"
+    },
+    {
+      "command": "verify-throwaway-install.sh",
+      "result": "passed initial apply, trellis update --force, reapply, three ownership checkpoints, finish fixtures, zero .new/.bak"
+    },
+    {
+      "command": "JSON Schema Draft 2020-12, JSON parse, bash -n, Python compile, git diff --check",
+      "result": "all passed"
+    }
+  ],
+  "findings": [
+    {
+      "priority": "P2",
+      "message": "guru_owned_rules 未覆盖 canonical workflow source，合法的 trellis/workflows/guru-team/** 会被误判；已增加 canonical-workflow-root 分类并补回归覆盖。",
+      "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "43 条 inventory 使用不存在的 guru-start-task replacement owner，且未精确绑定 live issue owner；已改为 #112/#129/#130/#131/#119 定义的真实 stable skill owner 并校验 owner/issue 绑定。",
+      "path": "trellis/presets/guru-team/ownership/upstream-ownership.json",
+      "status": "resolved"
+    },
+    {
+      "priority": "P2",
+      "message": "facts_sha256 主要绑定计数，不能充分证明 ownership 合同内容；已纳入 schema、inventory、Guru-owned rules、managed claims 与 legacy entries digest。",
+      "path": "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+      "status": "resolved"
+    }
+  ],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

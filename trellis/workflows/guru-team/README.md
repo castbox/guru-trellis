@@ -94,6 +94,30 @@ installer 幂等：同内容跳过，缺失文件写入，Guru-managed companion
 文件并把旧版保存为 `.bak`，已有 `.trellis/guru-team/config.yml` 不覆盖，识别为上游
 Trellis 生成入口时替换为 Guru Team overlay；未知本地改动写 `.new`，不静默覆盖。
 
+## Workflow Authoring Ownership
+
+Workflow phase、mandatory Skill routing、typed exit consumer 和 semantic gate 的
+canonical authoring 面是 Markdown workflow 与 `guru-*` closed-loop package。不得通过新增
+Trellis upstream namespace overlay、修改 hook/script 判断语义或扩张 broad managed-path claim
+实现新的流程行为。
+
+当前 preset 的 43 条 overlay 是 issue #128 固定的 `transitional_legacy/active` 集合，
+inventory 位于 `trellis/presets/guru-team/ownership/upstream-ownership.json`，每条都绑定
+base payload SHA-256、replacement owners、blocking issues 与 #132 removal owner。Trellis
+`0.6.5` clean init 会生成其中 37 条；6 条历史 Codex prompt/skill path 不再生成，但在
+#132 physical removal 前仍保留审计与安装事实。
+
+维护者在 preset mutation、dogfood drift、throwaway initial/update/reapply checkpoint 前运行：
+
+```bash
+trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
+```
+
+该 source-only validator 不进入 `.trellis/workflow.md`、mandatory Skill routing、platform
+entry 或业务 task runtime。`trellis update` 的 `.trellis/.template-hashes.json` 与
+overwrite/keep/`.new` 语义仍归 upstream；preset 的 `.new`/`.bak` 仍需维护者逐个处理，
+它们不代表 semantic ownership approval。
+
 `config-template.yml` 显式包含 `middle_platform_knowledge.mode: optional_warn`。
 已有目标仓库的 `.trellis/guru-team/config.yml` 不会为了补这个 key 被覆盖；如果 key
 缺失，workflow 仍按 backward-compatible 默认 `optional_warn` 执行。`required` 只作

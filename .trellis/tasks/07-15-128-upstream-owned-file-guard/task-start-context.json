@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 128,
+    "url": "https://github.com/castbox/guru-trellis/issues/128",
+    "title": "建立 Trellis upstream ownership 清单与禁止新增覆盖门禁",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/128"
+  },
+  "task_slug": "128-upstream-owned-file-guard",
+  "task_title": "#128 建立 Trellis upstream ownership 清单与禁止新增覆盖门禁",
+  "task_artifact_dir": ".trellis/tasks/07-15-128-upstream-owned-file-guard",
+  "branch_name": "fix/128-upstream-owned-file-guard",
+  "base_branch": "main",
+  "base_ref": "main",
+  "base_head_sha": "291b57b6c02872320a4dce0626a2f718399b8f56",
+  "remote_head_sha": "291b57b6c02872320a4dce0626a2f718399b8f56",
+  "workspace_slug": "128-upstream-owned-file-guard",
+  "task_workspace_id": "128-upstream-owned-file-guard",
+  "assignee": "wumengye",
+  "actor": {
+    "login": "wumengye"
+  },
+  "issue_scope_ledger_seed": {
+    "primary_issue": {
+      "number": 128,
+      "url": "https://github.com/castbox/guru-trellis/issues/128",
+      "title": "建立 Trellis upstream ownership 清单与禁止新增覆盖门禁",
+      "reason": "intake 主 issue，默认进入 close 候选。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 128,
+        "url": "https://github.com/castbox/guru-trellis/issues/128",
+        "title": "建立 Trellis upstream ownership 清单与禁止新增覆盖门禁",
+        "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [],
+    "followup_issues": []
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": false,
+      "selected_issue": 128
+    },
+    "naming_quality": {
+      "ok": true,
+      "reason": "naming includes enough business tokens",
+      "requires_semantic_name": false,
+      "current_slug": "128-upstream-owned-file-guard",
+      "current_surface": "workspace_slug",
+      "suggested_override_flags": [],
+      "checked_names": {
+        "slug": {
+          "ok": true,
+          "slug": "upstream-owned-file-guard",
+          "reason": "ok",
+          "business_tokens": [
+            "upstream",
+            "owned",
+            "file",
+            "guard"
+          ]
+        },
+        "task_slug": {
+          "ok": true,
+          "slug": "128-upstream-owned-file-guard",
+          "reason": "ok",
+          "business_tokens": [
+            "upstream",
+            "owned",
+            "file",
+            "guard"
+          ]
+        },
+        "workspace_slug": {
+          "ok": true,
+          "slug": "128-upstream-owned-file-guard",
+          "reason": "ok",
+          "business_tokens": [
+            "upstream",
+            "owned",
+            "file",
+            "guard"
+          ]
+        },
+        "branch_name": {
+          "ok": true,
+          "slug": "128-upstream-owned-file-guard",
+          "reason": "ok",
+          "business_tokens": [
+            "upstream",
+            "owned",
+            "file",
+            "guard"
+          ]
+        }
+      }
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "negative-upstream-managed-claim",
+  "mutation": {
+    "type": "add_upstream_managed_claim",
+    "path": ".github/prompts/"
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["upstream_owned_managed_claim"]
+}

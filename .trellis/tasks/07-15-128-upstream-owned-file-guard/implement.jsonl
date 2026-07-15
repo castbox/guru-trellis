@@ -1,0 +1,6 @@
+{"file":".trellis/spec/preset/index.md","reason":"定位 Guru Team preset 的 canonical installer 与 overlay 边界。"}
+{"file":".trellis/spec/preset/installer.md","reason":"约束 managed assets、source validation、update/reapply 与 sidecar 行为。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"约束 canonical overlay、platform entry 与 dogfood 同步边界。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"确保 validator 只承担确定性事实校验。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"提供 preset、workflow、schema、dogfood 与 throwaway 验证基线。"}
+{"file":".trellis/tasks/07-15-128-upstream-owned-file-guard/research/upstream-ownership-evidence.md","reason":"提供官方文档、issue owner、clean init 与 installer 实时证据。"}

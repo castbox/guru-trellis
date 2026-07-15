@@ -1,0 +1,64 @@
+{
+  "primary_issue": {
+    "number": 128,
+    "url": "https://github.com/castbox/guru-trellis/issues/128",
+    "title": "建立 Trellis upstream ownership 清单与禁止新增覆盖门禁",
+    "reason": "本 task 的唯一交付 issue。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 128,
+      "url": "https://github.com/castbox/guru-trellis/issues/128",
+      "title": "建立 Trellis upstream ownership 清单与禁止新增覆盖门禁",
+      "reason": "本 task 完整实现 ownership inventory、validator 与 validation chain 后关闭。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 127,
+      "url": "https://github.com/castbox/guru-trellis/issues/127",
+      "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+      "reason": "Umbrella 架构上下文；本 PR 不关闭。"
+    },
+    {
+      "number": 112,
+      "url": "https://github.com/castbox/guru-trellis/issues/112",
+      "title": "拆分 #98：实现 guru-create-task-workspace 并集成变更 Intake Skills",
+      "reason": "Intake replacement owner；本 PR 不实现、不关闭。"
+    },
+    {
+      "number": 119,
+      "url": "https://github.com/castbox/guru-trellis/issues/119",
+      "title": "拆分 #115：集成 Task 收尾 Skills 并迁移 trellis-finish-work",
+      "reason": "Finish replacement owner；本 PR 不实现、不关闭。"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 129,
+      "url": "https://github.com/castbox/guru-trellis/issues/129",
+      "title": "实现 guru-approve-task-plan 闭环 Skill",
+      "reason": "Planning replacement owner。"
+    },
+    {
+      "number": 130,
+      "url": "https://github.com/castbox/guru-trellis/issues/130",
+      "title": "实现 guru-check-task 闭环 Skill",
+      "reason": "Phase 2 replacement owner。"
+    },
+    {
+      "number": 131,
+      "url": "https://github.com/castbox/guru-trellis/issues/131",
+      "title": "实现 guru-review-branch 闭环 Skill",
+      "reason": "Branch Review replacement owner。"
+    },
+    {
+      "number": 132,
+      "url": "https://github.com/castbox/guru-trellis/issues/132",
+      "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+      "reason": "43 个 frozen legacy overlay 的唯一 removal issue。"
+    }
+  ]
+}

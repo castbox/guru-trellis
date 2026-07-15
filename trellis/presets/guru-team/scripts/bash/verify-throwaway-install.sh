@@ -7,6 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#main}"
 ALLOW_PUBLIC_SAMPLE="${TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE:-0}"
+OWNERSHIP_CHECK="$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
 ENGLISH_LANGUAGE_RULE_PATTERN='All documentation (must|should) be written in .*English'
 STALE_PLANNING_HINT_PATTERN='PRD-only|Lightweight tasks may be PRD-only|Lightweight tasks may have only|Lightweight task can (ask|request)|lightweight task with `?prd\.md`? complete|Missing optional artifacts|skipped for lightweight tasks|optional `?design\.md`? / `?implement\.md`?|optional `?design\.md`?|optional `?implement\.md`?|ask for start review, then run `?task\.py start`?|design\.md if present|implement\.md if present|`?design\.md`?[^[:cntrl:]]*(\(if exists\)|if exists|if present)|`?implement\.md`?[^[:cntrl:]]*(\(if exists\)|if exists|if present)|technical design if present|execution plan if present|technical design \(if exists\)|execution plan \(if exists\)|design\.md / implement\.md if present|when present, design\.md / implement\.md|when those files are present|technical design and implementation plan when present'
 
@@ -30,6 +31,12 @@ command -v trellis >/dev/null 2>&1 || {
 command -v git >/dev/null 2>&1 || {
   echo "git not found on PATH" >&2
   exit 127
+}
+
+ownership_checkpoint() {
+  local checkpoint="$1"
+  printf 'Upstream ownership checkpoint: %s\n' "$checkpoint"
+  "$OWNERSHIP_CHECK" --repo "$REPO_ROOT" --json
 }
 
 fail_if_english_language_rule() {
@@ -250,6 +257,8 @@ apply_local_workflow_sample
 if [[ "$USE_LOCAL_WORKFLOW_SAMPLE" == "1" ]]; then
   cmp -s "$REPO_ROOT/trellis/workflows/guru-team/workflow.md" "$TARGET/.trellis/workflow.md"
 fi
+
+ownership_checkpoint "initial-init-before-preset-apply"
 
 WORKSPACE_SENTINEL="$TARGET/.trellis/workspace/private/shared-start-secret-journal.md"
 mkdir -p "$(dirname "$WORKSPACE_SENTINEL")"
@@ -898,6 +907,7 @@ grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
   cd "$TARGET"
   trellis update --force
 )
+ownership_checkpoint "post-update-before-workflow-and-preset-reapply"
 (
   cd "$TARGET"
   trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force
@@ -907,6 +917,7 @@ apply_local_workflow_sample
   --repo "$TARGET" \
   --platform codex \
   --platform cursor
+ownership_checkpoint "post-preset-reapply-before-final-checks"
 
 grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 test -f "$TARGET/.trellis/guru-team/schemas/finish-summary.schema.json"

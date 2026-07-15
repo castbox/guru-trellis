@@ -1,0 +1,10 @@
+{
+  "id": "negative-new-upstream-overlay",
+  "mutation": {
+    "type": "add_overlay",
+    "path": ".codex/prompts/trellis-unreviewed.md",
+    "content": "unreviewed upstream namespace overlay\n"
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["overlay_not_in_frozen_baseline"]
+}
