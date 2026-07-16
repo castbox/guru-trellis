@@ -3,7 +3,7 @@
     "number": 113,
     "url": "https://github.com/castbox/guru-trellis/issues/113",
     "title": "按 Skill-first 重实现 #55：guru-clarify-requirements",
-    "reason": "intake 主 issue，默认进入 close 候选。",
+    "reason": "intake 主 issue，默认进入 close 候选。2026-07-16 用户确认 Branch Review F-001 的恶意伪造场景为 out-of-scope；GitHub-visible evidence: https://github.com/castbox/guru-trellis/issues/113#issuecomment-4990373622。",
     "acceptance_evidence": []
   },
   "close_issues": [
@@ -11,7 +11,7 @@
       "number": 113,
       "url": "https://github.com/castbox/guru-trellis/issues/113",
       "title": "按 Skill-first 重实现 #55：guru-clarify-requirements",
-      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐 F-002 至 F-006 与原 acceptance 的验收证据。F-001 已由用户确认并通过 https://github.com/castbox/guru-trellis/issues/113#issuecomment-4990373622 分类为 out-of-scope。",
       "acceptance_evidence": []
     }
   ],

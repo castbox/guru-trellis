@@ -47,7 +47,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertEqual(
             [item["consumer"] for item in self.interface["external_exits"]],
             [
-                {"kind": "workflow", "id": "guru-review-contract-wording"},
+                {"kind": "workflow", "id": "guru-requirements-clear-router"},
                 {"kind": "skill", "id": "guru-discover-change-context"},
                 {"kind": "skill", "id": "guru-sync-base"},
                 {"kind": "workflow", "id": "guru-full-task-intake-chain"},
@@ -137,6 +137,10 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "closed_question_ids": ["intent"],
         }]
         self.assertNotEqual(list(validator.iter_errors(partial)), [])
+
+        answered_without_evidence = copy.deepcopy(self.example)
+        answered_without_evidence["repository_answerable_questions"][0]["evidence_refs"] = []
+        self.assertNotEqual(list(validator.iter_errors(answered_without_evidence)), [])
 
         new_task = copy.deepcopy(self.example)
         new_task["typed_exit"] = "new_task"

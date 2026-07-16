@@ -140,8 +140,12 @@ schema `guru-requirements-clarification-1.0`, record/check runtime commands,
 and exits `clear` / `needs_context` / `refresh_context` / `new_task` /
 `blocked` with unique staged consumers. They must state that successful GitHub
 mutation returns `refresh_context`, issue creation belongs to #112, and `clear`
-still targets the #114 wording-review workflow route until that Skill is
-activated. Docs also document source-specific task/GitHub/Git deep-read
+uses the caller-aware `guru-requirements-clear-router`: initial/draft still
+targets the staged #114 wording route, active-task resumes planning or the
+exact interrupted phase, and standalone returns to its caller. Docs also state
+that `answered` requires checked evidence, every question id participates in
+the reducer lifecycle, and confirmed GitHub payload bytes equal mutation/live
+content. Docs also document source-specific task/GitHub/Git deep-read
 locators, structured no-raw-payload persistence, and field-specific
 validation. Workflow and stop route markers must
 be described as validator-resolved target declarations, not new Skill packages.

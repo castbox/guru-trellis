@@ -217,21 +217,25 @@ workflow/stop target markers。
 `guru-discover-change-context:context_ready` mandatory invoke semantic
 `guru-clarify-requirements`。Initial issue/draft、active-task scope change 与 standalone review
 共享相同 preconditions、AI Gate、confirmation 与 freshness。Repository-answerable questions
-必须先由 current Docs/code/tests/history/GitHub/Git evidence 回答或记录不可回答证据；之后每轮
-只问一个最高价值问题，`partial` 不得关闭 question。
+必须先由 current Docs/code/tests/history/GitHub/Git evidence 回答或记录不可回答证据，
+`answered`至少有一个checked ref。之后每轮只问一个最高价值问题，question id必须来自opened/current-open，
+`partial`不得关闭 question，reducer固定为`open_questions = opened - closed`。
 
 AI 拥有 scope/action/confirmation/pass/block/route 判断。Recorder 派生 proposal/action/
 payload/content/result digest；checker 重算 schema/digest并只读验证 live source/context/task
 binding。Package 没有 GitHub mutation executor；comment/body 写入仅在 AI 复核 live preimage
 并取得 exact action/proposal confirmation 后使用现有 connector 或审查过的 `gh`，写后必须
-重读。成功 mutation 返回 `refresh_context`，不直接 `clear`。
+重读；confirmed payload、payload digest、mutation result与live content必须一致。成功 mutation
+返回 `refresh_context`，不直接 `clear`。
 
 Pre-task/standalone 结果 stdout-only且无专用 artifact。Active-task current inclusion 绑定
 GitHub-visible authority、`issue-scope-ledger.json`、`prd.md`/`design.md`/`implement.md`、stale
 planning/Phase-2/Branch-Review identities与三个 re-entry owners。Schema 是
 `guru-requirements-clarification-1.0`，commands 是
-`record-requirements-clarification` / `check-requirements-clarification`。Exits 为 `clear` ->
-staged #114 wording route、`needs_context` -> context discovery、`refresh_context` -> base sync、
+`record-requirements-clarification` / `check-requirements-clarification`。Active-task Scope Change
+Gate mandatory invoke同一Skill。Exits 为 `clear` -> caller-aware
+`guru-requirements-clear-router`（initial/draft -> #114 wording，standalone -> caller，active ->
+planning review或exact interrupted progression）、`needs_context` -> context discovery、`refresh_context` -> base sync、
 `new_task` -> staged #112 full intake route、`blocked` -> fail-closed stop。
 
 ## 中文 Conventional Commits

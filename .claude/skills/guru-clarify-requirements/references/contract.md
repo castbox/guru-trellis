@@ -22,8 +22,8 @@ Execute in this order:
 2. classify input into confirmed facts, repository-answerable questions,
    product-intent questions, scope-risk decisions and out-of-scope facts;
 3. inspect current Docs/code/tests/history/GitHub/Git evidence until every
-   repository-answerable question is `answered` or `not_answerable` with
-   checked evidence and a missing reason;
+   repository-answerable question is `answered` with checked evidence or
+   `not_answerable` with checked evidence and a missing reason;
 4. ask exactly one highest-value user question per round. Use one
    `atomic_group` only for an indivisible product choice and record why it
    cannot be split. A partial answer closes no question;
@@ -42,8 +42,11 @@ perform those judgments.
 
 ## Questions And Convergence
 
-Every clarification round contains one `question_id`. `answer_status=partial`
-cannot close its own or another question. A refused load-bearing decision can
+Every clarification round contains one `question_id` that must be opened in
+that round or already belong to the current open set. The reducer enforces
+`open_questions = opened - closed`, rejects close-before-open and
+reopen-after-close, and does not allow an empty lifecycle to hide a partial
+answer. `answer_status=partial` cannot close its own or another question. A refused load-bearing decision can
 produce `blocked`; a rejected/deferred expansion that leaves current confirmed
 scope complete is classified as related, followup, new task or out-of-scope and
 does not block that current scope.
@@ -76,7 +79,9 @@ For `issue_comment` or `issue_body_edit`, the AI must reread the live preimage,
 match repo/issue/action/payload/confirmation digests, execute the exact existing
 connector action or reviewed `gh` command, reread live facts, then pass only
 normalized mutation facts to recorder/checker. Success returns
-`refresh_context`, never `clear`. `new_issue_draft` performs no issue creation
+`refresh_context`, never `clear`. Checker requires exact equality among the
+human-confirmed action payload body, canonical payload digest, mutation result
+content digest, and reread live body/comment bytes. `new_issue_draft` performs no issue creation
 and returns `new_task`; #112 owns the complete intake mutation route.
 
 ## Active-Task Scope Change
@@ -90,7 +95,9 @@ Bind live GitHub-visible authority, current `issue-scope-ledger.json` digest,
 all three planning document digests, stale planning/Phase-2/Branch-Review
 identities, and re-entry owners `guru-approve-task-plan`, `guru-check-task`, and
 `guru-review-branch`. This Skill records no dedicated task artifact; it
-validates the existing updated artifacts and legal re-entry contract.
+validates the existing updated artifacts and legal re-entry contract. The
+canonical active-task Scope Change Gate mandatory invokes this Skill and does
+not duplicate these steps.
 
 ## Recorder, Checker, And Exits
 
@@ -99,7 +106,7 @@ AI/human-reviewed payload and emits canonical result bytes. Checker recomputes
 them and validates current live GitHub/Git/task facts. Both are deterministic,
 perform no GitHub write, and cannot synthesize a semantic pass.
 
-- `clear` -> workflow target `guru-review-contract-wording` (staged #114);
+- `clear` -> workflow target `guru-requirements-clear-router`;
 - `needs_context` -> Skill `guru-discover-change-context`;
 - `refresh_context` -> Skill `guru-sync-base`;
 - `new_task` -> workflow target `guru-full-task-intake-chain` (staged #112);
@@ -110,3 +117,10 @@ unmapped exits fail closed. Pre-task/standalone results remain stdout-only and
 never write a repo cache, workspace journal or fixed handoff. The package
 requires the complete compatible Guru Team preset and is not self-contained or
 portable.
+
+The clear router validates `invocation_context.resume_target` without making a
+new semantic decision: initial issue/draft uses `guru-review-contract-wording`
+(staged #114), standalone uses `guru-standalone-caller`, accepted-current
+active scope uses `guru-active-task-planning-review`, and a non-current active
+classification uses the exact declared interrupted Phase 1/2/3/Branch Review
+target. Any kind/target mismatch fails closed.

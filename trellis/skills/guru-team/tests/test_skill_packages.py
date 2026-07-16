@@ -81,6 +81,26 @@ class SourceValidationTests(unittest.TestCase):
         self.assertEqual(result["facts"]["exit_markers"], 14)
         self.assertEqual(result["facts"]["target_markers"], 8)
 
+        workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
+        scope_gate = workflow.index("Scope Change Gate:")
+        clarify_invoke = workflow.index(
+            'guru-skill-invoke: {"skill":"guru-clarify-requirements"'
+        )
+        self.assertGreater(clarify_invoke, scope_gate)
+        self.assertEqual(
+            workflow.count('guru-skill-invoke: {"skill":"guru-clarify-requirements"'),
+            1,
+        )
+        self.assertIn(
+            'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"clear","consumer":{"kind":"workflow","id":"guru-requirements-clear-router"}}',
+            workflow,
+        )
+        self.assertNotIn(
+            "Scope Change Gate: when scope changes, first stop and ask the user",
+            workflow,
+        )
+        self.assertIn("invocation_context.resume_target", workflow)
+
     def test_production_task_commit_package_contract(self) -> None:
         package = SKILLS_ROOT / "packages/guru-create-task-commit"
         interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))

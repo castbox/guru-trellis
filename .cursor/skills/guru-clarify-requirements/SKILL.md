@@ -9,6 +9,10 @@ Use this Skill after `guru-discover-change-context:context_ready`, when an
 active task receives scope-changing input, or for an explicit standalone
 requirements review.
 
+For active-task scope change, the canonical workflow mandatory invokes this
+same Skill with an exact caller-aware `resume_target`; no caller may duplicate
+classification, confirmation, ledger, or planning-update semantics.
+
 Load [references/contract.md](references/contract.md) and
 `trellis-brainstorm`. Execute the semantic closed loop in its declared order,
 ask at most one highest-value question per round, complete the AI Review Gate
@@ -20,6 +24,9 @@ Pre-task and standalone results are stdout-only. This Skill has no mutation
 executor and no dedicated tracked clarification artifact. GitHub writes remain
 AI-owned and require exact confirmed payloads plus a live reread.
 
-Fail closed on missing/current-context drift, open load-bearing questions,
-confirmation or digest mismatch, stale active-task evidence, unknown exits, or
-missing compatible runtime. This package is not self-contained or portable.
+Fail closed on missing/current-context drift, repository `answered` without
+checked evidence, invalid question
+lifecycle, open load-bearing questions, confirmed-payload/live mutation or
+digest mismatch, invalid caller resume, stale active-task evidence, unknown
+exits, or missing compatible runtime. This package is not self-contained or
+portable.

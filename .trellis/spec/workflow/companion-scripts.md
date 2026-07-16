@@ -212,13 +212,17 @@ write the AI rereads the target preimage and verifies the exact target,
 action/payload digest, proposal digests, and dedicated human confirmation; it
 then uses an existing connector or reviewed `gh` command and rereads the
 result. Recorder/checker only normalize and validate supplied URL/state/
-updated-at/body-or-comment digest facts. Successful GitHub mutation requires
+updated-at/body-or-comment digest facts. The mutation result content digest
+must equal the exact confirmed `source_actions[].payload.body`, its canonical
+payload digest, and the reread live body/comment bytes. Successful GitHub mutation requires
 `refresh_context`. `new_issue_draft` remains side-effect-free and requires
 `new_task`; no script in this Skill creates an issue.
 
-Pure validation rejects repository-answerable questions left pending before a
-user round, multiple question ids in one round, a partial answer closing any
-question, an accepted unconfirmed expansion without proposal-digest-bound
+Pure validation rejects repository-answerable questions left pending or marked
+`answered` without checked evidence before a user round, multiple question ids
+in one round, a round whose question id was neither already open nor opened by
+that round, a partial answer closing any question, close-before-open,
+closure-then-reopen, an accepted unconfirmed expansion without proposal-digest-bound
 confirmation, generic confirmation action kinds, an optional-mechanism
 proposal accepted into current scope, an active-task inclusion without exact
 ledger/planning/re-entry linkage, open questions on `clear`, blocked/Gate

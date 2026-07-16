@@ -77,11 +77,14 @@ Continue entries must:
   `blocked` to `change-context-blocked`; platform entry text must load the
   stable id and must not copy current/history/Gate internals;
 - preserve the active `guru-clarify-requirements` invocation and typed exits:
-  `clear` to workflow target `guru-review-contract-wording`, `needs_context` to
+  `clear` to workflow target `guru-requirements-clear-router`, `needs_context` to
   `guru-discover-change-context`, `refresh_context` to `guru-sync-base`,
   `new_task` to workflow target `guru-full-task-intake-chain`, and `blocked` to
   `requirements-clarification-blocked`; platform entry text must load the
   stable id and must not copy its question/action/confirmation/Gate internals;
+- keep active-task Scope Change mandatory invocation and caller-aware resume
+  routing in canonical workflow/package sources. Do not patch the frozen
+  upstream-owned continue overlay to implement those semantics;
 - keep canonical `guru-workflow-target` / `guru-stop-target` declarations in
   the workflow only. Activating this package does not authorize editing or
   adding frozen upstream-owned overlay payloads; preset-generated `guru-*`

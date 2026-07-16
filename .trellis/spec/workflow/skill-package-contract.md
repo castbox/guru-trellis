@@ -250,10 +250,15 @@ necessity, semantic pass/block, and typed route.
 
 The result uses closed top-level fields and artifact schema
 `guru-requirements-clarification-1.0`. Repository-answerable questions must be
-`answered` or `not_answerable` with checked evidence before the first user
+`answered` or `not_answerable` with at least one checked evidence reference
+before the first user
 question. Each clarification round contains one `question_id`; an
 `atomic_group` is permitted only for an indivisible product choice and records
-its reason. `answer_status=partial` cannot close any question. The recorder
+its reason. Every round's `question_id` must be opened in that round or already
+open; `answer_status=partial` cannot close any question and therefore cannot
+disappear through an empty lifecycle. The reducer keeps exactly
+`open_questions = opened - closed`, rejects closing-before-open and reopening
+after closure. The recorder
 derives all proposal, action, payload, content, and result digests; the checker
 recomputes them and validates current live/task facts without generating
 questions, choosing actions, classifying scope, executing GitHub writes, or
@@ -264,7 +269,9 @@ Source actions are `none`, `issue_comment`, `issue_body_edit`,
 `active_task_scope_update`. GitHub mutation remains AI-owned: after exact
 action-digest-bound confirmation, the AI uses an existing connector or a
 reviewed `gh` command, rereads live facts, and supplies mutation evidence to
-the recorder. Generic continuation, task creation, planning approval, or
+the recorder. Checker binds the human-confirmed action payload, canonical
+payload digest, mutation result content digest, and reread live body/comment;
+any byte mismatch fails closed. Generic continuation, task creation, planning approval, or
 review confirmation cannot satisfy action or scope-proposal confirmation.
 `unconfirmed_expansion + accepted_current` requires a dedicated
 proposal-digest-bound confirmation. A proposal with
@@ -272,7 +279,7 @@ proposal-digest-bound confirmation. A proposal with
 removed/replaced or its independent product value is proposed separately.
 
 The five exits and unique consumers are `clear` -> workflow target
-`guru-review-contract-wording`, `needs_context` -> Skill
+`guru-requirements-clear-router`, `needs_context` -> Skill
 `guru-discover-change-context`, `refresh_context` -> Skill `guru-sync-base`,
 `new_task` -> workflow target `guru-full-task-intake-chain`, and `blocked` ->
 stop `requirements-clarification-blocked`. `clear` requires no open questions,
@@ -288,6 +295,12 @@ record stale downstream identities plus re-entry owners
 `guru-approve-task-plan`, `guru-check-task`, and `guru-review-branch`. A copied
 package without the complete compatible preset remains non-portable and fails
 closed through the dispatcher.
+
+`invocation_context.resume_target` is caller-aware and closed. Initial
+issue/draft accepts only `guru-review-contract-wording`; standalone accepts only
+`guru-standalone-caller`; active-task accepts the planning-review target or one
+of the declared interrupted Phase 1/2/3/Branch Review targets. Accepted-current
+scope requires the planning-review target.
 
 ## Distribution And Managed Hashes
 

@@ -43,8 +43,8 @@
     },
     {
       "id": "invocation_freshness",
-      "evidence": "mode, invocation kind, target/context/scope/action/payload/result digests and active-task bindings",
-      "binding": "one current semantic review round and its legal continuation",
+      "evidence": "mode, invocation kind, caller-aware resume target, target/context/scope/action/payload/result digests and active-task bindings",
+      "binding": "one current semantic review round and its validated legal continuation",
       "freshness": "all identities must still match at typed-exit validation"
     }
   ],
@@ -81,7 +81,7 @@
     {
       "id": "clear",
       "evidence": "zero open questions, passed AI Review Gate, current authority/context and all accepted proposals exactly confirmed",
-      "consumer": {"kind": "workflow", "id": "guru-review-contract-wording"}
+      "consumer": {"kind": "workflow", "id": "guru-requirements-clear-router"}
     },
     {
       "id": "needs_context",

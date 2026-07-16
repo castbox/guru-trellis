@@ -197,11 +197,25 @@ REQUIREMENTS_CLARIFICATION_TOP_LEVEL_KEYS = {
     "content_identity", "reason", "consumer", "error",
 }
 REQUIREMENTS_CLARIFICATION_CONSUMERS = {
-    "clear": {"kind": "workflow", "id": "guru-review-contract-wording"},
+    "clear": {"kind": "workflow", "id": "guru-requirements-clear-router"},
     "needs_context": {"kind": "skill", "id": "guru-discover-change-context"},
     "refresh_context": {"kind": "skill", "id": "guru-sync-base"},
     "new_task": {"kind": "workflow", "id": "guru-full-task-intake-chain"},
     "blocked": {"kind": "stop", "id": "requirements-clarification-blocked"},
+}
+REQUIREMENTS_CLARIFICATION_RESUME_TARGETS = {
+    "initial_issue": {"guru-review-contract-wording"},
+    "proposed_draft": {"guru-review-contract-wording"},
+    "standalone_review": {"guru-standalone-caller"},
+    "active_task_scope_change": {
+        "guru-active-task-planning-review",
+        "guru-resume-requirement-exploration",
+        "guru-resume-implementation",
+        "guru-resume-phase2-check",
+        "guru-resume-spec-evaluation",
+        "guru-resume-task-commit",
+        "guru-resume-branch-review",
+    },
 }
 REQUIREMENTS_CLARIFICATION_ACTION_KINDS = {
     "none", "issue_comment", "issue_body_edit", "proposed_draft_update",
@@ -19352,11 +19366,13 @@ def requirements_clarification_structural_errors(
     invocation_kind = invocation.get("kind") if isinstance(invocation, dict) else None
     if (
         not isinstance(invocation, dict)
-        or set(invocation) != {"kind", "caller", "task_locator"}
+        or set(invocation) != {"kind", "caller", "task_locator", "resume_target"}
         or invocation_kind not in {"initial_issue", "proposed_draft", "active_task_scope_change", "standalone_review"}
         or not requirements_clarification_nonempty(invocation.get("caller"))
     ):
         errors.append("invalid_requirements_clarification_invocation")
+    elif invocation.get("resume_target") not in REQUIREMENTS_CLARIFICATION_RESUME_TARGETS[invocation_kind]:
+        errors.append("requirements_clarification_resume_target_mismatch")
     if invocation_kind == "active_task_scope_change":
         if task_dir is None or not isinstance(invocation.get("task_locator"), str):
             errors.append("active_task_scope_change_requires_task")
@@ -19418,7 +19434,6 @@ def requirements_clarification_structural_errors(
         or not requirements_clarification_nonempty(context.get("missing_reason"))
     ):
         errors.append("invalid_stale_requirements_context")
-
     repository_questions = payload.get("repository_answerable_questions")
     if not isinstance(repository_questions, list):
         errors.append("invalid_repository_answerable_questions")
@@ -19433,8 +19448,11 @@ def requirements_clarification_structural_errors(
         evidence_refs = question.get("evidence_refs")
         if status not in {"pending", "answered", "not_answerable"} or not isinstance(evidence_refs, list):
             errors.append("invalid_repository_answerable_question")
-        elif status == "answered" and not requirements_clarification_nonempty(question.get("answer_summary")):
-            errors.append("answered_repository_question_requires_answer")
+        elif status == "answered" and (
+            not requirements_clarification_nonempty(question.get("answer_summary"))
+            or not evidence_refs
+        ):
+            errors.append("answered_repository_question_requires_evidence")
         elif status == "not_answerable" and (not evidence_refs or not requirements_clarification_nonempty(question.get("missing_reason"))):
             errors.append("not_answerable_question_requires_evidence")
     if len(repository_question_ids) != len(set(repository_question_ids)):
@@ -19464,6 +19482,9 @@ def requirements_clarification_structural_errors(
             continue
         opened_this_round = {value for value in opened_ids if isinstance(value, str)}
         closed_this_round = {value for value in closed_ids if isinstance(value, str)}
+        question_id = round_item.get("question_id")
+        if question_id not in current_open | opened_this_round:
+            errors.append("clarification_question_not_opened")
         if round_item.get("answer_status") == "partial" and closed_ids:
             errors.append("partial_answer_cannot_close_questions")
         if opened_this_round & closed:
@@ -19687,7 +19708,10 @@ def requirements_clarification_structural_errors(
             continue
         mutation_ids.append(mutation.get("action_id"))
         action = action_by_id.get(str(mutation.get("action_id")))
-        if action is None or mutation.get("action_digest") != action.get("action_digest"):
+        if action is None:
+            errors.append("mutation_action_binding_mismatch")
+            continue
+        if mutation.get("action_digest") != action.get("action_digest"):
             errors.append("mutation_action_binding_mismatch")
         elif mutation.get("kind") != action.get("kind") or action.get("status") not in {"executed", "validated"}:
             errors.append("mutation_action_state_mismatch")
@@ -19703,14 +19727,19 @@ def requirements_clarification_structural_errors(
         if mutation.get("facts_sha256") != context_digest(projection):
             errors.append("mutation_facts_digest_mismatch")
         mutation_kind = mutation.get("kind")
+        action_payload = action.get("payload") if isinstance(action, dict) else None
+        expected_content_sha = (
+            hashlib.sha256(action_payload["body"].encode("utf-8")).hexdigest()
+            if isinstance(action_payload, dict)
+            and requirements_clarification_nonempty(action_payload.get("body"))
+            else None
+        )
+        if mutation_kind in {"issue_comment", "issue_body_edit"} and (
+            action.get("payload_sha256") != context_digest(action_payload)
+            or mutation.get("content_sha256") != expected_content_sha
+        ):
+            errors.append("mutation_confirmed_payload_mismatch")
         if mutation_kind == "proposed_draft_update":
-            action_payload = action.get("payload") if isinstance(action, dict) else None
-            expected_content_sha = (
-                hashlib.sha256(action_payload["body"].encode("utf-8")).hexdigest()
-                if isinstance(action_payload, dict)
-                and requirements_clarification_nonempty(action_payload.get("body"))
-                else None
-            )
             if (
                 mutation.get("url") is not None
                 or mutation.get("state") != "draft"
@@ -19747,6 +19776,8 @@ def requirements_clarification_structural_errors(
         if isinstance(proposal, dict) and proposal.get("decision") == "accepted_current"
     ]
     if invocation_kind == "active_task_scope_change" and accepted_current:
+        if invocation.get("resume_target") != "guru-active-task-planning-review":
+            errors.append("active_task_current_scope_requires_planning_resume")
         accepted_digests = {proposal.get("proposal_digest") for proposal in accepted_current}
         if confirmation_status != "confirmed" or not accepted_digests.issubset(set(proposal_digests)):
             errors.append("active_task_current_scope_requires_exact_confirmation")
@@ -20034,13 +20065,21 @@ def requirements_clarification_live_mutation_errors(
             errors.append("mutation_live_issue_unreadable")
             continue
         if kind == "issue_body_edit":
+            action_payload = action.get("payload")
+            expected_content_sha = (
+                hashlib.sha256(action_payload["body"].encode("utf-8")).hexdigest()
+                if isinstance(action_payload, dict)
+                and requirements_clarification_nonempty(action_payload.get("body"))
+                else None
+            )
             if (
                 mutation.get("url") != issue_facts["url"]
                 or mutation.get("state") != issue_facts["state"]
                 or mutation.get("updated_at") != issue_facts["updated_at"]
                 or mutation.get("content_sha256") != issue_facts["body_sha256"]
+                or mutation.get("content_sha256") != expected_content_sha
             ):
-                errors.append("mutation_live_body_stale")
+                errors.append("mutation_live_body_payload_mismatch")
             continue
         if kind != "issue_comment":
             errors.append("mutation_kind_invalid")
@@ -20075,8 +20114,10 @@ def requirements_clarification_live_mutation_errors(
             or mutation.get("state") != issue_facts["state"]
             or mutation.get("content_sha256")
             != hashlib.sha256(str(comment.get("body") or "").encode("utf-8")).hexdigest()
+            or mutation.get("content_sha256")
+            != hashlib.sha256(str((action.get("payload") or {}).get("body") or "").encode("utf-8")).hexdigest()
         ):
-            errors.append("mutation_live_comment_stale")
+            errors.append("mutation_live_comment_payload_mismatch")
     return context_sort(errors)
 
 

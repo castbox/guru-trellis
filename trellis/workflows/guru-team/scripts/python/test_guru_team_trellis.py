@@ -16523,8 +16523,11 @@ class RequirementsClarificationTests(unittest.TestCase):
             / "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/requirements-clarification.json"
         )
 
-    def example(self) -> dict[str, object]:
+    def raw_example(self) -> dict[str, object]:
         return json.loads(self.example_path.read_text(encoding="utf-8"))
+
+    def example(self) -> dict[str, object]:
+        return self.derive(self.raw_example())
 
     def derive(self, payload: dict[str, object]) -> dict[str, object]:
         return gtt.derive_requirements_clarification_result(payload)
@@ -16538,7 +16541,7 @@ class RequirementsClarificationTests(unittest.TestCase):
             root=str(self.repo), mode="standalone", input=str(self.example_path), task=None
         )
         recorded = gtt.cmd_record_requirements_clarification(record_args)
-        self.assertEqual(recorded, self.example())
+        self.assertEqual(recorded, self.raw_example())
         check_args = argparse.Namespace(
             root=str(self.repo), input=str(self.example_path), task=None,
             expected_result_sha256=recorded["content_identity"]["result_sha256"],
@@ -16578,7 +16581,7 @@ class RequirementsClarificationTests(unittest.TestCase):
     def test_question_state_requires_exact_open_minus_closed(self) -> None:
         forged_clear = self.example()
         forged_clear["clarification_rounds"] = [{
-            "round_id": "round_1", "question_id": "intent_initial",
+            "round_id": "round_1", "question_id": "intent",
             "atomic_group_id": None, "atomic_group_reason": None,
             "category": "product_intent", "question": "Which behavior?",
             "answer_summary": "Only part was answered.", "answer_status": "partial",
@@ -16602,10 +16605,24 @@ class RequirementsClarificationTests(unittest.TestCase):
             "category": "product_intent", "question": "Confirm the remaining behavior?",
             "answer_summary": "The remaining behavior was confirmed.", "answer_status": "complete",
             "affected_contracts": ["requirements"],
-            "opened_question_ids": [], "closed_question_ids": ["intent"],
+            "opened_question_ids": ["intent_followup"],
+            "closed_question_ids": ["intent", "intent_followup"],
         })
         converged = self.derive(converged)
         self.assertEqual(self.structural(converged), [])
+
+        empty_lifecycle = self.example()
+        empty_lifecycle["clarification_rounds"] = [{
+            "round_id": "round_empty", "question_id": "untracked_intent",
+            "atomic_group_id": None, "atomic_group_reason": None,
+            "category": "product_intent", "question": "Which behavior?",
+            "answer_summary": "Only part was answered.", "answer_status": "partial",
+            "affected_contracts": ["requirements"],
+            "opened_question_ids": [], "closed_question_ids": [],
+        }]
+        empty_lifecycle["open_questions"] = []
+        empty_lifecycle = self.derive(empty_lifecycle)
+        self.assertIn("clarification_question_not_opened", self.structural(empty_lifecycle))
 
     def test_published_schema_and_atomic_refusal_are_enforced_by_runtime(self) -> None:
         unknown = self.example()
@@ -16721,7 +16738,7 @@ class RequirementsClarificationTests(unittest.TestCase):
 
         illegal_clear = copy.deepcopy(payload)
         illegal_clear["typed_exit"] = "clear"
-        illegal_clear["consumer"] = {"kind": "workflow", "id": "guru-review-contract-wording"}
+        illegal_clear["consumer"] = {"kind": "workflow", "id": "guru-requirements-clear-router"}
         illegal_clear = self.derive(illegal_clear)
         illegal_errors = self.structural(illegal_clear)
         self.assertIn("draft_source_action_forbidden_for_exit", illegal_errors)
@@ -16819,6 +16836,7 @@ class RequirementsClarificationTests(unittest.TestCase):
         standalone = self.example()
         standalone["invocation_context"] = {
             "kind": "standalone_review", "caller": "explicit review", "task_locator": None,
+            "resume_target": "guru-standalone-caller",
         }
         standalone = self.derive(standalone)
         self.assertEqual(self.structural(standalone), [])
@@ -16826,6 +16844,7 @@ class RequirementsClarificationTests(unittest.TestCase):
         initial = self.example()
         initial["invocation_context"] = {
             "kind": "initial_issue", "caller": "initial intake", "task_locator": None,
+            "resume_target": "guru-review-contract-wording",
         }
         target_projection = {
             "kind": "issue", "repo": "example/guru-extension", "issue_number": 7,
@@ -16845,6 +16864,23 @@ class RequirementsClarificationTests(unittest.TestCase):
         }
         with mock.patch.object(gtt, "context_read_live_issue", return_value=(live_issue, None)):
             self.assertEqual(gtt.requirements_clarification_live_errors(self.repo, initial, None), [])
+
+        wrong_resume = copy.deepcopy(initial)
+        wrong_resume["invocation_context"]["resume_target"] = "guru-standalone-caller"
+        wrong_resume = self.derive(wrong_resume)
+        self.assertIn(
+            "requirements_clarification_resume_target_mismatch",
+            self.structural(wrong_resume),
+        )
+
+    def test_answered_repository_question_requires_checked_evidence(self) -> None:
+        payload = self.example()
+        payload["repository_answerable_questions"][0]["evidence_refs"] = []
+        payload = self.derive(payload)
+        self.assertIn(
+            "answered_repository_question_requires_evidence",
+            self.structural(payload),
+        )
 
     def test_active_task_binds_existing_files_and_reentry_owners(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -16871,6 +16907,7 @@ class RequirementsClarificationTests(unittest.TestCase):
             payload["mode"] = "workflow"
             payload["invocation_context"] = {
                 "kind": "active_task_scope_change", "caller": "active task", "task_locator": locator,
+                "resume_target": "guru-resume-implementation",
             }
             payload["active_task_evidence"] = {
                 "task_locator": locator,
@@ -16977,6 +17014,7 @@ class RequirementsClarificationTests(unittest.TestCase):
             payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
             payload["invocation_context"] = {
                 "kind": "active_task_scope_change", "caller": "active task", "task_locator": locator,
+                "resume_target": "guru-active-task-planning-review",
             }
             payload["review_target"] = {
                 **target_projection, "facts_sha256": gtt.context_digest(target_projection),
@@ -17109,6 +17147,14 @@ class RequirementsClarificationTests(unittest.TestCase):
                     gtt.requirements_clarification_live_errors(root, mutation_fact_drift, task),
                 )
 
+            wrong_resume = copy.deepcopy(payload)
+            wrong_resume["invocation_context"]["resume_target"] = "guru-resume-implementation"
+            wrong_resume = self.derive(wrong_resume)
+            self.assertIn(
+                "active_task_current_scope_requires_planning_resume",
+                gtt.requirements_clarification_structural_errors(root, wrong_resume, task),
+            )
+
     def issue_payload_with_action(
         self,
         *,
@@ -17154,6 +17200,48 @@ class RequirementsClarificationTests(unittest.TestCase):
             "facts_sha256": "0" * 64,
         }]
         return self.derive(payload)
+
+    def test_unknown_mutation_action_is_a_structured_cli_failure(self) -> None:
+        payload = self.issue_payload_with_action(
+            kind="issue_body_edit",
+            action_id="edit_body",
+            action_payload={"body": "Confirmed body"},
+            mutation_url="https://github.com/example/guru-extension/issues/7",
+            mutation_updated_at="2026-01-01T00:00:02Z",
+            mutation_content_sha256=hashlib.sha256(b"Confirmed body").hexdigest(),
+        )
+        payload["mutation_results"][0]["action_id"] = "missing_action"
+        payload = self.derive(payload)
+        self.assertIn("mutation_action_binding_mismatch", self.structural(payload))
+
+        with tempfile.TemporaryDirectory() as temp:
+            input_path = Path(temp) / "requirements-clarification.json"
+            input_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    str(Path(gtt.__file__).resolve()),
+                    "record-requirements-clarification",
+                    "--root",
+                    str(self.repo),
+                    "--json",
+                    "--mode",
+                    "standalone",
+                    "--input",
+                    str(input_path),
+                ],
+                cwd=self.repo,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(proc.returncode, 2)
+            error = json.loads(proc.stderr)
+            self.assertIn("mutation_action_binding_mismatch", error["error_codes"])
+            self.assertNotIn("Traceback", proc.stderr)
+            self.assertNotIn("AttributeError", proc.stderr)
+            self.assertNotIn(str(self.repo), proc.stderr)
+            self.assertNotIn(str(input_path), proc.stderr)
 
     def test_action_bodies_allow_multiline_markdown_and_reject_controls(self) -> None:
         markdown = "# Clarification\n\n- first\tvalue\r\n- second"
@@ -17261,11 +17349,56 @@ class RequirementsClarificationTests(unittest.TestCase):
             mock.patch.object(gtt, "run", return_value=comment_response),
         ):
             errors = gtt.requirements_clarification_live_errors(self.repo, stale_comment, None)
-        self.assertIn("mutation_live_comment_stale", errors)
+        self.assertIn("mutation_live_comment_payload_mismatch", errors)
         self.assertIn(
-            "mutation_live_comment_stale",
+            "mutation_live_comment_payload_mismatch",
             gtt.requirements_clarification_typed_exit_live_errors(stale_comment, errors),
         )
+
+        for kind in ("issue_body_edit", "issue_comment"):
+            with self.subTest(kind=kind):
+                action_id = f"different_{kind}"
+                url = "https://github.com/example/guru-extension/issues/7"
+                if kind == "issue_comment":
+                    url += "#issuecomment-99"
+                different_body = "DIFFERENT LIVE CONTENT"
+                mismatch = self.issue_payload_with_action(
+                    kind=kind,
+                    action_id=action_id,
+                    action_payload={"body": "CONFIRMED PAYLOAD"},
+                    mutation_url=url,
+                    mutation_updated_at="2026-01-01T00:00:04Z",
+                    mutation_content_sha256=hashlib.sha256(different_body.encode("utf-8")).hexdigest(),
+                )
+                self.assertIn(
+                    "mutation_confirmed_payload_mismatch",
+                    self.structural(mismatch),
+                )
+                different_issue = copy.deepcopy(current_issue)
+                different_issue["updated_at"] = "2026-01-01T00:00:04Z"
+                different_issue["body_sha256"] = hashlib.sha256(different_body.encode("utf-8")).hexdigest()
+                different_comment = subprocess.CompletedProcess(
+                    [], 0,
+                    json.dumps({
+                        "id": 99, "html_url": url,
+                        "updated_at": "2026-01-01T00:00:04Z",
+                        "body": different_body,
+                    }),
+                    "",
+                )
+                with (
+                    mock.patch.object(gtt, "context_read_live_issue", return_value=(different_issue, None)),
+                    mock.patch.object(gtt, "run", return_value=different_comment),
+                ):
+                    live_mismatch = gtt.requirements_clarification_live_errors(
+                        self.repo, mismatch, None,
+                    )
+                expected = (
+                    "mutation_live_body_payload_mismatch"
+                    if kind == "issue_body_edit"
+                    else "mutation_live_comment_payload_mismatch"
+                )
+                self.assertIn(expected, live_mismatch)
 
     def test_executed_github_action_cannot_bypass_confirmation_or_refresh(self) -> None:
         body = self.issue_payload_with_action(
@@ -17276,7 +17409,7 @@ class RequirementsClarificationTests(unittest.TestCase):
         )
         bypass = copy.deepcopy(body)
         bypass["typed_exit"] = "clear"
-        bypass["consumer"] = {"kind": "workflow", "id": "guru-review-contract-wording"}
+        bypass["consumer"] = {"kind": "workflow", "id": "guru-requirements-clear-router"}
         bypass["mutation_results"] = []
         bypass["human_confirmation"] = copy.deepcopy(self.example()["human_confirmation"])
         bypass = self.derive(bypass)

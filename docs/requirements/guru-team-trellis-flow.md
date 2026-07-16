@@ -221,23 +221,28 @@ locator 不保存 raw source payload，只做 field-specific validation。
 stage profile。它加载 `trellis-brainstorm` 作为单问题问答方法，但问题选择、收敛、
 scope/action、semantic Gate 与 typed route 仍由本 Skill 独占。它先分离 confirmed facts、repository-answerable questions、product-intent
 questions、scope-risk decisions 与 out-of-scope；repository-answerable questions 未穷尽前
-不得询问用户。之后按每轮一个最高价值问题收敛，只有不可分割产品选择才使用一个
-`atomic_group`。`partial` 答案不得关闭 question。
+不得询问用户，`answered` 至少绑定一个 checked evidence ref。之后按每轮
+一个最高价值问题收敛，只有不可分割产品选择才使用一个 `atomic_group`。每轮
+`question_id` 必须来自本轮 opened 或既有 open set，`partial` 答案不得关闭 question，
+reducer固定保持 `open_questions = opened - closed`。
 
 该 Skill 的 source actions 只有 `none`、`issue_comment`、`issue_body_edit`、
 `proposed_draft_update`、`new_issue_draft` 与 `active_task_scope_update`。任何 GitHub
 mutation 都由 AI 在 exact action/proposal confirmation 后通过现有 connector 或审查过的
 `gh` 执行；脚本只有 `record-requirements-clarification` 与
 `check-requirements-clarification`，负责 closed schema、derived digest、live freshness、
-task-local linkage 与 exit invariants，不执行 write、不选择 semantic route。Mutation 成功
+task-local linkage 与 exit invariants，并要求 confirmed payload bytes、payload digest、
+mutation result与live body/comment一致，不执行 write、不选择 semantic route。Mutation 成功
 必须返回 `refresh_context`；`new_issue_draft` 不创建 issue，只返回 `new_task`。
 
-五个唯一出口为 `clear` -> staged workflow target
-`guru-review-contract-wording`、`needs_context` -> `guru-discover-change-context`、
+Active-task Scope Change Gate mandatory invoke本 Skill，不再在workflow复制分类步骤。五个唯一
+出口为 `clear` -> workflow target `guru-requirements-clear-router`、`needs_context` -> `guru-discover-change-context`、
 `refresh_context` -> `guru-sync-base`、`new_task` -> staged workflow target
 `guru-full-task-intake-chain`、`blocked` ->
-`requirements-clarification-blocked`。#114/#112 分别拥有两个 staged target 的后续
-Skill/完整 intake 实现。Source/installed validator 要求 Skill consumer active 且
+`requirements-clarification-blocked`。Clear router校验 `resume_target`：initial/draft进入#114
+wording route，standalone返回caller，active accepted-current返回planning review，其余active
+分类返回exact interrupted progression；router不重新分类。#114/#112 分别拥有 staged wording
+target/完整 intake 实现。Source/installed validator 要求 Skill consumer active 且
 workflow/stop target marker 唯一、kind 匹配、无 dangling。
 
 Source issue 可绑定 GitHub 当前 `open` 或 `closed` 状态，runtime 将受支持的 GitHub
@@ -265,7 +270,7 @@ structure 校验，不扫描整份 payload。
 | 问题 | Guru Team 规则 | 确定性资产 |
 | --- | --- | --- |
 | 任务是否应绑定 GitHub issue | AI 读取用户请求、issue body/comment 和 duplicate candidates 后判断；无 issue 时先提出 neutral issue draft。 | `prepare-task.sh --json` 只读取/搜索/输出候选；创建 issue 必须带 `--create-issue-confirmed`。 |
-| Intake clarity / 需求是否足够清晰 | `guru-clarify-requirements` 消费 current context，AI完成问题选择、scope/action、AI Gate、confirmation 与 route。范围、验收、close/ref 语义或实现目标仍有 load-bearing open question 时每轮只问一个。 | Recorder派生 proposal/action/content/result digest；checker验证 schema、live source与 typed exit。两者不生成问题或执行GitHub mutation。 |
+| Intake clarity / 需求是否足够清晰 | `guru-clarify-requirements` 消费 current context，AI完成问题选择、scope/action、AI Gate、confirmation 与 route。范围、验收、close/ref 语义或实现目标仍有 load-bearing open question 时每轮只问一个；active Scope Change也mandatory invoke同一Skill。 | Recorder派生 proposal/action/content/result digest；checker验证 answered evidence、question reducer、confirmed payload/live mutation与caller-aware typed exit。两者不生成问题或执行GitHub mutation。 |
 | 分支和 worktree 从哪里来 | AI 审查 invocation intent、resolution source、selected base、workspace path、branch name、current checkout、dirty state。 | shared core 只执行显式 refspec fetch；只有 decision checkout 正位于 selected base 且 local 是 remote ancestor 时执行 `merge --ff-only`。成功必须证明 decision/local/remote 三方 SHA equality。 |
 | 命名是否足够语义化 | AI 读 issue 后决定英文 short-name，低信息名称不得进入 executor。 | `naming_quality` 和 `--short-name` / `--workspace-slug` / `--task-slug` / `--branch`。 |
 

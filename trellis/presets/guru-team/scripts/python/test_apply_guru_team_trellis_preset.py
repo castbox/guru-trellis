@@ -877,6 +877,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("get_context.py --mode packages", verifier)
         self.assertIn("task.py current --source", verifier)
         self.assertIn("Unexpected .new/.bak sidecars after preview, switch, update, and preset reapply", verifier)
+        self.assertIn('"id":"guru-requirements-clear-router"', verifier)
+        self.assertNotIn(
+            '"exit":"clear","consumer":{"kind":"workflow","id":"guru-review-contract-wording"}',
+            verifier,
+        )
+        self.assertIn('"resume_target": "guru-review-contract-wording"', verifier)
         self.assertIn("verify_installed_closeout.py", verifier)
         self.assertIn("--case initial", verifier)
         self.assertIn("--case after-update", verifier)

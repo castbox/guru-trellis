@@ -9,3 +9,6 @@
 {"file": ".trellis/spec/docs/public-docs.md", "reason": "同步三份公开 README 的 Skill API、staged migration、安装升级与安全说明。"}
 {"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查 schema、runtime dispatcher、workflow consumer、manifest 和 installed copies 的跨层传递。"}
 {"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "先检索既有 #111/#122 helpers 与测试模式，避免复制 canonical digest、schema、dispatcher 和 installer 逻辑。"}
+{"file": ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-01-final-release-finding.md", "reason": "Branch Review 第1轮的6个阻塞finding；本轮实现必须逐项修复并补充针对性回归测试与Docs SSOT同步。"}
+{"file": ".trellis/tasks/07-16-113-guru-clarify-requirements/prd.md", "reason": "2026-07-16 scope revision：F-001 经用户确认和 GitHub-visible comment 分类为 out-of-scope；撤回仅为恶意伪造场景新增的 draft/context 可解引用合同，F-002 至 F-006 继续闭环。"}
+{"file": ".trellis/tasks/07-16-113-guru-clarify-requirements/phase2-check.json", "reason": "范围修订后的 fresh Phase 2 blocked evidence：修复正常 mutation/action 错配导致 traceback 的 P2，并补 accepted-current caller resume 的 P3 负例；不得重新引入 F-001。"}

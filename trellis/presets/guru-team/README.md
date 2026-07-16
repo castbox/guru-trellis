@@ -338,8 +338,10 @@ active Skill consumer 与唯一 workflow/stop target marker 均可解析。
 dispatcher wrappers。Runtime assets 是
 `.trellis/guru-team/scripts/bash/record-requirements-clarification.sh` 与
 `check-requirements-clarification.sh`；不存在 mutation executor。Workflow/standalone
-preconditions相同，pre-task/standalone stdout-only，active-task 只验证现有 ledger/planning/
-stale-gate/re-entry linkage，不创建专用 clarification artifact。Throwaway initial install、
+preconditions相同；answered evidence、question lifecycle与confirmed payload/live mutation均
+fail-closed验证。Pre-task/standalone stdout-only，
+active-task Scope Change Gate mandatory invoke本Skill，并由caller-aware clear router恢复planning或
+exact interrupted progression；只验证现有 ledger/planning/stale-gate/re-entry linkage，不创建专用 clarification artifact。Throwaway initial install、
 `trellis update`、workflow re-selection与preset reapply均执行 standalone record/check probe，
 并验证 `clear` / `needs_context` / `refresh_context` / `new_task` / `blocked` consumers。
 

@@ -672,8 +672,7 @@ enters `guru-clarify-requirements`; `refresh_base` re-enters
 Load and mandatory invoke the active semantic package by stable id. The global
 workflow owns only this invocation and its unique consumers:
 
-<!-- guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"clear","consumer":{"kind":"workflow","id":"guru-review-contract-wording"}} -->
+<!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"clear","consumer":{"kind":"workflow","id":"guru-requirements-clear-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"needs_context","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"new_task","consumer":{"kind":"workflow","id":"guru-full-task-intake-chain"}} -->
@@ -688,11 +687,12 @@ not copy that loop into this workflow or a platform entry.
 Pre-task and standalone recording remains stdout-only. The package has no
 GitHub mutation executor and no dedicated clarification artifact. A successful
 comment/body/source/scope mutation returns `refresh_context`; a reviewed
-side-effect-free new issue draft returns `new_task`. `clear` enters the staged
-#114 wording-review continuation; #112 owns the full task-intake continuation.
-Unknown, multiple, or unmapped exits fail closed.
+side-effect-free new issue draft returns `new_task`. `clear` enters the single
+caller-aware router, which validates `invocation_context.resume_target` before
+resuming the initial, active-task, or standalone caller. #112 owns the full
+task-intake continuation. Unknown, multiple, or unmapped exits fail closed.
 
-<!-- guru-workflow-target: {"id":"guru-review-contract-wording"} -->
+<!-- guru-workflow-target: {"id":"guru-requirements-clear-router"} -->
 <!-- guru-workflow-target: {"id":"guru-full-task-intake-chain"} -->
 <!-- guru-stop-target: {"id":"requirements-clarification-blocked"} -->
 
@@ -911,24 +911,38 @@ The plan must record:
 
 Run the Middle-platform Knowledge Gate when the task may involve Guru Team middle-platform SDKs or frameworks. Persist citations or the unavailable-MCP warning before design and implementation artifacts are considered ready.
 
-Scope Change Gate: when scope changes, first stop and ask the user how to classify the new requirement or referenced issue unless the user already made that classification explicit. Then update `issue-scope-ledger.json` immediately:
+Scope Change Gate: when an active task receives a new requirement, referenced
+issue, discovered bug, or possible scope expansion, pause the interrupted
+progression and mandatory invoke the same active semantic Skill used by initial
+intake:
 
-- `primary_issue`: the intake issue that anchors the task.
-- `close_issues`: issues this task explicitly promises to complete and close.
-- `related_issues`: context, reusable mechanism, partial overlap, or references only.
-- `followup_issues`: new scope, new bug, or expansion that should become a new Trellis task.
+<!-- guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true} -->
 
-The same decision must also leave GitHub-visible evidence: add a comment to the current issue, add a comment to the referenced issue, or create/propose a follow-up issue. Companion scripts may execute deterministic writes after reviewed text is supplied, but they must not decide whether the new scope belongs in the current task.
+Pass `invocation_context.kind=active_task_scope_change`, the current task
+locator, and one exact `resume_target` naming the interrupted progression. The
+Skill exclusively owns repository-first evidence classification, the
+current/related/followup/new-task/out-of-scope decision, question loop, exact
+confirmation, GitHub-visible authority, ledger/planning update requirements,
+stale downstream evidence, and typed exit. This workflow must not repeat or
+pre-decide those step-local semantics.
 
-Do not put active task state, PR runtime state, or project-private business rules into a spec template or marketplace entry.
+The `clear` consumer is always `guru-requirements-clear-router`. The router is
+only a workflow target declaration: it validates the caller-aware target
+already recorded by the Skill and then routes as follows, without reclassifying
+scope:
 
-Only add a newly discovered issue to `close_issues` when all conditions hold:
+- initial issue or proposed draft -> `guru-review-contract-wording`;
+- standalone review -> `guru-standalone-caller`;
+- active-task accepted-current scope -> `guru-active-task-planning-review`;
+- active-task non-current classification -> the exact interrupted target among
+  `guru-resume-requirement-exploration`, `guru-resume-implementation`,
+  `guru-resume-phase2-check`, `guru-resume-spec-evaluation`,
+  `guru-resume-task-commit`, or `guru-resume-branch-review`.
 
-- it belongs to the same delivery unit as the current task;
-- it does not materially expand design boundary, test scope, or risk level;
-- `prd.md`, `design.md`, and `implement.md` are updated;
-- the user explicitly confirms this issue should be solved in the current task;
-- Branch Review Gate later records coverage for that issue.
+Any invocation kind/resume target mismatch, unknown target, missing package,
+multiple exit, or unmapped exit stops fail closed. Do not put active task state,
+PR runtime state, or project-private business rules into a spec template or
+marketplace entry.
 
 #### 1.2 Research `[optional · repeatable]`
 

@@ -217,7 +217,7 @@ Top-level closed fields：
 
 - 把 `guru-discover-change-context:context_ready` consumer 从 workflow placeholder 改为 active Skill `guru-clarify-requirements`。
 - 新增 #113 mandatory invocation marker。
-- `clear` -> workflow target `guru-review-contract-wording`。该 target 保留 #114 尚未 active 的 staged dependency事实。
+- `clear` -> workflow target `guru-requirements-clear-router`。Router 只验证 caller-aware `resume_target`，不执行新的语义判断：initial issue/draft进入 staged `guru-review-contract-wording` target，standalone返回 caller，accepted-current active scope进入 planning review，non-current active classification恢复 exact interrupted progression。
 - `needs_context` -> active Skill `guru-discover-change-context`。
 - `refresh_context` -> active Skill `guru-sync-base`。
 - `new_task` -> workflow target `guru-full-task-intake-chain`。
@@ -225,7 +225,7 @@ Top-level closed fields：
 
 ### 9.2 后续迁移
 
-#114 激活时必须把 `clear` consumer 从 workflow target迁移到 active Skill `guru-review-contract-wording`，并删除不再使用的 placeholder target。#112 最终集成完整 Intake chain。#113 不预先实现 #114/#112 内部步骤。
+#114 激活时只把 `guru-requirements-clear-router` 的 initial issue/draft downstream 从 staged workflow target切换为 active Skill `guru-review-contract-wording`；public `clear` consumer保持 `guru-requirements-clear-router` 不变。仅当 placeholder target 已无任何 consumer 时才删除。#112 最终集成完整 Intake chain。#113 不预先实现 #114/#112 内部步骤。
 
 ## 10. Runtime 与测试结构
 
@@ -247,6 +247,12 @@ Top-level closed fields：
 
 Tests只覆盖需求声明的正常路径与常见 correctness边界，不增加恶意 actor、并发 race、fault injection或跨 OS 原子性矩阵。
 
+### 10.3 Branch Review F-001 范围决策
+
+2026-07-16 用户确认 F-001 为 `out-of-scope`，GitHub-visible 决策固定在 [issue comment](https://github.com/castbox/guru-trellis/issues/113#issuecomment-4990373622)。Pre-task/standalone caller 恶意伪造无法解引用的 draft/context hash 不属于 #113 的威胁模型，因此不新增仅为该场景服务的 embedded draft body、portable context content 或 evidence locator 合同，也不把对应恶意输入负例作为 acceptance。
+
+该排除不改变正常 correctness 边界：F-002 的 question lifecycle、F-003 的 confirmed payload/live mutation 一致性、F-004 的 active-task mandatory invocation 与 caller-aware resume、F-005 的 repository answer evidence、F-006 的 ownership facts 与完整 discovery 都保留。实现修订必须撤回仅属于 F-001 的 package/schema/runtime/example/test/docs delta，同时维持既有 evidence-first 与缺 context 返回 `needs_context` 的语义。
+
 ## 11. Docs SSOT Plan
 
 - `docs_state`: `partial_docs`
@@ -254,7 +260,7 @@ Tests只覆盖需求声明的正常路径与常见 correctness边界，不增加
 - Evidence paths：`.trellis/spec/workflow/{workflow-contract,skill-package-contract,companion-scripts,data-contracts,quality-guidelines}.md`、`.trellis/spec/preset/{installer,upstream-ownership}.md`、`.trellis/spec/docs/public-docs.md`、`docs/requirements/{requirement-main,guru-team-trellis-flow}.md`、三份 public README。
 - Durable docs updates：补充 #113 package/state machine、result schema、mutation/confirmation、active-task scope proposal、typed exit staged migration、additive distribution与验证矩阵。
 - Task artifact deltas：本设计中的 mode/precondition、question/confirmation/scope/action/result合同必须在实现 runtime 前写入 durable specs；PRD中的产品规则必须进入 durable requirements。
-- Task-history-only：Phase 0 snapshot、候选筛选、规划审查、逐轮实现finding、临时测试日志保留在当前 task artifacts。
+- Task-history-only：Phase 0 snapshot、候选筛选、规划审查、逐轮实现finding、F-001 的用户拒绝与 GitHub-visible scope decision、临时测试日志保留在当前 task artifacts。
 - Merge checkpoint：实现 runtime 前完成 durable spec delta；Phase 2 final check核对 durable docs、canonical package、runtime、installed copies、public docs和tests一致。
 - Follow-up boundary：#114/#101/#112 的内部合同不进入本任务 durable implementation；只记录 staged consumer关系。
 

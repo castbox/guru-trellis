@@ -7,7 +7,8 @@
   "invocation_context": {
     "kind": "proposed_draft",
     "caller": "standalone requirements review",
-    "task_locator": null
+    "task_locator": null,
+    "resume_target": "guru-review-contract-wording"
   },
   "review_target": {
     "kind": "draft",
@@ -88,12 +89,12 @@
     "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
     "action_sha256": "8bd79fcbfc2bf6fc34dca122c1c04c6afdc1425ffcd64a49289f1ee0cc764dc2",
     "payload_sha256": "161a1bfffa621be8ff92c3a770b613a877f77c8a2d865342c10988ae7f72aa6b",
-    "result_sha256": "2791dd78a5f85e3661180d9be76b0c8872dae25f2f156b4c0cb52012067d7138"
+    "result_sha256": "0dcff885c56cbc50cac622c6adbf60524d2f7307d7590d024b47e3de9fa26596"
   },
   "reason": "All load-bearing requirements are confirmed by current evidence.",
   "consumer": {
     "kind": "workflow",
-    "id": "guru-review-contract-wording"
+    "id": "guru-requirements-clear-router"
   },
   "error": null
 }

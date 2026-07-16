@@ -111,10 +111,11 @@ example = json.loads(
     (root / ".agents/skills/guru-clarify-requirements/examples/requirements-clarification.json")
     .read_text(encoding="utf-8")
 )
-cases = {"clear": copy.deepcopy(example)}
 multiline_markdown = "# Clarification\n\n- first\tvalue\r\n- second"
 
-needs_context = copy.deepcopy(example)
+clear = copy.deepcopy(example)
+clear = gtt.derive_requirements_clarification_result(clear)
+needs_context = copy.deepcopy(clear)
 needs_context["typed_exit"] = "needs_context"
 needs_context["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
 needs_context["context_evidence"] = {
@@ -122,16 +123,17 @@ needs_context["context_evidence"] = {
     "evidence_refs": ["repository evidence"],
     "missing_reason": "Current repository context is unavailable.",
 }
+cases = {"clear": clear}
 cases["needs_context"] = gtt.derive_requirements_clarification_result(needs_context)
 
-refresh_context = copy.deepcopy(example)
+refresh_context = copy.deepcopy(clear)
 refresh_context["typed_exit"] = "refresh_context"
 refresh_context["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
 refresh_context["context_evidence"]["status"] = "stale"
 refresh_context["context_evidence"]["missing_reason"] = "The reviewed context binding changed."
 cases["refresh_context"] = gtt.derive_requirements_clarification_result(refresh_context)
 
-new_task = copy.deepcopy(example)
+new_task = copy.deepcopy(clear)
 new_task["typed_exit"] = "new_task"
 new_task["consumer"] = {"kind": "workflow", "id": "guru-full-task-intake-chain"}
 new_task["source_actions"] = [{
@@ -149,11 +151,12 @@ issue_projection = {
     "updated_at": "2026-01-01T00:00:00Z", "body_sha256": "1" * 64,
 }
 for action_kind in ("issue_comment", "issue_body_edit"):
-    issue_action = copy.deepcopy(example)
+    issue_action = copy.deepcopy(clear)
     issue_action["typed_exit"] = "refresh_context"
     issue_action["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
     issue_action["invocation_context"] = {
         "kind": "initial_issue", "caller": "throwaway install", "task_locator": None,
+        "resume_target": "guru-review-contract-wording",
     }
     issue_action["review_target"] = {
         **issue_projection, "facts_sha256": gtt.context_digest(issue_projection),
@@ -176,7 +179,7 @@ new_task_errors = gtt.requirements_clarification_structural_errors(root, cases["
 if new_task_errors:
     raise SystemExit(f"installed new_issue_draft multiline payload failed: {new_task_errors}")
 
-blocked = copy.deepcopy(example)
+blocked = copy.deepcopy(clear)
 blocked["typed_exit"] = "blocked"
 blocked["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
 blocked["ai_review_gate"]["status"] = "blocked"
@@ -421,7 +424,7 @@ grep -q 'guru-skill-exit: {"skill":"guru-discover-change-context","exit":"contex
 grep -q 'guru-skill-exit: {"skill":"guru-discover-change-context","exit":"refresh_base","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-discover-change-context","exit":"blocked","consumer":{"kind":"stop","id":"change-context-blocked"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true}' "$TARGET/.trellis/workflow.md"
-grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"clear","consumer":{"kind":"workflow","id":"guru-review-contract-wording"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"clear","consumer":{"kind":"workflow","id":"guru-requirements-clear-router"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"needs_context","consumer":{"kind":"skill","id":"guru-discover-change-context"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"new_task","consumer":{"kind":"workflow","id":"guru-full-task-intake-chain"}}' "$TARGET/.trellis/workflow.md"

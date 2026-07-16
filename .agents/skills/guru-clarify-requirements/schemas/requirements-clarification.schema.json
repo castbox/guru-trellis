@@ -46,7 +46,7 @@
           "open_questions": {"maxItems": 0},
           "context_evidence": {"properties": {"status": {"const": "current"}}},
           "ai_review_gate": {"properties": {"status": {"const": "passed"}}},
-          "consumer": {"const": {"kind": "workflow", "id": "guru-review-contract-wording"}},
+          "consumer": {"const": {"kind": "workflow", "id": "guru-requirements-clear-router"}},
           "error": {"type": "null"}
         }
       }
@@ -93,6 +93,14 @@
       "if": {"properties": {"invocation_context": {"properties": {"kind": {"const": "active_task_scope_change"}}, "required": ["kind"]}}, "required": ["invocation_context"]},
       "then": {"properties": {"active_task_evidence": {"$ref": "#/$defs/activeTaskEvidence"}}},
       "else": {"properties": {"active_task_evidence": {"type": "null"}}}
+    },
+    {
+      "if": {"properties": {"invocation_context": {"properties": {"kind": {"enum": ["initial_issue", "proposed_draft"]}}, "required": ["kind"]}}, "required": ["invocation_context"]},
+      "then": {"properties": {"invocation_context": {"properties": {"resume_target": {"const": "guru-review-contract-wording"}}}}}
+    },
+    {
+      "if": {"properties": {"invocation_context": {"properties": {"kind": {"const": "standalone_review"}}, "required": ["kind"]}}, "required": ["invocation_context"]},
+      "then": {"properties": {"invocation_context": {"properties": {"resume_target": {"const": "guru-standalone-caller"}}}}}
     }
   ],
   "$defs": {
@@ -104,11 +112,20 @@
     "idList": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
     "invocationContext": {
       "type": "object", "additionalProperties": false,
-      "required": ["kind", "caller", "task_locator"],
+      "required": ["kind", "caller", "task_locator", "resume_target"],
       "properties": {
         "kind": {"enum": ["initial_issue", "proposed_draft", "active_task_scope_change", "standalone_review"]},
         "caller": {"$ref": "#/$defs/nonEmpty"},
-        "task_locator": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/portablePath"}]}
+        "task_locator": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/portablePath"}]},
+        "resume_target": {
+          "enum": [
+            "guru-review-contract-wording", "guru-standalone-caller",
+            "guru-active-task-planning-review", "guru-resume-requirement-exploration",
+            "guru-resume-implementation", "guru-resume-phase2-check",
+            "guru-resume-spec-evaluation", "guru-resume-task-commit",
+            "guru-resume-branch-review"
+          ]
+        }
       }
     },
     "reviewTarget": {
@@ -158,7 +175,7 @@
         "missing_reason": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/nonEmpty"}]}
       },
       "allOf": [
-        {"if": {"properties": {"status": {"const": "answered"}}, "required": ["status"]}, "then": {"properties": {"answer_summary": {"$ref": "#/$defs/nonEmpty"}, "missing_reason": {"type": "null"}}}},
+        {"if": {"properties": {"status": {"const": "answered"}}, "required": ["status"]}, "then": {"properties": {"evidence_refs": {"minItems": 1}, "answer_summary": {"$ref": "#/$defs/nonEmpty"}, "missing_reason": {"type": "null"}}}},
         {"if": {"properties": {"status": {"const": "not_answerable"}}, "required": ["status"]}, "then": {"properties": {"evidence_refs": {"minItems": 1}, "answer_summary": {"type": "null"}, "missing_reason": {"$ref": "#/$defs/nonEmpty"}}}}
       ]
     },

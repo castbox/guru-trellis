@@ -137,14 +137,21 @@ clarification loop; selects a source-of-truth action; completes the AI Review
 Gate; obtains exact action/proposal confirmation when required; records and
 validates current facts; and returns exactly one typed exit.
 
-The workflow owns only the mandatory invocation and unique consumers:
-`clear` -> workflow target `guru-review-contract-wording`, `needs_context` ->
+The workflow owns only the mandatory invocation and unique consumers. The one
+mandatory invocation marker is located in the shared active-task Scope Change
+Gate and is also consumed by the initial intake route; neither call site may
+copy the Skill's classification loop. `clear` -> workflow target
+`guru-requirements-clear-router`, `needs_context` ->
 Skill `guru-discover-change-context`, `refresh_context` -> Skill
 `guru-sync-base`, `new_task` -> workflow target
 `guru-full-task-intake-chain`, and `blocked` -> stop
-`requirements-clarification-blocked`. The first and fourth targets are staged
-integration points: #114 activates the wording-review Skill and #112 owns the
-complete task-intake chain. Unknown, multiple, or unmapped exits fail closed.
+`requirements-clarification-blocked`. The clear router validates the closed
+`invocation_context.resume_target`: initial issue/draft resumes the staged #114
+wording route, standalone returns to its direct caller, accepted active-task
+scope returns to planning review, and non-current active-task classification
+returns to the exact interrupted phase target. It performs no semantic
+reclassification. #112 owns the complete task-intake chain. Unknown, multiple,
+unmapped, or invocation/resume mismatched exits fail closed.
 
 A successful GitHub issue comment/body mutation returns `refresh_context`, not
 `clear`, so the base/context/clarification chain reruns against the new
@@ -155,6 +162,8 @@ or fixed handoff. Active-task inclusion binds live GitHub-visible authority,
 the current `issue-scope-ledger.json` content digest, all three planning
 document digests, stale downstream evidence identities, and re-entry owners
 `guru-approve-task-plan`, `guru-check-task`, and `guru-review-branch`.
+The active-task Scope Change Gate mandatory invokes this Skill rather than
+asking/classifying/updating the ledger directly in workflow Markdown.
 
 `trellis-finish-work` is a single resumable transaction entry. Its mandatory
 order is: shared prepare/digest preview, expected-digest handshake, reviewed

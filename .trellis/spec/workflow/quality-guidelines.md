@@ -73,11 +73,14 @@ repo-level history cache, or transitional legacy overlay payload fails.
 For `guru-clarify-requirements`, tests must cover workflow/standalone
 precondition parity; initial issue, proposed draft, active-task scope change,
 and standalone entry kinds; repository-answerable evidence before user
-questions; one-question and atomic-group rounds; partial/refused answers;
+questions, including rejection of `answered` without evidence;
+one-question and atomic-group rounds; partial/refused answers, empty lifecycle,
+close-before-open and reopen rejection;
 comment/body/draft/new-task/active-task actions; exact action and proposal
 confirmation; generic-confirmation rejection; optional-mechanism removal or
 replacement; active-task ledger/planning/stale-gate/re-entry bindings; all five
 typed exits and unique consumers; pre-task zero-write; live mutation freshness;
+caller-aware clear resume targets; confirmed payload/mutation/live body equality;
 and source/installed/discovery/throwaway update-reapply distribution. Static
 and runtime tests must also prove the package/runtime contain no GitHub write or
 issue-create executor and that recorder/checker do not generate semantic

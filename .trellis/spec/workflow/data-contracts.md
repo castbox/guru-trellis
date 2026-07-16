@@ -211,19 +211,23 @@ result. Top-level fields are exactly `schema_version`, `skill_id`,
 `consumer`, and `error`.
 
 `invocation_context.kind` is `initial_issue`, `proposed_draft`,
-`active_task_scope_change`, or `standalone_review`. `review_target` carries a
-portable current issue or side-effect-free draft identity. `context_evidence`
-binds the current `guru-context-discovery-1.0` snapshot/digest where available;
+`active_task_scope_change`, or `standalone_review` and includes a closed
+caller-aware `resume_target`. `review_target` carries a portable current issue
+or side-effect-free draft identity. `context_evidence` binds the current
+`guru-context-discovery-1.0` snapshot/digest where available;
 `needs_context` is the only exit that can omit load-bearing current context.
 
 Repository-answerable questions record one of `pending`, `answered`, or
 `not_answerable`. Before the first clarification round no entry may remain
-`pending`; `not_answerable` carries checked evidence refs and a non-empty
+`pending`; both `answered` and `not_answerable` carry non-empty checked evidence
+refs, while `not_answerable` also carries a non-empty
 missing reason. Each clarification round has one `question_id`, optional
 `atomic_group_id` plus an indivisibility reason, category `product_intent` or
 `scope_risk_decision`, answer summary, status `complete`, `partial`, or
-`refused`, affected contracts, and opened/closed question ids. A partial answer
-cannot close any question.
+`refused`, affected contracts, and opened/closed question ids. Its question id
+must already be open or be opened in that round. A partial answer cannot close
+any question. The replay invariant is exactly `open_questions = opened -
+closed`; close-before-open and reopen-after-close are invalid.
 
 Each `scope_proposals[]` row is closed and contains `proposal_id`, `scenario`,
 `trigger_evidence`, `proposed_contracts`, `cost`, `alternatives`,
@@ -245,7 +249,9 @@ derives action/payload digests; it does not execute the action. Human
 confirmation records `not_required`, `confirmed`, or `refused`, the exact
 action digest, proposal digests, confirmed action kinds, confirmer/time, and
 evidence summary. Generic continuation/planning/review confirmation action
-kinds are invalid.
+kinds are invalid. For comment/body mutation, mutation content SHA-256 must
+equal the exact confirmed action payload body, canonical payload digest, and
+reread live GitHub body/comment content.
 
 Active-task current inclusion requires live GitHub authority facts, exact
 content SHA-256 for `issue-scope-ledger.json`, `prd.md`, `design.md`, and
@@ -262,9 +268,13 @@ recomputes every digest and validates current live facts.
 
 Exit invariants are closed:
 
-- `clear` requires no open questions, a passed AI Gate, current source/context,
+- `clear` consumes `guru-requirements-clear-router` and requires no open
+  questions, a passed AI Gate, current source/context,
   all accepted proposals exactly confirmed, no pending action, and no
-  successful unrefreshed GitHub mutation;
+  successful unrefreshed GitHub mutation. The router validates
+  `resume_target`: initial/draft -> wording route, standalone -> caller,
+  accepted active scope -> planning review, otherwise active task -> exact
+  interrupted progression;
 - `needs_context` binds missing repository/current/history evidence and consumes
   `guru-discover-change-context`;
 - `refresh_context` binds stale or mutated authority and consumes
@@ -275,7 +285,8 @@ Exit invariants are closed:
   `requirements-clarification-blocked`.
 
 Unknown/multiple/unmapped exits, mismatched consumer objects, closed-question
-drift, confirmation/digest drift, or stale active-task linkage fail closed.
+drift, confirmation/digest drift, confirmed-payload/live-content drift,
+invocation/resume mismatch, or stale active-task linkage fail closed.
 
 ## Extension Version Manifest
 

@@ -43,7 +43,7 @@
 
 - [ ] 激活 registry entry `guru-clarify-requirements`，保持 stable id/public API。
 - [ ] 迁移 #111 `context_ready` consumer到 active #113 Skill，并同步 predecessor interfaces/contracts/tests。
-- [ ] 在 canonical workflow增加 #113 mandatory invocation、五个 exit mappings、workflow/stop targets和fail-closed规则。
+- [ ] 在 canonical workflow增加 #113 mandatory invocation、五个 exit mappings、workflow/stop targets和fail-closed规则；`clear` 唯一映射到 `guru-requirements-clear-router`，再由 caller-aware `resume_target` 恢复 initial/standalone/active progression。
 - [ ] 同步 dogfood `.trellis/workflow.md`，不得修改 upstream-owned overlay payload。
 - [ ] 更新 `trellis/guru-team-extension.json`：version、artifact schema id、active skill ids、companion command ids和managed public API。
 - [ ] 更新 preset `MANAGED_ASSET_PATHS`与installer assertions，安装新增 runtime wrappers。
@@ -51,6 +51,7 @@
 
 ## 6. Phase E：Behavior 与回归测试
 
+- [ ] 应用 2026-07-16 scope decision：撤回仅为 F-001 恶意伪造场景新增的 embedded draft body、portable context content/evidence locator 及对应负例；保留既有 evidence-first 和缺 context `needs_context` 语义。
 - [ ] Initial existing issue：clear、comment、body edit。
 - [ ] No-issue request：proposed draft update与new issue draft。
 - [ ] Standalone：context current、needs_context、refresh_context、blocked。
@@ -75,6 +76,7 @@
 
 - [ ] Main session更新 `check.jsonl`并派发独立 `trellis-check` sub-agent。
 - [ ] Phase 2 check覆盖PRD、design、实现、tests、durable docs、public docs、canonical/dogfood copies、throwaway/update与issue scope。
+- [ ] Phase 2 与 Branch Review 必须把 F-001 记录为有用户确认和 GitHub-visible evidence 的 `out-of-scope`，并继续验证 F-002 至 F-006 全部闭环。
 - [ ] 修复finding后重复完整 check，写入fresh `phase2-check.json`。
 - [ ] 评估 `.trellis/spec/`更新完整性与Docs SSOT reconciliation。
 - [ ] 使用 `guru-create-task-commit`完成AI commit review、用户确认、exact staging与commit。
