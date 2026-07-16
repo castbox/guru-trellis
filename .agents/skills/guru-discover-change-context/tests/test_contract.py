@@ -73,24 +73,13 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             "complete validator-passed `guru-base-sync-result-1.0`",
             "live body digest must equal the original reviewed draft body digest",
             "source issue may be live `open` or `closed`",
-            "live object type must be exactly `blob`",
+            "resolves from `HEAD:<path>` to exactly a `blob`",
             "source-specific portable locator",
-            "refreshable `task_branch_stale`",
-            "AWS/GCS/ Azure SAS",
+            "matching live stale facts return `refresh_base` for complete re-entry",
             "at least one array must be non-empty",
-            "base-only live gate",
-            "--prior-snapshot-input",
-            "--expected-prior-snapshot-sha256",
-            "--prior-refresh-receipt-input",
-            "--expected-prior-refresh-receipt-sha256",
-            "one-step projection",
-            "oldest `context_ready` ancestor through the direct prior",
-            "unique one-step projection from the preceding ancestor",
-            "independently retained with its digest",
-            "Missing, duplicate, reordered, skipped, rewritten, or non-parent evidence fails closed",
-            "All evidence bytes remain external",
+            "facts_sha256` is recomputed from those returned fields",
+            "do not issue a second duplicate search or re-read candidates after review",
             "git check-ignore --quiet --no-index --",
-            "`/<namespace>:<command>` span",
             "workflow route `guru-clarify-requirements`",
             "context_ready",
             "refresh_base",
@@ -161,6 +150,23 @@ class ChangeContextPackageContractTests(unittest.TestCase):
                 invalid_gate = copy.deepcopy(example)
                 invalid_gate["ai_review_gate"][field] = []
                 self.assertNotEqual(list(validator.iter_errors(invalid_gate)), [])
+            blocked_with_passed_gate = copy.deepcopy(example)
+            blocked_with_passed_gate["typed_exit"] = "blocked"
+            blocked_with_passed_gate["error"] = {
+                "codes": ["semantic_review_blocked"],
+                "summary": "The semantic review could not form safe evidence.",
+            }
+            self.assertNotEqual(
+                list(validator.iter_errors(blocked_with_passed_gate)), []
+            )
+            blocked_gate_with_ready_exit = copy.deepcopy(example)
+            blocked_gate_with_ready_exit["ai_review_gate"]["status"] = "blocked"
+            self.assertNotEqual(
+                list(validator.iter_errors(blocked_gate_with_ready_exit)), []
+            )
+            valid_blocked = copy.deepcopy(blocked_with_passed_gate)
+            valid_blocked["ai_review_gate"]["status"] = "blocked"
+            self.assertEqual(list(validator.iter_errors(valid_blocked)), [])
             missing_base_result = copy.deepcopy(example)
             del missing_base_result["base_evidence"]["sync_result"]
             self.assertNotEqual(list(validator.iter_errors(missing_base_result)), [])
@@ -180,6 +186,8 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             self.assertEqual(list(validator.iter_errors(closed_source)), [])
             closed_duplicate = copy.deepcopy(closed_source)
             closed_duplicate["duplicate_search"]["candidates"] = [{
+                "repo": "example/guru-extension",
+                "number": 99,
                 "identity": "#99",
                 "url": "https://github.com/example/guru-extension/issues/99",
                 "state": "closed",

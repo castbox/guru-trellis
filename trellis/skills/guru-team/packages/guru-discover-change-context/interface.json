@@ -45,7 +45,7 @@
       "id": "evidence_freshness",
       "evidence": "live change digest, reviewed Git blobs, query digest, archive manifest digest and snapshot digest",
       "binding": "the exact current/history evidence reviewed by the AI gate",
-      "freshness": "objective validator rereads every live binding before context_ready"
+      "freshness": "objective validator rechecks declared live change, current evidence and archive bindings before context_ready"
     }
   ],
   "runtime_dependency": {
@@ -74,13 +74,13 @@
       "id": "snapshot_recorder",
       "command": "scripts/record-context-discovery.sh",
       "runtime_command": "record-context-discovery",
-      "objective_scope": "canonical snapshot identity, ordered external ancestor plus independently retained refresh-receipt binding and reread, stdout-only pre-task output, Git-trackable target gate and exact same-snapshot task-local persistence"
+      "objective_scope": "canonical snapshot identity, stdout-only pre-task output, Git-trackable target gate and exact same-snapshot task-local persistence"
     },
     {
       "id": "snapshot_validator",
       "command": "scripts/check-context-discovery.sh",
       "runtime_command": "check-context-discovery",
-      "objective_scope": "closed result shape, AI-authored gate evidence, ordered external ancestor plus independently retained refresh-receipt binding, Git-trackable task target, digest bindings, live freshness, candidate/mem rules and typed-exit identity"
+      "objective_scope": "closed result shape, AI-authored gate evidence, Git-trackable task target, digest bindings, live freshness, candidate/mem rules and typed-exit identity"
     }
   ],
   "external_exits": [
@@ -101,7 +101,7 @@
     }
   ],
   "reentry": {
-    "identity": "mode, repository, base post-sync digest, change-input digest, live-change digest, query digest, archive-manifest digest and ordered externally verified superseded snapshot ancestry with independently retained refresh receipts",
+    "identity": "mode, repository, base post-sync digest, change-input digest, live-change digest, query digest, archive-manifest digest and snapshot digest",
     "freshness": "all live bindings are revalidated before acceptance; stale evidence restarts the complete Skill",
     "stale_behavior": "fail_closed"
   },

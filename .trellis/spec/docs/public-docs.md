@@ -126,21 +126,20 @@ task-local dirty-scope checks remain mandatory. They list exits `context_ready` 
 the no-workspace/no-runtime/no-repo-cache boundary. Docs must not imply that
 the Skill chooses duplicate reuse/new target or that a script performs its AI
 Review Gate.
+They also state that duplicate candidate facts are digest-bound to canonical
+repo/number/identity/URL/open-state/update-time facts recomputed from the one
+duplicate search result without a second search/re-read, and that `blocked` is
+valid exactly when the AI Review Gate is blocked. Public examples must not
+imply candidate fields or Gate/exit pairs are caller-trusted.
 They also identify `guru-clarify-requirements` as the existing Phase 0 workflow
 route rather than an active #113 package, document source-specific task/GitHub/
-Git deep-read locators, refreshable `task_branch_stale`, and the whole-payload
-machine-path/signed-query credential gate. Workflow and stop route markers must
+Git deep-read locators, structured no-raw-payload persistence, and field-specific
+validation. Workflow and stop route markers must
 be described as validator-resolved target declarations, not new Skill packages.
-Refresh documentation must state that record/check receive one repeatable
-external `context_ready` snapshot/expected-digest pair per refresh entry in
-oldest-to-direct-prior order plus `N-1` independently retained prior
-`refresh_base` receipt/expected-digest pairs for a history of length `N`, while
-the single-refresh form stays compatible without a receipt. It must describe
-count/order/history-prefix and superseded-link validation, every receipt's
-unique preceding-ancestor projection and exact next-ancestor-prefix binding,
-the current direct-prior one-entry projection, post-write evidence re-read,
-fail-closed missing/duplicate/reordered/skipped/rewritten/non-parent evidence,
-and the rule that external bytes are never persisted. It must also state that
+Refresh documentation must state that record/check compare caller-authored
+current stale codes, superseded query/snapshot digests, reason, and detection
+time with live freshness, then require complete re-entry from only the current
+payload and expected snapshot identity. It must also state that
 task-local recorder/checker prove the exact target is not ignored by repository,
 `.git/info/exclude`, or global Git exclude rules using `--no-index`, while
 pre-task stdout mode does not run that target gate.

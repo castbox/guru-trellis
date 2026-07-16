@@ -56,7 +56,24 @@
     },
     {
       "if": {"properties": {"typed_exit": {"const": "blocked"}}, "required": ["typed_exit"]},
-      "then": {"properties": {"error": {"$ref": "#/$defs/error"}}}
+      "then": {
+        "properties": {
+          "ai_review_gate": {"properties": {"status": {"const": "blocked"}}},
+          "error": {"$ref": "#/$defs/error"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "ai_review_gate": {
+            "properties": {"status": {"const": "blocked"}},
+            "required": ["status"]
+          }
+        },
+        "required": ["ai_review_gate"]
+      },
+      "then": {"properties": {"typed_exit": {"const": "blocked"}}}
     },
     {
       "if": {
@@ -261,8 +278,10 @@
     },
     "duplicateCandidate": {
       "type": "object", "additionalProperties": false,
-      "required": ["identity", "url", "state", "updated_at", "facts_sha256", "reason", "observation"],
+      "required": ["repo", "number", "identity", "url", "state", "updated_at", "facts_sha256", "reason", "observation"],
       "properties": {
+        "repo": {"type": "string", "pattern": "^[a-z0-9_.-]+/[a-z0-9_.-]+$"},
+        "number": {"type": "integer", "minimum": 1},
         "identity": {"$ref": "#/$defs/nonEmpty"}, "url": {"type": "string", "format": "uri"},
         "state": {"const": "open"},
         "updated_at": {"type": "string", "format": "date-time"}, "facts_sha256": {"$ref": "#/$defs/sha256"},
@@ -314,7 +333,7 @@
     },
     "manifestInvalid": {
       "type": "object", "additionalProperties": false, "required": ["path", "status", "error_code"],
-      "properties": {"path": {"$ref": "#/$defs/portablePath"}, "status": {"const": "invalid"}, "error_code": {"enum": ["unsafe_path", "not_regular_file", "symlink", "invalid_json", "missing_index", "invalid_index_shape"]}}
+      "properties": {"path": {"$ref": "#/$defs/portablePath"}, "status": {"const": "invalid"}, "error_code": {"enum": ["unsafe_path", "not_regular_file", "invalid_json", "missing_index", "invalid_index_shape"]}}
     },
     "candidate": {
       "type": "object", "additionalProperties": false,

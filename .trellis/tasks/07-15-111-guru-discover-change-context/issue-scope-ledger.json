@@ -3,7 +3,7 @@
     "number": 111,
     "url": "https://github.com/castbox/guru-trellis/issues/111",
     "title": "拆分 #98：实现 guru-discover-change-context 闭环 Skill",
-    "reason": "本 task 的 intake 与完整验收边界。",
+    "reason": "本 task 的 intake 与完整验收边界；2026-07-16 live issue 增加的场景范围控制同属 #111 当前验收合同。",
     "acceptance_evidence": []
   },
   "close_issues": [
@@ -11,7 +11,7 @@
       "number": 111,
       "url": "https://github.com/castbox/guru-trellis/issues/111",
       "title": "拆分 #98：实现 guru-discover-change-context 闭环 Skill",
-      "reason": "本 task 明确承诺完成并由 Branch Review Gate 覆盖的唯一 issue；publish 前补齐验收证据。",
+      "reason": "本 task 明确承诺完成并由 Branch Review Gate 覆盖的唯一 issue；实现必须收敛 live issue 明确排除的 threat/attack/tamper/hostile-input/concurrency 扩张，publish 前补齐验收证据。",
       "acceptance_evidence": []
     }
   ],

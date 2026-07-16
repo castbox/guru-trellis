@@ -91,39 +91,25 @@ package wrappers reach them only through `run-skill-command`.
 Preview accepts canonical clue arrays and a fixed limit no greater than 20. It
 recursively opens only archived `finish-summary.json` files, projects only
 `index`, applies `guru-context-history-score-1.0`, isolates malformed, missing,
-shape-invalid, symlinked, unreadable, and unsafe records with stable portable
+shape-invalid, ordinary unreadable, and non-file records with stable portable
 error rows, and emits query,
 archive-manifest and preview digests. It performs no AI selection,
 relevance/sufficiency judgment, duplicate decision, deep-read, mem lookup, or
 write.
 
 Record accepts an AI-authored reviewed payload from stdin or an explicit input
-file. A `refresh_base` payload additionally requires repeatable, paired
-`--prior-snapshot-input` and `--expected-prior-snapshot-sha256` values in
-oldest-ancestor-to-direct-prior order, one pair per refresh entry. For `N`
-refresh entries it also requires `N-1` paired
-`--prior-refresh-receipt-input` and
-`--expected-prior-refresh-receipt-sha256` values in hop order. The existing
-single ancestor pair remains compatible for one refresh and requires no
-receipt. The pure gate recomputes every external `context_ready` and receipt
-identity, validates counts/order/history prefixes and each superseded link,
-requires each receipt to be the unique one-entry `refresh_base` projection from
-the preceding ancestor and its complete history to equal the next ancestor
-prefix, then accepts only the current one-entry projection from the direct
-prior. Missing, duplicate, reordered, skipped, rewritten, or non-parent
-ancestor/receipt evidence fails closed. A receipt is trusted only when it and
-its digest were retained independently from the preceding production result;
-the current candidate chain cannot mint its own authority. External evidence
-bytes are not copied into the result or task artifact. Pre-task
-mode outputs canonical snapshot bytes only. Task mode requires
+file. A `refresh_base` payload records current stable stale codes, superseded
+query/snapshot digests, reason, and detection time. Recorder/checker compare
+those caller-authored facts with current live freshness and require complete
+skill re-entry. They consume only the current payload and expected snapshot
+identity, without rebuilding an external history chain. Pre-task mode outputs
+canonical snapshot bytes only. Task mode requires
 the expected snapshot digest and writes only direct active task-local
 `context-discovery.json` after objective live freshness checks; archived,
 completed, and other non-active task locators are rejected. It then reopens the
-written artifact, compares exact bytes and snapshot identity, re-reads the full
-external ancestor/receipt chain to detect drift, and repeats the required live
-freshness checks before success. Check reads the same canonical payload from
-stdin/file/task artifact and, for `refresh_base`, requires the same ordered
-external ancestors, receipts, and expected digests as the recorder. Before a
+written artifact once, compares exact bytes and snapshot identity, and repeats
+the required live freshness checks before success. Check reads the same
+canonical payload from stdin/file/task artifact. Before a
 task-local write and after it, and for every task-local check, the exact target
 must pass `git check-ignore --quiet --no-index -- <repo-relative-target>`.
 Repository ignore rules, `.git/info/exclude`, and `core.excludesFile` therefore
@@ -141,7 +127,7 @@ identity, draft-to-created-issue live body binding,
 selected-remote/base/live/reviewed-blob/query/archive freshness, and
 same-snapshot identity. Neither command creates semantic conclusions or
 rewrites an existing different artifact.
-Record/check first execute only pure schema, digest, portable/security, entry
+Record/check first execute only pure schema, digest, entry
 clue, and semantic-evidence shape validation. `change_input` has ten closed clue
 arrays and at least one must be non-empty; a separate issue binding or canonical
 query cannot satisfy this entry precondition. The next stage is the base-only
@@ -149,9 +135,8 @@ live gate. Any base stale result validates the caller-authored refresh codes and
 superseded identities/digests and returns before repository-bound query/current/
 deep-read locators, GitHub issues, reviewed blobs, or archive/history are read.
 Only a fresh base permits those remaining locator and live checks. Portable
-scanning recognizes only exact `/<namespace>:<command>` spans as slash commands,
-including inline-code, bold, sentence and Chinese-punctuation wrappers; absolute
-or multi-segment paths and signed URLs remain rejected.
+locator validation is structural and source-specific; it does not scan every
+payload string.
 Source-issue freshness accepts the normalized live GitHub states `open` and
 `closed`; duplicate candidates and a reviewed draft's created-issue binding
 remain independently open-only. Every 40-character reviewed Git identity must
@@ -159,8 +144,15 @@ resolve from `HEAD:<path>` to an object whose live type is exactly `blob`.
 Trees, gitlink commits, tags, missing objects, and mismatched blobs fail closed
 for Docs, code/contracts, and tests evidence alike.
 Task-artifact locators must remain inside the selected archive task, GitHub
-locators must be canonical issue/PR URLs without signed query data, and Git
+locators must be canonical issue/PR URLs without query or fragment, and Git
 locators must be exact live object/ref identities.
+
+Duplicate candidate facts use one deterministic projection: normalized bound
+`repo`, positive `number`, `identity=#<number>`, canonical issue `url`,
+`state=open`, and `updated_at`. The pure gate recomputes `facts_sha256` from
+only those fields and validates identity plus canonical URL from the same one
+search result. Record/check do not issue a second duplicate search or re-read
+candidates after AI review.
 
 Pre-task and standalone checks bind the live checkout to the base-sync decision
 branch. Direct active task mode instead requires the live branch to equal
@@ -177,18 +169,16 @@ reviewed-blob, or archive-preview reads. Git status failure is a stable
 fail-closed fact, never a clean checkout. `refresh_base` is accepted only when
 the caller-authored refresh entry's stable error codes exactly match live
 refreshable drift; the same errors reject `context_ready`, so scripts validate
-but never choose route intent. Target inspection uses `lexists` and `lstat` and
-rejects dangling or non-dangling symlinks plus every non-regular existing
-target before atomic write. Candidate-present `mem_review.status=used` requires
-a non-empty summary after all four sources are exhausted; a passed AI Gate
-requires non-empty reviewed scope and load-bearing
-conclusions. All three commands reject absolute
-POSIX/Windows/UNC/home/temp machine paths, protected workspace/runtime/cache prefixes, unsafe
-archive components, GitHub/Bearer tokens, private keys, database URLs, raw
-private data, AWS/GCS/Azure SAS or generic signed-query credentials, and control
-characters. `task_branch_stale` is refreshable; malformed task facts are not.
+but never choose route intent. Candidate-present `mem_review.status=used`
+requires a non-empty summary after all four sources are exhausted; a passed AI
+Gate requires non-empty reviewed scope and load-bearing conclusions. Closed
+schema fields and source-specific locators keep raw source payloads out of
+persisted evidence through field-specific validation. `task_branch_stale` is
+refreshable; malformed task facts are not.
 Expected failures use stable error codes and do not include raw JSON content,
 exception strings containing local paths, or secrets.
+The schema and runtime additionally enforce the exact semantic state pair
+`typed_exit=blocked` <-> `ai_review_gate.status=blocked` in both directions.
 
 ## GitHub and Git Operations
 

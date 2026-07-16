@@ -1,31 +1,46 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-15T22:50:25Z",
+  "generated_at": "2026-07-16T01:12:29Z",
   "task_dir": ".trellis/tasks/07-15-111-guru-discover-change-context",
   "base_branch": "main",
-  "head": "3395fad2a4049a33c4c679cd05452cfa45a85b92",
+  "head": "94d6126d75d7419e79a142f45d92b07dc8922241",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".agents/skills/guru-sync-base/interface.json",
-    ".claude/skills/guru-sync-base/interface.json",
-    ".codex/skills/guru-sync-base/interface.json",
-    ".cursor/skills/guru-sync-base/interface.json",
+    ".agents/skills/guru-discover-change-context/SKILL.md",
+    ".agents/skills/guru-discover-change-context/interface.json",
+    ".agents/skills/guru-discover-change-context/references/contract.md",
+    ".agents/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
+    ".agents/skills/guru-discover-change-context/tests/test_contract.py",
+    ".claude/skills/guru-discover-change-context/SKILL.md",
+    ".claude/skills/guru-discover-change-context/interface.json",
+    ".claude/skills/guru-discover-change-context/references/contract.md",
+    ".claude/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
+    ".claude/skills/guru-discover-change-context/tests/test_contract.py",
+    ".codex/skills/guru-discover-change-context/SKILL.md",
+    ".codex/skills/guru-discover-change-context/interface.json",
+    ".codex/skills/guru-discover-change-context/references/contract.md",
+    ".codex/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
+    ".codex/skills/guru-discover-change-context/tests/test_contract.py",
+    ".cursor/skills/guru-discover-change-context/SKILL.md",
+    ".cursor/skills/guru-discover-change-context/interface.json",
+    ".cursor/skills/guru-discover-change-context/references/contract.md",
+    ".cursor/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
+    ".cursor/skills/guru-discover-change-context/tests/test_contract.py",
     ".trellis/guru-team/extension.json",
     ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    ".trellis/guru-team/skills/packages/guru-sync-base/interface.json",
-    ".trellis/guru-team/skills/registry.json",
-    ".trellis/guru-team/skills/schemas/skill-interface.schema.json",
+    ".trellis/guru-team/skills/packages/guru-discover-change-context/SKILL.md",
+    ".trellis/guru-team/skills/packages/guru-discover-change-context/interface.json",
+    ".trellis/guru-team/skills/packages/guru-discover-change-context/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/context-discovery.schema.json",
+    ".trellis/guru-team/skills/packages/guru-discover-change-context/tests/test_contract.py",
     ".trellis/spec/docs/public-docs.md",
     ".trellis/spec/preset/installer.md",
-    ".trellis/spec/preset/overlay-guidelines.md",
-    ".trellis/spec/preset/upstream-ownership.md",
     ".trellis/spec/workflow/companion-scripts.md",
     ".trellis/spec/workflow/data-contracts.md",
-    ".trellis/spec/workflow/index.md",
     ".trellis/spec/workflow/quality-guidelines.md",
     ".trellis/spec/workflow/skill-package-contract.md",
     ".trellis/spec/workflow/workflow-contract.md",
-    ".trellis/workflow.md",
+    ".trellis/tasks/07-15-111-guru-discover-change-context/task-commit-plans/001.json",
     "README.md",
     "docs/requirements/README.md",
     "docs/requirements/guru-team-trellis-flow.md",
@@ -33,190 +48,107 @@
     "trellis/guru-team-extension.json",
     "trellis/presets/guru-team/README.md",
     "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
     "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-    "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
-    "trellis/skills/guru-team/packages/guru-sync-base/interface.json",
-    "trellis/skills/guru-team/registry.json",
-    "trellis/skills/guru-team/schemas/skill-interface.schema.json",
-    "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-interface.schema.json",
-    "trellis/skills/guru-team/tests/fixtures/representative-active/workflow.md",
-    "trellis/skills/guru-team/tests/test_skill_packages.py",
-    "trellis/workflows/guru-team/README.md",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    "trellis/workflows/guru-team/workflow.md",
-    ".agents/skills/guru-discover-change-context/SKILL.md",
-    ".agents/skills/guru-discover-change-context/examples/context-discovery.json",
-    ".agents/skills/guru-discover-change-context/interface.json",
-    ".agents/skills/guru-discover-change-context/references/contract.md",
-    ".agents/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
-    ".agents/skills/guru-discover-change-context/scripts/check-context-discovery.sh",
-    ".agents/skills/guru-discover-change-context/scripts/preview-change-context-history.sh",
-    ".agents/skills/guru-discover-change-context/scripts/record-context-discovery.sh",
-    ".agents/skills/guru-discover-change-context/tests/test_contract.py",
-    ".claude/skills/guru-discover-change-context/SKILL.md",
-    ".claude/skills/guru-discover-change-context/examples/context-discovery.json",
-    ".claude/skills/guru-discover-change-context/interface.json",
-    ".claude/skills/guru-discover-change-context/references/contract.md",
-    ".claude/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
-    ".claude/skills/guru-discover-change-context/scripts/check-context-discovery.sh",
-    ".claude/skills/guru-discover-change-context/scripts/preview-change-context-history.sh",
-    ".claude/skills/guru-discover-change-context/scripts/record-context-discovery.sh",
-    ".claude/skills/guru-discover-change-context/tests/test_contract.py",
-    ".codex/skills/guru-discover-change-context/SKILL.md",
-    ".codex/skills/guru-discover-change-context/examples/context-discovery.json",
-    ".codex/skills/guru-discover-change-context/interface.json",
-    ".codex/skills/guru-discover-change-context/references/contract.md",
-    ".codex/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
-    ".codex/skills/guru-discover-change-context/scripts/check-context-discovery.sh",
-    ".codex/skills/guru-discover-change-context/scripts/preview-change-context-history.sh",
-    ".codex/skills/guru-discover-change-context/scripts/record-context-discovery.sh",
-    ".codex/skills/guru-discover-change-context/tests/test_contract.py",
-    ".cursor/skills/guru-discover-change-context/SKILL.md",
-    ".cursor/skills/guru-discover-change-context/examples/context-discovery.json",
-    ".cursor/skills/guru-discover-change-context/interface.json",
-    ".cursor/skills/guru-discover-change-context/references/contract.md",
-    ".cursor/skills/guru-discover-change-context/schemas/context-discovery.schema.json",
-    ".cursor/skills/guru-discover-change-context/scripts/check-context-discovery.sh",
-    ".cursor/skills/guru-discover-change-context/scripts/preview-change-context-history.sh",
-    ".cursor/skills/guru-discover-change-context/scripts/record-context-discovery.sh",
-    ".cursor/skills/guru-discover-change-context/tests/test_contract.py",
-    ".trellis/guru-team/scripts/bash/check-context-discovery.sh",
-    ".trellis/guru-team/scripts/bash/preview-change-context-history.sh",
-    ".trellis/guru-team/scripts/bash/record-context-discovery.sh",
-    ".trellis/guru-team/skills/packages/guru-discover-change-context/SKILL.md",
-    ".trellis/guru-team/skills/packages/guru-discover-change-context/examples/context-discovery.json",
-    ".trellis/guru-team/skills/packages/guru-discover-change-context/interface.json",
-    ".trellis/guru-team/skills/packages/guru-discover-change-context/references/contract.md",
-    ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/context-discovery.schema.json",
-    ".trellis/guru-team/skills/packages/guru-discover-change-context/scripts/check-context-discovery.sh",
-    ".trellis/guru-team/skills/packages/guru-discover-change-context/scripts/preview-change-context-history.sh",
-    ".trellis/guru-team/skills/packages/guru-discover-change-context/scripts/record-context-discovery.sh",
-    ".trellis/guru-team/skills/packages/guru-discover-change-context/tests/test_contract.py",
-    ".trellis/tasks/07-15-111-guru-discover-change-context/check.jsonl",
-    ".trellis/tasks/07-15-111-guru-discover-change-context/implement.jsonl",
-    ".trellis/tasks/07-15-111-guru-discover-change-context/task-start-context.json",
-    ".trellis/tasks/07-15-111-guru-discover-change-context/task.json",
     "trellis/skills/guru-team/packages/guru-discover-change-context/SKILL.md",
-    "trellis/skills/guru-team/packages/guru-discover-change-context/examples/context-discovery.json",
     "trellis/skills/guru-team/packages/guru-discover-change-context/interface.json",
     "trellis/skills/guru-team/packages/guru-discover-change-context/references/contract.md",
     "trellis/skills/guru-team/packages/guru-discover-change-context/schemas/context-discovery.schema.json",
-    "trellis/skills/guru-team/packages/guru-discover-change-context/scripts/check-context-discovery.sh",
-    "trellis/skills/guru-team/packages/guru-discover-change-context/scripts/preview-change-context-history.sh",
-    "trellis/skills/guru-team/packages/guru-discover-change-context/scripts/record-context-discovery.sh",
     "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_contract.py",
-    "trellis/workflows/guru-team/scripts/bash/check-context-discovery.sh",
-    "trellis/workflows/guru-team/scripts/bash/preview-change-context-history.sh",
-    "trellis/workflows/guru-team/scripts/bash/record-context-discovery.sh"
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    ".trellis/tasks/07-15-111-guru-discover-change-context/review-gate.json",
+    ".trellis/tasks/07-15-111-guru-discover-change-context/review.md",
+    ".trellis/tasks/07-15-111-guru-discover-change-context/reviews/001-findings-review.md"
   ],
-  "checker": "/root/issue111_phase2_final_chainproof",
-  "check_summary": "独立阶段二检查已覆盖 issue #111 全部 R1-R10 与 AC1-AC16、九轮 finding 闭环、Docs SSOT、完整 refresh ancestor/receipt 证据链、task artifact Git 可跟踪性、canonical 与多平台分发、update/reapply 和部署安全边界；最终零 P0/P1/P2/P3 finding，可以进入任务提交 Skill。",
+  "checker": "/root/issue111_phase2_scope_check",
+  "check_summary": "Fresh 独立阶段二检查以 live #111 2026-07-16 场景范围为权威，覆盖最终 origin/main...HEAD 与全部 dirty/untracked 状态、approved planning、ssot_first Docs SSOT、implementation handoff、canonical/runtime/schema/tests、dogfood/多平台分发、install/update/throwaway 和部署影响。Checker 先做 scope qualification，机械修复两处 current-scope durable requirements 残留后重验；明确排除的 attack/threat/tamper/hostile-input/concurrency 等未进入 acceptance 或 finding。最终 P0/P1/P2/P3 均为 0，可以进入 guru-create-task-commit。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-15-111-guru-discover-change-context/prd.md",
-      "sha256": "b869afdb804c06cde1f678130b3faefaaf98c21981271ef5de4ced781affaff7",
-      "size_bytes": 12551,
-      "modified_at": "2026-07-15T17:10:10.453706+00:00"
+      "sha256": "2543f3ed7b3798d079335b057b11bd3915e4e39105fbcb5c39d265f9c5ebd537",
+      "size_bytes": 15428,
+      "modified_at": "2026-07-15T23:55:33.934222+00:00"
     },
     {
       "path": ".trellis/tasks/07-15-111-guru-discover-change-context/design.md",
-      "sha256": "05fe5822c43d9cc84659abf9295d7d204a0b6ac800cd30bf48216b92baec8682",
-      "size_bytes": 18868,
-      "modified_at": "2026-07-15T17:10:10.454132+00:00"
+      "sha256": "9738559dd0c09bdb7376f817702164d4ffa707a79a03147cec992739fde3bf21",
+      "size_bytes": 21750,
+      "modified_at": "2026-07-15T23:56:46.629502+00:00"
     },
     {
       "path": ".trellis/tasks/07-15-111-guru-discover-change-context/implement.md",
-      "sha256": "b697c34dba7ce5be5b0f3290ba71cb1d61aae4163ea6029423ffc912040691e0",
-      "size_bytes": 12828,
-      "modified_at": "2026-07-15T17:10:10.454408+00:00"
+      "sha256": "094cb96148c19b845bb813baabb540fc871e2e8150ab05993be8947fddb36fef",
+      "size_bytes": 15982,
+      "modified_at": "2026-07-15T23:56:46.629072+00:00"
     },
     {
       "path": ".trellis/tasks/07-15-111-guru-discover-change-context/planning-approval.json",
-      "sha256": "9433e9ab2bf9dedab5032a16cec7c7d0fdb675d00fec20956ef6a115ca2c86d9",
-      "size_bytes": 4564,
-      "modified_at": "2026-07-15T10:36:16.787325+00:00"
+      "sha256": "fe8c23b33ddb6daa8b7afc078992b08cf69df7570d5cbd6f02deb8d6307ff1b1",
+      "size_bytes": 7374,
+      "modified_at": "2026-07-15T23:58:31.826016+00:00"
     },
     {
       "path": ".trellis/tasks/07-15-111-guru-discover-change-context/implementation-handoff.md",
-      "sha256": "03bc01c17f280444c02bd86b3ecc0fd2cbaa308f859e2b36cb81a15741b2a4da",
-      "size_bytes": 34914,
-      "modified_at": "2026-07-15T22:32:11.699532+00:00"
-    },
-    {
-      "path": ".trellis/tasks/07-15-111-guru-discover-change-context/agent-assignment.json",
-      "sha256": "ff70f32407b4d6d858b4768bb10d1642310584218c602df64b73f90d8f1dfdde",
-      "size_bytes": 293573,
-      "modified_at": "2026-07-15T22:49:54.371774+00:00"
+      "sha256": "36095c0d1bebe9e151f5a65d8b2e2334573cafa56360d7df805b097a4ec3021b",
+      "size_bytes": 6922,
+      "modified_at": "2026-07-16T00:42:39.045896+00:00"
     },
     {
       "path": ".trellis/tasks/07-15-111-guru-discover-change-context/issue-scope-ledger.json",
-      "sha256": "91929a66ff465d133044c3c4765dc203d6485628353fe4587da14e68d1b3a3cc",
-      "size_bytes": 3835,
-      "modified_at": "2026-07-15T10:34:08.413962+00:00"
+      "sha256": "04f96d9691b78079b75cf797edfcec87625a92107c378f1ccacebdc7ff30ff78",
+      "size_bytes": 4019,
+      "modified_at": "2026-07-15T23:55:33.935567+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-15-111-guru-discover-change-context/agent-assignment.json",
+      "sha256": "7b10b9635e155e0586cd99fc96dfb39834856f486ac7f2d00f7a1e82aa286f4c",
+      "size_bytes": 325695,
+      "modified_at": "2026-07-16T01:11:42.834667+00:00"
     }
   ],
   "checked_specs": [
     {
-      "path": ".trellis/spec/workflow/index.md",
-      "sha256": "dd1d334a146857b7ff88e9929cecc827c786c5e23fac7ac1e08d91f63a099e6b",
-      "size_bytes": 3582,
-      "modified_at": "2026-07-15T10:41:17.781672+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/workflow-contract.md",
-      "sha256": "18900f88e2e29b8dbc68172acf3af794bd5a7b91667e727195ceaa113fcb2e28",
-      "size_bytes": 48860,
-      "modified_at": "2026-07-15T21:58:45.661706+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/data-contracts.md",
-      "sha256": "4fcd783fc6bec18113a70b3fba21be1b4fb41ce226c2fbd9a821f705e6de3c47",
-      "size_bytes": 77963,
-      "modified_at": "2026-07-15T21:59:41.475403+00:00"
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "8d0f455de6528b7bc64d36ba2ea0d69422c814bc59f48b05b9d57226fed93be5",
+      "size_bytes": 15187,
+      "modified_at": "2026-07-16T00:24:22.139912+00:00"
     },
     {
       "path": ".trellis/spec/workflow/skill-package-contract.md",
-      "sha256": "ab14a0d84de2e23de54d1dd0888d7836e4bf95f50d5f22db0b36424961508579",
-      "size_bytes": 20349,
-      "modified_at": "2026-07-15T22:00:19.457406+00:00"
+      "sha256": "26c584f18d25bb9c12676a0af95c9fa52c528019ee067592f5b1b66a5cd06896",
+      "size_bytes": 20032,
+      "modified_at": "2026-07-16T00:29:10.626634+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "c98c6941eb1f7c2be57d201ab1dbf6a7d47fd29132f3abd96f26da678d98c263",
+      "size_bytes": 48388,
+      "modified_at": "2026-07-16T00:29:10.626951+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "f96be42cf57f55cda2c26c6843f00675a367d0fd53e989655c34cb81d120f73f",
+      "size_bytes": 76950,
+      "modified_at": "2026-07-16T00:29:10.627731+00:00"
     },
     {
       "path": ".trellis/spec/workflow/companion-scripts.md",
-      "sha256": "22f5d643afe9396fcc479367d04bc3ce05e71c1ba2d2535db299719d70d4a7e9",
-      "size_bytes": 59356,
-      "modified_at": "2026-07-15T21:59:08.218837+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/quality-guidelines.md",
-      "sha256": "4896f2b507c73962bd7717044a46337d9fccb0b151078bfd2d6458f7d240550f",
-      "size_bytes": 15114,
-      "modified_at": "2026-07-15T22:00:19.457945+00:00"
+      "sha256": "639f895c60f0770f1a0fce1921a57a549c1d1f00467fe83dde9cf7253c5ce496",
+      "size_bytes": 58453,
+      "modified_at": "2026-07-16T00:29:47.274835+00:00"
     },
     {
       "path": ".trellis/spec/preset/installer.md",
-      "sha256": "1e6eaeb2da586fb676c711be0a40c2b1cd76154d639659b94570004e0bb7c188",
-      "size_bytes": 19236,
-      "modified_at": "2026-07-15T17:36:38.993553+00:00"
-    },
-    {
-      "path": ".trellis/spec/preset/overlay-guidelines.md",
-      "sha256": "90d23fd5ebbfb8535d32a2d65ab02f649e922ad165bcf5ca9d977b7b84de85b4",
-      "size_bytes": 18595,
-      "modified_at": "2026-07-15T17:34:45.941393+00:00"
+      "sha256": "60a17059be161933e9e164d6ea07dbcd23fa8c838b855a4130c63e1c35f56b0a",
+      "size_bytes": 19716,
+      "modified_at": "2026-07-16T00:24:22.140640+00:00"
     },
     {
       "path": ".trellis/spec/preset/upstream-ownership.md",
       "sha256": "791ddf1b62591295bcade5be9cc806c4e9c010a56c97f137d376dbaf7cc04c25",
       "size_bytes": 9313,
       "modified_at": "2026-07-15T10:43:04.813090+00:00"
-    },
-    {
-      "path": ".trellis/spec/docs/public-docs.md",
-      "sha256": "5bb860cd4c56c3f346c2ea31beb7237c848e23daffa8abbac437506b86b4d0c0",
-      "size_bytes": 9773,
-      "modified_at": "2026-07-15T22:00:19.458375+00:00"
     }
   ],
   "coverage": {
@@ -231,32 +163,36 @@
   },
   "validation_commands": [
     {
-      "command": "targeted discovery and package regressions",
-      "result": "35 passed"
+      "command": "targeted change-context contract/runtime tests",
+      "result": "29 tests passed"
     },
     {
-      "command": "full isolated pytest --import-mode=importlib -p no:cacheprovider",
-      "result": "606 passed in 179.37s"
+      "command": "full related unittest suite",
+      "result": "589 tests passed in 176.010s"
     },
     {
-      "command": "source skill package validator",
-      "result": "3 active skills, 9 exits, 6 targets passed"
+      "command": "python3 -m py_compile and bash -n",
+      "result": "passed"
     },
     {
-      "command": "installed Claude Codex Cursor validator",
-      "result": "128 managed files, 0 conflict/sidecar/removal"
+      "command": "JSON task workspace planning and git diff checks",
+      "result": "passed"
+    },
+    {
+      "command": "source and installed Skill package validators",
+      "result": "3 skills, 3 invoke markers, 9 exits, 6 targets; inventory 128, 0 conflict/sidecar"
+    },
+    {
+      "command": "preset apply --all-platforms twice",
+      "result": "unchanged and status ok"
     },
     {
       "command": "upstream ownership and dogfood overlay drift",
-      "result": "43 frozen entries and 13 claims passed"
+      "result": "43 active frozen paths, 13 managed claims, no drift"
     },
     {
-      "command": "clean public marketplace sample throwaway",
-      "result": "exit 0 including init preview switch update reapply record check and closeout"
-    },
-    {
-      "command": "workspace planning task JSON Python Bash diff and hygiene gates",
-      "result": "passed; source checkout clean"
+      "command": "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 verify-throwaway-install.sh",
+      "result": "exit 0; exact unpushed feature-ref remains deferred to remote verifier"
     }
   ],
   "findings": [],

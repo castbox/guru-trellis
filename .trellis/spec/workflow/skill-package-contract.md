@@ -199,10 +199,19 @@ object id must resolve `HEAD:<path>` to exactly a blob. A tree, gitlink commit,
 tag, missing object, or mismatched blob cannot satisfy the required Docs,
 code/contracts, or tests evidence groups.
 
+Duplicate candidate facts are not caller-trusted free-form fields. Their
+canonical digest projection is normalized bound `repo`, positive `number`,
+`identity=#<number>`, canonical issue URL, `state=open`, and `updated_at`.
+Source validation/runtime pure checks recompute that digest, identity, and URL
+from the fields returned by the one duplicate search. They do not issue a
+second search or re-read candidates after AI review. The package result schema
+and runtime also enforce
+`typed_exit=blocked` if and only if `ai_review_gate.status=blocked`.
+
 Deep-read shape is source-discriminated: selected archived task artifact,
-canonical GitHub issue/PR URL, or exact live Git object/ref. All payload strings
-are screened for portable paths and signed-query credentials, and active-task
-`task_branch_stale` remains a refreshable complete re-entry reason.
+canonical GitHub issue/PR URL, or exact live Git object/ref. Each locator is
+validated by its own closed structural contract, and active-task
+`task_branch_stale` remains a normal refreshable complete re-entry reason.
 
 External consumer resolution is part of both source and installed validation.
 Skill consumers must name an active registry id. Workflow/stop consumers must
@@ -221,23 +230,12 @@ archive index/cache. Scripts validate AI-authored selection and Gate evidence
 but do not select candidates, judge sufficiency, decide duplicate reuse, or
 synthesize semantic pass.
 
-The record/check commands require repeatable `--prior-snapshot-input` and
-`--expected-prior-snapshot-sha256` pairs for `refresh_base`, ordered from the
-oldest `context_ready` ancestor through the direct prior and with one pair per
-refresh entry. A chain of `N` refresh entries also requires `N-1` ordered
-`--prior-refresh-receipt-input` /
-`--expected-prior-refresh-receipt-sha256` pairs. The existing one-ancestor-pair
-CLI remains compatible for a single refresh without a receipt. The
-deterministic pure gate recomputes every ancestor and receipt identity, binds
-exact counts, order, history prefixes and every superseded query/snapshot
-digest, requires each receipt to be the unique appended-entry projection from
-the preceding ancestor and to equal the next ancestor history prefix, and
-accepts only the current appended-entry projection from the direct prior.
-Missing, duplicate, reordered, skipped, rewritten, or non-parent evidence fails
-closed. Receipts are authoritative only when independently retained with their
-digests from the prior production result. Ancestors and receipts are external
-evidence, not fields inside the self-hashed result; the recorder re-reads both
-chains after a task write, and no evidence bytes are persisted as task data.
+For `refresh_base`, the result records the current stable stale codes,
+superseded query digest, superseded snapshot digest, reason, and detection
+time. Recorder/checker compare those caller-authored facts with current live
+freshness and require complete skill re-entry. The commands consume only the
+current payload and expected snapshot identity; they do not reconstruct an
+external ancestry chain.
 Task-local record/check also require the exact target to be non-ignored under
 `git check-ignore --quiet --no-index --` before and after recording and during
 checking. Ignore matches or unreadable trackability fail closed; pre-task mode

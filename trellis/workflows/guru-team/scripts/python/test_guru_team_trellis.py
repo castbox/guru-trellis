@@ -15182,9 +15182,6 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         bad_shape = root / ".trellis/tasks/archive/2026-01/bad-shape"
         bad_shape.mkdir()
         (bad_shape / "finish-summary.json").write_text('{"index":{}}', encoding="utf-8")
-        target = root / ".trellis/tasks/archive/2026-01/symlink"
-        target.mkdir()
-        (target / "finish-summary.json").symlink_to(broken / "finish-summary.json")
         query = {
             "issue_refs": ["#111"],
             "commands": ["preview-change-context-history"],
@@ -15201,58 +15198,12 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         )
         self.assertEqual(
             {row["error_code"] for row in first["invalid"]},
-            {"invalid_json", "missing_index", "invalid_index_shape", "symlink"},
+            {"invalid_json", "missing_index", "invalid_index_shape"},
         )
         self.assertTrue(all("/Users/" not in json.dumps(row) for row in first["invalid"]))
         zero = gtt.build_context_history_preview(root, {"terms": ["no-match-anywhere"]})
         self.assertEqual(zero["candidates"], [])
         self.assertEqual(zero["manifest"], first["manifest"])
-
-    def test_preview_rejects_symlinked_archive_root(self) -> None:
-        temp = tempfile.TemporaryDirectory()
-        self.addCleanup(temp.cleanup)
-        root = Path(temp.name)
-        (root / ".trellis/tasks").mkdir(parents=True)
-        target = root / "archive-target"
-        target.mkdir()
-        (root / ".trellis/tasks/archive").symlink_to(target, target_is_directory=True)
-        with self.assertRaisesRegex(gtt.WorkflowError, "must not be a symlink"):
-            gtt.build_context_history_preview(root, {"terms": ["history"]})
-
-    def test_preview_isolates_symlinked_and_unreadable_archive_subtrees(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        self.write_summary(root, "valid", self.valid_index(111, "history", "trellis/history.md"))
-        outside = root / "outside-archive"
-        outside.mkdir()
-        symlinked = root / ".trellis/tasks/archive/2026-01/symlinked-subtree"
-        symlinked.symlink_to(outside, target_is_directory=True)
-        unreadable = root / ".trellis/tasks/archive/2026-01/unreadable-subtree"
-        unreadable.mkdir()
-        real_scandir = os.scandir
-
-        def guarded_scandir(path: object) -> object:
-            if Path(path) == unreadable:
-                raise PermissionError("unreadable archive fixture")
-            return real_scandir(path)
-
-        with mock.patch.object(gtt.os, "scandir", side_effect=guarded_scandir):
-            preview = gtt.build_context_history_preview(root, {"terms": ["history"]})
-
-        self.assertEqual(len(preview["candidates"]), 1)
-        invalid_by_path = {row["path"]: row["error_code"] for row in preview["invalid"]}
-        self.assertEqual(
-            invalid_by_path[
-                ".trellis/tasks/archive/2026-01/symlinked-subtree/finish-summary.json"
-            ],
-            "symlink",
-        )
-        self.assertEqual(
-            invalid_by_path[
-                ".trellis/tasks/archive/2026-01/unreadable-subtree/finish-summary.json"
-            ],
-            "unsafe_path",
-        )
 
     def test_score_uses_every_exact_weight_once_and_caps_tokens(self) -> None:
         temp, root = self.make_root()
@@ -15422,6 +15373,42 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         stale["snapshot_identity"]["snapshot_sha256"] = "0" * 64
         self.assertIn("snapshot_identity_mismatch", gtt.context_structural_errors(root, stale))
 
+    def test_blocked_exit_and_ai_gate_status_are_bijective(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        payload = self.valid_payload(root)
+
+        blocked_with_passed_gate = copy.deepcopy(payload)
+        blocked_with_passed_gate["typed_exit"] = "blocked"
+        blocked_with_passed_gate["error"] = {
+            "codes": ["semantic_review_blocked"],
+            "summary": "The semantic review could not form safe evidence.",
+        }
+        blocked_with_passed_gate["snapshot_identity"] = gtt.context_snapshot_identity(
+            blocked_with_passed_gate
+        )
+        blocked_with_passed_errors = gtt.context_structural_errors(
+            root, blocked_with_passed_gate
+        )
+        self.assertIn("context_schema_validation_failed", blocked_with_passed_errors)
+        self.assertIn("blocked_requires_blocked_gate", blocked_with_passed_errors)
+
+        blocked_gate_with_ready_exit = copy.deepcopy(payload)
+        blocked_gate_with_ready_exit["ai_review_gate"]["status"] = "blocked"
+        blocked_gate_with_ready_exit["snapshot_identity"] = gtt.context_snapshot_identity(
+            blocked_gate_with_ready_exit
+        )
+        blocked_gate_with_ready_errors = gtt.context_structural_errors(
+            root, blocked_gate_with_ready_exit
+        )
+        self.assertIn("context_schema_validation_failed", blocked_gate_with_ready_errors)
+        self.assertIn("blocked_gate_requires_blocked_exit", blocked_gate_with_ready_errors)
+
+        valid_blocked = copy.deepcopy(blocked_with_passed_gate)
+        valid_blocked["ai_review_gate"]["status"] = "blocked"
+        valid_blocked["snapshot_identity"] = gtt.context_snapshot_identity(valid_blocked)
+        self.assertEqual(gtt.context_structural_errors(root, valid_blocked), [])
+
     def test_zero_candidate_schema_and_runtime_require_not_needed_mem_shape(self) -> None:
         temp, root = self.make_root()
         self.addCleanup(temp.cleanup)
@@ -15480,82 +15467,6 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             "context_schema_validation_failed",
             gtt.context_structural_errors(root, payload),
         )
-
-    def test_structural_gate_rejects_machine_paths_tokens_and_signed_credentials(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        values = [
-            "/workspace",
-            "/custom",
-            "/home/example/private/context.json",
-            "/etc/guru/private/context.json",
-            "/tmp/guru-context.json",
-            "C:\\Users\\example\\private\\context.json",
-            "\\\\server\\private\\context.json",
-            "~/private/context.json",
-            "ghp_abcdefghijklmnopqrstuvwxyz123456",
-            "Authorization: Bearer abcdefghijklmnopqrstuvwxyz",
-            "postgresql://user:password@db.example.invalid/context",
-            "https://storage.example.invalid/object?X-Amz-Signature=fake-signature",
-            "https://storage.example.invalid/object?X-Goog-Credential=fake-credential",
-            "https://storage.example.invalid/object?sv=1&se=2&sp=r&sig=fake-sas",
-            "https://storage.example.invalid/object?signature=fake-generic",
-        ]
-        for value in values:
-            with self.subTest(value=value.split(":", 1)[0]):
-                payload = self.valid_payload(root)
-                payload["current_state"]["observations"] = [value]
-                payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-                self.assertIn(
-                    "non_portable_or_secret_content",
-                    gtt.context_structural_errors(root, payload),
-                )
-        for value in (
-            "https://github.com/example/guru-extension/issues/123",
-            "docs/requirements/context.md",
-            "Run /trellis:continue after review.",
-            "git:ref:refs/heads/main@" + "a" * 40,
-        ):
-            with self.subTest(portable=value):
-                payload = self.valid_payload(root)
-                payload["current_state"]["observations"] = [value]
-                payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-                self.assertNotIn(
-                    "non_portable_or_secret_content",
-                    gtt.context_structural_errors(root, payload),
-                )
-
-    def test_slash_command_spans_are_portable_without_weakening_path_rejection(self) -> None:
-        portable = (
-            "/trellis:continue",
-            "`/trellis:continue`",
-            "**/trellis:continue**",
-            "Run /trellis:continue after review.",
-            "完成后运行 /trellis:continue。",
-            "（/trellis:finish-work）",
-            "先运行 `/trellis:continue`，再检查。",
-            "Use /trellis.meta:finish-work now.",
-        )
-        rejected = (
-            "/workspace",
-            "/custom",
-            "/home/example/context.json",
-            "/tmp/context.json",
-            "/opt/guru/context.json",
-            "/var/lib/context.json",
-            "/first/second",
-            "/trellis:continue/etc/passwd",
-            "C:\\Users\\example\\context.json",
-            "\\\\server\\share\\context.json",
-            "~/context.json",
-            "https://storage.example.invalid/object?X-Amz-Signature=fake",
-        )
-        for value in portable:
-            with self.subTest(portable=value):
-                self.assertFalse(gtt.context_string_contains_non_portable_or_secret(value))
-        for value in rejected:
-            with self.subTest(rejected=value):
-                self.assertTrue(gtt.context_string_contains_non_portable_or_secret(value))
 
     def test_change_input_requires_one_real_clue_in_schema_and_runtime(self) -> None:
         temp, root = self.make_root()
@@ -15640,62 +15551,6 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             ["git", "rev-parse", "--verify", "--quiet", "refs/remotes/upstream/main"],
             observed_commands,
         )
-
-    def test_live_base_rejects_forged_full_provenance_and_git_status_failure(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        head = "1" * 40
-
-        def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
-            if command[:2] == ["git", "check-ref-format"]:
-                return subprocess.CompletedProcess(command, 0, "", "")
-            if command[:4] == ["git", "rev-parse", "--verify", "--quiet"]:
-                return subprocess.CompletedProcess(command, 0, f"{head}\n", "")
-            raise AssertionError(f"unexpected command: {command}")
-
-        cases: list[tuple[str, object]] = [
-            ("repository", "other/repository"),
-            ("decision_branch", "other-branch"),
-            ("post_sync_resolution_sha256", "f" * 64),
-        ]
-        for field, value in cases:
-            payload = self.valid_payload(root)
-            if field == "repository":
-                payload["repository"]["repo"] = value
-            elif field == "decision_branch":
-                payload["repository"]["decision_branch"] = value
-            else:
-                payload["base_evidence"][field] = value
-            with (
-                self.subTest(field=field),
-                mock.patch.object(gtt, "current_head", return_value=head),
-                mock.patch.object(gtt, "current_branch", return_value="main"),
-                mock.patch.object(gtt, "git_status_paths", return_value=[]),
-                mock.patch.object(
-                    gtt,
-                    "validate_github_remote_repository",
-                    side_effect=(
-                        gtt.WorkflowError("remote repository mismatch")
-                        if field == "repository"
-                        else None
-                    ),
-                ),
-                mock.patch.object(gtt, "run", side_effect=fake_run),
-            ):
-                self.assertNotEqual(gtt.context_live_base_errors(root, payload, None), [])
-
-        payload = self.valid_payload(root)
-        with (
-            mock.patch.object(gtt, "current_head", return_value=head),
-            mock.patch.object(gtt, "current_branch", return_value="main"),
-            mock.patch.object(gtt, "validate_github_remote_repository", return_value="example/guru-extension"),
-            mock.patch.object(gtt, "git_status_paths", side_effect=gtt.WorkflowError("status failed")),
-            mock.patch.object(gtt, "run", side_effect=fake_run),
-        ):
-            self.assertEqual(
-                gtt.context_live_base_errors(root, payload, None),
-                ["git_status_unreadable"],
-            )
 
     def test_feature_worktree_task_mode_records_same_snapshot_and_rejects_drift(self) -> None:
         temp = tempfile.TemporaryDirectory()
@@ -15830,14 +15685,10 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         refresh_record_args = argparse.Namespace(
             root=str(feature), mode="workflow", input=str(refresh_input),
             task=task_relative, expected_snapshot_sha256=refresh_expected,
-            prior_snapshot_input=str(input_path),
-            expected_prior_snapshot_sha256=expected,
         )
         refresh_check_args = argparse.Namespace(
             root=str(feature), input=None, task=task_relative,
             expected_snapshot_sha256=refresh_expected,
-            prior_snapshot_input=str(input_path),
-            expected_prior_snapshot_sha256=expected,
         )
         recorded_refresh = gtt.cmd_record_context_discovery(refresh_record_args)
         checked_refresh = gtt.cmd_check_context_discovery(refresh_check_args)
@@ -15995,14 +15846,10 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         record_refresh_args = argparse.Namespace(
             root=str(root), mode="workflow", input=str(refresh_path), task=None,
             expected_snapshot_sha256=None,
-            prior_snapshot_input=str(ready_path),
-            expected_prior_snapshot_sha256=ready_snapshot,
         )
         check_refresh_args = argparse.Namespace(
             root=str(root), input=str(refresh_path), task=None,
             expected_snapshot_sha256=refresh["snapshot_identity"]["snapshot_sha256"],
-            prior_snapshot_input=str(ready_path),
-            expected_prior_snapshot_sha256=ready_snapshot,
         )
 
         real_run = gtt.run
@@ -16173,7 +16020,7 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
                 ["live_draft_issue_unreadable"],
             )
 
-    def test_closed_source_issue_passes_and_closed_duplicate_is_rejected(self) -> None:
+    def test_closed_source_issue_is_valid_discovery_input(self) -> None:
         temp, root = self.make_root()
         self.addCleanup(temp.cleanup)
         payload = self.valid_payload(root)
@@ -16205,31 +16052,67 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
         self.assertEqual(gtt.context_structural_errors(root, payload), [])
         result = subprocess.CompletedProcess(
-            ["gh", "issue", "view"],
-            0,
-            json.dumps(issue),
-            "",
+            ["gh", "issue", "view"], 0, json.dumps(issue), ""
         )
         with mock.patch.object(gtt, "run", return_value=result):
             self.assertEqual(gtt.context_live_change_errors(root, payload), [])
 
-        open_duplicate = {
+    def test_duplicate_candidates_recompute_canonical_identity_and_digest(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        payload = self.valid_payload(root)
+        facts = {
+            "repo": "example/guru-extension",
+            "number": 99,
             "identity": "#99",
             "url": "https://github.com/example/guru-extension/issues/99",
             "state": "open",
             "updated_at": "2026-01-01T00:00:00Z",
-            "facts_sha256": "a" * 64,
-            "reason": "Possible duplicate.",
-            "observation": "Needs clarification.",
         }
-        payload["duplicate_search"]["candidates"] = [open_duplicate]
+        candidate = {
+            **facts,
+            "facts_sha256": gtt.context_digest(facts),
+            "reason": "The open issue may describe the same change.",
+            "observation": "Clarification must decide reuse or a new target.",
+        }
+        payload["duplicate_search"]["candidates"] = [candidate]
         payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
         self.assertEqual(gtt.context_structural_errors(root, payload), [])
-        payload["duplicate_search"]["candidates"][0]["state"] = "closed"
-        payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
+
+        wrong_digest = copy.deepcopy(payload)
+        wrong_digest["duplicate_search"]["candidates"][0]["facts_sha256"] = "f" * 64
+        wrong_digest["snapshot_identity"] = gtt.context_snapshot_identity(wrong_digest)
         self.assertIn(
-            "context_schema_validation_failed",
-            gtt.context_structural_errors(root, payload),
+            "duplicate_candidate_facts_digest_mismatch",
+            gtt.context_structural_errors(root, wrong_digest),
+        )
+
+        identity_mismatch = copy.deepcopy(payload)
+        identity_mismatch["duplicate_search"]["candidates"][0]["identity"] = "#100"
+        projection = identity_mismatch["duplicate_search"]["candidates"][0]
+        projection["facts_sha256"] = gtt.context_digest({
+            key: projection[key]
+            for key in ("repo", "number", "identity", "url", "state", "updated_at")
+        })
+        identity_mismatch["snapshot_identity"] = gtt.context_snapshot_identity(identity_mismatch)
+        self.assertIn(
+            "duplicate_candidate_identity_mismatch",
+            gtt.context_structural_errors(root, identity_mismatch),
+        )
+
+        url_mismatch = copy.deepcopy(payload)
+        url_mismatch["duplicate_search"]["candidates"][0]["url"] = (
+            "https://github.com/example/guru-extension/issues/100"
+        )
+        projection = url_mismatch["duplicate_search"]["candidates"][0]
+        projection["facts_sha256"] = gtt.context_digest({
+            key: projection[key]
+            for key in ("repo", "number", "identity", "url", "state", "updated_at")
+        })
+        url_mismatch["snapshot_identity"] = gtt.context_snapshot_identity(url_mismatch)
+        self.assertIn(
+            "duplicate_candidate_url_mismatch",
+            gtt.context_structural_errors(root, url_mismatch),
         )
 
     def test_candidate_selection_requires_one_to_three_and_deep_read(self) -> None:
@@ -16286,17 +16169,6 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         outside["snapshot_identity"] = gtt.context_snapshot_identity(outside)
         self.assertIn("deep_read_locator_outside_selected_task", gtt.context_structural_errors(root, outside))
 
-        symlink = selected_task / "linked.md"
-        symlink.symlink_to(selected_task / "design.md")
-        linked = copy.deepcopy(payload)
-        linked["history_review"]["deep_reads"][0]["locator"] = symlink.relative_to(root).as_posix()
-        linked["snapshot_identity"] = gtt.context_snapshot_identity(linked)
-        self.assertEqual(gtt.context_structural_errors(root, linked), [])
-        self.assertIn(
-            "deep_read_locator_symlink",
-            gtt.context_repo_bound_locator_errors(root, linked),
-        )
-
         def git(*args: str) -> str:
             return subprocess.run(
                 ["git", *args],
@@ -16331,7 +16203,7 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
                 self.assertEqual(gtt.context_structural_errors(root, variant), [])
 
         invalid_shape_locators = (
-            ("github", "https://github.com/example/guru-extension/issues/123?X-Amz-Signature=fake"),
+            ("github", "https://github.com/example/guru-extension/issues/123?view=full"),
             ("github", "/tmp/private-issue.json"),
             ("git", "refs/heads/main"),
         )
@@ -16382,11 +16254,15 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
 
         payload = self.valid_payload(root)
         duplicate = {
+            "repo": "example/repo", "number": 99,
             "identity": "#99", "url": "https://github.com/example/repo/issues/99",
-            "state": "open",
-            "updated_at": "2026-01-01T00:00:00Z", "facts_sha256": "a" * 64,
+            "state": "open", "updated_at": "2026-01-01T00:00:00Z",
             "reason": "Possible duplicate.", "observation": "Needs clarification.",
         }
+        duplicate["facts_sha256"] = gtt.context_digest({
+            key: duplicate[key]
+            for key in ("repo", "number", "identity", "url", "state", "updated_at")
+        })
         payload["duplicate_search"]["candidates"] = [duplicate, copy.deepcopy(duplicate)]
         payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
         self.assertIn("duplicate_issue_candidate_identity", gtt.context_structural_errors(root, payload))
@@ -16425,45 +16301,10 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
                 gtt.cmd_record_context_discovery(task_args)
         self.assertEqual(raised.exception.payload["error_codes"], ["existing_snapshot_mismatch"])
 
-    def test_task_recorder_rejects_dangling_symlink_directory_and_fifo_targets(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        input_path = root / "input.json"
-        input_path.write_text(json.dumps(payload), encoding="utf-8")
-        for kind in ("dangling-symlink", "directory", "fifo"):
-            task = root / ".trellis/tasks" / kind
-            task.mkdir(parents=True)
-            (task / "task.json").write_text('{"status":"in_progress"}\n', encoding="utf-8")
-            target = task / "context-discovery.json"
-            if kind == "dangling-symlink":
-                target.symlink_to(task / "missing-context.json")
-            elif kind == "directory":
-                target.mkdir()
-            else:
-                os.mkfifo(target)
-            args = argparse.Namespace(
-                root=str(root), mode="workflow", input=str(input_path),
-                task=task.relative_to(root).as_posix(),
-                expected_snapshot_sha256=payload["snapshot_identity"]["snapshot_sha256"],
-            )
-            with (
-                self.subTest(kind=kind),
-                mock.patch.object(gtt, "context_live_errors", return_value=[]),
-                self.assertRaises(gtt.WorkflowError) as raised,
-            ):
-                gtt.cmd_record_context_discovery(args)
-            self.assertEqual(
-                raised.exception.payload["error_codes"],
-                ["existing_snapshot_invalid_type"],
-            )
-            self.assertTrue(os.path.lexists(target))
-
     def test_refresh_base_record_and_check_require_matching_live_stale_evidence(self) -> None:
         temp, root = self.make_root()
         self.addCleanup(temp.cleanup)
         payload = self.valid_payload(root)
-        prior = copy.deepcopy(payload)
         superseded_snapshot = payload["snapshot_identity"]["snapshot_sha256"]
         payload["typed_exit"] = "refresh_base"
         payload["refresh_history"] = [{
@@ -16476,19 +16317,13 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
         input_path = root / "refresh.json"
         input_path.write_text(json.dumps(payload), encoding="utf-8")
-        prior_path = root / "prior.json"
-        prior_path.write_text(json.dumps(prior), encoding="utf-8")
         record_args = argparse.Namespace(
             root=str(root), mode="workflow", input=str(input_path), task=None,
             expected_snapshot_sha256=None,
-            prior_snapshot_input=str(prior_path),
-            expected_prior_snapshot_sha256=superseded_snapshot,
         )
         check_args = argparse.Namespace(
             root=str(root), input=str(input_path), task=None,
             expected_snapshot_sha256=payload["snapshot_identity"]["snapshot_sha256"],
-            prior_snapshot_input=str(prior_path),
-            expected_prior_snapshot_sha256=superseded_snapshot,
         )
         with mock.patch.object(gtt, "context_live_errors", return_value=["base_head_stale"]):
             recorded = gtt.cmd_record_context_discovery(record_args)
@@ -16503,13 +16338,11 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             root=str(root), mode="workflow", input=str(input_path),
             task=task.relative_to(root).as_posix(),
             expected_snapshot_sha256=payload["snapshot_identity"]["snapshot_sha256"],
-            prior_snapshot_input=str(prior_path),
-            expected_prior_snapshot_sha256=superseded_snapshot,
         )
         with mock.patch.object(gtt, "context_live_errors", return_value=["base_head_stale"]):
             self.assertEqual(gtt.cmd_record_context_discovery(task_args)["typed_exit"], "refresh_base")
 
-        ready = copy.deepcopy(prior)
+        ready = self.valid_payload(root)
         ready_path = root / "ready.json"
         ready_path.write_text(json.dumps(ready), encoding="utf-8")
         ready_args = argparse.Namespace(
@@ -16522,444 +16355,6 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         ):
             gtt.cmd_record_context_discovery(ready_args)
         self.assertEqual(raised.exception.payload["error_codes"], ["base_head_stale"])
-
-    def test_refresh_binding_requires_real_prior_snapshot_at_production_entries(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        prior = self.valid_payload(root)
-        prior_path = root / "prior.json"
-        prior_path.write_text(json.dumps(prior), encoding="utf-8")
-        prior_digest = prior["snapshot_identity"]["snapshot_sha256"]
-
-        refresh = copy.deepcopy(prior)
-        refresh["typed_exit"] = "refresh_base"
-        refresh["refresh_history"] = [{
-            "reason": "The reviewed base HEAD no longer matches live Git.",
-            "error_codes": ["base_head_stale"],
-            "superseded_query_sha256": prior["canonical_query"]["query_sha256"],
-            "superseded_snapshot_sha256": prior_digest,
-            "detected_at": "2026-01-01T00:01:00Z",
-        }]
-        refresh["snapshot_identity"] = gtt.context_snapshot_identity(refresh)
-        refresh_path = root / "refresh.json"
-        refresh_path.write_text(json.dumps(refresh), encoding="utf-8")
-
-        def record_args(**overrides: object) -> argparse.Namespace:
-            values: dict[str, object] = {
-                "root": str(root), "mode": "workflow", "input": str(refresh_path),
-                "task": None, "expected_snapshot_sha256": None,
-                "prior_snapshot_input": str(prior_path),
-                "expected_prior_snapshot_sha256": prior_digest,
-            }
-            values.update(overrides)
-            return argparse.Namespace(**values)
-
-        def check_args(**overrides: object) -> argparse.Namespace:
-            values: dict[str, object] = {
-                "root": str(root), "input": str(refresh_path), "task": None,
-                "expected_snapshot_sha256": refresh["snapshot_identity"]["snapshot_sha256"],
-                "prior_snapshot_input": str(prior_path),
-                "expected_prior_snapshot_sha256": prior_digest,
-            }
-            values.update(overrides)
-            return argparse.Namespace(**values)
-
-        tampered = copy.deepcopy(refresh)
-        tampered["refresh_history"][-1]["superseded_snapshot_sha256"] = "f" * 64
-        tampered["snapshot_identity"] = gtt.context_snapshot_identity(tampered)
-        refresh_path.write_text(json.dumps(tampered), encoding="utf-8")
-        with mock.patch.object(gtt, "context_live_errors") as live:
-            for command, args in (
-                (gtt.cmd_record_context_discovery, record_args()),
-                (gtt.cmd_check_context_discovery, check_args(
-                    expected_snapshot_sha256=tampered["snapshot_identity"]["snapshot_sha256"],
-                )),
-            ):
-                with self.subTest(command=command.__name__), self.assertRaises(gtt.WorkflowError) as raised:
-                    command(args)
-                self.assertIn("superseded_snapshot_digest_mismatch", raised.exception.payload["error_codes"])
-            live.assert_not_called()
-
-        refresh_path.write_text(json.dumps(refresh), encoding="utf-8")
-        invalid_cases = (
-            {"prior_snapshot_input": None, "expected_prior_snapshot_sha256": None},
-            {"expected_prior_snapshot_sha256": "f" * 64},
-        )
-        with mock.patch.object(gtt, "context_live_errors") as live:
-            for overrides in invalid_cases:
-                for command, args in (
-                    (gtt.cmd_record_context_discovery, record_args(**overrides)),
-                    (gtt.cmd_check_context_discovery, check_args(**overrides)),
-                ):
-                    with self.subTest(command=command.__name__, overrides=overrides), self.assertRaises(gtt.WorkflowError):
-                        command(args)
-            live.assert_not_called()
-
-        stale_prior = copy.deepcopy(prior)
-        stale_prior["generated_at"] = "2026-01-01T00:00:01Z"
-        stale_prior["snapshot_identity"] = gtt.context_snapshot_identity(stale_prior)
-        stale_prior_path = root / "stale-prior.json"
-        stale_prior_path.write_text(json.dumps(stale_prior), encoding="utf-8")
-        with (
-            mock.patch.object(gtt, "context_live_errors") as live,
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_check_context_discovery(check_args(
-                prior_snapshot_input=str(stale_prior_path),
-                expected_prior_snapshot_sha256=stale_prior["snapshot_identity"]["snapshot_sha256"],
-            ))
-        self.assertIn("refresh_projection_mismatch", raised.exception.payload["error_codes"])
-        live.assert_not_called()
-
-        prior_second = copy.deepcopy(prior)
-        prior_second["refresh_history"] = [{
-            "reason": "An earlier complete re-entry was required.",
-            "error_codes": ["remote_base_stale"],
-            "superseded_query_sha256": prior["canonical_query"]["query_sha256"],
-            "superseded_snapshot_sha256": prior_digest,
-            "detected_at": "2025-12-31T23:59:00Z",
-        }]
-        prior_second["snapshot_identity"] = gtt.context_snapshot_identity(prior_second)
-        prior_second_path = root / "prior-second.json"
-        prior_second_path.write_text(json.dumps(prior_second), encoding="utf-8")
-        first_receipt = copy.deepcopy(prior)
-        first_receipt["typed_exit"] = "refresh_base"
-        first_receipt["refresh_history"] = copy.deepcopy(prior_second["refresh_history"])
-        first_receipt["snapshot_identity"] = gtt.context_snapshot_identity(first_receipt)
-        first_receipt_path = root / "first-receipt.json"
-        first_receipt_path.write_text(json.dumps(first_receipt), encoding="utf-8")
-        first_receipt_digest = first_receipt["snapshot_identity"]["snapshot_sha256"]
-        refresh_second = copy.deepcopy(prior_second)
-        refresh_second["typed_exit"] = "refresh_base"
-        refresh_second["refresh_history"].append({
-            "reason": "The reviewed base HEAD changed again after re-entry.",
-            "error_codes": ["base_head_stale"],
-            "superseded_query_sha256": prior_second["canonical_query"]["query_sha256"],
-            "superseded_snapshot_sha256": prior_second["snapshot_identity"]["snapshot_sha256"],
-            "detected_at": "2026-01-01T00:02:00Z",
-        })
-        refresh_second["snapshot_identity"] = gtt.context_snapshot_identity(refresh_second)
-        refresh_path.write_text(json.dumps(refresh_second), encoding="utf-8")
-        ancestry_paths = [str(prior_path), str(prior_second_path)]
-        ancestry_digests = [prior_digest, prior_second["snapshot_identity"]["snapshot_sha256"]]
-        with mock.patch.object(gtt, "context_live_errors", return_value=["base_head_stale"]):
-            for command, args in (
-                (gtt.cmd_record_context_discovery, record_args(
-                    prior_snapshot_input=ancestry_paths,
-                    expected_prior_snapshot_sha256=ancestry_digests,
-                    prior_refresh_receipt_input=str(first_receipt_path),
-                    expected_prior_refresh_receipt_sha256=first_receipt_digest,
-                )),
-                (gtt.cmd_check_context_discovery, check_args(
-                    expected_snapshot_sha256=refresh_second["snapshot_identity"]["snapshot_sha256"],
-                    prior_snapshot_input=ancestry_paths,
-                    expected_prior_snapshot_sha256=ancestry_digests,
-                    prior_refresh_receipt_input=str(first_receipt_path),
-                    expected_prior_refresh_receipt_sha256=first_receipt_digest,
-                )),
-            ):
-                result = command(args)
-                self.assertEqual(result["typed_exit"], "refresh_base")
-        self.assertEqual(len(refresh_second["refresh_history"]), 2)
-
-        receipt_negative_cases = (
-            (
-                "missing-receipt",
-                {"prior_refresh_receipt_input": None, "expected_prior_refresh_receipt_sha256": None},
-                "prior_refresh_receipt_evidence_required",
-            ),
-            (
-                "receipt-digest-mismatch",
-                {"expected_prior_refresh_receipt_sha256": "f" * 64},
-                "expected_prior_refresh_receipt_mismatch",
-            ),
-        )
-        with mock.patch.object(gtt, "context_live_errors") as live:
-            for name, overrides, expected_error in receipt_negative_cases:
-                for command, args in (
-                    (gtt.cmd_record_context_discovery, record_args(**{
-                        "prior_snapshot_input": ancestry_paths,
-                        "expected_prior_snapshot_sha256": ancestry_digests,
-                        "prior_refresh_receipt_input": str(first_receipt_path),
-                        "expected_prior_refresh_receipt_sha256": first_receipt_digest,
-                        **overrides,
-                    })),
-                    (gtt.cmd_check_context_discovery, check_args(**{
-                        "expected_snapshot_sha256": refresh_second["snapshot_identity"]["snapshot_sha256"],
-                        "prior_snapshot_input": ancestry_paths,
-                        "expected_prior_snapshot_sha256": ancestry_digests,
-                        "prior_refresh_receipt_input": str(first_receipt_path),
-                        "expected_prior_refresh_receipt_sha256": first_receipt_digest,
-                        **overrides,
-                    })),
-                ):
-                    with self.subTest(case=name, command=command.__name__), self.assertRaises(
-                        gtt.WorkflowError
-                    ) as raised:
-                        command(args)
-                    self.assertIn(expected_error, raised.exception.payload["error_codes"])
-            live.assert_not_called()
-
-        forged_receipt = copy.deepcopy(first_receipt)
-        forged_receipt["refresh_history"][0]["reason"] = "A forged prior receipt reason."
-        forged_receipt["snapshot_identity"] = gtt.context_snapshot_identity(forged_receipt)
-        forged_receipt_path = root / "forged-first-receipt.json"
-        forged_receipt_path.write_text(json.dumps(forged_receipt), encoding="utf-8")
-        with (
-            mock.patch.object(gtt, "context_live_errors") as live,
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_check_context_discovery(check_args(
-                expected_snapshot_sha256=refresh_second["snapshot_identity"]["snapshot_sha256"],
-                prior_snapshot_input=ancestry_paths,
-                expected_prior_snapshot_sha256=ancestry_digests,
-                prior_refresh_receipt_input=str(forged_receipt_path),
-                expected_prior_refresh_receipt_sha256=forged_receipt["snapshot_identity"]["snapshot_sha256"],
-            ))
-        self.assertIn("prior_refresh_receipt_projection_mismatch", raised.exception.payload["error_codes"])
-        live.assert_not_called()
-
-        for field, value in (
-            ("reason", "A synchronized forged historical reason."),
-            ("detected_at", "2025-12-31T23:59:01Z"),
-            ("error_codes", ["base_head_stale"]),
-        ):
-            forged_prior = copy.deepcopy(prior_second)
-            forged_prior["refresh_history"][0][field] = value
-            forged_prior["snapshot_identity"] = gtt.context_snapshot_identity(forged_prior)
-            forged_prior_path = root / f"forged-prior-{field}.json"
-            forged_prior_path.write_text(json.dumps(forged_prior), encoding="utf-8")
-            forged_current = copy.deepcopy(refresh_second)
-            forged_current["refresh_history"][0][field] = value
-            forged_current["refresh_history"][1]["superseded_snapshot_sha256"] = (
-                forged_prior["snapshot_identity"]["snapshot_sha256"]
-            )
-            forged_current["snapshot_identity"] = gtt.context_snapshot_identity(forged_current)
-            refresh_path.write_text(json.dumps(forged_current), encoding="utf-8")
-            with mock.patch.object(gtt, "context_live_errors") as live:
-                for command, args in (
-                    (gtt.cmd_record_context_discovery, record_args(
-                        prior_snapshot_input=[str(prior_path), str(forged_prior_path)],
-                        expected_prior_snapshot_sha256=[
-                            prior_digest,
-                            forged_prior["snapshot_identity"]["snapshot_sha256"],
-                        ],
-                        prior_refresh_receipt_input=str(first_receipt_path),
-                        expected_prior_refresh_receipt_sha256=first_receipt_digest,
-                    )),
-                    (gtt.cmd_check_context_discovery, check_args(
-                        expected_snapshot_sha256=forged_current["snapshot_identity"]["snapshot_sha256"],
-                        prior_snapshot_input=[str(prior_path), str(forged_prior_path)],
-                        expected_prior_snapshot_sha256=[
-                            prior_digest,
-                            forged_prior["snapshot_identity"]["snapshot_sha256"],
-                        ],
-                        prior_refresh_receipt_input=str(first_receipt_path),
-                        expected_prior_refresh_receipt_sha256=first_receipt_digest,
-                    )),
-                ):
-                    with self.subTest(rewritten_field=field, command=command.__name__), self.assertRaises(
-                        gtt.WorkflowError
-                    ) as raised:
-                        command(args)
-                    self.assertIn(
-                        "prior_refresh_receipt_history_prefix_mismatch",
-                        raised.exception.payload["error_codes"],
-                    )
-                live.assert_not_called()
-
-        refresh_path.write_text(json.dumps(refresh_second), encoding="utf-8")
-        second_receipt = copy.deepcopy(refresh_second)
-        second_receipt_path = root / "second-receipt.json"
-        second_receipt_path.write_text(json.dumps(second_receipt), encoding="utf-8")
-        second_receipt_digest = second_receipt["snapshot_identity"]["snapshot_sha256"]
-        prior_third = copy.deepcopy(prior_second)
-        prior_third["refresh_history"] = copy.deepcopy(refresh_second["refresh_history"])
-        prior_third["snapshot_identity"] = gtt.context_snapshot_identity(prior_third)
-        prior_third_path = root / "prior-third.json"
-        prior_third_path.write_text(json.dumps(prior_third), encoding="utf-8")
-        refresh_third = copy.deepcopy(prior_third)
-        refresh_third["typed_exit"] = "refresh_base"
-        refresh_third["refresh_history"].append({
-            "reason": "The reviewed base HEAD changed for a third time.",
-            "error_codes": ["base_head_stale"],
-            "superseded_query_sha256": prior_third["canonical_query"]["query_sha256"],
-            "superseded_snapshot_sha256": prior_third["snapshot_identity"]["snapshot_sha256"],
-            "detected_at": "2026-01-01T00:03:00Z",
-        })
-        refresh_third["snapshot_identity"] = gtt.context_snapshot_identity(refresh_third)
-        refresh_path.write_text(json.dumps(refresh_third), encoding="utf-8")
-        three_ancestor_paths = [str(prior_path), str(prior_second_path), str(prior_third_path)]
-        three_ancestor_digests = [
-            prior_digest,
-            prior_second["snapshot_identity"]["snapshot_sha256"],
-            prior_third["snapshot_identity"]["snapshot_sha256"],
-        ]
-        receipt_paths = [str(first_receipt_path), str(second_receipt_path)]
-        receipt_digests = [first_receipt_digest, second_receipt_digest]
-        with mock.patch.object(gtt, "context_live_errors", return_value=["base_head_stale"]):
-            result = gtt.cmd_check_context_discovery(check_args(
-                expected_snapshot_sha256=refresh_third["snapshot_identity"]["snapshot_sha256"],
-                prior_snapshot_input=three_ancestor_paths,
-                expected_prior_snapshot_sha256=three_ancestor_digests,
-                prior_refresh_receipt_input=receipt_paths,
-                expected_prior_refresh_receipt_sha256=receipt_digests,
-            ))
-        self.assertEqual(result["typed_exit"], "refresh_base")
-        with (
-            mock.patch.object(gtt, "context_live_errors") as live,
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_check_context_discovery(check_args(
-                expected_snapshot_sha256=refresh_third["snapshot_identity"]["snapshot_sha256"],
-                prior_snapshot_input=three_ancestor_paths,
-                expected_prior_snapshot_sha256=three_ancestor_digests,
-                prior_refresh_receipt_input=list(reversed(receipt_paths)),
-                expected_prior_refresh_receipt_sha256=list(reversed(receipt_digests)),
-            ))
-        self.assertIn("prior_refresh_receipt_history_prefix_mismatch", raised.exception.payload["error_codes"])
-        live.assert_not_called()
-
-        rewritten = copy.deepcopy(refresh_second)
-        rewritten["refresh_history"][0]["reason"] = "The old entry was rewritten."
-        rewritten["snapshot_identity"] = gtt.context_snapshot_identity(rewritten)
-        non_parent_prior = copy.deepcopy(prior_second)
-        non_parent_prior["refresh_history"][0]["superseded_snapshot_sha256"] = "1" * 64
-        non_parent_prior["snapshot_identity"] = gtt.context_snapshot_identity(non_parent_prior)
-        non_parent_prior_path = root / "non-parent-prior.json"
-        non_parent_prior_path.write_text(json.dumps(non_parent_prior), encoding="utf-8")
-        non_parent = copy.deepcopy(non_parent_prior)
-        non_parent["typed_exit"] = "refresh_base"
-        non_parent["refresh_history"].append({
-            "reason": "The reviewed base HEAD changed again after re-entry.",
-            "error_codes": ["base_head_stale"],
-            "superseded_query_sha256": non_parent_prior["canonical_query"]["query_sha256"],
-            "superseded_snapshot_sha256": non_parent_prior["snapshot_identity"]["snapshot_sha256"],
-            "detected_at": "2026-01-01T00:02:00Z",
-        })
-        non_parent["snapshot_identity"] = gtt.context_snapshot_identity(non_parent)
-        negative_cases = (
-            (
-                "missing-ancestor",
-                refresh_second,
-                [str(prior_second_path)],
-                [prior_second["snapshot_identity"]["snapshot_sha256"]],
-                "refresh_ancestor_chain_length_mismatch",
-            ),
-            (
-                "duplicate-ancestor",
-                refresh_second,
-                [str(prior_path), str(prior_path)],
-                [prior_digest, prior_digest],
-                "duplicate_prior_snapshot_evidence",
-            ),
-            (
-                "wrong-order",
-                refresh_second,
-                list(reversed(ancestry_paths)),
-                list(reversed(ancestry_digests)),
-                "prior_snapshot_history_length_mismatch",
-            ),
-            (
-                "old-entry-rewrite",
-                rewritten,
-                ancestry_paths,
-                ancestry_digests,
-                "prior_snapshot_history_prefix_mismatch",
-            ),
-            (
-                "old-entry-skip",
-                {**copy.deepcopy(refresh_second), "refresh_history": [copy.deepcopy(refresh_second["refresh_history"][-1])]},
-                ancestry_paths,
-                ancestry_digests,
-                "refresh_ancestor_chain_length_mismatch",
-            ),
-            (
-                "non-parent",
-                non_parent,
-                [str(prior_path), str(non_parent_prior_path)],
-                [prior_digest, non_parent_prior["snapshot_identity"]["snapshot_sha256"]],
-                "ancestor_superseded_snapshot_digest_mismatch",
-            ),
-        )
-        for name, candidate, paths, digests, expected_error in negative_cases:
-            candidate["snapshot_identity"] = gtt.context_snapshot_identity(candidate)
-            refresh_path.write_text(json.dumps(candidate), encoding="utf-8")
-            with mock.patch.object(gtt, "context_live_errors") as live:
-                for command, args in (
-                    (gtt.cmd_record_context_discovery, record_args(
-                        prior_snapshot_input=paths,
-                        expected_prior_snapshot_sha256=digests,
-                        prior_refresh_receipt_input=str(first_receipt_path),
-                        expected_prior_refresh_receipt_sha256=first_receipt_digest,
-                    )),
-                    (gtt.cmd_check_context_discovery, check_args(
-                        expected_snapshot_sha256=candidate["snapshot_identity"]["snapshot_sha256"],
-                        prior_snapshot_input=paths,
-                        expected_prior_snapshot_sha256=digests,
-                        prior_refresh_receipt_input=str(first_receipt_path),
-                        expected_prior_refresh_receipt_sha256=first_receipt_digest,
-                    )),
-                ):
-                    with self.subTest(case=name, command=command.__name__), self.assertRaises(gtt.WorkflowError) as raised:
-                        command(args)
-                    self.assertIn(expected_error, raised.exception.payload["error_codes"])
-                live.assert_not_called()
-
-        refresh_path.write_text(json.dumps(refresh_second), encoding="utf-8")
-        task = root / ".trellis/tasks/refresh-chain-task"
-        task.mkdir(parents=True)
-        (task / "task.json").write_text('{"status":"in_progress"}\n', encoding="utf-8")
-        task_args = record_args(
-            task=task.relative_to(root).as_posix(),
-            expected_snapshot_sha256=refresh_second["snapshot_identity"]["snapshot_sha256"],
-            prior_snapshot_input=ancestry_paths,
-            expected_prior_snapshot_sha256=ancestry_digests,
-            prior_refresh_receipt_input=str(first_receipt_path),
-            expected_prior_refresh_receipt_sha256=first_receipt_digest,
-        )
-        real_persisted_check = gtt.context_persisted_snapshot_errors
-
-        def drift_after_persisted_check(*args: object, **kwargs: object) -> list[str]:
-            result = real_persisted_check(*args, **kwargs)
-            drifted = copy.deepcopy(prior)
-            drifted["generated_at"] = "2026-01-01T00:00:02Z"
-            drifted["snapshot_identity"] = gtt.context_snapshot_identity(drifted)
-            prior_path.write_text(json.dumps(drifted), encoding="utf-8")
-            return result
-
-        with (
-            mock.patch.object(gtt, "context_live_errors", return_value=["base_head_stale"]),
-            mock.patch.object(gtt, "context_persisted_snapshot_errors", side_effect=drift_after_persisted_check),
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_record_context_discovery(task_args)
-        self.assertEqual(raised.exception.payload["error_codes"], ["prior_snapshot_changed_during_record"])
-
-        prior_path.write_text(json.dumps(prior), encoding="utf-8")
-
-        def drift_receipt_after_persisted_check(*args: object, **kwargs: object) -> list[str]:
-            result = real_persisted_check(*args, **kwargs)
-            drifted = copy.deepcopy(first_receipt)
-            drifted["refresh_history"][0]["detected_at"] = "2025-12-31T23:59:02Z"
-            drifted["snapshot_identity"] = gtt.context_snapshot_identity(drifted)
-            first_receipt_path.write_text(json.dumps(drifted), encoding="utf-8")
-            return result
-
-        with (
-            mock.patch.object(gtt, "context_live_errors", return_value=["base_head_stale"]),
-            mock.patch.object(
-                gtt,
-                "context_persisted_snapshot_errors",
-                side_effect=drift_receipt_after_persisted_check,
-            ),
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_record_context_discovery(task_args)
-        self.assertEqual(
-            raised.exception.payload["error_codes"],
-            ["prior_snapshot_changed_during_record"],
-        )
 
     def test_task_target_must_remain_git_trackable_for_record_and_check(self) -> None:
         temp, root = self.make_root()
@@ -17087,39 +16482,6 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
                     gtt.cmd_record_context_discovery(args)
                 self.assertEqual(raised.exception.payload["error_codes"], ["task_not_active"])
                 self.assertFalse((target / "context-discovery.json").exists())
-
-    def test_task_recorder_detects_post_write_tamper_before_success(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        input_path = root / "input.json"
-        input_path.write_text(json.dumps(payload), encoding="utf-8")
-        task = root / ".trellis/tasks/active-task"
-        task.mkdir(parents=True)
-        (task / "task.json").write_text('{"status":"in_progress"}\n', encoding="utf-8")
-        args = argparse.Namespace(
-            root=str(root),
-            mode="workflow",
-            input=str(input_path),
-            task=task.relative_to(root).as_posix(),
-            expected_snapshot_sha256=payload["snapshot_identity"]["snapshot_sha256"],
-        )
-        real_write_json = gtt.write_json
-
-        def tampering_write(path: Path, value: dict[str, object]) -> None:
-            real_write_json(path, value)
-            path.write_text("{}\n", encoding="utf-8")
-
-        with (
-            mock.patch.object(gtt, "context_live_errors", return_value=[]),
-            mock.patch.object(gtt, "write_json", side_effect=tampering_write),
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_record_context_discovery(args)
-        self.assertEqual(
-            raised.exception.payload["error_codes"],
-            ["persisted_snapshot_mismatch"],
-        )
 
     def test_task_recorder_detects_post_write_trackability_change(self) -> None:
         temp, root = self.make_root()

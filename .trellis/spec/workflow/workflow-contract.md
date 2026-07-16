@@ -81,27 +81,22 @@ re-entry through `guru-sync-base`; the workflow cannot resume from history or
 the AI Gate. Recorder/checker validate the caller-authored `refresh_base`
 against deterministic live stale codes and return that typed exit; they never
 infer or replace AI route intent. `context_ready` rejects the same stale facts.
-At both production command entries, closed schema/digest/security/semantic-shape
+At both production command entries, closed schema/digest/semantic-shape
 validation is pure and fails before live access. The next gate reads only base
 facts. Base stale returns after matching refresh codes and superseded digests.
-For `refresh_base`, both production entries first require repeatable external
-`context_ready` ancestor snapshots plus expected digests in oldest-to-direct-
-prior order, one pair per refresh entry. A chain with `N` refresh entries also
-requires `N-1` independently retained prior `refresh_base` receipts plus their
-expected snapshot digests in oldest-to-newest hop order; the one-refresh,
-one-ancestor CLI remains compatible without a receipt. They recompute every
-identity, bind chain length/order/history prefixes and all superseded links,
-require each receipt to be the unique canonical projection that appended its
-complete entry to the preceding ancestor, and require that receipt history to
-equal the next `context_ready` ancestor history byte-for-byte. The current
-candidate must remain the one-step projection from the direct prior. Missing,
-duplicate, reordered, skipped, rewritten, or non-parent ancestors/receipts fail
-closed. Ancestor and receipt bytes are re-read after task recording and are not
-persisted. A receipt is authoritative only when it was retained independently
-from the preceding production recorder/checker result with its digest; evidence
-generated from the current candidate chain cannot authorize itself. After this pure gate,
-repository-bound locators, issue/blob/history evidence are checked only after a
-fresh base. Both modes require at least one non-empty `change_input` clue array.
+Duplicate candidates use the deterministic fact projection `repo`, `number`,
+`identity=#<number>`, canonical issue URL, `state=open`, and `updated_at`;
+`facts_sha256` excludes AI reason/observation and is recomputed in the pure
+gate from the fields returned by the one open duplicate search. Recorder and
+checker do not run a second search or re-read candidates after AI review. The
+schema/runtime state matrix also requires
+`typed_exit=blocked` if and only if `ai_review_gate.status=blocked`.
+For `refresh_base`, both production entries validate the current stable stale
+codes and superseded query/snapshot digests recorded by the caller, then return
+for complete re-entry. They consume only the current payload and expected
+snapshot identity, without reconstructing a refresh ancestry chain. Repository-bound locators,
+issue/blob/history evidence are checked only after a fresh base. Both modes
+require at least one non-empty `change_input` clue array.
 
 Fresh-base evidence includes the complete validator-passed
 `guru-base-sync-result-1.0` identity and provenance, not only matching HEADs.

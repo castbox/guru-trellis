@@ -288,7 +288,7 @@ platform selection:
 Production skill registry 同时保留 reserved `guru-create-work-commit` 与 active
 `guru-sync-base`、`guru-discover-change-context`、`guru-create-task-commit`。当前
 canonical extension version 是待发布的
-`0.6.5-guru.10`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
+`0.6.5-guru.11`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
 （含 interface、artifact schema、
 example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
 root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
@@ -317,14 +317,16 @@ Source issue 的 live state 可为 normalized `open` / `closed`，但 duplicate 
 draft-created issue binding 仍 open-only。40 位 current evidence Git identity 必须解析为
 exact blob；tree、gitlink commit、tag、missing object 或 identity drift 不能满足
 Docs、code/contracts、tests evidence。Deep-read locator 分别绑定 selected task artifact、
-canonical GitHub issue/PR 或 exact Git object/ref；whole-payload gate 拒绝 machine-local
-absolute paths 与 AWS/GCS/Azure/generic signed-query credentials。真实 feature-worktree 的
-`task_branch_stale` 可形成 `refresh_base`，其他 malformed task facts 仍 fail closed。
-Refresh record/check 必须按 oldest `context_ready` ancestor 到 direct prior 顺序重复提供
-external snapshot / expected digest 对，每条 refresh history 对应一对；单次 refresh 的原
-单对命令保持兼容。Pure gate 验证整条 ancestry 的长度、顺序、history prefix、每条
-superseded link 与 direct-prior 单步 projection；缺失、重复、错序、跳过、改写或非父
-关系 fail closed。Task 写后重读完整外部链，且不把 ancestor bytes 写入 task artifact。
+canonical GitHub issue/PR 或 exact Git object/ref；closed schema 与结构化 locator 不保存
+raw source payload，只做 field-specific validation。
+Duplicate candidate 的 managed schema/runtime 使用 repo、number、`#number` identity、
+canonical issue URL、open state 与 update time 的 canonical digest projection，并在 fresh
+base 后从同一次 search 返回字段重算 identity、URL 与 digest，不进行第二次 search 或
+candidate re-read。Managed schema/runtime 同时强制 `blocked` exit
+与 blocked AI Review Gate 双向一致。
+Refresh record/check 记录并核对当前 stable stale codes、superseded query/snapshot
+digests、reason 与 detection time，然后要求整步 re-entry；只消费当前 payload 与 expected
+snapshot identity，不重建 ancestry。
 `context_ready` 指向现有 `guru-clarify-requirements` workflow route，而非未实现的 #113
 Skill；source/installed validator 要求 active Skill consumer 与唯一 workflow/stop target
 marker 均可解析。

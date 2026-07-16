@@ -295,27 +295,17 @@ GitHub repo identity。Pre-task/standalone 绑定 decision checkout branch；tas
 HEAD 上进入 `task.json.branch` feature worktree，但仍校验完整 provenance、base refs、active
 task locator/status 与 task-local-only dirty paths。Git status failure 不得冒充 clean，base stale 在
 任何 live issue/draft、reviewed blob 或 archive preview 前短路。Draft 绑定 created issue 时
-live body digest 必须等于原 reviewed draft；caller-authored `refresh_base` 必须按最早
-`context_ready` ancestor 到 direct prior 的顺序，向 record/check 重复提供成对的
-`--prior-snapshot-input` 与 `--expected-prior-snapshot-sha256`，每条 refresh history
-对应一对；长度 `N` 的 history 还必须提供 `N-1` 对
-`--prior-refresh-receipt-input` / `--expected-prior-refresh-receipt-sha256`，证明上一轮
-production `refresh_base` 结果。单次 refresh 的原 ancestor 单对命令保持兼容且无需
-receipt。Pure gate 重算整条 ancestor/receipt identity，验证数量、顺序、history prefix、
-每条 superseded query/snapshot、每份 receipt 相对前一 ancestor 的唯一单步 projection、
-receipt history 与下一 ancestor prefix 完全一致，以及当前相对 direct-prior 的单步
-projection；缺失、重复、错序、跳过、改写或非父关系均 fail closed。Receipt 必须在上一轮
-输出时连同 digest 独立保留，当前候选链不能自证。Task 写后重读整条外部链检测 drift，
-外部 bytes 不持久化。Task-local recorder 写前/写后与 checker 还必须通过 `git
+live body digest 必须等于原 reviewed draft。Caller-authored `refresh_base` 记录当前 stable
+stale codes、superseded query/snapshot digests、reason 与 detection time；record/check 只将
+这些事实与当前 live freshness 对齐后要求整步 re-entry，并只消费当前 payload 与 expected
+snapshot identity，不重建 external refresh chain。Task-local recorder 写前/写后与 checker 还必须通过 `git
 check-ignore --quiet --no-index -- <target>` 证明 artifact 未被 repo ignore、
-`.git/info/exclude` 或 `core.excludesFile` 忽略；pre-task stdout-only 不执行该 gate。随后仅在 stable stale
-codes 与 live drift 一致时通过，`context_ready` 对同一 stale 拒绝。Dangling symlink 与任何
-non-regular existing snapshot target 均 fail closed。Archive symlink/unreadable subtree 形成 portable invalid evidence，snapshot
-的 deep-read locator 按 task artifact/canonical GitHub issue-or-PR/exact Git object-or-ref
-三类闭合校验；`task_branch_stale` 可触发完整 refresh re-entry，其他 malformed task facts
-仍阻塞。Whole-payload gate 拒绝 POSIX/Windows/UNC/home/temp machine paths、AWS/GCS/Azure
-SAS 或 generic signed-query credentials、GitHub/Bearer token、private key 与 DB URL，同时
-保留 ordinary URL 与 repo-relative path。不写 workspace、runtime、
+`.git/info/exclude` 或 `core.excludesFile` 忽略；pre-task stdout-only 不执行该 gate。只有
+stable stale codes 与 live drift 一致时才返回 `refresh_base`，`context_ready` 对同一 stale
+拒绝。Archive reader 以普通 file/read/JSON/index-shape failures 形成 portable invalid
+evidence；snapshot deep-read locator 按 task artifact/canonical GitHub issue-or-PR/exact Git
+object-or-ref 三类闭合校验。Closed schema 与结构化 locator 不保存 raw source payload，
+只做 field-specific validation。不写 workspace、runtime、
 repo-level archive index/cache 或 shared handoff。Schema 是
 `guru-context-discovery-1.0`，managed commands 是
 `preview-change-context-history`、`record-context-discovery`、
@@ -330,13 +320,19 @@ Source issue 的 live state 可为归一化后的 `open` 或 `closed`；open dup
 使用 40 位 Git identity 时，validator 会重新解析 `HEAD:<path>` 并要求对象类型严格为
 `blob`；tree、gitlink commit、tag、missing object 或 identity drift 均 fail closed。
 
-Recorder/checker 的 production entry 固定先执行 pure schema/digest/security/semantic
+Duplicate candidate 的 canonical fact projection 固定为 normalized bound repo、positive
+number、`identity=#<number>`、canonical issue URL、`state=open` 与 `updated_at`；
+`facts_sha256` 不含 AI reason/observation，并由 pure gate 从同一次 open duplicate search
+返回字段重算 identity、URL 与 digest；validator 不进行第二次 search 或 candidate re-read。
+Schema/runtime 同时
+强制 `typed_exit=blocked` 当且仅当 `ai_review_gate.status=blocked`。
+
+Recorder/checker 的 production entry 固定先执行 pure schema/digest/semantic
 shape，再执行 base-only live gate；只有 fresh base 才能读取 repo-bound locator、issue、
 reviewed blob 与 archive/history。Base stale 只核对 caller-authored refresh codes 和
 superseded digests 后返回。`change_input` 十组 clue arrays 至少一组非空，issue binding
-和 canonical query 不能替代入口线索。Portable gate 允许裸文本、inline code、bold、
-句中或中文标点包裹的精确 `/<namespace>:<command>` span，但继续拒绝真实绝对/
-multi-segment path 与 signed URL。
+和 canonical query 不能替代入口线索。Portable locator 只按各 source 的 closed structure
+验证，不扫描整份 payload。
 
 Skill id、external exit id、schema/interface id、stable command 和 registry
 lifecycle 是公共 API；破坏性变更必须使用新 id 或提供明确迁移合同。
@@ -381,7 +377,7 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.10`；在对应 merge commit 创建并验证
+manifest 已递增到下一待发布版本 `0.6.5-guru.11`；在对应 merge commit 创建并验证
 release tag 前，不得把 `.7` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录

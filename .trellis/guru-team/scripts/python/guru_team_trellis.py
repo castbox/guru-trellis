@@ -17673,18 +17673,8 @@ def context_query_path_shape(value: Any) -> str:
 
 
 def context_query_path(root: Path, value: Any) -> str:
-    normalized = context_query_path_shape(value)
-    raw = Path(normalized)
-    current = root
-    for part in raw.parts:
-        current = current / part
-        try:
-            mode = current.lstat().st_mode
-        except FileNotFoundError:
-            break
-        if stat.S_ISLNK(mode):
-            raise WorkflowError("query path contains a symlink component.", exit_code=2)
-    return normalized
+    del root
+    return context_query_path_shape(value)
 
 
 def context_tokens(values: list[str]) -> list[str]:
@@ -17758,65 +17748,26 @@ def context_archive_file_error(root: Path, path: Path) -> str | None:
         return "unsafe_path"
     if relative.as_posix().startswith("../"):
         return "unsafe_path"
-    current = root
-    for position, part in enumerate(relative.parts):
-        current = current / part
-        try:
-            mode = current.lstat().st_mode
-        except OSError:
-            return "unsafe_path"
-        if stat.S_ISLNK(mode):
-            return "symlink"
-        if position < len(relative.parts) - 1 and not stat.S_ISDIR(mode):
-            return "unsafe_path"
-        if position == len(relative.parts) - 1 and not stat.S_ISREG(mode):
-            return "not_regular_file"
-    return None
+    archive_parts = Path(".trellis/tasks/archive").parts
+    if (
+        relative.name != "finish-summary.json"
+        or relative.parts[: len(archive_parts)] != archive_parts
+        or len(relative.parts) <= len(archive_parts) + 2
+    ):
+        return "unsafe_path"
+    return None if path.is_file() else "not_regular_file"
 
 
 def context_finish_summary_paths(root: Path) -> list[Path]:
     archive = root / ".trellis/tasks/archive"
-    if not os.path.lexists(archive):
+    if not archive.exists():
         return []
-    try:
-        archive_mode = archive.lstat().st_mode
-    except OSError as exc:
-        raise WorkflowError("Archived task root is unreadable.", exit_code=2) from exc
-    if stat.S_ISLNK(archive_mode):
-        raise WorkflowError("Archived task root must not be a symlink.", exit_code=2)
-    if not stat.S_ISDIR(archive_mode):
+    if not archive.is_dir():
         raise WorkflowError("Archived task root must be a directory.", exit_code=2)
-    paths: list[Path] = []
-
-    def collect(directory: Path) -> None:
-        try:
-            with os.scandir(directory) as iterator:
-                entries = sorted(iterator, key=lambda entry: entry.name.encode("utf-8"))
-        except OSError:
-            # Preserve a portable invalid row instead of silently skipping an
-            # unreadable archive subtree.
-            paths.append(directory / "finish-summary.json")
-            return
-        for entry in entries:
-            child = directory / entry.name
-            try:
-                mode = child.lstat().st_mode
-            except OSError:
-                paths.append(
-                    child if entry.name == "finish-summary.json" else child / "finish-summary.json"
-                )
-                continue
-            if stat.S_ISLNK(mode):
-                paths.append(
-                    child if entry.name == "finish-summary.json" else child / "finish-summary.json"
-                )
-            elif stat.S_ISDIR(mode):
-                collect(child)
-            elif entry.name == "finish-summary.json":
-                paths.append(child)
-
-    collect(archive)
-    return sorted(paths, key=lambda path: path.relative_to(root).as_posix().encode("utf-8"))
+    return sorted(
+        archive.glob("**/finish-summary.json"),
+        key=lambda path: path.relative_to(root).as_posix().encode("utf-8"),
+    )
 
 
 def context_candidate_score(query: dict[str, Any], index: dict[str, Any]) -> tuple[dict[str, Any], dict[str, list[str]]]:
@@ -17944,27 +17895,9 @@ def context_active_task_dir(root: Path, value: str) -> Path:
         candidates = [root / raw]
     task_dir: Path | None = None
     for candidate in candidates:
-        path_errors: list[str] = []
-        if (
-            skill_lstat_path(
-                root,
-                candidate,
-                "context discovery active task",
-                path_errors,
-                kind="directory",
-            )
-            is not None
-            and skill_lstat_path(
-                root,
-                candidate / "task.json",
-                "context discovery active task marker",
-                path_errors,
-                kind="file",
-            )
-            is not None
-            and not path_errors
-        ):
-            task_dir = candidate.resolve()
+        candidate = Path(os.path.abspath(candidate))
+        if candidate.is_dir() and (candidate / "task.json").is_file():
+            task_dir = candidate
             break
     if task_dir is None:
         raise WorkflowError(
@@ -17972,7 +17905,7 @@ def context_active_task_dir(root: Path, value: str) -> Path:
             exit_code=2,
             payload={"error_codes": ["task_not_active"]},
         )
-    task_root = task_root_lexical.resolve()
+    task_root = Path(os.path.abspath(task_root_lexical))
     try:
         relative = task_dir.relative_to(task_root)
     except ValueError as exc:
@@ -17996,11 +17929,9 @@ def context_active_task_dir(root: Path, value: str) -> Path:
             exit_code=2,
             payload={"error_codes": ["task_not_active"]},
         ) from exc
-    if (
-        task_path.is_symlink()
-        or not isinstance(task_payload, dict)
-        or task_payload.get("status") not in {"planning", "in_progress"}
-    ):
+    if not isinstance(task_payload, dict) or task_payload.get("status") not in {
+        "planning", "in_progress",
+    }:
         raise WorkflowError(
             "Context discovery recorder requires task status planning or in_progress.",
             exit_code=2,
@@ -18034,14 +17965,8 @@ def context_payload_from_args(
                 raw = input_path.read_text(encoding="utf-8")
             except (OSError, UnicodeError) as exc:
                 raise WorkflowError("context discovery input is unreadable.", exit_code=2) from exc
-    elif task_dir is not None and os.path.lexists(task_dir / "context-discovery.json"):
+    elif task_dir is not None and (task_dir / "context-discovery.json").exists():
         artifact = task_dir / "context-discovery.json"
-        try:
-            artifact_stat = artifact.lstat()
-        except OSError as exc:
-            raise WorkflowError("context discovery task artifact is unreadable.", exit_code=2) from exc
-        if stat.S_ISLNK(artifact_stat.st_mode) or not stat.S_ISREG(artifact_stat.st_mode):
-            raise WorkflowError("context discovery task artifact must be a regular file.", exit_code=2)
         try:
             raw = artifact.read_text(encoding="utf-8")
         except (OSError, UnicodeError) as exc:
@@ -18077,340 +18002,6 @@ def context_snapshot_identity(payload: dict[str, Any]) -> dict[str, str]:
     }
     identity["snapshot_sha256"] = context_digest(identity)
     return identity
-
-
-def context_refresh_binding_errors(
-    root: Path,
-    payload: dict[str, Any],
-    prior_snapshots: list[dict[str, Any]],
-    expected_prior_snapshot_sha256s: list[str],
-    prior_refresh_receipts: list[dict[str, Any]],
-    expected_prior_refresh_receipt_sha256s: list[str],
-) -> list[str]:
-    """Bind refresh history to external ancestors and prior production receipts."""
-    is_refresh = payload.get("typed_exit") == "refresh_base"
-    has_prior = bool(prior_snapshots)
-    has_expected = bool(expected_prior_snapshot_sha256s)
-    has_receipts = bool(prior_refresh_receipts)
-    has_expected_receipts = bool(expected_prior_refresh_receipt_sha256s)
-    if not is_refresh:
-        return (
-            ["unexpected_prior_snapshot_evidence"]
-            if has_prior or has_expected or has_receipts or has_expected_receipts
-            else []
-        )
-    if not has_prior or not has_expected:
-        return ["prior_snapshot_evidence_required"]
-    if len(prior_snapshots) != len(expected_prior_snapshot_sha256s):
-        return ["prior_snapshot_evidence_count_mismatch"]
-    if len(prior_refresh_receipts) != len(expected_prior_refresh_receipt_sha256s):
-        return ["prior_refresh_receipt_evidence_count_mismatch"]
-    refresh_history = payload.get("refresh_history")
-    if not isinstance(refresh_history, list) or not refresh_history:
-        return ["refresh_base_requires_history"]
-    if len(prior_snapshots) != len(refresh_history):
-        return ["refresh_ancestor_chain_length_mismatch"]
-    required_receipts = len(refresh_history) - 1
-    if required_receipts and not has_receipts:
-        return ["prior_refresh_receipt_evidence_required"]
-    if len(prior_refresh_receipts) != required_receipts:
-        return ["refresh_receipt_chain_length_mismatch"]
-    if any(
-        not re.fullmatch(r"[0-9a-f]{64}", expected)
-        for expected in expected_prior_snapshot_sha256s
-    ):
-        return ["invalid_expected_prior_snapshot_sha256"]
-    if any(
-        not re.fullmatch(r"[0-9a-f]{64}", expected)
-        for expected in expected_prior_refresh_receipt_sha256s
-    ):
-        return ["invalid_expected_prior_refresh_receipt_sha256"]
-
-    errors: list[str] = []
-    prior_identities: list[dict[str, str]] = []
-    for prior_snapshot, expected in zip(
-        prior_snapshots,
-        expected_prior_snapshot_sha256s,
-        strict=True,
-    ):
-        if context_structural_errors(root, prior_snapshot):
-            errors.append("invalid_prior_snapshot")
-            continue
-        if prior_snapshot.get("typed_exit") != "context_ready":
-            errors.append("prior_snapshot_not_context_ready")
-            continue
-        prior_identity = context_snapshot_identity(prior_snapshot)
-        if prior_snapshot.get("snapshot_identity") != prior_identity:
-            errors.append("prior_snapshot_identity_mismatch")
-            continue
-        if prior_identity["snapshot_sha256"] != expected:
-            errors.append("expected_prior_snapshot_mismatch")
-            continue
-        prior_identities.append(prior_identity)
-    if errors:
-        return context_sort(errors)
-    if len({identity["snapshot_sha256"] for identity in prior_identities}) != len(prior_identities):
-        errors.append("duplicate_prior_snapshot_evidence")
-
-    receipt_identities: list[dict[str, str]] = []
-    for receipt, expected in zip(
-        prior_refresh_receipts,
-        expected_prior_refresh_receipt_sha256s,
-        strict=True,
-    ):
-        if context_structural_errors(root, receipt):
-            errors.append("invalid_prior_refresh_receipt")
-            continue
-        if receipt.get("typed_exit") != "refresh_base":
-            errors.append("prior_refresh_receipt_not_refresh_base")
-            continue
-        receipt_identity = context_snapshot_identity(receipt)
-        if receipt.get("snapshot_identity") != receipt_identity:
-            errors.append("prior_refresh_receipt_identity_mismatch")
-            continue
-        if receipt_identity["snapshot_sha256"] != expected:
-            errors.append("expected_prior_refresh_receipt_mismatch")
-            continue
-        receipt_identities.append(receipt_identity)
-    if errors:
-        return context_sort(errors)
-    if len({identity["snapshot_sha256"] for identity in receipt_identities}) != len(
-        receipt_identities
-    ):
-        errors.append("duplicate_prior_refresh_receipt_evidence")
-
-    for index, (prior_snapshot, prior_identity) in enumerate(
-        zip(prior_snapshots, prior_identities, strict=True)
-    ):
-        prior_history = prior_snapshot.get("refresh_history")
-        if not isinstance(prior_history, list) or len(prior_history) != index:
-            errors.append("prior_snapshot_history_length_mismatch")
-            continue
-        if prior_history != refresh_history[:index]:
-            errors.append("prior_snapshot_history_prefix_mismatch")
-        if index == 0:
-            continue
-        ancestor_link = prior_history[-1]
-        previous_identity = prior_identities[index - 1]
-        if not isinstance(ancestor_link, dict):
-            errors.append("prior_snapshot_history_prefix_mismatch")
-            continue
-        if ancestor_link.get("superseded_snapshot_sha256") != previous_identity["snapshot_sha256"]:
-            errors.append("ancestor_superseded_snapshot_digest_mismatch")
-        if ancestor_link.get("superseded_query_sha256") != previous_identity["query_sha256"]:
-            errors.append("ancestor_superseded_query_digest_mismatch")
-
-    for index, receipt in enumerate(prior_refresh_receipts):
-        receipt_history = receipt.get("refresh_history")
-        expected_history = refresh_history[: index + 1]
-        if receipt_history != expected_history:
-            errors.append("prior_refresh_receipt_history_prefix_mismatch")
-        ancestor_history = prior_snapshots[index].get("refresh_history")
-        if not isinstance(ancestor_history, list):
-            errors.append("prior_snapshot_history_prefix_mismatch")
-            continue
-        projected_receipt = copy.deepcopy(prior_snapshots[index])
-        projected_receipt["typed_exit"] = "refresh_base"
-        projected_receipt["refresh_history"] = [
-            *ancestor_history,
-            copy.deepcopy(refresh_history[index]),
-        ]
-        projected_receipt["snapshot_identity"] = context_snapshot_identity(projected_receipt)
-        if projected_receipt != receipt:
-            errors.append("prior_refresh_receipt_projection_mismatch")
-        next_history = prior_snapshots[index + 1].get("refresh_history")
-        if receipt_history != next_history:
-            errors.append("prior_refresh_receipt_next_ancestor_mismatch")
-
-    latest = refresh_history[-1]
-    direct_prior = prior_snapshots[-1]
-    direct_prior_identity = prior_identities[-1]
-    if latest.get("superseded_snapshot_sha256") != direct_prior_identity["snapshot_sha256"]:
-        errors.append("superseded_snapshot_digest_mismatch")
-    if latest.get("superseded_query_sha256") != direct_prior_identity["query_sha256"]:
-        errors.append("superseded_query_digest_mismatch")
-    prior_history = direct_prior.get("refresh_history")
-    if not isinstance(prior_history, list) or refresh_history != [*prior_history, latest]:
-        errors.append("refresh_history_not_single_append")
-    projected = copy.deepcopy(direct_prior)
-    projected["typed_exit"] = "refresh_base"
-    projected["refresh_history"] = [*prior_history, copy.deepcopy(latest)]
-    projected["snapshot_identity"] = context_snapshot_identity(projected)
-    if projected != payload:
-        errors.append("refresh_projection_mismatch")
-    return context_sort(errors)
-
-
-def context_read_external_json_evidence(
-    root: Path,
-    input_values: list[str],
-    *,
-    evidence_name: str,
-    unreadable_code: str,
-    invalid_type_code: str,
-    invalid_json_code: str,
-) -> tuple[list[dict[str, Any]], list[str]]:
-    evidence: list[dict[str, Any]] = []
-    file_sha256s: list[str] = []
-    for input_value in input_values:
-        evidence_path = Path(input_value)
-        if not evidence_path.is_absolute():
-            evidence_path = root / evidence_path
-        try:
-            before = evidence_path.lstat()
-            raw = evidence_path.read_bytes()
-            after = evidence_path.lstat()
-        except OSError as exc:
-            raise WorkflowError(
-                f"Context discovery {evidence_name} evidence is unreadable.",
-                exit_code=2,
-                payload={"error_codes": [unreadable_code]},
-            ) from exc
-        if (
-            stat.S_ISLNK(before.st_mode)
-            or not stat.S_ISREG(before.st_mode)
-            or not stat.S_ISREG(after.st_mode)
-            or (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns)
-            != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns)
-        ):
-            raise WorkflowError(
-                f"Context discovery {evidence_name} evidence must be a stable regular file.",
-                exit_code=2,
-                payload={"error_codes": [invalid_type_code]},
-            )
-        try:
-            value = json.loads(raw.decode("utf-8"))
-        except (UnicodeError, json.JSONDecodeError) as exc:
-            raise WorkflowError(
-                f"Context discovery {evidence_name} evidence is invalid JSON.",
-                exit_code=2,
-                payload={"error_codes": [invalid_json_code]},
-            ) from exc
-        if not isinstance(value, dict):
-            raise WorkflowError(
-                f"Context discovery {evidence_name} evidence root must be an object.",
-                exit_code=2,
-                payload={"error_codes": [invalid_json_code]},
-            )
-        evidence.append(value)
-        file_sha256s.append(hashlib.sha256(raw).hexdigest())
-    return evidence, file_sha256s
-
-
-def context_prior_snapshot_chain_from_args(
-    root: Path,
-    args: argparse.Namespace,
-    payload: dict[str, Any],
-) -> dict[str, Any]:
-    raw_inputs = getattr(args, "prior_snapshot_input", None)
-    raw_expected = getattr(args, "expected_prior_snapshot_sha256", None)
-    raw_receipt_inputs = getattr(args, "prior_refresh_receipt_input", None)
-    raw_expected_receipts = getattr(args, "expected_prior_refresh_receipt_sha256", None)
-    input_values = [raw_inputs] if isinstance(raw_inputs, str) else list(raw_inputs or [])
-    expected_values = [raw_expected] if isinstance(raw_expected, str) else list(raw_expected or [])
-    receipt_input_values = (
-        [raw_receipt_inputs]
-        if isinstance(raw_receipt_inputs, str)
-        else list(raw_receipt_inputs or [])
-    )
-    expected_receipt_values = (
-        [raw_expected_receipts]
-        if isinstance(raw_expected_receipts, str)
-        else list(raw_expected_receipts or [])
-    )
-    if payload.get("typed_exit") != "refresh_base":
-        errors = context_refresh_binding_errors(
-            root,
-            payload,
-            [],
-            expected_values,
-            [],
-            expected_receipt_values,
-        )
-        if input_values or receipt_input_values or errors:
-            raise WorkflowError(
-                "Context discovery prior snapshot evidence is not valid for this exit.",
-                exit_code=2,
-                payload={"error_codes": ["unexpected_prior_snapshot_evidence"]},
-            )
-        return {
-            "prior_snapshots": [],
-            "expected_prior_snapshot_sha256s": [],
-            "prior_snapshot_file_sha256s": [],
-            "prior_refresh_receipts": [],
-            "expected_prior_refresh_receipt_sha256s": [],
-            "prior_refresh_receipt_file_sha256s": [],
-        }
-    if not input_values or not expected_values:
-        raise WorkflowError(
-            "Context discovery refresh requires prior snapshot evidence.",
-            exit_code=2,
-            payload={"error_codes": ["prior_snapshot_evidence_required"]},
-        )
-    if len(input_values) != len(expected_values):
-        raise WorkflowError(
-            "Context discovery refresh requires one expected digest for every prior snapshot.",
-            exit_code=2,
-            payload={"error_codes": ["prior_snapshot_evidence_count_mismatch"]},
-        )
-    if any(input_value == "-" for input_value in input_values):
-        raise WorkflowError(
-            "Context discovery prior snapshot evidence requires an explicit file.",
-            exit_code=2,
-            payload={"error_codes": ["prior_snapshot_input_must_be_file"]},
-        )
-    if len(receipt_input_values) != len(expected_receipt_values):
-        raise WorkflowError(
-            "Context discovery refresh requires one expected digest for every prior receipt.",
-            exit_code=2,
-            payload={"error_codes": ["prior_refresh_receipt_evidence_count_mismatch"]},
-        )
-    if any(input_value == "-" for input_value in receipt_input_values):
-        raise WorkflowError(
-            "Context discovery prior refresh receipt evidence requires an explicit file.",
-            exit_code=2,
-            payload={"error_codes": ["prior_refresh_receipt_input_must_be_file"]},
-        )
-    prior_snapshots, prior_snapshot_file_sha256s = context_read_external_json_evidence(
-        root,
-        input_values,
-        evidence_name="prior snapshot",
-        unreadable_code="prior_snapshot_unreadable",
-        invalid_type_code="prior_snapshot_invalid_type_or_changed",
-        invalid_json_code="invalid_prior_snapshot",
-    )
-    prior_refresh_receipts, prior_refresh_receipt_file_sha256s = (
-        context_read_external_json_evidence(
-            root,
-            receipt_input_values,
-            evidence_name="prior refresh receipt",
-            unreadable_code="prior_refresh_receipt_unreadable",
-            invalid_type_code="prior_refresh_receipt_invalid_type_or_changed",
-            invalid_json_code="invalid_prior_refresh_receipt",
-        )
-    )
-    errors = context_refresh_binding_errors(
-        root,
-        payload,
-        prior_snapshots,
-        expected_values,
-        prior_refresh_receipts,
-        expected_receipt_values,
-    )
-    if errors:
-        raise WorkflowError(
-            "Context discovery refresh does not match the prior snapshot ancestry evidence.",
-            exit_code=2,
-            payload={"error_codes": errors},
-        )
-    return {
-        "prior_snapshots": prior_snapshots,
-        "expected_prior_snapshot_sha256s": expected_values,
-        "prior_snapshot_file_sha256s": prior_snapshot_file_sha256s,
-        "prior_refresh_receipts": prior_refresh_receipts,
-        "expected_prior_refresh_receipt_sha256s": expected_receipt_values,
-        "prior_refresh_receipt_file_sha256s": prior_refresh_receipt_file_sha256s,
-    }
 
 
 def context_discovery_schema(root: Path) -> dict[str, Any]:
@@ -18471,29 +18062,6 @@ CONTEXT_GITHUB_LOCATOR_RE = re.compile(
 )
 CONTEXT_GIT_OBJECT_LOCATOR_RE = re.compile(r"^git:object:([0-9a-f]{40})$")
 CONTEXT_GIT_REF_LOCATOR_RE = re.compile(r"^git:ref:(refs/[A-Za-z0-9._/-]+)@([0-9a-f]{40})$")
-CONTEXT_URL_RE = re.compile(r"\b[A-Za-z][A-Za-z0-9+.-]*://[^\s<>\"']+")
-CONTEXT_SIGNED_QUERY_RE = re.compile(
-    r"(?i)(?:[?&]|\b)(?:"
-    r"x-amz-(?:credential|security-token|signature)|"
-    r"x-goog-(?:credential|signature)|"
-    r"googleaccessid|signature|sig|token|access_token|credential|secret|password"
-    r")=[^\s&#\"']+"
-)
-CONTEXT_MACHINE_PATH_PATTERNS = (
-    re.compile(r"(?i)(?<![A-Za-z0-9])(?:[A-Z]:[\\/])[^\s<>\"']*"),
-    re.compile(r"(?<![\\])\\\\[^\\\s<>\"']+[\\][^\s<>\"']+"),
-    re.compile(r"(?<![/])//[^/\s<>\"']+/[^\s<>\"']+"),
-    re.compile(r"(?<![A-Za-z0-9_])(?:~|\$HOME|\$\{HOME\}|%USERPROFILE%)[\\/][^\s<>\"']+"),
-    re.compile(r"(?<![A-Za-z0-9_])/(?:[^/\s<>\"']+/)+[^\s<>\"']*"),
-    re.compile(r"(?<![A-Za-z0-9_])/(?:tmp|var|etc|opt|usr|home|Users|root|private|Volumes|mnt|srv|proc|sys|dev)(?=$|[\s<>\"'])"),
-)
-CONTEXT_POSIX_ABSOLUTE_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9_/])(/[^\s<>\"']*)")
-CONTEXT_SLASH_COMMAND_RE = re.compile(r"/[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+")
-CONTEXT_SLASH_COMMAND_SPAN_RE = re.compile(
-    r"(?<![A-Za-z0-9_./:-])/[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+(?![A-Za-z0-9_./:-])"
-)
-
-
 def context_github_locator_valid(value: str) -> bool:
     if CONTEXT_GITHUB_LOCATOR_RE.fullmatch(value) is None:
         return False
@@ -18572,53 +18140,6 @@ def context_git_locator_shape_errors(value: str) -> list[str]:
     return []
 
 
-def context_payload_strings(value: Any) -> list[str]:
-    if isinstance(value, str):
-        return [value]
-    if isinstance(value, list):
-        return [item for child in value for item in context_payload_strings(child)]
-    if isinstance(value, dict):
-        return [
-            item
-            for key, child in value.items()
-            for item in (*context_payload_strings(key), *context_payload_strings(child))
-        ]
-    return []
-
-
-def context_string_contains_non_portable_or_secret(value: str) -> bool:
-    secret_patterns = (
-        r"\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})\b",
-        r"(?i:\bbearer\s+[A-Za-z0-9._~+/=-]{8,})",
-        r"(?i:\b(?:postgres(?:ql)?|mysql|mariadb|mongodb(?:\+srv)?|redis|rediss)://[^\s\"']+)",
-        r"-----BEGIN (?:OPENSSH |RSA |EC |DSA )?PRIVATE KEY-----",
-    )
-    if any(marker in value for marker in (".trellis/workspace/", ".trellis/.runtime/")):
-        return True
-    if any(re.search(pattern, value) is not None for pattern in secret_patterns):
-        return True
-    if CONTEXT_SIGNED_QUERY_RE.search(value) is not None:
-        return True
-    urls = CONTEXT_URL_RE.findall(value)
-    for url in urls:
-        try:
-            parsed = urlsplit(url.rstrip(".,);]"))
-        except ValueError:
-            return True
-        if parsed.scheme.casefold() == "file":
-            return True
-    without_urls = CONTEXT_URL_RE.sub("", value)
-    without_slash_commands = CONTEXT_SLASH_COMMAND_SPAN_RE.sub("", without_urls)
-    if any(
-        pattern.search(without_slash_commands) is not None
-        for pattern in CONTEXT_MACHINE_PATH_PATTERNS
-    ):
-        return True
-    if CONTEXT_POSIX_ABSOLUTE_TOKEN_RE.search(without_slash_commands) is not None:
-        return True
-    return False
-
-
 def context_duplicate_values(values: Any) -> bool:
     if not isinstance(values, list):
         return False
@@ -18642,7 +18163,9 @@ def context_base_evidence_contract_errors(root: Path, payload: dict[str, Any]) -
     if not isinstance(result, dict):
         return ["invalid_base_sync_result"]
     errors: list[str] = []
-    if base_sync_result_errors(result):
+    unsigned_result = dict(result)
+    facts_sha256 = unsigned_result.pop("facts_sha256", None)
+    if facts_sha256 != canonical_json_sha256(unsigned_result):
         errors.append("invalid_base_sync_result")
     try:
         schema_errors = skill_json_schema_validation_errors(
@@ -18726,6 +18249,57 @@ def context_change_binding_errors(payload: dict[str, Any]) -> list[str]:
     return context_sort(errors)
 
 
+def context_duplicate_candidate_fact_projection(candidate: Any) -> dict[str, Any] | None:
+    if not isinstance(candidate, dict):
+        return None
+    repo = candidate.get("repo")
+    number = candidate.get("number")
+    identity = candidate.get("identity")
+    url = candidate.get("url")
+    state = candidate.get("state")
+    updated_at = candidate.get("updated_at")
+    if (
+        normalize_github_repository(repo) != repo
+        or not isinstance(number, int)
+        or isinstance(number, bool)
+        or number < 1
+        or not all(isinstance(value, str) and value for value in (identity, url, state, updated_at))
+    ):
+        return None
+    return {
+        "repo": repo,
+        "number": number,
+        "identity": identity,
+        "url": url,
+        "state": state,
+        "updated_at": updated_at,
+    }
+
+
+def context_duplicate_candidate_structural_errors(candidate: Any) -> list[str]:
+    expected_keys = {
+        "repo", "number", "identity", "url", "state", "updated_at",
+        "facts_sha256", "reason", "observation",
+    }
+    if not isinstance(candidate, dict) or set(candidate) != expected_keys:
+        return ["invalid_duplicate_candidate"]
+    projection = context_duplicate_candidate_fact_projection(candidate)
+    if projection is None:
+        return ["invalid_duplicate_candidate"]
+    errors: list[str] = []
+    repo = projection["repo"]
+    number = projection["number"]
+    if projection["identity"] != f"#{number}":
+        errors.append("duplicate_candidate_identity_mismatch")
+    if projection["url"] != f"https://github.com/{repo}/issues/{number}":
+        errors.append("duplicate_candidate_url_mismatch")
+    if projection["state"] != "open":
+        errors.append("duplicate_candidate_not_open")
+    if candidate.get("facts_sha256") != context_digest(projection):
+        errors.append("duplicate_candidate_facts_digest_mismatch")
+    return context_sort(errors)
+
+
 def context_change_input_errors(payload: dict[str, Any]) -> list[str]:
     change_input = payload.get("change_input")
     if not isinstance(change_input, dict):
@@ -18797,8 +18371,8 @@ def context_deep_read_locator_errors(
         return []
     if source == "git":
         return context_git_locator_errors(root, locator)
-    error_code = context_archive_file_error(root, root / locator)
-    return [] if error_code is None else [f"deep_read_locator_{error_code}"]
+    target = root / locator
+    return [] if target.is_file() else ["deep_read_locator_not_regular_file"]
 
 
 def context_structural_errors(root: Path, payload: dict[str, Any]) -> list[str]:
@@ -18944,6 +18518,8 @@ def context_structural_errors(root: Path, payload: dict[str, Any]) -> list[str]:
         if not isinstance(duplicate_candidates, list):
             errors.append("invalid_duplicate_search")
         else:
+            for candidate in duplicate_candidates:
+                errors.extend(context_duplicate_candidate_structural_errors(candidate))
             duplicate_ids = [row.get("identity") for row in duplicate_candidates if isinstance(row, dict)]
             if len(duplicate_ids) != len(duplicate_candidates) or len(duplicate_ids) != len(set(duplicate_ids)):
                 errors.append("duplicate_issue_candidate_identity")
@@ -18977,13 +18553,18 @@ def context_structural_errors(root: Path, payload: dict[str, Any]) -> list[str]:
     gate = payload.get("ai_review_gate")
     if not isinstance(gate, dict) or gate.get("status") not in {"passed", "blocked"}:
         errors.append("invalid_ai_review_gate")
-    elif typed_exit == "context_ready" and gate.get("status") != "passed":
-        errors.append("context_ready_requires_passed_gate")
-    elif gate.get("status") == "passed" and any(
-        isinstance(row, dict) and row.get("status") == "open"
-        for row in gate.get("findings", []) if isinstance(gate.get("findings"), list)
-    ):
-        errors.append("passed_gate_has_open_findings")
+    else:
+        if typed_exit == "context_ready" and gate.get("status") != "passed":
+            errors.append("context_ready_requires_passed_gate")
+        if typed_exit == "blocked" and gate.get("status") != "blocked":
+            errors.append("blocked_requires_blocked_gate")
+        if gate.get("status") == "blocked" and typed_exit != "blocked":
+            errors.append("blocked_gate_requires_blocked_exit")
+        if gate.get("status") == "passed" and any(
+            isinstance(row, dict) and row.get("status") == "open"
+            for row in gate.get("findings", []) if isinstance(gate.get("findings"), list)
+        ):
+            errors.append("passed_gate_has_open_findings")
     if isinstance(gate, dict) and gate.get("status") == "passed" and (
         not isinstance(gate.get("reviewed_scope"), list)
         or not gate["reviewed_scope"]
@@ -19018,11 +18599,6 @@ def context_structural_errors(root: Path, payload: dict[str, Any]) -> list[str]:
     expected_identity = context_snapshot_identity(payload)
     if payload.get("snapshot_identity") != expected_identity:
         errors.append("snapshot_identity_mismatch")
-    if any(
-        context_string_contains_non_portable_or_secret(value)
-        for value in context_payload_strings(payload)
-    ):
-        errors.append("non_portable_or_secret_content")
     return context_sort(errors)
 
 
@@ -19087,6 +18663,9 @@ def context_read_live_issue(
         return None, "invalid"
     state = str(issue.get("state") or "").casefold()
     if state not in {"open", "closed"}:
+        return None, "invalid"
+    expected_url = f"https://github.com/{repository}/issues/{number}"
+    if issue.get("number") != number or issue.get("url") != expected_url:
         return None, "invalid"
     facts = {
         "repo": repository,
@@ -19309,23 +18888,13 @@ def context_persisted_snapshot_errors(
     target: Path,
     expected_payload: dict[str, Any],
     task_dir: Path,
-    refresh_evidence: dict[str, Any],
 ) -> list[str]:
     expected_bytes = json_document_bytes(expected_payload)
     try:
-        before = target.lstat()
         actual_bytes = target.read_bytes()
-        after = target.lstat()
     except OSError:
         return ["persisted_snapshot_unreadable"]
-    if (
-        stat.S_ISLNK(before.st_mode)
-        or not stat.S_ISREG(before.st_mode)
-        or not stat.S_ISREG(after.st_mode)
-        or (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns)
-        != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns)
-        or actual_bytes != expected_bytes
-    ):
+    if actual_bytes != expected_bytes:
         return ["persisted_snapshot_mismatch"]
     try:
         persisted = json.loads(actual_bytes)
@@ -19338,16 +18907,6 @@ def context_persisted_snapshot_errors(
     structural = context_structural_errors(root, persisted)
     if structural:
         return context_sort(structural)
-    refresh_binding = context_refresh_binding_errors(
-        root,
-        persisted,
-        refresh_evidence["prior_snapshots"],
-        refresh_evidence["expected_prior_snapshot_sha256s"],
-        refresh_evidence["prior_refresh_receipts"],
-        refresh_evidence["expected_prior_refresh_receipt_sha256s"],
-    )
-    if refresh_binding:
-        return refresh_binding
     live = context_live_errors(root, persisted, task_dir)
     return context_sort(context_typed_exit_live_errors(persisted, live))
 
@@ -19415,11 +18974,6 @@ def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
             payload={"error_codes": context_sort(structural)},
         )
-    refresh_evidence = context_prior_snapshot_chain_from_args(
-        root,
-        args,
-        payload,
-    )
     live = context_live_errors(root, payload, task_dir)
     route_live = context_typed_exit_live_errors(payload, live)
     if structural or route_live:
@@ -19446,21 +19000,7 @@ def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
             payload={"error_codes": trackability_errors},
         )
     expected_bytes = json_document_bytes(payload)
-    if os.path.lexists(target):
-        try:
-            target_stat = target.lstat()
-        except OSError as exc:
-            raise WorkflowError(
-                "Existing context-discovery.json is unreadable.",
-                exit_code=2,
-                payload={"error_codes": ["existing_snapshot_unreadable"]},
-            ) from exc
-        if stat.S_ISLNK(target_stat.st_mode) or not stat.S_ISREG(target_stat.st_mode):
-            raise WorkflowError(
-                "Existing context-discovery.json is not a regular file.",
-                exit_code=2,
-                payload={"error_codes": ["existing_snapshot_invalid_type"]},
-            )
+    if target.exists():
         try:
             actual_bytes = target.read_bytes()
         except OSError as exc:
@@ -19485,27 +19025,12 @@ def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
         target,
         payload,
         task_dir,
-        refresh_evidence,
     )
     if persisted_errors:
         raise WorkflowError(
             "Persisted context discovery snapshot validation failed.",
             exit_code=2,
             payload={"error_codes": persisted_errors},
-        )
-    try:
-        confirmed_evidence = context_prior_snapshot_chain_from_args(root, args, payload)
-    except WorkflowError as exc:
-        raise WorkflowError(
-            "Context discovery prior snapshot ancestry evidence changed during recording.",
-            exit_code=2,
-            payload={"error_codes": ["prior_snapshot_changed_during_record"]},
-        ) from exc
-    if confirmed_evidence != refresh_evidence:
-        raise WorkflowError(
-            "Context discovery prior snapshot ancestry evidence changed during recording.",
-            exit_code=2,
-            payload={"error_codes": ["prior_snapshot_changed_during_record"]},
         )
     return payload
 
@@ -19520,7 +19045,6 @@ def cmd_check_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
             payload={"error_codes": context_sort(structural)},
         )
-    context_prior_snapshot_chain_from_args(root, args, payload)
     if task_dir is not None:
         trackability_errors = context_discovery_target_trackability_errors(
             root,
@@ -19602,34 +19126,6 @@ def build_parser() -> argparse.ArgumentParser:
     context_record.add_argument("--input")
     context_record.add_argument("--task")
     context_record.add_argument("--expected-snapshot-sha256")
-    context_record.add_argument(
-        "--prior-snapshot-input",
-        action="append",
-        default=[],
-        metavar="PATH",
-        help="Repeat in oldest-to-direct-prior order for every refresh_history entry.",
-    )
-    context_record.add_argument(
-        "--expected-prior-snapshot-sha256",
-        action="append",
-        default=[],
-        metavar="SHA256",
-        help="Repeat once per --prior-snapshot-input in the same order.",
-    )
-    context_record.add_argument(
-        "--prior-refresh-receipt-input",
-        action="append",
-        default=[],
-        metavar="PATH",
-        help="Repeat for each prior refresh hop in oldest-to-newest order.",
-    )
-    context_record.add_argument(
-        "--expected-prior-refresh-receipt-sha256",
-        action="append",
-        default=[],
-        metavar="SHA256",
-        help="Repeat once per --prior-refresh-receipt-input in the same order.",
-    )
 
     context_check = sub.add_parser("check-context-discovery")
     context_check.add_argument("--root")
@@ -19637,34 +19133,6 @@ def build_parser() -> argparse.ArgumentParser:
     context_check.add_argument("--input")
     context_check.add_argument("--task")
     context_check.add_argument("--expected-snapshot-sha256")
-    context_check.add_argument(
-        "--prior-snapshot-input",
-        action="append",
-        default=[],
-        metavar="PATH",
-        help="Repeat in oldest-to-direct-prior order for every refresh_history entry.",
-    )
-    context_check.add_argument(
-        "--expected-prior-snapshot-sha256",
-        action="append",
-        default=[],
-        metavar="SHA256",
-        help="Repeat once per --prior-snapshot-input in the same order.",
-    )
-    context_check.add_argument(
-        "--prior-refresh-receipt-input",
-        action="append",
-        default=[],
-        metavar="PATH",
-        help="Repeat for each prior refresh hop in oldest-to-newest order.",
-    )
-    context_check.add_argument(
-        "--expected-prior-refresh-receipt-sha256",
-        action="append",
-        default=[],
-        metavar="SHA256",
-        help="Repeat once per --prior-refresh-receipt-input in the same order.",
-    )
 
     version = sub.add_parser("version")
     version.add_argument("--root")

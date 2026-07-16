@@ -192,31 +192,23 @@ base/remote refs、repo identity、task status/locator 与 task-local-only dirty
 或其它历史源。Recorder/checker 执行 published
 closed Draft 2020-12 schema；base evidence 嵌入完整 validator-passed sync result，绑定
 post-sync digest、decision checkout、selected remote refs 与严格 GitHub remote repo
-identity，Git status 失败不得冒充 clean。`refresh_base` 的 record/check 必须按 oldest
-`context_ready` ancestor 到 direct prior 顺序，为每条 refresh history 重复消费外部
-snapshot 与 expected digest；长度 `N` 的 history 还消费 `N-1` 份上一轮独立保留的
-`refresh_base` receipt 与 expected digest，单次 refresh 的单对 ancestor CLI 保持兼容且
-无需 receipt。Pure gate 重算整条 ancestor/receipt identity，验证数量、顺序、history
-prefix、每条 superseded link、receipt 相对前一 ancestor 的唯一单步 projection、receipt
-history 与下一 ancestor prefix 的完全一致，以及当前相对 direct prior 的单步 projection；
-缺失、重复、错序、跳过、改写或非父关系 fail closed。Receipt authority 来自上一轮
-production result 和独立 digest，当前候选链不能自证。Task 写后重读完整外部链，外部
-bytes 不进入新 artifact。Task-local recorder 写前/写后与 checker 使用 `git check-ignore
+identity，Git status 失败不得冒充 clean。`refresh_base` 的 record/check 记录当前 stable
+stale codes、superseded query/snapshot digests、reason 与 detection time，将这些
+caller-authored facts 与 live drift 对齐后要求整步 re-entry；只消费当前 payload 与
+expected snapshot identity，不重建 ancestry。Task-local recorder 写前/写后与 checker
+使用 `git check-ignore
 --quiet --no-index -- <target>` 覆盖 repo ignore、`.git/info/exclude`、`core.excludesFile` 和
 already-tracked target；pre-task stdout-only 路径不执行该 gate。
 Base stale 在 live issue/draft、reviewed blob 与 archive preview 前短路；caller-authored
 `refresh_base` 只有在 stable stale codes 与 live drift 一致时通过，`context_ready` 对同一
 stale 拒绝。Draft 后续绑定 created issue 时
-必须 live 证明 issue body digest 等于原 reviewed draft。Existing target 的 dangling symlink
-和所有 non-regular type 均 fail closed。History 只能读取
-`.trellis/tasks/archive/**/finish-summary.json:index.*`，symlink/unreadable subtree 形成
-portable invalid evidence，不得静默跳过；零候选是成功结果，不触发
+必须 live 证明 issue body digest 等于原 reviewed draft。History 只能读取
+`.trellis/tasks/archive/**/finish-summary.json:index.*`，普通 non-file/read/JSON/index-shape
+failure 形成 portable invalid evidence；零候选是成功结果，不触发
 其它历史源。`trellis mem` 只有在 task artifacts、Docs/code/tests、GitHub 与 Git history 四类
-来源都不足以解释一个命名的 load-bearing decision 时才进入。Snapshot 禁止 macOS/Linux
-home path、GitHub/Bearer token、private key 与 DB URL。Deep-read locator 按 selected task
-artifact、canonical GitHub issue/PR、exact Git object/ref 分型；所有 payload string 额外拒绝
-POSIX/Windows/UNC/home/temp machine paths 与 AWS/GCS/Azure/generic signed-query
-credentials。`task_branch_stale` 是 refreshable re-entry，其他 malformed task facts 仍阻塞。
+来源都不足以解释一个命名的 load-bearing decision 时才进入。Deep-read locator 按 selected
+task artifact、canonical GitHub issue/PR、exact Git object/ref 分型；closed schema 与结构化
+locator 不保存 raw source payload，只做 field-specific validation。
 `context_ready` 的 `guru-clarify-requirements` 是既有 Phase 0 clarification/check-env/
 prepare-task workflow target，不实现 #113 Skill；source/installed validator 要求 Skill
 consumer active 且 workflow/stop target marker 唯一、kind 匹配、无 dangling。
@@ -227,13 +219,19 @@ open-only。Docs、code/contracts、tests 中每个 40 位 reviewed Git identity
 `HEAD:<path>` 重新解析且对象类型严格为 `blob`；tree、gitlink commit、tag、missing object
 或 blob identity 不匹配均 fail closed，不能填充任何必需 evidence group。
 
-Recorder/checker 的生产入口先做 pure schema/digest/security/semantic shape，随后只做
+Duplicate candidate 使用唯一 deterministic projection：normalized bound `repo`、positive
+`number`、`identity=#<number>`、canonical issue URL、`state=open`、`updated_at`。
+Pure gate 从同一次 open duplicate search 返回字段重算 `facts_sha256`、identity 与 URL，
+不把 AI reason/observation 混入事实；record/check 不运行第二次 search 或 candidate
+re-read。Result state matrix 还要求 `typed_exit=blocked` 当且仅当 AI Review Gate 为 blocked。
+
+Recorder/checker 的生产入口先做 pure schema/digest/semantic shape，随后只做
 base live gate；只有 fresh base 才校验 repo-bound query/current/deep-read locators、issue、
 reviewed blob 与 archive/history。Base stale 仅匹配 caller-authored refresh codes 和
 superseded digests 后返回，以上读取必须为零。Workflow/standalone 的 `change_input` 十组
-clue arrays 至少一组非空，issue binding/canonical query 不得替代。Portable gate 精确识别
-裸文本、inline code、bold、句中和中文标点包裹的 `/<namespace>:<command>` span，同时
-继续拒绝 absolute/multi-segment path 与 signed URL。
+clue arrays 至少一组非空，issue binding/canonical query 不得替代。Portable locator 只按
+task artifact、canonical GitHub issue/PR 与 exact Git object/ref 的 source-specific closed
+structure 校验，不扫描整份 payload。
 
 它解决以下问题：
 

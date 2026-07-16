@@ -92,6 +92,14 @@ normalizes the exact supported GitHub state spelling to lowercase before
 binding it. This does not weaken the independently open-only duplicate search
 or the open-only issue binding created from a reviewed draft.
 
+Each duplicate candidate is a closed object whose deterministic fact
+projection is exactly normalized bound `repo`, positive `number`,
+`identity=#<number>`, canonical issue `url`, `state=open`, and `updated_at`.
+`facts_sha256` is SHA-256 over the canonical JSON projection and excludes
+AI-authored `reason` / `observation`. Pure validation recomputes the digest,
+identity, and canonical URL from those returned fields. Recorder/checker do not
+issue a second duplicate search or re-read candidates after AI review.
+
 A proposed draft keeps its original body and facts digest. When its normalized
 change input contains a created issue ref, `live_change.issue_binding` is
 required and binds repo, number, canonical URL, state, update time, body digest,
@@ -104,14 +112,13 @@ Canonical query arrays are `issue_refs`, `pr_refs`, `branches`, `paths`,
 `commands`, `config_keys`, `schema_fields`, `symbols`, `terms`, `queries`, and
 derived `tokens`. Text uses NFKC, casefold, trimmed/collapsed whitespace and
 byte-sorted deduplication; path exact identity preserves case/punctuation and
-rejects absolute, parent-traversal, symlink-backed and protected paths. The
+rejects absolute, parent-traversal, and protected paths. The
 newline-terminated compact sorted-key JSON digest is `query_sha256`.
 
 History algorithm `guru-context-history-score-1.0` enumerates only
-`.trellis/tasks/archive/**/finish-summary.json`, validates each path by lexical
-containment plus component `lstat`, and represents symlinked or unreadable
-subtrees as portable invalid rows instead of silently skipping them. It parses
-only top-level `index` and never
+`.trellis/tasks/archive/**/finish-summary.json`, applies lexical repository and
+archive containment, and classifies ordinary non-file/read/JSON/index-shape
+failures as portable invalid rows. It parses only top-level `index` and never
 consumes sibling fields. Exact weights are issue 1000, PR 900, branch 800, path
 700, command/config/schema/symbol 600, term 400 and query 300. Token points
 equal `min(99, unique query tokens present)`. Sort is total score, exact count
@@ -138,6 +145,10 @@ requires at least one reviewed-scope row and at least one evidence-bound
 load-bearing conclusion. These are structural completeness checks only; scripts
 do not author or judge the semantic content.
 
+The exit/Gate matrix is biconditional: `typed_exit=blocked` if and only if
+`ai_review_gate.status=blocked`. Both the published schema and runtime reject a
+passed Gate carried by `blocked` and a blocked Gate carried by any other exit.
+
 Each deep read uses a source-discriminated locator: `task_artifact` is a
 repo-relative regular file inside the selected archived task, `github` is a
 canonical GitHub issue/PR URL without query/fragment, and `git` is an exact
@@ -161,30 +172,12 @@ selected local/remote base refs and repository identity must remain bound, and
 all dirty paths must be task-local. Any base error short-circuits before live
 issue/draft, reviewed-blob, or archive-preview reads. A caller-authored
 `refresh_base` result is valid only when its latest refresh entry lists the
-exact stable refreshable live-error set and is bound to the actual pre-refresh
-snapshot. Both recorder and checker require one repeatable
-`--prior-snapshot-input` plus independently retained
-`--expected-prior-snapshot-sha256` pair for every refresh-history entry, ordered
-from the oldest `context_ready` ancestor through the direct prior. A history of
-length `N` additionally requires `N-1` repeatable
-`--prior-refresh-receipt-input` plus independently retained
-`--expected-prior-refresh-receipt-sha256` pairs in oldest-to-newest hop order.
-The existing one-ancestor-pair CLI remains valid for a single refresh and uses
-no receipt. They require exact counts and distinct ordered evidence, recompute
-every ancestor and receipt identity, require each ancestor history to equal the
-current history prefix at that depth, and bind every superseded query/snapshot
-digest to the preceding real snapshot. Receipt `i` must be the unique canonical
-`refresh_base` projection of ancestor `i`: change `typed_exit`, append exactly
-entry `i`, and recompute identity. Its full history must equal ancestor `i+1`'s
-history byte-for-byte. The current payload must be the same one-step projection
-from the direct prior with the latest entry. Missing, duplicate, reordered,
-skipped, rewritten, or non-parent ancestor/receipt evidence fails closed.
-Receipts are authoritative only when their bytes and digests were retained
-independently from the preceding production result, not generated from the
-current candidate. All evidence bytes remain external, are re-read after task
-recording to detect semantic drift, and are never persisted in the new artifact.
-Recorder/checker then return the authored typed exit without generating route
-intent.
+exact stable refreshable live-error set and records the current superseded
+query/snapshot digests, reason, and detection time. Recorder/checker compare
+those caller-authored facts with current live freshness, return the authored
+typed exit without generating route intent, and require complete skill
+re-entry. They consume only the current payload and expected snapshot identity,
+without reconstructing a refresh ancestry chain.
 That set includes `task_branch_stale` for real feature-worktree task branch
 drift; malformed task branch, locator, or state facts remain non-refreshable.
 Every 40-character reviewed Git identity is resolved again from `HEAD:<path>`
@@ -199,17 +192,12 @@ covers `.gitignore`, `.git/info/exclude`, and `core.excludesFile`, including a
 tracked file. Ignored or unreadable trackability fails closed with
 `context_discovery_target_ignored` or
 `context_discovery_target_trackability_unreadable`; pre-task stdout-only mode
-does not run this target gate. Existing target inspection
-uses `lexists` plus `lstat`; every symlink including dangling links, directory,
-device, FIFO, or other non-regular target fails closed, while only a
-byte-identical regular file is idempotent. Existing different bytes, stale
-identity, non-task tracked dirty paths, workspace/runtime/cache targets,
-macOS/Linux home paths, GitHub/Bearer tokens, private keys, database URLs, or
-digest mismatch fail without overwrite, sidecar, or raw-secret error output.
-The same whole-payload string gate covers duplicate facts/URLs, observations,
-deep reads, findings, and errors; it rejects POSIX/Windows/UNC/home/temp
-machine-local absolute paths plus AWS/GCS/Azure SAS and generic signed-query
-credentials while preserving ordinary URLs and repo-relative paths.
+does not run this target gate. An existing byte-identical snapshot is
+idempotent; different bytes, stale identity, non-task tracked dirty paths,
+workspace/runtime/cache targets, or digest mismatch fail without overwrite or
+sidecar. The closed schema and source-specific portable locator fields keep raw
+source payloads out of the persisted artifact through field-specific
+validation.
 
 ## Extension Version Manifest
 

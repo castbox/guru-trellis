@@ -96,6 +96,10 @@ wrappers. Managed companion assets include
 artifact schema id, and all three runtime command ids. Installed validation
 must prove exact bytes, executable modes, package/interface/tree digests and
 selected-platform inventory before direct discovery may run.
+Managed schema/runtime/tests must move together when duplicate candidate facts
+gain canonical repo/number/identity/URL/open-state/update-time digest and live
+freshness checks, or when the `blocked` exit/Gate state matrix changes; a mixed
+old-schema/new-runtime installation is drift and fails installed validation.
 
 Fresh install and update/reapply verification must exercise a selected-platform
 standalone wrapper with the full preset runtime. Missing runtime, runtime drift,
@@ -104,7 +108,9 @@ appear to work. The throwaway path also verifies workflow route markers,
 stdout-only standalone resolution/result facts, the real workflow
 `synced -> guru-discover-change-context -> context_ready -> clarification/intake`
 chain, direct zero/candidate history preview, same-snapshot task-local
-record/check, and the prepare-task planner/mutation guard chain using rolling post-sync
+record/check, duplicate projection/digest recomputation from one search result,
+ordinary refresh stale-code/superseded-digest re-entry,
+bidirectional blocked exit/Gate rejection, and the prepare-task planner/mutation guard chain using rolling post-sync
 resolution digests and the shared resolver/sync core, `trellis update`,
 workflow re-selection, preset reapply, and a final recursive zero-sidecar scan.
 

@@ -53,7 +53,7 @@ workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandato
 `guru-create-work-commit` reserved tombstone，并激活 `guru-sync-base`、
 `guru-discover-change-context` 与 `guru-create-task-commit`；workflow 不得为
 reserved id 伪造 route。当前 canonical
-extension version 是待发布的 `0.6.5-guru.10`，已发布 stable source 仍是
+extension version 是待发布的 `0.6.5-guru.11`，已发布 stable source 仍是
 `v0.6.5-guru.2`。
 
 Active interface schema 1.2 保留 `workflow` / `standalone` mode id，新增必填
@@ -176,35 +176,33 @@ checkout branch；task mode 只允许相同 HEAD 上进入 `task.json.branch` fe
 继续校验完整 provenance、base refs、active task locator/status 与 task-local-only dirty paths。Git status
 failure 不得冒充 clean，base stale 在 live issue/draft、reviewed blob 与 archive preview 前
 短路。Draft-created-issue binding live 校验原 reviewed body；caller-authored `refresh_base`
-必须与 stable live stale codes 一致，`context_ready` 对同一 stale 拒绝。Dangling symlink 与
-任何 non-regular snapshot target fail closed。Archive symlink/unreadable subtree 形成 portable invalid
-evidence。Deep-read locator 按 selected task artifact、canonical GitHub issue/PR 与 exact Git
-object/ref 三类闭合校验；`task_branch_stale` 可 refresh，其他 malformed task facts 不可。
-Whole-payload gate 拒绝 POSIX/Windows/UNC/home/temp machine paths、AWS/GCS/Azure SAS 或
-generic signed-query credentials、GitHub/Bearer token、private key 与 DB URL；
-不写 workspace/runtime/repo cache。
+必须与 stable live stale codes 一致，`context_ready` 对同一 stale 拒绝。Archive reader
+以普通 file/read/JSON/index-shape failure 形成 portable invalid evidence。
+Deep-read locator 按 selected task artifact、canonical GitHub issue/PR 与 exact Git object/ref
+三类闭合校验。Closed schema 与结构化 locator 不保存 raw source payload，也不做
+跨字段扫描；不写 workspace/runtime/repo cache。
 
 Source issue 支持 GitHub live `open` / `closed`，runtime 将受支持的 state casing
 归一为小写；duplicate candidates 与 draft-created issue binding 仍是 open-only。
 Current Docs、code/contracts、tests 的 40 位 Git identity 必须从 `HEAD:<path>` 解析为
 exact `blob`，tree、gitlink commit、tag、missing object 或 identity drift 均 fail closed。
 
-Record/check production entry 先执行 pure schema/digest/security/semantic shape，再执行
+Duplicate candidate 的 deterministic fact projection 是 normalized bound `repo`、positive
+`number`、`identity=#<number>`、canonical issue URL、`state=open` 与 `updated_at`；pure
+gate 从同一次 open duplicate search 返回字段重算排除 reason/observation 的
+`facts_sha256`、identity 与 URL；record/check 不运行第二次 search 或 candidate re-read。
+`blocked` exit 与 blocked AI Review Gate 在 schema/runtime 中
+双向绑定。
+
+Record/check production entry 先执行 pure schema/digest/semantic shape，再执行
 base-only live gate；repo-bound locator、issue、reviewed blob 与 archive/history 仅在 fresh
-base 后读取。`refresh_base` record/check 必须按 oldest `context_ready` ancestor 到 direct
-prior 顺序重复提供 external snapshot / expected digest 对，每条 refresh history 对应一对；
-长度 `N` 的 history 另需 `N-1` 份上一轮 production `refresh_base` receipt / expected digest
-对。单次 refresh 的原 ancestor 单对命令保持兼容且无需 receipt。Pure gate 验证完整数量、
-顺序、history prefix、每条 superseded link、每份 receipt 相对前一 ancestor 的唯一单步
-projection、receipt history 与下一 ancestor prefix 完全一致，以及 current 相对 direct-
-prior 的单步 projection；缺失、重复、错序、跳过、改写或非父关系 fail closed。Receipt
-必须在上一轮输出时连同 digest 独立保留，不能由当前候选链生成。Task 写后重读完整外部链，
-外部 bytes 不持久化。Task-local recorder 写前/写后与 checker 还使用 `git check-ignore
+base 后读取。`refresh_base` record/check 记录并核对当前 stable stale codes、superseded
+query/snapshot digests、reason 与 detection time，然后要求整步 re-entry；只消费当前 payload
+与 expected snapshot identity，不重建 ancestry。Task-local recorder 写前/写后与 checker 还使用 `git check-ignore
 --quiet --no-index -- <target>` 验证 artifact 未命中 repo ignore、`.git/info/exclude` 或
 `core.excludesFile`；pre-task stdout-only 不执行该 gate。Base stale 随后只匹配
 caller-authored refresh codes 后返回。`change_input` 十组 clue arrays 至少一组非空，issue binding/canonical query 不得
-替代。Portable gate 只豁免裸文本、inline code、bold、句中或中文标点包裹的精确
-`/<namespace>:<command>` span，不豁免真实 absolute/multi-segment path 或 signed URL。
+替代。Portable locator 只按 source-specific closed structure 验证，不扫描整份 payload。
 
 Schema 是 `guru-context-discovery-1.0`；managed commands 是
 `preview-change-context-history`、`record-context-discovery` 和

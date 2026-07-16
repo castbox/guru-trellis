@@ -342,7 +342,7 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.10"
+assert extension["version"] == "0.6.5-guru.11"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
 assert len(assets) == 74
@@ -757,6 +757,20 @@ issue_binding = {
 }
 issue_binding["facts_sha256"] = gtt.context_digest(issue_binding)
 live_change["issue_binding"] = issue_binding
+duplicate_facts = {
+    "repo": "castbox/guru-trellis-throwaway",
+    "number": 99,
+    "identity": "#99",
+    "url": "https://github.com/castbox/guru-trellis-throwaway/issues/99",
+    "state": "open",
+    "updated_at": "2026-01-01T00:00:00Z",
+}
+duplicate_candidate = {
+    **duplicate_facts,
+    "facts_sha256": gtt.context_digest(duplicate_facts),
+    "reason": "The open issue may describe the same change.",
+    "observation": "Clarification must decide reuse or a new target.",
+}
 payload = {
     "schema_version": "1.0",
     "skill_id": "guru-discover-change-context",
@@ -785,7 +799,8 @@ payload = {
     "live_change": live_change,
     "duplicate_search": {
         "query": "repo:castbox/guru-trellis-throwaway is:issue is:open context discovery",
-        "checked_at": "2026-01-01T00:00:00Z", "scope": "open_issues", "candidates": [],
+        "checked_at": "2026-01-01T00:00:00Z", "scope": "open_issues",
+        "candidates": [duplicate_candidate],
     },
     "current_state": {
         "sequence_trace": list(gtt.CONTEXT_SEQUENCE_TRACE),
@@ -875,6 +890,8 @@ if gtt.context_structural_errors(root, closed_source):
     raise SystemExit("installed context discovery rejected a closed source issue")
 closed_duplicate = copy.deepcopy(closed_source)
 closed_duplicate["duplicate_search"]["candidates"] = [{
+    "repo": "castbox/guru-trellis-throwaway",
+    "number": 99,
     "identity": "#99",
     "url": "https://github.com/castbox/guru-trellis-throwaway/issues/99",
     "state": "closed",
@@ -886,6 +903,42 @@ closed_duplicate["duplicate_search"]["candidates"] = [{
 closed_duplicate["snapshot_identity"] = gtt.context_snapshot_identity(closed_duplicate)
 if "context_schema_validation_failed" not in gtt.context_structural_errors(root, closed_duplicate):
     raise SystemExit("installed context discovery accepted a closed duplicate candidate")
+
+wrong_duplicate_digest = copy.deepcopy(payload)
+wrong_duplicate_digest["duplicate_search"]["candidates"][0]["facts_sha256"] = "f" * 64
+wrong_duplicate_digest["snapshot_identity"] = gtt.context_snapshot_identity(wrong_duplicate_digest)
+if "duplicate_candidate_facts_digest_mismatch" not in gtt.context_structural_errors(root, wrong_duplicate_digest):
+    raise SystemExit("installed context discovery accepted a mismatched duplicate digest")
+
+for field, value, expected_code in (
+    ("identity", "#100", "duplicate_candidate_identity_mismatch"),
+    ("url", "https://github.com/castbox/guru-trellis-throwaway/issues/100", "duplicate_candidate_url_mismatch"),
+):
+    variant = copy.deepcopy(payload)
+    candidate_variant = variant["duplicate_search"]["candidates"][0]
+    candidate_variant[field] = value
+    candidate_variant["facts_sha256"] = gtt.context_digest({
+        key: candidate_variant[key]
+        for key in ("repo", "number", "identity", "url", "state", "updated_at")
+    })
+    variant["snapshot_identity"] = gtt.context_snapshot_identity(variant)
+    if expected_code not in gtt.context_structural_errors(root, variant):
+        raise SystemExit(f"installed context discovery accepted duplicate {field} mismatch")
+
+blocked_with_passed_gate = copy.deepcopy(payload)
+blocked_with_passed_gate["typed_exit"] = "blocked"
+blocked_with_passed_gate["error"] = {
+    "codes": ["semantic_review_blocked"],
+    "summary": "The semantic review could not form safe evidence.",
+}
+blocked_with_passed_gate["snapshot_identity"] = gtt.context_snapshot_identity(blocked_with_passed_gate)
+if "blocked_requires_blocked_gate" not in gtt.context_structural_errors(root, blocked_with_passed_gate):
+    raise SystemExit("installed context discovery accepted blocked with a passed Gate")
+blocked_gate_with_ready_exit = copy.deepcopy(payload)
+blocked_gate_with_ready_exit["ai_review_gate"]["status"] = "blocked"
+blocked_gate_with_ready_exit["snapshot_identity"] = gtt.context_snapshot_identity(blocked_gate_with_ready_exit)
+if "blocked_gate_requires_blocked_exit" not in gtt.context_structural_errors(root, blocked_gate_with_ready_exit):
+    raise SystemExit("installed context discovery accepted a blocked Gate with context_ready")
 
 empty_change_input = copy.deepcopy(payload)
 empty_change_input["change_input"] = {
@@ -945,7 +998,7 @@ for source, locator in source_specific_locators:
 
 invalid_locators = (
     ("task_artifact", ".trellis/tasks/archive/2025-12/other-task/design.md"),
-    ("github", "https://github.com/castbox/guru-trellis-throwaway/issues/111?X-Amz-Signature=fake"),
+    ("github", "https://github.com/castbox/guru-trellis-throwaway/issues/111?view=full"),
     ("git", f"git:ref:refs/heads/missing@{head}"),
 )
 for source, locator in invalid_locators:
@@ -960,43 +1013,6 @@ for source, locator in invalid_locators:
         or gtt.context_repo_bound_locator_errors(root, variant)
     ):
         raise SystemExit(f"installed context discovery accepted invalid {source} locator")
-
-for unsafe in (
-    "/workspace",
-    "/custom",
-    "/first/second",
-    "/trellis:continue/etc/passwd",
-    "/tmp/private/context.json",
-    "C:\\Users\\example\\private\\context.json",
-    "\\\\server\\private\\context.json",
-    "https://storage.example.invalid/object?X-Amz-Signature=fake",
-    "https://storage.example.invalid/object?X-Goog-Credential=fake",
-    "https://storage.example.invalid/object?sv=1&se=2&sp=r&sig=fake",
-    "https://storage.example.invalid/object?signature=fake",
-):
-    variant = copy.deepcopy(payload)
-    variant["current_state"]["observations"] = [unsafe]
-    variant["snapshot_identity"] = gtt.context_snapshot_identity(variant)
-    if "non_portable_or_secret_content" not in gtt.context_structural_errors(root, variant):
-        raise SystemExit("installed context discovery accepted machine-local or signed evidence")
-
-for portable in (
-    "/trellis:continue",
-    "`/trellis:continue`",
-    "**/trellis:continue**",
-    "https://github.com/castbox/guru-trellis-throwaway/issues/111",
-    "docs/context-discovery-smoke.md",
-    "Run /trellis:continue after review.",
-    "完成后运行 /trellis:continue。",
-    "（/trellis:finish-work）",
-    "先运行 `/trellis:continue`，再检查。",
-    f"git:ref:refs/heads/main@{head}",
-):
-    variant = copy.deepcopy(payload)
-    variant["current_state"]["observations"] = [portable]
-    variant["snapshot_identity"] = gtt.context_snapshot_identity(variant)
-    if "non_portable_or_secret_content" in gtt.context_structural_errors(root, variant):
-        raise SystemExit("installed context discovery rejected portable evidence")
 
 output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 PY
@@ -1103,6 +1119,10 @@ cat >"$DISCOVERY_FAKE_BIN/gh" <<'SH'
 set -euo pipefail
 if [[ "${1:-}" == "issue" && "${2:-}" == "view" && "${3:-}" == "111" ]]; then
   printf '%s\n' '{"number":111,"url":"https://github.com/castbox/guru-trellis-throwaway/issues/111","state":"OPEN","updatedAt":"2026-01-01T00:00:00Z","body":"throwaway context discovery request"}'
+  exit 0
+fi
+if [[ "${1:-}" == "issue" && "${2:-}" == "view" && "${3:-}" == "99" ]]; then
+  printf '%s\n' '{"number":99,"url":"https://github.com/castbox/guru-trellis-throwaway/issues/99","state":"OPEN","updatedAt":"2026-01-01T00:00:00Z","body":"throwaway duplicate candidate"}'
   exit 0
 fi
 exit 2
@@ -1270,56 +1290,6 @@ Path(sys.argv[3]).write_text(json.dumps(payload, ensure_ascii=False, indent=2) +
 print(payload["snapshot_identity"]["snapshot_sha256"])
 PY
 )"
-DISCOVERY_REFRESH_TAMPERED_INPUT="$WORK_DIR/context-discovery-refresh-tampered.json"
-python3 - "$DISCOVERY_TASK_WORKTREE" "$DISCOVERY_REFRESH_INPUT" "$DISCOVERY_REFRESH_TAMPERED_INPUT" <<'PY'
-import importlib.util
-import json
-import sys
-from pathlib import Path
-
-root = Path(sys.argv[1]).resolve()
-payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
-runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
-spec = importlib.util.spec_from_file_location("installed_tampered_refresh_context_runtime", runtime)
-if spec is None or spec.loader is None:
-    raise SystemExit(f"could not load installed context discovery runtime: {runtime}")
-gtt = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = gtt
-spec.loader.exec_module(gtt)
-payload["refresh_history"][-1]["superseded_snapshot_sha256"] = "f" * 64
-payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-Path(sys.argv[3]).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-PY
-for DISCOVERY_REFRESH_TAMPERED_KIND in record check; do
-  set +e
-  if [[ "$DISCOVERY_REFRESH_TAMPERED_KIND" == "record" ]]; then
-    DISCOVERY_REFRESH_TAMPERED_JSON="$(
-      DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
-        --root "$DISCOVERY_TASK_WORKTREE" \
-        --json \
-        --mode standalone \
-        --input "$DISCOVERY_REFRESH_TAMPERED_INPUT" \
-        --prior-snapshot-input "$DISCOVERY_INPUT" \
-        --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" 2>&1
-    )"
-  else
-    DISCOVERY_REFRESH_TAMPERED_JSON="$(
-      DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_CHECK" \
-        --root "$DISCOVERY_TASK_WORKTREE" \
-        --json \
-        --input "$DISCOVERY_REFRESH_TAMPERED_INPUT" \
-        --prior-snapshot-input "$DISCOVERY_INPUT" \
-        --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" 2>&1
-    )"
-  fi
-  DISCOVERY_REFRESH_TAMPERED_STATUS=$?
-  set -e
-  if [[ "$DISCOVERY_REFRESH_TAMPERED_STATUS" -eq 0 ]]; then
-    echo "Context discovery accepted a forged superseded snapshot digest" >&2
-    exit 2
-  fi
-  python3 -c 'import json, sys; payload = json.load(sys.stdin); assert "superseded_snapshot_digest_mismatch" in payload["error_codes"]' <<<"$DISCOVERY_REFRESH_TAMPERED_JSON"
-done
 set +e
 DISCOVERY_NON_REFRESHABLE_JSON="$(
   DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
@@ -1328,9 +1298,7 @@ DISCOVERY_NON_REFRESHABLE_JSON="$(
     --mode standalone \
     --input "$DISCOVERY_REFRESH_INPUT" \
     --task "$DISCOVERY_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_REFRESH_SNAPSHOT_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" 2>&1
+    --expected-snapshot-sha256 "$DISCOVERY_REFRESH_SNAPSHOT_SHA256" 2>&1
 )"
 DISCOVERY_NON_REFRESHABLE_STATUS=$?
 set -e
@@ -1356,287 +1324,17 @@ DISCOVERY_REFRESH_TASK_JSON="$(
     --mode standalone \
     --input "$DISCOVERY_REFRESH_INPUT" \
     --task "$DISCOVERY_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_REFRESH_SNAPSHOT_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256"
+    --expected-snapshot-sha256 "$DISCOVERY_REFRESH_SNAPSHOT_SHA256"
 )"
 DISCOVERY_REFRESH_CHECK_JSON="$(
   DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_CHECK" \
     --root "$DISCOVERY_TASK_WORKTREE" \
     --json \
     --task "$DISCOVERY_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_REFRESH_SNAPSHOT_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256"
+    --expected-snapshot-sha256 "$DISCOVERY_REFRESH_SNAPSHOT_SHA256"
 )"
 python3 -c 'import json, sys; recorded = json.loads(sys.argv[1]); checked = json.load(sys.stdin); assert recorded["typed_exit"] == checked["typed_exit"] == "refresh_base"; assert recorded["snapshot_identity"]["snapshot_sha256"] == checked["snapshot_sha256"] == sys.argv[2]' "$DISCOVERY_REFRESH_TASK_JSON" "$DISCOVERY_REFRESH_SNAPSHOT_SHA256" <<<"$DISCOVERY_REFRESH_CHECK_JSON"
 rm -rf "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL"
-DISCOVERY_CHAIN_TASK_REL=".trellis/tasks/context-discovery-chain"
-mkdir -p "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_CHAIN_TASK_REL"
-printf '%s\n' "{\"id\":\"context-discovery-chain\",\"status\":\"planning\",\"branch\":\"$DISCOVERY_TASK_BRANCH-stale\"}" >"$DISCOVERY_TASK_WORKTREE/$DISCOVERY_CHAIN_TASK_REL/task.json"
-DISCOVERY_CHAIN_PRIOR_INPUT="$WORK_DIR/context-discovery-chain-prior.json"
-DISCOVERY_CHAIN_REFRESH_INPUT="$WORK_DIR/context-discovery-chain-refresh.json"
-DISCOVERY_CHAIN_REWRITE_INPUT="$WORK_DIR/context-discovery-chain-rewrite.json"
-DISCOVERY_CHAIN_SKIP_INPUT="$WORK_DIR/context-discovery-chain-skip.json"
-DISCOVERY_CHAIN_RECEIPT_INPUT="$WORK_DIR/context-discovery-chain-receipt.json"
-DISCOVERY_CHAIN_META="$WORK_DIR/context-discovery-chain-meta.json"
-python3 - \
-  "$DISCOVERY_TASK_WORKTREE" \
-  "$DISCOVERY_INPUT" \
-  "$DISCOVERY_CHAIN_PRIOR_INPUT" \
-  "$DISCOVERY_CHAIN_REFRESH_INPUT" \
-  "$DISCOVERY_CHAIN_REWRITE_INPUT" \
-  "$DISCOVERY_CHAIN_SKIP_INPUT" \
-  "$DISCOVERY_CHAIN_RECEIPT_INPUT" \
-  "$DISCOVERY_CHAIN_META" <<'PY'
-import copy
-import importlib.util
-import json
-import sys
-from pathlib import Path
-
-root = Path(sys.argv[1]).resolve()
-ancestor = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
-runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
-spec = importlib.util.spec_from_file_location("installed_refresh_chain_runtime", runtime)
-if spec is None or spec.loader is None:
-    raise SystemExit(f"could not load installed context discovery runtime: {runtime}")
-gtt = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = gtt
-spec.loader.exec_module(gtt)
-
-prior = copy.deepcopy(ancestor)
-prior["refresh_history"] = [{
-    "reason": "An earlier complete re-entry was required.",
-    "error_codes": ["remote_base_stale"],
-    "superseded_query_sha256": ancestor["canonical_query"]["query_sha256"],
-    "superseded_snapshot_sha256": ancestor["snapshot_identity"]["snapshot_sha256"],
-    "detected_at": "2026-01-01T00:01:00Z",
-}]
-prior["snapshot_identity"] = gtt.context_snapshot_identity(prior)
-
-receipt = copy.deepcopy(ancestor)
-receipt["typed_exit"] = "refresh_base"
-receipt["refresh_history"] = copy.deepcopy(prior["refresh_history"])
-receipt["snapshot_identity"] = gtt.context_snapshot_identity(receipt)
-
-refresh = copy.deepcopy(prior)
-refresh["typed_exit"] = "refresh_base"
-refresh["refresh_history"].append({
-    "reason": "The active task branch no longer matches the feature worktree.",
-    "error_codes": ["task_branch_stale"],
-    "superseded_query_sha256": prior["canonical_query"]["query_sha256"],
-    "superseded_snapshot_sha256": prior["snapshot_identity"]["snapshot_sha256"],
-    "detected_at": "2026-01-01T00:02:00Z",
-})
-refresh["snapshot_identity"] = gtt.context_snapshot_identity(refresh)
-
-rewritten = copy.deepcopy(refresh)
-rewritten["refresh_history"][0]["reason"] = "The old refresh entry was rewritten."
-rewritten["snapshot_identity"] = gtt.context_snapshot_identity(rewritten)
-
-skipped = copy.deepcopy(refresh)
-skipped["refresh_history"] = [copy.deepcopy(refresh["refresh_history"][-1])]
-skipped["snapshot_identity"] = gtt.context_snapshot_identity(skipped)
-
-for path, payload in zip(sys.argv[3:7], (prior, refresh, rewritten, skipped), strict=True):
-    Path(path).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-Path(sys.argv[7]).write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-Path(sys.argv[8]).write_text(json.dumps({
-    "prior": prior["snapshot_identity"]["snapshot_sha256"],
-    "receipt": receipt["snapshot_identity"]["snapshot_sha256"],
-    "refresh": refresh["snapshot_identity"]["snapshot_sha256"],
-}) + "\n", encoding="utf-8")
-PY
-DISCOVERY_CHAIN_PRIOR_SHA256="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["prior"])' "$DISCOVERY_CHAIN_META")"
-DISCOVERY_CHAIN_RECEIPT_SHA256="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["receipt"])' "$DISCOVERY_CHAIN_META")"
-DISCOVERY_CHAIN_REFRESH_SHA256="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["refresh"])' "$DISCOVERY_CHAIN_META")"
-DISCOVERY_CHAIN_RECORD_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
-    --root "$DISCOVERY_TASK_WORKTREE" \
-    --json \
-    --mode standalone \
-    --input "$DISCOVERY_CHAIN_REFRESH_INPUT" \
-    --task "$DISCOVERY_CHAIN_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_CHAIN_REFRESH_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_CHAIN_PRIOR_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_CHAIN_PRIOR_SHA256" \
-    --prior-refresh-receipt-input "$DISCOVERY_CHAIN_RECEIPT_INPUT" \
-    --expected-prior-refresh-receipt-sha256 "$DISCOVERY_CHAIN_RECEIPT_SHA256"
-)"
-DISCOVERY_CHAIN_CHECK_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_CHECK" \
-    --root "$DISCOVERY_TASK_WORKTREE" \
-    --json \
-    --task "$DISCOVERY_CHAIN_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_CHAIN_REFRESH_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_CHAIN_PRIOR_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_CHAIN_PRIOR_SHA256" \
-    --prior-refresh-receipt-input "$DISCOVERY_CHAIN_RECEIPT_INPUT" \
-    --expected-prior-refresh-receipt-sha256 "$DISCOVERY_CHAIN_RECEIPT_SHA256"
-)"
-python3 -c 'import json, sys; recorded = json.loads(sys.argv[1]); checked = json.load(sys.stdin); assert recorded["typed_exit"] == checked["typed_exit"] == "refresh_base"; assert checked["snapshot_sha256"] == sys.argv[2]' "$DISCOVERY_CHAIN_RECORD_JSON" "$DISCOVERY_CHAIN_REFRESH_SHA256" <<<"$DISCOVERY_CHAIN_CHECK_JSON"
-
-run_discovery_chain_negative() {
-  local kind="$1"
-  local input="$2"
-  local expected_code="$3"
-  shift 3
-  local output status
-  set +e
-  if [[ "$kind" == "record" ]]; then
-    output="$(DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
-      --root "$DISCOVERY_TASK_WORKTREE" --json --mode standalone \
-      --input "$input" --task "$DISCOVERY_CHAIN_TASK_REL" "$@" 2>&1)"
-  else
-    output="$(DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_CHECK" \
-      --root "$DISCOVERY_TASK_WORKTREE" --json --input "$input" \
-      --task "$DISCOVERY_CHAIN_TASK_REL" "$@" 2>&1)"
-  fi
-  status=$?
-  set -e
-  if [[ "$status" -eq 0 ]]; then
-    echo "Context discovery accepted invalid refresh ancestry: $kind $expected_code" >&2
-    exit 2
-  fi
-  python3 -c 'import json, sys; payload = json.load(sys.stdin); assert sys.argv[1] in payload["error_codes"], payload' "$expected_code" <<<"$output"
-}
-for DISCOVERY_CHAIN_KIND in record check; do
-  run_discovery_chain_negative "$DISCOVERY_CHAIN_KIND" "$DISCOVERY_CHAIN_REFRESH_INPUT" \
-    refresh_ancestor_chain_length_mismatch \
-    --prior-snapshot-input "$DISCOVERY_CHAIN_PRIOR_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_CHAIN_PRIOR_SHA256"
-  run_discovery_chain_negative "$DISCOVERY_CHAIN_KIND" "$DISCOVERY_CHAIN_REFRESH_INPUT" \
-    prior_snapshot_history_length_mismatch \
-    --prior-snapshot-input "$DISCOVERY_CHAIN_PRIOR_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_CHAIN_PRIOR_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" \
-    --prior-refresh-receipt-input "$DISCOVERY_CHAIN_RECEIPT_INPUT" \
-    --expected-prior-refresh-receipt-sha256 "$DISCOVERY_CHAIN_RECEIPT_SHA256"
-  run_discovery_chain_negative "$DISCOVERY_CHAIN_KIND" "$DISCOVERY_CHAIN_REWRITE_INPUT" \
-    prior_snapshot_history_prefix_mismatch \
-    --prior-snapshot-input "$DISCOVERY_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_CHAIN_PRIOR_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_CHAIN_PRIOR_SHA256" \
-    --prior-refresh-receipt-input "$DISCOVERY_CHAIN_RECEIPT_INPUT" \
-    --expected-prior-refresh-receipt-sha256 "$DISCOVERY_CHAIN_RECEIPT_SHA256"
-  run_discovery_chain_negative "$DISCOVERY_CHAIN_KIND" "$DISCOVERY_CHAIN_SKIP_INPUT" \
-    refresh_ancestor_chain_length_mismatch \
-    --prior-snapshot-input "$DISCOVERY_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_CHAIN_PRIOR_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_CHAIN_PRIOR_SHA256" \
-    --prior-refresh-receipt-input "$DISCOVERY_CHAIN_RECEIPT_INPUT" \
-    --expected-prior-refresh-receipt-sha256 "$DISCOVERY_CHAIN_RECEIPT_SHA256"
-  run_discovery_chain_negative "$DISCOVERY_CHAIN_KIND" "$DISCOVERY_CHAIN_REFRESH_INPUT" \
-    prior_refresh_receipt_evidence_required \
-    --prior-snapshot-input "$DISCOVERY_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_CHAIN_PRIOR_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_CHAIN_PRIOR_SHA256"
-  run_discovery_chain_negative "$DISCOVERY_CHAIN_KIND" "$DISCOVERY_CHAIN_REFRESH_INPUT" \
-    expected_prior_refresh_receipt_mismatch \
-    --prior-snapshot-input "$DISCOVERY_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_CHAIN_PRIOR_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_CHAIN_PRIOR_SHA256" \
-    --prior-refresh-receipt-input "$DISCOVERY_CHAIN_RECEIPT_INPUT" \
-    --expected-prior-refresh-receipt-sha256 "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-done
-
-DISCOVERY_CHAIN_THIRD_PRIOR_INPUT="$WORK_DIR/context-discovery-chain-third-prior.json"
-DISCOVERY_CHAIN_SECOND_RECEIPT_INPUT="$WORK_DIR/context-discovery-chain-second-receipt.json"
-DISCOVERY_CHAIN_THIRD_REFRESH_INPUT="$WORK_DIR/context-discovery-chain-third-refresh.json"
-DISCOVERY_CHAIN_THIRD_META="$WORK_DIR/context-discovery-chain-third-meta.json"
-python3 - \
-  "$DISCOVERY_TASK_WORKTREE" \
-  "$DISCOVERY_CHAIN_PRIOR_INPUT" \
-  "$DISCOVERY_CHAIN_REFRESH_INPUT" \
-  "$DISCOVERY_CHAIN_THIRD_PRIOR_INPUT" \
-  "$DISCOVERY_CHAIN_SECOND_RECEIPT_INPUT" \
-  "$DISCOVERY_CHAIN_THIRD_REFRESH_INPUT" \
-  "$DISCOVERY_CHAIN_THIRD_META" <<'PY'
-import copy
-import importlib.util
-import json
-import sys
-from pathlib import Path
-
-root = Path(sys.argv[1]).resolve()
-prior = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
-second_receipt = json.loads(Path(sys.argv[3]).read_text(encoding="utf-8"))
-runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
-spec = importlib.util.spec_from_file_location("installed_refresh_third_runtime", runtime)
-if spec is None or spec.loader is None:
-    raise SystemExit(f"could not load installed context discovery runtime: {runtime}")
-gtt = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = gtt
-spec.loader.exec_module(gtt)
-
-third_prior = copy.deepcopy(prior)
-third_prior["refresh_history"] = copy.deepcopy(second_receipt["refresh_history"])
-third_prior["snapshot_identity"] = gtt.context_snapshot_identity(third_prior)
-third_refresh = copy.deepcopy(third_prior)
-third_refresh["typed_exit"] = "refresh_base"
-third_refresh["refresh_history"].append({
-    "reason": "The active task branch changed for a third complete re-entry.",
-    "error_codes": ["task_branch_stale"],
-    "superseded_query_sha256": third_prior["canonical_query"]["query_sha256"],
-    "superseded_snapshot_sha256": third_prior["snapshot_identity"]["snapshot_sha256"],
-    "detected_at": "2026-01-01T00:03:00Z",
-})
-third_refresh["snapshot_identity"] = gtt.context_snapshot_identity(third_refresh)
-
-Path(sys.argv[4]).write_text(json.dumps(third_prior, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-Path(sys.argv[5]).write_text(json.dumps(second_receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-Path(sys.argv[6]).write_text(json.dumps(third_refresh, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-Path(sys.argv[7]).write_text(json.dumps({
-    "third_prior": third_prior["snapshot_identity"]["snapshot_sha256"],
-    "second_receipt": second_receipt["snapshot_identity"]["snapshot_sha256"],
-    "third_refresh": third_refresh["snapshot_identity"]["snapshot_sha256"],
-}) + "\n", encoding="utf-8")
-PY
-DISCOVERY_CHAIN_THIRD_PRIOR_SHA256="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["third_prior"])' "$DISCOVERY_CHAIN_THIRD_META")"
-DISCOVERY_CHAIN_SECOND_RECEIPT_SHA256="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["second_receipt"])' "$DISCOVERY_CHAIN_THIRD_META")"
-DISCOVERY_CHAIN_THIRD_REFRESH_SHA256="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["third_refresh"])' "$DISCOVERY_CHAIN_THIRD_META")"
-DISCOVERY_CHAIN_THIRD_CHECK_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_CHECK" \
-    --root "$DISCOVERY_TASK_WORKTREE" --json \
-    --input "$DISCOVERY_CHAIN_THIRD_REFRESH_INPUT" \
-    --task "$DISCOVERY_CHAIN_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_CHAIN_THIRD_REFRESH_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_CHAIN_PRIOR_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_CHAIN_PRIOR_SHA256" \
-    --prior-snapshot-input "$DISCOVERY_CHAIN_THIRD_PRIOR_INPUT" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_CHAIN_THIRD_PRIOR_SHA256" \
-    --prior-refresh-receipt-input "$DISCOVERY_CHAIN_RECEIPT_INPUT" \
-    --expected-prior-refresh-receipt-sha256 "$DISCOVERY_CHAIN_RECEIPT_SHA256" \
-    --prior-refresh-receipt-input "$DISCOVERY_CHAIN_SECOND_RECEIPT_INPUT" \
-    --expected-prior-refresh-receipt-sha256 "$DISCOVERY_CHAIN_SECOND_RECEIPT_SHA256"
-)"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "passed"; assert payload["snapshot_sha256"] == sys.argv[1]' "$DISCOVERY_CHAIN_THIRD_REFRESH_SHA256" <<<"$DISCOVERY_CHAIN_THIRD_CHECK_JSON"
-run_discovery_chain_negative check "$DISCOVERY_CHAIN_THIRD_REFRESH_INPUT" \
-  prior_refresh_receipt_history_prefix_mismatch \
-  --expected-snapshot-sha256 "$DISCOVERY_CHAIN_THIRD_REFRESH_SHA256" \
-  --prior-snapshot-input "$DISCOVERY_INPUT" \
-  --expected-prior-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" \
-  --prior-snapshot-input "$DISCOVERY_CHAIN_PRIOR_INPUT" \
-  --expected-prior-snapshot-sha256 "$DISCOVERY_CHAIN_PRIOR_SHA256" \
-  --prior-snapshot-input "$DISCOVERY_CHAIN_THIRD_PRIOR_INPUT" \
-  --expected-prior-snapshot-sha256 "$DISCOVERY_CHAIN_THIRD_PRIOR_SHA256" \
-  --prior-refresh-receipt-input "$DISCOVERY_CHAIN_SECOND_RECEIPT_INPUT" \
-  --expected-prior-refresh-receipt-sha256 "$DISCOVERY_CHAIN_SECOND_RECEIPT_SHA256" \
-  --prior-refresh-receipt-input "$DISCOVERY_CHAIN_RECEIPT_INPUT" \
-  --expected-prior-refresh-receipt-sha256 "$DISCOVERY_CHAIN_RECEIPT_SHA256"
-rm -rf "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_CHAIN_TASK_REL"
 mkdir -p "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_ZERO_TASK_REL"
 printf '%s\n' "{\"id\":\"context-discovery-zero\",\"status\":\"planning\",\"branch\":\"$DISCOVERY_TASK_BRANCH\"}" >"$DISCOVERY_TASK_WORKTREE/$DISCOVERY_ZERO_TASK_REL/task.json"
 DISCOVERY_ZERO_TASK_JSON="$(
