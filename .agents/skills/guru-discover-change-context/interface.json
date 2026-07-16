@@ -1,0 +1,110 @@
+{
+  "$schema": "../../schemas/skill-interface.schema.json",
+  "schema_version": "1.2",
+  "id": "guru-discover-change-context",
+  "name": "guru-discover-change-context",
+  "description": "Discover fresh current and archived change context, run the semantic evidence gate, and produce a portable snapshot before Guru Team requirement clarification.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": ["runtime_dependency", "fresh_base", "repository_identity", "change_input", "evidence_freshness"]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": ["runtime_dependency", "fresh_base", "repository_identity", "change_input", "evidence_freshness"]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed extension manifest, dispatcher, active package inventory and declared runtime commands",
+      "binding": "complete compatible Guru Team preset runtime",
+      "freshness": "validated by run-skill-command before every runtime command"
+    },
+    {
+      "id": "fresh_base",
+      "evidence": "validator-passed guru-base-sync-result-1.0 with selected base, decision checkout, base HEAD and post_sync_resolution_sha256",
+      "binding": "repository, selected base, decision checkout and clean synchronized HEAD",
+      "freshness": "validated before live change, current-state or history reads and again before snapshot acceptance"
+    },
+    {
+      "id": "repository_identity",
+      "evidence": "Git toplevel, normalized GitHub owner/repository and selected base ref",
+      "binding": "portable repository identity without machine-local paths",
+      "freshness": "must still describe the live decision checkout"
+    },
+    {
+      "id": "change_input",
+      "evidence": "issue, request, paths, commands, config keys, schema fields or symbols",
+      "binding": "one non-empty canonical clue set",
+      "freshness": "query digest and live issue/proposed draft identity remain unchanged"
+    },
+    {
+      "id": "evidence_freshness",
+      "evidence": "live change digest, reviewed Git blobs, query digest, archive manifest digest and snapshot digest",
+      "binding": "the exact current/history evidence reviewed by the AI gate",
+      "freshness": "objective validator rechecks declared live change, current evidence and archive bindings before context_ready"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [
+    {"id": "context_discovery_example", "path": "examples/context-discovery.json"}
+  ],
+  "schemas": [
+    {"id": "context_discovery_schema", "path": "schemas/context-discovery.schema.json"}
+  ],
+  "validators": [
+    {
+      "id": "history_previewer",
+      "command": "scripts/preview-change-context-history.sh",
+      "runtime_command": "preview-change-context-history",
+      "objective_scope": "canonical query, finish-summary index-only manifest, deterministic score/sort/limit/projection, invalid isolation and preview digests"
+    },
+    {
+      "id": "snapshot_recorder",
+      "command": "scripts/record-context-discovery.sh",
+      "runtime_command": "record-context-discovery",
+      "objective_scope": "canonical snapshot identity, stdout-only pre-task output, Git-trackable target gate and exact same-snapshot task-local persistence"
+    },
+    {
+      "id": "snapshot_validator",
+      "command": "scripts/check-context-discovery.sh",
+      "runtime_command": "check-context-discovery",
+      "objective_scope": "closed result shape, AI-authored gate evidence, Git-trackable task target, digest bindings, live freshness, candidate/mem rules and typed-exit identity"
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "context_ready",
+      "evidence": "fresh current/history snapshot with passed AI Review Gate and objective validation",
+      "consumer": {"kind": "workflow", "id": "guru-clarify-requirements"}
+    },
+    {
+      "id": "refresh_base",
+      "evidence": "stale base, live change, reviewed blob, query, archive manifest or snapshot binding",
+      "consumer": {"kind": "skill", "id": "guru-sync-base"}
+    },
+    {
+      "id": "blocked",
+      "evidence": "invalid input, unsafe path, contract failure or semantic gate unable to pass safely",
+      "consumer": {"kind": "stop", "id": "change-context-blocked"}
+    }
+  ],
+  "reentry": {
+    "identity": "mode, repository, base post-sync digest, change-input digest, live-change digest, query digest, archive-manifest digest and snapshot digest",
+    "freshness": "all live bindings are revalidated before acceptance; stale evidence restarts the complete Skill",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"]
+}

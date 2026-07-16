@@ -234,6 +234,11 @@ unknown/invalid provenance 保留原文件并写 `.new` 后阻塞。完成安装
 `trellis update` 后重放时，必须处理所有 sidecar，再运行 source/installed
 `check-skill-packages` 和 dogfood drift 检查。
 
+Known upgrade 的 conflict manifest 只在 `conflicts=[]` 且 `sidecars[]` 全部是与
+当前 managed `files[]` 相邻的 `.bak` 时可用于恢复。未删除的 backup 会在重放时
+继续保留并阻塞；全部删除后再次 apply 才能转为 `status=ok`。`.new`、未知编辑、
+异常路径、未绑定 backup 或实际 conflict 不得走此恢复分支。
+
 Manifest 的 `files[]` 是当前完整 inventory；平台选择缩减时，known managed
 旧副本安全删除并进入 `removals[]`，unknown/invalid 副本保留并进入
 `conflicts[]`，`sidecars[]` 必须与磁盘 `.new/.bak` 精确一致。任何 conflict
@@ -258,6 +263,9 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/run-skill-command.sh`
 - `.trellis/guru-team/scripts/bash/sync-base.sh`
 - `.trellis/guru-team/scripts/bash/check-base-sync.sh`
+- `.trellis/guru-team/scripts/bash/preview-change-context-history.sh`
+- `.trellis/guru-team/scripts/bash/record-context-discovery.sh`
+- `.trellis/guru-team/scripts/bash/check-context-discovery.sh`
 - `.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh`
 - `.trellis/guru-team/scripts/bash/record-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
@@ -278,8 +286,9 @@ platform selection:
 - `.trellis/guru-team/scripts/python/guru_team_trellis.py`
 
 Production skill registry 同时保留 reserved `guru-create-work-commit` 与 active
-`guru-sync-base`、`guru-create-task-commit`。当前 canonical extension version 是待发布的
-`0.6.5-guru.7`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
+`guru-sync-base`、`guru-discover-change-context`、`guru-create-task-commit`。当前
+canonical extension version 是待发布的
+`0.6.5-guru.11`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
 （含 interface、artifact schema、
 example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
 root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
@@ -292,6 +301,35 @@ Interface schema 1.2 中 `workflow` 表示 global mandatory routing，`standalon
 audited package inventory 与 discovery copies。Wrapper 只能经过该 dispatcher；旧 runtime、
 缺失 manifest/dispatcher、API/command mismatch 或 managed drift 会在 companion command
 之前 fail closed，并提示安装/升级完整 preset、处理 `.new` / `.bak`、重跑验证。
+
+`guru-discover-change-context` package 同时安装
+`guru-context-discovery-1.0` schema、example、contract、tests 与三个 executable thin
+wrappers。Direct discovery 与 workflow route 使用相同 fresh-base/change-input/evidence
+freshness preconditions。Runtime 只读取 archived `finish-summary.json:index.*`，使用
+`guru-context-history-score-1.0`，不读取 workspace/runtime 或 repo-level archive
+index/cache。Pre-task recorder stdout-only；task-local recorder 只写 expected digest 匹配的
+同一 `context-discovery.json` snapshot；pre-task/standalone 绑定 decision branch，真实 task
+feature worktree 绑定 `task.json.branch` 且保持相同 HEAD/base refs/provenance/repo 与 task-local
+dirty scope。Zero candidate 固定 empty selection/deep reads 与 `mem_review=not_needed`，不触发
+其它历史源。Installed/throwaway gates 覆盖 zero/candidate preview、真实 feature-worktree
+record/check、invalid mem shape、`trellis update`、workflow/preset reapply 和最终 zero sidecar。
+Source issue 的 live state 可为 normalized `open` / `closed`，但 duplicate candidates 与
+draft-created issue binding 仍 open-only。40 位 current evidence Git identity 必须解析为
+exact blob；tree、gitlink commit、tag、missing object 或 identity drift 不能满足
+Docs、code/contracts、tests evidence。Deep-read locator 分别绑定 selected task artifact、
+canonical GitHub issue/PR 或 exact Git object/ref；closed schema 与结构化 locator 不保存
+raw source payload，只做 field-specific validation。
+Duplicate candidate 的 managed schema/runtime 使用 repo、number、`#number` identity、
+canonical issue URL、open state 与 update time 的 canonical digest projection，并在 fresh
+base 后从同一次 search 返回字段重算 identity、URL 与 digest，不进行第二次 search 或
+candidate re-read。Managed schema/runtime 同时强制 `blocked` exit
+与 blocked AI Review Gate 双向一致。
+Refresh record/check 记录并核对当前 stable stale codes、superseded query/snapshot
+digests、reason 与 detection time，然后要求整步 re-entry；只消费当前 payload 与 expected
+snapshot identity，不重建 ancestry。
+`context_ready` 指向现有 `guru-clarify-requirements` workflow route，而非未实现的 #113
+Skill；source/installed validator 要求 active Skill consumer 与唯一 workflow/stop target
+marker 均可解析。
 
 Shared overlays are always installed:
 

@@ -163,6 +163,84 @@ equality without mutation, then returns the post-sync digest. `prepare-task`
 reuses the same resolver/sync core; each semantic-read or mutation guard
 consumes the previous post-sync digest and returns the next one.
 
+`guru-discover-change-context` is the active semantic consumer of
+`guru-sync-base:synced`. Both modes require identical `runtime_dependency`,
+`fresh_base`, `repository_identity`, `change_input`, and
+`evidence_freshness` preconditions. Its exact semantic stages are the schema
+1.2 five-stage profile. The package owns the fixed current-state-before-history
+sequence, AI candidate selection/deep-read, AI Review Gate, conditional human
+confirmation recorded as not required, same-snapshot recorder/validator, and
+the exits `context_ready`, `refresh_base`, and `blocked`.
+
+Its base evidence embeds the complete validator-passed
+`guru-base-sync-result-1.0` object rather than a HEAD-only projection. Runtime
+validation rechecks the result/schema digests, post-sync resolution, decision
+branch, selected remote refs, strict GitHub remote repository identity, and a
+fail-closed Git status read before later semantic sources. Pre-task and
+standalone validation bind the live checkout to the sync result's decision
+branch. Direct active task recording/checking instead binds the live checkout
+to `task.json.branch`, because task/worktree creation may move the same HEAD to
+a feature branch after the stdout snapshot was reviewed; it still requires the
+original HEAD, complete sync provenance, selected local/remote base refs,
+repository identity, direct active task locator/status, and task-local-only
+dirty paths. A proposed draft
+that names a created issue carries a separate live issue binding whose body
+digest must equal the original reviewed draft digest. Semantic evidence shape
+requires a non-empty mem summary when used and non-empty reviewed scope plus
+load-bearing conclusions for a passed AI Gate. A zero-candidate preview fixes
+selected/excluded/deep-read evidence to empty and fixes mem review to the
+`not_needed` shape, so it cannot reach `trellis mem` or another history source;
+candidate previews retain the four-source insufficiency gate. Scripts validate
+these shapes but do not supply the judgment.
+The live source change may bind an `open` or `closed` issue after normalizing
+the supported GitHub state spelling; duplicate candidates and a draft-created
+issue binding remain open-only. Current-state evidence that records a Git
+object id must resolve `HEAD:<path>` to exactly a blob. A tree, gitlink commit,
+tag, missing object, or mismatched blob cannot satisfy the required Docs,
+code/contracts, or tests evidence groups.
+
+Duplicate candidate facts are not caller-trusted free-form fields. Their
+canonical digest projection is normalized bound `repo`, positive `number`,
+`identity=#<number>`, canonical issue URL, `state=open`, and `updated_at`.
+Source validation/runtime pure checks recompute that digest, identity, and URL
+from the fields returned by the one duplicate search. They do not issue a
+second search or re-read candidates after AI review. The package result schema
+and runtime also enforce
+`typed_exit=blocked` if and only if `ai_review_gate.status=blocked`.
+
+Deep-read shape is source-discriminated: selected archived task artifact,
+canonical GitHub issue/PR URL, or exact live Git object/ref. Each locator is
+validated by its own closed structural contract, and active-task
+`task_branch_stale` remains a normal refreshable complete re-entry reason.
+
+External consumer resolution is part of both source and installed validation.
+Skill consumers must name an active registry id. Workflow/stop consumers must
+have exactly one matching `guru-workflow-target` / `guru-stop-target` marker;
+missing, duplicate, kind-mismatched, or dangling targets fail closed. The
+`guru-clarify-requirements` id names the existing Phase 0 workflow route until
+#113 activates any separate package.
+
+The package publishes artifact schema `guru-context-discovery-1.0`, scoring
+algorithm id `guru-context-history-score-1.0`, and dispatcher-only wrappers for
+`preview-change-context-history`, `record-context-discovery`, and
+`check-context-discovery`. The history command may enumerate only
+`.trellis/tasks/archive/**/finish-summary.json` and project only top-level
+`index`; it never reads index siblings, workspace/runtime state, or a repo-level
+archive index/cache. Scripts validate AI-authored selection and Gate evidence
+but do not select candidates, judge sufficiency, decide duplicate reuse, or
+synthesize semantic pass.
+
+For `refresh_base`, the result records the current stable stale codes,
+superseded query digest, superseded snapshot digest, reason, and detection
+time. Recorder/checker compare those caller-authored facts with current live
+freshness and require complete skill re-entry. The commands consume only the
+current payload and expected snapshot identity; they do not reconstruct an
+external ancestry chain.
+Task-local record/check also require the exact target to be non-ignored under
+`git check-ignore --quiet --no-index --` before and after recording and during
+checking. Ignore matches or unreadable trackability fail closed; pre-task mode
+remains stdout-only and does not perform this target gate.
+
 ## Distribution And Managed Hashes
 
 The preset installs an audited canonical registry/schema/package copy under
@@ -191,6 +269,16 @@ and sidecar outcome. `files[]` is the complete current managed-file inventory;
 `sidecars[]` exactly equals the `.new`/`.bak` files on disk. A manifest with an
 unresolved conflict or sidecar has `status=conflict`, never `ok`. It never stores
 an absolute local path.
+
+A conflict manifest is reusable as previous managed provenance only for the
+deterministic known-upgrade recovery state: `conflicts[]` is empty, every
+declared sidecar is a unique repo-relative `.bak` adjacent to a current
+`files[]` path, and every still-present sidecar is a regular file behind a
+non-symlink path. Reapply preserves the remaining `.bak` inventory and stays
+blocked; after all declared backups are removed, the next reapply may return
+`status=ok`. A `.new`, semantic conflict, malformed path, unbound backup, or
+non-regular sidecar never enters this recovery path and invalidates previous
+provenance.
 
 Every source, installed, platform, target, and sidecar path is lexically bound
 to the repository. Before any read, write, removal, chmod, or digest, the

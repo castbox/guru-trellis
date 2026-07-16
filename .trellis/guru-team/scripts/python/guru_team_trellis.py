@@ -127,6 +127,60 @@ TASK_COMMIT_SKILL_ID = "guru-create-task-commit"
 BASE_SYNC_SKILL_ID = "guru-sync-base"
 BASE_SYNC_SCHEMA_VERSION = "1.0"
 BASE_SYNC_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-base-sync-result-1.0.json"
+CONTEXT_DISCOVERY_SKILL_ID = "guru-discover-change-context"
+CONTEXT_DISCOVERY_SCHEMA_VERSION = "1.0"
+CONTEXT_DISCOVERY_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-context-discovery-1.0.json"
+CONTEXT_HISTORY_ALGORITHM_ID = "guru-context-history-score-1.0"
+CONTEXT_HISTORY_LIMIT = 20
+CONTEXT_QUERY_KINDS = (
+    "issue_refs", "pr_refs", "branches", "paths", "commands", "config_keys",
+    "schema_fields", "symbols", "terms", "queries",
+)
+CONTEXT_EXACT_WEIGHTS = {
+    "issue_refs": 1000,
+    "pr_refs": 900,
+    "branches": 800,
+    "paths": 700,
+    "commands": 600,
+    "config_keys": 600,
+    "schema_fields": 600,
+    "symbols": 600,
+    "terms": 400,
+    "queries": 300,
+}
+CONTEXT_SEQUENCE_TRACE = [
+    "fresh_base", "live_change", "duplicates", "docs", "code_contracts",
+    "tests", "query_clues", "history_preview",
+]
+CONTEXT_PROTECTED_PREFIXES = (
+    ".trellis/workspace/",
+    ".trellis/.runtime/",
+)
+CONTEXT_TOP_LEVEL_KEYS = {
+    "schema_version", "skill_id", "generated_at", "mode", "typed_exit",
+    "repository", "base_evidence", "change_input", "live_change",
+    "duplicate_search", "current_state", "canonical_query", "history_preview",
+    "history_review", "mem_review", "ai_review_gate", "human_confirmation",
+    "refresh_history", "snapshot_identity", "error",
+}
+CONTEXT_REFRESHABLE_LIVE_ERRORS = frozenset({
+    "archive_manifest_or_preview_stale",
+    "base_decision_branch_stale",
+    "base_head_stale",
+    "base_repository_stale",
+    "checkout_not_clean",
+    "dirty_path_outside_task",
+    "git_status_unreadable",
+    "live_draft_digest_stale",
+    "live_draft_issue_stale",
+    "live_draft_issue_unreadable",
+    "live_issue_stale",
+    "local_base_stale",
+    "remote_base_stale",
+    "reviewed_blob_stale",
+    "reviewed_content_stale",
+    "task_branch_stale",
+})
 TASK_COMMIT_PLAN_SCHEMA_VERSION = "1.0"
 TASK_COMMIT_PLAN_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json"
 TASK_COMMIT_PLAN_DIR = "task-commit-plans"
@@ -3408,6 +3462,12 @@ def base_sync_schema(root: Path) -> dict[str, Any]:
         root / ".trellis/guru-team/skills/packages/guru-sync-base/schemas/base-sync-result.schema.json",
         root / "trellis/skills/guru-team/packages/guru-sync-base/schemas/base-sync-result.schema.json",
     ]
+    runtime_path = Path(__file__).resolve()
+    if len(runtime_path.parents) > 4:
+        candidates.append(
+            runtime_path.parents[4]
+            / "skills/guru-team/packages/guru-sync-base/schemas/base-sync-result.schema.json"
+        )
     schema_path = next((path for path in candidates if path.is_file() and not path.is_symlink()), None)
     if schema_path is None:
         raise WorkflowError(
@@ -3830,7 +3890,7 @@ def git_dirty(root: Path) -> bool:
     return bool(run(["git", "status", "--porcelain"], cwd=root, check=False).stdout.strip())
 
 
-def git_status_paths(root: Path) -> list[str]:
+def git_status_paths(root: Path, *, fail_closed: bool = False) -> list[str]:
     proc = subprocess.run(
         ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all", "--no-renames"],
         cwd=str(root),
@@ -3839,14 +3899,23 @@ def git_status_paths(root: Path) -> list[str]:
         check=False,
     )
     if proc.returncode != 0:
+        if fail_closed:
+            raise WorkflowError("Could not inspect Git status paths.", exit_code=2)
         return []
     paths: list[str] = []
     for record in proc.stdout.split(b"\0"):
         if not record:
             continue
         if len(record) < 4:
+            if fail_closed:
+                raise WorkflowError("Git status returned an invalid path record.", exit_code=2)
             continue
-        paths.append(record[3:].decode("utf-8", "strict"))
+        try:
+            paths.append(record[3:].decode("utf-8", "strict"))
+        except UnicodeError as exc:
+            if fail_closed:
+                raise WorkflowError("Git status returned an invalid path record.", exit_code=2) from exc
+            raise
     return paths
 
 
@@ -12914,6 +12983,7 @@ def execute_marketplace_verification(
 
 SKILL_ID_PATTERN = re.compile(r"^guru-[a-z0-9]+(?:-[a-z0-9]+)+$")
 SKILL_ROUTE_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+SKILL_EXIT_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:[-_][a-z0-9]+)*$")
 SKILL_INTERFACE_STAGE_PROFILES = {
     "semantic": [
         "forward_behavior",
@@ -12937,6 +13007,7 @@ SKILL_PLATFORM_ROOTS = {
 }
 SKILL_INVOKE_RE = re.compile(r"^\s*<!--\s*guru-skill-invoke:\s*(\{.*\})\s*-->\s*$")
 SKILL_EXIT_RE = re.compile(r"^\s*<!--\s*guru-skill-exit:\s*(\{.*\})\s*-->\s*$")
+SKILL_TARGET_RE = re.compile(r"^\s*<!--\s*guru-(workflow|stop)-target:\s*(\{.*\})\s*-->\s*$")
 SKILL_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
 SKILL_INTERFACE_SCHEMA_VERSION = "1.2"
 SKILL_INTERFACE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.2.json"
@@ -12964,7 +13035,7 @@ SKILL_CONTRACT_SCHEMAS = {
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.0.json",
     },
     "interface": {
-        "sha256": "c9ce038617d0dba0f2e16ef4e5388dbfa6268de56fbdea52a224883025802a77",
+        "sha256": "33e5daf1362d6580027254fc15d63824cb4688c9e97e896489e9e817b034841e",
         "id": SKILL_INTERFACE_SCHEMA_ID,
     },
 }
@@ -13213,6 +13284,27 @@ def skill_json_schema_validation_errors(
             return isinstance(value, (int, float)) and not isinstance(value, bool)
         return False
 
+    def format_matches(value: str, expected: str) -> bool:
+        if expected == "date-time":
+            if re.fullmatch(
+                r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
+                r"(?:\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})",
+                value,
+            ) is None:
+                return False
+            try:
+                datetime.fromisoformat(value.replace("Z", "+00:00"))
+            except ValueError:
+                return False
+            return True
+        if expected == "uri":
+            try:
+                parsed = urlsplit(value)
+            except ValueError:
+                return False
+            return bool(parsed.scheme and (parsed.netloc or parsed.path))
+        return True
+
     def validate(value: Any, node: Any, path: str, output: list[str]) -> None:
         if not isinstance(node, dict):
             output.append(f"{label} schema node is not an object at {path}")
@@ -13222,6 +13314,25 @@ def skill_json_schema_validation_errors(
             if target is not None:
                 validate(value, target, path, output)
             return
+        all_options = node.get("allOf")
+        if all_options is not None:
+            if not isinstance(all_options, list) or not all_options:
+                output.append(f"{label} schema has an invalid allOf at {path}")
+            else:
+                for option in all_options:
+                    validate(value, option, path, output)
+        any_options = node.get("anyOf")
+        if any_options is not None:
+            if not isinstance(any_options, list) or not any_options:
+                output.append(f"{label} schema has an invalid anyOf at {path}")
+            else:
+                branch_results: list[list[str]] = []
+                for option in any_options:
+                    branch_errors: list[str] = []
+                    validate(value, option, path, branch_errors)
+                    branch_results.append(branch_errors)
+                if not any(not branch_errors for branch_errors in branch_results):
+                    output.append(f"{label} violates anyOf at {path}")
         options = node.get("oneOf")
         if options is not None:
             if not isinstance(options, list) or not options:
@@ -13237,9 +13348,28 @@ def skill_json_schema_validation_errors(
                 output.append(f"{label} violates oneOf at {path}")
             return
 
+        condition = node.get("if")
+        if condition is not None:
+            condition_errors: list[str] = []
+            validate(value, condition, path, condition_errors)
+            branch = node.get("then") if not condition_errors else node.get("else")
+            if branch is not None:
+                validate(value, branch, path, output)
+
         expected_type = node.get("type")
         if expected_type is not None:
-            if not isinstance(expected_type, str) or not type_matches(value, expected_type):
+            expected_types = (
+                [expected_type]
+                if isinstance(expected_type, str)
+                else expected_type
+                if isinstance(expected_type, list)
+                else []
+            )
+            if (
+                not expected_types
+                or any(not isinstance(item, str) for item in expected_types)
+                or not any(type_matches(value, item) for item in expected_types)
+            ):
                 output.append(f"{label} has wrong type at {path}")
                 return
         if "const" in node and not skill_json_equal(value, node.get("const")):
@@ -13253,14 +13383,31 @@ def skill_json_schema_validation_errors(
             minimum = node.get("minLength")
             if isinstance(minimum, int) and len(value) < minimum:
                 output.append(f"{label} is shorter than minLength at {path}")
+            maximum = node.get("maxLength")
+            if isinstance(maximum, int) and len(value) > maximum:
+                output.append(f"{label} is longer than maxLength at {path}")
             pattern = node.get("pattern")
             if isinstance(pattern, str) and re.search(pattern, value) is None:
                 output.append(f"{label} violates pattern at {path}")
+            expected_format = node.get("format")
+            if isinstance(expected_format, str) and not format_matches(value, expected_format):
+                output.append(f"{label} violates format at {path}")
+
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            minimum = node.get("minimum")
+            maximum = node.get("maximum")
+            if isinstance(minimum, (int, float)) and value < minimum:
+                output.append(f"{label} is less than minimum at {path}")
+            if isinstance(maximum, (int, float)) and value > maximum:
+                output.append(f"{label} is greater than maximum at {path}")
 
         if isinstance(value, list):
             minimum = node.get("minItems")
             if isinstance(minimum, int) and len(value) < minimum:
                 output.append(f"{label} has fewer than minItems at {path}")
+            maximum = node.get("maxItems")
+            if isinstance(maximum, int) and len(value) > maximum:
+                output.append(f"{label} has more than maxItems at {path}")
             if node.get("uniqueItems") is True:
                 for index, item in enumerate(value):
                     if any(skill_json_equal(item, previous) for previous in value[:index]):
@@ -13614,7 +13761,7 @@ def validate_skill_interface(
         consumer = item.get("consumer")
         if (
             set(item) != {"id", "evidence", "consumer"}
-            or not SKILL_ROUTE_ID_PATTERN.fullmatch(str(item.get("id") or ""))
+            or not SKILL_EXIT_ID_PATTERN.fullmatch(str(item.get("id") or ""))
             or not str(item.get("evidence") or "").strip()
             or not isinstance(consumer, dict)
             or set(consumer) != {"kind", "id"}
@@ -13668,19 +13815,20 @@ def parse_skill_workflow_markers(
     errors: list[str],
     *,
     missing_ok: bool = False,
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     try:
         lines = workflow.read_text(encoding="utf-8").splitlines()
     except FileNotFoundError:
         if missing_ok:
-            return [], []
+            return [], [], []
         errors.append("workflow marker source is missing or invalid UTF-8")
-        return [], []
+        return [], [], []
     except UnicodeDecodeError:
         errors.append("workflow marker source is missing or invalid UTF-8")
-        return [], []
+        return [], [], []
     invokes: list[dict[str, Any]] = []
     exits: list[dict[str, Any]] = []
+    targets: list[dict[str, Any]] = []
     fenced = False
     for line_number, line in enumerate(lines, 1):
         if line.lstrip().startswith("```"):
@@ -13693,12 +13841,27 @@ def parse_skill_workflow_markers(
         if match is None:
             match = SKILL_EXIT_RE.fullmatch(line)
             kind = "exit"
+        target_kind: str | None = None
         if match is None:
-            if "guru-skill-invoke:" in line or "guru-skill-exit:" in line:
+            target_match = SKILL_TARGET_RE.fullmatch(line)
+            if target_match is not None:
+                match = target_match
+                kind = "target"
+                target_kind = target_match.group(1)
+        if match is None:
+            if any(
+                marker in line
+                for marker in (
+                    "guru-skill-invoke:",
+                    "guru-skill-exit:",
+                    "guru-workflow-target:",
+                    "guru-stop-target:",
+                )
+            ):
                 errors.append(f"invalid workflow skill marker at line {line_number}")
             continue
         try:
-            payload = json.loads(match.group(1))
+            payload = json.loads(match.group(2) if kind == "target" else match.group(1))
         except json.JSONDecodeError:
             errors.append(f"invalid workflow skill marker JSON at line {line_number}")
             continue
@@ -13706,8 +13869,12 @@ def parse_skill_workflow_markers(
             errors.append(f"workflow skill marker at line {line_number} must be an object")
             continue
         payload["_line"] = line_number
-        (invokes if kind == "invoke" else exits).append(payload)
-    return invokes, exits
+        if kind == "target":
+            payload["_kind"] = target_kind
+            targets.append(payload)
+        else:
+            (invokes if kind == "invoke" else exits).append(payload)
+    return invokes, exits, targets
 
 
 def _validate_skill_source(
@@ -13728,7 +13895,14 @@ def _validate_skill_source(
         return {
             "status": "failed",
             "mode": "source",
-            "facts": {"schema_version": None, "reserved_ids": [], "active_ids": [], "invoke_markers": 0, "exit_markers": 0},
+            "facts": {
+                "schema_version": None,
+                "reserved_ids": [],
+                "active_ids": [],
+                "invoke_markers": 0,
+                "exit_markers": 0,
+                "target_markers": 0,
+            },
             "errors": errors,
         }
     registry_stat = skill_lstat_path(boundary, skills_root / "registry.json", "skill registry", errors, kind="file")
@@ -13808,7 +13982,7 @@ def _validate_skill_source(
 
     workflow_stat = None
     if not require_workflow:
-        invokes, exit_markers = [], []
+        invokes, exit_markers, target_markers = [], [], []
     else:
         workflow_stat = skill_lstat_path(
             boundary,
@@ -13818,9 +13992,13 @@ def _validate_skill_source(
             kind="file",
         )
         if workflow_stat is None:
-            invokes, exit_markers = [], []
+            invokes, exit_markers, target_markers = [], [], []
         else:
-            invokes, exit_markers = parse_skill_workflow_markers(workflow, errors, missing_ok=False)
+            invokes, exit_markers, target_markers = parse_skill_workflow_markers(
+                workflow,
+                errors,
+                missing_ok=False,
+            )
     invoke_counts: dict[str, int] = {}
     for marker in invokes:
         skill_id = str(marker.get("skill") or "")
@@ -13847,6 +14025,7 @@ def _validate_skill_source(
         consumer = marker.get("consumer")
         if (
             set(marker) != {"skill", "exit", "consumer", "_line"}
+            or not SKILL_EXIT_ID_PATTERN.fullmatch(exit_id)
             or not isinstance(consumer, dict)
             or set(consumer) != {"kind", "id"}
             or consumer.get("kind") not in {"workflow", "skill", "stop"}
@@ -13859,6 +14038,7 @@ def _validate_skill_source(
         elif skill_id not in active:
             errors.append(f"unknown skill {skill_id} has an exit route")
     declared_exits: set[tuple[str, str]] = set()
+    declared_consumers: set[tuple[str, str]] = set()
     for skill_id, interface in interfaces.items():
         if workflow_stat is None:
             continue
@@ -13868,6 +14048,15 @@ def _validate_skill_source(
                 continue
             key = (skill_id, str(item.get("id") or ""))
             declared_exits.add(key)
+            consumer = item.get("consumer")
+            if isinstance(consumer, dict):
+                consumer_kind = str(consumer.get("kind") or "")
+                consumer_id = str(consumer.get("id") or "")
+                declared_consumers.add((consumer_kind, consumer_id))
+                if consumer_kind == "skill" and consumer_id not in active:
+                    errors.append(
+                        f"external exit {skill_id}/{key[1]} references non-active skill consumer {consumer_id}"
+                    )
             markers = marker_map.get(key, [])
             if not markers:
                 errors.append(f"external exit {skill_id}/{key[1]} is unmapped")
@@ -13878,6 +14067,44 @@ def _validate_skill_source(
     for key in marker_map:
         if key not in declared_exits and key[0] in active:
             errors.append(f"unknown external exit {key[0]}/{key[1]} is mapped")
+    target_map: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for marker in target_markers:
+        target_kind = str(marker.get("_kind") or "")
+        target_id = str(marker.get("id") or "")
+        if (
+            set(marker) != {"id", "_kind", "_line"}
+            or target_kind not in {"workflow", "stop"}
+            or not SKILL_ROUTE_ID_PATTERN.fullmatch(target_id)
+        ):
+            errors.append(
+                f"invalid {target_kind or 'unknown'} target marker for {target_id or '<empty>'}"
+            )
+        target_map.setdefault((target_kind, target_id), []).append(marker)
+    for consumer_kind, consumer_id in sorted(declared_consumers):
+        if consumer_kind == "skill":
+            continue
+        markers = target_map.get((consumer_kind, consumer_id), [])
+        other_kinds = {
+            kind
+            for kind, target_id in target_map
+            if target_id == consumer_id and kind != consumer_kind
+        }
+        if not markers:
+            if other_kinds:
+                errors.append(
+                    f"{consumer_kind} consumer target {consumer_id} has a kind mismatch"
+                )
+            else:
+                errors.append(
+                    f"{consumer_kind} consumer target {consumer_id} is not declared"
+                )
+        elif len(markers) != 1:
+            errors.append(
+                f"{consumer_kind} consumer target {consumer_id} has multiple declarations"
+            )
+    for key in target_map:
+        if key not in declared_consumers:
+            errors.append(f"{key[0]} target {key[1]} is dangling")
     package_root = skills_root / "packages"
     package_root_stat = skill_lstat_path(boundary, package_root, "skill packages root", errors, kind="directory", required=False)
     if package_root_stat is not None:
@@ -13904,6 +14131,7 @@ def _validate_skill_source(
             "active_ids": sorted(active),
             "invoke_markers": len(invokes),
             "exit_markers": len(exit_markers),
+            "target_markers": len(target_markers),
         },
         "errors": errors,
     }
@@ -13937,6 +14165,7 @@ def validate_skill_source(
                 "active_ids": [],
                 "invoke_markers": 0,
                 "exit_markers": 0,
+                "target_markers": 0,
             },
             "errors": ["skill source validation failed safely on malformed input"],
         }
@@ -17380,6 +17609,1473 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def context_canonical_bytes(value: Any) -> bytes:
+    return (json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+
+
+def context_digest(value: Any) -> str:
+    return hashlib.sha256(context_canonical_bytes(value)).hexdigest()
+
+
+def context_sort(values: set[str] | list[str]) -> list[str]:
+    return sorted(set(values), key=lambda item: item.encode("utf-8"))
+
+
+def context_normalize_text(value: Any, label: str) -> str:
+    if not isinstance(value, str):
+        raise WorkflowError(f"{label} must be a string.", exit_code=2)
+    if not value or any(ord(character) < 32 or ord(character) == 127 for character in value):
+        raise WorkflowError(f"{label} contains an empty or control-character value.", exit_code=2)
+    normalized = " ".join(unicodedata.normalize("NFKC", value).casefold().strip().split())
+    if not normalized:
+        raise WorkflowError(f"{label} normalizes to an empty value.", exit_code=2)
+    return normalized
+
+
+def context_normalize_retrieval_text(value: Any) -> str:
+    if not isinstance(value, str) or not value or "\x00" in value:
+        raise WorkflowError("index retrieval_text is invalid.", exit_code=2)
+    if any(ord(character) < 32 and character not in "\t\n\r" for character in value):
+        raise WorkflowError("index retrieval_text contains invalid control characters.", exit_code=2)
+    normalized = " ".join(unicodedata.normalize("NFKC", value).casefold().split())
+    if not normalized:
+        raise WorkflowError("index retrieval_text normalizes to an empty value.", exit_code=2)
+    return normalized
+
+
+def context_canonical_ref(value: Any, *, pull_request: bool) -> str:
+    normalized = context_normalize_text(value, "query reference")
+    marker = "pull" if pull_request else "issues"
+    url_match = re.fullmatch(rf"https://github\.com/[^/]+/[^/]+/{marker}/([1-9][0-9]*)", normalized)
+    direct_pattern = r"(?:pr\s*)?#([1-9][0-9]*)" if pull_request else r"#?([1-9][0-9]*)"
+    direct_match = re.fullmatch(direct_pattern, normalized)
+    match = url_match or direct_match
+    if match is None:
+        kind = "PR" if pull_request else "issue"
+        raise WorkflowError(f"query {kind} reference is invalid.", exit_code=2)
+    return f"PR #{int(match.group(1))}" if pull_request else f"#{int(match.group(1))}"
+
+
+def context_query_path_shape(value: Any) -> str:
+    if not isinstance(value, str) or not value or "\\" in value:
+        raise WorkflowError("query path is invalid.", exit_code=2)
+    if any(ord(character) < 32 or ord(character) == 127 for character in value):
+        raise WorkflowError("query path contains control characters.", exit_code=2)
+    raw = Path(value)
+    if raw.is_absolute() or any(part in {"", ".", ".."} for part in raw.parts):
+        raise WorkflowError("query path must be a clean repository-relative path.", exit_code=2)
+    normalized = raw.as_posix()
+    if normalized == ".trellis/workspace" or normalized == ".trellis/.runtime" or any(
+        normalized.startswith(prefix) for prefix in CONTEXT_PROTECTED_PREFIXES
+    ):
+        raise WorkflowError("query path targets protected workspace/runtime state.", exit_code=2)
+    return normalized
+
+
+def context_query_path(root: Path, value: Any) -> str:
+    del root
+    return context_query_path_shape(value)
+
+
+def context_tokens(values: list[str]) -> list[str]:
+    tokens: set[str] = set()
+    for value in values:
+        camel_split = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", unicodedata.normalize("NFKC", value))
+        normalized = camel_split.casefold()
+        for token in re.findall(r"[^\W_]+", normalized, flags=re.UNICODE):
+            if len(token) >= 2 or token.isdigit():
+                tokens.add(token)
+    return context_sort(tokens)
+
+
+def canonicalize_context_query(
+    root: Path,
+    raw: Any,
+    *,
+    validate_repo_paths: bool = True,
+) -> dict[str, Any]:
+    if not isinstance(raw, dict):
+        raise WorkflowError("change-context query must be an object.", exit_code=2)
+    unknown = set(raw) - set(CONTEXT_QUERY_KINDS) - {"tokens", "query_sha256"}
+    if unknown:
+        raise WorkflowError("change-context query contains unknown fields.", exit_code=2)
+    query: dict[str, list[str]] = {}
+    token_inputs: list[str] = []
+    for kind in CONTEXT_QUERY_KINDS:
+        values = raw.get(kind, [])
+        if not isinstance(values, list):
+            raise WorkflowError(f"change-context query {kind} must be an array.", exit_code=2)
+        canonical: list[str] = []
+        for value in values:
+            if kind == "issue_refs":
+                normalized = context_canonical_ref(value, pull_request=False)
+            elif kind == "pr_refs":
+                normalized = context_canonical_ref(value, pull_request=True)
+            elif kind == "paths":
+                normalized = (
+                    context_query_path(root, value)
+                    if validate_repo_paths
+                    else context_query_path_shape(value)
+                )
+            else:
+                normalized = context_normalize_text(value, f"query {kind}")
+            canonical.append(normalized)
+            if kind not in {"issue_refs", "pr_refs"}:
+                token_inputs.append(str(value))
+        query[kind] = context_sort(canonical)
+    if not any(query[kind] for kind in CONTEXT_QUERY_KINDS):
+        raise WorkflowError("change-context query has no clues.", exit_code=2)
+    result: dict[str, Any] = {**query, "tokens": context_tokens(token_inputs)}
+    result["query_sha256"] = context_digest(result)
+    return result
+
+
+def context_index_projection(index: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "problem": index["problem"],
+        "outcome": index["outcome"],
+        "changed_behavior": copy.deepcopy(index["changed_behavior"]),
+        "affected_surfaces": copy.deepcopy(index["affected_surfaces"]),
+        "contract_changes": copy.deepcopy(index["contract_changes"]),
+        "search_terms": copy.deepcopy(index["search_terms"]),
+    }
+
+
+def context_archive_file_error(root: Path, path: Path) -> str | None:
+    try:
+        relative = path.relative_to(root)
+    except ValueError:
+        return "unsafe_path"
+    if relative.as_posix().startswith("../"):
+        return "unsafe_path"
+    archive_parts = Path(".trellis/tasks/archive").parts
+    if (
+        relative.name != "finish-summary.json"
+        or relative.parts[: len(archive_parts)] != archive_parts
+        or len(relative.parts) <= len(archive_parts) + 2
+    ):
+        return "unsafe_path"
+    return None if path.is_file() else "not_regular_file"
+
+
+def context_finish_summary_paths(root: Path) -> list[Path]:
+    archive = root / ".trellis/tasks/archive"
+    if not archive.exists():
+        return []
+    if not archive.is_dir():
+        raise WorkflowError("Archived task root must be a directory.", exit_code=2)
+    return sorted(
+        archive.glob("**/finish-summary.json"),
+        key=lambda path: path.relative_to(root).as_posix().encode("utf-8"),
+    )
+
+
+def context_candidate_score(query: dict[str, Any], index: dict[str, Any]) -> tuple[dict[str, Any], dict[str, list[str]]]:
+    search_terms = index["search_terms"]
+    retrieval = context_normalize_retrieval_text(index["retrieval_text"])
+    retrieval_tokens = set(context_tokens([index["retrieval_text"]]))
+    matched: dict[str, list[str]] = {}
+    exact_points = 0
+    exact_count = 0
+    normalized_scalars: set[str] = set(retrieval_tokens)
+    for values in search_terms.values():
+        if isinstance(values, list):
+            for value in values:
+                if isinstance(value, str):
+                    normalized_scalars.add(context_normalize_text(value, "index search term"))
+    for kind in CONTEXT_QUERY_KINDS:
+        query_values = query[kind]
+        matches: list[str] = []
+        if kind == "paths":
+            candidate_values = set(search_terms.get("paths", []))
+            matches = [value for value in query_values if value in candidate_values]
+        elif kind == "terms":
+            matches = [value for value in query_values if value in normalized_scalars]
+        elif kind == "queries":
+            matches = [value for value in query_values if value in retrieval]
+        else:
+            candidate_values = {
+                context_normalize_text(value, f"index {kind}")
+                if kind not in {"issue_refs", "pr_refs"} else value
+                for value in search_terms.get(kind, [])
+                if isinstance(value, str)
+            }
+            matches = [value for value in query_values if value in candidate_values]
+        matches = context_sort(matches)
+        if matches:
+            matched[kind] = matches
+            exact_count += len(matches)
+            exact_points += CONTEXT_EXACT_WEIGHTS[kind] * len(matches)
+    token_matches = context_sort(set(query["tokens"]) & retrieval_tokens)
+    if token_matches:
+        matched["tokens"] = token_matches
+    token_points = min(99, len(token_matches))
+    return {
+        "total": exact_points + token_points,
+        "exact": exact_points,
+        "token": token_points,
+        "exact_match_count": exact_count,
+        "token_match_count": len(token_matches),
+    }, matched
+
+
+def build_context_history_preview(root: Path, raw_query: Any, *, limit: int = CONTEXT_HISTORY_LIMIT) -> dict[str, Any]:
+    if limit != CONTEXT_HISTORY_LIMIT:
+        raise WorkflowError(f"history preview limit must equal {CONTEXT_HISTORY_LIMIT}.", exit_code=2)
+    query = canonicalize_context_query(root, raw_query)
+    manifest: list[dict[str, Any]] = []
+    candidates: list[dict[str, Any]] = []
+    for path in context_finish_summary_paths(root):
+        relative = path.relative_to(root).as_posix()
+        error_code = context_archive_file_error(root, path)
+        index: Any = None
+        if error_code is None:
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                error_code = "invalid_json"
+            else:
+                if not isinstance(payload, dict) or "index" not in payload:
+                    error_code = "missing_index"
+                else:
+                    index = payload.get("index")
+                    if finish_summary_index_errors(index, final=True):
+                        error_code = "invalid_index_shape"
+        if error_code is not None:
+            manifest.append({"path": relative, "status": "invalid", "error_code": error_code})
+            continue
+        index_sha256 = context_digest(index)
+        manifest.append({"path": relative, "status": "valid", "index_sha256": index_sha256})
+        score, matched = context_candidate_score(query, index)
+        if score["total"] <= 0:
+            continue
+        candidate_identity = {"finish_summary_path": relative, "index_sha256": index_sha256}
+        candidates.append({
+            "candidate_id": context_digest(candidate_identity),
+            **candidate_identity,
+            "score": score,
+            "matched_clues": matched,
+            "index_projection": context_index_projection(index),
+        })
+    manifest.sort(key=lambda row: row["path"].encode("utf-8"))
+    candidates.sort(key=lambda row: (
+        -row["score"]["total"],
+        -row["score"]["exact_match_count"],
+        -row["score"]["token_match_count"],
+        row["finish_summary_path"].encode("utf-8"),
+    ))
+    candidates = candidates[:limit]
+    invalid = [copy.deepcopy(row) for row in manifest if row["status"] == "invalid"]
+    result: dict[str, Any] = {
+        "algorithm_id": CONTEXT_HISTORY_ALGORITHM_ID,
+        "canonical_query": query,
+        "query_sha256": query["query_sha256"],
+        "archive_manifest_sha256": context_digest(manifest),
+        "limit": limit,
+        "manifest": manifest,
+        "candidates": candidates,
+        "invalid": invalid,
+    }
+    digest_input = {
+        key: result[key]
+        for key in ("algorithm_id", "query_sha256", "archive_manifest_sha256", "limit", "candidates", "invalid")
+    }
+    result["preview_sha256"] = context_digest(digest_input)
+    return result
+
+
+def context_active_task_dir(root: Path, value: str) -> Path:
+    raw = Path(value)
+    task_root_lexical = tasks_root(root)
+    if raw.is_absolute():
+        candidates = [raw]
+    elif len(raw.parts) == 1:
+        candidates = [task_root_lexical / raw]
+    else:
+        candidates = [root / raw]
+    task_dir: Path | None = None
+    for candidate in candidates:
+        candidate = Path(os.path.abspath(candidate))
+        if candidate.is_dir() and (candidate / "task.json").is_file():
+            task_dir = candidate
+            break
+    if task_dir is None:
+        raise WorkflowError(
+            "Context discovery recorder requires a direct active task directory.",
+            exit_code=2,
+            payload={"error_codes": ["task_not_active"]},
+        )
+    task_root = Path(os.path.abspath(task_root_lexical))
+    try:
+        relative = task_dir.relative_to(task_root)
+    except ValueError as exc:
+        raise WorkflowError(
+            "Context discovery recorder requires a direct active task directory.",
+            exit_code=2,
+            payload={"error_codes": ["task_not_active"]},
+        ) from exc
+    if len(relative.parts) != 1 or relative.parts[0] == "archive" or task_dir_is_archived(root, task_dir):
+        raise WorkflowError(
+            "Context discovery recorder requires a direct active task directory.",
+            exit_code=2,
+            payload={"error_codes": ["task_not_active"]},
+        )
+    task_path = task_dir / "task.json"
+    try:
+        task_payload = json.loads(task_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise WorkflowError(
+            "Context discovery recorder requires a readable active task marker.",
+            exit_code=2,
+            payload={"error_codes": ["task_not_active"]},
+        ) from exc
+    if not isinstance(task_payload, dict) or task_payload.get("status") not in {
+        "planning", "in_progress",
+    }:
+        raise WorkflowError(
+            "Context discovery recorder requires task status planning or in_progress.",
+            exit_code=2,
+            payload={"error_codes": ["task_not_active"]},
+        )
+    return task_dir
+
+
+def context_payload_from_args(
+    root: Path,
+    args: argparse.Namespace,
+    *,
+    require_active_task: bool = False,
+) -> tuple[dict[str, Any], Path | None]:
+    task_dir: Path | None = None
+    if getattr(args, "task", None):
+        task_dir = (
+            context_active_task_dir(root, args.task)
+            if require_active_task
+            else resolve_task_dir(root, args.task)
+        )
+    input_value = getattr(args, "input", None)
+    if input_value:
+        if input_value == "-":
+            raw = sys.stdin.read()
+        else:
+            input_path = Path(input_value)
+            if not input_path.is_absolute():
+                input_path = root / input_path
+            try:
+                raw = input_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeError) as exc:
+                raise WorkflowError("context discovery input is unreadable.", exit_code=2) from exc
+    elif task_dir is not None and (task_dir / "context-discovery.json").exists():
+        artifact = task_dir / "context-discovery.json"
+        try:
+            raw = artifact.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as exc:
+            raise WorkflowError("context discovery task artifact is unreadable.", exit_code=2) from exc
+    else:
+        raise WorkflowError("context discovery requires --input or a task-local artifact.", exit_code=2)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise WorkflowError("context discovery input is invalid JSON.", exit_code=2) from exc
+    if not isinstance(payload, dict):
+        raise WorkflowError("context discovery input root must be an object.", exit_code=2)
+    return payload, task_dir
+
+
+def context_snapshot_identity(payload: dict[str, Any]) -> dict[str, str]:
+    unsigned = copy.deepcopy(payload)
+    unsigned.pop("snapshot_identity", None)
+    payload_sha256 = context_digest(unsigned)
+    query = payload.get("canonical_query") if isinstance(payload.get("canonical_query"), dict) else {}
+    preview = payload.get("history_preview") if isinstance(payload.get("history_preview"), dict) else {}
+    live_change = payload.get("live_change") if isinstance(payload.get("live_change"), dict) else {}
+    base = payload.get("base_evidence") if isinstance(payload.get("base_evidence"), dict) else {}
+    sync_result = base.get("sync_result") if isinstance(base.get("sync_result"), dict) else {}
+    identity = {
+        "query_sha256": str(query.get("query_sha256") or ""),
+        "archive_manifest_sha256": str(preview.get("archive_manifest_sha256") or ""),
+        "live_change_sha256": str(live_change.get("facts_sha256") or ""),
+        "base_head": str(base.get("base_head") or ""),
+        "base_sync_facts_sha256": str(sync_result.get("facts_sha256") or ""),
+        "post_sync_resolution_sha256": str(base.get("post_sync_resolution_sha256") or ""),
+        "payload_sha256": payload_sha256,
+    }
+    identity["snapshot_sha256"] = context_digest(identity)
+    return identity
+
+
+def context_discovery_schema(root: Path) -> dict[str, Any]:
+    candidates = [
+        root / ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/context-discovery.schema.json",
+        root / "trellis/skills/guru-team/packages/guru-discover-change-context/schemas/context-discovery.schema.json",
+    ]
+    runtime_path = Path(__file__).resolve()
+    if len(runtime_path.parents) > 4:
+        candidates.append(
+            runtime_path.parents[4]
+            / "skills/guru-team/packages/guru-discover-change-context/schemas/context-discovery.schema.json"
+        )
+    schema_path = next(
+        (path for path in candidates if path.is_file() and not path.is_symlink()),
+        None,
+    )
+    if schema_path is None:
+        raise WorkflowError(
+            "Context discovery schema is missing from the compatible Guru Team runtime.",
+            exit_code=2,
+            payload={"error_codes": ["context_schema_unavailable"]},
+        )
+    errors: list[str] = []
+    schema = skill_read_json(schema_path, "context discovery schema", errors)
+    if (
+        errors
+        or schema is None
+        or schema.get("$schema") != SKILL_SCHEMA_DIALECT
+        or schema.get("$id") != CONTEXT_DISCOVERY_SCHEMA_ID
+    ):
+        raise WorkflowError(
+            "Context discovery schema identity is invalid.",
+            exit_code=2,
+            payload={"error_codes": ["context_schema_unavailable"]},
+        )
+    return schema
+
+
+def context_portable_path_errors(root: Path, value: Any, label: str) -> list[str]:
+    try:
+        context_query_path(root, value)
+    except WorkflowError:
+        return [f"{label}_unsafe"]
+    return []
+
+
+def context_portable_path_shape_errors(value: Any, label: str) -> list[str]:
+    try:
+        context_query_path_shape(value)
+    except WorkflowError:
+        return [f"{label}_unsafe"]
+    return []
+
+
+CONTEXT_GITHUB_LOCATOR_RE = re.compile(
+    r"^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/(?:issues|pull)/[1-9][0-9]*$"
+)
+CONTEXT_GIT_OBJECT_LOCATOR_RE = re.compile(r"^git:object:([0-9a-f]{40})$")
+CONTEXT_GIT_REF_LOCATOR_RE = re.compile(r"^git:ref:(refs/[A-Za-z0-9._/-]+)@([0-9a-f]{40})$")
+def context_github_locator_valid(value: str) -> bool:
+    if CONTEXT_GITHUB_LOCATOR_RE.fullmatch(value) is None:
+        return False
+    try:
+        parsed = urlsplit(value)
+    except ValueError:
+        return False
+    return (
+        parsed.scheme == "https"
+        and parsed.netloc == "github.com"
+        and parsed.username is None
+        and parsed.password is None
+        and parsed.port is None
+        and not parsed.query
+        and not parsed.fragment
+    )
+
+
+def context_git_locator_errors(root: Path, value: str) -> list[str]:
+    object_match = CONTEXT_GIT_OBJECT_LOCATOR_RE.fullmatch(value)
+    if object_match is not None:
+        oid = object_match.group(1)
+        try:
+            probe = run(["git", "cat-file", "-e", f"{oid}^{{object}}"], cwd=root, check=False)
+        except OSError:
+            return ["deep_read_git_object_unreadable"]
+        return [] if probe.returncode == 0 else ["deep_read_git_object_unreadable"]
+    ref_match = CONTEXT_GIT_REF_LOCATOR_RE.fullmatch(value)
+    if ref_match is None:
+        return ["deep_read_git_locator_invalid"]
+    ref, expected_oid = ref_match.groups()
+    try:
+        ref_check = run(["git", "check-ref-format", ref], cwd=root, check=False)
+    except OSError:
+        return ["deep_read_git_ref_unreadable"]
+    if ref_check.returncode != 0:
+        return ["deep_read_git_locator_invalid"]
+    try:
+        resolved = run(
+            ["git", "rev-parse", "--verify", "--quiet", ref],
+            cwd=root,
+            check=False,
+        )
+    except OSError:
+        return ["deep_read_git_ref_unreadable"]
+    if resolved.returncode != 0 or resolved.stdout.strip() != expected_oid:
+        return ["deep_read_git_ref_stale"]
+    return []
+
+
+def context_git_ref_shape_valid(value: str) -> bool:
+    if (
+        not value.startswith("refs/")
+        or value.endswith(("/", "."))
+        or ".." in value
+        or "@{" in value
+        or "//" in value
+        or any(character in value for character in " ~^:?*[\\")
+        or any(ord(character) < 32 or ord(character) == 127 for character in value)
+    ):
+        return False
+    return all(
+        component
+        and not component.startswith(".")
+        and not component.endswith(".lock")
+        for component in value.split("/")
+    )
+
+
+def context_git_locator_shape_errors(value: str) -> list[str]:
+    if CONTEXT_GIT_OBJECT_LOCATOR_RE.fullmatch(value) is not None:
+        return []
+    ref_match = CONTEXT_GIT_REF_LOCATOR_RE.fullmatch(value)
+    if ref_match is None or not context_git_ref_shape_valid(ref_match.group(1)):
+        return ["deep_read_git_locator_invalid"]
+    return []
+
+
+def context_duplicate_values(values: Any) -> bool:
+    if not isinstance(values, list):
+        return False
+    normalized: list[str] = []
+    for value in values:
+        if not isinstance(value, str):
+            return False
+        try:
+            normalized.append(context_normalize_text(value, "context value"))
+        except WorkflowError:
+            return False
+    return len(normalized) != len(set(normalized))
+
+
+def context_base_evidence_contract_errors(root: Path, payload: dict[str, Any]) -> list[str]:
+    base = payload.get("base_evidence")
+    repository = payload.get("repository")
+    if not isinstance(base, dict) or not isinstance(repository, dict):
+        return ["invalid_base_evidence"]
+    result = base.get("sync_result")
+    if not isinstance(result, dict):
+        return ["invalid_base_sync_result"]
+    errors: list[str] = []
+    unsigned_result = dict(result)
+    facts_sha256 = unsigned_result.pop("facts_sha256", None)
+    if facts_sha256 != canonical_json_sha256(unsigned_result):
+        errors.append("invalid_base_sync_result")
+    try:
+        schema_errors = skill_json_schema_validation_errors(
+            result,
+            base_sync_schema(root),
+            "context discovery base sync result",
+        )
+    except WorkflowError:
+        schema_errors = ["base sync schema unavailable"]
+    if schema_errors:
+        errors.append("invalid_base_sync_result")
+    resolution = result.get("resolution")
+    decision = result.get("decision_checkout")
+    git = result.get("git")
+    if not all(isinstance(value, dict) for value in (resolution, decision, git)):
+        return context_sort(errors + ["invalid_base_sync_result"])
+    expected_projection = {
+        "schema_id": BASE_SYNC_SCHEMA_ID.rsplit("/", 1)[-1].removesuffix(".json"),
+        "remote": resolution.get("remote"),
+        "base_head": decision.get("head_after"),
+        "decision_head": decision.get("head_after"),
+        "local_head": git.get("local_head_after"),
+        "remote_head": git.get("remote_head_after"),
+        "post_sync_resolution_sha256": result.get("post_sync_resolution_sha256"),
+        "clean": decision.get("clean_after"),
+    }
+    if any(base.get(key) != value for key, value in expected_projection.items()):
+        errors.append("base_sync_projection_mismatch")
+    if (
+        repository.get("selected_base") != resolution.get("selected_base")
+        or repository.get("decision_branch") != decision.get("branch")
+    ):
+        errors.append("base_repository_projection_mismatch")
+    repo = repository.get("repo")
+    if normalize_github_repository(repo) != repo:
+        errors.append("invalid_repository_identity")
+    return context_sort(errors)
+
+
+def context_change_binding_errors(payload: dict[str, Any]) -> list[str]:
+    live = payload.get("live_change")
+    change_input = payload.get("change_input")
+    repository = payload.get("repository")
+    if not all(isinstance(value, dict) for value in (live, change_input, repository)):
+        return ["invalid_live_change"]
+    binding = live.get("issue_binding")
+    if live.get("kind") == "issue":
+        return [] if binding is None else ["live_issue_forbids_issue_binding"]
+    if live.get("kind") != "draft":
+        return ["invalid_live_change_kind"]
+    unsigned = {
+        key: live.get(key)
+        for key in ("kind", "identity", "state", "updated_at", "body_sha256")
+    }
+    errors: list[str] = []
+    body_sha256 = str(live.get("body_sha256") or "")
+    if live.get("identity") != f"draft:{body_sha256}" or live.get("facts_sha256") != context_digest(unsigned):
+        errors.append("live_draft_digest_stale")
+    issue_refs = change_input.get("issue_refs")
+    if not isinstance(issue_refs, list):
+        return context_sort(errors + ["invalid_change_issue_refs"])
+    if not issue_refs:
+        if binding is not None:
+            errors.append("draft_issue_binding_without_issue_ref")
+        return context_sort(errors)
+    if not isinstance(binding, dict):
+        return context_sort(errors + ["draft_issue_binding_required"])
+    number = binding.get("number")
+    if not isinstance(number, int) or f"#{number}" not in issue_refs:
+        errors.append("draft_issue_binding_ref_mismatch")
+    if binding.get("repo") != repository.get("repo"):
+        errors.append("draft_issue_binding_repo_mismatch")
+    if binding.get("body_sha256") != body_sha256:
+        errors.append("draft_issue_body_mismatch")
+    binding_unsigned = {
+        key: binding.get(key)
+        for key in ("repo", "number", "url", "state", "updated_at", "body_sha256")
+    }
+    if binding.get("facts_sha256") != context_digest(binding_unsigned):
+        errors.append("draft_issue_binding_digest_mismatch")
+    return context_sort(errors)
+
+
+def context_duplicate_candidate_fact_projection(candidate: Any) -> dict[str, Any] | None:
+    if not isinstance(candidate, dict):
+        return None
+    repo = candidate.get("repo")
+    number = candidate.get("number")
+    identity = candidate.get("identity")
+    url = candidate.get("url")
+    state = candidate.get("state")
+    updated_at = candidate.get("updated_at")
+    if (
+        normalize_github_repository(repo) != repo
+        or not isinstance(number, int)
+        or isinstance(number, bool)
+        or number < 1
+        or not all(isinstance(value, str) and value for value in (identity, url, state, updated_at))
+    ):
+        return None
+    return {
+        "repo": repo,
+        "number": number,
+        "identity": identity,
+        "url": url,
+        "state": state,
+        "updated_at": updated_at,
+    }
+
+
+def context_duplicate_candidate_structural_errors(candidate: Any) -> list[str]:
+    expected_keys = {
+        "repo", "number", "identity", "url", "state", "updated_at",
+        "facts_sha256", "reason", "observation",
+    }
+    if not isinstance(candidate, dict) or set(candidate) != expected_keys:
+        return ["invalid_duplicate_candidate"]
+    projection = context_duplicate_candidate_fact_projection(candidate)
+    if projection is None:
+        return ["invalid_duplicate_candidate"]
+    errors: list[str] = []
+    repo = projection["repo"]
+    number = projection["number"]
+    if projection["identity"] != f"#{number}":
+        errors.append("duplicate_candidate_identity_mismatch")
+    if projection["url"] != f"https://github.com/{repo}/issues/{number}":
+        errors.append("duplicate_candidate_url_mismatch")
+    if projection["state"] != "open":
+        errors.append("duplicate_candidate_not_open")
+    if candidate.get("facts_sha256") != context_digest(projection):
+        errors.append("duplicate_candidate_facts_digest_mismatch")
+    return context_sort(errors)
+
+
+def context_change_input_errors(payload: dict[str, Any]) -> list[str]:
+    change_input = payload.get("change_input")
+    if not isinstance(change_input, dict):
+        return ["invalid_change_input"]
+    clue_lists = [change_input.get(kind) for kind in CONTEXT_QUERY_KINDS]
+    if any(not isinstance(values, list) for values in clue_lists):
+        return ["invalid_change_input"]
+    if not any(values for values in clue_lists):
+        return ["change_input_has_no_clues"]
+    errors: list[str] = []
+    for value in change_input.get("paths", []):
+        errors.extend(context_portable_path_shape_errors(value, "change_input_path"))
+    return context_sort(errors)
+
+
+def context_deep_read_shape_errors(
+    candidate_by_id: dict[str, dict[str, Any]],
+    row: Any,
+) -> list[str]:
+    if not isinstance(row, dict) or set(row) != {
+        "candidate_id", "source", "locator", "purpose", "conclusion",
+    }:
+        return ["invalid_deep_read"]
+    candidate_id = row.get("candidate_id")
+    source = row.get("source")
+    locator = row.get("locator")
+    if candidate_id not in candidate_by_id or source not in {"task_artifact", "github", "git"}:
+        return ["invalid_deep_read"]
+    if not all(isinstance(row.get(key), str) and row[key].strip() for key in ("locator", "purpose", "conclusion")):
+        return ["invalid_deep_read"]
+    if source == "github":
+        return [] if context_github_locator_valid(locator) else ["deep_read_github_locator_invalid"]
+    if source == "git":
+        return context_git_locator_shape_errors(locator)
+    portable_errors = context_portable_path_shape_errors(locator, "deep_read_locator")
+    if portable_errors:
+        return portable_errors
+    summary = candidate_by_id[candidate_id].get("finish_summary_path")
+    if not isinstance(summary, str):
+        return ["deep_read_candidate_invalid"]
+    summary_path = Path(summary)
+    archive_parts = Path(".trellis/tasks/archive").parts
+    if (
+        summary_path.name != "finish-summary.json"
+        or summary_path.parts[:len(archive_parts)] != archive_parts
+        or len(summary_path.parts) <= len(archive_parts) + 2
+    ):
+        return ["deep_read_candidate_invalid"]
+    task_dir = summary_path.parent
+    locator_path = Path(str(locator))
+    try:
+        locator_path.relative_to(task_dir)
+    except ValueError:
+        return ["deep_read_locator_outside_selected_task"]
+    return []
+
+
+def context_deep_read_locator_errors(
+    root: Path,
+    candidate_by_id: dict[str, dict[str, Any]],
+    row: Any,
+) -> list[str]:
+    shape_errors = context_deep_read_shape_errors(candidate_by_id, row)
+    if shape_errors:
+        return shape_errors
+    source = row["source"]
+    locator = row["locator"]
+    if source == "github":
+        return []
+    if source == "git":
+        return context_git_locator_errors(root, locator)
+    target = root / locator
+    return [] if target.is_file() else ["deep_read_locator_not_regular_file"]
+
+
+def context_structural_errors(root: Path, payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    schema_errors = skill_json_schema_validation_errors(
+        payload,
+        context_discovery_schema(root),
+        "context discovery result",
+    )
+    if schema_errors:
+        errors.append("context_schema_validation_failed")
+    if set(payload) != CONTEXT_TOP_LEVEL_KEYS:
+        errors.append("invalid_top_level_fields")
+    if payload.get("schema_version") != CONTEXT_DISCOVERY_SCHEMA_VERSION or payload.get("skill_id") != CONTEXT_DISCOVERY_SKILL_ID:
+        errors.append("invalid_schema_identity")
+    if payload.get("mode") not in {"workflow", "standalone"}:
+        errors.append("invalid_mode")
+    typed_exit = payload.get("typed_exit")
+    if typed_exit not in {"context_ready", "refresh_base", "blocked"}:
+        errors.append("invalid_typed_exit")
+    errors.extend(context_base_evidence_contract_errors(root, payload))
+    errors.extend(context_change_input_errors(payload))
+    errors.extend(context_change_binding_errors(payload))
+    query = payload.get("canonical_query")
+    try:
+        expected_query = canonicalize_context_query(
+            root,
+            query,
+            validate_repo_paths=False,
+        )
+    except WorkflowError:
+        errors.append("invalid_canonical_query")
+        expected_query = None
+    if expected_query is not None and query != expected_query:
+        errors.append("canonical_query_digest_mismatch")
+    current = payload.get("current_state")
+    if not isinstance(current, dict) or current.get("sequence_trace") != CONTEXT_SEQUENCE_TRACE:
+        errors.append("invalid_current_state_order")
+    elif not all(isinstance(current.get(key), list) for key in ("docs", "code_contracts", "tests", "observations")):
+        errors.append("invalid_current_state_evidence")
+    else:
+        if typed_exit == "context_ready" and any(not current[group] for group in ("docs", "code_contracts", "tests")):
+            errors.append("context_ready_requires_current_evidence")
+        for group in ("docs", "code_contracts", "tests"):
+            for row in current[group]:
+                if not isinstance(row, dict) or set(row) != {"path", "blob_or_content_sha256", "purpose", "observation", "query_clues"}:
+                    errors.append("invalid_current_state_evidence")
+                    continue
+                errors.extend(
+                    context_portable_path_shape_errors(
+                        row.get("path"),
+                        "current_evidence_path",
+                    )
+                )
+                if not re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", str(row.get("blob_or_content_sha256") or "")):
+                    errors.append("invalid_current_evidence_digest")
+                if context_duplicate_values(row.get("query_clues")):
+                    errors.append("duplicate_current_query_clues")
+    preview = payload.get("history_preview")
+    preview_keys = {
+        "algorithm_id", "canonical_query", "query_sha256", "archive_manifest_sha256",
+        "preview_sha256", "limit", "manifest", "candidates", "invalid",
+    }
+    if (
+        not isinstance(preview, dict)
+        or set(preview) != preview_keys
+        or preview.get("algorithm_id") != CONTEXT_HISTORY_ALGORITHM_ID
+        or preview.get("limit") != CONTEXT_HISTORY_LIMIT
+    ):
+        errors.append("invalid_history_preview")
+        candidate_rows: list[Any] = []
+    else:
+        candidate_rows = preview.get("candidates") if isinstance(preview.get("candidates"), list) else []
+        if preview.get("query_sha256") != (query or {}).get("query_sha256"):
+            errors.append("history_query_digest_mismatch")
+        if preview.get("canonical_query") != query:
+            errors.append("history_canonical_query_mismatch")
+        manifest = preview.get("manifest")
+        invalid = preview.get("invalid")
+        if not isinstance(manifest, list) or not isinstance(invalid, list):
+            errors.append("invalid_history_manifest")
+        else:
+            manifest_paths = [row.get("path") for row in manifest if isinstance(row, dict)]
+            if len(manifest_paths) != len(manifest) or len(manifest_paths) != len(set(manifest_paths)):
+                errors.append("duplicate_history_manifest_path")
+            expected_invalid = [row for row in manifest if isinstance(row, dict) and row.get("status") == "invalid"]
+            if invalid != expected_invalid:
+                errors.append("history_invalid_projection_mismatch")
+            if preview.get("archive_manifest_sha256") != context_digest(manifest):
+                errors.append("history_manifest_digest_mismatch")
+        digest_input = {
+            key: preview.get(key)
+            for key in ("algorithm_id", "query_sha256", "archive_manifest_sha256", "limit", "candidates", "invalid")
+        }
+        if preview.get("preview_sha256") != context_digest(digest_input):
+            errors.append("history_preview_digest_mismatch")
+    candidate_ids = [row.get("candidate_id") for row in candidate_rows if isinstance(row, dict)]
+    if len(candidate_ids) != len(candidate_rows) or len(candidate_ids) != len(set(candidate_ids)):
+        errors.append("invalid_history_candidates")
+    candidate_by_id = {
+        str(row["candidate_id"]): row
+        for row in candidate_rows
+        if isinstance(row, dict) and isinstance(row.get("candidate_id"), str)
+    }
+    review = payload.get("history_review")
+    if not isinstance(review, dict) or set(review) != {"selected_candidates", "excluded_candidates", "deep_reads"}:
+        errors.append("invalid_history_review")
+    else:
+        selected = review.get("selected_candidates") if isinstance(review.get("selected_candidates"), list) else []
+        excluded = review.get("excluded_candidates") if isinstance(review.get("excluded_candidates"), list) else []
+        selected_ids = [row.get("candidate_id") for row in selected if isinstance(row, dict)]
+        excluded_ids = [row.get("candidate_id") for row in excluded if isinstance(row, dict)]
+        if (
+            len(selected_ids) != len(selected)
+            or len(excluded_ids) != len(excluded)
+            or len(selected_ids) != len(set(selected_ids))
+            or len(excluded_ids) != len(set(excluded_ids))
+            or any(
+                set(row) != {"candidate_id", "reason"}
+                or not isinstance(row.get("reason"), str)
+                or not row["reason"].strip()
+                for row in selected + excluded if isinstance(row, dict)
+            )
+        ):
+            errors.append("invalid_candidate_selection_shape")
+        if candidate_ids and not (1 <= len(selected_ids) <= min(3, len(candidate_ids))):
+            errors.append("invalid_selected_candidate_count")
+        if not candidate_ids and (selected or excluded or review.get("deep_reads")):
+            errors.append("zero_candidate_review_must_be_empty")
+        if set(selected_ids) | set(excluded_ids) != set(candidate_ids) or set(selected_ids) & set(excluded_ids):
+            errors.append("candidate_selection_partition_mismatch")
+        deep_reads = review.get("deep_reads") if isinstance(review.get("deep_reads"), list) else []
+        deep_ids = [row.get("candidate_id") for row in deep_reads if isinstance(row, dict)]
+        if set(selected_ids) != set(deep_ids) and selected_ids:
+            errors.append("selected_candidate_deep_read_mismatch")
+        for row in deep_reads:
+            errors.extend(context_deep_read_shape_errors(candidate_by_id, row))
+    duplicate_search = payload.get("duplicate_search")
+    if not isinstance(duplicate_search, dict) or set(duplicate_search) != {"query", "checked_at", "scope", "candidates"}:
+        errors.append("invalid_duplicate_search")
+    else:
+        duplicate_candidates = duplicate_search.get("candidates")
+        if not isinstance(duplicate_candidates, list):
+            errors.append("invalid_duplicate_search")
+        else:
+            for candidate in duplicate_candidates:
+                errors.extend(context_duplicate_candidate_structural_errors(candidate))
+            duplicate_ids = [row.get("identity") for row in duplicate_candidates if isinstance(row, dict)]
+            if len(duplicate_ids) != len(duplicate_candidates) or len(duplicate_ids) != len(set(duplicate_ids)):
+                errors.append("duplicate_issue_candidate_identity")
+    mem = payload.get("mem_review")
+    if not isinstance(mem, dict) or mem.get("status") not in {"not_needed", "used"}:
+        errors.append("invalid_mem_review")
+    elif not candidate_ids and mem.get("status") != "not_needed":
+        errors.append("zero_candidate_mem_must_be_not_needed")
+    elif mem.get("status") == "used":
+        sources = mem.get("exhausted_sources")
+        if (
+            not isinstance(sources, dict)
+            or set(sources) != {"task_artifacts", "current_docs_code_tests", "github", "git_history"}
+            or not all(value is True for value in sources.values())
+            or not str(mem.get("load_bearing_question") or "").strip()
+            or not str(mem.get("summary") or "").strip()
+        ):
+            errors.append("mem_gate_not_satisfied")
+    else:
+        if (
+            mem.get("load_bearing_question") is not None
+            or mem.get("summary") is not None
+            or mem.get("exhausted_sources") != {
+                "task_artifacts": False,
+                "current_docs_code_tests": False,
+                "github": False,
+                "git_history": False,
+            }
+        ):
+            errors.append("mem_not_needed_shape_invalid")
+    gate = payload.get("ai_review_gate")
+    if not isinstance(gate, dict) or gate.get("status") not in {"passed", "blocked"}:
+        errors.append("invalid_ai_review_gate")
+    else:
+        if typed_exit == "context_ready" and gate.get("status") != "passed":
+            errors.append("context_ready_requires_passed_gate")
+        if typed_exit == "blocked" and gate.get("status") != "blocked":
+            errors.append("blocked_requires_blocked_gate")
+        if gate.get("status") == "blocked" and typed_exit != "blocked":
+            errors.append("blocked_gate_requires_blocked_exit")
+        if gate.get("status") == "passed" and any(
+            isinstance(row, dict) and row.get("status") == "open"
+            for row in gate.get("findings", []) if isinstance(gate.get("findings"), list)
+        ):
+            errors.append("passed_gate_has_open_findings")
+    if isinstance(gate, dict) and gate.get("status") == "passed" and (
+        not isinstance(gate.get("reviewed_scope"), list)
+        or not gate["reviewed_scope"]
+        or not isinstance(gate.get("load_bearing_conclusions"), list)
+        or not gate["load_bearing_conclusions"]
+    ):
+        errors.append("passed_gate_requires_semantic_evidence")
+    if payload.get("human_confirmation") != {"status": "not_required", "reason": "decision_owned_by_guru-clarify-requirements"}:
+        errors.append("invalid_human_confirmation")
+    if typed_exit == "refresh_base":
+        refresh_history = payload.get("refresh_history")
+        if not isinstance(refresh_history, list) or not refresh_history:
+            errors.append("refresh_base_requires_history")
+        else:
+            latest = refresh_history[-1]
+            codes = latest.get("error_codes") if isinstance(latest, dict) else None
+            if (
+                not isinstance(codes, list)
+                or not codes
+                or any(not isinstance(code, str) for code in codes)
+                or codes != context_sort(codes)
+            ):
+                errors.append("invalid_refresh_error_codes")
+            if isinstance(latest, dict) and latest.get("superseded_query_sha256") != (
+                query.get("query_sha256") if isinstance(query, dict) else None
+            ):
+                errors.append("refresh_query_digest_mismatch")
+    if typed_exit == "blocked" and not isinstance(payload.get("error"), dict):
+        errors.append("blocked_requires_error")
+    if typed_exit == "context_ready" and payload.get("error") is not None:
+        errors.append("context_ready_forbids_error")
+    expected_identity = context_snapshot_identity(payload)
+    if payload.get("snapshot_identity") != expected_identity:
+        errors.append("snapshot_identity_mismatch")
+    return context_sort(errors)
+
+
+def context_repo_bound_locator_errors(root: Path, payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    change_input = payload.get("change_input")
+    if isinstance(change_input, dict) and isinstance(change_input.get("paths"), list):
+        for value in change_input["paths"]:
+            errors.extend(context_portable_path_errors(root, value, "change_input_path"))
+    query = payload.get("canonical_query")
+    if isinstance(query, dict) and isinstance(query.get("paths"), list):
+        for value in query["paths"]:
+            errors.extend(context_portable_path_errors(root, value, "canonical_query_path"))
+    current = payload.get("current_state")
+    if isinstance(current, dict):
+        for group in ("docs", "code_contracts", "tests"):
+            rows = current.get(group)
+            if not isinstance(rows, list):
+                continue
+            for row in rows:
+                if isinstance(row, dict):
+                    errors.extend(
+                        context_portable_path_errors(
+                            root,
+                            row.get("path"),
+                            "current_evidence_path",
+                        )
+                    )
+    preview = payload.get("history_preview")
+    review = payload.get("history_review")
+    if isinstance(preview, dict) and isinstance(review, dict):
+        candidates = preview.get("candidates")
+        candidate_rows = candidates if isinstance(candidates, list) else []
+        candidate_by_id = {
+            str(row["candidate_id"]): row
+            for row in candidate_rows if isinstance(row, dict)
+            if isinstance(row.get("candidate_id"), str)
+        }
+        deep_reads = review.get("deep_reads")
+        if isinstance(deep_reads, list):
+            for row in deep_reads:
+                errors.extend(
+                    context_deep_read_locator_errors(root, candidate_by_id, row)
+                )
+    return context_sort(errors)
+
+
+def context_read_live_issue(
+    root: Path,
+    repository: str,
+    number: int,
+) -> tuple[dict[str, Any] | None, str | None]:
+    proc = run([
+        "gh", "issue", "view", str(number), "--repo", repository,
+        "--json", "number,url,state,updatedAt,body",
+    ], cwd=root, check=False)
+    if proc.returncode != 0:
+        return None, "unreadable"
+    try:
+        issue = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return None, "invalid"
+    state = str(issue.get("state") or "").casefold()
+    if state not in {"open", "closed"}:
+        return None, "invalid"
+    expected_url = f"https://github.com/{repository}/issues/{number}"
+    if issue.get("number") != number or issue.get("url") != expected_url:
+        return None, "invalid"
+    facts = {
+        "repo": repository,
+        "number": issue.get("number"),
+        "url": issue.get("url"),
+        "state": state,
+        "updated_at": issue.get("updatedAt"),
+        "body_sha256": hashlib.sha256(str(issue.get("body") or "").encode("utf-8")).hexdigest(),
+    }
+    facts["facts_sha256"] = context_digest(facts)
+    return facts, None
+
+
+def context_live_change_errors(root: Path, payload: dict[str, Any]) -> list[str]:
+    live = payload.get("live_change")
+    repository = payload.get("repository")
+    change_input = payload.get("change_input")
+    if not all(isinstance(value, dict) for value in (live, repository, change_input)):
+        return ["invalid_live_change"]
+    repo = str(repository.get("repo") or "")
+    if live.get("kind") == "draft":
+        binding_errors = context_change_binding_errors(payload)
+        if binding_errors:
+            return binding_errors
+        issue_refs = change_input.get("issue_refs")
+        if not issue_refs:
+            return []
+        binding = live.get("issue_binding")
+        if not isinstance(binding, dict) or not isinstance(binding.get("number"), int):
+            return ["draft_issue_binding_required"]
+        facts, issue_error = context_read_live_issue(root, repo, binding["number"])
+        if issue_error is not None:
+            return ["live_draft_issue_unreadable"]
+        return [] if binding == facts else ["live_draft_issue_stale"]
+    if live.get("kind") != "issue":
+        return ["invalid_live_change_kind"]
+    match = re.search(r"(?:issues/|#)([1-9][0-9]*)$", str(live.get("identity") or ""))
+    if match is None:
+        return ["invalid_live_issue_identity"]
+    facts, issue_error = context_read_live_issue(root, repo, int(match.group(1)))
+    if issue_error == "unreadable":
+        return ["live_issue_unreadable"]
+    if issue_error is not None or facts is None:
+        return ["live_issue_invalid"]
+    expected = {
+        "kind": "issue", "identity": facts["url"], "state": facts["state"],
+        "updated_at": facts["updated_at"], "body_sha256": facts["body_sha256"],
+        "facts_sha256": facts["facts_sha256"], "issue_binding": None,
+    }
+    return [] if live == expected else ["live_issue_stale"]
+
+
+def context_live_base_errors(root: Path, payload: dict[str, Any], task_dir: Path | None) -> list[str]:
+    base = payload.get("base_evidence")
+    repository = payload.get("repository")
+    if not isinstance(base, dict) or not isinstance(repository, dict):
+        return ["invalid_base_evidence"]
+    contract_errors = context_base_evidence_contract_errors(root, payload)
+    if contract_errors:
+        return contract_errors
+    result = base["sync_result"]
+    resolution = result["resolution"]
+    decision = result["decision_checkout"]
+    git = result["git"]
+    errors: list[str] = []
+    head = current_head(root)
+    if head != decision.get("head_after"):
+        errors.append("base_head_stale")
+    live_branch = current_branch(root)
+    if task_dir is None:
+        if live_branch != decision.get("branch"):
+            errors.append("base_decision_branch_stale")
+    else:
+        try:
+            active_task_dir = context_active_task_dir(root, str(task_dir))
+        except WorkflowError:
+            errors.append("task_not_active")
+        else:
+            if active_task_dir != task_dir.resolve():
+                errors.append("task_not_active")
+            try:
+                task_payload = json.loads((active_task_dir / "task.json").read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                errors.append("task_not_active")
+            else:
+                task_branch = task_payload.get("branch") if isinstance(task_payload, dict) else None
+                try:
+                    task_branch = validate_base_branch_name(
+                        root,
+                        task_branch,
+                        "Context discovery active task branch",
+                    )
+                except WorkflowError:
+                    errors.append("invalid_task_branch")
+                else:
+                    if live_branch != task_branch:
+                        errors.append("task_branch_stale")
+    selected_base = str(resolution.get("selected_base") or "")
+    try:
+        selected_base = validate_base_branch_name(root, selected_base, "Context discovery selected base")
+    except WorkflowError:
+        errors.append("invalid_selected_base")
+        selected_base = ""
+    try:
+        remote_name = validate_base_remote_name(root, resolution.get("remote"))
+    except WorkflowError:
+        errors.append("invalid_base_remote")
+        remote_name = ""
+    local_head = ref_head(root, f"refs/heads/{selected_base}") if selected_base else None
+    remote_head = (
+        ref_head(root, f"refs/remotes/{remote_name}/{selected_base}")
+        if remote_name and selected_base
+        else None
+    )
+    if local_head != git.get("local_head_after"):
+        errors.append("local_base_stale")
+    if remote_head != git.get("remote_head_after"):
+        errors.append("remote_base_stale")
+    try:
+        validate_github_remote_repository(root, remote_name, str(repository.get("repo") or ""))
+    except WorkflowError:
+        errors.append("base_repository_stale")
+    try:
+        dirty = git_status_paths(root, fail_closed=True)
+    except (WorkflowError, UnicodeError):
+        errors.append("git_status_unreadable")
+        dirty = []
+    if task_dir is None and dirty:
+        errors.append("checkout_not_clean")
+    elif task_dir is not None:
+        task_prefix = task_dir.relative_to(root).as_posix() + "/"
+        if any(path != task_prefix[:-1] and not path.startswith(task_prefix) for path in dirty):
+            errors.append("dirty_path_outside_task")
+    return errors
+
+
+def context_reviewed_blob_errors(root: Path, payload: dict[str, Any]) -> list[str]:
+    current = payload.get("current_state")
+    if not isinstance(current, dict):
+        return ["invalid_current_state_evidence"]
+    errors: list[str] = []
+    for group in ("docs", "code_contracts", "tests"):
+        rows = current.get(group)
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            path = row.get("path")
+            expected = str(row.get("blob_or_content_sha256") or "")
+            if not isinstance(path, str):
+                continue
+            if len(expected) == 40:
+                proc = run(["git", "rev-parse", f"HEAD:{path}"], cwd=root, check=False)
+                resolved = proc.stdout.strip()
+                if proc.returncode != 0 or resolved != expected:
+                    errors.append("reviewed_blob_stale")
+                    continue
+                object_type = run(
+                    ["git", "cat-file", "-t", resolved],
+                    cwd=root,
+                    check=False,
+                )
+                if object_type.returncode != 0 or object_type.stdout.strip() != "blob":
+                    errors.append("reviewed_blob_stale")
+            elif len(expected) == 64:
+                target = root / path
+                try:
+                    actual = hashlib.sha256(target.read_bytes()).hexdigest()
+                except OSError:
+                    actual = ""
+                if actual != expected:
+                    errors.append("reviewed_content_stale")
+    return errors
+
+
+def context_live_errors(root: Path, payload: dict[str, Any], task_dir: Path | None) -> list[str]:
+    errors = context_live_base_errors(root, payload, task_dir)
+    if errors:
+        return context_sort(errors)
+    errors.extend(context_repo_bound_locator_errors(root, payload))
+    errors.extend(context_live_change_errors(root, payload))
+    errors.extend(context_reviewed_blob_errors(root, payload))
+    query = payload.get("canonical_query")
+    preview = payload.get("history_preview")
+    try:
+        rebuilt = build_context_history_preview(root, query)
+    except WorkflowError:
+        errors.append("history_preview_unreadable")
+    else:
+        if not isinstance(preview, dict) or any(
+            preview.get(key) != rebuilt.get(key)
+            for key in ("algorithm_id", "query_sha256", "archive_manifest_sha256", "preview_sha256", "limit", "manifest", "candidates", "invalid")
+        ):
+            errors.append("archive_manifest_or_preview_stale")
+    return context_sort(errors)
+
+
+def context_typed_exit_live_errors(
+    payload: dict[str, Any],
+    live_errors: list[str],
+) -> list[str]:
+    observed = context_sort(live_errors)
+    if payload.get("typed_exit") != "refresh_base":
+        return observed
+    if not observed:
+        return ["refresh_base_requires_live_stale"]
+    if any(code not in CONTEXT_REFRESHABLE_LIVE_ERRORS for code in observed):
+        return context_sort([*observed, "refresh_base_has_non_refreshable_error"])
+    refresh_history = payload.get("refresh_history")
+    latest = refresh_history[-1] if isinstance(refresh_history, list) and refresh_history else None
+    expected_codes = latest.get("error_codes") if isinstance(latest, dict) else None
+    if expected_codes != observed:
+        return ["refresh_error_codes_mismatch"]
+    return []
+
+
+def context_persisted_snapshot_errors(
+    root: Path,
+    target: Path,
+    expected_payload: dict[str, Any],
+    task_dir: Path,
+) -> list[str]:
+    expected_bytes = json_document_bytes(expected_payload)
+    try:
+        actual_bytes = target.read_bytes()
+    except OSError:
+        return ["persisted_snapshot_unreadable"]
+    if actual_bytes != expected_bytes:
+        return ["persisted_snapshot_mismatch"]
+    try:
+        persisted = json.loads(actual_bytes)
+    except (UnicodeError, json.JSONDecodeError):
+        return ["persisted_snapshot_mismatch"]
+    if not isinstance(persisted, dict) or persisted != expected_payload:
+        return ["persisted_snapshot_mismatch"]
+    if persisted.get("snapshot_identity") != context_snapshot_identity(persisted):
+        return ["persisted_snapshot_identity_mismatch"]
+    structural = context_structural_errors(root, persisted)
+    if structural:
+        return context_sort(structural)
+    live = context_live_errors(root, persisted, task_dir)
+    return context_sort(context_typed_exit_live_errors(persisted, live))
+
+
+def context_discovery_target_trackability_errors(root: Path, target: Path) -> list[str]:
+    try:
+        relative_target = target.relative_to(root).as_posix()
+    except ValueError:
+        return ["context_discovery_target_trackability_unreadable"]
+    try:
+        result = run(
+            [
+                "git",
+                "check-ignore",
+                "--quiet",
+                "--no-index",
+                "--",
+                relative_target,
+            ],
+            cwd=root,
+            check=False,
+        )
+    except OSError:
+        return ["context_discovery_target_trackability_unreadable"]
+    if result.returncode == 0:
+        return ["context_discovery_target_ignored"]
+    if result.returncode == 1:
+        return []
+    return ["context_discovery_target_trackability_unreadable"]
+
+
+def cmd_preview_change_context_history(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    if args.query_json:
+        try:
+            raw_query = json.loads(args.query_json)
+        except json.JSONDecodeError as exc:
+            raise WorkflowError("--query-json is invalid JSON.", exit_code=2) from exc
+    else:
+        raw_query = {
+            "issue_refs": args.issue_ref,
+            "pr_refs": args.pr_ref,
+            "branches": args.branch,
+            "paths": args.path,
+            "commands": args.query_command,
+            "config_keys": args.config_key,
+            "schema_fields": args.schema_field,
+            "symbols": args.symbol,
+            "terms": args.term,
+            "queries": args.query,
+        }
+    return build_context_history_preview(root, raw_query, limit=args.limit)
+
+
+def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    payload, task_dir = context_payload_from_args(root, args, require_active_task=True)
+    if payload.get("mode") != args.mode:
+        raise WorkflowError("context discovery mode does not match recorder mode.", exit_code=2)
+    payload["snapshot_identity"] = context_snapshot_identity(payload)
+    structural = context_structural_errors(root, payload)
+    if structural:
+        raise WorkflowError(
+            "Context discovery snapshot validation failed.",
+            exit_code=2,
+            payload={"error_codes": context_sort(structural)},
+        )
+    live = context_live_errors(root, payload, task_dir)
+    route_live = context_typed_exit_live_errors(payload, live)
+    if structural or route_live:
+        raise WorkflowError(
+            "Context discovery snapshot validation failed.",
+            exit_code=2,
+            payload={"error_codes": context_sort(structural + route_live)},
+        )
+    snapshot_sha256 = payload["snapshot_identity"]["snapshot_sha256"]
+    if args.expected_snapshot_sha256 and args.expected_snapshot_sha256 != snapshot_sha256:
+        raise WorkflowError("Expected context discovery snapshot digest does not match.", exit_code=2, payload={"error_codes": ["expected_snapshot_mismatch"]})
+    if task_dir is None:
+        if args.expected_snapshot_sha256:
+            raise WorkflowError("Pre-task context recording does not accept an expected task snapshot.", exit_code=2)
+        return payload
+    if not args.expected_snapshot_sha256:
+        raise WorkflowError("Task-local context recording requires --expected-snapshot-sha256.", exit_code=2)
+    target = task_dir / "context-discovery.json"
+    trackability_errors = context_discovery_target_trackability_errors(root, target)
+    if trackability_errors:
+        raise WorkflowError(
+            "Context discovery target must be trackable by Git.",
+            exit_code=2,
+            payload={"error_codes": trackability_errors},
+        )
+    expected_bytes = json_document_bytes(payload)
+    if target.exists():
+        try:
+            actual_bytes = target.read_bytes()
+        except OSError as exc:
+            raise WorkflowError(
+                "Existing context-discovery.json is unreadable.",
+                exit_code=2,
+                payload={"error_codes": ["existing_snapshot_unreadable"]},
+            ) from exc
+        if actual_bytes != expected_bytes:
+            raise WorkflowError("Existing context-discovery.json does not match the expected snapshot.", exit_code=2, payload={"error_codes": ["existing_snapshot_mismatch"]})
+    else:
+        write_json(target, payload)
+    trackability_errors = context_discovery_target_trackability_errors(root, target)
+    if trackability_errors:
+        raise WorkflowError(
+            "Context discovery target must remain trackable by Git.",
+            exit_code=2,
+            payload={"error_codes": trackability_errors},
+        )
+    persisted_errors = context_persisted_snapshot_errors(
+        root,
+        target,
+        payload,
+        task_dir,
+    )
+    if persisted_errors:
+        raise WorkflowError(
+            "Persisted context discovery snapshot validation failed.",
+            exit_code=2,
+            payload={"error_codes": persisted_errors},
+        )
+    return payload
+
+
+def cmd_check_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    payload, task_dir = context_payload_from_args(root, args)
+    structural = context_structural_errors(root, payload)
+    if structural:
+        raise WorkflowError(
+            "Context discovery snapshot validation failed.",
+            exit_code=2,
+            payload={"error_codes": context_sort(structural)},
+        )
+    if task_dir is not None:
+        trackability_errors = context_discovery_target_trackability_errors(
+            root,
+            task_dir / "context-discovery.json",
+        )
+        if trackability_errors:
+            raise WorkflowError(
+                "Context discovery target must be trackable by Git.",
+                exit_code=2,
+                payload={"error_codes": trackability_errors},
+            )
+    live = context_live_errors(root, payload, task_dir)
+    expected = args.expected_snapshot_sha256
+    actual = (payload.get("snapshot_identity") or {}).get("snapshot_sha256") if isinstance(payload.get("snapshot_identity"), dict) else None
+    if expected and expected != actual:
+        structural.append("expected_snapshot_mismatch")
+    errors = context_sort(structural + context_typed_exit_live_errors(payload, live))
+    if errors:
+        raise WorkflowError("Context discovery snapshot validation failed.", exit_code=2, payload={"error_codes": errors})
+    return {
+        "status": "passed",
+        "typed_exit": payload["typed_exit"],
+        "snapshot_sha256": actual,
+        "query_sha256": payload["snapshot_identity"]["query_sha256"],
+        "archive_manifest_sha256": payload["snapshot_identity"]["archive_manifest_sha256"],
+        "base_head": payload["snapshot_identity"]["base_head"],
+        "base_sync_facts_sha256": payload["snapshot_identity"]["base_sync_facts_sha256"],
+        "post_sync_resolution_sha256": payload["snapshot_identity"]["post_sync_resolution_sha256"],
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Guru Team Trellis workflow helpers")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -17406,6 +19102,37 @@ def build_parser() -> argparse.ArgumentParser:
     check_base.add_argument("--result-json")
     check_base.add_argument("--expected-resolution-sha256")
     check_base.add_argument("--record-skipped")
+
+    context_preview = sub.add_parser("preview-change-context-history")
+    context_preview.add_argument("--root")
+    context_preview.add_argument("--json", action="store_true")
+    context_preview.add_argument("--query-json")
+    context_preview.add_argument("--issue-ref", action="append", default=[])
+    context_preview.add_argument("--pr-ref", action="append", default=[])
+    context_preview.add_argument("--branch", action="append", default=[])
+    context_preview.add_argument("--path", action="append", default=[])
+    context_preview.add_argument("--command", dest="query_command", action="append", default=[])
+    context_preview.add_argument("--config-key", action="append", default=[])
+    context_preview.add_argument("--schema-field", action="append", default=[])
+    context_preview.add_argument("--symbol", action="append", default=[])
+    context_preview.add_argument("--term", action="append", default=[])
+    context_preview.add_argument("--query", action="append", default=[])
+    context_preview.add_argument("--limit", type=int, default=CONTEXT_HISTORY_LIMIT)
+
+    context_record = sub.add_parser("record-context-discovery")
+    context_record.add_argument("--root")
+    context_record.add_argument("--json", action="store_true")
+    context_record.add_argument("--mode", required=True, choices=["workflow", "standalone"])
+    context_record.add_argument("--input")
+    context_record.add_argument("--task")
+    context_record.add_argument("--expected-snapshot-sha256")
+
+    context_check = sub.add_parser("check-context-discovery")
+    context_check.add_argument("--root")
+    context_check.add_argument("--json", action="store_true")
+    context_check.add_argument("--input")
+    context_check.add_argument("--task")
+    context_check.add_argument("--expected-snapshot-sha256")
 
     version = sub.add_parser("version")
     version.add_argument("--root")
@@ -17733,6 +19460,12 @@ def main() -> int:
             payload = cmd_sync_base(args)
         elif args.command == "check-base-sync":
             payload = cmd_check_base_sync(args)
+        elif args.command == "preview-change-context-history":
+            payload = cmd_preview_change_context_history(args)
+        elif args.command == "record-context-discovery":
+            payload = cmd_record_context_discovery(args)
+        elif args.command == "check-context-discovery":
+            payload = cmd_check_context_discovery(args)
         elif args.command == "version":
             payload = cmd_version(args)
         elif args.command == "check-workspace-boundary":

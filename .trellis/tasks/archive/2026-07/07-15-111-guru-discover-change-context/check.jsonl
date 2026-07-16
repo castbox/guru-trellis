@@ -1,0 +1,7 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查需求、Docs SSOT、实现、schema、测试、安装与 upgrade/update 证据完整性。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"检查 semantic 五阶段、mode parity、package identity、runtime commands 与 typed exits。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"检查 current-before-history 顺序、mandatory invocation 与唯一 consumer。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查 query/manifest/preview/snapshot digests、invalid isolation、refresh 与 portable artifact。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"检查 AI judgment 与 executor/validator/recorder 边界。"}
+{"file":".trellis/spec/preset/installer.md","reason":"检查 canonical/installed/platform inventory、managed hash、dogfood、throwaway 与 update/reapply。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"检查无 legacy overlay 扩张、无 unclassified path 与 anchored guru_owned 分发。"}

@@ -59,6 +59,17 @@ git diff --check
 
 Add targeted script invocations when changing phase parsing, intake, review,
 finish, publish, installer behavior, or source-repo dogfood overlay sync.
+For `guru-discover-change-context`, tests must cover mode-precondition parity,
+stale-before-semantic-read ordering, exact/token score permutations, invalid
+isolation, deterministic sort/limit/projection, zero and 1-3 candidate paths,
+mem insufficiency gate, pre-task zero-write, same-snapshot task-local record,
+ordinary refresh stale-code/superseded-digest re-entry, task target trackability
+through repository `.gitignore`, `.git/info/exclude`, and `core.excludesFile`,
+duplicate candidate canonical fact digest plus identity/URL/repo/number binding
+from one search result, the bidirectional `blocked` exit/Gate matrix, all typed
+exits, source/installed distribution and clean
+throwaway update/reapply. Any reader of index siblings, workspace/runtime,
+repo-level history cache, or transitional legacy overlay payload fails.
 When changing Branch Review report generation or gate validation, add or update
 tests that reject obvious English template headings in task-local `review.md`
 and `reviews/*.md`, including `Review Rounds`, `Findings Lifecycle`,

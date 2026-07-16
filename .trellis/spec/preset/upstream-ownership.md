@@ -97,6 +97,13 @@ The following anchored forms are Guru-owned:
 - installed `.cursor/skills/guru-*/**`;
 - installed `.claude/skills/guru-*/**`.
 
+The canonical, installed, and discovery paths for
+`guru-discover-change-context` match these anchored forms and are
+`guru_owned`. Its companion scripts and schema live below the existing
+`.trellis/guru-team/**` and `trellis/workflows/guru-team/**` claims. Activating
+the Skill must not add, rewrite, or broaden a frozen transitional legacy
+overlay entry.
+
 Rules are matched by complete path components. They do not authorize
 `.agents/skills/trellis-*`, broad platform roots, arbitrary prompt/command
 directories, or paths that merely contain the text `guru`.

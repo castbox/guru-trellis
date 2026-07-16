@@ -130,7 +130,7 @@
       "additionalProperties": false,
       "required": ["id", "evidence", "consumer"],
       "properties": {
-        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$"},
         "evidence": {"type": "string", "minLength": 1},
         "consumer": {
           "type": "object",

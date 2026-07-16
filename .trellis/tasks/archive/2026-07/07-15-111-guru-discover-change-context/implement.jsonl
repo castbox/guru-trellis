@@ -1,0 +1,7 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"实现 public semantic Skill 的 package、interface、stage、runtime dependency、typed exit 与 managed distribution 合同。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"实现 Phase 0 mandatory invocation、跨 Skill transition、unique consumer 与 fail-closed route。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"设计 context-discovery artifact、finish-summary index consumption、portable identity、freshness 与 digest。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 preview、record、check 脚本只能执行 deterministic facts，不代替 AI Gate。"}
+{"file":".trellis/spec/preset/installer.md","reason":"实现 canonical package、installed runtime、platform copies、manifest、mode 与 update/reapply。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"确保新增资产只进入 anchored guru_owned namespace，不扩写 transitional legacy overlay。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"同步公开 README 的 Skill API、安装、升级、限制与安全说明。"}

@@ -109,6 +109,41 @@ README files must list the active id, result schema,
 runtime commands, full-preset requirement, update/reapply steps, and
 missing/drift/sidecar remediation without duplicating the complete Skill loop.
 
+Public Phase 0 docs must also name active semantic
+`guru-discover-change-context` as the only `guru-sync-base:synced` consumer.
+They state the fixed current-state-before-history order, workflow/standalone
+freshness parity, archived `finish-summary.json:index.*`-only reader,
+`guru-context-history-score-1.0`, stable query/manifest/preview digests, invalid
+isolation, 1-3 candidate deep-read, zero-candidate success with empty
+selection/deep reads and consistent `mem_review=not_needed`, candidate-present
+four-source mem insufficiency gate, stdout-only pre-task result, and exact
+same-snapshot task-local persistence. Public docs distinguish pre-task/
+standalone decision-branch binding from direct active task-mode
+`task.json.branch` feature-worktree binding at the unchanged snapshot HEAD; all
+sync provenance, selected base refs, repository identity, active task and
+task-local dirty-scope checks remain mandatory. They list exits `context_ready` / `refresh_base` /
+`blocked`, schema `guru-context-discovery-1.0`, all three runtime commands, and
+the no-workspace/no-runtime/no-repo-cache boundary. Docs must not imply that
+the Skill chooses duplicate reuse/new target or that a script performs its AI
+Review Gate.
+They also state that duplicate candidate facts are digest-bound to canonical
+repo/number/identity/URL/open-state/update-time facts recomputed from the one
+duplicate search result without a second search/re-read, and that `blocked` is
+valid exactly when the AI Review Gate is blocked. Public examples must not
+imply candidate fields or Gate/exit pairs are caller-trusted.
+They also identify `guru-clarify-requirements` as the existing Phase 0 workflow
+route rather than an active #113 package, document source-specific task/GitHub/
+Git deep-read locators, structured no-raw-payload persistence, and field-specific
+validation. Workflow and stop route markers must
+be described as validator-resolved target declarations, not new Skill packages.
+Refresh documentation must state that record/check compare caller-authored
+current stale codes, superseded query/snapshot digests, reason, and detection
+time with live freshness, then require complete re-entry from only the current
+payload and expected snapshot identity. It must also state that
+task-local recorder/checker prove the exact target is not ignored by repository,
+`.git/info/exclude`, or global Git exclude rules using `--no-index`, while
+pre-task stdout mode does not run that target gate.
+
 When workflow behavior changes, update the docs that users actually read:
 
 - `README.md` for install/upgrade and daily operation

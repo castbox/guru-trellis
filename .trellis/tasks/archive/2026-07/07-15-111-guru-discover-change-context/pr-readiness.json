@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/111-guru-discover-change-context",
+    "reviewed_head_sha": "dc3e2e9a32b7b8db1dc7e5645f8599ddfa2700b7",
+    "title": "feat(trellis): #111 实现变更上下文发现闭环 Skill",
+    "body_source": "pr-body.md",
+    "body_sha256": "073cb289585fed2c8fa77cd471180534d090a452f8a7d940e8f8778d07de7b0b",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "76f3202aea8297e4e134d11f9e777fe7545fd81ea63cd90d5e0586b7c3319a4d"
+  },
+  "publish_inputs_sha256": "32a0cbd461364abccf784bbaf87bc622bd112932495d4377c6b72f629bf664df"
+}

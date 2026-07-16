@@ -32,12 +32,17 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
 | 层级 | 类别 | 历史来源 | 说明 |
 | --- | --- | --- | --- |
 | P0 | Workflow 主合同与日常入口 | #1, #2, #57, #64, #65, #66, #78 | `guru-team` marketplace workflow 定义 Phase 0-3、auto-bootstrap 日常入口、业务项目中文文档默认规则、知识门禁和 Docs SSOT；Phase 1 规划策略、Phase 2 执行/检查、Phase 3 final review 只验证不补救、finish-work 不首次 merge docs；Branch Review `reviews/*.md` / `review.md` 也继承中文 human-readable artifact 规则。 |
-| P0 | Intake / base sync / worktree / no_task / workspace boundary 副作用边界 | #6, #15, #26, #51, #60, #96, #110 | repo-changing intake 在任何 issue、Docs、代码、测试或历史语义读取前 mandatory invoke `guru-sync-base`；caller-side AI 只做 tool-free route classification，deterministic Skill 直接执行 digest-bound fetch / ff-only，并以 decision checkout、local base、remote base 三方 SHA equality 放行，不增加 selected-base 或 post-execution AI Gate。之后创建 issue、worktree、branch、task 或当前 checkout 直改仍必须有 AI/human handoff、用户授权和语义命名门禁；tracked `task-start-context.json` 只保存 portable workspace identifiers，worktree mode 下 task artifact / review artifact 写入前必须通过当前 checkout、`.trellis/.runtime/guru-team/**`、`git worktree list` 与 `check-workspace-boundary.sh --task` 推导并校验 actual repo root。 |
+| P0 | Intake / base sync / change-context / worktree / no_task / workspace boundary 副作用边界 | #6, #15, #26, #51, #60, #96, #110, #111 | repo-changing intake 在任何 issue、Docs、代码、测试或历史语义读取前 mandatory invoke `guru-sync-base`；`synced` 随后 mandatory invoke semantic `guru-discover-change-context`，固定先审查 live change、duplicate、当前 Docs/code/tests，再对 `.trellis/tasks/archive/**/finish-summary.json:index.*` 做一次确定性 preview 和 AI 窄读。Pre-task snapshot 只走 stdout；task 创建后只把同一 digest-bound snapshot 写入 task-local `context-discovery.json`。Refresh 只记录当前 stable stale codes、superseded query/snapshot digests、reason 与 detection time，并通过 `guru-sync-base` 整步 re-entry；record/check 只消费当前 payload 与 expected snapshot identity，不重建 ancestry chain。之后创建 issue、worktree、branch、task 或当前 checkout 直改仍必须有 AI/human handoff、用户授权和语义命名门禁；tracked task artifacts 只保存 portable identifiers。 |
 | P0 | Planning / check / task work commit / Branch Review Gate 证据链 | #5, #8, #20, #44, #62, #72, #76, #78, #122, #125 | planning、phase2 check、`guru-create-task-commit`、独立 review、中文 raw/rollup review report、review report digest、任意 finding 阻断、fresh 最终放行审查、sub-agent liveness / status request / stale cutover / completed-only recovery chain 和 schema 1.2 append-only provenance correction/recovery link 形成可审计链路；task work commit 由可重复进入的公共 closed-loop skill 绑定 exact paths、统一消息 parser、普通 Git operation state、ordinary SHA-256/mode/delete、gitlink worktree HEAD/OID 与 candidate deterministic bytes，在 isolated index/detached HEAD 上执行 hook/commit；snapshot 以 `renamed_from` / `copied_from` 显式区分 rename 与 copy，只有 rename source 继承 destination 的删除/exact-stage authority，copy source 绝不因关系自动入 stage，若自身 dirty 则必须独立分类；真实 `index.lock` 作为 sentinel 持有到 transaction 结束，独立 final-index temp 在 sentinel 下发布，最终 candidate identity read 是线性化点，read 前并发 C 触发 ref/index rollback 并保留 C，read 后 C 作为 later operation 保留且 commit blob/result digest 仍为 committed authority；`workflow` 与 `standalone` 只区分 global routing 与 direct discovery，两者都依赖完整 Guru Team runtime，package wrapper 统一经 `run-skill-command` fail closed；默认 sub-agent mode 下 implement、check、Branch Review 都必须有真实 sub-agent evidence。 |
 | P0 | Finish / publish / PR readiness | #7, #17, #18, #27, #66 | PR 发布只能在 finish-work 后发生，且必须有 AI 审查过的 reviewer-facing body 与 readiness evidence；PR body 必须说明 Docs SSOT / 文档同步处理结果。 |
 | P1 | Preset installer 与平台 overlay | #9, #11 | preset 安装 companion assets 与平台入口，支持 overlay 选择，并保持 canonical / dogfood 同步。 |
 | P1 | 安装、升级、开箱验证 | #10, #27 | README 非交互安装、throwaway install、dry-run readiness 和 Codex 默认 sub-agent 让新项目可开箱使用。 |
 | P2 | Docs / spec / knowledge 协同 | #1, #9, #10, #57 | task artifact、durable docs、`.trellis/spec/`、中台知识引用、业务项目中文语言规则和公开安装文档协同。 |
+
+Phase 0 change-context 的 duplicate evidence 使用 repo/number/`#number` identity/canonical
+URL/open state/update time 的 deterministic digest projection，并从同一次 open search 返回
+字段重算 identity、URL 与 digest；record/check 不进行第二次 search 或 candidate re-read。
+同一 result contract 双向绑定 `typed_exit=blocked` 与 blocked AI Review Gate。
 
 ## Canonical Source
 
@@ -97,7 +102,8 @@ dogfood 副本当成唯一来源。
 | Trellis auto-bootstrap 日常入口 | #2 | #3 |
 | AI review prompt 与 Branch Review Gate | #5, #20, #44 | #12, #22 |
 | prepare-task 无副作用 planner 与命名质量门禁 | #6, #51 | #14；#51 对应 PR 待发布 |
-| Phase 0 selected-base resolve / sync closed loop | #110 | 当前实现分支；#111 仅负责后续 context discovery Skill 化 |
+| Phase 0 selected-base resolve / sync closed loop | #110 | 已实现；`synced` 的唯一 consumer 是 #111 的 active context discovery Skill |
+| Phase 0 change-context semantic closed loop | #111 | active `guru-discover-change-context`；current-state-first、finish-summary index preview、same-snapshot task-local persistence、current stale-code/superseded-digest refresh re-entry、Git-trackable task target |
 | Workspace boundary 与 source checkout 误写防护 | #60 | 当前 PR 待发布；为 #76 liveness checker 提供 source/task 双侧事实层 |
 | Sub-agent liveness / stale cutover 状态机 | #76 | 当前 PR 待发布 |
 | PR readiness 与 PR body 质量 | #7, #17 | #23, #24 |
