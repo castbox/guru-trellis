@@ -41,6 +41,19 @@ Python / shell 代码只负责确定性动作：
 
 绝对不要把需要智能判断的步骤写进 Python / shell。只要某一步需要理解意图、权衡风险、判断充分性、发现遗漏、审查 diff、决定 issue close/ref/followup、判断 PR 是否 ready，就必须由 AI Agent 按 Markdown prompt/workflow/skill 执行。脚本可以记录和校验结果，但不能替代判断。
 
+## 2.1 正常运行与诚实协作假设
+
+本仓库改进的是由 AI 控制、由用户与 AI 诚实协作执行的 Trellis 流程。用户、调用方、AI Agent 和正常 workflow step 均视为 honest-but-fallible：可能产生普通错误、遗漏、过期状态或不一致，但不会故意伪造、篡改、欺骗、攻击或绕过流程。内部 workflow artifact 不视为来自攻击者的不可信输入。
+
+- 必须处理正文明确要求的正常路径、常见操作失误、正常外部状态变化、stale/mismatch、实现缺陷和常见 correctness/compatibility 边界。
+- `hash`、`digest`、`freshness`、live reread 和 fail-closed 只用于正常流程中的版本绑定、过期检测、内容一致性和阻止错误接续；它们不是 authenticity、anti-tamper、anti-forgery 或 hostile-input security boundary。
+- 明确不处理恶意 actor、威胁/攻击模型、用户或调用方故意伪造/篡改 artifact、evidence、hash、digest、state 或 payload、对抗性输入、故意误用或流程绕过，也不为这些场景增加防御性机制或负例测试。
+- 除非需求正文已明确列为正常功能场景，否则不处理并发竞态压力、TOCTOU、锁或原子写入协议、分布式锁、额外 fault injection、偶发 crash consistency、跨 OS 原子性及其它非常规非功能加固。正文明确要求的正常并行任务、事务恢复和 failure matrix 仍然有效，但不得继续泛化。
+- Planning、Phase 2 check 和 Branch Review 必须先证明候选问题可在受支持的正常路径中、无需故意伪造或欺骗即可复现，才能进入 current acceptance、P0-P3 finding 或 implementation。仅靠手工篡改 artifact/hash/state 构造出的案例一律为 `out_of_scope`，不得阻塞、不得自动实现，也不得列为 required follow-up。
+- 正常 recorder/validator 生成错误 digest、正常 executor 写入错误 payload 或正常流程接受 stale state，仍属于有效 correctness bug；排除的是要求系统抵御人为伪造或恶意篡改，不是取消普通一致性校验。
+- 不得以“安全最佳实践”“defense in depth”“validator 应更强”“理论上可被伪造”或 reviewer severity 为由重新引入上述范围。当前 Open issues 已统一拒绝这些扩展；除非用户未来主动提出新的明确 requirement，不得针对已排除场景反复请求 scope confirmation。
+- 本节不削弱 secret/credential redaction、敏感数据不泄露、破坏性副作用确认、权限边界或正文已经明确要求的安全与发布规则。
+
 ## 3. Skill-first 闭环流程模块化
 
 ### 3.1 SSOT 分层
