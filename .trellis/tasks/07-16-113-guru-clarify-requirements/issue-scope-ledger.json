@@ -1,0 +1,77 @@
+{
+  "primary_issue": {
+    "number": 113,
+    "url": "https://github.com/castbox/guru-trellis/issues/113",
+    "title": "按 Skill-first 重实现 #55：guru-clarify-requirements",
+    "reason": "intake 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 113,
+      "url": "https://github.com/castbox/guru-trellis/issues/113",
+      "title": "按 Skill-first 重实现 #55：guru-clarify-requirements",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 55,
+      "url": "https://github.com/castbox/guru-trellis/issues/55",
+      "title": "github issue intake 的过程需要与时俱进",
+      "reason": "已关闭的历史行为来源；#113 重新实现其 initial clarity 与 active-task scope evolution，不重复关闭。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 98,
+      "url": "https://github.com/castbox/guru-trellis/issues/98",
+      "title": "拆分 #53：变更 Intake Skills 跨 Skill 编排与并行安全集成 umbrella",
+      "reason": "Intake Skill family umbrella与全局transition来源；本任务不关闭umbrella。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 109,
+      "url": "https://github.com/castbox/guru-trellis/issues/109",
+      "title": "建立 Guru Team Skill-first 闭环流程模块化强制规范",
+      "reason": "Skill-first architecture prerequisite，已经独立关闭。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 111,
+      "url": "https://github.com/castbox/guru-trellis/issues/111",
+      "title": "拆分 #98：实现 guru-discover-change-context 闭环 Skill",
+      "reason": "上游context evidence producer，已经独立关闭。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 114,
+      "url": "https://github.com/castbox/guru-trellis/issues/114",
+      "title": "按 Skill-first 重实现 #93：guru-review-contract-wording",
+      "reason": "clear exit的下游wording review owner；由独立task实现。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 101,
+      "url": "https://github.com/castbox/guru-trellis/issues/101",
+      "title": "拆分 #98：实现 guru-review-change-request 闭环 Skill",
+      "reason": "clarity passing evidence consumer；由独立task实现。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 112,
+      "url": "https://github.com/castbox/guru-trellis/issues/112",
+      "title": "拆分 #98：实现 guru-create-task-workspace 并集成变更 Intake Skills",
+      "reason": "最终task workspace与intake integration consumer；由独立task实现。",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 127,
+      "url": "https://github.com/castbox/guru-trellis/issues/127",
+      "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+      "reason": "scope qualification、专用scope expansion confirmation与upstream ownership架构来源。",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": []
+}

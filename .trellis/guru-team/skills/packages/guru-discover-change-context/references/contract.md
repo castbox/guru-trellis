@@ -113,7 +113,7 @@ digest must equal the original reviewed draft body digest. Every 40-character
 reviewed Git identity resolves from `HEAD:<path>` to exactly a `blob`;
 64-character content evidence is checked by exact byte digest.
 
-- `context_ready` -> workflow route `guru-clarify-requirements`;
+- `context_ready` -> Skill `guru-clarify-requirements`;
 - `refresh_base` -> `guru-sync-base`;
 - `blocked` -> `change-context-blocked`.
 

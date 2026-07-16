@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "检查 semantic 五阶段、mode parity、package identity、runtime dependency、commands 与五个 typed exits。"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查 #111 context_ready 到 active #113 的 mandatory transition、唯一 consumer 与 fail-closed target。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "检查 closed schema、content digests、question/scope/action/confirmation/mutation/active-task freshness 不变量。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "检查 recorder/checker 仅记录校验事实，无 GitHub write executor 且不替代 AI Gate。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "检查需求、设计、durable docs、runtime、schema、tests、installed copies、throwaway/update 证据完整。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查 canonical/installed/平台 inventory、version、mode、update/reapply 与 zero-sidecar。"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "检查只新增 Guru-owned additive assets，未扩张 frozen upstream-owned overlay。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "检查 no-new-overlay、dogfood 同步及 update 冲突语义。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "检查三份 README 与 requirements 对 active #113、staged #114/#112、安装升级和安全边界表述一致。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查 schema 到 runtime、workflow、manifest、installer、platform copies 的跨层数据流与错误传播。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查 digest/schema/live GitHub/dispatcher/installer helpers 是否复用既有模式且 canonical 无重复实现。"}

@@ -131,9 +131,18 @@ repo/number/identity/URL/open-state/update-time facts recomputed from the one
 duplicate search result without a second search/re-read, and that `blocked` is
 valid exactly when the AI Review Gate is blocked. Public examples must not
 imply candidate fields or Gate/exit pairs are caller-trusted.
-They also identify `guru-clarify-requirements` as the existing Phase 0 workflow
-route rather than an active #113 package, document source-specific task/GitHub/
-Git deep-read locators, structured no-raw-payload persistence, and field-specific
+They also identify active semantic `guru-clarify-requirements` as the only
+`context_ready` consumer. Public docs describe its initial/active-task/
+standalone entry coverage, repository-answerable-before-user-question rule,
+one-question loop, exact action/proposal confirmation, AI-owned GitHub mutation
+boundary, stdout-only pre-task result, no dedicated clarification artifact,
+schema `guru-requirements-clarification-1.0`, record/check runtime commands,
+and exits `clear` / `needs_context` / `refresh_context` / `new_task` /
+`blocked` with unique staged consumers. They must state that successful GitHub
+mutation returns `refresh_context`, issue creation belongs to #112, and `clear`
+still targets the #114 wording-review workflow route until that Skill is
+activated. Docs also document source-specific task/GitHub/Git deep-read
+locators, structured no-raw-payload persistence, and field-specific
 validation. Workflow and stop route markers must
 be described as validator-resolved target declarations, not new Skill packages.
 Refresh documentation must state that record/check compare caller-authored

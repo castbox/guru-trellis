@@ -266,6 +266,8 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/preview-change-context-history.sh`
 - `.trellis/guru-team/scripts/bash/record-context-discovery.sh`
 - `.trellis/guru-team/scripts/bash/check-context-discovery.sh`
+- `.trellis/guru-team/scripts/bash/record-requirements-clarification.sh`
+- `.trellis/guru-team/scripts/bash/check-requirements-clarification.sh`
 - `.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh`
 - `.trellis/guru-team/scripts/bash/record-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
@@ -286,9 +288,10 @@ platform selection:
 - `.trellis/guru-team/scripts/python/guru_team_trellis.py`
 
 Production skill registry 同时保留 reserved `guru-create-work-commit` 与 active
-`guru-sync-base`、`guru-discover-change-context`、`guru-create-task-commit`。当前
+`guru-sync-base`、`guru-discover-change-context`、`guru-clarify-requirements`、
+`guru-create-task-commit`。当前
 canonical extension version 是待发布的
-`0.6.5-guru.11`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
+`0.6.5-guru.12`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
 （含 interface、artifact schema、
 example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
 root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
@@ -327,9 +330,18 @@ candidate re-read。Managed schema/runtime 同时强制 `blocked` exit
 Refresh record/check 记录并核对当前 stable stale codes、superseded query/snapshot
 digests、reason 与 detection time，然后要求整步 re-entry；只消费当前 payload 与 expected
 snapshot identity，不重建 ancestry。
-`context_ready` 指向现有 `guru-clarify-requirements` workflow route，而非未实现的 #113
-Skill；source/installed validator 要求 active Skill consumer 与唯一 workflow/stop target
-marker 均可解析。
+`context_ready` 指向 active `guru-clarify-requirements`；source/installed validator 要求
+active Skill consumer 与唯一 workflow/stop target marker 均可解析。
+
+`guru-clarify-requirements` package additive 安装
+`guru-requirements-clarification-1.0` schema、example、contract、tests和两个 executable
+dispatcher wrappers。Runtime assets 是
+`.trellis/guru-team/scripts/bash/record-requirements-clarification.sh` 与
+`check-requirements-clarification.sh`；不存在 mutation executor。Workflow/standalone
+preconditions相同，pre-task/standalone stdout-only，active-task 只验证现有 ledger/planning/
+stale-gate/re-entry linkage，不创建专用 clarification artifact。Throwaway initial install、
+`trellis update`、workflow re-selection与preset reapply均执行 standalone record/check probe，
+并验证 `clear` / `needs_context` / `refresh_context` / `new_task` / `blocked` consumers。
 
 Shared overlays are always installed:
 

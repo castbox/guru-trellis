@@ -98,11 +98,14 @@ The following anchored forms are Guru-owned:
 - installed `.claude/skills/guru-*/**`.
 
 The canonical, installed, and discovery paths for
-`guru-discover-change-context` match these anchored forms and are
-`guru_owned`. Its companion scripts and schema live below the existing
-`.trellis/guru-team/**` and `trellis/workflows/guru-team/**` claims. Activating
-the Skill must not add, rewrite, or broaden a frozen transitional legacy
-overlay entry.
+`guru-discover-change-context` and `guru-clarify-requirements` match these
+anchored forms and are `guru_owned`. Their companion scripts and schemas live
+below the existing `.trellis/guru-team/**` and
+`trellis/workflows/guru-team/**` claims. Activating either Skill must not add,
+rewrite, or broaden a frozen transitional legacy overlay entry. In particular,
+#113 distribution is additive package/runtime/discovery content only; it does
+not authorize a new or changed file below
+`trellis/presets/guru-team/overlays/**`.
 
 Rules are matched by complete path components. They do not authorize
 `.agents/skills/trellis-*`, broad platform roots, arbitrary prompt/command

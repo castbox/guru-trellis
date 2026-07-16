@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "实现 public semantic Skill 的 package、interface、stage、runtime dependency、typed exit 与 managed distribution 合同。"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "实现 #113 mandatory invocation、前后置 Skill transition、唯一 consumer 与 fail-closed route。"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "实现 requirements clarification closed schema、content identity、scope proposal、source action、confirmation 与 freshness 绑定。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "约束 recorder/checker 只记录和校验确定性事实，不执行 GitHub mutation 或替代 AI Gate。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "覆盖 package、runtime、workflow、schema、tests、dogfood、throwaway 与 upgrade/update 验证。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "实现 canonical package/runtime 到 installed copies、manifest 与 all-platform discovery 的分发。"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "确保变更只进入 Guru-owned additive namespace，不扩张 upstream-owned overlay。"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "校验 no-new-overlay 边界、dogfood 同步和 update/reapply 行为。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "同步三份公开 README 的 Skill API、staged migration、安装升级与安全说明。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查 schema、runtime dispatcher、workflow consumer、manifest 和 installed copies 的跨层传递。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "先检索既有 #111/#122 helpers 与测试模式，避免复制 canonical digest、schema、dispatcher 和 installer 逻辑。"}

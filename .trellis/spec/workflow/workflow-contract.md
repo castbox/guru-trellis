@@ -71,10 +71,10 @@ exist and deep-read explicit evidence, or record an empty selection; execute
 the AI Review Gate; record/validate the reviewed payload; emit one typed exit.
 
 Duplicate reuse/new-target choice remains owned by
-`guru-clarify-requirements`. Conditional human confirmation is recorded as
+Skill `guru-clarify-requirements`. Conditional human confirmation is recorded as
 `not_required` with reason
 `decision_owned_by_guru-clarify-requirements`. Stable exits are
-`context_ready` -> workflow route `guru-clarify-requirements`, `refresh_base` -> Skill
+`context_ready` -> Skill `guru-clarify-requirements`, `refresh_base` -> Skill
 `guru-sync-base`, and `blocked` -> stop `change-context-blocked`. A stale base,
 issue, reviewed blob, canonical query, or archive manifest forces complete
 re-entry through `guru-sync-base`; the workflow cannot resume from history or
@@ -123,9 +123,38 @@ Workflow and stop consumers are declared by one unfenced
 or fail-closed stop. Source and installed validators require every Skill
 consumer to resolve to an active registry entry and every workflow/stop target
 to have exactly one matching-kind declaration; missing, multiple,
-kind-mismatched, or dangling targets fail closed. `guru-clarify-requirements`
-remains the stable id of the existing Phase 0 clarification/check-env/
-prepare-task workflow route; this contract does not activate the #113 package.
+kind-mismatched, or dangling targets fail closed.
+
+`guru-clarify-requirements` is the active semantic consumer of
+`guru-discover-change-context:context_ready`. It owns initial intake clarity,
+active-task scope change, and explicit standalone clarification review in one
+step-local closed loop. Workflow and standalone modes use identical runtime,
+authority, context, target, and freshness preconditions. Its positive behavior
+classifies confirmed facts, repository-answerable questions, product-intent
+questions, scope-risk decisions, and out-of-scope facts; exhausts
+repository-answerable questions before asking the user; runs a one-question
+clarification loop; selects a source-of-truth action; completes the AI Review
+Gate; obtains exact action/proposal confirmation when required; records and
+validates current facts; and returns exactly one typed exit.
+
+The workflow owns only the mandatory invocation and unique consumers:
+`clear` -> workflow target `guru-review-contract-wording`, `needs_context` ->
+Skill `guru-discover-change-context`, `refresh_context` -> Skill
+`guru-sync-base`, `new_task` -> workflow target
+`guru-full-task-intake-chain`, and `blocked` -> stop
+`requirements-clarification-blocked`. The first and fourth targets are staged
+integration points: #114 activates the wording-review Skill and #112 owns the
+complete task-intake chain. Unknown, multiple, or unmapped exits fail closed.
+
+A successful GitHub issue comment/body mutation returns `refresh_context`, not
+`clear`, so the base/context/clarification chain reruns against the new
+authority. `new_issue_draft` is side-effect-free and returns `new_task`; this
+Skill never creates a GitHub issue. Pre-task and standalone results are
+stdout-only and create no repository clarification cache, workspace journal,
+or fixed handoff. Active-task inclusion binds live GitHub-visible authority,
+the current `issue-scope-ledger.json` content digest, all three planning
+document digests, stale downstream evidence identities, and re-entry owners
+`guru-approve-task-plan`, `guru-check-task`, and `guru-review-branch`.
 
 `trellis-finish-work` is a single resumable transaction entry. Its mandatory
 order is: shared prepare/digest preview, expected-digest handshake, reviewed

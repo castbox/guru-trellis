@@ -232,8 +232,8 @@ shared skill copy 和所选 Codex/Cursor/Claude 平台副本。
 
 Registry 的 `reserved` id 不安装也不参与 mandatory route；只有通过完整
 package/interface/schema/route 验证的 `active` 项才会分发。当前 active ids 是
-`guru-sync-base`、`guru-discover-change-context` 与
-`guru-create-task-commit`。Active package 的
+`guru-sync-base`、`guru-discover-change-context`、
+`guru-clarify-requirements` 与 `guru-create-task-commit`。Active package 的
 `SKILL.md` frontmatter `name`/`description` 必须与 stable id/interface 精确
 一致，`tests[]` 必须是 package-local `tests/<file>` 的真实 regular file，不能
 使用标签、虚构路径、越界路径或 symlink evidence。升级遇到已知
@@ -309,11 +309,33 @@ object-or-ref 三类闭合校验。Closed schema 与结构化 locator 不保存 
 repo-level archive index/cache 或 shared handoff。Schema 是
 `guru-context-discovery-1.0`，managed commands 是
 `preview-change-context-history`、`record-context-discovery`、
-`check-context-discovery`。Stable exits 是 `context_ready` ->
-workflow route `guru-clarify-requirements`、`refresh_base` -> `guru-sync-base`、`blocked` ->
-`change-context-blocked`；duplicate reuse/new target 决策留给现有 Phase 0 clarification/intake
-continuation，不在 #111 实现 #113 Skill。Source/installed validator 要求 Skill consumer 是
-active registry id，并要求 workflow/stop consumer 各有唯一匹配 target marker。
+`check-context-discovery`。Stable exits 是 `context_ready` -> active Skill
+`guru-clarify-requirements`、`refresh_base` -> `guru-sync-base`、`blocked` ->
+`change-context-blocked`；duplicate reuse/new target 决策交给 #113。Source/installed
+validator 要求 Skill consumer 是 active registry id，并要求 workflow/stop consumer 各有唯一
+匹配 target marker。
+
+`guru-clarify-requirements` 统一 initial issue/proposed draft、active-task scope change 与
+standalone review。Workflow/standalone 使用相同 preconditions 和 semantic 五阶段；Skill
+先穷尽 repository-answerable questions，再按每轮一个最高价值问题收敛，只有不可分割产品
+选择才记录 `atomic_group`。Scope proposal 与 source action 都绑定 recorder 派生的 digest；
+未确认 expansion 纳入 current scope 必须取得 proposal-digest-bound 专用确认，普通“继续”、
+task/planning/review approval 不得替代。Optional mechanism 产生的风险只能删除/替换机制或
+另行提案。
+
+Package 不提供 mutation executor。GitHub comment/body 只能由 AI 在 exact action
+confirmation 和 live preimage 复核后通过现有 connector 或审查过的 `gh` 执行，随后重读
+live facts；recorder/checker 只规范化和校验 closed schema、derived digest、freshness、
+active-task ledger/planning/stale-gate linkage 与 typed exit。Pre-task/standalone stdout-only，
+无专用 clarification artifact；active-task current inclusion 绑定
+`guru-approve-task-plan`、`guru-check-task`、`guru-review-branch` re-entry owners。Schema 是
+`guru-requirements-clarification-1.0`，managed commands 是
+`record-requirements-clarification` 与 `check-requirements-clarification`。Exits 是
+`clear` -> staged `guru-review-contract-wording`、`needs_context` ->
+`guru-discover-change-context`、`refresh_context` -> `guru-sync-base`、`new_task` -> staged
+`guru-full-task-intake-chain`、`blocked` -> `requirements-clarification-blocked`。成功 GitHub
+mutation 必须返回 `refresh_context`；`new_issue_draft` 不创建 issue，真正 intake mutation
+属于 #112。
 
 Source issue 的 live state 可为归一化后的 `open` 或 `closed`；open duplicate candidates
 与 draft-created issue binding 仍分别保持 open-only。Current Docs、code/contracts、tests
@@ -377,7 +399,7 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.11`；在对应 merge commit 创建并验证
+manifest 已递增到下一待发布版本 `0.6.5-guru.12`；在对应 merge commit 创建并验证
 release tag 前，不得把 `.7` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录
@@ -401,9 +423,15 @@ guru-sync-base
   skipped -> original-request-route
   blocked -> base-sync-blocked
 guru-discover-change-context
-  context_ready -> guru-clarify-requirements -> check-env / prepare-task
+  context_ready -> guru-clarify-requirements
   refresh_base -> guru-sync-base
   blocked -> change-context-blocked
+guru-clarify-requirements
+  clear -> guru-review-contract-wording -> check-env / prepare-task
+  needs_context -> guru-discover-change-context
+  refresh_context -> guru-sync-base
+  new_task -> guru-full-task-intake-chain
+  blocked -> requirements-clarification-blocked
 ```
 
 只有 `synced` 才能继续读取 issue、搜索 duplicate 或创建 GitHub/worktree/task 副作用：

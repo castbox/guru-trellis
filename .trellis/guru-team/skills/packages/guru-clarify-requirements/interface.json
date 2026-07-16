@@ -1,0 +1,114 @@
+{
+  "$schema": "../../schemas/skill-interface.schema.json",
+  "schema_version": "1.2",
+  "id": "guru-clarify-requirements",
+  "name": "guru-clarify-requirements",
+  "description": "Clarify initial requirements, active-task scope changes, or explicit review requests through an evidence-first semantic loop with exact confirmation and typed exits.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": ["runtime_dependency", "review_target", "context_evidence", "source_authority", "invocation_freshness"]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": ["runtime_dependency", "review_target", "context_evidence", "source_authority", "invocation_freshness"]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed extension manifest, dispatcher, active package inventory and declared record/check runtime commands",
+      "binding": "complete compatible Guru Team preset runtime",
+      "freshness": "validated by run-skill-command before every runtime command"
+    },
+    {
+      "id": "review_target",
+      "evidence": "one current GitHub issue or side-effect-free proposed draft identity",
+      "binding": "the exact requirements authority reviewed by the AI",
+      "freshness": "target facts and content digest remain unchanged through recording and checking"
+    },
+    {
+      "id": "context_evidence",
+      "evidence": "current guru-context-discovery-1.0 snapshot or explicit missing/stale evidence",
+      "binding": "repository, current/history evidence and load-bearing decisions",
+      "freshness": "current evidence is revalidated before clear; missing evidence returns needs_context"
+    },
+    {
+      "id": "source_authority",
+      "evidence": "live issue/draft facts plus exact source-action preimage and post-mutation facts when applicable",
+      "binding": "the issue or draft that future intake will read",
+      "freshness": "AI rereads immediately before mutation and checker rereads declared live facts"
+    },
+    {
+      "id": "invocation_freshness",
+      "evidence": "mode, invocation kind, target/context/scope/action/payload/result digests and active-task bindings",
+      "binding": "one current semantic review round and its legal continuation",
+      "freshness": "all identities must still match at typed-exit validation"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [
+    {"id": "requirements_clarification_example", "path": "examples/requirements-clarification.json"}
+  ],
+  "schemas": [
+    {"id": "requirements_clarification_schema", "path": "schemas/requirements-clarification.schema.json"}
+  ],
+  "validators": [
+    {
+      "id": "clarification_recorder",
+      "command": "scripts/record-requirements-clarification.sh",
+      "runtime_command": "record-requirements-clarification",
+      "objective_scope": "closed result normalization, derived proposal/action/content/result digests, stdout-only boundary and semantic-shape invariants"
+    },
+    {
+      "id": "clarification_checker",
+      "command": "scripts/check-requirements-clarification.sh",
+      "runtime_command": "check-requirements-clarification",
+      "objective_scope": "published schema, digest recomputation, live source/context/task freshness, exact confirmation, active-task linkage and typed-exit invariants"
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "clear",
+      "evidence": "zero open questions, passed AI Review Gate, current authority/context and all accepted proposals exactly confirmed",
+      "consumer": {"kind": "workflow", "id": "guru-review-contract-wording"}
+    },
+    {
+      "id": "needs_context",
+      "evidence": "named load-bearing repository/current/history evidence is missing",
+      "consumer": {"kind": "skill", "id": "guru-discover-change-context"}
+    },
+    {
+      "id": "refresh_context",
+      "evidence": "source/context binding is stale or an issue/comment/body mutation succeeded",
+      "consumer": {"kind": "skill", "id": "guru-sync-base"}
+    },
+    {
+      "id": "new_task",
+      "evidence": "an independent delivery unit has a reviewed side-effect-free new issue draft",
+      "consumer": {"kind": "workflow", "id": "guru-full-task-intake-chain"}
+    },
+    {
+      "id": "blocked",
+      "evidence": "load-bearing refusal, unobtainable evidence, conflict, or blocked semantic gate",
+      "consumer": {"kind": "stop", "id": "requirements-clarification-blocked"}
+    }
+  ],
+  "reentry": {
+    "identity": "mode, invocation kind, review target, context, scope proposals, source actions, confirmation, active-task evidence and derived content identity",
+    "freshness": "clear is accepted only while every authority/context/task binding remains current; mutation or stale evidence restarts the complete upstream chain",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"]
+}

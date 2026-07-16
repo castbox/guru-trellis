@@ -70,6 +70,18 @@ from one search result, the bidirectional `blocked` exit/Gate matrix, all typed
 exits, source/installed distribution and clean
 throwaway update/reapply. Any reader of index siblings, workspace/runtime,
 repo-level history cache, or transitional legacy overlay payload fails.
+For `guru-clarify-requirements`, tests must cover workflow/standalone
+precondition parity; initial issue, proposed draft, active-task scope change,
+and standalone entry kinds; repository-answerable evidence before user
+questions; one-question and atomic-group rounds; partial/refused answers;
+comment/body/draft/new-task/active-task actions; exact action and proposal
+confirmation; generic-confirmation rejection; optional-mechanism removal or
+replacement; active-task ledger/planning/stale-gate/re-entry bindings; all five
+typed exits and unique consumers; pre-task zero-write; live mutation freshness;
+and source/installed/discovery/throwaway update-reapply distribution. Static
+and runtime tests must also prove the package/runtime contain no GitHub write or
+issue-create executor and that recorder/checker do not generate semantic
+decisions.
 When changing Branch Review report generation or gate validation, add or update
 tests that reject obvious English template headings in task-local `review.md`
 and `reviews/*.md`, including `Review Rounds`, `Findings Lifecycle`,

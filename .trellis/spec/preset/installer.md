@@ -101,16 +101,30 @@ gain canonical repo/number/identity/URL/open-state/update-time digest and live
 freshness checks, or when the `blocked` exit/Gate state matrix changes; a mixed
 old-schema/new-runtime installation is drift and fails installed validation.
 
+The registry also installs active semantic `guru-clarify-requirements` to the
+same audited runtime and selected discovery roots. Its managed tree includes
+`SKILL.md`, interface, contract, deidentified example,
+`guru-requirements-clarification-1.0` schema, tests, and executable
+dispatcher-only record/check wrappers. Companion managed assets are exactly
+`record-requirements-clarification.sh` and
+`check-requirements-clarification.sh`. No GitHub mutation or issue-creation
+executor is installed for this Skill. The extension manifest publishes the
+active id, artifact schema, and both runtime command ids as one compatible
+versioned capability.
+
 Fresh install and update/reapply verification must exercise a selected-platform
 standalone wrapper with the full preset runtime. Missing runtime, runtime drift,
 or unresolved sidecars must block before fetch. A package-only copy must never
 appear to work. The throwaway path also verifies workflow route markers,
 stdout-only standalone resolution/result facts, the real workflow
-`synced -> guru-discover-change-context -> context_ready -> clarification/intake`
-chain, direct zero/candidate history preview, same-snapshot task-local
+`synced -> guru-discover-change-context -> context_ready ->
+guru-clarify-requirements` chain and all five clarification exit consumers,
+direct zero/candidate history preview, same-snapshot task-local
 record/check, duplicate projection/digest recomputation from one search result,
 ordinary refresh stale-code/superseded-digest re-entry,
-bidirectional blocked exit/Gate rejection, and the prepare-task planner/mutation guard chain using rolling post-sync
+bidirectional blocked exit/Gate rejection, clarification workflow/standalone
+precondition parity, question/scope/action/confirmation invariants, stdout-only
+pre-task behavior, active-task bindings, and the prepare-task planner/mutation guard chain using rolling post-sync
 resolution digests and the shared resolver/sync core, `trellis update`,
 workflow re-selection, preset reapply, and a final recursive zero-sidecar scan.
 

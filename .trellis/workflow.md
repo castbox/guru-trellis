@@ -52,7 +52,8 @@ Deterministic scripts validate structure and evidence only; they do not make
 semantic review or routing judgments.
 
 The production registry currently activates `guru-sync-base`,
-`guru-discover-change-context`, and `guru-create-task-commit`. Their unfenced markers below are the only mandatory
+`guru-discover-change-context`, `guru-clarify-requirements`, and
+`guru-create-task-commit`. Their unfenced markers below are the only mandatory
 global routes. New active routes must update registry, package/interface, this
 workflow, tests, preset distribution, extension public API, and migration
 documentation together.
@@ -62,9 +63,9 @@ documentation together.
 ## Guru Team Gate
 
 Before creating a Trellis task or writing task artifacts, complete the Phase 0
-`guru-sync-base` and `guru-discover-change-context` routes. Only a fresh
-`context_ready` exit may continue to the environment, GitHub intake, and
-worktree commands below.
+`guru-sync-base`, `guru-discover-change-context`, and
+`guru-clarify-requirements` routes. Only a fresh `clear` exit may continue to
+the environment, GitHub intake, and worktree commands below.
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
@@ -569,7 +570,7 @@ Repos with `no_docs`, `partial_docs`, or `stale_docs` must still record one expl
 [workflow-state:no_task]
 No active task. First classify the user's natural-language request; do not require the user to explicitly run `trellis-start`.
 If the request includes an issue URL, issue number, clear development task, or file change, the first priority is the mandatory Phase 0 `guru-sync-base` invocation, not `check-env`, `prepare-task`, semantic repository reads, or bare `task.py create`.
-Only the `synced` exit enters mandatory `guru-discover-change-context`. Only its `context_ready` exit enters `guru-clarify-requirements` and then runs `.trellis/guru-team/scripts/bash/check-env.sh --json` plus `prepare-task` with the validator-passed post-sync resolution digest from `guru-sync-base` stdout facts.
+Only the `synced` exit enters mandatory `guru-discover-change-context`. Only its `context_ready` exit enters mandatory `guru-clarify-requirements`; only clarification `clear` may then run `.trellis/guru-team/scripts/bash/check-env.sh --json` plus `prepare-task` with the validator-passed post-sync resolution digest from `guru-sync-base` stdout facts. Other clarification exits re-enter context/base, stage a new task, or stop according to their declared consumers.
 The `skipped` exit returns to `original-request-route`; `blocked`, unknown, multiple, or unmapped exits stop fail closed.
 Default `prepare-task` is planner-only. After intake plan review and user approval in `workspace_mode: worktree`, create the execution environment with `prepare-task --create-worktree --create-task` or an equivalent controlled Guru Team executor.
 Do not silently edit the current checkout. Direct edits require explicit user approval to skip GitHub issue, Trellis task, worktree, and branch for this turn.
@@ -581,10 +582,11 @@ Task creation consent is not current-checkout direct-edit consent. Do not write 
 
 - 0.0 Base sync route `[required · once]`
 - 0.1 Change-context discovery `[required · once]`
-- 0.2 Environment check `[required · once]`
-- 0.3 GitHub issue intake `[required · once]`
-- 0.4 Git base branch and worktree preflight `[required · once]`
-- 0.5 Handoff review `[required · once]`
+- 0.2 Requirements clarification `[required · once]`
+- 0.3 Environment check `[required · once]`
+- 0.4 GitHub issue intake `[required · once]`
+- 0.5 Git base branch and worktree preflight `[required · once]`
+- 0.6 Handoff review `[required · once]`
 
 #### 0.0 Base sync route `[required · once]`
 
@@ -647,7 +649,7 @@ Load and mandatory invoke the active semantic package by stable id. The global
 workflow owns only this invocation and its unique consumers:
 
 <!-- guru-skill-invoke: {"skill":"guru-discover-change-context","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-discover-change-context","exit":"context_ready","consumer":{"kind":"workflow","id":"guru-clarify-requirements"}} -->
+<!-- guru-skill-exit: {"skill":"guru-discover-change-context","exit":"context_ready","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
 <!-- guru-skill-exit: {"skill":"guru-discover-change-context","exit":"refresh_base","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-discover-change-context","exit":"blocked","consumer":{"kind":"stop","id":"change-context-blocked"}} -->
 
@@ -665,13 +667,36 @@ enters `guru-clarify-requirements`; `refresh_base` re-enters
 
 <!-- guru-stop-target: {"id":"change-context-blocked"} -->
 
-The `context_ready` consumer is the existing Phase 0 clarification and intake
-continuation below. It is a workflow route, not an active public Skill package;
-this task does not implement `guru-clarify-requirements`.
+#### 0.2 Requirements clarification `[required · once]`
 
-<!-- guru-workflow-target: {"id":"guru-clarify-requirements"} -->
+Load and mandatory invoke the active semantic package by stable id. The global
+workflow owns only this invocation and its unique consumers:
 
-#### 0.2 Environment check `[required · once]`
+<!-- guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"clear","consumer":{"kind":"workflow","id":"guru-review-contract-wording"}} -->
+<!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"needs_context","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
+<!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
+<!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"new_task","consumer":{"kind":"workflow","id":"guru-full-task-intake-chain"}} -->
+<!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"blocked","consumer":{"kind":"stop","id":"requirements-clarification-blocked"}} -->
+
+Run the package contract with the current context snapshot and exact issue or
+draft authority. The package owns evidence classification, one-question
+clarification, scope proposals, source-action selection, AI Review Gate,
+conditional exact confirmation, recorder/checker, freshness and re-entry. Do
+not copy that loop into this workflow or a platform entry.
+
+Pre-task and standalone recording remains stdout-only. The package has no
+GitHub mutation executor and no dedicated clarification artifact. A successful
+comment/body/source/scope mutation returns `refresh_context`; a reviewed
+side-effect-free new issue draft returns `new_task`. `clear` enters the staged
+#114 wording-review continuation; #112 owns the full task-intake continuation.
+Unknown, multiple, or unmapped exits fail closed.
+
+<!-- guru-workflow-target: {"id":"guru-review-contract-wording"} -->
+<!-- guru-workflow-target: {"id":"guru-full-task-intake-chain"} -->
+<!-- guru-stop-target: {"id":"requirements-clarification-blocked"} -->
+
+#### 0.3 Environment check `[required · once]`
 
 Run:
 
@@ -682,7 +707,7 @@ Run:
 If `gh` is missing or unauthenticated, stop and tell the user to install GitHub
 CLI and run `gh auth login`.
 
-#### 0.3 GitHub issue intake `[required · once]`
+#### 0.4 GitHub issue intake `[required · once]`
 
 Run:
 
@@ -710,7 +735,7 @@ resolution digest returned by the preceding validator or prepare guard. Any
 source, base, candidate, remote, config, or digest drift blocks before the next
 semantic read or mutation.
 
-#### 0.4 Git base branch and worktree preflight `[required · once]`
+#### 0.5 Git base branch and worktree preflight `[required · once]`
 
 Use the preflight output from `prepare-task.sh`. The default command plans the worktree path but does not create it; `--create-worktree` or `--create-task` is required for filesystem workspace creation and is allowed only after a confirmed `source_issue` exists.
 
@@ -734,7 +759,7 @@ do not create an ambiguity prompt.
 
 Default to worktree mode. If the need for a new worktree is uncertain, ask the user before writing task files.
 
-#### 0.5 Handoff review `[required · once]`
+#### 0.6 Handoff review `[required · once]`
 
 Before task creation, summarize:
 

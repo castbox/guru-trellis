@@ -76,10 +76,16 @@ Continue entries must:
   `guru-clarify-requirements`, `refresh_base` to `guru-sync-base`, and
   `blocked` to `change-context-blocked`; platform entry text must load the
   stable id and must not copy current/history/Gate internals;
-- keep `guru-clarify-requirements` described as the existing Phase 0 workflow
-  continuation, not an active public Skill package; the canonical workflow's
-  `guru-workflow-target` / `guru-stop-target` declarations are validated at
-  source and installed runtime and must not be copied into platform overlays;
+- preserve the active `guru-clarify-requirements` invocation and typed exits:
+  `clear` to workflow target `guru-review-contract-wording`, `needs_context` to
+  `guru-discover-change-context`, `refresh_context` to `guru-sync-base`,
+  `new_task` to workflow target `guru-full-task-intake-chain`, and `blocked` to
+  `requirements-clarification-blocked`; platform entry text must load the
+  stable id and must not copy its question/action/confirmation/Gate internals;
+- keep canonical `guru-workflow-target` / `guru-stop-target` declarations in
+  the workflow only. Activating this package does not authorize editing or
+  adding frozen upstream-owned overlay payloads; preset-generated `guru-*`
+  discovery copies come from the package installer, not this overlay tree;
 
 - run `python3 ./.trellis/scripts/get_context.py`
 - run `python3 ./.trellis/scripts/get_context.py --mode phase`

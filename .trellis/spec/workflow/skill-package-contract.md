@@ -216,9 +216,7 @@ validated by its own closed structural contract, and active-task
 External consumer resolution is part of both source and installed validation.
 Skill consumers must name an active registry id. Workflow/stop consumers must
 have exactly one matching `guru-workflow-target` / `guru-stop-target` marker;
-missing, duplicate, kind-mismatched, or dangling targets fail closed. The
-`guru-clarify-requirements` id names the existing Phase 0 workflow route until
-#113 activates any separate package.
+missing, duplicate, kind-mismatched, or dangling targets fail closed.
 
 The package publishes artifact schema `guru-context-discovery-1.0`, scoring
 algorithm id `guru-context-history-score-1.0`, and dispatcher-only wrappers for
@@ -240,6 +238,56 @@ Task-local record/check also require the exact target to be non-ignored under
 `git check-ignore --quiet --no-index --` before and after recording and during
 checking. Ignore matches or unreadable trackability fail closed; pre-task mode
 remains stdout-only and does not perform this target gate.
+
+`guru-clarify-requirements` is an active semantic package with identical
+workflow/standalone preconditions: compatible runtime, current review target,
+current context evidence, source authority, and invocation-context freshness.
+Its exact schema 1.2 stages are `forward_behavior -> ai_review_gate ->
+conditional_human_confirmation -> recorder_validator -> typed_exit`. The Skill
+loads `trellis-brainstorm` as its one-question method, but owns question
+selection, convergence, scope classification, action selection, confirmation
+necessity, semantic pass/block, and typed route.
+
+The result uses closed top-level fields and artifact schema
+`guru-requirements-clarification-1.0`. Repository-answerable questions must be
+`answered` or `not_answerable` with checked evidence before the first user
+question. Each clarification round contains one `question_id`; an
+`atomic_group` is permitted only for an indivisible product choice and records
+its reason. `answer_status=partial` cannot close any question. The recorder
+derives all proposal, action, payload, content, and result digests; the checker
+recomputes them and validates current live/task facts without generating
+questions, choosing actions, classifying scope, executing GitHub writes, or
+turning deterministic success into a semantic pass.
+
+Source actions are `none`, `issue_comment`, `issue_body_edit`,
+`proposed_draft_update`, `new_issue_draft`, and
+`active_task_scope_update`. GitHub mutation remains AI-owned: after exact
+action-digest-bound confirmation, the AI uses an existing connector or a
+reviewed `gh` command, rereads live facts, and supplies mutation evidence to
+the recorder. Generic continuation, task creation, planning approval, or
+review confirmation cannot satisfy action or scope-proposal confirmation.
+`unconfirmed_expansion + accepted_current` requires a dedicated
+proposal-digest-bound confirmation. A proposal with
+`optional_mechanism_origin=true` cannot be `accepted_current`; the mechanism is
+removed/replaced or its independent product value is proposed separately.
+
+The five exits and unique consumers are `clear` -> workflow target
+`guru-review-contract-wording`, `needs_context` -> Skill
+`guru-discover-change-context`, `refresh_context` -> Skill `guru-sync-base`,
+`new_task` -> workflow target `guru-full-task-intake-chain`, and `blocked` ->
+stop `requirements-clarification-blocked`. `clear` requires no open questions,
+a passed current AI Gate, current authority/context, all accepted proposals
+exactly confirmed, and no unrefreshed mutation. A successful GitHub mutation
+returns `refresh_context`; a reviewed side-effect-free new issue draft returns
+`new_task`; `blocked` is valid if and only if the AI Gate is blocked.
+
+Pre-task and standalone results remain stdout-only. There is no dedicated
+tracked clarification artifact. Active-task decisions bind only the current
+task's existing issue ledger, planning documents, and review evidence, and
+record stale downstream identities plus re-entry owners
+`guru-approve-task-plan`, `guru-check-task`, and `guru-review-branch`. A copied
+package without the complete compatible preset remains non-portable and fails
+closed through the dispatcher.
 
 ## Distribution And Managed Hashes
 

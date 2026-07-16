@@ -180,6 +180,52 @@ exception strings containing local paths, or secrets.
 The schema and runtime additionally enforce the exact semantic state pair
 `typed_exit=blocked` <-> `ai_review_gate.status=blocked` in both directions.
 
+### Requirements Clarification Record And Check
+
+`record-requirements-clarification` and
+`check-requirements-clarification` are the only runtime commands published for
+`guru-clarify-requirements`. Canonical Bash wrappers remain thin; package
+wrappers reach them only through `run-skill-command` with fixed validator ids.
+There is no mutation executor command.
+
+Record accepts one AI-authored closed payload from stdin or an explicit input
+file. It normalizes timestamps and canonical lists, derives proposal/action/
+payload/content/result SHA-256 identities, validates the semantic state shape,
+and emits the canonical `guru-requirements-clarification-1.0` result on stdout.
+It never chooses a question, action, scope decision, confirmation requirement,
+AI Gate status, or typed exit. Pre-task and standalone modes reject an output
+path and perform no repository write. Active-task mode still creates no
+dedicated clarification artifact: it validates caller-authored bindings to the
+existing live issue authority, `issue-scope-ledger.json`, `prd.md`, `design.md`,
+`implement.md`, and stale downstream gate identities.
+
+Check accepts the recorder result from stdin or an explicit input file. It
+recomputes every derived digest, executes the published closed schema and pure
+invariants first, and then reads only the declared live GitHub/Git/task facts
+needed for freshness. It may report `needs_context` or `refresh_context` only
+when the caller-authored typed exit and deterministic missing/stale facts agree;
+it never infers route intent. It must not write GitHub, Git, task artifacts,
+workspace state, runtime caches, or sidecars.
+
+GitHub `issue_comment` and `issue_body_edit` mutations are AI-owned. Before a
+write the AI rereads the target preimage and verifies the exact target,
+action/payload digest, proposal digests, and dedicated human confirmation; it
+then uses an existing connector or reviewed `gh` command and rereads the
+result. Recorder/checker only normalize and validate supplied URL/state/
+updated-at/body-or-comment digest facts. Successful GitHub mutation requires
+`refresh_context`. `new_issue_draft` remains side-effect-free and requires
+`new_task`; no script in this Skill creates an issue.
+
+Pure validation rejects repository-answerable questions left pending before a
+user round, multiple question ids in one round, a partial answer closing any
+question, an accepted unconfirmed expansion without proposal-digest-bound
+confirmation, generic confirmation action kinds, an optional-mechanism
+proposal accepted into current scope, an active-task inclusion without exact
+ledger/planning/re-entry linkage, open questions on `clear`, blocked/Gate
+matrix mismatch, and any exit/consumer mismatch. Expected failures use stable
+non-secret error codes and never echo raw payloads, local absolute paths, or
+credentials.
+
 ## GitHub and Git Operations
 
 ### Shared Base Resolution And Sync

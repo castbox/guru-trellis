@@ -18,6 +18,21 @@
       "workflow_route_id": "phase-3-task-commit"
     },
     {
+      "id": "guru-clarify-requirements",
+      "state": "active",
+      "name": "guru-clarify-requirements",
+      "package": "packages/guru-clarify-requirements",
+      "interface": "packages/guru-clarify-requirements/interface.json",
+      "supported_platforms": [
+        "shared",
+        "codex",
+        "cursor",
+        "claude"
+      ],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "phase-0-requirements-clarification"
+    },
+    {
       "id": "guru-sync-base",
       "state": "active",
       "name": "guru-sync-base",
