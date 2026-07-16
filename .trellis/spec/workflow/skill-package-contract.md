@@ -308,6 +308,11 @@ prior file hash, placeholder planning body, or minimal approval JSON does not
 qualify. GitHub authority mutation returns `refresh_context`; only a context
 snapshot generated at or after authority `updated_at`, followed by a task update
 bound to that snapshot, may later return active-task `clear` or `new_task`.
+That `active_task_scope_update` is authorized by the same
+`exact_source_action_and_scope` confirmation as the classification proposals:
+its action id is listed in `confirmed_actions[]`, and the confirmation action
+digest exact-binds the canonical confirmed action set. Proposal-only
+confirmation, planning approval, or validated task evidence cannot substitute.
 Task-only update requires no second refresh. `mechanism_removed/replaced`
 remains outside confirmation/trail/action mutation. `new_task` still contains only the
 side-effect-free reviewed draft and #112 owns creation. A copied package without

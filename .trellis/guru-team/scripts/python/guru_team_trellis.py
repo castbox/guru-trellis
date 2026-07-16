@@ -19349,6 +19349,81 @@ def requirements_clarification_nonempty(value: Any) -> bool:
     )
 
 
+def requirements_clarification_confirmation_covers_actions(
+    confirmation: Any,
+    action_by_id: dict[str, dict[str, Any]],
+    required_action_ids: set[str],
+) -> bool:
+    if not isinstance(confirmation, dict):
+        return False
+    confirmed_actions = confirmation.get("confirmed_actions")
+    if (
+        confirmation.get("status") != "confirmed"
+        or confirmation.get("confirmation_kind")
+        not in {"exact_source_action", "exact_source_action_and_scope"}
+        or not isinstance(confirmed_actions, list)
+        or any(
+            not isinstance(action_id, str) or action_id not in action_by_id
+            for action_id in confirmed_actions
+        )
+        or not required_action_ids.issubset(set(confirmed_actions))
+    ):
+        return False
+    expected_digest = context_digest([
+        action_by_id[action_id].get("action_digest")
+        for action_id in confirmed_actions
+    ])
+    return confirmation.get("action_digest") == expected_digest
+
+
+def requirements_clarification_active_task_action_confirmation_errors(
+    payload: dict[str, Any],
+) -> list[str]:
+    invocation = payload.get("invocation_context")
+    if not isinstance(invocation, dict) or invocation.get("kind") != "active_task_scope_change":
+        return []
+    proposals = payload.get("scope_proposals")
+    classification_proposals = [
+        proposal for proposal in proposals
+        if isinstance(proposals, list)
+        and isinstance(proposal, dict)
+        and proposal.get("decision")
+        in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_CLASSIFICATION_DECISIONS
+    ] if isinstance(proposals, list) else []
+    if not classification_proposals:
+        return []
+    actions = payload.get("source_actions")
+    action_by_id = {
+        action["action_id"]: action
+        for action in actions
+        if isinstance(actions, list)
+        and isinstance(action, dict)
+        and isinstance(action.get("action_id"), str)
+    } if isinstance(actions, list) else {}
+    task_update_action_ids = {
+        action_id for action_id, action in action_by_id.items()
+        if action.get("kind") == "active_task_scope_update"
+    }
+    if not task_update_action_ids:
+        return []
+    confirmation = payload.get("human_confirmation")
+    expected_proposal_digests = [
+        proposal.get("proposal_digest") for proposal in classification_proposals
+    ]
+    if (
+        not isinstance(confirmation, dict)
+        or confirmation.get("confirmation_kind") != "exact_source_action_and_scope"
+        or confirmation.get("proposal_digests") != expected_proposal_digests
+        or not requirements_clarification_confirmation_covers_actions(
+            confirmation,
+            action_by_id,
+            task_update_action_ids,
+        )
+    ):
+        return ["active_task_scope_update_requires_exact_action_confirmation"]
+    return []
+
+
 def requirements_clarification_structural_errors(
     root: Path,
     payload: dict[str, Any],
@@ -19760,11 +19835,11 @@ def requirements_clarification_structural_errors(
             errors.append("mutation_action_state_mismatch")
         elif (
             confirmation_status != "confirmed"
-            or mutation.get("action_id") not in confirmed_actions
-            or confirmation.get("action_digest") != context_digest([
-                action_by_id[action_id].get("action_digest")
-                for action_id in confirmed_actions if action_id in action_by_id
-            ])
+            or not requirements_clarification_confirmation_covers_actions(
+                confirmation,
+                action_by_id,
+                {str(mutation.get("action_id"))},
+            )
         ):
             errors.append("mutation_requires_exact_action_confirmation")
         if mutation.get("facts_sha256") != context_digest(projection):
@@ -19858,7 +19933,7 @@ def requirements_clarification_structural_errors(
         if (
             confirmation_status != "confirmed"
             or confirmation.get("confirmation_kind")
-            not in {"exact_scope_proposal", "exact_source_action_and_scope"}
+            != "exact_source_action_and_scope"
             or proposal_digests != classification_proposal_digests
             or any(
                 proposal.get("confirmation_ref") is None
@@ -19943,6 +20018,12 @@ def requirements_clarification_structural_errors(
                 != trail.get("context_before_task_update_sha256")
             ):
                 errors.append("active_task_task_update_preimage_mismatch")
+
+        errors.extend(
+            requirements_clarification_active_task_action_confirmation_errors(
+                payload
+            )
+        )
 
     if invocation_kind == "active_task_scope_change" and active_task_mechanism_proposals:
         if any(
@@ -20540,6 +20621,9 @@ def requirements_clarification_live_errors(
 ) -> list[str]:
     target = payload.get("review_target")
     errors = requirements_clarification_live_issue_errors(root, target) if isinstance(target, dict) else ["requirements_target_invalid"]
+    errors.extend(
+        requirements_clarification_active_task_action_confirmation_errors(payload)
+    )
     proposals = payload.get("scope_proposals")
     has_active_task_terminal_reentry = (
         task_dir is not None

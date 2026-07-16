@@ -1,69 +1,47 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-16T22:30:02Z",
+  "generated_at": "2026-07-16T23:33:24Z",
   "task_dir": ".trellis/tasks/07-16-113-guru-clarify-requirements",
   "base_branch": "main",
-  "head": "d77fda1f6a16d064b5db37ff23be9dfe4fa8649a",
+  "head": "a9242def2a9173b72c0bacc186601fba74ddfbd8",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
     ".agents/skills/guru-clarify-requirements/SKILL.md",
-    ".agents/skills/guru-clarify-requirements/interface.json",
     ".agents/skills/guru-clarify-requirements/references/contract.md",
-    ".agents/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
     ".agents/skills/guru-clarify-requirements/tests/test_contract.py",
     ".claude/skills/guru-clarify-requirements/SKILL.md",
-    ".claude/skills/guru-clarify-requirements/interface.json",
     ".claude/skills/guru-clarify-requirements/references/contract.md",
-    ".claude/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
     ".claude/skills/guru-clarify-requirements/tests/test_contract.py",
     ".codex/skills/guru-clarify-requirements/SKILL.md",
-    ".codex/skills/guru-clarify-requirements/interface.json",
     ".codex/skills/guru-clarify-requirements/references/contract.md",
-    ".codex/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
     ".codex/skills/guru-clarify-requirements/tests/test_contract.py",
     ".cursor/skills/guru-clarify-requirements/SKILL.md",
-    ".cursor/skills/guru-clarify-requirements/interface.json",
     ".cursor/skills/guru-clarify-requirements/references/contract.md",
-    ".cursor/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
     ".cursor/skills/guru-clarify-requirements/tests/test_contract.py",
     ".trellis/guru-team/extension.json",
     ".trellis/guru-team/scripts/python/guru_team_trellis.py",
     ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
-    ".trellis/guru-team/skills/packages/guru-clarify-requirements/interface.json",
     ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
-    ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
     ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
-    ".trellis/spec/docs/public-docs.md",
-    ".trellis/spec/workflow/companion-scripts.md",
     ".trellis/spec/workflow/data-contracts.md",
     ".trellis/spec/workflow/quality-guidelines.md",
     ".trellis/spec/workflow/skill-package-contract.md",
-    ".trellis/spec/workflow/workflow-contract.md",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/agent-assignment.json",
-    ".trellis/tasks/07-16-113-guru-clarify-requirements/issue-scope-ledger.json",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/001.json",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/002.json",
-    ".trellis/workflow.md",
-    "README.md",
-    "docs/requirements/guru-team-trellis-flow.md",
-    "docs/requirements/requirement-main.md",
-    "trellis/presets/guru-team/README.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/003.json",
     "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
-    "trellis/skills/guru-team/packages/guru-clarify-requirements/interface.json",
     "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
-    "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
     "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py",
-    "trellis/workflows/guru-team/README.md",
     "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
     "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    "trellis/workflows/guru-team/workflow.md",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/review-gate.json",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/review.md",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-01-final-release-finding.md",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-02-finding-closure-reopened.md"
   ],
-  "checker": "/root/issue_113_phase2_round8_check",
-  "check_summary": "第8轮 fresh Phase 2 在固定 intake base 96ba63b、HEAD d77fda1 和完整 working tree 上完成独立审查；八类全部通过，46个正常态 replay 与全量、安装升级、throwaway、多平台、安全和部署门禁均通过，findings_count=0。F-001 继续 out_of_scope；remote feature ref 留待 push 后 publish gate。",
+  "checker": "/root/issue_113_f007_phase2_check",
+  "check_summary": "F-007 修复后的 fresh Phase 2 独立覆盖固定 base 到 a9242def 的完整提交历史与25个实现路径；五类 combined confirmation、new_task双action、mechanism-only/mixed及历史 findings 全部通过，八类一致性、全量测试、安装升级、clean throwaway、all-platform、安全与部署门禁 findings_count=0。F-001 继续 out_of_scope；remote feature ref 留待 publish gate。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/prd.md",
@@ -88,20 +66,38 @@
       "sha256": "d3e72cc689d26e0243eeef39d6fa214aaf8f645f856ad27ed3188b1a6d9f2943",
       "size_bytes": 7651,
       "modified_at": "2026-07-16T20:31:51.815428+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/issue-scope-ledger.json",
+      "sha256": "35462dcff80d2251dded0340133a082d4db8481662f77dbe852fd42940d903c4",
+      "size_bytes": 6239,
+      "modified_at": "2026-07-16T20:32:31.339666+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-03-finding-closure.md",
+      "sha256": "9cc55c538f02c88b3b84657bc557154442d0fbe2c20f062762777c46744941c5",
+      "size_bytes": 17104,
+      "modified_at": "2026-07-16T22:53:47.578899+00:00"
     }
   ],
   "checked_specs": [
     {
-      "path": ".trellis/spec/docs/public-docs.md",
-      "sha256": "06b88d2ba54270862a916502f537a6ae26ea3beb6b2265d3e8b78de5ef6018f6",
-      "size_bytes": 11393,
-      "modified_at": "2026-07-16T20:48:23.982988+00:00"
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "3b5d78796287b9b75b77316bd2408eccf1001c204db51b8a085d778e975ba8e6",
+      "size_bytes": 84888,
+      "modified_at": "2026-07-16T23:05:13.637920+00:00"
     },
     {
-      "path": ".trellis/spec/preset/overlay-guidelines.md",
-      "sha256": "5fcf3273c13e740f1458163be7a6d60b50c21b5ac8eb849446d00c83369abb50",
-      "size_bytes": 19268,
-      "modified_at": "2026-07-16T09:12:18.573442+00:00"
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "5ee25caa9da6114a60b4f282b138ae4c92b62b57505c2872d0e8573bec1bd3aa",
+      "size_bytes": 16773,
+      "modified_at": "2026-07-16T23:05:13.638160+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "4532351c24c04f34f2fdc0cb4aa43859c89cf298a4905a221be6a15060fd34ff",
+      "size_bytes": 25591,
+      "modified_at": "2026-07-16T23:12:39.912341+00:00"
     },
     {
       "path": ".trellis/spec/workflow/companion-scripts.md",
@@ -110,28 +106,34 @@
       "modified_at": "2026-07-16T21:57:04.326385+00:00"
     },
     {
-      "path": ".trellis/spec/workflow/data-contracts.md",
-      "sha256": "57e536b0a3cf19ea114fbf1ce11b25b60b43fc996460724bfa11acdfd66151fb",
-      "size_bytes": 84390,
-      "modified_at": "2026-07-16T21:57:04.325611+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/quality-guidelines.md",
-      "sha256": "2a5fd38729aba5120c41270aea2461cdea3b8a74478656730fddfee1d7d3bacb",
-      "size_bytes": 16530,
-      "modified_at": "2026-07-16T13:22:09.884187+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/skill-package-contract.md",
-      "sha256": "bed9a2c9d2f5e56725d87674636cabd0b3ddb32b2722b9a6e5402d5fb60df853",
-      "size_bytes": 25229,
-      "modified_at": "2026-07-16T20:48:23.982790+00:00"
-    },
-    {
       "path": ".trellis/spec/workflow/workflow-contract.md",
       "sha256": "38215be5ff41122a37d0b447ed96178b5d73f66d4cf4e434b55d2df64f3305d8",
       "size_bytes": 51847,
       "modified_at": "2026-07-16T20:51:01.286750+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "06b88d2ba54270862a916502f537a6ae26ea3beb6b2265d3e8b78de5ef6018f6",
+      "size_bytes": 11393,
+      "modified_at": "2026-07-16T20:48:23.982988+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "a999442daa4e5b29e8c52437dcebc8e89f549dfdda868bb687dfd142085c3532",
+      "size_bytes": 20564,
+      "modified_at": "2026-07-16T03:51:14.279741+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/upstream-ownership.md",
+      "sha256": "0d00e1891f96a9ae897c8bce3410668aebd79b1b013b5a1fd0abd39d331e82fb",
+      "size_bytes": 9527,
+      "modified_at": "2026-07-16T03:51:14.280037+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "5fcf3273c13e740f1458163be7a6d60b50c21b5ac8eb849446d00c83369abb50",
+      "size_bytes": 19268,
+      "modified_at": "2026-07-16T09:12:18.573442+00:00"
     }
   ],
   "coverage": {
@@ -146,48 +148,44 @@
   },
   "validation_commands": [
     {
+      "command": "F-007 independent structural/live replay",
+      "result": "5/5 positive; 25/25 structural and 25/25 live negative; new_task dual-action and mechanism-only/mixed passed"
+    },
+    {
       "command": "focused clarification and package contracts",
-      "result": "27/27 and 6/6 passed"
+      "result": "28/28 and 6/6 passed"
     },
     {
       "command": "full runtime, registry, preset, ownership",
-      "result": "495/495, 71/71, 39/39, 6/6 passed"
+      "result": "496/496, 71/71, 39/39, 6/6 passed"
     },
     {
-      "command": "independent normal-state semantic replay",
-      "result": "46/46 passed; current review and mechanism-only stale context rejected"
+      "command": "source/installed/equality/sidecar",
+      "result": "managed 168; 40 platform byte/mode groups; sidecar/removal/conflict 0/0/0"
     },
     {
-      "command": "source/installed/equality/overlay drift",
-      "result": "managed files 168; sidecar/removal/conflict 0/0/0; byte and mode equality passed"
+      "command": "clean throwaway marketplace and all-platform",
+      "result": "public discovery plus local unpublished workflow; initial, five exits, standalone, preview-switch, update-reapply, two-closeout, Agents/Claude/Codex/Cursor passed"
     },
     {
-      "command": "clean throwaway marketplace and lifecycle",
-      "result": "public discovery plus local unpublished workflow; initial, five exits, preview-switch, update-reapply, two-closeout passed"
+      "command": "AST/Bash/JSON/JSONL and task contexts",
+      "result": "19/17/38/2; implement.jsonl 14; check.jsonl 11 passed"
     },
     {
-      "command": "independent all-platform install",
-      "result": "Claude/Codex/Cursor/Agents managed 168 passed after verifier-order local workflow sample"
+      "command": "workspace/planning/assignment/diff/source checkout",
+      "result": "all gates passed; index empty; source checkout clean main"
     },
     {
-      "command": "AST/Bash/JSON/JSONL",
-      "result": "19/17/38/2 passed"
-    },
-    {
-      "command": "workspace/planning/assignment/task/diff",
-      "result": "all validators passed; source checkout clean main@b3e1184"
-    },
-    {
-      "command": "F-001 live authority and re-entry trail",
-      "result": "comment sha256, updated_at, context generated_at, planning hashes, approval and stale identities matched; out_of_scope"
+      "command": "F-001 live authority and trail",
+      "result": "comment sha256/updated_at/context/planning/approval/stale identities matched; out_of_scope; no hostile-input expansion"
     },
     {
       "command": "secret and deployment scans",
-      "result": "0 secret hits; 0 CI/CD/container/K8s/migration/Makefile/config asset hits"
+      "result": "0 secret hits; no CI/CD/container/K8s/migration/Makefile/config asset changes"
     },
     {
       "command": "remote feature branch marketplace ref",
-      "result": "not yet pushed; correctly deferred to post-push publish gate"
+      "result": "not pushed; deferred to post-push publish verifier"
     }
   ],
   "findings": [],

@@ -133,7 +133,13 @@ update. On re-entry, live authority kind/URL/content/`updated_at` must match,
 current `context-discovery.json.generated_at` must be at least that authority
 time, and its snapshot digest must equal `context_before_task_update_sha256`.
 The AI then validates the current ledger/planning/review/stale identities and
-one `active_task_scope_update` action. A task-only update does not require a
+one `active_task_scope_update` action. The same exact confirmation that covers
+the five-class proposal set must use
+`confirmation_kind=exact_source_action_and_scope`, list that task-update action
+id in `confirmed_actions[]`, and bind the canonical digest of the confirmed
+action set before the task-local source-of-truth write. Proposal-only
+confirmation, planning approval, or `status=validated` cannot substitute for
+this action confirmation. A task-only update does not require a
 second context snapshot or a changed digest before `clear` or active-task
 `new_task` resumes the exact interrupted progression. `new_task` then carries only a reviewed
 side-effect-free draft; #112 still owns issue/task creation. This Skill records

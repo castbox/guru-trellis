@@ -74,6 +74,8 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "context_before_task_update_sha256",
             "generated_at",
             "updated_at",
+            "confirmation_kind=exact_source_action_and_scope",
+            "confirmed_actions[]",
             "does not require a second context snapshot",
             "There is no mutation executor",
             "Success returns `refresh_context`",

@@ -253,7 +253,14 @@ derives action/payload digests; it does not execute the action. Human
 confirmation records `not_required`, `confirmed`, or `refused`, the exact
 action digest, proposal digests, confirmed action kinds, confirmer/time, and
 evidence summary. Generic continuation/planning/review confirmation action
-kinds are invalid. For comment/body mutation, mutation content SHA-256 must
+kinds are invalid. Every five-class active-task scope decision that carries an
+`active_task_scope_update` must use one
+`confirmation_kind=exact_source_action_and_scope`: its classification proposal
+digests are exact, the task-update action id is present in
+`confirmed_actions[]`, and `human_confirmation.action_digest` equals the
+canonical digest of that confirmed action set. Proposal-only confirmation,
+planning approval, or the task update's validated status cannot authorize the
+task-local source-of-truth write. For comment/body mutation, mutation content SHA-256 must
 equal the exact confirmed action payload body, canonical payload digest, and
 reread live GitHub body/comment content.
 

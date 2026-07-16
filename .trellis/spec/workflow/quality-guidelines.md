@@ -77,7 +77,10 @@ questions, including rejection of `answered` without evidence;
 one-question and atomic-group rounds; partial/refused answers, empty lifecycle,
 close-before-open and reopen rejection;
 comment/body/draft/new-task/active-task actions; exact action and proposal
-confirmation; generic-confirmation rejection; optional-mechanism removal or
+confirmation; five-class active-task task-update rejection when the proposal
+is confirmed but `confirmed_actions[]` is empty, the task action is absent, or
+the confirmation action digest is null/wrong; normal combined proposal/action
+confirmation re-entry; generic-confirmation rejection; optional-mechanism removal or
 replacement; active-task ledger/planning/stale-gate/re-entry bindings; all five
 typed exits and unique consumers; pre-task zero-write; live mutation freshness;
 caller-aware clear resume targets; confirmed payload/mutation/live body equality;

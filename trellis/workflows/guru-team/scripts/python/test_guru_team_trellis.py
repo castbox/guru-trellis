@@ -17094,6 +17094,18 @@ class RequirementsClarificationTests(unittest.TestCase):
                     "action_digest": "0" * 64, "status": "draft_ready",
                     "mutation_evidence": None,
                 })
+            payload = self.derive(payload)
+            task_action_digest = next(
+                action["action_digest"] for action in payload["source_actions"]
+                if action["action_id"] == "task_scope"
+            )
+            payload["human_confirmation"]["confirmation_kind"] = (
+                "exact_source_action_and_scope"
+            )
+            payload["human_confirmation"]["action_digest"] = (
+                gtt.context_digest([task_action_digest])
+            )
+            payload["human_confirmation"]["confirmed_actions"] = ["task_scope"]
         elif typed_exit == "refresh_context":
             payload["active_task_evidence"] = None
             ledger_payload["scope_decisions"] = []
@@ -17477,6 +17489,131 @@ class RequirementsClarificationTests(unittest.TestCase):
                     "active_task_final_classification_requires_exact_user_decision",
                     gtt.requirements_clarification_structural_errors(root, payload, task),
                 )
+
+    def test_every_active_task_classification_requires_exact_task_action_confirmation(self) -> None:
+        cases = (
+            ("accepted_current", "clear", "guru-active-task-planning-review"),
+            ("related", "clear", "guru-resume-implementation"),
+            ("followup", "clear", "guru-resume-implementation"),
+            ("new_task", "new_task", "guru-resume-implementation"),
+            ("out_of_scope", "clear", "guru-resume-implementation"),
+        )
+        for decision, typed_exit, resume_target in cases:
+            with self.subTest(decision=decision), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                task, payload, current_issue, comment_response = (
+                    self.make_active_task_classification(
+                        root,
+                        decision=decision,
+                        typed_exit=typed_exit,
+                        resume_target=resume_target,
+                        fresh_reentry=True,
+                    )
+                )
+                task_action = next(
+                    action for action in payload["source_actions"]
+                    if action["kind"] == "active_task_scope_update"
+                )
+                self.assertEqual(
+                    payload["human_confirmation"]["confirmation_kind"],
+                    "exact_source_action_and_scope",
+                )
+                self.assertIn(
+                    task_action["action_id"],
+                    payload["human_confirmation"]["confirmed_actions"],
+                )
+                self.assertEqual(
+                    payload["human_confirmation"]["action_digest"],
+                    gtt.context_digest([task_action["action_digest"]]),
+                )
+                self.assertEqual(
+                    gtt.requirements_clarification_structural_errors(
+                        root, payload, task
+                    ),
+                    [],
+                )
+                with (
+                    mock.patch.object(
+                        gtt,
+                        "context_read_live_issue",
+                        return_value=(current_issue, None),
+                    ),
+                    mock.patch.object(gtt, "run", return_value=comment_response),
+                ):
+                    self.assertEqual(
+                        gtt.requirements_clarification_live_errors(
+                            root, payload, task
+                        ),
+                        [],
+                    )
+
+                variants = []
+                proposal_only = copy.deepcopy(payload)
+                proposal_only["human_confirmation"]["confirmation_kind"] = (
+                    "exact_scope_proposal"
+                )
+                proposal_only["human_confirmation"]["action_digest"] = None
+                proposal_only["human_confirmation"]["confirmed_actions"] = []
+                variants.append(("empty_confirmed_actions", proposal_only))
+
+                null_digest = copy.deepcopy(payload)
+                null_digest["human_confirmation"]["action_digest"] = None
+                variants.append(("null_action_digest", null_digest))
+
+                wrong_digest = copy.deepcopy(payload)
+                wrong_digest["human_confirmation"]["action_digest"] = "f" * 64
+                variants.append(("wrong_action_digest", wrong_digest))
+
+                task_action_unlisted = copy.deepcopy(payload)
+                task_action_unlisted["source_actions"].append({
+                    "action_id": "other_action",
+                    "kind": "none",
+                    "target": None,
+                    "payload": None,
+                    "preimage_sha256": None,
+                    "payload_sha256": None,
+                    "action_digest": "0" * 64,
+                    "status": "not_required",
+                    "mutation_evidence": None,
+                })
+                task_action_unlisted = self.derive(task_action_unlisted)
+                other_action = next(
+                    action for action in task_action_unlisted["source_actions"]
+                    if action["action_id"] == "other_action"
+                )
+                task_action_unlisted["human_confirmation"]["confirmed_actions"] = [
+                    "other_action"
+                ]
+                task_action_unlisted["human_confirmation"]["action_digest"] = (
+                    gtt.context_digest([other_action["action_digest"]])
+                )
+                variants.append(("task_action_unlisted", task_action_unlisted))
+
+                for variant, invalid in variants:
+                    with self.subTest(decision=decision, variant=variant):
+                        invalid = self.derive(invalid)
+                        self.assertIn(
+                            "active_task_scope_update_requires_exact_action_confirmation",
+                            gtt.requirements_clarification_structural_errors(
+                                root, invalid, task
+                            ),
+                        )
+                        with (
+                            mock.patch.object(
+                                gtt,
+                                "context_read_live_issue",
+                                return_value=(current_issue, None),
+                            ),
+                            mock.patch.object(
+                                gtt, "run", return_value=comment_response
+                            ),
+                        ):
+                            self.assertIn(
+                                "active_task_scope_update_requires_exact_action_confirmation",
+                                gtt.requirements_clarification_live_errors(
+                                    root, invalid, task
+                                ),
+                            )
 
     def test_active_task_requires_complete_planning_approval_and_exact_doc_binding(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
