@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Guru Team Phase 0 缺少独立的变更上下文调查闭环，updated-base 当前证据、open issue duplicate candidates 与 archived finish-summary 历史发现分散在入口和人工步骤中，无法形成可复用的 semantic evidence。",
+    "outcome": "已交付 semantic guru-discover-change-context Skill，以 fresh-base precondition、current-state-before-history、稳定 history projection/digest、AI relevance gate 与 task-local same-snapshot persistence 统一 workflow 和 standalone 调查。",
+    "changed_behavior": [
+      "Repo-changing intake 在 guru-sync-base:synced 后显式 mandatory invoke guru-discover-change-context。",
+      "Workflow 和 standalone 均先验证 fresh base，再按 Docs、code/API/config/schema、tests、history 的固定顺序调查。",
+      "Open duplicate candidates 从同一次搜索结果重算 repo、number、identity、canonical URL、open state、updated time 与 facts_sha256。",
+      "Archived history 只扫描 finish-summary.json:index.*，固定 query digest、manifest digest、score、sort、limit、projection 和 invalid isolation。",
+      "AI 负责 query clues、candidate selection、relevance、sufficiency、finding 与 route，脚本只执行 deterministic search、schema、digest、record 和 check。",
+      "Pre-task preview 保持 stdout-only；task 创建后只把同一 snapshot 保存为 task-local context-discovery.json。",
+      "context_ready、refresh_base、blocked 三个 typed exits 均绑定唯一 consumer 或 fail-closed stop。",
+      "Canonical、preset、dogfood、四平台副本、durable docs 与 throwaway/update 验证已同步。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "guru-discover-change-context public Skill package",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-discover-change-context/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/interface.json",
+          "trellis/skills/guru-team/packages/guru-discover-change-context/schemas/context-discovery.schema.json"
+        ],
+        "change": "新增 workflow/standalone 同合同的 semantic 变更上下文调查闭环与三个 typed exits。"
+      },
+      {
+        "kind": "workflow",
+        "name": "Guru Team Phase 0 change-context routing",
+        "paths": [
+          "trellis/workflows/guru-team/workflow.md",
+          ".trellis/workflow.md"
+        ],
+        "change": "在 synced base 后强制调用 context discovery，并将三个出口路由到唯一 consumer。"
+      },
+      {
+        "kind": "script",
+        "name": "Change-context companion commands",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/bash/preview-change-context-history.sh",
+          "trellis/workflows/guru-team/scripts/bash/record-context-discovery.sh",
+          "trellis/workflows/guru-team/scripts/bash/check-context-discovery.sh"
+        ],
+        "change": "新增 history preview、task-local recorder 与 artifact validator 的 deterministic runtime。"
+      },
+      {
+        "kind": "preset",
+        "name": "Guru Team distribution and upgrade",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "将 Skill、schema、runtime commands 与平台副本纳入 managed install、update/reapply 和 open-box verification。"
+      },
+      {
+        "kind": "docs",
+        "name": "Change-context durable contract",
+        "paths": [
+          "docs/requirements/guru-team-trellis-flow.md",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/spec/workflow/data-contracts.md"
+        ],
+        "change": "记录正常调查路径、AI/script 边界、history contract、same-snapshot persistence 与 scope exclusions。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Phase 0 change-context ownership",
+        "before": "当前仓库证据、duplicate issue 和 archived history 调查分散在入口与人工步骤中。",
+        "after": "guru-discover-change-context 独占完整 semantic 调查步骤，workflow 只按 stable id 调用和消费 typed exit。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Current-state and history order",
+        "before": "当前态与历史候选可能混合读取，无法证明结论建立在 updated base 的现状之上。",
+        "after": "固定先审查 Docs/code/tests/current observations，再 preview archived finish-summary history。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "History discovery reproducibility",
+        "before": "Archived task 搜索缺少统一 query、manifest、score、sort、limit、projection 与 invalid isolation 合同。",
+        "after": "只扫描 finish-summary.json:index.*，由 deterministic engine 生成稳定 digest、排序和候选投影。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Semantic judgment and script boundary",
+        "before": "Candidate relevance、sufficiency、deep-read 与 route 判断没有独立 Skill Gate 所有者。",
+        "after": "AI Review Gate 负责语义判断，recorder/validator 只在 Gate 后记录和验证机器事实。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Preview and persistence boundary",
+        "before": "Pre-task 与 task-created 场景缺少统一 snapshot 身份和 task-local persistence 约束。",
+        "after": "Pre-task stdout-only；task 创建后只保存同一 expected snapshot 到 direct active task，禁止共享 index/cache。",
+        "source_artifact": "design.md"
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "preview-change-context-history.sh",
+        "record-context-discovery.sh",
+        "check-context-discovery.sh",
+        "verify-throwaway-install.sh"
+      ],
+      "config_keys": [
+        "skill_runtime.commands.guru_discover_change_context"
+      ],
+      "schema_fields": [
+        "query_sha256",
+        "archive_manifest_sha256",
+        "facts_sha256",
+        "typed_exit",
+        "ai_review_gate"
+      ],
+      "symbols": [
+        "preview_change_context_history",
+        "record_context_discovery",
+        "validate_context_discovery_artifact",
+        "validate_duplicate_candidate_facts"
+      ],
+      "phrases": [
+        "guru-discover-change-context 闭环 Skill 已完成",
+        "preview-change-context-history.sh 历史预览命令已完成",
+        "current-state-before-history 调查顺序已启用",
+        "archived finish-summary history discovery 已完成",
+        "context-discovery.json same-snapshot persistence 已完成",
+        "context_ready refresh_base blocked typed exits 已启用",
+        "remote marketplace branch-pinned 验证由 finish-work 执行"
+      ]
+    }
+  }
+}

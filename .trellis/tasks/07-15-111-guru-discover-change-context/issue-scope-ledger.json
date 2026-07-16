@@ -4,7 +4,22 @@
     "url": "https://github.com/castbox/guru-trellis/issues/111",
     "title": "拆分 #98：实现 guru-discover-change-context 闭环 Skill",
     "reason": "本 task 的 intake 与完整验收边界；2026-07-16 live issue 增加的场景范围控制同属 #111 当前验收合同。",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "已实现 guru-discover-change-context semantic 闭环：fresh-base precondition、current-state-before-history、duplicate projection、archived finish-summary discovery、AI Review Gate、task-local same-snapshot persistence 与三个 typed exits 均由 schema/runtime/tests 承接。",
+      "Docs SSOT、canonical workflow/package/runtime/schema、preset、dogfood 与 Agents/Codex/Cursor/Claude 分发已同步到 live #111 的正常调查范围；明确排除的非功能加固未进入当前 acceptance 或实现。",
+      "Fresh Phase 2 与 Branch Review Gate 已通过：targeted 29、full 589、source/installed inventory、ownership、dogfood drift、clean throwaway 和 upgrade/update 证据完整，最终 P0/P1/P2/P3 均为 0。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "38a2780f7cbf8f19d60dfed20fd2625b9ff4a8270474a24ab2855dd02cad3acd",
+        "verified_content_head": "dc3e2e9a32b7b8db1dc7e5645f8599ddfa2700b7",
+        "remote_head": "dc3e2e9a32b7b8db1dc7e5645f8599ddfa2700b7",
+        "publish_head": "dc3e2e9a32b7b8db1dc7e5645f8599ddfa2700b7",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -12,7 +27,22 @@
       "url": "https://github.com/castbox/guru-trellis/issues/111",
       "title": "拆分 #98：实现 guru-discover-change-context 闭环 Skill",
       "reason": "本 task 明确承诺完成并由 Branch Review Gate 覆盖的唯一 issue；实现必须收敛 live issue 明确排除的 threat/attack/tamper/hostile-input/concurrency 扩张，publish 前补齐验收证据。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "guru-discover-change-context 已按 live #111 完成交付，并在 workflow/standalone 中使用同一 semantic profile、freshness、调查顺序、history projection/digest、invalid isolation、zero-candidate、candidate selection 和 task-local persistence 合同。",
+        "Round 001 的 BR-001/BR-002 已由同一 finding owner 在 Round 002 对 dc3e2e9 闭环，Round 003 使用 fresh final reviewer 覆盖完整 origin/main...HEAD，Branch Review Gate 记录 findings=0。",
+        "Fresh targeted 29 与 full 589 tests、source/installed Skill、128-file inventory、43/13 ownership、dogfood drift、clean throwaway、trellis update/reapply、py_compile、bash -n 和 git diff --check 均通过。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "38a2780f7cbf8f19d60dfed20fd2625b9ff4a8270474a24ab2855dd02cad3acd",
+          "verified_content_head": "dc3e2e9a32b7b8db1dc7e5645f8599ddfa2700b7",
+          "remote_head": "dc3e2e9a32b7b8db1dc7e5645f8599ddfa2700b7",
+          "publish_head": "dc3e2e9a32b7b8db1dc7e5645f8599ddfa2700b7",
+          "commands_passed": true
+        }
+      ]
     }
   ],
   "related_issues": [
