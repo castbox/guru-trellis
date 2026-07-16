@@ -73,5 +73,66 @@
       "acceptance_evidence": []
     }
   ],
-  "followup_issues": []
+  "followup_issues": [],
+  "scope_decisions": [
+    {
+      "trail_id": "scope-decision-f001-out-of-scope",
+      "proposal_decisions": [
+        {
+          "proposal_id": "f001-anti-forgery-expansion",
+          "proposal_digest": "98705aa5a02e72b96b72e0c7706011481ed413b69a71359a87f8c575280ba7fe",
+          "decision": "out_of_scope",
+          "confirmation_ref": "github-comment-4990373622"
+        }
+      ],
+      "user_decision": {
+        "status": "confirmed",
+        "proposal_digests": [
+          "98705aa5a02e72b96b72e0c7706011481ed413b69a71359a87f8c575280ba7fe"
+        ],
+        "confirmer": "user",
+        "confirmed_at": "2026-07-16T09:39:51Z",
+        "evidence_summary": "用户明确确认 F-001 不纳入 #113；GitHub comment 4990373622 固化 exact out_of_scope 决策，并保留 F-002 至 F-006 及正常 correctness 边界。"
+      },
+      "github_authority": {
+        "kind": "issue_comment",
+        "url": "https://github.com/castbox/guru-trellis/issues/113#issuecomment-4990373622",
+        "content_sha256": "ef8b1239738ead871cd562639f0f7854111432d2917ae7113bfe401ceeed362f",
+        "updated_at": "2026-07-16T09:39:51Z"
+      },
+      "context_before_task_update_sha256": "ec1124c89ec13301414dcb945991f8f233ec34a473ae1eb06363be3d479ca798",
+      "planning_documents": [
+        {
+          "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/prd.md",
+          "content_sha256": "a5991eb7c0ffcd5a60f10008fe41b4a41a0ecdf13dff201ac1e855b795dc77e2"
+        },
+        {
+          "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/design.md",
+          "content_sha256": "0d965256286301e8fb0f7ea7c9ac56a68d508bb3d94901aa0be4da731c03f113"
+        },
+        {
+          "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/implement.md",
+          "content_sha256": "0b8eb512995fb045f1c5afe688edce0e8131e11fc575c25b6deb52999a6c65ef"
+        }
+      ],
+      "stale_downstream_evidence": {
+        "planning_approval_sha256": "d3e72cc689d26e0243eeef39d6fa214aaf8f645f856ad27ed3188b1a6d9f2943",
+        "phase2_check_sha256": "9b02a70b47b69ba5abda8c42929255dd162c7d29edae1a492c0e64a1b62431e8",
+        "branch_review_sha256": "bd9c56780522a9d891fa365ccc8155bc69f31080f99479935825eb4a4aca8f10"
+      },
+      "review_evidence": {
+        "status": "stale",
+        "artifact": {
+          "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/review-gate.json",
+          "content_sha256": "bd9c56780522a9d891fa365ccc8155bc69f31080f99479935825eb4a4aca8f10"
+        }
+      },
+      "reentry_owners": [
+        "guru-approve-task-plan",
+        "guru-check-task",
+        "guru-review-branch"
+      ],
+      "interrupted_resume_target": "guru-resume-branch-review"
+    }
+  ]
 }

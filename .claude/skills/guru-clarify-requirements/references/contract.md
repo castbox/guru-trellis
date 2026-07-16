@@ -49,7 +49,9 @@ reopen-after-close, and does not allow an empty lifecycle to hide a partial
 answer. `answer_status=partial` cannot close its own or another question. A refused load-bearing decision can
 produce `blocked`; a rejected/deferred expansion that leaves current confirmed
 scope complete is classified as related, followup, new task or out-of-scope and
-does not block that current scope.
+does not block that current scope. During an active task, an unconfirmed
+expansion cannot receive any of those five scope classifications without dedicated
+proposal-digest-bound user decision evidence.
 
 `clear` is valid only when `open_questions=[]`, the AI Review Gate passed,
 source/context authority is current, all accepted proposals have exact
@@ -91,13 +93,51 @@ current close scope, related, followup, new task or out-of-scope. Current
 inclusion requires the same delivery unit, no material boundary/risk/test
 expansion, complete updated planning and dedicated confirmation.
 
-Bind live GitHub-visible authority, current `issue-scope-ledger.json` digest,
-all three planning document digests, stale planning/Phase-2/Branch-Review
-identities, and re-entry owners `guru-approve-task-plan`, `guru-check-task`, and
-`guru-review-branch`. This Skill records no dedicated task artifact; it
-validates the existing updated artifacts and legal re-entry contract. The
-canonical active-task Scope Change Gate mandatory invokes this Skill and does
-not duplicate these steps.
+Active-task `clear` and `new_task` require a non-empty set containing only the
+seven terminal decisions: the five scope classifications `accepted_current`,
+`related`, `followup`, `new_task`, and `out_of_scope`, plus the mechanism
+dispositions `mechanism_removed` and `mechanism_replaced`. `new_task` must
+contain at least one `decision=new_task` classification. Every scope
+classification requires proposal-digest-bound exact user-decision evidence,
+regardless of its origin status, and binds one structured `decision_trail`.
+Mechanism dispositions instead require `optional_mechanism_origin=true` and
+`confirmation_ref=null`; they never enter the trail or trigger GitHub/task
+authority mutation. A mechanism-only payload may return `clear`, and a mixed
+payload projects only its five-classification subset into confirmation/trail.
+Mechanism-only still carries the current task-local ledger, all three planning
+documents, complete planning approval, review/stale identities, re-entry
+owners, and current context evidence; only `decision_trail` is null. Every
+terminal active-task path receives the same live task/context freshness check.
+The exact trail is stored in current
+`issue-scope-ledger.json.scope_decisions[]` and contains proposal decisions,
+user-decision evidence, live GitHub comment/body authority including
+`updated_at`, the `context_before_task_update_sha256`, all three planning
+document digests, planning approval,
+Branch-Review state, interrupted resume target and re-entry owners
+`guru-approve-task-plan`, `guru-check-task`, and `guru-review-branch`. Checker
+parses the ledger and requires one exact trail match. It reuses the shared
+schema 1.2 planning-approval validator, including explicit post-planning
+confirmation, passed ambiguity review, controlled-term scan, all seven checked
+dimensions, exact reviewed/approved aliases, and the three path/hash/size
+bindings; an old ledger hash, two-line planning placeholder, or minimal
+approval/review JSON is insufficient.
+
+If `review-gate.json` exists, re-entry requires
+`review_evidence.status=stale` and the exact artifact path/content digest.
+`not_started` is valid only when that file is absent, its artifact is null, and
+the stale downstream Branch Review digest is null. `current` is never valid
+during active-task re-entry.
+
+GitHub comment/body mutation returns `refresh_context` before any task-local
+update. On re-entry, live authority kind/URL/content/`updated_at` must match,
+current `context-discovery.json.generated_at` must be at least that authority
+time, and its snapshot digest must equal `context_before_task_update_sha256`.
+The AI then validates the current ledger/planning/review/stale identities and
+one `active_task_scope_update` action. A task-only update does not require a
+second context snapshot or a changed digest before `clear` or active-task
+`new_task` resumes the exact interrupted progression. `new_task` then carries only a reviewed
+side-effect-free draft; #112 still owns issue/task creation. This Skill records
+no dedicated clarification artifact and never writes another task directory.
 
 ## Recorder, Checker, And Exits
 

@@ -239,7 +239,11 @@ Decision is `pending`, `accepted_current`, `related`, `followup`, `new_task`,
 `out_of_scope`, `mechanism_removed`, or `mechanism_replaced`. An unconfirmed
 expansion accepted into current scope requires a dedicated confirmation bound
 to its exact proposal digest. An optional-mechanism-origin proposal cannot be
-accepted current.
+classified into the five scope classes: its terminal disposition is
+`mechanism_removed` or `mechanism_replaced`, with
+`optional_mechanism_origin=true` and `confirmation_ref=null`. During an active task, an unconfirmed expansion classified as
+`related`, `followup`, `new_task`, or `out_of_scope` also requires exact
+proposal-digest-bound user decision evidence.
 
 `source_actions[]` supports only `none`, `issue_comment`, `issue_body_edit`,
 `proposed_draft_update`, `new_issue_draft`, and
@@ -253,13 +257,34 @@ kinds are invalid. For comment/body mutation, mutation content SHA-256 must
 equal the exact confirmed action payload body, canonical payload digest, and
 reread live GitHub body/comment content.
 
-Active-task current inclusion requires live GitHub authority facts, exact
-content SHA-256 for `issue-scope-ledger.json`, `prd.md`, `design.md`, and
-`implement.md`, stale planning/Phase-2/Branch-Review identities, and exact
-re-entry owners `guru-approve-task-plan`, `guru-check-task`, and
-`guru-review-branch`. These are validation bindings to existing artifacts, not
-a dedicated clarification file. Pre-task and standalone results remain
-stdout-only.
+Active-task `clear`/`new_task` requires a non-empty array containing only the
+seven terminal decisions. Every `accepted_current`, `related`, `followup`, `new_task`, or
+`out_of_scope` proposal requires proposal-digest-bound exact user-decision
+evidence regardless of origin status, plus live GitHub authority facts and
+one structured `decision_trail` exactly present in
+`issue-scope-ledger.json.scope_decisions[]`. The trail carries proposal
+id/digest/decision/confirmation refs, user-decision evidence, GitHub
+comment/body URL, content digest, and `updated_at`, the
+`context_before_task_update_sha256`, exact
+content SHA-256 for `prd.md`, `design.md`, and `implement.md`, planning approval,
+review status, stale Phase-2/Branch-Review identities, interrupted resume target,
+and exact re-entry owners `guru-approve-task-plan`, `guru-check-task`, and
+`guru-review-branch`. The ledger itself must have the normal
+primary/close/related/followup structure. Planning evidence must pass the shared
+schema 1.2 validator and exact-bind both reviewed/approved aliases plus current
+path/hash/size for all three documents; `{}`, two-line planning placeholders,
+minimal approval JSON, and hash-only files are invalid. These are validation bindings to existing artifacts, not a
+dedicated clarification file. Pre-task and standalone results remain stdout-only.
+
+A mechanism-only terminal result still requires the same task-local ledger,
+planning documents, complete planning approval, review/stale identities,
+re-entry owners, and current context evidence; only `decision_trail` is null.
+Mixed results project only their five-classification subset into the trail.
+Every terminal active-task result receives the same live task/context freshness
+validation. When `review-gate.json` exists, `review_evidence.status` must be
+`stale` and bind that exact artifact path/content digest. `not_started` is valid
+only when the file is absent, the artifact is null, and the stale downstream
+Branch Review digest is null; `current` is invalid during re-entry.
 
 `content_identity` contains recorder-derived target, content, context, scope,
 action, payload, and result SHA-256 fields. Result identity is computed from
@@ -278,9 +303,12 @@ Exit invariants are closed:
 - `needs_context` binds missing repository/current/history evidence and consumes
   `guru-discover-change-context`;
 - `refresh_context` binds stale or mutated authority and consumes
-  `guru-sync-base`; successful issue comment/body mutation requires this exit;
-- `new_task` requires a reviewed side-effect-free `new_issue_draft` and consumes
-  `guru-full-task-intake-chain`;
+  `guru-sync-base`; successful issue comment/body mutation requires this exit.
+  Re-entry requires context `generated_at >= authority.updated_at`, then binds
+  task update to that same context digest without requiring a second refresh;
+- `new_task` requires a reviewed side-effect-free `new_issue_draft`, plus a
+  fresh persisted classification trail for active-task callers, and consumes
+  `guru-full-task-intake-chain`; #112 owns every issue/task creation side effect;
 - `blocked` is valid if and only if `ai_review_gate.status=blocked` and consumes
   `requirements-clarification-blocked`.
 

@@ -15,6 +15,7 @@
 - [ ] 更新 `.trellis/spec/workflow/skill-package-contract.md`：modes、preconditions、question loop、AI Gate、confirmation、result schema与stdout-only artifact边界。
 - [ ] 更新 `.trellis/spec/workflow/companion-scripts.md`：executor/recorder/checker命令、输入、输出、zero-side-effect stale path。
 - [ ] 更新 `.trellis/spec/workflow/data-contracts.md`：`guru-requirements-clarification-1.0`、scope proposal、source action、content identity与active-task evidence linkage。
+- [ ] 固化 active-task `scope_decisions[]` structured SSOT、非空 terminal proposal set、五类 scope classification exact 用户证据、mechanism disposition、完整 schema 1.2 planning approval 与 authority-before-context-before-task-update re-entry 合同。
 - [ ] 更新 `.trellis/spec/preset/installer.md`、`.trellis/spec/preset/upstream-ownership.md`：additive package/runtime/discovery assets和no-new-overlay约束。
 - [ ] 更新 `.trellis/spec/docs/public-docs.md`：公开说明、version matrix与staged dependency措辞。
 - [ ] 更新 `docs/requirements/requirement-main.md`、`docs/requirements/guru-team-trellis-flow.md`：把 #55旧行为升级为 active #113 closed-loop Skill。
@@ -35,6 +36,9 @@
 - [ ] 在 `guru_team_trellis.py` 增加 schema loader、canonical digest、question/scope/action/result pure validators。
 - [ ] 实现 `record-requirements-clarification`：仅记录AI/human结论并计算derived content/result identity。
 - [ ] 实现 `check-requirements-clarification`：schema、shape、digest、GitHub freshness、task-local hash/linkage和typed exit校验。
+- [ ] Active-task `clear/new_task` 必须拒绝空或非 terminal `scope_proposals[]`；五类 scope classification 必须与 `human_confirmation`、`decision_trail` 和当前 ledger `scope_decisions[]` exact 匹配，`mechanism_removed/replaced` 必须作为 null-confirmation/no-trail terminal disposition 进入 `clear`。
+- [ ] 复用 shared `validate_planning_approval(root, task_dir)` 完整校验 schema 1.2 approval 和三份 planning artifact，禁止以 approval SHA shape 或 planning file hash 代替完整 gate。
+- [ ] 校验真实 review state、stale downstream identities、live GitHub authority content/`updated_at`、`context-discovery.generated_at`、task update 前 context digest 与 exact interrupted target；GitHub mutation 后只能 `refresh_context`，authority-before-context-before-task-update re-entry 完整后才能 resume，task-only update 不要求第二次 context digest 变化。
 - [ ] 证明shared runtime和package wrappers均不调用GitHub write；mutation由AI在exact confirmation后使用现有connector/`gh`执行。
 - [ ] 增加 Bash runtime wrappers与 parser command registration。
 - [ ] 保持 canonical workflow runtime、preset distributed runtime和dogfood runtime字节一致。
@@ -57,6 +61,8 @@
 - [ ] Standalone：context current、needs_context、refresh_context、blocked。
 - [ ] Question loop：single、atomic group、partial answer、refusal、open question blocking。
 - [ ] Active task：current inclusion、related、followup、new task、out-of-scope、task-local path/hash/re-entry owner。
+- [ ] Active task 负例：空 proposal/action-none/empty-mutation、五类 scope classification 缺 exact 用户证据、缺失或重复 ledger trail、placeholder planning docs、最小 approval JSON、错误 review state、stale GitHub authority、authority `updated_at` 晚于 context、mutation 后直接 clear/new_task。
+- [ ] Active task 正例：使用正常 recorder 生成的 schema 1.2 planning approval、真实 task planning/review evidence 和 live GitHub-visible decision trail，覆盖 authority-before-context-before-task-update re-entry 后 exact resume，并覆盖仅含与混合 `mechanism_removed/replaced` 的 `clear`。
 - [ ] #127 scope proposal：exact proposal confirmation、generic confirmation rejection、refusal/defer、optional mechanism removal/replacement。
 - [ ] Mutation evidence：stale preimage禁止write、exact confirmation/payload、post-mutation hash/facts。
 - [ ] Exit mapping：missing/unknown/multiple/unmapped consumer全部fail closed。
@@ -75,6 +81,8 @@
 ## 8. Phase G：Trellis Check 与提交门禁
 
 - [ ] Main session更新 `check.jsonl`并派发独立 `trellis-check` sub-agent。
+- [ ] 重新展示修订后的 `prd.md`、`design.md`、`implement.md` 并取得 explicit post-planning confirmation；随后记录并验证 fresh schema 1.2 `planning-approval.json`。
+- [ ] 在当前 `issue-scope-ledger.json.scope_decisions[]` 记录 F-001 的 `out_of_scope` structured trail，绑定 live comment、当前 planning docs/approval、stale review/Phase 2、interrupted target与 re-entry owners；F-001 不进入 implementation acceptance。
 - [ ] Phase 2 check覆盖PRD、design、实现、tests、durable docs、public docs、canonical/dogfood copies、throwaway/update与issue scope。
 - [ ] Phase 2 与 Branch Review 必须把 F-001 记录为有用户确认和 GitHub-visible evidence 的 `out-of-scope`，并继续验证 F-002 至 F-006 全部闭环。
 - [ ] 修复finding后重复完整 check，写入fresh `phase2-check.json`。

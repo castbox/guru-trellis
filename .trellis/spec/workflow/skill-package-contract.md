@@ -277,24 +277,42 @@ review confirmation cannot satisfy action or scope-proposal confirmation.
 proposal-digest-bound confirmation. A proposal with
 `optional_mechanism_origin=true` cannot be `accepted_current`; the mechanism is
 removed/replaced or its independent product value is proposed separately.
+For an active task, `unconfirmed_expansion` classified as `related`,
+`followup`, `new_task`, or `out_of_scope` also requires dedicated
+proposal-digest-bound user decision evidence; an AI-only classification is not
+a final auditable decision.
 
 The five exits and unique consumers are `clear` -> workflow target
 `guru-requirements-clear-router`, `needs_context` -> Skill
 `guru-discover-change-context`, `refresh_context` -> Skill `guru-sync-base`,
 `new_task` -> workflow target `guru-full-task-intake-chain`, and `blocked` ->
-stop `requirements-clarification-blocked`. `clear` requires no open questions,
-a passed current AI Gate, current authority/context, all accepted proposals
-exactly confirmed, and no unrefreshed mutation. A successful GitHub mutation
+stop `requirements-clarification-blocked`. Active-task `clear`/`new_task`
+requires a non-empty terminal proposal set. `clear` requires no open questions,
+a passed current AI Gate, current authority/context, every five-class scope
+classification exactly confirmed, confirmation-free mechanism dispositions,
+and no unrefreshed mutation. A successful GitHub mutation
 returns `refresh_context`; a reviewed side-effect-free new issue draft returns
 `new_task`; `blocked` is valid if and only if the AI Gate is blocked.
 
 Pre-task and standalone results remain stdout-only. There is no dedicated
-tracked clarification artifact. Active-task decisions bind only the current
-task's existing issue ledger, planning documents, and review evidence, and
-record stale downstream identities plus re-entry owners
-`guru-approve-task-plan`, `guru-check-task`, and `guru-review-branch`. A copied
-package without the complete compatible preset remains non-portable and fails
-closed through the dispatcher.
+tracked clarification artifact. Every five-class active-task classification binds a
+structured `decision_trail` that must exactly match one current
+`issue-scope-ledger.json.scope_decisions[]` entry. The trail records exact
+proposal decisions, user-decision evidence, live GitHub comment/body authority
+including `updated_at`, `context_before_task_update_sha256`, all three planning documents, planning
+approval, review state, interrupted resume target, stale downstream identities,
+and re-entry owners `guru-approve-task-plan`, `guru-check-task`, and
+`guru-review-branch`. The active-task checker reuses the shared complete schema
+1.2 planning validator and exact-binds reviewed/approved document evidence; a
+prior file hash, placeholder planning body, or minimal approval JSON does not
+qualify. GitHub authority mutation returns `refresh_context`; only a context
+snapshot generated at or after authority `updated_at`, followed by a task update
+bound to that snapshot, may later return active-task `clear` or `new_task`.
+Task-only update requires no second refresh. `mechanism_removed/replaced`
+remains outside confirmation/trail/action mutation. `new_task` still contains only the
+side-effect-free reviewed draft and #112 owns creation. A copied package without
+the complete compatible preset remains non-portable and fails closed through
+the dispatcher.
 
 `invocation_context.resume_target` is caller-aware and closed. Initial
 issue/draft accepts only `guru-review-contract-wording`; standalone accepts only

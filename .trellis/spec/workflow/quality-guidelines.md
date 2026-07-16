@@ -81,6 +81,10 @@ confirmation; generic-confirmation rejection; optional-mechanism removal or
 replacement; active-task ledger/planning/stale-gate/re-entry bindings; all five
 typed exits and unique consumers; pre-task zero-write; live mutation freshness;
 caller-aware clear resume targets; confirmed payload/mutation/live body equality;
+unconfirmed related/followup/new-task/out-of-scope rejection; exact structured
+ledger decision-trail and live GitHub authority binding; mutation-only
+`refresh_context`; fresh re-entry before exact interrupted progression; active
+`new_task` trail preservation with side-effect-free draft-only continuation;
 and source/installed/discovery/throwaway update-reapply distribution. Static
 and runtime tests must also prove the package/runtime contain no GitHub write or
 issue-create executor and that recorder/checker do not generate semantic

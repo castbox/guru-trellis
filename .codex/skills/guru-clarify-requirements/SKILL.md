@@ -27,6 +27,10 @@ AI-owned and require exact confirmed payloads plus a live reread.
 Fail closed on missing/current-context drift, repository `answered` without
 checked evidence, invalid question
 lifecycle, open load-bearing questions, confirmed-payload/live mutation or
-digest mismatch, invalid caller resume, stale active-task evidence, unknown
+digest mismatch, empty/non-final active-task proposal sets on `clear`/`new_task`,
+any of the five scope classifications without exact user-decision evidence,
+mechanism disposition with confirmation/trail/mutation, incomplete schema 1.2
+planning approval, missing ledger decision trail or GitHub-visible authority,
+authority/context/task-update order mismatch, invalid caller resume, stale active-task evidence, unknown
 exits, or missing compatible runtime. This package is not self-contained or
 portable.

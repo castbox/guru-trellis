@@ -226,11 +226,24 @@ REQUIREMENTS_CLARIFICATION_REENTRY_OWNERS = {
 }
 REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_PAYLOAD_FIELDS = (
     "github_authority_facts_sha256", "ledger", "planning_documents",
-    "stale_downstream_evidence", "reentry_owners",
+    "stale_downstream_evidence", "review_evidence", "decision_trail",
+    "reentry_owners",
 )
+REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_CLASSIFICATION_DECISIONS = {
+    "accepted_current", "related", "followup", "new_task", "out_of_scope",
+}
+REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_MECHANISM_DECISIONS = {
+    "mechanism_removed", "mechanism_replaced",
+}
+REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_TERMINAL_DECISIONS = (
+    REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_CLASSIFICATION_DECISIONS
+    | REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_MECHANISM_DECISIONS
+)
+REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_NON_CURRENT_DECISIONS = {
+    "related", "followup", "new_task", "out_of_scope",
+}
 REQUIREMENTS_CLARIFICATION_REFRESH_ACTION_KINDS = {
     "issue_comment", "issue_body_edit", "proposed_draft_update",
-    "active_task_scope_update",
 }
 TASK_COMMIT_PLAN_SCHEMA_VERSION = "1.0"
 TASK_COMMIT_PLAN_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json"
@@ -8324,6 +8337,7 @@ def validate_planning_approval(
         errors.append("planning-approval.json 缺少 dirty_paths 数组。")
     reviewed = payload.get("reviewed_artifacts")
     approved_alias = payload.get("approved_artifacts")
+    normalized_reviewed: list[Any] = []
     if not isinstance(reviewed, list) or not reviewed:
         errors.append("planning-approval.json 缺少 reviewed_artifacts。")
         reviewed = []
@@ -8353,6 +8367,10 @@ def validate_planning_approval(
                 errors.append(f"planning-approval.json 未在 approved_artifacts alias 记录 {name}。")
         for item in normalized_alias:
             errors.extend(digest_errors(root, item, "planning approval approved_artifacts"))
+        if normalized_alias != normalized_reviewed:
+            errors.append(
+                "planning-approval.json approved_artifacts alias 必须与 reviewed_artifacts 完全一致。"
+            )
     else:
         # Old artifacts with only approved_artifacts are intentionally blocked
         # by schema/source checks above; this branch keeps error output focused.
@@ -19527,8 +19545,21 @@ def requirements_clarification_structural_errors(
             proposal_by_id[proposal_id] = proposal
         if proposal.get("proposal_digest") != context_digest(projection):
             errors.append("scope_proposal_digest_mismatch")
-        if proposal.get("optional_mechanism_origin") is True and proposal.get("decision") == "accepted_current":
-            errors.append("optional_mechanism_cannot_expand_scope")
+        decision = proposal.get("decision")
+        optional_mechanism = proposal.get("optional_mechanism_origin") is True
+        if decision in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_MECHANISM_DECISIONS:
+            if not optional_mechanism:
+                errors.append("mechanism_disposition_requires_optional_mechanism_origin")
+            if proposal.get("confirmation_ref") is not None:
+                errors.append("mechanism_disposition_forbids_confirmation")
+        elif (
+            optional_mechanism
+            and decision
+            in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_CLASSIFICATION_DECISIONS
+        ):
+            errors.append("optional_mechanism_requires_mechanism_disposition")
+            if decision == "accepted_current":
+                errors.append("optional_mechanism_cannot_expand_scope")
     if len(proposal_ids) != len(set(proposal_ids)):
         errors.append("duplicate_scope_proposal_id")
 
@@ -19685,6 +19716,18 @@ def requirements_clarification_structural_errors(
                 or proposal.get("confirmation_ref") is None
             ):
                 errors.append("unconfirmed_expansion_requires_exact_confirmation")
+        if (
+            invocation_kind == "active_task_scope_change"
+            and proposal.get("origin_requirement_status") == "unconfirmed_expansion"
+            and proposal.get("decision")
+            in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_NON_CURRENT_DECISIONS
+            and (
+                confirmation_status != "confirmed"
+                or proposal.get("proposal_digest") not in proposal_digests
+                or proposal.get("confirmation_ref") is None
+            )
+        ):
+            errors.append("unconfirmed_non_current_decision_requires_user_evidence")
 
     mutations = payload.get("mutation_results")
     if not isinstance(mutations, list):
@@ -19775,24 +19818,152 @@ def requirements_clarification_structural_errors(
         proposal for proposal in proposals
         if isinstance(proposal, dict) and proposal.get("decision") == "accepted_current"
     ]
+    active_task_terminal_proposals = [
+        proposal for proposal in proposals
+        if isinstance(proposal, dict)
+        and proposal.get("decision")
+        in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_TERMINAL_DECISIONS
+    ]
+    active_task_classification_proposals = [
+        proposal for proposal in proposals
+        if isinstance(proposal, dict)
+        and proposal.get("decision")
+        in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_CLASSIFICATION_DECISIONS
+    ]
+    active_task_mechanism_proposals = [
+        proposal for proposal in proposals
+        if isinstance(proposal, dict)
+        and proposal.get("decision")
+        in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_MECHANISM_DECISIONS
+    ]
+    if invocation_kind == "active_task_scope_change" and typed_exit in {"clear", "new_task"}:
+        if not proposals or len(active_task_terminal_proposals) != len(proposals):
+            errors.append("active_task_clear_or_new_task_requires_final_scope_proposal_set")
+        if typed_exit == "new_task" and not any(
+            proposal.get("decision") == "new_task"
+            for proposal in active_task_classification_proposals
+        ):
+            errors.append("active_task_new_task_requires_new_task_classification")
     if invocation_kind == "active_task_scope_change" and accepted_current:
         if invocation.get("resume_target") != "guru-active-task-planning-review":
             errors.append("active_task_current_scope_requires_planning_resume")
         accepted_digests = {proposal.get("proposal_digest") for proposal in accepted_current}
         if confirmation_status != "confirmed" or not accepted_digests.issubset(set(proposal_digests)):
             errors.append("active_task_current_scope_requires_exact_confirmation")
-        if not any(
-            action.get("kind") == "active_task_scope_update"
-            and action.get("status") in {"executed", "validated"}
-            for action in actions if isinstance(action, dict)
+    if invocation_kind == "active_task_scope_change" and active_task_classification_proposals:
+        classification_proposal_digests = [
+            proposal.get("proposal_digest")
+            for proposal in active_task_classification_proposals
+        ]
+        if (
+            confirmation_status != "confirmed"
+            or confirmation.get("confirmation_kind")
+            not in {"exact_scope_proposal", "exact_source_action_and_scope"}
+            or proposal_digests != classification_proposal_digests
+            or any(
+                proposal.get("confirmation_ref") is None
+                for proposal in active_task_classification_proposals
+            )
         ):
-            errors.append("active_task_current_scope_requires_task_update")
-        if not any(
-            action.get("kind") in {"issue_comment", "issue_body_edit"}
-            and action.get("status") in {"executed", "validated"}
-            for action in actions if isinstance(action, dict)
+            errors.append("active_task_final_classification_requires_exact_user_decision")
+        evidence = payload.get("active_task_evidence")
+        trail = evidence.get("decision_trail") if isinstance(evidence, dict) else None
+        requires_reentry_trail = typed_exit in {"clear", "new_task"}
+        if requires_reentry_trail and not isinstance(trail, dict):
+            errors.append("active_task_final_classification_requires_decision_trail")
+        elif requires_reentry_trail:
+            expected_decisions = [
+                {
+                    "proposal_id": proposal.get("proposal_id"),
+                    "proposal_digest": proposal.get("proposal_digest"),
+                    "decision": proposal.get("decision"),
+                    "confirmation_ref": proposal.get("confirmation_ref"),
+                }
+                for proposal in active_task_classification_proposals
+            ]
+            if trail.get("proposal_decisions") != expected_decisions:
+                errors.append("active_task_decision_trail_proposals_mismatch")
+            trail_decision = trail.get("user_decision")
+            if not isinstance(trail_decision, dict):
+                errors.append("active_task_decision_trail_user_evidence_invalid")
+            elif trail_decision != {
+                "status": confirmation_status,
+                "proposal_digests": proposal_digests,
+                "confirmer": confirmation.get("confirmer"),
+                "confirmed_at": confirmation.get("confirmed_at"),
+                "evidence_summary": confirmation.get("evidence_summary"),
+            }:
+                errors.append("active_task_decision_trail_user_evidence_mismatch")
+            if trail.get("planning_documents") != evidence.get("planning_documents"):
+                errors.append("active_task_decision_trail_planning_mismatch")
+            if trail.get("stale_downstream_evidence") != evidence.get("stale_downstream_evidence"):
+                errors.append("active_task_decision_trail_stale_evidence_mismatch")
+            if trail.get("review_evidence") != evidence.get("review_evidence"):
+                errors.append("active_task_decision_trail_review_mismatch")
+            if trail.get("reentry_owners") != evidence.get("reentry_owners"):
+                errors.append("active_task_decision_trail_reentry_mismatch")
+            if trail.get("interrupted_resume_target") != invocation.get("resume_target"):
+                errors.append("active_task_decision_trail_resume_mismatch")
+            context_before = trail.get("context_before_task_update_sha256")
+            current_context = context.get("snapshot_sha256") if isinstance(context, dict) else None
+            if context_before != current_context:
+                errors.append("active_task_decision_trail_task_update_context_mismatch")
+        elif trail is not None:
+            errors.append("active_task_decision_trail_forbidden_before_reentry")
+
+        github_action_kinds = {
+            action.get("kind") for action in actions
+            if isinstance(action, dict)
+            and action.get("kind") in {"issue_comment", "issue_body_edit"}
+        }
+        task_update_actions = [
+            action for action in actions
+            if isinstance(action, dict)
+            and action.get("kind") == "active_task_scope_update"
+        ]
+        if typed_exit == "refresh_context":
+            if not github_action_kinds:
+                errors.append("active_task_classification_refresh_requires_github_authority")
+            if task_update_actions:
+                errors.append("active_task_task_update_forbidden_before_context_refresh")
+        elif typed_exit in {"clear", "new_task"}:
+            if github_action_kinds or any(
+                isinstance(mutation, dict)
+                and mutation.get("kind") in {"issue_comment", "issue_body_edit"}
+                for mutation in mutations
+            ):
+                errors.append("active_task_reentry_forbids_github_mutation")
+            if len(task_update_actions) != 1:
+                errors.append("active_task_final_classification_requires_task_update")
+            elif task_update_actions[0].get("status") != "validated":
+                errors.append("active_task_final_classification_requires_validated_task_update")
+            elif (
+                isinstance(trail, dict)
+                and task_update_actions[0].get("preimage_sha256")
+                != trail.get("context_before_task_update_sha256")
+            ):
+                errors.append("active_task_task_update_preimage_mismatch")
+
+    if invocation_kind == "active_task_scope_change" and active_task_mechanism_proposals:
+        if any(
+            proposal.get("confirmation_ref") is not None
+            or proposal.get("optional_mechanism_origin") is not True
+            for proposal in active_task_mechanism_proposals
         ):
-            errors.append("active_task_current_scope_requires_github_authority")
+            errors.append("active_task_mechanism_disposition_shape_invalid")
+        if not active_task_classification_proposals:
+            evidence = payload.get("active_task_evidence")
+            if confirmation_status != "not_required" or proposal_digests:
+                errors.append("active_task_mechanism_only_forbids_confirmation")
+            if not isinstance(evidence, dict):
+                errors.append("active_task_mechanism_only_requires_task_evidence")
+            elif evidence.get("decision_trail") is not None:
+                errors.append("active_task_mechanism_only_forbids_decision_trail")
+            if any(
+                isinstance(action, dict) and action.get("kind") != "none"
+                for action in actions
+            ) or mutations:
+                errors.append("active_task_mechanism_only_forbids_authority_mutation")
 
     gate = payload.get("ai_review_gate")
     gate_status = gate.get("status") if isinstance(gate, dict) else None
@@ -19814,7 +19985,17 @@ def requirements_clarification_structural_errors(
         errors.append("passed_requirements_gate_has_open_findings")
 
     if invocation_kind == "active_task_scope_change":
-        errors.extend(requirements_clarification_active_task_shape_errors(root, payload, task_dir))
+        if (
+            typed_exit in {"clear", "new_task"}
+            and active_task_terminal_proposals
+        ):
+            errors.extend(
+                requirements_clarification_active_task_shape_errors(
+                    root, payload, task_dir
+                )
+            )
+        elif payload.get("active_task_evidence") is not None:
+            errors.append("active_task_evidence_forbidden_before_classification_reentry")
     elif payload.get("active_task_evidence") is not None:
         errors.append("non_task_clarification_has_active_task_evidence")
 
@@ -19851,7 +20032,7 @@ def requirements_clarification_structural_errors(
         if any(action.get("status") == "pending" for action in actions if isinstance(action, dict)):
             errors.append("clear_forbids_pending_source_actions")
         if any(
-            action.get("kind") in {"issue_comment", "issue_body_edit", "active_task_scope_update"}
+            action.get("kind") in {"issue_comment", "issue_body_edit"}
             for action in actions if isinstance(action, dict)
         ):
             errors.append("clear_forbids_source_mutation_actions")
@@ -19909,12 +20090,78 @@ def requirements_clarification_active_task_shape_errors(
     } if isinstance(planning, list) else set()
     if planning_paths != expected_planning or len(planning or []) != 3:
         errors.append("active_task_planning_binding_invalid")
+    stale = evidence.get("stale_downstream_evidence")
+    if (
+        not isinstance(stale, dict)
+        or set(stale)
+        != {"planning_approval_sha256", "phase2_check_sha256", "branch_review_sha256"}
+    ):
+        errors.append("active_task_stale_evidence_invalid")
+    elif not requirements_clarification_is_sha256(stale.get("planning_approval_sha256")):
+        errors.append("active_task_planning_approval_evidence_required")
+    review = evidence.get("review_evidence")
+    branch_review_sha = stale.get("branch_review_sha256") if isinstance(stale, dict) else None
+    review_path = task_dir / "review-gate.json"
+    review_started = review_path.exists()
+    if not isinstance(review, dict) or set(review) != {"status", "artifact"}:
+        errors.append("active_task_review_evidence_invalid")
+    elif review.get("status") == "not_started":
+        if review.get("artifact") is not None or branch_review_sha is not None:
+            errors.append("active_task_review_evidence_mismatch")
+        if review_started:
+            errors.append("active_task_review_started_requires_stale")
+    elif review.get("status") == "current":
+        errors.append("active_task_review_current_forbidden_during_reentry")
+    elif review.get("status") == "stale":
+        artifact = review.get("artifact")
+        expected_review_path = f"{expected_locator}/review-gate.json"
+        if (
+            not isinstance(artifact, dict)
+            or artifact.get("path") != expected_review_path
+            or artifact.get("content_sha256") != branch_review_sha
+            or not requirements_clarification_is_sha256(branch_review_sha)
+        ):
+            errors.append("active_task_review_evidence_mismatch")
+        if not review_started:
+            errors.append("active_task_review_stale_requires_existing_artifact")
+    else:
+        errors.append("active_task_review_evidence_invalid")
+    trail = evidence.get("decision_trail")
+    if trail is not None:
+        required_trail_keys = {
+            "trail_id", "proposal_decisions", "user_decision",
+            "github_authority", "context_before_task_update_sha256",
+            "planning_documents", "stale_downstream_evidence",
+            "review_evidence", "reentry_owners", "interrupted_resume_target",
+        }
+        if set(trail) != required_trail_keys:
+            errors.append("active_task_decision_trail_shape_invalid")
+        if not requirements_clarification_nonempty(trail.get("trail_id")):
+            errors.append("active_task_decision_trail_shape_invalid")
+        if not requirements_clarification_is_sha256(
+            trail.get("context_before_task_update_sha256")
+        ):
+            errors.append("active_task_decision_trail_shape_invalid")
+        authority = trail.get("github_authority")
+        if (
+            not isinstance(authority, dict)
+            or set(authority) != {"kind", "url", "content_sha256", "updated_at"}
+            or authority.get("kind") not in {"issue_comment", "issue_body"}
+            or not requirements_clarification_nonempty(authority.get("url"))
+            or not requirements_clarification_is_sha256(authority.get("content_sha256"))
+        ):
+            errors.append("active_task_decision_trail_github_authority_invalid")
+        else:
+            try:
+                parse_iso_datetime(
+                    authority.get("updated_at"),
+                    "active-task GitHub authority updated_at",
+                )
+            except WorkflowError:
+                errors.append("active_task_decision_trail_github_authority_invalid")
     reentry = evidence.get("reentry_owners")
     if not isinstance(reentry, list) or set(reentry) != REQUIREMENTS_CLARIFICATION_REENTRY_OWNERS or len(reentry) != 3:
         errors.append("active_task_reentry_owners_invalid")
-    stale = evidence.get("stale_downstream_evidence")
-    if not isinstance(stale, dict) or set(stale) != {"planning_approval_sha256", "phase2_check_sha256", "branch_review_sha256"}:
-        errors.append("active_task_stale_evidence_invalid")
     return errors
 
 
@@ -19950,6 +20197,63 @@ def requirements_clarification_live_issue_errors(
     return [] if target == expected else ["requirements_target_issue_stale"]
 
 
+def requirements_clarification_decision_authority_live_errors(
+    root: Path,
+    target: Any,
+    authority: Any,
+) -> list[str]:
+    if not isinstance(target, dict) or target.get("kind") != "issue":
+        return ["active_task_decision_authority_requires_issue"]
+    if not isinstance(authority, dict):
+        return ["active_task_decision_authority_invalid"]
+    repo = str(target.get("repo") or "")
+    number = target.get("issue_number")
+    if not isinstance(number, int) or number <= 0:
+        return ["active_task_decision_authority_requires_issue"]
+    if authority.get("kind") == "issue_body":
+        facts, issue_error = context_read_live_issue(root, repo, number)
+        if (
+            issue_error is not None
+            or facts is None
+            or authority.get("url") != facts.get("url")
+            or authority.get("content_sha256") != facts.get("body_sha256")
+            or authority.get("updated_at") != facts.get("updated_at")
+        ):
+            return ["active_task_decision_authority_body_stale"]
+        return []
+    if authority.get("kind") != "issue_comment":
+        return ["active_task_decision_authority_invalid"]
+    url = str(authority.get("url") or "")
+    match = re.fullmatch(
+        rf"https://github\.com/{re.escape(repo)}/issues/{number}#issuecomment-([1-9][0-9]*)",
+        url,
+    )
+    if match is None:
+        return ["active_task_decision_authority_comment_invalid"]
+    comment_id = int(match.group(1))
+    proc = run(
+        ["gh", "api", f"repos/{repo}/issues/comments/{comment_id}"],
+        cwd=root,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return ["active_task_decision_authority_comment_unreadable"]
+    try:
+        comment = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return ["active_task_decision_authority_comment_unreadable"]
+    if (
+        not isinstance(comment, dict)
+        or comment.get("id") != comment_id
+        or comment.get("html_url") != url
+        or authority.get("updated_at") != comment.get("updated_at")
+        or authority.get("content_sha256")
+        != hashlib.sha256(str(comment.get("body") or "").encode("utf-8")).hexdigest()
+    ):
+        return ["active_task_decision_authority_comment_stale"]
+    return []
+
+
 def requirements_clarification_active_task_live_errors(
     root: Path,
     payload: dict[str, Any],
@@ -19961,6 +20265,17 @@ def requirements_clarification_active_task_live_errors(
     if not isinstance(evidence, dict):
         return ["active_task_evidence_required"]
     errors: list[str] = []
+    planning_approval_payload: dict[str, Any] = {}
+    try:
+        _, planning_approval_payload, planning_approval_errors = validate_planning_approval(
+            root,
+            task_dir,
+        )
+    except WorkflowError:
+        planning_approval_errors = ["planning approval unavailable"]
+    if planning_approval_errors:
+        errors.append("active_task_planning_approval_invalid")
+    ledger_payload: Any = None
     file_rows: list[dict[str, Any]] = []
     ledger = evidence.get("ledger")
     if isinstance(ledger, dict):
@@ -19968,6 +20283,28 @@ def requirements_clarification_active_task_live_errors(
     planning = evidence.get("planning_documents")
     if isinstance(planning, list):
         file_rows.extend(row for row in planning if isinstance(row, dict))
+    reviewed_artifacts = planning_approval_payload.get("reviewed_artifacts")
+    normalized_reviewed = [
+        normalized_digest_entry(root, task_dir, item)
+        for item in reviewed_artifacts
+    ] if isinstance(reviewed_artifacts, list) else []
+    reviewed_by_path = {
+        str(item.get("path")): item
+        for item in normalized_reviewed
+        if isinstance(item, dict)
+    }
+    expected_planning_from_approval = [
+        {
+            "path": repo_relative(root, task_dir / name),
+            "content_sha256": reviewed_by_path.get(
+                repo_relative(root, task_dir / name),
+                {},
+            ).get("sha256"),
+        }
+        for name in DEFAULT_PLANNING_ARTIFACTS
+    ]
+    if planning != expected_planning_from_approval:
+        errors.append("active_task_planning_approval_binding_mismatch")
     for row in file_rows:
         path_value = row.get("path")
         if not isinstance(path_value, str):
@@ -19980,6 +20317,32 @@ def requirements_clarification_active_task_live_errors(
             continue
         if requirements_clarification_file_digest(path) != row.get("content_sha256"):
             errors.append("active_task_file_stale")
+        if row is ledger:
+            try:
+                ledger_payload = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                errors.append("active_task_ledger_unreadable")
+    required_ledger_keys = {
+        "primary_issue", "close_issues", "related_issues", "followup_issues",
+    }
+    if not isinstance(ledger_payload, dict) or not required_ledger_keys.issubset(ledger_payload):
+        errors.append("active_task_ledger_structure_invalid")
+    trail = evidence.get("decision_trail")
+    if isinstance(trail, dict):
+        scope_decisions = ledger_payload.get("scope_decisions") if isinstance(ledger_payload, dict) else None
+        matching = [
+            item for item in scope_decisions
+            if isinstance(item, dict) and item.get("trail_id") == trail.get("trail_id")
+        ] if isinstance(scope_decisions, list) else []
+        if len(matching) != 1 or matching[0] != trail:
+            errors.append("active_task_decision_trail_ledger_mismatch")
+        errors.extend(
+            requirements_clarification_decision_authority_live_errors(
+                root,
+                payload.get("review_target"),
+                trail.get("github_authority"),
+            )
+        )
     stale = evidence.get("stale_downstream_evidence")
     if isinstance(stale, dict):
         stale_files = {
@@ -19994,6 +20357,34 @@ def requirements_clarification_active_task_live_errors(
                 errors.append("active_task_stale_evidence_unbound")
             elif expected is not None and actual != expected:
                 errors.append("active_task_stale_evidence_drift")
+    review = evidence.get("review_evidence")
+    review_path = task_dir / "review-gate.json"
+    review_started = review_path.exists()
+    review_status = review.get("status") if isinstance(review, dict) else None
+    if review_started:
+        if review_status != "stale":
+            errors.append("active_task_review_started_requires_stale")
+        artifact = review.get("artifact") if isinstance(review, dict) else None
+        if isinstance(artifact, dict):
+            try:
+                bound_review_path = root / context_query_path_shape(
+                    str(artifact.get("path") or "")
+                )
+            except WorkflowError:
+                errors.append("active_task_review_evidence_invalid")
+            else:
+                if (
+                    bound_review_path != review_path
+                    or requirements_clarification_file_digest(bound_review_path)
+                    != artifact.get("content_sha256")
+                ):
+                    errors.append("active_task_review_evidence_stale")
+        else:
+            errors.append("active_task_review_evidence_invalid")
+    elif review_status != "not_started" or (
+        isinstance(review, dict) and review.get("artifact") is not None
+    ):
+        errors.append("active_task_review_not_started_required")
     context = payload.get("context_evidence")
     context_path = task_dir / "context-discovery.json"
     if isinstance(context, dict) and context.get("status") == "current":
@@ -20008,6 +20399,27 @@ def requirements_clarification_active_task_live_errors(
                 identity = snapshot.get("snapshot_identity") if isinstance(snapshot, dict) else None
                 if not isinstance(identity, dict) or identity.get("snapshot_sha256") != context.get("snapshot_sha256"):
                     errors.append("requirements_context_snapshot_stale")
+                trail = evidence.get("decision_trail")
+                authority = trail.get("github_authority") if isinstance(trail, dict) else None
+                if isinstance(authority, dict):
+                    try:
+                        context_generated_at = parse_iso_datetime(
+                            snapshot.get("generated_at") if isinstance(snapshot, dict) else None,
+                            "active-task context generated_at",
+                        )
+                    except WorkflowError:
+                        errors.append("active_task_context_generated_at_invalid")
+                    else:
+                        try:
+                            authority_updated_at = parse_iso_datetime(
+                                authority.get("updated_at"),
+                                "active-task GitHub authority updated_at",
+                            )
+                        except WorkflowError:
+                            errors.append("active_task_decision_authority_updated_at_invalid")
+                        else:
+                            if context_generated_at < authority_updated_at:
+                                errors.append("active_task_context_predates_decision_authority")
     return context_sort(errors)
 
 
@@ -20128,7 +20540,25 @@ def requirements_clarification_live_errors(
 ) -> list[str]:
     target = payload.get("review_target")
     errors = requirements_clarification_live_issue_errors(root, target) if isinstance(target, dict) else ["requirements_target_invalid"]
-    errors.extend(requirements_clarification_active_task_live_errors(root, payload, task_dir))
+    proposals = payload.get("scope_proposals")
+    has_active_task_terminal_reentry = (
+        task_dir is not None
+        and payload.get("typed_exit") in {"clear", "new_task"}
+        and isinstance(proposals, list)
+        and bool(proposals)
+        and all(
+            isinstance(proposal, dict)
+            and proposal.get("decision")
+            in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_TERMINAL_DECISIONS
+            for proposal in proposals
+        )
+    )
+    if has_active_task_terminal_reentry:
+        errors.extend(
+            requirements_clarification_active_task_live_errors(
+                root, payload, task_dir
+            )
+        )
     errors.extend(requirements_clarification_live_mutation_errors(root, payload, task_dir))
     return context_sort(errors)
 

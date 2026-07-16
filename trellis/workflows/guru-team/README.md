@@ -238,6 +238,15 @@ Gate mandatory invoke同一Skill。Exits 为 `clear` -> caller-aware
 planning review或exact interrupted progression）、`needs_context` -> context discovery、`refresh_context` -> base sync、
 `new_task` -> staged #112 full intake route、`blocked` -> fail-closed stop。
 
+Active-task `clear`/`new_task` 要求非空且全部属于七类 terminal decision 的 proposal set；
+五类 scope classification 无论 origin 均要求 exact proposal 用户证据，并 exact 匹配当前
+`issue-scope-ledger.json.scope_decisions[]` 的 structured trail，并绑定 live GitHub authority、
+shared validator 完整校验的 schema 1.2 planning approval/docs、review state、stale gates、interrupted target
+与 re-entry owners。`mechanism_removed/replaced` 使用 optional origin/null confirmation，
+不进入 trail/action mutation。GitHub authority mutation 后只能 `refresh_context`；context
+时间覆盖 authority 后 task update 绑定同一 digest，不要求第二次 refresh。Active-task `new_task` 保留该 trail，仍只给 #112
+side-effect-free reviewed draft。
+
 ## 中文 Conventional Commits
 
 `guru-team` workflow 强制进入 PR 分支或 `main` 的提交使用中文 Conventional

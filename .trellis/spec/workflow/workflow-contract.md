@@ -158,10 +158,24 @@ A successful GitHub issue comment/body mutation returns `refresh_context`, not
 authority. `new_issue_draft` is side-effect-free and returns `new_task`; this
 Skill never creates a GitHub issue. Pre-task and standalone results are
 stdout-only and create no repository clarification cache, workspace journal,
-or fixed handoff. Active-task inclusion binds live GitHub-visible authority,
-the current `issue-scope-ledger.json` content digest, all three planning
-document digests, stale downstream evidence identities, and re-entry owners
-`guru-approve-task-plan`, `guru-check-task`, and `guru-review-branch`.
+or fixed handoff. Active-task `clear`/`new_task` requires a non-empty set of the
+seven terminal decisions. Every accepted-current, related, followup, new-task,
+or out-of-scope scope classification requires proposal-digest-bound exact user
+evidence, regardless of origin status. It binds live GitHub-visible authority and one structured
+decision trail exactly present in current
+`issue-scope-ledger.json.scope_decisions[]`, including all three planning
+document digests, a shared-validator-passed complete schema 1.2 planning
+approval, review state, stale downstream identities, authority `updated_at`,
+and `context_before_task_update_sha256`,
+the interrupted target and re-entry owners `guru-approve-task-plan`,
+`guru-check-task`, and `guru-review-branch`. GitHub comment/body authority mutation
+returns `refresh_context`; only that GitHub mutation requires the
+refresh. The refreshed context `generated_at` must not predate authority
+`updated_at`; task update then binds that same digest and does not require a
+second context refresh. `mechanism_removed/replaced` requires optional origin,
+null confirmation, no trail, and no authority mutation. An active-task
+`new_task` preserves that current-task trail and still hands #112 only a
+side-effect-free reviewed draft.
 The active-task Scope Change Gate mandatory invokes this Skill rather than
 asking/classifying/updating the ledger directly in workflow Markdown.
 

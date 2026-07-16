@@ -235,6 +235,17 @@ task-local linkage 与 exit invariants，并要求 confirmed payload bytes、pay
 mutation result与live body/comment一致，不执行 write、不选择 semantic route。Mutation 成功
 必须返回 `refresh_context`；`new_issue_draft` 不创建 issue，只返回 `new_task`。
 
+Active-task `clear`/`new_task` 必须有非空且全部属于七类 terminal decision 的 proposal set；
+accepted-current/related/followup/new-task/out-of-scope 五类 scope classification 无论 origin
+都必须有 proposal-digest-bound 用户证据，并把 exact structured `decision_trail` 写入当前
+`issue-scope-ledger.json.scope_decisions[]`，绑定 live GitHub comment/body authority、三份
+planning 文档与 shared schema 1.2 validator 完整通过的 approval、review state、stale downstream、interrupted target 与 re-entry
+owners。`mechanism_removed/replaced` 要求 optional origin、null confirmation，且不进入
+trail/action mutation。GitHub authority mutation 只能返回 `refresh_context`；context
+`generated_at >= authority.updated_at` 后 task update 绑定同一 digest，不要求第二次 refresh，
+完成后才可恢复 exact progression。
+Active-task `new_task` 保留 trail，只把 side-effect-free reviewed draft 交给 #112。
+
 Active-task Scope Change Gate mandatory invoke本 Skill，不再在workflow复制分类步骤。五个唯一
 出口为 `clear` -> workflow target `guru-requirements-clear-router`、`needs_context` -> `guru-discover-change-context`、
 `refresh_context` -> `guru-sync-base`、`new_task` -> staged workflow target

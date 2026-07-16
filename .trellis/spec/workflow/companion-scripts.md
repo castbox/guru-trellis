@@ -197,7 +197,19 @@ AI Gate status, or typed exit. Pre-task and standalone modes reject an output
 path and perform no repository write. Active-task mode still creates no
 dedicated clarification artifact: it validates caller-authored bindings to the
 existing live issue authority, `issue-scope-ledger.json`, `prd.md`, `design.md`,
-`implement.md`, and stale downstream gate identities.
+`implement.md`, planning approval, review state, structured decision trail, and
+stale downstream gate identities. It parses
+`issue-scope-ledger.json.scope_decisions[]` and requires one exact trail match;
+active-task `clear`/`new_task` requires a non-empty terminal proposal set, and
+each of the five scope classifications requires exact user-decision evidence.
+Mechanism dispositions require optional origin and null confirmation and stay
+outside trail/action mutation. A mechanism-only terminal result still supplies
+the current ledger/planning/complete-approval/review/stale/context/re-entry
+evidence with `decision_trail=null`, and it runs through the same task-local live
+freshness checker as classification and mixed results. The checker calls the
+shared complete schema 1.2 planning-approval validator and exact-binds its
+reviewed/approved planning rows; an old file digest, two-line planning docs, or
+minimal ledger/approval JSON is insufficient.
 
 Check accepts the recorder result from stdin or an explicit input file. It
 recomputes every derived digest, executes the published closed schema and pure
@@ -216,7 +228,17 @@ updated-at/body-or-comment digest facts. The mutation result content digest
 must equal the exact confirmed `source_actions[].payload.body`, its canonical
 payload digest, and the reread live body/comment bytes. Successful GitHub mutation requires
 `refresh_context`. `new_issue_draft` remains side-effect-free and requires
-`new_task`; no script in this Skill creates an issue.
+`new_task`; no script in this Skill creates an issue. Active-task GitHub
+authority mutation requires `refresh_context` before task update. A later
+active-task `clear`/`new_task` validates live authority kind/URL/content/time,
+requires context `generated_at >= authority.updated_at`, and binds the task
+update preimage to that context digest. Task-only update requires no second
+context digest change.
+
+An existing `review-gate.json` requires `review_evidence.status=stale` plus its
+exact path/content digest. `not_started` is accepted only when the file is
+absent, the artifact is null, and no Branch Review digest is bound; `current`
+fails both pure and live active-task re-entry validation.
 
 Pure validation rejects repository-answerable questions left pending or marked
 `answered` without checked evidence before a user round, multiple question ids
@@ -225,7 +247,11 @@ that round, a partial answer closing any question, close-before-open,
 closure-then-reopen, an accepted unconfirmed expansion without proposal-digest-bound
 confirmation, generic confirmation action kinds, an optional-mechanism
 proposal accepted into current scope, an active-task inclusion without exact
-ledger/planning/re-entry linkage, open questions on `clear`, blocked/Gate
+ledger/planning/re-entry linkage, an empty/non-final active-task proposal set,
+any five-class active-task classification without exact user evidence, a
+mechanism disposition with confirmation/trail/action mutation, an incomplete
+planning approval, a missing/mismatched ledger decision trail or GitHub authority,
+mutation without fresh re-entry, open questions on `clear`, blocked/Gate
 matrix mismatch, and any exit/consumer mismatch. Expected failures use stable
 non-secret error codes and never echo raw payloads, local absolute paths, or
 credentials.

@@ -145,7 +145,17 @@ targets the staged #114 wording route, active-task resumes planning or the
 exact interrupted phase, and standalone returns to its caller. Docs also state
 that `answered` requires checked evidence, every question id participates in
 the reducer lifecycle, and confirmed GitHub payload bytes equal mutation/live
-content. Docs also document source-specific task/GitHub/Git deep-read
+content. For active tasks they must state that `clear`/`new_task` requires a
+non-empty terminal proposal set and every five-class scope classification,
+regardless of origin, requires exact user-decision evidence; every scope classification
+has live GitHub authority and one exact structured
+`issue-scope-ledger.json.scope_decisions[]` trail binding planning/review/re-entry
+evidence; planning evidence must pass the complete shared schema 1.2 validator
+rather than a hash/placeholder check; GitHub authority mutation returns
+`refresh_context`; context time must not predate authority time, the task update
+binds that digest without a second refresh, and mechanism dispositions require
+no confirmation/trail/mutation before exact progression or a #112 side-effect-free new-task
+draft. Docs also document source-specific task/GitHub/Git deep-read
 locators, structured no-raw-payload persistence, and field-specific
 validation. Workflow and stop route markers must
 be described as validator-resolved target declarations, not new Skill packages.

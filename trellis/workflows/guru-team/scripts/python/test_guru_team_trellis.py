@@ -16535,6 +16535,20 @@ class RequirementsClarificationTests(unittest.TestCase):
     def structural(self, payload: dict[str, object], task_dir: Path | None = None) -> list[str]:
         return gtt.requirements_clarification_structural_errors(self.repo, payload, task_dir)
 
+    def persist_active_task_trail(
+        self,
+        root: Path,
+        task: Path,
+        payload: dict[str, object],
+    ) -> dict[str, object]:
+        evidence = payload["active_task_evidence"]
+        ledger_path = task / "issue-scope-ledger.json"
+        ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+        ledger["scope_decisions"] = [copy.deepcopy(evidence["decision_trail"])]
+        ledger_path.write_text(json.dumps(ledger, sort_keys=True) + "\n", encoding="utf-8")
+        evidence["ledger"]["content_sha256"] = hashlib.sha256(ledger_path.read_bytes()).hexdigest()
+        return self.derive(payload)
+
     def test_example_record_and_check_are_canonical_and_stdout_only(self) -> None:
         before = set(gtt.git_status_paths(self.repo))
         record_args = argparse.Namespace(
@@ -16882,270 +16896,841 @@ class RequirementsClarificationTests(unittest.TestCase):
             self.structural(payload),
         )
 
-    def test_active_task_binds_existing_files_and_reentry_owners(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            subprocess.run(["git", "init", "-q", str(root)], check=True)
-            task = root / ".trellis/tasks/active-scope"
-            task.mkdir(parents=True)
-            (task / "task.json").write_text('{"status":"in_progress","branch":"main"}\n', encoding="utf-8")
-            for name, content in (
-                ("issue-scope-ledger.json", "{}\n"), ("prd.md", "# PRD\n"),
-                ("design.md", "# Design\n"), ("implement.md", "# Implement\n"),
-            ):
-                (task / name).write_text(content, encoding="utf-8")
-            payload = self.example()
-            (task / "context-discovery.json").write_text(
-                json.dumps({
-                    "snapshot_identity": {
-                        "snapshot_sha256": payload["context_evidence"]["snapshot_sha256"],
-                    },
-                }) + "\n",
-                encoding="utf-8",
+    def make_active_task_classification(
+        self,
+        root: Path,
+        *,
+        decision: str,
+        typed_exit: str,
+        resume_target: str,
+        fresh_reentry: bool,
+    ) -> tuple[Path, dict[str, object], dict[str, object], subprocess.CompletedProcess[str]]:
+        subprocess.run(["git", "init", "-q", str(root)], check=True)
+        task = root / ".trellis/tasks/active-scope"
+        task.mkdir(parents=True)
+        locator = task.relative_to(root).as_posix()
+        (task / "task.json").write_text(
+            '{"status":"in_progress","branch":"main"}\n', encoding="utf-8"
+        )
+        for name, content in (
+            (
+                "prd.md",
+                "# Active scope requirements\n\n"
+                "## Goal\n\nClassify the requested scope without changing the confirmed delivery silently.\n\n"
+                "## Acceptance\n\nPersist one exact user decision and resume only after evidence is current.\n",
+            ),
+            (
+                "design.md",
+                "# Active scope design\n\n"
+                "## Data flow\n\nBind the proposal, user decision, GitHub authority, and task ledger.\n\n"
+                "## Failure behavior\n\nReject missing, stale, or mismatched evidence with structured errors.\n",
+            ),
+            (
+                "implement.md",
+                "# Active scope implementation\n\n"
+                "## Sequence\n\nValidate planning, persist the trail, refresh authority, then resume the owner.\n\n"
+                "## Verification\n\nRun structural, live, package, and installation regression checks.\n",
+            ),
+        ):
+            (task / name).write_text(content, encoding="utf-8")
+        with (
+            mock.patch.object(gtt, "current_head", return_value="a" * 40),
+            mock.patch.object(gtt, "git_status_paths", return_value=[]),
+        ):
+            planning_approval = gtt.build_planning_approval_payload(
+                root,
+                task,
+                reviewer="codex-main-session",
+                approval_summary="The complete planning contract was reviewed and accepted.",
+                user_confirmation="The user explicitly confirmed all three displayed planning documents.",
+                artifacts=[],
+                ambiguity_reviewer="codex-main-session",
+                ambiguity_summary="The planning documents contain deterministic scope and acceptance contracts.",
+                ambiguity_status=gtt.PLANNING_AMBIGUITY_STATUS_PASSED,
+                review_prompt_presented_at="2026-01-01T00:00:00Z",
             )
-            locator = task.relative_to(root).as_posix()
-            payload["mode"] = "workflow"
-            payload["invocation_context"] = {
-                "kind": "active_task_scope_change", "caller": "active task", "task_locator": locator,
-                "resume_target": "guru-resume-implementation",
+        gtt.write_json(task / "planning-approval.json", planning_approval)
+        payload = self.example()
+        original_context = payload["context_evidence"]["snapshot_sha256"]
+        current_context = "4" * 64 if fresh_reentry else original_context
+        payload["context_evidence"]["snapshot_sha256"] = current_context
+        context_generated_at = (
+            "2026-01-01T00:00:03Z"
+            if fresh_reentry
+            else "2026-01-01T00:00:00Z"
+        )
+        (task / "context-discovery.json").write_text(
+            json.dumps({
+                "generated_at": context_generated_at,
+                "snapshot_identity": {"snapshot_sha256": current_context},
+            }) + "\n",
+            encoding="utf-8",
+        )
+        target_projection = {
+            "kind": "issue", "repo": "example/guru-extension", "issue_number": 7,
+            "url": "https://github.com/example/guru-extension/issues/7", "state": "open",
+            "updated_at": "2026-01-01T00:00:00Z", "body_sha256": "1" * 64,
+        }
+        payload["mode"] = "workflow"
+        payload["typed_exit"] = typed_exit
+        payload["consumer"] = gtt.REQUIREMENTS_CLARIFICATION_CONSUMERS[typed_exit]
+        payload["invocation_context"] = {
+            "kind": "active_task_scope_change", "caller": "active task",
+            "task_locator": locator, "resume_target": resume_target,
+        }
+        payload["review_target"] = {
+            **target_projection, "facts_sha256": gtt.context_digest(target_projection),
+        }
+        payload["scope_proposals"] = [{
+            "proposal_id": f"classify_{decision}",
+            "scenario": "Classify an independent active-task request.",
+            "trigger_evidence": ["new active-task input"],
+            "proposed_contracts": ["one explicit scope classification"],
+            "cost": "A separate delivery and validation path.",
+            "alternatives": ["Keep the current confirmed scope unchanged."],
+            "consequence_if_omitted": "The independent request is not part of this delivery.",
+            "origin_requirement_status": "unconfirmed_expansion",
+            "optional_mechanism_origin": False, "decision": decision,
+            "proposal_digest": "0" * 64, "confirmation_ref": "scope_confirmation",
+        }]
+        payload = self.derive(payload)
+        proposal_digest = payload["scope_proposals"][0]["proposal_digest"]
+        decision_summary = "The user confirmed the exact active-task classification proposal."
+        payload["human_confirmation"] = {
+            "status": "confirmed", "confirmation_kind": "exact_scope_proposal",
+            "action_digest": None, "proposal_digests": [proposal_digest],
+            "confirmed_actions": [], "confirmer": "user",
+            "confirmed_at": "2026-01-01T00:00:01Z",
+            "evidence_summary": decision_summary,
+        }
+        planning = [
+            {
+                "path": f"{locator}/{name}",
+                "content_sha256": hashlib.sha256((task / name).read_bytes()).hexdigest(),
             }
-            payload["active_task_evidence"] = {
-                "task_locator": locator,
-                "github_authority_facts_sha256": payload["review_target"]["facts_sha256"],
-                "ledger": {
-                    "path": f"{locator}/issue-scope-ledger.json",
-                    "content_sha256": hashlib.sha256((task / "issue-scope-ledger.json").read_bytes()).hexdigest(),
+            for name in ("prd.md", "design.md", "implement.md")
+        ]
+        stale = {
+            "planning_approval_sha256": hashlib.sha256(
+                (task / "planning-approval.json").read_bytes()
+            ).hexdigest(),
+            "phase2_check_sha256": None,
+            "branch_review_sha256": None,
+        }
+        review_evidence = {"status": "not_started", "artifact": None}
+        reentry_owners = ["guru-approve-task-plan", "guru-check-task", "guru-review-branch"]
+        comment_body = f"Confirmed active-task scope decision: {decision}."
+        comment_url = "https://github.com/example/guru-extension/issues/7#issuecomment-99"
+        trail = {
+            "trail_id": f"scope_decision_{decision}",
+            "proposal_decisions": [{
+                "proposal_id": f"classify_{decision}",
+                "proposal_digest": proposal_digest,
+                "decision": decision,
+                "confirmation_ref": "scope_confirmation",
+            }],
+            "user_decision": {
+                "status": "confirmed", "proposal_digests": [proposal_digest],
+                "confirmer": "user", "confirmed_at": "2026-01-01T00:00:01Z",
+                "evidence_summary": decision_summary,
+            },
+            "github_authority": {
+                "kind": "issue_comment", "url": comment_url,
+                "content_sha256": hashlib.sha256(comment_body.encode("utf-8")).hexdigest(),
+                "updated_at": "2026-01-01T00:00:02Z",
+            },
+            "context_before_task_update_sha256": current_context,
+            "planning_documents": planning,
+            "stale_downstream_evidence": stale,
+            "review_evidence": review_evidence,
+            "reentry_owners": reentry_owners,
+            "interrupted_resume_target": resume_target,
+        }
+        ledger_payload = {
+            "primary_issue": {"number": 7},
+            "close_issues": [{"number": 7}],
+            "related_issues": [],
+            "followup_issues": [],
+            "scope_decisions": [trail],
+        }
+        (task / "issue-scope-ledger.json").write_text(
+            json.dumps(ledger_payload, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        ledger_sha = hashlib.sha256((task / "issue-scope-ledger.json").read_bytes()).hexdigest()
+        payload["active_task_evidence"] = {
+            "task_locator": locator,
+            "github_authority_facts_sha256": payload["review_target"]["facts_sha256"],
+            "ledger": {
+                "path": f"{locator}/issue-scope-ledger.json",
+                "content_sha256": ledger_sha,
+            },
+            "planning_documents": planning,
+            "stale_downstream_evidence": stale,
+            "review_evidence": review_evidence,
+            "decision_trail": trail,
+            "reentry_owners": reentry_owners,
+        }
+        if typed_exit in {"clear", "new_task"}:
+            payload["source_actions"] = [{
+                "action_id": "task_scope", "kind": "active_task_scope_update",
+                "target": {"task_locator": locator},
+                "payload": {
+                    field: copy.deepcopy(payload["active_task_evidence"][field])
+                    for field in gtt.REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_PAYLOAD_FIELDS
                 },
-                "planning_documents": [
-                    {"path": f"{locator}/{name}", "content_sha256": hashlib.sha256((task / name).read_bytes()).hexdigest()}
-                    for name in ("prd.md", "design.md", "implement.md")
-                ],
-                "stale_downstream_evidence": {
-                    "planning_approval_sha256": None, "phase2_check_sha256": None, "branch_review_sha256": None,
-                },
-                "reentry_owners": ["guru-approve-task-plan", "guru-check-task", "guru-review-branch"],
-            }
-            payload = self.derive(payload)
-            self.assertEqual(gtt.requirements_clarification_structural_errors(root, payload, task), [])
-            self.assertEqual(gtt.requirements_clarification_active_task_live_errors(root, payload, task), [])
-            for decision in ("related", "followup", "out_of_scope"):
-                with self.subTest(decision=decision):
-                    classified = copy.deepcopy(payload)
-                    classified["scope_proposals"] = [{
-                        "proposal_id": f"classify_{decision}",
-                        "scenario": "Classify an independent scope request.",
-                        "trigger_evidence": ["new active-task input"],
-                        "proposed_contracts": ["independent acceptance"],
-                        "cost": "A separate delivery and validation path.",
-                        "alternatives": ["Keep the current confirmed scope unchanged."],
-                        "consequence_if_omitted": "The independent request is not part of this delivery.",
-                        "origin_requirement_status": "unconfirmed_expansion",
-                        "optional_mechanism_origin": False, "decision": decision,
-                        "proposal_digest": "0" * 64, "confirmation_ref": None,
-                    }]
-                    classified = self.derive(classified)
-                    self.assertEqual(
-                        gtt.requirements_clarification_structural_errors(root, classified, task),
-                        [],
-                    )
-
-            new_task = copy.deepcopy(payload)
-            new_task["typed_exit"] = "new_task"
-            new_task["consumer"] = {"kind": "workflow", "id": "guru-full-task-intake-chain"}
-            new_task["scope_proposals"] = [{
-                    "proposal_id": "classify_new_task",
-                    "scenario": "Classify an independent delivery unit.",
-                    "trigger_evidence": ["new active-task input"],
-                    "proposed_contracts": ["independent acceptance"],
-                    "cost": "A separate delivery and validation path.",
-                    "alternatives": ["Defer the independent delivery."],
-                    "consequence_if_omitted": "The independent delivery is not started.",
-                    "origin_requirement_status": "unconfirmed_expansion",
-                    "optional_mechanism_origin": False, "decision": "new_task",
-                    "proposal_digest": "0" * 64, "confirmation_ref": None,
+                "preimage_sha256": current_context, "payload_sha256": None,
+                "action_digest": "0" * 64, "status": "validated",
+                "mutation_evidence": {"source": "confirmed-task-local-update"},
             }]
-            new_task["source_actions"] = [{
+            if typed_exit == "new_task":
+                payload["source_actions"].append({
                     "action_id": "new_issue", "kind": "new_issue_draft",
-                    "target": {"repo": payload["review_target"]["repo"]},
-                    "payload": {"title": "Independent delivery", "body": "Reviewed independent scope."},
+                    "target": {"repo": "example/guru-extension"},
+                    "payload": {
+                        "title": "Independent delivery",
+                        "body": "Reviewed independent scope.",
+                    },
                     "preimage_sha256": None, "payload_sha256": None,
                     "action_digest": "0" * 64, "status": "draft_ready",
                     "mutation_evidence": None,
-            }]
-            new_task = self.derive(new_task)
-            self.assertEqual(
-                gtt.requirements_clarification_structural_errors(root, new_task, task),
-                [],
-            )
-            (task / "design.md").write_text("# Changed\n", encoding="utf-8")
-            self.assertIn(
-                "active_task_file_stale",
-                gtt.requirements_clarification_active_task_live_errors(root, payload, task),
-            )
-
-    def test_active_task_current_inclusion_binds_confirmation_authority_and_reentry(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            subprocess.run(["git", "init", "-q", str(root)], check=True)
-            task = root / ".trellis/tasks/active-scope"
-            task.mkdir(parents=True)
-            locator = task.relative_to(root).as_posix()
-            (task / "task.json").write_text('{"status":"in_progress","branch":"main"}\n', encoding="utf-8")
-            for name, content in (
-                ("issue-scope-ledger.json", '{"close_issues":[7]}\n'),
-                ("prd.md", "# Updated PRD\n"), ("design.md", "# Updated Design\n"),
-                ("implement.md", "# Updated Implement\n"),
-            ):
-                (task / name).write_text(content, encoding="utf-8")
-
-            payload = self.example()
-            snapshot_sha = payload["context_evidence"]["snapshot_sha256"]
-            (task / "context-discovery.json").write_text(
-                json.dumps({"snapshot_identity": {"snapshot_sha256": snapshot_sha}}) + "\n",
+                })
+        elif typed_exit == "refresh_context":
+            payload["active_task_evidence"] = None
+            ledger_payload["scope_decisions"] = []
+            (task / "issue-scope-ledger.json").write_text(
+                json.dumps(ledger_payload, sort_keys=True) + "\n",
                 encoding="utf-8",
             )
-            target_projection = {
-                "kind": "issue", "repo": "example/guru-extension", "issue_number": 7,
-                "url": "https://github.com/example/guru-extension/issues/7", "state": "open",
-                "updated_at": "2026-01-01T00:00:00Z", "body_sha256": "1" * 64,
-            }
-            payload["mode"] = "workflow"
-            payload["typed_exit"] = "refresh_context"
-            payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
-            payload["invocation_context"] = {
-                "kind": "active_task_scope_change", "caller": "active task", "task_locator": locator,
-                "resume_target": "guru-active-task-planning-review",
-            }
-            payload["review_target"] = {
-                **target_projection, "facts_sha256": gtt.context_digest(target_projection),
-            }
-            planning = [
-                {"path": f"{locator}/{name}", "content_sha256": hashlib.sha256((task / name).read_bytes()).hexdigest()}
-                for name in ("prd.md", "design.md", "implement.md")
-            ]
-            ledger_sha = hashlib.sha256((task / "issue-scope-ledger.json").read_bytes()).hexdigest()
-            payload["active_task_evidence"] = {
-                "task_locator": locator,
-                "github_authority_facts_sha256": payload["review_target"]["facts_sha256"],
-                "ledger": {"path": f"{locator}/issue-scope-ledger.json", "content_sha256": ledger_sha},
-                "planning_documents": planning,
-                "stale_downstream_evidence": {
-                    "planning_approval_sha256": None, "phase2_check_sha256": None,
-                    "branch_review_sha256": None,
-                },
-                "reentry_owners": ["guru-approve-task-plan", "guru-check-task", "guru-review-branch"],
-            }
-            payload["scope_proposals"] = [{
-                "proposal_id": "include_current", "scenario": "Include the confirmed scope in this task.",
-                "trigger_evidence": ["user request"], "proposed_contracts": ["updated acceptance"],
-                "cost": "Update planning and validation.", "alternatives": ["Create a follow-up task."],
-                "consequence_if_omitted": "The requested scope is not delivered.",
-                "origin_requirement_status": "unconfirmed_expansion", "optional_mechanism_origin": False,
-                "decision": "accepted_current", "proposal_digest": "0" * 64,
-                "confirmation_ref": "scope_confirmation",
+            payload["source_actions"] = [{
+                "action_id": "github_authority", "kind": "issue_comment",
+                "target": {"repo": "example/guru-extension", "issue_number": 7},
+                "payload": {"body": comment_body}, "preimage_sha256": "1" * 64,
+                "payload_sha256": None, "action_digest": "0" * 64,
+                "status": "executed", "mutation_evidence": {"source": "ai-reviewed-gh"},
             }]
-            comment_body = "The exact current-task scope inclusion was confirmed."
-            payload["source_actions"] = [
-                {
-                    "action_id": "github_authority", "kind": "issue_comment",
-                    "target": {"repo": "example/guru-extension", "issue_number": 7},
-                    "payload": {"body": comment_body}, "preimage_sha256": "1" * 64,
-                    "payload_sha256": None, "action_digest": "0" * 64, "status": "executed",
-                    "mutation_evidence": {"source": "ai-reviewed-gh"},
-                },
-                {
-                    "action_id": "task_scope", "kind": "active_task_scope_update",
-                    "target": {"task_locator": locator},
-                    "payload": {
-                        field: copy.deepcopy(payload["active_task_evidence"][field])
-                        for field in gtt.REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_PAYLOAD_FIELDS
-                    },
-                    "preimage_sha256": ledger_sha, "payload_sha256": None,
-                    "action_digest": "0" * 64, "status": "executed",
-                    "mutation_evidence": {"source": "confirmed-task-local-update"},
-                },
-            ]
             payload = self.derive(payload)
             action_digests = [action["action_digest"] for action in payload["source_actions"]]
-            proposal_digest = payload["scope_proposals"][0]["proposal_digest"]
-            payload["human_confirmation"] = {
-                "status": "confirmed", "confirmation_kind": "exact_source_action_and_scope",
-                "action_digest": gtt.context_digest(action_digests),
-                "proposal_digests": [proposal_digest],
-                "confirmed_actions": ["github_authority", "task_scope"],
-                "confirmer": "user", "confirmed_at": "2026-01-01T00:00:01Z",
-                "evidence_summary": "The exact action and proposal digests were confirmed.",
-            }
-            comment_url = "https://github.com/example/guru-extension/issues/7#issuecomment-99"
-            payload["mutation_results"] = [
-                {
-                    "action_id": "github_authority", "kind": "issue_comment", "status": "succeeded",
-                    "url": comment_url, "state": "open", "updated_at": "2026-01-01T00:00:02Z",
-                    "content_sha256": hashlib.sha256(comment_body.encode("utf-8")).hexdigest(),
-                    "action_digest": action_digests[0], "facts_sha256": "0" * 64,
-                },
-                {
-                    "action_id": "task_scope", "kind": "active_task_scope_update", "status": "succeeded",
-                    "url": None, "state": "task_local", "updated_at": None,
-                    "content_sha256": gtt.context_digest(payload["active_task_evidence"]),
-                    "action_digest": action_digests[1], "facts_sha256": "0" * 64,
-                },
-            ]
-            payload = self.derive(payload)
-            current_issue = {
-                "repo": "example/guru-extension", "number": 7,
-                "url": target_projection["url"], "state": "open",
-                "updated_at": target_projection["updated_at"], "body_sha256": target_projection["body_sha256"],
-                "facts_sha256": "unused",
-            }
-            comment_response = subprocess.CompletedProcess(
-                [], 0,
+            payload["human_confirmation"]["confirmation_kind"] = "exact_source_action_and_scope"
+            payload["human_confirmation"]["action_digest"] = gtt.context_digest(action_digests)
+            payload["human_confirmation"]["confirmed_actions"] = ["github_authority"]
+            payload["mutation_results"] = [{
+                "action_id": "github_authority", "kind": "issue_comment",
+                "status": "succeeded", "url": comment_url, "state": "open",
+                "updated_at": "2026-01-01T00:00:02Z",
+                "content_sha256": hashlib.sha256(comment_body.encode("utf-8")).hexdigest(),
+                "action_digest": action_digests[0], "facts_sha256": "0" * 64,
+            }]
+        payload = self.derive(payload)
+        current_issue = {
+            "repo": "example/guru-extension", "number": 7,
+            "url": target_projection["url"], "state": "open",
+            "updated_at": target_projection["updated_at"],
+            "body_sha256": target_projection["body_sha256"], "facts_sha256": "unused",
+        }
+        comment_response = subprocess.CompletedProcess(
+            [], 0,
+            json.dumps({
+                "id": 99, "html_url": comment_url,
+                "updated_at": "2026-01-01T00:00:02Z", "body": comment_body,
+            }),
+            "",
+        )
+        return task, payload, current_issue, comment_response
+
+    def test_active_task_clear_or_new_task_rejects_empty_final_proposal_set(self) -> None:
+        for typed_exit, resume_target in (
+            ("clear", "guru-resume-implementation"),
+            ("new_task", "guru-resume-implementation"),
+        ):
+            with self.subTest(typed_exit=typed_exit), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                task, payload, _current_issue, _comment_response = self.make_active_task_classification(
+                    root,
+                    decision="new_task" if typed_exit == "new_task" else "related",
+                    typed_exit=typed_exit,
+                    resume_target=resume_target,
+                    fresh_reentry=True,
+                )
+                payload["scope_proposals"] = []
+                payload["active_task_evidence"]["decision_trail"] = None
+                payload["human_confirmation"] = copy.deepcopy(self.example()["human_confirmation"])
+                payload["source_actions"] = [{
+                    "action_id": "no_action", "kind": "none", "target": None,
+                    "payload": None, "preimage_sha256": None, "payload_sha256": None,
+                    "action_digest": "0" * 64, "status": "not_required",
+                    "mutation_evidence": None,
+                }]
+                payload["mutation_results"] = []
+                payload = self.derive(payload)
+                errors = gtt.requirements_clarification_structural_errors(root, payload, task)
+                self.assertIn(
+                    "active_task_clear_or_new_task_requires_final_scope_proposal_set",
+                    errors,
+                )
+
+    def test_active_task_terminal_decisions_split_classification_from_mechanism(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task, payload, current_issue, _comment_response = self.make_active_task_classification(
+                root,
+                decision="related",
+                typed_exit="clear",
+                resume_target="guru-resume-implementation",
+                fresh_reentry=True,
+            )
+            classification_payload = copy.deepcopy(payload)
+            classification_comment = subprocess.CompletedProcess(
+                [],
+                0,
                 json.dumps({
-                    "id": 99, "html_url": comment_url, "updated_at": "2026-01-01T00:00:02Z",
-                    "body": comment_body,
+                    "id": 99,
+                    "html_url": "https://github.com/example/guru-extension/issues/7#issuecomment-99",
+                    "updated_at": "2026-01-01T00:00:02Z",
+                    "body": "Confirmed active-task scope decision: related.",
+                }),
+                "",
+            )
+            payload["scope_proposals"] = [{
+                "proposal_id": "remove_optional_guard",
+                "scenario": "Remove an optional implementation guard.",
+                "trigger_evidence": ["the mechanism created the reported risk"],
+                "proposed_contracts": ["retain the original requirement boundary"],
+                "cost": "Remove the optional mechanism.",
+                "alternatives": ["Replace it with a simpler mechanism."],
+                "consequence_if_omitted": "The implementation would create avoidable scope.",
+                "origin_requirement_status": "unconfirmed_expansion",
+                "optional_mechanism_origin": True,
+                "decision": "mechanism_removed",
+                "proposal_digest": "0" * 64,
+                "confirmation_ref": None,
+            }]
+            payload["human_confirmation"] = copy.deepcopy(
+                self.example()["human_confirmation"]
+            )
+            mechanism_evidence = copy.deepcopy(
+                payload["active_task_evidence"]
+            )
+            mechanism_evidence["decision_trail"] = None
+            payload["active_task_evidence"] = mechanism_evidence
+            payload["source_actions"] = [{
+                "action_id": "no_action", "kind": "none", "target": None,
+                "payload": None, "preimage_sha256": None,
+                "payload_sha256": None, "action_digest": "0" * 64,
+                "status": "not_required", "mutation_evidence": None,
+            }]
+            payload["mutation_results"] = []
+            mechanism_only = self.derive(payload)
+            self.assertEqual(
+                gtt.requirements_clarification_structural_errors(
+                    root, mechanism_only, task
+                ),
+                [],
+            )
+            with mock.patch.object(
+                gtt,
+                "context_read_live_issue",
+                return_value=(current_issue, None),
+            ):
+                self.assertEqual(
+                    gtt.requirements_clarification_live_errors(
+                        root, mechanism_only, task
+                    ),
+                    [],
+                )
+
+            mechanism_replaced = copy.deepcopy(mechanism_only)
+            mechanism_replaced["scope_proposals"][0]["decision"] = (
+                "mechanism_replaced"
+            )
+            mechanism_replaced = self.derive(mechanism_replaced)
+            self.assertEqual(
+                gtt.requirements_clarification_structural_errors(
+                    root, mechanism_replaced, task
+                ),
+                [],
+            )
+            with mock.patch.object(
+                gtt,
+                "context_read_live_issue",
+                return_value=(current_issue, None),
+            ):
+                self.assertEqual(
+                    gtt.requirements_clarification_live_errors(
+                        root, mechanism_replaced, task
+                    ),
+                    [],
+                )
+
+            context_path = task / "context-discovery.json"
+            current_context = context_path.read_text(encoding="utf-8")
+            stale_context = json.loads(current_context)
+            stale_context["snapshot_identity"]["snapshot_sha256"] = "9" * 64
+            context_path.write_text(
+                json.dumps(stale_context) + "\n", encoding="utf-8"
+            )
+            with mock.patch.object(
+                gtt,
+                "context_read_live_issue",
+                return_value=(current_issue, None),
+            ):
+                self.assertIn(
+                    "requirements_context_snapshot_stale",
+                    gtt.requirements_clarification_live_errors(
+                        root, mechanism_only, task
+                    ),
+                )
+            context_path.write_text(current_context, encoding="utf-8")
+
+            mixed_task = task
+            mixed = classification_payload
+            mixed_issue = current_issue
+            mixed_comment = classification_comment
+            mixed["scope_proposals"].append(copy.deepcopy(
+                mechanism_only["scope_proposals"][0]
+            ))
+            mixed = self.derive(mixed)
+            classification_digest = mixed["scope_proposals"][0]["proposal_digest"]
+            self.assertEqual(
+                mixed["human_confirmation"]["proposal_digests"],
+                [classification_digest],
+            )
+            self.assertEqual(
+                [row["decision"] for row in mixed["active_task_evidence"]["decision_trail"]["proposal_decisions"]],
+                ["related"],
+            )
+            self.assertEqual(
+                gtt.requirements_clarification_structural_errors(
+                    root, mixed, mixed_task
+                ),
+                [],
+            )
+            with (
+                mock.patch.object(
+                    gtt, "context_read_live_issue", return_value=(mixed_issue, None)
+                ),
+                mock.patch.object(gtt, "run", return_value=mixed_comment),
+            ):
+                self.assertEqual(
+                    gtt.requirements_clarification_live_errors(
+                        root, mixed, mixed_task
+                    ),
+                    [],
+                )
+
+    def test_active_task_mechanism_disposition_rejects_wrong_optional_confirmation_trail_and_action(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task, payload, _current_issue, _comment_response = self.make_active_task_classification(
+                root,
+                decision="related",
+                typed_exit="clear",
+                resume_target="guru-resume-implementation",
+                fresh_reentry=True,
+            )
+            proposal = payload["scope_proposals"][0]
+            proposal["decision"] = "mechanism_replaced"
+            proposal["confirmation_ref"] = None
+            proposal["optional_mechanism_origin"] = True
+            original_actions = copy.deepcopy(payload["source_actions"])
+            payload["human_confirmation"] = copy.deepcopy(
+                self.example()["human_confirmation"]
+            )
+            original_evidence = copy.deepcopy(payload["active_task_evidence"])
+            mechanism_evidence = copy.deepcopy(original_evidence)
+            mechanism_evidence["decision_trail"] = None
+            payload["active_task_evidence"] = mechanism_evidence
+            payload["source_actions"] = [{
+                "action_id": "no_action", "kind": "none", "target": None,
+                "payload": None, "preimage_sha256": None,
+                "payload_sha256": None, "action_digest": "0" * 64,
+                "status": "not_required", "mutation_evidence": None,
+            }]
+            payload["mutation_results"] = []
+            payload = self.derive(payload)
+
+            wrong_optional = copy.deepcopy(payload)
+            wrong_optional["scope_proposals"][0]["optional_mechanism_origin"] = False
+            wrong_optional = self.derive(wrong_optional)
+            self.assertIn(
+                "mechanism_disposition_requires_optional_mechanism_origin",
+                gtt.requirements_clarification_structural_errors(
+                    root, wrong_optional, task
+                ),
+            )
+
+            wrong_confirmation = copy.deepcopy(payload)
+            wrong_confirmation["scope_proposals"][0]["confirmation_ref"] = "generic_continue"
+            wrong_confirmation = self.derive(wrong_confirmation)
+            self.assertIn(
+                "mechanism_disposition_forbids_confirmation",
+                gtt.requirements_clarification_structural_errors(
+                    root, wrong_confirmation, task
+                ),
+            )
+
+            wrong_trail = copy.deepcopy(payload)
+            wrong_trail["active_task_evidence"] = original_evidence
+            wrong_trail = self.derive(wrong_trail)
+            self.assertIn(
+                "active_task_mechanism_only_forbids_decision_trail",
+                gtt.requirements_clarification_structural_errors(
+                    root, wrong_trail, task
+                ),
+            )
+
+            missing_evidence = copy.deepcopy(payload)
+            missing_evidence["active_task_evidence"] = None
+            missing_evidence = self.derive(missing_evidence)
+            self.assertIn(
+                "active_task_mechanism_only_requires_task_evidence",
+                gtt.requirements_clarification_structural_errors(
+                    root, missing_evidence, task
+                ),
+            )
+
+            wrong_action = copy.deepcopy(payload)
+            wrong_action["source_actions"] = original_actions
+            wrong_action = self.derive(wrong_action)
+            self.assertIn(
+                "active_task_mechanism_only_forbids_authority_mutation",
+                gtt.requirements_clarification_structural_errors(
+                    root, wrong_action, task
+                ),
+            )
+
+    def test_active_task_terminal_set_rejects_pending_and_new_task_without_classification(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task, pending, _current_issue, _comment_response = self.make_active_task_classification(
+                root,
+                decision="related",
+                typed_exit="clear",
+                resume_target="guru-resume-implementation",
+                fresh_reentry=True,
+            )
+            pending["scope_proposals"][0]["decision"] = "pending"
+            pending = self.derive(pending)
+            self.assertIn(
+                "active_task_clear_or_new_task_requires_final_scope_proposal_set",
+                gtt.requirements_clarification_structural_errors(root, pending, task),
+            )
+
+            mechanism_new_task = copy.deepcopy(pending)
+            mechanism_new_task["typed_exit"] = "new_task"
+            mechanism_new_task["consumer"] = gtt.REQUIREMENTS_CLARIFICATION_CONSUMERS["new_task"]
+            mechanism_new_task["scope_proposals"][0]["decision"] = "mechanism_replaced"
+            mechanism_new_task["scope_proposals"][0]["optional_mechanism_origin"] = True
+            mechanism_new_task["scope_proposals"][0]["confirmation_ref"] = None
+            mechanism_new_task["human_confirmation"] = copy.deepcopy(
+                self.example()["human_confirmation"]
+            )
+            mechanism_new_task["active_task_evidence"] = None
+            mechanism_new_task["source_actions"] = [{
+                "action_id": "new_issue", "kind": "new_issue_draft",
+                "target": {"repo": "example/guru-extension"},
+                "payload": {"title": "Draft", "body": "Reviewed draft."},
+                "preimage_sha256": None, "payload_sha256": None,
+                "action_digest": "0" * 64, "status": "draft_ready",
+                "mutation_evidence": None,
+            }]
+            mechanism_new_task["mutation_results"] = []
+            mechanism_new_task = self.derive(mechanism_new_task)
+            self.assertIn(
+                "active_task_new_task_requires_new_task_classification",
+                gtt.requirements_clarification_structural_errors(
+                    root, mechanism_new_task, task
+                ),
+            )
+
+    def test_every_active_task_final_decision_requires_exact_user_evidence(self) -> None:
+        cases = (
+            ("accepted_current", "clear", "guru-active-task-planning-review"),
+            ("related", "clear", "guru-resume-implementation"),
+            ("followup", "clear", "guru-resume-implementation"),
+            ("new_task", "new_task", "guru-resume-implementation"),
+            ("out_of_scope", "clear", "guru-resume-implementation"),
+        )
+        for decision, typed_exit, resume_target in cases:
+            with self.subTest(decision=decision), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                task, payload, _current_issue, _comment_response = self.make_active_task_classification(
+                    root,
+                    decision=decision,
+                    typed_exit=typed_exit,
+                    resume_target=resume_target,
+                    fresh_reentry=True,
+                )
+                payload["scope_proposals"][0]["origin_requirement_status"] = "explicit"
+                payload = self.derive(payload)
+                proposal_digest = payload["scope_proposals"][0]["proposal_digest"]
+                payload["scope_proposals"][0]["confirmation_ref"] = None
+                payload["human_confirmation"] = copy.deepcopy(self.example()["human_confirmation"])
+                trail = payload["active_task_evidence"]["decision_trail"]
+                trail["proposal_decisions"][0]["proposal_digest"] = proposal_digest
+                trail["proposal_decisions"][0]["confirmation_ref"] = None
+                trail["user_decision"] = {
+                    "status": "not_required", "proposal_digests": [], "confirmer": None,
+                    "confirmed_at": None, "evidence_summary": "No exact user decision exists.",
+                }
+                payload = self.derive(payload)
+                self.assertIn(
+                    "active_task_final_classification_requires_exact_user_decision",
+                    gtt.requirements_clarification_structural_errors(root, payload, task),
+                )
+
+    def test_active_task_requires_complete_planning_approval_and_exact_doc_binding(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task, payload, current_issue, comment_response = self.make_active_task_classification(
+                root,
+                decision="related",
+                typed_exit="clear",
+                resume_target="guru-resume-implementation",
+                fresh_reentry=True,
+            )
+            _path, approval, approval_errors = gtt.validate_planning_approval(root, task)
+            self.assertEqual(approval_errors, [])
+            self.assertEqual(approval["schema_version"], "1.2")
+            self.assertEqual(approval["reviewed_artifacts"], approval["approved_artifacts"])
+            with (
+                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
+                mock.patch.object(gtt, "run", return_value=comment_response),
+            ):
+                self.assertEqual(gtt.requirements_clarification_live_errors(root, payload, task), [])
+
+            for name in ("prd.md", "design.md", "implement.md"):
+                (task / name).write_text(f"# {name}\n\nPlaceholder.\n", encoding="utf-8")
+            (task / "planning-approval.json").write_text(
+                '{"schema_version":"1.2","status":"passed"}\n', encoding="utf-8"
+            )
+            planning = [
+                {
+                    "path": f"{task.relative_to(root).as_posix()}/{name}",
+                    "content_sha256": hashlib.sha256((task / name).read_bytes()).hexdigest(),
+                }
+                for name in ("prd.md", "design.md", "implement.md")
+            ]
+            stale = payload["active_task_evidence"]["stale_downstream_evidence"]
+            stale["planning_approval_sha256"] = hashlib.sha256(
+                (task / "planning-approval.json").read_bytes()
+            ).hexdigest()
+            payload["active_task_evidence"]["planning_documents"] = planning
+            payload["active_task_evidence"]["decision_trail"]["planning_documents"] = copy.deepcopy(planning)
+            payload["active_task_evidence"]["decision_trail"]["stale_downstream_evidence"] = copy.deepcopy(stale)
+            payload = self.persist_active_task_trail(root, task, payload)
+            with (
+                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
+                mock.patch.object(gtt, "run", return_value=comment_response),
+            ):
+                live_errors = gtt.requirements_clarification_live_errors(root, payload, task)
+            self.assertIn("active_task_planning_approval_invalid", live_errors)
+            self.assertIn("active_task_planning_approval_binding_mismatch", live_errors)
+
+    def test_active_task_live_review_stale_identity_and_authority_are_bound(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task, payload, current_issue, comment_response = self.make_active_task_classification(
+                root,
+                decision="out_of_scope",
+                typed_exit="clear",
+                resume_target="guru-resume-branch-review",
+                fresh_reentry=True,
+            )
+            review_path = task / "review-gate.json"
+            review_path.write_text(
+                '{"status":"stale","reason":"scope authority changed"}\n',
+                encoding="utf-8",
+            )
+            self.assertIn(
+                "active_task_review_started_requires_stale",
+                gtt.requirements_clarification_structural_errors(
+                    root, payload, task
+                ),
+            )
+            with (
+                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
+                mock.patch.object(gtt, "run", return_value=comment_response),
+            ):
+                self.assertIn(
+                    "active_task_review_started_requires_stale",
+                    gtt.requirements_clarification_live_errors(root, payload, task),
+                )
+
+            review_sha = hashlib.sha256(review_path.read_bytes()).hexdigest()
+            review = {
+                "status": "stale",
+                "artifact": {
+                    "path": f"{task.relative_to(root).as_posix()}/review-gate.json",
+                    "content_sha256": review_sha,
+                },
+            }
+            stale = payload["active_task_evidence"]["stale_downstream_evidence"]
+            stale["branch_review_sha256"] = review_sha
+            payload["active_task_evidence"]["review_evidence"] = review
+            trail = payload["active_task_evidence"]["decision_trail"]
+            trail["review_evidence"] = copy.deepcopy(review)
+            trail["stale_downstream_evidence"] = copy.deepcopy(stale)
+            payload = self.persist_active_task_trail(root, task, payload)
+            with (
+                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
+                mock.patch.object(gtt, "run", return_value=comment_response),
+            ):
+                self.assertEqual(gtt.requirements_clarification_live_errors(root, payload, task), [])
+
+            current = copy.deepcopy(payload)
+            current["active_task_evidence"]["review_evidence"]["status"] = "current"
+            current["active_task_evidence"]["decision_trail"]["review_evidence"] = copy.deepcopy(
+                current["active_task_evidence"]["review_evidence"]
+            )
+            current = self.derive(current)
+            self.assertIn(
+                "active_task_review_current_forbidden_during_reentry",
+                gtt.requirements_clarification_structural_errors(
+                    root, current, task
+                ),
+            )
+            with (
+                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
+                mock.patch.object(gtt, "run", return_value=comment_response),
+            ):
+                self.assertIn(
+                    "active_task_review_started_requires_stale",
+                    gtt.requirements_clarification_live_errors(root, current, task),
+                )
+
+            (task / "phase2-check.json").write_text('{"status":"stale"}\n', encoding="utf-8")
+            stale_comment = subprocess.CompletedProcess(
+                [],
+                0,
+                json.dumps({
+                    "id": 99,
+                    "html_url": "https://github.com/example/guru-extension/issues/7#issuecomment-99",
+                    "updated_at": "2026-01-01T00:00:02Z",
+                    "body": "A different live decision.",
                 }),
                 "",
             )
             with (
                 mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
+                mock.patch.object(gtt, "run", return_value=stale_comment),
+            ):
+                live_errors = gtt.requirements_clarification_live_errors(root, payload, task)
+            self.assertIn("active_task_stale_evidence_unbound", live_errors)
+            self.assertIn("active_task_decision_authority_comment_stale", live_errors)
+
+    def test_active_task_non_current_classification_requires_confirmed_persisted_trail(self) -> None:
+        for decision in ("related", "followup", "out_of_scope"):
+            with self.subTest(decision=decision), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                task, payload, current_issue, comment_response = self.make_active_task_classification(
+                    root, decision=decision, typed_exit="clear",
+                    resume_target="guru-resume-implementation", fresh_reentry=True,
+                )
+                self.assertEqual(gtt.requirements_clarification_structural_errors(root, payload, task), [])
+                with (
+                    mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
+                    mock.patch.object(gtt, "run", return_value=comment_response),
+                ):
+                    self.assertEqual(gtt.requirements_clarification_live_errors(root, payload, task), [])
+
+                unconfirmed = copy.deepcopy(payload)
+                unconfirmed["scope_proposals"][0]["confirmation_ref"] = None
+                unconfirmed["human_confirmation"] = copy.deepcopy(self.example()["human_confirmation"])
+                unconfirmed["active_task_evidence"]["decision_trail"]["proposal_decisions"][0]["confirmation_ref"] = None
+                unconfirmed["active_task_evidence"]["decision_trail"]["user_decision"] = {
+                    "status": "not_required", "proposal_digests": [], "confirmer": None,
+                    "confirmed_at": None,
+                    "evidence_summary": "No auditable user decision was recorded.",
+                }
+                unconfirmed = self.derive(unconfirmed)
+                self.assertIn(
+                    "unconfirmed_non_current_decision_requires_user_evidence",
+                    gtt.requirements_clarification_structural_errors(root, unconfirmed, task),
+                )
+
+                no_trail = copy.deepcopy(payload)
+                no_trail["active_task_evidence"]["decision_trail"] = None
+                no_trail = self.derive(no_trail)
+                self.assertIn(
+                    "active_task_final_classification_requires_decision_trail",
+                    gtt.requirements_clarification_structural_errors(root, no_trail, task),
+                )
+
+                ledger = json.loads((task / "issue-scope-ledger.json").read_text(encoding="utf-8"))
+                ledger["scope_decisions"] = []
+                (task / "issue-scope-ledger.json").write_text(
+                    json.dumps(ledger, sort_keys=True) + "\n", encoding="utf-8"
+                )
+                payload["active_task_evidence"]["ledger"]["content_sha256"] = hashlib.sha256(
+                    (task / "issue-scope-ledger.json").read_bytes()
+                ).hexdigest()
+                payload = self.derive(payload)
+                with (
+                    mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
+                    mock.patch.object(gtt, "run", return_value=comment_response),
+                ):
+                    self.assertIn(
+                        "active_task_decision_trail_ledger_mismatch",
+                        gtt.requirements_clarification_live_errors(root, payload, task),
+                    )
+
+    def test_active_task_new_task_keeps_trail_and_returns_only_reviewed_draft(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task, payload, current_issue, comment_response = self.make_active_task_classification(
+                root, decision="new_task", typed_exit="new_task",
+                resume_target="guru-resume-implementation", fresh_reentry=True,
+            )
+            self.assertEqual(
+                [action["kind"] for action in payload["source_actions"]],
+                ["active_task_scope_update", "new_issue_draft"],
+            )
+            self.assertEqual(payload["mutation_results"], [])
+            self.assertEqual(gtt.requirements_clarification_structural_errors(root, payload, task), [])
+            with (
+                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
                 mock.patch.object(gtt, "run", return_value=comment_response),
             ):
-                self.assertEqual(gtt.requirements_clarification_structural_errors(root, payload, task), [])
+                self.assertEqual(gtt.requirements_clarification_live_errors(root, payload, task), [])
+
+    def test_active_task_authority_mutation_requires_refresh_then_fresh_reentry(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task, payload, current_issue, comment_response = self.make_active_task_classification(
+                root, decision="accepted_current", typed_exit="refresh_context",
+                resume_target="guru-active-task-planning-review", fresh_reentry=False,
+            )
+            self.assertEqual(gtt.requirements_clarification_structural_errors(root, payload, task), [])
+            self.assertEqual(
+                json.loads(
+                    (task / "issue-scope-ledger.json").read_text(encoding="utf-8")
+                )["scope_decisions"],
+                [],
+            )
+            self.assertEqual(
+                [action["kind"] for action in payload["source_actions"]],
+                ["issue_comment"],
+            )
+            with (
+                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
+                mock.patch.object(gtt, "run", return_value=comment_response),
+            ):
                 live = gtt.requirements_clarification_live_errors(root, payload, task)
             self.assertEqual(live, [])
             self.assertEqual(gtt.requirements_clarification_typed_exit_live_errors(payload, live), [])
 
-            action_payload_drift = copy.deepcopy(payload)
-            action_payload_drift["source_actions"][1]["payload"]["ledger"]["content_sha256"] = "f" * 64
-            action_payload_drift = self.derive(action_payload_drift)
+            illegal_clear = copy.deepcopy(payload)
+            illegal_clear["typed_exit"] = "clear"
+            illegal_clear["consumer"] = gtt.REQUIREMENTS_CLARIFICATION_CONSUMERS["clear"]
+            illegal_clear = self.derive(illegal_clear)
+            errors = gtt.requirements_clarification_structural_errors(root, illegal_clear, task)
+            self.assertIn("source_action_requires_refresh_context", errors)
+            self.assertIn("mutation_results_require_refresh_context", errors)
+            self.assertIn("active_task_reentry_forbids_github_mutation", errors)
             self.assertIn(
-                "active_task_scope_action_binding_invalid",
-                gtt.requirements_clarification_structural_errors(root, action_payload_drift, task),
+                "active_task_final_classification_requires_decision_trail",
+                errors,
             )
-            with (
-                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-                mock.patch.object(gtt, "run", return_value=comment_response),
-            ):
-                self.assertIn(
-                    "active_task_scope_mutation_live_binding_invalid",
-                    gtt.requirements_clarification_live_errors(root, action_payload_drift, task),
-                )
-
-            mutation_fact_drift = copy.deepcopy(payload)
-            mutation_fact_drift["mutation_results"][1]["content_sha256"] = "f" * 64
-            mutation_fact_drift = self.derive(mutation_fact_drift)
-            self.assertIn(
-                "active_task_scope_mutation_result_invalid",
-                gtt.requirements_clarification_structural_errors(root, mutation_fact_drift, task),
-            )
-            with (
-                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-                mock.patch.object(gtt, "run", return_value=comment_response),
-            ):
-                self.assertIn(
-                    "active_task_scope_mutation_live_binding_invalid",
-                    gtt.requirements_clarification_live_errors(root, mutation_fact_drift, task),
-                )
 
             wrong_resume = copy.deepcopy(payload)
             wrong_resume["invocation_context"]["resume_target"] = "guru-resume-implementation"
@@ -17154,6 +17739,139 @@ class RequirementsClarificationTests(unittest.TestCase):
                 "active_task_current_scope_requires_planning_resume",
                 gtt.requirements_clarification_structural_errors(root, wrong_resume, task),
             )
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task, payload, current_issue, comment_response = self.make_active_task_classification(
+                root, decision="accepted_current", typed_exit="clear",
+                resume_target="guru-active-task-planning-review", fresh_reentry=True,
+            )
+            self.assertEqual(gtt.requirements_clarification_structural_errors(root, payload, task), [])
+            with (
+                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
+                mock.patch.object(gtt, "run", return_value=comment_response),
+            ):
+                self.assertEqual(gtt.requirements_clarification_live_errors(root, payload, task), [])
+
+    def test_active_task_issue_body_decision_authority_uses_live_post_mutation_body(self) -> None:
+        target = {
+            "kind": "issue", "repo": "example/guru-extension", "issue_number": 7,
+            "url": "https://github.com/example/guru-extension/issues/7",
+            "body_sha256": "1" * 64,
+        }
+        live_body_sha = hashlib.sha256(b"post-mutation body").hexdigest()
+        authority = {
+            "kind": "issue_body", "url": target["url"],
+            "content_sha256": live_body_sha,
+            "updated_at": "2026-01-01T00:00:02Z",
+        }
+        live_issue = {
+            "url": target["url"], "body_sha256": live_body_sha,
+            "updated_at": "2026-01-01T00:00:02Z",
+        }
+        with mock.patch.object(gtt, "context_read_live_issue", return_value=(live_issue, None)):
+            self.assertEqual(
+                gtt.requirements_clarification_decision_authority_live_errors(
+                    self.repo, target, authority
+                ),
+                [],
+            )
+
+        stale_time = copy.deepcopy(authority)
+        stale_time["updated_at"] = "2026-01-01T00:00:01Z"
+        with mock.patch.object(
+            gtt, "context_read_live_issue", return_value=(live_issue, None)
+        ):
+            self.assertIn(
+                "active_task_decision_authority_body_stale",
+                gtt.requirements_clarification_decision_authority_live_errors(
+                    self.repo, target, stale_time
+                ),
+            )
+
+    def test_active_task_reentry_binds_authority_time_context_time_and_task_update_context(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task, payload, current_issue, comment_response = self.make_active_task_classification(
+                root,
+                decision="out_of_scope",
+                typed_exit="clear",
+                resume_target="guru-resume-branch-review",
+                fresh_reentry=True,
+            )
+            trail = payload["active_task_evidence"]["decision_trail"]
+            self.assertEqual(
+                trail["context_before_task_update_sha256"],
+                payload["context_evidence"]["snapshot_sha256"],
+            )
+            with (
+                mock.patch.object(
+                    gtt, "context_read_live_issue", return_value=(current_issue, None)
+                ),
+                mock.patch.object(gtt, "run", return_value=comment_response),
+            ):
+                self.assertEqual(
+                    gtt.requirements_clarification_live_errors(root, payload, task),
+                    [],
+                )
+
+            stale_context = json.loads(
+                (task / "context-discovery.json").read_text(encoding="utf-8")
+            )
+            stale_context["generated_at"] = "2026-01-01T00:00:01Z"
+            (task / "context-discovery.json").write_text(
+                json.dumps(stale_context) + "\n", encoding="utf-8"
+            )
+            with (
+                mock.patch.object(
+                    gtt, "context_read_live_issue", return_value=(current_issue, None)
+                ),
+                mock.patch.object(gtt, "run", return_value=comment_response),
+            ):
+                self.assertIn(
+                    "active_task_context_predates_decision_authority",
+                    gtt.requirements_clarification_live_errors(root, payload, task),
+                )
+
+            wrong_context = copy.deepcopy(payload)
+            wrong_context["active_task_evidence"]["decision_trail"][
+                "context_before_task_update_sha256"
+            ] = "5" * 64
+            wrong_context["source_actions"][0]["preimage_sha256"] = "5" * 64
+            wrong_context = self.persist_active_task_trail(
+                root, task, self.derive(wrong_context)
+            )
+            self.assertIn(
+                "active_task_decision_trail_task_update_context_mismatch",
+                gtt.requirements_clarification_structural_errors(
+                    root, wrong_context, task
+                ),
+            )
+
+    def test_active_task_comment_authority_updated_at_is_live_bound(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task, payload, current_issue, comment_response = self.make_active_task_classification(
+                root,
+                decision="related",
+                typed_exit="clear",
+                resume_target="guru-resume-implementation",
+                fresh_reentry=True,
+            )
+            payload["active_task_evidence"]["decision_trail"]["github_authority"][
+                "updated_at"
+            ] = "2026-01-01T00:00:01Z"
+            payload = self.persist_active_task_trail(root, task, self.derive(payload))
+            with (
+                mock.patch.object(
+                    gtt, "context_read_live_issue", return_value=(current_issue, None)
+                ),
+                mock.patch.object(gtt, "run", return_value=comment_response),
+            ):
+                self.assertIn(
+                    "active_task_decision_authority_comment_stale",
+                    gtt.requirements_clarification_live_errors(root, payload, task),
+                )
 
     def issue_payload_with_action(
         self,

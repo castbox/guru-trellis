@@ -74,13 +74,13 @@
       "id": "clarification_checker",
       "command": "scripts/check-requirements-clarification.sh",
       "runtime_command": "check-requirements-clarification",
-      "objective_scope": "published schema, digest recomputation, live source/context/task freshness, exact confirmation, active-task linkage and typed-exit invariants"
+      "objective_scope": "published schema, digest recomputation, live source/context/task freshness, exact five-classification confirmation, mechanism disposition isolation, decision-trail linkage, authority-before-context-before-task-update re-entry and typed-exit invariants"
     }
   ],
   "external_exits": [
     {
       "id": "clear",
-      "evidence": "zero open questions, passed AI Review Gate, current authority/context and all accepted proposals exactly confirmed",
+      "evidence": "zero open questions, passed AI Review Gate, current authority/context, non-empty terminal active-task proposals, exact five-classification confirmation/trail projection, and confirmation-free mechanism dispositions",
       "consumer": {"kind": "workflow", "id": "guru-requirements-clear-router"}
     },
     {
@@ -95,7 +95,7 @@
     },
     {
       "id": "new_task",
-      "evidence": "an independent delivery unit has a reviewed side-effect-free new issue draft",
+      "evidence": "an independent delivery unit has a reviewed side-effect-free new issue draft and any active task preserved its classification trail before fresh re-entry",
       "consumer": {"kind": "workflow", "id": "guru-full-task-intake-chain"}
     },
     {
@@ -106,7 +106,7 @@
   ],
   "reentry": {
     "identity": "mode, invocation kind, review target, context, scope proposals, source actions, confirmation, active-task evidence and derived content identity",
-    "freshness": "clear is accepted only while every authority/context/task binding remains current; mutation or stale evidence restarts the complete upstream chain",
+    "freshness": "clear/new_task is accepted only while every authority/context/task binding remains current; GitHub authority mutation refreshes context first, context generated_at is not earlier than authority updated_at, task update binds that current digest, and no second context digest change is required",
     "stale_behavior": "fail_closed"
   },
   "tests": ["tests/test_contract.py"],

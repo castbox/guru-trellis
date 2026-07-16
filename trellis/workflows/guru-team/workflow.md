@@ -686,8 +686,21 @@ not copy that loop into this workflow or a platform entry.
 
 Pre-task and standalone recording remains stdout-only. The package has no
 GitHub mutation executor and no dedicated clarification artifact. A successful
-comment/body/source/scope mutation returns `refresh_context`; a reviewed
-side-effect-free new issue draft returns `new_task`. `clear` enters the single
+comment/body/source mutation returns `refresh_context`. Active-task
+`clear`/`new_task` requires a non-empty set containing only seven terminal
+decisions. Every accepted-current/related/followup/new-task/out-of-scope scope
+classification must have proposal-digest-bound exact user-decision evidence,
+live GitHub authority, and one structured trail exactly persisted in current
+`issue-scope-ledger.json.scope_decisions[]`. Its planning evidence must pass the
+shared complete schema 1.2 validator and exact reviewed/approved document
+bindings; hash-only or placeholder evidence is invalid. `mechanism_removed` and
+`mechanism_replaced` are terminal dispositions with optional origin, null
+confirmation, no trail, and no authority mutation. GitHub mutation refreshes
+context first; complete re-entry requires context `generated_at` not earlier
+than authority `updated_at`, then a task update bound to that same context
+digest. It does not require a second context digest change. Only then may
+active-task `clear` or `new_task` return; the latter still carries only a reviewed
+side-effect-free new issue draft. `clear` enters the single
 caller-aware router, which validates `invocation_context.resume_target` before
 resuming the initial, active-task, or standalone caller. #112 owns the full
 task-intake continuation. Unknown, multiple, or unmapped exits fail closed.
@@ -925,6 +938,20 @@ current/related/followup/new-task/out-of-scope decision, question loop, exact
 confirmation, GitHub-visible authority, ledger/planning update requirements,
 stale downstream evidence, and typed exit. This workflow must not repeat or
 pre-decide those step-local semantics.
+
+For active-task `clear`/`new_task`, the Skill requires a non-empty terminal
+proposal set. For every five-class scope classification, the Skill requires
+exact user evidence and a structured
+decision trail exactly present in current
+`issue-scope-ledger.json.scope_decisions[]`, regardless of proposal origin. The
+trail binds live GitHub comment/body authority, planning documents and complete
+schema 1.2 approval validated through the shared helper, review state, stale downstream
+identities, authority `updated_at`, `context_before_task_update_sha256`,
+interrupted target, and re-entry owners. `mechanism_removed/replaced` stays
+outside confirmation/trail/action mutation. GitHub authority mutation returns
+`refresh_context`; only authority-before-context-before-task-update re-entry may
+resume, and a task-only update does not require a second context refresh. Active-task
+`new_task` preserves this trail and gives #112 only the side-effect-free draft.
 
 The `clear` consumer is always `guru-requirements-clear-router`. The router is
 only a workflow target declaration: it validates the caller-aware target

@@ -345,6 +345,16 @@ exact interrupted progression；只验证现有 ledger/planning/stale-gate/re-en
 `trellis update`、workflow re-selection与preset reapply均执行 standalone record/check probe，
 并验证 `clear` / `needs_context` / `refresh_context` / `new_task` / `blocked` consumers。
 
+Active-task `clear`/`new_task` 必须携带非空七类 terminal proposal set，每个五类 scope
+classification 无论 origin 均要求 exact 用户证据，并 exact 绑定当前
+`issue-scope-ledger.json.scope_decisions[]` structured trail、所需用户证据、live GitHub
+authority、通过 shared schema 1.2 完整 validator 且 exact reviewed/approved 三文档绑定的
+planning evidence，以及 review/stale/re-entry evidence。`mechanism_removed/replaced` 使用
+optional origin/null confirmation，不进入 trail/action mutation。GitHub authority mutation
+必须返回 `refresh_context`；context 时间覆盖 authority 后 task update 绑定同一 digest，
+不要求第二次 refresh；`new_task` 只向 #112
+传递 side-effect-free draft，不在本 package 创建 issue/task。
+
 Shared overlays are always installed:
 
 - `.trellis/agents/implement.md`

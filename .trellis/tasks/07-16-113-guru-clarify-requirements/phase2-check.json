@@ -1,31 +1,27 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-16T11:53:26Z",
+  "generated_at": "2026-07-16T22:30:02Z",
   "task_dir": ".trellis/tasks/07-16-113-guru-clarify-requirements",
   "base_branch": "main",
-  "head": "2bf9317d2fa838aff40f250f770e6e51f4439aab",
+  "head": "d77fda1f6a16d064b5db37ff23be9dfe4fa8649a",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
     ".agents/skills/guru-clarify-requirements/SKILL.md",
-    ".agents/skills/guru-clarify-requirements/examples/requirements-clarification.json",
     ".agents/skills/guru-clarify-requirements/interface.json",
     ".agents/skills/guru-clarify-requirements/references/contract.md",
     ".agents/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
     ".agents/skills/guru-clarify-requirements/tests/test_contract.py",
     ".claude/skills/guru-clarify-requirements/SKILL.md",
-    ".claude/skills/guru-clarify-requirements/examples/requirements-clarification.json",
     ".claude/skills/guru-clarify-requirements/interface.json",
     ".claude/skills/guru-clarify-requirements/references/contract.md",
     ".claude/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
     ".claude/skills/guru-clarify-requirements/tests/test_contract.py",
     ".codex/skills/guru-clarify-requirements/SKILL.md",
-    ".codex/skills/guru-clarify-requirements/examples/requirements-clarification.json",
     ".codex/skills/guru-clarify-requirements/interface.json",
     ".codex/skills/guru-clarify-requirements/references/contract.md",
     ".codex/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
     ".codex/skills/guru-clarify-requirements/tests/test_contract.py",
     ".cursor/skills/guru-clarify-requirements/SKILL.md",
-    ".cursor/skills/guru-clarify-requirements/examples/requirements-clarification.json",
     ".cursor/skills/guru-clarify-requirements/interface.json",
     ".cursor/skills/guru-clarify-requirements/references/contract.md",
     ".cursor/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
@@ -33,103 +29,73 @@
     ".trellis/guru-team/extension.json",
     ".trellis/guru-team/scripts/python/guru_team_trellis.py",
     ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
-    ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json",
     ".trellis/guru-team/skills/packages/guru-clarify-requirements/interface.json",
     ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
     ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
     ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
     ".trellis/spec/docs/public-docs.md",
-    ".trellis/spec/preset/overlay-guidelines.md",
     ".trellis/spec/workflow/companion-scripts.md",
     ".trellis/spec/workflow/data-contracts.md",
     ".trellis/spec/workflow/quality-guidelines.md",
     ".trellis/spec/workflow/skill-package-contract.md",
     ".trellis/spec/workflow/workflow-contract.md",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/agent-assignment.json",
-    ".trellis/tasks/07-16-113-guru-clarify-requirements/implement.jsonl",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/issue-scope-ledger.json",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/001.json",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/002.json",
     ".trellis/workflow.md",
     "README.md",
     "docs/requirements/guru-team-trellis-flow.md",
     "docs/requirements/requirement-main.md",
     "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-    "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
     "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
-    "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/requirements-clarification.json",
     "trellis/skills/guru-team/packages/guru-clarify-requirements/interface.json",
     "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
     "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
     "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py",
-    "trellis/skills/guru-team/tests/test_skill_packages.py",
     "trellis/workflows/guru-team/README.md",
     "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
     "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
     "trellis/workflows/guru-team/workflow.md",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/review-gate.json",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/review.md",
-    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-01-final-release-finding.md"
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-01-final-release-finding.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-02-finding-closure-reopened.md"
   ],
-  "checker": "/root/issue_113_phase2_round5_check",
-  "check_summary": "第 5 轮 fresh Phase 2 在固定 intake base 96ba63b8、HEAD 2bf9317d 和完整当前 dirty diff 上完成；clear router planning Docs SSOT、F-001 out-of-scope、F-002 至 F-006、normal mutation/action mismatch、caller-aware resume 与全部安装升级门禁均独立验证通过，findings_count=0。远端 current-branch marketplace ref 因分支未 push 留给发布门禁，不影响本地 Phase 2 通过。",
+  "checker": "/root/issue_113_phase2_round8_check",
+  "check_summary": "第8轮 fresh Phase 2 在固定 intake base 96ba63b、HEAD d77fda1 和完整 working tree 上完成独立审查；八类全部通过，46个正常态 replay 与全量、安装升级、throwaway、多平台、安全和部署门禁均通过，findings_count=0。F-001 继续 out_of_scope；remote feature ref 留待 push 后 publish gate。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/prd.md",
-      "sha256": "d03f09158f88ec955cb1c8007f4042c7005366393f6338deae14d17831164832",
-      "size_bytes": 14403,
-      "modified_at": "2026-07-16T11:34:08.687503+00:00"
+      "sha256": "a5991eb7c0ffcd5a60f10008fe41b4a41a0ecdf13dff201ac1e855b795dc77e2",
+      "size_bytes": 17842,
+      "modified_at": "2026-07-16T20:30:29.741345+00:00"
     },
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/design.md",
-      "sha256": "63469ad25c76eb3c1360d7fef64260d44cd0096c3c35acfc37be2243e1c435a6",
-      "size_bytes": 15736,
-      "modified_at": "2026-07-16T11:34:08.687854+00:00"
+      "sha256": "0d965256286301e8fb0f7ea7c9ac56a68d508bb3d94901aa0be4da731c03f113",
+      "size_bytes": 21098,
+      "modified_at": "2026-07-16T20:30:29.741822+00:00"
     },
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/implement.md",
-      "sha256": "95c84b7417a73218c685e7bb36519894fc8b4346de89c413876b08b1f2213df3",
-      "size_bytes": 8723,
-      "modified_at": "2026-07-16T11:34:08.688144+00:00"
+      "sha256": "0b8eb512995fb045f1c5afe688edce0e8131e11fc575c25b6deb52999a6c65ef",
+      "size_bytes": 11014,
+      "modified_at": "2026-07-16T20:30:29.742191+00:00"
     },
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/planning-approval.json",
-      "sha256": "33ab9419ba6c09e5d205ca5834e1b94e16c130b2755ac38cabc425b0a9db25f3",
-      "size_bytes": 9042,
-      "modified_at": "2026-07-16T11:35:27.320414+00:00"
+      "sha256": "d3e72cc689d26e0243eeef39d6fa214aaf8f645f856ad27ed3188b1a6d9f2943",
+      "size_bytes": 7651,
+      "modified_at": "2026-07-16T20:31:51.815428+00:00"
     }
   ],
   "checked_specs": [
     {
-      "path": ".trellis/spec/workflow/workflow-contract.md",
-      "sha256": "7b5a71eb34c6b66ecf6f6bc2cd770b81c92f5762484b0de926eeaaff5fc22657",
-      "size_bytes": 50876,
-      "modified_at": "2026-07-16T09:12:18.571287+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/skill-package-contract.md",
-      "sha256": "9e2253b1b8799f4b41441236abc57e9acff6bcb00c03d44f0caf60a179c6d7ab",
-      "size_bytes": 23895,
-      "modified_at": "2026-07-16T09:57:33.397758+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/companion-scripts.md",
-      "sha256": "f4f924ea431e04fee53f3d3cef5c157f089bb9b62e85abb014668e74ca84f0eb",
-      "size_bytes": 61620,
-      "modified_at": "2026-07-16T09:57:33.396136+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/data-contracts.md",
-      "sha256": "c888167c449fa847d2dccd19be610c365d232546b3b3a0f30d522ab6cf5174c8",
-      "size_bytes": 82188,
-      "modified_at": "2026-07-16T09:57:33.396829+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/quality-guidelines.md",
-      "sha256": "01f6d3c8602e63f209e284888237624d3dce33b6f8151dfe050227b5ed878c12",
-      "size_bytes": 16224,
-      "modified_at": "2026-07-16T09:57:33.397320+00:00"
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "06b88d2ba54270862a916502f537a6ae26ea3beb6b2265d3e8b78de5ef6018f6",
+      "size_bytes": 11393,
+      "modified_at": "2026-07-16T20:48:23.982988+00:00"
     },
     {
       "path": ".trellis/spec/preset/overlay-guidelines.md",
@@ -138,10 +104,34 @@
       "modified_at": "2026-07-16T09:12:18.573442+00:00"
     },
     {
-      "path": ".trellis/spec/docs/public-docs.md",
-      "sha256": "264a8302f5cc75e7b46eecf5177c24e2b44b7a32d40a3dd37229f9948a6ec224",
-      "size_bytes": 10618,
-      "modified_at": "2026-07-16T09:57:33.395622+00:00"
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "4e76c8b51d569c68c2319a91f82b486ce9be873ed27f4b1a1034529c73b14481",
+      "size_bytes": 63470,
+      "modified_at": "2026-07-16T21:57:04.326385+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "57e536b0a3cf19ea114fbf1ce11b25b60b43fc996460724bfa11acdfd66151fb",
+      "size_bytes": 84390,
+      "modified_at": "2026-07-16T21:57:04.325611+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "2a5fd38729aba5120c41270aea2461cdea3b8a74478656730fddfee1d7d3bacb",
+      "size_bytes": 16530,
+      "modified_at": "2026-07-16T13:22:09.884187+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "bed9a2c9d2f5e56725d87674636cabd0b3ddb32b2722b9a6e5402d5fb60df853",
+      "size_bytes": 25229,
+      "modified_at": "2026-07-16T20:48:23.982790+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "38215be5ff41122a37d0b447ed96178b5d73f66d4cf4e434b55d2df64f3305d8",
+      "size_bytes": 51847,
+      "modified_at": "2026-07-16T20:51:01.286750+00:00"
     }
   ],
   "coverage": {
@@ -156,48 +146,48 @@
   },
   "validation_commands": [
     {
-      "command": "planning/interface/workflow/durable/public docs clear router",
-      "result": "passed; #114 changes initial downstream only"
+      "command": "focused clarification and package contracts",
+      "result": "27/27 and 6/6 passed"
     },
     {
-      "command": "focused requirements clarification",
-      "result": "16/16 passed; targeted closure 5/5"
+      "command": "full runtime, registry, preset, ownership",
+      "result": "495/495, 71/71, 39/39, 6/6 passed"
     },
     {
-      "command": "package/registry/runtime/preset/ownership",
-      "result": "6/71/484/39/6 passed; full discovery 45/45"
+      "command": "independent normal-state semantic replay",
+      "result": "46/46 passed; current review and mechanism-only stale context rejected"
     },
     {
-      "command": "unknown-action source/dogfood/throwaway CLI",
-      "result": "exit 2; mutation_action_binding_mismatch; no traceback/AttributeError/absolute path"
+      "command": "source/installed/equality/overlay drift",
+      "result": "managed files 168; sidecar/removal/conflict 0/0/0; byte and mode equality passed"
     },
     {
-      "command": "source/installed/drift/equality",
-      "result": "passed; managed files 168; canonical/dogfood/agents/codex/cursor/claude byte and mode equality"
+      "command": "clean throwaway marketplace and lifecycle",
+      "result": "public discovery plus local unpublished workflow; initial, five exits, preview-switch, update-reapply, two-closeout passed"
     },
     {
-      "command": "clean throwaway",
-      "result": "initial/five exits/standalone/Phase0/task-commit/preview-switch/update/reapply/initial+after-update closeout/all-platform passed"
-    },
-    {
-      "command": "sidecar/conflict/removal",
-      "result": "0/0/0"
+      "command": "independent all-platform install",
+      "result": "Claude/Codex/Cursor/Agents managed 168 passed after verifier-order local workflow sample"
     },
     {
       "command": "AST/Bash/JSON/JSONL",
-      "result": "19/17/36/2 files, 25 rows passed"
+      "result": "19/17/38/2 passed"
     },
     {
-      "command": "git diff/task/context/workspace/planning",
-      "result": "passed"
+      "command": "workspace/planning/assignment/task/diff",
+      "result": "all validators passed; source checkout clean main@b3e1184"
     },
     {
-      "command": "security/deployment scan",
-      "result": "no secrets; no CI/CD/container/K8s/migration/Makefile/config-template impact"
+      "command": "F-001 live authority and re-entry trail",
+      "result": "comment sha256, updated_at, context generated_at, planning hashes, approval and stale identities matched; out_of_scope"
     },
     {
-      "command": "remote current branch marketplace ref",
-      "result": "deferred until branch push; public discovery plus local unpublished workflow sample passed"
+      "command": "secret and deployment scans",
+      "result": "0 secret hits; 0 CI/CD/container/K8s/migration/Makefile/config asset hits"
+    },
+    {
+      "command": "remote feature branch marketplace ref",
+      "result": "not yet pushed; correctly deferred to post-push publish gate"
     }
   ],
   "findings": [],

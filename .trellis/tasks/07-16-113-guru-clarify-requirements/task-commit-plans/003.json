@@ -1,0 +1,1223 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "003",
+  "task": {
+    "id": "113-guru-clarify-requirements",
+    "path": ".trellis/tasks/07-16-113-guru-clarify-requirements",
+    "status": "in_progress",
+    "branch": "feat/113-guru-clarify-requirements"
+  },
+  "issue": {
+    "primary_issue": 113,
+    "ledger_sha256": "35462dcff80d2251dded0340133a082d4db8481662f77dbe852fd42940d903c4"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "d77fda1f6a16d064b5db37ff23be9dfe4fa8649a"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/planning-approval.json",
+      "sha256": "d3e72cc689d26e0243eeef39d6fa214aaf8f645f856ad27ed3188b1a6d9f2943",
+      "size": 7651
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/phase2-check.json",
+      "sha256": "e49360825784c6c423bc835b334088a14a2f4178ab99efa6cb9d8467823a4820",
+      "size": 9457
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/issue-scope-ledger.json",
+      "sha256": "35462dcff80d2251dded0340133a082d4db8481662f77dbe852fd42940d903c4",
+      "size": 6239
+    },
+    "task": {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/task.json",
+      "sha256": "a9c51eaa81d0dd71df22080dd2b69c758795e453c3b3e40beef8ff71139690a3",
+      "size": 693
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".agents/skills/guru-clarify-requirements/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "38bbef0747eb3d990898f60f92d72988b90e309d",
+        "worktree_sha256": "3e301c4932795a821ce319cfbded205d1bbaad6c40f692763107040411c92b3c",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-clarify-requirements/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fe453a694ad1f59038388848b4e410ee28f07505",
+        "worktree_sha256": "6f25332901a8d4fbdb70d28049d28b8915cd0c607ee1b98b41e3f288e8911c6e",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-clarify-requirements/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b2c2bec449cd53adf788299942d7411fe88912bf",
+        "worktree_sha256": "c1ff3d9e5a946f1da4856093e536b047d35f0c0120e686d55de815645610d76b",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6a345a0d2a6d85e2afdf1619b8707c73de26de97",
+        "worktree_sha256": "5933025990d414d1ff948d48ebfb6f10351c8ec112c26a63a998a9604d994814",
+        "mode": "100644"
+      },
+      {
+        "path": ".agents/skills/guru-clarify-requirements/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "61bba06b6466cfe8d23ed163e3d2bdb05d233dac",
+        "worktree_sha256": "75d2ac1cbc48828fe906c4253efcea5d059348e66c0affa02e34381449784595",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-clarify-requirements/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "38bbef0747eb3d990898f60f92d72988b90e309d",
+        "worktree_sha256": "3e301c4932795a821ce319cfbded205d1bbaad6c40f692763107040411c92b3c",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-clarify-requirements/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fe453a694ad1f59038388848b4e410ee28f07505",
+        "worktree_sha256": "6f25332901a8d4fbdb70d28049d28b8915cd0c607ee1b98b41e3f288e8911c6e",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-clarify-requirements/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b2c2bec449cd53adf788299942d7411fe88912bf",
+        "worktree_sha256": "c1ff3d9e5a946f1da4856093e536b047d35f0c0120e686d55de815645610d76b",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6a345a0d2a6d85e2afdf1619b8707c73de26de97",
+        "worktree_sha256": "5933025990d414d1ff948d48ebfb6f10351c8ec112c26a63a998a9604d994814",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-clarify-requirements/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "61bba06b6466cfe8d23ed163e3d2bdb05d233dac",
+        "worktree_sha256": "75d2ac1cbc48828fe906c4253efcea5d059348e66c0affa02e34381449784595",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-clarify-requirements/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "38bbef0747eb3d990898f60f92d72988b90e309d",
+        "worktree_sha256": "3e301c4932795a821ce319cfbded205d1bbaad6c40f692763107040411c92b3c",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-clarify-requirements/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fe453a694ad1f59038388848b4e410ee28f07505",
+        "worktree_sha256": "6f25332901a8d4fbdb70d28049d28b8915cd0c607ee1b98b41e3f288e8911c6e",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-clarify-requirements/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b2c2bec449cd53adf788299942d7411fe88912bf",
+        "worktree_sha256": "c1ff3d9e5a946f1da4856093e536b047d35f0c0120e686d55de815645610d76b",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6a345a0d2a6d85e2afdf1619b8707c73de26de97",
+        "worktree_sha256": "5933025990d414d1ff948d48ebfb6f10351c8ec112c26a63a998a9604d994814",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-clarify-requirements/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "61bba06b6466cfe8d23ed163e3d2bdb05d233dac",
+        "worktree_sha256": "75d2ac1cbc48828fe906c4253efcea5d059348e66c0affa02e34381449784595",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-clarify-requirements/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "38bbef0747eb3d990898f60f92d72988b90e309d",
+        "worktree_sha256": "3e301c4932795a821ce319cfbded205d1bbaad6c40f692763107040411c92b3c",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-clarify-requirements/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fe453a694ad1f59038388848b4e410ee28f07505",
+        "worktree_sha256": "6f25332901a8d4fbdb70d28049d28b8915cd0c607ee1b98b41e3f288e8911c6e",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-clarify-requirements/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b2c2bec449cd53adf788299942d7411fe88912bf",
+        "worktree_sha256": "c1ff3d9e5a946f1da4856093e536b047d35f0c0120e686d55de815645610d76b",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6a345a0d2a6d85e2afdf1619b8707c73de26de97",
+        "worktree_sha256": "5933025990d414d1ff948d48ebfb6f10351c8ec112c26a63a998a9604d994814",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-clarify-requirements/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "61bba06b6466cfe8d23ed163e3d2bdb05d233dac",
+        "worktree_sha256": "75d2ac1cbc48828fe906c4253efcea5d059348e66c0affa02e34381449784595",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a22379108201d43d5937c443c993c21d036d8686",
+        "worktree_sha256": "7dd5aab52c8be4a21f16a9d6af8cfd707fa771bcbb8bbbf502d0286f830fd143",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1d5a1296feb87d1f706f457c50fcac94db36cbb7",
+        "worktree_sha256": "3a6ebf033150bbb2b1f59dc3c30f528c9fe6e0e11be9a9701f85ce26d575edba",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "38bbef0747eb3d990898f60f92d72988b90e309d",
+        "worktree_sha256": "3e301c4932795a821ce319cfbded205d1bbaad6c40f692763107040411c92b3c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fe453a694ad1f59038388848b4e410ee28f07505",
+        "worktree_sha256": "6f25332901a8d4fbdb70d28049d28b8915cd0c607ee1b98b41e3f288e8911c6e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b2c2bec449cd53adf788299942d7411fe88912bf",
+        "worktree_sha256": "c1ff3d9e5a946f1da4856093e536b047d35f0c0120e686d55de815645610d76b",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6a345a0d2a6d85e2afdf1619b8707c73de26de97",
+        "worktree_sha256": "5933025990d414d1ff948d48ebfb6f10351c8ec112c26a63a998a9604d994814",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "61bba06b6466cfe8d23ed163e3d2bdb05d233dac",
+        "worktree_sha256": "75d2ac1cbc48828fe906c4253efcea5d059348e66c0affa02e34381449784595",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/docs/public-docs.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3772dd96527e52f20d6dd5ab4df33cfdcaa835c9",
+        "worktree_sha256": "06b88d2ba54270862a916502f537a6ae26ea3beb6b2265d3e8b78de5ef6018f6",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "829e344a92cc44ee15d99d4c1041e0ba711dc83c",
+        "worktree_sha256": "4e76c8b51d569c68c2319a91f82b486ce9be873ed27f4b1a1034529c73b14481",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9303e3a20c5af776f9caf0c5201a01eaa43f5fa8",
+        "worktree_sha256": "57e536b0a3cf19ea114fbf1ce11b25b60b43fc996460724bfa11acdfd66151fb",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f61407d02dca233380e6fbf318bb7a2f0452d868",
+        "worktree_sha256": "2a5fd38729aba5120c41270aea2461cdea3b8a74478656730fddfee1d7d3bacb",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "f1bb267c71b40ff63910573b719679181d645ca0",
+        "worktree_sha256": "bed9a2c9d2f5e56725d87674636cabd0b3ddb32b2722b9a6e5402d5fb60df853",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "50cffa53b21f0767dcff659cc30a39e2e39fbe5d",
+        "worktree_sha256": "38215be5ff41122a37d0b447ed96178b5d73f66d4cf4e434b55d2df64f3305d8",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8b486433a85f8ad3ad7deaeb0535bda08a8b6c59",
+        "worktree_sha256": "8ff43545d52d079afdca5efb8ef9748259bbd56c3ac0b5133a9f9c0053ee8c3f",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/design.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e7d96c76ee3e520a5f7b396a99f824d3b2d0b26b",
+        "worktree_sha256": "0d965256286301e8fb0f7ea7c9ac56a68d508bb3d94901aa0be4da731c03f113",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/implement.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4fa943af9ed013dd8ffa27a277c53e919ff2811a",
+        "worktree_sha256": "0b8eb512995fb045f1c5afe688edce0e8131e11fc575c25b6deb52999a6c65ef",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/issue-scope-ledger.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b5f87e1650ba6e254f13c5942417a1f8a433d141",
+        "worktree_sha256": "35462dcff80d2251dded0340133a082d4db8481662f77dbe852fd42940d903c4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4c2e1d6cd735b281faaaeb156f77c4c7507acfad",
+        "worktree_sha256": "e49360825784c6c423bc835b334088a14a2f4178ab99efa6cb9d8467823a4820",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/planning-approval.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "99eabc87a7083e18bc2af804f74595878645241c",
+        "worktree_sha256": "d3e72cc689d26e0243eeef39d6fa214aaf8f645f856ad27ed3188b1a6d9f2943",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/prd.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e1c08f7981edb77fcbcbcc2f8e34553b415aabb4",
+        "worktree_sha256": "a5991eb7c0ffcd5a60f10008fe41b4a41a0ecdf13dff201ac1e855b795dc77e2",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/review-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "bd9c56780522a9d891fa365ccc8155bc69f31080f99479935825eb4a4aca8f10",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "d9981c747c726ba9cb50cce88f51a9a226e95919757b747413a624b8f044cfff",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-01-final-release-finding.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "7c3f5ef9474815662494836fcff07bacd574423dbfbaa87016405e19ae5c6b17",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-02-finding-closure-reopened.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "cdbd1188e8ec8cc7640376ebc543215c9d7e81fda199c2072c325e826a2fbf47",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/001.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3841bb74650a09accbc9f0d8448ee48577fe4346",
+        "worktree_sha256": "eeceab02587ecf06e5837e96f26c2f1a857db264172950ded979f254cf515188",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/002.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "691d54a727e9a00827e3b1678159755c996401dc",
+        "worktree_sha256": "57005b9e17b60dd9a6d9019e9dde9b0a23d440b3088a3960d515bec223f0c36c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/workflow.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "12e004b4595dfeb836d3e916c6abda6067fc6cae",
+        "worktree_sha256": "8715f4fe39d21095798614e16f9f89e300d4f132257dae98974d63666d4ed16b",
+        "mode": "100644"
+      },
+      {
+        "path": "README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "194f751a1f9a6d52edd7aa4a8f28c846fcfc432b",
+        "worktree_sha256": "bf69f4480d46874798148a2cf2cbc920f0fce5c816365a6f8e9e130bb832ea6d",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4cf2c2690fd780f28387dc754d6daf2634912df2",
+        "worktree_sha256": "48aad798cde40506fa5120f33228e9fbb74bc4ea04b85e5f3236d87ebba4ebcc",
+        "mode": "100644"
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "40f9e04d23617e73426461413d74240a6220ed8e",
+        "worktree_sha256": "f04e81ae058c617dc2ed87d98ff2c2b3de3f1b746996214cf962e1e37889c91e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "4bb0635f2631154df102f57d89c2baea17ea9448",
+        "worktree_sha256": "0f11e3b25575ae58307bed7109cd38547e2387bd1110ad4096f07559a4d470b6",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "38bbef0747eb3d990898f60f92d72988b90e309d",
+        "worktree_sha256": "3e301c4932795a821ce319cfbded205d1bbaad6c40f692763107040411c92b3c",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/interface.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "fe453a694ad1f59038388848b4e410ee28f07505",
+        "worktree_sha256": "6f25332901a8d4fbdb70d28049d28b8915cd0c607ee1b98b41e3f288e8911c6e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "b2c2bec449cd53adf788299942d7411fe88912bf",
+        "worktree_sha256": "c1ff3d9e5a946f1da4856093e536b047d35f0c0120e686d55de815645610d76b",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "6a345a0d2a6d85e2afdf1619b8707c73de26de97",
+        "worktree_sha256": "5933025990d414d1ff948d48ebfb6f10351c8ec112c26a63a998a9604d994814",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "61bba06b6466cfe8d23ed163e3d2bdb05d233dac",
+        "worktree_sha256": "75d2ac1cbc48828fe906c4253efcea5d059348e66c0affa02e34381449784595",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "2400ea90b02c58c384dae1c90145c3fb453f1634",
+        "worktree_sha256": "3a0039b3b144aaa354ac9dc0a64d7360df822b5bbb63049ecef1fb887bab0e2e",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1d5a1296feb87d1f706f457c50fcac94db36cbb7",
+        "worktree_sha256": "3a6ebf033150bbb2b1f59dc3c30f528c9fe6e0e11be9a9701f85ce26d575edba",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "90394ff3d3ca764d578ff53eebc47ea6971f9221",
+        "worktree_sha256": "b6f611820ddc5e18f9f5fdd59fecc532e18b12f3fe7e8abae73a72587a35fda0",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/workflow.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "12e004b4595dfeb836d3e916c6abda6067fc6cae",
+        "worktree_sha256": "8715f4fe39d21095798614e16f9f89e300d4f132257dae98974d63666d4ed16b",
+        "mode": "100644"
+      }
+    ],
+    "digest": "a5f534402aa621320848868e48e3544e1ff0db26c3b5f9ee81d04faf0760031b"
+  },
+  "path_classifications": [
+    {
+      "path": ".agents/skills/guru-clarify-requirements/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-clarify-requirements/interface.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-clarify-requirements/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".agents/skills/guru-clarify-requirements/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-clarify-requirements/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-clarify-requirements/interface.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-clarify-requirements/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-clarify-requirements/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-clarify-requirements/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-clarify-requirements/interface.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-clarify-requirements/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-clarify-requirements/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-clarify-requirements/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-clarify-requirements/interface.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-clarify-requirements/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-clarify-requirements/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/interface.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/agent-assignment.json",
+      "category": "unrelated-preserved",
+      "reason": "该路径属于 agent liveness、既有提交结果或 Branch Review 元数据，本次 finding-fix work commit 必须原样保留且不得暂存。",
+      "coverage_source": "trellis-continue metadata exclusion"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/design.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/implement.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/issue-scope-ledger.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/planning-approval.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/prd.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/review-gate.json",
+      "category": "unrelated-preserved",
+      "reason": "该路径属于 agent liveness、既有提交结果或 Branch Review 元数据，本次 finding-fix work commit 必须原样保留且不得暂存。",
+      "coverage_source": "trellis-continue metadata exclusion"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/review.md",
+      "category": "unrelated-preserved",
+      "reason": "该路径属于 agent liveness、既有提交结果或 Branch Review 元数据，本次 finding-fix work commit 必须原样保留且不得暂存。",
+      "coverage_source": "trellis-continue metadata exclusion"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-01-final-release-finding.md",
+      "category": "unrelated-preserved",
+      "reason": "该路径属于 agent liveness、既有提交结果或 Branch Review 元数据，本次 finding-fix work commit 必须原样保留且不得暂存。",
+      "coverage_source": "trellis-continue metadata exclusion"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-02-finding-closure-reopened.md",
+      "category": "unrelated-preserved",
+      "reason": "该路径属于 agent liveness、既有提交结果或 Branch Review 元数据，本次 finding-fix work commit 必须原样保留且不得暂存。",
+      "coverage_source": "trellis-continue metadata exclusion"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/001.json",
+      "category": "unrelated-preserved",
+      "reason": "该路径属于 agent liveness、既有提交结果或 Branch Review 元数据，本次 finding-fix work commit 必须原样保留且不得暂存。",
+      "coverage_source": "trellis-continue metadata exclusion"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/002.json",
+      "category": "unrelated-preserved",
+      "reason": "该路径属于 agent liveness、既有提交结果或 Branch Review 元数据，本次 finding-fix work commit 必须原样保留且不得暂存。",
+      "coverage_source": "trellis-continue metadata exclusion"
+    },
+    {
+      "path": ".trellis/workflow.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "README.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "docs/requirements/guru-team-trellis-flow.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "docs/requirements/requirement-main.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/interface.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/workflow.md",
+      "category": "task-reviewed",
+      "reason": "该路径属于 #113 已批准范围，并由第 8 轮 fresh phase2-check.json 的 dirty_paths、checked_artifacts 或 recorder self-evidence 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/003.json",
+      "category": "task-reviewed",
+      "reason": "本次 guru-create-task-commit 调用的精确候选、分类、AI review 与后续授权证据。",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".agents/skills/guru-clarify-requirements/SKILL.md",
+    ".agents/skills/guru-clarify-requirements/interface.json",
+    ".agents/skills/guru-clarify-requirements/references/contract.md",
+    ".agents/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+    ".agents/skills/guru-clarify-requirements/tests/test_contract.py",
+    ".claude/skills/guru-clarify-requirements/SKILL.md",
+    ".claude/skills/guru-clarify-requirements/interface.json",
+    ".claude/skills/guru-clarify-requirements/references/contract.md",
+    ".claude/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+    ".claude/skills/guru-clarify-requirements/tests/test_contract.py",
+    ".codex/skills/guru-clarify-requirements/SKILL.md",
+    ".codex/skills/guru-clarify-requirements/interface.json",
+    ".codex/skills/guru-clarify-requirements/references/contract.md",
+    ".codex/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+    ".codex/skills/guru-clarify-requirements/tests/test_contract.py",
+    ".cursor/skills/guru-clarify-requirements/SKILL.md",
+    ".cursor/skills/guru-clarify-requirements/interface.json",
+    ".cursor/skills/guru-clarify-requirements/references/contract.md",
+    ".cursor/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+    ".cursor/skills/guru-clarify-requirements/tests/test_contract.py",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+    ".trellis/guru-team/skills/packages/guru-clarify-requirements/interface.json",
+    ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+    ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
+    ".trellis/spec/docs/public-docs.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/design.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/implement.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/issue-scope-ledger.json",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/phase2-check.json",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/planning-approval.json",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/prd.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/003.json",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+    "trellis/skills/guru-team/packages/guru-clarify-requirements/interface.json",
+    "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+    "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "message": {
+    "subject": "fix(workflow): #113 收紧需求澄清恢复门禁",
+    "body": "背景：\n后续 Phase 2 重放发现终态分类、可选机制和 active-task 恢复仍存在正常路径一致性缺口。\n\n变更：\n分离七类 proposal 终态与五类 scope classification，要求 classification 精确确认与 trail；补齐 mechanism-only/mixed clear、GitHub authority/context/task 时序、Branch Review stale 状态和 context freshness 校验，并同步 canonical、preset、平台副本、durable SSOT 与回归测试。\n\n边界：\nF-001 伪造与对抗性输入按用户确认保持 out-of-scope；不执行 push、PR 或 issue close，remote feature-branch marketplace 验证留给 publish 门禁。\n\n验证：\n第 8 轮 fresh Phase 2 findings_count=0；focused 27/27、package 6/6、runtime 495/495、registry 71/71、preset 39/39、ownership 6/6、normal-state replay 46/46 及 clean throwaway/update-reapply/all-platform 通过。\n\nRefs #113",
+    "bytes": "fix(workflow): #113 收紧需求澄清恢复门禁\n\n背景：\n后续 Phase 2 重放发现终态分类、可选机制和 active-task 恢复仍存在正常路径一致性缺口。\n\n变更：\n分离七类 proposal 终态与五类 scope classification，要求 classification 精确确认与 trail；补齐 mechanism-only/mixed clear、GitHub authority/context/task 时序、Branch Review stale 状态和 context freshness 校验，并同步 canonical、preset、平台副本、durable SSOT 与回归测试。\n\n边界：\nF-001 伪造与对抗性输入按用户确认保持 out-of-scope；不执行 push、PR 或 issue close，remote feature-branch marketplace 验证留给 publish 门禁。\n\n验证：\n第 8 轮 fresh Phase 2 findings_count=0；focused 27/27、package 6/6、runtime 495/495、registry 71/71、preset 39/39、ownership 6/6、normal-state replay 46/46 及 clean throwaway/update-reapply/all-platform 通过。\n\nRefs #113\n",
+    "sha256": "094175003793297a53a2d43f2cd6fb9212ab62938271412aafca28c9c12568ca"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "/root",
+    "summary": "已审查 #113 当前完整 dirty snapshot、fresh Phase 2、Issue Scope Ledger、Docs SSOT、提交消息、升级兼容、安全与部署边界；54 个 task-reviewed 路径纳入 exact staging，7 个 agent/旧计划/Branch Review metadata 路径原样保留。",
+    "evidence": [
+      "第 8 轮 fresh phase2-check.json 在 HEAD d77fda1f 上 findings_count=0，覆盖 requirements/design/code/tests/spec_sync/cross_layer/docs_ssot/deployment。",
+      "中文 Conventional Commit message 已按背景、变更、边界、验证和唯一 Refs #113 组织；candidate validation 将复用共享 validate_commit_message parser。",
+      "planning-approval、phase2-check、workspace boundary、agent assignment 与 task/issue identity 当前均有效；固定 intake base 仍为 96ba63b8。",
+      "Docs SSOT 使用 ssot_first，task delta 已合入 durable specs、requirements、workflow 与 public README。",
+      "未发现 secret 泄露或 CI/CD、容器、K8s、数据库 migration、Makefile、配置模板影响；remote feature-branch marketplace ref 明确留给 publish 门禁。"
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "user-explicit-exact-plan-confirmation",
+    "evidence": "用户在看到 003 的 54 条 exact stage paths、7 条 unrelated-preserved paths 与完整四小节提交消息后回复“确认继续”；授权仅适用于本次 exact staging 与 commit，不包含 push、PR、issue close 或 finish-work。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-16T22:35:20.612014Z",
+    "plan_digest": "c5173df6e4f1351f6fc64d9270724950e98130500b689fc7c24ad283c4967b4d"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}
