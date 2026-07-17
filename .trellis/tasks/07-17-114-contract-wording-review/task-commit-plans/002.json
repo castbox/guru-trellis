@@ -250,7 +250,68 @@
     "plan_digest": "7ab4d1b296d07f91e93a2c0044ed6a22fa59302dffa56faaaf7aabb64e952270"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-17T11:26:58Z",
+    "commit_sha": "6bfedae44d7636ef56850d7e187c2e11b0e1967b",
+    "parent": "dfde7dd37dc74848805c88f97e423e01a9e26f33",
+    "message_sha256": "a7d7258e80d36c49c8d45ec0e40e23de8c454fe4fbade3867496de60c45968ad",
+    "committed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+      ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/002.json",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "b8d5b8028b7bff68e749c71315f66de0a562a689",
+      "actual_tree": "b8d5b8028b7bff68e749c71315f66de0a562a689",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "468960c2168b1db19c0a6af35c9c1e08901faba6",
+          "expected_mode": "100644",
+          "actual_blob": "468960c2168b1db19c0a6af35c9c1e08901faba6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+          "expected_blob": "121d8fc896c66971b169406f384dddfb05f4d7f9",
+          "expected_mode": "100644",
+          "actual_blob": "121d8fc896c66971b169406f384dddfb05f4d7f9",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/002.json",
+          "expected_blob": "918af7a96196b686ed030458166cf670f96c6905",
+          "expected_mode": "100644",
+          "actual_blob": "918af7a96196b686ed030458166cf670f96c6905",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/guru-team-extension.json",
+          "expected_blob": "fa4cb13367d25c30a4c1c92fd9da675b658bdb53",
+          "expected_mode": "100644",
+          "actual_blob": "fa4cb13367d25c30a4c1c92fd9da675b658bdb53",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "expected_blob": "45384fe2456bf1cddb80bd29569065ee7f577ed8",
+          "expected_mode": "100644",
+          "actual_blob": "45384fe2456bf1cddb80bd29569065ee7f577ed8",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

@@ -4,7 +4,22 @@
     "url": "https://github.com/castbox/guru-trellis/issues/114",
     "title": "按 Skill-first 重实现 #93：guru-review-contract-wording",
     "reason": "intake 主 issue，默认进入 close 候选。",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "Phase 2 R7 独立语义检查覆盖 Issue #114 replacement-first 需求、设计、代码、测试、Docs SSOT、分发、upgrade/update 与部署安全边界，P0/P1/P2/P3 均为 0。",
+      "Round 8 fresh 最终审查绑定 HEAD 32119d2ed400046a44148d7f6b580b59a95a0f94，覆盖 origin/main...HEAD 的 5 个 commits 与 94 个 paths；历史 3 个 P1、2 个 P2 finding 全部闭环，当前 findings_count=0。",
+      "Shared runtime 507、production package 71、wording package 16、preset/ownership 45、planning gate 54 项测试全部通过；fresh install、trellis update --force、preset reapply、六树 byte equality、dogfood drift 与 sidecar audit 通过。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "77b1db6c7463e1eac65b730c26037f0bdf47ab9a1303e54937947ecc5c9f9e14",
+        "verified_content_head": "32119d2ed400046a44148d7f6b580b59a95a0f94",
+        "remote_head": "32119d2ed400046a44148d7f6b580b59a95a0f94",
+        "publish_head": "32119d2ed400046a44148d7f6b580b59a95a0f94",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -12,7 +27,22 @@
       "url": "https://github.com/castbox/guru-trellis/issues/114",
       "title": "按 Skill-first 重实现 #93：guru-review-contract-wording",
       "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "Phase 2 R7 独立语义检查覆盖 Issue #114 replacement-first 需求、设计、代码、测试、Docs SSOT、分发、upgrade/update 与部署安全边界，P0/P1/P2/P3 均为 0。",
+        "Round 8 fresh 最终审查绑定 HEAD 32119d2ed400046a44148d7f6b580b59a95a0f94，覆盖 origin/main...HEAD 的 5 个 commits 与 94 个 paths；历史 3 个 P1、2 个 P2 finding 全部闭环，当前 findings_count=0。",
+        "Shared runtime 507、production package 71、wording package 16、preset/ownership 45、planning gate 54 项测试全部通过；fresh install、trellis update --force、preset reapply、六树 byte equality、dogfood drift 与 sidecar audit 通过。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "77b1db6c7463e1eac65b730c26037f0bdf47ab9a1303e54937947ecc5c9f9e14",
+          "verified_content_head": "32119d2ed400046a44148d7f6b580b59a95a0f94",
+          "remote_head": "32119d2ed400046a44148d7f6b580b59a95a0f94",
+          "publish_head": "32119d2ed400046a44148d7f6b580b59a95a0f94",
+          "commands_passed": true
+        }
+      ]
     }
   ],
   "related_issues": [],

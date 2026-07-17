@@ -1234,7 +1234,491 @@
     "plan_digest": "ae7287a0b8e12542fe34a0ff622030c067527166d35bd2b4664f99af672d4268"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-17T14:07:49Z",
+    "commit_sha": "088300a7b3ee33816ec0d96fb3c09d4215ccbae8",
+    "parent": "78ea618f470eaa33fb09f6b5dacc112a60a14e04",
+    "message_sha256": "1db70231f5d57cfe2281b044de4dbc763af66851d83c723f053c59567efffbbe",
+    "committed_paths": [
+      ".agents/skills/guru-review-contract-wording/examples/contract-wording-review.json",
+      ".agents/skills/guru-review-contract-wording/interface.json",
+      ".agents/skills/guru-review-contract-wording/references/contract.md",
+      ".agents/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+      ".agents/skills/guru-review-contract-wording/tests/test_contract.py",
+      ".claude/skills/guru-review-contract-wording/examples/contract-wording-review.json",
+      ".claude/skills/guru-review-contract-wording/interface.json",
+      ".claude/skills/guru-review-contract-wording/references/contract.md",
+      ".claude/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+      ".claude/skills/guru-review-contract-wording/tests/test_contract.py",
+      ".codex/skills/guru-review-contract-wording/examples/contract-wording-review.json",
+      ".codex/skills/guru-review-contract-wording/interface.json",
+      ".codex/skills/guru-review-contract-wording/references/contract.md",
+      ".codex/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+      ".codex/skills/guru-review-contract-wording/tests/test_contract.py",
+      ".cursor/skills/guru-review-contract-wording/examples/contract-wording-review.json",
+      ".cursor/skills/guru-review-contract-wording/interface.json",
+      ".cursor/skills/guru-review-contract-wording/references/contract.md",
+      ".cursor/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+      ".cursor/skills/guru-review-contract-wording/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-review-contract-wording/examples/contract-wording-review.json",
+      ".trellis/guru-team/skills/packages/guru-review-contract-wording/interface.json",
+      ".trellis/guru-team/skills/packages/guru-review-contract-wording/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+      ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-17-114-contract-wording-review/contract-wording-review.json",
+      ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+      ".trellis/tasks/07-17-114-contract-wording-review/planning-approval.json",
+      ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/004.json",
+      ".trellis/workflow.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/skills/guru-team/packages/guru-review-contract-wording/examples/contract-wording-review.json",
+      "trellis/skills/guru-team/packages/guru-review-contract-wording/interface.json",
+      "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+      "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "3ceaa9f2bc1c8f984d1899e234a65bd311137a69",
+      "actual_tree": "3ceaa9f2bc1c8f984d1899e234a65bd311137a69",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".agents/skills/guru-review-contract-wording/examples/contract-wording-review.json",
+          "expected_blob": "b291cb8c1edea1ea8c969cebd903ee828ad75614",
+          "expected_mode": "100644",
+          "actual_blob": "b291cb8c1edea1ea8c969cebd903ee828ad75614",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-review-contract-wording/interface.json",
+          "expected_blob": "4c252851e3d6119888141dcd22c778cf70509e59",
+          "expected_mode": "100644",
+          "actual_blob": "4c252851e3d6119888141dcd22c778cf70509e59",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-review-contract-wording/references/contract.md",
+          "expected_blob": "73366461a0bc4c657620120ca39404bace537aed",
+          "expected_mode": "100644",
+          "actual_blob": "73366461a0bc4c657620120ca39404bace537aed",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+          "expected_blob": "f57d4522a62930a2d1ca00f7865dd5f1724a8930",
+          "expected_mode": "100644",
+          "actual_blob": "f57d4522a62930a2d1ca00f7865dd5f1724a8930",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-review-contract-wording/tests/test_contract.py",
+          "expected_blob": "0f700f208c1150479787762c45b3ad8974647a3e",
+          "expected_mode": "100644",
+          "actual_blob": "0f700f208c1150479787762c45b3ad8974647a3e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-contract-wording/examples/contract-wording-review.json",
+          "expected_blob": "b291cb8c1edea1ea8c969cebd903ee828ad75614",
+          "expected_mode": "100644",
+          "actual_blob": "b291cb8c1edea1ea8c969cebd903ee828ad75614",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-contract-wording/interface.json",
+          "expected_blob": "4c252851e3d6119888141dcd22c778cf70509e59",
+          "expected_mode": "100644",
+          "actual_blob": "4c252851e3d6119888141dcd22c778cf70509e59",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-contract-wording/references/contract.md",
+          "expected_blob": "73366461a0bc4c657620120ca39404bace537aed",
+          "expected_mode": "100644",
+          "actual_blob": "73366461a0bc4c657620120ca39404bace537aed",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+          "expected_blob": "f57d4522a62930a2d1ca00f7865dd5f1724a8930",
+          "expected_mode": "100644",
+          "actual_blob": "f57d4522a62930a2d1ca00f7865dd5f1724a8930",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-contract-wording/tests/test_contract.py",
+          "expected_blob": "0f700f208c1150479787762c45b3ad8974647a3e",
+          "expected_mode": "100644",
+          "actual_blob": "0f700f208c1150479787762c45b3ad8974647a3e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-contract-wording/examples/contract-wording-review.json",
+          "expected_blob": "b291cb8c1edea1ea8c969cebd903ee828ad75614",
+          "expected_mode": "100644",
+          "actual_blob": "b291cb8c1edea1ea8c969cebd903ee828ad75614",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-contract-wording/interface.json",
+          "expected_blob": "4c252851e3d6119888141dcd22c778cf70509e59",
+          "expected_mode": "100644",
+          "actual_blob": "4c252851e3d6119888141dcd22c778cf70509e59",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-contract-wording/references/contract.md",
+          "expected_blob": "73366461a0bc4c657620120ca39404bace537aed",
+          "expected_mode": "100644",
+          "actual_blob": "73366461a0bc4c657620120ca39404bace537aed",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+          "expected_blob": "f57d4522a62930a2d1ca00f7865dd5f1724a8930",
+          "expected_mode": "100644",
+          "actual_blob": "f57d4522a62930a2d1ca00f7865dd5f1724a8930",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-contract-wording/tests/test_contract.py",
+          "expected_blob": "0f700f208c1150479787762c45b3ad8974647a3e",
+          "expected_mode": "100644",
+          "actual_blob": "0f700f208c1150479787762c45b3ad8974647a3e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-contract-wording/examples/contract-wording-review.json",
+          "expected_blob": "b291cb8c1edea1ea8c969cebd903ee828ad75614",
+          "expected_mode": "100644",
+          "actual_blob": "b291cb8c1edea1ea8c969cebd903ee828ad75614",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-contract-wording/interface.json",
+          "expected_blob": "4c252851e3d6119888141dcd22c778cf70509e59",
+          "expected_mode": "100644",
+          "actual_blob": "4c252851e3d6119888141dcd22c778cf70509e59",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-contract-wording/references/contract.md",
+          "expected_blob": "73366461a0bc4c657620120ca39404bace537aed",
+          "expected_mode": "100644",
+          "actual_blob": "73366461a0bc4c657620120ca39404bace537aed",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+          "expected_blob": "f57d4522a62930a2d1ca00f7865dd5f1724a8930",
+          "expected_mode": "100644",
+          "actual_blob": "f57d4522a62930a2d1ca00f7865dd5f1724a8930",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-contract-wording/tests/test_contract.py",
+          "expected_blob": "0f700f208c1150479787762c45b3ad8974647a3e",
+          "expected_mode": "100644",
+          "actual_blob": "0f700f208c1150479787762c45b3ad8974647a3e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "21cc2ddf2fcedce60d857a84722242d6566f9640",
+          "expected_mode": "100644",
+          "actual_blob": "21cc2ddf2fcedce60d857a84722242d6566f9640",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "4c7ef21ec96d2789a840e3db8d00e52d68a72b6e",
+          "expected_mode": "100755",
+          "actual_blob": "4c7ef21ec96d2789a840e3db8d00e52d68a72b6e",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/examples/contract-wording-review.json",
+          "expected_blob": "b291cb8c1edea1ea8c969cebd903ee828ad75614",
+          "expected_mode": "100644",
+          "actual_blob": "b291cb8c1edea1ea8c969cebd903ee828ad75614",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/interface.json",
+          "expected_blob": "4c252851e3d6119888141dcd22c778cf70509e59",
+          "expected_mode": "100644",
+          "actual_blob": "4c252851e3d6119888141dcd22c778cf70509e59",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/references/contract.md",
+          "expected_blob": "73366461a0bc4c657620120ca39404bace537aed",
+          "expected_mode": "100644",
+          "actual_blob": "73366461a0bc4c657620120ca39404bace537aed",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+          "expected_blob": "f57d4522a62930a2d1ca00f7865dd5f1724a8930",
+          "expected_mode": "100644",
+          "actual_blob": "f57d4522a62930a2d1ca00f7865dd5f1724a8930",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
+          "expected_blob": "0f700f208c1150479787762c45b3ad8974647a3e",
+          "expected_mode": "100644",
+          "actual_blob": "0f700f208c1150479787762c45b3ad8974647a3e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/preset/overlay-guidelines.md",
+          "expected_blob": "cc9d8f6e898f38344c42adb6f832c51a0db197f0",
+          "expected_mode": "100644",
+          "actual_blob": "cc9d8f6e898f38344c42adb6f832c51a0db197f0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/companion-scripts.md",
+          "expected_blob": "27fe5613465468ff458e1e67f3ede8a1db2635a2",
+          "expected_mode": "100644",
+          "actual_blob": "27fe5613465468ff458e1e67f3ede8a1db2635a2",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/data-contracts.md",
+          "expected_blob": "2b8bc2202f45b682559cfef300a2ce10627dbe3d",
+          "expected_mode": "100644",
+          "actual_blob": "2b8bc2202f45b682559cfef300a2ce10627dbe3d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/quality-guidelines.md",
+          "expected_blob": "ca53cd7e4f5a3a2645c5ccfe4dd28ee797579cef",
+          "expected_mode": "100644",
+          "actual_blob": "ca53cd7e4f5a3a2645c5ccfe4dd28ee797579cef",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/skill-package-contract.md",
+          "expected_blob": "e5751e92809a39ae33e2e5d76e652816acdb95ba",
+          "expected_mode": "100644",
+          "actual_blob": "e5751e92809a39ae33e2e5d76e652816acdb95ba",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/workflow-contract.md",
+          "expected_blob": "8b338286bceac0ac53b3506b2ed0b66363e1debd",
+          "expected_mode": "100644",
+          "actual_blob": "8b338286bceac0ac53b3506b2ed0b66363e1debd",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-17-114-contract-wording-review/contract-wording-review.json",
+          "expected_blob": "0f2afec83ec978b8ce663428bea3ff039ec284cc",
+          "expected_mode": "100644",
+          "actual_blob": "0f2afec83ec978b8ce663428bea3ff039ec284cc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+          "expected_blob": "04f9d4ccf8ae9dd0a762dcd51456d9d77feadefe",
+          "expected_mode": "100644",
+          "actual_blob": "04f9d4ccf8ae9dd0a762dcd51456d9d77feadefe",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-17-114-contract-wording-review/planning-approval.json",
+          "expected_blob": "d22cac17a56f568d665aa0fd682a572f8bbc0d42",
+          "expected_mode": "100644",
+          "actual_blob": "d22cac17a56f568d665aa0fd682a572f8bbc0d42",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/004.json",
+          "expected_blob": "3284d80706f68310e017a54035a31e354c8c9c8b",
+          "expected_mode": "100644",
+          "actual_blob": "3284d80706f68310e017a54035a31e354c8c9c8b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/workflow.md",
+          "expected_blob": "bd30d066e821c6ab3c182e498b5c5bfab0a1b06a",
+          "expected_mode": "100644",
+          "actual_blob": "bd30d066e821c6ab3c182e498b5c5bfab0a1b06a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/guru-team-trellis-flow.md",
+          "expected_blob": "04cc6cbd0fb8e891e09f90882afdc5aa8f95edc6",
+          "expected_mode": "100644",
+          "actual_blob": "04cc6cbd0fb8e891e09f90882afdc5aa8f95edc6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/requirement-main.md",
+          "expected_blob": "2964d66cf05219aa6381db346ab65f44a169b273",
+          "expected_mode": "100644",
+          "actual_blob": "2964d66cf05219aa6381db346ab65f44a169b273",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/README.md",
+          "expected_blob": "dcaa72a68f3982b581844efbf44a4c404458a5db",
+          "expected_mode": "100644",
+          "actual_blob": "dcaa72a68f3982b581844efbf44a4c404458a5db",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "expected_blob": "d8c04210d8750dd06145ac64079c3d8251c42f87",
+          "expected_mode": "100755",
+          "actual_blob": "d8c04210d8750dd06145ac64079c3d8251c42f87",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "expected_blob": "3155751ae6be80407e3e37f3dae74b0fc2812e1c",
+          "expected_mode": "100644",
+          "actual_blob": "3155751ae6be80407e3e37f3dae74b0fc2812e1c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-contract-wording/examples/contract-wording-review.json",
+          "expected_blob": "b291cb8c1edea1ea8c969cebd903ee828ad75614",
+          "expected_mode": "100644",
+          "actual_blob": "b291cb8c1edea1ea8c969cebd903ee828ad75614",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-contract-wording/interface.json",
+          "expected_blob": "4c252851e3d6119888141dcd22c778cf70509e59",
+          "expected_mode": "100644",
+          "actual_blob": "4c252851e3d6119888141dcd22c778cf70509e59",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
+          "expected_blob": "73366461a0bc4c657620120ca39404bace537aed",
+          "expected_mode": "100644",
+          "actual_blob": "73366461a0bc4c657620120ca39404bace537aed",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+          "expected_blob": "f57d4522a62930a2d1ca00f7865dd5f1724a8930",
+          "expected_mode": "100644",
+          "actual_blob": "f57d4522a62930a2d1ca00f7865dd5f1724a8930",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
+          "expected_blob": "0f700f208c1150479787762c45b3ad8974647a3e",
+          "expected_mode": "100644",
+          "actual_blob": "0f700f208c1150479787762c45b3ad8974647a3e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/README.md",
+          "expected_blob": "23bea11ffc9f556e384c0908a5e0976a552cf314",
+          "expected_mode": "100644",
+          "actual_blob": "23bea11ffc9f556e384c0908a5e0976a552cf314",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "4c7ef21ec96d2789a840e3db8d00e52d68a72b6e",
+          "expected_mode": "100755",
+          "actual_blob": "4c7ef21ec96d2789a840e3db8d00e52d68a72b6e",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "6721d0213ca8fcd8d46afcaad1d6ffc086ba988f",
+          "expected_mode": "100644",
+          "actual_blob": "6721d0213ca8fcd8d46afcaad1d6ffc086ba988f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/workflow.md",
+          "expected_blob": "bd30d066e821c6ab3c182e498b5c5bfab0a1b06a",
+          "expected_mode": "100644",
+          "actual_blob": "bd30d066e821c6ab3c182e498b5c5bfab0a1b06a",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }
