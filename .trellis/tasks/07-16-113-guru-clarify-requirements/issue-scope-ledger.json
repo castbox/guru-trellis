@@ -4,7 +4,25 @@
     "url": "https://github.com/castbox/guru-trellis/issues/113",
     "title": "按 Skill-first 重实现 #55：guru-clarify-requirements",
     "reason": "intake 主 issue，默认进入 close 候选。2026-07-16 用户确认 Branch Review F-001 的恶意伪造场景为 out-of-scope；GitHub-visible evidence: https://github.com/castbox/guru-trellis/issues/113#issuecomment-4990373622。",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "`guru-clarify-requirements` 已作为 active public Skill 完成 canonical package、workflow mandatory invocation、shared runtime、registry、extension manifest、preset installer 与 Agents/Codex/Cursor/Claude 平台分发。",
+      "Evidence-first 分类、单问题/atomic-group clarification、partial answer 不关闭问题、六类 action plan、action-digest-bound exact confirmation、mutation 后 live freshness 与五个 typed exits 均已实现并有正反测试。",
+      "Active-task 五类 scope classification、七类 terminal proposal decision、唯一 structured decision trail、authority -> context -> task update 时序、完整 planning approval 与 exact interrupted progression re-entry 已实现并验证。",
+      "Fresh 验证通过：focused 28/28、package 6/6、shared runtime 496/496、registry/distribution 71/71、preset 39/39、ownership 6/6；source/installed、40 组平台 byte/mode 与 clean throwaway install/update/reapply 全部通过。",
+      "Branch Review Gate 绑定 HEAD 908eec2ee6bdf8190a6da52af1b925d890e75954；七轮 review 已闭合 F-002 至 F-008，最终 P0/P1/P2/P3 均为 0。",
+      "F-001 恶意伪造扩展按用户决定和 GitHub comment https://github.com/castbox/guru-trellis/issues/113#issuecomment-4990373622 固定为 out_of_scope；正常 stale/mismatch、错误 payload 与 freshness correctness 保持有效。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "34594beb95e8e1f42bbd418fcdc76145d372d24b32c5e5c653e9efccaaaadfc6",
+        "verified_content_head": "908eec2ee6bdf8190a6da52af1b925d890e75954",
+        "remote_head": "908eec2ee6bdf8190a6da52af1b925d890e75954",
+        "publish_head": "908eec2ee6bdf8190a6da52af1b925d890e75954",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -12,7 +30,25 @@
       "url": "https://github.com/castbox/guru-trellis/issues/113",
       "title": "按 Skill-first 重实现 #55：guru-clarify-requirements",
       "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐 F-002 至 F-006 与原 acceptance 的验收证据。F-001 已由用户确认并通过 https://github.com/castbox/guru-trellis/issues/113#issuecomment-4990373622 分类为 out-of-scope。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "`guru-clarify-requirements` 已作为 active public Skill 完成 canonical package、workflow mandatory invocation、shared runtime、registry、extension manifest、preset installer 与 Agents/Codex/Cursor/Claude 平台分发。",
+        "Evidence-first 分类、单问题/atomic-group clarification、partial answer 不关闭问题、六类 action plan、action-digest-bound exact confirmation、mutation 后 live freshness 与五个 typed exits 均已实现并有正反测试。",
+        "Active-task 五类 scope classification、七类 terminal proposal decision、唯一 structured decision trail、authority -> context -> task update 时序、完整 planning approval 与 exact interrupted progression re-entry 已实现并验证。",
+        "Fresh 验证通过：focused 28/28、package 6/6、shared runtime 496/496、registry/distribution 71/71、preset 39/39、ownership 6/6；source/installed、40 组平台 byte/mode 与 clean throwaway install/update/reapply 全部通过。",
+        "Branch Review Gate 绑定 HEAD 908eec2ee6bdf8190a6da52af1b925d890e75954；七轮 review 已闭合 F-002 至 F-008，最终 P0/P1/P2/P3 均为 0。",
+        "F-001 恶意伪造扩展按用户决定和 GitHub comment https://github.com/castbox/guru-trellis/issues/113#issuecomment-4990373622 固定为 out_of_scope；正常 stale/mismatch、错误 payload 与 freshness correctness 保持有效。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "34594beb95e8e1f42bbd418fcdc76145d372d24b32c5e5c653e9efccaaaadfc6",
+          "verified_content_head": "908eec2ee6bdf8190a6da52af1b925d890e75954",
+          "remote_head": "908eec2ee6bdf8190a6da52af1b925d890e75954",
+          "publish_head": "908eec2ee6bdf8190a6da52af1b925d890e75954",
+          "commands_passed": true
+        }
+      ]
     }
   ],
   "related_issues": [

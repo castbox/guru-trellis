@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/113-guru-clarify-requirements",
+    "reviewed_head_sha": "908eec2ee6bdf8190a6da52af1b925d890e75954",
+    "title": "完成：#113 按 Skill-first 重实现 #55：guru-clarify-requirements",
+    "body_source": "pr-body.md",
+    "body_sha256": "f11935ad008f1aec4ef203514b87fd20fddd1727f022f5824360bd7be6a3710f",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "5b1005071526f00674a66a05a120ac139a0a173c08b83903217cc9ca54b0a356"
+  },
+  "publish_inputs_sha256": "14633da00d5a13420b3e2651f5e1d4d0e75ead11c26adece9e27520c6e719718"
+}

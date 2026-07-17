@@ -376,7 +376,68 @@
     "plan_digest": "04e86c666e0cb8ad5c87f0d3167700982d97ea450a47bf53b6e9ca34eed40730"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-17T01:59:08Z",
+    "commit_sha": "908eec2ee6bdf8190a6da52af1b925d890e75954",
+    "parent": "0b7fcb981031b6fc2c33e8854f80f4f9dbc6b429",
+    "message_sha256": "7cf24d7783badca40cfc892e1f8533883dd152174a403d7732f8052ba84bb055",
+    "committed_paths": [
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/tasks/07-16-113-guru-clarify-requirements/design.md",
+      ".trellis/tasks/07-16-113-guru-clarify-requirements/phase2-check.json",
+      ".trellis/tasks/07-16-113-guru-clarify-requirements/planning-approval.json",
+      ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/005.json"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "9bdc773f96e68e284079c6e89591f05be5bd6552",
+      "actual_tree": "9bdc773f96e68e284079c6e89591f05be5bd6552",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/spec/workflow/data-contracts.md",
+          "expected_blob": "0612c4fd62b329cde0fd2985a1b632e0c7ea05aa",
+          "expected_mode": "100644",
+          "actual_blob": "0612c4fd62b329cde0fd2985a1b632e0c7ea05aa",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/design.md",
+          "expected_blob": "292613fae553018d209737e37cb24ecf579c7e66",
+          "expected_mode": "100644",
+          "actual_blob": "292613fae553018d209737e37cb24ecf579c7e66",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/phase2-check.json",
+          "expected_blob": "c609f4353af0e806d18b65528af0f74feb5b4506",
+          "expected_mode": "100644",
+          "actual_blob": "c609f4353af0e806d18b65528af0f74feb5b4506",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/planning-approval.json",
+          "expected_blob": "a5c363c924386265fd96f5c1c92e6b9ea3ea07d1",
+          "expected_mode": "100644",
+          "actual_blob": "a5c363c924386265fd96f5c1c92e6b9ea3ea07d1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/005.json",
+          "expected_blob": "8486577a166641fc98a0b559ad5adb86e4bea9bd",
+          "expected_mode": "100644",
+          "actual_blob": "8486577a166641fc98a0b559ad5adb86e4bea9bd",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }
