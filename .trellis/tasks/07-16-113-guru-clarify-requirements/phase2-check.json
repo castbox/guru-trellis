@@ -1,47 +1,25 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-16T23:33:24Z",
+  "generated_at": "2026-07-17T01:51:48Z",
   "task_dir": ".trellis/tasks/07-16-113-guru-clarify-requirements",
   "base_branch": "main",
-  "head": "a9242def2a9173b72c0bacc186601fba74ddfbd8",
+  "head": "0b7fcb981031b6fc2c33e8854f80f4f9dbc6b429",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".agents/skills/guru-clarify-requirements/SKILL.md",
-    ".agents/skills/guru-clarify-requirements/references/contract.md",
-    ".agents/skills/guru-clarify-requirements/tests/test_contract.py",
-    ".claude/skills/guru-clarify-requirements/SKILL.md",
-    ".claude/skills/guru-clarify-requirements/references/contract.md",
-    ".claude/skills/guru-clarify-requirements/tests/test_contract.py",
-    ".codex/skills/guru-clarify-requirements/SKILL.md",
-    ".codex/skills/guru-clarify-requirements/references/contract.md",
-    ".codex/skills/guru-clarify-requirements/tests/test_contract.py",
-    ".cursor/skills/guru-clarify-requirements/SKILL.md",
-    ".cursor/skills/guru-clarify-requirements/references/contract.md",
-    ".cursor/skills/guru-clarify-requirements/tests/test_contract.py",
-    ".trellis/guru-team/extension.json",
-    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
-    ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
-    ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
     ".trellis/spec/workflow/data-contracts.md",
-    ".trellis/spec/workflow/quality-guidelines.md",
-    ".trellis/spec/workflow/skill-package-contract.md",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/agent-assignment.json",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/001.json",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/002.json",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/003.json",
-    "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
-    "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
-    "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/004.json",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/review-gate.json",
-    ".trellis/tasks/07-16-113-guru-clarify-requirements/review.md",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-01-final-release-finding.md",
-    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-02-finding-closure-reopened.md"
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-02-finding-closure-reopened.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-03-finding-closure.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-04-f007-closure.md"
   ],
-  "checker": "/root/issue_113_f007_phase2_check",
-  "check_summary": "F-007 修复后的 fresh Phase 2 独立覆盖固定 base 到 a9242def 的完整提交历史与25个实现路径；五类 combined confirmation、new_task双action、mechanism-only/mixed及历史 findings 全部通过，八类一致性、全量测试、安装升级、clean throwaway、all-platform、安全与部署门禁 findings_count=0。F-001 继续 out_of_scope；remote feature ref 留待 publish gate。",
+  "checker": "/root/issue_113_f008_phase2_replacement",
+  "check_summary": "F-008修复后的replacement fresh Phase2从头独立覆盖固定base到HEAD完整实现及两份文档delta；F-008 exact收敛，F-002至F-007无回归，F-001保持out_of_scope，八类一致性、全量测试、安装升级、clean throwaway、all-platform、安全与部署检查findings_count=0。前序stream中断partial未作为pass证据。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/prd.md",
@@ -51,9 +29,9 @@
     },
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/design.md",
-      "sha256": "0d965256286301e8fb0f7ea7c9ac56a68d508bb3d94901aa0be4da731c03f113",
-      "size_bytes": 21098,
-      "modified_at": "2026-07-16T20:30:29.741822+00:00"
+      "sha256": "4609fb509b67d825ef7ed0add27c1e5310775c8e87235443f91664e9b216f3c2",
+      "size_bytes": 21947,
+      "modified_at": "2026-07-17T00:43:28.640264+00:00"
     },
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/implement.md",
@@ -63,9 +41,9 @@
     },
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/planning-approval.json",
-      "sha256": "d3e72cc689d26e0243eeef39d6fa214aaf8f645f856ad27ed3188b1a6d9f2943",
-      "size_bytes": 7651,
-      "modified_at": "2026-07-16T20:31:51.815428+00:00"
+      "sha256": "1d3ce1bcd78b900b2c7092ef45feaf6cbbe82465a80b512ca7924f1df5027ed6",
+      "size_bytes": 5412,
+      "modified_at": "2026-07-17T00:53:16.844630+00:00"
     },
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/issue-scope-ledger.json",
@@ -74,30 +52,36 @@
       "modified_at": "2026-07-16T20:32:31.339666+00:00"
     },
     {
-      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-03-finding-closure.md",
-      "sha256": "9cc55c538f02c88b3b84657bc557154442d0fbe2c20f062762777c46744941c5",
-      "size_bytes": 17104,
-      "modified_at": "2026-07-16T22:53:47.578899+00:00"
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-05-final-release.md",
+      "sha256": "40c93114c852d1fc5ea2e8424656ad97426035eda7f8f9861ad0d7e0ab90b285",
+      "size_bytes": 15590,
+      "modified_at": "2026-07-17T00:18:31.198091+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/review.md",
+      "sha256": "1c32ca59e36e1cc82c3de8da80a01e5e60f1472263aa2f41a7252394cb4bd82c",
+      "size_bytes": 7924,
+      "modified_at": "2026-07-17T00:38:00.766936+00:00"
     }
   ],
   "checked_specs": [
     {
       "path": ".trellis/spec/workflow/data-contracts.md",
-      "sha256": "3b5d78796287b9b75b77316bd2408eccf1001c204db51b8a085d778e975ba8e6",
-      "size_bytes": 84888,
-      "modified_at": "2026-07-16T23:05:13.637920+00:00"
-    },
-    {
-      "path": ".trellis/spec/workflow/quality-guidelines.md",
-      "sha256": "5ee25caa9da6114a60b4f282b138ae4c92b62b57505c2872d0e8573bec1bd3aa",
-      "size_bytes": 16773,
-      "modified_at": "2026-07-16T23:05:13.638160+00:00"
+      "sha256": "01de8831ddc28f4223d3c046b5e18d684d629b73014d75cdb7fdb58353767ae4",
+      "size_bytes": 84886,
+      "modified_at": "2026-07-17T00:43:03.854940+00:00"
     },
     {
       "path": ".trellis/spec/workflow/skill-package-contract.md",
       "sha256": "4532351c24c04f34f2fdc0cb4aa43859c89cf298a4905a221be6a15060fd34ff",
       "size_bytes": 25591,
       "modified_at": "2026-07-16T23:12:39.912341+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "5ee25caa9da6114a60b4f282b138ae4c92b62b57505c2872d0e8573bec1bd3aa",
+      "size_bytes": 16773,
+      "modified_at": "2026-07-16T23:05:13.638160+00:00"
     },
     {
       "path": ".trellis/spec/workflow/companion-scripts.md",
@@ -148,8 +132,8 @@
   },
   "validation_commands": [
     {
-      "command": "F-007 independent structural/live replay",
-      "result": "5/5 positive; 25/25 structural and 25/25 live negative; new_task dual-action and mechanism-only/mixed passed"
+      "command": "F-008 exact Docs SSOT field comparison",
+      "result": "5 preconditions and 11 clarificationRound fields exact; confirmed_actions are action ids; active stale terms 0"
     },
     {
       "command": "focused clarification and package contracts",
@@ -161,27 +145,27 @@
     },
     {
       "command": "source/installed/equality/sidecar",
-      "result": "managed 168; 40 platform byte/mode groups; sidecar/removal/conflict 0/0/0"
+      "result": "4 active skills; managed 168; 40 platform byte/mode groups; sidecar/removal/conflict 0/0/0"
     },
     {
       "command": "clean throwaway marketplace and all-platform",
-      "result": "public discovery plus local unpublished workflow; initial, five exits, standalone, preview-switch, update-reapply, two-closeout, Agents/Claude/Codex/Cursor passed"
+      "result": "public discovery plus local unpublished workflow; initial, five exits, standalone, preview-switch, update-reselect-reapply, two-closeout, all-platform passed"
     },
     {
       "command": "AST/Bash/JSON/JSONL and task contexts",
-      "result": "19/17/38/2; implement.jsonl 14; check.jsonl 11 passed"
+      "result": "19/17/40/2; implement.jsonl 14; check.jsonl 11 passed"
     },
     {
-      "command": "workspace/planning/assignment/diff/source checkout",
-      "result": "all gates passed; index empty; source checkout clean main"
+      "command": "workspace/planning/replacement/diff/source checkout",
+      "result": "fresh approval passed; failed predecessor replaced and replacement completed; index empty; source checkout clean main"
     },
     {
-      "command": "F-001 live authority and trail",
-      "result": "comment sha256/updated_at/context/planning/approval/stale identities matched; out_of_scope; no hostile-input expansion"
+      "command": "F-001 live authority and regression scope",
+      "result": "authority and ledger matched; out_of_scope; no hostile-input expansion; F-002 through F-007 passed"
     },
     {
       "command": "secret and deployment scans",
-      "result": "0 secret hits; no CI/CD/container/K8s/migration/Makefile/config asset changes"
+      "result": "0 secret hits; no CI/CD/container/Compose/K8s/Kustomize/migration/Makefile/config asset changes"
     },
     {
       "command": "remote feature branch marketplace ref",

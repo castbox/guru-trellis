@@ -1,67 +1,31 @@
 {
   "schema_version": "1.2",
-  "generated_at": "2026-07-16T20:31:51Z",
-  "review_prompt_presented_at": "2026-07-16T20:31:51Z",
-  "approved_at": "2026-07-16T20:31:51Z",
+  "generated_at": "2026-07-17T00:53:16Z",
+  "review_prompt_presented_at": "2026-07-17T00:53:16Z",
+  "approved_at": "2026-07-17T00:53:16Z",
   "task_dir": ".trellis/tasks/07-16-113-guru-clarify-requirements",
-  "head": "d77fda1f6a16d064b5db37ff23be9dfe4fa8649a",
+  "head": "0b7fcb981031b6fc2c33e8854f80f4f9dbc6b429",
   "dirty_paths": [
-    ".agents/skills/guru-clarify-requirements/SKILL.md",
-    ".agents/skills/guru-clarify-requirements/interface.json",
-    ".agents/skills/guru-clarify-requirements/references/contract.md",
-    ".agents/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
-    ".claude/skills/guru-clarify-requirements/SKILL.md",
-    ".claude/skills/guru-clarify-requirements/interface.json",
-    ".claude/skills/guru-clarify-requirements/references/contract.md",
-    ".claude/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
-    ".codex/skills/guru-clarify-requirements/SKILL.md",
-    ".codex/skills/guru-clarify-requirements/interface.json",
-    ".codex/skills/guru-clarify-requirements/references/contract.md",
-    ".codex/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
-    ".cursor/skills/guru-clarify-requirements/SKILL.md",
-    ".cursor/skills/guru-clarify-requirements/interface.json",
-    ".cursor/skills/guru-clarify-requirements/references/contract.md",
-    ".cursor/skills/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
-    ".trellis/guru-team/extension.json",
-    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
-    ".trellis/guru-team/skills/packages/guru-clarify-requirements/interface.json",
-    ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
-    ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
-    ".trellis/spec/docs/public-docs.md",
-    ".trellis/spec/workflow/companion-scripts.md",
     ".trellis/spec/workflow/data-contracts.md",
-    ".trellis/spec/workflow/quality-guidelines.md",
-    ".trellis/spec/workflow/skill-package-contract.md",
-    ".trellis/spec/workflow/workflow-contract.md",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/agent-assignment.json",
-    ".trellis/tasks/07-16-113-guru-clarify-requirements/issue-scope-ledger.json",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/001.json",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/002.json",
-    ".trellis/workflow.md",
-    "README.md",
-    "docs/requirements/guru-team-trellis-flow.md",
-    "docs/requirements/requirement-main.md",
-    "trellis/presets/guru-team/README.md",
-    "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
-    "trellis/skills/guru-team/packages/guru-clarify-requirements/interface.json",
-    "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
-    "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
-    "trellis/workflows/guru-team/README.md",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/003.json",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/004.json",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/review-gate.json",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/review.md",
     ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-01-final-release-finding.md",
-    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-02-finding-closure-reopened.md"
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-02-finding-closure-reopened.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-03-finding-closure.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-04-f007-closure.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-05-final-release.md"
   ],
   "reviewer": "codex-main-session",
-  "approval_summary": "已审查 #113 第6轮 Phase2 finding 后的修订规划；七类 terminal proposal、五类 scope classification、mechanism disposition 与 authority-before-context-before-task-update re-entry 已形成一致且可验证的合同。",
+  "approval_summary": "已审查Round 5 F-008后的修订规划；design中的entry preconditions与clarification round字段已精确对齐public interface/schema，durable data contract已明确confirmed action ids，原需求、范围、测试和发布边界未变化。",
   "ambiguity_review": {
     "status": "passed",
     "reviewer": "codex-main-session",
-    "summary": "三份规划工件与 issue #113、F-001 out_of_scope 决策及第6轮两个正常路径 finding 一致；scope classification 与 mechanism disposition 无重叠，authority/content/time/task binding 均有机器可验证条件，无开放问题或未分类弱约束命中。",
+    "summary": "三份规划与issue #113、F-001 out_of_scope决策及Round 5 F-008一致；五项precondition、十一项clarification round字段、confirmation action id/kind边界均为唯一可验证合同，无开放问题、并行实现路径、需求弱化或未分类受控词命中。",
     "normative_language": {
       "controlled_terms": [
         "可以",
@@ -120,7 +84,7 @@
   },
   "user_confirmation": {
     "source": "explicit-post-planning-review",
-    "message": "用户在看到修订后的 prd.md、design.md、implement.md 绝对链接及旧 approval 失效说明后，于本轮明确回复“确认继续”。"
+    "message": "用户在看到修订后的prd.md、design.md、implement.md绝对链接、F-008差异及旧planning approval失效说明后，于当前轮明确回复“确认继续”。"
   },
   "reviewed_artifacts": [
     {
@@ -131,9 +95,9 @@
     },
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/design.md",
-      "sha256": "0d965256286301e8fb0f7ea7c9ac56a68d508bb3d94901aa0be4da731c03f113",
-      "size_bytes": 21098,
-      "modified_at": "2026-07-16T20:30:29.741822+00:00"
+      "sha256": "4609fb509b67d825ef7ed0add27c1e5310775c8e87235443f91664e9b216f3c2",
+      "size_bytes": 21947,
+      "modified_at": "2026-07-17T00:43:28.640264+00:00"
     },
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/implement.md",
@@ -151,9 +115,9 @@
     },
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/design.md",
-      "sha256": "0d965256286301e8fb0f7ea7c9ac56a68d508bb3d94901aa0be4da731c03f113",
-      "size_bytes": 21098,
-      "modified_at": "2026-07-16T20:30:29.741822+00:00"
+      "sha256": "4609fb509b67d825ef7ed0add27c1e5310775c8e87235443f91664e9b216f3c2",
+      "size_bytes": 21947,
+      "modified_at": "2026-07-17T00:43:28.640264+00:00"
     },
     {
       "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/implement.md",

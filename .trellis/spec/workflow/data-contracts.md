@@ -251,7 +251,7 @@ proposal-digest-bound user decision evidence.
 status, action digest, payload digest, and mutation evidence. The recorder
 derives action/payload digests; it does not execute the action. Human
 confirmation records `not_required`, `confirmed`, or `refused`, the exact
-action digest, proposal digests, confirmed action kinds, confirmer/time, and
+action digest, proposal digests, confirmed action ids, confirmer/time, and
 evidence summary. Generic continuation/planning/review confirmation action
 kinds are invalid. Every five-class active-task scope decision that carries an
 `active_task_scope_update` must use one

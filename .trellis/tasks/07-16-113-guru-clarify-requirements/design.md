@@ -55,12 +55,11 @@ Artifact schema id 固定为 `guru-requirements-clarification-1.0`。Extension i
 
 两种 mode 的 `entry_precondition_ids` 完全一致：
 
-1. `runtime_dependency`：完整 Guru Team preset、installed manifest、dispatcher、managed package inventory current。
-2. `invocation_context`：`initial_intake`、`active_task_scope_change` 或 `explicit_review` 三选一。
-3. `review_target`：existing issue、proposed draft、active task scope 或 standalone request 的 portable identity。
-4. `context_availability`：current #111 snapshot reference、明确 missing evidence codes 或 standalone caller supplied evidence。
-5. `source_authority`：current issue/draft/task scope content hashes与 mutation preimage。
-6. `evidence_freshness`：question state、action digest、confirmation digest、mutation result、scope/content/result digest current。
+1. `runtime_dependency`：evidence 是 installed extension manifest、dispatcher、active package inventory 与已声明的 record/check runtime commands；绑定完整且兼容的 Guru Team preset runtime；每次 runtime command 前由 `run-skill-command` 验证 freshness。
+2. `review_target`：evidence 是一个 current GitHub issue 或 side-effect-free proposed draft identity；绑定 AI 实际审查的 exact requirements authority；record/check 全程要求 target facts 与 content digest 不变。
+3. `context_evidence`：evidence 是 current `guru-context-discovery-1.0` snapshot 或明确的 missing/stale evidence；绑定 repository、current/history evidence 与 load-bearing decisions；`clear` 前重新验证 current evidence，缺失时返回 `needs_context`。
+4. `source_authority`：evidence 是 live issue/draft facts，以及适用时 exact source-action preimage 与 post-mutation facts；绑定 future intake 将读取的 issue 或 draft；AI 在 mutation 前立即重读，checker 重读已声明的 live facts。
+5. `invocation_freshness`：evidence 是 mode、invocation kind、caller-aware resume target、target/context/scope/action/payload/result digests 与 active-task bindings；绑定一个 current semantic review round 及其合法 continuation；typed-exit validation 时所有 identity 必须仍然匹配。
 
 缺 context 是合法输入状态，用于产生 `needs_context`；不得把它建模为 package invocation failure。Runtime dependency、target identity 或 closed payload shape 无效才属于 fail-closed invocation failure。
 
@@ -88,17 +87,17 @@ classified
 
 - `round_id`
 - `question_id`
-- `question_kind`: `single` 或 `atomic_group`
-- `question_text`
-- `atomicity_reason`: `atomic_group` 必填，`single` 必须为 null
+- `atomic_group_id`
+- `atomic_group_reason`
 - `category`: `product_intent` 或 `scope_risk_decision`
+- `question`
 - `answer_summary`
 - `answer_status`: `complete`、`partial`、`refused`
-- `affected_contracts[]`
-- `opened_question_ids[]`
-- `closed_question_ids[]`
+- `affected_contracts`
+- `opened_question_ids`
+- `closed_question_ids`
 
-同一 round 只能有一个 `question_id`。`partial` 不得关闭自身或其它 load-bearing question。`repository_answerable_questions[]` 必须在第一轮用户问题前全部处于 `answered` 或 `not_answerable`；`not_answerable` 必须携带已检查 evidence refs 与缺失原因。
+Closed schema 不定义额外的 single/atomic-group discriminator：普通单题使用 `atomic_group_id=null` 且 `atomic_group_reason=null`；只有不可拆分的 product choice 才使用非 null `atomic_group_id`，并同时提供非空的 `atomic_group_reason`。同一 round 仍只有一个 `question_id`，`question` 承载问题正文。`partial` 不得关闭自身或其它 load-bearing question。`repository_answerable_questions[]` 必须在第一轮用户问题前全部处于 `answered` 或 `not_answerable`；`not_answerable` 必须携带已检查 evidence refs 与缺失原因。
 
 ### 5.3 Convergence rule
 
