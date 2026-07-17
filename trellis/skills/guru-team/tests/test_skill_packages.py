@@ -75,11 +75,11 @@ class SourceValidationTests(unittest.TestCase):
         self.assertEqual(result["facts"]["reserved_ids"], ["guru-create-work-commit"])
         self.assertEqual(
             result["facts"]["active_ids"],
-            ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"],
+            ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-review-contract-wording", "guru-sync-base"],
         )
-        self.assertEqual(result["facts"]["invoke_markers"], 4)
-        self.assertEqual(result["facts"]["exit_markers"], 14)
-        self.assertEqual(result["facts"]["target_markers"], 8)
+        self.assertEqual(result["facts"]["invoke_markers"], 5)
+        self.assertEqual(result["facts"]["exit_markers"], 17)
+        self.assertEqual(result["facts"]["target_markers"], 11)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         scope_gate = workflow.index("Scope Change Gate:")
@@ -1214,7 +1214,7 @@ class ProductionDistributionTests(unittest.TestCase):
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["reserved_ids"], ["guru-create-work-commit"])
-            self.assertEqual(result["active_ids"], ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"])
+            self.assertEqual(result["active_ids"], ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-review-contract-wording", "guru-sync-base"])
             self.assertFalse((repo / ".agents/skills/guru-create-work-commit").exists())
             for root in (".agents", ".codex", ".cursor", ".claude"):
                 task_commit = repo / root / "skills/guru-create-task-commit"
@@ -1230,6 +1230,11 @@ class ProductionDistributionTests(unittest.TestCase):
                 self.assertTrue((clarification / "schemas/requirements-clarification.schema.json").is_file())
                 self.assertTrue(os.access(clarification / "scripts/record-requirements-clarification.sh", os.X_OK))
                 self.assertTrue(os.access(clarification / "scripts/check-requirements-clarification.sh", os.X_OK))
+                wording = repo / root / "skills/guru-review-contract-wording"
+                self.assertTrue((wording / "SKILL.md").is_file())
+                self.assertTrue((wording / "schemas/contract-wording-review.schema.json").is_file())
+                self.assertTrue(os.access(wording / "scripts/record-contract-wording-review.sh", os.X_OK))
+                self.assertTrue(os.access(wording / "scripts/check-contract-wording-review.sh", os.X_OK))
 
             manifest = dst / "extension.json"
             manifest.write_text(json.dumps({

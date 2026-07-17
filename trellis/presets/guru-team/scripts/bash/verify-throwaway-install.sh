@@ -425,8 +425,10 @@ record_planning_contract_wording() {
   local task_rel="$1"
   local probe_dir="$WORK_DIR/contract-wording-planning"
   local input="$probe_dir/planning_artifacts.input.json"
+  local changed_input="$probe_dir/planning_artifacts.content_changed.input.json"
+  local bytes_before="$probe_dir/planning_artifacts.bytes.json"
   mkdir -p "$probe_dir"
-  python3 - "$TARGET" "$task_rel" "$input" <<'PY'
+  python3 - "$TARGET" "$task_rel" "$input" "$changed_input" "$bytes_before" <<'PY'
 import importlib.util
 import json
 import sys
@@ -435,6 +437,8 @@ from pathlib import Path
 root = Path(sys.argv[1])
 task_rel = sys.argv[2]
 output = Path(sys.argv[3])
+changed_output = Path(sys.argv[4])
+bytes_output = Path(sys.argv[5])
 runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
 spec = importlib.util.spec_from_file_location("installed_planning_wording_runtime", runtime)
 if spec is None or spec.loader is None:
@@ -446,52 +450,108 @@ scope, contents = gtt.contract_wording_build_scope(
     root, "planning_artifacts", "workflow", task_dir=root / task_rel
 )
 scan = gtt.scan_contract_wording(scope, contents)
+gate = {
+    "status": "passed",
+    "reviewer": "throwaway-planning-wording-review",
+    "summary": "The fixed three-file planning scope and complete current scan were reviewed.",
+    "reviewed_scan_sha256": scan["scan_sha256"],
+    "checked_dimensions": {
+        name: True for name in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
+    },
+    "planning_checked_dimensions": {
+        name: True
+        for name in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+    },
+}
+classifications = [
+    {
+        "hit_id": hit["hit_id"],
+        "classification": "term_definition",
+        "reason": "Throwaway planning review confirms this retained wording is explicitly defined.",
+    }
+    for hit in scan["hits"]
+]
 authored = {
-    "generated_at": "2026-07-17T00:00:00Z",
+    "generated_at": "2026-07-17T00:00:01Z",
     "semantic_review": {
         "revisions": [],
-        "classifications": [
-            {
-                "hit_id": hit["hit_id"],
-                "classification": "term_definition",
-                "reason": "Throwaway planning review confirms this retained wording is explicitly defined.",
-            }
-            for hit in scan["hits"]
-        ],
-        "ai_review_gate": {
-            "status": "passed",
-            "reviewer": "throwaway-planning-wording-review",
-            "summary": "The fixed three-file planning scope and complete current scan were reviewed.",
-            "reviewed_scan_sha256": scan["scan_sha256"],
-            "checked_dimensions": {
-                name: True for name in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
-            },
-            "planning_checked_dimensions": {
-                name: True
-                for name in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-            },
-        },
+        "classifications": classifications,
+        "ai_review_gate": gate,
     },
     "human_confirmation": {
         "status": "not_required",
         "confirmed_by": None,
         "confirmed_at": None,
-        "reason": "No planning content mutation is required for this throwaway smoke.",
+        "reason": "The complete re-entry requires no further content mutation.",
     },
     "typed_exit": "pass",
 }
+first = scope["items"][0]
+changed_authored = {
+    "generated_at": "2026-07-17T00:00:00Z",
+    "semantic_review": {
+        "revisions": [{
+            "revision_id": "throwaway-planning-content-change",
+            "locator": first["path"],
+            "before_sha256": "0" * 64,
+            "after_sha256": first["content_sha256"],
+            "reason": "The authorized wording rewrite is already reflected in current bytes.",
+            "mutation_authority": "The throwaway workflow authorized this planning wording rewrite.",
+            "rescan_sha256": scan["scan_sha256"],
+        }],
+        "classifications": [
+            dict(row) for row in classifications
+        ],
+        "ai_review_gate": dict(gate),
+    },
+    "human_confirmation": {
+        "status": "not_required",
+        "confirmed_by": None,
+        "confirmed_at": None,
+        "reason": "The authorized rewrite did not require a separate confirmation.",
+    },
+    "typed_exit": "content_changed",
+}
 output.write_text(json.dumps(authored, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+changed_output.write_text(
+    json.dumps(changed_authored, ensure_ascii=False, indent=2) + "\n",
+    encoding="utf-8",
+)
+bytes_output.write_text(
+    json.dumps({
+        name: (root / task_rel / name).read_bytes().hex()
+        for name in gtt.CONTRACT_WORDING_PLANNING_SCOPE
+    }, sort_keys=True) + "\n",
+    encoding="utf-8",
+)
 PY
   "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
     --root "$TARGET" --json --mode workflow --profile planning_artifacts \
-    --task "$task_rel" --input "$input" >/dev/null
+    --task "$task_rel" --input "$changed_input" >/dev/null
   "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
     --root "$TARGET" --json --task "$task_rel" >/dev/null
-  python3 - "$TARGET/$task_rel/contract-wording-review.json" <<'PY'
+  local prior_facts
+  prior_facts="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["facts_sha256"])' "$TARGET/$task_rel/contract-wording-review.json")"
+  "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
+    --root "$TARGET" --json --mode workflow --profile planning_artifacts \
+    --task "$task_rel" --input "$input" \
+    --supersede-reentry-facts-sha256 "$prior_facts" >/dev/null
+  "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
+    --root "$TARGET" --json --task "$task_rel" >/dev/null
+  python3 - "$TARGET/$task_rel/contract-wording-review.json" "$TARGET" "$task_rel" "$bytes_before" <<'PY'
 import json
 import sys
 
 payload = json.load(open(sys.argv[1], encoding="utf-8"))
+root = __import__("pathlib").Path(sys.argv[2])
+task_rel = sys.argv[3]
+before = json.load(open(sys.argv[4], encoding="utf-8"))
+assert payload["typed_exit"] == "pass"
+assert payload["semantic_review"]["revisions"] == []
+assert before == {
+    name: (root / task_rel / name).read_bytes().hex()
+    for name in ("prd.md", "design.md", "implement.md")
+}
 dimensions = payload["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"]
 assert set(dimensions) == {
     "no_requirement_weakening",

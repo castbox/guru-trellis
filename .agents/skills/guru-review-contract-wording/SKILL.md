@@ -20,4 +20,8 @@ re-entry by the profile consumer; it is not a partial pass. Fail closed when
 scope can be narrowed, evidence is stale or incomplete, a hit is unclassified
 or a contract violation, mutation authority is missing, product semantics
 would change without confirmation, or the compatible Guru Team runtime is not
-installed. This package is not self-contained or portable.
+installed. After the consumer enters a complete same-profile re-entry, current
+`content_changed` or `blocked` task-local evidence may be superseded only by
+binding its exact `facts_sha256` to a different, fully current result; an
+identical result and a current `pass` remain protected. This package is not
+self-contained or portable.

@@ -4033,6 +4033,85 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             encoding="utf-8",
         )
 
+    def write_wording_recorder_input(
+        self,
+        name: str,
+        typed_exit: str,
+        *,
+        with_revision: bool = False,
+    ) -> Path:
+        scope, contents = gtt.contract_wording_build_scope(
+            self.root,
+            "planning_artifacts",
+            "workflow",
+            task_dir=self.task_dir,
+        )
+        scan = gtt.scan_contract_wording(scope, contents)
+        passed = typed_exit != "blocked"
+        revisions = []
+        if with_revision:
+            item = scope["items"][0]
+            revisions = [{
+                "revision_id": f"{name}-revision",
+                "locator": item["path"],
+                "before_sha256": "0" * 64,
+                "after_sha256": item["content_sha256"],
+                "reason": "测试已授权改写后的 current rescan。",
+                "mutation_authority": "测试 workflow 已授权 planning artifact 改写。",
+                "rescan_sha256": scan["scan_sha256"],
+            }]
+        payload = {
+            "generated_at": f"2026-07-17T00:00:{sum(name.encode('utf-8')) % 60:02d}Z",
+            "semantic_review": {
+                "revisions": revisions,
+                "classifications": [{
+                    "hit_id": hit["hit_id"],
+                    "classification": "term_definition",
+                    "reason": "AI 已审查并保留该确定含义。",
+                } for hit in scan["hits"]],
+                "ai_review_gate": {
+                    "status": "passed" if passed else "blocked",
+                    "reviewer": "test-reentry-reviewer",
+                    "summary": "已完成同一 planning profile 的完整 current review。",
+                    "reviewed_scan_sha256": scan["scan_sha256"],
+                    "checked_dimensions": {
+                        key: passed for key in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
+                    },
+                    "planning_checked_dimensions": {
+                        key: passed
+                        for key in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+                    },
+                },
+            },
+            "human_confirmation": {
+                "status": "not_required" if passed else "refused",
+                "confirmed_by": None,
+                "confirmed_at": None,
+                "reason": "测试记录当前 authority/confirmation 结果。",
+            },
+            "typed_exit": typed_exit,
+        }
+        path = self.root / f"{name}.json"
+        gtt.write_json(path, payload)
+        return path
+
+    def wording_record_args(self, input_path: Path, **overrides: object) -> argparse.Namespace:
+        values: dict[str, object] = {
+            "root": None,
+            "json": True,
+            "mode": "workflow",
+            "profile": "planning_artifacts",
+            "input": str(input_path),
+            "task": str(self.task_dir),
+            "path": [],
+            "change_request_input": None,
+            "scan_only": False,
+            "replace_stale": False,
+            "supersede_reentry_facts_sha256": None,
+        }
+        values.update(overrides)
+        return argparse.Namespace(**values)
+
     def write_wording_evidence(
         self,
         classification: str | None = "term_definition",
@@ -4432,6 +4511,243 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertIn(
             "contract_wording_revision_rescan_mismatch",
             gtt.contract_wording_structural_errors(self.root, result, scope, scan),
+        )
+
+    def test_contract_wording_recorder_supersedes_current_content_changed_after_reentry(self) -> None:
+        (self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT).unlink()
+        before = {
+            name: (self.task_dir / name).read_bytes()
+            for name in gtt.CONTRACT_WORDING_PLANNING_SCOPE
+        }
+        changed_input = self.write_wording_recorder_input(
+            "content-changed", "content_changed", with_revision=True
+        )
+        pass_input = self.write_wording_recorder_input("content-changed-pass", "pass")
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            changed = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(changed_input)
+            )
+            passed = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(
+                    pass_input,
+                    supersede_reentry_facts_sha256=changed["facts_sha256"],
+                )
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(changed["typed_exit"], "content_changed")
+        self.assertEqual(passed["typed_exit"], "pass")
+        self.assertEqual(
+            gtt.read_json(self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT),
+            passed,
+        )
+        self.assertEqual(
+            before,
+            {
+                name: (self.task_dir / name).read_bytes()
+                for name in gtt.CONTRACT_WORDING_PLANNING_SCOPE
+            },
+        )
+
+    def test_contract_wording_recorder_supersedes_current_blocked_but_protects_pass(self) -> None:
+        (self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT).unlink()
+        blocked_input = self.write_wording_recorder_input("blocked", "blocked")
+        pass_input = self.write_wording_recorder_input("blocked-pass", "pass")
+        next_pass_input = self.write_wording_recorder_input("second-pass", "pass")
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            blocked = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(blocked_input)
+            )
+            passed = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(
+                    pass_input,
+                    supersede_reentry_facts_sha256=blocked["facts_sha256"],
+                )
+            )
+            with self.assertRaises(gtt.WorkflowError) as exact_pass:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        pass_input,
+                        supersede_reentry_facts_sha256=passed["facts_sha256"],
+                    )
+                )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        next_pass_input,
+                        supersede_reentry_facts_sha256=passed["facts_sha256"],
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(blocked["typed_exit"], "blocked")
+        self.assertEqual(passed["typed_exit"], "pass")
+        self.assertIn(
+            "contract_wording_current_pass_protected",
+            exact_pass.exception.payload["error_codes"],
+        )
+        self.assertIn(
+            "contract_wording_current_pass_protected",
+            raised.exception.payload["error_codes"],
+        )
+
+    def test_contract_wording_reentry_supersession_requires_existing_target_and_exact_digest(self) -> None:
+        evidence_path = self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT
+        evidence_path.unlink()
+        changed_input = self.write_wording_recorder_input(
+            "missing-content-changed", "content_changed", with_revision=True
+        )
+        pass_input = self.write_wording_recorder_input("missing-pass", "pass")
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as missing:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        changed_input,
+                        supersede_reentry_facts_sha256="0" * 64,
+                    )
+                )
+            changed = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(changed_input)
+            )
+            with self.assertRaises(gtt.WorkflowError) as identical:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        changed_input,
+                        supersede_reentry_facts_sha256=changed["facts_sha256"],
+                    )
+                )
+            with self.assertRaises(gtt.WorkflowError) as digest:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        pass_input,
+                        supersede_reentry_facts_sha256="0" * 64,
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(changed["typed_exit"], "content_changed")
+        self.assertIn(
+            "contract_wording_replacement_target_missing",
+            missing.exception.payload["error_codes"],
+        )
+        self.assertIn(
+            "contract_wording_reentry_requires_new_result",
+            identical.exception.payload["error_codes"],
+        )
+        self.assertIn(
+            "contract_wording_reentry_superseded_facts_mismatch",
+            digest.exception.payload["error_codes"],
+        )
+
+    def test_contract_wording_reentry_supersession_rejects_non_task_profile(self) -> None:
+        explicit = self.root / "explicit.md"
+        explicit.write_text("# Explicit\n\n确定合同。\n", encoding="utf-8")
+        args = self.wording_record_args(
+            explicit,
+            root=str(self.root),
+            mode="standalone",
+            profile="explicit_paths",
+            input=None,
+            task=None,
+            path=["explicit.md"],
+            supersede_reentry_facts_sha256="0" * 64,
+        )
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.cmd_record_contract_wording_review(args)
+        self.assertIn(
+            "contract_wording_replacement_profile_invalid",
+            raised.exception.payload["error_codes"],
+        )
+
+    def test_contract_wording_reentry_supersession_rejects_stale_digest_and_wrong_profile(self) -> None:
+        evidence_path = self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT
+        evidence_path.unlink()
+        changed_input = self.write_wording_recorder_input(
+            "stale-content-changed", "content_changed", with_revision=True
+        )
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            changed = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(changed_input)
+            )
+            (self.task_dir / "prd.md").write_text(
+                "# PRD\n\n改写后的确定需求。\n", encoding="utf-8"
+            )
+            pass_input = self.write_wording_recorder_input("fresh-pass", "pass")
+            with self.assertRaises(gtt.WorkflowError) as stale:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        pass_input,
+                        supersede_reentry_facts_sha256=changed["facts_sha256"],
+                    )
+                )
+            fresh = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(pass_input, replace_stale=True)
+            )
+
+            current_changed_input = self.write_wording_recorder_input(
+                "current-content-changed", "content_changed", with_revision=True
+            )
+            scope, contents = gtt.contract_wording_build_scope(
+                self.root,
+                "planning_artifacts",
+                "workflow",
+                task_dir=self.task_dir,
+            )
+            scan = gtt.scan_contract_wording(scope, contents)
+            current_changed = gtt.contract_wording_derive_result(
+                "planning_artifacts",
+                "workflow",
+                scope,
+                scan,
+                gtt.read_json(current_changed_input),
+            )
+            current_changed["profile"] = "explicit_paths"
+            current_changed["facts_sha256"] = gtt.context_digest({
+                key: value
+                for key, value in current_changed.items()
+                if key != "facts_sha256"
+            })
+            gtt.write_json(evidence_path, current_changed)
+            wrong_profile_pass = self.write_wording_recorder_input(
+                "wrong-profile-pass", "pass"
+            )
+            with self.assertRaises(gtt.WorkflowError) as wrong_profile:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        wrong_profile_pass,
+                        supersede_reentry_facts_sha256=current_changed["facts_sha256"],
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(fresh["typed_exit"], "pass")
+        self.assertIn(
+            "contract_wording_reentry_requires_current_evidence",
+            stale.exception.payload["error_codes"],
+        )
+        self.assertIn(
+            "contract_wording_reentry_profile_mismatch",
+            wrong_profile.exception.payload["error_codes"],
         )
 
     def test_record_and_check_planning_approval(self) -> None:

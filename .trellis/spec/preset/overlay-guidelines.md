@@ -105,6 +105,12 @@ Continue entries must:
   canonical contract's exact, explicitly AI-reviewed planning-only dimensions
   may pass. Overlays should point to the workflow/package and must not duplicate
   vocabulary, classifications, dimension catalog, scanner, or semantic loop
+- state that complete same-profile re-entry supersedes current
+  `content_changed`/`blocked` task-local evidence only with a different, fully
+  current result bound to the exact prior `facts_sha256`; stale evidence uses
+  the separate stale replacement path, and identical results and current
+  `pass` remain protected. Do not make overlays decide semantic route intent or
+  duplicate the package's transition validation
 - in `planning`, remind the AI to create or update the `Docs SSOT Plan`
   required by `.trellis/workflow.md`; do not paste the full enum/strategy
   contract into every overlay

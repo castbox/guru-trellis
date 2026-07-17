@@ -360,6 +360,16 @@ It also never infers or defaults a planning semantic result; only the AI Review
 Gate may produce the values required by the canonical package contract.
 Every content change invalidates the prior scope/scan identity and requires a
 complete rebuild and rescan before evidence can pass.
+Task-local evidence replacement uses one objective state transition contract.
+Stale evidence requires `--replace-stale`. After the fixed consumer has entered
+a complete same-profile re-entry, structurally current `content_changed` or
+`blocked` evidence may be superseded only when
+`--supersede-reentry-facts-sha256` equals the existing `facts_sha256`; the new
+evidence must differ from the old artifact and independently pass full current
+validation. The flags are mutually exclusive; identical-result, wrong-profile,
+or stale supersession fails closed, and a current `pass` remains protected. The
+recorder validates these facts but does not decide that the AI/workflow should
+re-enter or which new exit is correct.
 For a live issue revision, the recorder derives the exact confirmed-payload
 digest from source identity, locator, field, preimage hash, and confirmed
 content hash, and derives a mutation-result identity from the current reread

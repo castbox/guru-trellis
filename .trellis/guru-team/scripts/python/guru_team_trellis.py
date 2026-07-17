@@ -21243,6 +21243,24 @@ def cmd_record_contract_wording_review(args: argparse.Namespace) -> dict[str, An
     profile = str(args.profile or "").strip()
     mode = str(args.mode or "").strip()
     scope, contents, task_dir = contract_wording_scope_from_args(root, args, profile, mode)
+    replace_stale = bool(getattr(args, "replace_stale", False))
+    supersede_facts = str(
+        getattr(args, "supersede_reentry_facts_sha256", None) or ""
+    ).strip()
+    if replace_stale and supersede_facts:
+        raise WorkflowError(
+            "Stale replacement and current re-entry supersession are mutually exclusive.",
+            exit_code=2,
+            payload={"error_codes": ["contract_wording_replacement_modes_conflict"]},
+        )
+    if (replace_stale or supersede_facts) and (
+        profile != "planning_artifacts" or bool(getattr(args, "scan_only", False))
+    ):
+        raise WorkflowError(
+            "Contract wording replacement is available only while recording task-local planning_artifacts evidence.",
+            exit_code=2,
+            payload={"error_codes": ["contract_wording_replacement_profile_invalid"]},
+        )
     scan = scan_contract_wording(scope, contents)
     if args.scan_only:
         if getattr(args, "input", None):
@@ -21279,20 +21297,66 @@ def cmd_record_contract_wording_review(args: argparse.Namespace) -> dict[str, An
             exit_code=2,
             payload={"error_codes": trackability},
         )
+    if not target.exists() and (replace_stale or supersede_facts):
+        raise WorkflowError(
+            "Contract wording replacement requires an existing task-local artifact.",
+            exit_code=2,
+            payload={"error_codes": ["contract_wording_replacement_target_missing"]},
+        )
     if target.exists():
         existing = read_json(target)
-        if existing != result:
-            if not args.replace_stale:
-                raise WorkflowError(
-                    "Existing contract-wording-review.json differs; explicit --replace-stale re-entry is required.",
-                    exit_code=2,
-                )
+        if existing != result and not replace_stale and not supersede_facts:
+            raise WorkflowError(
+                "Existing contract-wording-review.json differs; use --replace-stale for stale evidence or --supersede-reentry-facts-sha256 after a current non-pass re-entry.",
+                exit_code=2,
+            )
+        if replace_stale or supersede_facts:
             existing_errors = contract_wording_structural_errors(root, existing, scope, scan)
-            if not existing_errors:
-                raise WorkflowError(
-                    "Current contract-wording-review.json cannot be replaced as stale.",
-                    exit_code=2,
-                )
+            if replace_stale:
+                if not existing_errors:
+                    raise WorkflowError(
+                        "Current contract-wording-review.json cannot be replaced as stale.",
+                        exit_code=2,
+                    )
+            else:
+                supersession_errors: list[str] = []
+                if re.fullmatch(r"[0-9a-f]{64}", supersede_facts) is None:
+                    supersession_errors.append(
+                        "contract_wording_reentry_superseded_facts_invalid"
+                    )
+                if existing == result:
+                    supersession_errors.append(
+                        "contract_wording_reentry_requires_new_result"
+                    )
+                if existing_errors:
+                    supersession_errors.append(
+                        "contract_wording_reentry_requires_current_evidence"
+                    )
+                if (
+                    existing.get("profile") != result.get("profile")
+                    or existing.get("mode") != result.get("mode")
+                ):
+                    supersession_errors.append(
+                        "contract_wording_reentry_profile_mismatch"
+                    )
+                if existing.get("facts_sha256") != supersede_facts:
+                    supersession_errors.append(
+                        "contract_wording_reentry_superseded_facts_mismatch"
+                    )
+                if existing.get("typed_exit") == "pass":
+                    supersession_errors.append(
+                        "contract_wording_current_pass_protected"
+                    )
+                elif existing.get("typed_exit") not in {"content_changed", "blocked"}:
+                    supersession_errors.append(
+                        "contract_wording_reentry_requires_nonpass_exit"
+                    )
+                if supersession_errors:
+                    raise WorkflowError(
+                        "Contract wording same-profile re-entry supersession is invalid.",
+                        exit_code=2,
+                        payload={"error_codes": context_sort(supersession_errors)},
+                    )
     write_json(target, result)
     persisted = read_json(target)
     if persisted != result:
@@ -21484,7 +21548,12 @@ def build_parser() -> argparse.ArgumentParser:
     wording_record.add_argument("--path", action="append", default=[])
     wording_record.add_argument("--change-request-input")
     wording_record.add_argument("--scan-only", action="store_true")
-    wording_record.add_argument("--replace-stale", action="store_true")
+    wording_replacement = wording_record.add_mutually_exclusive_group()
+    wording_replacement.add_argument("--replace-stale", action="store_true")
+    wording_replacement.add_argument(
+        "--supersede-reentry-facts-sha256",
+        help="Exact facts_sha256 of current same-profile content_changed/blocked evidence whose consumer has entered a complete re-entry.",
+    )
 
     wording_check = sub.add_parser("check-contract-wording-review")
     wording_check.add_argument("--root")

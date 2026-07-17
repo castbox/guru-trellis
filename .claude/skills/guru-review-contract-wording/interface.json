@@ -96,7 +96,7 @@
   ],
   "reentry": {
     "identity": "mode, profile, normalized scope items, scope/scan digests, current hits, revisions, classifications, Review Gate, confirmation and result digest",
-    "freshness": "every content mutation invalidates prior hits and semantic evidence; the checker rebuilds the profile scope and deterministic scan before accepting the declared exit",
+    "freshness": "every content mutation invalidates prior hits and semantic evidence; stale replacement is explicit, while a current content_changed/blocked result may be superseded only by a different, fully current same-profile result bound to its exact prior facts_sha256; identical results and current pass are protected",
     "stale_behavior": "fail_closed"
   },
   "tests": ["tests/test_contract.py"],

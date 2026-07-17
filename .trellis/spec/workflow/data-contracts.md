@@ -619,6 +619,18 @@ require non-empty author, date-time `updated_at`, selection reason, and content
 hash. These additions do not strengthen planning, explicit-path, draft, or
 archived evidence into a live mutation contract.
 
+The task-local artifact has one replacement state machine. `--replace-stale`
+accepts only an existing artifact that fails current scope/scan/schema
+validation. After the verified `content_changed` consumer or a resumed
+`blocked` stop has entered complete same-profile re-entry,
+`--supersede-reentry-facts-sha256` accepts only an existing structurally current
+non-pass artifact whose exact `facts_sha256`, profile, and mode match. The
+replacement result must independently be complete and current. The two paths
+are mutually exclusive; an identical replacement result, wrong digest/profile,
+stale supersession, and current `pass` replacement fail closed. This invocation
+fact does not let the recorder choose re-entry, semantic judgment, or the
+replacement exit.
+
 ## Phase 2 Check Artifact
 
 `phase2-check.json` is the commit-preflight evidence for Phase 2.2. It records:

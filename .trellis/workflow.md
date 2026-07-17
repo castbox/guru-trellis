@@ -724,6 +724,12 @@ The router consumes only the checker-validated profile and exit; unknown,
 multiple, stale, or unmapped results fail closed. The Skill package owns fixed
 scope, semantic revision/classification, AI Review Gate, confirmation,
 recorder/checker, evidence freshness, and re-entry.
+After a `content_changed` consumer or resumed `blocked` stop enters complete
+same-profile re-entry, task-local current non-pass evidence is superseded only
+with a different, fully current result bound to its exact prior `facts_sha256`.
+Stale evidence follows the separate stale replacement path; an identical
+result and current `pass` remain protected. The recorder validates these
+objective transition facts without deciding semantic route intent.
 For `planning_artifacts`, `pass` also requires the canonical package's exact
 profile-specific planning-dimension evidence. Evidence recorded before that
 field existed is stale even when its schema id is still `1.0`.
@@ -1021,7 +1027,12 @@ evidence at `{TASK_DIR}/contract-wording-review.json`. Only a checker-validated
 AI-reviewed and recorded continues; `content_changed` requires complete
 planning review re-entry, and `blocked` stops with the recorded reason. The
 recorder/checker validates only the exact field shape and values and never
-supplies a semantic result.
+supplies a semantic result. On that complete re-entry, a current
+`content_changed` or resumed `blocked` artifact is replaced by passing its exact
+prior digest to `--supersede-reentry-facts-sha256`; `--replace-stale` remains
+only for evidence that no longer matches current scope/scan. The superseding
+result must be fully current and differ from the old artifact; an identical
+result or current `pass` cannot be overwritten by either re-entry assertion.
 
 After the wording Skill passes, the main session must run the Markdown artifact
 resolver, render a `Markdown 产物 review 表`, visibly present all three

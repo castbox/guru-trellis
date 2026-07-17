@@ -709,6 +709,13 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   For `planning_artifacts`, they require the canonical planning-only dimension
   object and validate its exact shape/value; they never infer or generate those
   AI judgments. Other profiles reject the field.
+  Task-local replacement has two mutually exclusive objective paths: stale
+  evidence uses `--replace-stale`, while complete same-profile re-entry from a
+  structurally current `content_changed`/`blocked` result uses
+  `--supersede-reentry-facts-sha256 <existing-facts-sha256>`. The recorder
+  validates currentness, exact digest, same profile/mode, a different and
+  complete new evidence result, identical-result rejection, and current-pass
+  protection; it never decides semantic re-entry or route intent.
   For `change_request` selected comments they reject missing author or update
   time. For a live issue revision they derive exact confirmed-payload and
   mutation-result digests, require the human confirmation digest to bind the

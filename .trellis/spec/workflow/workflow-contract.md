@@ -192,6 +192,13 @@ planning-artifacts pass permits planning artifact presentation, and content
 changes re-enter the corresponding full review. Unknown, missing, multiple,
 stale, or unmapped profile/exit evidence fails closed.
 
+For task-local planning evidence, the full re-entry consumer passes the exact
+prior `facts_sha256` to supersede a structurally current `content_changed` or
+resumed `blocked` result with a different, fully current new result. Stale
+evidence uses a separate stale replacement assertion. These paths are mutually
+exclusive; identical results and current `pass` are protected, and the
+recorder checks transition facts but never decides semantic re-entry.
+
 The workflow, prompts, launchers, and platform entries must not reproduce the
 Skill's vocabulary, classification catalog, rewrite/classification/review
 loop, scanner behavior, or evidence derivation. They reference only stable

@@ -585,7 +585,10 @@ evidence/binding，再校验 schema 1.2 compatibility projection、explicit conf
 digests。Phase 0 handoff、旧 schema/source、缺失/过期/non-pass wording evidence 不能通过
 gate；schema id 仍为 `guru-contract-wording-review-1.0` 但缺少 planning-only dimensions 的旧
 evidence 同样 stale，必须完整重审而不能手工补齐。实现提交后的 HEAD drift、metadata tail 或无关 dirty paths 不会单独使 approval
-stale。`task.py start` 只是状态写入，不代表规划已审查。
+stale。`content_changed` 或恢复后的 `blocked` 进入完整 same-profile re-entry 时，recorder
+要求 `--supersede-reentry-facts-sha256` 精确绑定 current non-pass evidence，且完整 current
+新结果必须与旧 artifact 不同；stale evidence 仍只走 `--replace-stale`，相同结果与 current
+`pass` 受保护。`task.py start` 只是状态写入，不代表规划已审查。
 阶段停止点和阶段完成回复还必须给用户一个最新的 task Markdown 入口表。AI 先运行
 `resolve-human-artifacts.sh --json --task <task-path>`，再输出
 `Markdown 产物 review 表`；标准表只列 `prd.md`、`design.md`、`implement.md`、

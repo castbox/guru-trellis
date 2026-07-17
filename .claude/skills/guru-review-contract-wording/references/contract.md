@@ -34,9 +34,16 @@ the rebuilt live scope. Draft review remains side-effect-free.
 The scope is exactly the current active task's `prd.md`, `design.md`, and
 `implement.md`, in that order. All three must be regular files. The caller may
 not supply a selector, alias, replacement, or exclusion. Passed evidence is
-task-local `contract-wording-review.json`; older different evidence may be
-replaced only during an explicit same-profile re-entry after it is proven
-stale.
+task-local `contract-wording-review.json`. A different stale artifact may be
+replaced only through explicit `--replace-stale`. A structurally current
+`content_changed` or `blocked` artifact is instead superseded only after its
+consumer enters a complete same-profile re-entry and supplies
+`--supersede-reentry-facts-sha256 <existing-facts-sha256>`. The recorder
+requires the existing artifact to remain current, requires the exact bound
+digest and same profile/mode, validates a complete current replacement that
+differs from the existing artifact, and rejects identical-result or current
+`pass` supersession. The script validates this transition but does not decide
+whether the semantic consumer entered re-entry.
 
 In addition to the common wording Review Gate, this profile must explicitly
 review and record all seven planning semantics inherited from #93:
@@ -166,6 +173,14 @@ historical no-revision evidence do not acquire a synthetic mutation binding.
 The exit/Gate relation is biconditional: `blocked` if and only if the Gate is
 blocked. Unknown profile, exit, consumer, selector, or stale identity fails
 closed.
+
+Task-local replacement has one active transition contract. Stale evidence uses
+`--replace-stale`; current non-pass evidence uses the exact digest-bound
+same-profile re-entry path above. The two flags are mutually exclusive. A
+supersession assertion cannot preserve the exact same result, and a current
+`pass` cannot be replaced merely to revise reviewer prose, timestamps, or route
+intent; content drift first makes it stale, while a real new review must be
+started through the owning workflow/Skill contract.
 
 ## Planning Approval Migration
 

@@ -134,6 +134,12 @@ class ContractWordingPackageTest(unittest.TestCase):
             self.assertIn(classification, contract)
         for dimension in GTT.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS:
             self.assertIn(dimension, contract)
+        self.assertIn("--supersede-reentry-facts-sha256", contract)
+        self.assertIn("current `pass`", " ".join(contract.split()))
+        interface = json.loads((PACKAGE_ROOT / "interface.json").read_text(encoding="utf-8"))
+        self.assertIn("facts_sha256", interface["reentry"]["freshness"])
+        self.assertIn("identical results", interface["reentry"]["freshness"])
+        self.assertIn("current pass", interface["reentry"]["freshness"])
 
     def test_schema_and_example_are_closed_versioned_json(self) -> None:
         schema = json.loads((PACKAGE_ROOT / "schemas" / "contract-wording-review.schema.json").read_text(encoding="utf-8"))
