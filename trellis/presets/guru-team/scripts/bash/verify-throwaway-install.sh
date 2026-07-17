@@ -123,6 +123,7 @@ needs_context["context_evidence"] = {
     "evidence_refs": ["repository evidence"],
     "missing_reason": "Current repository context is unavailable.",
 }
+
 cases = {"clear": clear}
 cases["needs_context"] = gtt.derive_requirements_clarification_result(needs_context)
 
@@ -209,6 +210,280 @@ PY
   done
 }
 
+verify_contract_wording_standalone_profiles() {
+  local label="$1"
+  local probe_dir="$WORK_DIR/contract-wording-$label"
+  local explicit_rel="docs/contract-wording-$label.md"
+  local draft_rel="docs/contract-wording-$label-draft.json"
+  mkdir -p "$probe_dir" "$TARGET/docs"
+  printf '# Contract wording\n\n建议保留为已定义术语。\n' >"$TARGET/$explicit_rel"
+  cat >"$TARGET/$draft_rel" <<'JSON'
+{
+  "kind": "draft",
+  "draft_id": "throwaway-contract-wording",
+  "title": "Exact contract wording title",
+  "body": "建议保留为已定义术语。",
+  "selected_comments": []
+}
+JSON
+  python3 - "$TARGET" "$probe_dir" "$explicit_rel" "$draft_rel" <<'PY'
+import importlib.util
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+probe_dir = Path(sys.argv[2])
+explicit_rel = sys.argv[3]
+draft_rel = sys.argv[4]
+runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+spec = importlib.util.spec_from_file_location("installed_contract_wording_runtime", runtime)
+if spec is None or spec.loader is None:
+    raise SystemExit(f"could not load installed contract wording runtime: {runtime}")
+gtt = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = gtt
+spec.loader.exec_module(gtt)
+
+cases = {
+    "explicit_paths": gtt.contract_wording_build_scope(
+        root, "explicit_paths", "standalone", explicit_paths=[explicit_rel]
+    ),
+    "change_request": gtt.contract_wording_build_scope(
+        root, "change_request", "standalone", change_request_input=draft_rel
+    ),
+}
+for profile, (scope, contents) in cases.items():
+    scan = gtt.scan_contract_wording(scope, contents)
+    authored = {
+        "generated_at": "2026-07-17T00:00:00Z",
+        "semantic_review": {
+            "revisions": [],
+            "classifications": [
+                {
+                    "hit_id": hit["hit_id"],
+                    "classification": "term_definition",
+                    "reason": "Throwaway semantic review confirms this retained wording is an explicit term definition.",
+                }
+                for hit in scan["hits"]
+            ],
+            "ai_review_gate": {
+                "status": "passed",
+                "reviewer": "throwaway-contract-wording-review",
+                "summary": "The complete current throwaway scope and deterministic scan were reviewed.",
+                "reviewed_scan_sha256": scan["scan_sha256"],
+                "checked_dimensions": {
+                    name: True for name in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
+                },
+            },
+        },
+        "human_confirmation": {
+            "status": "not_required",
+            "confirmed_by": None,
+            "confirmed_at": None,
+            "reason": "No content mutation is required for this throwaway profile smoke.",
+        },
+        "typed_exit": "pass",
+    }
+    (probe_dir / f"{profile}.input.json").write_text(
+        json.dumps(authored, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+issue_rel = f"docs/contract-wording-{probe_dir.name}-issue.json"
+(root / issue_rel).write_text(json.dumps({
+    "kind": "issue",
+    "repo": "castbox/guru-trellis",
+    "number": 114,
+    "selected_comments": [],
+}), encoding="utf-8")
+live_issue = {
+    "title": "Exact live issue title",
+    "body": "Exact rewritten live issue body",
+    "url": "https://github.com/castbox/guru-trellis/issues/114",
+    "updatedAt": "2026-07-17T08:00:00Z",
+    "comments": [],
+}
+original_auth = gtt.require_gh_auth
+original_view = gtt.issue_view
+gtt.require_gh_auth = lambda _root: None
+gtt.issue_view = lambda _repo, _number, _root: live_issue
+try:
+    live_scope, live_contents = gtt.contract_wording_build_scope(
+        root, "change_request", "standalone", change_request_input=issue_rel
+    )
+finally:
+    gtt.require_gh_auth = original_auth
+    gtt.issue_view = original_view
+live_scan = gtt.scan_contract_wording(live_scope, live_contents)
+body_item = next(item for item in live_scope["items"] if item["field"] == "body")
+payload_fact = {
+    "source_identity": body_item["source_identity"],
+    "locator": body_item["id"],
+    "field": "body",
+    "preimage_sha256": "0" * 64,
+    "content_sha256": body_item["content_sha256"],
+}
+live_result = gtt.contract_wording_derive_result(
+    "change_request",
+    "standalone",
+    live_scope,
+    live_scan,
+    {
+        "generated_at": "2026-07-17T08:01:00Z",
+        "semantic_review": {
+            "revisions": [{
+                "revision_id": "throwaway-live-revision",
+                "locator": body_item["id"],
+                "before_sha256": "0" * 64,
+                "after_sha256": body_item["content_sha256"],
+                "reason": "The installed runtime binds the exact live issue rewrite.",
+                "mutation_authority": "The exact payload was confirmed before the live mutation.",
+                "rescan_sha256": live_scan["scan_sha256"],
+                "change_request_mutation": {
+                    "source_identity": body_item["source_identity"],
+                    "locator": body_item["id"],
+                    "field": "body",
+                    "preimage_sha256": "0" * 64,
+                    "confirmed_content_sha256": body_item["content_sha256"],
+                    "reread_content_sha256": body_item["content_sha256"],
+                    "source_updated_at": body_item["updated_at"],
+                },
+            }],
+            "classifications": [],
+            "ai_review_gate": {
+                "status": "passed",
+                "reviewer": "throwaway-live-mutation-review",
+                "summary": "The installed runtime reviewed the exact confirmed payload and current reread result.",
+                "reviewed_scan_sha256": live_scan["scan_sha256"],
+                "checked_dimensions": {
+                    name: True for name in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
+                },
+            },
+        },
+        "human_confirmation": {
+            "status": "confirmed",
+            "confirmed_by": "throwaway-user",
+            "confirmed_at": "2026-07-17T07:59:00Z",
+            "reason": "The exact live issue payload was confirmed.",
+            "confirmed_payload_sha256": gtt.context_digest([gtt.context_digest(payload_fact)]),
+        },
+        "typed_exit": "content_changed",
+    },
+)
+assert gtt.contract_wording_structural_errors(root, live_result, live_scope, live_scan) == []
+
+missing_comment_rel = f"docs/contract-wording-{probe_dir.name}-missing-comment.json"
+(root / missing_comment_rel).write_text(json.dumps({
+    "kind": "draft",
+    "draft_id": "throwaway-missing-comment-metadata",
+    "title": "Exact title",
+    "body": "Exact body",
+    "selected_comments": [{
+        "id": "comment-1",
+        "author": None,
+        "updated_at": "2026-07-17T00:00:00Z",
+        "selection_reason": "This comment is authoritative.",
+        "body": "Exact comment body.",
+    }],
+}), encoding="utf-8")
+try:
+    gtt.contract_wording_build_scope(
+        root, "change_request", "standalone", change_request_input=missing_comment_rel
+    )
+except gtt.WorkflowError:
+    pass
+else:
+    raise AssertionError("installed runtime accepted selected comment without author")
+PY
+
+  local profile input result facts
+  for profile in explicit_paths change_request; do
+    input="$probe_dir/$profile.input.json"
+    result="$probe_dir/$profile.result.json"
+    if [[ "$profile" == "explicit_paths" ]]; then
+      "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
+        --root "$TARGET" --json --mode standalone --profile "$profile" \
+        --path "$explicit_rel" --input "$input" >"$result"
+      facts="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["facts_sha256"])' "$result")"
+      "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
+        --root "$TARGET" --json --input "$result" --path "$explicit_rel" \
+        --expected-facts-sha256 "$facts" >/dev/null
+    else
+      "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
+        --root "$TARGET" --json --mode standalone --profile "$profile" \
+        --change-request-input "$draft_rel" --input "$input" >"$result"
+      facts="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["facts_sha256"])' "$result")"
+      "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
+        --root "$TARGET" --json --input "$result" --change-request-input "$draft_rel" \
+        --expected-facts-sha256 "$facts" >/dev/null
+    fi
+    python3 -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["profile"] == sys.argv[2]; assert payload["typed_exit"] == "pass"' "$result" "$profile"
+  done
+}
+
+record_planning_contract_wording() {
+  local task_rel="$1"
+  local probe_dir="$WORK_DIR/contract-wording-planning"
+  local input="$probe_dir/planning_artifacts.input.json"
+  mkdir -p "$probe_dir"
+  python3 - "$TARGET" "$task_rel" "$input" <<'PY'
+import importlib.util
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+task_rel = sys.argv[2]
+output = Path(sys.argv[3])
+runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+spec = importlib.util.spec_from_file_location("installed_planning_wording_runtime", runtime)
+if spec is None or spec.loader is None:
+    raise SystemExit(f"could not load installed planning wording runtime: {runtime}")
+gtt = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = gtt
+spec.loader.exec_module(gtt)
+scope, contents = gtt.contract_wording_build_scope(
+    root, "planning_artifacts", "workflow", task_dir=root / task_rel
+)
+scan = gtt.scan_contract_wording(scope, contents)
+authored = {
+    "generated_at": "2026-07-17T00:00:00Z",
+    "semantic_review": {
+        "revisions": [],
+        "classifications": [
+            {
+                "hit_id": hit["hit_id"],
+                "classification": "term_definition",
+                "reason": "Throwaway planning review confirms this retained wording is explicitly defined.",
+            }
+            for hit in scan["hits"]
+        ],
+        "ai_review_gate": {
+            "status": "passed",
+            "reviewer": "throwaway-planning-wording-review",
+            "summary": "The fixed three-file planning scope and complete current scan were reviewed.",
+            "reviewed_scan_sha256": scan["scan_sha256"],
+            "checked_dimensions": {
+                name: True for name in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
+            },
+        },
+    },
+    "human_confirmation": {
+        "status": "not_required",
+        "confirmed_by": None,
+        "confirmed_at": None,
+        "reason": "No planning content mutation is required for this throwaway smoke.",
+    },
+    "typed_exit": "pass",
+}
+output.write_text(json.dumps(authored, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PY
+  "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
+    --root "$TARGET" --json --mode workflow --profile planning_artifacts \
+    --task "$task_rel" --input "$input" >/dev/null
+  "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
+    --root "$TARGET" --json --task "$task_rel" >/dev/null
+}
 create_task_commit_plan() {
   local sequence="$1"
   local subject="$2"
@@ -429,6 +704,10 @@ grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"needs_con
 grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"new_task","consumer":{"kind":"workflow","id":"guru-full-task-intake-chain"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"blocked","consumer":{"kind":"stop","id":"requirements-clarification-blocked"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-invoke: {"skill":"guru-review-contract-wording","required":true}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"pass","consumer":{"kind":"workflow","id":"guru-contract-wording-pass-router"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"content_changed","consumer":{"kind":"workflow","id":"guru-contract-wording-change-router"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"blocked","consumer":{"kind":"stop","id":"contract-wording-blocked"}}' "$TARGET/.trellis/workflow.md"
 grep -q "dispatch_mode: sub-agent" "$TARGET/.trellis/config.yaml"
 fail_if_english_language_rule ".trellis/spec" "$TARGET/.trellis/spec"
 WORKSPACE_TREE_DIGEST_AFTER="$(workspace_tree_digest "$TARGET/.trellis/workspace")"
@@ -451,6 +730,8 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/record-context-discovery.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-context-discovery.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-requirements-clarification.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-requirements-clarification.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/record-contract-wording-review.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-contract-wording-review.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-subagent-liveness.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-commit-messages.sh"
@@ -475,7 +756,7 @@ assert extension["extension_id"] == "guru-team"
 assert extension["version"] == "0.6.5-guru.12"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 76
+assert len(assets) == 78
 assert all((root / path).is_file() for path in assets)
 for artifact in (
     "agent-assignment.json", "pr-body.md", "closeout-plan.json",
@@ -489,15 +770,17 @@ for command in (
     "create-task-commit", "run-skill-command", "sync-base", "check-base-sync",
     "preview-change-context-history", "record-context-discovery", "check-context-discovery",
     "record-requirements-clarification", "check-requirements-clarification",
+    "record-contract-wording-review", "check-contract-wording-review",
     "format-merge-commit",
     "backfill-finish-summary", "check-skill-packages",
 ):
     assert command in api["companion_scripts"]
 assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"
-assert api["skill_contracts"]["active_skill_ids"] == ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"]
+assert api["skill_contracts"]["active_skill_ids"] == ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-review-contract-wording", "guru-sync-base"]
 assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-context-discovery-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-requirements-clarification-1.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-contract-wording-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.2"
 assert api["skill_runtime"] == {
     "api_version": "1.0",
@@ -506,14 +789,14 @@ assert api["skill_runtime"] == {
 }
 assert skills["status"] == "ok"
 assert skills["reserved_ids"] == ["guru-create-work-commit"]
-assert skills["active_ids"] == ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"]
+assert skills["active_ids"] == ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-review-contract-wording", "guru-sync-base"]
 assert skills["selected_platforms"] == ["codex", "cursor"]
 assert skills["sidecars"] == []
-assert len(skills["files"]) == 135
+assert len(skills["files"]) == 167
 PY
 SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
-python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; assert source["facts"]["target_markers"] == installed["facts"]["target_markers"] == 8' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
+python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; assert source["facts"]["target_markers"] == installed["facts"]["target_markers"] == 11' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
 test ! -e "$TARGET/.agents/skills/guru-create-work-commit"
 test ! -e "$TARGET/.codex/skills/guru-create-work-commit"
 test ! -e "$TARGET/.cursor/skills/guru-create-work-commit"
@@ -544,7 +827,14 @@ test -x "$TARGET/.agents/skills/guru-clarify-requirements/scripts/check-requirem
 test -x "$TARGET/.codex/skills/guru-clarify-requirements/scripts/record-requirements-clarification.sh"
 test -x "$TARGET/.cursor/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
 test ! -e "$TARGET/.claude/skills/guru-clarify-requirements"
+test -f "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/SKILL.md"
+test -x "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh"
+test -x "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
+test -x "$TARGET/.codex/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh"
+test -x "$TARGET/.cursor/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
+test ! -e "$TARGET/.claude/skills/guru-review-contract-wording"
 verify_requirements_clarification_exits "initial"
+verify_contract_wording_standalone_profiles "initial"
 test ! -e "$TARGET/.agents/skills/guru-example-action"
 test ! -e "$TARGET/.codex/skills/guru-example-action"
 test ! -e "$TARGET/.cursor/skills/guru-example-action"
@@ -1671,13 +1961,14 @@ for name, payload in (
 (root / "unrelated-preserved.log").write_text("preserve this exact state\n", encoding="utf-8")
 PY
 
+record_planning_contract_wording "$TASK_REL"
+
 "$TARGET/.trellis/guru-team/scripts/bash/record-planning-approval.sh" \
   --root "$TARGET" \
   --task "$TASK_REL" \
   --reviewer "throwaway-planning-review" \
   --summary "已复核三份 throwaway 规划文档与固定提交范围。" \
-  --ambiguity-reviewer "throwaway-ambiguity-review" \
-  --ambiguity-summary "已检查弱约束词、入口边界与验收口径，无未决歧义。" \
+  --contract-wording-evidence "$TASK_REL/contract-wording-review.json" \
   --user-confirmation "已明确授权 disposable throwaway 进入实现验证。" \
   >/dev/null
 
@@ -1817,6 +2108,7 @@ ownership_checkpoint "post-preset-reapply-before-final-checks"
 grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-discover-change-context","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-invoke: {"skill":"guru-review-contract-wording","required":true}' "$TARGET/.trellis/workflow.md"
 test -f "$TARGET/.trellis/guru-team/schemas/finish-summary.schema.json"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
@@ -1829,11 +2121,14 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/record-context-discovery.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-context-discovery.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-requirements-clarification.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-requirements-clarification.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/record-contract-wording-review.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-contract-wording-review.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/create-task-commit.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/SKILL.md"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-discover-change-context/SKILL.md"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md"
+test -f "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/SKILL.md"
 test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" --help >/dev/null
 test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
@@ -1847,6 +2142,9 @@ test -x "$TARGET/.cursor/skills/guru-discover-change-context/scripts/preview-cha
 test -x "$TARGET/.agents/skills/guru-clarify-requirements/scripts/record-requirements-clarification.sh"
 test -x "$TARGET/.codex/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
 test -x "$TARGET/.cursor/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
+test -x "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh"
+test -x "$TARGET/.codex/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
+test -x "$TARGET/.cursor/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed >/dev/null
 DISCOVERY_AFTER_UPDATE_JSON="$(
@@ -1858,6 +2156,71 @@ DISCOVERY_AFTER_UPDATE_JSON="$(
 )"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["algorithm_id"] == "guru-context-history-score-1.0"; assert any(row["finish_summary_path"].endswith("context-discovery-fixture/finish-summary.json") for row in payload["candidates"])' <<<"$DISCOVERY_AFTER_UPDATE_JSON"
 verify_requirements_clarification_exits "after-update"
+verify_contract_wording_standalone_profiles "after-update"
+POST_UPDATE_TASK_REL=".trellis/tasks/07-17-114-contract-wording-after-update"
+POST_UPDATE_BRANCH="$(git -C "$TARGET" branch --show-current)"
+POST_UPDATE_HEAD="$(git -C "$TARGET" rev-parse HEAD)"
+python3 - "$TARGET" "$POST_UPDATE_TASK_REL" "$POST_UPDATE_BRANCH" "$POST_UPDATE_HEAD" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+task_rel = sys.argv[2]
+branch = sys.argv[3]
+head = sys.argv[4]
+task_dir = root / task_rel
+task_dir.mkdir(parents=True)
+task = {
+    "id": "contract-wording-after-update",
+    "name": "contract-wording-after-update",
+    "title": "Post-update contract wording review",
+    "status": "planning",
+    "branch": branch,
+    "base_branch": "main",
+}
+context = {
+    "schema_version": "1.0",
+    "source_issue": {
+        "number": 114,
+        "url": "https://github.com/castbox/guru-trellis/issues/114",
+        "title": "Post-update contract wording review",
+        "created_by_workflow": False,
+    },
+    "source_repo": {
+        "repo": "castbox/guru-trellis-throwaway",
+        "url": "https://github.com/castbox/guru-trellis-throwaway",
+    },
+    "task_slug": "contract-wording-after-update",
+    "task_title": "Post-update contract wording review",
+    "task_artifact_dir": task_rel,
+    "branch_name": branch,
+    "base_branch": "main",
+    "base_ref": "main",
+    "base_head_sha": head,
+    "remote_head_sha": head,
+    "workspace_slug": "",
+    "task_workspace_id": "contract-wording-after-update",
+    "assignee": "throwaway",
+    "actor": {"login": "throwaway"},
+    "issue_scope_ledger_seed": {},
+    "intake_summary": {},
+}
+for name, payload in (("task.json", task), ("task-start-context.json", context)):
+    (task_dir / name).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+(task_dir / "prd.md").write_text(
+    "# Post-update wording review\n\nThe required planning scope remains exact.\n", encoding="utf-8"
+)
+(task_dir / "design.md").write_text(
+    "# Post-update design\n\nThe installed checker rebuilds all three planning artifacts.\n", encoding="utf-8"
+)
+(task_dir / "implement.md").write_text(
+    "# Post-update implementation\n\nRecord and validate the current installed planning evidence.\n", encoding="utf-8"
+)
+PY
+record_planning_contract_wording "$POST_UPDATE_TASK_REL"
+"$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
+  --root "$TARGET" --json --task "$POST_UPDATE_TASK_REL" >/dev/null
 "$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
 BACKFILL_AFTER_UPDATE_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh" --root "$TARGET" --json --dry-run)"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["mode"] == "dry-run"; assert payload["scanned_tasks"] == 2; assert len(payload["skipped"]) == 2; assert all(row["reason"] == "finish-summary exists" for row in payload["skipped"]); assert payload["errors"] == []' <<<"$BACKFILL_AFTER_UPDATE_JSON"

@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-17T07:55:29Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-17-114-contract-wording-review",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-17-114-contract-wording-review/prd.md",
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/prd.md",
+        "size_bytes": 12901,
+        "content_sha256": "93b92272cb4e2ab601045e238a8c541384a4712af0240b43ace4c3acb8c681d4"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-17-114-contract-wording-review/design.md",
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/design.md",
+        "size_bytes": 16122,
+        "content_sha256": "4055443ec2bc12cf5352d644243210dca1238cebbd02a743e20885a01aa64df8"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-17-114-contract-wording-review/implement.md",
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/implement.md",
+        "size_bytes": 11843,
+        "content_sha256": "0f0d02fa6795d81f889182886dd59d5bcf98696357e83431e29ab2d2598c4c5a"
+      }
+    ],
+    "scope_sha256": "cd10dae9c2c9c6944cc2739eaf42ba7c66a6b58ca519a1c35b0a4eabcc3ad2f2"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session",
+      "summary": "已对固定 planning_artifacts 范围完成合同措辞与需求语义审查；三份规划文档无受控词命中，需求边界、replacement-first 删除顺序、#93 兼容约束、out-of-scope 与验收矩阵均明确，无需内容修订。",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "本轮未修改 planning artifacts，合同措辞审查本身不需要 mutation confirmation；独立的 post-planning 用户确认由 planning-approval.json 记录。"
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "4423e491d8037c7f9a72ac7538bec582f69861d791e6f65302d8fbfc28bff1ab"
+}

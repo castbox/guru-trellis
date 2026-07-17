@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"实现 canonical Skill package、semantic stage profile、public interface、typed exits 与 installed package contract。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"实现 mandatory invocation、profile-aware unique consumers、planning/Phase 2/Branch Review routing。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"实现 contract wording evidence、hash/freshness、planning approval compatibility projection 与迁移。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 scanner/recorder/checker 的 deterministic 边界和 dispatcher runtime commands。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"同步 preset、dogfood 和四平台 discovery copies，防止平台入口复制 step-local 规则。"}

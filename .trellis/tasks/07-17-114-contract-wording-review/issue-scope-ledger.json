@@ -1,0 +1,20 @@
+{
+  "primary_issue": {
+    "number": 114,
+    "url": "https://github.com/castbox/guru-trellis/issues/114",
+    "title": "按 Skill-first 重实现 #93：guru-review-contract-wording",
+    "reason": "intake 主 issue，默认进入 close 候选。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 114,
+      "url": "https://github.com/castbox/guru-trellis/issues/114",
+      "title": "按 Skill-first 重实现 #93：guru-review-contract-wording",
+      "reason": "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

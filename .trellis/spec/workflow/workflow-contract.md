@@ -179,6 +179,26 @@ side-effect-free reviewed draft.
 The active-task Scope Change Gate mandatory invokes this Skill rather than
 asking/classifying/updating the ledger directly in workflow Markdown.
 
+After initial requirement clarification returns `clear`, and again after all
+three planning artifacts exist, the workflow mandatory invokes
+`guru-review-contract-wording`. The initial route uses fixed profile
+`change_request`; the planning route uses fixed profile `planning_artifacts`.
+The global workflow owns only invocation and these unique external consumers:
+`pass` -> `guru-contract-wording-pass-router`, `content_changed` ->
+`guru-contract-wording-change-router`, and `blocked` ->
+`contract-wording-blocked`. The pass/change routers restore the continuation
+from the checker-validated profile: change-request pass continues task intake,
+planning-artifacts pass permits planning artifact presentation, and content
+changes re-enter the corresponding full review. Unknown, missing, multiple,
+stale, or unmapped profile/exit evidence fails closed.
+
+The workflow, prompts, launchers, and platform entries must not reproduce the
+Skill's vocabulary, classification catalog, rewrite/classification/review
+loop, scanner behavior, or evidence derivation. They reference only stable
+Skill id, fixed profile, schema `guru-contract-wording-review-1.0`, typed exit,
+and their consumer obligation. A zero-hit deterministic scan is not a
+substitute for the Skill's semantic Review Gate.
+
 `trellis-finish-work` is a single resumable transaction entry. Its mandatory
 order is: shared prepare/digest preview, expected-digest handshake, reviewed
 content push, deterministic marketplace evidence and readiness commit/push,
@@ -418,12 +438,13 @@ review result exists, to persist objective gate evidence.
 Phase 1.4 and Phase 2.2 have their own evidence gates before the Branch Review
 Gate:
 
-- `planning-approval.json` records that the main session completed planning
-  artifact ambiguity review before display, displayed task-local links to
-  `prd.md`, `design.md`, and `implement.md`, then received explicit
-  post-planning user confirmation before `task.py start`. It must use
-  `schema_version=1.2`, include passed structured `ambiguity_review` evidence,
-  including fixed-scope controlled-term scanner results, use
+- `planning-approval.json` records that the main session obtained a current
+  checker-validated `guru-review-contract-wording:planning_artifacts:pass`
+  artifact before display, displayed task-local links to `prd.md`, `design.md`,
+  and `implement.md`, then received explicit post-planning user confirmation
+  before `task.py start`. It must use `schema_version=1.2`, bind the current
+  `guru-contract-wording-review-1.0` artifact/schema/scope/scan identity, include
+  its deterministic compatibility projection under `ambiguity_review`, use
   `user_confirmation.source=explicit-post-planning-review`, and record matching
   hash / size metadata for all three planning documents, plus
   modified-time, HEAD, and dirty paths as audit context. Validator freshness is
@@ -433,10 +454,12 @@ Gate:
   `implement.md` content still matches the last explicit user review. If any of
   those three planning documents changes, show the three links again and wait
   for fresh explicit post-planning confirmation. Phase 0 intake approval,
-  generic workflow confirmation, old `source=workflow`, old schema, missing
-  `ambiguity_review`, non-passed ambiguity evidence, unclassified scanner hits,
-  `contract_violation` hits, or stale scanner evidence fails closed. `task.py
-  start` is not proof of planning review.
+  generic workflow confirmation, old `source=workflow`, old schema, missing or
+  non-pass wording evidence, projection drift, non-empty unchecked hits, or
+  stale wording evidence fails closed. `task.py start` is not proof of planning
+  review. Active approvals created before the wording-evidence binding require
+  a fresh wording review, document presentation, and explicit confirmation;
+  archived artifacts are not rewritten.
 - `phase2-check.json` records complete `trellis-check` coverage before commit.
   Passing validation commands alone is not proof that requirements, design,
   implementation, tests, specs, docs, cross-layer flow, and deployment impact

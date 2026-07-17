@@ -33,6 +33,21 @@
       "workflow_route_id": "phase-0-requirements-clarification"
     },
     {
+      "id": "guru-review-contract-wording",
+      "state": "active",
+      "name": "guru-review-contract-wording",
+      "package": "packages/guru-review-contract-wording",
+      "interface": "packages/guru-review-contract-wording/interface.json",
+      "supported_platforms": [
+        "shared",
+        "codex",
+        "cursor",
+        "claude"
+      ],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "contract-wording-review"
+    },
+    {
       "id": "guru-sync-base",
       "state": "active",
       "name": "guru-sync-base",

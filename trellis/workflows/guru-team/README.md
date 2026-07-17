@@ -51,7 +51,8 @@ workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandato
 调用与唯一出口 consumer/stop，不复制 step-local skill 正文。完整运行时资产
 由 Guru Team preset 分发。Production registry 保留
 `guru-create-work-commit` reserved tombstone，并激活 `guru-sync-base`、
-`guru-discover-change-context`、`guru-clarify-requirements` 与
+`guru-discover-change-context`、`guru-clarify-requirements`、
+`guru-review-contract-wording` 与
 `guru-create-task-commit`；workflow 不得为
 reserved id 伪造 route。当前 canonical
 extension version 是待发布的 `0.6.5-guru.12`，已发布 stable source 仍是
@@ -246,6 +247,28 @@ shared validator 完整校验的 schema 1.2 planning approval/docs、review stat
 不进入 trail/action mutation。GitHub authority mutation 后只能 `refresh_context`；context
 时间覆盖 authority 后 task update 绑定同一 digest，不要求第二次 refresh。Active-task `new_task` 保留该 trail，仍只给 #112
 side-effect-free reviewed draft。
+
+## Contract Wording Review
+
+`guru-clarify-requirements:clear` 对 initial issue/draft mandatory invoke semantic
+`guru-review-contract-wording`；Phase 1 在展示规划链接前再次用固定
+`planning_artifacts` profile 调用同一 Skill。Standalone caller 只能用
+`explicit_paths` 审查本轮明确指定的 repo-relative Markdown 文件。Canonical package
+独占三个 profile、`contract-wording-v2` vocabulary、
+`contract-wording-classifications-v1`、AI rewrite/review、confirmation policy、schema
+`guru-contract-wording-review-1.0` 与 `pass` / `content_changed` / `blocked` exits；workflow
+只拥有 mandatory invocation、profile-aware router 与 fail-closed stop。
+
+Runtime commands 是 `record-contract-wording-review` 与
+`check-contract-wording-review`。它们只重建 fixed scope、执行 deterministic scan、派生
+digests/unchecked projection，并校验 schema、freshness 和 Gate/exit invariant；不选择
+classification、rewrite、semantic pass 或 route。`change_request` selected comment 缺
+author/updated time 会 fail closed；live issue revision 由 recorder 派生 confirmed-payload
+与 mutation-result digests，并由 checker 绑定 exact confirmation、preimage、current reread
+content/source update time。`planning_artifacts:pass` 写入 task-local
+`contract-wording-review.json`，`record-planning-approval` 只消费该 current evidence 并记录
+explicit post-planning confirmation。`content_changed` 要求对应 profile 完整重入；旧 active
+approval 若没有 #114 binding，必须重新执行 wording review 和规划确认。Archived artifact 不改写。
 
 ## 中文 Conventional Commits
 
@@ -549,16 +572,15 @@ matcher 判断是否进入 Guru Team issue intake 和 worktree preflight。
 未审批、怀疑自动注入没有运行，或需要完整上下文报告和重新加载 Trellis 上下文的场景。
 
 Planning start gate 和 Phase 2 check gate 都需要 task-local evidence。进入实现前主会话
-必须完成可定位的 `Docs SSOT Plan` 和 planning artifact ambiguity review，再展示
+必须完成可定位的 `Docs SSOT Plan`，mandatory invoke
+`guru-review-contract-wording:planning_artifacts`，并取得 checker-validated `pass`；随后展示
 `prd.md` / `design.md` / `implement.md` 三个 task-local 链接，用户看到后明确确认，
-才能调用 `record-planning-approval.sh` 写入 schema 1.2、passed
-`ambiguity_review`、固定范围正文扫描 `hits[]`、空 `unchecked_normative_hits[]` 和
-`user_confirmation.source=explicit-post-planning-review` 的
-`planning-approval.json`，再用 `check-planning-approval.sh` 重新扫描校验；Phase 0
-handoff 确认、旧 schema/source、缺失/non-passed ambiguity evidence、未分类命中或
-`contract_violation` 命中不能通过 gate。校验 freshness 绑定三份规划文档内容 digest 和
-scanner evidence；实现提交后的 HEAD drift、metadata tail 或无关 dirty paths 不会单独使
-approval stale。`task.py start` 只是状态写入，不代表规划已审查。
+才能调用 `record-planning-approval.sh --contract-wording-evidence
+<task-path>/contract-wording-review.json`。`check-planning-approval.sh` 先复核 current wording
+evidence/binding，再校验 schema 1.2 compatibility projection、explicit confirmation 与三文档
+digests。Phase 0 handoff、旧 schema/source、缺失/过期/non-pass wording evidence 不能通过
+gate；实现提交后的 HEAD drift、metadata tail 或无关 dirty paths 不会单独使 approval
+stale。`task.py start` 只是状态写入，不代表规划已审查。
 阶段停止点和阶段完成回复还必须给用户一个最新的 task Markdown 入口表。AI 先运行
 `resolve-human-artifacts.sh --json --task <task-path>`，再输出
 `Markdown 产物 review 表`；标准表只列 `prd.md`、`design.md`、`implement.md`、

@@ -68,6 +68,8 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/check-context-discovery.sh"),
     Path("scripts/bash/record-requirements-clarification.sh"),
     Path("scripts/bash/check-requirements-clarification.sh"),
+    Path("scripts/bash/record-contract-wording-review.sh"),
+    Path("scripts/bash/check-contract-wording-review.sh"),
     Path("scripts/bash/resolve-human-artifacts.sh"),
     Path("scripts/bash/verify-marketplace.sh"),
     Path("scripts/bash/record-planning-approval.sh"),
@@ -510,7 +512,8 @@ def copy_skill_managed(
     current = target.read_bytes()
     current_hash = hashlib.sha256(current).hexdigest()
     if current_hash == canonical_hash:
-        target.chmod(target_mode)
+        if stat.S_IMODE(target_stat.st_mode) != target_mode:
+            target.chmod(target_mode)
         return {"action": "unchanged", "path": relative, "sha256": canonical_hash, "executable": executable}
     previous_hash = previous_hashes.get(relative)
     if provenance_valid and previous_hash and current_hash == previous_hash:
@@ -1278,6 +1281,8 @@ def install_assets(
         dst / "scripts/bash/check-context-discovery.sh",
         dst / "scripts/bash/record-requirements-clarification.sh",
         dst / "scripts/bash/check-requirements-clarification.sh",
+        dst / "scripts/bash/record-contract-wording-review.sh",
+        dst / "scripts/bash/check-contract-wording-review.sh",
         dst / "scripts/bash/resolve-human-artifacts.sh",
         dst / "scripts/bash/verify-marketplace.sh",
         dst / "scripts/bash/record-planning-approval.sh",

@@ -53,7 +53,7 @@ semantic review or routing judgments.
 
 The production registry currently activates `guru-sync-base`,
 `guru-discover-change-context`, `guru-clarify-requirements`, and
-`guru-create-task-commit`. Their unfenced markers below are the only mandatory
+`guru-review-contract-wording`, and `guru-create-task-commit`. Their unfenced markers below are the only mandatory
 global routes. New active routes must update registry, package/interface, this
 workflow, tests, preset distribution, extension public API, and migration
 documentation together.
@@ -64,8 +64,9 @@ documentation together.
 
 Before creating a Trellis task or writing task artifacts, complete the Phase 0
 `guru-sync-base`, `guru-discover-change-context`, and
-`guru-clarify-requirements` routes. Only a fresh `clear` exit may continue to
-the environment, GitHub intake, and worktree commands below.
+`guru-clarify-requirements` routes. Initial issue/draft `clear` then enters
+`guru-review-contract-wording:change_request`; only its current `pass` exit may
+continue to the environment, GitHub intake, and worktree commands below.
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
@@ -438,7 +439,8 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - `design.md` — technical design before implementation: boundaries, contracts, data flow, compatibility, tradeoffs, rollout / rollback.
 - `implement.md` — execution plan before implementation: ordered checklist, validation commands, review gates, rollback points.
 - `Docs SSOT Plan` — required Phase 1 planning contract, preferably a section in `design.md`; `prd.md` records docs status and requirement impact, and `implement.md` records the checklist/checkpoint. Do not duplicate the full plan across all three files.
-- `planning-approval.json` — start gate evidence that the main session completed planning artifact ambiguity review, displayed links to `prd.md`, `design.md`, and `implement.md`, then received explicit post-planning user confirmation; `task.py start` is only a status write.
+- `planning-approval.json` — start gate evidence that current `planning_artifacts:pass` wording evidence was projected, links to `prd.md`, `design.md`, and `implement.md` were displayed, then the user explicitly confirmed; `task.py start` is only a status write.
+- `contract-wording-review.json` — current `guru-review-contract-wording:planning_artifacts` evidence consumed by planning approval; vocabulary, classification, semantic review, and typed exits remain owned by the canonical Skill package.
 - `phase2-check.json` — Phase 2 `trellis-check` report for full task-scope quality coverage before commit and Branch Review Gate.
 - `issue-scope-ledger.json` — task-level close/ref/followup scope; do not overload `source_issue`.
 - `agent-assignment.json` — task-local sub-agent assignment ledger with Chinese logical roles, technical `agent_id`, display-only `platform_nickname`, HEAD evidence, review rounds, raw report digest fields, and reuse/replacement decisions.
@@ -450,20 +452,11 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 
 Guru Team implementation tasks must have `prd.md`, `design.md`, `implement.md`, and one locatable `Docs SSOT Plan` before `task.py start`; a Phase 0 intake approval never substitutes for this post-planning review.
 
-Planning artifact normative language must be deterministic. Requirements,
-design contracts, event/state-machine rules, gate clauses, acceptance criteria,
-implementation steps, and validation steps must not use controlled weak
-constraint terms as unconditional execution contract wording. The controlled
-term list is `可以`, `允许`, `建议`, `推荐`, `可选`, `尽量`, `尽可能`, `最好`,
-`应该`, `应当`, `原则上`, `一般`, `通常`, `视情况`, `根据情况`, `根据需要`,
-`按需`, `必要时`, `如有需要`, `需要时`, `适当`, `适当时`, `合理`, `合理时`,
-`类似`, `相关`, `相应`, `等`, `等等`, `之类`, `一些`, `若干`, `部分`, `至少`,
-and `默认`. These terms are review triggers, not absolute forbidden words. If
-external quotes, historical evidence, issue text, term definitions, literal
-identifiers, or risk notes contain those terms, label the source and state that
-the quoted wording is not itself the execution contract. Rewrite normative
-clauses with deterministic language such as `必须`, `不得`, `只能`, `当且仅当`,
-`失败并阻塞`, or `记录结构化字段`.
+Contract wording review is owned by the mandatory semantic Skill
+`guru-review-contract-wording`. Consumers reference only its fixed profile,
+schema `guru-contract-wording-review-1.0`, and typed exit. Vocabulary,
+classification semantics, rewrite/review loop, confirmation policy, and
+scanner evidence are defined only by the canonical package contract.
 
 ### Business Project Documentation Language
 
@@ -709,7 +702,31 @@ task-intake continuation. Unknown, multiple, or unmapped exits fail closed.
 <!-- guru-workflow-target: {"id":"guru-full-task-intake-chain"} -->
 <!-- guru-stop-target: {"id":"requirements-clarification-blocked"} -->
 
-#### 0.3 Environment check `[required · once]`
+#### 0.3 Contract wording review `[required · repeatable]`
+
+Load and mandatory invoke the active semantic package by stable id. The global
+workflow owns only this invocation, the profile-aware routers, and the stop:
+
+<!-- guru-skill-invoke: {"skill":"guru-review-contract-wording","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"pass","consumer":{"kind":"workflow","id":"guru-contract-wording-pass-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"content_changed","consumer":{"kind":"workflow","id":"guru-contract-wording-change-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"blocked","consumer":{"kind":"stop","id":"contract-wording-blocked"}} -->
+
+The `pass` router maps `change_request` to the full task-intake continuation,
+`planning_artifacts` to planning document presentation/approval, and
+`explicit_paths` to the standalone caller. The `content_changed` router maps
+`change_request` to base/context refresh, `planning_artifacts` to complete
+planning review re-entry, and `explicit_paths` to standalone wording re-entry.
+The router consumes only the checker-validated profile and exit; unknown,
+multiple, stale, or unmapped results fail closed. The Skill package owns fixed
+scope, semantic revision/classification, AI Review Gate, confirmation,
+recorder/checker, evidence freshness, and re-entry.
+
+<!-- guru-workflow-target: {"id":"guru-contract-wording-pass-router"} -->
+<!-- guru-workflow-target: {"id":"guru-contract-wording-change-router"} -->
+<!-- guru-stop-target: {"id":"contract-wording-blocked"} -->
+
+#### 0.4 Environment check `[required · once]`
 
 Run:
 
@@ -824,10 +841,10 @@ Load `trellis-brainstorm`; stay in planning.
 Confirm the Guru Team task-start context exists in the chosen workspace for durable tasks: `.trellis/tasks/<task-slug>/task-start-context.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
-Finish `prd.md`, `design.md`, and `implement.md`; then perform planning artifact ambiguity review before displaying them. Verify no requirement weakening, source issue semantics preserved, conditional paths have trigger conditions, no parallel implementation paths, gates have machine-verifiable conditions, acceptance criteria are deterministic, and external quotes are labeled non-contract.
-After ambiguity review passes, visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
+Finish `prd.md`, `design.md`, and `implement.md`; then mandatory invoke `guru-review-contract-wording` with fixed profile `planning_artifacts`. Only a checker-validated `pass` may display the documents; `content_changed` repeats complete planning review and `blocked` stops.
+After the wording Skill passes, visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
 Before that planning stop reply, run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表`; only link existing Markdown files and do not list JSON artifacts.
-Before `task.py start`, record and check `planning-approval.json` schema 1.2 with `ambiguity_review` evidence and `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale approval blocks implementation and Phase 2 check recording.
+Before `task.py start`, record and check `planning-approval.json` schema 1.2 from current `planning_artifacts:pass` evidence with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale wording/approval evidence blocks implementation and Phase 2 check recording.
 Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research manifests before start.
 [/workflow-state:planning]
 
@@ -836,10 +853,10 @@ Load `trellis-brainstorm`; stay in planning.
 Confirm the Guru Team task-start context exists in the chosen workspace for durable tasks: `.trellis/tasks/<task-slug>/task-start-context.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
-Finish `prd.md`, `design.md`, and `implement.md`; then perform planning artifact ambiguity review before displaying them. Verify no requirement weakening, source issue semantics preserved, conditional paths have trigger conditions, no parallel implementation paths, gates have machine-verifiable conditions, acceptance criteria are deterministic, and external quotes are labeled non-contract.
-After ambiguity review passes, visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
+Finish `prd.md`, `design.md`, and `implement.md`; then mandatory invoke `guru-review-contract-wording` with fixed profile `planning_artifacts`. Only a checker-validated `pass` may display the documents; `content_changed` repeats complete planning review and `blocked` stops.
+After the wording Skill passes, visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
 Before that planning stop reply, run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表`; only link existing Markdown files and do not list JSON artifacts.
-Before `task.py start`, record and check `planning-approval.json` schema 1.2 with `ambiguity_review` evidence and `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale approval blocks implementation and Phase 2 check recording.
+Before `task.py start`, record and check `planning-approval.json` schema 1.2 from current `planning_artifacts:pass` evidence with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale wording/approval evidence blocks implementation and Phase 2 check recording.
 Inline mode: skip jsonl curation; Phase 2 reads artifacts/specs via `trellis-before-dev`.
 [/workflow-state:planning-inline]
 
@@ -988,44 +1005,16 @@ Inline Codex/Kilo/Antigravity/Devin workflows skip this step and load context th
 #### 1.4 Explicit planning review `[required · once]`
 
 After `prd.md`, `design.md`, and `implement.md` are complete, including a
-locatable `Docs SSOT Plan`, the main session must complete planning artifact
-ambiguity review before presenting them to the user. This is an AI semantic
-review in Markdown workflow space; hook, shell, and Python helpers may record
-or validate structured evidence only.
+locatable `Docs SSOT Plan`, the main session must invoke
+`guru-review-contract-wording` with fixed profile `planning_artifacts` before
+presenting them to the user. Load the canonical package contract; this workflow
+does not repeat its vocabulary, classification set, semantic loop, or Review
+Gate. The Skill persists current schema `guru-contract-wording-review-1.0`
+evidence at `{TASK_DIR}/contract-wording-review.json`. Only a checker-validated
+`pass` continues; `content_changed` requires complete planning review re-entry,
+and `blocked` stops with the recorded reason.
 
-The ambiguity review must check all of these dimensions:
-
-- no requirement weakening;
-- source issue semantics preserved;
-- conditional paths have explicit trigger conditions;
-- no parallel implementation paths for the same purpose;
-- gates have machine-verifiable conditions instead of only natural-language fallback;
-- acceptance criteria have deterministic pass/fail semantics;
-- external quotes, historical notes, or risk notes with weak terms are labeled as non-contract.
-
-If a normative clause uses a controlled weak constraint term without a trigger
-condition, deterministic value, explicit reference object, or source label,
-rewrite the clause before the planning stop. The controlled terms are `可以`,
-`允许`, `建议`, `推荐`, `可选`, `尽量`, `尽可能`, `最好`, `应该`, `应当`,
-`原则上`, `一般`, `通常`, `视情况`, `根据情况`, `根据需要`, `按需`, `必要时`,
-`如有需要`, `需要时`, `适当`, `适当时`, `合理`, `合理时`, `类似`, `相关`,
-`相应`, `等`, `等等`, `之类`, `一些`, `若干`, `部分`, `至少`, and `默认`.
-
-`record-planning-approval` and `check-planning-approval` must scan the fixed
-scope `prd.md`, `design.md`, and `implement.md`. The scan is deterministic
-evidence only: it records every term hit under
-`ambiguity_review.normative_language.hits[]` with `path`, `line`, `term`,
-`text`, `classification`, and `reason`. The only allowed classifications are
-`contract_violation`, `quoted_source_non_contract`, `term_definition`,
-`literal_identifier`, `historical_record_non_contract`,
-`deterministic_threshold`, `deterministic_default`, `deterministic_option`, and
-`deterministic_reference`. Unclassified hits and `contract_violation` hits must
-also appear in `unchecked_normative_hits[]` and block planning approval.
-Allowed classifications do not block, but they must include a non-empty
-machine-auditable reason. Script scans and classification structure do not
-replace the AI ambiguity review conclusion.
-
-After ambiguity review passes, the main session must run the Markdown artifact
+After the wording Skill passes, the main session must run the Markdown artifact
 resolver, render a `Markdown 产物 review 表`, visibly present all three
 task-local planning documents to the user, and then stop for an explicit
 post-planning confirmation.
@@ -1053,7 +1042,8 @@ The user's Phase 0 intake approval to create a GitHub issue, worktree, branch,
 or Trellis task is not planning approval. Do not reuse a Phase 0 confirmation,
 generic "continue" consent, or historical `planning-approval.json` with
 `user_confirmation.source=workflow`. If `planning-approval.json` is missing,
-has old schema/source, lacks passed `ambiguity_review` evidence, or the current
+has old schema/source, lacks current `planning_artifacts:pass` evidence binding,
+or the current
 `prd.md`/`design.md`/`implement.md` content digests no longer match the last
 explicit user-reviewed plan, show the three links again and wait for a fresh
 explicit post-planning confirmation.
@@ -1065,23 +1055,31 @@ planning approval failure.
 After the explicit post-planning confirmation, write the task-local start gate evidence:
 
 ```bash
+.trellis/guru-team/scripts/bash/record-contract-wording-review.sh --json \
+  --mode workflow \
+  --profile planning_artifacts \
+  --task <task-path> \
+  --scan-only
+.trellis/guru-team/scripts/bash/record-contract-wording-review.sh --json \
+  --mode workflow \
+  --profile planning_artifacts \
+  --task <task-path> \
+  --input <AI-reviewed-wording-input.json>
+.trellis/guru-team/scripts/bash/check-contract-wording-review.sh --json \
+  --task <task-path>
 .trellis/guru-team/scripts/bash/record-planning-approval.sh --json \
   --reviewer "codex-main-session" \
   --summary "中文规划审查结论" \
-  --ambiguity-reviewer "codex-main-session" \
-  --ambiguity-summary "中文 ambiguity review 结论" \
-  --ambiguity-status passed \
-  --normative-hit "path|line|term|classification|reason" \
+  --contract-wording-evidence <task-path>/contract-wording-review.json \
   --user-confirmation "用户在看到 prd.md、design.md、implement.md 三个链接后确认进入实现" \
   --confirmation-source explicit-post-planning-review
 .trellis/guru-team/scripts/bash/check-planning-approval.sh --json
 ```
 
-Pass one `--normative-hit` for each scanner hit that remains in the planning
-documents after the AI review. Omit the flag only when the scanner finds no
-controlled terms. The recorder must fail closed when any hit is unclassified,
-uses an unknown classification, has an empty reason for an allowed
-classification, or is classified as `contract_violation`.
+The wording recorder/checker own fixed-scope scan facts and evidence structure;
+the Skill's AI Review Gate owns semantic rewrite/classification/pass judgment.
+`record-planning-approval` only validates and projects that evidence before
+recording the separate explicit post-planning confirmation.
 
 Only after the check passes:
 
@@ -1104,7 +1102,7 @@ transition; it is not planning review evidence.
 | `prd.md` exists | yes |
 | `design.md` exists | yes |
 | `implement.md` exists | yes |
-| Main session completed planning artifact ambiguity review before displaying planning links | yes |
+| `guru-review-contract-wording:planning_artifacts` passed before displaying planning links | yes |
 | Main session displayed links to `prd.md`, `design.md`, and `implement.md` after generating them | yes |
 | User confirms task should enter implementation after seeing the three planning links | yes |
 | `planning-approval.json` schema 1.2 exists with passed `ambiguity_review` evidence, fixed-scope scanner results, no unchecked hits, and `check-planning-approval` passes | yes |

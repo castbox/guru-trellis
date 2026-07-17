@@ -544,13 +544,14 @@ surface with no paths.
 ## Planning Approval Artifact
 
 `planning-approval.json` is the start gate evidence for Phase 1.4. New
-artifacts use `schema_version=1.2` and are valid only after the main session
-has completed planning artifact ambiguity review, displayed task-local links to
-all three planning documents, and the user has explicitly confirmed after
-seeing them. Phase 0 handoff approval, generic workflow confirmation, old
-`schema_version=1.0` / `schema_version=1.1`, missing `ambiguity_review`,
-non-passed ambiguity review, or `user_confirmation.source=workflow` must fail
-closed.
+artifacts use `schema_version=1.2` and are valid only after the main session has
+obtained a current checker-validated
+`guru-review-contract-wording:planning_artifacts:pass` artifact, displayed
+task-local links to all three planning documents, and the user has explicitly
+confirmed after seeing them. Phase 0 handoff approval, generic workflow
+confirmation, old `schema_version=1.0` / `schema_version=1.1`, missing/non-pass
+wording evidence, projection drift, or
+`user_confirmation.source=workflow` must fail closed.
 
 It records:
 
@@ -559,58 +560,51 @@ It records:
 - `review_prompt_presented_at` and `approved_at`
 - Chinese approval summary and user confirmation evidence with
   `user_confirmation.source=explicit-post-planning-review`
-- `ambiguity_review` object with `status=passed`, non-empty `reviewer`,
-  non-empty `summary`, `normative_language.controlled_terms`,
-  `normative_language.scan_scope`, `normative_language.hits`,
-  `normative_language.unchecked_normative_hits`, and all required
-  `checked_dimensions` set to true
+- `contract_wording_review` binding with artifact path, schema id, evidence
+  digest, scope digest, and scan digest
+- `ambiguity_review` compatibility projection deterministically copied from
+  the validated wording evidence, preserving reviewer/summary/checked
+  dimensions, complete scan facts, classifications/reasons, and empty
+  unchecked hits for audit visibility
 - `reviewed_artifacts[]` entries for `prd.md`, `design.md`, and
   `implement.md`, each with path, sha256, size, and modified-time metadata
 - `approved_artifacts[]` as a compatibility alias for the same three entries
 - dirty paths at approval time
 
-The artifact is valid while the recorded `prd.md`, `design.md`, and
-`implement.md` hashes / sizes still match the current files. `HEAD`,
-`modified_at`, and `dirty_paths` are recorded as audit context for when the
-user approved the plan; they are not freshness keys. `check-planning-approval.sh`
-must verify all three planning docs are present, required digest metadata
-exists, sha256 / size still match, and the confirmation source is
-`explicit-post-planning-review`. Later implementation commits, metadata tail
-changes, or unrelated working-tree dirty paths must not invalidate planning
-approval by themselves. If any of the three planning document contents changes,
-the validator must fail closed so the workflow can show the three links again
-and wait for fresh explicit post-planning user confirmation. `task.py start` is
-a status transition only and must not be treated as planning review evidence.
+The artifact is valid while the bound wording evidence passes the generic
+checker and the recorded `prd.md`, `design.md`, and `implement.md` hashes /
+sizes still match the current files. `HEAD`, `modified_at`, and `dirty_paths`
+are recorded as audit context for when the user approved the plan; they are not
+freshness keys. `check-planning-approval.sh` first invokes the generic wording
+checker, then verifies the compatibility projection and all three planning
+artifact entries, confirmation source, and current content digests. Later
+implementation commits, metadata tail changes, or unrelated working-tree dirty
+paths do not invalidate approval by themselves. If any planning document or
+wording evidence identity changes, the workflow must rerun the complete
+`planning_artifacts` review, show the three links again, and wait for fresh
+explicit post-planning confirmation. `task.py start` is a status transition
+only and is never planning review evidence.
 
-`ambiguity_review.normative_language.controlled_terms` must equal the full
-controlled weak-constraint v2 term list: `可以`, `允许`, `建议`, `推荐`,
-`可选`, `尽量`, `尽可能`, `最好`, `应该`, `应当`, `原则上`, `一般`,
-`通常`, `视情况`, `根据情况`, `根据需要`, `按需`, `必要时`, `如有需要`,
-`需要时`, `适当`, `适当时`, `合理`, `合理时`, `类似`, `相关`, `相应`,
-`等`, `等等`, `之类`, `一些`, `若干`, `部分`, `至少`, and `默认`.
-`scan_scope` must equal `["prd.md", "design.md", "implement.md"]`.
-`hits[]` must contain every controlled-term hit found in those three planning
-documents with `path`, `line`, `term`, `text`, `classification`, and `reason`.
-`unchecked_normative_hits[]` must contain only unclassified hits and
-`classification=contract_violation` hits; it must be empty for passed approval.
-Allowed non-blocking classifications are `quoted_source_non_contract`,
-`term_definition`, `literal_identifier`, `historical_record_non_contract`,
-`deterministic_threshold`, `deterministic_default`, `deterministic_option`, and
-`deterministic_reference`, each with a non-empty reason. `checked_dimensions`
-must contain `no_requirement_weakening`,
-`source_issue_semantics_preserved`, `conditional_paths_have_conditions`,
-`no_parallel_implementation_paths`,
-`gates_have_machine_verifiable_conditions`,
-`acceptance_criteria_are_deterministic`, and
-`external_quotes_are_labeled_non_contract`, all set to true.
+The complete vocabulary, classification semantics, scan identity, unchecked
+derivation, Gate requirements, and typed-exit invariants belong only to the
+canonical `guru-review-contract-wording` contract and shared generic runtime.
+`planning-approval.json` preserves a deterministic audit projection but cannot
+reimplement or accept caller-injected classification rows. Active approvals
+without the new `contract_wording_review` binding are pre-#114 evidence and
+fail with a fresh re-review requirement; archived approvals remain historical
+and are not migrated in place.
 
-The companion validator must rescan the same three planning documents and fail
-closed if the current scan no longer matches recorded `hits[]`, if
-`scan_scope` or `controlled_terms` drift, if a hit uses an unknown
-classification, if an allowed classification lacks a reason, or if
-`unchecked_normative_hits[]` is non-empty. The scanner is deterministic fact
-collection and classification structure validation only; AI semantic review
-remains in Markdown workflow / planning artifacts.
+Schema `guru-contract-wording-review-1.0` has an additive live-issue mutation
+binding. A current `change_request` live issue revision records source
+identity, locator, field, preimage hash, confirmed content hash, current reread
+content hash, and source update time. The recorder derives per-revision
+`confirmed_payload_sha256` and `mutation_result_sha256`; human confirmation
+binds the ordered confirmed-payload digest set. The checker rebuilds the live
+scope and requires the reread hash/update time and derived identities to match.
+Selected authoritative comments are profile-discriminated scope items and
+require non-empty author, date-time `updated_at`, selection reason, and content
+hash. These additions do not strengthen planning, explicit-path, draft, or
+archived evidence into a live mutation contract.
 
 ## Phase 2 Check Artifact
 

@@ -1,0 +1,104 @@
+{
+  "$schema": "../../schemas/skill-interface.schema.json",
+  "schema_version": "1.2",
+  "id": "guru-review-contract-wording",
+  "name": "guru-review-contract-wording",
+  "description": "Review controlled contract wording through fixed change-request, planning-artifact, or explicit-path scope, semantic revision and classification, deterministic evidence, and typed exits.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": ["runtime_dependency", "review_scope", "mutation_authority", "semantic_evidence", "invocation_freshness"]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": ["runtime_dependency", "review_scope", "mutation_authority", "semantic_evidence", "invocation_freshness"]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed extension manifest, dispatcher, active package inventory and declared record/check runtime commands",
+      "binding": "complete compatible Guru Team preset runtime",
+      "freshness": "validated by run-skill-command before every runtime command"
+    },
+    {
+      "id": "review_scope",
+      "evidence": "one complete fixed profile scope with normalized item identities and current content hashes",
+      "binding": "change_request title/body plus selected authoritative comments, the three planning artifacts, or the explicit repo-relative Markdown paths",
+      "freshness": "the checker rebuilds the selected profile scope and rejects selector narrowing or content drift"
+    },
+    {
+      "id": "mutation_authority",
+      "evidence": "AI-reviewed authority for each proposed content mutation, exact confirmed-payload digest, and current live mutation-result identity when required",
+      "binding": "only the issue, draft, planning artifact, or explicit Markdown content authorized by the invocation",
+      "freshness": "live issue revisions bind source/locator/field, preimage, confirmed content, current reread content and source update time through rescan and checking"
+    },
+    {
+      "id": "semantic_evidence",
+      "evidence": "AI-authored revisions, retained-hit classifications and reasons, Review Gate judgment, and conditional human confirmation",
+      "binding": "the complete current deterministic scan",
+      "freshness": "every content change rebuilds scope and scan before semantic evidence can be recorded"
+    },
+    {
+      "id": "invocation_freshness",
+      "evidence": "mode, profile, scope, scan, semantic review, confirmation, result identities and caller route",
+      "binding": "one current closed-loop review round",
+      "freshness": "all identities and the declared profile/exit remain current at typed-exit validation"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [
+    {"id": "contract_wording_review_example", "path": "examples/contract-wording-review.json"}
+  ],
+  "schemas": [
+    {"id": "contract_wording_review_schema", "path": "schemas/contract-wording-review.schema.json"}
+  ],
+  "validators": [
+    {
+      "id": "contract_wording_recorder",
+      "command": "scripts/record-contract-wording-review.sh",
+      "runtime_command": "record-contract-wording-review",
+      "objective_scope": "fixed profile scope reconstruction, deterministic scan, schema and whitelist validation, derived unchecked hits, live issue payload/result identities and canonical digests"
+    },
+    {
+      "id": "contract_wording_checker",
+      "command": "scripts/check-contract-wording-review.sh",
+      "runtime_command": "check-contract-wording-review",
+      "objective_scope": "published schema, fixed scope and scan completeness, selected-comment metadata, live issue payload/preimage/result binding, content freshness, classification structure, Gate/exit biconditional and result digest validation"
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "pass",
+      "evidence": "current complete scope and scan, zero unchecked hits, passed AI Review Gate, and no unconsumed content revision",
+      "consumer": {"kind": "workflow", "id": "guru-contract-wording-pass-router"}
+    },
+    {
+      "id": "content_changed",
+      "evidence": "one or more authorized revisions are bound to rebuilt scope, current content hashes, a complete rescan, and a passed AI Review Gate",
+      "consumer": {"kind": "workflow", "id": "guru-contract-wording-change-router"}
+    },
+    {
+      "id": "blocked",
+      "evidence": "missing scope or mutation authority, unconfirmed semantic change, refused required mutation, unchecked violation, or blocked AI Review Gate",
+      "consumer": {"kind": "stop", "id": "contract-wording-blocked"}
+    }
+  ],
+  "reentry": {
+    "identity": "mode, profile, normalized scope items, scope/scan digests, current hits, revisions, classifications, Review Gate, confirmation and result digest",
+    "freshness": "every content mutation invalidates prior hits and semantic evidence; the checker rebuilds the profile scope and deterministic scan before accepting the declared exit",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"]
+}

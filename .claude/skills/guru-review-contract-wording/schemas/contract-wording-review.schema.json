@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-contract-wording-review-1.0.json",
+  "title": "Guru contract wording review result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "skill_id", "generated_at", "profile", "mode", "vocabulary_version", "classification_version", "scope", "scan", "semantic_review", "human_confirmation", "typed_exit", "facts_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "skill_id": {"const": "guru-review-contract-wording"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "profile": {"enum": ["change_request", "planning_artifacts", "explicit_paths"]},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "vocabulary_version": {"const": "contract-wording-v2"},
+    "classification_version": {"const": "contract-wording-classifications-v1"},
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "items", "scope_sha256"],
+      "properties": {
+        "identity": {"type": "string", "minLength": 1},
+        "items": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/scopeItem"}},
+        "scope_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "scan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hits", "scan_sha256"],
+      "properties": {
+        "hits": {"type": "array", "items": {"$ref": "#/$defs/hit"}},
+        "scan_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "semantic_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revisions", "classifications", "unchecked_normative_hits", "ai_review_gate"],
+      "properties": {
+        "revisions": {"type": "array", "items": {"$ref": "#/$defs/revision"}},
+        "classifications": {"type": "array", "items": {"$ref": "#/$defs/classification"}},
+        "unchecked_normative_hits": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "ai_review_gate": {"$ref": "#/$defs/aiReviewGate"}
+      }
+    },
+    "human_confirmation": {"$ref": "#/$defs/humanConfirmation"},
+    "typed_exit": {"enum": ["pass", "content_changed", "blocked"]},
+    "facts_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"typed_exit": {"const": "blocked"}}, "required": ["typed_exit"]},
+      "then": {"properties": {"semantic_review": {"properties": {"ai_review_gate": {"properties": {"status": {"const": "blocked"}}}}}}},
+      "else": {"properties": {"semantic_review": {"properties": {"ai_review_gate": {"properties": {"status": {"const": "passed"}}}}}}}
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "content_changed"}}, "required": ["typed_exit"]},
+      "then": {"properties": {"semantic_review": {"properties": {"revisions": {"minItems": 1}}}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "scopeItem": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id", "path", "size_bytes", "content_sha256"],
+          "properties": {
+            "kind": {"const": "markdown_file"},
+            "id": {"type": "string", "minLength": 1},
+            "path": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+\\.md$"},
+            "size_bytes": {"type": "integer", "minimum": 0},
+            "content_sha256": {"$ref": "#/$defs/sha256"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id", "source_kind", "source_identity", "field", "author", "updated_at", "selection_reason", "size_bytes", "content_sha256"],
+          "properties": {
+            "kind": {"const": "change_request_field"},
+            "id": {"type": "string", "minLength": 1},
+            "source_kind": {"enum": ["issue", "draft"]},
+            "source_identity": {"type": "string", "minLength": 1},
+            "field": {"enum": ["title", "body"]},
+            "author": {"const": null},
+            "updated_at": {"type": ["string", "null"], "format": "date-time"},
+            "selection_reason": {"const": null},
+            "size_bytes": {"type": "integer", "minimum": 0},
+            "content_sha256": {"$ref": "#/$defs/sha256"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id", "source_kind", "source_identity", "field", "author", "updated_at", "selection_reason", "size_bytes", "content_sha256"],
+          "properties": {
+            "kind": {"const": "change_request_field"},
+            "id": {"type": "string", "minLength": 1},
+            "source_kind": {"enum": ["issue", "draft"]},
+            "source_identity": {"type": "string", "minLength": 1},
+            "field": {"const": "comment"},
+            "author": {"type": "string", "minLength": 1},
+            "updated_at": {"type": "string", "format": "date-time"},
+            "selection_reason": {"type": "string", "minLength": 1},
+            "size_bytes": {"type": "integer", "minimum": 0},
+            "content_sha256": {"$ref": "#/$defs/sha256"}
+          }
+        }
+      ]
+    },
+    "hit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hit_id", "scope_item_id", "locator", "line", "term", "text", "content_sha256"],
+      "properties": {
+        "hit_id": {"type": "string", "minLength": 1},
+        "scope_item_id": {"type": "string", "minLength": 1},
+        "locator": {"type": "string", "minLength": 1},
+        "line": {"type": "integer", "minimum": 1},
+        "term": {"type": "string", "minLength": 1},
+        "text": {"type": "string"},
+        "content_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revision_id", "locator", "before_sha256", "after_sha256", "reason", "mutation_authority", "rescan_sha256"],
+      "properties": {
+        "revision_id": {"type": "string", "minLength": 1},
+        "locator": {"type": "string", "minLength": 1},
+        "before_sha256": {"$ref": "#/$defs/sha256"},
+        "after_sha256": {"$ref": "#/$defs/sha256"},
+        "reason": {"type": "string", "minLength": 1},
+        "mutation_authority": {"type": "string", "minLength": 1},
+        "rescan_sha256": {"$ref": "#/$defs/sha256"},
+        "change_request_mutation": {"$ref": "#/$defs/changeRequestMutation"}
+      }
+    },
+    "changeRequestMutation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_identity", "locator", "field", "preimage_sha256", "confirmed_content_sha256", "confirmed_payload_sha256", "reread_content_sha256", "source_updated_at", "mutation_result_sha256"],
+      "properties": {
+        "source_identity": {"type": "string", "minLength": 1},
+        "locator": {"type": "string", "minLength": 1},
+        "field": {"enum": ["title", "body", "comment"]},
+        "preimage_sha256": {"$ref": "#/$defs/sha256"},
+        "confirmed_content_sha256": {"$ref": "#/$defs/sha256"},
+        "confirmed_payload_sha256": {"$ref": "#/$defs/sha256"},
+        "reread_content_sha256": {"$ref": "#/$defs/sha256"},
+        "source_updated_at": {"type": "string", "format": "date-time"},
+        "mutation_result_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hit_id", "classification", "reason"],
+      "properties": {
+        "hit_id": {"type": "string", "minLength": 1},
+        "classification": {"enum": ["contract_violation", "quoted_source_non_contract", "term_definition", "literal_identifier", "historical_record_non_contract", "deterministic_threshold", "deterministic_default", "deterministic_option", "deterministic_reference"]},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "aiReviewGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewer", "summary", "reviewed_scan_sha256", "checked_dimensions"],
+      "properties": {
+        "status": {"enum": ["passed", "blocked"]},
+        "reviewer": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "reviewed_scan_sha256": {"$ref": "#/$defs/sha256"},
+        "checked_dimensions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["complete_profile_scope", "all_hits_classified", "zero_unchecked_hits", "product_semantics_preserved", "retained_reasons_sufficient", "zero_hits_not_requirement_review"],
+          "properties": {
+            "complete_profile_scope": {"type": "boolean"},
+            "all_hits_classified": {"type": "boolean"},
+            "zero_unchecked_hits": {"type": "boolean"},
+            "product_semantics_preserved": {"type": "boolean"},
+            "retained_reasons_sufficient": {"type": "boolean"},
+            "zero_hits_not_requirement_review": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "humanConfirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "confirmed_by", "confirmed_at", "reason"],
+      "properties": {
+        "status": {"enum": ["not_required", "confirmed", "refused"]},
+        "confirmed_by": {"type": ["string", "null"]},
+        "confirmed_at": {"type": ["string", "null"], "format": "date-time"},
+        "reason": {"type": "string", "minLength": 1},
+        "confirmed_payload_sha256": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}
+      }
+    }
+  }
+}

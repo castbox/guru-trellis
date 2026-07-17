@@ -1,0 +1,6 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"审核 package/interface/frontmatter/modes/stages/exits/public API 与 source/installed validation。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"审核 mandatory Skill route、三个 profile consumer、planning compatibility 与 fail-closed stop。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"审核 evidence schema、scope/content digests、rescan、unchecked、migration 和 freshness。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"审核 scripts 未承担 classification、rewrite、semantic pass/block 或 route intent。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"审核 #93 回归、legacy deletion、throwaway、update/reapply 与 Branch Review 覆盖。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"审核 canonical/dogfood/platform 分发一致性及 active surface 无重复规则 owner。"}

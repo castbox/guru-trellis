@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "profile": "explicit_paths",
+  "mode": "standalone",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "explicit_paths:docs/example.md",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:docs/example.md",
+        "path": "docs/example.md",
+        "size_bytes": 19,
+        "content_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+      }
+    ],
+    "scope_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "example-reviewer",
+      "summary": "The fixed scope was reviewed and no controlled wording was found.",
+      "reviewed_scan_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "No content mutation required confirmation."
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+}
