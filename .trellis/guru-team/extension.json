@@ -43,6 +43,7 @@
         ".trellis/guru-team/extension.json",
         "planning-approval.json",
         "context-discovery.json",
+        "contract-wording-review.json",
         "phase2-check.json",
         "task-commit-plans/*.json",
         "agent-assignment.json",
@@ -130,11 +131,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-17T09:23:33Z",
+  "installed_at": "2026-07-17T11:01:01Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "feat/114-contract-wording-review",
-    "commit": "2528a0762b84159f802e5b258daa7ff55e17b4a5",
+    "commit": "dfde7dd37dc74848805c88f97e423e01a9e26f33",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

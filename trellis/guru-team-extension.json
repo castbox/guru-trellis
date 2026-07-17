@@ -41,6 +41,7 @@
       ".trellis/guru-team/extension.json",
       "planning-approval.json",
       "context-discovery.json",
+      "contract-wording-review.json",
       "phase2-check.json",
       "task-commit-plans/*.json",
       "agent-assignment.json",

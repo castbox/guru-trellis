@@ -1,0 +1,256 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "002",
+  "task": {
+    "id": "114-contract-wording-review",
+    "path": ".trellis/tasks/07-17-114-contract-wording-review",
+    "status": "in_progress",
+    "branch": "feat/114-contract-wording-review"
+  },
+  "issue": {
+    "primary_issue": 114,
+    "ledger_sha256": "f7dc8ab2fe101b6ef0d087b4ac0293cf8469ca745129a4d924a8bcc5769abf21"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "dfde7dd37dc74848805c88f97e423e01a9e26f33"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/planning-approval.json",
+      "sha256": "577f42f96c18cd22ed05e77cae27863fe67ed8ab0b4d77ee496240e4e3612b96",
+      "size": 11053
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+      "sha256": "a7aac4dec60681017e904358c8e1204631c4043b318a39e6ede1a186a8c69a7e",
+      "size": 9557
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/issue-scope-ledger.json",
+      "sha256": "f7dc8ab2fe101b6ef0d087b4ac0293cf8469ca745129a4d924a8bcc5769abf21",
+      "size": 671
+    },
+    "task": {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/task.json",
+      "sha256": "37034f4783a86d7888fa2133d8a1c78c924616a905fa25e04967db61cc8ddbe9",
+      "size": 690
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "7bcc2e34892fe68f6134472ef58f5a7b3e6c6a59",
+        "worktree_sha256": "4a8ad2ebee483cb71f8f6b58416f079361565bc92b5423e3883c5bff94c6ebe4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1f047848f17865f64552a7752fec660e2c4dc1e0",
+        "worktree_sha256": "5d593bc596e3ad88a9bccfe00089ae4ace6c4a004b0a41765280d35a08dd7daa",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "8437eb8e1939a96460074ac18c4039228c0007d6",
+        "worktree_sha256": "a7aac4dec60681017e904358c8e1204631c4043b318a39e6ede1a186a8c69a7e",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/review-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "4435c9cfe750d6b96337cdfff0f7c38985ad3ba1b9c607539c764fe687a0f068",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "2744ddd494cb7a5d4c73a8c0e9bbab62b833faed783817c2ff5870d5373ab12c",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/reviews/001-findings-review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "63a0298f8194a8fb50a75ce5e135d6cfa2ea73d08a5b361483e2dcd713330d72",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/001.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a121fb4c03a1e3a00b917642c9e0bd568860f9a6",
+        "worktree_sha256": "f39a68a1795fe5d38624125f8b79151643012de8ce3de5e0766e4a4d6841ee82",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/guru-team-extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a21117d9c63c6ee15e4037e54784e56f3bf9022a",
+        "worktree_sha256": "4c1f8c60eecda1964ad565e2b23b8044f52d6f579b6822ea7e84a03022b9c4d3",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "dac3e596f387ba65546d07b7b511898f5c93c119",
+        "worktree_sha256": "cbdc97b11f0840dc40ad14a8444ed6648579a2998decf8b13dc30d07008c985e",
+        "mode": "100644"
+      }
+    ],
+    "digest": "741c22cdb033f31cff5903a8276df27b71f447b5207b659cc525b38885c067d5"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "Issue #114 首轮 P2 finding 修复，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/agent-assignment.json",
+      "category": "unrelated-preserved",
+      "reason": "Phase 2 与 Branch Review 的 liveness/assignment metadata tail，workflow 明确要求本轮不提交。",
+      "coverage_source": "trellis-continue metadata-tail rule"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "本轮 finding fix 后重新录制并通过 validator 的 fresh Phase 2 evidence。",
+      "coverage_source": "phase2-check.json self-recorder evidence"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/review-gate.json",
+      "category": "unrelated-preserved",
+      "reason": "首轮 failed Branch Review Gate metadata，需保留但不得进入 finding-fix work commit。",
+      "coverage_source": "trellis-continue metadata-tail rule"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/review.md",
+      "category": "unrelated-preserved",
+      "reason": "Branch Review 人类可读 rollup metadata，需留待最终 gate 后处理。",
+      "coverage_source": "trellis-continue metadata-tail rule"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/reviews/001-findings-review.md",
+      "category": "unrelated-preserved",
+      "reason": "首轮独立审查原始报告，需保留为 finding 生命周期证据但本轮不得提交。",
+      "coverage_source": "trellis-continue metadata-tail rule"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/001.json",
+      "category": "unrelated-preserved",
+      "reason": "上一轮 executor 的 post-commit mutable result，按合同保留在 working tree，不进入新提交。",
+      "coverage_source": "guru-create-task-commit result-tail rule"
+    },
+    {
+      "path": "trellis/guru-team-extension.json",
+      "category": "task-reviewed",
+      "reason": "Issue #114 首轮 P2 finding 修复，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "category": "task-reviewed",
+      "reason": "Issue #114 public artifact inventory 回归测试，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/002.json",
+      "category": "task-reviewed",
+      "reason": "本次 guru-create-task-commit 调用的不可递归候选证据。",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/guru-team/extension.json",
+    ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+    ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/002.json",
+    "trellis/guru-team-extension.json",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+  ],
+  "message": {
+    "subject": "fix(workflow): #114 补全措辞审查产物合同",
+    "body": "背景：\n首轮 Branch Review 发现 contract-wording-review.json 已成为正式 planning artifact，但 public_api.artifact_contracts 未登记该合同。\n\n变更：\n在 canonical 与 dogfood extension manifest 中登记 contract-wording-review.json，并为 preset installer 增加 canonical/installed public artifact inventory 回归断言。\n\n边界：\n仅关闭首轮 P2 finding；不改变 guru-review-contract-wording 语义，不修改 archived tasks，也不扩张 #101、#112、#129、#132。\n\n验证：\npackage 14/14、runtime 500/500、preset 39/39 通过；source/installed validation、dogfood drift、全平台安装与 update/reapply 均通过。远程 marketplace 验证仍留待 publish gate。\n\nRefs #114",
+    "bytes": "fix(workflow): #114 补全措辞审查产物合同\n\n背景：\n首轮 Branch Review 发现 contract-wording-review.json 已成为正式 planning artifact，但 public_api.artifact_contracts 未登记该合同。\n\n变更：\n在 canonical 与 dogfood extension manifest 中登记 contract-wording-review.json，并为 preset installer 增加 canonical/installed public artifact inventory 回归断言。\n\n边界：\n仅关闭首轮 P2 finding；不改变 guru-review-contract-wording 语义，不修改 archived tasks，也不扩张 #101、#112、#129、#132。\n\n验证：\npackage 14/14、runtime 500/500、preset 39/39 通过；source/installed validation、dogfood drift、全平台安装与 update/reapply 均通过。远程 marketplace 验证仍留待 publish gate。\n\nRefs #114\n",
+    "sha256": "a7d7258e80d36c49c8d45ec0e40e23de8c454fe4fbade3867496de60c45968ad"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "Codex 主会话 semantic commit gate",
+    "summary": "已复核 #114 finding-fix 的精确 stage 集合、提交语义、Issue 引用、Phase 2 freshness、upgrade/deployment/security 边界与 Branch Review metadata 保留，允许创建一个本地 finding-fix work commit。",
+    "evidence": [
+      "workspace boundary、planning approval 与 fresh phase2-check 均在 dfde7dd 通过；source checkout 干净，Git 处于普通操作状态。",
+      "exact_stage_paths 仅包含两份 extension manifest、preset inventory regression、fresh phase2-check 与 sequence 002 candidate；全部由 fresh Phase 2 或 skill-artifact 覆盖。",
+      "agent-assignment、review.md、reviews/001、failed review-gate 与 001 executor result 均分类为 unrelated-preserved，保持未提交。",
+      "提交信息为中文 Conventional Commit，唯一 footer 是 Refs #114，不含 Closes/Fixes/Resolves。",
+      "改动不改变 Skill 语义，不涉及部署资产、数据库、CI/CD、容器或生产配置；远程 marketplace 限制明确留待 publish gate。"
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "explicit-user-confirmation-2026-07-17",
+    "evidence": "用户再次明确回复“确认继续”；授权适用于上述 finding-fix exact_stage_paths 和本地 fix(workflow) work commit，并继续 Branch Review；不授权 push、PR 或 Issue close。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-17T11:24:40Z",
+    "plan_digest": "7ab4d1b296d07f91e93a2c0044ed6a22fa59302dffa56faaaf7aabb64e952270"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

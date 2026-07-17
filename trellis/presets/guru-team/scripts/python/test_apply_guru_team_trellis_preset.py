@@ -1162,6 +1162,14 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(installed["extension"]["version"], "0.6.5-guru.12")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
+        canonical = json.loads(
+            (self.guru_root / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
+        )
+        self.assertIn(
+            "contract-wording-review.json",
+            canonical["public_api"]["artifact_contracts"],
+        )
+        self.assertIn("contract-wording-review.json", public_api["artifact_contracts"])
         self.assertIn("agent-assignment.json", public_api["artifact_contracts"])
         self.assertIn("reviews/*.md", public_api["artifact_contracts"])
         self.assertIn("record-subagent-liveness-event", public_api["companion_scripts"])
