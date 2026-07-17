@@ -8051,6 +8051,73 @@ def contract_wording_file_item(root: Path, path: Path) -> tuple[dict[str, Any], 
     )
 
 
+def contract_wording_live_issue_comment_index(
+    root: Path,
+    repo: str,
+    number: int,
+) -> dict[str, dict[str, Any]]:
+    try:
+        pages = gh_json(
+            [
+                "api",
+                f"repos/{repo}/issues/{number}/comments?per_page=100",
+                "--paginate",
+                "--slurp",
+                "-H",
+                "Accept: application/vnd.github+json",
+                "-H",
+                "X-GitHub-Api-Version: 2022-11-28",
+            ],
+            cwd=root,
+        )
+    except json.JSONDecodeError as exc:
+        raise WorkflowError(
+            "change_request live issue comments API returned invalid JSON.",
+            exit_code=2,
+        ) from exc
+    if not isinstance(pages, list) or any(not isinstance(page, list) for page in pages):
+        raise WorkflowError(
+            "change_request live issue comments API pagination response is invalid.",
+            exit_code=2,
+        )
+
+    comments: dict[str, dict[str, Any]] = {}
+    node_ids: set[str] = set()
+    database_ids: set[int] = set()
+    urls: set[str] = set()
+    for page in pages:
+        for comment in page:
+            if not isinstance(comment, dict):
+                raise WorkflowError(
+                    "change_request live issue comments API page contains an invalid row.",
+                    exit_code=2,
+                )
+            database_id = comment.get("id")
+            node_id = str(comment.get("node_id") or "").strip()
+            url = str(comment.get("html_url") or "").strip()
+            if (
+                not is_strict_int(database_id)
+                or int(database_id) <= 0
+                or not node_id
+                or not url
+            ):
+                raise WorkflowError(
+                    "change_request live issue comment identity is missing or invalid.",
+                    exit_code=2,
+                )
+            if int(database_id) in database_ids or node_id in node_ids or url in urls:
+                raise WorkflowError(
+                    "change_request live issue comments API returned duplicate comment identity.",
+                    exit_code=2,
+                )
+            database_ids.add(int(database_id))
+            node_ids.add(node_id)
+            urls.add(url)
+            comments[node_id] = comment
+            comments[url] = comment
+    return comments
+
+
 def contract_wording_change_request_scope(
     root: Path,
     source_input: str | None,
@@ -8078,34 +8145,50 @@ def contract_wording_change_request_scope(
             raise WorkflowError("change_request live issue updated_at is missing.", exit_code=2)
         parse_iso_datetime(source_updated_at, "change_request live issue updated_at")
         source_identity = str(live.get("url") or f"https://github.com/{repo}/issues/{number}")
-        comments = live.get("comments") if isinstance(live.get("comments"), list) else []
-        comment_by_id = {
-            str(comment.get("id") or comment.get("url") or ""): comment
-            for comment in comments
-            if isinstance(comment, dict) and str(comment.get("id") or comment.get("url") or "")
-        }
+        comment_by_id = (
+            contract_wording_live_issue_comment_index(root, repo, int(number))
+            if selected
+            else {}
+        )
         selected_rows: list[dict[str, Any]] = []
+        selected_node_ids: set[str] = set()
         for row in selected:
             if not isinstance(row, dict):
                 raise WorkflowError("change_request selected comment must be an object.", exit_code=2)
             comment_id = str(row.get("id") or "").strip()
             reason = str(row.get("selection_reason") or "").strip()
-            if not comment_id or comment_id in selected_ids or comment_id not in comment_by_id or not reason:
+            if not comment_id or comment_id in selected_ids or not reason:
                 raise WorkflowError("change_request selected comment identity or reason is invalid.", exit_code=2)
+            comment = comment_by_id.get(comment_id)
+            if comment is None:
+                raise WorkflowError(
+                    "change_request selected comment was not found in the live issue comments API.",
+                    exit_code=2,
+                )
+            node_id = str(comment.get("node_id") or "").strip()
+            if node_id in selected_node_ids:
+                raise WorkflowError(
+                    "change_request selected comment identity or reason is invalid.",
+                    exit_code=2,
+                )
             selected_ids.add(comment_id)
-            comment = comment_by_id[comment_id]
-            author = comment.get("author")
+            selected_node_ids.add(node_id)
+            author = comment.get("user")
             author_value = str(author.get("login") or "").strip() if isinstance(author, dict) else ""
-            updated_at = str(comment.get("updatedAt") or "").strip()
-            if not author_value or not updated_at:
-                raise WorkflowError("change_request selected comment author or updated_at is missing.", exit_code=2)
+            updated_at = str(comment.get("updated_at") or "").strip()
+            comment_body = comment.get("body")
+            if not author_value or not updated_at or not isinstance(comment_body, str):
+                raise WorkflowError(
+                    "change_request selected comment author, updated_at, or body is missing.",
+                    exit_code=2,
+                )
             parse_iso_datetime(updated_at, "change_request selected comment updated_at")
             selected_rows.append({
                 "id": comment_id,
                 "author": author_value,
                 "updated_at": updated_at,
                 "selection_reason": reason,
-                "body": str(comment.get("body") or ""),
+                "body": comment_body,
             })
     elif kind == "draft":
         draft_id = str(source.get("draft_id") or "").strip()

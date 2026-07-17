@@ -4199,6 +4199,89 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                         change_request_input=source.name,
                     )
 
+    def test_contract_wording_live_comment_adapter_failures_are_specific(self) -> None:
+        node_id = "IC_kwDOA114"
+        comment_url = "https://github.com/castbox/guru-trellis/issues/114#issuecomment-11401"
+        source = self.root / "issue-selected-comment.json"
+        source.write_text(json.dumps({
+            "kind": "issue",
+            "repo": "castbox/guru-trellis",
+            "number": 114,
+            "selected_comments": [{
+                "id": node_id,
+                "selection_reason": "该评论是 authoritative contract source。",
+            }],
+        }), encoding="utf-8")
+        live = {
+            "title": "确定标题",
+            "body": "确定正文",
+            "url": "https://github.com/castbox/guru-trellis/issues/114",
+            "updatedAt": "2026-07-17T08:00:00Z",
+            "comments": [{
+                "id": node_id,
+                "author": {"login": "reviewer"},
+                "body": "确定评论内容。",
+                "createdAt": "2026-07-17T07:00:00Z",
+                "url": comment_url,
+            }],
+        }
+        rest_comment = {
+            "id": 11401,
+            "node_id": node_id,
+            "user": {"login": "reviewer"},
+            "body": "确定评论内容。",
+            "created_at": "2026-07-17T07:00:00Z",
+            "updated_at": "2026-07-17T08:00:00Z",
+            "html_url": comment_url,
+        }
+        cases = [
+            (
+                [rest_comment],
+                "pagination response is invalid",
+            ),
+            (
+                [[rest_comment], [dict(rest_comment)]],
+                "duplicate comment identity",
+            ),
+            (
+                [[{key: value for key, value in rest_comment.items() if key != "updated_at"}]],
+                "updated_at",
+            ),
+        ]
+        for api_payload, expected in cases:
+            with (
+                self.subTest(expected=expected),
+                mock.patch.object(gtt, "require_gh_auth"),
+                mock.patch.object(gtt, "issue_view", return_value=live),
+                mock.patch.object(gtt, "gh_json", return_value=api_payload),
+            ):
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    gtt.contract_wording_build_scope(
+                        self.root,
+                        "change_request",
+                        "standalone",
+                        change_request_input=source.name,
+                    )
+                self.assertIn(expected, str(raised.exception))
+
+        api_error = gtt.WorkflowError(
+            "gh command failed: gh api repos/castbox/guru-trellis/issues/114/comments?per_page=100",
+            exit_code=2,
+        )
+        with (
+            mock.patch.object(gtt, "require_gh_auth"),
+            mock.patch.object(gtt, "issue_view", return_value=live),
+            mock.patch.object(gtt, "gh_json", side_effect=api_error),
+        ):
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.contract_wording_build_scope(
+                    self.root,
+                    "change_request",
+                    "standalone",
+                    change_request_input=source.name,
+                )
+        self.assertIn("gh command failed: gh api", str(raised.exception))
+
     def test_contract_wording_live_issue_mutation_requires_exact_confirmation_chain(self) -> None:
         source = self.root / "issue-change-request.json"
         source.write_text(json.dumps({

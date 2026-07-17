@@ -1,3 +1,4 @@
+import hashlib
 import importlib.util
 import json
 import subprocess
@@ -230,12 +231,14 @@ class ContractWordingPackageTest(unittest.TestCase):
                     )
 
         issue_input = self.root / "issue.json"
+        node_id = "IC_kwDOA114"
+        comment_url = "https://github.com/castbox/guru-trellis/issues/114#issuecomment-11401"
         issue_input.write_text(json.dumps({
             "kind": "issue",
             "repo": "castbox/guru-trellis",
             "number": 114,
             "selected_comments": [{
-                "id": "comment-1",
+                "id": node_id,
                 "selection_reason": "This comment is authoritative.",
             }],
         }), encoding="utf-8")
@@ -245,20 +248,101 @@ class ContractWordingPackageTest(unittest.TestCase):
             "url": "https://github.com/castbox/guru-trellis/issues/114",
             "updatedAt": "2026-07-17T00:00:00Z",
             "comments": [{
-                "id": "comment-1",
-                "author": None,
-                "updatedAt": "2026-07-17T00:00:00Z",
+                "id": node_id,
+                "author": {"login": "reviewer"},
+                "createdAt": "2026-07-16T00:00:00Z",
                 "body": "Exact authoritative comment.",
+                "url": comment_url,
             }],
         }
-        with mock.patch.object(GTT, "require_gh_auth"), mock.patch.object(GTT, "issue_view", return_value=live):
-            with self.assertRaises(GTT.WorkflowError):
+        rest_comment = {
+            "id": 11401,
+            "node_id": node_id,
+            "user": {"login": "reviewer"},
+            "created_at": "2026-07-16T00:00:00Z",
+            "body": "Exact authoritative comment.",
+            "html_url": comment_url,
+        }
+        with (
+            mock.patch.object(GTT, "require_gh_auth"),
+            mock.patch.object(GTT, "issue_view", return_value=live),
+            mock.patch.object(GTT, "gh_json", return_value=[[rest_comment]]),
+        ):
+            with self.assertRaises(GTT.WorkflowError) as raised:
                 GTT.contract_wording_build_scope(
                     self.root,
                     "change_request",
                     "standalone",
                     change_request_input=issue_input.name,
                 )
+        self.assertIn("updated_at", str(raised.exception))
+
+    def test_live_selected_comment_uses_paginated_rest_updated_time_and_builds_evidence(self) -> None:
+        node_id = "IC_kwDOA115"
+        comment_url = "https://github.com/castbox/guru-trellis/issues/114#issuecomment-11402"
+        issue_input = self.root / "issue-live-comment.json"
+        issue_input.write_text(json.dumps({
+            "kind": "issue",
+            "repo": "castbox/guru-trellis",
+            "number": 114,
+            "selected_comments": [{
+                "id": node_id,
+                "selection_reason": "This comment is authoritative.",
+            }],
+        }), encoding="utf-8")
+        live = {
+            "title": "Exact change title",
+            "body": "Exact change body",
+            "url": "https://github.com/castbox/guru-trellis/issues/114",
+            "updatedAt": "2026-01-01T00:00:00Z",
+            "comments": [{
+                "id": node_id,
+                "author": {"login": "reviewer"},
+                "body": "Exact authoritative comment.",
+                "createdAt": "2025-12-31T23:00:00Z",
+                "url": comment_url,
+            }],
+        }
+        rest_comment = {
+            "id": 11402,
+            "node_id": node_id,
+            "user": {"login": "reviewer"},
+            "body": "Exact authoritative comment.",
+            "created_at": "2025-12-31T23:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+            "html_url": comment_url,
+        }
+        with (
+            mock.patch.object(GTT, "require_gh_auth"),
+            mock.patch.object(GTT, "issue_view", return_value=live),
+            mock.patch.object(GTT, "gh_json", return_value=[[rest_comment]]) as api,
+        ):
+            scope, contents = GTT.contract_wording_build_scope(
+                self.root,
+                "change_request",
+                "standalone",
+                change_request_input=issue_input.name,
+            )
+
+        api_args, api_kwargs = api.call_args
+        self.assertEqual(api_kwargs, {"cwd": self.root})
+        self.assertIn("repos/castbox/guru-trellis/issues/114/comments?per_page=100", api_args[0])
+        self.assertIn("--paginate", api_args[0])
+        self.assertIn("--slurp", api_args[0])
+        comment_item = scope["items"][2]
+        self.assertEqual(comment_item["id"], f"comment:{node_id}")
+        self.assertEqual(comment_item["author"], "reviewer")
+        self.assertEqual(comment_item["updated_at"], rest_comment["updated_at"])
+        self.assertEqual(
+            comment_item["content_sha256"],
+            hashlib.sha256(rest_comment["body"].encode("utf-8")).hexdigest(),
+        )
+        scan = GTT.scan_contract_wording(scope, contents)
+        result = self.result(scope, scan)
+        self.assertEqual(
+            GTT.contract_wording_structural_errors(self.root, result, scope, scan),
+            [],
+        )
 
     def test_workflow_profiles_cannot_be_narrowed_or_replaced(self) -> None:
         with self.assertRaises(GTT.WorkflowError):
