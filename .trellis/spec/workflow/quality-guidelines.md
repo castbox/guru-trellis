@@ -106,7 +106,10 @@ and runtime tests for all three fixed profiles, selector-shrink rejection,
 vocabulary/classification version binding, complete-hit classification/reason
 validation, unchecked blocking, content-change rescan, stale/hash mismatch,
 Gate/exit biconditional, unique profile-aware consumers, planning compatibility
-projection, missing/non-pass legacy evidence, old `schema_version=1.1` failure,
+projection copied value-for-value from exact AI-reviewed planning-only
+dimensions, rejection of missing/false/extra/wrong-profile dimensions,
+missing/non-pass legacy evidence, schema 1.0 wording evidence predating the
+planning-only field, old `schema_version=1.1` approval failure,
 and a regression where current HEAD / dirty-path drift does not block while the
 three planning document content digests and wording evidence remain current.
 Run source and installed package validation, dogfood drift, clean throwaway

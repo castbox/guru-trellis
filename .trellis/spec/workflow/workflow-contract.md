@@ -196,8 +196,11 @@ The workflow, prompts, launchers, and platform entries must not reproduce the
 Skill's vocabulary, classification catalog, rewrite/classification/review
 loop, scanner behavior, or evidence derivation. They reference only stable
 Skill id, fixed profile, schema `guru-contract-wording-review-1.0`, typed exit,
-and their consumer obligation. A zero-hit deterministic scan is not a
-substitute for the Skill's semantic Review Gate.
+and their consumer obligation. For `planning_artifacts`, that obligation also
+requires the canonical contract's exact planning-only dimension evidence with
+every value explicitly AI-reviewed as true. A zero-hit deterministic scan or
+runtime-generated default is not a substitute for the Skill's semantic Review
+Gate.
 
 `trellis-finish-work` is a single resumable transaction entry. Its mandatory
 order is: shared prepare/digest preview, expected-digest handshake, reviewed
@@ -444,7 +447,9 @@ Gate:
   and `implement.md`, then received explicit post-planning user confirmation
   before `task.py start`. It must use `schema_version=1.2`, bind the current
   `guru-contract-wording-review-1.0` artifact/schema/scope/scan identity, include
-  its deterministic compatibility projection under `ambiguity_review`, use
+  its deterministic compatibility projection under `ambiguity_review`, copied
+  value-for-value from the checker-validated planning-only dimensions without
+  defaults, use
   `user_confirmation.source=explicit-post-planning-review`, and record matching
   hash / size metadata for all three planning documents, plus
   modified-time, HEAD, and dirty paths as audit context. Validator freshness is
@@ -452,8 +457,10 @@ Gate:
   working-tree dirty paths: implementation commits, metadata tail, or unrelated
   dirty paths do not invalidate approval while `prd.md`, `design.md`, and
   `implement.md` content still matches the last explicit user review. If any of
-  those three planning documents changes, show the three links again and wait
-  for fresh explicit post-planning confirmation. Phase 0 intake approval,
+  those three planning documents changes, or schema 1.0 wording evidence lacks
+  the planning-only dimension field, rerun the complete AI review, show the
+  three links again, and wait for fresh explicit post-planning confirmation;
+  never patch missing booleans into old evidence. Phase 0 intake approval,
   generic workflow confirmation, old `source=workflow`, old schema, missing or
   non-pass wording evidence, projection drift, non-empty unchecked hits, or
   stale wording evidence fails closed. `task.py start` is not proof of planning

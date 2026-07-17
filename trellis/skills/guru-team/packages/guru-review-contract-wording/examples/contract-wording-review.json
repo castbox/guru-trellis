@@ -2,19 +2,33 @@
   "schema_version": "1.0",
   "skill_id": "guru-review-contract-wording",
   "generated_at": "2026-01-01T00:00:00Z",
-  "profile": "explicit_paths",
-  "mode": "standalone",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
   "vocabulary_version": "contract-wording-v2",
   "classification_version": "contract-wording-classifications-v1",
   "scope": {
-    "identity": "explicit_paths:docs/example.md",
+    "identity": "planning_artifacts:.trellis/tasks/example-contract-wording",
     "items": [
       {
         "kind": "markdown_file",
-        "id": "file:docs/example.md",
-        "path": "docs/example.md",
+        "id": "file:.trellis/tasks/example-contract-wording/prd.md",
+        "path": ".trellis/tasks/example-contract-wording/prd.md",
         "size_bytes": 19,
         "content_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/example-contract-wording/design.md",
+        "path": ".trellis/tasks/example-contract-wording/design.md",
+        "size_bytes": 23,
+        "content_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/example-contract-wording/implement.md",
+        "path": ".trellis/tasks/example-contract-wording/implement.md",
+        "size_bytes": 29,
+        "content_sha256": "6666666666666666666666666666666666666666666666666666666666666666"
       }
     ],
     "scope_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
@@ -30,7 +44,7 @@
     "ai_review_gate": {
       "status": "passed",
       "reviewer": "example-reviewer",
-      "summary": "The fixed scope was reviewed and no controlled wording was found.",
+      "summary": "The fixed planning scope, controlled wording, and planning semantics were reviewed.",
       "reviewed_scan_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
       "checked_dimensions": {
         "complete_profile_scope": true,
@@ -39,6 +53,15 @@
         "product_semantics_preserved": true,
         "retained_reasons_sufficient": true,
         "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
       }
     }
   },

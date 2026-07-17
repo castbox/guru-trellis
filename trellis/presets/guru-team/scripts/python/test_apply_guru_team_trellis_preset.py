@@ -1217,6 +1217,38 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-contract-wording-review-1.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
+        schema_relative = Path("schemas/contract-wording-review.schema.json")
+        canonical_schema_path = (
+            self.guru_root
+            / "trellis/skills/guru-team/packages/guru-review-contract-wording"
+            / schema_relative
+        )
+        canonical_schema_bytes = canonical_schema_path.read_bytes()
+        canonical_schema = json.loads(canonical_schema_bytes)
+        planning_dimensions = canonical_schema["$defs"]["planningCheckedDimensions"]
+        self.assertFalse(planning_dimensions["additionalProperties"])
+        self.assertEqual(
+            set(planning_dimensions["required"]),
+            {
+                "no_requirement_weakening",
+                "source_issue_semantics_preserved",
+                "conditional_paths_have_conditions",
+                "no_parallel_implementation_paths",
+                "gates_have_machine_verifiable_conditions",
+                "acceptance_criteria_are_deterministic",
+                "external_quotes_are_labeled_non_contract",
+            },
+        )
+        for package_root in (
+            self.repo / ".trellis/guru-team/skills/packages/guru-review-contract-wording",
+            self.repo / ".agents/skills/guru-review-contract-wording",
+            self.repo / ".codex/skills/guru-review-contract-wording",
+            self.repo / ".cursor/skills/guru-review-contract-wording",
+        ):
+            self.assertEqual(
+                (package_root / schema_relative).read_bytes(),
+                canonical_schema_bytes,
+            )
         self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.2")
         self.assertEqual(public_api["skill_contracts"]["reserved_skill_ids"], ["guru-create-work-commit"])
         self.assertIn("format-merge-commit", public_api["companion_scripts"])

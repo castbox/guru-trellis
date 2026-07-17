@@ -101,8 +101,10 @@ Continue entries must:
   `guru-review-contract-wording:planning_artifacts` evidence cannot substitute
 - in `planning`, before displaying the three task-local planning documents,
   mandatory invoke `guru-review-contract-wording` with fixed profile
-  `planning_artifacts`; overlays should point to the workflow/package and must
-  not duplicate vocabulary, classifications, scanner, or semantic loop
+  `planning_artifacts`; only checker-validated evidence containing the
+  canonical contract's exact, explicitly AI-reviewed planning-only dimensions
+  may pass. Overlays should point to the workflow/package and must not duplicate
+  vocabulary, classifications, dimension catalog, scanner, or semantic loop
 - in `planning`, remind the AI to create or update the `Docs SSOT Plan`
   required by `.trellis/workflow.md`; do not paste the full enum/strategy
   contract into every overlay
@@ -115,12 +117,16 @@ Continue entries must:
   through `review.md`, and JSON artifacts stay out of the standard table
 - state that `planning-approval.json` must use schema 1.2, bind current
   checker-validated `guru-contract-wording-review-1.0` planning evidence and
-  its deterministic `ambiguity_review` compatibility projection,
+  its deterministic `ambiguity_review` compatibility projection copied
+  value-for-value from planning-only dimensions without defaults,
   `user_confirmation.source=explicit-post-planning-review`,
   `review_prompt_presented_at`, `approved_at`, and matching hash / size /
   modified-time metadata for `prd.md`, `design.md`, and `implement.md`; state
   that freshness is based on planning document content digests, while HEAD and
   dirty-path drift alone do not require another user review
+- state that schema 1.0 wording evidence missing the planning-only field is
+  stale and requires complete AI re-review, redisplay of all three planning
+  documents, and fresh post-planning confirmation; never patch old evidence
 - in `in_progress`, rerun `check-planning-approval.sh --json` before dispatching
   `trellis-implement` / channel `implement` or recording `phase2-check.json`
 - in `in_progress`, tell the AI to consume the approved `Docs SSOT Plan` during

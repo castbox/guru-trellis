@@ -131,11 +131,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-07-17T11:52:15Z",
+  "installed_at": "2026-07-17T13:24:58Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "feat/114-contract-wording-review",
-    "commit": "6bfedae44d7636ef56850d7e187c2e11b0e1967b",
+    "commit": "78ea618f470eaa33fb09f6b5dacc112a60a14e04",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -269,8 +269,8 @@
       },
       {
         "id": "guru-review-contract-wording",
-        "interface_sha256": "a9427b64034aed57f2c1a50d7f9736144064dfa5cb3896536c3f55f7be0904f3",
-        "tree_sha256": "36e6cf179fb98f5540141f2eaa21d9e9fd5a02c5bb43b64cda0e36f3845bfffb"
+        "interface_sha256": "0e7fc5b58efec0dcb43c459cb11bb35b04d2c289b350b8e9ac978e89943204fc",
+        "tree_sha256": "a799758b06ebc4ea4592a3efbb5dcd8bf55342f799ff0b3a4e7f9578eae7e0ca"
       },
       {
         "id": "guru-sync-base",
@@ -427,28 +427,28 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/examples/contract-wording-review.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/examples/contract-wording-review.json",
-        "sha256": "41c45b58a2d32f97997f879e5cfdf4c7beba673f43a72779bb2a76f9994b65e9",
+        "sha256": "e17fef29dbd40b3fc2418a4a3287fd39cc90e061e14f475cf81e75d620eaf7c0",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/interface.json",
-        "sha256": "a9427b64034aed57f2c1a50d7f9736144064dfa5cb3896536c3f55f7be0904f3",
+        "sha256": "0e7fc5b58efec0dcb43c459cb11bb35b04d2c289b350b8e9ac978e89943204fc",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
-        "sha256": "607fd3ef4bce6732217a89c7b9dcd2ce330c7f7ecf0d5f327a9a46ebb41f015b",
+        "sha256": "874fc2dc2d65f2acbc2ac9220f2a149512615c9bdd6a3bcb90f090809c22fa00",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
-        "sha256": "579851d3fc738f80d59ef6d76351f5e8abb16bc7cdbc1d4e48e0469375f62298",
+        "sha256": "29b618e365654d4814143015c8b126c5f3f6a23d31a79a784b8a3e968a477d9c",
         "executable": false,
         "action": "unchanged"
       },
@@ -469,7 +469,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
-        "sha256": "fe78e6a2a2eb5e296f47f027a2bd973813a7796116bf46e683df20ba2589d4f5",
+        "sha256": "cfce8ebb4b71c9cb807c5be54140631e2f349a1b0b33c1c2514728f59df23fb3",
         "executable": false,
         "action": "unchanged"
       },
@@ -1050,28 +1050,28 @@
       {
         "path": ".agents/skills/guru-review-contract-wording/examples/contract-wording-review.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/examples/contract-wording-review.json",
-        "sha256": "41c45b58a2d32f97997f879e5cfdf4c7beba673f43a72779bb2a76f9994b65e9",
+        "sha256": "e17fef29dbd40b3fc2418a4a3287fd39cc90e061e14f475cf81e75d620eaf7c0",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".agents/skills/guru-review-contract-wording/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/interface.json",
-        "sha256": "a9427b64034aed57f2c1a50d7f9736144064dfa5cb3896536c3f55f7be0904f3",
+        "sha256": "0e7fc5b58efec0dcb43c459cb11bb35b04d2c289b350b8e9ac978e89943204fc",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".agents/skills/guru-review-contract-wording/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
-        "sha256": "607fd3ef4bce6732217a89c7b9dcd2ce330c7f7ecf0d5f327a9a46ebb41f015b",
+        "sha256": "874fc2dc2d65f2acbc2ac9220f2a149512615c9bdd6a3bcb90f090809c22fa00",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".agents/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
-        "sha256": "579851d3fc738f80d59ef6d76351f5e8abb16bc7cdbc1d4e48e0469375f62298",
+        "sha256": "29b618e365654d4814143015c8b126c5f3f6a23d31a79a784b8a3e968a477d9c",
         "executable": false,
         "action": "unchanged"
       },
@@ -1092,7 +1092,7 @@
       {
         "path": ".agents/skills/guru-review-contract-wording/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
-        "sha256": "fe78e6a2a2eb5e296f47f027a2bd973813a7796116bf46e683df20ba2589d4f5",
+        "sha256": "cfce8ebb4b71c9cb807c5be54140631e2f349a1b0b33c1c2514728f59df23fb3",
         "executable": false,
         "action": "unchanged"
       },
@@ -1106,28 +1106,28 @@
       {
         "path": ".codex/skills/guru-review-contract-wording/examples/contract-wording-review.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/examples/contract-wording-review.json",
-        "sha256": "41c45b58a2d32f97997f879e5cfdf4c7beba673f43a72779bb2a76f9994b65e9",
+        "sha256": "e17fef29dbd40b3fc2418a4a3287fd39cc90e061e14f475cf81e75d620eaf7c0",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-review-contract-wording/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/interface.json",
-        "sha256": "a9427b64034aed57f2c1a50d7f9736144064dfa5cb3896536c3f55f7be0904f3",
+        "sha256": "0e7fc5b58efec0dcb43c459cb11bb35b04d2c289b350b8e9ac978e89943204fc",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-review-contract-wording/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
-        "sha256": "607fd3ef4bce6732217a89c7b9dcd2ce330c7f7ecf0d5f327a9a46ebb41f015b",
+        "sha256": "874fc2dc2d65f2acbc2ac9220f2a149512615c9bdd6a3bcb90f090809c22fa00",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
-        "sha256": "579851d3fc738f80d59ef6d76351f5e8abb16bc7cdbc1d4e48e0469375f62298",
+        "sha256": "29b618e365654d4814143015c8b126c5f3f6a23d31a79a784b8a3e968a477d9c",
         "executable": false,
         "action": "unchanged"
       },
@@ -1148,7 +1148,7 @@
       {
         "path": ".codex/skills/guru-review-contract-wording/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
-        "sha256": "fe78e6a2a2eb5e296f47f027a2bd973813a7796116bf46e683df20ba2589d4f5",
+        "sha256": "cfce8ebb4b71c9cb807c5be54140631e2f349a1b0b33c1c2514728f59df23fb3",
         "executable": false,
         "action": "unchanged"
       },
@@ -1162,28 +1162,28 @@
       {
         "path": ".claude/skills/guru-review-contract-wording/examples/contract-wording-review.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/examples/contract-wording-review.json",
-        "sha256": "41c45b58a2d32f97997f879e5cfdf4c7beba673f43a72779bb2a76f9994b65e9",
+        "sha256": "e17fef29dbd40b3fc2418a4a3287fd39cc90e061e14f475cf81e75d620eaf7c0",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-review-contract-wording/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/interface.json",
-        "sha256": "a9427b64034aed57f2c1a50d7f9736144064dfa5cb3896536c3f55f7be0904f3",
+        "sha256": "0e7fc5b58efec0dcb43c459cb11bb35b04d2c289b350b8e9ac978e89943204fc",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-review-contract-wording/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
-        "sha256": "607fd3ef4bce6732217a89c7b9dcd2ce330c7f7ecf0d5f327a9a46ebb41f015b",
+        "sha256": "874fc2dc2d65f2acbc2ac9220f2a149512615c9bdd6a3bcb90f090809c22fa00",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
-        "sha256": "579851d3fc738f80d59ef6d76351f5e8abb16bc7cdbc1d4e48e0469375f62298",
+        "sha256": "29b618e365654d4814143015c8b126c5f3f6a23d31a79a784b8a3e968a477d9c",
         "executable": false,
         "action": "unchanged"
       },
@@ -1204,7 +1204,7 @@
       {
         "path": ".claude/skills/guru-review-contract-wording/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
-        "sha256": "fe78e6a2a2eb5e296f47f027a2bd973813a7796116bf46e683df20ba2589d4f5",
+        "sha256": "cfce8ebb4b71c9cb807c5be54140631e2f349a1b0b33c1c2514728f59df23fb3",
         "executable": false,
         "action": "unchanged"
       },
@@ -1218,28 +1218,28 @@
       {
         "path": ".cursor/skills/guru-review-contract-wording/examples/contract-wording-review.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/examples/contract-wording-review.json",
-        "sha256": "41c45b58a2d32f97997f879e5cfdf4c7beba673f43a72779bb2a76f9994b65e9",
+        "sha256": "e17fef29dbd40b3fc2418a4a3287fd39cc90e061e14f475cf81e75d620eaf7c0",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-review-contract-wording/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/interface.json",
-        "sha256": "a9427b64034aed57f2c1a50d7f9736144064dfa5cb3896536c3f55f7be0904f3",
+        "sha256": "0e7fc5b58efec0dcb43c459cb11bb35b04d2c289b350b8e9ac978e89943204fc",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-review-contract-wording/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
-        "sha256": "607fd3ef4bce6732217a89c7b9dcd2ce330c7f7ecf0d5f327a9a46ebb41f015b",
+        "sha256": "874fc2dc2d65f2acbc2ac9220f2a149512615c9bdd6a3bcb90f090809c22fa00",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
-        "sha256": "579851d3fc738f80d59ef6d76351f5e8abb16bc7cdbc1d4e48e0469375f62298",
+        "sha256": "29b618e365654d4814143015c8b126c5f3f6a23d31a79a784b8a3e968a477d9c",
         "executable": false,
         "action": "unchanged"
       },
@@ -1260,7 +1260,7 @@
       {
         "path": ".cursor/skills/guru-review-contract-wording/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
-        "sha256": "fe78e6a2a2eb5e296f47f027a2bd973813a7796116bf46e683df20ba2589d4f5",
+        "sha256": "cfce8ebb4b71c9cb807c5be54140631e2f349a1b0b33c1c2514728f59df23fb3",
         "executable": false,
         "action": "unchanged"
       },

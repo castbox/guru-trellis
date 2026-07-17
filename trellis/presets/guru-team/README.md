@@ -367,7 +367,10 @@ scan、hash/digest、unchecked、schema/freshness 与 Gate/exit 结构校验。I
 同时拒绝 selected comment 缺 author/updated time，并为 live issue revision 校验 exact
 confirmed payload digest、preimage 和 current reread mutation-result identity。
 `planning_artifacts:pass` 写 task-local `contract-wording-review.json`，供 planning
-approval adapter 投影消费；其它 profile stdout-only。Fresh install、dogfood、四平台
+approval adapter 投影消费；它还必须包含 canonical contract 定义的 exact
+`semantic_review.ai_review_gate.planning_checked_dimensions`，全部显式 AI-reviewed 为 true
+才能成功。Runtime 只验证该 planning-only 字段的 shape/value，projection 只逐项复制，不默认
+生成。其它 profile 禁止该字段且保持 stdout-only。Fresh install、dogfood、四平台
 discovery copies 与 update/reapply 必须同时包含 package、commands、schema 和 route markers。
 
 Shared overlays are always installed:
@@ -469,11 +472,16 @@ after the main session obtained checker-validated
 `guru-review-contract-wording:planning_artifacts:pass` evidence and displayed
 task-local links to `prd.md`, `design.md`, and `implement.md`. The artifact uses
 schema 1.2, binds the wording artifact/schema/scope/scan identity, derives the
-existing `ambiguity_review` audit projection from that evidence,
+existing `ambiguity_review` audit projection, including every already-validated
+planning-dimension value, from that evidence without defaulting semantic results,
 `user_confirmation.source=explicit-post-planning-review`, and hash / size /
 modified-time metadata for all three files; Phase 0 intake approval, old
-schema/source evidence, missing/non-pass/stale wording evidence, projection
+schema/source evidence, schema 1.0 wording evidence missing the planning-only
+dimensions, missing/non-pass/stale wording evidence, projection
 drift, or non-empty unchecked hits must fail closed.
+Missing planning dimensions require a complete fresh AI review, another display
+of all three planning documents, and fresh post-planning confirmation; never
+patch booleans into old evidence.
 Freshness is based on the three planning document content digests and the
 rescanned hit set, not later HEAD drift, metadata tail, or unrelated dirty
 paths. `task.py start` remains only a status transition.

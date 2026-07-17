@@ -56,6 +56,34 @@
     {
       "if": {"properties": {"typed_exit": {"const": "content_changed"}}, "required": ["typed_exit"]},
       "then": {"properties": {"semantic_review": {"properties": {"revisions": {"minItems": 1}}}}}
+    },
+    {
+      "if": {"properties": {"profile": {"const": "planning_artifacts"}}, "required": ["profile"]},
+      "then": {
+        "properties": {
+          "semantic_review": {
+            "properties": {
+              "ai_review_gate": {
+                "required": ["planning_checked_dimensions"],
+                "properties": {
+                  "planning_checked_dimensions": {"$ref": "#/$defs/planningCheckedDimensions"}
+                }
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "semantic_review": {
+            "properties": {
+              "ai_review_gate": {
+                "not": {"required": ["planning_checked_dimensions"]}
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "$defs": {
@@ -186,7 +214,22 @@
             "retained_reasons_sufficient": {"type": "boolean"},
             "zero_hits_not_requirement_review": {"type": "boolean"}
           }
-        }
+        },
+        "planning_checked_dimensions": {"$ref": "#/$defs/planningCheckedDimensions"}
+      }
+    },
+    "planningCheckedDimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["no_requirement_weakening", "source_issue_semantics_preserved", "conditional_paths_have_conditions", "no_parallel_implementation_paths", "gates_have_machine_verifiable_conditions", "acceptance_criteria_are_deterministic", "external_quotes_are_labeled_non_contract"],
+      "properties": {
+        "no_requirement_weakening": {"type": "boolean"},
+        "source_issue_semantics_preserved": {"type": "boolean"},
+        "conditional_paths_have_conditions": {"type": "boolean"},
+        "no_parallel_implementation_paths": {"type": "boolean"},
+        "gates_have_machine_verifiable_conditions": {"type": "boolean"},
+        "acceptance_criteria_are_deterministic": {"type": "boolean"},
+        "external_quotes_are_labeled_non_contract": {"type": "boolean"}
       }
     },
     "humanConfirmation": {

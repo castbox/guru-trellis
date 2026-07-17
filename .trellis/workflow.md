@@ -440,7 +440,7 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - `implement.md` — execution plan before implementation: ordered checklist, validation commands, review gates, rollback points.
 - `Docs SSOT Plan` — required Phase 1 planning contract, preferably a section in `design.md`; `prd.md` records docs status and requirement impact, and `implement.md` records the checklist/checkpoint. Do not duplicate the full plan across all three files.
 - `planning-approval.json` — start gate evidence that current `planning_artifacts:pass` wording evidence was projected, links to `prd.md`, `design.md`, and `implement.md` were displayed, then the user explicitly confirmed; `task.py start` is only a status write.
-- `contract-wording-review.json` — current `guru-review-contract-wording:planning_artifacts` evidence consumed by planning approval; vocabulary, classification, semantic review, and typed exits remain owned by the canonical Skill package.
+- `contract-wording-review.json` — current `guru-review-contract-wording:planning_artifacts` evidence consumed by planning approval; its profile-specific `semantic_review.ai_review_gate.planning_checked_dimensions` obligation, vocabulary, classification, semantic review, and typed exits remain owned by the canonical Skill package.
 - `phase2-check.json` — Phase 2 `trellis-check` report for full task-scope quality coverage before commit and Branch Review Gate.
 - `issue-scope-ledger.json` — task-level close/ref/followup scope; do not overload `source_issue`.
 - `agent-assignment.json` — task-local sub-agent assignment ledger with Chinese logical roles, technical `agent_id`, display-only `platform_nickname`, HEAD evidence, review rounds, raw report digest fields, and reuse/replacement decisions.
@@ -456,7 +456,10 @@ Contract wording review is owned by the mandatory semantic Skill
 `guru-review-contract-wording`. Consumers reference only its fixed profile,
 schema `guru-contract-wording-review-1.0`, and typed exit. Vocabulary,
 classification semantics, rewrite/review loop, confirmation policy, and
-scanner evidence are defined only by the canonical package contract.
+scanner evidence are defined only by the canonical package contract. A
+`planning_artifacts:pass` consumer additionally requires that contract's exact
+planning-dimension object with every AI-reviewed value recorded as true; no
+consumer or deterministic runtime may synthesize those judgments.
 
 ### Business Project Documentation Language
 
@@ -721,6 +724,9 @@ The router consumes only the checker-validated profile and exit; unknown,
 multiple, stale, or unmapped results fail closed. The Skill package owns fixed
 scope, semantic revision/classification, AI Review Gate, confirmation,
 recorder/checker, evidence freshness, and re-entry.
+For `planning_artifacts`, `pass` also requires the canonical package's exact
+profile-specific planning-dimension evidence. Evidence recorded before that
+field existed is stale even when its schema id is still `1.0`.
 
 <!-- guru-workflow-target: {"id":"guru-contract-wording-pass-router"} -->
 <!-- guru-workflow-target: {"id":"guru-contract-wording-change-router"} -->
@@ -841,7 +847,7 @@ Load `trellis-brainstorm`; stay in planning.
 Confirm the Guru Team task-start context exists in the chosen workspace for durable tasks: `.trellis/tasks/<task-slug>/task-start-context.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
-Finish `prd.md`, `design.md`, and `implement.md`; then mandatory invoke `guru-review-contract-wording` with fixed profile `planning_artifacts`. Only a checker-validated `pass` may display the documents; `content_changed` repeats complete planning review and `blocked` stops.
+Finish `prd.md`, `design.md`, and `implement.md`; then mandatory invoke `guru-review-contract-wording` with fixed profile `planning_artifacts`. Only a checker-validated `pass` with the canonical profile-specific planning dimensions explicitly AI-reviewed and recorded may display the documents; `content_changed` repeats complete planning review and `blocked` stops.
 After the wording Skill passes, visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
 Before that planning stop reply, run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表`; only link existing Markdown files and do not list JSON artifacts.
 Before `task.py start`, record and check `planning-approval.json` schema 1.2 from current `planning_artifacts:pass` evidence with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale wording/approval evidence blocks implementation and Phase 2 check recording.
@@ -853,7 +859,7 @@ Load `trellis-brainstorm`; stay in planning.
 Confirm the Guru Team task-start context exists in the chosen workspace for durable tasks: `.trellis/tasks/<task-slug>/task-start-context.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
-Finish `prd.md`, `design.md`, and `implement.md`; then mandatory invoke `guru-review-contract-wording` with fixed profile `planning_artifacts`. Only a checker-validated `pass` may display the documents; `content_changed` repeats complete planning review and `blocked` stops.
+Finish `prd.md`, `design.md`, and `implement.md`; then mandatory invoke `guru-review-contract-wording` with fixed profile `planning_artifacts`. Only a checker-validated `pass` with the canonical profile-specific planning dimensions explicitly AI-reviewed and recorded may display the documents; `content_changed` repeats complete planning review and `blocked` stops.
 After the wording Skill passes, visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
 Before that planning stop reply, run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表`; only link existing Markdown files and do not list JSON artifacts.
 Before `task.py start`, record and check `planning-approval.json` schema 1.2 from current `planning_artifacts:pass` evidence with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale wording/approval evidence blocks implementation and Phase 2 check recording.
@@ -1011,8 +1017,11 @@ presenting them to the user. Load the canonical package contract; this workflow
 does not repeat its vocabulary, classification set, semantic loop, or Review
 Gate. The Skill persists current schema `guru-contract-wording-review-1.0`
 evidence at `{TASK_DIR}/contract-wording-review.json`. Only a checker-validated
-`pass` continues; `content_changed` requires complete planning review re-entry,
-and `blocked` stops with the recorded reason.
+`pass` whose canonical profile-specific planning dimensions are all explicitly
+AI-reviewed and recorded continues; `content_changed` requires complete
+planning review re-entry, and `blocked` stops with the recorded reason. The
+recorder/checker validates only the exact field shape and values and never
+supplies a semantic result.
 
 After the wording Skill passes, the main session must run the Markdown artifact
 resolver, render a `Markdown 产物 review 表`, visibly present all three
@@ -1043,10 +1052,13 @@ or Trellis task is not planning approval. Do not reuse a Phase 0 confirmation,
 generic "continue" consent, or historical `planning-approval.json` with
 `user_confirmation.source=workflow`. If `planning-approval.json` is missing,
 has old schema/source, lacks current `planning_artifacts:pass` evidence binding,
+uses wording evidence that predates the profile-specific planning-dimension
+field,
 or the current
 `prd.md`/`design.md`/`implement.md` content digests no longer match the last
 explicit user-reviewed plan, show the three links again and wait for a fresh
-explicit post-planning confirmation.
+explicit post-planning confirmation. Migration requires a fresh complete AI
+review; never patch missing dimension booleans into old evidence.
 Current `HEAD` drift, metadata tail, or unrelated dirty paths alone are not a
 planning approval failure.
 
@@ -1079,7 +1091,9 @@ After the explicit post-planning confirmation, write the task-local start gate e
 The wording recorder/checker own fixed-scope scan facts and evidence structure;
 the Skill's AI Review Gate owns semantic rewrite/classification/pass judgment.
 `record-planning-approval` only validates and projects that evidence before
-recording the separate explicit post-planning confirmation.
+recording the separate explicit post-planning confirmation. Its compatibility
+projection copies each already-validated planning-dimension value from the
+wording evidence and must not default or generate true values.
 
 Only after the check passes:
 
@@ -1102,7 +1116,7 @@ transition; it is not planning review evidence.
 | `prd.md` exists | yes |
 | `design.md` exists | yes |
 | `implement.md` exists | yes |
-| `guru-review-contract-wording:planning_artifacts` passed before displaying planning links | yes |
+| `guru-review-contract-wording:planning_artifacts` passed with its profile-specific planning dimensions explicitly AI-reviewed before displaying planning links | yes |
 | Main session displayed links to `prd.md`, `design.md`, and `implement.md` after generating them | yes |
 | User confirms task should enter implementation after seeing the three planning links | yes |
 | `planning-approval.json` schema 1.2 exists with passed `ambiguity_review` evidence, fixed-scope scanner results, no unchecked hits, and `check-planning-approval` passes | yes |

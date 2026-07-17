@@ -417,7 +417,7 @@ PY
         --root "$TARGET" --json --input "$result" --change-request-input "$draft_rel" \
         --expected-facts-sha256 "$facts" >/dev/null
     fi
-    python3 -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["profile"] == sys.argv[2]; assert payload["typed_exit"] == "pass"' "$result" "$profile"
+    python3 -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["profile"] == sys.argv[2]; assert payload["typed_exit"] == "pass"; assert "planning_checked_dimensions" not in payload["semantic_review"]["ai_review_gate"]' "$result" "$profile"
   done
 }
 
@@ -466,6 +466,10 @@ authored = {
             "checked_dimensions": {
                 name: True for name in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
             },
+            "planning_checked_dimensions": {
+                name: True
+                for name in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+            },
         },
     },
     "human_confirmation": {
@@ -483,6 +487,23 @@ PY
     --task "$task_rel" --input "$input" >/dev/null
   "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
     --root "$TARGET" --json --task "$task_rel" >/dev/null
+  python3 - "$TARGET/$task_rel/contract-wording-review.json" <<'PY'
+import json
+import sys
+
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+dimensions = payload["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"]
+assert set(dimensions) == {
+    "no_requirement_weakening",
+    "source_issue_semantics_preserved",
+    "conditional_paths_have_conditions",
+    "no_parallel_implementation_paths",
+    "gates_have_machine_verifiable_conditions",
+    "acceptance_criteria_are_deterministic",
+    "external_quotes_are_labeled_non_contract",
+}
+assert all(value is True for value in dimensions.values())
+PY
 }
 create_task_commit_plan() {
   local sequence="$1"

@@ -132,7 +132,7 @@ CONTRACT_WORDING_CONSUMERS = {
     "content_changed": {"kind": "workflow", "id": "guru-contract-wording-change-router"},
     "blocked": {"kind": "stop", "id": "contract-wording-blocked"},
 }
-PLANNING_APPROVAL_COMPATIBILITY_DIMENSIONS = [
+CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS = [
     "no_requirement_weakening",
     "source_issue_semantics_preserved",
     "conditional_paths_have_conditions",
@@ -8481,6 +8481,24 @@ def contract_wording_structural_errors(
         errors.append("contract_wording_gate_scan_mismatch")
     dimensions = gate.get("checked_dimensions")
     dimensions = dimensions if isinstance(dimensions, dict) else {}
+    planning_dimensions = gate.get("planning_checked_dimensions")
+    planning_dimensions_complete = True
+    if payload.get("profile") == "planning_artifacts":
+        if not isinstance(planning_dimensions, dict):
+            errors.append("contract_wording_planning_review_dimensions_missing")
+            planning_dimensions = {}
+        elif set(planning_dimensions) != set(CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS):
+            errors.append("contract_wording_planning_review_dimensions_invalid")
+        planning_dimensions_complete = (
+            set(planning_dimensions) == set(CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS)
+            and all(
+                planning_dimensions.get(name) is True
+                for name in CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+            )
+        )
+    elif "planning_checked_dimensions" in gate:
+        errors.append("unexpected_contract_wording_planning_review_dimensions")
+        planning_dimensions_complete = False
     revisions = semantic.get("revisions")
     revisions = revisions if isinstance(revisions, list) else []
     revision_ids = [row.get("revision_id") for row in revisions if isinstance(row, dict)]
@@ -8583,14 +8601,20 @@ def contract_wording_structural_errors(
             errors.append("contract_wording_unchecked_hits_block")
         if any(dimensions.get(name) is not True for name in CONTRACT_WORDING_REVIEW_DIMENSIONS):
             errors.append("contract_wording_review_dimensions_incomplete")
+        if payload.get("profile") == "planning_artifacts" and not planning_dimensions_complete:
+            errors.append("contract_wording_planning_review_dimensions_incomplete")
         if confirmation.get("status") == "refused":
             errors.append("contract_wording_confirmation_refused")
     if typed_exit == "pass" and revisions:
         errors.append("contract_wording_pass_has_unconsumed_revision")
     if typed_exit == "content_changed" and not revisions:
         errors.append("contract_wording_content_changed_requires_revision")
-    if typed_exit == "blocked" and confirmation.get("status") == "confirmed" and not expected_unchecked and all(
-        dimensions.get(name) is True for name in CONTRACT_WORDING_REVIEW_DIMENSIONS
+    if (
+        typed_exit == "blocked"
+        and confirmation.get("status") == "confirmed"
+        and not expected_unchecked
+        and all(dimensions.get(name) is True for name in CONTRACT_WORDING_REVIEW_DIMENSIONS)
+        and planning_dimensions_complete
     ):
         errors.append("contract_wording_blocked_without_blocking_evidence")
     return context_sort(errors)
@@ -8616,6 +8640,24 @@ def contract_wording_trackability_errors(root: Path, target: Path) -> list[str]:
 
 
 def contract_wording_planning_projection(payload: dict[str, Any]) -> dict[str, Any]:
+    gate = payload.get("semantic_review", {}).get("ai_review_gate", {})
+    planning_dimensions = gate.get("planning_checked_dimensions")
+    if (
+        payload.get("profile") != "planning_artifacts"
+        or payload.get("typed_exit") != "pass"
+        or gate.get("status") != "passed"
+        or not isinstance(planning_dimensions, dict)
+        or set(planning_dimensions) != set(CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS)
+        or any(
+            planning_dimensions.get(dimension) is not True
+            for dimension in CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+        )
+    ):
+        raise WorkflowError(
+            "Planning compatibility projection requires seven explicitly AI-reviewed planning dimensions.",
+            exit_code=2,
+            payload={"error_codes": ["contract_wording_planning_review_dimensions_not_passed"]},
+        )
     scan_hits = payload["scan"]["hits"]
     classifications = {
         row["hit_id"]: row for row in payload["semantic_review"]["classifications"]
@@ -8644,7 +8686,8 @@ def contract_wording_planning_projection(payload: dict[str, Any]) -> dict[str, A
             "unchecked_normative_hits": unchecked,
         },
         "checked_dimensions": {
-            dimension: True for dimension in PLANNING_APPROVAL_COMPATIBILITY_DIMENSIONS
+            dimension: planning_dimensions[dimension]
+            for dimension in CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
         },
     }
 

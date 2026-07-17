@@ -1,28 +1,67 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-17T12:19:25Z",
+  "generated_at": "2026-07-17T14:04:18Z",
   "task_dir": ".trellis/tasks/07-17-114-contract-wording-review",
   "base_branch": "main",
-  "head": "6bfedae44d7636ef56850d7e187c2e11b0e1967b",
+  "head": "78ea618f470eaa33fb09f6b5dacc112a60a14e04",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
+    ".agents/skills/guru-review-contract-wording/examples/contract-wording-review.json",
+    ".agents/skills/guru-review-contract-wording/interface.json",
+    ".agents/skills/guru-review-contract-wording/references/contract.md",
+    ".agents/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
     ".agents/skills/guru-review-contract-wording/tests/test_contract.py",
+    ".claude/skills/guru-review-contract-wording/examples/contract-wording-review.json",
+    ".claude/skills/guru-review-contract-wording/interface.json",
+    ".claude/skills/guru-review-contract-wording/references/contract.md",
+    ".claude/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
     ".claude/skills/guru-review-contract-wording/tests/test_contract.py",
+    ".codex/skills/guru-review-contract-wording/examples/contract-wording-review.json",
+    ".codex/skills/guru-review-contract-wording/interface.json",
+    ".codex/skills/guru-review-contract-wording/references/contract.md",
+    ".codex/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
     ".codex/skills/guru-review-contract-wording/tests/test_contract.py",
+    ".cursor/skills/guru-review-contract-wording/examples/contract-wording-review.json",
+    ".cursor/skills/guru-review-contract-wording/interface.json",
+    ".cursor/skills/guru-review-contract-wording/references/contract.md",
+    ".cursor/skills/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
     ".cursor/skills/guru-review-contract-wording/tests/test_contract.py",
     ".trellis/guru-team/extension.json",
     ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/packages/guru-review-contract-wording/examples/contract-wording-review.json",
+    ".trellis/guru-team/skills/packages/guru-review-contract-wording/interface.json",
+    ".trellis/guru-team/skills/packages/guru-review-contract-wording/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
     ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/spec/workflow/workflow-contract.md",
     ".trellis/tasks/07-17-114-contract-wording-review/agent-assignment.json",
     ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/001.json",
     ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/002.json",
+    ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/003.json",
+    ".trellis/workflow.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/skills/guru-team/packages/guru-review-contract-wording/examples/contract-wording-review.json",
+    "trellis/skills/guru-team/packages/guru-review-contract-wording/interface.json",
+    "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
     "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
+    "trellis/workflows/guru-team/README.md",
     "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
     "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
     ".trellis/tasks/07-17-114-contract-wording-review/review-gate.json"
   ],
-  "checker": "issue114_phase2_check_r4",
-  "check_summary": "fresh full Phase 2 语义检查通过：已覆盖 origin/main...6bfedae 的完整 #114 实现及当前 10 个 source dirty paths；Round 1 public artifact inventory P2 已关闭，Round 2 live comment updatedAt P1 已在实现与 Phase 2 层面解决，当前 P0/P1/P2/P3 开放 finding 均为 0。真实 GitHub comment REST adapter、canonical/dogfood/四平台副本、Docs SSOT、测试、安装、update/reapply、部署与安全边界一致；公开 marketplace discovery 重试后成功，真实 remote branch/tag marketplace 安装因分支未 push 留待 publish gate。",
+  "checker": "issue114_phase2_check_r5",
+  "check_summary": "Phase 2 R5 完整语义检查通过：覆盖 origin/main...78ea618 的 90 个已提交路径与当前 60 个 dirty paths（48 个 non-metadata、12 个 metadata）；Round 4 planning semantic dimensions P1 已在实现和检查层面闭环，当前 P0/P1/P2/P3 均为 0。replacement-first、#93 planning 语义兼容、三 profile 固定 scope、AI/script 边界、Docs SSOT、canonical/platform/dogfood 分发、throwaway 初装与 update/reapply 均通过；真实 pushed marketplace ref 尚不存在，按合同留到 publish gate。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-17-114-contract-wording-review/prd.md",
@@ -44,15 +83,15 @@
     },
     {
       "path": ".trellis/tasks/07-17-114-contract-wording-review/planning-approval.json",
-      "sha256": "577f42f96c18cd22ed05e77cae27863fe67ed8ab0b4d77ee496240e4e3612b96",
-      "size_bytes": 11053,
-      "modified_at": "2026-07-17T07:57:07.131263+00:00"
+      "sha256": "f10491ed41dd1e9b741a240f061b51a9743086e8214ee3902ae517130c8ae976",
+      "size_bytes": 9293,
+      "modified_at": "2026-07-17T13:38:20.758534+00:00"
     },
     {
       "path": ".trellis/tasks/07-17-114-contract-wording-review/contract-wording-review.json",
-      "sha256": "a06e90f9003b1251c812a4609fd5fef05ce310b8d7ebe398c078f1ebc05d7ca1",
-      "size_bytes": 2886,
-      "modified_at": "2026-07-17T07:56:36.579733+00:00"
+      "sha256": "644b8d5d09405a9fefdb7e1c82bb8703ebd771fbf238d4c18c658469db392e3f",
+      "size_bytes": 3338,
+      "modified_at": "2026-07-17T13:36:36.458930+00:00"
     },
     {
       "path": ".trellis/tasks/07-17-114-contract-wording-review/context-discovery.json",
@@ -85,6 +124,12 @@
       "modified_at": "2026-07-17T05:38:49.603247+00:00"
     },
     {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/review.md",
+      "sha256": "bf6fa103e84bc31449517f18f01a0b0173e2494452912e5ee70c5bc5e7a92734",
+      "size_bytes": 3851,
+      "modified_at": "2026-07-17T12:57:40.366636+00:00"
+    },
+    {
       "path": ".trellis/tasks/07-17-114-contract-wording-review/reviews/001-findings-review.md",
       "sha256": "63a0298f8194a8fb50a75ce5e135d6cfa2ea73d08a5b361483e2dcd713330d72",
       "size_bytes": 6641,
@@ -97,48 +142,54 @@
       "modified_at": "2026-07-17T11:40:07.985925+00:00"
     },
     {
-      "path": ".trellis/tasks/07-17-114-contract-wording-review/review.md",
-      "sha256": "72c0bb6c8a4b92f9dd8088340f795e91d984026b58a0e614f132e15f6c3aaaa1",
-      "size_bytes": 2746,
-      "modified_at": "2026-07-17T11:40:07.986397+00:00"
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/reviews/003-closure-review.md",
+      "sha256": "5f71bad053af4a9cfc11b388ad4aff59c380c52c22f937b7269498bf8f1e37e0",
+      "size_bytes": 6809,
+      "modified_at": "2026-07-17T12:41:17.805565+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/reviews/004-final-review.md",
+      "sha256": "4d313d2489acc7da82bf2dd1f686c04495f37cef93375109e850b32b707dfeed",
+      "size_bytes": 8780,
+      "modified_at": "2026-07-17T12:56:52.183192+00:00"
     }
   ],
   "checked_specs": [
     {
       "path": ".trellis/spec/preset/overlay-guidelines.md",
-      "sha256": "8bb28e639047c99e6170762088027a93a85b35be5f20ec4ae17fec4142cd07fa",
-      "size_bytes": 19323,
-      "modified_at": "2026-07-17T07:15:56.232693+00:00"
+      "sha256": "df20faacf2d1c3427b2fa10fdf65594627ee9cb3df7559f9d4e3af0f89176d71",
+      "size_bytes": 19779,
+      "modified_at": "2026-07-17T13:22:14.501339+00:00"
     },
     {
       "path": ".trellis/spec/workflow/companion-scripts.md",
-      "sha256": "fbb43e9d36688c51f1f19b0666170ba20c5c8009b638cd97cbe3d6f71375376f",
-      "size_bytes": 64000,
-      "modified_at": "2026-07-17T08:55:05.529608+00:00"
+      "sha256": "9065a17c6185c432c6706d7a27390d7002f69a9934567aed3e86e71786ff9bdd",
+      "size_bytes": 64579,
+      "modified_at": "2026-07-17T13:22:14.500532+00:00"
     },
     {
       "path": ".trellis/spec/workflow/data-contracts.md",
-      "sha256": "16332ad9d68d50e388ac201d88217264f9bcd19a12fd62a5bda99d3c539f54ee",
-      "size_bytes": 84482,
-      "modified_at": "2026-07-17T08:55:05.500712+00:00"
+      "sha256": "1c7da671201ac611915e03a132a5faad8fa20812bf776edfb0670e6698196e72",
+      "size_bytes": 85321,
+      "modified_at": "2026-07-17T13:22:14.500058+00:00"
     },
     {
       "path": ".trellis/spec/workflow/quality-guidelines.md",
-      "sha256": "1d417c3e67e0a73a0221b6f9ee8709afe9d7d2dd792838e1c4768a81f092816b",
-      "size_bytes": 17127,
-      "modified_at": "2026-07-17T07:15:56.125923+00:00"
+      "sha256": "e6dcd8de715e1fc491fde3489cc591da1ed111ff4e7a36cf82ddbaed70391266",
+      "size_bytes": 17329,
+      "modified_at": "2026-07-17T13:22:14.501085+00:00"
     },
     {
       "path": ".trellis/spec/workflow/skill-package-contract.md",
-      "sha256": "ae4c5a7bbd2d6c84c365a4e8a767fb6dc87b9ba0aa3c28095e627f14aee16539",
-      "size_bytes": 28472,
-      "modified_at": "2026-07-17T08:55:46.884267+00:00"
+      "sha256": "398f33a9390fdfe08c25ad0a397ff682a4f301e54b999be32bfc0c05aaf3cc6b",
+      "size_bytes": 29351,
+      "modified_at": "2026-07-17T13:22:14.498430+00:00"
     },
     {
       "path": ".trellis/spec/workflow/workflow-contract.md",
-      "sha256": "f68fe29e2e65339436d5900e20b6f4ace82ce421d7ff5bd542362fa65fef6f0b",
-      "size_bytes": 53395,
-      "modified_at": "2026-07-17T07:15:55.796878+00:00"
+      "sha256": "d7117057dbe067642aaab228c1c1f93b5f4d1cc66d4a1f3df049a693cc799f76",
+      "size_bytes": 53845,
+      "modified_at": "2026-07-17T13:22:14.499362+00:00"
     }
   ],
   "coverage": {
@@ -154,87 +205,55 @@
   "validation_commands": [
     {
       "command": "check-workspace-boundary.sh",
-      "result": "expected/actual task worktree 一致，source checkout 干净，无 suspicious artifact"
+      "result": "task worktree 与 source checkout 边界正确，无 suspicious artifact"
     },
     {
       "command": "check-planning-approval.sh",
-      "result": "schema 1.2、planning_artifacts:pass 与 planning document digests current"
+      "result": "schema 1.2、6 个 common 与 7 个 planning dimensions、document digests 全部 current"
     },
     {
-      "command": "Issue #114 requirements/design/code cross-layer review",
-      "result": "replacement-first、#93 planning gate、三 profile、五阶段 semantic profile、freshness、typed exits、唯一 consumers、legacy deletion 与 scope boundary 均通过"
+      "command": "Issue #114 requirements/design/code semantic review",
+      "result": "replacement-first、三固定 profile、typed exits、AI/script 边界和 #93 without-weakening 通过"
     },
     {
-      "command": "live GitHub comment REST adapter review",
-      "result": "使用 REST node_id 对齐 selected comment，只接受 user.login、真实 updated_at、body/hash；API failure、非法分页/row、缺字段、重复 identity/alias 与无匹配均 fail closed，空 body 合法"
+      "command": "planning semantic dimensions failure matrix",
+      "result": "missing、false、extra、wrong-profile 与 invalid projection 全部 fail closed，current projection exact-copy"
     },
     {
       "command": "Docs SSOT reconciliation",
-      "result": "ssot_first；canonical package/shared runtime 独占完整语义，workflow、README、requirements 与 13 个 durable sources 已同步，无 blocking inconsistency"
+      "result": "ssot_first；canonical package/runtime 独占语义，workflow、requirements、README、spec 和平台副本一致"
     },
     {
-      "command": "python3 -m unittest trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
-      "result": "15/15 passed"
-    },
-    {
-      "command": "python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
-      "result": "501/501 passed"
-    },
-    {
-      "command": "python3 -m unittest trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-      "result": "39/39 passed"
-    },
-    {
-      "command": "python3 -m py_compile canonical and installed runtime/tests",
-      "result": "passed"
-    },
-    {
-      "command": "bash -n canonical/installed/preset/package scripts",
-      "result": "passed"
-    },
-    {
-      "command": "JSON/schema/task validation",
-      "result": "32 JSON、extension、registry、interface、schema、example、wording/planning evidence、implement.jsonl、check.jsonl passed"
+      "command": "package/runtime/preset suites",
+      "result": "16/16、502/502、39/39 passed"
     },
     {
       "command": "source and installed package validation",
-      "result": "5 active skills、17 exit markers；208 managed、0 sidecar、0 removal、0 conflict"
+      "result": "5 active skills、17 exits、11 targets；208 managed、0 sidecar、0 removal、0 conflict"
     },
     {
-      "command": "check-dogfood-overlay-drift.sh",
-      "result": "passed"
+      "command": "ownership/dogfood drift/package byte equality",
+      "result": "canonical/installed/Agents/Codex/Cursor/Claude 六份 package 一致，无 overlay drift"
     },
     {
-      "command": "git diff --check origin/main and working tree",
-      "result": "passed"
-    },
-    {
-      "command": "legacy owner and residue search",
-      "result": "active legacy owner 0；仅 --normative-hit 负向测试；.new/.bak/.pyc/__pycache__ 0"
+      "command": "compile/Bash/JSON/schema/task/diff checks",
+      "result": "全部通过"
     },
     {
       "command": "full throwaway workflow/preset/update validation",
-      "result": "初装、三个 wording profiles、planning compatibility、initial closeout、trellis update --force、preset reapply、after-update closeout passed"
+      "result": "初装、三个 profiles、planning evidence、initial closeout、trellis update --force、workflow/preset reapply、after-update closeout 全通过"
     },
     {
-      "command": "Claude/Codex/Cursor all-platform throwaway",
-      "result": "初装与 update/reapply 均 208 managed、0 sidecar/removal/conflict，六份 package copies 字节一致"
+      "command": "Claude/Codex/Cursor all-platform apply",
+      "result": "初装与 update/reapply 均通过"
     },
     {
-      "command": "live Issue #120 freshness scan",
-      "result": "selected comment node id、author、真实 updated_at 与 body digest 匹配；updated_at/body 漂移均返回 contract_wording_scope_stale"
+      "command": "legacy/archive/deployment/security audit",
+      "result": "旧实现残留为 0，archive/deployment paths 无 diff，secret scan 无命中"
     },
     {
-      "command": "archived task and scope boundary audit",
-      "result": "archive 未改；未扩张 #101/#112/#129/#132"
-    },
-    {
-      "command": "deployment and safety audit",
-      "result": "未修改 CI/CD、容器、K8s/Kustomize、Helm、DB migration、Makefile；未发现敏感数据"
-    },
-    {
-      "command": "official docs and public marketplace discovery",
-      "result": "官方文档与 public marketplace discovery 已成功复核；真实 remote branch/tag marketplace 安装因分支未 push 留待 publish gate"
+      "command": "remote marketplace publish limitation",
+      "result": "真实 pushed branch ref 尚不存在，必须在 publish gate 远端验证"
     }
   ],
   "findings": [],

@@ -72,8 +72,23 @@ class ContractWordingPackageTest(unittest.TestCase):
             for hit in scan["hits"]
         ]
         passed = typed_exit != "blocked"
+        profile = str(scope["identity"]).split(":", 1)[0]
+        gate = {
+            "status": "passed" if passed else "blocked",
+            "reviewer": "package-test-reviewer",
+            "summary": "The complete current scope and scan were reviewed.",
+            "reviewed_scan_sha256": scan["scan_sha256"],
+            "checked_dimensions": {
+                name: passed for name in GTT.CONTRACT_WORDING_REVIEW_DIMENSIONS
+            },
+        }
+        if profile == "planning_artifacts":
+            gate["planning_checked_dimensions"] = {
+                name: passed
+                for name in GTT.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+            }
         return GTT.contract_wording_derive_result(
-            str(scope["identity"]).split(":", 1)[0],
+            profile,
             "workflow" if str(scope["identity"]).startswith("planning_artifacts:") else "standalone",
             scope,
             scan,
@@ -82,15 +97,7 @@ class ContractWordingPackageTest(unittest.TestCase):
                 "semantic_review": {
                     "revisions": revisions or [],
                     "classifications": classifications,
-                    "ai_review_gate": {
-                        "status": "passed" if passed else "blocked",
-                        "reviewer": "package-test-reviewer",
-                        "summary": "The complete current scope and scan were reviewed.",
-                        "reviewed_scan_sha256": scan["scan_sha256"],
-                        "checked_dimensions": {
-                            name: passed for name in GTT.CONTRACT_WORDING_REVIEW_DIMENSIONS
-                        },
-                    },
+                    "ai_review_gate": gate,
                 },
                 "human_confirmation": {
                     "status": "not_required" if passed else "refused",
@@ -125,6 +132,8 @@ class ContractWordingPackageTest(unittest.TestCase):
             self.assertIn(token, contract)
         for classification in ("contract_violation", "deterministic_threshold", "deterministic_default", "deterministic_option", "deterministic_reference"):
             self.assertIn(classification, contract)
+        for dimension in GTT.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS:
+            self.assertIn(dimension, contract)
 
     def test_schema_and_example_are_closed_versioned_json(self) -> None:
         schema = json.loads((PACKAGE_ROOT / "schemas" / "contract-wording-review.schema.json").read_text(encoding="utf-8"))
@@ -133,6 +142,11 @@ class ContractWordingPackageTest(unittest.TestCase):
         self.assertFalse(schema["additionalProperties"])
         self.assertEqual(example["schema_version"], "1.0")
         self.assertEqual(example["skill_id"], "guru-review-contract-wording")
+        self.assertEqual(example["profile"], "planning_artifacts")
+        self.assertEqual(
+            set(example["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"]),
+            set(GTT.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS),
+        )
 
     def test_wrappers_resolve_the_managed_dispatcher_from_every_install_root(self) -> None:
         for name in ("record-contract-wording-review.sh", "check-contract-wording-review.sh"):
@@ -368,6 +382,82 @@ class ContractWordingPackageTest(unittest.TestCase):
                 explicit_paths=["docs/review.md"],
                 change_request_input="draft.json",
             )
+
+    def test_planning_semantic_dimensions_fail_closed_and_project_exact_evidence(self) -> None:
+        scope, contents = GTT.contract_wording_build_scope(
+            self.root, "planning_artifacts", "workflow", task_dir=self.task
+        )
+        scan = GTT.scan_contract_wording(scope, contents)
+        result = self.result(scope, scan)
+        self.assertEqual(
+            GTT.contract_wording_structural_errors(self.root, result, scope, scan),
+            [],
+        )
+        expected = {
+            name: True for name in GTT.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+        }
+        self.assertEqual(
+            result["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"],
+            expected,
+        )
+        self.assertEqual(
+            GTT.contract_wording_planning_projection(result)["checked_dimensions"],
+            expected,
+        )
+
+        def resign(payload: dict[str, object]) -> None:
+            payload["facts_sha256"] = GTT.context_digest({
+                key: value for key, value in payload.items() if key != "facts_sha256"
+            })
+
+        missing = json.loads(json.dumps(result))
+        del missing["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"]
+        resign(missing)
+        self.assertIn(
+            "contract_wording_planning_review_dimensions_missing",
+            GTT.contract_wording_structural_errors(self.root, missing, scope, scan),
+        )
+
+        false_value = json.loads(json.dumps(result))
+        false_value["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"][
+            "no_requirement_weakening"
+        ] = False
+        resign(false_value)
+        self.assertIn(
+            "contract_wording_planning_review_dimensions_incomplete",
+            GTT.contract_wording_structural_errors(self.root, false_value, scope, scan),
+        )
+        with self.assertRaises(GTT.WorkflowError):
+            GTT.contract_wording_planning_projection(false_value)
+
+        extra = json.loads(json.dumps(result))
+        extra["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"][
+            "undeclared_dimension"
+        ] = True
+        resign(extra)
+        self.assertIn(
+            "contract_wording_planning_review_dimensions_invalid",
+            GTT.contract_wording_structural_errors(self.root, extra, scope, scan),
+        )
+
+        explicit_scope, explicit_contents = GTT.contract_wording_build_scope(
+            self.root,
+            "explicit_paths",
+            "standalone",
+            explicit_paths=["docs/review.md"],
+        )
+        explicit_scan = GTT.scan_contract_wording(explicit_scope, explicit_contents)
+        wrong_profile = self.result(explicit_scope, explicit_scan)
+        wrong_profile["semantic_review"]["ai_review_gate"][
+            "planning_checked_dimensions"
+        ] = expected
+        resign(wrong_profile)
+        self.assertIn(
+            "unexpected_contract_wording_planning_review_dimensions",
+            GTT.contract_wording_structural_errors(
+                self.root, wrong_profile, explicit_scope, explicit_scan
+            ),
+        )
 
     def test_explicit_paths_reject_unsafe_or_non_markdown_selectors(self) -> None:
         text_path = self.root / "docs/not-markdown.txt"

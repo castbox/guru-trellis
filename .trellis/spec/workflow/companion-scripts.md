@@ -706,6 +706,9 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   `planning_artifacts` evidence to task-local
   `contract-wording-review.json`. They do not choose rewrite,
   classification, reason, confirmation, semantic pass/block, or route intent.
+  For `planning_artifacts`, they require the canonical planning-only dimension
+  object and validate its exact shape/value; they never infer or generate those
+  AI judgments. Other profiles reject the field.
   For `change_request` selected comments they reject missing author or update
   time. For a live issue revision they derive exact confirmed-payload and
   mutation-result digests, require the human confirmation digest to bind the
@@ -724,7 +727,8 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   `approved_artifacts` alias, use
   `user_confirmation.source=explicit-post-planning-review`, and derive the
   existing `ambiguity_review` audit projection only from verified wording
-  evidence. The old caller-injected classification path is not an active API.
+  evidence, copying each validated planning-dimension value without defaults.
+  The old caller-injected classification path is not an active API.
 - `check-planning-approval.sh` validates all three planning artifact entries,
   hash / size metadata, confirmation source, current wording evidence through
   the generic checker, exact compatibility projection, and required audit
@@ -737,6 +741,10 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   content digests. A later implementation commit, metadata tail, or unrelated
   working-tree dirty path must not block planning approval while those three
   reviewed planning documents still match.
+  Schema 1.0 wording evidence that predates the planning-only dimension field
+  is nevertheless stale. It requires complete AI review re-entry, redisplay of
+  all three planning documents, and fresh post-planning confirmation; scripts
+  must reject attempts to patch missing booleans into old evidence.
 - `record-phase2-check.sh` records prior full-scope `trellis-check` evidence;
   it must not replace check judgment with command exit codes.
 - `check-phase2-check.sh` validates coverage, validation evidence, findings,

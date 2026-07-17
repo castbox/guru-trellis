@@ -4072,6 +4072,10 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                         key: exit_value != "blocked"
                         for key in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
                     },
+                    "planning_checked_dimensions": {
+                        key: exit_value != "blocked"
+                        for key in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+                    },
                 },
             },
             "human_confirmation": {
@@ -4410,6 +4414,10 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                         "checked_dimensions": {
                             key: True for key in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
                         },
+                        "planning_checked_dimensions": {
+                            key: True
+                            for key in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+                        },
                     },
                 },
                 "human_confirmation": {
@@ -4458,12 +4466,59 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertEqual(payload["ambiguity_review"]["normative_language"]["unchecked_normative_hits"], [])
         self.assertEqual(
             set(payload["ambiguity_review"]["checked_dimensions"]),
-            set(gtt.PLANNING_APPROVAL_COMPATIBILITY_DIMENSIONS),
+            set(gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS),
         )
         self.assertTrue(all(payload["ambiguity_review"]["checked_dimensions"].values()))
         self.assertEqual(payload["contract_wording_review"]["schema_id"], "guru-contract-wording-review-1.0")
         self.assertEqual(len(payload["reviewed_artifacts"]), 3)
         self.assertEqual(len(payload["approved_artifacts"]), 3)
+
+    def test_planning_semantic_dimension_matrix_and_projection_fail_closed(self) -> None:
+        result = self.write_wording_evidence()
+        scope, contents = gtt.contract_wording_build_scope(
+            self.root,
+            "planning_artifacts",
+            "workflow",
+            task_dir=self.task_dir,
+        )
+        scan = gtt.scan_contract_wording(scope, contents)
+        expected = {
+            name: True for name in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+        }
+        self.assertEqual(
+            gtt.contract_wording_planning_projection(result)["checked_dimensions"],
+            expected,
+        )
+
+        cases = []
+        missing = json.loads(json.dumps(result))
+        del missing["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"]
+        cases.append(("missing", missing, "contract_wording_planning_review_dimensions_missing"))
+        false_value = json.loads(json.dumps(result))
+        false_value["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"][
+            "no_requirement_weakening"
+        ] = False
+        cases.append(("false", false_value, "contract_wording_planning_review_dimensions_incomplete"))
+        extra = json.loads(json.dumps(result))
+        extra["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"][
+            "undeclared_dimension"
+        ] = True
+        cases.append(("extra", extra, "contract_wording_planning_review_dimensions_invalid"))
+        wrong_profile = json.loads(json.dumps(result))
+        wrong_profile["profile"] = "explicit_paths"
+        cases.append(("wrong-profile", wrong_profile, "unexpected_contract_wording_planning_review_dimensions"))
+
+        for label, payload, expected_error in cases:
+            with self.subTest(label=label):
+                payload["facts_sha256"] = gtt.context_digest({
+                    key: value for key, value in payload.items() if key != "facts_sha256"
+                })
+                self.assertIn(
+                    expected_error,
+                    gtt.contract_wording_structural_errors(self.root, payload, scope, scan),
+                )
+                with self.assertRaises(gtt.WorkflowError):
+                    gtt.contract_wording_planning_projection(payload)
 
     def test_record_planning_approval_blocks_unclassified_normative_hits(self) -> None:
         for term in ["推荐", "可选", "至少", "默认"]:
@@ -17281,6 +17336,10 @@ class RequirementsClarificationTests(unittest.TestCase):
                         "reviewed_scan_sha256": wording_scan["scan_sha256"],
                         "checked_dimensions": {
                             name: True for name in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
+                        },
+                        "planning_checked_dimensions": {
+                            name: True
+                            for name in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
                         },
                     },
                 },

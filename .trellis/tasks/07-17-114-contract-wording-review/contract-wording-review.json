@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "skill_id": "guru-review-contract-wording",
-  "generated_at": "2026-07-17T07:55:29Z",
+  "generated_at": "2026-07-17T13:36:01Z",
   "profile": "planning_artifacts",
   "mode": "workflow",
   "vocabulary_version": "contract-wording-v2",
@@ -44,7 +44,7 @@
     "ai_review_gate": {
       "status": "passed",
       "reviewer": "codex-main-session",
-      "summary": "已对固定 planning_artifacts 范围完成合同措辞与需求语义审查；三份规划文档无受控词命中，需求边界、replacement-first 删除顺序、#93 兼容约束、out-of-scope 与验收矩阵均明确，无需内容修订。",
+      "summary": "已重新审查固定 planning_artifacts 范围、live Issue #114 与 #93 兼容合同。三份规划文档无受控词命中；需求未弱化，source semantics、条件路径、单一实现 owner、deterministic gate、可观察验收和非合同引用边界均完整明确，无需修改正文。",
       "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
       "checked_dimensions": {
         "complete_profile_scope": true,
@@ -53,6 +53,15 @@
         "product_semantics_preserved": true,
         "retained_reasons_sufficient": true,
         "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
       }
     }
   },
@@ -60,8 +69,8 @@
     "status": "not_required",
     "confirmed_by": null,
     "confirmed_at": null,
-    "reason": "本轮未修改 planning artifacts，合同措辞审查本身不需要 mutation confirmation；独立的 post-planning 用户确认由 planning-approval.json 记录。"
+    "reason": "本轮未修改 planning artifacts；合同措辞审查无需 mutation confirmation，独立 post-planning 用户确认由 planning-approval.json 记录。"
   },
   "typed_exit": "pass",
-  "facts_sha256": "4423e491d8037c7f9a72ac7538bec582f69861d791e6f65302d8fbfc28bff1ab"
+  "facts_sha256": "9b5d6882724a86e4ca7c49db56eeb10d27cb99f74251de5d5914f283758d7c0e"
 }

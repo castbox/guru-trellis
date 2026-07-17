@@ -340,7 +340,11 @@ title/body plus AI-selected authoritative comments whose stable identity,
 non-empty author, update time, selection reason, and content hash are all
 present; `planning_artifacts`
 always binds the active task's `prd.md`, `design.md`, and `implement.md` and
-writes task-local `contract-wording-review.json`; `explicit_paths` accepts only
+requires the canonical contract's exact
+`semantic_review.ai_review_gate.planning_checked_dimensions` object before a
+successful exit; it writes task-local `contract-wording-review.json`.
+`change_request` and `explicit_paths` prohibit that planning-only object, and
+`explicit_paths` accepts only
 the standalone caller's explicit repo-relative Markdown regular files and is
 stdout-only. Workflow callers cannot substitute `explicit_paths` for either
 fixed workflow profile.
@@ -349,8 +353,11 @@ The deterministic runtime publishes `record-contract-wording-review` and
 `check-contract-wording-review`. It builds fixed scope facts, scans current
 content, derives identities/digests and unchecked hits, validates schema,
 classification/reason structure, freshness, rescan binding, Gate/exit
-invariants, and trackability. It never chooses scope, rewrite, classification,
+invariants, exact planning-dimension shape/value, and trackability. It never
+chooses scope, rewrite, classification,
 reason sufficiency, semantic pass/block, confirmation need, or route intent.
+It also never infers or defaults a planning semantic result; only the AI Review
+Gate may produce the values required by the canonical package contract.
 Every content change invalidates the prior scope/scan identity and requires a
 complete rebuild and rescan before evidence can pass.
 For a live issue revision, the recorder derives the exact confirmed-payload
@@ -369,6 +376,13 @@ profile and exit. Unknown, multiple, stale, or unmapped profile/exit evidence
 fails closed. Planning approval is only a consumer/projection of current
 `planning_artifacts:pass` evidence and cannot become a second vocabulary,
 classification, scanner, or semantic-review owner.
+Its compatibility projection copies each already-validated planning dimension
+from that evidence. Planning evidence recorded before the planning-only field
+existed is stale even with schema id `guru-contract-wording-review-1.0`; active
+tasks must perform a complete fresh AI review, display all three planning
+documents again, and obtain fresh post-planning confirmation. Missing booleans
+must never be patched into old evidence, while archived artifacts remain
+historical.
 
 ## Distribution And Managed Hashes
 

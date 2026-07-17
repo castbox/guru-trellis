@@ -550,7 +550,8 @@ obtained a current checker-validated
 task-local links to all three planning documents, and the user has explicitly
 confirmed after seeing them. Phase 0 handoff approval, generic workflow
 confirmation, old `schema_version=1.0` / `schema_version=1.1`, missing/non-pass
-wording evidence, projection drift, or
+wording evidence, wording evidence that lacks the canonical planning-only
+dimension field, projection drift, or
 `user_confirmation.source=workflow` must fail closed.
 
 It records:
@@ -564,7 +565,8 @@ It records:
   digest, scope digest, and scan digest
 - `ambiguity_review` compatibility projection deterministically copied from
   the validated wording evidence, preserving reviewer/summary/checked
-  dimensions, complete scan facts, classifications/reasons, and empty
+  dimensions value-for-value without defaults, complete scan facts,
+  classifications/reasons, and empty
   unchecked hits for audit visibility
 - `reviewed_artifacts[]` entries for `prd.md`, `design.md`, and
   `implement.md`, each with path, sha256, size, and modified-time metadata
@@ -593,6 +595,17 @@ reimplement or accept caller-injected classification rows. Active approvals
 without the new `contract_wording_review` binding are pre-#114 evidence and
 fail with a fresh re-review requirement; archived approvals remain historical
 and are not migrated in place.
+
+For `planning_artifacts`, the bound wording evidence must contain the canonical
+contract's exact `semantic_review.ai_review_gate.planning_checked_dimensions`
+object with every value explicitly AI-reviewed as true. The recorder/checker
+validates only its shape/value, and the approval projection copies those values
+instead of generating them. Evidence recorded before this planning-only field
+existed is stale even when it uses schema id
+`guru-contract-wording-review-1.0`; the workflow must rerun the complete AI
+review, display all three planning documents, and obtain fresh post-planning
+confirmation. Never patch missing booleans into old evidence. Other profiles
+prohibit the field, and archived artifacts remain historical.
 
 Schema `guru-contract-wording-review-1.0` has an additive live-issue mutation
 binding. A current `change_request` live issue revision records source

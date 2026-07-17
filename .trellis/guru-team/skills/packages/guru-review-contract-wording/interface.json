@@ -37,7 +37,7 @@
     },
     {
       "id": "semantic_evidence",
-      "evidence": "AI-authored revisions, retained-hit classifications and reasons, Review Gate judgment, and conditional human confirmation",
+      "evidence": "AI-authored revisions, retained-hit classifications and reasons, common Review Gate judgment, planning-profile semantic dimensions when applicable, and conditional human confirmation",
       "binding": "the complete current deterministic scan",
       "freshness": "every content change rebuilds scope and scan before semantic evidence can be recorded"
     },
@@ -68,13 +68,13 @@
       "id": "contract_wording_recorder",
       "command": "scripts/record-contract-wording-review.sh",
       "runtime_command": "record-contract-wording-review",
-      "objective_scope": "fixed profile scope reconstruction, deterministic scan, schema and whitelist validation, derived unchecked hits, live issue payload/result identities and canonical digests"
+      "objective_scope": "fixed profile scope reconstruction, deterministic scan, schema and whitelist validation, exact planning-profile dimension shape/value validation, derived unchecked hits, live issue payload/result identities and canonical digests"
     },
     {
       "id": "contract_wording_checker",
       "command": "scripts/check-contract-wording-review.sh",
       "runtime_command": "check-contract-wording-review",
-      "objective_scope": "published schema, fixed scope and scan completeness, selected-comment metadata, live issue payload/preimage/result binding, content freshness, classification structure, Gate/exit biconditional and result digest validation"
+      "objective_scope": "published schema, fixed scope and scan completeness, selected-comment metadata, live issue payload/preimage/result binding, content freshness, classification structure, exact planning-profile dimension shape/value validation, Gate/exit biconditional and result digest validation"
     }
   ],
   "external_exits": [
