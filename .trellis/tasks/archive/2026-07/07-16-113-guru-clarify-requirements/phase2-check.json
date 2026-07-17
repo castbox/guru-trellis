@@ -1,0 +1,177 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-17T01:51:48Z",
+  "task_dir": ".trellis/tasks/07-16-113-guru-clarify-requirements",
+  "base_branch": "main",
+  "head": "0b7fcb981031b6fc2c33e8854f80f4f9dbc6b429",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/agent-assignment.json",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/001.json",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/002.json",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/003.json",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/task-commit-plans/004.json",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/review-gate.json",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-01-final-release-finding.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-02-finding-closure-reopened.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-03-finding-closure.md",
+    ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-04-f007-closure.md"
+  ],
+  "checker": "/root/issue_113_f008_phase2_replacement",
+  "check_summary": "F-008修复后的replacement fresh Phase2从头独立覆盖固定base到HEAD完整实现及两份文档delta；F-008 exact收敛，F-002至F-007无回归，F-001保持out_of_scope，八类一致性、全量测试、安装升级、clean throwaway、all-platform、安全与部署检查findings_count=0。前序stream中断partial未作为pass证据。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/prd.md",
+      "sha256": "a5991eb7c0ffcd5a60f10008fe41b4a41a0ecdf13dff201ac1e855b795dc77e2",
+      "size_bytes": 17842,
+      "modified_at": "2026-07-16T20:30:29.741345+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/design.md",
+      "sha256": "4609fb509b67d825ef7ed0add27c1e5310775c8e87235443f91664e9b216f3c2",
+      "size_bytes": 21947,
+      "modified_at": "2026-07-17T00:43:28.640264+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/implement.md",
+      "sha256": "0b8eb512995fb045f1c5afe688edce0e8131e11fc575c25b6deb52999a6c65ef",
+      "size_bytes": 11014,
+      "modified_at": "2026-07-16T20:30:29.742191+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/planning-approval.json",
+      "sha256": "1d3ce1bcd78b900b2c7092ef45feaf6cbbe82465a80b512ca7924f1df5027ed6",
+      "size_bytes": 5412,
+      "modified_at": "2026-07-17T00:53:16.844630+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/issue-scope-ledger.json",
+      "sha256": "35462dcff80d2251dded0340133a082d4db8481662f77dbe852fd42940d903c4",
+      "size_bytes": 6239,
+      "modified_at": "2026-07-16T20:32:31.339666+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/reviews/round-05-final-release.md",
+      "sha256": "40c93114c852d1fc5ea2e8424656ad97426035eda7f8f9861ad0d7e0ab90b285",
+      "size_bytes": 15590,
+      "modified_at": "2026-07-17T00:18:31.198091+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-16-113-guru-clarify-requirements/review.md",
+      "sha256": "1c32ca59e36e1cc82c3de8da80a01e5e60f1472263aa2f41a7252394cb4bd82c",
+      "size_bytes": 7924,
+      "modified_at": "2026-07-17T00:38:00.766936+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "01de8831ddc28f4223d3c046b5e18d684d629b73014d75cdb7fdb58353767ae4",
+      "size_bytes": 84886,
+      "modified_at": "2026-07-17T00:43:03.854940+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "4532351c24c04f34f2fdc0cb4aa43859c89cf298a4905a221be6a15060fd34ff",
+      "size_bytes": 25591,
+      "modified_at": "2026-07-16T23:12:39.912341+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "5ee25caa9da6114a60b4f282b138ae4c92b62b57505c2872d0e8573bec1bd3aa",
+      "size_bytes": 16773,
+      "modified_at": "2026-07-16T23:05:13.638160+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "4e76c8b51d569c68c2319a91f82b486ce9be873ed27f4b1a1034529c73b14481",
+      "size_bytes": 63470,
+      "modified_at": "2026-07-16T21:57:04.326385+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "38215be5ff41122a37d0b447ed96178b5d73f66d4cf4e434b55d2df64f3305d8",
+      "size_bytes": 51847,
+      "modified_at": "2026-07-16T20:51:01.286750+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "06b88d2ba54270862a916502f537a6ae26ea3beb6b2265d3e8b78de5ef6018f6",
+      "size_bytes": 11393,
+      "modified_at": "2026-07-16T20:48:23.982988+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "a999442daa4e5b29e8c52437dcebc8e89f549dfdda868bb687dfd142085c3532",
+      "size_bytes": 20564,
+      "modified_at": "2026-07-16T03:51:14.279741+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/upstream-ownership.md",
+      "sha256": "0d00e1891f96a9ae897c8bce3410668aebd79b1b013b5a1fd0abd39d331e82fb",
+      "size_bytes": 9527,
+      "modified_at": "2026-07-16T03:51:14.280037+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "5fcf3273c13e740f1458163be7a6d60b50c21b5ac8eb849446d00c83369abb50",
+      "size_bytes": 19268,
+      "modified_at": "2026-07-16T09:12:18.573442+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "F-008 exact Docs SSOT field comparison",
+      "result": "5 preconditions and 11 clarificationRound fields exact; confirmed_actions are action ids; active stale terms 0"
+    },
+    {
+      "command": "focused clarification and package contracts",
+      "result": "28/28 and 6/6 passed"
+    },
+    {
+      "command": "full runtime, registry, preset, ownership",
+      "result": "496/496, 71/71, 39/39, 6/6 passed"
+    },
+    {
+      "command": "source/installed/equality/sidecar",
+      "result": "4 active skills; managed 168; 40 platform byte/mode groups; sidecar/removal/conflict 0/0/0"
+    },
+    {
+      "command": "clean throwaway marketplace and all-platform",
+      "result": "public discovery plus local unpublished workflow; initial, five exits, standalone, preview-switch, update-reselect-reapply, two-closeout, all-platform passed"
+    },
+    {
+      "command": "AST/Bash/JSON/JSONL and task contexts",
+      "result": "19/17/40/2; implement.jsonl 14; check.jsonl 11 passed"
+    },
+    {
+      "command": "workspace/planning/replacement/diff/source checkout",
+      "result": "fresh approval passed; failed predecessor replaced and replacement completed; index empty; source checkout clean main"
+    },
+    {
+      "command": "F-001 live authority and regression scope",
+      "result": "authority and ledger matched; out_of_scope; no hostile-input expansion; F-002 through F-007 passed"
+    },
+    {
+      "command": "secret and deployment scans",
+      "result": "0 secret hits; no CI/CD/container/Compose/K8s/Kustomize/migration/Makefile/config asset changes"
+    },
+    {
+      "command": "remote feature branch marketplace ref",
+      "result": "not pushed; deferred to post-push publish verifier"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

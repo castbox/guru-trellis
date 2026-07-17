@@ -216,9 +216,7 @@ validated by its own closed structural contract, and active-task
 External consumer resolution is part of both source and installed validation.
 Skill consumers must name an active registry id. Workflow/stop consumers must
 have exactly one matching `guru-workflow-target` / `guru-stop-target` marker;
-missing, duplicate, kind-mismatched, or dangling targets fail closed. The
-`guru-clarify-requirements` id names the existing Phase 0 workflow route until
-#113 activates any separate package.
+missing, duplicate, kind-mismatched, or dangling targets fail closed.
 
 The package publishes artifact schema `guru-context-discovery-1.0`, scoring
 algorithm id `guru-context-history-score-1.0`, and dispatcher-only wrappers for
@@ -240,6 +238,92 @@ Task-local record/check also require the exact target to be non-ignored under
 `git check-ignore --quiet --no-index --` before and after recording and during
 checking. Ignore matches or unreadable trackability fail closed; pre-task mode
 remains stdout-only and does not perform this target gate.
+
+`guru-clarify-requirements` is an active semantic package with identical
+workflow/standalone preconditions: compatible runtime, current review target,
+current context evidence, source authority, and invocation-context freshness.
+Its exact schema 1.2 stages are `forward_behavior -> ai_review_gate ->
+conditional_human_confirmation -> recorder_validator -> typed_exit`. The Skill
+loads `trellis-brainstorm` as its one-question method, but owns question
+selection, convergence, scope classification, action selection, confirmation
+necessity, semantic pass/block, and typed route.
+
+The result uses closed top-level fields and artifact schema
+`guru-requirements-clarification-1.0`. Repository-answerable questions must be
+`answered` or `not_answerable` with at least one checked evidence reference
+before the first user
+question. Each clarification round contains one `question_id`; an
+`atomic_group` is permitted only for an indivisible product choice and records
+its reason. Every round's `question_id` must be opened in that round or already
+open; `answer_status=partial` cannot close any question and therefore cannot
+disappear through an empty lifecycle. The reducer keeps exactly
+`open_questions = opened - closed`, rejects closing-before-open and reopening
+after closure. The recorder
+derives all proposal, action, payload, content, and result digests; the checker
+recomputes them and validates current live/task facts without generating
+questions, choosing actions, classifying scope, executing GitHub writes, or
+turning deterministic success into a semantic pass.
+
+Source actions are `none`, `issue_comment`, `issue_body_edit`,
+`proposed_draft_update`, `new_issue_draft`, and
+`active_task_scope_update`. GitHub mutation remains AI-owned: after exact
+action-digest-bound confirmation, the AI uses an existing connector or a
+reviewed `gh` command, rereads live facts, and supplies mutation evidence to
+the recorder. Checker binds the human-confirmed action payload, canonical
+payload digest, mutation result content digest, and reread live body/comment;
+any byte mismatch fails closed. Generic continuation, task creation, planning approval, or
+review confirmation cannot satisfy action or scope-proposal confirmation.
+`unconfirmed_expansion + accepted_current` requires a dedicated
+proposal-digest-bound confirmation. A proposal with
+`optional_mechanism_origin=true` cannot be `accepted_current`; the mechanism is
+removed/replaced or its independent product value is proposed separately.
+For an active task, `unconfirmed_expansion` classified as `related`,
+`followup`, `new_task`, or `out_of_scope` also requires dedicated
+proposal-digest-bound user decision evidence; an AI-only classification is not
+a final auditable decision.
+
+The five exits and unique consumers are `clear` -> workflow target
+`guru-requirements-clear-router`, `needs_context` -> Skill
+`guru-discover-change-context`, `refresh_context` -> Skill `guru-sync-base`,
+`new_task` -> workflow target `guru-full-task-intake-chain`, and `blocked` ->
+stop `requirements-clarification-blocked`. Active-task `clear`/`new_task`
+requires a non-empty terminal proposal set. `clear` requires no open questions,
+a passed current AI Gate, current authority/context, every five-class scope
+classification exactly confirmed, confirmation-free mechanism dispositions,
+and no unrefreshed mutation. A successful GitHub mutation
+returns `refresh_context`; a reviewed side-effect-free new issue draft returns
+`new_task`; `blocked` is valid if and only if the AI Gate is blocked.
+
+Pre-task and standalone results remain stdout-only. There is no dedicated
+tracked clarification artifact. Every five-class active-task classification binds a
+structured `decision_trail` that must exactly match one current
+`issue-scope-ledger.json.scope_decisions[]` entry. The trail records exact
+proposal decisions, user-decision evidence, live GitHub comment/body authority
+including `updated_at`, `context_before_task_update_sha256`, all three planning documents, planning
+approval, review state, interrupted resume target, stale downstream identities,
+and re-entry owners `guru-approve-task-plan`, `guru-check-task`, and
+`guru-review-branch`. The active-task checker reuses the shared complete schema
+1.2 planning validator and exact-binds reviewed/approved document evidence; a
+prior file hash, placeholder planning body, or minimal approval JSON does not
+qualify. GitHub authority mutation returns `refresh_context`; only a context
+snapshot generated at or after authority `updated_at`, followed by a task update
+bound to that snapshot, may later return active-task `clear` or `new_task`.
+That `active_task_scope_update` is authorized by the same
+`exact_source_action_and_scope` confirmation as the classification proposals:
+its action id is listed in `confirmed_actions[]`, and the confirmation action
+digest exact-binds the canonical confirmed action set. Proposal-only
+confirmation, planning approval, or validated task evidence cannot substitute.
+Task-only update requires no second refresh. `mechanism_removed/replaced`
+remains outside confirmation/trail/action mutation. `new_task` still contains only the
+side-effect-free reviewed draft and #112 owns creation. A copied package without
+the complete compatible preset remains non-portable and fails closed through
+the dispatcher.
+
+`invocation_context.resume_target` is caller-aware and closed. Initial
+issue/draft accepts only `guru-review-contract-wording`; standalone accepts only
+`guru-standalone-caller`; active-task accepts the planning-review target or one
+of the declared interrupted Phase 1/2/3/Branch Review targets. Accepted-current
+scope requires the planning-review target.
 
 ## Distribution And Managed Hashes
 

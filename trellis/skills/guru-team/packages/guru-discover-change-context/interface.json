@@ -87,7 +87,7 @@
     {
       "id": "context_ready",
       "evidence": "fresh current/history snapshot with passed AI Review Gate and objective validation",
-      "consumer": {"kind": "workflow", "id": "guru-clarify-requirements"}
+      "consumer": {"kind": "skill", "id": "guru-clarify-requirements"}
     },
     {
       "id": "refresh_base",

@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-clarify-requirements",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "mode": "standalone",
+  "typed_exit": "clear",
+  "invocation_context": {
+    "kind": "proposed_draft",
+    "caller": "standalone requirements review",
+    "task_locator": null,
+    "resume_target": "guru-review-contract-wording"
+  },
+  "review_target": {
+    "kind": "draft",
+    "repo": "example/guru-extension",
+    "issue_number": null,
+    "url": null,
+    "state": "draft",
+    "updated_at": null,
+    "body_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "facts_sha256": "ecbfcd32f254c0ebc87fa353478d4b913cdde8d3933b558c81aa837a49f135b8"
+  },
+  "context_evidence": {
+    "status": "current",
+    "schema_id": "guru-context-discovery-1.0",
+    "snapshot_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "evidence_refs": ["guru-context-discovery-1.0:3333333333333333333333333333333333333333333333333333333333333333"],
+    "missing_reason": null
+  },
+  "confirmed_facts": [
+    {
+      "fact_id": "delivery_goal",
+      "summary": "The reviewed draft defines one bounded delivery goal.",
+      "evidence_refs": ["review_target.body_sha256"],
+      "affected_contracts": ["requirements"]
+    }
+  ],
+  "repository_answerable_questions": [
+    {
+      "question_id": "existing_owner",
+      "question": "Which existing contract owns this behavior?",
+      "status": "answered",
+      "evidence_refs": ["context_evidence.snapshot_sha256"],
+      "answer_summary": "The current workflow package is the sole owner.",
+      "missing_reason": null
+    }
+  ],
+  "clarification_rounds": [],
+  "open_questions": [],
+  "scope_proposals": [],
+  "source_actions": [
+    {
+      "action_id": "no_source_change",
+      "kind": "none",
+      "target": null,
+      "payload": null,
+      "preimage_sha256": null,
+      "payload_sha256": null,
+      "action_digest": "2b6a5000552ff3d6495ba832e5ebf64217026f389edb3b6893f300aafef65b7f",
+      "status": "not_required",
+      "mutation_evidence": null
+    }
+  ],
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmation_kind": "none",
+    "action_digest": null,
+    "proposal_digests": [],
+    "confirmed_actions": [],
+    "confirmer": null,
+    "confirmed_at": null,
+    "evidence_summary": "No source mutation or scope expansion requires confirmation."
+  },
+  "mutation_results": [],
+  "active_task_evidence": null,
+  "ai_review_gate": {
+    "status": "passed",
+    "reviewed_scope": ["reviewed draft", "current context evidence", "open questions"],
+    "excluded_scope": ["implementation mechanism"],
+    "load_bearing_conclusions": ["The current requirement is complete and current."],
+    "findings": [],
+    "summary": "The reviewed evidence supports a clear requirements exit."
+  },
+  "affected_contracts": ["requirements", "workflow routing"],
+  "content_identity": {
+    "target_sha256": "603e08673b9ead771afe56bee61774d9a9a70b6ba0fa0b40c76cc050ac1aaaf0",
+    "content_sha256": "94b13eddb24ebfe946826823d9c9505253f0ced541d0cdb5bedc92bf068e95bf",
+    "context_sha256": "46be0780ee8aaa5cf134e8b534e695728c4cd093d1ac6a7505d00996d782b3b5",
+    "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "action_sha256": "8bd79fcbfc2bf6fc34dca122c1c04c6afdc1425ffcd64a49289f1ee0cc764dc2",
+    "payload_sha256": "161a1bfffa621be8ff92c3a770b613a877f77c8a2d865342c10988ae7f72aa6b",
+    "result_sha256": "0dcff885c56cbc50cac622c6adbf60524d2f7307d7590d024b47e3de9fa26596"
+  },
+  "reason": "All load-bearing requirements are confirmed by current evidence.",
+  "consumer": {
+    "kind": "workflow",
+    "id": "guru-requirements-clear-router"
+  },
+  "error": null
+}

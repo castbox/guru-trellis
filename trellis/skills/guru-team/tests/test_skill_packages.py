@@ -75,11 +75,31 @@ class SourceValidationTests(unittest.TestCase):
         self.assertEqual(result["facts"]["reserved_ids"], ["guru-create-work-commit"])
         self.assertEqual(
             result["facts"]["active_ids"],
-            ["guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"],
+            ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"],
         )
-        self.assertEqual(result["facts"]["invoke_markers"], 3)
-        self.assertEqual(result["facts"]["exit_markers"], 9)
-        self.assertEqual(result["facts"]["target_markers"], 6)
+        self.assertEqual(result["facts"]["invoke_markers"], 4)
+        self.assertEqual(result["facts"]["exit_markers"], 14)
+        self.assertEqual(result["facts"]["target_markers"], 8)
+
+        workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
+        scope_gate = workflow.index("Scope Change Gate:")
+        clarify_invoke = workflow.index(
+            'guru-skill-invoke: {"skill":"guru-clarify-requirements"'
+        )
+        self.assertGreater(clarify_invoke, scope_gate)
+        self.assertEqual(
+            workflow.count('guru-skill-invoke: {"skill":"guru-clarify-requirements"'),
+            1,
+        )
+        self.assertIn(
+            'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"clear","consumer":{"kind":"workflow","id":"guru-requirements-clear-router"}}',
+            workflow,
+        )
+        self.assertNotIn(
+            "Scope Change Gate: when scope changes, first stop and ask the user",
+            workflow,
+        )
+        self.assertIn("invocation_context.resume_target", workflow)
 
     def test_production_task_commit_package_contract(self) -> None:
         package = SKILLS_ROOT / "packages/guru-create-task-commit"
@@ -1194,7 +1214,7 @@ class ProductionDistributionTests(unittest.TestCase):
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["reserved_ids"], ["guru-create-work-commit"])
-            self.assertEqual(result["active_ids"], ["guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"])
+            self.assertEqual(result["active_ids"], ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"])
             self.assertFalse((repo / ".agents/skills/guru-create-work-commit").exists())
             for root in (".agents", ".codex", ".cursor", ".claude"):
                 task_commit = repo / root / "skills/guru-create-task-commit"
@@ -1205,6 +1225,11 @@ class ProductionDistributionTests(unittest.TestCase):
                 self.assertTrue((sync_base / "SKILL.md").is_file())
                 self.assertTrue((sync_base / "schemas/base-sync-result.schema.json").is_file())
                 self.assertTrue(os.access(sync_base / "scripts/sync-base.sh", os.X_OK))
+                clarification = repo / root / "skills/guru-clarify-requirements"
+                self.assertTrue((clarification / "SKILL.md").is_file())
+                self.assertTrue((clarification / "schemas/requirements-clarification.schema.json").is_file())
+                self.assertTrue(os.access(clarification / "scripts/record-requirements-clarification.sh", os.X_OK))
+                self.assertTrue(os.access(clarification / "scripts/check-requirements-clarification.sh", os.X_OK))
 
             manifest = dst / "extension.json"
             manifest.write_text(json.dumps({

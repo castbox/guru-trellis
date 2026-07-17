@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Guru Team缺少统一承接initial intake、active-task scope change与standalone review的需求澄清Skill，问题收敛、exact mutation确认、scope decision trail和fresh re-entry容易分散到workflow或caller。",
+    "outcome": "已交付semantic `guru-clarify-requirements`闭环，以evidence-first分类、单问题循环、action-digest-bound确认、active-task structured trail和五个typed exits统一需求澄清与范围变更。",
+    "changed_behavior": [
+      "`guru-discover-change-context`的`context_ready`现在显式进入`guru-clarify-requirements`。",
+      "Repository-answerable question必须先读取current evidence，缺少load-bearing context时返回`needs_context`。",
+      "Clarification每轮只问一个最高价值问题，partial answer不得关闭open question。",
+      "任何source-of-truth mutation前必须展示exact action/payload并取得digest-bound用户确认。",
+      "Active-task五类scope classification必须绑定GitHub authority、planning、ledger和fresh re-entry evidence。",
+      "`clear`、`needs_context`、`refresh_context`、`new_task`、`blocked`均有唯一consumer或fail-closed stop。",
+      "Canonical、dogfood、四平台副本、preset、durable docs与clean throwaway/update验证已同步。",
+      "F-001恶意伪造扩展保持out-of-scope，正常stale/mismatch与错误payload correctness校验保持有效。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "guru-clarify-requirements public Skill package",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/interface.json",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json"
+        ],
+        "change": "新增workflow/standalone同合同的semantic需求澄清闭环、closed result schema、examples、wrappers与package tests。"
+      },
+      {
+        "kind": "workflow",
+        "name": "Guru Team requirements clarification routing",
+        "paths": [
+          "trellis/workflows/guru-team/workflow.md",
+          ".trellis/workflow.md"
+        ],
+        "change": "将context_ready consumer迁移到active Skill，并为五个typed exits定义唯一consumer或fail-closed stop。"
+      },
+      {
+        "kind": "script",
+        "name": "Requirements clarification recorder and validator runtime",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/bash/record-requirements-clarification.sh",
+          "trellis/workflows/guru-team/scripts/bash/check-requirements-clarification.sh"
+        ],
+        "change": "记录并校验AI/human已完成的question lifecycle、confirmed action、scope trail、freshness与typed-exit invariants。"
+      },
+      {
+        "kind": "schema",
+        "name": "Clarification interface and result contracts",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/interface.json",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+          ".trellis/spec/workflow/data-contracts.md"
+        ],
+        "change": "定义五个entry preconditions、11项clarification round closed shape、scope proposals、confirmed actions与fresh re-entry绑定。"
+      },
+      {
+        "kind": "preset",
+        "name": "Guru Team package distribution and upgrade inventory",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/guru-team-extension.json",
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "安装active package、shared runtime、registry和Agents/Codex/Cursor/Claude副本，并验证managed drift与update/reapply。"
+      },
+      {
+        "kind": "docs",
+        "name": "Requirements clarification durable contracts",
+        "paths": [
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md",
+          ".trellis/spec/workflow/workflow-contract.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          "README.md"
+        ],
+        "change": "同步clarification职责、scope change gate、script boundary、canonical distribution、升级与验证矩阵。"
+      },
+      {
+        "kind": "test",
+        "name": "Runtime, package, registry, preset and throwaway regressions",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "change": "覆盖focused 28、package 6、runtime 496、registry 71、preset 39、ownership 6及clean install/update/reapply。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Requirements clarification ownership",
+        "before": "Initial clarity与active-task scope evolution可能分散在Phase 0 workflow、caller或脚本中。",
+        "after": "`guru-clarify-requirements`独占semantic question、clarity、scope classification、action selection、confirmation necessity与typed route判断。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Evidence-first question lifecycle",
+        "before": "缺少统一的confirmed/repository-answerable/product-intent/scope-risk/out-of-scope分类与partial answer闭环。",
+        "after": "Repository-answerable question必须先取证；每轮一个问题；partial不得close；open questions清零且authority current后才能clear。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Exact source-of-truth mutation confirmation",
+        "before": "普通继续或阶段确认可能被误当作comment、body、draft或active-task mutation授权。",
+        "after": "Mutation前必须展示exact target、payload、scope delta、affected contracts与executor command，并绑定action digest确认。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Active-task scope decision and re-entry",
+        "before": "Non-current/new-task分类、GitHub authority、planning/ledger update与下游gate freshness缺少统一structured trail。",
+        "after": "五类classification绑定唯一decision trail，并按authority.updated_at到context.generated_at再到task update顺序恢复exact interrupted progression。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Normal-operation security boundary",
+        "before": "F-001提出为恶意伪造pre-task/standalone artifact增加embedded body或locator。",
+        "after": "该场景按用户决定固定out-of-scope；正常stale/mismatch、错误payload、freshness和ownership correctness继续校验。",
+        "source_artifact": "prd.md"
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "record-requirements-clarification.sh",
+        "check-requirements-clarification.sh",
+        "verify-throwaway-install.sh"
+      ],
+      "config_keys": [
+        "skill_runtime.commands.record_requirements_clarification",
+        "skill_runtime.commands.check_requirements_clarification"
+      ],
+      "schema_fields": [
+        "clarification_rounds",
+        "scope_proposals",
+        "confirmed_actions",
+        "decision_trail",
+        "invocation_context.resume_target"
+      ],
+      "symbols": [
+        "validate_requirements_clarification_result",
+        "record_requirements_clarification",
+        "check_requirements_clarification"
+      ],
+      "phrases": [
+        "guru-clarify-requirements需求澄清闭环已完成",
+        "repository-answerable question evidence-first校验已完成",
+        "confirmed_actions exact mutation确认合同已新增",
+        "active-task scope_proposals structured decision trail已完成",
+        "check-requirements-clarification.sh五个typed exits验证已通过",
+        "F-001恶意伪造扩展保持out-of-scope"
+      ]
+    }
+  }
+}

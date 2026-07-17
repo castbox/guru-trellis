@@ -46,7 +46,7 @@ class ChangeContextPackageContractTests(unittest.TestCase):
         )
         self.assertEqual(
             self.interface["external_exits"][0]["consumer"],
-            {"kind": "workflow", "id": "guru-clarify-requirements"},
+            {"kind": "skill", "id": "guru-clarify-requirements"},
         )
 
     def test_contract_keeps_semantic_and_history_boundaries(self) -> None:
@@ -80,7 +80,7 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             "facts_sha256` is recomputed from those returned fields",
             "do not issue a second duplicate search or re-read candidates after review",
             "git check-ignore --quiet --no-index --",
-            "workflow route `guru-clarify-requirements`",
+            "Skill `guru-clarify-requirements`",
             "context_ready",
             "refresh_base",
         ):

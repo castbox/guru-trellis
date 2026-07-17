@@ -199,6 +199,130 @@ sidecar. The closed schema and source-specific portable locator fields keep raw
 source payloads out of the persisted artifact through field-specific
 validation.
 
+## Requirements Clarification Result
+
+Schema id `guru-requirements-clarification-1.0` is a closed Draft 2020-12
+result. Top-level fields are exactly `schema_version`, `skill_id`,
+`generated_at`, `mode`, `typed_exit`, `invocation_context`, `review_target`,
+`context_evidence`, `confirmed_facts`, `repository_answerable_questions`,
+`clarification_rounds`, `open_questions`, `scope_proposals`, `source_actions`,
+`human_confirmation`, `mutation_results`, `active_task_evidence`,
+`ai_review_gate`, `affected_contracts`, `content_identity`, `reason`,
+`consumer`, and `error`.
+
+`invocation_context.kind` is `initial_issue`, `proposed_draft`,
+`active_task_scope_change`, or `standalone_review` and includes a closed
+caller-aware `resume_target`. `review_target` carries a portable current issue
+or side-effect-free draft identity. `context_evidence` binds the current
+`guru-context-discovery-1.0` snapshot/digest where available;
+`needs_context` is the only exit that can omit load-bearing current context.
+
+Repository-answerable questions record one of `pending`, `answered`, or
+`not_answerable`. Before the first clarification round no entry may remain
+`pending`; both `answered` and `not_answerable` carry non-empty checked evidence
+refs, while `not_answerable` also carries a non-empty
+missing reason. Each clarification round has one `question_id`, optional
+`atomic_group_id` plus an indivisibility reason, category `product_intent` or
+`scope_risk_decision`, answer summary, status `complete`, `partial`, or
+`refused`, affected contracts, and opened/closed question ids. Its question id
+must already be open or be opened in that round. A partial answer cannot close
+any question. The replay invariant is exactly `open_questions = opened -
+closed`; close-before-open and reopen-after-close are invalid.
+
+Each `scope_proposals[]` row is closed and contains `proposal_id`, `scenario`,
+`trigger_evidence`, `proposed_contracts`, `cost`, `alternatives`,
+`consequence_if_omitted`, `origin_requirement_status`,
+`optional_mechanism_origin`, `decision`, recorder-derived `proposal_digest`,
+and `confirmation_ref`. `origin_requirement_status` is `explicit`,
+`necessary_correctness`, `confirmed_expansion`, or `unconfirmed_expansion`.
+Decision is `pending`, `accepted_current`, `related`, `followup`, `new_task`,
+`out_of_scope`, `mechanism_removed`, or `mechanism_replaced`. An unconfirmed
+expansion accepted into current scope requires a dedicated confirmation bound
+to its exact proposal digest. An optional-mechanism-origin proposal cannot be
+classified into the five scope classes: its terminal disposition is
+`mechanism_removed` or `mechanism_replaced`, with
+`optional_mechanism_origin=true` and `confirmation_ref=null`. During an active task, an unconfirmed expansion classified as
+`related`, `followup`, `new_task`, or `out_of_scope` also requires exact
+proposal-digest-bound user decision evidence.
+
+`source_actions[]` supports only `none`, `issue_comment`, `issue_body_edit`,
+`proposed_draft_update`, `new_issue_draft`, and
+`active_task_scope_update`. Every row binds exact target, payload, preimage,
+status, action digest, payload digest, and mutation evidence. The recorder
+derives action/payload digests; it does not execute the action. Human
+confirmation records `not_required`, `confirmed`, or `refused`, the exact
+action digest, proposal digests, confirmed action ids, confirmer/time, and
+evidence summary. Generic continuation/planning/review confirmation action
+kinds are invalid. Every five-class active-task scope decision that carries an
+`active_task_scope_update` must use one
+`confirmation_kind=exact_source_action_and_scope`: its classification proposal
+digests are exact, the task-update action id is present in
+`confirmed_actions[]`, and `human_confirmation.action_digest` equals the
+canonical digest of that confirmed action set. Proposal-only confirmation,
+planning approval, or the task update's validated status cannot authorize the
+task-local source-of-truth write. For comment/body mutation, mutation content SHA-256 must
+equal the exact confirmed action payload body, canonical payload digest, and
+reread live GitHub body/comment content.
+
+Active-task `clear`/`new_task` requires a non-empty array containing only the
+seven terminal decisions. Every `accepted_current`, `related`, `followup`, `new_task`, or
+`out_of_scope` proposal requires proposal-digest-bound exact user-decision
+evidence regardless of origin status, plus live GitHub authority facts and
+one structured `decision_trail` exactly present in
+`issue-scope-ledger.json.scope_decisions[]`. The trail carries proposal
+id/digest/decision/confirmation refs, user-decision evidence, GitHub
+comment/body URL, content digest, and `updated_at`, the
+`context_before_task_update_sha256`, exact
+content SHA-256 for `prd.md`, `design.md`, and `implement.md`, planning approval,
+review status, stale Phase-2/Branch-Review identities, interrupted resume target,
+and exact re-entry owners `guru-approve-task-plan`, `guru-check-task`, and
+`guru-review-branch`. The ledger itself must have the normal
+primary/close/related/followup structure. Planning evidence must pass the shared
+schema 1.2 validator and exact-bind both reviewed/approved aliases plus current
+path/hash/size for all three documents; `{}`, two-line planning placeholders,
+minimal approval JSON, and hash-only files are invalid. These are validation bindings to existing artifacts, not a
+dedicated clarification file. Pre-task and standalone results remain stdout-only.
+
+A mechanism-only terminal result still requires the same task-local ledger,
+planning documents, complete planning approval, review/stale identities,
+re-entry owners, and current context evidence; only `decision_trail` is null.
+Mixed results project only their five-classification subset into the trail.
+Every terminal active-task result receives the same live task/context freshness
+validation. When `review-gate.json` exists, `review_evidence.status` must be
+`stale` and bind that exact artifact path/content digest. `not_started` is valid
+only when the file is absent, the artifact is null, and the stale downstream
+Branch Review digest is null; `current` is invalid during re-entry.
+
+`content_identity` contains recorder-derived target, content, context, scope,
+action, payload, and result SHA-256 fields. Result identity is computed from
+the canonical result projection with its own field omitted. The checker
+recomputes every digest and validates current live facts.
+
+Exit invariants are closed:
+
+- `clear` consumes `guru-requirements-clear-router` and requires no open
+  questions, a passed AI Gate, current source/context,
+  all accepted proposals exactly confirmed, no pending action, and no
+  successful unrefreshed GitHub mutation. The router validates
+  `resume_target`: initial/draft -> wording route, standalone -> caller,
+  accepted active scope -> planning review, otherwise active task -> exact
+  interrupted progression;
+- `needs_context` binds missing repository/current/history evidence and consumes
+  `guru-discover-change-context`;
+- `refresh_context` binds stale or mutated authority and consumes
+  `guru-sync-base`; successful issue comment/body mutation requires this exit.
+  Re-entry requires context `generated_at >= authority.updated_at`, then binds
+  task update to that same context digest without requiring a second refresh;
+- `new_task` requires a reviewed side-effect-free `new_issue_draft`, plus a
+  fresh persisted classification trail for active-task callers, and consumes
+  `guru-full-task-intake-chain`; #112 owns every issue/task creation side effect;
+- `blocked` is valid if and only if `ai_review_gate.status=blocked` and consumes
+  `requirements-clarification-blocked`.
+
+Unknown/multiple/unmapped exits, mismatched consumer objects, closed-question
+drift, confirmation/digest drift, confirmed-payload/live-content drift,
+invocation/resume mismatch, or stale active-task linkage fail closed.
+
 ## Extension Version Manifest
 
 `trellis/guru-team-extension.json` defines the reusable Guru Team extension

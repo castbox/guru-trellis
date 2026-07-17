@@ -131,9 +131,32 @@ repo/number/identity/URL/open-state/update-time facts recomputed from the one
 duplicate search result without a second search/re-read, and that `blocked` is
 valid exactly when the AI Review Gate is blocked. Public examples must not
 imply candidate fields or Gate/exit pairs are caller-trusted.
-They also identify `guru-clarify-requirements` as the existing Phase 0 workflow
-route rather than an active #113 package, document source-specific task/GitHub/
-Git deep-read locators, structured no-raw-payload persistence, and field-specific
+They also identify active semantic `guru-clarify-requirements` as the only
+`context_ready` consumer. Public docs describe its initial/active-task/
+standalone entry coverage, repository-answerable-before-user-question rule,
+one-question loop, exact action/proposal confirmation, AI-owned GitHub mutation
+boundary, stdout-only pre-task result, no dedicated clarification artifact,
+schema `guru-requirements-clarification-1.0`, record/check runtime commands,
+and exits `clear` / `needs_context` / `refresh_context` / `new_task` /
+`blocked` with unique staged consumers. They must state that successful GitHub
+mutation returns `refresh_context`, issue creation belongs to #112, and `clear`
+uses the caller-aware `guru-requirements-clear-router`: initial/draft still
+targets the staged #114 wording route, active-task resumes planning or the
+exact interrupted phase, and standalone returns to its caller. Docs also state
+that `answered` requires checked evidence, every question id participates in
+the reducer lifecycle, and confirmed GitHub payload bytes equal mutation/live
+content. For active tasks they must state that `clear`/`new_task` requires a
+non-empty terminal proposal set and every five-class scope classification,
+regardless of origin, requires exact user-decision evidence; every scope classification
+has live GitHub authority and one exact structured
+`issue-scope-ledger.json.scope_decisions[]` trail binding planning/review/re-entry
+evidence; planning evidence must pass the complete shared schema 1.2 validator
+rather than a hash/placeholder check; GitHub authority mutation returns
+`refresh_context`; context time must not predate authority time, the task update
+binds that digest without a second refresh, and mechanism dispositions require
+no confirmation/trail/mutation before exact progression or a #112 side-effect-free new-task
+draft. Docs also document source-specific task/GitHub/Git deep-read
+locators, structured no-raw-payload persistence, and field-specific
 validation. Workflow and stop route markers must
 be described as validator-resolved target declarations, not new Skill packages.
 Refresh documentation must state that record/check compare caller-authored

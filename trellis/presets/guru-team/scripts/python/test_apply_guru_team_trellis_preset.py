@@ -386,6 +386,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 "codex",
                 "claude",
                 "cursor",
+                "shared",
+                "codex",
+                "claude",
+                "cursor",
             ],
         )
 
@@ -401,6 +405,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn(Path("scripts/bash/preview-change-context-history.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/record-context-discovery.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-context-discovery.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/record-requirements-clarification.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-requirements-clarification.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/resolve-human-artifacts.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/record-subagent-liveness-event.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-subagent-liveness.sh"), preset.MANAGED_ASSET_PATHS)
@@ -615,7 +621,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 79)
+        self.assertEqual(len(managed_assets), 81)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -871,6 +877,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("get_context.py --mode packages", verifier)
         self.assertIn("task.py current --source", verifier)
         self.assertIn("Unexpected .new/.bak sidecars after preview, switch, update, and preset reapply", verifier)
+        self.assertIn('"id":"guru-requirements-clear-router"', verifier)
+        self.assertNotIn(
+            '"exit":"clear","consumer":{"kind":"workflow","id":"guru-review-contract-wording"}',
+            verifier,
+        )
+        self.assertIn('"resume_target": "guru-review-contract-wording"', verifier)
         self.assertIn("verify_installed_closeout.py", verifier)
         self.assertIn("--case initial", verifier)
         self.assertIn("--case after-update", verifier)
@@ -1135,7 +1147,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.11")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.12")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         self.assertIn("agent-assignment.json", public_api["artifact_contracts"])
@@ -1150,6 +1162,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("preview-change-context-history", public_api["companion_scripts"])
         self.assertIn("record-context-discovery", public_api["companion_scripts"])
         self.assertIn("check-context-discovery", public_api["companion_scripts"])
+        self.assertIn("record-requirements-clarification", public_api["companion_scripts"])
+        self.assertIn("check-requirements-clarification", public_api["companion_scripts"])
         self.assertEqual(
             public_api["skill_runtime"],
             {
@@ -1161,10 +1175,14 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("task-commit-plans/*.json", public_api["artifact_contracts"])
         self.assertEqual(
             public_api["skill_contracts"]["active_skill_ids"],
-            ["guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"],
+            ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"],
         )
         self.assertIn(
             "guru-base-sync-result-1.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        self.assertIn(
+            "guru-requirements-clarification-1.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.2")

@@ -181,6 +181,70 @@ CONTEXT_REFRESHABLE_LIVE_ERRORS = frozenset({
     "reviewed_content_stale",
     "task_branch_stale",
 })
+REQUIREMENTS_CLARIFICATION_SKILL_ID = "guru-clarify-requirements"
+REQUIREMENTS_CLARIFICATION_SCHEMA_VERSION = "1.0"
+REQUIREMENTS_CLARIFICATION_SCHEMA_ID = (
+    "https://github.com/castbox/guru-trellis/schemas/"
+    "guru-requirements-clarification-1.0.json"
+)
+REQUIREMENTS_CLARIFICATION_TOP_LEVEL_KEYS = {
+    "schema_version", "skill_id", "generated_at", "mode", "typed_exit",
+    "invocation_context", "review_target", "context_evidence",
+    "confirmed_facts", "repository_answerable_questions",
+    "clarification_rounds", "open_questions", "scope_proposals",
+    "source_actions", "human_confirmation", "mutation_results",
+    "active_task_evidence", "ai_review_gate", "affected_contracts",
+    "content_identity", "reason", "consumer", "error",
+}
+REQUIREMENTS_CLARIFICATION_CONSUMERS = {
+    "clear": {"kind": "workflow", "id": "guru-requirements-clear-router"},
+    "needs_context": {"kind": "skill", "id": "guru-discover-change-context"},
+    "refresh_context": {"kind": "skill", "id": "guru-sync-base"},
+    "new_task": {"kind": "workflow", "id": "guru-full-task-intake-chain"},
+    "blocked": {"kind": "stop", "id": "requirements-clarification-blocked"},
+}
+REQUIREMENTS_CLARIFICATION_RESUME_TARGETS = {
+    "initial_issue": {"guru-review-contract-wording"},
+    "proposed_draft": {"guru-review-contract-wording"},
+    "standalone_review": {"guru-standalone-caller"},
+    "active_task_scope_change": {
+        "guru-active-task-planning-review",
+        "guru-resume-requirement-exploration",
+        "guru-resume-implementation",
+        "guru-resume-phase2-check",
+        "guru-resume-spec-evaluation",
+        "guru-resume-task-commit",
+        "guru-resume-branch-review",
+    },
+}
+REQUIREMENTS_CLARIFICATION_ACTION_KINDS = {
+    "none", "issue_comment", "issue_body_edit", "proposed_draft_update",
+    "new_issue_draft", "active_task_scope_update",
+}
+REQUIREMENTS_CLARIFICATION_REENTRY_OWNERS = {
+    "guru-approve-task-plan", "guru-check-task", "guru-review-branch",
+}
+REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_PAYLOAD_FIELDS = (
+    "github_authority_facts_sha256", "ledger", "planning_documents",
+    "stale_downstream_evidence", "review_evidence", "decision_trail",
+    "reentry_owners",
+)
+REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_CLASSIFICATION_DECISIONS = {
+    "accepted_current", "related", "followup", "new_task", "out_of_scope",
+}
+REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_MECHANISM_DECISIONS = {
+    "mechanism_removed", "mechanism_replaced",
+}
+REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_TERMINAL_DECISIONS = (
+    REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_CLASSIFICATION_DECISIONS
+    | REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_MECHANISM_DECISIONS
+)
+REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_NON_CURRENT_DECISIONS = {
+    "related", "followup", "new_task", "out_of_scope",
+}
+REQUIREMENTS_CLARIFICATION_REFRESH_ACTION_KINDS = {
+    "issue_comment", "issue_body_edit", "proposed_draft_update",
+}
 TASK_COMMIT_PLAN_SCHEMA_VERSION = "1.0"
 TASK_COMMIT_PLAN_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json"
 TASK_COMMIT_PLAN_DIR = "task-commit-plans"
@@ -8273,6 +8337,7 @@ def validate_planning_approval(
         errors.append("planning-approval.json 缺少 dirty_paths 数组。")
     reviewed = payload.get("reviewed_artifacts")
     approved_alias = payload.get("approved_artifacts")
+    normalized_reviewed: list[Any] = []
     if not isinstance(reviewed, list) or not reviewed:
         errors.append("planning-approval.json 缺少 reviewed_artifacts。")
         reviewed = []
@@ -8302,6 +8367,10 @@ def validate_planning_approval(
                 errors.append(f"planning-approval.json 未在 approved_artifacts alias 记录 {name}。")
         for item in normalized_alias:
             errors.extend(digest_errors(root, item, "planning approval approved_artifacts"))
+        if normalized_alias != normalized_reviewed:
+            errors.append(
+                "planning-approval.json approved_artifacts alias 必须与 reviewed_artifacts 完全一致。"
+            )
     else:
         # Old artifacts with only approved_artifacts are intentionally blocked
         # by schema/source checks above; this branch keeps error output focused.
@@ -19076,6 +19145,1586 @@ def cmd_check_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def requirements_clarification_schema(root: Path) -> dict[str, Any]:
+    candidates = [
+        root / ".trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+        root / "trellis/skills/guru-team/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json",
+    ]
+    runtime_path = Path(__file__).resolve()
+    if len(runtime_path.parents) > 4:
+        candidates.append(
+            runtime_path.parents[4]
+            / "skills/guru-team/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json"
+        )
+    schema_path = next(
+        (path for path in candidates if path.is_file() and not path.is_symlink()),
+        None,
+    )
+    if schema_path is None:
+        raise WorkflowError(
+            "Requirements clarification schema is missing from the compatible Guru Team runtime.",
+            exit_code=2,
+            payload={"error_codes": ["requirements_clarification_schema_unavailable"]},
+        )
+    errors: list[str] = []
+    schema = skill_read_json(schema_path, "requirements clarification schema", errors)
+    if (
+        errors
+        or schema is None
+        or schema.get("$schema") != SKILL_SCHEMA_DIALECT
+        or schema.get("$id") != REQUIREMENTS_CLARIFICATION_SCHEMA_ID
+    ):
+        raise WorkflowError(
+            "Requirements clarification schema is incompatible.",
+            exit_code=2,
+            payload={"error_codes": ["requirements_clarification_schema_invalid"]},
+        )
+    return schema
+
+
+def requirements_clarification_payload_from_args(
+    root: Path,
+    args: argparse.Namespace,
+) -> tuple[dict[str, Any], Path | None]:
+    input_value = getattr(args, "input", None)
+    if not input_value:
+        raise WorkflowError("requirements clarification requires --input.", exit_code=2)
+    if input_value == "-":
+        raw = sys.stdin.read()
+    else:
+        input_path = Path(input_value)
+        if not input_path.is_absolute():
+            input_path = root / input_path
+        try:
+            raw = input_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as exc:
+            raise WorkflowError("requirements clarification input is unreadable.", exit_code=2) from exc
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise WorkflowError("requirements clarification input is invalid JSON.", exit_code=2) from exc
+    if not isinstance(payload, dict):
+        raise WorkflowError("requirements clarification input root must be an object.", exit_code=2)
+
+    task_dir: Path | None = None
+    task_value = getattr(args, "task", None)
+    invocation = payload.get("invocation_context")
+    if not task_value and isinstance(invocation, dict):
+        task_value = invocation.get("task_locator")
+    if task_value:
+        task_dir = context_active_task_dir(root, str(task_value))
+    return payload, task_dir
+
+
+def requirements_clarification_review_target_projection(target: Any) -> dict[str, Any] | None:
+    if not isinstance(target, dict):
+        return None
+    fields = (
+        "kind", "repo", "issue_number", "url", "state", "updated_at",
+        "body_sha256",
+    )
+    if any(field not in target for field in fields):
+        return None
+    return {field: copy.deepcopy(target[field]) for field in fields}
+
+
+def requirements_clarification_proposal_projection(proposal: Any) -> dict[str, Any] | None:
+    if not isinstance(proposal, dict):
+        return None
+    projection = copy.deepcopy(proposal)
+    projection.pop("proposal_digest", None)
+    projection.pop("confirmation_ref", None)
+    return projection
+
+
+def requirements_clarification_action_projection(action: Any) -> dict[str, Any] | None:
+    if not isinstance(action, dict):
+        return None
+    fields = (
+        "action_id", "kind", "target", "payload", "preimage_sha256",
+        "payload_sha256",
+    )
+    if any(field not in action for field in fields):
+        return None
+    return {field: copy.deepcopy(action[field]) for field in fields}
+
+
+def requirements_clarification_active_task_payload_projection(
+    evidence: Any,
+) -> dict[str, Any] | None:
+    if not isinstance(evidence, dict) or any(
+        field not in evidence for field in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_PAYLOAD_FIELDS
+    ):
+        return None
+    return {
+        field: copy.deepcopy(evidence[field])
+        for field in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_PAYLOAD_FIELDS
+    }
+
+
+def requirements_clarification_mutation_projection(result: Any) -> dict[str, Any] | None:
+    if not isinstance(result, dict):
+        return None
+    projection = copy.deepcopy(result)
+    projection.pop("facts_sha256", None)
+    return projection
+
+
+def requirements_clarification_content_identity(payload: dict[str, Any]) -> dict[str, str]:
+    actions = payload.get("source_actions") if isinstance(payload.get("source_actions"), list) else []
+    content_projection = {
+        "confirmed_facts": payload.get("confirmed_facts"),
+        "repository_answerable_questions": payload.get("repository_answerable_questions"),
+        "clarification_rounds": payload.get("clarification_rounds"),
+        "open_questions": payload.get("open_questions"),
+        "affected_contracts": payload.get("affected_contracts"),
+        "reason": payload.get("reason"),
+    }
+    unsigned_result = copy.deepcopy(payload)
+    unsigned_result.pop("content_identity", None)
+    return {
+        "target_sha256": context_digest(payload.get("review_target")),
+        "content_sha256": context_digest(content_projection),
+        "context_sha256": context_digest(payload.get("context_evidence")),
+        "scope_sha256": context_digest(payload.get("scope_proposals")),
+        "action_sha256": context_digest(actions),
+        "payload_sha256": context_digest([
+            action.get("payload") if isinstance(action, dict) else None
+            for action in actions
+        ]),
+        "result_sha256": context_digest(unsigned_result),
+    }
+
+
+def derive_requirements_clarification_result(payload: dict[str, Any]) -> dict[str, Any]:
+    result = copy.deepcopy(payload)
+    result["schema_version"] = REQUIREMENTS_CLARIFICATION_SCHEMA_VERSION
+    result["skill_id"] = REQUIREMENTS_CLARIFICATION_SKILL_ID
+    target = result.get("review_target")
+    projection = requirements_clarification_review_target_projection(target)
+    if isinstance(target, dict) and projection is not None:
+        target["facts_sha256"] = context_digest(projection)
+    proposals = result.get("scope_proposals")
+    if isinstance(proposals, list):
+        for proposal in proposals:
+            projection = requirements_clarification_proposal_projection(proposal)
+            if isinstance(proposal, dict) and projection is not None:
+                proposal["proposal_digest"] = context_digest(projection)
+    actions = result.get("source_actions")
+    if isinstance(actions, list):
+        for action in actions:
+            if not isinstance(action, dict):
+                continue
+            payload_value = action.get("payload")
+            action["payload_sha256"] = (
+                context_digest(payload_value) if isinstance(payload_value, dict) else None
+            )
+            projection = requirements_clarification_action_projection(action)
+            if projection is not None:
+                action["action_digest"] = context_digest(projection)
+    mutations = result.get("mutation_results")
+    if isinstance(mutations, list):
+        for mutation in mutations:
+            projection = requirements_clarification_mutation_projection(mutation)
+            if isinstance(mutation, dict) and projection is not None:
+                mutation["facts_sha256"] = context_digest(projection)
+    result["content_identity"] = requirements_clarification_content_identity(result)
+    return result
+
+
+def requirements_clarification_is_sha256(value: Any) -> bool:
+    return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
+
+
+def requirements_clarification_nonempty(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and bool(value.strip())
+        and "\x00" not in value
+        and not any(
+            (ord(character) < 32 and character not in "\t\n\r")
+            or ord(character) == 127
+            for character in value
+        )
+    )
+
+
+def requirements_clarification_confirmation_covers_actions(
+    confirmation: Any,
+    action_by_id: dict[str, dict[str, Any]],
+    required_action_ids: set[str],
+) -> bool:
+    if not isinstance(confirmation, dict):
+        return False
+    confirmed_actions = confirmation.get("confirmed_actions")
+    if (
+        confirmation.get("status") != "confirmed"
+        or confirmation.get("confirmation_kind")
+        not in {"exact_source_action", "exact_source_action_and_scope"}
+        or not isinstance(confirmed_actions, list)
+        or any(
+            not isinstance(action_id, str) or action_id not in action_by_id
+            for action_id in confirmed_actions
+        )
+        or not required_action_ids.issubset(set(confirmed_actions))
+    ):
+        return False
+    expected_digest = context_digest([
+        action_by_id[action_id].get("action_digest")
+        for action_id in confirmed_actions
+    ])
+    return confirmation.get("action_digest") == expected_digest
+
+
+def requirements_clarification_active_task_action_confirmation_errors(
+    payload: dict[str, Any],
+) -> list[str]:
+    invocation = payload.get("invocation_context")
+    if not isinstance(invocation, dict) or invocation.get("kind") != "active_task_scope_change":
+        return []
+    proposals = payload.get("scope_proposals")
+    classification_proposals = [
+        proposal for proposal in proposals
+        if isinstance(proposals, list)
+        and isinstance(proposal, dict)
+        and proposal.get("decision")
+        in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_CLASSIFICATION_DECISIONS
+    ] if isinstance(proposals, list) else []
+    if not classification_proposals:
+        return []
+    actions = payload.get("source_actions")
+    action_by_id = {
+        action["action_id"]: action
+        for action in actions
+        if isinstance(actions, list)
+        and isinstance(action, dict)
+        and isinstance(action.get("action_id"), str)
+    } if isinstance(actions, list) else {}
+    task_update_action_ids = {
+        action_id for action_id, action in action_by_id.items()
+        if action.get("kind") == "active_task_scope_update"
+    }
+    if not task_update_action_ids:
+        return []
+    confirmation = payload.get("human_confirmation")
+    expected_proposal_digests = [
+        proposal.get("proposal_digest") for proposal in classification_proposals
+    ]
+    if (
+        not isinstance(confirmation, dict)
+        or confirmation.get("confirmation_kind") != "exact_source_action_and_scope"
+        or confirmation.get("proposal_digests") != expected_proposal_digests
+        or not requirements_clarification_confirmation_covers_actions(
+            confirmation,
+            action_by_id,
+            task_update_action_ids,
+        )
+    ):
+        return ["active_task_scope_update_requires_exact_action_confirmation"]
+    return []
+
+
+def requirements_clarification_structural_errors(
+    root: Path,
+    payload: dict[str, Any],
+    task_dir: Path | None,
+) -> list[str]:
+    errors: list[str] = []
+    schema_errors = skill_json_schema_validation_errors(
+        payload,
+        requirements_clarification_schema(root),
+        "requirements clarification result",
+    )
+    if schema_errors:
+        errors.append("requirements_clarification_schema_validation_failed")
+    if set(payload) != REQUIREMENTS_CLARIFICATION_TOP_LEVEL_KEYS:
+        errors.append("invalid_requirements_clarification_top_level")
+    if payload.get("schema_version") != REQUIREMENTS_CLARIFICATION_SCHEMA_VERSION:
+        errors.append("invalid_requirements_clarification_schema_version")
+    if payload.get("skill_id") != REQUIREMENTS_CLARIFICATION_SKILL_ID:
+        errors.append("invalid_requirements_clarification_skill_id")
+    if payload.get("mode") not in {"workflow", "standalone"}:
+        errors.append("invalid_requirements_clarification_mode")
+    typed_exit = payload.get("typed_exit")
+    if typed_exit not in REQUIREMENTS_CLARIFICATION_CONSUMERS:
+        errors.append("invalid_requirements_clarification_typed_exit")
+    elif payload.get("consumer") != REQUIREMENTS_CLARIFICATION_CONSUMERS[typed_exit]:
+        errors.append("requirements_clarification_consumer_mismatch")
+    try:
+        parse_iso_datetime(payload.get("generated_at"), "requirements clarification generated_at")
+    except WorkflowError:
+        errors.append("invalid_requirements_clarification_generated_at")
+
+    invocation = payload.get("invocation_context")
+    invocation_kind = invocation.get("kind") if isinstance(invocation, dict) else None
+    if (
+        not isinstance(invocation, dict)
+        or set(invocation) != {"kind", "caller", "task_locator", "resume_target"}
+        or invocation_kind not in {"initial_issue", "proposed_draft", "active_task_scope_change", "standalone_review"}
+        or not requirements_clarification_nonempty(invocation.get("caller"))
+    ):
+        errors.append("invalid_requirements_clarification_invocation")
+    elif invocation.get("resume_target") not in REQUIREMENTS_CLARIFICATION_RESUME_TARGETS[invocation_kind]:
+        errors.append("requirements_clarification_resume_target_mismatch")
+    if invocation_kind == "active_task_scope_change":
+        if task_dir is None or not isinstance(invocation.get("task_locator"), str):
+            errors.append("active_task_scope_change_requires_task")
+    elif task_dir is not None or (isinstance(invocation, dict) and invocation.get("task_locator") is not None):
+        errors.append("non_task_clarification_forbids_task")
+
+    target = payload.get("review_target")
+    target_projection = requirements_clarification_review_target_projection(target)
+    if (
+        not isinstance(target, dict)
+        or set(target) != {"kind", "repo", "issue_number", "url", "state", "updated_at", "body_sha256", "facts_sha256"}
+        or target.get("kind") not in {"issue", "draft"}
+        or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", str(target.get("repo") or ""))
+        or not requirements_clarification_is_sha256(target.get("body_sha256"))
+        or target_projection is None
+        or target.get("facts_sha256") != context_digest(target_projection)
+    ):
+        errors.append("invalid_requirements_clarification_target")
+    elif target.get("kind") == "draft":
+        if any(target.get(field) is not None for field in ("issue_number", "url", "updated_at")) or target.get("state") != "draft":
+            errors.append("invalid_requirements_clarification_draft_target")
+    elif (
+        not isinstance(target.get("issue_number"), int)
+        or target["issue_number"] <= 0
+        or target.get("url") != f"https://github.com/{target['repo']}/issues/{target['issue_number']}"
+        or target.get("state") not in {"open", "closed"}
+        or not requirements_clarification_nonempty(target.get("updated_at"))
+    ):
+        errors.append("invalid_requirements_clarification_issue_target")
+
+    context = payload.get("context_evidence")
+    if (
+        not isinstance(context, dict)
+        or set(context) != {"status", "schema_id", "snapshot_sha256", "evidence_refs", "missing_reason"}
+        or context.get("status") not in {"current", "missing", "stale"}
+        or not isinstance(context.get("evidence_refs"), list)
+    ):
+        errors.append("invalid_requirements_clarification_context")
+    elif context.get("status") == "current":
+        if (
+            context.get("schema_id") != "guru-context-discovery-1.0"
+            or not requirements_clarification_is_sha256(context.get("snapshot_sha256"))
+            or not context.get("evidence_refs")
+            or context.get("missing_reason") is not None
+        ):
+            errors.append("invalid_current_requirements_context")
+    elif context.get("status") == "missing":
+        if (
+            context.get("schema_id") is not None
+            or context.get("snapshot_sha256") is not None
+            or not context.get("evidence_refs")
+            or not requirements_clarification_nonempty(context.get("missing_reason"))
+        ):
+            errors.append("invalid_missing_requirements_context")
+    elif (
+        context.get("schema_id") != "guru-context-discovery-1.0"
+        or not requirements_clarification_is_sha256(context.get("snapshot_sha256"))
+        or not context.get("evidence_refs")
+        or not requirements_clarification_nonempty(context.get("missing_reason"))
+    ):
+        errors.append("invalid_stale_requirements_context")
+    repository_questions = payload.get("repository_answerable_questions")
+    if not isinstance(repository_questions, list):
+        errors.append("invalid_repository_answerable_questions")
+        repository_questions = []
+    repository_question_ids: list[Any] = []
+    for question in repository_questions:
+        if not isinstance(question, dict):
+            errors.append("invalid_repository_answerable_question")
+            continue
+        repository_question_ids.append(question.get("question_id"))
+        status = question.get("status")
+        evidence_refs = question.get("evidence_refs")
+        if status not in {"pending", "answered", "not_answerable"} or not isinstance(evidence_refs, list):
+            errors.append("invalid_repository_answerable_question")
+        elif status == "answered" and (
+            not requirements_clarification_nonempty(question.get("answer_summary"))
+            or not evidence_refs
+        ):
+            errors.append("answered_repository_question_requires_evidence")
+        elif status == "not_answerable" and (not evidence_refs or not requirements_clarification_nonempty(question.get("missing_reason"))):
+            errors.append("not_answerable_question_requires_evidence")
+    if len(repository_question_ids) != len(set(repository_question_ids)):
+        errors.append("duplicate_repository_question_id")
+
+    rounds = payload.get("clarification_rounds")
+    if not isinstance(rounds, list):
+        errors.append("invalid_clarification_rounds")
+        rounds = []
+    if rounds and any(question.get("status") == "pending" for question in repository_questions if isinstance(question, dict)):
+        errors.append("repository_questions_must_precede_user_questions")
+    round_ids: list[Any] = []
+    user_question_ids: list[Any] = []
+    opened: set[str] = set()
+    closed: set[str] = set()
+    current_open: set[str] = set()
+    for round_item in rounds:
+        if not isinstance(round_item, dict):
+            errors.append("invalid_clarification_round")
+            continue
+        round_ids.append(round_item.get("round_id"))
+        user_question_ids.append(round_item.get("question_id"))
+        opened_ids = round_item.get("opened_question_ids")
+        closed_ids = round_item.get("closed_question_ids")
+        if not isinstance(opened_ids, list) or not isinstance(closed_ids, list):
+            errors.append("invalid_clarification_question_transitions")
+            continue
+        opened_this_round = {value for value in opened_ids if isinstance(value, str)}
+        closed_this_round = {value for value in closed_ids if isinstance(value, str)}
+        question_id = round_item.get("question_id")
+        if question_id not in current_open | opened_this_round:
+            errors.append("clarification_question_not_opened")
+        if round_item.get("answer_status") == "partial" and closed_ids:
+            errors.append("partial_answer_cannot_close_questions")
+        if opened_this_round & closed:
+            errors.append("clarification_question_reopened_after_closure")
+        if closed_this_round - (current_open | opened_this_round):
+            errors.append("clarification_question_closes_unopened")
+        opened.update(opened_this_round)
+        closed.update(closed_this_round)
+        current_open.update(opened_this_round)
+        current_open.difference_update(closed_this_round)
+        atomic_id = round_item.get("atomic_group_id")
+        atomic_reason = round_item.get("atomic_group_reason")
+        if (atomic_id is None) != (atomic_reason is None):
+            errors.append("invalid_atomic_group")
+    if len(round_ids) != len(set(round_ids)) or len(user_question_ids) != len(set(user_question_ids)):
+        errors.append("duplicate_clarification_round_or_question")
+    open_questions = payload.get("open_questions")
+    if not isinstance(open_questions, list) or len(open_questions) != len(set(open_questions)):
+        errors.append("invalid_open_questions")
+        open_questions = []
+    if set(open_questions) & closed:
+        errors.append("closed_question_remains_open")
+    if set(open_questions) != current_open or current_open != opened - closed:
+        errors.append("open_questions_state_mismatch")
+
+    proposals = payload.get("scope_proposals")
+    if not isinstance(proposals, list):
+        errors.append("invalid_scope_proposals")
+        proposals = []
+    proposal_ids: list[Any] = []
+    proposal_by_id: dict[str, dict[str, Any]] = {}
+    for proposal in proposals:
+        projection = requirements_clarification_proposal_projection(proposal)
+        if not isinstance(proposal, dict) or projection is None:
+            errors.append("invalid_scope_proposal")
+            continue
+        proposal_id = proposal.get("proposal_id")
+        proposal_ids.append(proposal_id)
+        if isinstance(proposal_id, str):
+            proposal_by_id[proposal_id] = proposal
+        if proposal.get("proposal_digest") != context_digest(projection):
+            errors.append("scope_proposal_digest_mismatch")
+        decision = proposal.get("decision")
+        optional_mechanism = proposal.get("optional_mechanism_origin") is True
+        if decision in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_MECHANISM_DECISIONS:
+            if not optional_mechanism:
+                errors.append("mechanism_disposition_requires_optional_mechanism_origin")
+            if proposal.get("confirmation_ref") is not None:
+                errors.append("mechanism_disposition_forbids_confirmation")
+        elif (
+            optional_mechanism
+            and decision
+            in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_CLASSIFICATION_DECISIONS
+        ):
+            errors.append("optional_mechanism_requires_mechanism_disposition")
+            if decision == "accepted_current":
+                errors.append("optional_mechanism_cannot_expand_scope")
+    if len(proposal_ids) != len(set(proposal_ids)):
+        errors.append("duplicate_scope_proposal_id")
+
+    actions = payload.get("source_actions")
+    if not isinstance(actions, list) or not actions:
+        errors.append("invalid_source_actions")
+        actions = []
+    action_ids: list[Any] = []
+    action_by_id: dict[str, dict[str, Any]] = {}
+    for action in actions:
+        projection = requirements_clarification_action_projection(action)
+        if not isinstance(action, dict) or projection is None or action.get("kind") not in REQUIREMENTS_CLARIFICATION_ACTION_KINDS:
+            errors.append("invalid_source_action")
+            continue
+        action_id = action.get("action_id")
+        action_ids.append(action_id)
+        if isinstance(action_id, str):
+            action_by_id[action_id] = action
+        expected_payload_sha = context_digest(action.get("payload")) if isinstance(action.get("payload"), dict) else None
+        if action.get("payload_sha256") != expected_payload_sha or action.get("action_digest") != context_digest(projection):
+            errors.append("source_action_digest_mismatch")
+        action_kind = action.get("kind")
+        action_target = action.get("target")
+        action_payload = action.get("payload")
+        action_status = action.get("status")
+        if action_kind == "none":
+            if (
+                any(action.get(field) is not None for field in ("target", "payload", "preimage_sha256", "mutation_evidence"))
+                or action_status != "not_required"
+            ):
+                errors.append("none_action_shape_invalid")
+        elif action_kind in {"issue_comment", "issue_body_edit"}:
+            expected_target = {
+                "repo": target.get("repo") if isinstance(target, dict) else None,
+                "issue_number": target.get("issue_number") if isinstance(target, dict) else None,
+            }
+            if (
+                not isinstance(target, dict)
+                or target.get("kind") != "issue"
+                or action_target != expected_target
+                or not isinstance(action_payload, dict)
+                or set(action_payload) != {"body"}
+                or not requirements_clarification_nonempty(action_payload.get("body"))
+                or action.get("preimage_sha256") != target.get("body_sha256")
+                or action_status not in {"pending", "executed", "validated"}
+            ):
+                errors.append("github_source_action_shape_invalid")
+            if action_status == "pending" and action.get("mutation_evidence") is not None:
+                errors.append("pending_source_action_has_mutation_evidence")
+            if (
+                action_status in {"executed", "validated"}
+                and action.get("mutation_evidence") != {"source": "ai-reviewed-gh"}
+            ):
+                errors.append("executed_source_action_requires_mutation_evidence")
+        elif action_kind in {"proposed_draft_update", "new_issue_draft"}:
+            if (
+                not isinstance(action_target, dict)
+                or action_target != {"repo": target.get("repo") if isinstance(target, dict) else None}
+                or not isinstance(action_payload, dict)
+                or set(action_payload) != {"title", "body"}
+                or not all(requirements_clarification_nonempty(action_payload.get(field)) for field in ("title", "body"))
+                or action.get("mutation_evidence") is not None
+            ):
+                errors.append("draft_source_action_shape_invalid")
+            if action_kind == "proposed_draft_update" and (
+                not isinstance(target, dict)
+                or target.get("kind") != "draft"
+                or not isinstance(action_payload, dict)
+                or action_status != "validated"
+                or hashlib.sha256(action_payload.get("body", "").encode("utf-8")).hexdigest()
+                != target.get("body_sha256")
+            ):
+                errors.append("proposed_draft_update_binding_invalid")
+            if action_kind == "new_issue_draft" and (
+                action.get("preimage_sha256") is not None or action_status != "draft_ready"
+            ):
+                errors.append("new_issue_draft_binding_invalid")
+        elif action_kind == "active_task_scope_update":
+            expected_locator = (
+                task_dir.relative_to(root).as_posix() if task_dir is not None else None
+            )
+            expected_payload = requirements_clarification_active_task_payload_projection(
+                payload.get("active_task_evidence")
+            )
+            if (
+                invocation_kind != "active_task_scope_change"
+                or action_target != {"task_locator": expected_locator}
+                or action_payload != expected_payload
+                or not requirements_clarification_is_sha256(action.get("preimage_sha256"))
+                or action_status not in {"executed", "validated"}
+                or action.get("mutation_evidence")
+                != {"source": "confirmed-task-local-update"}
+            ):
+                errors.append("active_task_scope_action_binding_invalid")
+    if len(action_ids) != len(set(action_ids)):
+        errors.append("duplicate_source_action_id")
+
+    confirmation = payload.get("human_confirmation")
+    if not isinstance(confirmation, dict):
+        errors.append("invalid_requirements_confirmation")
+        confirmation = {}
+    confirmation_status = confirmation.get("status")
+    proposal_digests = confirmation.get("proposal_digests")
+    confirmed_actions = confirmation.get("confirmed_actions")
+    if not isinstance(proposal_digests, list) or not isinstance(confirmed_actions, list):
+        errors.append("invalid_requirements_confirmation")
+        proposal_digests = []
+        confirmed_actions = []
+    if confirmation_status == "not_required":
+        if (
+            confirmation.get("confirmation_kind") != "none"
+            or confirmation.get("action_digest") is not None
+            or proposal_digests
+            or confirmed_actions
+            or confirmation.get("confirmer") is not None
+            or confirmation.get("confirmed_at") is not None
+        ):
+            errors.append("not_required_confirmation_shape_invalid")
+    elif confirmation_status in {"confirmed", "refused"}:
+        if confirmation.get("confirmation_kind") not in {"exact_source_action", "exact_scope_proposal", "exact_source_action_and_scope"}:
+            errors.append("generic_confirmation_forbidden")
+        if not requirements_clarification_nonempty(confirmation.get("confirmer")) or not requirements_clarification_nonempty(confirmation.get("confirmed_at")):
+            errors.append("exact_confirmation_identity_required")
+        if confirmed_actions and confirmation.get("action_digest") != context_digest([
+            action_by_id[action_id].get("action_digest")
+            for action_id in confirmed_actions if action_id in action_by_id
+        ]):
+            errors.append("confirmation_action_digest_mismatch")
+        if any(action_id not in action_by_id for action_id in confirmed_actions):
+            errors.append("confirmation_action_unknown")
+        known_proposal_digests = {
+            proposal.get("proposal_digest")
+            for proposal in proposals if isinstance(proposal, dict)
+        }
+        if any(digest not in known_proposal_digests for digest in proposal_digests):
+            errors.append("confirmation_proposal_unknown")
+        if confirmed_actions and confirmation.get("confirmation_kind") not in {
+            "exact_source_action", "exact_source_action_and_scope",
+        }:
+            errors.append("confirmation_kind_action_mismatch")
+        if proposal_digests and confirmation.get("confirmation_kind") not in {
+            "exact_scope_proposal", "exact_source_action_and_scope",
+        }:
+            errors.append("confirmation_kind_proposal_mismatch")
+    else:
+        errors.append("invalid_requirements_confirmation_status")
+    for proposal in proposals:
+        if not isinstance(proposal, dict):
+            continue
+        if proposal.get("origin_requirement_status") == "unconfirmed_expansion" and proposal.get("decision") == "accepted_current":
+            if (
+                confirmation_status != "confirmed"
+                or proposal.get("proposal_digest") not in proposal_digests
+                or proposal.get("confirmation_ref") is None
+            ):
+                errors.append("unconfirmed_expansion_requires_exact_confirmation")
+        if (
+            invocation_kind == "active_task_scope_change"
+            and proposal.get("origin_requirement_status") == "unconfirmed_expansion"
+            and proposal.get("decision")
+            in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_NON_CURRENT_DECISIONS
+            and (
+                confirmation_status != "confirmed"
+                or proposal.get("proposal_digest") not in proposal_digests
+                or proposal.get("confirmation_ref") is None
+            )
+        ):
+            errors.append("unconfirmed_non_current_decision_requires_user_evidence")
+
+    mutations = payload.get("mutation_results")
+    if not isinstance(mutations, list):
+        errors.append("invalid_mutation_results")
+        mutations = []
+    mutation_ids: list[Any] = []
+    for mutation in mutations:
+        projection = requirements_clarification_mutation_projection(mutation)
+        if (
+            not isinstance(mutation, dict)
+            or projection is None
+            or set(mutation) != {
+                "action_id", "kind", "status", "url", "state", "updated_at",
+                "content_sha256", "action_digest", "facts_sha256",
+            }
+            or mutation.get("status") != "succeeded"
+            or not requirements_clarification_is_sha256(mutation.get("content_sha256"))
+            or not requirements_clarification_is_sha256(mutation.get("action_digest"))
+        ):
+            errors.append("invalid_mutation_result")
+            continue
+        mutation_ids.append(mutation.get("action_id"))
+        action = action_by_id.get(str(mutation.get("action_id")))
+        if action is None:
+            errors.append("mutation_action_binding_mismatch")
+            continue
+        if mutation.get("action_digest") != action.get("action_digest"):
+            errors.append("mutation_action_binding_mismatch")
+        elif mutation.get("kind") != action.get("kind") or action.get("status") not in {"executed", "validated"}:
+            errors.append("mutation_action_state_mismatch")
+        elif (
+            confirmation_status != "confirmed"
+            or not requirements_clarification_confirmation_covers_actions(
+                confirmation,
+                action_by_id,
+                {str(mutation.get("action_id"))},
+            )
+        ):
+            errors.append("mutation_requires_exact_action_confirmation")
+        if mutation.get("facts_sha256") != context_digest(projection):
+            errors.append("mutation_facts_digest_mismatch")
+        mutation_kind = mutation.get("kind")
+        action_payload = action.get("payload") if isinstance(action, dict) else None
+        expected_content_sha = (
+            hashlib.sha256(action_payload["body"].encode("utf-8")).hexdigest()
+            if isinstance(action_payload, dict)
+            and requirements_clarification_nonempty(action_payload.get("body"))
+            else None
+        )
+        if mutation_kind in {"issue_comment", "issue_body_edit"} and (
+            action.get("payload_sha256") != context_digest(action_payload)
+            or mutation.get("content_sha256") != expected_content_sha
+        ):
+            errors.append("mutation_confirmed_payload_mismatch")
+        if mutation_kind == "proposed_draft_update":
+            if (
+                mutation.get("url") is not None
+                or mutation.get("state") != "draft"
+                or mutation.get("updated_at") is not None
+                or mutation.get("content_sha256") != expected_content_sha
+            ):
+                errors.append("proposed_draft_mutation_result_invalid")
+        elif mutation_kind == "active_task_scope_update":
+            if (
+                mutation.get("url") is not None
+                or mutation.get("state") != "task_local"
+                or mutation.get("updated_at") is not None
+                or mutation.get("content_sha256")
+                != context_digest(payload.get("active_task_evidence"))
+            ):
+                errors.append("active_task_scope_mutation_result_invalid")
+    if len(mutation_ids) != len(set(mutation_ids)):
+        errors.append("duplicate_mutation_action_id")
+    mutation_action_ids = {
+        str(action_id) for action_id in mutation_ids if isinstance(action_id, str)
+    }
+    for action in actions:
+        if not isinstance(action, dict):
+            continue
+        if (
+            action.get("kind") in REQUIREMENTS_CLARIFICATION_REFRESH_ACTION_KINDS
+            and action.get("status") in {"executed", "validated"}
+            and action.get("action_id") not in mutation_action_ids
+        ):
+            errors.append("executed_source_action_requires_mutation_result")
+
+    accepted_current = [
+        proposal for proposal in proposals
+        if isinstance(proposal, dict) and proposal.get("decision") == "accepted_current"
+    ]
+    active_task_terminal_proposals = [
+        proposal for proposal in proposals
+        if isinstance(proposal, dict)
+        and proposal.get("decision")
+        in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_TERMINAL_DECISIONS
+    ]
+    active_task_classification_proposals = [
+        proposal for proposal in proposals
+        if isinstance(proposal, dict)
+        and proposal.get("decision")
+        in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_CLASSIFICATION_DECISIONS
+    ]
+    active_task_mechanism_proposals = [
+        proposal for proposal in proposals
+        if isinstance(proposal, dict)
+        and proposal.get("decision")
+        in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_MECHANISM_DECISIONS
+    ]
+    if invocation_kind == "active_task_scope_change" and typed_exit in {"clear", "new_task"}:
+        if not proposals or len(active_task_terminal_proposals) != len(proposals):
+            errors.append("active_task_clear_or_new_task_requires_final_scope_proposal_set")
+        if typed_exit == "new_task" and not any(
+            proposal.get("decision") == "new_task"
+            for proposal in active_task_classification_proposals
+        ):
+            errors.append("active_task_new_task_requires_new_task_classification")
+    if invocation_kind == "active_task_scope_change" and accepted_current:
+        if invocation.get("resume_target") != "guru-active-task-planning-review":
+            errors.append("active_task_current_scope_requires_planning_resume")
+        accepted_digests = {proposal.get("proposal_digest") for proposal in accepted_current}
+        if confirmation_status != "confirmed" or not accepted_digests.issubset(set(proposal_digests)):
+            errors.append("active_task_current_scope_requires_exact_confirmation")
+    if invocation_kind == "active_task_scope_change" and active_task_classification_proposals:
+        classification_proposal_digests = [
+            proposal.get("proposal_digest")
+            for proposal in active_task_classification_proposals
+        ]
+        if (
+            confirmation_status != "confirmed"
+            or confirmation.get("confirmation_kind")
+            != "exact_source_action_and_scope"
+            or proposal_digests != classification_proposal_digests
+            or any(
+                proposal.get("confirmation_ref") is None
+                for proposal in active_task_classification_proposals
+            )
+        ):
+            errors.append("active_task_final_classification_requires_exact_user_decision")
+        evidence = payload.get("active_task_evidence")
+        trail = evidence.get("decision_trail") if isinstance(evidence, dict) else None
+        requires_reentry_trail = typed_exit in {"clear", "new_task"}
+        if requires_reentry_trail and not isinstance(trail, dict):
+            errors.append("active_task_final_classification_requires_decision_trail")
+        elif requires_reentry_trail:
+            expected_decisions = [
+                {
+                    "proposal_id": proposal.get("proposal_id"),
+                    "proposal_digest": proposal.get("proposal_digest"),
+                    "decision": proposal.get("decision"),
+                    "confirmation_ref": proposal.get("confirmation_ref"),
+                }
+                for proposal in active_task_classification_proposals
+            ]
+            if trail.get("proposal_decisions") != expected_decisions:
+                errors.append("active_task_decision_trail_proposals_mismatch")
+            trail_decision = trail.get("user_decision")
+            if not isinstance(trail_decision, dict):
+                errors.append("active_task_decision_trail_user_evidence_invalid")
+            elif trail_decision != {
+                "status": confirmation_status,
+                "proposal_digests": proposal_digests,
+                "confirmer": confirmation.get("confirmer"),
+                "confirmed_at": confirmation.get("confirmed_at"),
+                "evidence_summary": confirmation.get("evidence_summary"),
+            }:
+                errors.append("active_task_decision_trail_user_evidence_mismatch")
+            if trail.get("planning_documents") != evidence.get("planning_documents"):
+                errors.append("active_task_decision_trail_planning_mismatch")
+            if trail.get("stale_downstream_evidence") != evidence.get("stale_downstream_evidence"):
+                errors.append("active_task_decision_trail_stale_evidence_mismatch")
+            if trail.get("review_evidence") != evidence.get("review_evidence"):
+                errors.append("active_task_decision_trail_review_mismatch")
+            if trail.get("reentry_owners") != evidence.get("reentry_owners"):
+                errors.append("active_task_decision_trail_reentry_mismatch")
+            if trail.get("interrupted_resume_target") != invocation.get("resume_target"):
+                errors.append("active_task_decision_trail_resume_mismatch")
+            context_before = trail.get("context_before_task_update_sha256")
+            current_context = context.get("snapshot_sha256") if isinstance(context, dict) else None
+            if context_before != current_context:
+                errors.append("active_task_decision_trail_task_update_context_mismatch")
+        elif trail is not None:
+            errors.append("active_task_decision_trail_forbidden_before_reentry")
+
+        github_action_kinds = {
+            action.get("kind") for action in actions
+            if isinstance(action, dict)
+            and action.get("kind") in {"issue_comment", "issue_body_edit"}
+        }
+        task_update_actions = [
+            action for action in actions
+            if isinstance(action, dict)
+            and action.get("kind") == "active_task_scope_update"
+        ]
+        if typed_exit == "refresh_context":
+            if not github_action_kinds:
+                errors.append("active_task_classification_refresh_requires_github_authority")
+            if task_update_actions:
+                errors.append("active_task_task_update_forbidden_before_context_refresh")
+        elif typed_exit in {"clear", "new_task"}:
+            if github_action_kinds or any(
+                isinstance(mutation, dict)
+                and mutation.get("kind") in {"issue_comment", "issue_body_edit"}
+                for mutation in mutations
+            ):
+                errors.append("active_task_reentry_forbids_github_mutation")
+            if len(task_update_actions) != 1:
+                errors.append("active_task_final_classification_requires_task_update")
+            elif task_update_actions[0].get("status") != "validated":
+                errors.append("active_task_final_classification_requires_validated_task_update")
+            elif (
+                isinstance(trail, dict)
+                and task_update_actions[0].get("preimage_sha256")
+                != trail.get("context_before_task_update_sha256")
+            ):
+                errors.append("active_task_task_update_preimage_mismatch")
+
+        errors.extend(
+            requirements_clarification_active_task_action_confirmation_errors(
+                payload
+            )
+        )
+
+    if invocation_kind == "active_task_scope_change" and active_task_mechanism_proposals:
+        if any(
+            proposal.get("confirmation_ref") is not None
+            or proposal.get("optional_mechanism_origin") is not True
+            for proposal in active_task_mechanism_proposals
+        ):
+            errors.append("active_task_mechanism_disposition_shape_invalid")
+        if not active_task_classification_proposals:
+            evidence = payload.get("active_task_evidence")
+            if confirmation_status != "not_required" or proposal_digests:
+                errors.append("active_task_mechanism_only_forbids_confirmation")
+            if not isinstance(evidence, dict):
+                errors.append("active_task_mechanism_only_requires_task_evidence")
+            elif evidence.get("decision_trail") is not None:
+                errors.append("active_task_mechanism_only_forbids_decision_trail")
+            if any(
+                isinstance(action, dict) and action.get("kind") != "none"
+                for action in actions
+            ) or mutations:
+                errors.append("active_task_mechanism_only_forbids_authority_mutation")
+
+    gate = payload.get("ai_review_gate")
+    gate_status = gate.get("status") if isinstance(gate, dict) else None
+    if (
+        not isinstance(gate, dict)
+        or gate_status not in {"passed", "blocked"}
+        or not isinstance(gate.get("reviewed_scope"), list)
+        or not gate.get("reviewed_scope")
+        or not isinstance(gate.get("load_bearing_conclusions"), list)
+        or not gate.get("load_bearing_conclusions")
+    ):
+        errors.append("invalid_requirements_ai_review_gate")
+    if (typed_exit == "blocked") != (gate_status == "blocked"):
+        errors.append("requirements_blocked_gate_exit_mismatch")
+    if gate_status == "passed" and any(
+        isinstance(finding, dict) and finding.get("status") == "open"
+        for finding in gate.get("findings", []) if isinstance(gate.get("findings"), list)
+    ):
+        errors.append("passed_requirements_gate_has_open_findings")
+
+    if invocation_kind == "active_task_scope_change":
+        if (
+            typed_exit in {"clear", "new_task"}
+            and active_task_terminal_proposals
+        ):
+            errors.extend(
+                requirements_clarification_active_task_shape_errors(
+                    root, payload, task_dir
+                )
+            )
+        elif payload.get("active_task_evidence") is not None:
+            errors.append("active_task_evidence_forbidden_before_classification_reentry")
+    elif payload.get("active_task_evidence") is not None:
+        errors.append("non_task_clarification_has_active_task_evidence")
+
+    has_new_issue_draft = any(
+        action.get("kind") == "new_issue_draft" and action.get("status") == "draft_ready"
+        for action in actions if isinstance(action, dict)
+    )
+    has_refresh_action = any(
+        action.get("kind") in REQUIREMENTS_CLARIFICATION_REFRESH_ACTION_KINDS
+        and action.get("status") in {"executed", "validated"}
+        for action in actions if isinstance(action, dict)
+    )
+    if has_new_issue_draft and typed_exit != "new_task":
+        errors.append("new_issue_draft_requires_new_task_exit")
+    if has_refresh_action and typed_exit != "refresh_context":
+        errors.append("source_action_requires_refresh_context")
+    if mutations and typed_exit != "refresh_context":
+        errors.append("mutation_results_require_refresh_context")
+    if typed_exit in {"clear", "needs_context"} and any(
+        action.get("kind") in {"proposed_draft_update", "new_issue_draft"}
+        for action in actions if isinstance(action, dict)
+    ):
+        errors.append("draft_source_action_forbidden_for_exit")
+
+    if typed_exit == "clear":
+        if open_questions:
+            errors.append("clear_requires_zero_open_questions")
+        if any(question.get("status") == "pending" for question in repository_questions if isinstance(question, dict)):
+            errors.append("clear_requires_repository_questions_resolved")
+        if not isinstance(context, dict) or context.get("status") != "current":
+            errors.append("clear_requires_current_context")
+        if any(proposal.get("decision") == "pending" for proposal in proposals if isinstance(proposal, dict)):
+            errors.append("clear_forbids_pending_scope_proposals")
+        if any(action.get("status") == "pending" for action in actions if isinstance(action, dict)):
+            errors.append("clear_forbids_pending_source_actions")
+        if any(
+            action.get("kind") in {"issue_comment", "issue_body_edit"}
+            for action in actions if isinstance(action, dict)
+        ):
+            errors.append("clear_forbids_source_mutation_actions")
+        if mutations:
+            errors.append("clear_forbids_unrefreshed_mutations")
+        if payload.get("error") is not None:
+            errors.append("clear_forbids_error")
+    elif typed_exit == "needs_context":
+        if not isinstance(context, dict) or context.get("status") != "missing":
+            errors.append("needs_context_requires_missing_context")
+    elif typed_exit == "refresh_context":
+        if not mutations and (not isinstance(context, dict) or context.get("status") != "stale"):
+            errors.append("refresh_context_requires_stale_or_mutated_authority")
+    elif typed_exit == "new_task":
+        if not any(action.get("kind") == "new_issue_draft" and action.get("status") == "draft_ready" for action in actions if isinstance(action, dict)):
+            errors.append("new_task_requires_reviewed_issue_draft")
+        if payload.get("error") is not None:
+            errors.append("new_task_forbids_error")
+    elif typed_exit == "blocked" and not isinstance(payload.get("error"), dict):
+        errors.append("blocked_requirements_requires_error")
+
+    expected_identity = requirements_clarification_content_identity(payload)
+    if payload.get("content_identity") != expected_identity:
+        errors.append("requirements_clarification_content_identity_mismatch")
+    return context_sort(errors)
+
+
+def requirements_clarification_active_task_shape_errors(
+    root: Path,
+    payload: dict[str, Any],
+    task_dir: Path | None,
+) -> list[str]:
+    evidence = payload.get("active_task_evidence")
+    if task_dir is None or not isinstance(evidence, dict):
+        return ["active_task_evidence_required"]
+    errors: list[str] = []
+    expected_locator = task_dir.relative_to(root).as_posix()
+    if evidence.get("task_locator") != expected_locator:
+        errors.append("active_task_locator_mismatch")
+    target = payload.get("review_target")
+    if not isinstance(target, dict) or evidence.get("github_authority_facts_sha256") != target.get("facts_sha256"):
+        errors.append("active_task_github_authority_mismatch")
+    ledger = evidence.get("ledger")
+    expected_ledger = f"{expected_locator}/issue-scope-ledger.json"
+    if not isinstance(ledger, dict) or ledger.get("path") != expected_ledger or not requirements_clarification_is_sha256(ledger.get("content_sha256")):
+        errors.append("active_task_ledger_binding_invalid")
+    planning = evidence.get("planning_documents")
+    expected_planning = {
+        f"{expected_locator}/prd.md",
+        f"{expected_locator}/design.md",
+        f"{expected_locator}/implement.md",
+    }
+    planning_paths = {
+        item.get("path") for item in planning if isinstance(item, dict)
+    } if isinstance(planning, list) else set()
+    if planning_paths != expected_planning or len(planning or []) != 3:
+        errors.append("active_task_planning_binding_invalid")
+    stale = evidence.get("stale_downstream_evidence")
+    if (
+        not isinstance(stale, dict)
+        or set(stale)
+        != {"planning_approval_sha256", "phase2_check_sha256", "branch_review_sha256"}
+    ):
+        errors.append("active_task_stale_evidence_invalid")
+    elif not requirements_clarification_is_sha256(stale.get("planning_approval_sha256")):
+        errors.append("active_task_planning_approval_evidence_required")
+    review = evidence.get("review_evidence")
+    branch_review_sha = stale.get("branch_review_sha256") if isinstance(stale, dict) else None
+    review_path = task_dir / "review-gate.json"
+    review_started = review_path.exists()
+    if not isinstance(review, dict) or set(review) != {"status", "artifact"}:
+        errors.append("active_task_review_evidence_invalid")
+    elif review.get("status") == "not_started":
+        if review.get("artifact") is not None or branch_review_sha is not None:
+            errors.append("active_task_review_evidence_mismatch")
+        if review_started:
+            errors.append("active_task_review_started_requires_stale")
+    elif review.get("status") == "current":
+        errors.append("active_task_review_current_forbidden_during_reentry")
+    elif review.get("status") == "stale":
+        artifact = review.get("artifact")
+        expected_review_path = f"{expected_locator}/review-gate.json"
+        if (
+            not isinstance(artifact, dict)
+            or artifact.get("path") != expected_review_path
+            or artifact.get("content_sha256") != branch_review_sha
+            or not requirements_clarification_is_sha256(branch_review_sha)
+        ):
+            errors.append("active_task_review_evidence_mismatch")
+        if not review_started:
+            errors.append("active_task_review_stale_requires_existing_artifact")
+    else:
+        errors.append("active_task_review_evidence_invalid")
+    trail = evidence.get("decision_trail")
+    if trail is not None:
+        required_trail_keys = {
+            "trail_id", "proposal_decisions", "user_decision",
+            "github_authority", "context_before_task_update_sha256",
+            "planning_documents", "stale_downstream_evidence",
+            "review_evidence", "reentry_owners", "interrupted_resume_target",
+        }
+        if set(trail) != required_trail_keys:
+            errors.append("active_task_decision_trail_shape_invalid")
+        if not requirements_clarification_nonempty(trail.get("trail_id")):
+            errors.append("active_task_decision_trail_shape_invalid")
+        if not requirements_clarification_is_sha256(
+            trail.get("context_before_task_update_sha256")
+        ):
+            errors.append("active_task_decision_trail_shape_invalid")
+        authority = trail.get("github_authority")
+        if (
+            not isinstance(authority, dict)
+            or set(authority) != {"kind", "url", "content_sha256", "updated_at"}
+            or authority.get("kind") not in {"issue_comment", "issue_body"}
+            or not requirements_clarification_nonempty(authority.get("url"))
+            or not requirements_clarification_is_sha256(authority.get("content_sha256"))
+        ):
+            errors.append("active_task_decision_trail_github_authority_invalid")
+        else:
+            try:
+                parse_iso_datetime(
+                    authority.get("updated_at"),
+                    "active-task GitHub authority updated_at",
+                )
+            except WorkflowError:
+                errors.append("active_task_decision_trail_github_authority_invalid")
+    reentry = evidence.get("reentry_owners")
+    if not isinstance(reentry, list) or set(reentry) != REQUIREMENTS_CLARIFICATION_REENTRY_OWNERS or len(reentry) != 3:
+        errors.append("active_task_reentry_owners_invalid")
+    return errors
+
+
+def requirements_clarification_file_digest(path: Path) -> str | None:
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
+def requirements_clarification_live_issue_errors(
+    root: Path,
+    target: dict[str, Any],
+) -> list[str]:
+    if target.get("kind") != "issue":
+        return []
+    number = target.get("issue_number")
+    if not isinstance(number, int):
+        return ["requirements_target_issue_invalid"]
+    facts, issue_error = context_read_live_issue(root, str(target.get("repo") or ""), number)
+    if issue_error is not None or facts is None:
+        return ["requirements_target_issue_unreadable"]
+    expected = {
+        "kind": "issue",
+        "repo": target.get("repo"),
+        "issue_number": facts["number"],
+        "url": facts["url"],
+        "state": facts["state"],
+        "updated_at": facts["updated_at"],
+        "body_sha256": facts["body_sha256"],
+    }
+    expected["facts_sha256"] = context_digest(expected)
+    return [] if target == expected else ["requirements_target_issue_stale"]
+
+
+def requirements_clarification_decision_authority_live_errors(
+    root: Path,
+    target: Any,
+    authority: Any,
+) -> list[str]:
+    if not isinstance(target, dict) or target.get("kind") != "issue":
+        return ["active_task_decision_authority_requires_issue"]
+    if not isinstance(authority, dict):
+        return ["active_task_decision_authority_invalid"]
+    repo = str(target.get("repo") or "")
+    number = target.get("issue_number")
+    if not isinstance(number, int) or number <= 0:
+        return ["active_task_decision_authority_requires_issue"]
+    if authority.get("kind") == "issue_body":
+        facts, issue_error = context_read_live_issue(root, repo, number)
+        if (
+            issue_error is not None
+            or facts is None
+            or authority.get("url") != facts.get("url")
+            or authority.get("content_sha256") != facts.get("body_sha256")
+            or authority.get("updated_at") != facts.get("updated_at")
+        ):
+            return ["active_task_decision_authority_body_stale"]
+        return []
+    if authority.get("kind") != "issue_comment":
+        return ["active_task_decision_authority_invalid"]
+    url = str(authority.get("url") or "")
+    match = re.fullmatch(
+        rf"https://github\.com/{re.escape(repo)}/issues/{number}#issuecomment-([1-9][0-9]*)",
+        url,
+    )
+    if match is None:
+        return ["active_task_decision_authority_comment_invalid"]
+    comment_id = int(match.group(1))
+    proc = run(
+        ["gh", "api", f"repos/{repo}/issues/comments/{comment_id}"],
+        cwd=root,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return ["active_task_decision_authority_comment_unreadable"]
+    try:
+        comment = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return ["active_task_decision_authority_comment_unreadable"]
+    if (
+        not isinstance(comment, dict)
+        or comment.get("id") != comment_id
+        or comment.get("html_url") != url
+        or authority.get("updated_at") != comment.get("updated_at")
+        or authority.get("content_sha256")
+        != hashlib.sha256(str(comment.get("body") or "").encode("utf-8")).hexdigest()
+    ):
+        return ["active_task_decision_authority_comment_stale"]
+    return []
+
+
+def requirements_clarification_active_task_live_errors(
+    root: Path,
+    payload: dict[str, Any],
+    task_dir: Path | None,
+) -> list[str]:
+    if task_dir is None:
+        return []
+    evidence = payload.get("active_task_evidence")
+    if not isinstance(evidence, dict):
+        return ["active_task_evidence_required"]
+    errors: list[str] = []
+    planning_approval_payload: dict[str, Any] = {}
+    try:
+        _, planning_approval_payload, planning_approval_errors = validate_planning_approval(
+            root,
+            task_dir,
+        )
+    except WorkflowError:
+        planning_approval_errors = ["planning approval unavailable"]
+    if planning_approval_errors:
+        errors.append("active_task_planning_approval_invalid")
+    ledger_payload: Any = None
+    file_rows: list[dict[str, Any]] = []
+    ledger = evidence.get("ledger")
+    if isinstance(ledger, dict):
+        file_rows.append(ledger)
+    planning = evidence.get("planning_documents")
+    if isinstance(planning, list):
+        file_rows.extend(row for row in planning if isinstance(row, dict))
+    reviewed_artifacts = planning_approval_payload.get("reviewed_artifacts")
+    normalized_reviewed = [
+        normalized_digest_entry(root, task_dir, item)
+        for item in reviewed_artifacts
+    ] if isinstance(reviewed_artifacts, list) else []
+    reviewed_by_path = {
+        str(item.get("path")): item
+        for item in normalized_reviewed
+        if isinstance(item, dict)
+    }
+    expected_planning_from_approval = [
+        {
+            "path": repo_relative(root, task_dir / name),
+            "content_sha256": reviewed_by_path.get(
+                repo_relative(root, task_dir / name),
+                {},
+            ).get("sha256"),
+        }
+        for name in DEFAULT_PLANNING_ARTIFACTS
+    ]
+    if planning != expected_planning_from_approval:
+        errors.append("active_task_planning_approval_binding_mismatch")
+    for row in file_rows:
+        path_value = row.get("path")
+        if not isinstance(path_value, str):
+            errors.append("active_task_file_binding_invalid")
+            continue
+        try:
+            path = root / context_query_path_shape(path_value)
+        except WorkflowError:
+            errors.append("active_task_file_binding_invalid")
+            continue
+        if requirements_clarification_file_digest(path) != row.get("content_sha256"):
+            errors.append("active_task_file_stale")
+        if row is ledger:
+            try:
+                ledger_payload = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                errors.append("active_task_ledger_unreadable")
+    required_ledger_keys = {
+        "primary_issue", "close_issues", "related_issues", "followup_issues",
+    }
+    if not isinstance(ledger_payload, dict) or not required_ledger_keys.issubset(ledger_payload):
+        errors.append("active_task_ledger_structure_invalid")
+    trail = evidence.get("decision_trail")
+    if isinstance(trail, dict):
+        scope_decisions = ledger_payload.get("scope_decisions") if isinstance(ledger_payload, dict) else None
+        matching = [
+            item for item in scope_decisions
+            if isinstance(item, dict) and item.get("trail_id") == trail.get("trail_id")
+        ] if isinstance(scope_decisions, list) else []
+        if len(matching) != 1 or matching[0] != trail:
+            errors.append("active_task_decision_trail_ledger_mismatch")
+        errors.extend(
+            requirements_clarification_decision_authority_live_errors(
+                root,
+                payload.get("review_target"),
+                trail.get("github_authority"),
+            )
+        )
+    stale = evidence.get("stale_downstream_evidence")
+    if isinstance(stale, dict):
+        stale_files = {
+            "planning_approval_sha256": task_dir / PLANNING_APPROVAL_ARTIFACT,
+            "phase2_check_sha256": task_dir / PHASE2_CHECK_ARTIFACT,
+            "branch_review_sha256": task_dir / "review-gate.json",
+        }
+        for field, path in stale_files.items():
+            expected = stale.get(field)
+            actual = requirements_clarification_file_digest(path)
+            if expected is None and actual is not None:
+                errors.append("active_task_stale_evidence_unbound")
+            elif expected is not None and actual != expected:
+                errors.append("active_task_stale_evidence_drift")
+    review = evidence.get("review_evidence")
+    review_path = task_dir / "review-gate.json"
+    review_started = review_path.exists()
+    review_status = review.get("status") if isinstance(review, dict) else None
+    if review_started:
+        if review_status != "stale":
+            errors.append("active_task_review_started_requires_stale")
+        artifact = review.get("artifact") if isinstance(review, dict) else None
+        if isinstance(artifact, dict):
+            try:
+                bound_review_path = root / context_query_path_shape(
+                    str(artifact.get("path") or "")
+                )
+            except WorkflowError:
+                errors.append("active_task_review_evidence_invalid")
+            else:
+                if (
+                    bound_review_path != review_path
+                    or requirements_clarification_file_digest(bound_review_path)
+                    != artifact.get("content_sha256")
+                ):
+                    errors.append("active_task_review_evidence_stale")
+        else:
+            errors.append("active_task_review_evidence_invalid")
+    elif review_status != "not_started" or (
+        isinstance(review, dict) and review.get("artifact") is not None
+    ):
+        errors.append("active_task_review_not_started_required")
+    context = payload.get("context_evidence")
+    context_path = task_dir / "context-discovery.json"
+    if isinstance(context, dict) and context.get("status") == "current":
+        if not context_path.is_file() or context_path.is_symlink():
+            errors.append("requirements_context_snapshot_unavailable")
+        else:
+            try:
+                snapshot = json.loads(context_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                errors.append("requirements_context_snapshot_unreadable")
+            else:
+                identity = snapshot.get("snapshot_identity") if isinstance(snapshot, dict) else None
+                if not isinstance(identity, dict) or identity.get("snapshot_sha256") != context.get("snapshot_sha256"):
+                    errors.append("requirements_context_snapshot_stale")
+                trail = evidence.get("decision_trail")
+                authority = trail.get("github_authority") if isinstance(trail, dict) else None
+                if isinstance(authority, dict):
+                    try:
+                        context_generated_at = parse_iso_datetime(
+                            snapshot.get("generated_at") if isinstance(snapshot, dict) else None,
+                            "active-task context generated_at",
+                        )
+                    except WorkflowError:
+                        errors.append("active_task_context_generated_at_invalid")
+                    else:
+                        try:
+                            authority_updated_at = parse_iso_datetime(
+                                authority.get("updated_at"),
+                                "active-task GitHub authority updated_at",
+                            )
+                        except WorkflowError:
+                            errors.append("active_task_decision_authority_updated_at_invalid")
+                        else:
+                            if context_generated_at < authority_updated_at:
+                                errors.append("active_task_context_predates_decision_authority")
+    return context_sort(errors)
+
+
+def requirements_clarification_live_mutation_errors(
+    root: Path,
+    payload: dict[str, Any],
+    task_dir: Path | None,
+) -> list[str]:
+    actions = payload.get("source_actions")
+    mutations = payload.get("mutation_results")
+    if not isinstance(actions, list) or not isinstance(mutations, list):
+        return ["invalid_mutation_results"]
+    action_by_id = {
+        str(action.get("action_id")): action
+        for action in actions if isinstance(action, dict)
+    }
+    errors: list[str] = []
+    for mutation in mutations:
+        if not isinstance(mutation, dict):
+            continue
+        action = action_by_id.get(str(mutation.get("action_id")))
+        if not isinstance(action, dict):
+            continue
+        kind = mutation.get("kind")
+        if kind == "proposed_draft_update":
+            continue
+        if kind == "active_task_scope_update":
+            evidence = payload.get("active_task_evidence")
+            expected_locator = (
+                task_dir.relative_to(root).as_posix() if task_dir is not None else None
+            )
+            if (
+                task_dir is None
+                or action.get("target") != {"task_locator": expected_locator}
+                or action.get("payload")
+                != requirements_clarification_active_task_payload_projection(evidence)
+                or mutation.get("url") is not None
+                or mutation.get("state") != "task_local"
+                or mutation.get("updated_at") is not None
+                or mutation.get("content_sha256") != context_digest(evidence)
+            ):
+                errors.append("active_task_scope_mutation_live_binding_invalid")
+            continue
+        target = action.get("target")
+        if not isinstance(target, dict):
+            errors.append("mutation_target_invalid")
+            continue
+        repo = target.get("repo")
+        number = target.get("issue_number")
+        if not isinstance(repo, str) or not isinstance(number, int) or number <= 0:
+            errors.append("mutation_target_invalid")
+            continue
+        issue_facts, issue_error = context_read_live_issue(root, repo, number)
+        if issue_error is not None or issue_facts is None:
+            errors.append("mutation_live_issue_unreadable")
+            continue
+        if kind == "issue_body_edit":
+            action_payload = action.get("payload")
+            expected_content_sha = (
+                hashlib.sha256(action_payload["body"].encode("utf-8")).hexdigest()
+                if isinstance(action_payload, dict)
+                and requirements_clarification_nonempty(action_payload.get("body"))
+                else None
+            )
+            if (
+                mutation.get("url") != issue_facts["url"]
+                or mutation.get("state") != issue_facts["state"]
+                or mutation.get("updated_at") != issue_facts["updated_at"]
+                or mutation.get("content_sha256") != issue_facts["body_sha256"]
+                or mutation.get("content_sha256") != expected_content_sha
+            ):
+                errors.append("mutation_live_body_payload_mismatch")
+            continue
+        if kind != "issue_comment":
+            errors.append("mutation_kind_invalid")
+            continue
+        url = str(mutation.get("url") or "")
+        match = re.fullmatch(
+            rf"https://github\.com/{re.escape(repo)}/issues/{number}#issuecomment-([1-9][0-9]*)",
+            url,
+        )
+        if match is None:
+            errors.append("mutation_comment_url_invalid")
+            continue
+        comment_id = int(match.group(1))
+        proc = run(
+            ["gh", "api", f"repos/{repo}/issues/comments/{comment_id}"],
+            cwd=root,
+            check=False,
+        )
+        if proc.returncode != 0:
+            errors.append("mutation_live_comment_unreadable")
+            continue
+        try:
+            comment = json.loads(proc.stdout)
+        except json.JSONDecodeError:
+            errors.append("mutation_live_comment_unreadable")
+            continue
+        if (
+            not isinstance(comment, dict)
+            or comment.get("id") != comment_id
+            or comment.get("html_url") != url
+            or mutation.get("updated_at") != comment.get("updated_at")
+            or mutation.get("state") != issue_facts["state"]
+            or mutation.get("content_sha256")
+            != hashlib.sha256(str(comment.get("body") or "").encode("utf-8")).hexdigest()
+            or mutation.get("content_sha256")
+            != hashlib.sha256(str((action.get("payload") or {}).get("body") or "").encode("utf-8")).hexdigest()
+        ):
+            errors.append("mutation_live_comment_payload_mismatch")
+    return context_sort(errors)
+
+
+def requirements_clarification_live_errors(
+    root: Path,
+    payload: dict[str, Any],
+    task_dir: Path | None,
+) -> list[str]:
+    target = payload.get("review_target")
+    errors = requirements_clarification_live_issue_errors(root, target) if isinstance(target, dict) else ["requirements_target_invalid"]
+    errors.extend(
+        requirements_clarification_active_task_action_confirmation_errors(payload)
+    )
+    proposals = payload.get("scope_proposals")
+    has_active_task_terminal_reentry = (
+        task_dir is not None
+        and payload.get("typed_exit") in {"clear", "new_task"}
+        and isinstance(proposals, list)
+        and bool(proposals)
+        and all(
+            isinstance(proposal, dict)
+            and proposal.get("decision")
+            in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_TERMINAL_DECISIONS
+            for proposal in proposals
+        )
+    )
+    if has_active_task_terminal_reentry:
+        errors.extend(
+            requirements_clarification_active_task_live_errors(
+                root, payload, task_dir
+            )
+        )
+    errors.extend(requirements_clarification_live_mutation_errors(root, payload, task_dir))
+    return context_sort(errors)
+
+
+def requirements_clarification_typed_exit_live_errors(
+    payload: dict[str, Any],
+    live_errors: list[str],
+) -> list[str]:
+    if payload.get("typed_exit") != "refresh_context":
+        return context_sort(live_errors)
+    allowed_refresh_drift = {
+        "requirements_target_issue_stale",
+        "requirements_context_snapshot_stale",
+    }
+    fatal = [code for code in live_errors if code not in allowed_refresh_drift]
+    if fatal:
+        return context_sort(fatal)
+    has_mutation = bool(payload.get("mutation_results"))
+    context = payload.get("context_evidence")
+    has_stale_context = isinstance(context, dict) and context.get("status") == "stale"
+    if not live_errors and not has_mutation and not has_stale_context:
+        return ["refresh_context_requires_observed_drift"]
+    return []
+
+
+def cmd_record_requirements_clarification(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    payload, task_dir = requirements_clarification_payload_from_args(root, args)
+    if payload.get("mode") != args.mode:
+        raise WorkflowError("requirements clarification mode does not match recorder mode.", exit_code=2)
+    result = derive_requirements_clarification_result(payload)
+    structural = requirements_clarification_structural_errors(root, result, task_dir)
+    if structural:
+        raise WorkflowError(
+            "Requirements clarification result validation failed.",
+            exit_code=2,
+            payload={"error_codes": structural},
+        )
+    live = requirements_clarification_live_errors(root, result, task_dir)
+    errors = requirements_clarification_typed_exit_live_errors(result, live)
+    if errors:
+        raise WorkflowError(
+            "Requirements clarification result freshness validation failed.",
+            exit_code=2,
+            payload={"error_codes": errors},
+        )
+    return result
+
+
+def cmd_check_requirements_clarification(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    payload, task_dir = requirements_clarification_payload_from_args(root, args)
+    structural = requirements_clarification_structural_errors(root, payload, task_dir)
+    if structural:
+        raise WorkflowError(
+            "Requirements clarification result validation failed.",
+            exit_code=2,
+            payload={"error_codes": structural},
+        )
+    live = requirements_clarification_live_errors(root, payload, task_dir)
+    errors = requirements_clarification_typed_exit_live_errors(payload, live)
+    identity = payload.get("content_identity")
+    actual = identity.get("result_sha256") if isinstance(identity, dict) else None
+    if args.expected_result_sha256 and args.expected_result_sha256 != actual:
+        errors.append("expected_requirements_clarification_result_mismatch")
+    if errors:
+        raise WorkflowError(
+            "Requirements clarification result freshness validation failed.",
+            exit_code=2,
+            payload={"error_codes": context_sort(errors)},
+        )
+    return {
+        "status": "passed",
+        "typed_exit": payload["typed_exit"],
+        "target_sha256": payload["content_identity"]["target_sha256"],
+        "context_sha256": payload["content_identity"]["context_sha256"],
+        "scope_sha256": payload["content_identity"]["scope_sha256"],
+        "action_sha256": payload["content_identity"]["action_sha256"],
+        "result_sha256": payload["content_identity"]["result_sha256"],
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Guru Team Trellis workflow helpers")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -19133,6 +20782,20 @@ def build_parser() -> argparse.ArgumentParser:
     context_check.add_argument("--input")
     context_check.add_argument("--task")
     context_check.add_argument("--expected-snapshot-sha256")
+
+    clarification_record = sub.add_parser("record-requirements-clarification")
+    clarification_record.add_argument("--root")
+    clarification_record.add_argument("--json", action="store_true")
+    clarification_record.add_argument("--mode", required=True, choices=["workflow", "standalone"])
+    clarification_record.add_argument("--input", required=True)
+    clarification_record.add_argument("--task")
+
+    clarification_check = sub.add_parser("check-requirements-clarification")
+    clarification_check.add_argument("--root")
+    clarification_check.add_argument("--json", action="store_true")
+    clarification_check.add_argument("--input", required=True)
+    clarification_check.add_argument("--task")
+    clarification_check.add_argument("--expected-result-sha256")
 
     version = sub.add_parser("version")
     version.add_argument("--root")
@@ -19466,6 +21129,10 @@ def main() -> int:
             payload = cmd_record_context_discovery(args)
         elif args.command == "check-context-discovery":
             payload = cmd_check_context_discovery(args)
+        elif args.command == "record-requirements-clarification":
+            payload = cmd_record_requirements_clarification(args)
+        elif args.command == "check-requirements-clarification":
+            payload = cmd_check_requirements_clarification(args)
         elif args.command == "version":
             payload = cmd_version(args)
         elif args.command == "check-workspace-boundary":

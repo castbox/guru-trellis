@@ -87,6 +87,128 @@ print(digest.hexdigest())
 PY
 }
 
+verify_requirements_clarification_exits() {
+  local label="$1"
+  local probe_dir="$WORK_DIR/requirements-clarification-$label"
+  mkdir -p "$probe_dir"
+  python3 - "$TARGET" "$probe_dir" <<'PY'
+import copy
+import importlib.util
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+probe_dir = Path(sys.argv[2])
+runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+spec = importlib.util.spec_from_file_location("installed_requirements_clarification_runtime", runtime)
+if spec is None or spec.loader is None:
+    raise SystemExit(f"could not load installed clarification runtime: {runtime}")
+gtt = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = gtt
+spec.loader.exec_module(gtt)
+example = json.loads(
+    (root / ".agents/skills/guru-clarify-requirements/examples/requirements-clarification.json")
+    .read_text(encoding="utf-8")
+)
+multiline_markdown = "# Clarification\n\n- first\tvalue\r\n- second"
+
+clear = copy.deepcopy(example)
+clear = gtt.derive_requirements_clarification_result(clear)
+needs_context = copy.deepcopy(clear)
+needs_context["typed_exit"] = "needs_context"
+needs_context["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
+needs_context["context_evidence"] = {
+    "status": "missing", "schema_id": None, "snapshot_sha256": None,
+    "evidence_refs": ["repository evidence"],
+    "missing_reason": "Current repository context is unavailable.",
+}
+cases = {"clear": clear}
+cases["needs_context"] = gtt.derive_requirements_clarification_result(needs_context)
+
+refresh_context = copy.deepcopy(clear)
+refresh_context["typed_exit"] = "refresh_context"
+refresh_context["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
+refresh_context["context_evidence"]["status"] = "stale"
+refresh_context["context_evidence"]["missing_reason"] = "The reviewed context binding changed."
+cases["refresh_context"] = gtt.derive_requirements_clarification_result(refresh_context)
+
+new_task = copy.deepcopy(clear)
+new_task["typed_exit"] = "new_task"
+new_task["consumer"] = {"kind": "workflow", "id": "guru-full-task-intake-chain"}
+new_task["source_actions"] = [{
+    "action_id": "new_issue", "kind": "new_issue_draft",
+    "target": {"repo": "example/guru-extension"},
+    "payload": {"title": "Independent delivery", "body": multiline_markdown},
+    "preimage_sha256": None, "payload_sha256": None, "action_digest": "0" * 64,
+    "status": "draft_ready", "mutation_evidence": None,
+}]
+cases["new_task"] = gtt.derive_requirements_clarification_result(new_task)
+
+issue_projection = {
+    "kind": "issue", "repo": "example/guru-extension", "issue_number": 7,
+    "url": "https://github.com/example/guru-extension/issues/7", "state": "open",
+    "updated_at": "2026-01-01T00:00:00Z", "body_sha256": "1" * 64,
+}
+for action_kind in ("issue_comment", "issue_body_edit"):
+    issue_action = copy.deepcopy(clear)
+    issue_action["typed_exit"] = "refresh_context"
+    issue_action["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
+    issue_action["invocation_context"] = {
+        "kind": "initial_issue", "caller": "throwaway install", "task_locator": None,
+        "resume_target": "guru-review-contract-wording",
+    }
+    issue_action["review_target"] = {
+        **issue_projection, "facts_sha256": gtt.context_digest(issue_projection),
+    }
+    issue_action["context_evidence"]["status"] = "stale"
+    issue_action["context_evidence"]["missing_reason"] = "The source action awaits refresh."
+    issue_action["source_actions"] = [{
+        "action_id": f"multiline_{action_kind}", "kind": action_kind,
+        "target": {"repo": "example/guru-extension", "issue_number": 7},
+        "payload": {"body": multiline_markdown}, "preimage_sha256": "1" * 64,
+        "payload_sha256": None, "action_digest": "0" * 64,
+        "status": "pending", "mutation_evidence": None,
+    }]
+    issue_action = gtt.derive_requirements_clarification_result(issue_action)
+    errors = gtt.requirements_clarification_structural_errors(root, issue_action, None)
+    if errors:
+        raise SystemExit(f"installed {action_kind} multiline payload failed: {errors}")
+
+new_task_errors = gtt.requirements_clarification_structural_errors(root, cases["new_task"], None)
+if new_task_errors:
+    raise SystemExit(f"installed new_issue_draft multiline payload failed: {new_task_errors}")
+
+blocked = copy.deepcopy(clear)
+blocked["typed_exit"] = "blocked"
+blocked["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
+blocked["ai_review_gate"]["status"] = "blocked"
+blocked["error"] = {
+    "codes": ["load_bearing_choice_refused"],
+    "summary": "A load-bearing product choice was refused.",
+}
+cases["blocked"] = gtt.derive_requirements_clarification_result(blocked)
+
+for typed_exit, payload in cases.items():
+    (probe_dir / f"{typed_exit}.input.json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+PY
+
+  local typed_exit input result result_sha
+  for typed_exit in clear needs_context refresh_context new_task blocked; do
+    input="$probe_dir/$typed_exit.input.json"
+    result="$probe_dir/$typed_exit.result.json"
+    "$TARGET/.agents/skills/guru-clarify-requirements/scripts/record-requirements-clarification.sh" \
+      --root "$TARGET" --json --mode standalone --input "$input" >"$result"
+    result_sha="$(python3 -c 'import json, sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["typed_exit"] == sys.argv[2]; print(payload["content_identity"]["result_sha256"])' "$result" "$typed_exit")"
+    "$TARGET/.agents/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh" \
+      --root "$TARGET" --json --input "$result" \
+      --expected-result-sha256 "$result_sha" >/dev/null
+  done
+}
+
 create_task_commit_plan() {
   local sequence="$1"
   local subject="$2"
@@ -298,9 +420,15 @@ grep -q "record-subagent-liveness-event.sh" "$TARGET/.trellis/workflow.md"
 grep -q "check-subagent-liveness.sh" "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-sync-base","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-discover-change-context","required":true}' "$TARGET/.trellis/workflow.md"
-grep -q 'guru-skill-exit: {"skill":"guru-discover-change-context","exit":"context_ready","consumer":{"kind":"workflow","id":"guru-clarify-requirements"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-discover-change-context","exit":"context_ready","consumer":{"kind":"skill","id":"guru-clarify-requirements"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-discover-change-context","exit":"refresh_base","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-discover-change-context","exit":"blocked","consumer":{"kind":"stop","id":"change-context-blocked"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"clear","consumer":{"kind":"workflow","id":"guru-requirements-clear-router"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"needs_context","consumer":{"kind":"skill","id":"guru-discover-change-context"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"new_task","consumer":{"kind":"workflow","id":"guru-full-task-intake-chain"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"blocked","consumer":{"kind":"stop","id":"requirements-clarification-blocked"}}' "$TARGET/.trellis/workflow.md"
 grep -q "dispatch_mode: sub-agent" "$TARGET/.trellis/config.yaml"
 fail_if_english_language_rule ".trellis/spec" "$TARGET/.trellis/spec"
 WORKSPACE_TREE_DIGEST_AFTER="$(workspace_tree_digest "$TARGET/.trellis/workspace")"
@@ -321,6 +449,8 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/check-base-sync.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/preview-change-context-history.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-context-discovery.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-context-discovery.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/record-requirements-clarification.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-requirements-clarification.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-subagent-liveness.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-commit-messages.sh"
@@ -342,10 +472,10 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.11"
+assert extension["version"] == "0.6.5-guru.12"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 74
+assert len(assets) == 76
 assert all((root / path).is_file() for path in assets)
 for artifact in (
     "agent-assignment.json", "pr-body.md", "closeout-plan.json",
@@ -358,14 +488,16 @@ for command in (
     "check-subagent-liveness", "check-commit-messages",
     "create-task-commit", "run-skill-command", "sync-base", "check-base-sync",
     "preview-change-context-history", "record-context-discovery", "check-context-discovery",
+    "record-requirements-clarification", "check-requirements-clarification",
     "format-merge-commit",
     "backfill-finish-summary", "check-skill-packages",
 ):
     assert command in api["companion_scripts"]
 assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"
-assert api["skill_contracts"]["active_skill_ids"] == ["guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"]
+assert api["skill_contracts"]["active_skill_ids"] == ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"]
 assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-context-discovery-1.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-requirements-clarification-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.2"
 assert api["skill_runtime"] == {
     "api_version": "1.0",
@@ -374,14 +506,14 @@ assert api["skill_runtime"] == {
 }
 assert skills["status"] == "ok"
 assert skills["reserved_ids"] == ["guru-create-work-commit"]
-assert skills["active_ids"] == ["guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"]
+assert skills["active_ids"] == ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"]
 assert skills["selected_platforms"] == ["codex", "cursor"]
 assert skills["sidecars"] == []
-assert len(skills["files"]) == 103
+assert len(skills["files"]) == 135
 PY
 SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
-python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; assert source["facts"]["target_markers"] == installed["facts"]["target_markers"] == 6' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
+python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; assert source["facts"]["target_markers"] == installed["facts"]["target_markers"] == 8' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
 test ! -e "$TARGET/.agents/skills/guru-create-work-commit"
 test ! -e "$TARGET/.codex/skills/guru-create-work-commit"
 test ! -e "$TARGET/.cursor/skills/guru-create-work-commit"
@@ -406,6 +538,13 @@ test -x "$TARGET/.agents/skills/guru-discover-change-context/scripts/check-conte
 test -x "$TARGET/.codex/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
 test -x "$TARGET/.cursor/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
 test ! -e "$TARGET/.claude/skills/guru-discover-change-context"
+test -f "$TARGET/.trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md"
+test -x "$TARGET/.agents/skills/guru-clarify-requirements/scripts/record-requirements-clarification.sh"
+test -x "$TARGET/.agents/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
+test -x "$TARGET/.codex/skills/guru-clarify-requirements/scripts/record-requirements-clarification.sh"
+test -x "$TARGET/.cursor/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
+test ! -e "$TARGET/.claude/skills/guru-clarify-requirements"
+verify_requirements_clarification_exits "initial"
 test ! -e "$TARGET/.agents/skills/guru-example-action"
 test ! -e "$TARGET/.codex/skills/guru-example-action"
 test ! -e "$TARGET/.cursor/skills/guru-example-action"
@@ -1677,6 +1816,7 @@ ownership_checkpoint "post-preset-reapply-before-final-checks"
 
 grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-discover-change-context","required":true}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true}' "$TARGET/.trellis/workflow.md"
 test -f "$TARGET/.trellis/guru-team/schemas/finish-summary.schema.json"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
@@ -1687,10 +1827,13 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/check-base-sync.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/preview-change-context-history.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-context-discovery.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-context-discovery.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/record-requirements-clarification.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-requirements-clarification.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/create-task-commit.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/SKILL.md"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-discover-change-context/SKILL.md"
+test -f "$TARGET/.trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md"
 test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" --help >/dev/null
 test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
@@ -1701,6 +1844,9 @@ test -x "$TARGET/.cursor/skills/guru-sync-base/scripts/sync-base.sh"
 test -x "$TARGET/.agents/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
 test -x "$TARGET/.codex/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
 test -x "$TARGET/.cursor/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
+test -x "$TARGET/.agents/skills/guru-clarify-requirements/scripts/record-requirements-clarification.sh"
+test -x "$TARGET/.codex/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
+test -x "$TARGET/.cursor/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed >/dev/null
 DISCOVERY_AFTER_UPDATE_JSON="$(
@@ -1711,6 +1857,7 @@ DISCOVERY_AFTER_UPDATE_JSON="$(
     --command preview-change-context-history
 )"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["algorithm_id"] == "guru-context-history-score-1.0"; assert any(row["finish_summary_path"].endswith("context-discovery-fixture/finish-summary.json") for row in payload["candidates"])' <<<"$DISCOVERY_AFTER_UPDATE_JSON"
+verify_requirements_clarification_exits "after-update"
 "$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
 BACKFILL_AFTER_UPDATE_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh" --root "$TARGET" --json --dry-run)"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["mode"] == "dry-run"; assert payload["scanned_tasks"] == 2; assert len(payload["skipped"]) == 2; assert all(row["reason"] == "finish-summary exists" for row in payload["skipped"]); assert payload["errors"] == []' <<<"$BACKFILL_AFTER_UPDATE_JSON"

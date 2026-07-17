@@ -70,6 +70,28 @@ from one search result, the bidirectional `blocked` exit/Gate matrix, all typed
 exits, source/installed distribution and clean
 throwaway update/reapply. Any reader of index siblings, workspace/runtime,
 repo-level history cache, or transitional legacy overlay payload fails.
+For `guru-clarify-requirements`, tests must cover workflow/standalone
+precondition parity; initial issue, proposed draft, active-task scope change,
+and standalone entry kinds; repository-answerable evidence before user
+questions, including rejection of `answered` without evidence;
+one-question and atomic-group rounds; partial/refused answers, empty lifecycle,
+close-before-open and reopen rejection;
+comment/body/draft/new-task/active-task actions; exact action and proposal
+confirmation; five-class active-task task-update rejection when the proposal
+is confirmed but `confirmed_actions[]` is empty, the task action is absent, or
+the confirmation action digest is null/wrong; normal combined proposal/action
+confirmation re-entry; generic-confirmation rejection; optional-mechanism removal or
+replacement; active-task ledger/planning/stale-gate/re-entry bindings; all five
+typed exits and unique consumers; pre-task zero-write; live mutation freshness;
+caller-aware clear resume targets; confirmed payload/mutation/live body equality;
+unconfirmed related/followup/new-task/out-of-scope rejection; exact structured
+ledger decision-trail and live GitHub authority binding; mutation-only
+`refresh_context`; fresh re-entry before exact interrupted progression; active
+`new_task` trail preservation with side-effect-free draft-only continuation;
+and source/installed/discovery/throwaway update-reapply distribution. Static
+and runtime tests must also prove the package/runtime contain no GitHub write or
+issue-create executor and that recorder/checker do not generate semantic
+decisions.
 When changing Branch Review report generation or gate validation, add or update
 tests that reject obvious English template headings in task-local `review.md`
 and `reviews/*.md`, including `Review Rounds`, `Findings Lifecycle`,
