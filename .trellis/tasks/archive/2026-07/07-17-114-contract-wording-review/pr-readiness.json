@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/114-contract-wording-review",
+    "reviewed_head_sha": "32119d2ed400046a44148d7f6b580b59a95a0f94",
+    "title": "完成：#114 按 Skill-first 重实现 #93：guru-review-contract-wording",
+    "body_source": "pr-body.md",
+    "body_sha256": "fdcd3e37954bad0e1c78ba8cbd4b59e7e75cd07a5d72b356e77c4a02889d412b",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "cd4e093816185d0233089b1f2820eaf961c7b8155a42751efb1f3f55c9cce4c2"
+  },
+  "publish_inputs_sha256": "c1b91d951958c6e5eb4480753a70eb2fba011d336dfbff384010edad18156e7e"
+}

@@ -1,0 +1,240 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-17T17:45:13Z",
+  "task_dir": ".trellis/tasks/07-17-114-contract-wording-review",
+  "base_branch": "main",
+  "head": "088300a7b3ee33816ec0d96fb3c09d4215ccbae8",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/guru-review-contract-wording/SKILL.md",
+    ".agents/skills/guru-review-contract-wording/interface.json",
+    ".agents/skills/guru-review-contract-wording/references/contract.md",
+    ".agents/skills/guru-review-contract-wording/tests/test_contract.py",
+    ".claude/skills/guru-review-contract-wording/SKILL.md",
+    ".claude/skills/guru-review-contract-wording/interface.json",
+    ".claude/skills/guru-review-contract-wording/references/contract.md",
+    ".claude/skills/guru-review-contract-wording/tests/test_contract.py",
+    ".codex/skills/guru-review-contract-wording/SKILL.md",
+    ".codex/skills/guru-review-contract-wording/interface.json",
+    ".codex/skills/guru-review-contract-wording/references/contract.md",
+    ".codex/skills/guru-review-contract-wording/tests/test_contract.py",
+    ".cursor/skills/guru-review-contract-wording/SKILL.md",
+    ".cursor/skills/guru-review-contract-wording/interface.json",
+    ".cursor/skills/guru-review-contract-wording/references/contract.md",
+    ".cursor/skills/guru-review-contract-wording/tests/test_contract.py",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/packages/guru-review-contract-wording/SKILL.md",
+    ".trellis/guru-team/skills/packages/guru-review-contract-wording/interface.json",
+    ".trellis/guru-team/skills/packages/guru-review-contract-wording/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/001.json",
+    ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/002.json",
+    ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/003.json",
+    ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/004.json",
+    ".trellis/workflow.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+    "trellis/skills/guru-team/packages/guru-review-contract-wording/SKILL.md",
+    "trellis/skills/guru-team/packages/guru-review-contract-wording/interface.json",
+    "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".trellis/tasks/07-17-114-contract-wording-review/review-gate.json",
+    ".trellis/tasks/07-17-114-contract-wording-review/review.md",
+    ".trellis/tasks/07-17-114-contract-wording-review/reviews/001-findings-review.md",
+    ".trellis/tasks/07-17-114-contract-wording-review/reviews/002-closure-review.md",
+    ".trellis/tasks/07-17-114-contract-wording-review/reviews/003-closure-review.md",
+    ".trellis/tasks/07-17-114-contract-wording-review/reviews/004-final-review.md",
+    ".trellis/tasks/07-17-114-contract-wording-review/reviews/005-closure-review.md"
+  ],
+  "checker": "issue114_phase2_check_r7",
+  "check_summary": "Phase 2 R7 完整语义检查通过：覆盖 Issue #114 replacement-first 全需求、origin/main...088300a 已提交范围与当前全部未提交实现；Round 6 current non-pass re-entry supersession P1 和 production package suite P2 均已闭环，额外 replacement flag fail-closed 边界完整，当前 P0/P1/P2/P3 为 0。Docs SSOT、canonical/installed/四平台分发、旧 active owner 删除、archive 不改写、fresh install/update/reapply 与部署安全边界均通过；真实 pushed marketplace ref 仍按合同留给 publish gate。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/prd.md",
+      "sha256": "93b92272cb4e2ab601045e238a8c541384a4712af0240b43ace4c3acb8c681d4",
+      "size_bytes": 12901,
+      "modified_at": "2026-07-17T05:39:43.531085+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/design.md",
+      "sha256": "4055443ec2bc12cf5352d644243210dca1238cebbd02a743e20885a01aa64df8",
+      "size_bytes": 16122,
+      "modified_at": "2026-07-17T05:39:43.531642+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/implement.md",
+      "sha256": "0f0d02fa6795d81f889182886dd59d5bcf98696357e83431e29ab2d2598c4c5a",
+      "size_bytes": 11843,
+      "modified_at": "2026-07-17T05:39:43.532142+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/planning-approval.json",
+      "sha256": "f10491ed41dd1e9b741a240f061b51a9743086e8214ee3902ae517130c8ae976",
+      "size_bytes": 9293,
+      "modified_at": "2026-07-17T13:38:20.758534+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/contract-wording-review.json",
+      "sha256": "644b8d5d09405a9fefdb7e1c82bb8703ebd771fbf238d4c18c658469db392e3f",
+      "size_bytes": 3338,
+      "modified_at": "2026-07-17T13:36:36.458930+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/context-discovery.json",
+      "sha256": "8c350b7849264759ac2448428fcc70f24cb2ca8941310f5be82e9f07c4243d2d",
+      "size_bytes": 302422,
+      "modified_at": "2026-07-17T05:18:58.686350+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/task-start-context.json",
+      "sha256": "c55ce96e6274a9de9145a97db7664f4c7330820851e04e290c0c754710386d3c",
+      "size_bytes": 3221,
+      "modified_at": "2026-07-17T05:18:16.700825+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/issue-scope-ledger.json",
+      "sha256": "f7dc8ab2fe101b6ef0d087b4ac0293cf8469ca745129a4d924a8bcc5769abf21",
+      "size_bytes": 671,
+      "modified_at": "2026-07-17T05:18:16.700205+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/implement.jsonl",
+      "sha256": "b134a020dda87556de1999950b0850346b6d058d5492978b52fd9ea0a9565cb5",
+      "size_bytes": 860,
+      "modified_at": "2026-07-17T05:38:49.602954+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/check.jsonl",
+      "sha256": "4606959882bf8e961ac87fa49d9ce096ee61eaac255106d52d1740515191cd1c",
+      "size_bytes": 979,
+      "modified_at": "2026-07-17T05:38:49.603247+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/agent-assignment.json",
+      "sha256": "2d5be005936873dedd06ad479982d95b0e6ae3c53ff042fda2c116e3f1aae0b8",
+      "size_bytes": 264663,
+      "modified_at": "2026-07-17T17:44:14.100224+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/reviews/006-final-review.md",
+      "sha256": "e116dd1453c43a61d9ad92abf01ff1964c4dcf70fc58863a61efc7fd9d394293",
+      "size_bytes": 13571,
+      "modified_at": "2026-07-17T14:39:36.465241+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "6429b3a1fba72eed08ce2067b7619c5f15ce3f54092b8789b436889de7f178dd",
+      "size_bytes": 20200,
+      "modified_at": "2026-07-17T16:28:52.103823+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "de97f9d7cb0f03e4f4751a08b43895cda7149789041fc6012cd50bc664d5ff49",
+      "size_bytes": 65088,
+      "modified_at": "2026-07-17T16:28:52.104230+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "e93b02452120121d55380107dbb99ea52897f5ca0044a6a9a77e2b0845837638",
+      "size_bytes": 86084,
+      "modified_at": "2026-07-17T16:28:52.104667+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "dc21e070d281698c648d03cba3624e0fda2966207f9315504b0fb85c9dd8eb71",
+      "size_bytes": 17781,
+      "modified_at": "2026-07-17T16:28:52.105319+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "9f4a697811f9b6a1cc4d7eaf9e9e9b7c39d0be1f028efc58380acf7c247a349b",
+      "size_bytes": 30067,
+      "modified_at": "2026-07-17T16:28:52.105682+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "8af32173c1bd36c980efdd3b6a0ff328d5a2e05a62145a4865f2e61d99dd0b86",
+      "size_bytes": 54297,
+      "modified_at": "2026-07-17T16:28:52.106078+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "check-workspace-boundary.sh",
+      "result": "task worktree 与 source checkout 边界正确，source clean，suspicious artifact 为 0"
+    },
+    {
+      "command": "check-planning-approval.sh",
+      "result": "schema 1.2 与 planning document digests current"
+    },
+    {
+      "command": "Issue #114 + official Trellis docs + full diff semantic review",
+      "result": "replacement-first、三 profiles、semantic/script 边界、typed exits 与 planning compatibility 通过"
+    },
+    {
+      "command": "current non-pass supersession failure matrix",
+      "result": "content_changed/blocked 可 digest-bound 收敛为 pass；pass/no-target/identical/wrong digest/profile/stale/extra flag 非 planning 或 scan-only 均 fail closed，stale replacement 独立互斥"
+    },
+    {
+      "command": "production package contract",
+      "result": "5 active skills、17 invokes/exits、11 targets，四平台安装断言通过"
+    },
+    {
+      "command": "runtime/production/wording/preset/planning suites",
+      "result": "507/507、71/71、16/16、45/45、54/54 passed"
+    },
+    {
+      "command": "source/installed validation",
+      "result": "5 active skills；208 managed、0 sidecar、0 removal、0 conflict"
+    },
+    {
+      "command": "throwaway fresh install/update/reapply",
+      "result": "fresh install、initial supersession/closeout、trellis update --force、workflow/preset reapply、after-update supersession/final closeout 与五平台安装通过"
+    },
+    {
+      "command": "six-tree byte equality + dogfood drift + upstream ownership",
+      "result": "canonical、installed、shared、Codex、Cursor、Claude 一致，无 overlay drift"
+    },
+    {
+      "command": "legacy/archive audit",
+      "result": "旧 active planning ambiguity owner 已删除，仅负向拒绝测试字面；#93 archived task 无 diff"
+    },
+    {
+      "command": "compile/Bash/JSON/task/diff/secret/deployment audit",
+      "result": "Python compile、Bash syntax、JSON parse、task validation、git diff --check 通过；无凭据或 CI/CD/container/K8s/migration/Makefile 影响"
+    },
+    {
+      "command": "remote marketplace publish limitation",
+      "result": "真实 pushed branch ref 不存在，按合同必须由 publish gate 验证，不冒充 Phase 2 本地证据"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

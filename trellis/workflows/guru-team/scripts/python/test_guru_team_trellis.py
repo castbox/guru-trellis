@@ -279,13 +279,10 @@ def planning_args(**overrides: object) -> argparse.Namespace:
         "task": None,
         "reviewer": "codex-main-session",
         "summary": "规划 artifact 已审阅，可以进入实现。",
-        "ambiguity_reviewer": "codex-main-session",
-        "ambiguity_summary": "已完成 planning artifact ambiguity review，规范性条款无未处理弱约束表达。",
-        "ambiguity_status": gtt.PLANNING_AMBIGUITY_STATUS_PASSED,
+        "contract_wording_evidence": gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT,
         "user_confirmation": "用户确认进入实现。",
         "review_prompt_presented_at": None,
         "confirmation_source": gtt.PLANNING_APPROVAL_CONFIRMATION_SOURCE,
-        "normative_hit": None,
         "artifact": None,
         "dry_run": False,
     }
@@ -3974,7 +3971,10 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.task_dir = self.root / ".trellis/tasks/07-04-gates"
         self.task_dir.mkdir(parents=True)
         (self.root / ".trellis/guru-team").mkdir(parents=True)
-        (self.root / ".git").mkdir()
+        subprocess.run(
+            ["git", "init", "-q", "-b", "main", str(self.root)],
+            check=True,
+        )
         (self.task_dir / "task.json").write_text(
             '{"title":"Gate task","base_branch":"main"}\n',
             encoding="utf-8",
@@ -4006,6 +4006,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         (self.task_dir / "implement.md").write_text("# Implement\n\n计划。\n", encoding="utf-8")
         (self.root / ".trellis/spec").mkdir(parents=True)
         (self.root / ".trellis/spec/index.md").write_text("# Spec\n\n规则。\n", encoding="utf-8")
+        self.write_wording_evidence()
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
@@ -4032,8 +4033,143 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def normative_hit_arg(self, term: str, classification: str, reason: str = "AI 已分类该命中。") -> str:
-        return f"prd.md|3|{term}|{classification}|{reason}"
+    def write_wording_recorder_input(
+        self,
+        name: str,
+        typed_exit: str,
+        *,
+        with_revision: bool = False,
+    ) -> Path:
+        scope, contents = gtt.contract_wording_build_scope(
+            self.root,
+            "planning_artifacts",
+            "workflow",
+            task_dir=self.task_dir,
+        )
+        scan = gtt.scan_contract_wording(scope, contents)
+        passed = typed_exit != "blocked"
+        revisions = []
+        if with_revision:
+            item = scope["items"][0]
+            revisions = [{
+                "revision_id": f"{name}-revision",
+                "locator": item["path"],
+                "before_sha256": "0" * 64,
+                "after_sha256": item["content_sha256"],
+                "reason": "测试已授权改写后的 current rescan。",
+                "mutation_authority": "测试 workflow 已授权 planning artifact 改写。",
+                "rescan_sha256": scan["scan_sha256"],
+            }]
+        payload = {
+            "generated_at": f"2026-07-17T00:00:{sum(name.encode('utf-8')) % 60:02d}Z",
+            "semantic_review": {
+                "revisions": revisions,
+                "classifications": [{
+                    "hit_id": hit["hit_id"],
+                    "classification": "term_definition",
+                    "reason": "AI 已审查并保留该确定含义。",
+                } for hit in scan["hits"]],
+                "ai_review_gate": {
+                    "status": "passed" if passed else "blocked",
+                    "reviewer": "test-reentry-reviewer",
+                    "summary": "已完成同一 planning profile 的完整 current review。",
+                    "reviewed_scan_sha256": scan["scan_sha256"],
+                    "checked_dimensions": {
+                        key: passed for key in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
+                    },
+                    "planning_checked_dimensions": {
+                        key: passed
+                        for key in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+                    },
+                },
+            },
+            "human_confirmation": {
+                "status": "not_required" if passed else "refused",
+                "confirmed_by": None,
+                "confirmed_at": None,
+                "reason": "测试记录当前 authority/confirmation 结果。",
+            },
+            "typed_exit": typed_exit,
+        }
+        path = self.root / f"{name}.json"
+        gtt.write_json(path, payload)
+        return path
+
+    def wording_record_args(self, input_path: Path, **overrides: object) -> argparse.Namespace:
+        values: dict[str, object] = {
+            "root": None,
+            "json": True,
+            "mode": "workflow",
+            "profile": "planning_artifacts",
+            "input": str(input_path),
+            "task": str(self.task_dir),
+            "path": [],
+            "change_request_input": None,
+            "scan_only": False,
+            "replace_stale": False,
+            "supersede_reentry_facts_sha256": None,
+        }
+        values.update(overrides)
+        return argparse.Namespace(**values)
+
+    def write_wording_evidence(
+        self,
+        classification: str | None = "term_definition",
+        *,
+        typed_exit: str | None = None,
+    ) -> dict[str, object]:
+        scope, contents = gtt.contract_wording_build_scope(
+            self.root,
+            "planning_artifacts",
+            "workflow",
+            task_dir=self.task_dir,
+        )
+        scan = gtt.scan_contract_wording(scope, contents)
+        classifications = []
+        if classification is not None:
+            classifications = [
+                {
+                    "hit_id": hit["hit_id"],
+                    "classification": classification,
+                    "reason": "AI 已分类该命中。",
+                }
+                for hit in scan["hits"]
+            ]
+        has_blocker = classification is None or classification == "contract_violation"
+        exit_value = typed_exit or ("blocked" if has_blocker else "pass")
+        authored = {
+            "generated_at": "2026-01-01T00:00:00Z",
+            "semantic_review": {
+                "revisions": [],
+                "classifications": classifications,
+                "ai_review_gate": {
+                    "status": "blocked" if exit_value == "blocked" else "passed",
+                    "reviewer": "codex-main-session",
+                    "summary": "已完成固定 planning artifacts 合同措辞审查。",
+                    "reviewed_scan_sha256": scan["scan_sha256"],
+                    "checked_dimensions": {
+                        key: exit_value != "blocked"
+                        for key in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
+                    },
+                    "planning_checked_dimensions": {
+                        key: exit_value != "blocked"
+                        for key in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+                    },
+                },
+            },
+            "human_confirmation": {
+                "status": "refused" if exit_value == "blocked" else "not_required",
+                "confirmed_by": None,
+                "confirmed_at": None,
+                "reason": "测试 evidence。",
+            },
+            "typed_exit": exit_value,
+        }
+        result = gtt.contract_wording_derive_result(
+            "planning_artifacts", "workflow", scope, scan, authored
+        )
+        gtt.write_json(self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT, result)
+        return result
 
     def test_check_planning_approval_rejects_missing_artifact(self) -> None:
         patches = self.patch_common()
@@ -4049,7 +4185,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn("Planning approval artifact not found", str(raised.exception))
 
-    def test_planning_ambiguity_v2_terms_are_scanned(self) -> None:
+    def test_contract_wording_v2_terms_are_scanned(self) -> None:
         expected_terms = [
             "可以",
             "允许",
@@ -4087,14 +4223,532 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             "至少",
             "默认",
         ]
-        self.assertEqual(gtt.PLANNING_AMBIGUITY_CONTROLLED_TERMS, expected_terms)
-        self.assertEqual(gtt.PLANNING_AMBIGUITY_SCAN_SCOPE, ["prd.md", "design.md", "implement.md"])
+        self.assertEqual(gtt.CONTRACT_WORDING_VOCABULARY_V2, expected_terms)
+        self.assertEqual(gtt.CONTRACT_WORDING_PLANNING_SCOPE, ["prd.md", "design.md", "implement.md"])
 
         for term in expected_terms:
             with self.subTest(term=term):
                 self.write_normative_prd_hit(term)
-                hits = gtt.scan_planning_normative_language(self.root, self.task_dir)
+                scope, contents = gtt.contract_wording_build_scope(
+                    self.root, "planning_artifacts", "workflow", task_dir=self.task_dir
+                )
+                hits = gtt.scan_contract_wording(scope, contents)["hits"]
                 self.assertIn(term, {str(hit["term"]) for hit in hits})
+
+    def test_contract_wording_explicit_paths_normalize_before_duplicate_check(self) -> None:
+        path = self.root / "docs/review.md"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# Review\n", encoding="utf-8")
+        scope, _ = gtt.contract_wording_build_scope(
+            self.root,
+            "explicit_paths",
+            "standalone",
+            explicit_paths=["docs/./review.md"],
+        )
+        self.assertEqual(scope["identity"], "explicit_paths:docs/review.md")
+        self.assertEqual(scope["items"][0]["path"], "docs/review.md")
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.contract_wording_build_scope(
+                self.root,
+                "explicit_paths",
+                "standalone",
+                explicit_paths=["docs/review.md", "docs/./review.md"],
+            )
+
+    def test_contract_wording_change_request_rejects_selected_comment_without_stable_metadata(self) -> None:
+        source = self.root / "draft-selected-comment.json"
+        for missing in ("author", "updated_at"):
+            with self.subTest(missing=missing):
+                comment = {
+                    "id": "comment-1",
+                    "author": "reviewer",
+                    "updated_at": "2026-07-17T00:00:00Z",
+                    "selection_reason": "该评论是 authoritative contract source。",
+                    "body": "确定评论内容。",
+                }
+                comment[missing] = None
+                source.write_text(json.dumps({
+                    "kind": "draft",
+                    "draft_id": "draft-selected-comment",
+                    "title": "确定标题",
+                    "body": "确定正文",
+                    "selected_comments": [comment],
+                }), encoding="utf-8")
+                with self.assertRaises(gtt.WorkflowError):
+                    gtt.contract_wording_build_scope(
+                        self.root,
+                        "change_request",
+                        "standalone",
+                        change_request_input=source.name,
+                    )
+
+    def test_contract_wording_live_comment_adapter_failures_are_specific(self) -> None:
+        node_id = "IC_kwDOA114"
+        comment_url = "https://github.com/castbox/guru-trellis/issues/114#issuecomment-11401"
+        source = self.root / "issue-selected-comment.json"
+        source.write_text(json.dumps({
+            "kind": "issue",
+            "repo": "castbox/guru-trellis",
+            "number": 114,
+            "selected_comments": [{
+                "id": node_id,
+                "selection_reason": "该评论是 authoritative contract source。",
+            }],
+        }), encoding="utf-8")
+        live = {
+            "title": "确定标题",
+            "body": "确定正文",
+            "url": "https://github.com/castbox/guru-trellis/issues/114",
+            "updatedAt": "2026-07-17T08:00:00Z",
+            "comments": [{
+                "id": node_id,
+                "author": {"login": "reviewer"},
+                "body": "确定评论内容。",
+                "createdAt": "2026-07-17T07:00:00Z",
+                "url": comment_url,
+            }],
+        }
+        rest_comment = {
+            "id": 11401,
+            "node_id": node_id,
+            "user": {"login": "reviewer"},
+            "body": "确定评论内容。",
+            "created_at": "2026-07-17T07:00:00Z",
+            "updated_at": "2026-07-17T08:00:00Z",
+            "html_url": comment_url,
+        }
+        cases = [
+            (
+                [rest_comment],
+                "pagination response is invalid",
+            ),
+            (
+                [[rest_comment], [dict(rest_comment)]],
+                "duplicate comment identity",
+            ),
+            (
+                [[{key: value for key, value in rest_comment.items() if key != "updated_at"}]],
+                "updated_at",
+            ),
+        ]
+        for api_payload, expected in cases:
+            with (
+                self.subTest(expected=expected),
+                mock.patch.object(gtt, "require_gh_auth"),
+                mock.patch.object(gtt, "issue_view", return_value=live),
+                mock.patch.object(gtt, "gh_json", return_value=api_payload),
+            ):
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    gtt.contract_wording_build_scope(
+                        self.root,
+                        "change_request",
+                        "standalone",
+                        change_request_input=source.name,
+                    )
+                self.assertIn(expected, str(raised.exception))
+
+        api_error = gtt.WorkflowError(
+            "gh command failed: gh api repos/castbox/guru-trellis/issues/114/comments?per_page=100",
+            exit_code=2,
+        )
+        with (
+            mock.patch.object(gtt, "require_gh_auth"),
+            mock.patch.object(gtt, "issue_view", return_value=live),
+            mock.patch.object(gtt, "gh_json", side_effect=api_error),
+        ):
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.contract_wording_build_scope(
+                    self.root,
+                    "change_request",
+                    "standalone",
+                    change_request_input=source.name,
+                )
+        self.assertIn("gh command failed: gh api", str(raised.exception))
+
+    def test_contract_wording_live_issue_mutation_requires_exact_confirmation_chain(self) -> None:
+        source = self.root / "issue-change-request.json"
+        source.write_text(json.dumps({
+            "kind": "issue",
+            "repo": "castbox/guru-trellis",
+            "number": 114,
+            "selected_comments": [],
+        }), encoding="utf-8")
+        live = {
+            "title": "确定标题",
+            "body": "确定改写后的正文",
+            "url": "https://github.com/castbox/guru-trellis/issues/114",
+            "updatedAt": "2026-07-17T08:00:00Z",
+            "comments": [],
+        }
+        with mock.patch.object(gtt, "require_gh_auth"), mock.patch.object(gtt, "issue_view", return_value=live):
+            scope, contents = gtt.contract_wording_build_scope(
+                self.root,
+                "change_request",
+                "standalone",
+                change_request_input=source.name,
+            )
+        scan = gtt.scan_contract_wording(scope, contents)
+        body_item = next(item for item in scope["items"] if item["field"] == "body")
+        mutation = {
+            "source_identity": body_item["source_identity"],
+            "locator": body_item["id"],
+            "field": "body",
+            "preimage_sha256": "0" * 64,
+            "confirmed_content_sha256": body_item["content_sha256"],
+            "reread_content_sha256": body_item["content_sha256"],
+            "source_updated_at": body_item["updated_at"],
+        }
+        payload_digest = gtt.context_digest([gtt.context_digest({
+            "source_identity": mutation["source_identity"],
+            "locator": mutation["locator"],
+            "field": mutation["field"],
+            "preimage_sha256": mutation["preimage_sha256"],
+            "content_sha256": mutation["confirmed_content_sha256"],
+        })])
+        result = gtt.contract_wording_derive_result(
+            "change_request",
+            "standalone",
+            scope,
+            scan,
+            {
+                "generated_at": "2026-07-17T08:01:00Z",
+                "semantic_review": {
+                    "revisions": [{
+                        "revision_id": "revision-1",
+                        "locator": body_item["id"],
+                        "before_sha256": "0" * 64,
+                        "after_sha256": body_item["content_sha256"],
+                        "reason": "测试精确 issue body mutation binding。",
+                        "mutation_authority": "用户确认了精确 issue body payload。",
+                        "rescan_sha256": scan["scan_sha256"],
+                        "change_request_mutation": mutation,
+                    }],
+                    "classifications": [],
+                    "ai_review_gate": {
+                        "status": "passed",
+                        "reviewer": "test-reviewer",
+                        "summary": "已审查 confirmed payload、preimage 与 live reread result。",
+                        "reviewed_scan_sha256": scan["scan_sha256"],
+                        "checked_dimensions": {
+                            key: True for key in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
+                        },
+                    },
+                },
+                "human_confirmation": {
+                    "status": "confirmed",
+                    "confirmed_by": "user",
+                    "confirmed_at": "2026-07-17T07:59:00Z",
+                    "reason": "用户确认了精确 payload。",
+                    "confirmed_payload_sha256": payload_digest,
+                },
+                "typed_exit": "content_changed",
+            },
+        )
+        self.assertEqual(gtt.contract_wording_structural_errors(self.root, result, scope, scan), [])
+        result["human_confirmation"]["confirmed_payload_sha256"] = "f" * 64
+        result["facts_sha256"] = gtt.context_digest({
+            key: value for key, value in result.items() if key != "facts_sha256"
+        })
+        self.assertIn(
+            "change_request_confirmation_payload_digest_mismatch",
+            gtt.contract_wording_structural_errors(self.root, result, scope, scan),
+        )
+
+    def test_contract_wording_revision_binds_locator_to_current_hash(self) -> None:
+        self.write_normative_prd_hit("建议")
+        scope, contents = gtt.contract_wording_build_scope(
+            self.root,
+            "planning_artifacts",
+            "workflow",
+            task_dir=self.task_dir,
+        )
+        scan = gtt.scan_contract_wording(scope, contents)
+        result = gtt.contract_wording_derive_result(
+            "planning_artifacts",
+            "workflow",
+            scope,
+            scan,
+            {
+                "generated_at": "2026-01-01T00:00:00Z",
+                "semantic_review": {
+                    "revisions": [{
+                        "revision_id": "revision-1",
+                        "locator": "wrong.md",
+                        "before_sha256": "0" * 64,
+                        "after_sha256": scope["items"][0]["content_sha256"],
+                        "reason": "测试 revision locator 绑定。",
+                        "mutation_authority": "测试授权。",
+                        "rescan_sha256": scan["scan_sha256"],
+                    }],
+                    "classifications": [{
+                        "hit_id": hit["hit_id"],
+                        "classification": "term_definition",
+                        "reason": "测试分类。",
+                    } for hit in scan["hits"]],
+                    "ai_review_gate": {
+                        "status": "passed",
+                        "reviewer": "test-reviewer",
+                        "summary": "测试 current revision binding。",
+                        "reviewed_scan_sha256": scan["scan_sha256"],
+                        "checked_dimensions": {
+                            key: True for key in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
+                        },
+                        "planning_checked_dimensions": {
+                            key: True
+                            for key in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+                        },
+                    },
+                },
+                "human_confirmation": {
+                    "status": "not_required",
+                    "confirmed_by": None,
+                    "confirmed_at": None,
+                    "reason": "测试无需确认。",
+                },
+                "typed_exit": "content_changed",
+            },
+        )
+        self.assertIn(
+            "contract_wording_revision_rescan_mismatch",
+            gtt.contract_wording_structural_errors(self.root, result, scope, scan),
+        )
+
+    def test_contract_wording_recorder_supersedes_current_content_changed_after_reentry(self) -> None:
+        (self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT).unlink()
+        before = {
+            name: (self.task_dir / name).read_bytes()
+            for name in gtt.CONTRACT_WORDING_PLANNING_SCOPE
+        }
+        changed_input = self.write_wording_recorder_input(
+            "content-changed", "content_changed", with_revision=True
+        )
+        pass_input = self.write_wording_recorder_input("content-changed-pass", "pass")
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            changed = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(changed_input)
+            )
+            passed = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(
+                    pass_input,
+                    supersede_reentry_facts_sha256=changed["facts_sha256"],
+                )
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(changed["typed_exit"], "content_changed")
+        self.assertEqual(passed["typed_exit"], "pass")
+        self.assertEqual(
+            gtt.read_json(self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT),
+            passed,
+        )
+        self.assertEqual(
+            before,
+            {
+                name: (self.task_dir / name).read_bytes()
+                for name in gtt.CONTRACT_WORDING_PLANNING_SCOPE
+            },
+        )
+
+    def test_contract_wording_recorder_supersedes_current_blocked_but_protects_pass(self) -> None:
+        (self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT).unlink()
+        blocked_input = self.write_wording_recorder_input("blocked", "blocked")
+        pass_input = self.write_wording_recorder_input("blocked-pass", "pass")
+        next_pass_input = self.write_wording_recorder_input("second-pass", "pass")
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            blocked = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(blocked_input)
+            )
+            passed = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(
+                    pass_input,
+                    supersede_reentry_facts_sha256=blocked["facts_sha256"],
+                )
+            )
+            with self.assertRaises(gtt.WorkflowError) as exact_pass:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        pass_input,
+                        supersede_reentry_facts_sha256=passed["facts_sha256"],
+                    )
+                )
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        next_pass_input,
+                        supersede_reentry_facts_sha256=passed["facts_sha256"],
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(blocked["typed_exit"], "blocked")
+        self.assertEqual(passed["typed_exit"], "pass")
+        self.assertIn(
+            "contract_wording_current_pass_protected",
+            exact_pass.exception.payload["error_codes"],
+        )
+        self.assertIn(
+            "contract_wording_current_pass_protected",
+            raised.exception.payload["error_codes"],
+        )
+
+    def test_contract_wording_reentry_supersession_requires_existing_target_and_exact_digest(self) -> None:
+        evidence_path = self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT
+        evidence_path.unlink()
+        changed_input = self.write_wording_recorder_input(
+            "missing-content-changed", "content_changed", with_revision=True
+        )
+        pass_input = self.write_wording_recorder_input("missing-pass", "pass")
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with self.assertRaises(gtt.WorkflowError) as missing:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        changed_input,
+                        supersede_reentry_facts_sha256="0" * 64,
+                    )
+                )
+            changed = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(changed_input)
+            )
+            with self.assertRaises(gtt.WorkflowError) as identical:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        changed_input,
+                        supersede_reentry_facts_sha256=changed["facts_sha256"],
+                    )
+                )
+            with self.assertRaises(gtt.WorkflowError) as digest:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        pass_input,
+                        supersede_reentry_facts_sha256="0" * 64,
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(changed["typed_exit"], "content_changed")
+        self.assertIn(
+            "contract_wording_replacement_target_missing",
+            missing.exception.payload["error_codes"],
+        )
+        self.assertIn(
+            "contract_wording_reentry_requires_new_result",
+            identical.exception.payload["error_codes"],
+        )
+        self.assertIn(
+            "contract_wording_reentry_superseded_facts_mismatch",
+            digest.exception.payload["error_codes"],
+        )
+
+    def test_contract_wording_reentry_supersession_rejects_non_task_profile(self) -> None:
+        explicit = self.root / "explicit.md"
+        explicit.write_text("# Explicit\n\n确定合同。\n", encoding="utf-8")
+        args = self.wording_record_args(
+            explicit,
+            root=str(self.root),
+            mode="standalone",
+            profile="explicit_paths",
+            input=None,
+            task=None,
+            path=["explicit.md"],
+            supersede_reentry_facts_sha256="0" * 64,
+        )
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.cmd_record_contract_wording_review(args)
+        self.assertIn(
+            "contract_wording_replacement_profile_invalid",
+            raised.exception.payload["error_codes"],
+        )
+
+    def test_contract_wording_reentry_supersession_rejects_stale_digest_and_wrong_profile(self) -> None:
+        evidence_path = self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT
+        evidence_path.unlink()
+        changed_input = self.write_wording_recorder_input(
+            "stale-content-changed", "content_changed", with_revision=True
+        )
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            changed = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(changed_input)
+            )
+            (self.task_dir / "prd.md").write_text(
+                "# PRD\n\n改写后的确定需求。\n", encoding="utf-8"
+            )
+            pass_input = self.write_wording_recorder_input("fresh-pass", "pass")
+            with self.assertRaises(gtt.WorkflowError) as stale:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        pass_input,
+                        supersede_reentry_facts_sha256=changed["facts_sha256"],
+                    )
+                )
+            fresh = gtt.cmd_record_contract_wording_review(
+                self.wording_record_args(pass_input, replace_stale=True)
+            )
+
+            current_changed_input = self.write_wording_recorder_input(
+                "current-content-changed", "content_changed", with_revision=True
+            )
+            scope, contents = gtt.contract_wording_build_scope(
+                self.root,
+                "planning_artifacts",
+                "workflow",
+                task_dir=self.task_dir,
+            )
+            scan = gtt.scan_contract_wording(scope, contents)
+            current_changed = gtt.contract_wording_derive_result(
+                "planning_artifacts",
+                "workflow",
+                scope,
+                scan,
+                gtt.read_json(current_changed_input),
+            )
+            current_changed["profile"] = "explicit_paths"
+            current_changed["facts_sha256"] = gtt.context_digest({
+                key: value
+                for key, value in current_changed.items()
+                if key != "facts_sha256"
+            })
+            gtt.write_json(evidence_path, current_changed)
+            wrong_profile_pass = self.write_wording_recorder_input(
+                "wrong-profile-pass", "pass"
+            )
+            with self.assertRaises(gtt.WorkflowError) as wrong_profile:
+                gtt.cmd_record_contract_wording_review(
+                    self.wording_record_args(
+                        wrong_profile_pass,
+                        supersede_reentry_facts_sha256=current_changed["facts_sha256"],
+                    )
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        self.assertEqual(fresh["typed_exit"], "pass")
+        self.assertIn(
+            "contract_wording_reentry_requires_current_evidence",
+            stale.exception.payload["error_codes"],
+        )
+        self.assertIn(
+            "contract_wording_reentry_profile_mismatch",
+            wrong_profile.exception.payload["error_codes"],
+        )
 
     def test_record_and_check_planning_approval(self) -> None:
         patches = self.patch_common()
@@ -4114,30 +4768,79 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertEqual(payload["user_confirmation"]["source"], gtt.PLANNING_APPROVAL_CONFIRMATION_SOURCE)
         self.assertEqual(payload["head"], "abc123")
         self.assertEqual(check["status"], "ok")
-        self.assertEqual(payload["ambiguity_review"]["status"], gtt.PLANNING_AMBIGUITY_STATUS_PASSED)
+        self.assertEqual(payload["ambiguity_review"]["status"], "passed")
         self.assertEqual(payload["ambiguity_review"]["reviewer"], "codex-main-session")
         self.assertEqual(
             payload["ambiguity_review"]["normative_language"]["controlled_terms"],
-            gtt.PLANNING_AMBIGUITY_CONTROLLED_TERMS,
+            gtt.CONTRACT_WORDING_VOCABULARY_V2,
         )
         self.assertEqual(
             payload["ambiguity_review"]["normative_language"]["scan_scope"],
-            gtt.PLANNING_AMBIGUITY_SCAN_SCOPE,
+            gtt.CONTRACT_WORDING_PLANNING_SCOPE,
         )
         self.assertEqual(payload["ambiguity_review"]["normative_language"]["hits"], [])
         self.assertEqual(payload["ambiguity_review"]["normative_language"]["unchecked_normative_hits"], [])
         self.assertEqual(
             set(payload["ambiguity_review"]["checked_dimensions"]),
-            set(gtt.PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS),
+            set(gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS),
         )
         self.assertTrue(all(payload["ambiguity_review"]["checked_dimensions"].values()))
+        self.assertEqual(payload["contract_wording_review"]["schema_id"], "guru-contract-wording-review-1.0")
         self.assertEqual(len(payload["reviewed_artifacts"]), 3)
         self.assertEqual(len(payload["approved_artifacts"]), 3)
+
+    def test_planning_semantic_dimension_matrix_and_projection_fail_closed(self) -> None:
+        result = self.write_wording_evidence()
+        scope, contents = gtt.contract_wording_build_scope(
+            self.root,
+            "planning_artifacts",
+            "workflow",
+            task_dir=self.task_dir,
+        )
+        scan = gtt.scan_contract_wording(scope, contents)
+        expected = {
+            name: True for name in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+        }
+        self.assertEqual(
+            gtt.contract_wording_planning_projection(result)["checked_dimensions"],
+            expected,
+        )
+
+        cases = []
+        missing = json.loads(json.dumps(result))
+        del missing["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"]
+        cases.append(("missing", missing, "contract_wording_planning_review_dimensions_missing"))
+        false_value = json.loads(json.dumps(result))
+        false_value["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"][
+            "no_requirement_weakening"
+        ] = False
+        cases.append(("false", false_value, "contract_wording_planning_review_dimensions_incomplete"))
+        extra = json.loads(json.dumps(result))
+        extra["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"][
+            "undeclared_dimension"
+        ] = True
+        cases.append(("extra", extra, "contract_wording_planning_review_dimensions_invalid"))
+        wrong_profile = json.loads(json.dumps(result))
+        wrong_profile["profile"] = "explicit_paths"
+        cases.append(("wrong-profile", wrong_profile, "unexpected_contract_wording_planning_review_dimensions"))
+
+        for label, payload, expected_error in cases:
+            with self.subTest(label=label):
+                payload["facts_sha256"] = gtt.context_digest({
+                    key: value for key, value in payload.items() if key != "facts_sha256"
+                })
+                self.assertIn(
+                    expected_error,
+                    gtt.contract_wording_structural_errors(self.root, payload, scope, scan),
+                )
+                with self.assertRaises(gtt.WorkflowError):
+                    gtt.contract_wording_planning_projection(payload)
 
     def test_record_planning_approval_blocks_unclassified_normative_hits(self) -> None:
         for term in ["推荐", "可选", "至少", "默认"]:
             with self.subTest(term=term):
                 self.write_normative_prd_hit(term)
+                self.write_wording_evidence(None)
                 planning_artifact = self.task_dir / "planning-approval.json"
                 if planning_artifact.exists():
                     planning_artifact.unlink()
@@ -4152,9 +4855,10 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                         patcher.stop()
 
                 self.assertEqual(raised.exception.exit_code, 2)
-                normative = raised.exception.payload["normative_language"]
-                self.assertTrue(any(hit["term"] == term for hit in normative["hits"]))
-                self.assertTrue(any(hit["term"] == term for hit in normative["unchecked_normative_hits"]))
+                self.assertIn(
+                    "planning_approval_requires_passed_wording_evidence",
+                    raised.exception.payload["error_codes"],
+                )
                 self.assertFalse(planning_artifact.exists())
 
     def test_record_planning_approval_accepts_allowed_normative_classifications(self) -> None:
@@ -4171,13 +4875,12 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         for term, classification in cases:
             with self.subTest(classification=classification):
                 self.write_normative_prd_hit(term)
+                self.write_wording_evidence(classification)
                 patches = self.patch_common()
                 for patcher in patches:
                     patcher.start()
                 try:
-                    payload = gtt.cmd_record_planning_approval(
-                        planning_args(normative_hit=[self.normative_hit_arg(term, classification)])
-                    )
+                    payload = gtt.cmd_record_planning_approval(planning_args())
                     check = gtt.cmd_check_planning_approval(planning_args())
                 finally:
                     for patcher in reversed(patches):
@@ -4193,6 +4896,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         for term in ["至少", "默认", "可选", "相关"]:
             with self.subTest(term=term):
                 self.write_normative_prd_hit(term)
+                self.write_wording_evidence("contract_violation")
                 planning_artifact = self.task_dir / "planning-approval.json"
                 if planning_artifact.exists():
                     planning_artifact.unlink()
@@ -4201,81 +4905,64 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                     patcher.start()
                 try:
                     with self.assertRaises(gtt.WorkflowError) as raised:
-                        gtt.cmd_record_planning_approval(
-                            planning_args(
-                                normative_hit=[
-                                    self.normative_hit_arg(
-                                        term,
-                                        "contract_violation",
-                                        "缺少 issue #93 要求的确定性信息。",
-                                    )
-                                ]
-                            )
-                        )
+                        gtt.cmd_record_planning_approval(planning_args())
                 finally:
                     for patcher in reversed(patches):
                         patcher.stop()
 
-                normative = raised.exception.payload["normative_language"]
-                self.assertTrue(
-                    any(
-                        hit["term"] == term and hit["classification"] == "contract_violation"
-                        for hit in normative["unchecked_normative_hits"]
-                    )
+                self.assertIn(
+                    "planning_approval_requires_passed_wording_evidence",
+                    raised.exception.payload["error_codes"],
                 )
                 self.assertFalse(planning_artifact.exists())
 
     def test_check_planning_approval_rejects_normative_scan_mismatch(self) -> None:
         self.write_normative_prd_hit("推荐")
+        evidence = self.write_wording_evidence("term_definition")
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
         try:
-            payload = gtt.cmd_record_planning_approval(
-                planning_args(normative_hit=[self.normative_hit_arg("推荐", "term_definition")])
-            )
-            payload["ambiguity_review"]["normative_language"]["hits"][0]["text"] = "artifact 手工篡改。"
-            payload.pop("artifact_path", None)
-            payload.pop("dry_run", None)
-            (self.task_dir / "planning-approval.json").write_text(
-                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
-                encoding="utf-8",
-            )
+            gtt.cmd_record_planning_approval(planning_args())
+            evidence["scan"]["hits"][0]["text"] = "artifact 手工篡改。"
+            gtt.write_json(self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT, evidence)
             with self.assertRaises(gtt.WorkflowError) as raised:
                 gtt.cmd_check_planning_approval(planning_args())
         finally:
             for patcher in reversed(patches):
                 patcher.stop()
 
-        self.assertTrue(any("扫描结果不一致" in error for error in raised.exception.payload["errors"]))
+        self.assertTrue(any("wording evidence 校验失败" in error for error in raised.exception.payload["errors"]))
 
-    def test_record_planning_approval_requires_ambiguity_summary(self) -> None:
+    def test_record_planning_approval_requires_wording_evidence(self) -> None:
+        (self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT).unlink()
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
         try:
             with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_planning_approval(planning_args(ambiguity_summary=""))
+                gtt.cmd_record_planning_approval(planning_args())
         finally:
             for patcher in reversed(patches):
                 patcher.stop()
 
         self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("--ambiguity-summary", str(raised.exception))
+        self.assertIn("contract-wording-review.json", str(raised.exception))
 
-    def test_record_planning_approval_rejects_non_passed_ambiguity_status(self) -> None:
+    def test_record_planning_approval_rejects_non_passed_wording_evidence(self) -> None:
+        self.write_wording_evidence(None)
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
         try:
             with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_planning_approval(planning_args(ambiguity_status="failed"))
+                gtt.cmd_record_planning_approval(planning_args())
         finally:
             for patcher in reversed(patches):
                 patcher.stop()
 
         self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("--ambiguity-status", str(raised.exception))
+        self.assertIn("missing, stale, or blocked", str(raised.exception))
 
     def test_check_planning_approval_rejects_missing_ambiguity_review(self) -> None:
         patches = self.patch_common()
@@ -4322,7 +5009,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertTrue(any("schema_version" in error for error in errors))
         self.assertTrue(any("ambiguity_review" in error for error in errors))
 
-    def test_check_planning_approval_rejects_incomplete_ambiguity_review(self) -> None:
+    def test_check_planning_approval_rejects_tampered_ambiguity_projection(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
@@ -4348,12 +5035,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                 patcher.stop()
 
         errors = raised.exception.payload["errors"]
-        self.assertTrue(any("ambiguity_review.status" in error for error in errors))
-        self.assertTrue(any("缺少 reviewer" in error for error in errors))
-        self.assertTrue(any("缺少 summary" in error for error in errors))
-        self.assertTrue(any("controlled_terms" in error for error in errors))
-        self.assertTrue(any("unchecked_normative_hits" in error for error in errors))
-        self.assertTrue(any("acceptance_criteria_are_deterministic" in error for error in errors))
+        self.assertTrue(any("完整投影" in error for error in errors))
 
     def test_validate_planning_approval_accepts_archived_task_with_active_artifact_paths(self) -> None:
         patches = self.patch_common()
@@ -4367,7 +5049,14 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
 
         archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-gates"
         archived_task_dir.mkdir(parents=True)
-        for name in ["task.json", "prd.md", "design.md", "implement.md", "planning-approval.json"]:
+        for name in [
+            "task.json",
+            "prd.md",
+            "design.md",
+            "implement.md",
+            gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT,
+            "planning-approval.json",
+        ]:
             (archived_task_dir / name).write_bytes((self.task_dir / name).read_bytes())
         for name in ["prd.md", "design.md", "implement.md"]:
             (self.task_dir / name).unlink()
@@ -5139,13 +5828,13 @@ class PlanningApprovalDogfoodSyncTest(unittest.TestCase):
         spec.loader.exec_module(module)
         return module
 
-    def test_planning_ambiguity_constants_match_dogfood_helper(self) -> None:
+    def test_contract_wording_constants_match_dogfood_helper(self) -> None:
         dogfood = self.load_dogfood_module()
         for name in [
-            "PLANNING_AMBIGUITY_CONTROLLED_TERMS",
-            "PLANNING_AMBIGUITY_SCAN_SCOPE",
-            "PLANNING_AMBIGUITY_CLASSIFICATIONS",
-            "PLANNING_AMBIGUITY_BLOCKING_CLASSIFICATIONS",
+            "CONTRACT_WORDING_VOCABULARY_V2",
+            "CONTRACT_WORDING_PLANNING_SCOPE",
+            "CONTRACT_WORDING_CLASSIFICATIONS_V1",
+            "CONTRACT_WORDING_BLOCKING_CLASSIFICATIONS",
         ]:
             with self.subTest(name=name):
                 self.assertEqual(getattr(dogfood, name), getattr(gtt, name))
@@ -12567,6 +13256,12 @@ shutil.move(str(active), str(archived))
                     record_transition("archive-move")
                     if injected_stage == "archive-move":
                         return subprocess.CompletedProcess(command, 1, "", "injected archive move")
+                    return original_run(
+                        command,
+                        cwd=cwd,
+                        check=check,
+                        env={"PYTHONDONTWRITEBYTECODE": "1"},
+                    )
                 if command and command[0] == "trellis":
                     record_transition("verifier")
                     if injected_stage == "verifier":
@@ -16933,6 +17628,47 @@ class RequirementsClarificationTests(unittest.TestCase):
             ),
         ):
             (task / name).write_text(content, encoding="utf-8")
+        wording_scope, wording_contents = gtt.contract_wording_build_scope(
+            root,
+            "planning_artifacts",
+            "workflow",
+            task_dir=task,
+        )
+        wording_scan = gtt.scan_contract_wording(wording_scope, wording_contents)
+        wording_evidence = gtt.contract_wording_derive_result(
+            "planning_artifacts",
+            "workflow",
+            wording_scope,
+            wording_scan,
+            {
+                "generated_at": "2026-01-01T00:00:00Z",
+                "semantic_review": {
+                    "revisions": [],
+                    "classifications": [],
+                    "ai_review_gate": {
+                        "status": "passed",
+                        "reviewer": "codex-main-session",
+                        "summary": "The planning wording contract was reviewed and passed.",
+                        "reviewed_scan_sha256": wording_scan["scan_sha256"],
+                        "checked_dimensions": {
+                            name: True for name in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
+                        },
+                        "planning_checked_dimensions": {
+                            name: True
+                            for name in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+                        },
+                    },
+                },
+                "human_confirmation": {
+                    "status": "not_required",
+                    "confirmed_by": None,
+                    "confirmed_at": None,
+                    "reason": "The fixture requires no content mutation.",
+                },
+                "typed_exit": "pass",
+            },
+        )
+        gtt.write_json(task / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT, wording_evidence)
         with (
             mock.patch.object(gtt, "current_head", return_value="a" * 40),
             mock.patch.object(gtt, "git_status_paths", return_value=[]),
@@ -16944,9 +17680,7 @@ class RequirementsClarificationTests(unittest.TestCase):
                 approval_summary="The complete planning contract was reviewed and accepted.",
                 user_confirmation="The user explicitly confirmed all three displayed planning documents.",
                 artifacts=[],
-                ambiguity_reviewer="codex-main-session",
-                ambiguity_summary="The planning documents contain deterministic scope and acceptance contracts.",
-                ambiguity_status=gtt.PLANNING_AMBIGUITY_STATUS_PASSED,
+                contract_wording_evidence=gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT,
                 review_prompt_presented_at="2026-01-01T00:00:00Z",
             )
         gtt.write_json(task / "planning-approval.json", planning_approval)

@@ -325,6 +325,75 @@ issue/draft accepts only `guru-review-contract-wording`; standalone accepts only
 of the declared interrupted Phase 1/2/3/Branch Review targets. Accepted-current
 scope requires the planning-review target.
 
+`guru-review-contract-wording` is the active semantic owner for controlled
+contract wording review. Workflow and standalone modes use identical runtime,
+scope, mutation-authority, semantic-evidence, and freshness preconditions. Its
+exact schema 1.2 stages are `forward_behavior -> ai_review_gate ->
+conditional_human_confirmation -> recorder_validator -> typed_exit`.
+
+The package owns vocabulary `contract-wording-v2`, classification contract
+`contract-wording-classifications-v1`, the rewrite/classification/review loop,
+profile scope contracts, confirmation policy, artifact schema
+`guru-contract-wording-review-1.0`, and exits `pass`, `content_changed`, and
+`blocked`. The three profiles are closed: `change_request` always includes
+title/body plus AI-selected authoritative comments whose stable identity,
+non-empty author, update time, selection reason, and content hash are all
+present; `planning_artifacts`
+always binds the active task's `prd.md`, `design.md`, and `implement.md` and
+requires the canonical contract's exact
+`semantic_review.ai_review_gate.planning_checked_dimensions` object before a
+successful exit; it writes task-local `contract-wording-review.json`.
+`change_request` and `explicit_paths` prohibit that planning-only object, and
+`explicit_paths` accepts only
+the standalone caller's explicit repo-relative Markdown regular files and is
+stdout-only. Workflow callers cannot substitute `explicit_paths` for either
+fixed workflow profile.
+
+The deterministic runtime publishes `record-contract-wording-review` and
+`check-contract-wording-review`. It builds fixed scope facts, scans current
+content, derives identities/digests and unchecked hits, validates schema,
+classification/reason structure, freshness, rescan binding, Gate/exit
+invariants, exact planning-dimension shape/value, and trackability. It never
+chooses scope, rewrite, classification,
+reason sufficiency, semantic pass/block, confirmation need, or route intent.
+It also never infers or defaults a planning semantic result; only the AI Review
+Gate may produce the values required by the canonical package contract.
+Every content change invalidates the prior scope/scan identity and requires a
+complete rebuild and rescan before evidence can pass.
+Task-local evidence replacement uses one objective state transition contract.
+Stale evidence requires `--replace-stale`. After the fixed consumer has entered
+a complete same-profile re-entry, structurally current `content_changed` or
+`blocked` evidence may be superseded only when
+`--supersede-reentry-facts-sha256` equals the existing `facts_sha256`; the new
+evidence must differ from the old artifact and independently pass full current
+validation. The flags are mutually exclusive; identical-result, wrong-profile,
+or stale supersession fails closed, and a current `pass` remains protected. The
+recorder validates these facts but does not decide that the AI/workflow should
+re-enter or which new exit is correct.
+For a live issue revision, the recorder derives the exact confirmed-payload
+digest from source identity, locator, field, preimage hash, and confirmed
+content hash, and derives a mutation-result identity from the current reread
+content plus source update time. The checker requires human confirmation to
+bind the ordered payload digest set and the mutation result to equal the
+rebuilt live scope. This is deterministic normal-flow consistency evidence,
+not an authenticity, hostile-input, locking, or TOCTOU boundary.
+
+Unique consumers are `pass` -> workflow target
+`guru-contract-wording-pass-router`, `content_changed` -> workflow target
+`guru-contract-wording-change-router`, and `blocked` -> stop
+`contract-wording-blocked`. Those routers use only the checker-validated
+profile and exit. Unknown, multiple, stale, or unmapped profile/exit evidence
+fails closed. Planning approval is only a consumer/projection of current
+`planning_artifacts:pass` evidence and cannot become a second vocabulary,
+classification, scanner, or semantic-review owner.
+Its compatibility projection copies each already-validated planning dimension
+from that evidence. Planning evidence recorded before the planning-only field
+existed is stale even with schema id `guru-contract-wording-review-1.0`; active
+tasks must perform a complete fresh AI review, display all three planning
+documents again, and obtain fresh post-planning confirmation. Missing booleans
+must never be patched into old evidence, while archived artifacts remain
+historical.
+
 ## Distribution And Managed Hashes
 
 The preset installs an audited canonical registry/schema/package copy under

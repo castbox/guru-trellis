@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "#93 的 planning ambiguity 审查绑定 planning approval，词表、分类、scanner 与语义判断分散在 runtime、workflow 和文档中，无法作为 closed-loop Skill 复用于 change request、planning artifacts 与显式合同文档。",
+    "outcome": "已交付 replacement-first 的 guru-review-contract-wording semantic Skill，以三个固定 profile、共享词表/分类 SSOT、AI review、deterministic facts/validator 和 digest-bound re-entry 统一合同措辞审查，并删除旧 active owner。",
+    "changed_behavior": [
+      "change_request 固定审查 title、body 和 AI 选定的 authoritative comments，并绑定稳定 identity、真实更新时间与内容 hash。",
+      "planning_artifacts 固定审查当前 task 的 prd.md、design.md、implement.md，继续阻塞 unchecked normative hits。",
+      "explicit_paths 只接受 standalone 用户显式指定的 repo-relative Markdown regular files，不能缩小固定 profile。",
+      "Scanner 只记录 term、location、text 与 hash；AI 独占 rewrite、九类 classification、reason、semantic pass/block 和必要确认。",
+      "Planning approval 逐项消费七项已验证 semantic dimensions，不再生成默认 true 或拥有词表/scanner。",
+      "content_changed 与 blocked 支持 digest-bound same-profile re-entry 收敛，stale、wrong-profile 和 conflicting replacement fail closed。",
+      "新链路验证完成后已移除旧 planning ambiguity constants、scanner/helpers、active flag usage 和重复规则 owner。",
+      "Canonical、preset、四平台副本、dogfood、throwaway 与 update/reapply 合同已同步。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "guru-review-contract-wording public Skill package",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-review-contract-wording/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-review-contract-wording/interface.json",
+          "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md"
+        ],
+        "change": "新增 semantic closed loop、三个固定 profile、九类 classification、typed exits 与 re-entry 合同。"
+      },
+      {
+        "kind": "script",
+        "name": "Contract wording shared runtime",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/bash/record-contract-wording-review.sh",
+          "trellis/workflows/guru-team/scripts/bash/check-contract-wording-review.sh"
+        ],
+        "change": "实现固定 scope builder、objective scanner facts、AI evidence recorder、validator、planning projection 与 current non-pass supersession。"
+      },
+      {
+        "kind": "workflow",
+        "name": "Guru Team contract wording routing",
+        "paths": [
+          "trellis/workflows/guru-team/workflow.md",
+          ".trellis/workflow.md"
+        ],
+        "change": "Phase 0 与 planning 显式调用 stable Skill，并唯一消费 pass、content_changed、blocked。"
+      },
+      {
+        "kind": "schema",
+        "name": "Contract wording review evidence",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+          "trellis/skills/guru-team/packages/guru-review-contract-wording/examples/contract-wording-review.json"
+        ],
+        "change": "定义 profile scope/hash、hit classification、semantic dimensions、replacement 和 external exit 的机器合同。"
+      },
+      {
+        "kind": "preset",
+        "name": "Guru Team package distribution and upgrade",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/guru-team-extension.json",
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "分发 canonical、installed 与四平台 package/runtime/schema，并校验 fresh install、update/reapply 和 managed drift。"
+      },
+      {
+        "kind": "docs",
+        "name": "Contract wording and planning durable SSOT",
+        "paths": [
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/spec/workflow/workflow-contract.md"
+        ],
+        "change": "回写新 Skill 单一所有权、planning consumer、replacement-first 删除与分发验收合同。"
+      },
+      {
+        "kind": "test",
+        "name": "Wording, runtime, planning and preset regressions",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "change": "覆盖三个 profile、planning compatibility、re-entry failure matrix、旧 owner 删除、五平台分发与 update/reapply。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Contract wording ownership",
+        "before": "词表、classification、scanner 和 planning semantic review 由 planning ambiguity runtime/workflow 多处共同拥有。",
+        "after": "guru-review-contract-wording canonical package 独占完整合同，workflow、planning approval 和平台入口只调用或消费。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Fixed review profiles",
+        "before": "旧实现只绑定 planning 三文档，没有可复用且不可缩小的 change request 与 explicit path scope。",
+        "after": "固定 change_request、planning_artifacts、explicit_paths 三个 profile，各自绑定 scope/hash/consumer。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "AI and script boundary",
+        "before": "Planning 专用 helper 同时承担扫描事实与流程语义，复用和审计边界不清晰。",
+        "after": "Scanner/validator 只处理客观 facts 与结构完整性，AI 独占 classification、rewrite、reason 和 pass/block。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Planning compatibility",
+        "before": "Planning approval 直接拥有 controlled-term 规则，并可能由 projection 生成 semantic 默认值。",
+        "after": "Planning approval 强制消费已验证 planning_artifacts evidence，并逐项复制七项 AI-reviewed dimensions。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Evidence re-entry",
+        "before": "Current content_changed 或 blocked evidence 没有可达的 mandatory same-profile re-entry 收敛路径。",
+        "after": "Current non-pass evidence 可按旧 facts digest 精确 supersede 为新结果，conflicting、stale 或 wrong-profile replacement 被拒绝。",
+        "source_artifact": "review.md"
+      },
+      {
+        "contract": "Legacy implementation removal",
+        "before": "Active runtime 保留 PLANNING_AMBIGUITY constants、planning scanner/parser/helpers 与 normative-hit flag。",
+        "after": "Replacement verification 后删除旧 active owner，仅保留新 Skill consumer 和负向拒绝测试。",
+        "source_artifact": "implement.md"
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "record-contract-wording-review",
+        "check-contract-wording-review",
+        "verify-throwaway-install"
+      ],
+      "config_keys": [
+        "skill_runtime.commands.guru_review_contract_wording",
+        "profiles.planning_artifacts",
+        "external_exits.content_changed"
+      ],
+      "schema_fields": [
+        "classification",
+        "unchecked_normative_hits",
+        "planning_semantic_dimensions",
+        "replaces_facts_sha256"
+      ],
+      "symbols": [
+        "CONTRACT_WORDING_CLASSIFICATIONS",
+        "build_contract_wording_scope",
+        "validate_contract_wording_review",
+        "resolve_current_contract_wording_evidence"
+      ],
+      "phrases": [
+        "合同措辞审查旧实现已删除",
+        "guru-review-contract-wording Skill 已完成",
+        "planning_artifacts 七项语义审查已保留",
+        "content_changed same-profile re-entry 已修复",
+        "unchecked_normative_hits 阻塞合同已完成",
+        "verify-throwaway-install update reapply 已通过"
+      ]
+    }
+  }
+}

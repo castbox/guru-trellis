@@ -390,6 +390,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 "codex",
                 "claude",
                 "cursor",
+                "shared",
+                "codex",
+                "claude",
+                "cursor",
             ],
         )
 
@@ -407,6 +411,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn(Path("scripts/bash/check-context-discovery.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/record-requirements-clarification.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-requirements-clarification.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/record-contract-wording-review.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-contract-wording-review.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/resolve-human-artifacts.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/record-subagent-liveness-event.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-subagent-liveness.sh"), preset.MANAGED_ASSET_PATHS)
@@ -621,7 +627,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 81)
+        self.assertEqual(len(managed_assets), 83)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -883,6 +889,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             verifier,
         )
         self.assertIn('"resume_target": "guru-review-contract-wording"', verifier)
+        self.assertIn('verify_contract_wording_standalone_profiles "initial"', verifier)
+        self.assertIn('verify_contract_wording_standalone_profiles "after-update"', verifier)
+        self.assertIn('record_planning_contract_wording "$TASK_REL"', verifier)
+        self.assertIn('--contract-wording-evidence "$TASK_REL/contract-wording-review.json"', verifier)
+        self.assertNotIn("--ambiguity-reviewer", verifier)
+        self.assertNotIn("--normative-hit", verifier)
         self.assertIn("verify_installed_closeout.py", verifier)
         self.assertIn("--case initial", verifier)
         self.assertIn("--case after-update", verifier)
@@ -1150,6 +1162,14 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(installed["extension"]["version"], "0.6.5-guru.12")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
+        canonical = json.loads(
+            (self.guru_root / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
+        )
+        self.assertIn(
+            "contract-wording-review.json",
+            canonical["public_api"]["artifact_contracts"],
+        )
+        self.assertIn("contract-wording-review.json", public_api["artifact_contracts"])
         self.assertIn("agent-assignment.json", public_api["artifact_contracts"])
         self.assertIn("reviews/*.md", public_api["artifact_contracts"])
         self.assertIn("record-subagent-liveness-event", public_api["companion_scripts"])
@@ -1164,6 +1184,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("check-context-discovery", public_api["companion_scripts"])
         self.assertIn("record-requirements-clarification", public_api["companion_scripts"])
         self.assertIn("check-requirements-clarification", public_api["companion_scripts"])
+        self.assertIn("record-contract-wording-review", public_api["companion_scripts"])
+        self.assertIn("check-contract-wording-review", public_api["companion_scripts"])
         self.assertEqual(
             public_api["skill_runtime"],
             {
@@ -1175,7 +1197,13 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("task-commit-plans/*.json", public_api["artifact_contracts"])
         self.assertEqual(
             public_api["skill_contracts"]["active_skill_ids"],
-            ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-sync-base"],
+            [
+                "guru-clarify-requirements",
+                "guru-create-task-commit",
+                "guru-discover-change-context",
+                "guru-review-contract-wording",
+                "guru-sync-base",
+            ],
         )
         self.assertIn(
             "guru-base-sync-result-1.0",
@@ -1185,6 +1213,42 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-requirements-clarification-1.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
+        self.assertIn(
+            "guru-contract-wording-review-1.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        schema_relative = Path("schemas/contract-wording-review.schema.json")
+        canonical_schema_path = (
+            self.guru_root
+            / "trellis/skills/guru-team/packages/guru-review-contract-wording"
+            / schema_relative
+        )
+        canonical_schema_bytes = canonical_schema_path.read_bytes()
+        canonical_schema = json.loads(canonical_schema_bytes)
+        planning_dimensions = canonical_schema["$defs"]["planningCheckedDimensions"]
+        self.assertFalse(planning_dimensions["additionalProperties"])
+        self.assertEqual(
+            set(planning_dimensions["required"]),
+            {
+                "no_requirement_weakening",
+                "source_issue_semantics_preserved",
+                "conditional_paths_have_conditions",
+                "no_parallel_implementation_paths",
+                "gates_have_machine_verifiable_conditions",
+                "acceptance_criteria_are_deterministic",
+                "external_quotes_are_labeled_non_contract",
+            },
+        )
+        for package_root in (
+            self.repo / ".trellis/guru-team/skills/packages/guru-review-contract-wording",
+            self.repo / ".agents/skills/guru-review-contract-wording",
+            self.repo / ".codex/skills/guru-review-contract-wording",
+            self.repo / ".cursor/skills/guru-review-contract-wording",
+        ):
+            self.assertEqual(
+                (package_root / schema_relative).read_bytes(),
+                canonical_schema_bytes,
+            )
         self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.2")
         self.assertEqual(public_api["skill_contracts"]["reserved_skill_ids"], ["guru-create-work-commit"])
         self.assertIn("format-merge-commit", public_api["companion_scripts"])

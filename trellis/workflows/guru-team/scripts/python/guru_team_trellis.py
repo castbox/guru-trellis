@@ -62,8 +62,14 @@ BLOCKING_PRIORITIES = {"P0", "P1", "P2"}
 PLANNING_APPROVAL_ARTIFACT = "planning-approval.json"
 PLANNING_APPROVAL_SCHEMA_VERSION = "1.2"
 PLANNING_APPROVAL_CONFIRMATION_SOURCE = "explicit-post-planning-review"
-PLANNING_AMBIGUITY_STATUS_PASSED = "passed"
-PLANNING_AMBIGUITY_CONTROLLED_TERMS = [
+CONTRACT_WORDING_SKILL_ID = "guru-review-contract-wording"
+CONTRACT_WORDING_SCHEMA_VERSION = "1.0"
+CONTRACT_WORDING_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-contract-wording-review-1.0.json"
+CONTRACT_WORDING_VOCABULARY_VERSION = "contract-wording-v2"
+CONTRACT_WORDING_CLASSIFICATION_VERSION = "contract-wording-classifications-v1"
+CONTRACT_WORDING_EVIDENCE_ARTIFACT = "contract-wording-review.json"
+CONTRACT_WORDING_PROFILES = {"change_request", "planning_artifacts", "explicit_paths"}
+CONTRACT_WORDING_VOCABULARY_V2 = [
     "可以",
     "允许",
     "建议",
@@ -100,8 +106,8 @@ PLANNING_AMBIGUITY_CONTROLLED_TERMS = [
     "至少",
     "默认",
 ]
-PLANNING_AMBIGUITY_SCAN_SCOPE = ["prd.md", "design.md", "implement.md"]
-PLANNING_AMBIGUITY_CLASSIFICATIONS = [
+CONTRACT_WORDING_PLANNING_SCOPE = ["prd.md", "design.md", "implement.md"]
+CONTRACT_WORDING_CLASSIFICATIONS_V1 = [
     "contract_violation",
     "quoted_source_non_contract",
     "term_definition",
@@ -112,8 +118,21 @@ PLANNING_AMBIGUITY_CLASSIFICATIONS = [
     "deterministic_option",
     "deterministic_reference",
 ]
-PLANNING_AMBIGUITY_BLOCKING_CLASSIFICATIONS = {"contract_violation"}
-PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS = [
+CONTRACT_WORDING_BLOCKING_CLASSIFICATIONS = {"contract_violation"}
+CONTRACT_WORDING_REVIEW_DIMENSIONS = [
+    "complete_profile_scope",
+    "all_hits_classified",
+    "zero_unchecked_hits",
+    "product_semantics_preserved",
+    "retained_reasons_sufficient",
+    "zero_hits_not_requirement_review",
+]
+CONTRACT_WORDING_CONSUMERS = {
+    "pass": {"kind": "workflow", "id": "guru-contract-wording-pass-router"},
+    "content_changed": {"kind": "workflow", "id": "guru-contract-wording-change-router"},
+    "blocked": {"kind": "stop", "id": "contract-wording-blocked"},
+}
+CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS = [
     "no_requirement_weakening",
     "source_issue_semantics_preserved",
     "conditional_paths_have_conditions",
@@ -3036,7 +3055,7 @@ def issue_view(repo: str, number: int, root: Path) -> dict[str, Any]:
             "--repo",
             repo,
             "--json",
-            "number,title,url,body,comments,state",
+            "number,title,url,body,comments,state,updatedAt",
         ],
         cwd=root,
     )
@@ -7924,297 +7943,833 @@ def unresolved_blocking_findings(findings: list[dict[str, Any]]) -> list[dict[st
     return blockers
 
 
-def planning_ambiguity_scan_paths(task_dir: Path) -> list[Path]:
-    return [task_dir / name for name in PLANNING_AMBIGUITY_SCAN_SCOPE]
-
-
-def planning_normative_hit_key(hit: dict[str, Any]) -> tuple[str, int, str]:
-    return (str(hit.get("path") or ""), int(hit.get("line") or 0), str(hit.get("term") or ""))
-
-
-def scan_planning_normative_language(root: Path, task_dir: Path) -> list[dict[str, Any]]:
-    hits: list[dict[str, Any]] = []
-    for path in planning_ambiguity_scan_paths(task_dir):
-        if not path.exists() or not path.is_file():
-            raise WorkflowError(f"Required planning artifact not found for ambiguity scan: {path}", exit_code=2)
-        repo_path = repo_relative(root, path)
-        for line_number, text in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-            for term in PLANNING_AMBIGUITY_CONTROLLED_TERMS:
-                if term in text:
-                    hits.append(
-                        {
-                            "path": repo_path,
-                            "line": line_number,
-                            "term": term,
-                            "text": text,
-                        }
-                    )
-    return hits
-
-
-def parse_planning_normative_hit_arg(root: Path, task_dir: Path, value: str) -> dict[str, Any]:
-    parts = str(value or "").split("|", 4)
-    if len(parts) != 5:
-        raise WorkflowError(
-            'Invalid --normative-hit. Expected "path|line|term|classification|reason".',
-            exit_code=2,
-            payload={"normative_hit": value},
+def contract_wording_schema(root: Path) -> dict[str, Any]:
+    candidates = [
+        root / ".trellis/guru-team/skills/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+        root / "trellis/skills/guru-team/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json",
+    ]
+    runtime_path = Path(__file__).resolve()
+    if len(runtime_path.parents) > 2:
+        candidates.append(
+            runtime_path.parents[2]
+            / "skills/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json"
         )
-    raw_path, raw_line, raw_term, raw_classification, raw_reason = [part.strip() for part in parts]
-    path = resolve_task_local_path(root, task_dir, raw_path)
-    scope_paths = {path.resolve(): name for name, path in zip(PLANNING_AMBIGUITY_SCAN_SCOPE, planning_ambiguity_scan_paths(task_dir))}
-    if path.resolve() not in scope_paths:
-        raise WorkflowError(
-            "record-planning-approval --normative-hit path must be one of: "
-            + ", ".join(PLANNING_AMBIGUITY_SCAN_SCOPE),
-            exit_code=2,
-            payload={"path": raw_path},
+    if len(runtime_path.parents) > 4:
+        candidates.append(
+            runtime_path.parents[4]
+            / "skills/guru-team/packages/guru-review-contract-wording/schemas/contract-wording-review.schema.json"
         )
-    if not re.fullmatch(r"[1-9][0-9]*", raw_line):
-        raise WorkflowError("record-planning-approval --normative-hit line must be a positive integer.", exit_code=2)
-    term = raw_term
-    if term not in PLANNING_AMBIGUITY_CONTROLLED_TERMS:
+    schema_path = next((path for path in candidates if path.is_file() and not path.is_symlink()), None)
+    if schema_path is None:
         raise WorkflowError(
-            "record-planning-approval --normative-hit term is not in the controlled planning ambiguity vocabulary.",
+            "Contract wording review schema is missing from the compatible Guru Team runtime.",
             exit_code=2,
-            payload={"term": term},
+            payload={"error_codes": ["contract_wording_schema_unavailable"]},
         )
-    classification = raw_classification
-    if classification and classification not in PLANNING_AMBIGUITY_CLASSIFICATIONS:
-        raise WorkflowError(
-            "record-planning-approval --normative-hit classification is not allowed.",
-            exit_code=2,
-            payload={"classification": classification},
-        )
-    reason = raw_reason
-    if classification and not reason:
-        raise WorkflowError(
-            "record-planning-approval --normative-hit reason is required for classified hits.",
-            exit_code=2,
-            payload={"path": raw_path, "line": int(raw_line), "term": term},
-        )
-    return {
-        "path": repo_relative(root, path),
-        "line": int(raw_line),
-        "term": term,
-        "classification": classification,
-        "reason": reason,
-    }
-
-
-def parse_planning_normative_hit_args(root: Path, task_dir: Path, values: list[str] | None) -> dict[tuple[str, int, str], dict[str, str]]:
-    parsed: dict[tuple[str, int, str], dict[str, str]] = {}
-    for value in values or []:
-        item = parse_planning_normative_hit_arg(root, task_dir, value)
-        key = planning_normative_hit_key(item)
-        if key in parsed:
-            raise WorkflowError(
-                "record-planning-approval received duplicate --normative-hit classification input.",
-                exit_code=2,
-                payload={"path": key[0], "line": key[1], "term": key[2]},
-            )
-        parsed[key] = {
-            "classification": str(item.get("classification") or ""),
-            "reason": str(item.get("reason") or ""),
-        }
-    return parsed
-
-
-def planning_normative_language_payload(
-    root: Path,
-    task_dir: Path,
-    normative_hit_inputs: list[str] | None,
-) -> dict[str, Any]:
-    scanned_hits = scan_planning_normative_language(root, task_dir)
-    scanned_keys = {planning_normative_hit_key(hit) for hit in scanned_hits}
-    classifications = parse_planning_normative_hit_args(root, task_dir, normative_hit_inputs)
-    unused_keys = [key for key in classifications if key not in scanned_keys]
-    if unused_keys:
-        first = unused_keys[0]
-        raise WorkflowError(
-            "record-planning-approval --normative-hit does not match a current scan hit.",
-            exit_code=2,
-            payload={"path": first[0], "line": first[1], "term": first[2]},
-        )
-
-    hits: list[dict[str, Any]] = []
-    unchecked_hits: list[dict[str, Any]] = []
-    for scanned in scanned_hits:
-        key = planning_normative_hit_key(scanned)
-        classification = classifications.get(key, {}).get("classification", "")
-        reason = classifications.get(key, {}).get("reason", "")
-        hit = {
-            **scanned,
-            "classification": classification,
-            "reason": reason,
-        }
-        hits.append(hit)
-        if not classification or classification in PLANNING_AMBIGUITY_BLOCKING_CLASSIFICATIONS:
-            unchecked_hits.append(copy.deepcopy(hit))
-
-    return {
-        "controlled_terms": list(PLANNING_AMBIGUITY_CONTROLLED_TERMS),
-        "scan_scope": list(PLANNING_AMBIGUITY_SCAN_SCOPE),
-        "hits": hits,
-        "unchecked_normative_hits": unchecked_hits,
-    }
-
-
-def planning_normative_hit_entry_errors(item: Any, label: str) -> list[str]:
-    if not isinstance(item, dict):
-        return [f"{label} 中存在非对象 hit。"]
     errors: list[str] = []
-    for key in ["path", "term", "text", "classification", "reason"]:
-        if key not in item or not isinstance(item.get(key), str):
-            errors.append(f"{label} hit 缺少字符串字段 {key}。")
-    if not is_strict_int(item.get("line")) or int(item.get("line") or 0) <= 0:
-        errors.append(f"{label} hit.line 必须是正整数。")
-    term = str(item.get("term") or "")
-    if term and term not in PLANNING_AMBIGUITY_CONTROLLED_TERMS:
-        errors.append(f"{label} hit.term 不在受控词表中: {term}。")
-    classification = str(item.get("classification") or "")
-    reason = str(item.get("reason") or "")
-    if classification and classification not in PLANNING_AMBIGUITY_CLASSIFICATIONS:
-        errors.append(f"{label} hit.classification 不在允许分类集合中: {classification}。")
-    if classification and not reason:
-        errors.append(f"{label} hit.reason 不能为空。")
-    return errors
+    schema = skill_read_json(schema_path, "contract wording review schema", errors)
+    if (
+        errors
+        or schema is None
+        or schema.get("$schema") != SKILL_SCHEMA_DIALECT
+        or schema.get("$id") != CONTRACT_WORDING_SCHEMA_ID
+    ):
+        raise WorkflowError(
+            "Contract wording review schema is incompatible.",
+            exit_code=2,
+            payload={"error_codes": ["contract_wording_schema_invalid"]},
+        )
+    return schema
 
 
-def planning_normative_language_errors(root: Path, task_dir: Path, normative: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
-    controlled_terms = normative.get("controlled_terms")
-    if not isinstance(controlled_terms, list):
-        errors.append("planning-approval.json ambiguity_review.normative_language.controlled_terms 必须是数组。")
-    elif controlled_terms != PLANNING_AMBIGUITY_CONTROLLED_TERMS:
-        errors.append("planning-approval.json ambiguity_review.controlled_terms 必须与当前受控弱约束词表完全一致。")
-
-    scan_scope = normative.get("scan_scope")
-    if not isinstance(scan_scope, list):
-        errors.append("planning-approval.json ambiguity_review.normative_language.scan_scope 必须是数组。")
-    elif scan_scope != PLANNING_AMBIGUITY_SCAN_SCOPE:
-        errors.append("planning-approval.json ambiguity_review.scan_scope 必须固定为 prd.md, design.md, implement.md。")
-
-    hits = normative.get("hits")
-    if not isinstance(hits, list):
-        errors.append("planning-approval.json ambiguity_review.normative_language.hits 必须是数组。")
-        hits = []
+def contract_wording_read_input(root: Path, value: str | None, label: str) -> dict[str, Any]:
+    if not value:
+        raise WorkflowError(f"{label} requires an input JSON file.", exit_code=2)
+    if value == "-":
+        raw = sys.stdin.read()
     else:
-        seen_keys: set[tuple[str, int, str]] = set()
-        for index, item in enumerate(hits):
-            errors.extend(planning_normative_hit_entry_errors(item, f"planning-approval.json hits[{index}]"))
-            if isinstance(item, dict) and is_strict_int(item.get("line")):
-                key = planning_normative_hit_key(item)
-                if key in seen_keys:
-                    errors.append(f"planning-approval.json ambiguity_review.normative_language.hits 存在重复命中: {key[0]}:{key[1]} {key[2]}。")
-                seen_keys.add(key)
-
-    unchecked_hits = normative.get("unchecked_normative_hits")
-    if not isinstance(unchecked_hits, list):
-        errors.append("planning-approval.json ambiguity_review.normative_language.unchecked_normative_hits 必须是数组。")
-        unchecked_hits = []
-    else:
-        for index, item in enumerate(unchecked_hits):
-            errors.extend(planning_normative_hit_entry_errors(item, f"planning-approval.json unchecked_normative_hits[{index}]"))
-
+        path = Path(value)
+        if not path.is_absolute():
+            path = root / path
+        try:
+            raw = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as exc:
+            raise WorkflowError(f"{label} input is unreadable.", exit_code=2) from exc
     try:
-        current_hits = scan_planning_normative_language(root, task_dir)
-    except WorkflowError as exc:
-        errors.append(str(exc))
-        current_hits = []
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise WorkflowError(f"{label} input is invalid JSON.", exit_code=2) from exc
+    if not isinstance(payload, dict):
+        raise WorkflowError(f"{label} input root must be an object.", exit_code=2)
+    return payload
 
-    recorded_scan_facts = [
+
+def contract_wording_markdown_path(root: Path, value: str, label: str) -> Path:
+    raw = Path(str(value or ""))
+    if (
+        not str(value or "").strip()
+        or raw.is_absolute()
+        or any(part in {"", ".", ".."} for part in raw.parts)
+        or raw.suffix.casefold() != ".md"
+    ):
+        raise WorkflowError(f"{label} must be a repo-relative Markdown path.", exit_code=2)
+    path = root.joinpath(*raw.parts)
+    current = root
+    for part in raw.parts:
+        current = current / part
+        try:
+            item_stat = current.lstat()
+        except OSError as exc:
+            raise WorkflowError(f"{label} is missing or unreadable.", exit_code=2) from exc
+        if stat.S_ISLNK(item_stat.st_mode):
+            raise WorkflowError(f"{label} must not contain a symlink component.", exit_code=2)
+    try:
+        path.resolve().relative_to(root.resolve())
+    except ValueError as exc:
+        raise WorkflowError(f"{label} escapes the repository.", exit_code=2) from exc
+    if not path.is_file():
+        raise WorkflowError(f"{label} must be a regular Markdown file.", exit_code=2)
+    return path
+
+
+def contract_wording_file_item(root: Path, path: Path) -> tuple[dict[str, Any], str]:
+    try:
+        content = path.read_text(encoding="utf-8")
+        raw = path.read_bytes()
+    except (OSError, UnicodeError) as exc:
+        raise WorkflowError("Contract wording scope contains an unreadable UTF-8 Markdown file.", exit_code=2) from exc
+    relative = repo_relative(root, path)
+    return (
         {
-            "path": item.get("path"),
-            "line": item.get("line"),
-            "term": item.get("term"),
-            "text": item.get("text"),
-        }
-        for item in hits
-        if isinstance(item, dict)
-    ]
-    if recorded_scan_facts != current_hits:
-        errors.append("planning-approval.json ambiguity_review.normative_language.hits 与当前 prd.md/design.md/implement.md 扫描结果不一致。")
-
-    expected_unchecked = [
-        copy.deepcopy(item)
-        for item in hits
-        if isinstance(item, dict)
-        and (
-            not str(item.get("classification") or "").strip()
-            or str(item.get("classification") or "").strip() in PLANNING_AMBIGUITY_BLOCKING_CLASSIFICATIONS
-        )
-    ]
-    if unchecked_hits != expected_unchecked:
-        errors.append("planning-approval.json ambiguity_review.unchecked_normative_hits 与 hits[] 中未分类或 contract_violation 命中不一致。")
-    if unchecked_hits:
-        errors.append("planning-approval.json ambiguity_review.unchecked_normative_hits 必须为空；非空表示仍有未处理规范性弱约束命中。")
-    return errors
+            "kind": "markdown_file",
+            "id": f"file:{relative}",
+            "path": relative,
+            "size_bytes": len(raw),
+            "content_sha256": hashlib.sha256(raw).hexdigest(),
+        },
+        content,
+    )
 
 
-def build_planning_ambiguity_review_payload(
-    reviewer: str,
-    summary: str,
-    status: str,
+def contract_wording_live_issue_comment_index(
     root: Path,
-    task_dir: Path,
-    normative_hit_inputs: list[str] | None,
+    repo: str,
+    number: int,
+) -> dict[str, dict[str, Any]]:
+    try:
+        pages = gh_json(
+            [
+                "api",
+                f"repos/{repo}/issues/{number}/comments?per_page=100",
+                "--paginate",
+                "--slurp",
+                "-H",
+                "Accept: application/vnd.github+json",
+                "-H",
+                "X-GitHub-Api-Version: 2022-11-28",
+            ],
+            cwd=root,
+        )
+    except json.JSONDecodeError as exc:
+        raise WorkflowError(
+            "change_request live issue comments API returned invalid JSON.",
+            exit_code=2,
+        ) from exc
+    if not isinstance(pages, list) or any(not isinstance(page, list) for page in pages):
+        raise WorkflowError(
+            "change_request live issue comments API pagination response is invalid.",
+            exit_code=2,
+        )
+
+    comments: dict[str, dict[str, Any]] = {}
+    node_ids: set[str] = set()
+    database_ids: set[int] = set()
+    urls: set[str] = set()
+    for page in pages:
+        for comment in page:
+            if not isinstance(comment, dict):
+                raise WorkflowError(
+                    "change_request live issue comments API page contains an invalid row.",
+                    exit_code=2,
+                )
+            database_id = comment.get("id")
+            node_id = str(comment.get("node_id") or "").strip()
+            url = str(comment.get("html_url") or "").strip()
+            if (
+                not is_strict_int(database_id)
+                or int(database_id) <= 0
+                or not node_id
+                or not url
+            ):
+                raise WorkflowError(
+                    "change_request live issue comment identity is missing or invalid.",
+                    exit_code=2,
+                )
+            if int(database_id) in database_ids or node_id in node_ids or url in urls:
+                raise WorkflowError(
+                    "change_request live issue comments API returned duplicate comment identity.",
+                    exit_code=2,
+                )
+            database_ids.add(int(database_id))
+            node_ids.add(node_id)
+            urls.add(url)
+            comments[node_id] = comment
+            comments[url] = comment
+    return comments
+
+
+def contract_wording_change_request_scope(
+    root: Path,
+    source_input: str | None,
+) -> tuple[str, list[dict[str, Any]], dict[str, str]]:
+    source = contract_wording_read_input(root, source_input, "change_request scope")
+    kind = source.get("kind")
+    selected = source.get("selected_comments", [])
+    if not isinstance(selected, list):
+        raise WorkflowError("change_request selected_comments must be an array.", exit_code=2)
+    selected_ids: set[str] = set()
+    items: list[dict[str, Any]] = []
+    contents: dict[str, str] = {}
+
+    if kind == "issue":
+        repo = str(source.get("repo") or "").strip()
+        number = source.get("number")
+        if re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo) is None or not is_strict_int(number) or int(number) <= 0:
+            raise WorkflowError("change_request issue identity is invalid.", exit_code=2)
+        require_gh_auth(root)
+        live = issue_view(repo, int(number), root)
+        title = str(live.get("title") or "")
+        body = str(live.get("body") or "")
+        source_updated_at = str(live.get("updatedAt") or "").strip()
+        if not source_updated_at:
+            raise WorkflowError("change_request live issue updated_at is missing.", exit_code=2)
+        parse_iso_datetime(source_updated_at, "change_request live issue updated_at")
+        source_identity = str(live.get("url") or f"https://github.com/{repo}/issues/{number}")
+        comment_by_id = (
+            contract_wording_live_issue_comment_index(root, repo, int(number))
+            if selected
+            else {}
+        )
+        selected_rows: list[dict[str, Any]] = []
+        selected_node_ids: set[str] = set()
+        for row in selected:
+            if not isinstance(row, dict):
+                raise WorkflowError("change_request selected comment must be an object.", exit_code=2)
+            comment_id = str(row.get("id") or "").strip()
+            reason = str(row.get("selection_reason") or "").strip()
+            if not comment_id or comment_id in selected_ids or not reason:
+                raise WorkflowError("change_request selected comment identity or reason is invalid.", exit_code=2)
+            comment = comment_by_id.get(comment_id)
+            if comment is None:
+                raise WorkflowError(
+                    "change_request selected comment was not found in the live issue comments API.",
+                    exit_code=2,
+                )
+            node_id = str(comment.get("node_id") or "").strip()
+            if node_id in selected_node_ids:
+                raise WorkflowError(
+                    "change_request selected comment identity or reason is invalid.",
+                    exit_code=2,
+                )
+            selected_ids.add(comment_id)
+            selected_node_ids.add(node_id)
+            author = comment.get("user")
+            author_value = str(author.get("login") or "").strip() if isinstance(author, dict) else ""
+            updated_at = str(comment.get("updated_at") or "").strip()
+            comment_body = comment.get("body")
+            if not author_value or not updated_at or not isinstance(comment_body, str):
+                raise WorkflowError(
+                    "change_request selected comment author, updated_at, or body is missing.",
+                    exit_code=2,
+                )
+            parse_iso_datetime(updated_at, "change_request selected comment updated_at")
+            selected_rows.append({
+                "id": comment_id,
+                "author": author_value,
+                "updated_at": updated_at,
+                "selection_reason": reason,
+                "body": comment_body,
+            })
+    elif kind == "draft":
+        draft_id = str(source.get("draft_id") or "").strip()
+        title_value = source.get("title")
+        body_value = source.get("body")
+        if not draft_id or not isinstance(title_value, str) or not isinstance(body_value, str):
+            raise WorkflowError("change_request draft requires draft_id, title, and body.", exit_code=2)
+        title = title_value
+        body = body_value
+        source_updated_at = None
+        source_identity = f"draft:{draft_id}"
+        selected_rows = []
+        for row in selected:
+            if not isinstance(row, dict):
+                raise WorkflowError("change_request selected comment must be an object.", exit_code=2)
+            comment_id = str(row.get("id") or "").strip()
+            reason = str(row.get("selection_reason") or "").strip()
+            comment_body = row.get("body")
+            author = str(row.get("author") or "").strip()
+            updated_at = str(row.get("updated_at") or "").strip()
+            if (
+                not comment_id
+                or comment_id in selected_ids
+                or not reason
+                or not isinstance(comment_body, str)
+                or not author
+                or not updated_at
+            ):
+                raise WorkflowError(
+                    "change_request draft comment identity, author, updated_at, body, or reason is invalid.",
+                    exit_code=2,
+                )
+            parse_iso_datetime(updated_at, "change_request draft comment updated_at")
+            selected_ids.add(comment_id)
+            selected_rows.append({
+                "id": comment_id,
+                "author": author,
+                "updated_at": updated_at,
+                "selection_reason": reason,
+                "body": comment_body,
+            })
+    else:
+        raise WorkflowError("change_request kind must be issue or draft.", exit_code=2)
+
+    for field, text in (("title", title), ("body", body)):
+        raw = text.encode("utf-8")
+        item_id = f"change:{field}"
+        items.append({
+            "kind": "change_request_field",
+            "id": item_id,
+            "source_kind": kind,
+            "source_identity": source_identity,
+            "field": field,
+            "author": None,
+            "updated_at": source_updated_at,
+            "selection_reason": None,
+            "size_bytes": len(raw),
+            "content_sha256": hashlib.sha256(raw).hexdigest(),
+        })
+        contents[item_id] = text
+    for row in selected_rows:
+        text = row.pop("body")
+        raw = text.encode("utf-8")
+        item_id = f"comment:{row['id']}"
+        items.append({
+            "kind": "change_request_field",
+            "id": item_id,
+            "source_kind": kind,
+            "source_identity": source_identity,
+            "field": "comment",
+            "author": row["author"],
+            "updated_at": row["updated_at"],
+            "selection_reason": row["selection_reason"],
+            "size_bytes": len(raw),
+            "content_sha256": hashlib.sha256(raw).hexdigest(),
+        })
+        contents[item_id] = text
+    return f"change_request:{source_identity}", items, contents
+
+
+def contract_wording_build_scope(
+    root: Path,
+    profile: str,
+    mode: str,
+    *,
+    task_dir: Path | None = None,
+    explicit_paths: list[str] | None = None,
+    change_request_input: str | None = None,
+) -> tuple[dict[str, Any], dict[str, str]]:
+    if profile not in CONTRACT_WORDING_PROFILES:
+        raise WorkflowError("Unknown contract wording profile.", exit_code=2)
+    if mode not in {"workflow", "standalone"}:
+        raise WorkflowError("Unknown contract wording mode.", exit_code=2)
+    if profile == "planning_artifacts":
+        if mode != "workflow" or task_dir is None or explicit_paths or change_request_input:
+            raise WorkflowError("planning_artifacts requires workflow mode, the active task, and no caller selector.", exit_code=2)
+        logical_task = active_task_relative_for_archive(root, task_dir) or repo_relative(root, task_dir)
+        identity = f"planning_artifacts:{logical_task}"
+        paths = [f"{logical_task}/{name}" for name in CONTRACT_WORDING_PLANNING_SCOPE]
+        read_paths = [repo_relative(root, task_dir / name) for name in CONTRACT_WORDING_PLANNING_SCOPE]
+    elif profile == "explicit_paths":
+        if mode != "standalone" or task_dir is not None or change_request_input:
+            raise WorkflowError("explicit_paths is standalone-only and cannot replace a workflow profile.", exit_code=2)
+        values = [Path(value).as_posix() for value in list(explicit_paths or [])]
+        if not values or len(values) != len(set(values)):
+            raise WorkflowError("explicit_paths requires a non-empty duplicate-free path set.", exit_code=2)
+        paths = sorted(values, key=lambda item: item.encode("utf-8"))
+        read_paths = paths
+        identity = "explicit_paths:" + ",".join(paths)
+    else:
+        if task_dir is not None or explicit_paths or not change_request_input:
+            raise WorkflowError("change_request requires exactly one issue/draft scope input and no file selector.", exit_code=2)
+        identity, items, contents = contract_wording_change_request_scope(root, change_request_input)
+        scope = {"identity": identity, "items": items}
+        scope["scope_sha256"] = context_digest(scope)
+        return scope, contents
+
+    items = []
+    contents = {}
+    for index, (value, read_value) in enumerate(zip(paths, read_paths)):
+        path = contract_wording_markdown_path(root, read_value, f"contract wording scope path {index + 1}")
+        item, content = contract_wording_file_item(root, path)
+        if value != read_value:
+            item["id"] = f"file:{value}"
+            item["path"] = value
+        items.append(item)
+        contents[item["id"]] = content
+    scope = {"identity": identity, "items": items}
+    scope["scope_sha256"] = context_digest(scope)
+    return scope, contents
+
+
+def scan_contract_wording(scope: dict[str, Any], contents: dict[str, str]) -> dict[str, Any]:
+    hits: list[dict[str, Any]] = []
+    for item in scope["items"]:
+        item_id = item["id"]
+        locator = item.get("path") or item_id
+        for line_number, text in enumerate(contents[item_id].splitlines(), 1):
+            for term in CONTRACT_WORDING_VOCABULARY_V2:
+                if term not in text:
+                    continue
+                fact = {
+                    "scope_item_id": item_id,
+                    "locator": locator,
+                    "line": line_number,
+                    "term": term,
+                    "text": text,
+                    "content_sha256": item["content_sha256"],
+                }
+                hits.append({"hit_id": context_digest(fact), **fact})
+    return {"hits": hits, "scan_sha256": context_digest(hits)}
+
+
+def contract_wording_derive_result(
+    profile: str,
+    mode: str,
+    scope: dict[str, Any],
+    scan: dict[str, Any],
+    authored: dict[str, Any],
 ) -> dict[str, Any]:
-    normalized_status = str(status or "").strip()
-    normalized_reviewer = str(reviewer or "").strip()
-    normalized_summary = str(summary or "").strip()
-    if normalized_status != PLANNING_AMBIGUITY_STATUS_PASSED:
-        raise WorkflowError(
-            f"record-planning-approval requires --ambiguity-status {PLANNING_AMBIGUITY_STATUS_PASSED}.",
-            exit_code=2,
-            payload={"received_status": normalized_status or "(missing)"},
+    if set(authored) != {"generated_at", "semantic_review", "human_confirmation", "typed_exit"}:
+        raise WorkflowError("Contract wording recorder input has undeclared or missing fields.", exit_code=2)
+    semantic = authored.get("semantic_review")
+    if not isinstance(semantic, dict) or set(semantic) != {"revisions", "classifications", "ai_review_gate"}:
+        raise WorkflowError("Contract wording semantic_review input shape is invalid.", exit_code=2)
+    classifications = copy.deepcopy(semantic.get("classifications"))
+    if not isinstance(classifications, list):
+        classifications = []
+    classification_by_hit = {
+        row.get("hit_id"): row
+        for row in classifications
+        if isinstance(row, dict) and isinstance(row.get("hit_id"), str)
+    }
+    unchecked = [
+        hit["hit_id"]
+        for hit in scan["hits"]
+        if hit["hit_id"] not in classification_by_hit
+        or classification_by_hit[hit["hit_id"]].get("classification") in CONTRACT_WORDING_BLOCKING_CLASSIFICATIONS
+    ]
+    revisions = copy.deepcopy(semantic.get("revisions"))
+    if not isinstance(revisions, list):
+        revisions = []
+    for revision in revisions:
+        if not isinstance(revision, dict):
+            continue
+        mutation = revision.get("change_request_mutation")
+        if not isinstance(mutation, dict):
+            continue
+        payload_facts = {
+            "source_identity": mutation.get("source_identity"),
+            "locator": mutation.get("locator"),
+            "field": mutation.get("field"),
+            "preimage_sha256": mutation.get("preimage_sha256"),
+            "content_sha256": mutation.get("confirmed_content_sha256"),
+        }
+        result_facts = {
+            "source_identity": mutation.get("source_identity"),
+            "locator": mutation.get("locator"),
+            "field": mutation.get("field"),
+            "preimage_sha256": mutation.get("preimage_sha256"),
+            "content_sha256": mutation.get("reread_content_sha256"),
+            "source_updated_at": mutation.get("source_updated_at"),
+        }
+        mutation["confirmed_payload_sha256"] = context_digest(payload_facts)
+        mutation["mutation_result_sha256"] = context_digest(result_facts)
+    result = {
+        "schema_version": CONTRACT_WORDING_SCHEMA_VERSION,
+        "skill_id": CONTRACT_WORDING_SKILL_ID,
+        "generated_at": authored.get("generated_at"),
+        "profile": profile,
+        "mode": mode,
+        "vocabulary_version": CONTRACT_WORDING_VOCABULARY_VERSION,
+        "classification_version": CONTRACT_WORDING_CLASSIFICATION_VERSION,
+        "scope": copy.deepcopy(scope),
+        "scan": copy.deepcopy(scan),
+        "semantic_review": {
+            "revisions": revisions,
+            "classifications": classifications,
+            "unchecked_normative_hits": unchecked,
+            "ai_review_gate": copy.deepcopy(semantic.get("ai_review_gate")),
+        },
+        "human_confirmation": copy.deepcopy(authored.get("human_confirmation")),
+        "typed_exit": authored.get("typed_exit"),
+    }
+    result["facts_sha256"] = context_digest(result)
+    return result
+
+
+def contract_wording_structural_errors(
+    root: Path,
+    payload: dict[str, Any],
+    scope: dict[str, Any],
+    scan: dict[str, Any],
+) -> list[str]:
+    errors: list[str] = []
+    if skill_json_schema_validation_errors(payload, contract_wording_schema(root), "contract wording review result"):
+        errors.append("contract_wording_schema_validation_failed")
+    if payload.get("skill_id") != CONTRACT_WORDING_SKILL_ID:
+        errors.append("invalid_contract_wording_skill_id")
+    if payload.get("vocabulary_version") != CONTRACT_WORDING_VOCABULARY_VERSION:
+        errors.append("invalid_contract_wording_vocabulary_version")
+    if payload.get("classification_version") != CONTRACT_WORDING_CLASSIFICATION_VERSION:
+        errors.append("invalid_contract_wording_classification_version")
+    if payload.get("scope") != scope:
+        errors.append("contract_wording_scope_stale")
+    if payload.get("scan") != scan:
+        errors.append("contract_wording_scan_stale")
+    unsigned = copy.deepcopy(payload)
+    actual_facts = unsigned.pop("facts_sha256", None)
+    if actual_facts != context_digest(unsigned):
+        errors.append("contract_wording_facts_digest_mismatch")
+
+    semantic = payload.get("semantic_review")
+    semantic = semantic if isinstance(semantic, dict) else {}
+    classifications = semantic.get("classifications")
+    classifications = classifications if isinstance(classifications, list) else []
+    current_hit_ids = [hit["hit_id"] for hit in scan["hits"]]
+    classification_ids = [row.get("hit_id") for row in classifications if isinstance(row, dict)]
+    if len(classification_ids) != len(set(classification_ids)):
+        errors.append("duplicate_contract_wording_classification")
+    if set(classification_ids) - set(current_hit_ids):
+        errors.append("unused_contract_wording_classification")
+    for row in classifications:
+        if not isinstance(row, dict):
+            errors.append("invalid_contract_wording_classification")
+            continue
+        if row.get("classification") not in CONTRACT_WORDING_CLASSIFICATIONS_V1:
+            errors.append("unknown_contract_wording_classification")
+        if not str(row.get("reason") or "").strip():
+            errors.append("empty_contract_wording_classification_reason")
+    by_hit = {
+        row.get("hit_id"): row
+        for row in classifications
+        if isinstance(row, dict) and isinstance(row.get("hit_id"), str)
+    }
+    expected_unchecked = [
+        hit_id for hit_id in current_hit_ids
+        if hit_id not in by_hit
+        or by_hit[hit_id].get("classification") in CONTRACT_WORDING_BLOCKING_CLASSIFICATIONS
+    ]
+    if semantic.get("unchecked_normative_hits") != expected_unchecked:
+        errors.append("contract_wording_unchecked_projection_mismatch")
+
+    gate = semantic.get("ai_review_gate")
+    gate = gate if isinstance(gate, dict) else {}
+    typed_exit = payload.get("typed_exit")
+    if (typed_exit == "blocked") != (gate.get("status") == "blocked"):
+        errors.append("contract_wording_gate_exit_mismatch")
+    if gate.get("reviewed_scan_sha256") != scan["scan_sha256"]:
+        errors.append("contract_wording_gate_scan_mismatch")
+    dimensions = gate.get("checked_dimensions")
+    dimensions = dimensions if isinstance(dimensions, dict) else {}
+    planning_dimensions = gate.get("planning_checked_dimensions")
+    planning_dimensions_complete = True
+    if payload.get("profile") == "planning_artifacts":
+        if not isinstance(planning_dimensions, dict):
+            errors.append("contract_wording_planning_review_dimensions_missing")
+            planning_dimensions = {}
+        elif set(planning_dimensions) != set(CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS):
+            errors.append("contract_wording_planning_review_dimensions_invalid")
+        planning_dimensions_complete = (
+            set(planning_dimensions) == set(CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS)
+            and all(
+                planning_dimensions.get(name) is True
+                for name in CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+            )
         )
-    if not normalized_reviewer:
-        raise WorkflowError("record-planning-approval requires --ambiguity-reviewer identity metadata.", exit_code=2)
-    if not normalized_summary:
-        raise WorkflowError("record-planning-approval requires --ambiguity-summary with the AI ambiguity review conclusion.", exit_code=2)
-    normative_language = planning_normative_language_payload(root, task_dir, normative_hit_inputs)
-    if normative_language["unchecked_normative_hits"]:
-        raise WorkflowError(
-            "record-planning-approval blocked by unchecked normative planning artifact hits.",
-            exit_code=2,
-            payload={"normative_language": normative_language},
+    elif "planning_checked_dimensions" in gate:
+        errors.append("unexpected_contract_wording_planning_review_dimensions")
+        planning_dimensions_complete = False
+    revisions = semantic.get("revisions")
+    revisions = revisions if isinstance(revisions, list) else []
+    revision_ids = [row.get("revision_id") for row in revisions if isinstance(row, dict)]
+    if len(revision_ids) != len(set(revision_ids)):
+        errors.append("duplicate_contract_wording_revision")
+    current_hashes_by_locator = {
+        str(item.get("path") or item["id"]): item["content_sha256"]
+        for item in scope["items"]
+    }
+    current_items_by_locator = {
+        str(item.get("path") or item["id"]): item
+        for item in scope["items"]
+    }
+    live_issue_payload_digests: list[str] = []
+    for row in revisions:
+        if not isinstance(row, dict):
+            errors.append("invalid_contract_wording_revision")
+            continue
+        locator = str(row.get("locator") or "")
+        if (
+            row.get("rescan_sha256") != scan["scan_sha256"]
+            or current_hashes_by_locator.get(locator) != row.get("after_sha256")
+        ):
+            errors.append("contract_wording_revision_rescan_mismatch")
+        if row.get("before_sha256") == row.get("after_sha256"):
+            errors.append("contract_wording_revision_has_no_change")
+        current_item = current_items_by_locator.get(locator)
+        mutation = row.get("change_request_mutation")
+        is_live_issue_revision = (
+            payload.get("profile") == "change_request"
+            and isinstance(current_item, dict)
+            and current_item.get("source_kind") == "issue"
         )
+        if is_live_issue_revision:
+            if not isinstance(mutation, dict):
+                errors.append("change_request_live_mutation_evidence_missing")
+                continue
+            payload_facts = {
+                "source_identity": mutation.get("source_identity"),
+                "locator": mutation.get("locator"),
+                "field": mutation.get("field"),
+                "preimage_sha256": mutation.get("preimage_sha256"),
+                "content_sha256": mutation.get("confirmed_content_sha256"),
+            }
+            result_facts = {
+                "source_identity": mutation.get("source_identity"),
+                "locator": mutation.get("locator"),
+                "field": mutation.get("field"),
+                "preimage_sha256": mutation.get("preimage_sha256"),
+                "content_sha256": mutation.get("reread_content_sha256"),
+                "source_updated_at": mutation.get("source_updated_at"),
+            }
+            expected_payload_digest = context_digest(payload_facts)
+            expected_result_digest = context_digest(result_facts)
+            if (
+                mutation.get("source_identity") != current_item.get("source_identity")
+                or mutation.get("locator") != locator
+                or mutation.get("field") != current_item.get("field")
+                or mutation.get("preimage_sha256") != row.get("before_sha256")
+                or mutation.get("confirmed_content_sha256") != row.get("after_sha256")
+            ):
+                errors.append("change_request_confirmed_payload_binding_mismatch")
+            if (
+                mutation.get("reread_content_sha256") != row.get("after_sha256")
+                or mutation.get("reread_content_sha256") != current_item.get("content_sha256")
+                or mutation.get("source_updated_at") != current_item.get("updated_at")
+            ):
+                errors.append("change_request_mutation_result_binding_mismatch")
+            if mutation.get("confirmed_payload_sha256") != expected_payload_digest:
+                errors.append("change_request_confirmed_payload_digest_mismatch")
+            if mutation.get("mutation_result_sha256") != expected_result_digest:
+                errors.append("change_request_mutation_result_digest_mismatch")
+            live_issue_payload_digests.append(expected_payload_digest)
+        elif mutation is not None:
+            errors.append("unexpected_change_request_mutation_evidence")
+    confirmation = payload.get("human_confirmation")
+    confirmation = confirmation if isinstance(confirmation, dict) else {}
+    if confirmation.get("status") == "confirmed" and (
+        not str(confirmation.get("confirmed_by") or "").strip()
+        or not str(confirmation.get("confirmed_at") or "").strip()
+    ):
+        errors.append("incomplete_contract_wording_confirmation")
+    if confirmation.get("status") == "not_required" and (
+        confirmation.get("confirmed_by") is not None or confirmation.get("confirmed_at") is not None
+    ):
+        errors.append("invalid_not_required_contract_wording_confirmation")
+    if live_issue_payload_digests:
+        expected_confirmation_digest = context_digest(live_issue_payload_digests)
+        if confirmation.get("status") != "confirmed":
+            errors.append("change_request_live_mutation_confirmation_required")
+        if confirmation.get("confirmed_payload_sha256") != expected_confirmation_digest:
+            errors.append("change_request_confirmation_payload_digest_mismatch")
+    elif confirmation.get("confirmed_payload_sha256") is not None:
+        errors.append("unexpected_contract_wording_confirmation_payload_digest")
+
+    if typed_exit in {"pass", "content_changed"}:
+        if set(classification_ids) != set(current_hit_ids):
+            errors.append("contract_wording_hit_classification_incomplete")
+        if expected_unchecked:
+            errors.append("contract_wording_unchecked_hits_block")
+        if any(dimensions.get(name) is not True for name in CONTRACT_WORDING_REVIEW_DIMENSIONS):
+            errors.append("contract_wording_review_dimensions_incomplete")
+        if payload.get("profile") == "planning_artifacts" and not planning_dimensions_complete:
+            errors.append("contract_wording_planning_review_dimensions_incomplete")
+        if confirmation.get("status") == "refused":
+            errors.append("contract_wording_confirmation_refused")
+    if typed_exit == "pass" and revisions:
+        errors.append("contract_wording_pass_has_unconsumed_revision")
+    if typed_exit == "content_changed" and not revisions:
+        errors.append("contract_wording_content_changed_requires_revision")
+    if (
+        typed_exit == "blocked"
+        and confirmation.get("status") == "confirmed"
+        and not expected_unchecked
+        and all(dimensions.get(name) is True for name in CONTRACT_WORDING_REVIEW_DIMENSIONS)
+        and planning_dimensions_complete
+    ):
+        errors.append("contract_wording_blocked_without_blocking_evidence")
+    return context_sort(errors)
+
+
+def contract_wording_trackability_errors(root: Path, target: Path) -> list[str]:
+    relative = repo_relative(root, target)
+    try:
+        proc = subprocess.run(
+            ["git", "check-ignore", "--quiet", "--no-index", "--", relative],
+            cwd=root,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return ["contract_wording_evidence_trackability_unreadable"]
+    if proc.returncode == 0:
+        return ["contract_wording_evidence_target_ignored"]
+    if proc.returncode != 1:
+        return ["contract_wording_evidence_trackability_unreadable"]
+    return []
+
+
+def contract_wording_planning_projection(payload: dict[str, Any]) -> dict[str, Any]:
+    gate = payload.get("semantic_review", {}).get("ai_review_gate", {})
+    planning_dimensions = gate.get("planning_checked_dimensions")
+    if (
+        payload.get("profile") != "planning_artifacts"
+        or payload.get("typed_exit") != "pass"
+        or gate.get("status") != "passed"
+        or not isinstance(planning_dimensions, dict)
+        or set(planning_dimensions) != set(CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS)
+        or any(
+            planning_dimensions.get(dimension) is not True
+            for dimension in CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+        )
+    ):
+        raise WorkflowError(
+            "Planning compatibility projection requires seven explicitly AI-reviewed planning dimensions.",
+            exit_code=2,
+            payload={"error_codes": ["contract_wording_planning_review_dimensions_not_passed"]},
+        )
+    scan_hits = payload["scan"]["hits"]
+    classifications = {
+        row["hit_id"]: row for row in payload["semantic_review"]["classifications"]
+    }
+    hits = [
+        {
+            "path": hit["locator"],
+            "line": hit["line"],
+            "term": hit["term"],
+            "text": hit["text"],
+            "classification": classifications.get(hit["hit_id"], {}).get("classification", ""),
+            "reason": classifications.get(hit["hit_id"], {}).get("reason", ""),
+        }
+        for hit in scan_hits
+    ]
+    unchecked_ids = set(payload["semantic_review"]["unchecked_normative_hits"])
+    unchecked = [copy.deepcopy(row) for row, hit in zip(hits, scan_hits) if hit["hit_id"] in unchecked_ids]
     return {
-        "status": PLANNING_AMBIGUITY_STATUS_PASSED,
-        "reviewer": normalized_reviewer,
-        "summary": normalized_summary,
-        "normative_language": normative_language,
+        "status": "passed",
+        "reviewer": payload["semantic_review"]["ai_review_gate"]["reviewer"],
+        "summary": payload["semantic_review"]["ai_review_gate"]["summary"],
+        "normative_language": {
+            "controlled_terms": list(CONTRACT_WORDING_VOCABULARY_V2),
+            "scan_scope": list(CONTRACT_WORDING_PLANNING_SCOPE),
+            "hits": hits,
+            "unchecked_normative_hits": unchecked,
+        },
         "checked_dimensions": {
-            dimension: True for dimension in PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS
+            dimension: planning_dimensions[dimension]
+            for dimension in CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
         },
     }
 
 
-def planning_ambiguity_review_errors(root: Path, task_dir: Path, review: Any) -> list[str]:
+def contract_wording_planning_evidence(
+    root: Path,
+    task_dir: Path,
+    evidence_value: str | None,
+) -> tuple[Path, dict[str, Any]]:
+    expected = task_dir / CONTRACT_WORDING_EVIDENCE_ARTIFACT
+    locator = str(evidence_value or CONTRACT_WORDING_EVIDENCE_ARTIFACT).strip()
+    active_task = active_task_relative_for_archive(root, task_dir)
+    active_locator = (
+        f"{active_task}/{CONTRACT_WORDING_EVIDENCE_ARTIFACT}"
+        if active_task is not None
+        else None
+    )
+    if active_locator is not None and locator == active_locator:
+        path = expected
+    else:
+        path = resolve_task_local_path(root, task_dir, locator)
+    if path.resolve() != expected.resolve():
+        raise WorkflowError(
+            f"planning_artifacts wording evidence must be task-local {CONTRACT_WORDING_EVIDENCE_ARTIFACT}.",
+            exit_code=2,
+        )
+    if not path.is_file():
+        raise WorkflowError(
+            f"Planning contract wording evidence not found: {path}",
+            exit_code=2,
+            payload={"error_codes": ["contract_wording_evidence_missing"]},
+        )
+    payload = read_json(path)
+    scope, contents = contract_wording_build_scope(root, "planning_artifacts", "workflow", task_dir=task_dir)
+    scan = scan_contract_wording(scope, contents)
+    errors = contract_wording_structural_errors(root, payload, scope, scan)
+    if payload.get("profile") != "planning_artifacts" or payload.get("mode") != "workflow":
+        errors.append("planning_approval_requires_planning_artifacts_wording_evidence")
+    if payload.get("typed_exit") != "pass":
+        errors.append("planning_approval_requires_passed_wording_evidence")
+    errors.extend(contract_wording_trackability_errors(root, path))
+    if errors:
+        raise WorkflowError(
+            "Planning contract wording evidence is missing, stale, or blocked.",
+            exit_code=2,
+            payload={"error_codes": context_sort(errors)},
+        )
+    return path, payload
+
+
+def planning_wording_review_errors(
+    root: Path,
+    task_dir: Path,
+    approval: dict[str, Any],
+) -> list[str]:
+    binding = approval.get("contract_wording_review")
+    if not isinstance(binding, dict):
+        return [
+            "planning-approval.json 缺少 contract_wording_review；pre-#114 active approval 必须重新执行 planning_artifacts wording review 和显式规划确认。"
+        ]
+    try:
+        path, evidence = contract_wording_planning_evidence(root, task_dir, str(binding.get("artifact_path") or ""))
+    except WorkflowError as exc:
+        codes = exc.payload.get("error_codes") if isinstance(exc.payload, dict) else None
+        return ["planning-approval.json contract wording evidence 校验失败: " + ", ".join(codes or [str(exc)])]
+    logical_task = active_task_relative_for_archive(root, task_dir)
+    expected_binding = {
+        "artifact_path": (
+            f"{logical_task}/{CONTRACT_WORDING_EVIDENCE_ARTIFACT}"
+            if logical_task is not None
+            else repo_relative(root, path)
+        ),
+        "schema_id": "guru-contract-wording-review-1.0",
+        "facts_sha256": evidence["facts_sha256"],
+        "scope_sha256": evidence["scope"]["scope_sha256"],
+        "scan_sha256": evidence["scan"]["scan_sha256"],
+    }
     errors: list[str] = []
-    if not isinstance(review, dict):
-        return ["planning-approval.json 缺少 ambiguity_review 结构化证据。"]
-    if str(review.get("status") or "").strip() != PLANNING_AMBIGUITY_STATUS_PASSED:
-        errors.append(f"planning-approval.json ambiguity_review.status 必须是 {PLANNING_AMBIGUITY_STATUS_PASSED}。")
-    if not str(review.get("reviewer") or "").strip():
-        errors.append("planning-approval.json ambiguity_review 缺少 reviewer。")
-    if not str(review.get("summary") or "").strip():
-        errors.append("planning-approval.json ambiguity_review 缺少 summary。")
-
-    normative = review.get("normative_language")
-    if not isinstance(normative, dict):
-        errors.append("planning-approval.json ambiguity_review 缺少 normative_language。")
-        normative = {}
-    errors.extend(planning_normative_language_errors(root, task_dir, normative))
-
-    dimensions = review.get("checked_dimensions")
-    if not isinstance(dimensions, dict):
-        errors.append("planning-approval.json ambiguity_review 缺少 checked_dimensions。")
-        dimensions = {}
-    for dimension in PLANNING_AMBIGUITY_REQUIRED_DIMENSIONS:
-        if dimensions.get(dimension) is not True:
-            errors.append(f"planning-approval.json ambiguity_review.checked_dimensions.{dimension} 必须为 true。")
+    if binding != expected_binding:
+        errors.append("planning-approval.json contract_wording_review binding 与当前 wording evidence 不一致。")
+    if approval.get("ambiguity_review") != contract_wording_planning_projection(evidence):
+        errors.append("planning-approval.json ambiguity_review 必须是已验证 planning_artifacts wording evidence 的完整投影。")
     return errors
 
 
@@ -8225,10 +8780,7 @@ def build_planning_approval_payload(
     approval_summary: str,
     user_confirmation: str,
     artifacts: list[str],
-    ambiguity_reviewer: str,
-    ambiguity_summary: str,
-    ambiguity_status: str,
-    normative_hit_inputs: list[str] | None = None,
+    contract_wording_evidence: str,
     review_prompt_presented_at: str | None = None,
     confirmation_source: str = PLANNING_APPROVAL_CONFIRMATION_SOURCE,
 ) -> dict[str, Any]:
@@ -8259,14 +8811,10 @@ def build_planning_approval_payload(
         artifact_paths = requested
     else:
         artifact_paths = required_paths
-    ambiguity_review = build_planning_ambiguity_review_payload(
-        ambiguity_reviewer,
-        ambiguity_summary,
-        ambiguity_status,
-        root,
-        task_dir,
-        normative_hit_inputs,
+    wording_path, wording_evidence = contract_wording_planning_evidence(
+        root, task_dir, contract_wording_evidence
     )
+    ambiguity_review = contract_wording_planning_projection(wording_evidence)
     reviewed = [file_digest(root, path) for path in artifact_paths]
     artifact_repo_paths = {str(item["path"]) for item in reviewed}
     artifact_repo_paths.add(repo_relative(root, planning_approval_path(task_dir)))
@@ -8284,13 +8832,20 @@ def build_planning_approval_payload(
         "reviewer": reviewer,
         "approval_summary": approval_summary,
         "ambiguity_review": ambiguity_review,
+        "contract_wording_review": {
+            "artifact_path": repo_relative(root, wording_path),
+            "schema_id": "guru-contract-wording-review-1.0",
+            "facts_sha256": wording_evidence["facts_sha256"],
+            "scope_sha256": wording_evidence["scope"]["scope_sha256"],
+            "scan_sha256": wording_evidence["scan"]["scan_sha256"],
+        },
         "user_confirmation": {
             "source": PLANNING_APPROVAL_CONFIRMATION_SOURCE,
             "message": user_confirmation,
         },
         "reviewed_artifacts": reviewed,
         "approved_artifacts": copy.deepcopy(reviewed),
-        "notes": "record-planning-approval 是 recorder / validator：记录已经完成的 AI/human planning review 和用户确认；它不替代 planning 判断。",
+        "notes": "record-planning-approval 只投影已验证的 guru-review-contract-wording:planning_artifacts evidence，并记录已完成的 AI/human planning review 和用户确认；它不替代 semantic judgment。",
     }
 
 
@@ -8316,7 +8871,7 @@ def validate_planning_approval(
         errors.append("planning-approval.json 缺少 approval_summary。")
     if not str(payload.get("reviewer") or "").strip():
         errors.append("planning-approval.json 缺少 reviewer。")
-    errors.extend(planning_ambiguity_review_errors(root, task_dir, payload.get("ambiguity_review")))
+    errors.extend(planning_wording_review_errors(root, task_dir, payload))
     confirmation = payload.get("user_confirmation")
     if not isinstance(confirmation, dict):
         errors.append("planning-approval.json 缺少用户确认摘要。")
@@ -10642,19 +11197,12 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
     reviewer = str(args.reviewer or "").strip()
     summary = str(args.summary or "").strip()
     confirmation = str(args.user_confirmation or "").strip()
-    ambiguity_reviewer = str(getattr(args, "ambiguity_reviewer", "") or "").strip()
-    ambiguity_summary = str(getattr(args, "ambiguity_summary", "") or "").strip()
-    ambiguity_status = str(getattr(args, "ambiguity_status", PLANNING_AMBIGUITY_STATUS_PASSED) or "").strip()
     if not reviewer:
         raise WorkflowError("record-planning-approval requires --reviewer identity metadata.", exit_code=2)
     if not summary:
         raise WorkflowError("record-planning-approval requires --summary with the planning review conclusion.", exit_code=2)
     if not confirmation:
         raise WorkflowError("record-planning-approval requires --user-confirmation evidence.", exit_code=2)
-    if not ambiguity_reviewer:
-        raise WorkflowError("record-planning-approval requires --ambiguity-reviewer identity metadata.", exit_code=2)
-    if not ambiguity_summary:
-        raise WorkflowError("record-planning-approval requires --ambiguity-summary with the AI ambiguity review conclusion.", exit_code=2)
     payload = build_planning_approval_payload(
         root=root,
         task_dir=task_dir,
@@ -10662,10 +11210,7 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
         approval_summary=summary,
         user_confirmation=confirmation,
         artifacts=list(args.artifact or []),
-        ambiguity_reviewer=ambiguity_reviewer,
-        ambiguity_summary=ambiguity_summary,
-        ambiguity_status=ambiguity_status,
-        normative_hit_inputs=list(getattr(args, "normative_hit", None) or []),
+        contract_wording_evidence=str(args.contract_wording_evidence or ""),
         review_prompt_presented_at=getattr(args, "review_prompt_presented_at", None),
         confirmation_source=str(getattr(args, "confirmation_source", PLANNING_APPROVAL_CONFIRMATION_SOURCE) or ""),
     )
@@ -20668,6 +21213,202 @@ def requirements_clarification_typed_exit_live_errors(
     return []
 
 
+def contract_wording_scope_from_args(
+    root: Path,
+    args: argparse.Namespace,
+    profile: str,
+    mode: str,
+) -> tuple[dict[str, Any], dict[str, str], Path | None]:
+    task_dir: Path | None = None
+    if profile == "planning_artifacts":
+        task_dir = resolve_task_dir(root, getattr(args, "task", None))
+        config = load_config(root)
+        task_context = load_task_start_context(task_dir, config)
+        assert_workspace_boundary(root, config, task_context, task_dir)
+    elif getattr(args, "task", None):
+        raise WorkflowError("Only planning_artifacts accepts --task.", exit_code=2)
+    scope, contents = contract_wording_build_scope(
+        root,
+        profile,
+        mode,
+        task_dir=task_dir,
+        explicit_paths=list(getattr(args, "path", None) or []),
+        change_request_input=getattr(args, "change_request_input", None),
+    )
+    return scope, contents, task_dir
+
+
+def cmd_record_contract_wording_review(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    profile = str(args.profile or "").strip()
+    mode = str(args.mode or "").strip()
+    scope, contents, task_dir = contract_wording_scope_from_args(root, args, profile, mode)
+    replace_stale = bool(getattr(args, "replace_stale", False))
+    supersede_facts = str(
+        getattr(args, "supersede_reentry_facts_sha256", None) or ""
+    ).strip()
+    if replace_stale and supersede_facts:
+        raise WorkflowError(
+            "Stale replacement and current re-entry supersession are mutually exclusive.",
+            exit_code=2,
+            payload={"error_codes": ["contract_wording_replacement_modes_conflict"]},
+        )
+    if (replace_stale or supersede_facts) and (
+        profile != "planning_artifacts" or bool(getattr(args, "scan_only", False))
+    ):
+        raise WorkflowError(
+            "Contract wording replacement is available only while recording task-local planning_artifacts evidence.",
+            exit_code=2,
+            payload={"error_codes": ["contract_wording_replacement_profile_invalid"]},
+        )
+    scan = scan_contract_wording(scope, contents)
+    if args.scan_only:
+        if getattr(args, "input", None):
+            raise WorkflowError("--scan-only does not accept semantic --input.", exit_code=2)
+        return {
+            "status": "scanned",
+            "skill_id": CONTRACT_WORDING_SKILL_ID,
+            "profile": profile,
+            "mode": mode,
+            "vocabulary_version": CONTRACT_WORDING_VOCABULARY_VERSION,
+            "scope": scope,
+            "scan": scan,
+        }
+    if getattr(args, "input", None) == "-" and getattr(args, "change_request_input", None) == "-":
+        raise WorkflowError("Semantic input and change_request scope cannot both read stdin.", exit_code=2)
+    authored = contract_wording_read_input(root, getattr(args, "input", None), "contract wording recorder")
+    result = contract_wording_derive_result(profile, mode, scope, scan, authored)
+    errors = contract_wording_structural_errors(root, result, scope, scan)
+    if errors:
+        raise WorkflowError(
+            "Contract wording review result validation failed.",
+            exit_code=2,
+            payload={"error_codes": errors},
+        )
+    if profile != "planning_artifacts":
+        return result
+
+    assert task_dir is not None
+    target = task_dir / CONTRACT_WORDING_EVIDENCE_ARTIFACT
+    trackability = contract_wording_trackability_errors(root, target)
+    if trackability:
+        raise WorkflowError(
+            "Contract wording evidence target must be trackable by Git.",
+            exit_code=2,
+            payload={"error_codes": trackability},
+        )
+    if not target.exists() and (replace_stale or supersede_facts):
+        raise WorkflowError(
+            "Contract wording replacement requires an existing task-local artifact.",
+            exit_code=2,
+            payload={"error_codes": ["contract_wording_replacement_target_missing"]},
+        )
+    if target.exists():
+        existing = read_json(target)
+        if existing != result and not replace_stale and not supersede_facts:
+            raise WorkflowError(
+                "Existing contract-wording-review.json differs; use --replace-stale for stale evidence or --supersede-reentry-facts-sha256 after a current non-pass re-entry.",
+                exit_code=2,
+            )
+        if replace_stale or supersede_facts:
+            existing_errors = contract_wording_structural_errors(root, existing, scope, scan)
+            if replace_stale:
+                if not existing_errors:
+                    raise WorkflowError(
+                        "Current contract-wording-review.json cannot be replaced as stale.",
+                        exit_code=2,
+                    )
+            else:
+                supersession_errors: list[str] = []
+                if re.fullmatch(r"[0-9a-f]{64}", supersede_facts) is None:
+                    supersession_errors.append(
+                        "contract_wording_reentry_superseded_facts_invalid"
+                    )
+                if existing == result:
+                    supersession_errors.append(
+                        "contract_wording_reentry_requires_new_result"
+                    )
+                if existing_errors:
+                    supersession_errors.append(
+                        "contract_wording_reentry_requires_current_evidence"
+                    )
+                if (
+                    existing.get("profile") != result.get("profile")
+                    or existing.get("mode") != result.get("mode")
+                ):
+                    supersession_errors.append(
+                        "contract_wording_reentry_profile_mismatch"
+                    )
+                if existing.get("facts_sha256") != supersede_facts:
+                    supersession_errors.append(
+                        "contract_wording_reentry_superseded_facts_mismatch"
+                    )
+                if existing.get("typed_exit") == "pass":
+                    supersession_errors.append(
+                        "contract_wording_current_pass_protected"
+                    )
+                elif existing.get("typed_exit") not in {"content_changed", "blocked"}:
+                    supersession_errors.append(
+                        "contract_wording_reentry_requires_nonpass_exit"
+                    )
+                if supersession_errors:
+                    raise WorkflowError(
+                        "Contract wording same-profile re-entry supersession is invalid.",
+                        exit_code=2,
+                        payload={"error_codes": context_sort(supersession_errors)},
+                    )
+    write_json(target, result)
+    persisted = read_json(target)
+    if persisted != result:
+        raise WorkflowError("Persisted contract wording evidence identity mismatch.", exit_code=2)
+    trackability = contract_wording_trackability_errors(root, target)
+    if trackability:
+        raise WorkflowError(
+            "Contract wording evidence target must remain trackable by Git.",
+            exit_code=2,
+            payload={"error_codes": trackability},
+        )
+    return result
+
+
+def cmd_check_contract_wording_review(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    input_value = getattr(args, "input", None)
+    if input_value:
+        payload = contract_wording_read_input(root, input_value, "contract wording checker")
+    elif getattr(args, "task", None):
+        task_dir = resolve_task_dir(root, args.task)
+        payload = read_json(task_dir / CONTRACT_WORDING_EVIDENCE_ARTIFACT)
+    else:
+        raise WorkflowError("check-contract-wording-review requires --input or --task.", exit_code=2)
+    profile = str(payload.get("profile") or "")
+    mode = str(payload.get("mode") or "")
+    scope, contents, task_dir = contract_wording_scope_from_args(root, args, profile, mode)
+    scan = scan_contract_wording(scope, contents)
+    errors = contract_wording_structural_errors(root, payload, scope, scan)
+    if task_dir is not None:
+        expected_target = task_dir / CONTRACT_WORDING_EVIDENCE_ARTIFACT
+        if not input_value or Path(input_value).name == CONTRACT_WORDING_EVIDENCE_ARTIFACT:
+            errors.extend(contract_wording_trackability_errors(root, expected_target))
+    if args.expected_facts_sha256 and args.expected_facts_sha256 != payload.get("facts_sha256"):
+        errors.append("expected_contract_wording_facts_mismatch")
+    if errors:
+        raise WorkflowError(
+            "Contract wording review freshness validation failed.",
+            exit_code=2,
+            payload={"error_codes": context_sort(errors)},
+        )
+    return {
+        "status": "passed",
+        "skill_id": CONTRACT_WORDING_SKILL_ID,
+        "profile": profile,
+        "typed_exit": payload["typed_exit"],
+        "scope_sha256": payload["scope"]["scope_sha256"],
+        "scan_sha256": payload["scan"]["scan_sha256"],
+        "facts_sha256": payload["facts_sha256"],
+    }
+
+
 def cmd_record_requirements_clarification(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     payload, task_dir = requirements_clarification_payload_from_args(root, args)
@@ -20797,6 +21538,32 @@ def build_parser() -> argparse.ArgumentParser:
     clarification_check.add_argument("--task")
     clarification_check.add_argument("--expected-result-sha256")
 
+    wording_record = sub.add_parser("record-contract-wording-review")
+    wording_record.add_argument("--root")
+    wording_record.add_argument("--json", action="store_true")
+    wording_record.add_argument("--mode", required=True, choices=["workflow", "standalone"])
+    wording_record.add_argument("--profile", required=True, choices=sorted(CONTRACT_WORDING_PROFILES))
+    wording_record.add_argument("--input")
+    wording_record.add_argument("--task")
+    wording_record.add_argument("--path", action="append", default=[])
+    wording_record.add_argument("--change-request-input")
+    wording_record.add_argument("--scan-only", action="store_true")
+    wording_replacement = wording_record.add_mutually_exclusive_group()
+    wording_replacement.add_argument("--replace-stale", action="store_true")
+    wording_replacement.add_argument(
+        "--supersede-reentry-facts-sha256",
+        help="Exact facts_sha256 of current same-profile content_changed/blocked evidence whose consumer has entered a complete re-entry.",
+    )
+
+    wording_check = sub.add_parser("check-contract-wording-review")
+    wording_check.add_argument("--root")
+    wording_check.add_argument("--json", action="store_true")
+    wording_check.add_argument("--input")
+    wording_check.add_argument("--task")
+    wording_check.add_argument("--path", action="append", default=[])
+    wording_check.add_argument("--change-request-input")
+    wording_check.add_argument("--expected-facts-sha256")
+
     version = sub.add_parser("version")
     version.add_argument("--root")
     version.add_argument("--json", action="store_true")
@@ -20890,12 +21657,10 @@ def build_parser() -> argparse.ArgumentParser:
     planning.add_argument("--task")
     planning.add_argument("--reviewer", required=True, help="Reviewer name or AI/human review channel.")
     planning.add_argument("--summary", required=True, help="Chinese planning review conclusion.")
-    planning.add_argument("--ambiguity-reviewer", required=True, help="AI reviewer that completed planning artifact ambiguity review.")
-    planning.add_argument("--ambiguity-summary", required=True, help="Chinese ambiguity review conclusion before planning docs are shown for confirmation.")
     planning.add_argument(
-        "--ambiguity-status",
-        default=PLANNING_AMBIGUITY_STATUS_PASSED,
-        help=f"Must be {PLANNING_AMBIGUITY_STATUS_PASSED}; non-passed ambiguity review cannot record planning approval.",
+        "--contract-wording-evidence",
+        required=True,
+        help="Task-local contract-wording-review.json produced by guru-review-contract-wording:planning_artifacts:pass.",
     )
     planning.add_argument("--user-confirmation", required=True, help="Evidence summary for user approval to enter implementation.")
     planning.add_argument(
@@ -20906,11 +21671,6 @@ def build_parser() -> argparse.ArgumentParser:
         "--confirmation-source",
         default=PLANNING_APPROVAL_CONFIRMATION_SOURCE,
         help=f"Must be {PLANNING_APPROVAL_CONFIRMATION_SOURCE}; Phase 0 handoff/workflow confirmation is rejected.",
-    )
-    planning.add_argument(
-        "--normative-hit",
-        action="append",
-        help='AI-classified scan hit as "path|line|term|classification|reason". Unclassified hits and contract_violation block approval.',
     )
     planning.add_argument("--artifact", action="append", help="Task-local artifact path to approve. Defaults to existing prd/design/implement.")
     planning.add_argument("--dry-run", action="store_true")
@@ -21133,6 +21893,10 @@ def main() -> int:
             payload = cmd_record_requirements_clarification(args)
         elif args.command == "check-requirements-clarification":
             payload = cmd_check_requirements_clarification(args)
+        elif args.command == "record-contract-wording-review":
+            payload = cmd_record_contract_wording_review(args)
+        elif args.command == "check-contract-wording-review":
+            payload = cmd_check_contract_wording_review(args)
         elif args.command == "version":
             payload = cmd_version(args)
         elif args.command == "check-workspace-boundary":

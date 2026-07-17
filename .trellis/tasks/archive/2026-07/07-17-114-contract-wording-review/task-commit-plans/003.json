@@ -1,0 +1,549 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "003",
+  "task": {
+    "id": "114-contract-wording-review",
+    "path": ".trellis/tasks/07-17-114-contract-wording-review",
+    "status": "in_progress",
+    "branch": "feat/114-contract-wording-review"
+  },
+  "issue": {
+    "primary_issue": 114,
+    "ledger_sha256": "f7dc8ab2fe101b6ef0d087b4ac0293cf8469ca745129a4d924a8bcc5769abf21"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "6bfedae44d7636ef56850d7e187c2e11b0e1967b"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/planning-approval.json",
+      "sha256": "577f42f96c18cd22ed05e77cae27863fe67ed8ab0b4d77ee496240e4e3612b96",
+      "size": 11053
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+      "sha256": "6a9496192ae465eca332582c31c540c634104631b6d7f879735fe8f452e35eed",
+      "size": 11184
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/issue-scope-ledger.json",
+      "sha256": "f7dc8ab2fe101b6ef0d087b4ac0293cf8469ca745129a4d924a8bcc5769abf21",
+      "size": 671
+    },
+    "task": {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/task.json",
+      "sha256": "37034f4783a86d7888fa2133d8a1c78c924616a905fa25e04967db61cc8ddbe9",
+      "size": 690
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".agents/skills/guru-review-contract-wording/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e8aef91d3b5f6bd71208c8c5835c468505e75a7e",
+        "worktree_sha256": "fe78e6a2a2eb5e296f47f027a2bd973813a7796116bf46e683df20ba2589d4f5",
+        "mode": "100644"
+      },
+      {
+        "path": ".claude/skills/guru-review-contract-wording/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e8aef91d3b5f6bd71208c8c5835c468505e75a7e",
+        "worktree_sha256": "fe78e6a2a2eb5e296f47f027a2bd973813a7796116bf46e683df20ba2589d4f5",
+        "mode": "100644"
+      },
+      {
+        "path": ".codex/skills/guru-review-contract-wording/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e8aef91d3b5f6bd71208c8c5835c468505e75a7e",
+        "worktree_sha256": "fe78e6a2a2eb5e296f47f027a2bd973813a7796116bf46e683df20ba2589d4f5",
+        "mode": "100644"
+      },
+      {
+        "path": ".cursor/skills/guru-review-contract-wording/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e8aef91d3b5f6bd71208c8c5835c468505e75a7e",
+        "worktree_sha256": "fe78e6a2a2eb5e296f47f027a2bd973813a7796116bf46e683df20ba2589d4f5",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "468960c2168b1db19c0a6af35c9c1e08901faba6",
+        "worktree_sha256": "29f45235c1e40d147444e42f477669bccdda7b74d4384b105f64c8ca541e9e35",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "125eb9e3cab0e868ec0d014c872c29d97ce5a85e",
+        "worktree_sha256": "5276dfdea4df0ec4eddaf9341788c7ff6c4f1efff3e9479293baf130b226bfe9",
+        "mode": "100755"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e8aef91d3b5f6bd71208c8c5835c468505e75a7e",
+        "worktree_sha256": "fe78e6a2a2eb5e296f47f027a2bd973813a7796116bf46e683df20ba2589d4f5",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1f047848f17865f64552a7752fec660e2c4dc1e0",
+        "worktree_sha256": "7407044be444e02ac0ec48fefa9fc96322ded50dbd210bdf1412831ce2cdf9e0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "121d8fc896c66971b169406f384dddfb05f4d7f9",
+        "worktree_sha256": "6a9496192ae465eca332582c31c540c634104631b6d7f879735fe8f452e35eed",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/review-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "cb8a338e1306f362c63bece06b9cf9329b9e1f966b58a9f967e2913123590150",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "72c0bb6c8a4b92f9dd8088340f795e91d984026b58a0e614f132e15f6c3aaaa1",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/reviews/001-findings-review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "63a0298f8194a8fb50a75ce5e135d6cfa2ea73d08a5b361483e2dcd713330d72",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/reviews/002-closure-review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "178bb3dbbaeeb7e4e2d3ddf0864a561d831439d7d8fd81ea662e7e6307113072",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/001.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "a121fb4c03a1e3a00b917642c9e0bd568860f9a6",
+        "worktree_sha256": "f39a68a1795fe5d38624125f8b79151643012de8ce3de5e0766e4a4d6841ee82",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/002.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "918af7a96196b686ed030458166cf670f96c6905",
+        "worktree_sha256": "01e997d5d6b4e68d80fa536f0f945f9d0aa487b249979bf040a59a54370e7c4a",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "e8aef91d3b5f6bd71208c8c5835c468505e75a7e",
+        "worktree_sha256": "fe78e6a2a2eb5e296f47f027a2bd973813a7796116bf46e683df20ba2589d4f5",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "125eb9e3cab0e868ec0d014c872c29d97ce5a85e",
+        "worktree_sha256": "5276dfdea4df0ec4eddaf9341788c7ff6c4f1efff3e9479293baf130b226bfe9",
+        "mode": "100755"
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3c960ec0ad7a814b2cc01a88070fb4118cf193e0",
+        "worktree_sha256": "01c9b6a7c177056d58ddd6bf07e68f6ab4d413376028765f8eda5eed8468d64a",
+        "mode": "100644"
+      }
+    ],
+    "digest": "12bc5aab7fb88c041dd303906f7dc6d73ededffbc6504327902e34f2ae9008c7"
+  },
+  "path_classifications": [
+    {
+      "path": ".agents/skills/guru-review-contract-wording/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "P1 评论更新时间 adapter 回归合同的 Agents 分发副本，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".claude/skills/guru-review-contract-wording/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "P1 评论更新时间 adapter 回归合同的 Claude 分发副本，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".codex/skills/guru-review-contract-wording/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "P1 评论更新时间 adapter 回归合同的 Codex 分发副本，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".cursor/skills/guru-review-contract-wording/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "P1 评论更新时间 adapter 回归合同的 Cursor 分发副本，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/extension.json",
+      "category": "task-reviewed",
+      "reason": "P1 修复后的 installed extension provenance 更新，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "P1 修复的 installed REST comment adapter，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "P1 adapter 回归合同的 installed Skill package 副本，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/agent-assignment.json",
+      "category": "unrelated-preserved",
+      "reason": "实现、Phase 2 与审查 liveness/assignment metadata tail，workflow 明确要求本轮不提交。",
+      "coverage_source": "trellis-continue metadata-tail rule"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "P1 修复后重新录制并通过 validator 的 fresh Phase 2 evidence。",
+      "coverage_source": "phase2-check.json self-recorder evidence"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/review-gate.json",
+      "category": "unrelated-preserved",
+      "reason": "历史 failed Branch Review Gate metadata，需保留但不得进入 finding-fix work commit。",
+      "coverage_source": "trellis-continue metadata-tail rule"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/review.md",
+      "category": "unrelated-preserved",
+      "reason": "仍记录 Round 2 P1 open 的历史 Branch Review rollup，需留待 closure/final review 更新。",
+      "coverage_source": "trellis-continue metadata-tail rule"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/reviews/001-findings-review.md",
+      "category": "unrelated-preserved",
+      "reason": "Round 1 原始审查报告，需保留为 finding 生命周期证据但本轮不得提交。",
+      "coverage_source": "trellis-continue metadata-tail rule"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/reviews/002-closure-review.md",
+      "category": "unrelated-preserved",
+      "reason": "Round 2 原始审查报告，需保留 P1 finding owner 证据但本轮不得提交。",
+      "coverage_source": "trellis-continue metadata-tail rule"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/001.json",
+      "category": "unrelated-preserved",
+      "reason": "早期 executor 的 post-commit mutable result，按合同保留在 working tree，不进入新提交。",
+      "coverage_source": "guru-create-task-commit result-tail rule"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/002.json",
+      "category": "unrelated-preserved",
+      "reason": "上一轮 executor 的 post-commit mutable result，按合同保留在 working tree，不进入新提交。",
+      "coverage_source": "guru-create-task-commit result-tail rule"
+    },
+    {
+      "path": "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
+      "category": "task-reviewed",
+      "reason": "P1 adapter 回归合同的 canonical Skill package，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "P1 修复的 canonical REST comment adapter，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "category": "task-reviewed",
+      "reason": "P1 REST adapter 的 canonical runtime failure matrix 与 live freshness 测试，已由 fresh Phase 2 覆盖。",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/003.json",
+      "category": "task-reviewed",
+      "reason": "本次 guru-create-task-commit 调用的不可递归候选证据。",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".agents/skills/guru-review-contract-wording/tests/test_contract.py",
+    ".claude/skills/guru-review-contract-wording/tests/test_contract.py",
+    ".codex/skills/guru-review-contract-wording/tests/test_contract.py",
+    ".cursor/skills/guru-review-contract-wording/tests/test_contract.py",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
+    ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+    ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/003.json",
+    "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "message": {
+    "subject": "fix(workflow): #114 修复评论更新时间证据",
+    "body": "背景：\n合同措辞审查需以真实 GitHub 评论更新时间绑定 change_request scope。\n\n变更：\n使用 REST node_id 对齐 authoritative comment，并将 user.login、updated_at、body 与正文摘要纳入证据。\n补充分页、缺失字段、重复 identity/alias、API 失败和 stale 漂移回归测试，同步 canonical、dogfood 与四平台副本。\n\n边界：\n保留空评论正文合法；不扩张 Issue #114 scope，不修改部署资产。\n\n验证：\npackage 15/15、runtime 501/501、preset 39/39 通过；完整 throwaway、update/reapply、dogfood drift 与 live Issue #120 scan 通过。\n\nRefs #114",
+    "bytes": "fix(workflow): #114 修复评论更新时间证据\n\n背景：\n合同措辞审查需以真实 GitHub 评论更新时间绑定 change_request scope。\n\n变更：\n使用 REST node_id 对齐 authoritative comment，并将 user.login、updated_at、body 与正文摘要纳入证据。\n补充分页、缺失字段、重复 identity/alias、API 失败和 stale 漂移回归测试，同步 canonical、dogfood 与四平台副本。\n\n边界：\n保留空评论正文合法；不扩张 Issue #114 scope，不修改部署资产。\n\n验证：\npackage 15/15、runtime 501/501、preset 39/39 通过；完整 throwaway、update/reapply、dogfood drift 与 live Issue #120 scan 通过。\n\nRefs #114\n",
+    "sha256": "1a3daedbeae6e2ced30db961223f262928a105103f7de6397457afdd2588cb60"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "Codex 主会话 semantic commit gate",
+    "summary": "已复核 #114 Round 2 P1 finding-fix 的精确 stage 集合、提交语义、Issue 引用、Phase 2 freshness、Docs SSOT、upgrade/deployment/security 边界与 Branch Review metadata 保留，允许创建一个本地 finding-fix work commit。",
+    "evidence": [
+      "workspace boundary、planning approval 与 fresh phase2-check 均在 6bfedae 通过；source checkout 干净、live index 为空且 Git 处于普通操作状态。",
+      "exact_stage_paths 仅包含 10 个 REST comment adapter source/test/provenance 路径、fresh phase2-check 与 sequence 003 candidate；全部由 fresh Phase 2 或 skill-artifact 覆盖。",
+      "agent-assignment、review.md、reviews/001、reviews/002、failed review-gate 与 001/002 executor result 均分类为 unrelated-preserved，保持未提交。",
+      "提交信息为中文 Conventional Commit，唯一 footer 是 Refs #114，不含 Closes/Fixes/Resolves。",
+      "Docs SSOT 仍为 ssot_first 且无新 durable docs drift；改动不涉及部署资产、数据库、CI/CD、容器或生产配置，真实 remote branch/tag marketplace 验证留待 publish gate。"
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "explicit-user-confirmation-2026-07-17",
+    "evidence": "用户再次明确回复“确认继续”；授权适用于上述 12 个 exact_stage_paths 和本地 fix(workflow) work commit，并继续 finding closure 与最终 Branch Review；不授权 push、PR 或 Issue close。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-17T12:22:05Z",
+    "plan_digest": "e194524c43fc02d0881b049bbca70e86b73e07cb06f372889940db39122dbdf8"
+  },
+  "result": {
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-17T12:32:26Z",
+    "commit_sha": "78ea618f470eaa33fb09f6b5dacc112a60a14e04",
+    "parent": "6bfedae44d7636ef56850d7e187c2e11b0e1967b",
+    "message_sha256": "1a3daedbeae6e2ced30db961223f262928a105103f7de6397457afdd2588cb60",
+    "committed_paths": [
+      ".agents/skills/guru-review-contract-wording/tests/test_contract.py",
+      ".claude/skills/guru-review-contract-wording/tests/test_contract.py",
+      ".codex/skills/guru-review-contract-wording/tests/test_contract.py",
+      ".cursor/skills/guru-review-contract-wording/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
+      ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+      ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/003.json",
+      "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "3fe8ca1af24c27181d10a05f9f955faecbbe1a52",
+      "actual_tree": "3fe8ca1af24c27181d10a05f9f955faecbbe1a52",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".agents/skills/guru-review-contract-wording/tests/test_contract.py",
+          "expected_blob": "1d168e311cc045275fe996c308050fe7c468d044",
+          "expected_mode": "100644",
+          "actual_blob": "1d168e311cc045275fe996c308050fe7c468d044",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-contract-wording/tests/test_contract.py",
+          "expected_blob": "1d168e311cc045275fe996c308050fe7c468d044",
+          "expected_mode": "100644",
+          "actual_blob": "1d168e311cc045275fe996c308050fe7c468d044",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-contract-wording/tests/test_contract.py",
+          "expected_blob": "1d168e311cc045275fe996c308050fe7c468d044",
+          "expected_mode": "100644",
+          "actual_blob": "1d168e311cc045275fe996c308050fe7c468d044",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-contract-wording/tests/test_contract.py",
+          "expected_blob": "1d168e311cc045275fe996c308050fe7c468d044",
+          "expected_mode": "100644",
+          "actual_blob": "1d168e311cc045275fe996c308050fe7c468d044",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "a6c10c7bc3ca16386d384ded3b7cc0aba9969e89",
+          "expected_mode": "100644",
+          "actual_blob": "a6c10c7bc3ca16386d384ded3b7cc0aba9969e89",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "ac4dc4da707bbe18578851c43b7e826ab556fc60",
+          "expected_mode": "100755",
+          "actual_blob": "ac4dc4da707bbe18578851c43b7e826ab556fc60",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
+          "expected_blob": "1d168e311cc045275fe996c308050fe7c468d044",
+          "expected_mode": "100644",
+          "actual_blob": "1d168e311cc045275fe996c308050fe7c468d044",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-17-114-contract-wording-review/phase2-check.json",
+          "expected_blob": "6612ec1d53fb766b6b9b14ba6385d59dfaec7daf",
+          "expected_mode": "100644",
+          "actual_blob": "6612ec1d53fb766b6b9b14ba6385d59dfaec7daf",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-17-114-contract-wording-review/task-commit-plans/003.json",
+          "expected_blob": "d439fc1f3d5dd3abfe091333731ce9012f906576",
+          "expected_mode": "100644",
+          "actual_blob": "d439fc1f3d5dd3abfe091333731ce9012f906576",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py",
+          "expected_blob": "1d168e311cc045275fe996c308050fe7c468d044",
+          "expected_mode": "100644",
+          "actual_blob": "1d168e311cc045275fe996c308050fe7c468d044",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "ac4dc4da707bbe18578851c43b7e826ab556fc60",
+          "expected_mode": "100755",
+          "actual_blob": "ac4dc4da707bbe18578851c43b7e826ab556fc60",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "ae63357a8af7b46bf583d88154f1e77942c2b1b9",
+          "expected_mode": "100644",
+          "actual_blob": "ae63357a8af7b46bf583d88154f1e77942c2b1b9",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
+  }
+}

@@ -100,14 +100,27 @@ This validator is objective template-heading detection only; it must not judge
 whether the Chinese review narrative is semantically sufficient.
 When changing planning approval behavior, also run
 `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-dir>`
-against a current `schema_version=1.2` artifact with passed
-`ambiguity_review` evidence. Include unit tests for the v2 controlled-term
-list, fixed `scan_scope`, `hits[]`, `unchecked_normative_hits[]`,
-unclassified-hit blocking, `contract_violation` blocking, allowed
-classification reasons, rescanning mismatch failures, missing/non-passed
-ambiguity review, stale or old-source approval failure, old `schema_version=1.1`
-failure, and a regression where current HEAD / dirty-path drift does not block
-while `prd.md`, `design.md`, and `implement.md` content digests still match.
+against a current `schema_version=1.2` artifact bound to checker-validated
+`guru-review-contract-wording:planning_artifacts:pass` evidence. Include package
+and runtime tests for all three fixed profiles, selector-shrink rejection,
+vocabulary/classification version binding, complete-hit classification/reason
+validation, unchecked blocking, content-change rescan, stale/hash mismatch,
+Gate/exit biconditional, unique profile-aware consumers, planning compatibility
+projection copied value-for-value from exact AI-reviewed planning-only
+dimensions, rejection of missing/false/extra/wrong-profile dimensions,
+recorder-level current `content_changed -> pass` with unchanged post-mutation
+bytes, current `blocked -> pass` after authority/confirmation resolution,
+prior-digest mismatch, exact-same-result, wrong-profile and stale supersession
+rejection, current `pass` protection, and the separate stale replacement path,
+missing/non-pass legacy evidence, schema 1.0 wording evidence predating the
+planning-only field, old `schema_version=1.1` approval failure,
+and a regression where current HEAD / dirty-path drift does not block while the
+three planning document content digests and wording evidence remain current.
+Run source and installed package validation, dogfood drift, clean throwaway
+install, and `trellis update` plus preset reapply because the package, runtime
+commands, schema, and four discovery roots are one distribution contract.
+The throwaway fresh-install and after-update/reapply phases must each execute a
+real installed-recorder `content_changed -> pass` transition.
 When changing workspace boundary behavior, also run
 `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
 <task-dir>` from the selected task worktree and add regression tests for wrong

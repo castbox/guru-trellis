@@ -698,39 +698,60 @@ ledger, readiness, or marketplace artifact validators.
 
 Planning and Phase 2 helpers follow the same recorder / validator boundary:
 
+- `record-contract-wording-review.sh` and
+  `check-contract-wording-review.sh` are the generic deterministic recorder and
+  checker for `guru-review-contract-wording`. They rebuild the fixed profile
+  scope, rescan current bytes, derive digests/unchecked facts, validate the
+  published schema and Gate/exit/freshness invariants, and persist only
+  `planning_artifacts` evidence to task-local
+  `contract-wording-review.json`. They do not choose rewrite,
+  classification, reason, confirmation, semantic pass/block, or route intent.
+  For `planning_artifacts`, they require the canonical planning-only dimension
+  object and validate its exact shape/value; they never infer or generate those
+  AI judgments. Other profiles reject the field.
+  Task-local replacement has two mutually exclusive objective paths: stale
+  evidence uses `--replace-stale`, while complete same-profile re-entry from a
+  structurally current `content_changed`/`blocked` result uses
+  `--supersede-reentry-facts-sha256 <existing-facts-sha256>`. The recorder
+  validates currentness, exact digest, same profile/mode, a different and
+  complete new evidence result, identical-result rejection, and current-pass
+  protection; it never decides semantic re-entry or route intent.
+  For `change_request` selected comments they reject missing author or update
+  time. For a live issue revision they derive exact confirmed-payload and
+  mutation-result digests, require the human confirmation digest to bind the
+  ordered proposed payloads, and compare source/locator/field, preimage,
+  reread content, and source update time with the rebuilt live scope. These are
+  objective normal-flow consistency checks only; the script still does not
+  decide whether to mutate or whether the user should confirm.
 - `record-planning-approval.sh` records prior AI/human planning review and the
-  user's explicit post-planning confirmation after the main session completed
-  planning artifact ambiguity review and displayed task-local links to
-  `prd.md`, `design.md`, and `implement.md`; it must not decide whether
-  planning is sufficient or whether natural-language ambiguity was actually
-  resolved. New artifacts use `schema_version=1.2`,
-  `review_prompt_presented_at`, `approved_at`, `reviewed_artifacts[]`, the
-  `approved_artifacts` alias,
-  `user_confirmation.source=explicit-post-planning-review`, and structured
-  `ambiguity_review` evidence. The recorder builds controlled-term,
-  scan-scope, hit, unchecked-hit, and checked-dimension fields from fixed
-  constants and deterministic scans after receiving AI-provided
-  `--ambiguity-reviewer`, `--ambiguity-summary`, passed status, and one
-  classification record for each retained controlled-term hit. It must fail
-  closed before writing when any hit is unclassified or classified as
-  `contract_violation`.
+  user's explicit post-planning confirmation after the main session supplied a
+  current checker-validated
+  `guru-review-contract-wording:planning_artifacts:pass` evidence locator and
+  displayed task-local links to `prd.md`, `design.md`, and `implement.md`; it
+  must not decide whether planning or wording review is sufficient. New
+  artifacts use `schema_version=1.2`, bind wording artifact/schema/evidence/
+  scope/scan identities, preserve `reviewed_artifacts[]` plus the
+  `approved_artifacts` alias, use
+  `user_confirmation.source=explicit-post-planning-review`, and derive the
+  existing `ambiguity_review` audit projection only from verified wording
+  evidence, copying each validated planning-dimension value without defaults.
+  The old caller-injected classification path is not an active API.
 - `check-planning-approval.sh` validates all three planning artifact entries,
-  hash / size metadata, confirmation source, structured `ambiguity_review`
-  fields, and required audit fields before `task.py start`, before
-  implementation dispatch, and before `phase2-check.json` can be recorded. It
-  must fail closed on old schema, missing or non-passed `ambiguity_review`,
-  missing reviewer/summary, incomplete controlled terms, wrong fixed
-  `scan_scope`, missing or stale `hits`, non-empty
-  `unchecked_normative_hits`, missing checked dimensions, old source, Phase 0
-  handoff confirmation, missing docs, or changed planning document content.
-  It must rescan `prd.md`, `design.md`, and `implement.md` and compare the
-  current scan to the recorded scanner evidence instead of trusting the stored
-  array blindly.
+  hash / size metadata, confirmation source, current wording evidence through
+  the generic checker, exact compatibility projection, and required audit
+  fields before `task.py start`, before implementation dispatch, and before
+  `phase2-check.json` can be recorded. It fails closed on old schema/source,
+  missing/non-pass/stale wording evidence, non-empty unchecked hits, projection
+  or digest drift, missing docs, or changed planning document content.
   Recorded HEAD, modified-time, and `dirty_paths` remain audit context, but
   validator freshness is tied to `prd.md`, `design.md`, and `implement.md`
   content digests. A later implementation commit, metadata tail, or unrelated
   working-tree dirty path must not block planning approval while those three
   reviewed planning documents still match.
+  Schema 1.0 wording evidence that predates the planning-only dimension field
+  is nevertheless stale. It requires complete AI review re-entry, redisplay of
+  all three planning documents, and fresh post-planning confirmation; scripts
+  must reject attempts to patch missing booleans into old evidence.
 - `record-phase2-check.sh` records prior full-scope `trellis-check` evidence;
   it must not replace check judgment with command exit codes.
 - `check-phase2-check.sh` validates coverage, validation evidence, findings,

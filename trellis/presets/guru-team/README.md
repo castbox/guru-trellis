@@ -268,6 +268,8 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/check-context-discovery.sh`
 - `.trellis/guru-team/scripts/bash/record-requirements-clarification.sh`
 - `.trellis/guru-team/scripts/bash/check-requirements-clarification.sh`
+- `.trellis/guru-team/scripts/bash/record-contract-wording-review.sh`
+- `.trellis/guru-team/scripts/bash/check-contract-wording-review.sh`
 - `.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh`
 - `.trellis/guru-team/scripts/bash/record-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
@@ -289,7 +291,7 @@ platform selection:
 
 Production skill registry 同时保留 reserved `guru-create-work-commit` 与 active
 `guru-sync-base`、`guru-discover-change-context`、`guru-clarify-requirements`、
-`guru-create-task-commit`。当前
+`guru-review-contract-wording`、`guru-create-task-commit`。当前
 canonical extension version 是待发布的
 `0.6.5-guru.12`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
 （含 interface、artifact schema、
@@ -354,6 +356,26 @@ optional origin/null confirmation，不进入 trail/action mutation。GitHub aut
 必须返回 `refresh_context`；context 时间覆盖 authority 后 task update 绑定同一 digest，
 不要求第二次 refresh；`new_task` 只向 #112
 传递 side-effect-free draft，不在本 package 创建 issue/task。
+
+`guru-review-contract-wording` package 安装
+`guru-contract-wording-review-1.0` schema、example、contract、tests 和两个
+executable dispatcher wrappers。Workflow/standalone preconditions 相同；固定 profiles
+为 `change_request`、`planning_artifacts`、`explicit_paths`，typed exits 为 `pass`、
+`content_changed`、`blocked`。Vocabulary、classification semantics、AI rewrite/review
+loop 和 confirmation policy 只存在于 canonical package contract；runtime 只负责固定 scope、
+scan、hash/digest、unchecked、schema/freshness 与 Gate/exit 结构校验。Installed runtime
+同时拒绝 selected comment 缺 author/updated time，并为 live issue revision 校验 exact
+confirmed payload digest、preimage 和 current reread mutation-result identity。
+Task-local current `content_changed`/`blocked` 在 consumer 进入完整 same-profile re-entry 后，
+必须用 `--supersede-reentry-facts-sha256` 精确绑定旧 result，且完整 current 新结果必须与
+旧 artifact 不同；stale evidence 只使用互斥的 `--replace-stale`，相同结果和 current `pass`
+不得无理由覆盖。Runtime 只校验 transition facts，不决定 semantic route。
+`planning_artifacts:pass` 写 task-local `contract-wording-review.json`，供 planning
+approval adapter 投影消费；它还必须包含 canonical contract 定义的 exact
+`semantic_review.ai_review_gate.planning_checked_dimensions`，全部显式 AI-reviewed 为 true
+才能成功。Runtime 只验证该 planning-only 字段的 shape/value，projection 只逐项复制，不默认
+生成。其它 profile 禁止该字段且保持 stdout-only。Fresh install、dogfood、四平台
+discovery copies 与 update/reapply 必须同时包含 package、commands、schema 和 route markers。
 
 Shared overlays are always installed:
 
@@ -450,14 +472,20 @@ hooks, suspected bootstrap failures, or manual context reloads.
 Planning, check, review, and publish helpers are internal companion script
 subcommands used by the workflow; they are not daily user-facing entries.
 `record-planning-approval.sh` records the explicit post-planning confirmation
-after the main session completed planning artifact ambiguity review and
-displayed task-local links to `prd.md`, `design.md`, and `implement.md`. The
-artifact uses schema 1.2, passed `ambiguity_review` evidence,
-fixed-scope scanner evidence for `prd.md`, `design.md`, and `implement.md`,
+after the main session obtained checker-validated
+`guru-review-contract-wording:planning_artifacts:pass` evidence and displayed
+task-local links to `prd.md`, `design.md`, and `implement.md`. The artifact uses
+schema 1.2, binds the wording artifact/schema/scope/scan identity, derives the
+existing `ambiguity_review` audit projection, including every already-validated
+planning-dimension value, from that evidence without defaulting semantic results,
 `user_confirmation.source=explicit-post-planning-review`, and hash / size /
 modified-time metadata for all three files; Phase 0 intake approval, old
-schema/source evidence, missing/non-passed ambiguity evidence, unclassified
-controlled-term hits, or `contract_violation` hits must fail closed.
+schema/source evidence, schema 1.0 wording evidence missing the planning-only
+dimensions, missing/non-pass/stale wording evidence, projection
+drift, or non-empty unchecked hits must fail closed.
+Missing planning dimensions require a complete fresh AI review, another display
+of all three planning documents, and fresh post-planning confirmation; never
+patch booleans into old evidence.
 Freshness is based on the three planning document content digests and the
 rescanned hit set, not later HEAD drift, metadata tail, or unrelated dirty
 paths. `task.py start` remains only a status transition.
