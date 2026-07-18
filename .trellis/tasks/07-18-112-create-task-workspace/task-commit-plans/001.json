@@ -2363,7 +2363,1112 @@
     "plan_digest": "272619cea9ca85321e6fc1a74d0d1016cf6da0597e8734301634a9ca0f6d618a"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-18T16:15:01Z",
+    "commit_sha": "26a284477a1c1c21760ff7f93409466ebda9100f",
+    "parent": "7036dc4ca92a376288564345c98f6c55d8dfe6b8",
+    "message_sha256": "452c5e424fe566e07c2ec11d83f07862ed77b10c414756b14bf9bca142e7a8dd",
+    "committed_paths": [
+      ".agents/skills/guru-create-task-workspace/SKILL.md",
+      ".agents/skills/guru-create-task-workspace/examples/task-workspace-plan.json",
+      ".agents/skills/guru-create-task-workspace/examples/task-workspace-result.json",
+      ".agents/skills/guru-create-task-workspace/interface.json",
+      ".agents/skills/guru-create-task-workspace/references/contract.md",
+      ".agents/skills/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+      ".agents/skills/guru-create-task-workspace/schemas/task-workspace-result.schema.json",
+      ".agents/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh",
+      ".agents/skills/guru-create-task-workspace/scripts/create-task-workspace.sh",
+      ".agents/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh",
+      ".agents/skills/guru-create-task-workspace/tests/test_contract.py",
+      ".claude/skills/guru-create-task-workspace/SKILL.md",
+      ".claude/skills/guru-create-task-workspace/examples/task-workspace-plan.json",
+      ".claude/skills/guru-create-task-workspace/examples/task-workspace-result.json",
+      ".claude/skills/guru-create-task-workspace/interface.json",
+      ".claude/skills/guru-create-task-workspace/references/contract.md",
+      ".claude/skills/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+      ".claude/skills/guru-create-task-workspace/schemas/task-workspace-result.schema.json",
+      ".claude/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh",
+      ".claude/skills/guru-create-task-workspace/scripts/create-task-workspace.sh",
+      ".claude/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh",
+      ".claude/skills/guru-create-task-workspace/tests/test_contract.py",
+      ".codex/skills/guru-create-task-workspace/SKILL.md",
+      ".codex/skills/guru-create-task-workspace/examples/task-workspace-plan.json",
+      ".codex/skills/guru-create-task-workspace/examples/task-workspace-result.json",
+      ".codex/skills/guru-create-task-workspace/interface.json",
+      ".codex/skills/guru-create-task-workspace/references/contract.md",
+      ".codex/skills/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+      ".codex/skills/guru-create-task-workspace/schemas/task-workspace-result.schema.json",
+      ".codex/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh",
+      ".codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh",
+      ".codex/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh",
+      ".codex/skills/guru-create-task-workspace/tests/test_contract.py",
+      ".cursor/skills/guru-create-task-workspace/SKILL.md",
+      ".cursor/skills/guru-create-task-workspace/examples/task-workspace-plan.json",
+      ".cursor/skills/guru-create-task-workspace/examples/task-workspace-result.json",
+      ".cursor/skills/guru-create-task-workspace/interface.json",
+      ".cursor/skills/guru-create-task-workspace/references/contract.md",
+      ".cursor/skills/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+      ".cursor/skills/guru-create-task-workspace/schemas/task-workspace-result.schema.json",
+      ".cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh",
+      ".cursor/skills/guru-create-task-workspace/scripts/create-task-workspace.sh",
+      ".cursor/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh",
+      ".cursor/skills/guru-create-task-workspace/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/schemas/task-start-context.schema.json",
+      ".trellis/guru-team/scripts/bash/check-task-workspace-result.sh",
+      ".trellis/guru-team/scripts/bash/create-task-workspace.sh",
+      ".trellis/guru-team/scripts/bash/record-task-workspace-plan.sh",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/examples/task-workspace-plan.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/examples/task-workspace-result.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/interface.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/task-workspace-result.schema.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/check-task-workspace-result.sh",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/create-task-workspace.sh",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/record-task-workspace-plan.sh",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
+      ".trellis/guru-team/skills/registry.json",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-18-112-create-task-workspace/agent-assignment.json",
+      ".trellis/tasks/07-18-112-create-task-workspace/check.jsonl",
+      ".trellis/tasks/07-18-112-create-task-workspace/context-discovery.json",
+      ".trellis/tasks/07-18-112-create-task-workspace/contract-wording-review.json",
+      ".trellis/tasks/07-18-112-create-task-workspace/design.md",
+      ".trellis/tasks/07-18-112-create-task-workspace/implement.jsonl",
+      ".trellis/tasks/07-18-112-create-task-workspace/implement.md",
+      ".trellis/tasks/07-18-112-create-task-workspace/issue-review.json",
+      ".trellis/tasks/07-18-112-create-task-workspace/issue-scope-ledger.json",
+      ".trellis/tasks/07-18-112-create-task-workspace/phase2-check.json",
+      ".trellis/tasks/07-18-112-create-task-workspace/planning-approval.json",
+      ".trellis/tasks/07-18-112-create-task-workspace/prd.md",
+      ".trellis/tasks/07-18-112-create-task-workspace/research/current-state.md",
+      ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/001.json",
+      ".trellis/tasks/07-18-112-create-task-workspace/task-start-context.json",
+      ".trellis/tasks/07-18-112-create-task-workspace/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/examples/task-workspace-plan.json",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/examples/task-workspace-result.json",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/interface.json",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-result.schema.json",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/scripts/check-task-workspace-result.sh",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/scripts/create-task-workspace.sh",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/scripts/record-task-workspace-plan.sh",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py",
+      "trellis/skills/guru-team/registry.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/schemas/task-start-context.schema.json",
+      "trellis/workflows/guru-team/scripts/bash/check-task-workspace-result.sh",
+      "trellis/workflows/guru-team/scripts/bash/create-task-workspace.sh",
+      "trellis/workflows/guru-team/scripts/bash/record-task-workspace-plan.sh",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "b5b6b686cc8aa9913240aaf96280b440272b3651",
+      "actual_tree": "b5b6b686cc8aa9913240aaf96280b440272b3651",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".agents/skills/guru-create-task-workspace/SKILL.md",
+          "expected_blob": "24e4e748ccb49821b23cdf862c3a1dc29f8832f5",
+          "expected_mode": "100644",
+          "actual_blob": "24e4e748ccb49821b23cdf862c3a1dc29f8832f5",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-workspace/examples/task-workspace-plan.json",
+          "expected_blob": "75d106b628abd13d37b166e973f93769eec74837",
+          "expected_mode": "100644",
+          "actual_blob": "75d106b628abd13d37b166e973f93769eec74837",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-workspace/examples/task-workspace-result.json",
+          "expected_blob": "0d8ec23e2aebba012136f6a7c2709a20ece90166",
+          "expected_mode": "100644",
+          "actual_blob": "0d8ec23e2aebba012136f6a7c2709a20ece90166",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-workspace/interface.json",
+          "expected_blob": "32cc372cb4e58e82953b9343fd97ab02c5f5c5ae",
+          "expected_mode": "100644",
+          "actual_blob": "32cc372cb4e58e82953b9343fd97ab02c5f5c5ae",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-workspace/references/contract.md",
+          "expected_blob": "7af66c84acf5a76d8416f41efa46768479fc0742",
+          "expected_mode": "100644",
+          "actual_blob": "7af66c84acf5a76d8416f41efa46768479fc0742",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+          "expected_blob": "74eef2c001ea628446f8494785ccfc10915bb04e",
+          "expected_mode": "100644",
+          "actual_blob": "74eef2c001ea628446f8494785ccfc10915bb04e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-workspace/schemas/task-workspace-result.schema.json",
+          "expected_blob": "2c7c4ffb9ef7f670fe0a25aabb904264dce1e997",
+          "expected_mode": "100644",
+          "actual_blob": "2c7c4ffb9ef7f670fe0a25aabb904264dce1e997",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh",
+          "expected_blob": "1f8a37d7edaf7360db04373b6868027400325e3f",
+          "expected_mode": "100755",
+          "actual_blob": "1f8a37d7edaf7360db04373b6868027400325e3f",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-workspace/scripts/create-task-workspace.sh",
+          "expected_blob": "86fd9d37955e48bd57a20653ce9a13bd12587974",
+          "expected_mode": "100755",
+          "actual_blob": "86fd9d37955e48bd57a20653ce9a13bd12587974",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh",
+          "expected_blob": "3ca4845e144de54a39a3dc27c9ae1b9e4ed2df48",
+          "expected_mode": "100755",
+          "actual_blob": "3ca4845e144de54a39a3dc27c9ae1b9e4ed2df48",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-workspace/tests/test_contract.py",
+          "expected_blob": "d18b1a0e34f184b87249e1ac3817c8c7fa59203f",
+          "expected_mode": "100644",
+          "actual_blob": "d18b1a0e34f184b87249e1ac3817c8c7fa59203f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-workspace/SKILL.md",
+          "expected_blob": "24e4e748ccb49821b23cdf862c3a1dc29f8832f5",
+          "expected_mode": "100644",
+          "actual_blob": "24e4e748ccb49821b23cdf862c3a1dc29f8832f5",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-workspace/examples/task-workspace-plan.json",
+          "expected_blob": "75d106b628abd13d37b166e973f93769eec74837",
+          "expected_mode": "100644",
+          "actual_blob": "75d106b628abd13d37b166e973f93769eec74837",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-workspace/examples/task-workspace-result.json",
+          "expected_blob": "0d8ec23e2aebba012136f6a7c2709a20ece90166",
+          "expected_mode": "100644",
+          "actual_blob": "0d8ec23e2aebba012136f6a7c2709a20ece90166",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-workspace/interface.json",
+          "expected_blob": "32cc372cb4e58e82953b9343fd97ab02c5f5c5ae",
+          "expected_mode": "100644",
+          "actual_blob": "32cc372cb4e58e82953b9343fd97ab02c5f5c5ae",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-workspace/references/contract.md",
+          "expected_blob": "7af66c84acf5a76d8416f41efa46768479fc0742",
+          "expected_mode": "100644",
+          "actual_blob": "7af66c84acf5a76d8416f41efa46768479fc0742",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+          "expected_blob": "74eef2c001ea628446f8494785ccfc10915bb04e",
+          "expected_mode": "100644",
+          "actual_blob": "74eef2c001ea628446f8494785ccfc10915bb04e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-workspace/schemas/task-workspace-result.schema.json",
+          "expected_blob": "2c7c4ffb9ef7f670fe0a25aabb904264dce1e997",
+          "expected_mode": "100644",
+          "actual_blob": "2c7c4ffb9ef7f670fe0a25aabb904264dce1e997",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh",
+          "expected_blob": "1f8a37d7edaf7360db04373b6868027400325e3f",
+          "expected_mode": "100755",
+          "actual_blob": "1f8a37d7edaf7360db04373b6868027400325e3f",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-workspace/scripts/create-task-workspace.sh",
+          "expected_blob": "86fd9d37955e48bd57a20653ce9a13bd12587974",
+          "expected_mode": "100755",
+          "actual_blob": "86fd9d37955e48bd57a20653ce9a13bd12587974",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh",
+          "expected_blob": "3ca4845e144de54a39a3dc27c9ae1b9e4ed2df48",
+          "expected_mode": "100755",
+          "actual_blob": "3ca4845e144de54a39a3dc27c9ae1b9e4ed2df48",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-workspace/tests/test_contract.py",
+          "expected_blob": "d18b1a0e34f184b87249e1ac3817c8c7fa59203f",
+          "expected_mode": "100644",
+          "actual_blob": "d18b1a0e34f184b87249e1ac3817c8c7fa59203f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-workspace/SKILL.md",
+          "expected_blob": "24e4e748ccb49821b23cdf862c3a1dc29f8832f5",
+          "expected_mode": "100644",
+          "actual_blob": "24e4e748ccb49821b23cdf862c3a1dc29f8832f5",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-workspace/examples/task-workspace-plan.json",
+          "expected_blob": "75d106b628abd13d37b166e973f93769eec74837",
+          "expected_mode": "100644",
+          "actual_blob": "75d106b628abd13d37b166e973f93769eec74837",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-workspace/examples/task-workspace-result.json",
+          "expected_blob": "0d8ec23e2aebba012136f6a7c2709a20ece90166",
+          "expected_mode": "100644",
+          "actual_blob": "0d8ec23e2aebba012136f6a7c2709a20ece90166",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-workspace/interface.json",
+          "expected_blob": "32cc372cb4e58e82953b9343fd97ab02c5f5c5ae",
+          "expected_mode": "100644",
+          "actual_blob": "32cc372cb4e58e82953b9343fd97ab02c5f5c5ae",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-workspace/references/contract.md",
+          "expected_blob": "7af66c84acf5a76d8416f41efa46768479fc0742",
+          "expected_mode": "100644",
+          "actual_blob": "7af66c84acf5a76d8416f41efa46768479fc0742",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+          "expected_blob": "74eef2c001ea628446f8494785ccfc10915bb04e",
+          "expected_mode": "100644",
+          "actual_blob": "74eef2c001ea628446f8494785ccfc10915bb04e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-workspace/schemas/task-workspace-result.schema.json",
+          "expected_blob": "2c7c4ffb9ef7f670fe0a25aabb904264dce1e997",
+          "expected_mode": "100644",
+          "actual_blob": "2c7c4ffb9ef7f670fe0a25aabb904264dce1e997",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh",
+          "expected_blob": "1f8a37d7edaf7360db04373b6868027400325e3f",
+          "expected_mode": "100755",
+          "actual_blob": "1f8a37d7edaf7360db04373b6868027400325e3f",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh",
+          "expected_blob": "86fd9d37955e48bd57a20653ce9a13bd12587974",
+          "expected_mode": "100755",
+          "actual_blob": "86fd9d37955e48bd57a20653ce9a13bd12587974",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh",
+          "expected_blob": "3ca4845e144de54a39a3dc27c9ae1b9e4ed2df48",
+          "expected_mode": "100755",
+          "actual_blob": "3ca4845e144de54a39a3dc27c9ae1b9e4ed2df48",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-workspace/tests/test_contract.py",
+          "expected_blob": "d18b1a0e34f184b87249e1ac3817c8c7fa59203f",
+          "expected_mode": "100644",
+          "actual_blob": "d18b1a0e34f184b87249e1ac3817c8c7fa59203f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-workspace/SKILL.md",
+          "expected_blob": "24e4e748ccb49821b23cdf862c3a1dc29f8832f5",
+          "expected_mode": "100644",
+          "actual_blob": "24e4e748ccb49821b23cdf862c3a1dc29f8832f5",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-workspace/examples/task-workspace-plan.json",
+          "expected_blob": "75d106b628abd13d37b166e973f93769eec74837",
+          "expected_mode": "100644",
+          "actual_blob": "75d106b628abd13d37b166e973f93769eec74837",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-workspace/examples/task-workspace-result.json",
+          "expected_blob": "0d8ec23e2aebba012136f6a7c2709a20ece90166",
+          "expected_mode": "100644",
+          "actual_blob": "0d8ec23e2aebba012136f6a7c2709a20ece90166",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-workspace/interface.json",
+          "expected_blob": "32cc372cb4e58e82953b9343fd97ab02c5f5c5ae",
+          "expected_mode": "100644",
+          "actual_blob": "32cc372cb4e58e82953b9343fd97ab02c5f5c5ae",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-workspace/references/contract.md",
+          "expected_blob": "7af66c84acf5a76d8416f41efa46768479fc0742",
+          "expected_mode": "100644",
+          "actual_blob": "7af66c84acf5a76d8416f41efa46768479fc0742",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+          "expected_blob": "74eef2c001ea628446f8494785ccfc10915bb04e",
+          "expected_mode": "100644",
+          "actual_blob": "74eef2c001ea628446f8494785ccfc10915bb04e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-workspace/schemas/task-workspace-result.schema.json",
+          "expected_blob": "2c7c4ffb9ef7f670fe0a25aabb904264dce1e997",
+          "expected_mode": "100644",
+          "actual_blob": "2c7c4ffb9ef7f670fe0a25aabb904264dce1e997",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh",
+          "expected_blob": "1f8a37d7edaf7360db04373b6868027400325e3f",
+          "expected_mode": "100755",
+          "actual_blob": "1f8a37d7edaf7360db04373b6868027400325e3f",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-workspace/scripts/create-task-workspace.sh",
+          "expected_blob": "86fd9d37955e48bd57a20653ce9a13bd12587974",
+          "expected_mode": "100755",
+          "actual_blob": "86fd9d37955e48bd57a20653ce9a13bd12587974",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh",
+          "expected_blob": "3ca4845e144de54a39a3dc27c9ae1b9e4ed2df48",
+          "expected_mode": "100755",
+          "actual_blob": "3ca4845e144de54a39a3dc27c9ae1b9e4ed2df48",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-workspace/tests/test_contract.py",
+          "expected_blob": "d18b1a0e34f184b87249e1ac3817c8c7fa59203f",
+          "expected_mode": "100644",
+          "actual_blob": "d18b1a0e34f184b87249e1ac3817c8c7fa59203f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "248c43aaf328042dce4f13f86a41d2795717a247",
+          "expected_mode": "100644",
+          "actual_blob": "248c43aaf328042dce4f13f86a41d2795717a247",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/schemas/task-start-context.schema.json",
+          "expected_blob": "ef750ac4a167bf0b92146c857f1daed88951f9ad",
+          "expected_mode": "100644",
+          "actual_blob": "ef750ac4a167bf0b92146c857f1daed88951f9ad",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/bash/check-task-workspace-result.sh",
+          "expected_blob": "ddd3faf8167ab6e59cc7b8bb02aa55d7db7770ce",
+          "expected_mode": "100755",
+          "actual_blob": "ddd3faf8167ab6e59cc7b8bb02aa55d7db7770ce",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/bash/create-task-workspace.sh",
+          "expected_blob": "320181c28ae45eb4fd462d15f09c3bfd34655cb0",
+          "expected_mode": "100755",
+          "actual_blob": "320181c28ae45eb4fd462d15f09c3bfd34655cb0",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/bash/record-task-workspace-plan.sh",
+          "expected_blob": "5c238fc3e4e2825fdfcbb6d506ccbba1ec9eb281",
+          "expected_mode": "100755",
+          "actual_blob": "5c238fc3e4e2825fdfcbb6d506ccbba1ec9eb281",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "7bbdafbedb039155983d900bd917b0259e87434b",
+          "expected_mode": "100755",
+          "actual_blob": "7bbdafbedb039155983d900bd917b0259e87434b",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md",
+          "expected_blob": "24e4e748ccb49821b23cdf862c3a1dc29f8832f5",
+          "expected_mode": "100644",
+          "actual_blob": "24e4e748ccb49821b23cdf862c3a1dc29f8832f5",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/examples/task-workspace-plan.json",
+          "expected_blob": "75d106b628abd13d37b166e973f93769eec74837",
+          "expected_mode": "100644",
+          "actual_blob": "75d106b628abd13d37b166e973f93769eec74837",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/examples/task-workspace-result.json",
+          "expected_blob": "0d8ec23e2aebba012136f6a7c2709a20ece90166",
+          "expected_mode": "100644",
+          "actual_blob": "0d8ec23e2aebba012136f6a7c2709a20ece90166",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/interface.json",
+          "expected_blob": "32cc372cb4e58e82953b9343fd97ab02c5f5c5ae",
+          "expected_mode": "100644",
+          "actual_blob": "32cc372cb4e58e82953b9343fd97ab02c5f5c5ae",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/references/contract.md",
+          "expected_blob": "7af66c84acf5a76d8416f41efa46768479fc0742",
+          "expected_mode": "100644",
+          "actual_blob": "7af66c84acf5a76d8416f41efa46768479fc0742",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+          "expected_blob": "74eef2c001ea628446f8494785ccfc10915bb04e",
+          "expected_mode": "100644",
+          "actual_blob": "74eef2c001ea628446f8494785ccfc10915bb04e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/task-workspace-result.schema.json",
+          "expected_blob": "2c7c4ffb9ef7f670fe0a25aabb904264dce1e997",
+          "expected_mode": "100644",
+          "actual_blob": "2c7c4ffb9ef7f670fe0a25aabb904264dce1e997",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/check-task-workspace-result.sh",
+          "expected_blob": "1f8a37d7edaf7360db04373b6868027400325e3f",
+          "expected_mode": "100755",
+          "actual_blob": "1f8a37d7edaf7360db04373b6868027400325e3f",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/create-task-workspace.sh",
+          "expected_blob": "86fd9d37955e48bd57a20653ce9a13bd12587974",
+          "expected_mode": "100755",
+          "actual_blob": "86fd9d37955e48bd57a20653ce9a13bd12587974",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/record-task-workspace-plan.sh",
+          "expected_blob": "3ca4845e144de54a39a3dc27c9ae1b9e4ed2df48",
+          "expected_mode": "100755",
+          "actual_blob": "3ca4845e144de54a39a3dc27c9ae1b9e4ed2df48",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
+          "expected_blob": "d18b1a0e34f184b87249e1ac3817c8c7fa59203f",
+          "expected_mode": "100644",
+          "actual_blob": "d18b1a0e34f184b87249e1ac3817c8c7fa59203f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/registry.json",
+          "expected_blob": "fde43d0c27b6f8e9b32b594c74acae93fdcb3063",
+          "expected_mode": "100644",
+          "actual_blob": "fde43d0c27b6f8e9b32b594c74acae93fdcb3063",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/docs/public-docs.md",
+          "expected_blob": "9b09e239268e5c57ceee59fd5d254542edf572f6",
+          "expected_mode": "100644",
+          "actual_blob": "9b09e239268e5c57ceee59fd5d254542edf572f6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/preset/installer.md",
+          "expected_blob": "e8988253ab455e0bd0d3937b4104bb848343b5cb",
+          "expected_mode": "100644",
+          "actual_blob": "e8988253ab455e0bd0d3937b4104bb848343b5cb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/preset/overlay-guidelines.md",
+          "expected_blob": "554ae3d2786576da6128a168b9f553f672fd10e7",
+          "expected_mode": "100644",
+          "actual_blob": "554ae3d2786576da6128a168b9f553f672fd10e7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/preset/upstream-ownership.md",
+          "expected_blob": "376ef22a66190d7331523a57373069fb832481ea",
+          "expected_mode": "100644",
+          "actual_blob": "376ef22a66190d7331523a57373069fb832481ea",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/companion-scripts.md",
+          "expected_blob": "e3e9b68542ac50da820100d5b0defa00c3f03c72",
+          "expected_mode": "100644",
+          "actual_blob": "e3e9b68542ac50da820100d5b0defa00c3f03c72",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/data-contracts.md",
+          "expected_blob": "f3e6bdd72cf7aa4faaf7e3091ecc2fba95d7afda",
+          "expected_mode": "100644",
+          "actual_blob": "f3e6bdd72cf7aa4faaf7e3091ecc2fba95d7afda",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/index.md",
+          "expected_blob": "cd26e0a067a636c3ebf39aef04a2a59500ab050d",
+          "expected_mode": "100644",
+          "actual_blob": "cd26e0a067a636c3ebf39aef04a2a59500ab050d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/quality-guidelines.md",
+          "expected_blob": "fd5c3b12a650756ec8c2ff0ff85cd0db87440806",
+          "expected_mode": "100644",
+          "actual_blob": "fd5c3b12a650756ec8c2ff0ff85cd0db87440806",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/skill-package-contract.md",
+          "expected_blob": "c30133b112533328b9b9d286dbded8de5e33057f",
+          "expected_mode": "100644",
+          "actual_blob": "c30133b112533328b9b9d286dbded8de5e33057f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/workflow-contract.md",
+          "expected_blob": "b6390c0369c1d4d5b01b5435697cd4c65a584d4f",
+          "expected_mode": "100644",
+          "actual_blob": "b6390c0369c1d4d5b01b5435697cd4c65a584d4f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/agent-assignment.json",
+          "expected_blob": "14377da2d4a95336f9d0319848a9232949846417",
+          "expected_mode": "100644",
+          "actual_blob": "14377da2d4a95336f9d0319848a9232949846417",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/check.jsonl",
+          "expected_blob": "13a4c4bb763a2aa49b8a126da5eb00809238a446",
+          "expected_mode": "100644",
+          "actual_blob": "13a4c4bb763a2aa49b8a126da5eb00809238a446",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/context-discovery.json",
+          "expected_blob": "0d826f5f4afd396788a8c1d665f207862a46aa5f",
+          "expected_mode": "100644",
+          "actual_blob": "0d826f5f4afd396788a8c1d665f207862a46aa5f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/contract-wording-review.json",
+          "expected_blob": "71d78de31a31fd79294c31f91dc1fc65b1c0d2ad",
+          "expected_mode": "100644",
+          "actual_blob": "71d78de31a31fd79294c31f91dc1fc65b1c0d2ad",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/design.md",
+          "expected_blob": "2a4666d26c71f88af563c80eaca465cfc7eb1f7c",
+          "expected_mode": "100644",
+          "actual_blob": "2a4666d26c71f88af563c80eaca465cfc7eb1f7c",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/implement.jsonl",
+          "expected_blob": "35b8761b46ba17d90cc4e9a1207834a094a20ecc",
+          "expected_mode": "100644",
+          "actual_blob": "35b8761b46ba17d90cc4e9a1207834a094a20ecc",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/implement.md",
+          "expected_blob": "6f42e196ecdf97503bc2bd7735c378ed8a53ff9b",
+          "expected_mode": "100644",
+          "actual_blob": "6f42e196ecdf97503bc2bd7735c378ed8a53ff9b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/issue-review.json",
+          "expected_blob": "9b86f44704f2174581413d7997885c4c7c2fc1d1",
+          "expected_mode": "100644",
+          "actual_blob": "9b86f44704f2174581413d7997885c4c7c2fc1d1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/issue-scope-ledger.json",
+          "expected_blob": "42084cb8811d011b32e2a9f6d4d955f0a5f0ee09",
+          "expected_mode": "100644",
+          "actual_blob": "42084cb8811d011b32e2a9f6d4d955f0a5f0ee09",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/phase2-check.json",
+          "expected_blob": "d4fe32f523ba3911c9c2efd88eae80117b22881a",
+          "expected_mode": "100644",
+          "actual_blob": "d4fe32f523ba3911c9c2efd88eae80117b22881a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/planning-approval.json",
+          "expected_blob": "28c732e1d3884c1d639a9bee0bc4a1b96d64e04e",
+          "expected_mode": "100644",
+          "actual_blob": "28c732e1d3884c1d639a9bee0bc4a1b96d64e04e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/prd.md",
+          "expected_blob": "d12a8417ab603d1cd70128e7fa53ddea02491768",
+          "expected_mode": "100644",
+          "actual_blob": "d12a8417ab603d1cd70128e7fa53ddea02491768",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/research/current-state.md",
+          "expected_blob": "ed5b4f33ac45fa2408789f52b86a816373eea2d0",
+          "expected_mode": "100644",
+          "actual_blob": "ed5b4f33ac45fa2408789f52b86a816373eea2d0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/001.json",
+          "expected_blob": "3b9c1ec9d7d84d94c659236ea80a69a3f19e3340",
+          "expected_mode": "100644",
+          "actual_blob": "3b9c1ec9d7d84d94c659236ea80a69a3f19e3340",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/task-start-context.json",
+          "expected_blob": "55cfc454cc94b57a07f3537059b02621f6cc9767",
+          "expected_mode": "100644",
+          "actual_blob": "55cfc454cc94b57a07f3537059b02621f6cc9767",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/task.json",
+          "expected_blob": "1b95693db71f8bd24af820071b2061934a4ee330",
+          "expected_mode": "100644",
+          "actual_blob": "1b95693db71f8bd24af820071b2061934a4ee330",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/workflow.md",
+          "expected_blob": "8d3c8ae850a9536f4d2d3aeafaf472cec5b0f182",
+          "expected_mode": "100644",
+          "actual_blob": "8d3c8ae850a9536f4d2d3aeafaf472cec5b0f182",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "README.md",
+          "expected_blob": "8d8378b87a07e88c0468bf310a417e6d722ea732",
+          "expected_mode": "100644",
+          "actual_blob": "8d8378b87a07e88c0468bf310a417e6d722ea732",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/README.md",
+          "expected_blob": "2de0283a1d96b587d9a6d3f2f6dfd7d751a9b018",
+          "expected_mode": "100644",
+          "actual_blob": "2de0283a1d96b587d9a6d3f2f6dfd7d751a9b018",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/guru-team-trellis-flow.md",
+          "expected_blob": "9a3aa79bcf229270f53157c77ef24cc72f4d59fb",
+          "expected_mode": "100644",
+          "actual_blob": "9a3aa79bcf229270f53157c77ef24cc72f4d59fb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/requirement-main.md",
+          "expected_blob": "d81fb1f286046508635bec1625096d914b05adbb",
+          "expected_mode": "100644",
+          "actual_blob": "d81fb1f286046508635bec1625096d914b05adbb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/guru-team-extension.json",
+          "expected_blob": "7fc16ea8c2c6841fb4d93ccbb46890c60a8317af",
+          "expected_mode": "100644",
+          "actual_blob": "7fc16ea8c2c6841fb4d93ccbb46890c60a8317af",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/README.md",
+          "expected_blob": "0d6b4fb7bbce86d5a1300a6523d005bac04c3de5",
+          "expected_mode": "100644",
+          "actual_blob": "0d6b4fb7bbce86d5a1300a6523d005bac04c3de5",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "expected_blob": "cee2fc1e0ff9fb899238adfdcc0f96f71bf94e48",
+          "expected_mode": "100755",
+          "actual_blob": "cee2fc1e0ff9fb899238adfdcc0f96f71bf94e48",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "expected_blob": "de9ec5b0ced98c4bb4e54e9592b61f7d50723664",
+          "expected_mode": "100755",
+          "actual_blob": "de9ec5b0ced98c4bb4e54e9592b61f7d50723664",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "expected_blob": "14d4b6cfaf30983ab6f7f02e3f7890be7f2e1e80",
+          "expected_mode": "100644",
+          "actual_blob": "14d4b6cfaf30983ab6f7f02e3f7890be7f2e1e80",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+          "expected_blob": "00070a094e7bb3684ee6b05fefa0df2b183d104d",
+          "expected_mode": "100644",
+          "actual_blob": "00070a094e7bb3684ee6b05fefa0df2b183d104d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
+          "expected_blob": "0f9fad65ed1b4d8c79ca017fa25b2fff53444b7a",
+          "expected_mode": "100644",
+          "actual_blob": "0f9fad65ed1b4d8c79ca017fa25b2fff53444b7a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/SKILL.md",
+          "expected_blob": "24e4e748ccb49821b23cdf862c3a1dc29f8832f5",
+          "expected_mode": "100644",
+          "actual_blob": "24e4e748ccb49821b23cdf862c3a1dc29f8832f5",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/examples/task-workspace-plan.json",
+          "expected_blob": "75d106b628abd13d37b166e973f93769eec74837",
+          "expected_mode": "100644",
+          "actual_blob": "75d106b628abd13d37b166e973f93769eec74837",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/examples/task-workspace-result.json",
+          "expected_blob": "0d8ec23e2aebba012136f6a7c2709a20ece90166",
+          "expected_mode": "100644",
+          "actual_blob": "0d8ec23e2aebba012136f6a7c2709a20ece90166",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/interface.json",
+          "expected_blob": "32cc372cb4e58e82953b9343fd97ab02c5f5c5ae",
+          "expected_mode": "100644",
+          "actual_blob": "32cc372cb4e58e82953b9343fd97ab02c5f5c5ae",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/references/contract.md",
+          "expected_blob": "7af66c84acf5a76d8416f41efa46768479fc0742",
+          "expected_mode": "100644",
+          "actual_blob": "7af66c84acf5a76d8416f41efa46768479fc0742",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+          "expected_blob": "74eef2c001ea628446f8494785ccfc10915bb04e",
+          "expected_mode": "100644",
+          "actual_blob": "74eef2c001ea628446f8494785ccfc10915bb04e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-result.schema.json",
+          "expected_blob": "2c7c4ffb9ef7f670fe0a25aabb904264dce1e997",
+          "expected_mode": "100644",
+          "actual_blob": "2c7c4ffb9ef7f670fe0a25aabb904264dce1e997",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/scripts/check-task-workspace-result.sh",
+          "expected_blob": "1f8a37d7edaf7360db04373b6868027400325e3f",
+          "expected_mode": "100755",
+          "actual_blob": "1f8a37d7edaf7360db04373b6868027400325e3f",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/scripts/create-task-workspace.sh",
+          "expected_blob": "86fd9d37955e48bd57a20653ce9a13bd12587974",
+          "expected_mode": "100755",
+          "actual_blob": "86fd9d37955e48bd57a20653ce9a13bd12587974",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/scripts/record-task-workspace-plan.sh",
+          "expected_blob": "3ca4845e144de54a39a3dc27c9ae1b9e4ed2df48",
+          "expected_mode": "100755",
+          "actual_blob": "3ca4845e144de54a39a3dc27c9ae1b9e4ed2df48",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py",
+          "expected_blob": "d18b1a0e34f184b87249e1ac3817c8c7fa59203f",
+          "expected_mode": "100644",
+          "actual_blob": "d18b1a0e34f184b87249e1ac3817c8c7fa59203f",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/registry.json",
+          "expected_blob": "fde43d0c27b6f8e9b32b594c74acae93fdcb3063",
+          "expected_mode": "100644",
+          "actual_blob": "fde43d0c27b6f8e9b32b594c74acae93fdcb3063",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "expected_blob": "9929d460a923180a2f3ad0ce6ca1dab234ce5559",
+          "expected_mode": "100644",
+          "actual_blob": "9929d460a923180a2f3ad0ce6ca1dab234ce5559",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/README.md",
+          "expected_blob": "4e899e060d2343fb0c97cb31380578ac30c5b2b1",
+          "expected_mode": "100644",
+          "actual_blob": "4e899e060d2343fb0c97cb31380578ac30c5b2b1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/schemas/task-start-context.schema.json",
+          "expected_blob": "ef750ac4a167bf0b92146c857f1daed88951f9ad",
+          "expected_mode": "100644",
+          "actual_blob": "ef750ac4a167bf0b92146c857f1daed88951f9ad",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/bash/check-task-workspace-result.sh",
+          "expected_blob": "ddd3faf8167ab6e59cc7b8bb02aa55d7db7770ce",
+          "expected_mode": "100755",
+          "actual_blob": "ddd3faf8167ab6e59cc7b8bb02aa55d7db7770ce",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/bash/create-task-workspace.sh",
+          "expected_blob": "320181c28ae45eb4fd462d15f09c3bfd34655cb0",
+          "expected_mode": "100755",
+          "actual_blob": "320181c28ae45eb4fd462d15f09c3bfd34655cb0",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/bash/record-task-workspace-plan.sh",
+          "expected_blob": "5c238fc3e4e2825fdfcbb6d506ccbba1ec9eb281",
+          "expected_mode": "100755",
+          "actual_blob": "5c238fc3e4e2825fdfcbb6d506ccbba1ec9eb281",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "7bbdafbedb039155983d900bd917b0259e87434b",
+          "expected_mode": "100755",
+          "actual_blob": "7bbdafbedb039155983d900bd917b0259e87434b",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "faf13203994bf6f3e5dd456480117565c8ed8919",
+          "expected_mode": "100644",
+          "actual_blob": "faf13203994bf6f3e5dd456480117565c8ed8919",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/workflow.md",
+          "expected_blob": "8d3c8ae850a9536f4d2d3aeafaf472cec5b0f182",
+          "expected_mode": "100644",
+          "actual_blob": "8d3c8ae850a9536f4d2d3aeafaf472cec5b0f182",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

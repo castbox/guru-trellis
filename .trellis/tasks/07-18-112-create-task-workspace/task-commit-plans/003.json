@@ -266,7 +266,59 @@
     "plan_digest": "13a4c1f761c59e2f4294cdaf5943c3882dd1b20e3ff3a69d63a81c85c71b5f4e"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-18T18:19:11Z",
+    "commit_sha": "ed7c0786cc85f3bfd0378cd7433b37a5703c6425",
+    "parent": "c032fa6f37e25bf5b4ed1227b8b2264eb580a8e3",
+    "message_sha256": "cf1233f0f467a2df16dce46aeb07258e68c88c7e018d6138b59e594f587e82c1",
+    "committed_paths": [
+      ".trellis/tasks/07-18-112-create-task-workspace/phase2-check.json",
+      ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/003.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "fa90cc3c667a552ccc240b191c6cbb9c35d9f744",
+      "actual_tree": "fa90cc3c667a552ccc240b191c6cbb9c35d9f744",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/phase2-check.json",
+          "expected_blob": "551f8112c74770ea7521978abe784aef6df68c7b",
+          "expected_mode": "100644",
+          "actual_blob": "551f8112c74770ea7521978abe784aef6df68c7b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/003.json",
+          "expected_blob": "914dd24ca73dc163a5318d6b3281de12f58d5ee6",
+          "expected_mode": "100644",
+          "actual_blob": "914dd24ca73dc163a5318d6b3281de12f58d5ee6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "expected_blob": "1141182b5cac9cc537cfbb0c9c6c0e1141ffb97d",
+          "expected_mode": "100644",
+          "actual_blob": "1141182b5cac9cc537cfbb0c9c6c0e1141ffb97d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/README.md",
+          "expected_blob": "41ab28f566e6a591101b7e2160e09c9741ddb1ae",
+          "expected_mode": "100644",
+          "actual_blob": "41ab28f566e6a591101b7e2160e09c9741ddb1ae",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

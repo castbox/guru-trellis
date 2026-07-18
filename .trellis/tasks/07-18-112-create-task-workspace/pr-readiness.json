@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/112-create-task-workspace",
+    "reviewed_head_sha": "38a51965e5c4af32941c595badb07b4017965861",
+    "title": "feat(trellis): 实现统一任务工作区创建闭环",
+    "body_source": "pr-body.md",
+    "body_sha256": "5e6c01815949c5d98bb55f80c8ea2be457986410f902563bf55948a89f9d812a",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "1b32026374994b56fb6e6344c39f72b8dc1cc2d1016e8e5386fbf74ac90cecb4"
+  },
+  "publish_inputs_sha256": "0bfd81314f8668a9da6f251548d2d90eae1ed418bf9dc0ed8fbc2dece6809dfe"
+}

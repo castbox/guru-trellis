@@ -5,7 +5,22 @@
     "url": "https://github.com/castbox/guru-trellis/issues/112",
     "title": "拆分 #98：实现 guru-create-task-workspace 并集成变更 Intake Skills",
     "reason": "当前 task 的 primary issue；combined acceptance 全部通过后关闭。",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "Fresh Phase 2 独立语义检查覆盖 Issue #112 的 R1-R12、AC1-AC17、planning/implementation handoff、Docs SSOT、124-file implementation、分发、ownership、install/update/reapply、A/B merge 与安全部署边界；完整 suite 644/644 通过。",
+      "Round 1-5 已关闭 official identity、public version、duplicate Issue recovery、mutation-time base freshness 与 created provenance findings；Round 6 fresh final reviewer绑定 HEAD 38a51965e5c4af32941c595badb07b4017965861，覆盖 origin/main...HEAD 完整 diff且 P0/P1/P2/P3 均为 0。",
+      "Source/installed validators、303 managed files、43 frozen overlays、dogfood drift、六树 byte/mode parity、zero sidecar/conflict/removal、clean throwaway 与双向 A/B merge均通过；remote branch-pinned marketplace verification由 finish-work在PR创建前强制执行。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "42ffba1cd9db38cb9755651e09548d86dd342939801fafe860c4c14f9efdeea5",
+        "verified_content_head": "38a51965e5c4af32941c595badb07b4017965861",
+        "remote_head": "38a51965e5c4af32941c595badb07b4017965861",
+        "publish_head": "38a51965e5c4af32941c595badb07b4017965861",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -13,21 +28,66 @@
       "url": "https://github.com/castbox/guru-trellis/issues/112",
       "title": "拆分 #98：实现 guru-create-task-workspace 并集成变更 Intake Skills",
       "reason": "当前 task 的 primary issue；combined acceptance 全部通过后关闭。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "Fresh Phase 2 独立语义检查覆盖 Issue #112 的 R1-R12、AC1-AC17、planning/implementation handoff、Docs SSOT、124-file implementation、分发、ownership、install/update/reapply、A/B merge 与安全部署边界；完整 suite 644/644 通过。",
+        "Round 1-5 已关闭 official identity、public version、duplicate Issue recovery、mutation-time base freshness 与 created provenance findings；Round 6 fresh final reviewer绑定 HEAD 38a51965e5c4af32941c595badb07b4017965861，覆盖 origin/main...HEAD 完整 diff且 P0/P1/P2/P3 均为 0。",
+        "Source/installed validators、303 managed files、43 frozen overlays、dogfood drift、六树 byte/mode parity、zero sidecar/conflict/removal、clean throwaway 与双向 A/B merge均通过；remote branch-pinned marketplace verification由 finish-work在PR创建前强制执行。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "42ffba1cd9db38cb9755651e09548d86dd342939801fafe860c4c14f9efdeea5",
+          "verified_content_head": "38a51965e5c4af32941c595badb07b4017965861",
+          "remote_head": "38a51965e5c4af32941c595badb07b4017965861",
+          "publish_head": "38a51965e5c4af32941c595badb07b4017965861",
+          "commands_passed": true
+        }
+      ]
     },
     {
       "number": 99,
       "url": "https://github.com/castbox/guru-trellis/issues/99",
       "title": "拆分 #53：取消 Guru Team 安装与任务创建对 Trellis developer identity 的依赖",
       "reason": "#112 必须完整承接 no-developer-identity task creation 与安装验收后关闭。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "Assignee固定顺序已实现为 explicit、single issue assignee、current GitHub login、AI choice，并始终显式传给 official task create；多 assignee或无法解析时 fail closed。",
+        "Official task handler adapter只在单次调用内隔离 developer accessor，task.json creator与assignee均绑定 reviewed login，同时 existing .trellis/.developer bytes保持不变。",
+        "Clean throwaway、installed validator与focused regression覆盖无 .trellis/.developer、无 .trellis/workspace、no-developer task creation、existing identity preservation与update/reapply；Phase 2和Round 6均确认当前 findings为0。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "42ffba1cd9db38cb9755651e09548d86dd342939801fafe860c4c14f9efdeea5",
+          "verified_content_head": "38a51965e5c4af32941c595badb07b4017965861",
+          "remote_head": "38a51965e5c4af32941c595badb07b4017965861",
+          "publish_head": "38a51965e5c4af32941c595badb07b4017965861",
+          "commands_passed": true
+        }
+      ]
     },
     {
       "number": 54,
       "url": "https://github.com/castbox/guru-trellis/issues/54",
       "title": "README 里的安装 prompt 用户名的部分 需要改进",
       "reason": "#112 clean throwaway 必须覆盖原 developer-name 安装场景后关闭。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "Guru Team README、workflow/preset docs与installer已移除安装和任务创建对 developer name的要求，不再要求或猜测 Trellis developer identity。",
+        "Clean throwaway从无 developer identity的新仓库执行 marketplace discovery/preview/switch、preset install、workspace/task create、trellis update与workflow/preset reapply并通过。",
+        "Source/installed validators确认303个managed files一致、sidecar/conflict/removal均为0；Round 6最终审查确认#54原developer-name安装场景已被combined acceptance完整覆盖。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "42ffba1cd9db38cb9755651e09548d86dd342939801fafe860c4c14f9efdeea5",
+          "verified_content_head": "38a51965e5c4af32941c595badb07b4017965861",
+          "remote_head": "38a51965e5c4af32941c595badb07b4017965861",
+          "publish_head": "38a51965e5c4af32941c595badb07b4017965861",
+          "commands_passed": true
+        }
+      ]
     }
   ],
   "related_issues": [
