@@ -62,7 +62,7 @@ The durable result stores only portable projections and error codes:
 
 - context: schema/exit, snapshot/base/query/live/current/history/duplicate
   identities;
-- clarity: schema/exit, result/target/content/scope identities;
+- clarity: schema/exit, result/target/disposition/content/scope identities;
 - wording: schema/profile/exit, facts/scope/scan and target-content identities.
 
 Each projection has `status=current`, `missing`, or `invalid`. Only `current`
@@ -71,7 +71,9 @@ input to the AI's reroute judgment; scripts never map an error code to an exit.
 
 `evidence_linkage` binds target identity/content, base/current/history/
 duplicate identities, clarity facts, wording facts, and one canonical
-`linkage_sha256`. Checker invocation supplies the same current prerequisite
+`linkage_sha256`. The clarification disposition digest is an independent
+linkage member, so a retained/selected target decision cannot drift while a
+previous readiness pass remains reusable. Checker invocation supplies the same current prerequisite
 payloads and change-request input, rebuilds this projection, and compares it
 byte-for-byte with the recorded result.
 

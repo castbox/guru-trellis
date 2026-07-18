@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "skill_id": "guru-clarify-requirements",
   "generated_at": "2026-01-01T00:00:00Z",
   "mode": "standalone",
@@ -19,6 +19,18 @@
     "updated_at": null,
     "body_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
     "facts_sha256": "ecbfcd32f254c0ebc87fa353478d4b913cdde8d3933b558c81aa837a49f135b8"
+  },
+  "target_disposition": {
+    "disposition": "keep_current_draft",
+    "duplicate_query": "repo:example/guru-extension is:issue is:open reviewed draft",
+    "duplicate_checked_at": "2026-01-01T00:00:00Z",
+    "duplicate_candidates": [],
+    "duplicate_facts_sha256": "483927c9d8588cb79f0aca1ccfe80ac4242fad74eb5374408b80d886867b03a6",
+    "selected_issue": null,
+    "original_target_role": "primary",
+    "decision_summary": "No open duplicate exists, so the current reviewed draft remains the target.",
+    "confirmation_ref": null,
+    "disposition_digest": "4af679323fd5d9a9266a7edfdec2a41fd0af97c432982e64c811e35450f8d8e4"
   },
   "context_evidence": {
     "status": "current",
@@ -65,6 +77,7 @@
     "status": "not_required",
     "confirmation_kind": "none",
     "action_digest": null,
+    "target_disposition_digest": null,
     "proposal_digests": [],
     "confirmed_actions": [],
     "confirmer": null,
@@ -84,12 +97,13 @@
   "affected_contracts": ["requirements", "workflow routing"],
   "content_identity": {
     "target_sha256": "603e08673b9ead771afe56bee61774d9a9a70b6ba0fa0b40c76cc050ac1aaaf0",
+    "disposition_sha256": "fc60202f9de59f7a860a29682f8a417ed4e0c5844afbe2712b4ef59f38e52404",
     "content_sha256": "94b13eddb24ebfe946826823d9c9505253f0ced541d0cdb5bedc92bf068e95bf",
     "context_sha256": "46be0780ee8aaa5cf134e8b534e695728c4cd093d1ac6a7505d00996d782b3b5",
     "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
     "action_sha256": "8bd79fcbfc2bf6fc34dca122c1c04c6afdc1425ffcd64a49289f1ee0cc764dc2",
     "payload_sha256": "161a1bfffa621be8ff92c3a770b613a877f77c8a2d865342c10988ae7f72aa6b",
-    "result_sha256": "0dcff885c56cbc50cac622c6adbf60524d2f7307d7590d024b47e3de9fa26596"
+    "result_sha256": "81d287951c5e86525cd84ab28d527bdaeda55c88e3375080c400062764886c11"
   },
   "reason": "All load-bearing requirements are confirmed by current evidence.",
   "consumer": {

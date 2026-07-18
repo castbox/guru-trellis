@@ -79,7 +79,7 @@ class SourceValidationTests(unittest.TestCase):
             ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"],
         )
         self.assertEqual(result["facts"]["invoke_markers"], 6)
-        self.assertEqual(result["facts"]["exit_markers"], 22)
+        self.assertEqual(result["facts"]["exit_markers"], 23)
         self.assertEqual(result["facts"]["target_markers"], 12)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")

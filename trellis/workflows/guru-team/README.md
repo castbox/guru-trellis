@@ -56,7 +56,7 @@ workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandato
 `guru-create-task-commit`；同时以 consumer-only `planned` lifecycle 保留
 `guru-create-task-workspace`，但不安装 #112 package 或 invoke/exit marker。Workflow 不得为
 reserved/planned id 伪造 invocation route。当前 canonical
-extension version 是待发布的 `0.6.5-guru.13`，已发布 stable source 仍是
+extension version 是待发布的 `0.6.5-guru.14`，已发布 stable source 仍是
 `v0.6.5-guru.2`。
 
 Active interface schema 1.2 保留 `workflow` / `standalone` mode id，新增必填
@@ -233,12 +233,17 @@ binding。Package 没有 GitHub mutation executor；comment/body 写入仅在 AI
 Pre-task/standalone 结果 stdout-only且无专用 artifact。Active-task current inclusion 绑定
 GitHub-visible authority、`issue-scope-ledger.json`、`prd.md`/`design.md`/`implement.md`、stale
 planning/Phase-2/Branch-Review identities与三个 re-entry owners。Schema 是
-`guru-requirements-clarification-1.0`，commands 是
+`guru-requirements-clarification-2.0`，commands 是
 `record-requirements-clarification` / `check-requirements-clarification`。Active-task Scope Change
 Gate mandatory invoke同一Skill。Exits 为 `clear` -> caller-aware
 `guru-requirements-clear-router`（initial/draft -> #114 wording，standalone -> caller，active ->
 planning review或exact interrupted progression）、`needs_context` -> context discovery、`refresh_context` -> base sync、
+`retarget_context` -> base sync 并对 selected open issue 完整重跑 Intake、
 `new_task` -> staged #112 full intake route、`blocked` -> fail-closed stop。
+
+2.0 以 target disposition、duplicate candidate decision、authority impact、
+`select_existing_issue` / `reopen_issue` 和 `retarget_context` 替代无法兼容扩展的 1.0 artifact。
+旧 artifact/caller fail closed 并从 `guru-sync-base` 重跑，不执行语义自动迁移。
 
 Active-task `clear`/`new_task` 要求非空且全部属于七类 terminal decision 的 proposal set；
 五类 scope classification 无论 origin 均要求 exact proposal 用户证据，并 exact 匹配当前

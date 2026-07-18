@@ -27,12 +27,15 @@ AI-owned and require exact confirmed payloads plus a live reread.
 Fail closed on missing/current-context drift, repository `answered` without
 checked evidence, invalid question
 lifecycle, open load-bearing questions, confirmed-payload/live mutation or
-digest mismatch, empty/non-final active-task proposal sets on `clear`/`new_task`,
+digest mismatch, missing/stale/multiple target disposition, unresolved or
+stale duplicate-candidate decisions, closed targets without an explicit legal
+disposition, empty/non-final active-task proposal sets on `clear`/`new_task`,
 any of the five scope classifications without exact user-decision evidence,
 any classification task update not covered by the same combined exact
 proposal/action confirmation,
 mechanism disposition with confirmation/trail/mutation, incomplete schema 1.2
 planning approval, missing ledger decision trail or GitHub-visible authority,
-authority/context/task-update order mismatch, invalid caller resume, stale active-task evidence, unknown
-exits, or missing compatible runtime. This package is not self-contained or
-portable.
+load-bearing clarification without a confirmed and current issue/draft
+authority action, authority/context/task-update order mismatch, invalid caller
+resume, stale active-task evidence, legacy 1.0 artifact input, unknown exits,
+or missing compatible runtime. This package is not self-contained or portable.

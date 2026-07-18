@@ -337,15 +337,22 @@ live facts；recorder/checker 只规范化和校验 closed schema、derived dige
 confirmed exact payload/mutation/live content、active-task ledger/planning/stale-gate linkage 与 typed exit。Pre-task/standalone stdout-only，
 无专用 clarification artifact；active-task current inclusion 绑定
 `guru-approve-task-plan`、`guru-check-task`、`guru-review-branch` re-entry owners。Schema 是
-`guru-requirements-clarification-1.0`，managed commands 是
+`guru-requirements-clarification-2.0`，managed commands 是
 `record-requirements-clarification` 与 `check-requirements-clarification`。Active-task Scope
 Change Gate mandatory invoke本Skill。Exits 是 `clear` -> caller-aware
 `guru-requirements-clear-router`、`needs_context` ->
-`guru-discover-change-context`、`refresh_context` -> `guru-sync-base`、`new_task` -> staged
+`guru-discover-change-context`、`refresh_context` -> `guru-sync-base`、`retarget_context` ->
+`guru-sync-base` 并针对 selected issue 完整重跑 Intake、`new_task` -> staged
 `guru-full-task-intake-chain`、`blocked` -> `requirements-clarification-blocked`。成功 GitHub
 mutation 必须返回 `refresh_context`；`new_issue_draft` 不创建 issue，真正 intake mutation
 属于 #112。Clear router只验证 `resume_target`并恢复initial wording、standalone caller、
 active planning review或exact interrupted progression，不重新分类scope。
+
+2.0 新增 checker-bound target disposition、duplicate candidate decision、authority impact、
+`select_existing_issue` / `reopen_issue` 与 `retarget_context`。1.0 artifact/caller 无法表达这些
+必填合同，recorder/checker 返回
+`requirements_clarification_legacy_schema_requires_refresh`；不做语义自动迁移，必须从
+`guru-sync-base` 重新执行完整 Intake。
 
 Active-task `clear`/`new_task` 必须携带非空且全部属于七类 terminal decision 的 proposal set；
 accepted-current/related/followup/new-task/out-of-scope 五类 scope classification 无论来源状态，
@@ -422,7 +429,7 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.13`；在对应 merge commit 创建并验证
+manifest 已递增到下一待发布版本 `0.6.5-guru.14`；在对应 merge commit 创建并验证
 release tag 前，不得把 `.7` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录

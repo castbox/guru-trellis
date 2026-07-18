@@ -109,9 +109,44 @@ fail_if_python_cache() {
 verify_requirements_clarification_exits() {
   local label="$1"
   local probe_dir="$WORK_DIR/requirements-clarification-$label"
-  mkdir -p "$probe_dir"
+  local fake_bin="$probe_dir/bin"
+  mkdir -p "$probe_dir" "$fake_bin"
+  cat >"$fake_bin/gh" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" != "issue" || "${2:-}" != "view" ]]; then
+  echo "unsupported throwaway gh invocation" >&2
+  exit 2
+fi
+
+number="${3:-}"
+case "$number" in
+  7)
+    state="${GURU_FAKE_ISSUE_7_STATE:-closed}"
+    if [[ "$state" == "open" ]]; then
+      updated_at="2026-01-01T00:00:02Z"
+    else
+      updated_at="2026-01-01T00:00:00Z"
+    fi
+    ;;
+  8)
+    state="open"
+    updated_at="2026-01-01T00:00:00Z"
+    ;;
+  *)
+    echo "unknown throwaway issue: $number" >&2
+    exit 2
+    ;;
+esac
+
+printf '{"number":%s,"url":"https://github.com/example/guru-extension/issues/%s","state":"%s","updatedAt":"%s","body":"Reviewed source issue body."}\n' \
+  "$number" "$number" "$state" "$updated_at"
+SH
+  chmod +x "$fake_bin/gh"
   python3 - "$TARGET" "$probe_dir" <<'PY'
 import copy
+import hashlib
 import importlib.util
 import json
 import sys
@@ -131,9 +166,347 @@ example = json.loads(
     .read_text(encoding="utf-8")
 )
 multiline_markdown = "# Clarification\n\n- first\tvalue\r\n- second"
+issue_body = "Reviewed source issue body."
 
-clear = copy.deepcopy(example)
-clear = gtt.derive_requirements_clarification_result(clear)
+
+def derive(payload):
+    return gtt.derive_requirements_clarification_result(payload)
+
+
+def issue_target(payload, *, state="open"):
+    payload = copy.deepcopy(payload)
+    payload["invocation_context"] = {
+        "kind": "initial_issue",
+        "caller": "throwaway install",
+        "task_locator": None,
+        "resume_target": "guru-review-contract-wording",
+    }
+    projection = {
+        "kind": "issue",
+        "repo": "example/guru-extension",
+        "issue_number": 7,
+        "url": "https://github.com/example/guru-extension/issues/7",
+        "state": state,
+        "updated_at": "2026-01-01T00:00:00Z",
+        "body_sha256": hashlib.sha256(issue_body.encode("utf-8")).hexdigest(),
+    }
+    payload["review_target"] = {
+        **projection,
+        "facts_sha256": gtt.context_digest(projection),
+    }
+    return payload
+
+
+def candidate(number, decision):
+    projection = {
+        "repo": "example/guru-extension",
+        "number": number,
+        "identity": f"#{number}",
+        "url": f"https://github.com/example/guru-extension/issues/{number}",
+        "state": "open",
+        "updated_at": "2026-01-01T00:00:00Z",
+    }
+    return {
+        **projection,
+        "facts_sha256": gtt.context_digest(projection),
+        "decision": decision,
+        "reason": "The candidate was compared with the reviewed delivery unit.",
+    }
+
+
+def disposition(
+    payload,
+    kind,
+    *,
+    candidates=None,
+    selected_issue=None,
+    original_target_role="primary",
+    confirmation_ref=None,
+):
+    payload = copy.deepcopy(payload)
+    payload["target_disposition"] = {
+        "disposition": kind,
+        "duplicate_query": "repo:example/guru-extension is:issue is:open reviewed target",
+        "duplicate_checked_at": "2026-01-01T00:00:00Z",
+        "duplicate_candidates": candidates or [],
+        "duplicate_facts_sha256": "0" * 64,
+        "selected_issue": selected_issue,
+        "original_target_role": original_target_role,
+        "decision_summary": f"The AI selected {kind} from the current evidence.",
+        "confirmation_ref": confirmation_ref,
+        "disposition_digest": "0" * 64,
+    }
+    return derive(payload)
+
+
+def confirm(payload, *action_ids):
+    payload = derive(payload)
+    actions = {
+        action["action_id"]: action
+        for action in payload["source_actions"]
+        if isinstance(action, dict)
+    }
+    payload["human_confirmation"] = {
+        "status": "confirmed",
+        "confirmation_kind": (
+            "exact_source_action_and_target"
+            if action_ids
+            else "exact_target_disposition"
+        ),
+        "action_digest": (
+            gtt.context_digest([
+                actions[action_id]["action_digest"] for action_id in action_ids
+            ])
+            if action_ids
+            else None
+        ),
+        "target_disposition_digest": payload["target_disposition"]["disposition_digest"],
+        "proposal_digests": [],
+        "confirmed_actions": list(action_ids),
+        "confirmer": "throwaway-user",
+        "confirmed_at": "2026-01-01T00:00:01Z",
+        "evidence_summary": "The exact target disposition and actions were confirmed.",
+    }
+    return derive(payload)
+
+
+def retarget(payload):
+    selected_candidate = candidate(8, "selected")
+    selected_issue = {
+        "repo": selected_candidate["repo"],
+        "issue_number": selected_candidate["number"],
+        "url": selected_candidate["url"],
+        "state": selected_candidate["state"],
+        "updated_at": selected_candidate["updated_at"],
+        "facts_sha256": selected_candidate["facts_sha256"],
+    }
+    payload = copy.deepcopy(payload)
+    payload["typed_exit"] = "retarget_context"
+    payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
+    payload["source_actions"] = [{
+        "action_id": "select_existing",
+        "kind": "select_existing_issue",
+        "target": {"repo": selected_candidate["repo"], "issue_number": 8},
+        "payload": selected_issue,
+        "preimage_sha256": payload["review_target"]["facts_sha256"],
+        "payload_sha256": None,
+        "action_digest": "0" * 64,
+        "status": "validated",
+        "mutation_evidence": None,
+    }]
+    payload = disposition(
+        payload,
+        "retarget_existing_issue",
+        candidates=[selected_candidate],
+        selected_issue=selected_issue,
+        original_target_role="related",
+        confirmation_ref="selected_target_confirmation",
+    )
+    return confirm(payload, "select_existing")
+
+
+def reopened():
+    payload = issue_target(example, state="closed")
+    payload["typed_exit"] = "refresh_context"
+    payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
+    payload["source_actions"] = [{
+        "action_id": "reopen_source",
+        "kind": "reopen_issue",
+        "target": {"repo": "example/guru-extension", "issue_number": 7},
+        "payload": {"state": "open"},
+        "preimage_sha256": payload["review_target"]["facts_sha256"],
+        "payload_sha256": None,
+        "action_digest": "0" * 64,
+        "status": "executed",
+        "mutation_evidence": {"source": "ai-reviewed-gh"},
+    }]
+    payload = disposition(
+        payload,
+        "reopen_closed_issue",
+        confirmation_ref="reopen_target_confirmation",
+    )
+    action_digest = payload["source_actions"][0]["action_digest"]
+    payload["mutation_results"] = [{
+        "action_id": "reopen_source",
+        "kind": "reopen_issue",
+        "status": "succeeded",
+        "url": payload["review_target"]["url"],
+        "state": "open",
+        "updated_at": "2026-01-01T00:00:02Z",
+        "content_sha256": payload["review_target"]["body_sha256"],
+        "action_digest": action_digest,
+        "facts_sha256": "0" * 64,
+    }]
+    return confirm(payload, "reopen_source")
+
+
+def followup(body=multiline_markdown):
+    payload = issue_target(example, state="closed")
+    payload["typed_exit"] = "new_task"
+    payload["consumer"] = {"kind": "workflow", "id": "guru-full-task-intake-chain"}
+    payload["source_actions"] = [{
+        "action_id": "new_issue",
+        "kind": "new_issue_draft",
+        "target": {"repo": "example/guru-extension"},
+        "payload": {"title": "Independent follow-up delivery", "body": body},
+        "preimage_sha256": None,
+        "payload_sha256": None,
+        "action_digest": "0" * 64,
+        "status": "draft_ready",
+        "mutation_evidence": None,
+    }]
+    payload = disposition(
+        payload,
+        "create_followup_draft",
+        original_target_role="related",
+        confirmation_ref="followup_target_confirmation",
+    )
+    return confirm(payload, "new_issue")
+
+
+def complete():
+    payload = issue_target(example, state="closed")
+    payload["typed_exit"] = "blocked"
+    payload["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
+    payload["ai_review_gate"]["status"] = "blocked"
+    payload["error"] = {
+        "codes": ["requirements_target_complete"],
+        "summary": "The closed target is complete and no independent gap remains.",
+    }
+    payload = disposition(
+        payload,
+        "block_target_complete",
+        original_target_role="reference",
+        confirmation_ref="complete_target_confirmation",
+    )
+    return confirm(payload)
+
+
+def add_authority_round(payload, *, impact, action_ids):
+    payload = copy.deepcopy(payload)
+    payload["clarification_rounds"] = [{
+        "round_id": "round_authority",
+        "question_id": "acceptance_boundary",
+        "atomic_group_id": None,
+        "atomic_group_reason": None,
+        "category": "product_intent",
+        "question": "Which acceptance boundary is authoritative?",
+        "answer_summary": "The user confirmed the exact acceptance boundary.",
+        "answer_status": "complete",
+        "authority_impact": impact,
+        "authority_action_ids": action_ids,
+        "affected_contracts": ["acceptance criteria"],
+        "opened_question_ids": ["acceptance_boundary"],
+        "closed_question_ids": ["acceptance_boundary"],
+    }]
+    payload["open_questions"] = []
+    return derive(payload)
+
+
+def issue_authority(kind):
+    body = f"Confirmed load-bearing authority through {kind}."
+    payload = issue_target(example, state="open")
+    payload["typed_exit"] = "refresh_context"
+    payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
+    payload["source_actions"] = [{
+        "action_id": "persist_authority",
+        "kind": kind,
+        "target": {"repo": "example/guru-extension", "issue_number": 7},
+        "payload": {"body": body},
+        "preimage_sha256": payload["review_target"]["body_sha256"],
+        "payload_sha256": None,
+        "action_digest": "0" * 64,
+        "status": "executed",
+        "mutation_evidence": {"source": "ai-reviewed-gh"},
+    }]
+    payload = disposition(payload, "keep_current_open_issue")
+    action_digest = payload["source_actions"][0]["action_digest"]
+    payload["human_confirmation"] = {
+        "status": "confirmed",
+        "confirmation_kind": "exact_source_action",
+        "action_digest": gtt.context_digest([action_digest]),
+        "target_disposition_digest": None,
+        "proposal_digests": [],
+        "confirmed_actions": ["persist_authority"],
+        "confirmer": "throwaway-user",
+        "confirmed_at": "2026-01-01T00:00:01Z",
+        "evidence_summary": "The exact authority mutation was confirmed.",
+    }
+    url = payload["review_target"]["url"]
+    if kind == "issue_comment":
+        url += "#issuecomment-99"
+    payload["mutation_results"] = [{
+        "action_id": "persist_authority",
+        "kind": kind,
+        "status": "succeeded",
+        "url": url,
+        "state": "open",
+        "updated_at": "2026-01-01T00:00:02Z",
+        "content_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+        "action_digest": action_digest,
+        "facts_sha256": "0" * 64,
+    }]
+    return add_authority_round(
+        payload,
+        impact="load_bearing",
+        action_ids=["persist_authority"],
+    )
+
+
+def draft_authority():
+    body = "The proposed draft persists the load-bearing acceptance boundary."
+    payload = copy.deepcopy(example)
+    payload["typed_exit"] = "refresh_context"
+    payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
+    payload["review_target"]["body_sha256"] = hashlib.sha256(body.encode("utf-8")).hexdigest()
+    payload["source_actions"] = [{
+        "action_id": "persist_draft",
+        "kind": "proposed_draft_update",
+        "target": {"repo": "example/guru-extension"},
+        "payload": {"title": "Clarified draft", "body": body},
+        "preimage_sha256": "1" * 64,
+        "payload_sha256": None,
+        "action_digest": "0" * 64,
+        "status": "validated",
+        "mutation_evidence": None,
+    }]
+    payload = derive(payload)
+    action_digest = payload["source_actions"][0]["action_digest"]
+    payload["human_confirmation"] = {
+        "status": "confirmed",
+        "confirmation_kind": "exact_source_action",
+        "action_digest": gtt.context_digest([action_digest]),
+        "target_disposition_digest": None,
+        "proposal_digests": [],
+        "confirmed_actions": ["persist_draft"],
+        "confirmer": "throwaway-user",
+        "confirmed_at": "2026-01-01T00:00:01Z",
+        "evidence_summary": "The exact proposed draft update was confirmed.",
+    }
+    payload["mutation_results"] = [{
+        "action_id": "persist_draft",
+        "kind": "proposed_draft_update",
+        "status": "succeeded",
+        "url": None,
+        "state": "draft",
+        "updated_at": None,
+        "content_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+        "action_digest": action_digest,
+        "facts_sha256": "0" * 64,
+    }]
+    return add_authority_round(
+        payload,
+        impact="load_bearing",
+        action_ids=["persist_draft"],
+    )
+
+
+def assert_structural(label, payload):
+    errors = gtt.requirements_clarification_structural_errors(root, payload, None)
+    if errors:
+        raise SystemExit(f"installed {label} fixture failed: {errors}")
+
+clear = derive(example)
 needs_context = copy.deepcopy(clear)
 needs_context["typed_exit"] = "needs_context"
 needs_context["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
@@ -142,72 +515,104 @@ needs_context["context_evidence"] = {
     "evidence_refs": ["repository evidence"],
     "missing_reason": "Current repository context is unavailable.",
 }
-
-cases = {"clear": clear}
-cases["needs_context"] = gtt.derive_requirements_clarification_result(needs_context)
-
-refresh_context = copy.deepcopy(clear)
-refresh_context["typed_exit"] = "refresh_context"
-refresh_context["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
-refresh_context["context_evidence"]["status"] = "stale"
-refresh_context["context_evidence"]["missing_reason"] = "The reviewed context binding changed."
-cases["refresh_context"] = gtt.derive_requirements_clarification_result(refresh_context)
-
-new_task = copy.deepcopy(clear)
-new_task["typed_exit"] = "new_task"
-new_task["consumer"] = {"kind": "workflow", "id": "guru-full-task-intake-chain"}
-new_task["source_actions"] = [{
-    "action_id": "new_issue", "kind": "new_issue_draft",
-    "target": {"repo": "example/guru-extension"},
-    "payload": {"title": "Independent delivery", "body": multiline_markdown},
-    "preimage_sha256": None, "payload_sha256": None, "action_digest": "0" * 64,
-    "status": "draft_ready", "mutation_evidence": None,
-}]
-cases["new_task"] = gtt.derive_requirements_clarification_result(new_task)
-
-issue_projection = {
-    "kind": "issue", "repo": "example/guru-extension", "issue_number": 7,
-    "url": "https://github.com/example/guru-extension/issues/7", "state": "open",
-    "updated_at": "2026-01-01T00:00:00Z", "body_sha256": "1" * 64,
+cases = {
+    "clear": clear,
+    "needs_context": derive(needs_context),
+    "refresh_context": reopened(),
+    "retarget_context": retarget(example),
+    "new_task": followup(),
+    "blocked": complete(),
 }
-for action_kind in ("issue_comment", "issue_body_edit"):
-    issue_action = copy.deepcopy(clear)
-    issue_action["typed_exit"] = "refresh_context"
-    issue_action["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
-    issue_action["invocation_context"] = {
-        "kind": "initial_issue", "caller": "throwaway install", "task_locator": None,
-        "resume_target": "guru-review-contract-wording",
-    }
-    issue_action["review_target"] = {
-        **issue_projection, "facts_sha256": gtt.context_digest(issue_projection),
-    }
-    issue_action["context_evidence"]["status"] = "stale"
-    issue_action["context_evidence"]["missing_reason"] = "The source action awaits refresh."
-    issue_action["source_actions"] = [{
-        "action_id": f"multiline_{action_kind}", "kind": action_kind,
-        "target": {"repo": "example/guru-extension", "issue_number": 7},
-        "payload": {"body": multiline_markdown}, "preimage_sha256": "1" * 64,
-        "payload_sha256": None, "action_digest": "0" * 64,
-        "status": "pending", "mutation_evidence": None,
-    }]
-    issue_action = gtt.derive_requirements_clarification_result(issue_action)
-    errors = gtt.requirements_clarification_structural_errors(root, issue_action, None)
-    if errors:
-        raise SystemExit(f"installed {action_kind} multiline payload failed: {errors}")
 
-new_task_errors = gtt.requirements_clarification_structural_errors(root, cases["new_task"], None)
-if new_task_errors:
-    raise SystemExit(f"installed new_issue_draft multiline payload failed: {new_task_errors}")
-
-blocked = copy.deepcopy(clear)
-blocked["typed_exit"] = "blocked"
-blocked["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
-blocked["ai_review_gate"]["status"] = "blocked"
-blocked["error"] = {
-    "codes": ["load_bearing_choice_refused"],
-    "summary": "A load-bearing product choice was refused.",
+# The clean install exercises the complete #139 normal-path scenario matrix
+# against the installed runtime, while the wrapper loop below verifies every
+# public exit through its recorder and checker.
+rejected = candidate(8, "rejected")
+retain_draft = disposition(
+    example,
+    "keep_current_draft",
+    candidates=[rejected],
+    confirmation_ref="retain_draft_confirmation",
+)
+retain_draft = confirm(retain_draft)
+retain_issue = disposition(
+    issue_target(example),
+    "keep_current_open_issue",
+    candidates=[rejected],
+    confirmation_ref="retain_issue_confirmation",
+)
+retain_issue = confirm(retain_issue)
+open_without_duplicate = disposition(
+    issue_target(example),
+    "keep_current_open_issue",
+)
+matrix = {
+    "draft_duplicate_retain": retain_draft,
+    "draft_duplicate_retarget": cases["retarget_context"],
+    "issue_duplicate_retain": retain_issue,
+    "issue_duplicate_retarget": retarget(issue_target(example)),
+    "open_issue_without_duplicate": open_without_duplicate,
+    "closed_issue_reopen": cases["refresh_context"],
+    "closed_issue_followup": cases["new_task"],
+    "closed_issue_complete": cases["blocked"],
+    "issue_load_bearing_comment": issue_authority("issue_comment"),
+    "issue_load_bearing_body_edit": issue_authority("issue_body_edit"),
+    "draft_load_bearing_update": draft_authority(),
 }
-cases["blocked"] = gtt.derive_requirements_clarification_result(blocked)
+for scenario, payload in matrix.items():
+    assert_structural(scenario, payload)
+
+illegal_load_bearing = add_authority_round(
+    example,
+    impact="load_bearing",
+    action_ids=[],
+)
+illegal_errors = gtt.requirements_clarification_structural_errors(
+    root, illegal_load_bearing, None
+)
+for code in (
+    "load_bearing_round_requires_authority_action",
+    "load_bearing_authority_update_requires_refresh_context",
+):
+    if code not in illegal_errors:
+        raise SystemExit(f"installed load-bearing none+clear did not fail with {code}")
+non_load_bearing = add_authority_round(
+    example,
+    impact="non_load_bearing",
+    action_ids=[],
+)
+assert_structural("non_load_bearing_without_mutation", non_load_bearing)
+
+refresh_without_disposition = copy.deepcopy(matrix["draft_load_bearing_update"])
+refresh_without_disposition["target_disposition"] = None
+refresh_without_disposition = derive(refresh_without_disposition)
+if "requirements_target_disposition_required" not in gtt.requirements_clarification_structural_errors(
+    root, refresh_without_disposition, None
+):
+    raise SystemExit("installed authority refresh accepted a missing target disposition")
+
+wrong_confirmation = copy.deepcopy(cases["retarget_context"])
+wrong_confirmation["human_confirmation"]["target_disposition_digest"] = "f" * 64
+wrong_confirmation = derive(wrong_confirmation)
+if "target_disposition_requires_exact_confirmation" not in gtt.requirements_clarification_structural_errors(
+    root, wrong_confirmation, None
+):
+    raise SystemExit("installed retarget fixture accepted stale target confirmation")
+
+stale_action = copy.deepcopy(cases["retarget_context"])
+stale_action["source_actions"][0]["payload"]["updated_at"] = "2026-01-01T00:00:09Z"
+stale_action = derive(stale_action)
+if "select_existing_issue_action_binding_invalid" not in gtt.requirements_clarification_structural_errors(
+    root, stale_action, None
+):
+    raise SystemExit("installed retarget fixture accepted stale selected action")
+
+legacy = copy.deepcopy(example)
+legacy["schema_version"] = "1.0"
+(probe_dir / "legacy.input.json").write_text(
+    json.dumps(legacy, ensure_ascii=False, indent=2) + "\n",
+    encoding="utf-8",
+)
 
 for typed_exit, payload in cases.items():
     (probe_dir / f"{typed_exit}.input.json").write_text(
@@ -217,16 +622,31 @@ for typed_exit, payload in cases.items():
 PY
 
   local typed_exit input result result_sha
-  for typed_exit in clear needs_context refresh_context new_task blocked; do
+  for typed_exit in clear needs_context refresh_context retarget_context new_task blocked; do
     input="$probe_dir/$typed_exit.input.json"
     result="$probe_dir/$typed_exit.result.json"
-    "$TARGET/.agents/skills/guru-clarify-requirements/scripts/record-requirements-clarification.sh" \
+    if [[ "$typed_exit" == "refresh_context" ]]; then
+      export GURU_FAKE_ISSUE_7_STATE="open"
+    else
+      export GURU_FAKE_ISSUE_7_STATE="closed"
+    fi
+    PATH="$fake_bin:$PATH" "$TARGET/.agents/skills/guru-clarify-requirements/scripts/record-requirements-clarification.sh" \
       --root "$TARGET" --json --mode standalone --input "$input" >"$result"
     result_sha="$(python3 -c 'import json, sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["typed_exit"] == sys.argv[2]; print(payload["content_identity"]["result_sha256"])' "$result" "$typed_exit")"
-    "$TARGET/.agents/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh" \
+    PATH="$fake_bin:$PATH" "$TARGET/.agents/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh" \
       --root "$TARGET" --json --input "$result" \
       --expected-result-sha256 "$result_sha" >/dev/null
   done
+  unset GURU_FAKE_ISSUE_7_STATE
+
+  local legacy_error
+  legacy_error="$probe_dir/legacy.error.json"
+  if PATH="$fake_bin:$PATH" "$TARGET/.agents/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh" \
+    --root "$TARGET" --json --input "$probe_dir/legacy.input.json" >"$legacy_error" 2>&1; then
+    echo "Installed clarification checker accepted legacy schema 1.0" >&2
+    exit 2
+  fi
+  grep -q 'requirements_clarification_legacy_schema_requires_refresh' "$legacy_error"
 }
 
 verify_contract_wording_standalone_profiles() {
@@ -802,6 +1222,7 @@ grep -q 'guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true
 grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"clear","consumer":{"kind":"workflow","id":"guru-requirements-clear-router"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"needs_context","consumer":{"kind":"skill","id":"guru-discover-change-context"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"retarget_context","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"new_task","consumer":{"kind":"workflow","id":"guru-full-task-intake-chain"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"blocked","consumer":{"kind":"stop","id":"requirements-clarification-blocked"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-review-contract-wording","required":true}' "$TARGET/.trellis/workflow.md"
@@ -866,7 +1287,7 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.13"
+assert extension["version"] == "0.6.5-guru.14"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
 assert len(assets) == 80
@@ -894,7 +1315,7 @@ assert api["skill_contracts"]["active_skill_ids"] == ["guru-clarify-requirements
 assert api["skill_contracts"]["planned_skill_ids"] == ["guru-create-task-workspace"]
 assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-context-discovery-1.0" in api["skill_contracts"]["artifact_schema_ids"]
-assert "guru-requirements-clarification-1.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-requirements-clarification-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-contract-wording-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-change-request-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.2"
@@ -915,7 +1336,7 @@ assert planned == [{"id": "guru-create-task-workspace", "state": "planned", "rea
 PY
 SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
-python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":6,"exit_markers":22,"target_markers":12,"planned_ids":["guru-create-task-workspace"]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
+python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":6,"exit_markers":23,"target_markers":12,"planned_ids":["guru-create-task-workspace"]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
 test ! -e "$TARGET/.agents/skills/guru-create-work-commit"
 test ! -e "$TARGET/.codex/skills/guru-create-work-commit"
 test ! -e "$TARGET/.cursor/skills/guru-create-work-commit"
@@ -2241,6 +2662,7 @@ ownership_checkpoint "post-preset-reapply-before-final-checks"
 grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-discover-change-context","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"retarget_context","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-review-contract-wording","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-review-change-request","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-review-change-request","exit":"ready","consumer":{"kind":"skill","id":"guru-create-task-workspace"}}' "$TARGET/.trellis/workflow.md"

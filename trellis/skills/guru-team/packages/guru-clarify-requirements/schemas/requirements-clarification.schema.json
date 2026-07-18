@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-1.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-2.0.json",
   "title": "Guru Team requirements clarification result",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "schema_version", "skill_id", "generated_at", "mode", "typed_exit",
-    "invocation_context", "review_target", "context_evidence",
+    "invocation_context", "review_target", "target_disposition", "context_evidence",
     "confirmed_facts", "repository_answerable_questions",
     "clarification_rounds", "open_questions", "scope_proposals",
     "source_actions", "human_confirmation", "mutation_results",
@@ -14,13 +14,14 @@
     "content_identity", "reason", "consumer", "error"
   ],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "2.0"},
     "skill_id": {"const": "guru-clarify-requirements"},
     "generated_at": {"type": "string", "format": "date-time"},
     "mode": {"enum": ["workflow", "standalone"]},
-    "typed_exit": {"enum": ["clear", "needs_context", "refresh_context", "new_task", "blocked"]},
+    "typed_exit": {"enum": ["clear", "needs_context", "refresh_context", "retarget_context", "new_task", "blocked"]},
     "invocation_context": {"$ref": "#/$defs/invocationContext"},
     "review_target": {"$ref": "#/$defs/reviewTarget"},
+    "target_disposition": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/targetDisposition"}]},
     "context_evidence": {"$ref": "#/$defs/contextEvidence"},
     "confirmed_facts": {"type": "array", "items": {"$ref": "#/$defs/confirmedFact"}},
     "repository_answerable_questions": {"type": "array", "items": {"$ref": "#/$defs/repositoryQuestion"}},
@@ -65,6 +66,18 @@
       "then": {"properties": {"consumer": {"const": {"kind": "skill", "id": "guru-sync-base"}}}}
     },
     {
+      "if": {"properties": {"typed_exit": {"const": "retarget_context"}}, "required": ["typed_exit"]},
+      "then": {
+        "properties": {
+          "consumer": {"const": {"kind": "skill", "id": "guru-sync-base"}},
+          "target_disposition": {"properties": {"disposition": {"const": "retarget_existing_issue"}}},
+          "source_actions": {"contains": {"properties": {"kind": {"const": "select_existing_issue"}}, "required": ["kind"]}},
+          "ai_review_gate": {"properties": {"status": {"const": "passed"}}},
+          "error": {"type": "null"}
+        }
+      }
+    },
+    {
       "if": {"properties": {"typed_exit": {"const": "new_task"}}, "required": ["typed_exit"]},
       "then": {
         "properties": {
@@ -96,6 +109,20 @@
     {
       "if": {
         "properties": {
+          "invocation_context": {"properties": {"kind": {"enum": ["initial_issue", "proposed_draft", "standalone_review"]}}, "required": ["kind"]},
+          "typed_exit": {"enum": ["clear", "refresh_context", "retarget_context", "new_task"]}
+        },
+        "required": ["invocation_context", "typed_exit"]
+      },
+      "then": {"properties": {"target_disposition": {"$ref": "#/$defs/targetDisposition"}}}
+    },
+    {
+      "if": {"properties": {"invocation_context": {"properties": {"kind": {"const": "active_task_scope_change"}}, "required": ["kind"]}}, "required": ["invocation_context"]},
+      "then": {"properties": {"target_disposition": {"type": "null"}}}
+    },
+    {
+      "if": {
+        "properties": {
           "invocation_context": {"properties": {"kind": {"const": "active_task_scope_change"}}, "required": ["kind"]},
           "typed_exit": {"enum": ["clear", "new_task"]}
         },
@@ -112,7 +139,8 @@
               ]
             }
           },
-          "active_task_evidence": {"$ref": "#/$defs/activeTaskEvidence"}
+          "active_task_evidence": {"$ref": "#/$defs/activeTaskEvidence"},
+          "target_disposition": {"type": "null"}
         }
       }
     },
@@ -164,6 +192,37 @@
         "facts_sha256": {"$ref": "#/$defs/sha256"}
       }
     },
+    "duplicateCandidateDecision": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repo", "number", "identity", "url", "state", "updated_at", "facts_sha256", "decision", "reason"],
+      "properties": {
+        "repo": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "number": {"type": "integer", "minimum": 1},
+        "identity": {"type": "string", "pattern": "^#[1-9][0-9]*$"},
+        "url": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/[1-9][0-9]*$"},
+        "state": {"const": "open"},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "facts_sha256": {"$ref": "#/$defs/sha256"},
+        "decision": {"enum": ["selected", "rejected"]},
+        "reason": {"$ref": "#/$defs/nonEmpty"}
+      }
+    },
+    "targetDisposition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["disposition", "duplicate_query", "duplicate_checked_at", "duplicate_candidates", "duplicate_facts_sha256", "selected_issue", "original_target_role", "decision_summary", "confirmation_ref", "disposition_digest"],
+      "properties": {
+        "disposition": {"enum": ["keep_current_open_issue", "keep_current_draft", "retarget_existing_issue", "reopen_closed_issue", "create_followup_draft", "block_target_complete"]},
+        "duplicate_query": {"$ref": "#/$defs/nonEmpty"},
+        "duplicate_checked_at": {"type": "string", "format": "date-time"},
+        "duplicate_candidates": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/duplicateCandidateDecision"}},
+        "duplicate_facts_sha256": {"$ref": "#/$defs/sha256"},
+        "selected_issue": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/selectedIssuePayload"}]},
+        "original_target_role": {"enum": ["primary", "related", "reference"]},
+        "decision_summary": {"$ref": "#/$defs/nonEmpty"},
+        "confirmation_ref": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/identifier"}]},
+        "disposition_digest": {"$ref": "#/$defs/sha256"}
+      }
+    },
     "contextEvidence": {
       "type": "object", "additionalProperties": false,
       "required": ["status", "schema_id", "snapshot_sha256", "evidence_refs", "missing_reason"],
@@ -203,7 +262,7 @@
     },
     "clarificationRound": {
       "type": "object", "additionalProperties": false,
-      "required": ["round_id", "question_id", "atomic_group_id", "atomic_group_reason", "category", "question", "answer_summary", "answer_status", "affected_contracts", "opened_question_ids", "closed_question_ids"],
+      "required": ["round_id", "question_id", "atomic_group_id", "atomic_group_reason", "category", "question", "answer_summary", "answer_status", "authority_impact", "authority_action_ids", "affected_contracts", "opened_question_ids", "closed_question_ids"],
       "properties": {
         "round_id": {"$ref": "#/$defs/identifier"},
         "question_id": {"$ref": "#/$defs/identifier"},
@@ -213,6 +272,8 @@
         "question": {"$ref": "#/$defs/nonEmpty"},
         "answer_summary": {"$ref": "#/$defs/nonEmpty"},
         "answer_status": {"enum": ["complete", "partial", "refused"]},
+        "authority_impact": {"enum": ["load_bearing", "non_load_bearing"]},
+        "authority_action_ids": {"$ref": "#/$defs/idList"},
         "affected_contracts": {"$ref": "#/$defs/stringList"},
         "opened_question_ids": {"$ref": "#/$defs/idList"},
         "closed_question_ids": {"$ref": "#/$defs/idList"}
@@ -255,9 +316,9 @@
       "required": ["action_id", "kind", "target", "payload", "preimage_sha256", "payload_sha256", "action_digest", "status", "mutation_evidence"],
       "properties": {
         "action_id": {"$ref": "#/$defs/identifier"},
-        "kind": {"enum": ["none", "issue_comment", "issue_body_edit", "proposed_draft_update", "new_issue_draft", "active_task_scope_update"]},
+        "kind": {"enum": ["none", "issue_comment", "issue_body_edit", "proposed_draft_update", "new_issue_draft", "select_existing_issue", "reopen_issue", "active_task_scope_update"]},
         "target": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/githubIssueActionTarget"}, {"$ref": "#/$defs/draftActionTarget"}, {"$ref": "#/$defs/activeTaskActionTarget"}]},
-        "payload": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/bodyActionPayload"}, {"$ref": "#/$defs/draftActionPayload"}, {"$ref": "#/$defs/activeTaskActionPayload"}]},
+        "payload": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/bodyActionPayload"}, {"$ref": "#/$defs/draftActionPayload"}, {"$ref": "#/$defs/selectedIssuePayload"}, {"$ref": "#/$defs/stateActionPayload"}, {"$ref": "#/$defs/activeTaskActionPayload"}]},
         "preimage_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
         "payload_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
         "action_digest": {"$ref": "#/$defs/sha256"},
@@ -283,6 +344,14 @@
         {
           "if": {"properties": {"kind": {"const": "new_issue_draft"}}, "required": ["kind"]},
           "then": {"properties": {"target": {"$ref": "#/$defs/draftActionTarget"}, "payload": {"$ref": "#/$defs/draftActionPayload"}, "preimage_sha256": {"type": "null"}, "payload_sha256": {"$ref": "#/$defs/sha256"}, "status": {"const": "draft_ready"}, "mutation_evidence": {"type": "null"}}}
+        },
+        {
+          "if": {"properties": {"kind": {"const": "select_existing_issue"}}, "required": ["kind"]},
+          "then": {"properties": {"target": {"$ref": "#/$defs/githubIssueActionTarget"}, "payload": {"$ref": "#/$defs/selectedIssuePayload"}, "preimage_sha256": {"$ref": "#/$defs/sha256"}, "payload_sha256": {"$ref": "#/$defs/sha256"}, "status": {"const": "validated"}, "mutation_evidence": {"type": "null"}}}
+        },
+        {
+          "if": {"properties": {"kind": {"const": "reopen_issue"}}, "required": ["kind"]},
+          "then": {"properties": {"target": {"$ref": "#/$defs/githubIssueActionTarget"}, "payload": {"$ref": "#/$defs/stateActionPayload"}, "preimage_sha256": {"$ref": "#/$defs/sha256"}, "payload_sha256": {"$ref": "#/$defs/sha256"}, "status": {"enum": ["pending", "executed", "validated"]}, "mutation_evidence": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/githubMutationEvidence"}]}}}
         },
         {
           "if": {"properties": {"kind": {"const": "active_task_scope_update"}}, "required": ["kind"]},
@@ -315,6 +384,23 @@
       "required": ["title", "body"],
       "properties": {"title": {"$ref": "#/$defs/nonEmpty"}, "body": {"$ref": "#/$defs/nonEmpty"}}
     },
+    "selectedIssuePayload": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repo", "issue_number", "url", "state", "updated_at", "facts_sha256"],
+      "properties": {
+        "repo": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "issue_number": {"type": "integer", "minimum": 1},
+        "url": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/[1-9][0-9]*$"},
+        "state": {"const": "open"},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "facts_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "stateActionPayload": {
+      "type": "object", "additionalProperties": false,
+      "required": ["state"],
+      "properties": {"state": {"const": "open"}}
+    },
     "githubMutationEvidence": {
       "type": "object", "additionalProperties": false,
       "required": ["source"],
@@ -327,11 +413,12 @@
     },
     "humanConfirmation": {
       "type": "object", "additionalProperties": false,
-      "required": ["status", "confirmation_kind", "action_digest", "proposal_digests", "confirmed_actions", "confirmer", "confirmed_at", "evidence_summary"],
+      "required": ["status", "confirmation_kind", "action_digest", "target_disposition_digest", "proposal_digests", "confirmed_actions", "confirmer", "confirmed_at", "evidence_summary"],
       "properties": {
         "status": {"enum": ["not_required", "confirmed", "refused"]},
-        "confirmation_kind": {"enum": ["none", "exact_source_action", "exact_scope_proposal", "exact_source_action_and_scope"]},
+        "confirmation_kind": {"enum": ["none", "exact_source_action", "exact_scope_proposal", "exact_source_action_and_scope", "exact_target_disposition", "exact_source_action_and_target"]},
         "action_digest": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
+        "target_disposition_digest": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
         "proposal_digests": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/sha256"}},
         "confirmed_actions": {"$ref": "#/$defs/idList"},
         "confirmer": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/nonEmpty"}]},
@@ -344,7 +431,7 @@
       "required": ["action_id", "kind", "status", "url", "state", "updated_at", "content_sha256", "action_digest", "facts_sha256"],
       "properties": {
         "action_id": {"$ref": "#/$defs/identifier"},
-        "kind": {"enum": ["issue_comment", "issue_body_edit", "proposed_draft_update", "active_task_scope_update"]},
+        "kind": {"enum": ["issue_comment", "issue_body_edit", "proposed_draft_update", "reopen_issue", "active_task_scope_update"]},
         "status": {"const": "succeeded"},
         "url": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/nonEmpty"}]},
         "state": {"enum": ["open", "closed", "draft", "task_local"]},
@@ -357,6 +444,7 @@
         {"if": {"properties": {"kind": {"const": "issue_comment"}}, "required": ["kind"]}, "then": {"properties": {"url": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/[1-9][0-9]*#issuecomment-[1-9][0-9]*$"}, "state": {"enum": ["open", "closed"]}, "updated_at": {"type": "string", "format": "date-time"}}}},
         {"if": {"properties": {"kind": {"const": "issue_body_edit"}}, "required": ["kind"]}, "then": {"properties": {"url": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/[1-9][0-9]*$"}, "state": {"enum": ["open", "closed"]}, "updated_at": {"type": "string", "format": "date-time"}}}},
         {"if": {"properties": {"kind": {"const": "proposed_draft_update"}}, "required": ["kind"]}, "then": {"properties": {"url": {"type": "null"}, "state": {"const": "draft"}, "updated_at": {"type": "null"}}}},
+        {"if": {"properties": {"kind": {"const": "reopen_issue"}}, "required": ["kind"]}, "then": {"properties": {"url": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/[1-9][0-9]*$"}, "state": {"const": "open"}, "updated_at": {"type": "string", "format": "date-time"}}}},
         {"if": {"properties": {"kind": {"const": "active_task_scope_update"}}, "required": ["kind"]}, "then": {"properties": {"url": {"type": "null"}, "state": {"const": "task_local"}, "updated_at": {"type": "null"}}}}
       ]
     },
@@ -514,9 +602,10 @@
     },
     "contentIdentity": {
       "type": "object", "additionalProperties": false,
-      "required": ["target_sha256", "content_sha256", "context_sha256", "scope_sha256", "action_sha256", "payload_sha256", "result_sha256"],
+      "required": ["target_sha256", "disposition_sha256", "content_sha256", "context_sha256", "scope_sha256", "action_sha256", "payload_sha256", "result_sha256"],
       "properties": {
         "target_sha256": {"$ref": "#/$defs/sha256"},
+        "disposition_sha256": {"$ref": "#/$defs/sha256"},
         "content_sha256": {"$ref": "#/$defs/sha256"},
         "context_sha256": {"$ref": "#/$defs/sha256"},
         "scope_sha256": {"$ref": "#/$defs/sha256"},

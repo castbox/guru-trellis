@@ -680,6 +680,7 @@ workflow owns only this invocation and its unique consumers:
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"clear","consumer":{"kind":"workflow","id":"guru-requirements-clear-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"needs_context","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
+<!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"retarget_context","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"new_task","consumer":{"kind":"workflow","id":"guru-full-task-intake-chain"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"blocked","consumer":{"kind":"stop","id":"requirements-clarification-blocked"}} -->
 
@@ -689,9 +690,21 @@ clarification, scope proposals, source-action selection, AI Review Gate,
 conditional exact confirmation, recorder/checker, freshness and re-entry. Do
 not copy that loop into this workflow or a platform entry.
 
+The public artifact contract is `guru-requirements-clarification-2.0`.
+Schema 1.0 artifacts and callers cannot express the checker-bound target
+disposition, authority impact, or retarget identity, so recorder/checker return
+`requirements_clarification_legacy_schema_requires_refresh`. Do not infer a
+semantic migration or resume a downstream pass: re-enter `guru-sync-base` and
+rerun the complete sync, discovery, clarification, wording, and readiness chain
+against the current target.
+
 Pre-task and standalone recording remains stdout-only. The package has no
 GitHub mutation executor and no dedicated clarification artifact. A successful
-comment/body/source mutation returns `refresh_context`. Active-task
+comment/body/reopen mutation returns `refresh_context`; an exactly selected
+different open issue returns `retarget_context`. Both re-enter `guru-sync-base`,
+but retargeting must rerun the complete initial sync, discovery, clarification,
+wording, and readiness chain for the selected issue without reusing old-target
+passes. Active-task
 `clear`/`new_task` requires a non-empty set containing only seven terminal
 decisions. Every accepted-current/related/followup/new-task/out-of-scope scope
 classification must have proposal-digest-bound exact user-decision evidence,
