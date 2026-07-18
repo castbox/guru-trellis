@@ -1,0 +1,154 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-18T02:59:49Z",
+  "task_dir": ".trellis/tasks/07-18-101-review-change-request",
+  "base_branch": "main",
+  "head": "81d9c02099854b90d3ec1a9b575a412992be3834",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/tasks/07-18-101-review-change-request/agent-assignment.json",
+    ".trellis/tasks/07-18-101-review-change-request/issue-scope-ledger.json",
+    ".trellis/tasks/07-18-101-review-change-request/task-commit-plans/001.json",
+    ".trellis/tasks/07-18-101-review-change-request/finish-summary-index.json",
+    ".trellis/tasks/07-18-101-review-change-request/pr-body.md",
+    ".trellis/tasks/07-18-101-review-change-request/review-gate.json",
+    ".trellis/tasks/07-18-101-review-change-request/review.md",
+    ".trellis/tasks/07-18-101-review-change-request/reviews/001-findings-review.md",
+    ".trellis/tasks/07-18-101-review-change-request/reviews/002-closure-review.md",
+    ".trellis/tasks/07-18-101-review-change-request/reviews/003-final-review.md"
+  ],
+  "checker": "/root/issue101_phase2_handoff_recheck",
+  "check_summary": "Branch Review Round 1 handoff evidence P2 修复后的 fresh 完整 Phase 2 已从头覆盖 Issue #101 批准规划、96-file 实现、evt-0103 implementation handoff、Docs SSOT、分发/ownership/update 与安全部署；P0-P3 均为零，644 项核心测试和 clean throwaway 两阶段全部通过。此记录只 digest-bind Phase 2 实际审查且冻结的 task 输入；issue ledger、assignment、review 与 gate 属于发布前 metadata tail，由各自 validator 负责。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-18-101-review-change-request/prd.md",
+      "sha256": "211286bdd1a0f8e6a60a008ab02440888dce3648118c702271b0286201de58fe",
+      "size_bytes": 15285,
+      "modified_at": "2026-07-17T19:57:27.058049+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-101-review-change-request/design.md",
+      "sha256": "3ebb5adbf135d84b2b7a92c511f65b15b4fd5c7334b65074b0dc8ff6938a89e5",
+      "size_bytes": 16401,
+      "modified_at": "2026-07-17T19:57:27.058248+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-101-review-change-request/implement.md",
+      "sha256": "e88d565320d6255f57e1c10c599a67aa552171c384f290000c22b8bba5b08e99",
+      "size_bytes": 13218,
+      "modified_at": "2026-07-17T19:57:27.058432+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-101-review-change-request/planning-approval.json",
+      "sha256": "84f3250ac67246108767edab16b881fa1294b55e93ccb8388016a3a16951ad16",
+      "size_bytes": 5379,
+      "modified_at": "2026-07-17T20:00:26.314936+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-101-review-change-request/contract-wording-review.json",
+      "sha256": "cf357e158057befa35f170aeaa5c8e9e8b734a8d1b4e50b75089be19554cb320",
+      "size_bytes": 3444,
+      "modified_at": "2026-07-17T19:58:36.720877+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "18a279626fb8b56b58ecff6fc8012a23ea90a7ca746b4f9442242dbe9e7eb16e",
+      "size_bytes": 32575,
+      "modified_at": "2026-07-17T22:02:52.598537+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "314bebf4adad1da74f74c11a45ca800c4a693d38501322c390ca4b08e0b8b64a",
+      "size_bytes": 55313,
+      "modified_at": "2026-07-17T20:43:30.241768+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "b8bdafe1287f469970d07a0d06ea92fd617d898d4f9cf4afcf71ece9b30a751d",
+      "size_bytes": 88661,
+      "modified_at": "2026-07-17T22:02:52.598962+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "2e8f6958786043f238d824ba42a0d76c38ef90121f3e12b83b7f480c5c05414e",
+      "size_bytes": 66378,
+      "modified_at": "2026-07-17T22:02:52.599388+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "016d0166f9d8acef9023b23c7a71f8193be86a08bffbf267e8f95bcfcf307df7",
+      "size_bytes": 18717,
+      "modified_at": "2026-07-17T20:44:13.986128+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "027d68dadcae16873cd07497fa84a028379414e15cf906d2de7f26336d451bfc",
+      "size_bytes": 21613,
+      "modified_at": "2026-07-17T20:44:51.180862+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "6429b3a1fba72eed08ce2067b7619c5f15ce3f54092b8789b436889de7f178dd",
+      "size_bytes": 20200,
+      "modified_at": "2026-07-17T19:47:03.799347+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/upstream-ownership.md",
+      "sha256": "e05a94ab7c46cf5ea42cd7ae01a2c3ccfe2707a1b099c6afe60b76aa7b219c6f",
+      "size_bytes": 9595,
+      "modified_at": "2026-07-17T20:44:51.181177+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 trellis/skills/guru-team/packages/guru-review-change-request/tests/test_contract.py",
+      "result": "20/20 通过"
+    },
+    {
+      "command": "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "508/508 通过"
+    },
+    {
+      "command": "python3 trellis/skills/guru-team/tests/test_skill_packages.py",
+      "result": "71/71 通过"
+    },
+    {
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "39/39 通过"
+    },
+    {
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "result": "6/6 通过，43 frozen overlays 未变化"
+    },
+    {
+      "command": "source/installed validators + dogfood + six-tree bytes/mode",
+      "result": "全部通过，installed=248，sidecar/removal/conflict=0"
+    },
+    {
+      "command": "clean throwaway fresh + trellis update --force + workflow/preset reapply",
+      "result": "两阶段各 20/20，closeout pr_ready=true，zero residue"
+    },
+    {
+      "command": "py_compile14 + bash-n17 + JSON33 + git diff --check + residue/secret/deploy scan",
+      "result": "全部通过；无 CI/CD/container/K8s/DB migration/Makefile 服务部署影响"
+    },
+    {
+      "command": "AI trellis-check semantic review",
+      "result": "evt-0103 handoff 与实际实现/durable inputs/task delta一致；P0=0、P1=0、P2=0、P3=0；remote branch-pinned 留 finish-work"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

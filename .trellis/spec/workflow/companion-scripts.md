@@ -723,6 +723,24 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   reread content, and source update time with the rebuilt live scope. These are
   objective normal-flow consistency checks only; the script still does not
   decide whether to mutate or whether the user should confirm.
+- `record-change-request-review.sh` and
+  `check-change-request-review.sh` are the stdout-only recorder/checker for
+  `guru-review-change-request`. The recorder accepts a complete AI-authored
+  review and one exact change-request input; the checker accepts the recorded
+  result plus the current full prerequisite payload set and same target input.
+  Both reuse existing context/clarification/wording objective helpers, rebuild
+  portable projections and linkage, validate schema/hash/ref/Gate/consumer/
+  ready invariants, and return the AI-authored exit unchanged. They do not
+  accept an output/task locator, create `issue-review.json`, generate findings
+  or Gate status, choose a delivery unit, search history/duplicates, or map an
+  objective error to a route. Missing or stale evidence remains input for the
+  AI's next complete Skill round. For draft and standalone targets they reuse
+  #113's exact draft `review_target` projection and canonical digest to derive
+  the only valid `source_request_sha256`; 64-hex shape alone is insufficient.
+  Production tests must invoke the actual context, clarification, wording, and
+  change-request record/check commands before asserting `ready` or linkage
+  drift, rather than supplying only handwritten projections to a structural
+  helper.
 - `record-planning-approval.sh` records prior AI/human planning review and the
   user's explicit post-planning confirmation after the main session supplied a
   current checker-validated

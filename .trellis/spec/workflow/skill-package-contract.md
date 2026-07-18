@@ -16,10 +16,15 @@ configurator and installs active packages after validating the canonical source.
 ## Registry Lifecycle
 
 `trellis/skills/guru-team/registry.json` is validated by
-`schemas/skill-registry.schema.json` and has two states:
+`schemas/skill-registry.schema.json` and has three states:
 
 - `reserved` claims a stable `guru-<action>-<object>` id only. It has no package,
   route, interface, or platform destination and must never be installed.
+- `planned` claims a future stable consumer id only. It has no package,
+  interface, invoke marker, exit marker, or platform destination and must never
+  be installed. An active Skill may declare a typed exit to that id; callers
+  stop at the missing-Skill gate until a later delivery promotes it to a
+  complete active package.
 - `active` declares a package path, interface path, supported platform targets,
   validator command, and workflow route identity. Every referenced file and
   route must pass source validation before installation.
@@ -105,8 +110,10 @@ Mandatory routing is machine-readable HTML-comment JSON:
 Every active skill has exactly one mandatory invocation identity. Every
 external exit has exactly one workflow/skill consumer or one explicit
 fail-closed stop. Unknown, duplicate, multiple, or unmapped markers fail source
-validation. Reserved ids must not appear in markers. Frontmatter auto-match is
-discovery assistance only and never replaces mandatory invocation markers.
+validation. Reserved ids must not appear in markers. Planned ids may appear
+only as a Skill consumer; a planned invoke or exit marker is invalid.
+Frontmatter auto-match is discovery assistance only and never replaces
+mandatory invocation markers.
 
 `guru-create-task-commit` is mandatory after a fresh final Phase 2 pass and
 before every task work stage/commit side effect. It exposes only `committed`,
@@ -214,9 +221,12 @@ validated by its own closed structural contract, and active-task
 `task_branch_stale` remains a normal refreshable complete re-entry reason.
 
 External consumer resolution is part of both source and installed validation.
-Skill consumers must name an active registry id. Workflow/stop consumers must
-have exactly one matching `guru-workflow-target` / `guru-stop-target` marker;
-missing, duplicate, kind-mismatched, or dangling targets fail closed.
+Skill consumers must name an active or planned registry id. An active consumer
+must resolve to its complete installed package; a planned consumer is an
+explicit unavailable transition and stops fail closed without fallback.
+Workflow/stop consumers must have exactly one matching
+`guru-workflow-target` / `guru-stop-target` marker; missing, duplicate,
+kind-mismatched, or dangling targets fail closed.
 
 The package publishes artifact schema `guru-context-discovery-1.0`, scoring
 algorithm id `guru-context-history-score-1.0`, and dispatcher-only wrappers for
@@ -393,6 +403,36 @@ tasks must perform a complete fresh AI review, display all three planning
 documents again, and obtain fresh post-planning confirmation. Missing booleans
 must never be patched into old evidence, while archived artifacts remain
 historical.
+
+## Change Request Readiness Package
+
+Active semantic Skill `guru-review-change-request` is the sole pre-task
+readiness owner after `guru-review-contract-wording:change_request:pass`. It
+consumes current context, clarification, and wording results; normalizes one
+`existing_issue`, `proposed_draft`, or `standalone_request`; reviews the fixed
+ten dimensions; records findings, scope conclusion, AI Review Gate, optional
+confirmation, and exactly one exit. Its exits are `ready` -> planned
+`guru-create-task-workspace`, `clarify_requirements` ->
+`guru-clarify-requirements`, `review_wording` ->
+`guru-review-contract-wording`, `refresh_context` -> `guru-sync-base`, and
+`blocked` -> stop `change-request-review-blocked`.
+
+The record/check commands are stdout-only before task creation. They reuse the
+existing objective context, clarification, and wording validators; project
+portable hashes and error codes; rebuild target/linkage/facts digests; and
+validate closed schema, fixed dimensions/findings references, Gate/exit
+invariants, consumer identity, and freshness. They never search history or
+duplicates, read Docs/code/tests for semantic judgment, generate findings,
+select a delivery unit, infer a Gate, or map objective error codes to an exit.
+For a proposed draft or standalone request they derive `source_request_sha256`
+from #113's exact draft authority projection: `kind=draft`, normalized repo,
+null issue/URL/update authority, `state=draft`, and current reviewed-body
+SHA-256. Title hash and draft/request/caller identity stay separately bound.
+An arbitrary 64-hex value, including a normal producer's stale prior digest,
+fails closed before prerequisite linkage is accepted.
+Only a later active `guru-create-task-workspace` package may persist the exact
+checker-passed bytes as task-local `issue-review.json` while creating the
+workspace. Until then, `ready` stops at the planned consumer gate.
 
 ## Distribution And Managed Hashes
 

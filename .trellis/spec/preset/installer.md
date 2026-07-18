@@ -34,7 +34,7 @@ Public workflow skill packages are a separate managed-hash domain. The preset
 validates `trellis/skills/guru-team/`, installs its registry/schema/active
 packages under `.trellis/guru-team/skills/`, and distributes active package
 bytes to `.agents/skills/<id>/` plus only the selected Codex/Cursor/Claude
-roots. Reserved ids and test fixtures are never installed.
+roots. Reserved and planned ids plus test fixtures are never installed.
 
 Skill files use the exact previous hash recorded in
 `.trellis/guru-team/extension.json`. Missing files install; canonical-equal
@@ -65,9 +65,12 @@ including dangling, internal, external, and multilevel chains, fails closed.
 
 Installed package validation parses the installed workflow target declarations
 as well as invoke/exit markers. Every `skill` consumer must resolve to an active
-installed registry id; every `workflow` / `stop` consumer must resolve to one
-matching-kind `guru-workflow-target` / `guru-stop-target` marker. Missing,
-multiple, kind-mismatched, or dangling targets block installation/runtime use.
+or planned installed registry id. Active consumers require their complete
+installed package; planned consumers have no package and stop at the
+missing-Skill gate until promoted. Planned invoke/exit markers are invalid.
+Every `workflow` / `stop` consumer must resolve to one matching-kind
+`guru-workflow-target` / `guru-stop-target` marker. Missing, unknown, multiple,
+kind-mismatched, or dangling targets block installation/runtime use.
 
 The production registry keeps `guru-create-work-commit` reserved and installs
 the active `guru-create-task-commit` package to the audited runtime root and
@@ -111,6 +114,19 @@ dispatcher-only record/check wrappers. Companion managed assets are exactly
 executor is installed for this Skill. The extension manifest publishes the
 active id, artifact schema, and both runtime command ids as one compatible
 versioned capability.
+
+The registry additionally installs active semantic
+`guru-review-change-request` and records planned consumer
+`guru-create-task-workspace` without installing a #112 package. The active
+managed tree includes Skill/interface/contract, deidentified
+`issue-review.json` example, `guru-change-request-review-1.0` schema, tests, and
+executable dispatcher-only record/check wrappers. Companion managed assets are
+`record-change-request-review.sh` and `check-change-request-review.sh`; both are
+stdout-only and install no task/workspace mutation executor. The extension
+manifest publishes the active id, planned id, artifact schema/id, stable
+artifact basename, and both runtime command ids. Source/installed validation
+must prove five exit markers and exact consumers while allowing only the
+planned `ready` consumer to stop unavailable.
 
 Fresh install and update/reapply verification must exercise a selected-platform
 standalone wrapper with the full preset runtime. Missing runtime, runtime drift,

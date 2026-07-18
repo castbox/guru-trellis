@@ -25,6 +25,16 @@
         "reason": {"type": "string", "minLength": 1}
       }
     },
+    "planned": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state", "reason"],
+      "properties": {
+        "id": {"$ref": "#/$defs/skillId"},
+        "state": {"const": "planned"},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
     "active": {
       "type": "object",
       "additionalProperties": false,
@@ -45,6 +55,6 @@
         "workflow_route_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}
       }
     },
-    "skill": {"oneOf": [{"$ref": "#/$defs/reserved"}, {"$ref": "#/$defs/active"}]}
+    "skill": {"oneOf": [{"$ref": "#/$defs/reserved"}, {"$ref": "#/$defs/planned"}, {"$ref": "#/$defs/active"}]}
   }
 }

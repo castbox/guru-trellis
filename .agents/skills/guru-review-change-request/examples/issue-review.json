@@ -1,0 +1,121 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-change-request",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "mode": "workflow",
+  "target": {
+    "kind": "existing_issue",
+    "repo": "example/guru-extension",
+    "issue_number": 27,
+    "url": "https://github.com/example/guru-extension/issues/27",
+    "updated_at": "2026-01-01T00:00:00Z",
+    "draft_id": null,
+    "source_request_sha256": null,
+    "caller_locator": null,
+    "request_id": null,
+    "title_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "body_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "side_effect_free": false,
+    "identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "content_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  },
+  "prerequisites": {
+    "context": {
+      "status": "current",
+      "schema_id": "guru-context-discovery-1.0",
+      "typed_exit": "context_ready",
+      "payload_sha256": "1010101010101010101010101010101010101010101010101010101010101010",
+      "snapshot_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "base_sync_facts_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+      "base_head": "1313131313131313131313131313131313131313",
+      "live_target_sha256": "1414141414141414141414141414141414141414141414141414141414141414",
+      "query_sha256": "1515151515151515151515151515151515151515151515151515151515151515",
+      "current_state_sha256": "1616161616161616161616161616161616161616161616161616161616161616",
+      "history_sha256": "1717171717171717171717171717171717171717171717171717171717171717",
+      "duplicate_sha256": "1818181818181818181818181818181818181818181818181818181818181818",
+      "error_codes": []
+    },
+    "clarity": {
+      "status": "current",
+      "schema_id": "guru-requirements-clarification-1.0",
+      "typed_exit": "clear",
+      "payload_sha256": "2020202020202020202020202020202020202020202020202020202020202020",
+      "facts_sha256": "2121212121212121212121212121212121212121212121212121212121212121",
+      "target_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "content_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "scope_sha256": "2323232323232323232323232323232323232323232323232323232323232323",
+      "error_codes": []
+    },
+    "wording": {
+      "status": "current",
+      "schema_id": "guru-contract-wording-review-1.0",
+      "profile": "change_request",
+      "typed_exit": "pass",
+      "payload_sha256": "3030303030303030303030303030303030303030303030303030303030303030",
+      "facts_sha256": "3131313131313131313131313131313131313131313131313131313131313131",
+      "scope_sha256": "3232323232323232323232323232323232323232323232323232323232323232",
+      "scan_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "target_content_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "error_codes": []
+    }
+  },
+  "evidence_linkage": {
+    "target_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "target_content_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "base_head": "1313131313131313131313131313131313131313",
+    "current_state_sha256": "1616161616161616161616161616161616161616161616161616161616161616",
+    "history_sha256": "1717171717171717171717171717171717171717171717171717171717171717",
+    "duplicate_sha256": "1818181818181818181818181818181818181818181818181818181818181818",
+    "clarity_facts_sha256": "2121212121212121212121212121212121212121212121212121212121212121",
+    "wording_facts_sha256": "3131313131313131313131313131313131313131313131313131313131313131",
+    "linkage_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  },
+  "semantic_review": {
+    "dimensions": [
+      {"id": "requirement_completeness", "status": "passed", "summary": "The current requirement is complete.", "evidence_refs": ["target"], "affected_hashes": ["dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"], "finding_ids": []},
+      {"id": "delivery_unit_consistency", "status": "passed", "summary": "The request is one delivery unit.", "evidence_refs": ["evidence_linkage"], "affected_hashes": ["eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"], "finding_ids": []},
+      {"id": "implementation_target_evidence", "status": "passed", "summary": "Implementation targets are evidenced.", "evidence_refs": ["prerequisites.context"], "affected_hashes": ["1616161616161616161616161616161616161616161616161616161616161616"], "finding_ids": []},
+      {"id": "claimed_behavior_current", "status": "passed", "summary": "Claims match current behavior evidence.", "evidence_refs": ["prerequisites.context"], "affected_hashes": ["1616161616161616161616161616161616161616161616161616161616161616"], "finding_ids": []},
+      {"id": "current_implementation_gap", "status": "passed", "summary": "A current implementation gap remains.", "evidence_refs": ["prerequisites.context"], "affected_hashes": ["1616161616161616161616161616161616161616161616161616161616161616"], "finding_ids": []},
+      {"id": "docs_code_tests_consistency", "status": "passed", "summary": "Docs, code, and tests are consistent.", "evidence_refs": ["prerequisites.context"], "affected_hashes": ["1616161616161616161616161616161616161616161616161616161616161616"], "finding_ids": []},
+      {"id": "archived_history_constraints", "status": "passed", "summary": "Archived constraints are accounted for.", "evidence_refs": ["prerequisites.context"], "affected_hashes": ["1717171717171717171717171717171717171717171717171717171717171717"], "finding_ids": []},
+      {"id": "duplicate_reuse_validity", "status": "passed", "summary": "Duplicate and reuse facts are resolved.", "evidence_refs": ["prerequisites.context"], "affected_hashes": ["1818181818181818181818181818181818181818181818181818181818181818"], "finding_ids": []},
+      {"id": "target_authority_current", "status": "passed", "summary": "The issue authority is current.", "evidence_refs": ["target"], "affected_hashes": ["cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"], "finding_ids": []},
+      {"id": "prerequisite_hash_linkage", "status": "passed", "summary": "All prerequisite hashes are linked.", "evidence_refs": ["evidence_linkage"], "affected_hashes": ["eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"], "finding_ids": []}
+    ],
+    "findings": [],
+    "scope_conclusion": {
+      "requirement_scope_basis": "The reviewed issue and linked prerequisites define the scope.",
+      "delivery_unit_id": "example-change-27",
+      "close_issues": [27],
+      "related_issues": [],
+      "followup_issues": [],
+      "duplicate_reuse_decision": "No current duplicate replaces this delivery unit.",
+      "implementation_target": "The fictional Guru extension package.",
+      "current_gap": "The readiness Skill is not yet implemented.",
+      "archived_constraints": ["Preserve the documented public identifiers."],
+      "risk_boundary": ["Normal honest workflow operation only."],
+      "excluded_scope": ["Workspace creation is owned by a downstream Skill."]
+    },
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "example-ai-reviewer",
+      "reviewed_linkage_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "summary": "All ten dimensions were reviewed against the linked evidence.",
+      "findings_count": 0,
+      "scope_conclusion_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "reason": "No product-semantic change requires a new decision.",
+    "proposal_sha256": null
+  },
+  "typed_exit": "ready",
+  "reason": "The independently deliverable change request is ready for workspace creation.",
+  "affected_evidence": [
+    {"ref": "evidence_linkage", "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "summary": "The complete portable prerequisite linkage."}
+  ],
+  "consumer": {"kind": "skill", "id": "guru-create-task-workspace"},
+  "facts_sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+}

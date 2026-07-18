@@ -264,6 +264,48 @@ REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_NON_CURRENT_DECISIONS = {
 REQUIREMENTS_CLARIFICATION_REFRESH_ACTION_KINDS = {
     "issue_comment", "issue_body_edit", "proposed_draft_update",
 }
+CHANGE_REQUEST_REVIEW_SKILL_ID = "guru-review-change-request"
+CHANGE_REQUEST_REVIEW_SCHEMA_VERSION = "1.0"
+CHANGE_REQUEST_REVIEW_SCHEMA_ID = (
+    "https://github.com/castbox/guru-trellis/schemas/"
+    "guru-change-request-review-1.0.json"
+)
+CHANGE_REQUEST_REVIEW_DIMENSIONS = [
+    "requirement_completeness",
+    "delivery_unit_consistency",
+    "implementation_target_evidence",
+    "claimed_behavior_current",
+    "current_implementation_gap",
+    "docs_code_tests_consistency",
+    "archived_history_constraints",
+    "duplicate_reuse_validity",
+    "target_authority_current",
+    "prerequisite_hash_linkage",
+]
+CHANGE_REQUEST_REVIEW_FINDING_CATEGORIES = {
+    "requirement_gap",
+    "delivery_conflict",
+    "wording_gap",
+    "context_stale",
+    "target_complete",
+    "current_history_conflict",
+    "duplicate_reuse_conflict",
+    "prerequisite_mismatch",
+}
+CHANGE_REQUEST_REVIEW_CONSUMERS = {
+    "ready": {"kind": "skill", "id": "guru-create-task-workspace"},
+    "clarify_requirements": {"kind": "skill", "id": "guru-clarify-requirements"},
+    "review_wording": {"kind": "skill", "id": "guru-review-contract-wording"},
+    "refresh_context": {"kind": "skill", "id": "guru-sync-base"},
+    "blocked": {"kind": "stop", "id": "change-request-review-blocked"},
+}
+CHANGE_REQUEST_REVIEW_GATE_BY_EXIT = {
+    "ready": "passed",
+    "clarify_requirements": "reroute",
+    "review_wording": "reroute",
+    "refresh_context": "reroute",
+    "blocked": "blocked",
+}
 TASK_COMMIT_PLAN_SCHEMA_VERSION = "1.0"
 TASK_COMMIT_PLAN_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json"
 TASK_COMMIT_PLAN_DIR = "task-commit-plans"
@@ -13645,7 +13687,7 @@ SKILL_RUNTIME_REMEDIATION = (
 )
 SKILL_CONTRACT_SCHEMAS = {
     "registry": {
-        "sha256": "8d81f69b02667d77fa5d21dce320de7feac25d7d92702336b89358e1f65cda1b",
+        "sha256": "e49bdcefbbb8c4c97aae90ab604c3ae90e5ba8cd08574fdbdf8e814bd6018081",
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.0.json",
     },
     "interface": {
@@ -14512,6 +14554,7 @@ def _validate_skill_source(
             "facts": {
                 "schema_version": None,
                 "reserved_ids": [],
+                "planned_ids": [],
                 "active_ids": [],
                 "invoke_markers": 0,
                 "exit_markers": 0,
@@ -14551,6 +14594,7 @@ def _validate_skill_source(
     )
     entries: list[dict[str, Any]] = []
     reserved: set[str] = set()
+    planned: set[str] = set()
     active: dict[str, dict[str, Any]] = {}
     interfaces: dict[str, dict[str, Any]] = {}
     if registry is not None:
@@ -14578,6 +14622,14 @@ def _validate_skill_source(
                 ):
                     errors.append(f"reserved registry entry {skill_id} has invalid fields")
                 reserved.add(skill_id)
+            elif state == "planned":
+                if (
+                    set(entry) != {"id", "state", "reason"}
+                    or not isinstance(entry.get("reason"), str)
+                    or not entry["reason"].strip()
+                ):
+                    errors.append(f"planned registry entry {skill_id} has invalid fields")
+                planned.add(skill_id)
             elif state == "active":
                 active[skill_id] = entry
                 interface = validate_skill_interface(
@@ -14621,6 +14673,8 @@ def _validate_skill_source(
         invoke_counts[skill_id] = invoke_counts.get(skill_id, 0) + 1
         if skill_id in reserved:
             errors.append(f"reserved skill {skill_id} is referenced by a mandatory route")
+        elif skill_id in planned:
+            errors.append(f"planned skill {skill_id} is referenced by a mandatory route")
         elif skill_id not in active:
             errors.append(f"unknown skill {skill_id} is referenced by a mandatory route")
     for skill_id in active:
@@ -14649,6 +14703,8 @@ def _validate_skill_source(
         marker_map.setdefault((skill_id, exit_id), []).append(marker)
         if skill_id in reserved:
             errors.append(f"reserved skill {skill_id} has an exit route")
+        elif skill_id in planned:
+            errors.append(f"planned skill {skill_id} has an exit route")
         elif skill_id not in active:
             errors.append(f"unknown skill {skill_id} has an exit route")
     declared_exits: set[tuple[str, str]] = set()
@@ -14667,9 +14723,13 @@ def _validate_skill_source(
                 consumer_kind = str(consumer.get("kind") or "")
                 consumer_id = str(consumer.get("id") or "")
                 declared_consumers.add((consumer_kind, consumer_id))
-                if consumer_kind == "skill" and consumer_id not in active:
+                if (
+                    consumer_kind == "skill"
+                    and consumer_id not in active
+                    and consumer_id not in planned
+                ):
                     errors.append(
-                        f"external exit {skill_id}/{key[1]} references non-active skill consumer {consumer_id}"
+                        f"external exit {skill_id}/{key[1]} references unknown skill consumer {consumer_id}"
                     )
             markers = marker_map.get(key, [])
             if not markers:
@@ -14742,6 +14802,7 @@ def _validate_skill_source(
         "facts": {
             "schema_version": registry.get("schema_version") if registry else None,
             "reserved_ids": sorted(reserved),
+            "planned_ids": sorted(planned),
             "active_ids": sorted(active),
             "invoke_markers": len(invokes),
             "exit_markers": len(exit_markers),
@@ -14776,6 +14837,7 @@ def validate_skill_source(
             "facts": {
                 "schema_version": None,
                 "reserved_ids": [],
+                "planned_ids": [],
                 "active_ids": [],
                 "invoke_markers": 0,
                 "exit_markers": 0,
@@ -15139,6 +15201,7 @@ def validate_skill_installed(
             "facts": {
                 "schema_version": None,
                 "reserved_ids": [],
+                "planned_ids": [],
                 "active_ids": [],
                 "invoke_markers": 0,
                 "exit_markers": 0,
@@ -21466,6 +21529,1012 @@ def cmd_check_requirements_clarification(args: argparse.Namespace) -> dict[str, 
     }
 
 
+def change_request_review_schema(root: Path) -> dict[str, Any]:
+    candidates = [
+        root / ".trellis/guru-team/skills/packages/guru-review-change-request/schemas/change-request-review.schema.json",
+        root / "trellis/skills/guru-team/packages/guru-review-change-request/schemas/change-request-review.schema.json",
+    ]
+    runtime_path = Path(__file__).resolve()
+    if len(runtime_path.parents) > 2:
+        candidates.append(
+            runtime_path.parents[2]
+            / "skills/packages/guru-review-change-request/schemas/change-request-review.schema.json"
+        )
+    if len(runtime_path.parents) > 4:
+        candidates.append(
+            runtime_path.parents[4]
+            / "skills/guru-team/packages/guru-review-change-request/schemas/change-request-review.schema.json"
+        )
+    schema_path = next(
+        (path for path in candidates if path.is_file() and not path.is_symlink()),
+        None,
+    )
+    if schema_path is None:
+        raise WorkflowError(
+            "Change request review schema is missing from the compatible Guru Team runtime.",
+            exit_code=2,
+            payload={"error_codes": ["change_request_review_schema_unavailable"]},
+        )
+    errors: list[str] = []
+    schema = skill_read_json(schema_path, "change request review schema", errors)
+    if (
+        errors
+        or schema is None
+        or schema.get("$schema") != SKILL_SCHEMA_DIALECT
+        or schema.get("$id") != CHANGE_REQUEST_REVIEW_SCHEMA_ID
+    ):
+        raise WorkflowError(
+            "Change request review schema identity is invalid.",
+            exit_code=2,
+            payload={"error_codes": ["change_request_review_schema_unavailable"]},
+        )
+    return schema
+
+
+def change_request_review_read_input(
+    root: Path,
+    value: str | None,
+    label: str,
+) -> dict[str, Any]:
+    if not value:
+        raise WorkflowError(f"{label} requires an input JSON object.", exit_code=2)
+    return contract_wording_read_input(root, value, label)
+
+
+def change_request_review_sha256(value: Any) -> str | None:
+    return value if isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) else None
+
+
+def change_request_review_scope_hashes(
+    scope: dict[str, Any],
+) -> tuple[str | None, str | None, str | None]:
+    items = scope.get("items") if isinstance(scope, dict) else None
+    if not isinstance(items, list):
+        return None, None, None
+    title_hash: str | None = None
+    body_hash: str | None = None
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        field = item.get("field")
+        if field == "title":
+            title_hash = change_request_review_sha256(item.get("content_sha256"))
+        elif field == "body":
+            body_hash = change_request_review_sha256(item.get("content_sha256"))
+    if title_hash is None or body_hash is None:
+        return title_hash, body_hash, None
+    return title_hash, body_hash, context_digest({
+        "title_sha256": title_hash,
+        "body_sha256": body_hash,
+    })
+
+
+def change_request_review_request_authority_projection(
+    repo: Any,
+    source: Any,
+    body_sha256: Any,
+) -> dict[str, Any] | None:
+    if (
+        normalize_github_repository(repo) != repo
+        or not isinstance(source, dict)
+        or source.get("kind") != "draft"
+        or change_request_review_sha256(body_sha256) is None
+    ):
+        return None
+    authority = {
+        "kind": "draft",
+        "repo": repo,
+        "issue_number": None,
+        "url": None,
+        "state": "draft",
+        "updated_at": None,
+        "body_sha256": body_sha256,
+    }
+    return requirements_clarification_review_target_projection(authority)
+
+
+def change_request_review_target_identity_projection(
+    target: dict[str, Any],
+) -> dict[str, Any]:
+    common = {
+        "kind": target.get("kind"),
+        "repo": target.get("repo"),
+        "title_sha256": target.get("title_sha256"),
+        "body_sha256": target.get("body_sha256"),
+    }
+    if target.get("kind") == "existing_issue":
+        return {
+            **common,
+            "issue_number": target.get("issue_number"),
+            "url": target.get("url"),
+            "updated_at": target.get("updated_at"),
+        }
+    if target.get("kind") == "proposed_draft":
+        return {
+            **common,
+            "draft_id": target.get("draft_id"),
+            "source_request_sha256": target.get("source_request_sha256"),
+        }
+    return {
+        **common,
+        "caller_locator": target.get("caller_locator"),
+        "request_id": target.get("request_id"),
+        "source_request_sha256": target.get("source_request_sha256"),
+    }
+
+
+def change_request_review_normalize_target(
+    root: Path,
+    raw_target: Any,
+    change_request_input: str,
+    mode: str,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, str]]:
+    if not isinstance(raw_target, dict):
+        raise WorkflowError(
+            "Change request review target must be an object.",
+            exit_code=2,
+            payload={"error_codes": ["change_request_review_target_invalid"]},
+        )
+    source = change_request_review_read_input(
+        root,
+        change_request_input,
+        "change request review target source",
+    )
+    scope, contents = contract_wording_build_scope(
+        root,
+        "change_request",
+        mode,
+        change_request_input=change_request_input,
+    )
+    title_hash, body_hash, content_hash = change_request_review_scope_hashes(scope)
+    if title_hash is None or body_hash is None or content_hash is None:
+        raise WorkflowError(
+            "Change request review target scope is incomplete.",
+            exit_code=2,
+            payload={"error_codes": ["change_request_review_target_scope_incomplete"]},
+        )
+    kind = raw_target.get("kind")
+    repo = raw_target.get("repo")
+    if normalize_github_repository(repo) != repo:
+        raise WorkflowError(
+            "Change request review repository identity is invalid.",
+            exit_code=2,
+            payload={"error_codes": ["change_request_review_target_repo_invalid"]},
+        )
+    base_keys = {"kind", "repo", "title_sha256", "body_sha256"}
+    errors: list[str] = []
+    target: dict[str, Any]
+    if kind == "existing_issue":
+        expected_keys = base_keys | {"issue_number", "url", "updated_at"}
+        issue_number = raw_target.get("issue_number")
+        expected_url = (
+            f"https://github.com/{repo}/issues/{issue_number}"
+            if is_strict_int(issue_number) and int(issue_number) > 0
+            else None
+        )
+        source_identity = str(scope.get("identity") or "").removeprefix("change_request:")
+        scope_items = scope.get("items") if isinstance(scope.get("items"), list) else []
+        source_updated = next(
+            (
+                item.get("updated_at")
+                for item in scope_items
+                if isinstance(item, dict) and item.get("field") == "title"
+            ),
+            None,
+        )
+        if (
+            source.get("kind") != "issue"
+            or source.get("repo") != repo
+            or source.get("number") != issue_number
+            or expected_url is None
+            or raw_target.get("url") != expected_url
+            or source_identity != expected_url
+            or raw_target.get("updated_at") != source_updated
+        ):
+            errors.append("change_request_review_issue_authority_mismatch")
+        target = {
+            "kind": kind,
+            "repo": repo,
+            "issue_number": issue_number,
+            "url": raw_target.get("url"),
+            "updated_at": raw_target.get("updated_at"),
+            "draft_id": None,
+            "source_request_sha256": None,
+            "caller_locator": None,
+            "request_id": None,
+            "title_sha256": title_hash,
+            "body_sha256": body_hash,
+            "side_effect_free": False,
+        }
+    elif kind == "proposed_draft":
+        expected_keys = base_keys | {"draft_id", "source_request_sha256", "side_effect_free"}
+        draft_id = raw_target.get("draft_id")
+        source_request_sha256 = change_request_review_sha256(raw_target.get("source_request_sha256"))
+        authority_projection = change_request_review_request_authority_projection(
+            repo,
+            source,
+            body_hash,
+        )
+        expected_source_request_sha256 = (
+            context_digest(authority_projection)
+            if authority_projection is not None
+            else None
+        )
+        if (
+            source.get("kind") != "draft"
+            or source.get("draft_id") != draft_id
+            or not isinstance(draft_id, str)
+            or not draft_id.strip()
+            or authority_projection is None
+            or raw_target.get("side_effect_free") is not True
+        ):
+            errors.append("change_request_review_draft_authority_mismatch")
+        if source_request_sha256 != expected_source_request_sha256:
+            errors.append("change_request_review_source_request_mismatch")
+        target = {
+            "kind": kind,
+            "repo": repo,
+            "issue_number": None,
+            "url": None,
+            "updated_at": None,
+            "draft_id": draft_id,
+            "source_request_sha256": source_request_sha256,
+            "caller_locator": None,
+            "request_id": None,
+            "title_sha256": title_hash,
+            "body_sha256": body_hash,
+            "side_effect_free": True,
+        }
+    elif kind == "standalone_request":
+        expected_keys = base_keys | {
+            "caller_locator", "request_id", "source_request_sha256",
+            "side_effect_free",
+        }
+        caller_locator = raw_target.get("caller_locator")
+        request_id = raw_target.get("request_id")
+        source_request_sha256 = change_request_review_sha256(raw_target.get("source_request_sha256"))
+        authority_projection = change_request_review_request_authority_projection(
+            repo,
+            source,
+            body_hash,
+        )
+        expected_source_request_sha256 = (
+            context_digest(authority_projection)
+            if authority_projection is not None
+            else None
+        )
+        if (
+            source.get("kind") != "draft"
+            or source.get("draft_id") != request_id
+            or not isinstance(caller_locator, str)
+            or not caller_locator.strip()
+            or not isinstance(request_id, str)
+            or not request_id.strip()
+            or authority_projection is None
+            or raw_target.get("side_effect_free") is not True
+        ):
+            errors.append("change_request_review_standalone_authority_mismatch")
+        if source_request_sha256 != expected_source_request_sha256:
+            errors.append("change_request_review_source_request_mismatch")
+        target = {
+            "kind": kind,
+            "repo": repo,
+            "issue_number": None,
+            "url": None,
+            "updated_at": None,
+            "draft_id": None,
+            "source_request_sha256": source_request_sha256,
+            "caller_locator": caller_locator,
+            "request_id": request_id,
+            "title_sha256": title_hash,
+            "body_sha256": body_hash,
+            "side_effect_free": True,
+        }
+    else:
+        raise WorkflowError(
+            "Change request review target kind is invalid.",
+            exit_code=2,
+            payload={"error_codes": ["change_request_review_target_kind_invalid"]},
+        )
+    target["identity_sha256"] = context_digest(
+        change_request_review_target_identity_projection(target)
+    )
+    target["content_sha256"] = content_hash
+    actual_keys = set(raw_target)
+    if actual_keys == expected_keys:
+        pass
+    elif actual_keys == set(target):
+        if raw_target != target:
+            errors.append("change_request_review_normalized_target_mismatch")
+    else:
+        errors.append("change_request_review_target_fields_invalid")
+    if raw_target.get("title_sha256") != title_hash or raw_target.get("body_sha256") != body_hash:
+        errors.append("change_request_review_target_content_mismatch")
+    if "identity_sha256" in raw_target and raw_target.get("identity_sha256") != target["identity_sha256"]:
+        errors.append("change_request_review_target_identity_mismatch")
+    if "content_sha256" in raw_target and raw_target.get("content_sha256") != target["content_sha256"]:
+        errors.append("change_request_review_target_content_digest_mismatch")
+    if errors:
+        raise WorkflowError(
+            "Change request review target validation failed.",
+            exit_code=2,
+            payload={"error_codes": context_sort(errors)},
+        )
+    return target, scope, contents
+
+
+def change_request_review_missing_projection(kind: str) -> dict[str, Any]:
+    common = {
+        "status": "missing",
+        "schema_id": None,
+        "typed_exit": None,
+        "payload_sha256": None,
+    }
+    if kind == "context":
+        return {
+            **common,
+            "snapshot_sha256": None,
+            "base_sync_facts_sha256": None,
+            "base_head": None,
+            "live_target_sha256": None,
+            "query_sha256": None,
+            "current_state_sha256": None,
+            "history_sha256": None,
+            "duplicate_sha256": None,
+            "error_codes": ["change_request_review_context_missing"],
+        }
+    if kind == "clarity":
+        return {
+            **common,
+            "facts_sha256": None,
+            "target_sha256": None,
+            "content_sha256": None,
+            "scope_sha256": None,
+            "error_codes": ["change_request_review_clarity_missing"],
+        }
+    return {
+        **common,
+        "profile": None,
+        "facts_sha256": None,
+        "scope_sha256": None,
+        "scan_sha256": None,
+        "target_content_sha256": None,
+        "error_codes": ["change_request_review_wording_missing"],
+    }
+
+
+def change_request_review_context_projection(
+    root: Path,
+    payload: Any,
+) -> dict[str, Any]:
+    if payload is None:
+        return change_request_review_missing_projection("context")
+    if not isinstance(payload, dict):
+        result = change_request_review_missing_projection("context")
+        result["status"] = "invalid"
+        result["error_codes"] = ["change_request_review_context_invalid"]
+        return result
+    structural = context_structural_errors(root, payload)
+    live: list[str] = []
+    if not structural:
+        live = context_typed_exit_live_errors(
+            payload,
+            context_live_errors(root, payload, None),
+        )
+    errors = list(structural) + list(live)
+    if payload.get("typed_exit") != "context_ready":
+        errors.append("change_request_review_context_exit_not_ready")
+    snapshot = payload.get("snapshot_identity") if isinstance(payload.get("snapshot_identity"), dict) else {}
+    base = payload.get("base_evidence") if isinstance(payload.get("base_evidence"), dict) else {}
+    sync_result = base.get("sync_result") if isinstance(base.get("sync_result"), dict) else {}
+    live_change = payload.get("live_change") if isinstance(payload.get("live_change"), dict) else {}
+    preview = payload.get("history_preview") if isinstance(payload.get("history_preview"), dict) else {}
+    history_projection = {
+        "preview_sha256": preview.get("preview_sha256"),
+        "history_review": payload.get("history_review"),
+        "mem_review": payload.get("mem_review"),
+    }
+    return {
+        "status": "current" if not errors else "invalid",
+        "schema_id": "guru-context-discovery-1.0",
+        "typed_exit": payload.get("typed_exit") if isinstance(payload.get("typed_exit"), str) else None,
+        "payload_sha256": context_digest(payload),
+        "snapshot_sha256": change_request_review_sha256(snapshot.get("snapshot_sha256")),
+        "base_sync_facts_sha256": change_request_review_sha256(sync_result.get("facts_sha256")),
+        "base_head": snapshot.get("base_head") if re.fullmatch(r"[0-9a-f]{40}", str(snapshot.get("base_head") or "")) else None,
+        "live_target_sha256": change_request_review_sha256(live_change.get("facts_sha256")),
+        "query_sha256": change_request_review_sha256(snapshot.get("query_sha256")),
+        "current_state_sha256": context_digest(payload.get("current_state")),
+        "history_sha256": context_digest(history_projection),
+        "duplicate_sha256": context_digest(payload.get("duplicate_search")),
+        "error_codes": context_sort(errors),
+    }
+
+
+def change_request_review_clarity_projection(
+    root: Path,
+    payload: Any,
+) -> dict[str, Any]:
+    if payload is None:
+        return change_request_review_missing_projection("clarity")
+    if not isinstance(payload, dict):
+        result = change_request_review_missing_projection("clarity")
+        result["status"] = "invalid"
+        result["error_codes"] = ["change_request_review_clarity_invalid"]
+        return result
+    structural = requirements_clarification_structural_errors(root, payload, None)
+    live: list[str] = []
+    if not structural:
+        live = requirements_clarification_typed_exit_live_errors(
+            payload,
+            requirements_clarification_live_errors(root, payload, None),
+        )
+    errors = list(structural) + list(live)
+    if payload.get("typed_exit") != "clear":
+        errors.append("change_request_review_clarity_exit_not_clear")
+    identity = payload.get("content_identity") if isinstance(payload.get("content_identity"), dict) else {}
+    return {
+        "status": "current" if not errors else "invalid",
+        "schema_id": "guru-requirements-clarification-1.0",
+        "typed_exit": payload.get("typed_exit") if isinstance(payload.get("typed_exit"), str) else None,
+        "payload_sha256": context_digest(payload),
+        "facts_sha256": change_request_review_sha256(identity.get("result_sha256")),
+        "target_sha256": change_request_review_sha256(identity.get("target_sha256")),
+        "content_sha256": change_request_review_sha256(identity.get("content_sha256")),
+        "scope_sha256": change_request_review_sha256(identity.get("scope_sha256")),
+        "error_codes": context_sort(errors),
+    }
+
+
+def change_request_review_wording_projection(
+    root: Path,
+    payload: Any,
+    scope: dict[str, Any],
+    contents: dict[str, str],
+) -> dict[str, Any]:
+    if payload is None:
+        return change_request_review_missing_projection("wording")
+    if not isinstance(payload, dict):
+        result = change_request_review_missing_projection("wording")
+        result["status"] = "invalid"
+        result["error_codes"] = ["change_request_review_wording_invalid"]
+        return result
+    scan = scan_contract_wording(scope, contents)
+    errors = contract_wording_structural_errors(root, payload, scope, scan)
+    if payload.get("profile") != "change_request":
+        errors.append("change_request_review_wording_profile_invalid")
+    if payload.get("typed_exit") != "pass":
+        errors.append("change_request_review_wording_exit_not_pass")
+    _, _, target_content_sha256 = change_request_review_scope_hashes(scope)
+    scope_value = payload.get("scope") if isinstance(payload.get("scope"), dict) else {}
+    scan_value = payload.get("scan") if isinstance(payload.get("scan"), dict) else {}
+    return {
+        "status": "current" if not errors else "invalid",
+        "schema_id": "guru-contract-wording-review-1.0",
+        "profile": payload.get("profile") if isinstance(payload.get("profile"), str) else None,
+        "typed_exit": payload.get("typed_exit") if isinstance(payload.get("typed_exit"), str) else None,
+        "payload_sha256": context_digest(payload),
+        "facts_sha256": change_request_review_sha256(payload.get("facts_sha256")),
+        "scope_sha256": change_request_review_sha256(scope_value.get("scope_sha256")),
+        "scan_sha256": change_request_review_sha256(scan_value.get("scan_sha256")),
+        "target_content_sha256": target_content_sha256,
+        "error_codes": context_sort(errors),
+    }
+
+
+def change_request_review_prerequisite_target_identity_projection(
+    payloads: dict[str, Any],
+) -> dict[str, Any] | None:
+    context_payload = payloads.get("context")
+    clarity_payload = payloads.get("clarity")
+    wording_payload = payloads.get("wording")
+    if not all(
+        isinstance(payload, dict)
+        for payload in (context_payload, clarity_payload, wording_payload)
+    ):
+        return None
+
+    repository = context_payload.get("repository")
+    repository = repository if isinstance(repository, dict) else {}
+    live_change = context_payload.get("live_change")
+    live_change = live_change if isinstance(live_change, dict) else {}
+    clarity_target = clarity_payload.get("review_target")
+    clarity_target = clarity_target if isinstance(clarity_target, dict) else {}
+    invocation = clarity_payload.get("invocation_context")
+    invocation = invocation if isinstance(invocation, dict) else {}
+    wording_scope = wording_payload.get("scope")
+    wording_scope = wording_scope if isinstance(wording_scope, dict) else {}
+    title_hash, body_hash, _ = change_request_review_scope_hashes(wording_scope)
+    source_identity = str(wording_scope.get("identity") or "").removeprefix(
+        "change_request:"
+    )
+
+    invocation_kind = invocation.get("kind")
+    if (
+        live_change.get("kind") == "issue"
+        and clarity_target.get("kind") == "issue"
+        and invocation_kind == "initial_issue"
+    ):
+        kind = "existing_issue"
+    elif (
+        live_change.get("kind") == "draft"
+        and clarity_target.get("kind") == "draft"
+        and invocation_kind == "proposed_draft"
+    ):
+        kind = "proposed_draft"
+    elif (
+        live_change.get("kind") == "draft"
+        and clarity_target.get("kind") == "draft"
+        and invocation_kind == "standalone_review"
+    ):
+        kind = "standalone_request"
+    else:
+        return None
+
+    common = {
+        "kind": kind,
+        "repo": repository.get("repo"),
+        "title_sha256": title_hash,
+        "body_sha256": body_hash,
+    }
+    if kind == "existing_issue":
+        return {
+            **common,
+            "issue_number": clarity_target.get("issue_number"),
+            "url": clarity_target.get("url"),
+            "updated_at": clarity_target.get("updated_at"),
+        }
+    request_identity = (
+        source_identity.removeprefix("draft:")
+        if source_identity.startswith("draft:")
+        else None
+    )
+    if kind == "proposed_draft":
+        return {
+            **common,
+            "draft_id": request_identity,
+            "source_request_sha256": clarity_target.get("facts_sha256"),
+        }
+    return {
+        **common,
+        "caller_locator": invocation.get("caller"),
+        "request_id": request_identity,
+        "source_request_sha256": clarity_target.get("facts_sha256"),
+    }
+
+
+def change_request_review_target_linkage_errors(
+    target: dict[str, Any],
+    payloads: dict[str, Any],
+    projections: dict[str, dict[str, Any]],
+) -> None:
+    context_payload = payloads.get("context")
+    if isinstance(context_payload, dict):
+        repository = context_payload.get("repository") if isinstance(context_payload.get("repository"), dict) else {}
+        live_change = context_payload.get("live_change") if isinstance(context_payload.get("live_change"), dict) else {}
+        context_errors: list[str] = []
+        if repository.get("repo") != target.get("repo") or live_change.get("body_sha256") != target.get("body_sha256"):
+            context_errors.append("change_request_review_context_target_mismatch")
+        if target.get("kind") == "existing_issue" and (
+            live_change.get("kind") != "issue"
+            or live_change.get("identity") != target.get("url")
+            or live_change.get("updated_at") != target.get("updated_at")
+        ):
+            context_errors.append("change_request_review_context_issue_mismatch")
+        if target.get("kind") != "existing_issue" and live_change.get("kind") != "draft":
+            context_errors.append("change_request_review_context_draft_mismatch")
+        if context_errors:
+            projections["context"]["status"] = "invalid"
+            projections["context"]["error_codes"] = context_sort(
+                projections["context"]["error_codes"] + context_errors
+            )
+    clarity_payload = payloads.get("clarity")
+    if isinstance(clarity_payload, dict):
+        clarity_target = clarity_payload.get("review_target") if isinstance(clarity_payload.get("review_target"), dict) else {}
+        clarity_errors: list[str] = []
+        if clarity_target.get("repo") != target.get("repo") or clarity_target.get("body_sha256") != target.get("body_sha256"):
+            clarity_errors.append("change_request_review_clarity_target_mismatch")
+        if target.get("kind") == "existing_issue" and (
+            clarity_target.get("kind") != "issue"
+            or clarity_target.get("issue_number") != target.get("issue_number")
+            or clarity_target.get("url") != target.get("url")
+            or clarity_target.get("updated_at") != target.get("updated_at")
+        ):
+            clarity_errors.append("change_request_review_clarity_issue_mismatch")
+        if target.get("kind") != "existing_issue" and clarity_target.get("kind") != "draft":
+            clarity_errors.append("change_request_review_clarity_draft_mismatch")
+        if clarity_errors:
+            projections["clarity"]["status"] = "invalid"
+            projections["clarity"]["error_codes"] = context_sort(
+                projections["clarity"]["error_codes"] + clarity_errors
+            )
+    wording = projections["wording"]
+    if (
+        wording.get("target_content_sha256") is not None
+        and wording.get("target_content_sha256") != target.get("content_sha256")
+    ):
+        wording["status"] = "invalid"
+        wording["error_codes"] = context_sort(
+            wording["error_codes"] + ["change_request_review_wording_target_mismatch"]
+        )
+    prerequisite_identity = change_request_review_prerequisite_target_identity_projection(
+        payloads
+    )
+    complete_prerequisite_payloads = all(
+        isinstance(payloads.get(kind), dict)
+        for kind in ("context", "clarity", "wording")
+    )
+    if (
+        complete_prerequisite_payloads
+        and (
+            prerequisite_identity is None
+            or context_digest(prerequisite_identity) != target.get("identity_sha256")
+        )
+    ):
+        identity_error = "change_request_review_target_identity_linkage_mismatch"
+        for projection in projections.values():
+            projection["status"] = "invalid"
+            projection["error_codes"] = context_sort(
+                projection["error_codes"] + [identity_error]
+            )
+
+
+def change_request_review_prerequisite_projections(
+    root: Path,
+    payloads: Any,
+    target: dict[str, Any],
+    scope: dict[str, Any],
+    contents: dict[str, str],
+) -> dict[str, dict[str, Any]]:
+    if not isinstance(payloads, dict) or set(payloads) != {"context", "clarity", "wording"}:
+        raise WorkflowError(
+            "Change request review prerequisite payloads must contain context, clarity, and wording.",
+            exit_code=2,
+            payload={"error_codes": ["change_request_review_prerequisites_invalid"]},
+        )
+    projections = {
+        "context": change_request_review_context_projection(root, payloads.get("context")),
+        "clarity": change_request_review_clarity_projection(root, payloads.get("clarity")),
+        "wording": change_request_review_wording_projection(
+            root,
+            payloads.get("wording"),
+            scope,
+            contents,
+        ),
+    }
+    change_request_review_target_linkage_errors(target, payloads, projections)
+    return projections
+
+
+def change_request_review_linkage(
+    target: dict[str, Any],
+    prerequisites: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    context_projection = prerequisites["context"]
+    clarity_projection = prerequisites["clarity"]
+    wording_projection = prerequisites["wording"]
+    linkage = {
+        "target_identity_sha256": target["identity_sha256"],
+        "target_content_sha256": target["content_sha256"],
+        "base_head": context_projection["base_head"],
+        "current_state_sha256": context_projection["current_state_sha256"],
+        "history_sha256": context_projection["history_sha256"],
+        "duplicate_sha256": context_projection["duplicate_sha256"],
+        "clarity_facts_sha256": clarity_projection["facts_sha256"],
+        "wording_facts_sha256": wording_projection["facts_sha256"],
+    }
+    linkage["linkage_sha256"] = context_digest(linkage)
+    return linkage
+
+
+def change_request_review_derive_result(
+    target: dict[str, Any],
+    prerequisites: dict[str, dict[str, Any]],
+    linkage: dict[str, Any],
+    authored: dict[str, Any],
+) -> dict[str, Any]:
+    expected = {
+        "generated_at", "mode", "target", "prerequisite_payloads",
+        "semantic_review", "human_confirmation", "typed_exit", "reason",
+        "affected_evidence", "consumer",
+    }
+    if set(authored) != expected:
+        raise WorkflowError(
+            "Change request review recorder input has undeclared or missing fields.",
+            exit_code=2,
+            payload={"error_codes": ["change_request_review_input_fields_invalid"]},
+        )
+    result = {
+        "schema_version": CHANGE_REQUEST_REVIEW_SCHEMA_VERSION,
+        "skill_id": CHANGE_REQUEST_REVIEW_SKILL_ID,
+        "generated_at": authored.get("generated_at"),
+        "mode": authored.get("mode"),
+        "target": copy.deepcopy(target),
+        "prerequisites": copy.deepcopy(prerequisites),
+        "evidence_linkage": copy.deepcopy(linkage),
+        "semantic_review": copy.deepcopy(authored.get("semantic_review")),
+        "human_confirmation": copy.deepcopy(authored.get("human_confirmation")),
+        "typed_exit": authored.get("typed_exit"),
+        "reason": authored.get("reason"),
+        "affected_evidence": copy.deepcopy(authored.get("affected_evidence")),
+        "consumer": copy.deepcopy(authored.get("consumer")),
+    }
+    result["facts_sha256"] = context_digest(result)
+    return result
+
+
+def change_request_review_structural_errors(
+    root: Path,
+    payload: dict[str, Any],
+    expected_target: dict[str, Any],
+    expected_prerequisites: dict[str, dict[str, Any]],
+    expected_linkage: dict[str, Any],
+) -> list[str]:
+    errors: list[str] = []
+    if skill_json_schema_validation_errors(
+        payload,
+        change_request_review_schema(root),
+        "change request review result",
+    ):
+        errors.append("change_request_review_schema_validation_failed")
+    expected_top = {
+        "schema_version", "skill_id", "generated_at", "mode", "target",
+        "prerequisites", "evidence_linkage", "semantic_review",
+        "human_confirmation", "typed_exit", "reason", "affected_evidence",
+        "consumer", "facts_sha256",
+    }
+    if set(payload) != expected_top:
+        errors.append("change_request_review_top_level_fields_invalid")
+    if (
+        payload.get("schema_version") != CHANGE_REQUEST_REVIEW_SCHEMA_VERSION
+        or payload.get("skill_id") != CHANGE_REQUEST_REVIEW_SKILL_ID
+    ):
+        errors.append("change_request_review_schema_identity_invalid")
+    if payload.get("target") != expected_target:
+        errors.append("change_request_review_target_stale")
+    if payload.get("prerequisites") != expected_prerequisites:
+        errors.append("change_request_review_prerequisites_stale")
+    if payload.get("evidence_linkage") != expected_linkage:
+        errors.append("change_request_review_linkage_stale")
+    identity_error = "change_request_review_target_identity_linkage_mismatch"
+    if any(
+        identity_error in projection.get("error_codes", [])
+        for projection in expected_prerequisites.values()
+    ):
+        errors.append(identity_error)
+    unsigned = copy.deepcopy(payload)
+    actual_facts = unsigned.pop("facts_sha256", None)
+    if actual_facts != context_digest(unsigned):
+        errors.append("change_request_review_facts_digest_mismatch")
+    typed_exit = payload.get("typed_exit")
+    if typed_exit not in CHANGE_REQUEST_REVIEW_CONSUMERS:
+        errors.append("change_request_review_exit_invalid")
+    elif payload.get("consumer") != CHANGE_REQUEST_REVIEW_CONSUMERS[typed_exit]:
+        errors.append("change_request_review_consumer_mismatch")
+    semantic = payload.get("semantic_review")
+    semantic = semantic if isinstance(semantic, dict) else {}
+    dimensions = semantic.get("dimensions")
+    dimensions = dimensions if isinstance(dimensions, list) else []
+    dimension_ids = [
+        row.get("id") for row in dimensions if isinstance(row, dict)
+    ]
+    if dimension_ids != CHANGE_REQUEST_REVIEW_DIMENSIONS:
+        errors.append("change_request_review_dimensions_invalid")
+    findings = semantic.get("findings")
+    findings = findings if isinstance(findings, list) else []
+    finding_ids = [
+        row.get("finding_id") for row in findings if isinstance(row, dict)
+    ]
+    if len(finding_ids) != len(findings) or len(finding_ids) != len(set(finding_ids)):
+        errors.append("change_request_review_findings_invalid")
+    for finding in findings:
+        if not isinstance(finding, dict):
+            continue
+        if finding.get("category") not in CHANGE_REQUEST_REVIEW_FINDING_CATEGORIES:
+            errors.append("change_request_review_finding_category_invalid")
+    referenced_findings: set[Any] = set()
+    for dimension in dimensions:
+        if not isinstance(dimension, dict):
+            continue
+        ids = dimension.get("finding_ids")
+        if not isinstance(ids, list) or any(value not in finding_ids for value in ids):
+            errors.append("change_request_review_finding_reference_invalid")
+        else:
+            referenced_findings.update(ids)
+    if set(finding_ids) != referenced_findings:
+        errors.append("change_request_review_finding_reference_incomplete")
+    affected = payload.get("affected_evidence")
+    affected = affected if isinstance(affected, list) else []
+    evidence_refs = [
+        row.get("ref") for row in affected if isinstance(row, dict)
+    ]
+    if len(evidence_refs) != len(affected) or len(evidence_refs) != len(set(evidence_refs)):
+        errors.append("change_request_review_affected_evidence_invalid")
+    affected_hashes = {
+        row.get("sha256")
+        for row in affected
+        if isinstance(row, dict) and change_request_review_sha256(row.get("sha256")) is not None
+    }
+    prerequisite_hashes = {
+        value
+        for projection in expected_prerequisites.values()
+        for value in projection.values()
+        if change_request_review_sha256(value) is not None
+    }
+    allowed_hashes = affected_hashes | prerequisite_hashes | {
+        expected_target.get("identity_sha256"),
+        expected_target.get("content_sha256"),
+        expected_linkage.get("linkage_sha256"),
+    }
+    allowed_refs = set(evidence_refs) | {
+        "target", "prerequisites.context", "prerequisites.clarity",
+        "prerequisites.wording", "evidence_linkage",
+    }
+    for row in [*dimensions, *findings]:
+        if not isinstance(row, dict):
+            continue
+        refs = row.get("evidence_refs")
+        if not isinstance(refs, list) or any(ref not in allowed_refs for ref in refs):
+            errors.append("change_request_review_evidence_reference_invalid")
+        hashes = row.get("affected_hashes")
+        if not isinstance(hashes, list) or any(value not in allowed_hashes for value in hashes):
+            errors.append("change_request_review_affected_hash_invalid")
+    scope_conclusion = semantic.get("scope_conclusion")
+    scope_conclusion = scope_conclusion if isinstance(scope_conclusion, dict) else {}
+    gate = semantic.get("ai_review_gate")
+    gate = gate if isinstance(gate, dict) else {}
+    if gate.get("reviewed_linkage_sha256") != expected_linkage.get("linkage_sha256"):
+        errors.append("change_request_review_gate_linkage_mismatch")
+    if gate.get("findings_count") != len(findings):
+        errors.append("change_request_review_gate_findings_mismatch")
+    if gate.get("scope_conclusion_sha256") != context_digest(scope_conclusion):
+        errors.append("change_request_review_gate_scope_mismatch")
+    expected_gate = CHANGE_REQUEST_REVIEW_GATE_BY_EXIT.get(typed_exit)
+    if gate.get("status") != expected_gate:
+        errors.append("change_request_review_gate_exit_mismatch")
+    confirmation = payload.get("human_confirmation")
+    confirmation = confirmation if isinstance(confirmation, dict) else {}
+    if confirmation.get("status") == "not_required" and confirmation.get("proposal_sha256") is not None:
+        errors.append("change_request_review_confirmation_shape_invalid")
+    if confirmation.get("status") == "required" and (
+        typed_exit != "clarify_requirements"
+        or change_request_review_sha256(confirmation.get("proposal_sha256")) is None
+    ):
+        errors.append("change_request_review_confirmation_route_invalid")
+    if typed_exit in CHANGE_REQUEST_REVIEW_CONSUMERS and typed_exit != "ready":
+        if not findings:
+            errors.append("change_request_review_non_ready_requires_finding")
+        if not any(
+            isinstance(dimension, dict) and dimension.get("status") == "failed"
+            for dimension in dimensions
+        ):
+            errors.append("change_request_review_non_ready_requires_failed_dimension")
+        if not any(
+            isinstance(finding, dict) and finding.get("blocking") is True
+            for finding in findings
+        ):
+            errors.append("change_request_review_non_ready_requires_blocking_finding")
+        if not affected:
+            errors.append("change_request_review_non_ready_requires_affected_evidence")
+    if typed_exit == "ready":
+        if any(
+            projection.get("status") != "current" or projection.get("error_codes")
+            for projection in expected_prerequisites.values()
+        ):
+            errors.append("change_request_review_ready_requires_current_prerequisites")
+        if any(
+            not isinstance(dimension, dict) or dimension.get("status") != "passed"
+            for dimension in dimensions
+        ):
+            errors.append("change_request_review_ready_requires_passed_dimensions")
+        if any(
+            isinstance(finding, dict) and finding.get("blocking") is True
+            for finding in findings
+        ):
+            errors.append("change_request_review_ready_has_blocking_finding")
+        if confirmation.get("status") != "not_required":
+            errors.append("change_request_review_ready_confirmation_invalid")
+        if any(
+            expected_linkage.get(field) is None
+            for field in (
+                "base_head", "current_state_sha256", "history_sha256",
+                "duplicate_sha256", "clarity_facts_sha256",
+                "wording_facts_sha256",
+            )
+        ):
+            errors.append("change_request_review_ready_linkage_incomplete")
+    return context_sort(errors)
+
+
+def cmd_record_change_request_review(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    authored = change_request_review_read_input(root, args.input, "change request review recorder")
+    if authored.get("mode") != args.mode:
+        raise WorkflowError(
+            "Change request review mode does not match recorder mode.",
+            exit_code=2,
+            payload={"error_codes": ["change_request_review_mode_mismatch"]},
+        )
+    target, scope, contents = change_request_review_normalize_target(
+        root,
+        authored.get("target"),
+        args.change_request_input,
+        args.mode,
+    )
+    prerequisites = change_request_review_prerequisite_projections(
+        root,
+        authored.get("prerequisite_payloads"),
+        target,
+        scope,
+        contents,
+    )
+    linkage = change_request_review_linkage(target, prerequisites)
+    result = change_request_review_derive_result(target, prerequisites, linkage, authored)
+    errors = change_request_review_structural_errors(
+        root,
+        result,
+        target,
+        prerequisites,
+        linkage,
+    )
+    if errors:
+        raise WorkflowError(
+            "Change request review result validation failed.",
+            exit_code=2,
+            payload={"error_codes": errors},
+        )
+    return result
+
+
+def cmd_check_change_request_review(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    payload = change_request_review_read_input(root, args.input, "change request review checker")
+    prerequisite_payloads = change_request_review_read_input(
+        root,
+        args.prerequisites_input,
+        "change request review current prerequisites",
+    )
+    mode = str(payload.get("mode") or "")
+    target, scope, contents = change_request_review_normalize_target(
+        root,
+        payload.get("target"),
+        args.change_request_input,
+        mode,
+    )
+    prerequisites = change_request_review_prerequisite_projections(
+        root,
+        prerequisite_payloads,
+        target,
+        scope,
+        contents,
+    )
+    linkage = change_request_review_linkage(target, prerequisites)
+    errors = change_request_review_structural_errors(
+        root,
+        payload,
+        target,
+        prerequisites,
+        linkage,
+    )
+    if args.expected_facts_sha256 and args.expected_facts_sha256 != payload.get("facts_sha256"):
+        errors.append("expected_change_request_review_facts_mismatch")
+    if errors:
+        raise WorkflowError(
+            "Change request review freshness validation failed.",
+            exit_code=2,
+            payload={"error_codes": context_sort(errors)},
+        )
+    return {
+        "status": "passed",
+        "skill_id": CHANGE_REQUEST_REVIEW_SKILL_ID,
+        "typed_exit": payload["typed_exit"],
+        "target_identity_sha256": target["identity_sha256"],
+        "target_content_sha256": target["content_sha256"],
+        "linkage_sha256": linkage["linkage_sha256"],
+        "facts_sha256": payload["facts_sha256"],
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Guru Team Trellis workflow helpers")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -21563,6 +22632,25 @@ def build_parser() -> argparse.ArgumentParser:
     wording_check.add_argument("--path", action="append", default=[])
     wording_check.add_argument("--change-request-input")
     wording_check.add_argument("--expected-facts-sha256")
+
+    change_request_record = sub.add_parser("record-change-request-review")
+    change_request_record.add_argument("--root")
+    change_request_record.add_argument("--json", action="store_true")
+    change_request_record.add_argument(
+        "--mode",
+        required=True,
+        choices=["workflow", "standalone"],
+    )
+    change_request_record.add_argument("--input", required=True)
+    change_request_record.add_argument("--change-request-input", required=True)
+
+    change_request_check = sub.add_parser("check-change-request-review")
+    change_request_check.add_argument("--root")
+    change_request_check.add_argument("--json", action="store_true")
+    change_request_check.add_argument("--input", required=True)
+    change_request_check.add_argument("--prerequisites-input", required=True)
+    change_request_check.add_argument("--change-request-input", required=True)
+    change_request_check.add_argument("--expected-facts-sha256")
 
     version = sub.add_parser("version")
     version.add_argument("--root")
@@ -21897,6 +22985,10 @@ def main() -> int:
             payload = cmd_record_contract_wording_review(args)
         elif args.command == "check-contract-wording-review":
             payload = cmd_check_contract_wording_review(args)
+        elif args.command == "record-change-request-review":
+            payload = cmd_record_change_request_review(args)
+        elif args.command == "check-change-request-review":
+            payload = cmd_check_change_request_review(args)
         elif args.command == "version":
             payload = cmd_version(args)
         elif args.command == "check-workspace-boundary":
