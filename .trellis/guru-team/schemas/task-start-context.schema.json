@@ -22,7 +22,64 @@
     "assignee": {"type": "string"},
     "actor": {"type": "object", "additionalProperties": false, "required": ["login"], "properties": {"login": {"type": "string"}}},
     "issue_scope_ledger_seed": {"type": "object", "additionalProperties": true},
-    "intake_summary": {"type": "object", "additionalProperties": false, "required": ["duplicate_decision", "naming_quality", "confirmation"], "properties": {"duplicate_decision": {"type": "object", "additionalProperties": true}, "naming_quality": {"type": "object", "additionalProperties": true}, "confirmation": {"type": "object", "additionalProperties": true}}}
+    "intake_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["duplicate_decision", "naming_quality", "confirmation"],
+      "properties": {
+        "duplicate_decision": {"type": "object", "additionalProperties": true},
+        "naming_quality": {"type": "object", "additionalProperties": true},
+        "confirmation": {"type": "object", "additionalProperties": true},
+        "final_source_issue_binding": {"$ref": "#/$defs/finalSourceIssueBinding"},
+        "prerequisite_evidence": {"$ref": "#/$defs/prerequisiteEvidence"}
+      }
+    }
   },
-  "$defs": {"slug": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}}
+  "$defs": {
+    "slug": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "nullableSha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "finalSourceIssueBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "number", "url", "state", "title_sha256", "body_sha256", "updated_at", "target_disposition_sha256", "created_issue_binding_sha256"],
+      "properties": {
+        "repo": {"type": "string", "pattern": "^[^/\\s]+/[^/\\s]+$"},
+        "number": {"type": "integer", "minimum": 1},
+        "url": {"type": "string", "pattern": "^https://github\\.com/[^/\\s]+/[^/\\s]+/issues/[1-9][0-9]*$"},
+        "state": {"const": "open"},
+        "title_sha256": {"$ref": "#/$defs/sha256"},
+        "body_sha256": {"$ref": "#/$defs/sha256"},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "target_disposition_sha256": {"$ref": "#/$defs/sha256"},
+        "created_issue_binding_sha256": {"$ref": "#/$defs/nullableSha256"}
+      }
+    },
+    "prerequisiteRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill_id", "schema_id", "typed_exit", "payload_sha256", "facts_sha256", "content_sha256", "linkage_sha256"],
+      "properties": {
+        "skill_id": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "schema_id": {"type": "string", "minLength": 1},
+        "typed_exit": {"type": "string", "minLength": 1},
+        "payload_sha256": {"$ref": "#/$defs/sha256"},
+        "facts_sha256": {"$ref": "#/$defs/sha256"},
+        "content_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "linkage_sha256": {"$ref": "#/$defs/nullableSha256"}
+      }
+    },
+    "prerequisiteEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base", "context", "clarity", "wording", "readiness"],
+      "properties": {
+        "base": {"$ref": "#/$defs/prerequisiteRow"},
+        "context": {"$ref": "#/$defs/prerequisiteRow"},
+        "clarity": {"$ref": "#/$defs/prerequisiteRow"},
+        "wording": {"$ref": "#/$defs/prerequisiteRow"},
+        "readiness": {"$ref": "#/$defs/prerequisiteRow"}
+      }
+    }
+  }
 }

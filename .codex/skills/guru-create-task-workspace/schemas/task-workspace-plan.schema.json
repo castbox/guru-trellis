@@ -1,0 +1,272 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-1.0.json",
+  "title": "Guru Team Task Workspace Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "skill_id", "generated_at", "mode", "invocation", "prerequisites", "target", "scope", "base", "naming", "assignee", "side_effects", "confirmations", "ai_review_gate", "freshness"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "skill_id": {"const": "guru-create-task-workspace"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "invocation": {"$ref": "#/$defs/invocation"},
+    "prerequisites": {"$ref": "#/$defs/prerequisites"},
+    "target": {"$ref": "#/$defs/target"},
+    "scope": {"$ref": "#/$defs/scope"},
+    "base": {"$ref": "#/$defs/base"},
+    "naming": {"$ref": "#/$defs/naming"},
+    "assignee": {"$ref": "#/$defs/assignee"},
+    "side_effects": {"$ref": "#/$defs/sideEffects"},
+    "confirmations": {"$ref": "#/$defs/confirmations"},
+    "ai_review_gate": {"$ref": "#/$defs/aiReviewGate"},
+    "freshness": {"$ref": "#/$defs/freshness"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "target": {
+            "properties": {
+              "kind": {"const": "existing_issue"}
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "invocation": {"properties": {
+            "target_kind": {"const": "existing_issue"},
+            "action_scope": {"const": "workspace_and_task_mutation"}
+          }},
+          "target": {"properties": {
+            "issue_number": {"type": "integer", "minimum": 1},
+            "url": {"$ref": "#/$defs/issueUrl"},
+            "state": {"const": "open"},
+            "updated_at": {"type": "string", "format": "date-time"},
+            "draft": {"type": "null"}
+          }},
+          "confirmations": {"properties": {
+            "github_issue_mutation": {"properties": {"status": {"const": "not_in_current_invocation"}}},
+            "workspace_and_task_mutation": {"properties": {"status": {"enum": ["confirmed", "refused", "not_in_current_invocation"]}}}
+          }}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "target": {
+            "properties": {
+              "kind": {"const": "reviewed_draft"}
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "invocation": {"properties": {
+            "target_kind": {"const": "reviewed_draft"},
+            "action_scope": {"const": "github_issue_mutation"}
+          }},
+          "target": {"properties": {
+            "issue_number": {"type": "null"},
+            "url": {"type": "null"},
+            "state": {"type": "null"},
+            "updated_at": {"type": "null"},
+            "draft": {"type": "object"},
+            "created_issue_binding_sha256": {"type": "null"}
+          }},
+          "confirmations": {"properties": {
+            "github_issue_mutation": {"properties": {"status": {"enum": ["confirmed", "refused", "not_in_current_invocation"]}}},
+            "workspace_and_task_mutation": {"properties": {"status": {"const": "not_in_current_invocation"}}}
+          }}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "nullableSha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "gitSha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "cleanText": {"type": "string", "minLength": 1},
+    "nullableText": {"type": ["string", "null"], "minLength": 1},
+    "repo": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "issueUrl": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/[1-9][0-9]*$"},
+    "slug": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "invocation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["caller", "target_kind", "action_scope", "resume_identity"],
+      "properties": {
+        "caller": {"$ref": "#/$defs/cleanText"},
+        "target_kind": {"enum": ["existing_issue", "reviewed_draft"]},
+        "action_scope": {"enum": ["github_issue_mutation", "workspace_and_task_mutation"]},
+        "resume_identity": {"$ref": "#/$defs/cleanText"}
+      }
+    },
+    "prerequisite": {
+      "type": "object", "additionalProperties": false,
+      "required": ["skill_id", "schema_id", "typed_exit", "artifact", "payload_sha256", "facts_sha256", "content_sha256", "linkage_sha256"],
+      "properties": {
+        "skill_id": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "schema_id": {"$ref": "#/$defs/cleanText"},
+        "typed_exit": {"$ref": "#/$defs/cleanText"},
+        "artifact": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?![A-Za-z]:/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\r\\n\\\\]+$"},
+        "payload_sha256": {"$ref": "#/$defs/sha256"},
+        "facts_sha256": {"$ref": "#/$defs/sha256"},
+        "content_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "linkage_sha256": {"$ref": "#/$defs/nullableSha256"}
+      }
+    },
+    "prerequisites": {
+      "type": "object", "additionalProperties": false,
+      "required": ["base", "context", "clarity", "wording", "readiness"],
+      "properties": {
+        "base": {"$ref": "#/$defs/prerequisite"},
+        "context": {"$ref": "#/$defs/prerequisite"},
+        "clarity": {"$ref": "#/$defs/prerequisite"},
+        "wording": {"$ref": "#/$defs/prerequisite"},
+        "readiness": {"$ref": "#/$defs/prerequisite"}
+      }
+    },
+    "draft": {
+      "type": ["object", "null"], "additionalProperties": false,
+      "required": ["draft_id", "source_request_sha256", "title", "body", "labels", "reviewed_draft_sha256"],
+      "properties": {
+        "draft_id": {"$ref": "#/$defs/cleanText"},
+        "source_request_sha256": {"$ref": "#/$defs/sha256"},
+        "title": {"$ref": "#/$defs/cleanText"},
+        "body": {"$ref": "#/$defs/cleanText"},
+        "labels": {"type": "array", "items": {"$ref": "#/$defs/cleanText"}, "uniqueItems": true},
+        "reviewed_draft_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "target": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "repo", "issue_number", "url", "state", "updated_at", "title_sha256", "body_sha256", "draft", "disposition_sha256", "duplicate_decision_sha256", "created_issue_binding_sha256"],
+      "properties": {
+        "kind": {"enum": ["existing_issue", "reviewed_draft"]},
+        "repo": {"$ref": "#/$defs/repo"},
+        "issue_number": {"type": ["integer", "null"], "minimum": 1},
+        "url": {"anyOf": [{"$ref": "#/$defs/issueUrl"}, {"type": "null"}]},
+        "state": {"enum": ["open", null]},
+        "updated_at": {"type": ["string", "null"], "format": "date-time"},
+        "title_sha256": {"$ref": "#/$defs/sha256"},
+        "body_sha256": {"$ref": "#/$defs/sha256"},
+        "draft": {"$ref": "#/$defs/draft"},
+        "disposition_sha256": {"$ref": "#/$defs/sha256"},
+        "duplicate_decision_sha256": {"$ref": "#/$defs/sha256"},
+        "created_issue_binding_sha256": {"$ref": "#/$defs/nullableSha256"}
+      }
+    },
+    "issueRef": {
+      "type": "object", "additionalProperties": false,
+      "required": ["number", "url", "title", "reason"],
+      "properties": {
+        "number": {"type": "integer", "minimum": 1},
+        "url": {"$ref": "#/$defs/issueUrl"},
+        "title": {"$ref": "#/$defs/cleanText"},
+        "reason": {"$ref": "#/$defs/cleanText"}
+      }
+    },
+    "scope": {
+      "type": "object", "additionalProperties": false,
+      "required": ["primary", "close", "related", "followup", "scope_sha256"],
+      "properties": {
+        "primary": {"anyOf": [{"$ref": "#/$defs/issueRef"}, {"type": "null"}]},
+        "close": {"type": "array", "items": {"$ref": "#/$defs/issueRef"}, "uniqueItems": true},
+        "related": {"type": "array", "items": {"$ref": "#/$defs/issueRef"}, "uniqueItems": true},
+        "followup": {"type": "array", "items": {"$ref": "#/$defs/issueRef"}, "uniqueItems": true},
+        "scope_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "base": {
+      "type": "object", "additionalProperties": false,
+      "required": ["selected_base", "remote", "base_ref", "decision_head", "local_head", "remote_head", "sync_facts_sha256"],
+      "properties": {
+        "selected_base": {"$ref": "#/$defs/cleanText"},
+        "remote": {"$ref": "#/$defs/cleanText"},
+        "base_ref": {"$ref": "#/$defs/cleanText"},
+        "decision_head": {"$ref": "#/$defs/gitSha"},
+        "local_head": {"$ref": "#/$defs/gitSha"},
+        "remote_head": {"$ref": "#/$defs/gitSha"},
+        "sync_facts_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "objectDisposition": {"enum": ["create_new", "reuse_exact", "conflict_blocked"]},
+    "naming": {
+      "type": "object", "additionalProperties": false,
+      "required": ["branch_name", "workspace_slug", "task_slug", "task_title", "reason", "branch_disposition", "workspace_disposition", "task_disposition"],
+      "properties": {
+        "branch_name": {"type": "string", "pattern": "^[a-z]+/[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "workspace_slug": {"$ref": "#/$defs/slug"},
+        "task_slug": {"$ref": "#/$defs/slug"},
+        "task_title": {"$ref": "#/$defs/cleanText"},
+        "reason": {"$ref": "#/$defs/cleanText"},
+        "branch_disposition": {"$ref": "#/$defs/objectDisposition"},
+        "workspace_disposition": {"$ref": "#/$defs/objectDisposition"},
+        "task_disposition": {"$ref": "#/$defs/objectDisposition"}
+      }
+    },
+    "assignee": {
+      "type": "object", "additionalProperties": false,
+      "required": ["login", "source", "candidates", "resolution_evidence"],
+      "properties": {
+        "login": {"type": "string", "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38}[A-Za-z0-9])?$"},
+        "source": {"enum": ["explicit_input", "single_issue_assignee", "current_github_login", "user_selected_from_candidates", "user_supplied_after_unresolved"]},
+        "candidates": {"type": "array", "items": {"type": "string", "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38}[A-Za-z0-9])?$"}, "uniqueItems": true},
+        "resolution_evidence": {"$ref": "#/$defs/cleanText"}
+      }
+    },
+    "sideEffects": {
+      "type": "object", "additionalProperties": false,
+      "required": ["operations", "task_artifacts", "runtime_mappings", "command_argv", "stop_after"],
+      "properties": {
+        "operations": {"type": "array", "items": {"enum": ["create_issue", "create_branch", "create_worktree", "create_task", "write_task_artifacts", "write_runtime_mappings"]}, "uniqueItems": true},
+        "task_artifacts": {"type": "array", "items": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+/(task-start-context|issue-scope-ledger|context-discovery|issue-review)\\.json$"}, "uniqueItems": true},
+        "runtime_mappings": {"type": "array", "items": {"type": "string", "pattern": "^\\.trellis/\\.runtime/guru-team/(workspaces|tasks)/[^/]+\\.json$"}, "uniqueItems": true},
+        "command_argv": {"type": "array", "items": {"type": "string", "pattern": "^(?!/)(?![A-Za-z]:/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\r\\n\\\\]*$"}, "minItems": 1},
+        "stop_after": {"enum": ["created_issue_refresh", "created_workspace"]}
+      }
+    },
+    "confirmation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "source", "reviewed_plan_sha256", "evidence", "confirmation_sha256"],
+      "properties": {
+        "status": {"enum": ["confirmed", "not_in_current_invocation", "refused"]},
+        "source": {"$ref": "#/$defs/nullableText"},
+        "reviewed_plan_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "evidence": {"$ref": "#/$defs/nullableText"},
+        "confirmation_sha256": {"$ref": "#/$defs/nullableSha256"}
+      }
+    },
+    "confirmations": {
+      "type": "object", "additionalProperties": false,
+      "required": ["github_issue_mutation", "workspace_and_task_mutation"],
+      "properties": {
+        "github_issue_mutation": {"$ref": "#/$defs/confirmation"},
+        "workspace_and_task_mutation": {"$ref": "#/$defs/confirmation"}
+      }
+    },
+    "aiReviewGate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "reviewer", "reviewed_plan_sha256", "summary", "evidence"],
+      "properties": {
+        "status": {"enum": ["passed", "blocked", "reroute"]},
+        "reviewer": {"$ref": "#/$defs/cleanText"},
+        "reviewed_plan_sha256": {"$ref": "#/$defs/sha256"},
+        "summary": {"$ref": "#/$defs/cleanText"},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/cleanText"}, "minItems": 1, "uniqueItems": true}
+      }
+    },
+    "freshness": {
+      "type": "object", "additionalProperties": false,
+      "required": ["captured_at", "reviewable_plan_sha256", "plan_sha256"],
+      "properties": {
+        "captured_at": {"type": "string", "format": "date-time"},
+        "reviewable_plan_sha256": {"$ref": "#/$defs/sha256"},
+        "plan_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

@@ -93,6 +93,30 @@ from deterministic candidate/executor checks, and document fresh-sequence
 re-entry after finding fixes. Platform entry docs should reference the stable
 skill and typed exits instead of repeating its step-local contract.
 
+Public Intake docs must name active semantic `guru-create-task-workspace` as
+the sole consumer of `guru-review-change-request:ready` and the sole
+issue/branch/worktree/task mutation owner. All three README files list its
+schemas `guru-task-workspace-plan-1.0` and
+`guru-task-workspace-result-1.0`, runtime commands
+`record-task-workspace-plan`, `create-task-workspace`, and
+`check-task-workspace-result`, and exits `created`, `refresh_review`,
+`cancelled`, and `blocked` with unique consumers.
+
+Docs distinguish the two confirmations: a reviewed draft may create only the
+exact issue and immediately returns `refresh_review`; the later open-issue
+invocation obtains a fresh workspace/task confirmation. They state the fixed
+assignee order, the four tracked task-local Intake artifacts, ignored
+`.trellis/.runtime/guru-team/**` mappings, exact object reuse/blocking, and the
+A/B two-order local merge fixture. `prepare-task` is query-only and its legacy
+mutation flags fail closed with migration guidance.
+
+Guru install commands and prompts do not require a developer name,
+`TRELLIS_USER`, `-u`, or `--user`. Public docs accurately state that official
+Trellis may independently create/use `.trellis/.developer` and
+`.trellis/workspace/**`, while Guru preset apply/update/reapply and the task
+workspace executor neither depend on nor create/restore those paths and never
+delete existing official data.
+
 Public docs that describe Phase 0 must name `guru-sync-base` as the active
 selected-base closed-loop owner, list stable exits `synced` / `skipped` /
 `blocked`, and state that the package uses the deterministic schema 1.2 profile

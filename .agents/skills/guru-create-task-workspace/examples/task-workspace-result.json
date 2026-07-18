@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-workspace",
+  "generated_at": "2026-01-01T00:01:00Z",
+  "mode": "workflow",
+  "variant": "created_workspace",
+  "plan_sha256": "7979797979797979797979797979797979797979797979797979797979797979",
+  "executor": {"status": "passed", "checked_at": "2026-01-01T00:00:59Z", "evidence": ["Exact branch, worktree and task were created."]},
+  "checker": {"status": "passed", "checked_at": "2026-01-01T00:01:00Z", "evidence": ["Four task-local artifacts and ignored runtime mappings passed."]},
+  "created_issue": null,
+  "created_workspace": {
+    "repo": "example/guru-extension",
+    "issue_number": 27,
+    "branch_name": "feat/027-create-task-workspace",
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "workspace_slug": "027-create-task-workspace",
+    "task_slug": "027-create-task-workspace",
+    "task_artifact_dir": ".trellis/tasks/01-01-027-create-task-workspace",
+    "assignee": "example-maintainer",
+    "task_status": "planning",
+    "artifacts": [
+      {"path": ".trellis/tasks/01-01-027-create-task-workspace/task-start-context.json", "sha256": "8181818181818181818181818181818181818181818181818181818181818181", "size": 1200, "mode": "100644", "tracked": true},
+      {"path": ".trellis/tasks/01-01-027-create-task-workspace/issue-scope-ledger.json", "sha256": "8282828282828282828282828282828282828282828282828282828282828282", "size": 800, "mode": "100644", "tracked": true},
+      {"path": ".trellis/tasks/01-01-027-create-task-workspace/context-discovery.json", "sha256": "8383838383838383838383838383838383838383838383838383838383838383", "size": 1800, "mode": "100644", "tracked": true},
+      {"path": ".trellis/tasks/01-01-027-create-task-workspace/issue-review.json", "sha256": "8484848484848484848484848484848484848484848484848484848484848484", "size": 1600, "mode": "100644", "tracked": true}
+    ],
+    "runtime_mappings": [
+      {"path": ".trellis/.runtime/guru-team/workspaces/027-create-task-workspace.json", "ignored": true},
+      {"path": ".trellis/.runtime/guru-team/tasks/027-create-task-workspace.json", "ignored": true}
+    ],
+    "workspace_boundary_match": true,
+    "source_developer_identity_created": false,
+    "target_developer_identity_created": false,
+    "workspace_journal_created": false
+  },
+  "no_side_effect": null,
+  "typed_exit": "created",
+  "reason": "The exact reviewed task workspace and four portable Intake artifacts passed checking.",
+  "consumer": {"kind": "workflow", "id": "guru-task-workspace-created"},
+  "facts_sha256": "8585858585858585858585858585858585858585858585858585858585858585"
+}

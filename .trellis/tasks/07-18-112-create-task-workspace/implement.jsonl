@@ -1,0 +1,9 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"实现 active semantic Skill 的 package、mode parity、五阶段、runtime dependency、typed exits 与分发合同。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"实现六 Skill Intake chain、mandatory invocation、唯一 consumer、refresh re-entry 与 fail-closed route。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"设计 task-workspace plan/result、created issue binding、四个 portable task artifacts 与 runtime namespace。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 recorder、exact executor、result checker、legacy prepare migration 与 AI/script ownership。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"落实 prerequisite freshness、assignee/no-developer、A/B merge、scope regression 与 Phase 2 evidence。"}
+{"file":".trellis/spec/preset/installer.md","reason":"实现 canonical/installed/platform package inventory、manifest、managed hash、throwaway 与 update/reapply。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"确保新增资产只进入 guru-owned namespace，legacy upstream overlay baseline保持不变。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"同步安装命令、official identity边界、active Skill API、升级与未验证风险说明。"}
+{"file":".trellis/tasks/07-18-112-create-task-workspace/research/current-state.md","reason":"提供 fresh issue、official Trellis、current registry/runtime/docs 与 no-developer实验事实。"}

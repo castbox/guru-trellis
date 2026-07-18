@@ -256,6 +256,49 @@ matrix mismatch, and any exit/consumer mismatch. Expected failures use stable
 non-secret error codes and never echo raw payloads, local absolute paths, or
 credentials.
 
+### Task Workspace Record, Execute, And Check
+
+`record-task-workspace-plan`, `create-task-workspace`, and
+`check-task-workspace-result` are the deterministic commands published for
+active semantic `guru-create-task-workspace`. Their Bash wrappers remain thin;
+package wrappers reach them only through `run-skill-command` and fixed
+validator ids.
+
+The recorder accepts one AI-authored plan, validates the closed plan schema and
+current prerequisite projections, derives canonical digests, and emits the
+plan on stdout. It does not choose the final target, duplicate disposition,
+naming, assignee route, confirmation requirement, AI Gate, or typed exit.
+
+The executor consumes the exact plan digest. Before each mutation it rechecks
+base, target, prerequisite bytes, confirmation scope, plan digest, and current
+Git/worktree/task facts. A draft invocation creates the exact reviewed issue,
+immediately rereads it, emits a created-issue result with
+`typed_exit=refresh_review`, and stops without branch/worktree/task/runtime
+writes. An open-issue invocation creates or reuses only exact matching
+branch/worktree/task identity, always calls official `task.py create` with an
+explicit `--assignee`, writes exactly four task-local tracked Intake artifacts,
+and writes only ignored `.trellis/.runtime/guru-team/**` mappings.
+
+The checker validates the result schema, plan linkage, live issue or
+branch/worktree/task identity, artifact bytes/schema/digests/trackability,
+runtime ignore state, and workspace boundary. It never turns deterministic
+success into a semantic pass or selects a recovery route. Existing objects or
+artifacts may be reused only when all identity and bytes match; mismatch fails
+closed without overwrite.
+
+Non-mutation results preserve reviewed semantic facts: passed Gate plus a
+digest-bound refused active confirmation is `cancelled`; `reroute` with no
+active confirmation is `refresh_review`; `blocked` with no active confirmation
+is `blocked`. The executor/checker validate that matrix and zero-write
+snapshots; they do not choose the Gate or route. Public result stdout omits the
+absolute workspace path and the checker derives it from current config, the
+reviewed slug, and live Git facts.
+
+Neither command reads, creates, copies, initializes, restores, or deletes
+`.trellis/.developer` or `.trellis/workspace/**`. Existing official data is
+untouched. The public plan/result contain no absolute paths, runtime paths,
+full process output, secrets, or raw private records.
+
 ## GitHub and Git Operations
 
 ### Shared Base Resolution And Sync
@@ -311,29 +354,27 @@ reviewed a non-repo route; standalone rejects that path.
 
 `prepare-task` requires the prior validator/guard
 `post_sync_resolution_sha256` and the same resolver inputs. It calls the shared
-resolver/sync core before `gh auth status`, issue read, and duplicate search,
-then reruns an independent guard immediately before each GitHub, worktree, and
-task mutation boundary. The task guard occurs after worktree/identity setup and
-immediately before `task.py create`. `--base-branch` can assert equality but
+resolver/sync core before `gh auth status`, issue read, and duplicate search.
+It has no mutation guard because every legacy mutation flag fails before a
+write. `--base-branch` can assert equality but
 cannot rewrite config/config-candidate/remote-default provenance as explicit.
-The legacy planner/executor freshness functions remain adapters only. A stale
+The legacy planner freshness functions remain adapters only. A stale
 planner result is blocking, not permission to continue planning. Each guard
-consumes the preceding guard's post-sync digest and returns its own post-sync
-digest for the next boundary. Neither prepare output nor task-start context
+consumes the preceding validator's post-sync digest and returns its current
+post-sync digest. Neither prepare output nor task-start context
 persists the complete resolution/result stdout payloads.
 
 Always gate GitHub operations with `gh auth status` through `require_gh_auth()`.
 Do not assume the GitHub CLI is configured just because `gh` exists.
 
-Default `prepare` must be side-effect-free for GitHub and filesystem writes
-until the corresponding explicit confirmed/executor flag is present. It may call
-`gh issue view/list` for explicit issues and duplicate search, but planner
-output must stay on stdout and must not write `.trellis/tasks/<task-slug>/task-start-context.json`.
-It must not call `gh issue create`, `git worktree add`, or `task.py create`
-unless the corresponding explicit confirmed/executor flag is present and the
-workflow has already required AI/human intake plan review. Confirming or creating a
-source issue alone still must not write handoff; handoff is written only by
-`--create-worktree` or `--create-task` in the chosen workspace.
+`prepare-task` is query-only compatibility. It may call `gh issue view/list`
+for explicit issues and duplicate search, but output stays on stdout and it
+never calls `gh issue create`, `git worktree add`, or `task.py create`.
+Legacy `--create-issue-confirmed`, `--create-worktree`, and `--create-task`
+flags fail before any write with a stable migration error naming
+`guru-create-task-workspace` and its prerequisite Skills. The exact executor
+may reuse base/naming/GitHub/worktree/task helpers, but no second mutation
+entrypoint remains active.
 
 Before publish, reject uncommitted non-metadata changes. Metadata-only paths are
 defined by `METADATA_ONLY_PREFIXES` and `METADATA_ONLY_FILES`; update these

@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-18T11:32:33Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-18-112-create-task-workspace",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-18-112-create-task-workspace/prd.md",
+        "path": ".trellis/tasks/07-18-112-create-task-workspace/prd.md",
+        "size_bytes": 15474,
+        "content_sha256": "65a3e2d7bf726405d85ef97a37b60d14ee8be641ff828608a9941ebd2da196f2"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-18-112-create-task-workspace/design.md",
+        "path": ".trellis/tasks/07-18-112-create-task-workspace/design.md",
+        "size_bytes": 20740,
+        "content_sha256": "e5620a69fcb7c25a9d2592ff795046ee884c0d94a6998a41a17d29a8db9b18b5"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-18-112-create-task-workspace/implement.md",
+        "path": ".trellis/tasks/07-18-112-create-task-workspace/implement.md",
+        "size_bytes": 16609,
+        "content_sha256": "2f06ee299c47a72778e0f3597b1fe3d4b1afbc03c9358b88de72d93ed0c48a2a"
+      }
+    ],
+    "scope_sha256": "e2f2d2ccef65c6264e2ac42de12c44bc113e35b328106757828ca3b90d89daf0"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session:019f74c9-ef24-7e63-aa37-4cccdaeb2be9",
+      "summary": "已审查固定的 prd.md、design.md、implement.md 全量范围。三文档保留 #112、#99、#54 的 target、assignee、no-developer、task-local artifacts、thin workflow、A/B merge 与分发验收语义；条件分支、唯一 mutation owner、机器门禁、验收结果和范围排除均已明确，未发现弱化、平行实现路径或未标注外部引用。",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "本次 wording review 未修改 planning artifacts，产品语义未发生变化。"
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "597a67cf349416fcae8014674a900ab91b07fcd6631e7483e7765ee97d1f0628"
+}

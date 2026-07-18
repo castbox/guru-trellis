@@ -1,0 +1,133 @@
+{
+  "schema_version": "1.2",
+  "generated_at": "2026-07-18T11:37:03Z",
+  "review_prompt_presented_at": "2026-07-18T11:37:03Z",
+  "approved_at": "2026-07-18T11:37:03Z",
+  "task_dir": ".trellis/tasks/07-18-112-create-task-workspace",
+  "head": "7036dc4ca92a376288564345c98f6c55d8dfe6b8",
+  "dirty_paths": [
+    ".trellis/tasks/07-18-112-create-task-workspace/check.jsonl",
+    ".trellis/tasks/07-18-112-create-task-workspace/context-discovery.json",
+    ".trellis/tasks/07-18-112-create-task-workspace/contract-wording-review.json",
+    ".trellis/tasks/07-18-112-create-task-workspace/implement.jsonl",
+    ".trellis/tasks/07-18-112-create-task-workspace/issue-review.json",
+    ".trellis/tasks/07-18-112-create-task-workspace/issue-scope-ledger.json",
+    ".trellis/tasks/07-18-112-create-task-workspace/research/current-state.md",
+    ".trellis/tasks/07-18-112-create-task-workspace/task-start-context.json",
+    ".trellis/tasks/07-18-112-create-task-workspace/task.json"
+  ],
+  "reviewer": "codex-main-session",
+  "approval_summary": "用户已审阅三份规划文档并明确批准按当前规划进入实现。",
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "codex-main-session:019f74c9-ef24-7e63-aa37-4cccdaeb2be9",
+    "summary": "已审查固定的 prd.md、design.md、implement.md 全量范围。三文档保留 #112、#99、#54 的 target、assignee、no-developer、task-local artifacts、thin workflow、A/B merge 与分发验收语义；条件分支、唯一 mutation owner、机器门禁、验收结果和范围排除均已明确，未发现弱化、平行实现路径或未标注外部引用。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "推荐",
+        "可选",
+        "尽量",
+        "尽可能",
+        "最好",
+        "应该",
+        "应当",
+        "原则上",
+        "一般",
+        "通常",
+        "视情况",
+        "根据情况",
+        "根据需要",
+        "按需",
+        "必要时",
+        "如有需要",
+        "需要时",
+        "适当",
+        "适当时",
+        "合理",
+        "合理时",
+        "类似",
+        "相关",
+        "相应",
+        "等",
+        "等等",
+        "之类",
+        "一些",
+        "若干",
+        "部分",
+        "至少",
+        "默认"
+      ],
+      "scan_scope": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ],
+      "hits": [],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "contract_wording_review": {
+    "artifact_path": ".trellis/tasks/07-18-112-create-task-workspace/contract-wording-review.json",
+    "schema_id": "guru-contract-wording-review-1.0",
+    "facts_sha256": "597a67cf349416fcae8014674a900ab91b07fcd6631e7483e7765ee97d1f0628",
+    "scope_sha256": "e2f2d2ccef65c6264e2ac42de12c44bc113e35b328106757828ca3b90d89daf0",
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "user_confirmation": {
+    "source": "explicit-post-planning-review",
+    "message": "用户在规划链接展示后明确回复确认继续。"
+  },
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/prd.md",
+      "sha256": "65a3e2d7bf726405d85ef97a37b60d14ee8be641ff828608a9941ebd2da196f2",
+      "size_bytes": 15474,
+      "modified_at": "2026-07-18T11:31:09.637970+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/design.md",
+      "sha256": "e5620a69fcb7c25a9d2592ff795046ee884c0d94a6998a41a17d29a8db9b18b5",
+      "size_bytes": 20740,
+      "modified_at": "2026-07-18T11:31:09.638073+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/implement.md",
+      "sha256": "2f06ee299c47a72778e0f3597b1fe3d4b1afbc03c9358b88de72d93ed0c48a2a",
+      "size_bytes": 16609,
+      "modified_at": "2026-07-18T11:31:09.638155+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/prd.md",
+      "sha256": "65a3e2d7bf726405d85ef97a37b60d14ee8be641ff828608a9941ebd2da196f2",
+      "size_bytes": 15474,
+      "modified_at": "2026-07-18T11:31:09.637970+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/design.md",
+      "sha256": "e5620a69fcb7c25a9d2592ff795046ee884c0d94a6998a41a17d29a8db9b18b5",
+      "size_bytes": 20740,
+      "modified_at": "2026-07-18T11:31:09.638073+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/implement.md",
+      "sha256": "2f06ee299c47a72778e0f3597b1fe3d4b1afbc03c9358b88de72d93ed0c48a2a",
+      "size_bytes": 16609,
+      "modified_at": "2026-07-18T11:31:09.638155+00:00"
+    }
+  ],
+  "notes": "record-planning-approval 只投影已验证的 guru-review-contract-wording:planning_artifacts evidence，并记录已完成的 AI/human planning review 和用户确认；它不替代 semantic judgment。"
+}

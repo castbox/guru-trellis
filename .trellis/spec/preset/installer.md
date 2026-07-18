@@ -116,17 +116,29 @@ active id, artifact schema, and both runtime command ids as one compatible
 versioned capability.
 
 The registry additionally installs active semantic
-`guru-review-change-request` and records planned consumer
-`guru-create-task-workspace` without installing a #112 package. The active
+`guru-review-change-request` and active consumer
+`guru-create-task-workspace`. The readiness
 managed tree includes Skill/interface/contract, deidentified
 `issue-review.json` example, `guru-change-request-review-1.0` schema, tests, and
 executable dispatcher-only record/check wrappers. Companion managed assets are
 `record-change-request-review.sh` and `check-change-request-review.sh`; both are
-stdout-only and install no task/workspace mutation executor. The extension
-manifest publishes the active id, planned id, artifact schema/id, stable
-artifact basename, and both runtime command ids. Source/installed validation
-must prove five exit markers and exact consumers while allowing only the
-planned `ready` consumer to stop unavailable.
+stdout-only and install no task/workspace mutation executor. The workspace
+package separately installs Skill/interface/contract, plan/result schemas,
+deidentified examples, tests, and dispatcher-only wrappers for
+`record-task-workspace-plan`, `create-task-workspace`, and
+`check-task-workspace-result`. The extension manifest publishes both active
+ids, artifact schema ids, stable artifact basename, and all runtime command
+ids. Source/installed validation must prove readiness's five exit markers and
+the workspace package's four exit markers and exact consumers. No planned
+missing-package stop remains.
+
+Guru preset apply, update, and reapply do not read, create, copy, initialize,
+restore, or delete `.trellis/.developer` or `.trellis/workspace/**`. A clean
+fixture begins from an initialized repository where those official paths are
+absent and proves all Guru operations leave them absent. A preservation fixture
+begins with existing official identity/journal bytes and proves Guru operations
+leave them unchanged. Official Trellis may still create/use those paths outside
+the Guru preset contract.
 
 Fresh install and update/reapply verification must exercise a selected-platform
 standalone wrapper with the full preset runtime. Missing runtime, runtime drift,
@@ -140,8 +152,9 @@ record/check, duplicate projection/digest recomputation from one search result,
 ordinary refresh stale-code/superseded-digest re-entry,
 bidirectional blocked exit/Gate rejection, clarification workflow/standalone
 precondition parity, question/scope/action/confirmation invariants, stdout-only
-pre-task behavior, active-task bindings, and the prepare-task planner/mutation guard chain using rolling post-sync
-resolution digests and the shared resolver/sync core, `trellis update`,
+pre-task behavior, active-task bindings, the query-only prepare path consuming
+the current post-sync digest through the shared resolver/sync core, and the
+workspace Skill's independent mutation-time freshness checks, `trellis update`,
 workflow re-selection, preset reapply, and a final recursive zero-sidecar scan.
 
 The shared `scripts/bash/run-skill-command.sh` dispatcher is also a managed

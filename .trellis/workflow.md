@@ -54,10 +54,8 @@ semantic review or routing judgments.
 The production registry currently activates `guru-sync-base`,
 `guru-discover-change-context`, `guru-clarify-requirements`, and
 `guru-review-contract-wording`, `guru-review-change-request`, and
-`guru-create-task-commit`. It also declares planned consumer
-`guru-create-task-workspace`; planned ids have no package or invoke marker and
-must stop fail closed until promoted to an active package. The unfenced markers
-below are the only mandatory global routes. New active routes must update
+`guru-create-task-workspace`, and `guru-create-task-commit`. The unfenced
+markers below are the only mandatory global routes. New active routes must update
 registry, package/interface, this workflow, tests, preset distribution,
 extension public API, and migration documentation together.
 
@@ -66,27 +64,22 @@ extension public API, and migration documentation together.
 ## Guru Team Gate
 
 Before creating a Trellis task or writing task artifacts, complete the Phase 0
-`guru-sync-base`, `guru-discover-change-context`, and
-`guru-clarify-requirements` routes. Initial issue/draft `clear` then enters
-`guru-review-contract-wording:change_request`; only its current `pass` exit may
-enter `guru-review-change-request`. Only a checker-validated readiness `ready`
-exit may invoke `guru-create-task-workspace`. While that #112 package remains
-planned rather than active, the workflow stops fail closed before the
-environment, GitHub intake, or worktree commands below; it never falls back to
-the legacy full-intake route.
+chain in order: `guru-sync-base` -> `guru-discover-change-context` ->
+`guru-clarify-requirements` -> `guru-review-contract-wording` ->
+`guru-review-change-request` -> `guru-create-task-workspace`. Only the final
+`created` exit enters Phase 1. Each package owns its entry evidence, semantic
+or deterministic stage profile, confirmation, recorder/checker, freshness,
+re-entry and typed exit; this workflow does not reproduce those rules.
 
 ```bash
-.trellis/guru-team/scripts/bash/check-env.sh --json
 .trellis/guru-team/scripts/bash/prepare-task.sh --json \
   --expected-resolution-sha256 <post-sync-resolution-sha256> \
   "<user request, issue number, or issue URL>"
 ```
 
-The default prepare command is side-effect-free intake/preflight planning for GitHub and filesystem writes: it may read an explicit issue and open duplicate candidates, then outputs source/proposed issue, base branch, branch name, workspace path, `create_task_command`, and `naming_quality`. Planner output is JSON only and does not write `.trellis/tasks/<task-slug>/task-start-context.json`, create a GitHub issue, worktree, branch, or Trellis task.
-
-If no source issue was supplied, prepare writes `proposed_issue` and `requires_confirmation`. The AI must show the duplicate-search result, proposed issue title/body, base branch, branch name, and workspace path to the user. Only after confirmation may it rerun prepare with `--create-issue-confirmed --issue-title "<reviewed title>" --issue-body-file <reviewed-body-file>`.
-
-After a confirmed source issue exists and the intake plan has been reviewed, use `--create-worktree` or `--create-task` only with explicit user approval. `--create-worktree` creates or reuses the chosen workspace and writes only gitignored local runtime mapping. `--create-task` additionally creates the Trellis task and writes `.trellis/tasks/<task-slug>/task-start-context.json` inside that workspace. They must not be used as a shortcut around planning review. They also enforce `naming_quality`: if the generated or overridden slug, branch, workspace slug, or task slug is low-information, the executor fails before creating a worktree or Trellis task and asks the agent to pass semantic overrides.
+`prepare-task` is a side-effect-free compatibility query only. Its legacy
+mutation flags fail closed before writes and point callers to
+`guru-create-task-workspace`; it is never an alternate task creation route.
 
 When there is no active task and the current turn requires file changes, do not
 silently edit the current checkout. First run Phase 0 intake/preflight, or ask
@@ -104,49 +97,11 @@ The companion scripts live under `.trellis/guru-team/` and are installed by the 
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh --repo <project>
 ```
 
-### Intake Rules
-
-- If the user supplies a GitHub issue number or URL, read that issue body and comments before planning.
-- If no issue is supplied, decide whether the request is clear enough for an intake issue.
-- After reading the request, issue body, and comments, perform an intake clarity check before intake plan review. If the problem statement, acceptance criteria, close scope, risk boundary, or implementation target is still ambiguous, load `trellis-brainstorm`, inspect repository evidence before asking user questions, and clarify the scope before creating or starting the Trellis task.
-- For an existing source issue, decide whether clarified requirements should be captured as a new issue comment or by asking the user to update the original issue body. Use comments for additive clarifications, scope decisions, and user confirmations; use body edits only when the original body would mislead future intake and the edit has been reviewed.
-- For a no-issue natural-language request, proposed issue title/body must incorporate the clarified scope before `--create-issue-confirmed`; do not create a generic placeholder issue and expect `prd.md` to repair the source issue later.
-- Before creating an issue, search open issues for likely duplicates and show the result to the user.
-- High-similarity candidates are never auto-bound. Ask the user whether to reuse the candidate or create a new issue.
-- Proposed issue bodies use a neutral, reusable intake structure. GitHub issue creation requires `--create-issue-confirmed` and an AI/human reviewed body file; never let the default prepare command create the issue.
-- If the task scope evolves during planning or execution, pause and ask the user whether the new requirement or referenced issue belongs in the current task, should be recorded as related context, or should become a follow-up issue / new Trellis task. Record the decision in both GitHub-visible issue evidence and task-local artifacts.
-- Do not rely on `auto_create_issue` in older configs. It is a deprecated compatibility field and must not override the explicit confirmation requirement.
-- Do not print tokens, secrets, private keys, signed URLs, `.env` content, or sensitive raw records in logs, docs, issues, or task artifacts.
-
-### Git Preflight Rules
-
-- `gh` must exist and `gh auth status` must pass before any GitHub read/write operation.
-- Resolve base by explicit value, non-empty scalar config, the first existing
-  configured candidate in declared order (default `dev -> develop -> main ->
-  master`), then remote default only when no candidate exists. Never use the
-  current branch as an implicit fallback.
-- Caller-side AI classification resolves any user-intent conflict before Skill
-  invocation. The deterministic `guru-sync-base` package does not ask the user
-  to confirm its machine-selected base.
-- Default workspace is a Git worktree under `../<repo-name>-worktrees`.
-- Report current checkout path, current branch, base branch, worktree path, branch name, dirty state, and existing worktrees.
-- Slugs, branch names, worktree names, and task names must include an issue number or another unique id plus semantic English business tokens. Do not rely on Trellis date prefixes or auto-increment-like names for parallel work.
-- If an issue title is Chinese, non-ASCII, or too generic to produce business tokens, the agent must read the issue and explicitly pass a semantic English short-name. `prepare-task` must not translate Chinese, convert titles to pinyin, or pretend it inferred business meaning from non-ASCII text.
-- Recommended worktree/task slug format is `NNN-business-capability`. When `--branch` is omitted, `prepare-task` deterministically infers a branch type and uses `<branch-type>/NNN-business-capability`; valid branch types are `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `style`, `build`, `ci`, `chore`, and `revert`, with `chore` as the fallback. Example: `feat/052-resume-detail-inline-attachment-preview`.
-- Use `--short-name`, `--workspace-slug`, and `--task-slug` as the deterministic interface from the agent's semantic judgment into the companion script; use `--branch` only when a special explicit branch name is needed. Explicit overrides still go through the same low-information naming gate.
-
-### Task Runtime Boundary
-
-Planner output, including output with a confirmed `source_issue`, sets `no task context/runtime write` and remains stdout-only. After explicit approval, `--create-worktree` writes only local runtime mapping; `--create-task` writes the task-local tracked `.trellis/tasks/<task-slug>/task-start-context.json` after task creation. It must not dirty the source checkout merely because a new AI session or intake preflight ran. A task-start-context and local runtime mapping contains:
-
-- confirmed source issue number, URL, title, and creation flag; `source_issue` is intake provenance, not the final close scope
-- task context path and runtime mapping state
-- slug, task slug, task title, branch, base branch, workspace path
-- `naming_quality` with `ok`, `reason`, `requires_semantic_name`, `current_slug`, and `suggested_override_flags`
-- an Issue Scope Ledger seed that the task copies to `{TASK_DIR}/issue-scope-ledger.json`
-- duplicate-search candidates
-- preflight evidence
-- exact `task.py create` command
+The package contract is the sole owner of target authority, naming, assignee,
+two mutually exclusive confirmations, exact issue/workspace/task mutations,
+four task-local Intake artifacts, ignored runtime mappings, no-developer
+boundary, ordinary recovery and fail-closed refresh. Secrets and sensitive raw
+records remain prohibited from public packages and portable artifacts.
 
 ### Workspace Boundary
 
@@ -230,15 +185,19 @@ text.
 
 ## Trellis System
 
-### Developer Identity
+### Official Developer Identity (Optional)
 
-On first use, initialize your identity:
+Guru Team installation, Intake, task workspace creation, and later phases do
+not require a developer name or developer identity. Do not run an identity
+initializer as a Guru workflow prerequisite. If the user independently chooses
+to use the official Trellis identity/workspace journal capability, its official
+command remains available:
 
 ```bash
 python3 ./.trellis/scripts/init_developer.py <your-name>
 ```
 
-The official command may create `.trellis/workspace/<your-name>/`; Guru Team
+That optional official command may create `.trellis/workspace/<your-name>/`; Guru Team
 ignores that directory, never uses it for finish/readiness/context evidence, and
 the preset keeps `.trellis/workspace/` gitignored. Task completion history lives
 in archived task-local `finish-summary.json` instead. Guru Team `trellis-start`
@@ -263,12 +222,12 @@ Update spec when a task discovers a reusable pattern, pitfall, convention, or te
 
 Reference only: this command list documents the Trellis task CLI. In Guru Team
 workflows, durable, issue-backed, task-like, or file-changing work enters
-through the Phase 0 `guru-sync-base` `synced` route, then `check-env` +
-`prepare-task`. Do not use the bare
+through the complete Phase 0 chain from `guru-sync-base` through
+`guru-create-task-workspace`. Do not use the bare
 `task.py create` command below from the source checkout for Guru Team worktree
-tasks. The bare create command is only a Phase 1.0 controlled follow-up after
-`prepare-task` has selected or reused a worktree and local runtime/Git facts
-confirm the shell/editor is already operating inside that worktree.
+tasks. Only the exact workspace Skill executor may invoke it with a reviewed
+non-empty `--assignee` after the target, naming, confirmation, and freshness
+gates pass.
 
 Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `task.json`, `prd.md`, `design.md`, `implement.md`, `research/` when applicable, the task-level `issue-scope-ledger.json`, sub-agent/review assignment and status evidence (`agent-assignment.json`), Branch Review Gate raw reports (`reviews/*.md`), the final review rollup (`review.md`), the recorder artifact (`review-gate.json` by default), and context manifests (`implement.jsonl`, `check.jsonl`) for sub-agent-capable platforms. Guru Team implementation tasks require `prd.md`, `design.md`, and `implement.md` before `task.py start`, implementation, and check; missing or stale planning documents fail the explicit post-planning approval gate.
 
@@ -430,9 +389,7 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 
 - Do not require the user to explicitly run `trellis-start` before new work. In normal auto-bootstrap platforms, classify the user's natural-language request from the injected Trellis context, workflow-state, startup context, hook breadcrumb, or skill matcher.
 - Simple conversation or non-file-changing small task: ask only whether this turn should create a Trellis task. If the user says no, skip Trellis for this session.
-- Issue-backed, task-like, or file-changing request: first mandatory invoke `guru-sync-base`; after its `synced` exit, run Guru Team issue intake and Git base/worktree preflight before task creation. This includes pasted issue URLs, issue numbers, and clear development tasks. The next commands are:
-  - `.trellis/guru-team/scripts/bash/check-env.sh --json`
-  - `.trellis/guru-team/scripts/bash/prepare-task.sh --json --expected-resolution-sha256 <post-sync-resolution-sha256> "<user request, issue number, or issue URL>"`
+- Issue-backed, task-like, or file-changing request: first mandatory invoke `guru-sync-base`; after its `synced` exit, mandatory invoke `guru-discover-change-context`, `guru-clarify-requirements`, `guru-review-contract-wording`, `guru-review-change-request`, and `guru-create-task-workspace` in order. This includes pasted issue URLs, issue numbers, and clear development tasks. `check-env` and `prepare-task` are compatibility queries, not workflow hops or mutation authorization.
 - File-changing request with no active task: do not silently edit the current
   checkout. A current-checkout direct-edit override is allowed only after the
   user explicitly approves skipping GitHub issue, Trellis task, worktree, and
@@ -573,9 +530,9 @@ Repos with `no_docs`, `partial_docs`, or `stale_docs` must still record one expl
 [workflow-state:no_task]
 No active task. First classify the user's natural-language request; do not require the user to explicitly run `trellis-start`.
 If the request includes an issue URL, issue number, clear development task, or file change, the first priority is the mandatory Phase 0 `guru-sync-base` invocation, not `check-env`, `prepare-task`, semantic repository reads, or bare `task.py create`.
-Only the `synced` exit enters mandatory `guru-discover-change-context`. Only its `context_ready` exit enters mandatory `guru-clarify-requirements`; initial clarification `clear` enters mandatory `guru-review-contract-wording:change_request`, whose current `pass` enters mandatory `guru-review-change-request`. Only readiness `ready` may name planned `guru-create-task-workspace`; while that #112 consumer remains planned, stop fail closed without falling back to `check-env`, `prepare-task`, or `guru-full-task-intake-chain`. Other exits re-enter their declared prerequisite owner, stage a separate new-task route where explicitly owned, or stop.
+Only the `synced` exit enters mandatory `guru-discover-change-context`. Only its `context_ready` exit enters mandatory `guru-clarify-requirements`; initial clarification `clear` enters mandatory `guru-review-contract-wording:change_request`, whose current `pass` enters mandatory `guru-review-change-request`. Only readiness `ready` enters mandatory `guru-create-task-workspace`, and only its checker-passed `created` exit enters Phase 1. `refresh_review` re-enters `guru-sync-base`; `cancelled` and `blocked` stop. Other exits re-enter their declared prerequisite owner, stage a separate new-task route where explicitly owned, or stop.
 The `skipped` exit returns to `original-request-route`; `blocked`, unknown, multiple, or unmapped exits stop fail closed.
-Default `prepare-task` is planner-only. After intake plan review and user approval in `workspace_mode: worktree`, create the execution environment with `prepare-task --create-worktree --create-task` or an equivalent controlled Guru Team executor.
+`prepare-task` is query-only compatibility. All issue/workspace/task mutation is owned by `guru-create-task-workspace`.
 Do not silently edit the current checkout. Direct edits require explicit user approval to skip GitHub issue, Trellis task, worktree, and branch for this turn.
 Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect.
 Task creation consent is not current-checkout direct-edit consent. Do not write `.trellis/tasks/` artifacts until consent is clear and preflight has a clear workspace.
@@ -588,10 +545,7 @@ Task creation consent is not current-checkout direct-edit consent. Do not write 
 - 0.2 Requirements clarification `[required · once]`
 - 0.3 Contract wording review `[required · repeatable]`
 - 0.4 Change-request readiness review `[required · repeatable]`
-- 0.5 Environment check `[required · once]`
-- 0.6 GitHub issue intake `[required · once]`
-- 0.7 Git base branch and worktree preflight `[required · once]`
-- 0.8 Handoff review `[required · once]`
+- 0.5 Task workspace creation `[required · repeatable]`
 
 #### 0.0 Base sync route `[required · once]`
 
@@ -779,119 +733,40 @@ stdout-only recorder/checker, evidence linkage, freshness, and typed exit. The
 workflow does not copy or infer those judgments. Unknown, duplicate, multiple,
 stale, consumer-mismatched, or unmapped exits fail closed.
 
-`ready` names planned #112 Skill `guru-create-task-workspace`. Before invoking
-that consumer, require its registry entry to be active and its complete
-compatible package/runtime validation to pass. Its current `planned` entry has
-no package, so `ready` stops at the mandatory missing-Skill gate. Do not use
-`guru-full-task-intake-chain` or the commands below as a fallback. The three
-reroute exits completely re-enter their declared prerequisite owner; `blocked`
-stops.
+`ready` invokes active `guru-create-task-workspace` only after complete
+compatible package/runtime validation. Do not use `prepare-task`, bare
+`task.py create`, or `guru-full-task-intake-chain` as a mutation fallback. The
+three reroute exits completely re-enter their declared prerequisite owner;
+`blocked` stops.
 
 <!-- guru-stop-target: {"id":"change-request-review-blocked"} -->
 
-#### 0.5 Environment check `[required · once]`
+#### 0.5 Task workspace creation `[required · repeatable]`
 
-Run:
+Load and mandatory invoke the active semantic package by stable id. The global
+workflow owns only this invocation, four unique consumers, and the two stops:
 
-```bash
-.trellis/guru-team/scripts/bash/check-env.sh --json
-```
+<!-- guru-skill-invoke: {"skill":"guru-create-task-workspace","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"created","consumer":{"kind":"workflow","id":"guru-task-workspace-created"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"refresh_review","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"cancelled","consumer":{"kind":"stop","id":"task-workspace-cancelled"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"blocked","consumer":{"kind":"stop","id":"task-workspace-blocked"}} -->
 
-If `gh` is missing or unauthenticated, stop and tell the user to install GitHub
-CLI and run `gh auth login`.
+The package consumes the complete checker-passed Intake evidence and owns its
+semantic forward behavior, AI Review Gate, invocation-specific confirmation,
+recorder/executor/checker, ordinary recovery and exact artifacts. A reviewed
+draft invocation creates and checks only the issue, then returns
+`refresh_review`; an existing open issue invocation may return `created` after
+the exact workspace/task result passes. Task workspace confirmation is not
+planning approval.
 
-#### 0.6 GitHub issue intake `[required · once]`
-
-Run:
-
-```bash
-.trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --expected-resolution-sha256 <post-sync-resolution-sha256> \
-  "<user request, issue number, or issue URL>"
-```
-
-If the command exits with duplicate candidates, show the candidates and ask the user whether to reuse one or force a new issue. Never silently bind to a candidate the user did not provide.
-
-If the command returns `proposed_issue` / `requires_confirmation`, stop before any GitHub or filesystem write. Show the duplicate-search result, proposed issue title/body, base branch, branch name, workspace path, and next confirmed command. If the user confirms issue creation, write the reviewed issue body to a temporary local file and rerun:
-
-```bash
-.trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --expected-resolution-sha256 <latest-prepare-post-sync-resolution-sha256> \
-  --create-issue-confirmed \
-  --issue-title "<reviewed issue title>" \
-  --issue-body-file <reviewed-issue-body.md> \
-  "<user request>"
-```
-
-Every retry reruns the same resolver/sync core with the latest post-sync
-resolution digest returned by the preceding validator or prepare guard. Any
-source, base, candidate, remote, config, or digest drift blocks before the next
-semantic read or mutation.
-
-#### 0.7 Git base branch and worktree preflight `[required · once]`
-
-Use the preflight output from `prepare-task.sh`. The default command plans the worktree path but does not create it; `--create-worktree` or `--create-task` is required for filesystem workspace creation and is allowed only after a confirmed `source_issue` exists.
-
-Planner output must include `preflight.base_freshness` from the same strict core
-used by `guru-sync-base`: explicit refspec fetch, selected-base checkout-only
-`git merge --ff-only`, clean status, and decision checkout/local base/
-remote-tracking base HEAD equality. `fetch_performed: false`, `fresh: false`,
-`three_way_equal: false`, divergence, wrong checkout, or unknown freshness is a
-blocked result, not stale planner output that may continue. Executor paths
-rerun the freshness guard independently and immediately before GitHub,
-worktree, and task mutations. Each guard consumes the prior guard's post-sync
-digest and returns the next one. A config,
-ordered candidate, remote-default, selected-base, source, or digest change
-blocks before fetch or semantic reads. Pass `--base-branch` only when the
-original resolver invocation used the same explicit base input. Do not create
-a task branch from stale or unequal base facts.
-
-Report the resolution source, selected base, candidates, decision checkout,
-and equality facts. Multiple existing candidates follow configured order; they
-do not create an ambiguity prompt.
-
-Default to worktree mode. If the need for a new worktree is uncertain, ask the user before writing task files.
-
-#### 0.8 Handoff review `[required · once]`
-
-Before task creation, summarize:
-
-- source issue URL
-- proposed issue title/body when `source_issue` is still null
-- duplicate-search result
-- naming quality result, including whether `--short-name`, `--workspace-slug`, `--task-slug`, or `--branch` semantic overrides are required
-- base branch
-- base freshness evidence from `preflight.base_freshness`
-- branch name
-- workspace path
-- current checkout and current branch
-- create-task command or confirmed Guru Team executor command
-
-Only after this is clear, create the Trellis task in the chosen workspace. When
-`workspace_mode: worktree`, the normal executor is:
-
-```bash
-.trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --expected-resolution-sha256 <latest-prepare-post-sync-resolution-sha256> \
-  --create-worktree \
-  --create-task \
-  "<source issue URL or approved request>"
-```
-
-Do not run bare `python3 ./.trellis/scripts/task.py create ...` in the source
-checkout for issue-backed or file-changing Guru Team worktree tasks.
-
-If the user explicitly requests a current-checkout direct-edit override instead
-of creating or reusing a GitHub issue, Trellis task, worktree, and branch,
-summarize the skipped artifacts, current checkout, current branch, dirty state,
-side effects, changed-file scope, and commit/push boundary before editing.
-Record the approval evidence in the task artifact, review report, or final
-handoff when practical. The override is scoped to the described file edits and
-does not approve commit, push, PR creation, or issue closure.
+<!-- guru-workflow-target: {"id":"guru-task-workspace-created"} -->
+<!-- guru-stop-target: {"id":"task-workspace-cancelled"} -->
+<!-- guru-stop-target: {"id":"task-workspace-blocked"} -->
 
 ### Phase 1: Plan
 
-- 1.0 Create task `[required · once]` (only after Phase 0)
+- 1.0 Confirm created task workspace `[required · once]` (only after Phase 0)
 - 1.1 Requirement exploration `[required · repeatable]`
 - 1.2 Research `[optional · repeatable]`
 - 1.3 Configure context `[required · once]` for sub-agent-dispatch platforms
@@ -923,56 +798,17 @@ Before `task.py start`, record and check `planning-approval.json` schema 1.2 fro
 Inline mode: skip jsonl curation; Phase 2 reads artifacts/specs via `trellis-before-dev`.
 [/workflow-state:planning-inline]
 
-#### 1.0 Create task `[required · once]`
+#### 1.0 Confirm created task workspace `[required · once]`
 
-If Phase 0 only produced planner output, rerun `prepare-task.sh` after user approval.
-Task creation consent is not current-checkout direct-edit consent, and it is not
-permission to bypass the selected worktree, branch, or handoff.
-
-When `workspace_mode: worktree`, prefer the single controlled executor path:
-
-```bash
-.trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --expected-resolution-sha256 <latest-prepare-post-sync-resolution-sha256> \
-  --create-worktree \
-  --create-task \
-  "<source issue URL or approved request>"
-```
-
-This rerun recomputes the same resolution identity and digest immediately
-before filesystem/task mutations; drift blocks before those side effects.
-
-This creates or reuses the chosen workspace, creates the branch and Trellis task
-there, and writes `.trellis/tasks/<task-slug>/task-start-context.json` inside that workspace.
-The tracked context stores only portable `workspace_slug`, `task_workspace_id`, and
-repo-relative `task_artifact_dir`. It never stores or supplies an absolute
-`workspace_path`; resolve the local task worktree from the current checkout,
-`.trellis/.runtime/guru-team/**`, and `git worktree list`, and validate it with
+Enter this step only through `guru-task-workspace-created`. The upstream Skill
+has already created or exactly reused the reviewed branch, worktree and
+planning-status Trellis task, and has checked the four task-local Intake
+artifacts. Resolve the local worktree from ignored runtime/Git facts and run
 `check-workspace-boundary.sh --json --task <task-path>` before task-local writes.
+Do not rerun `prepare-task`, bare `task.py create`, or any second creator.
 
-- Use `--create-worktree` to create or reuse the chosen workspace and write only `.trellis/.runtime/guru-team/workspaces/<workspace-slug>.json`.
-- Use `--create-task` only when the user approved task creation as part of the executor step; it creates or reuses the chosen workspace, creates the Trellis task, writes task-local `task-start-context.json` and Issue Scope Ledger seed, then writes the task runtime mapping.
-
-```bash
-python3 ./.trellis/scripts/task.py create "<task title>" --slug <issue-or-unique-slug>
-```
-
-The bare `task.py create` command above is only a follow-up for controlled
-cases where `prepare-task --create-worktree` has already written the handoff and
-the shell/editor is operating inside the executor-selected worktree reported for the current command and recoverable from local runtime/Git facts. Do not run
-it from the source checkout for issue-backed or file-changing Guru Team tasks.
-
-Use `task.py set-branch`, `set-base-branch`, and `set-scope` to record handoff details only when the prepare script has not already done that.
-
-Copy or materialize the Issue Scope Ledger seed from `.trellis/tasks/<task-slug>/task-start-context.json` into:
-
-```text
-{TASK_DIR}/issue-scope-ledger.json
-```
-
-If the companion script has not created it yet, create it with `primary_issue`, `close_issues`, `related_issues`, and `followup_issues`. The default `primary_issue` is the intake issue; it is only a close candidate until acceptance evidence and review coverage are present.
-
-Run only `create` here. Save `start` for step 1.5.
+Task workspace confirmation authorizes only Intake creation. Planning approval
+remains a separate explicit post-planning gate at step 1.5.
 
 #### 1.1 Requirement exploration `[required · repeatable]`
 

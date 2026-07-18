@@ -1,0 +1,270 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-change-request",
+  "generated_at": "2026-07-18T11:00:59Z",
+  "mode": "workflow",
+  "target": {
+    "kind": "existing_issue",
+    "repo": "castbox/guru-trellis",
+    "issue_number": 112,
+    "url": "https://github.com/castbox/guru-trellis/issues/112",
+    "updated_at": "2026-07-18T08:09:46Z",
+    "draft_id": null,
+    "source_request_sha256": null,
+    "caller_locator": null,
+    "request_id": null,
+    "title_sha256": "323708f01fa50b667894de34b9061a15ddacb2f114f40182b543880c0436075f",
+    "body_sha256": "e64c67b9249092ad2c988f247ffd6d27239ac5bf901aa45cd2198871b5d0c449",
+    "side_effect_free": false,
+    "identity_sha256": "06ce622ad7e6d11167eb2d9e9c69f9d9b8cdf0f367d60637eea332bdf0301ff2",
+    "content_sha256": "d94451e9fb3d8cd6fb38ce200823527bd9cbf66004c5e2b2c62671ee831d696f"
+  },
+  "prerequisites": {
+    "context": {
+      "status": "current",
+      "schema_id": "guru-context-discovery-1.0",
+      "typed_exit": "context_ready",
+      "payload_sha256": "6b0bc9fcda6e67b80f8300e2eea298876585a30c7d88852ee569dab2a296a362",
+      "snapshot_sha256": "4d19784c7a3d25d06b3c08467759ab695c0868e15b9c3be331c66da24551321b",
+      "base_sync_facts_sha256": "c4fe88308d4be26cb70640f5a74324a75d5e4e86a1b9afed66f5f527dae15b15",
+      "base_head": "7036dc4ca92a376288564345c98f6c55d8dfe6b8",
+      "live_target_sha256": "70629ecd3914b9c8d85f3dec982039c77395c9eda7807933f84fe604e3358798",
+      "query_sha256": "28e07bfd8dc479c2e4bb5459f45e9b8be748320802db3bb588e536d20e3c3ed3",
+      "current_state_sha256": "a7c627a2185f03a5a6f2226a85031a9dc44a3b91cee4f69de0e41d7dc2491b87",
+      "history_sha256": "4db1c8a96489d2c282454c1cfe005128cf80bd2a84d199a54cb6e10e5946475b",
+      "duplicate_sha256": "76c3346b4b34138cf58a4c5ac1274ddcddd83419154af9459ef806546e300e7b",
+      "error_codes": []
+    },
+    "clarity": {
+      "status": "current",
+      "schema_id": "guru-requirements-clarification-2.0",
+      "typed_exit": "clear",
+      "payload_sha256": "60197569893a127d647c3a7ce836bf9b8e14ddb5e3e13d1e23f63144b2d6b3d3",
+      "facts_sha256": "6c0118101d7c18be802005ab8d42d17de2e4c224b72888ccd118fa016e38b914",
+      "target_sha256": "3255d4ac3111e017d45313273d206ee743fa7293cec137ef0b75b9964160f454",
+      "disposition_sha256": "f2fda9158e70b9da22ac1e25513986c620c0822281861e44655f23b15f0ef803",
+      "content_sha256": "8490b119bbcbec89cdb80065f4233a5cc3a77bb4ee583cd8826a8396e536d677",
+      "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "error_codes": []
+    },
+    "wording": {
+      "status": "current",
+      "schema_id": "guru-contract-wording-review-1.0",
+      "profile": "change_request",
+      "typed_exit": "pass",
+      "payload_sha256": "4ccf6c544ed069b7ee26971021bdcb20f34c5a883098220f5a9fcb92ba3e9235",
+      "facts_sha256": "b0c7a74e80c571783b95890409da2c9d07cfbcbade1a571a5be2817ce6e5ff23",
+      "scope_sha256": "96fa998ea5eb1363d4ba9fa543d5f645dd94d334bbbbc1dc5281ae833528bdfc",
+      "scan_sha256": "09438945e8010bf40696a2fe45e4273e73e366af0a2a16956c5a94e868d108c4",
+      "target_content_sha256": "d94451e9fb3d8cd6fb38ce200823527bd9cbf66004c5e2b2c62671ee831d696f",
+      "error_codes": []
+    }
+  },
+  "evidence_linkage": {
+    "target_identity_sha256": "06ce622ad7e6d11167eb2d9e9c69f9d9b8cdf0f367d60637eea332bdf0301ff2",
+    "target_content_sha256": "d94451e9fb3d8cd6fb38ce200823527bd9cbf66004c5e2b2c62671ee831d696f",
+    "base_head": "7036dc4ca92a376288564345c98f6c55d8dfe6b8",
+    "current_state_sha256": "a7c627a2185f03a5a6f2226a85031a9dc44a3b91cee4f69de0e41d7dc2491b87",
+    "history_sha256": "4db1c8a96489d2c282454c1cfe005128cf80bd2a84d199a54cb6e10e5946475b",
+    "duplicate_sha256": "76c3346b4b34138cf58a4c5ac1274ddcddd83419154af9459ef806546e300e7b",
+    "clarity_facts_sha256": "6c0118101d7c18be802005ab8d42d17de2e4c224b72888ccd118fa016e38b914",
+    "clarity_disposition_sha256": "f2fda9158e70b9da22ac1e25513986c620c0822281861e44655f23b15f0ef803",
+    "wording_facts_sha256": "b0c7a74e80c571783b95890409da2c9d07cfbcbade1a571a5be2817ce6e5ff23",
+    "linkage_sha256": "2a21d7c1d6cb25ebc91b5b68d0d7d2cc56628a045711e00f2927c825dbf50387"
+  },
+  "semantic_review": {
+    "dimensions": [
+      {
+        "id": "requirement_completeness",
+        "status": "passed",
+        "summary": "当前 authority 完整定义 modes、evidence、side effects、assignee、exits、workflow integration、combined fixture、close scope 与明确排除项。",
+        "evidence_refs": [
+          "target",
+          "prerequisites.clarity",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "d94451e9fb3d8cd6fb38ce200823527bd9cbf66004c5e2b2c62671ee831d696f",
+          "6c0118101d7c18be802005ab8d42d17de2e4c224b72888ccd118fa016e38b914",
+          "b0c7a74e80c571783b95890409da2c9d07cfbcbade1a571a5be2817ce6e5ff23"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "delivery_unit_consistency",
+        "status": "passed",
+        "summary": "Skill package、thin workflow 接线、executor compatibility 和 combined fixture 是同一 task-workspace creation contract 的实现与验收面。",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "2a21d7c1d6cb25ebc91b5b68d0d7d2cc56628a045711e00f2927c825dbf50387"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "implementation_target_evidence",
+        "status": "passed",
+        "summary": "Fresh registry、workflow、runtime、tests 与 durable docs 已定位 planned package slot、ready route、prepare-task identity dependency 和可复用 writer。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "a7c627a2185f03a5a6f2226a85031a9dc44a3b91cee4f69de0e41d7dc2491b87"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "claimed_behavior_current",
+        "status": "passed",
+        "summary": "在 fresh main 上，ready consumer 确实因 planned package fail closed，task creation 仍依赖旧 developer identity 路径。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "a7c627a2185f03a5a6f2226a85031a9dc44a3b91cee4f69de0e41d7dc2491b87"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "current_implementation_gap",
+        "status": "passed",
+        "summary": "Active guru-create-task-workspace package、semantic confirmation loop、created/refresh_review exits 和 no-developer-identity integration 均尚未交付。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "a7c627a2185f03a5a6f2226a85031a9dc44a3b91cee4f69de0e41d7dc2491b87"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "docs_code_tests_consistency",
+        "status": "passed",
+        "summary": "Docs 已给出 portable/runtime 边界，registry/workflow 预留 planned contract，代码与测试仍反映 legacy identity path；#112 精确负责收敛这些差异。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "a7c627a2185f03a5a6f2226a85031a9dc44a3b91cee4f69de0e41d7dc2491b87"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "archived_history_constraints",
+        "status": "passed",
+        "summary": "只复用 #96/#60/#56 的边界合同，明确排除 abandoned #112 attempt 及其全部 planning/implementation/review evidence。",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "4db1c8a96489d2c282454c1cfe005128cf80bd2a84d199a54cb6e10e5946475b"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "duplicate_reuse_validity",
+        "status": "passed",
+        "summary": "Live duplicate search 无相同交付单元，#139 disposition 保留 #112；#98/#53/#132 不替代当前 target。",
+        "evidence_refs": [
+          "prerequisites.context",
+          "prerequisites.clarity"
+        ],
+        "affected_hashes": [
+          "76c3346b4b34138cf58a4c5ac1274ddcddd83419154af9459ef806546e300e7b",
+          "f2fda9158e70b9da22ac1e25513986c620c0822281861e44655f23b15f0ef803"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "target_authority_current",
+        "status": "passed",
+        "summary": "Recorder live reread 绑定 #112 URL、updated_at、title/body digest，并纳入 correction comment 5010397502。",
+        "evidence_refs": [
+          "target",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "06ce622ad7e6d11167eb2d9e9c69f9d9b8cdf0f367d60637eea332bdf0301ff2",
+          "b0c7a74e80c571783b95890409da2c9d07cfbcbade1a571a5be2817ce6e5ff23"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "prerequisite_hash_linkage",
+        "status": "passed",
+        "summary": "context_ready、clear 与 change_request:pass 均为 current，且 target、base/current/history/duplicate/disposition/wording digests 完整关联。",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "2a21d7c1d6cb25ebc91b5b68d0d7d2cc56628a045711e00f2927c825dbf50387"
+        ],
+        "finding_ids": []
+      }
+    ],
+    "findings": [],
+    "scope_conclusion": {
+      "requirement_scope_basis": "Live #112 正文、authoritative correction comment 和三个 checker-passed Intake prerequisites 共同定义当前交付范围。",
+      "delivery_unit_id": "issue-112-guru-create-task-workspace",
+      "close_issues": [
+        112,
+        99,
+        54
+      ],
+      "related_issues": [
+        98,
+        53
+      ],
+      "followup_issues": [
+        132
+      ],
+      "duplicate_reuse_decision": "当前 open issue 中没有相同交付单元；#112 保持 primary target，#98/#53 是 umbrella/related scope，#132 是后续平台入口关闭任务。",
+      "implementation_target": "新增 active semantic guru-create-task-workspace package，接入 thin Intake workflow，并替换 task creation 的 developer identity 前置。",
+      "current_gap": "Registry 仍标记该 Skill 为 planned，ready consumer 因 package 缺失 fail closed；prepare-task 仍调用 infer_assignee 和 ensure_workspace_developer_identity。",
+      "archived_constraints": [
+        "继承 #96 的 task-local portable artifact 与 gitignored runtime mapping 边界。",
+        "继承 #60 的 direct active task workspace boundary 校验。",
+        "继承 #56 的 semantic branch/workspace/task naming 边界。",
+        "旧 #112 attempt 的代码、planning、approval、implementation、tests 和 review evidence 全部不可复用。"
+      ],
+      "risk_boundary": [
+        "只覆盖 honest-but-fallible 正常流程、常见 stale/mismatch 和 correctness/compatibility 边界。",
+        "所有 GitHub/worktree/branch/task side effect 前展示 exact plan 并分别确认。",
+        "Combined fixture 必须验证 A->B 与 B->A 均无 Guru tracked metadata 冲突。"
+      ],
+      "excluded_scope": [
+        "#132 拥有 legacy upstream entry overlay 移除和完整 Stage 0/platform-entry closure。",
+        "#129/#130/#131 的 Phase 1 planning、Phase 2 check 与 Branch Review successor Skills。",
+        "恶意伪造、对抗输入、并发压力、锁、TOCTOU、跨 OS 原子性和额外 fault injection。"
+      ]
+    },
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session",
+      "reviewed_linkage_sha256": "2a21d7c1d6cb25ebc91b5b68d0d7d2cc56628a045711e00f2927c825dbf50387",
+      "summary": "十个 readiness 维度均由 live #112、fresh main 和三个 current prerequisite 直接支持；该交付单元可以进入 task workspace 创建。",
+      "findings_count": 0,
+      "scope_conclusion_sha256": "f68f5f76f2b3675abc682891ecc7d75a5e3c475b49a3266e943da416aafc6173"
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "reason": "Readiness review 未提出任何改变既有产品语义的 proposal。",
+    "proposal_sha256": null
+  },
+  "typed_exit": "ready",
+  "reason": "#112 是证据完整、边界明确且可独立验收的 task-workspace creation 交付单元。",
+  "affected_evidence": [
+    {
+      "ref": "evidence_linkage",
+      "sha256": "2a21d7c1d6cb25ebc91b5b68d0d7d2cc56628a045711e00f2927c825dbf50387",
+      "summary": "绑定 target 与 context/clarity/wording 的完整 portable prerequisite linkage。"
+    }
+  ],
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-create-task-workspace"
+  },
+  "facts_sha256": "99c35e8bb632313140a72a0d3e5e5b2eb654f8ed7b2d1b9ee1909eefe2b39788"
+}

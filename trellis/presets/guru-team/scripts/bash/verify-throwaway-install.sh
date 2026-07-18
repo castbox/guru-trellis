@@ -2,7 +2,6 @@
 set -euo pipefail
 export PYTHONDONTWRITEBYTECODE=1
 
-USER_NAME="${TRELLIS_USER:-throwaway}"
 WORK_DIR="${1:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
@@ -86,6 +85,28 @@ if root.is_dir():
         digest.update(b"\0")
 print(digest.hexdigest())
 PY
+}
+
+file_sha256() {
+  python3 - "$1" <<'PY'
+import hashlib
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+if not path.is_file():
+    raise SystemExit(f"expected regular file: {path}")
+print(hashlib.sha256(path.read_bytes()).hexdigest())
+PY
+}
+
+assert_official_state_absent() {
+  local root="$1"
+  local label="$2"
+  if [[ -e "$root/.trellis/.developer" || -e "$root/.trellis/workspace" ]]; then
+    echo "Guru operation recreated official identity/workspace state during $label" >&2
+    exit 2
+  fi
 }
 
 verify_change_request_review_package() {
@@ -1149,8 +1170,9 @@ PY
 fi
 
 apply_local_workflow_sample() {
+  local target="${1:-$TARGET}"
   if [[ "$USE_LOCAL_WORKFLOW_SAMPLE" == "1" ]]; then
-    cp "$REPO_ROOT/trellis/workflows/guru-team/workflow.md" "$TARGET/.trellis/workflow.md"
+    cp "$REPO_ROOT/trellis/workflows/guru-team/workflow.md" "$target/.trellis/workflow.md"
   fi
 }
 
@@ -1166,7 +1188,7 @@ git -C "$TARGET" commit -q -m "chore: initialize throwaway repository"
 
 (
   cd "$TARGET"
-  trellis init -y -u "$USER_NAME" --codex --cursor \
+  trellis init -y --codex --cursor \
     --workflow guru-team \
     --workflow-source "$WORKFLOW_SOURCE"
 )
@@ -1177,6 +1199,7 @@ fi
 
 ownership_checkpoint "initial-init-before-preset-apply"
 
+test -f "$TARGET/.trellis/.developer"
 WORKSPACE_SENTINEL="$TARGET/.trellis/workspace/private/shared-start-secret-journal.md"
 mkdir -p "$(dirname "$WORKSPACE_SENTINEL")"
 printf '%s\n' 'SHARED_START_SECRET_JOURNAL_CONTENT' >"$WORKSPACE_SENTINEL"
@@ -1201,6 +1224,7 @@ sys.addaudithook(_reject_workspace_access)
 PY
 
 WORKSPACE_TREE_DIGEST_BEFORE="$(workspace_tree_digest "$TARGET/.trellis/workspace")"
+DEVELOPER_IDENTITY_DIGEST_BEFORE="$(file_sha256 "$TARGET/.trellis/.developer")"
 
 "$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
   --repo "$TARGET" \
@@ -1235,6 +1259,11 @@ grep -q 'guru-skill-exit: {"skill":"guru-review-change-request","exit":"clarify_
 grep -q 'guru-skill-exit: {"skill":"guru-review-change-request","exit":"review_wording","consumer":{"kind":"skill","id":"guru-review-contract-wording"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-review-change-request","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-review-change-request","exit":"blocked","consumer":{"kind":"stop","id":"change-request-review-blocked"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-invoke: {"skill":"guru-create-task-workspace","required":true}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"created","consumer":{"kind":"workflow","id":"guru-task-workspace-created"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"refresh_review","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"cancelled","consumer":{"kind":"stop","id":"task-workspace-cancelled"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"blocked","consumer":{"kind":"stop","id":"task-workspace-blocked"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-stop-target: {"id":"change-request-review-blocked"}' "$TARGET/.trellis/workflow.md"
 if grep -Eq 'guru-skill-exit: \{"skill":"guru-review-change-request"[^\n]*"id":"guru-full-task-intake-chain"' "$TARGET/.trellis/workflow.md"; then
   echo "Change request readiness retained the legacy full-intake fallback" >&2
@@ -1245,6 +1274,10 @@ fail_if_english_language_rule ".trellis/spec" "$TARGET/.trellis/spec"
 WORKSPACE_TREE_DIGEST_AFTER="$(workspace_tree_digest "$TARGET/.trellis/workspace")"
 if [[ "$WORKSPACE_TREE_DIGEST_AFTER" != "$WORKSPACE_TREE_DIGEST_BEFORE" ]]; then
   echo "Preset modified .trellis/workspace content" >&2
+  exit 2
+fi
+if [[ "$(file_sha256 "$TARGET/.trellis/.developer")" != "$DEVELOPER_IDENTITY_DIGEST_BEFORE" ]]; then
+  echo "Preset modified .trellis/.developer content" >&2
   exit 2
 fi
 if [[ -d "$TARGET/.trellis/tasks/00-bootstrap-guidelines" ]]; then
@@ -1266,6 +1299,9 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/record-contract-wording-review.
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-contract-wording-review.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-change-request-review.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-change-request-review.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/record-task-workspace-plan.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/create-task-workspace.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-task-workspace-result.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-subagent-liveness.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-commit-messages.sh"
@@ -1287,10 +1323,10 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.14"
+assert extension["version"] == "0.6.5-guru.15"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 80
+assert len(assets) == 83
 assert all((root / path).is_file() for path in assets)
 for artifact in (
     "agent-assignment.json", "pr-body.md", "closeout-plan.json",
@@ -1306,18 +1342,21 @@ for command in (
     "record-requirements-clarification", "check-requirements-clarification",
     "record-contract-wording-review", "check-contract-wording-review",
     "record-change-request-review", "check-change-request-review",
+    "record-task-workspace-plan", "create-task-workspace", "check-task-workspace-result",
     "format-merge-commit",
     "backfill-finish-summary", "check-skill-packages",
 ):
     assert command in api["companion_scripts"]
 assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"
-assert api["skill_contracts"]["active_skill_ids"] == ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"]
-assert api["skill_contracts"]["planned_skill_ids"] == ["guru-create-task-workspace"]
+assert api["skill_contracts"]["active_skill_ids"] == ["guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"]
+assert api["skill_contracts"]["planned_skill_ids"] == []
 assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-context-discovery-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-requirements-clarification-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-contract-wording-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-change-request-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-task-workspace-plan-1.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-task-workspace-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.2"
 assert api["skill_runtime"] == {
     "api_version": "1.0",
@@ -1326,17 +1365,19 @@ assert api["skill_runtime"] == {
 }
 assert skills["status"] == "ok"
 assert skills["reserved_ids"] == ["guru-create-work-commit"]
-assert skills["active_ids"] == ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"]
+assert skills["active_ids"] == ["guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"]
 assert skills["selected_platforms"] == ["codex", "cursor"]
 assert skills["sidecars"] == []
-assert len(skills["files"]) == 199
+skill_paths = [entry["path"] for entry in skills["files"]]
+assert len(skill_paths) == len(set(skill_paths))
+assert all((root / path).is_file() for path in skill_paths)
 registry = json.loads((root / ".trellis/guru-team/skills/registry.json").read_text(encoding="utf-8"))
 planned = [entry for entry in registry["skills"] if entry.get("state") == "planned"]
-assert planned == [{"id": "guru-create-task-workspace", "state": "planned", "reason": "Issue #112 owns this future consumer; until its package becomes active, callers must stop fail closed."}]
+assert planned == []
 PY
 SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
-python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":6,"exit_markers":23,"target_markers":12,"planned_ids":["guru-create-task-workspace"]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
+python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":7,"exit_markers":27,"target_markers":15,"planned_ids":[]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
 test ! -e "$TARGET/.agents/skills/guru-create-work-commit"
 test ! -e "$TARGET/.codex/skills/guru-create-work-commit"
 test ! -e "$TARGET/.cursor/skills/guru-create-work-commit"
@@ -1381,10 +1422,14 @@ test -x "$TARGET/.codex/skills/guru-review-change-request/scripts/check-change-r
 test -x "$TARGET/.cursor/skills/guru-review-change-request/scripts/record-change-request-review.sh"
 test -x "$TARGET/.cursor/skills/guru-review-change-request/scripts/check-change-request-review.sh"
 test ! -e "$TARGET/.claude/skills/guru-review-change-request"
-test ! -e "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace"
-test ! -e "$TARGET/.agents/skills/guru-create-task-workspace"
-test ! -e "$TARGET/.codex/skills/guru-create-task-workspace"
-test ! -e "$TARGET/.cursor/skills/guru-create-task-workspace"
+test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/create-task-workspace.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/check-task-workspace-result.sh"
+test -f "$TARGET/.agents/skills/guru-create-task-workspace/SKILL.md"
+test -x "$TARGET/.agents/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"
+test -x "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"
+test -x "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"
 test ! -e "$TARGET/.claude/skills/guru-create-task-workspace"
 verify_requirements_clarification_exits "initial"
 verify_contract_wording_standalone_profiles "initial"
@@ -2416,7 +2461,10 @@ PHASE0_PLANNER_JSON="$(
 )"
 PHASE0_PLANNER_POST_DIGEST="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); freshness = payload["preflight"]["base_freshness"]; assert payload["source_issue"]["number"] == 110; assert payload["workspace_ready"] is False; assert freshness["reviewed_resolution_sha256"] == sys.argv[1]; assert freshness["three_way_equal"] is True; print(freshness["post_sync_resolution_sha256"])' "$PHASE0_POST_DIGEST" <<<"$PHASE0_PLANNER_JSON")"
 
-PHASE0_EXECUTOR_JSON="$(
+PHASE0_STATUS_BEFORE="$(git -C "$TARGET" status --porcelain=v1)"
+PHASE0_WORKTREES_BEFORE="$(git -C "$TARGET" worktree list --porcelain)"
+set +e
+PHASE0_LEGACY_MUTATION_JSON="$(
   PATH="$PHASE0_FAKE_BIN:$PATH" \
   "$TARGET/.trellis/guru-team/scripts/bash/prepare-task.sh" \
     --root "$TARGET" \
@@ -2429,11 +2477,27 @@ PHASE0_EXECUTOR_JSON="$(
     --task-slug "110-phase0-stdout-facts" \
     --assignee throwaway \
     --create-worktree \
-    "$PHASE0_ISSUE_URL"
+    "$PHASE0_ISSUE_URL" 2>&1
 )"
-PHASE0_WORKTREE="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["workspace_ready"] is True; assert payload["preflight"]["base_freshness"]["reviewed_resolution_sha256"] == sys.argv[1]; print(payload["workspace_path"])' "$PHASE0_PLANNER_POST_DIGEST" <<<"$PHASE0_EXECUTOR_JSON")"
-git -C "$TARGET" worktree remove --force "$PHASE0_WORKTREE"
-git -C "$TARGET" branch -D "$PHASE0_BRANCH" >/dev/null
+PHASE0_LEGACY_MUTATION_STATUS=$?
+set -e
+if [[ "$PHASE0_LEGACY_MUTATION_STATUS" -ne 2 ]]; then
+  echo "Legacy prepare-task mutation did not fail with the migration exit" >&2
+  exit 2
+fi
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "error"; assert payload["migration"] == "guru-create-task-workspace"; assert payload["legacy_mutation_flags"] == ["--create-worktree"]; assert payload["required_prerequisite_skills"] == ["guru-sync-base", "guru-discover-change-context", "guru-clarify-requirements", "guru-review-contract-wording", "guru-review-change-request"]; assert payload["writes_performed"] is False' <<<"$PHASE0_LEGACY_MUTATION_JSON"
+if [[ "$(git -C "$TARGET" status --porcelain=v1)" != "$PHASE0_STATUS_BEFORE" ]]; then
+  echo "Legacy prepare-task mutation changed the working tree" >&2
+  exit 2
+fi
+if [[ "$(git -C "$TARGET" worktree list --porcelain)" != "$PHASE0_WORKTREES_BEFORE" ]]; then
+  echo "Legacy prepare-task mutation changed the worktree list" >&2
+  exit 2
+fi
+if git -C "$TARGET" show-ref --verify --quiet "refs/heads/$PHASE0_BRANCH"; then
+  echo "Legacy prepare-task mutation created the target branch" >&2
+  exit 2
+fi
 cp "$SYNC_CONFIG_BACKUP" "$TARGET/.trellis/guru-team/config.yml"
 git -C "$TARGET" add .trellis/guru-team/config.yml
 git -C "$TARGET" commit -q -m "chore: restore throwaway preset config"
@@ -2626,6 +2690,9 @@ python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["st
 INITIAL_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case initial)"
 printf '%s\n' "$INITIAL_CLOSEOUT_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 105; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True; assert payload["after_archive_hook_preflight"] is True' <<<"$INITIAL_CLOSEOUT_JSON"
+INITIAL_TASK_WORKSPACE_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-initial")"
+printf '%s\n' "$INITIAL_TASK_WORKSPACE_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["context-discovery.json", "issue-review.json", "issue-scope-ledger.json", "task-start-context.json"]; assert not any(payload[key] for key in ("source_developer_identity", "target_developer_identity", "source_workspace_journal", "target_workspace_journal"))' <<<"$INITIAL_TASK_WORKSPACE_JSON"
 
 rm -f "$TARGET/.trellis/workflow.md.new"
 (
@@ -2659,6 +2726,15 @@ apply_local_workflow_sample
   --platform cursor
 ownership_checkpoint "post-preset-reapply-before-final-checks"
 
+if [[ "$(workspace_tree_digest "$TARGET/.trellis/workspace")" != "$WORKSPACE_TREE_DIGEST_BEFORE" ]]; then
+  echo "Update/reapply modified existing official workspace content" >&2
+  exit 2
+fi
+if [[ "$(file_sha256 "$TARGET/.trellis/.developer")" != "$DEVELOPER_IDENTITY_DIGEST_BEFORE" ]]; then
+  echo "Update/reapply modified existing official developer identity" >&2
+  exit 2
+fi
+
 grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-discover-change-context","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true}' "$TARGET/.trellis/workflow.md"
@@ -2670,6 +2746,11 @@ grep -q 'guru-skill-exit: {"skill":"guru-review-change-request","exit":"clarify_
 grep -q 'guru-skill-exit: {"skill":"guru-review-change-request","exit":"review_wording","consumer":{"kind":"skill","id":"guru-review-contract-wording"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-review-change-request","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-review-change-request","exit":"blocked","consumer":{"kind":"stop","id":"change-request-review-blocked"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-invoke: {"skill":"guru-create-task-workspace","required":true}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"created","consumer":{"kind":"workflow","id":"guru-task-workspace-created"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"refresh_review","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"cancelled","consumer":{"kind":"stop","id":"task-workspace-cancelled"}}' "$TARGET/.trellis/workflow.md"
+grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"blocked","consumer":{"kind":"stop","id":"task-workspace-blocked"}}' "$TARGET/.trellis/workflow.md"
 test -f "$TARGET/.trellis/guru-team/schemas/finish-summary.schema.json"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
@@ -2686,6 +2767,9 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/record-contract-wording-review.
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-contract-wording-review.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/record-change-request-review.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-change-request-review.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/record-task-workspace-plan.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/create-task-workspace.sh"
+test -x "$TARGET/.trellis/guru-team/scripts/bash/check-task-workspace-result.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/create-task-commit.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/SKILL.md"
@@ -2693,7 +2777,8 @@ test -f "$TARGET/.trellis/guru-team/skills/packages/guru-discover-change-context
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/SKILL.md"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-review-change-request/SKILL.md"
-test ! -e "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace"
+test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/create-task-workspace.sh"
 test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" --help >/dev/null
 test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
@@ -2713,9 +2798,10 @@ test -x "$TARGET/.cursor/skills/guru-review-contract-wording/scripts/check-contr
 test -x "$TARGET/.agents/skills/guru-review-change-request/scripts/record-change-request-review.sh"
 test -x "$TARGET/.codex/skills/guru-review-change-request/scripts/check-change-request-review.sh"
 test -x "$TARGET/.cursor/skills/guru-review-change-request/scripts/check-change-request-review.sh"
-test ! -e "$TARGET/.agents/skills/guru-create-task-workspace"
-test ! -e "$TARGET/.codex/skills/guru-create-task-workspace"
-test ! -e "$TARGET/.cursor/skills/guru-create-task-workspace"
+test -f "$TARGET/.agents/skills/guru-create-task-workspace/SKILL.md"
+test -x "$TARGET/.agents/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"
+test -x "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"
+test -x "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed >/dev/null
 DISCOVERY_AFTER_UPDATE_JSON="$(
@@ -2802,6 +2888,59 @@ grep -q '^\.trellis/workspace/$' "$TARGET/.gitignore"
 UPDATED_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case after-update)"
 printf '%s\n' "$UPDATED_CLOSEOUT_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 106; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True; assert payload["after_archive_hook_preflight"] is True' <<<"$UPDATED_CLOSEOUT_JSON"
+UPDATED_TASK_WORKSPACE_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-after-update")"
+printf '%s\n' "$UPDATED_TASK_WORKSPACE_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["context-discovery.json", "issue-review.json", "issue-scope-ledger.json", "task-start-context.json"]; assert not any(payload[key] for key in ("source_developer_identity", "target_developer_identity", "source_workspace_journal", "target_workspace_journal"))' <<<"$UPDATED_TASK_WORKSPACE_JSON"
+
+ABSENCE_TARGET="$WORK_DIR/no-developer-project"
+mkdir "$ABSENCE_TARGET"
+git -C "$ABSENCE_TARGET" init -q
+git -C "$ABSENCE_TARGET" remote add origin https://github.com/castbox/guru-trellis-throwaway.git
+git -C "$ABSENCE_TARGET" config user.name "Guru Team No Developer Fixture"
+git -C "$ABSENCE_TARGET" config user.email "guru-team-no-developer@example.invalid"
+git -C "$ABSENCE_TARGET" branch -M main
+printf '%s\n' 'no-developer repository baseline' >"$ABSENCE_TARGET/.throwaway-baseline"
+git -C "$ABSENCE_TARGET" add .throwaway-baseline
+git -C "$ABSENCE_TARGET" commit -q -m "chore: initialize no-developer fixture"
+(
+  cd "$ABSENCE_TARGET"
+  trellis init -y --codex --cursor \
+    --workflow guru-team \
+    --workflow-source "$WORKFLOW_SOURCE"
+)
+apply_local_workflow_sample "$ABSENCE_TARGET"
+test -f "$ABSENCE_TARGET/.trellis/.developer"
+test -d "$ABSENCE_TARGET/.trellis/workspace"
+rm -rf "$ABSENCE_TARGET/.trellis/.developer" "$ABSENCE_TARGET/.trellis/workspace"
+assert_official_state_absent "$ABSENCE_TARGET" "no-developer fixture setup"
+"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
+  --repo "$ABSENCE_TARGET" \
+  --platform codex \
+  --platform cursor
+assert_official_state_absent "$ABSENCE_TARGET" "initial preset apply"
+(
+  cd "$ABSENCE_TARGET"
+  trellis update --force
+)
+assert_official_state_absent "$ABSENCE_TARGET" "trellis update"
+(
+  cd "$ABSENCE_TARGET"
+  trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force
+)
+apply_local_workflow_sample "$ABSENCE_TARGET"
+assert_official_state_absent "$ABSENCE_TARGET" "workflow reapply"
+"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
+  --repo "$ABSENCE_TARGET" \
+  --platform codex \
+  --platform cursor
+assert_official_state_absent "$ABSENCE_TARGET" "preset reapply"
+"$ABSENCE_TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$ABSENCE_TARGET" --json --mode installed >/dev/null
+ABSENCE_SIDECARS="$(find "$ABSENCE_TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print)"
+if [[ -n "$ABSENCE_SIDECARS" ]]; then
+  echo "Unexpected no-developer fixture sidecars after update/reapply:" >&2
+  printf '%s\n' "$ABSENCE_SIDECARS" >&2
+  exit 2
+fi
 
 fail_if_python_cache "throwaway target" "$TARGET"
 FINAL_SIDECARS="$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print)"

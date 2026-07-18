@@ -37,6 +37,11 @@ Before editing workflow behavior:
   that core and does not define a second resolver.
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - `guru-discover-change-context` owns the semantic Phase 0 current-state/history discovery loop; its deterministic runtime reads only archived `finish-summary.json:index.*` and persists no repo-level cache.
+- `guru-create-task-workspace` owns the final Intake mutation closed loop. Its
+  recorder/executor/checker publish stdout plan/result contracts, create either
+  one exact reviewed issue or one exact workspace/task invocation, persist only
+  four portable task-local Intake artifacts, and use only ignored
+  `.trellis/.runtime/guru-team/**` mappings.
 - `trellis/workflows/guru-team/schemas/task-start-context.schema.json` documents the portable task-start context JSON shape.
 
 ## Required Validation

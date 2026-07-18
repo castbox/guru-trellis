@@ -272,6 +272,9 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/check-contract-wording-review.sh`
 - `.trellis/guru-team/scripts/bash/record-change-request-review.sh`
 - `.trellis/guru-team/scripts/bash/check-change-request-review.sh`
+- `.trellis/guru-team/scripts/bash/record-task-workspace-plan.sh`
+- `.trellis/guru-team/scripts/bash/create-task-workspace.sh`
+- `.trellis/guru-team/scripts/bash/check-task-workspace-result.sh`
 - `.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh`
 - `.trellis/guru-team/scripts/bash/record-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
@@ -291,12 +294,11 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/backfill-finish-summary.sh`
 - `.trellis/guru-team/scripts/python/guru_team_trellis.py`
 
-Production skill registry 同时保留 reserved `guru-create-work-commit`、consumer-only
-planned `guru-create-task-workspace`，以及 active `guru-sync-base`、
+Production skill registry 同时保留 reserved `guru-create-work-commit`，以及 active
+`guru-create-task-workspace`、`guru-sync-base`、
 `guru-discover-change-context`、`guru-clarify-requirements`、
 `guru-review-contract-wording`、`guru-review-change-request`、
-`guru-create-task-commit`。Planned id 不安装 package，也不能拥有 invoke/exit marker；
-`ready` consumer 在 #112 active 前停在 missing-Skill gate。当前
+`guru-create-task-commit`。Planned id 不安装 package，也不能拥有 invoke/exit marker。当前
 canonical extension version 是待发布的
 `0.6.5-guru.14`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
 （含 interface、artifact schema、
@@ -394,12 +396,20 @@ context/clarity/wording linkage、十项 dimensions、findings、scope conclusio
 schema/hash/ref/freshness/consumer/ready invariant，不生成 readiness、finding、delivery unit 或
 route。Pre-task/standalone stdout-only；#112 后续只能持久化同一 checker-passed bytes。
 
-五出口固定为 `ready` -> planned `guru-create-task-workspace`、
+五出口固定为 `ready` -> active `guru-create-task-workspace`、
 `clarify_requirements` -> `guru-clarify-requirements`、`review_wording` ->
 `guru-review-contract-wording`、`refresh_context` -> `guru-sync-base`、`blocked` ->
 `change-request-review-blocked`。Fresh install、selected platform discovery、installed validation
-与 update/reapply 必须证明 planned #112 package 不存在、`ready` 没有 legacy full-intake fallback，
+与 update/reapply 必须证明 active workspace package存在、`ready` 没有 legacy full-intake fallback，
 并覆盖三类 target、五出口和 zero cache/sidecar residue。
+
+`guru-create-task-workspace` package 安装
+`guru-task-workspace-plan-1.0`、`guru-task-workspace-result-1.0`、contract、examples、tests
+和三个 executable dispatcher wrappers。Draft invocation 创建 exact issue 后固定
+`refresh_review`；open issue invocation 使用独立 workspace/task confirmation。Assignee 按
+explicit、single issue assignee、zero issue assignees/current login、multiple/unresolved user
+choice 顺序解析。成功后只写四个 tracked task-local Intake artifacts 与 ignored
+`.trellis/.runtime/guru-team/**` mappings。
 
 Shared overlays are always installed:
 
@@ -675,7 +685,11 @@ candidates are ordered, not ambiguous. The deterministic Skill performs
 digest-bound execution without a selected-base or post-execution AI gate. A
 `synced` result requires a clean checkout and equal decision/local/remote HEADs;
 `skipped` returns to the original request, while `blocked` stops fail closed.
-Only `synced` enters Guru Team intake:
+Only `synced` enters the mandatory
+`guru-discover-change-context -> guru-clarify-requirements ->
+guru-review-contract-wording -> guru-review-change-request ->
+guru-create-task-workspace` chain. The following command is query-only
+compatibility and is not a workflow hop:
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
@@ -684,7 +698,7 @@ Only `synced` enters Guru Team intake:
   "<user request or issue URL>"
 ```
 
-`prepare-task.sh --json` is an intake/preflight planner by default. It may read
+`prepare-task.sh --json` is query-only compatibility. It may read
 an explicit issue and search duplicates, but it does not create a GitHub issue,
 worktree, branch, Trellis task, or `.trellis/tasks/<task-slug>/task-start-context.json`. Freeform
 requests without a source issue return `proposed_issue`, `requires_confirmation`,
@@ -696,21 +710,15 @@ cannot be `fresh: true`. A behind local base advances only on the selected-base
 checkout via `git merge --ff-only`; wrong checkout, dirty state, missing refs,
 fetch failure, divergence, resolution drift, or post-sync mismatch fail closed.
 Prepare requires the preceding validator/guard post-sync resolution digest and
-the same resolver inputs. It preserves explicit/config/config-candidate/remote-default provenance and reruns an
-independent adjacent guard before GitHub, worktree, and task mutation; the task
-guard is after worktree/identity setup and before `task.py create`.
+the same resolver inputs. It preserves explicit/config/config-candidate/remote-default provenance.
 Resolution and result facts are stdout-only. Neither standalone nor workflow
 mode creates resolution/result evidence files, leases, release commands, or
-cleanup state. Every planner/mutation guard consumes the preceding post-sync
-digest, reruns the shared core, and returns the next post-sync digest;
-identity/digest drift requires a fresh Skill invocation.
-The AI must show the
-proposed title/body and duplicate evidence, then rerun with
-`--create-issue-confirmed --issue-title ... --issue-body-file ...` only after
-approval. A confirmed source issue still remains stdout-only until the user
-approves `--create-worktree` or `--create-task`; those executor paths write the
-handoff inside the chosen workspace, not as a new-session side effect in the
-source checkout.
+cleanup state. The compatibility query consumes the current post-sync digest
+and reruns the shared core before its reads. Workspace mutation freshness is
+owned and revalidated by `guru-create-task-workspace`; identity/digest drift
+requires a fresh Skill invocation.
+Legacy `--create-issue-confirmed`, `--create-worktree`, and `--create-task`
+fail closed before any write and point to active `guru-create-task-workspace`.
 
 The AI should read the issue and provide a semantic English short-name through
 `--short-name`, `--workspace-slug`, and `--task-slug` when the title is Chinese,
@@ -723,13 +731,18 @@ perform Chinese transliteration or pinyin conversion; it deterministically
 infers a supported branch type, assembles the name, checks conflicts, and blocks
 low-information names before executor side effects.
 When `workspace_mode: worktree`, create the execution workspace and task through
-`prepare-task --create-worktree --create-task` or an equivalent controlled Guru
-Team executor. Task creation consent is not approval to run bare
+active `guru-create-task-workspace`. Task creation consent is not approval to run bare
 `python3 ./.trellis/scripts/task.py create ...` in the source checkout.
 Executor paths also enforce `naming_quality` and fail closed before creating a
 worktree, branch, or Trellis task if the generated or overridden name is low
 information, such as `issue-52`, `52-issue-52`, a bare number, or only generic
 tokens like `bug`, `fix`, `task`, `work`, `update`, or `change`.
+
+Only passed Gate plus confirmed active scope may mutate. Passed plus refused,
+`reroute`, and `blocked` produce checker-validated zero-write `cancelled`,
+`refresh_review`, and `blocked` results. Public result stdout omits the absolute
+workspace path; the checker derives it from current config, reviewed slug, and
+live Git facts, while local absolute mappings remain ignored runtime only.
 
 The tracked `task-start-context.json` provides only portable `workspace_slug`,
 `task_workspace_id`, and repo-relative `task_artifact_dir`; it never provides an
@@ -752,21 +765,29 @@ boundary helper. The #76 liveness checker uses this source/task fact
 layer: source checkout `HEAD`, dirty status, diff stat, or mtime changes are
 `workspace_boundary_violation_progress`, not stale evidence.
 
-`--create-issue-confirmed` reruns the shared core before GitHub mutation;
-`--create-worktree` / `--create-task` rerun it before worktree/task mutation.
+`create-task-workspace` reruns the shared core before GitHub or worktree/task mutation.
 Each run keeps `preflight.base_freshness` in the current result only and requires
 clean decision/local/remote equality. Planner evidence never replaces either
 mutation-time guard, preventing new task branches from starting from a stale
 local base.
 
-After the worktree exists, the executor ensures the target workspace has
-Trellis developer identity before writing task context or creating a task. It copies
-the gitignored source checkout `.trellis/.developer` when available, initializes
-an equivalent target identity from an explicit `--assignee` when the source file
-is missing, and otherwise fails closed with the recovery command
-`python3 ./.trellis/scripts/init_developer.py <name>`. This makes the new
-worktree immediately usable by `get_context.py` and `task.py list --mine`.
-Guru Team finish does not call `add_session.py`.
+The active package uses schemas `guru-task-workspace-plan-1.0` and
+`guru-task-workspace-result-1.0` plus runtime commands
+`record-task-workspace-plan`, `create-task-workspace`, and
+`check-task-workspace-result`. It keeps workflow/standalone preconditions
+identical, uses mutually exclusive issue/workspace confirmations, and exposes
+only `created`, `refresh_review`, `cancelled`, and `blocked` exits. A draft
+issue creation invocation always stops at `refresh_review`; branch/worktree/task
+creation happens only after full Intake re-entry.
+
+Guru preset apply/update/reapply and the workspace executor do not read,
+create, copy, initialize, restore, or delete `.trellis/.developer` or
+`.trellis/workspace/**`; they do not require `init_developer.py`. Existing
+official identity/journal bytes are preserved, and official Trellis remains free
+to use those paths separately. The exact executor passes one resolved assignee
+explicitly to `task.py create --assignee` and writes only four tracked
+task-local Intake artifacts plus ignored runtime mappings. The real local A/B
+fixture verifies both merge orders without a remote PR or concurrent process.
 
 The installer manages `schemas/closeout-plan.schema.json` and
 `schemas/finish-summary.schema.json`, writes top-level
