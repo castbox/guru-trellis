@@ -1,0 +1,8 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"审核 package/interface/frontmatter/modes/stages/exits、AI Gate evidence 与 stable public API。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"审核 prerequisite ordering、five consumers、unknown/multiple/unmapped fail-closed 与 #112 absence behavior。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"审核 three target variants、current/history/clarity/wording linkage、artifact schema、freshness 与 side-effect-free boundary。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"审核 runtime没有执行 readiness、duplicate/reuse、delivery unit、finding或 typed-exit judgment。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"审核 replacement-first、full Phase 2、Branch Review、throwaway/update/remote marketplace 与 impact matrix。"}
+{"file":".trellis/spec/preset/installer.md","reason":"审核 canonical/installed runtime、manifest、inventory、mode、fresh install 和 update/reapply。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"审核 four-platform byte equality、dogfood drift、sidecar zero 与 no-new-overlay边界。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"审核 frozen upstream inventory、managed claims 与新增 Guru-owned paths。"}

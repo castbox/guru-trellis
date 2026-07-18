@@ -270,6 +270,8 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/check-requirements-clarification.sh`
 - `.trellis/guru-team/scripts/bash/record-contract-wording-review.sh`
 - `.trellis/guru-team/scripts/bash/check-contract-wording-review.sh`
+- `.trellis/guru-team/scripts/bash/record-change-request-review.sh`
+- `.trellis/guru-team/scripts/bash/check-change-request-review.sh`
 - `.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh`
 - `.trellis/guru-team/scripts/bash/record-planning-approval.sh`
 - `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
@@ -289,11 +291,14 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/backfill-finish-summary.sh`
 - `.trellis/guru-team/scripts/python/guru_team_trellis.py`
 
-Production skill registry 同时保留 reserved `guru-create-work-commit` 与 active
-`guru-sync-base`、`guru-discover-change-context`、`guru-clarify-requirements`、
-`guru-review-contract-wording`、`guru-create-task-commit`。当前
+Production skill registry 同时保留 reserved `guru-create-work-commit`、consumer-only
+planned `guru-create-task-workspace`，以及 active `guru-sync-base`、
+`guru-discover-change-context`、`guru-clarify-requirements`、
+`guru-review-contract-wording`、`guru-review-change-request`、
+`guru-create-task-commit`。Planned id 不安装 package，也不能拥有 invoke/exit marker；
+`ready` consumer 在 #112 active 前停在 missing-Skill gate。当前
 canonical extension version 是待发布的
-`0.6.5-guru.12`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
+`0.6.5-guru.13`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
 （含 interface、artifact schema、
 example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
 root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
@@ -376,6 +381,23 @@ approval adapter 投影消费；它还必须包含 canonical contract 定义的 
 才能成功。Runtime 只验证该 planning-only 字段的 shape/value，projection 只逐项复制，不默认
 生成。其它 profile 禁止该字段且保持 stdout-only。Fresh install、dogfood、四平台
 discovery copies 与 update/reapply 必须同时包含 package、commands、schema 和 route markers。
+
+`guru-review-change-request` package additive 安装
+`guru-change-request-review-1.0` schema、deidentified `issue-review.json` example、contract、
+tests 和两个 executable dispatcher wrappers。Runtime assets 是
+`.trellis/guru-team/scripts/bash/record-change-request-review.sh` 与
+`check-change-request-review.sh`。Workflow/standalone preconditions 相同；三类 target、current
+context/clarity/wording linkage、十项 dimensions、findings、scope conclusion、AI Gate 与五出口
+由 canonical semantic package 拥有。Runtime 只重建 portable projection/linkage/facts 并校验
+schema/hash/ref/freshness/consumer/ready invariant，不生成 readiness、finding、delivery unit 或
+route。Pre-task/standalone stdout-only；#112 后续只能持久化同一 checker-passed bytes。
+
+五出口固定为 `ready` -> planned `guru-create-task-workspace`、
+`clarify_requirements` -> `guru-clarify-requirements`、`review_wording` ->
+`guru-review-contract-wording`、`refresh_context` -> `guru-sync-base`、`blocked` ->
+`change-request-review-blocked`。Fresh install、selected platform discovery、installed validation
+与 update/reapply 必须证明 planned #112 package 不存在、`ready` 没有 legacy full-intake fallback，
+并覆盖三类 target、五出口和 zero cache/sidecar residue。
 
 Shared overlays are always installed:
 

@@ -1,0 +1,120 @@
+{
+  "$schema": "../../schemas/skill-interface.schema.json",
+  "schema_version": "1.2",
+  "id": "guru-review-change-request",
+  "name": "guru-review-change-request",
+  "description": "Review whether a current change request is one independently deliverable unit through linked prerequisite evidence, an AI readiness gate, and five typed exits.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": ["runtime_dependency", "review_target", "context_evidence", "clarity_evidence", "wording_evidence", "invocation_freshness"]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": ["runtime_dependency", "review_target", "context_evidence", "clarity_evidence", "wording_evidence", "invocation_freshness"]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed extension manifest, dispatcher, active package inventory and declared record/check runtime commands",
+      "binding": "complete compatible Guru Team preset runtime",
+      "freshness": "validated by run-skill-command before every runtime command"
+    },
+    {
+      "id": "review_target",
+      "evidence": "one existing issue, side-effect-free proposed draft, or explicit standalone request with current title/body identity",
+      "binding": "the exact change request reviewed by all prerequisite Skills and the readiness AI gate",
+      "freshness": "target authority and reviewed content are rebuilt from the same change-request input during recording and checking"
+    },
+    {
+      "id": "context_evidence",
+      "evidence": "current guru-context-discovery-1.0 context_ready result or explicit missing/stale facts",
+      "binding": "base, live target, current Docs/code/tests, duplicate facts and archived history",
+      "freshness": "existing objective context structural and live checks are rerun before ready"
+    },
+    {
+      "id": "clarity_evidence",
+      "evidence": "current guru-requirements-clarification-1.0 clear result or explicit missing/stale facts",
+      "binding": "the same review target, content and scope decision",
+      "freshness": "existing objective clarification structural and live checks are rerun before ready"
+    },
+    {
+      "id": "wording_evidence",
+      "evidence": "current guru-contract-wording-review-1.0 change_request pass result or explicit missing/stale facts",
+      "binding": "the same title/body bytes and fixed change-request scope",
+      "freshness": "the fixed scope is rebuilt and rescanned before ready"
+    },
+    {
+      "id": "invocation_freshness",
+      "evidence": "mode, target identity, prerequisite projections, linkage digest, AI review, confirmation policy and typed consumer",
+      "binding": "one current readiness review round",
+      "freshness": "checker recomputes the complete objective projection from current prerequisite bytes"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [
+    {"id": "change_request_review_example", "path": "examples/issue-review.json"}
+  ],
+  "schemas": [
+    {"id": "change_request_review_schema", "path": "schemas/change-request-review.schema.json"}
+  ],
+  "validators": [
+    {
+      "id": "change_request_review_recorder",
+      "command": "scripts/record-change-request-review.sh",
+      "runtime_command": "record-change-request-review",
+      "objective_scope": "stdout-only target normalization, existing prerequisite objective checks, fixed linkage projection, closed schema, semantic evidence shape, consumer identity and facts digest"
+    },
+    {
+      "id": "change_request_review_checker",
+      "command": "scripts/check-change-request-review.sh",
+      "runtime_command": "check-change-request-review",
+      "objective_scope": "published schema, current target and prerequisite projection, linkage and facts digest recomputation, fixed dimensions/findings references, Gate/exit invariant and exact consumer"
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "ready",
+      "evidence": "all ten AI-reviewed dimensions passed, no blocking finding, and all three prerequisite projections are current and linked",
+      "consumer": {"kind": "skill", "id": "guru-create-task-workspace"}
+    },
+    {
+      "id": "clarify_requirements",
+      "evidence": "the AI found a user decision gap, delivery-unit conflict, or need for a new reviewed draft",
+      "consumer": {"kind": "skill", "id": "guru-clarify-requirements"}
+    },
+    {
+      "id": "review_wording",
+      "evidence": "the AI found missing, stale, unchecked, mismatched, or non-pass change-request wording evidence",
+      "consumer": {"kind": "skill", "id": "guru-review-contract-wording"}
+    },
+    {
+      "id": "refresh_context",
+      "evidence": "the AI found stale base, live target, query, current-state, duplicate, or archived-history identity",
+      "consumer": {"kind": "skill", "id": "guru-sync-base"}
+    },
+    {
+      "id": "blocked",
+      "evidence": "the target is already complete without an independent gap or the delivery conflict cannot be resolved safely",
+      "consumer": {"kind": "stop", "id": "change-request-review-blocked"}
+    }
+  ],
+  "reentry": {
+    "identity": "mode, target identity/content digests, three prerequisite projections, linkage digest, semantic review, confirmation, typed exit and facts digest",
+    "freshness": "ready is accepted only while the same current prerequisite bytes rebuild the exact recorded target and linkage projections; any drift requires complete owner re-entry",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"]
+}

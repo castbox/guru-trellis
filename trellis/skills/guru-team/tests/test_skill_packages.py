@@ -73,13 +73,14 @@ class SourceValidationTests(unittest.TestCase):
         )
         self.assertEqual(result["status"], "passed", result["errors"])
         self.assertEqual(result["facts"]["reserved_ids"], ["guru-create-work-commit"])
+        self.assertEqual(result["facts"]["planned_ids"], ["guru-create-task-workspace"])
         self.assertEqual(
             result["facts"]["active_ids"],
-            ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-review-contract-wording", "guru-sync-base"],
+            ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"],
         )
-        self.assertEqual(result["facts"]["invoke_markers"], 5)
-        self.assertEqual(result["facts"]["exit_markers"], 17)
-        self.assertEqual(result["facts"]["target_markers"], 11)
+        self.assertEqual(result["facts"]["invoke_markers"], 6)
+        self.assertEqual(result["facts"]["exit_markers"], 22)
+        self.assertEqual(result["facts"]["target_markers"], 12)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         scope_gate = workflow.index("Scope Change Gate:")
@@ -100,6 +101,15 @@ class SourceValidationTests(unittest.TestCase):
             workflow,
         )
         self.assertIn("invocation_context.resume_target", workflow)
+        self.assertIn(
+            'guru-skill-exit: {"skill":"guru-review-change-request","exit":"ready","consumer":{"kind":"skill","id":"guru-create-task-workspace"}}',
+            workflow,
+        )
+        self.assertIn("planned rather than active", workflow)
+        self.assertNotIn(
+            "The `pass` router maps `change_request` to the full task-intake continuation",
+            workflow,
+        )
 
     def test_production_task_commit_package_contract(self) -> None:
         package = SKILLS_ROOT / "packages/guru-create-task-commit"
@@ -330,7 +340,7 @@ class SourceValidationTests(unittest.TestCase):
                 self.workflow.write_text(workflow, encoding="utf-8")
                 self.assertIn(expected, self.validate()["errors"])
 
-    def test_skill_consumer_must_resolve_to_active_registry_entry(self) -> None:
+    def test_skill_consumer_must_resolve_to_active_or_planned_registry_entry(self) -> None:
         interface = self.read_interface()
         interface["external_exits"][0]["consumer"] = {
             "kind": "skill",
@@ -343,7 +353,33 @@ class SourceValidationTests(unittest.TestCase):
         )
         self.workflow.write_text(workflow, encoding="utf-8")
         self.assertTrue(any(
-            "references non-active skill consumer guru-missing-consumer" in item
+            "references unknown skill consumer guru-missing-consumer" in item
+            for item in self.validate()["errors"]
+        ))
+
+        registry = self.read_registry()
+        registry["skills"].append({
+            "id": "guru-missing-consumer",
+            "state": "planned",
+            "reason": "A later delivery owns this exact consumer package.",
+        })
+        self.write_registry(registry)
+        self.workflow.write_text(
+            workflow.replace(
+                '<!-- guru-workflow-target: {"id":"fixture-next"} -->\n',
+                "",
+            ),
+            encoding="utf-8",
+        )
+        self.assertEqual(self.validate()["status"], "passed", self.validate()["errors"])
+
+        self.workflow.write_text(
+            self.workflow.read_text(encoding="utf-8")
+            + '<!-- guru-skill-invoke: {"skill":"guru-missing-consumer","required":true} -->\n',
+            encoding="utf-8",
+        )
+        self.assertTrue(any(
+            "planned skill guru-missing-consumer is referenced by a mandatory route" in item
             for item in self.validate()["errors"]
         ))
 
@@ -1214,7 +1250,7 @@ class ProductionDistributionTests(unittest.TestCase):
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["reserved_ids"], ["guru-create-work-commit"])
-            self.assertEqual(result["active_ids"], ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-review-contract-wording", "guru-sync-base"])
+            self.assertEqual(result["active_ids"], ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"])
             self.assertFalse((repo / ".agents/skills/guru-create-work-commit").exists())
             for root in (".agents", ".codex", ".cursor", ".claude"):
                 task_commit = repo / root / "skills/guru-create-task-commit"

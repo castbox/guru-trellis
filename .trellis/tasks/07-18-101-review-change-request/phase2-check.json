@@ -1,0 +1,243 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-18T01:02:53Z",
+  "task_dir": ".trellis/tasks/07-18-101-review-change-request",
+  "base_branch": "main",
+  "head": "9087987b9239168e00063a2ac89e9ae3d186d6cf",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/registry.json",
+    ".trellis/guru-team/skills/schemas/skill-registry.schema.json",
+    ".trellis/spec/preset/installer.md",
+    ".trellis/spec/preset/upstream-ownership.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/guru-team-extension.json",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+    "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+    "trellis/skills/guru-team/registry.json",
+    "trellis/skills/guru-team/schemas/skill-registry.schema.json",
+    "trellis/skills/guru-team/tests/fixtures/representative-active/schemas/skill-registry.schema.json",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".agents/skills/guru-review-change-request/SKILL.md",
+    ".agents/skills/guru-review-change-request/examples/issue-review.json",
+    ".agents/skills/guru-review-change-request/interface.json",
+    ".agents/skills/guru-review-change-request/references/contract.md",
+    ".agents/skills/guru-review-change-request/schemas/change-request-review.schema.json",
+    ".agents/skills/guru-review-change-request/scripts/check-change-request-review.sh",
+    ".agents/skills/guru-review-change-request/scripts/record-change-request-review.sh",
+    ".agents/skills/guru-review-change-request/tests/test_contract.py",
+    ".claude/skills/guru-review-change-request/SKILL.md",
+    ".claude/skills/guru-review-change-request/examples/issue-review.json",
+    ".claude/skills/guru-review-change-request/interface.json",
+    ".claude/skills/guru-review-change-request/references/contract.md",
+    ".claude/skills/guru-review-change-request/schemas/change-request-review.schema.json",
+    ".claude/skills/guru-review-change-request/scripts/check-change-request-review.sh",
+    ".claude/skills/guru-review-change-request/scripts/record-change-request-review.sh",
+    ".claude/skills/guru-review-change-request/tests/test_contract.py",
+    ".codex/skills/guru-review-change-request/SKILL.md",
+    ".codex/skills/guru-review-change-request/examples/issue-review.json",
+    ".codex/skills/guru-review-change-request/interface.json",
+    ".codex/skills/guru-review-change-request/references/contract.md",
+    ".codex/skills/guru-review-change-request/schemas/change-request-review.schema.json",
+    ".codex/skills/guru-review-change-request/scripts/check-change-request-review.sh",
+    ".codex/skills/guru-review-change-request/scripts/record-change-request-review.sh",
+    ".codex/skills/guru-review-change-request/tests/test_contract.py",
+    ".cursor/skills/guru-review-change-request/SKILL.md",
+    ".cursor/skills/guru-review-change-request/examples/issue-review.json",
+    ".cursor/skills/guru-review-change-request/interface.json",
+    ".cursor/skills/guru-review-change-request/references/contract.md",
+    ".cursor/skills/guru-review-change-request/schemas/change-request-review.schema.json",
+    ".cursor/skills/guru-review-change-request/scripts/check-change-request-review.sh",
+    ".cursor/skills/guru-review-change-request/scripts/record-change-request-review.sh",
+    ".cursor/skills/guru-review-change-request/tests/test_contract.py",
+    ".trellis/guru-team/scripts/bash/check-change-request-review.sh",
+    ".trellis/guru-team/scripts/bash/record-change-request-review.sh",
+    ".trellis/guru-team/skills/packages/guru-review-change-request/SKILL.md",
+    ".trellis/guru-team/skills/packages/guru-review-change-request/examples/issue-review.json",
+    ".trellis/guru-team/skills/packages/guru-review-change-request/interface.json",
+    ".trellis/guru-team/skills/packages/guru-review-change-request/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-review-change-request/schemas/change-request-review.schema.json",
+    ".trellis/guru-team/skills/packages/guru-review-change-request/scripts/check-change-request-review.sh",
+    ".trellis/guru-team/skills/packages/guru-review-change-request/scripts/record-change-request-review.sh",
+    ".trellis/guru-team/skills/packages/guru-review-change-request/tests/test_contract.py",
+    ".trellis/tasks/07-18-101-review-change-request/check.jsonl",
+    ".trellis/tasks/07-18-101-review-change-request/implement.jsonl",
+    ".trellis/tasks/07-18-101-review-change-request/task-start-context.json",
+    ".trellis/tasks/07-18-101-review-change-request/task.json",
+    "trellis/skills/guru-team/packages/guru-review-change-request/SKILL.md",
+    "trellis/skills/guru-team/packages/guru-review-change-request/examples/issue-review.json",
+    "trellis/skills/guru-team/packages/guru-review-change-request/interface.json",
+    "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-review-change-request/schemas/change-request-review.schema.json",
+    "trellis/skills/guru-team/packages/guru-review-change-request/scripts/check-change-request-review.sh",
+    "trellis/skills/guru-team/packages/guru-review-change-request/scripts/record-change-request-review.sh",
+    "trellis/skills/guru-team/packages/guru-review-change-request/tests/test_contract.py",
+    "trellis/workflows/guru-team/scripts/bash/check-change-request-review.sh",
+    "trellis/workflows/guru-team/scripts/bash/record-change-request-review.sh"
+  ],
+  "checker": "/root/issue101_phase2_acceptance",
+  "check_summary": "第五轮独立 Trellis Phase 2 acceptance 已覆盖 Issue #101 全部批准需求、设计、实现、历史 finding closure、完整 dirty scope、Docs SSOT、分发与安装/update 边界；P0-P3 均为零，644 项本地测试及 clean throwaway 两阶段验证全部通过，可进入受控提交。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-18-101-review-change-request/prd.md",
+      "sha256": "211286bdd1a0f8e6a60a008ab02440888dce3648118c702271b0286201de58fe",
+      "size_bytes": 15285,
+      "modified_at": "2026-07-17T19:57:27.058049+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-101-review-change-request/design.md",
+      "sha256": "3ebb5adbf135d84b2b7a92c511f65b15b4fd5c7334b65074b0dc8ff6938a89e5",
+      "size_bytes": 16401,
+      "modified_at": "2026-07-17T19:57:27.058248+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-101-review-change-request/implement.md",
+      "sha256": "e88d565320d6255f57e1c10c599a67aa552171c384f290000c22b8bba5b08e99",
+      "size_bytes": 13218,
+      "modified_at": "2026-07-17T19:57:27.058432+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-101-review-change-request/planning-approval.json",
+      "sha256": "84f3250ac67246108767edab16b881fa1294b55e93ccb8388016a3a16951ad16",
+      "size_bytes": 5379,
+      "modified_at": "2026-07-17T20:00:26.314936+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-101-review-change-request/contract-wording-review.json",
+      "sha256": "cf357e158057befa35f170aeaa5c8e9e8b734a8d1b4e50b75089be19554cb320",
+      "size_bytes": 3444,
+      "modified_at": "2026-07-17T19:58:36.720877+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-101-review-change-request/issue-scope-ledger.json",
+      "sha256": "0496824d4593132350a42c9e649611fbefdfc0e919248ce75d5ec94d87326e3d",
+      "size_bytes": 2399,
+      "modified_at": "2026-07-17T19:57:27.059553+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-101-review-change-request/agent-assignment.json",
+      "sha256": "1fd47e3e2412794cd29eb8bfa815d351d8c8eb8e9c2ec4252be4b2c3c73a5a87",
+      "size_bytes": 92656,
+      "modified_at": "2026-07-18T01:01:35.742353+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "18a279626fb8b56b58ecff6fc8012a23ea90a7ca746b4f9442242dbe9e7eb16e",
+      "size_bytes": 32575,
+      "modified_at": "2026-07-17T22:02:52.598537+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "314bebf4adad1da74f74c11a45ca800c4a693d38501322c390ca4b08e0b8b64a",
+      "size_bytes": 55313,
+      "modified_at": "2026-07-17T20:43:30.241768+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "b8bdafe1287f469970d07a0d06ea92fd617d898d4f9cf4afcf71ece9b30a751d",
+      "size_bytes": 88661,
+      "modified_at": "2026-07-17T22:02:52.598962+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "2e8f6958786043f238d824ba42a0d76c38ef90121f3e12b83b7f480c5c05414e",
+      "size_bytes": 66378,
+      "modified_at": "2026-07-17T22:02:52.599388+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "016d0166f9d8acef9023b23c7a71f8193be86a08bffbf267e8f95bcfcf307df7",
+      "size_bytes": 18717,
+      "modified_at": "2026-07-17T20:44:13.986128+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "027d68dadcae16873cd07497fa84a028379414e15cf906d2de7f26336d451bfc",
+      "size_bytes": 21613,
+      "modified_at": "2026-07-17T20:44:51.180862+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "6429b3a1fba72eed08ce2067b7619c5f15ce3f54092b8789b436889de7f178dd",
+      "size_bytes": 20200,
+      "modified_at": "2026-07-17T19:47:03.799347+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/upstream-ownership.md",
+      "sha256": "e05a94ab7c46cf5ea42cd7ae01a2c3ccfe2707a1b099c6afe60b76aa7b219c6f",
+      "size_bytes": 9595,
+      "modified_at": "2026-07-17T20:44:51.181177+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "python3 trellis/skills/guru-team/packages/guru-review-change-request/tests/test_contract.py",
+      "result": "20/20 通过，覆盖三 target production ready、freshness/hash/finding closure 与 identity/misroute fail-closed"
+    },
+    {
+      "command": "python3 trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "result": "508/508 通过"
+    },
+    {
+      "command": "python3 trellis/skills/guru-team/tests/test_skill_packages.py",
+      "result": "71/71 通过"
+    },
+    {
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "result": "39/39 通过"
+    },
+    {
+      "command": "python3 trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "result": "6/6 通过，43 frozen paths 不变"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "result": "fresh install 与 trellis update --force + workflow/preset reapply 后 package 各 20/20、两轮 closeout pr_ready=true"
+    },
+    {
+      "command": "source/installed validators + dogfood drift + canonical/installed/shared/Codex/Cursor/Claude bytes/mode",
+      "result": "全部通过，installed 248 files，sidecar/removal/conflict=0"
+    },
+    {
+      "command": "py_compile + bash -n + JSON parse + git diff --check + residue scan",
+      "result": "全部通过，.new/.bak/__pycache__/.pyc/.pyo=0"
+    },
+    {
+      "command": "AI Phase 2 semantic review",
+      "result": "P0=0、P1=0、P2=0、P3=0；Docs SSOT=ssot_first 已收敛；secret/CI/CD/container/Kubernetes/DB migration/Makefile 无影响，部署仅为公共 extension/preset 更新"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

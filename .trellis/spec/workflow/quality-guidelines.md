@@ -121,6 +121,19 @@ install, and `trellis update` plus preset reapply because the package, runtime
 commands, schema, and four discovery roots are one distribution contract.
 The throwaway fresh-install and after-update/reapply phases must each execute a
 real installed-recorder `content_changed -> pass` transition.
+For `guru-review-change-request`, tests must cover workflow/standalone
+precondition parity; all three target variants; current context/clarity/wording
+projection and hash linkage; each prerequisite missing, stale, wrong-exit, or
+target/content mismatched; all ten ordered dimensions; finding/reference/hash
+closure; five exits and exact consumers; planned #112 missing-package stop;
+unknown/multiple/unmapped exit rejection; empty or incomplete AI Gate;
+scanner/checker success without a semantic Gate; non-ready failed-dimension,
+blocking-finding, affected-evidence requirements; facts digest freshness;
+stdout-only zero-write behavior; source/installed/schema/runtime/platform
+distribution; and clean throwaway update/workflow/preset reapply with zero
+cache/sidecar residue. Tests must prove scripts preserve the AI-authored route
+and contain no readiness, finding, delivery-unit, history, duplicate, or
+workspace-creation generator.
 When changing workspace boundary behavior, also run
 `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
 <task-dir>` from the selected task worktree and add regression tests for wrong

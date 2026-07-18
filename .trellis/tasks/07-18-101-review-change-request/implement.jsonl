@@ -1,0 +1,7 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"实现 public semantic Skill interface、entry parity、AI Gate、five typed exits 与 source/installed package contract。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"实现 mandatory invocation、prerequisite route、five unique consumers、#112 placeholder 与 fail-closed transition。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"实现 issue-review schema、target identity、context/clarity/wording hash linkage、freshness 与 stdout-only lifecycle。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 recorder/checker 只负责 schema、hash、digest、linkage，禁止替代 AI readiness 与 route judgment。"}
+{"file":".trellis/spec/preset/installer.md","reason":"同步 extension manifest、preset installer、inventory、runtime command 与 installed package contract。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"同步 shared/Codex/Cursor/Claude discovery copies 与 dogfood，不增加 upstream overlay。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"执行 #128 ownership gate，证明新增资产全部位于 anchored Guru-owned namespace且 frozen overlay不变。"}

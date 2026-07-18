@@ -26,7 +26,8 @@ breadcrumbs, launchers, and workflow prose must not duplicate that loop. See
 
 The workflow has four durable phases:
 
-- Phase 0: issue intake, Git base branch selection, and worktree preflight.
+- Phase 0: base/context/clarity/wording/readiness gates, issue intake, Git base
+  branch selection, and worktree preflight.
 - Phase 1: Trellis task creation, planning artifacts, `Docs SSOT Plan`, explicit post-planning user review, and start gate evidence.
 - Phase 2: implementation and quality check.
 - Phase 3: spec decision, commit, Branch Review Gate, finish-work, and automatic publish.
@@ -121,9 +122,11 @@ state.
 Workflow and stop consumers are declared by one unfenced
 `guru-workflow-target` or `guru-stop-target` marker at the actual continuation
 or fail-closed stop. Source and installed validators require every Skill
-consumer to resolve to an active registry entry and every workflow/stop target
-to have exactly one matching-kind declaration; missing, multiple,
-kind-mismatched, or dangling targets fail closed.
+consumer to resolve to an active or planned registry entry and every
+workflow/stop target to have exactly one matching-kind declaration. Planned ids
+are consumer-only and stop at the missing-Skill gate until promoted; they
+cannot have invoke/exit markers or an installed package. Missing, unknown,
+multiple, kind-mismatched, or dangling targets fail closed.
 
 `guru-clarify-requirements` is the active semantic consumer of
 `guru-discover-change-context:context_ready`. It owns initial intake clarity,
@@ -187,7 +190,8 @@ The global workflow owns only invocation and these unique external consumers:
 `pass` -> `guru-contract-wording-pass-router`, `content_changed` ->
 `guru-contract-wording-change-router`, and `blocked` ->
 `contract-wording-blocked`. The pass/change routers restore the continuation
-from the checker-validated profile: change-request pass continues task intake,
+from the checker-validated profile: change-request pass mandatory invokes
+`guru-review-change-request`,
 planning-artifacts pass permits planning artifact presentation, and content
 changes re-enter the corresponding full review. Unknown, missing, multiple,
 stale, or unmapped profile/exit evidence fails closed.
@@ -208,6 +212,18 @@ requires the canonical contract's exact planning-only dimension evidence with
 every value explicitly AI-reviewed as true. A zero-hit deterministic scan or
 runtime-generated default is not a substitute for the Skill's semantic Review
 Gate.
+
+`guru-review-change-request` then owns the complete pre-task semantic readiness
+loop. The workflow owns only its mandatory marker and five consumers. `ready`
+names planned #112 Skill `guru-create-task-workspace`; until #112 promotes that
+id to an active, installed package, the missing-Skill gate stops and must not
+fall back to `guru-full-task-intake-chain`, `check-env`, or `prepare-task`.
+`clarify_requirements`, `review_wording`, and `refresh_context` completely
+re-enter their declared prerequisite Skill; `blocked` stops at
+`change-request-review-blocked`. The package's schema, linked prerequisite
+projections, ten dimensions, findings, scope conclusion, AI Gate,
+confirmation, recorder/checker, and exit judgment must not be copied into the
+workflow or platform entries.
 
 `trellis-finish-work` is a single resumable transaction entry. Its mandatory
 order is: shared prepare/digest preview, expected-digest handshake, reviewed

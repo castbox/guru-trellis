@@ -631,6 +631,49 @@ stale supersession, and current `pass` replacement fail closed. This invocation
 fact does not let the recorder choose re-entry, semantic judgment, or the
 replacement exit.
 
+### Change request readiness result
+
+Schema `guru-change-request-review-1.0` defines the portable
+`issue-review.json` result owned by `guru-review-change-request`. Before task
+creation the recorder and checker return JSON on stdout only. The normalized
+target is exactly one existing issue, side-effect-free proposed draft, or
+side-effect-free standalone request, with title/body, identity, content, and
+source authority hashes. `prerequisites` contains portable projections of the
+full current context, clarification, and wording payloads; `evidence_linkage`
+binds target identity/content, base/current/history/duplicate facts, clarity
+facts, wording facts, and one canonical digest.
+
+For both draft variants, `source_request_sha256` is the canonical digest of the
+same current authority projection owned by #113 `review_target`: `kind=draft`,
+normalized `repo`, null `issue_number`, `url`, and `updated_at`, `state=draft`,
+and the current reviewed-body SHA-256. Runtime rebuilds this projection from
+the current change-request input bytes and rejects any merely well-shaped but
+wrong or stale digest. Title bytes and draft/request/caller identity remain
+separate target fields and continue to participate in target content/identity
+digests.
+
+The semantic portion contains the ten ordered readiness dimensions, a closed
+finding category set, affected evidence/hashes, scope conclusion, AI Review
+Gate, conditional human confirmation, reason, scalar exit, and exact consumer.
+`ready` requires all prerequisites current, all dimensions passed, no blocking
+finding, complete linkage, passed Gate, and no required confirmation. Every
+non-ready result requires at least one AI-authored failed dimension, blocking
+finding, and affected evidence. Deterministic commands validate these facts but
+never infer or rewrite the exit.
+
+The public package carries only a deidentified example. Planned #112 Skill
+`guru-create-task-workspace` may later persist only the exact checker-passed
+bytes at the direct active task's tracked `{TASK_DIR}/issue-review.json`; #101
+does not create a task, workspace journal, cache, index, sidecar, or tracked
+artifact.
+
+The production regression suite must first pass real current context,
+clarification, and wording payloads through their record/check commands and
+then consume those full results in change-request record/check. It covers wrong
+exits, consumer and target/content mismatch, base/current/history/duplicate
+drift, and proposed-draft/standalone source-authority mismatch; handwritten
+portable projections alone are not sufficient evidence.
+
 ## Phase 2 Check Artifact
 
 `phase2-check.json` is the commit-preflight evidence for Phase 2.2. It records:

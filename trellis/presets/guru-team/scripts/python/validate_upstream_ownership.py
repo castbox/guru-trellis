@@ -706,6 +706,7 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
 
     manifest_paths: list[str] = []
     manifest_active_ids: list[str] = []
+    manifest_planned_ids: list[str] = []
     if isinstance(extension, dict):
         public_api = extension.get("public_api")
         if not isinstance(public_api, dict):
@@ -728,6 +729,12 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
                     errors,
                     "extension_manifest_contract_invalid",
                 )
+                manifest_planned_ids = normalize_string_array(
+                    contracts.get("planned_skill_ids"),
+                    "public_api.skill_contracts.planned_skill_ids",
+                    errors,
+                    "extension_manifest_contract_invalid",
+                )
     for path in sorted(set(manifest_paths) - set(claim_by_path)):
         errors.append(ownership_error("unclassified_managed_claim", path, "extension manifest path is absent from ownership inventory"))
     for path in sorted(set(claim_by_path) - set(manifest_paths)):
@@ -741,14 +748,24 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
             errors.append(ownership_error("unclassified_managed_asset", installed_path, f"classification_rules={matches}"))
 
     active_skill_ids: list[str] = []
+    planned_skill_ids: list[str] = []
     if isinstance(registry, dict) and isinstance(registry.get("skills"), list):
         for index, skill in enumerate(registry["skills"]):
             if not isinstance(skill, dict):
                 errors.append(ownership_error("skill_registry_contract_invalid", f"skills[{index}]", "expected object"))
                 continue
             state = skill.get("state")
-            if not isinstance(state, str) or state not in {"active", "reserved"}:
-                errors.append(ownership_error("skill_registry_contract_invalid", f"skills[{index}].state", "expected active or reserved"))
+            if not isinstance(state, str) or state not in {"active", "planned", "reserved"}:
+                errors.append(ownership_error("skill_registry_contract_invalid", f"skills[{index}].state", "expected active, planned, or reserved"))
+                continue
+            if state == "planned":
+                skill_id = skill.get("id")
+                if not isinstance(skill_id, str):
+                    errors.append(ownership_error("planned_skill_id_invalid", f"skills[{index}].id", "expected string"))
+                    continue
+                planned_skill_ids.append(skill_id)
+                if classify_guru_path(skill_id, rules) != ["canonical-skill-id"]:
+                    errors.append(ownership_error("planned_skill_not_guru_owned", skill_id, "planned Skill id must use guru-*"))
                 continue
             if state != "active":
                 continue
@@ -789,6 +806,8 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
         errors.append(ownership_error("skill_registry_contract_invalid", "skills", "expected array"))
     if sorted(active_skill_ids) != sorted(manifest_active_ids):
         errors.append(ownership_error("active_skill_manifest_mismatch", "public_api.skill_contracts.active_skill_ids", f"registry={sorted(active_skill_ids)} manifest={sorted(manifest_active_ids)}"))
+    if sorted(planned_skill_ids) != sorted(manifest_planned_ids):
+        errors.append(ownership_error("planned_skill_manifest_mismatch", "public_api.skill_contracts.planned_skill_ids", f"registry={sorted(planned_skill_ids)} manifest={sorted(manifest_planned_ids)}"))
 
     facts = {
         "target_trellis_cli": inventory.get("target_trellis_cli") if isinstance(inventory, dict) else None,
@@ -812,6 +831,7 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
         "classified_managed_claim_count": len(set(manifest_paths) & set(claim_by_path)),
         "managed_asset_count": len(managed_assets),
         "active_skill_count": len(active_skill_ids),
+        "planned_skill_count": len(planned_skill_ids),
     }
     errors.sort(key=lambda item: (item["code"], item["path"], item["detail"]))
     return {

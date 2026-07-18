@@ -8,6 +8,11 @@
       "reason": "Reserved compatibility tombstone; use the active guru-create-task-commit entry instead."
     },
     {
+      "id": "guru-create-task-workspace",
+      "state": "planned",
+      "reason": "Issue #112 owns this future consumer; until its package becomes active, callers must stop fail closed."
+    },
+    {
       "id": "guru-create-task-commit",
       "state": "active",
       "name": "guru-create-task-commit",
@@ -46,6 +51,21 @@
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "contract-wording-review"
+    },
+    {
+      "id": "guru-review-change-request",
+      "state": "active",
+      "name": "guru-review-change-request",
+      "package": "packages/guru-review-change-request",
+      "interface": "packages/guru-review-change-request/interface.json",
+      "supported_platforms": [
+        "shared",
+        "codex",
+        "cursor",
+        "claude"
+      ],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "phase-0-change-request-readiness"
     },
     {
       "id": "guru-sync-base",

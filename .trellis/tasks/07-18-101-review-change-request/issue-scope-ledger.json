@@ -1,0 +1,57 @@
+{
+  "primary_issue": {
+    "number": 101,
+    "url": "https://github.com/castbox/guru-trellis/issues/101",
+    "title": "拆分 #98：实现 guru-review-change-request 闭环 Skill",
+    "reason": "本任务唯一交付单元与 close 候选。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 101,
+      "url": "https://github.com/castbox/guru-trellis/issues/101",
+      "title": "拆分 #98：实现 guru-review-change-request 闭环 Skill",
+      "reason": "只有 Issue #101 进入本 PR close scope；publish 前补齐 Phase 2、Branch Review 与 remote marketplace evidence。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 98,
+      "url": "https://github.com/castbox/guru-trellis/issues/98",
+      "title": "拆分 #53：变更 Intake Skills 跨 Skill 编排与并行安全集成 umbrella",
+      "reason": "上游 umbrella 与全局 intake chain authority；本 PR 只引用，不关闭。"
+    },
+    {
+      "number": 112,
+      "url": "https://github.com/castbox/guru-trellis/issues/112",
+      "title": "拆分 #98：实现 guru-create-task-workspace 并集成变更 Intake Skills",
+      "reason": "下游 ready consumer 与 task-local persistence owner；本 PR 只声明 transition，不关闭。"
+    },
+    {
+      "number": 111,
+      "url": "https://github.com/castbox/guru-trellis/issues/111",
+      "title": "拆分 #98：实现 guru-discover-change-context 闭环 Skill",
+      "reason": "Current/history prerequisite owner；本 PR 只消费 passing evidence。"
+    },
+    {
+      "number": 113,
+      "url": "https://github.com/castbox/guru-trellis/issues/113",
+      "title": "按 Skill-first 重实现 #55：guru-clarify-requirements",
+      "reason": "Clarity prerequisite owner；本 PR 不复制 clarification loop。"
+    },
+    {
+      "number": 114,
+      "url": "https://github.com/castbox/guru-trellis/issues/114",
+      "title": "按 Skill-first 重实现 #93：guru-review-contract-wording",
+      "reason": "Wording prerequisite owner；本 PR 不复制 scanner/classification。"
+    },
+    {
+      "number": 128,
+      "url": "https://github.com/castbox/guru-trellis/issues/128",
+      "title": "建立 Trellis upstream ownership 清单与禁止新增覆盖门禁",
+      "reason": "Distribution ownership gate；本 PR 仅写 Guru-owned assets。"
+    }
+  ],
+  "followup_issues": []
+}

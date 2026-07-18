@@ -104,6 +104,7 @@ dogfood 副本当成唯一来源。
 | prepare-task 无副作用 planner 与命名质量门禁 | #6, #51 | #14；#51 对应 PR 待发布 |
 | Phase 0 selected-base resolve / sync closed loop | #110 | 已实现；`synced` 的唯一 consumer 是 #111 的 active context discovery Skill |
 | Phase 0 change-context semantic closed loop | #111 | active `guru-discover-change-context`；current-state-first、finish-summary index preview、same-snapshot task-local persistence、current stale-code/superseded-digest refresh re-entry、Git-trackable task target |
+| Phase 0 change-request readiness semantic closed loop | #101 | active `guru-review-change-request`；三类 target、current context/clarity/wording linkage、十项 AI review dimensions、五出口、stdout-only record/check；`ready` 指向 consumer-only planned #112，package 未 active 前 fail closed |
 | Workspace boundary 与 source checkout 误写防护 | #60 | 当前 PR 待发布；为 #76 liveness checker 提供 source/task 双侧事实层 |
 | Sub-agent liveness / stale cutover 状态机 | #76 | 当前 PR 待发布 |
 | PR readiness 与 PR body 质量 | #7, #17 | #23, #24 |

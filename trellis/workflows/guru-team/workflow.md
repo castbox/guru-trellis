@@ -53,10 +53,13 @@ semantic review or routing judgments.
 
 The production registry currently activates `guru-sync-base`,
 `guru-discover-change-context`, `guru-clarify-requirements`, and
-`guru-review-contract-wording`, and `guru-create-task-commit`. Their unfenced markers below are the only mandatory
-global routes. New active routes must update registry, package/interface, this
-workflow, tests, preset distribution, extension public API, and migration
-documentation together.
+`guru-review-contract-wording`, `guru-review-change-request`, and
+`guru-create-task-commit`. It also declares planned consumer
+`guru-create-task-workspace`; planned ids have no package or invoke marker and
+must stop fail closed until promoted to an active package. The unfenced markers
+below are the only mandatory global routes. New active routes must update
+registry, package/interface, this workflow, tests, preset distribution,
+extension public API, and migration documentation together.
 
 ---
 
@@ -66,7 +69,11 @@ Before creating a Trellis task or writing task artifacts, complete the Phase 0
 `guru-sync-base`, `guru-discover-change-context`, and
 `guru-clarify-requirements` routes. Initial issue/draft `clear` then enters
 `guru-review-contract-wording:change_request`; only its current `pass` exit may
-continue to the environment, GitHub intake, and worktree commands below.
+enter `guru-review-change-request`. Only a checker-validated readiness `ready`
+exit may invoke `guru-create-task-workspace`. While that #112 package remains
+planned rather than active, the workflow stops fail closed before the
+environment, GitHub intake, or worktree commands below; it never falls back to
+the legacy full-intake route.
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
@@ -566,7 +573,7 @@ Repos with `no_docs`, `partial_docs`, or `stale_docs` must still record one expl
 [workflow-state:no_task]
 No active task. First classify the user's natural-language request; do not require the user to explicitly run `trellis-start`.
 If the request includes an issue URL, issue number, clear development task, or file change, the first priority is the mandatory Phase 0 `guru-sync-base` invocation, not `check-env`, `prepare-task`, semantic repository reads, or bare `task.py create`.
-Only the `synced` exit enters mandatory `guru-discover-change-context`. Only its `context_ready` exit enters mandatory `guru-clarify-requirements`; only clarification `clear` may then run `.trellis/guru-team/scripts/bash/check-env.sh --json` plus `prepare-task` with the validator-passed post-sync resolution digest from `guru-sync-base` stdout facts. Other clarification exits re-enter context/base, stage a new task, or stop according to their declared consumers.
+Only the `synced` exit enters mandatory `guru-discover-change-context`. Only its `context_ready` exit enters mandatory `guru-clarify-requirements`; initial clarification `clear` enters mandatory `guru-review-contract-wording:change_request`, whose current `pass` enters mandatory `guru-review-change-request`. Only readiness `ready` may name planned `guru-create-task-workspace`; while that #112 consumer remains planned, stop fail closed without falling back to `check-env`, `prepare-task`, or `guru-full-task-intake-chain`. Other exits re-enter their declared prerequisite owner, stage a separate new-task route where explicitly owned, or stop.
 The `skipped` exit returns to `original-request-route`; `blocked`, unknown, multiple, or unmapped exits stop fail closed.
 Default `prepare-task` is planner-only. After intake plan review and user approval in `workspace_mode: worktree`, create the execution environment with `prepare-task --create-worktree --create-task` or an equivalent controlled Guru Team executor.
 Do not silently edit the current checkout. Direct edits require explicit user approval to skip GitHub issue, Trellis task, worktree, and branch for this turn.
@@ -579,10 +586,12 @@ Task creation consent is not current-checkout direct-edit consent. Do not write 
 - 0.0 Base sync route `[required · once]`
 - 0.1 Change-context discovery `[required · once]`
 - 0.2 Requirements clarification `[required · once]`
-- 0.3 Environment check `[required · once]`
-- 0.4 GitHub issue intake `[required · once]`
-- 0.5 Git base branch and worktree preflight `[required · once]`
-- 0.6 Handoff review `[required · once]`
+- 0.3 Contract wording review `[required · repeatable]`
+- 0.4 Change-request readiness review `[required · repeatable]`
+- 0.5 Environment check `[required · once]`
+- 0.6 GitHub issue intake `[required · once]`
+- 0.7 Git base branch and worktree preflight `[required · once]`
+- 0.8 Handoff review `[required · once]`
 
 #### 0.0 Base sync route `[required · once]`
 
@@ -715,7 +724,7 @@ workflow owns only this invocation, the profile-aware routers, and the stop:
 <!-- guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"content_changed","consumer":{"kind":"workflow","id":"guru-contract-wording-change-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"blocked","consumer":{"kind":"stop","id":"contract-wording-blocked"}} -->
 
-The `pass` router maps `change_request` to the full task-intake continuation,
+The `pass` router maps `change_request` to `guru-review-change-request`,
 `planning_artifacts` to planning document presentation/approval, and
 `explicit_paths` to the standalone caller. The `content_changed` router maps
 `change_request` to base/context refresh, `planning_artifacts` to complete
@@ -738,7 +747,36 @@ field existed is stale even when its schema id is still `1.0`.
 <!-- guru-workflow-target: {"id":"guru-contract-wording-change-router"} -->
 <!-- guru-stop-target: {"id":"contract-wording-blocked"} -->
 
-#### 0.4 Environment check `[required · once]`
+#### 0.4 Change-request readiness review `[required · repeatable]`
+
+After a checker-validated `guru-review-contract-wording:change_request:pass`,
+load and mandatory invoke the active semantic package by stable id. The global
+workflow owns only this invocation, five unique consumers, and the stop:
+
+<!-- guru-skill-invoke: {"skill":"guru-review-change-request","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"ready","consumer":{"kind":"skill","id":"guru-create-task-workspace"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"clarify_requirements","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"review_wording","consumer":{"kind":"skill","id":"guru-review-contract-wording"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"blocked","consumer":{"kind":"stop","id":"change-request-review-blocked"}} -->
+
+The package owns the ten-dimension readiness review, findings, delivery-unit
+and scope conclusion, AI Review Gate, conditional human confirmation,
+stdout-only recorder/checker, evidence linkage, freshness, and typed exit. The
+workflow does not copy or infer those judgments. Unknown, duplicate, multiple,
+stale, consumer-mismatched, or unmapped exits fail closed.
+
+`ready` names planned #112 Skill `guru-create-task-workspace`. Before invoking
+that consumer, require its registry entry to be active and its complete
+compatible package/runtime validation to pass. Its current `planned` entry has
+no package, so `ready` stops at the mandatory missing-Skill gate. Do not use
+`guru-full-task-intake-chain` or the commands below as a fallback. The three
+reroute exits completely re-enter their declared prerequisite owner; `blocked`
+stops.
+
+<!-- guru-stop-target: {"id":"change-request-review-blocked"} -->
+
+#### 0.5 Environment check `[required · once]`
 
 Run:
 
@@ -749,7 +787,7 @@ Run:
 If `gh` is missing or unauthenticated, stop and tell the user to install GitHub
 CLI and run `gh auth login`.
 
-#### 0.4 GitHub issue intake `[required · once]`
+#### 0.6 GitHub issue intake `[required · once]`
 
 Run:
 
@@ -777,7 +815,7 @@ resolution digest returned by the preceding validator or prepare guard. Any
 source, base, candidate, remote, config, or digest drift blocks before the next
 semantic read or mutation.
 
-#### 0.5 Git base branch and worktree preflight `[required · once]`
+#### 0.7 Git base branch and worktree preflight `[required · once]`
 
 Use the preflight output from `prepare-task.sh`. The default command plans the worktree path but does not create it; `--create-worktree` or `--create-task` is required for filesystem workspace creation and is allowed only after a confirmed `source_issue` exists.
 
@@ -801,7 +839,7 @@ do not create an ambiguity prompt.
 
 Default to worktree mode. If the need for a new worktree is uncertain, ask the user before writing task files.
 
-#### 0.6 Handoff review `[required · once]`
+#### 0.8 Handoff review `[required · once]`
 
 Before task creation, summarize:
 

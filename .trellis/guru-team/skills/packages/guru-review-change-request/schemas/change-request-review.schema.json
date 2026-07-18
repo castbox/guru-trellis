@@ -1,0 +1,326 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-1.0.json",
+  "title": "Guru Team Change Request Readiness Review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill_id",
+    "generated_at",
+    "mode",
+    "target",
+    "prerequisites",
+    "evidence_linkage",
+    "semantic_review",
+    "human_confirmation",
+    "typed_exit",
+    "reason",
+    "affected_evidence",
+    "consumer",
+    "facts_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "skill_id": {"const": "guru-review-change-request"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "target": {"$ref": "#/$defs/target"},
+    "prerequisites": {"$ref": "#/$defs/prerequisites"},
+    "evidence_linkage": {"$ref": "#/$defs/linkage"},
+    "semantic_review": {"$ref": "#/$defs/semanticReview"},
+    "human_confirmation": {"$ref": "#/$defs/humanConfirmation"},
+    "typed_exit": {"enum": ["ready", "clarify_requirements", "review_wording", "refresh_context", "blocked"]},
+    "reason": {"type": "string", "minLength": 1},
+    "affected_evidence": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/evidenceRef"},
+      "uniqueItems": true
+    },
+    "consumer": {"$ref": "#/$defs/consumer"},
+    "facts_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"typed_exit": {"const": "ready"}}},
+      "then": {
+        "properties": {
+          "consumer": {"const": {"kind": "skill", "id": "guru-create-task-workspace"}},
+          "human_confirmation": {"properties": {"status": {"const": "not_required"}}},
+          "semantic_review": {"properties": {"ai_review_gate": {"properties": {"status": {"const": "passed"}}}}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "clarify_requirements"}}},
+      "then": {
+        "properties": {
+          "consumer": {"const": {"kind": "skill", "id": "guru-clarify-requirements"}},
+          "semantic_review": {"properties": {"ai_review_gate": {"properties": {"status": {"const": "reroute"}}}}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "review_wording"}}},
+      "then": {
+        "properties": {
+          "consumer": {"const": {"kind": "skill", "id": "guru-review-contract-wording"}},
+          "semantic_review": {"properties": {"ai_review_gate": {"properties": {"status": {"const": "reroute"}}}}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "refresh_context"}}},
+      "then": {
+        "properties": {
+          "consumer": {"const": {"kind": "skill", "id": "guru-sync-base"}},
+          "semantic_review": {"properties": {"ai_review_gate": {"properties": {"status": {"const": "reroute"}}}}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "blocked"}}},
+      "then": {
+        "properties": {
+          "consumer": {"const": {"kind": "stop", "id": "change-request-review-blocked"}},
+          "semantic_review": {"properties": {"ai_review_gate": {"properties": {"status": {"const": "blocked"}}}}}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "typed_exit": {"enum": ["clarify_requirements", "review_wording", "refresh_context", "blocked"]}
+        },
+        "required": ["typed_exit"]
+      },
+      "then": {
+        "properties": {
+          "affected_evidence": {"minItems": 1},
+          "semantic_review": {
+            "properties": {
+              "dimensions": {"contains": {"properties": {"status": {"const": "failed"}}, "required": ["status"]}},
+              "findings": {"minItems": 1, "contains": {"properties": {"blocking": {"const": true}}, "required": ["blocking"]}}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "nullableSha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "nullableGitSha": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+    "cleanText": {"type": "string", "minLength": 1},
+    "nullableText": {"type": ["string", "null"]},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind", "repo", "issue_number", "url", "updated_at", "draft_id",
+        "source_request_sha256", "caller_locator", "request_id",
+        "title_sha256", "body_sha256", "side_effect_free",
+        "identity_sha256", "content_sha256"
+      ],
+      "properties": {
+        "kind": {"enum": ["existing_issue", "proposed_draft", "standalone_request"]},
+        "repo": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "issue_number": {"type": ["integer", "null"], "minimum": 1},
+        "url": {"type": ["string", "null"], "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/[1-9][0-9]*$"},
+        "updated_at": {"type": ["string", "null"], "format": "date-time"},
+        "draft_id": {"type": ["string", "null"], "minLength": 1},
+        "source_request_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "caller_locator": {"type": ["string", "null"], "minLength": 1},
+        "request_id": {"type": ["string", "null"], "minLength": 1},
+        "title_sha256": {"$ref": "#/$defs/sha256"},
+        "body_sha256": {"$ref": "#/$defs/sha256"},
+        "side_effect_free": {"type": "boolean"},
+        "identity_sha256": {"$ref": "#/$defs/sha256"},
+        "content_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "projectionStatus": {"enum": ["current", "missing", "invalid"]},
+    "errorCodes": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "contextProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "schema_id", "typed_exit", "payload_sha256", "snapshot_sha256", "base_sync_facts_sha256", "base_head", "live_target_sha256", "query_sha256", "current_state_sha256", "history_sha256", "duplicate_sha256", "error_codes"],
+      "properties": {
+        "status": {"$ref": "#/$defs/projectionStatus"},
+        "schema_id": {"type": ["string", "null"]},
+        "typed_exit": {"type": ["string", "null"]},
+        "payload_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "snapshot_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "base_sync_facts_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "base_head": {"$ref": "#/$defs/nullableGitSha"},
+        "live_target_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "query_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "current_state_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "history_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "duplicate_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "error_codes": {"$ref": "#/$defs/errorCodes"}
+      }
+    },
+    "clarityProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "schema_id", "typed_exit", "payload_sha256", "facts_sha256", "target_sha256", "content_sha256", "scope_sha256", "error_codes"],
+      "properties": {
+        "status": {"$ref": "#/$defs/projectionStatus"},
+        "schema_id": {"type": ["string", "null"]},
+        "typed_exit": {"type": ["string", "null"]},
+        "payload_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "facts_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "target_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "content_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "scope_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "error_codes": {"$ref": "#/$defs/errorCodes"}
+      }
+    },
+    "wordingProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "schema_id", "profile", "typed_exit", "payload_sha256", "facts_sha256", "scope_sha256", "scan_sha256", "target_content_sha256", "error_codes"],
+      "properties": {
+        "status": {"$ref": "#/$defs/projectionStatus"},
+        "schema_id": {"type": ["string", "null"]},
+        "profile": {"type": ["string", "null"]},
+        "typed_exit": {"type": ["string", "null"]},
+        "payload_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "facts_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "scope_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "scan_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "target_content_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "error_codes": {"$ref": "#/$defs/errorCodes"}
+      }
+    },
+    "prerequisites": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context", "clarity", "wording"],
+      "properties": {
+        "context": {"$ref": "#/$defs/contextProjection"},
+        "clarity": {"$ref": "#/$defs/clarityProjection"},
+        "wording": {"$ref": "#/$defs/wordingProjection"}
+      }
+    },
+    "linkage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_identity_sha256", "target_content_sha256", "base_head", "current_state_sha256", "history_sha256", "duplicate_sha256", "clarity_facts_sha256", "wording_facts_sha256", "linkage_sha256"],
+      "properties": {
+        "target_identity_sha256": {"$ref": "#/$defs/sha256"},
+        "target_content_sha256": {"$ref": "#/$defs/sha256"},
+        "base_head": {"$ref": "#/$defs/nullableGitSha"},
+        "current_state_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "history_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "duplicate_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "clarity_facts_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "wording_facts_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "linkage_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "dimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "summary", "evidence_refs", "affected_hashes", "finding_ids"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "status": {"enum": ["passed", "failed"]},
+        "summary": {"$ref": "#/$defs/cleanText"},
+        "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "affected_hashes": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/sha256"}, "uniqueItems": true},
+        "finding_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["finding_id", "category", "summary", "blocking", "evidence_refs", "affected_hashes", "route_basis"],
+      "properties": {
+        "finding_id": {"type": "string", "minLength": 1},
+        "category": {"enum": ["requirement_gap", "delivery_conflict", "wording_gap", "context_stale", "target_complete", "current_history_conflict", "duplicate_reuse_conflict", "prerequisite_mismatch"]},
+        "summary": {"$ref": "#/$defs/cleanText"},
+        "blocking": {"type": "boolean"},
+        "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "affected_hashes": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/sha256"}, "uniqueItems": true},
+        "route_basis": {"$ref": "#/$defs/cleanText"}
+      }
+    },
+    "scopeConclusion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requirement_scope_basis", "delivery_unit_id", "close_issues", "related_issues", "followup_issues", "duplicate_reuse_decision", "implementation_target", "current_gap", "archived_constraints", "risk_boundary", "excluded_scope"],
+      "properties": {
+        "requirement_scope_basis": {"$ref": "#/$defs/cleanText"},
+        "delivery_unit_id": {"$ref": "#/$defs/cleanText"},
+        "close_issues": {"type": "array", "items": {"type": "integer", "minimum": 1}, "uniqueItems": true},
+        "related_issues": {"type": "array", "items": {"type": "integer", "minimum": 1}, "uniqueItems": true},
+        "followup_issues": {"type": "array", "items": {"type": "integer", "minimum": 1}, "uniqueItems": true},
+        "duplicate_reuse_decision": {"$ref": "#/$defs/cleanText"},
+        "implementation_target": {"$ref": "#/$defs/cleanText"},
+        "current_gap": {"$ref": "#/$defs/cleanText"},
+        "archived_constraints": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "risk_boundary": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "excluded_scope": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+      }
+    },
+    "aiReviewGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewer", "reviewed_linkage_sha256", "summary", "findings_count", "scope_conclusion_sha256"],
+      "properties": {
+        "status": {"enum": ["passed", "reroute", "blocked"]},
+        "reviewer": {"$ref": "#/$defs/cleanText"},
+        "reviewed_linkage_sha256": {"$ref": "#/$defs/sha256"},
+        "summary": {"$ref": "#/$defs/cleanText"},
+        "findings_count": {"type": "integer", "minimum": 0},
+        "scope_conclusion_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "semanticReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimensions", "findings", "scope_conclusion", "ai_review_gate"],
+      "properties": {
+        "dimensions": {"type": "array", "minItems": 10, "maxItems": 10, "items": {"$ref": "#/$defs/dimension"}},
+        "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
+        "scope_conclusion": {"$ref": "#/$defs/scopeConclusion"},
+        "ai_review_gate": {"$ref": "#/$defs/aiReviewGate"}
+      }
+    },
+    "humanConfirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason", "proposal_sha256"],
+      "properties": {
+        "status": {"enum": ["not_required", "required"]},
+        "reason": {"$ref": "#/$defs/cleanText"},
+        "proposal_sha256": {"$ref": "#/$defs/nullableSha256"}
+      }
+    },
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256", "summary"],
+      "properties": {
+        "ref": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "summary": {"$ref": "#/$defs/cleanText"}
+      }
+    },
+    "consumer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"enum": ["skill", "stop"]},
+        "id": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

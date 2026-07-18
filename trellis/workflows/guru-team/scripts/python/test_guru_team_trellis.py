@@ -19016,6 +19016,30 @@ class RequirementsClarificationTests(unittest.TestCase):
         wrong_preimage = self.derive(wrong_preimage)
         self.assertIn("github_source_action_shape_invalid", self.structural(wrong_preimage))
 
+class ChangeRequestReviewRuntimeCommandTests(unittest.TestCase):
+    def test_record_and_check_commands_are_registered(self) -> None:
+        expected_flags = {
+            "record-change-request-review": (
+                "--mode", "--input", "--change-request-input",
+            ),
+            "check-change-request-review": (
+                "--input", "--prerequisites-input", "--change-request-input",
+                "--expected-facts-sha256",
+            ),
+        }
+        for command, flags in expected_flags.items():
+            with self.subTest(command=command):
+                process = subprocess.run(
+                    [sys.executable, str(Path(gtt.__file__).resolve()), command, "--help"],
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+                self.assertEqual(process.returncode, 0, process.stderr)
+                for flag in flags:
+                    self.assertIn(flag, process.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
