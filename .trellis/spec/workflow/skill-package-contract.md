@@ -456,9 +456,12 @@ executor, and checker validate deterministic facts only and never select a
 duplicate, target, closed-state disposition, semantic name, assignee route,
 confirmation need, Gate status, or exit intent.
 
-A reviewed-draft invocation may only create the exact confirmed issue. It
-re-reads the live open issue, binds its title/body/update facts to the reviewed
-draft and confirmation, returns `refresh_review`, and performs no
+A reviewed-draft invocation may only create the exact confirmed issue. Before
+create, it searches live open issues for the exact reviewed title, body,
+labels, and a creation time not earlier than the reviewed plan. Zero matches
+permits one create, one match is recovered and reread, and multiple matches
+fail closed. It binds the live title/body/update facts to the reviewed draft
+and confirmation, returns `refresh_review`, and performs no
 branch/worktree/task/runtime mutation. An open-issue invocation uses a separate
 `workspace_and_task_mutation` confirmation and may return `created` only after
 the branch/worktree/task, four tracked task-local Intake artifacts, ignored
@@ -468,6 +471,23 @@ The non-mutation matrix is equally explicit: passed Gate plus a digest-bound
 confirmation yields `refresh_review`; `blocked` with no active confirmation
 yields `blocked`. Runtime preserves these AI-authored facts and may mutate only
 for passed plus confirmed.
+
+An open-issue plan that continues a workflow-created draft embeds the complete
+prior checker-passed `created_issue` result and its binding digest. The result
+facts digest, binding facts digest, reviewed draft id/digest, creation
+confirmation digest, current issue authority, and complete Intake rerun's live
+existing-issue identity must all agree. The fresh context is `kind=issue` with
+canonical URL/open state/update time/body/facts identity and null
+`issue_binding`. Ordinary existing issues carry null result and binding fields;
+missing, partial, or mixed provenance fails closed.
+
+The plan also binds the checker-passed base result's
+`post_sync_resolution_sha256`. Before the first GitHub issue or workspace/task
+mutation, the executor runs the shared resolver and sync core once. The fresh
+selected base, refs, decision/local/remote HEADs, and post-sync identity must
+equal the reviewed plan. A normal remote advance may be fetched and safely
+fast-forwarded, but it returns `refresh_review` before issue, branch, worktree,
+task, artifact, or runtime mutation because the reviewed base identity changed.
 
 Assignee resolution order is explicit input, exactly one issue assignee, zero
 issue assignees to current GitHub login, then an AI/user choice for multiple or

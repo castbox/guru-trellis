@@ -100,6 +100,7 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
                 "reviewed_draft_sha256": "b" * 64,
             },
             "created_issue_binding_sha256": None,
+            "created_issue_result": None,
         })
         reviewed_draft["side_effects"] = {
             "operations": ["create_issue"],
@@ -117,6 +118,42 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
             "confirmation_sha256": None,
         }
         self.assertEqual(GTT.skill_json_schema_validation_errors(reviewed_draft, schema, "reviewed draft"), [])
+
+        missing_provenance = copy.deepcopy(example)
+        missing_provenance["target"]["created_issue_binding_sha256"] = "a" * 64
+        self.assertTrue(GTT.skill_json_schema_validation_errors(missing_provenance, schema, "partial provenance"))
+
+        binding = {
+            "repo": example["target"]["repo"],
+            "number": example["target"]["issue_number"],
+            "canonical_url": example["target"]["url"],
+            "state": "open",
+            "title_sha256": example["target"]["title_sha256"],
+            "body_sha256": example["target"]["body_sha256"],
+            "updated_at": example["target"]["updated_at"],
+            "reviewed_draft_id": "draft-27",
+            "reviewed_draft_sha256": "a" * 64,
+            "creation_confirmation_sha256": "b" * 64,
+        }
+        binding["facts_sha256"] = GTT.context_digest(binding)
+        checked_result = {
+            "schema_version": "1.0", "skill_id": "guru-create-task-workspace",
+            "generated_at": "2026-01-01T00:00:30Z", "mode": "workflow",
+            "variant": "created_issue", "plan_sha256": "c" * 64,
+            "executor": {"status": "passed", "checked_at": "2026-01-01T00:00:20Z", "evidence": ["created"]},
+            "checker": {"status": "passed", "checked_at": "2026-01-01T00:00:30Z", "evidence": ["checked"]},
+            "created_issue": binding, "created_workspace": None, "no_side_effect": None,
+            "typed_exit": "refresh_review", "reason": "Complete Intake refresh is required.",
+            "consumer": {"kind": "skill", "id": "guru-sync-base"}, "facts_sha256": "",
+        }
+        checked_result["facts_sha256"] = GTT.task_workspace_result_digest(checked_result)
+        created_issue_plan = copy.deepcopy(example)
+        created_issue_plan["target"]["created_issue_binding_sha256"] = binding["facts_sha256"]
+        created_issue_plan["target"]["created_issue_result"] = checked_result
+        self.assertEqual(
+            GTT.skill_json_schema_validation_errors(created_issue_plan, schema, "created issue provenance"),
+            [],
+        )
 
     def test_result_schema_closes_no_side_effect_union(self) -> None:
         schema = json.loads((PACKAGE_ROOT / "schemas/task-workspace-result.schema.json").read_text(encoding="utf-8"))
@@ -188,6 +225,10 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
         )
         self.assertIn("existing official identity bytes remain exact", contract)
         self.assertIn("does not trim them or append a newline", contract)
+        self.assertIn("Zero matches creates", contract)
+        self.assertIn("complete prior checker-passed created-issue result", contract)
+        self.assertIn("null `issue_binding`", contract)
+        self.assertIn("`post_sync_resolution_sha256`", contract)
         self.assertIn("`prepare-task` is query-only", contract)
         self.assertNotIn("init_developer.py <name>", contract)
 

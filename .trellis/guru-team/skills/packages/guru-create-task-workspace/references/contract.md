@@ -74,10 +74,29 @@ confirmation returns `blocked`. Only passed plus `confirmed` may mutate.
 ## Exact execution and recovery
 
 The executor revalidates runtime, plan digest, base, final target, prerequisite
-bytes, confirmation and live object facts at every mutation boundary. A draft
-transaction creates the exact reviewed title/body/labels, rereads the issue,
-builds a created-issue binding, and stops. The GitHub adapter preserves the
-reviewed title and body bytes; it does not trim them or append a newline.
+bytes, confirmation and live object facts at every mutation boundary. The plan
+binds the initial checker-passed `post_sync_resolution_sha256`. Before the
+first confirmed issue or workspace/task mutation, runtime calls the shared base
+resolver/sync core once. A changed fresh post-sync identity returns
+`refresh_review` before business mutation; an unchanged identity continues.
+
+A draft transaction creates the exact reviewed title/body/labels, rereads the
+issue, builds a created-issue binding, and stops. The GitHub adapter preserves
+the reviewed title and body bytes; it does not trim them or append a newline.
+Before create, it searches live open issues for exact title/body/labels with
+`createdAt` not earlier than the reviewed plan capture. Zero matches creates
+once, one match is recovered and reread, and multiple matches block. This
+recovery emits the same `created_issue` result and prevents a second remote
+create after an immediate reread failure.
+
+After complete Intake re-entry, an existing issue produced by this path embeds
+the complete prior checker-passed created-issue result. Runtime recomputes the
+result and binding facts digests and matches the current issue, reviewed draft
+id/digest, and creation confirmation digest. The fresh context is the canonical
+live existing issue (`kind=issue`, canonical identity, open state, update time,
+body and facts digests, null `issue_binding`) rather than the pre-create draft.
+Ordinary existing issues use null result/binding provenance; partial or mixed
+provenance fails closed.
 
 An open-issue transaction creates or exactly reuses the reviewed branch and
 worktree and reruns the guards in the target worktree. In an isolated

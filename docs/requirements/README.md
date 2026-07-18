@@ -27,6 +27,9 @@ harness。它们用于回答一个问题：Guru Team 已经在官方 Trellis 之
   已沉淀为 workspace boundary 事实层与 task artifact 写入边界；#76 正在沉淀为
   sub-agent liveness、status request、stale cutover 与 completed-only recovery
   gate。合并后应随对应 PR 更新到历史索引。
+- #112 的失败恢复补充要求 reviewed-draft 创建前执行 exact open-issue 0/1/>1
+  恢复判定，完整 Intake 重入携带 checker-passed created-issue result；首次业务 mutation
+  前还必须重跑 shared base sync，remote 前进时刷新 base 后返回 `refresh_review`。
 
 ## 扩展重要性分层
 
@@ -82,6 +85,8 @@ existing ref（缺省 `dev -> develop -> main -> master`）、候选均不存在
 query 接收 current expected digest 并在读取前重跑 shared core；workspace mutation
 freshness 由 `guru-create-task-workspace` 在自身边界独立重验。
 Skill 不创建 repo-external evidence file、lease、release 或 cleanup API。
+Workspace plan 绑定 initial `post_sync_resolution_sha256`；executor 首次 mutation 前实际
+fetch/sync，fresh identity 改变时不创建 issue/workspace/task并回到完整 Intake。
 
 本仓库的扩展长期源头位于：
 

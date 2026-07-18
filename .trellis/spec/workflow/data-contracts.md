@@ -708,6 +708,12 @@ the two mutually exclusive confirmation scopes; AI Review Gate evidence; and
 the canonical plan digest. It contains no absolute path, runtime payload,
 secret, raw private record, or shell command string.
 
+The `base` projection includes the checker-passed
+`post_sync_resolution_sha256` in addition to selected base, refs, HEADs, and
+the original sync facts digest. This post-sync identity is the comparison
+anchor for the shared resolver/sync rerun immediately before the first
+confirmed mutation.
+
 Assignee source is exactly `explicit_input`, `single_issue_assignee`,
 `current_github_login`, `user_selected_from_candidates`, or
 `user_supplied_after_unresolved`. Candidate order is explicit input, exactly
@@ -722,6 +728,19 @@ mutation is fixed to not-current. A created issue binding covers normalized
 repo, positive number, canonical URL, `state=open`, title/body SHA-256,
 `updated_at`, reviewed draft id/digest, creation confirmation digest, and its
 canonical facts digest.
+
+Target provenance uses two coordinated nullable fields:
+`created_issue_binding_sha256` and `created_issue_result`. A normal existing
+issue and a reviewed draft before create require both null. An existing issue
+produced by an earlier draft invocation requires both non-null: the binding SHA
+equals the embedded created issue facts digest, and `created_issue_result` is
+the complete `guru-task-workspace-result-1.0` `created_issue` variant with
+passed executor/checker stages, valid result and binding facts digests, and the
+fixed `refresh_review` consumer. Its current issue facts match the plan and its
+complete Intake rerun exposes the canonical live existing issue with
+`kind=issue`, canonical URL identity, open state, matching update time, body and
+facts digests, and null `issue_binding`. Missing or partial provenance is
+invalid.
 
 Schema `guru-task-workspace-result-1.0` is a closed stdout-only union:
 
@@ -740,6 +759,13 @@ The result is never a fifth tracked Intake artifact. Ordinary re-entry may
 reuse only exact branch/worktree/task/artifact identity. A mismatch in issue,
 base, naming, locator, task state, or bytes is `blocked`; runtime does not
 overwrite, delete, rename, or silently adopt a conflicting object.
+
+Before a draft create, exact recovery candidate facts are title, body, the
+order-independent exact label set, `state=open`, and `createdAt` not earlier
+than the reviewed plan capture. Zero candidates authorize one create; one is
+recovered and live reread; multiple candidates block. A recovered issue emits
+the same checker-valid `created_issue` result and `refresh_review` route as a
+newly created issue.
 
 ## Phase 2 Check Artifact
 

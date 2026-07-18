@@ -45,7 +45,16 @@
             "state": {"const": "open"},
             "updated_at": {"type": "string", "format": "date-time"},
             "draft": {"type": "null"}
-          }},
+          }, "allOf": [{"oneOf": [
+              {"properties": {
+                "created_issue_binding_sha256": {"type": "null"},
+                "created_issue_result": {"type": "null"}
+              }},
+              {"properties": {
+                "created_issue_binding_sha256": {"$ref": "#/$defs/sha256"},
+                "created_issue_result": {"$ref": "#/$defs/createdIssueResult"}
+              }}
+          ]}]},
           "confirmations": {"properties": {
             "github_issue_mutation": {"properties": {"status": {"const": "not_in_current_invocation"}}},
             "workspace_and_task_mutation": {"properties": {"status": {"enum": ["confirmed", "refused", "not_in_current_invocation"]}}}
@@ -75,7 +84,8 @@
             "state": {"type": "null"},
             "updated_at": {"type": "null"},
             "draft": {"type": "object"},
-            "created_issue_binding_sha256": {"type": "null"}
+            "created_issue_binding_sha256": {"type": "null"},
+            "created_issue_result": {"type": "null"}
           }},
           "confirmations": {"properties": {
             "github_issue_mutation": {"properties": {"status": {"enum": ["confirmed", "refused", "not_in_current_invocation"]}}},
@@ -143,7 +153,7 @@
     },
     "target": {
       "type": "object", "additionalProperties": false,
-      "required": ["kind", "repo", "issue_number", "url", "state", "updated_at", "title_sha256", "body_sha256", "draft", "disposition_sha256", "duplicate_decision_sha256", "created_issue_binding_sha256"],
+      "required": ["kind", "repo", "issue_number", "url", "state", "updated_at", "title_sha256", "body_sha256", "draft", "disposition_sha256", "duplicate_decision_sha256", "created_issue_binding_sha256", "created_issue_result"],
       "properties": {
         "kind": {"enum": ["existing_issue", "reviewed_draft"]},
         "repo": {"$ref": "#/$defs/repo"},
@@ -156,7 +166,8 @@
         "draft": {"$ref": "#/$defs/draft"},
         "disposition_sha256": {"$ref": "#/$defs/sha256"},
         "duplicate_decision_sha256": {"$ref": "#/$defs/sha256"},
-        "created_issue_binding_sha256": {"$ref": "#/$defs/nullableSha256"}
+        "created_issue_binding_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "created_issue_result": {"anyOf": [{"$ref": "#/$defs/createdIssueResult"}, {"type": "null"}]}
       }
     },
     "issueRef": {
@@ -182,7 +193,7 @@
     },
     "base": {
       "type": "object", "additionalProperties": false,
-      "required": ["selected_base", "remote", "base_ref", "decision_head", "local_head", "remote_head", "sync_facts_sha256"],
+      "required": ["selected_base", "remote", "base_ref", "decision_head", "local_head", "remote_head", "post_sync_resolution_sha256", "sync_facts_sha256"],
       "properties": {
         "selected_base": {"$ref": "#/$defs/cleanText"},
         "remote": {"$ref": "#/$defs/cleanText"},
@@ -190,7 +201,55 @@
         "decision_head": {"$ref": "#/$defs/gitSha"},
         "local_head": {"$ref": "#/$defs/gitSha"},
         "remote_head": {"$ref": "#/$defs/gitSha"},
+        "post_sync_resolution_sha256": {"$ref": "#/$defs/sha256"},
         "sync_facts_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "stage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "checked_at", "evidence"],
+      "properties": {
+        "status": {"const": "passed"},
+        "checked_at": {"type": "string", "format": "date-time"},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/cleanText"}, "uniqueItems": true}
+      }
+    },
+    "createdIssue": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repo", "number", "canonical_url", "state", "title_sha256", "body_sha256", "updated_at", "reviewed_draft_id", "reviewed_draft_sha256", "creation_confirmation_sha256", "facts_sha256"],
+      "properties": {
+        "repo": {"$ref": "#/$defs/repo"},
+        "number": {"type": "integer", "minimum": 1},
+        "canonical_url": {"$ref": "#/$defs/issueUrl"},
+        "state": {"const": "open"},
+        "title_sha256": {"$ref": "#/$defs/sha256"},
+        "body_sha256": {"$ref": "#/$defs/sha256"},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "reviewed_draft_id": {"$ref": "#/$defs/cleanText"},
+        "reviewed_draft_sha256": {"$ref": "#/$defs/sha256"},
+        "creation_confirmation_sha256": {"$ref": "#/$defs/sha256"},
+        "facts_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "createdIssueResult": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "skill_id", "generated_at", "mode", "variant", "plan_sha256", "executor", "checker", "created_issue", "created_workspace", "no_side_effect", "typed_exit", "reason", "consumer", "facts_sha256"],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "skill_id": {"const": "guru-create-task-workspace"},
+        "generated_at": {"type": "string", "format": "date-time"},
+        "mode": {"enum": ["workflow", "standalone"]},
+        "variant": {"const": "created_issue"},
+        "plan_sha256": {"$ref": "#/$defs/sha256"},
+        "executor": {"$ref": "#/$defs/stage"},
+        "checker": {"$ref": "#/$defs/stage"},
+        "created_issue": {"$ref": "#/$defs/createdIssue"},
+        "created_workspace": {"type": "null"},
+        "no_side_effect": {"type": "null"},
+        "typed_exit": {"const": "refresh_review"},
+        "reason": {"$ref": "#/$defs/cleanText"},
+        "consumer": {"const": {"kind": "skill", "id": "guru-sync-base"}},
+        "facts_sha256": {"$ref": "#/$defs/sha256"}
       }
     },
     "objectDisposition": {"enum": ["create_new", "reuse_exact", "conflict_blocked"]},

@@ -23306,6 +23306,92 @@ def task_workspace_readiness_linkage_errors(
     return context_sort(errors)
 
 
+def task_workspace_created_issue_provenance_errors(
+    plan: dict[str, Any],
+    payloads: dict[str, dict[str, Any]],
+) -> list[str]:
+    target = plan.get("target") if isinstance(plan.get("target"), dict) else {}
+    result = target.get("created_issue_result")
+    binding_sha = target.get("created_issue_binding_sha256")
+    context_payload = payloads.get("context") if isinstance(payloads.get("context"), dict) else {}
+    live_change = (
+        context_payload.get("live_change")
+        if isinstance(context_payload.get("live_change"), dict)
+        else {}
+    )
+    context_binding = live_change.get("issue_binding")
+    context_repository = (
+        context_payload.get("repository")
+        if isinstance(context_payload.get("repository"), dict)
+        else {}
+    )
+    errors: list[str] = []
+
+    if result is None and binding_sha is None:
+        if isinstance(context_binding, dict):
+            errors.append("task_workspace_created_issue_result_required")
+        return errors
+    if not isinstance(result, dict) or not isinstance(binding_sha, str):
+        return ["task_workspace_created_issue_provenance_incomplete"]
+
+    if result.get("variant") != "created_issue" or result.get("typed_exit") != "refresh_review":
+        errors.append("task_workspace_created_issue_result_variant_invalid")
+    if result.get("consumer") != TASK_WORKSPACE_CONSUMERS["refresh_review"]:
+        errors.append("task_workspace_created_issue_result_consumer_invalid")
+    if result.get("mode") != plan.get("mode"):
+        errors.append("task_workspace_created_issue_result_mode_mismatch")
+    for stage_name in ("executor", "checker"):
+        stage = result.get(stage_name) if isinstance(result.get(stage_name), dict) else {}
+        if stage.get("status") != "passed":
+            errors.append(f"task_workspace_created_issue_{stage_name}_not_passed")
+    if result.get("facts_sha256") != task_workspace_result_digest(result):
+        errors.append("task_workspace_created_issue_result_facts_digest_mismatch")
+
+    binding = result.get("created_issue") if isinstance(result.get("created_issue"), dict) else {}
+    binding_projection = copy.deepcopy(binding)
+    binding_projection.pop("facts_sha256", None)
+    if binding.get("facts_sha256") != context_digest(binding_projection):
+        errors.append("task_workspace_created_issue_binding_digest_mismatch")
+    if binding_sha != binding.get("facts_sha256"):
+        errors.append("task_workspace_created_issue_binding_sha_mismatch")
+    for field, expected in (
+        ("repo", target.get("repo")),
+        ("number", target.get("issue_number")),
+        ("canonical_url", target.get("url")),
+        ("state", target.get("state")),
+        ("title_sha256", target.get("title_sha256")),
+        ("body_sha256", target.get("body_sha256")),
+        ("updated_at", target.get("updated_at")),
+    ):
+        if binding.get(field) != expected:
+            errors.append(f"task_workspace_created_issue_{field}_target_mismatch")
+
+    expected_live_issue_facts = {
+        "repo": binding.get("repo"),
+        "number": binding.get("number"),
+        "url": binding.get("canonical_url"),
+        "state": binding.get("state"),
+        "updated_at": binding.get("updated_at"),
+        "body_sha256": binding.get("body_sha256"),
+    }
+    expected_live_change = {
+        "kind": "issue",
+        "identity": binding.get("canonical_url"),
+        "state": binding.get("state"),
+        "updated_at": binding.get("updated_at"),
+        "body_sha256": binding.get("body_sha256"),
+        "facts_sha256": context_digest(expected_live_issue_facts),
+        "issue_binding": None,
+    }
+    if (
+        context_repository.get("repo") != binding.get("repo")
+        or context_binding is not None
+        or live_change != expected_live_change
+    ):
+        errors.append("task_workspace_created_issue_context_binding_mismatch")
+    return context_sort(errors)
+
+
 def task_workspace_plan_semantic_errors(
     root: Path,
     plan: dict[str, Any],
@@ -23387,6 +23473,7 @@ def task_workspace_plan_semantic_errors(
                 errors.append(f"task_workspace_target_{key}_mismatch")
         if target.get("state") != "open" or str(clarity_target.get("state") or "").lower() != "open":
             errors.append("task_workspace_existing_issue_not_open")
+        errors.extend(task_workspace_created_issue_provenance_errors(plan, payloads))
         issue_number = str(target.get("issue_number") or "")
         for field in ("workspace_slug", "task_slug"):
             value = str(naming.get(field) or "")
@@ -23420,7 +23507,7 @@ def task_workspace_plan_semantic_errors(
             errors.append("task_workspace_workspace_operations_invalid")
     else:
         draft = target.get("draft") if isinstance(target.get("draft"), dict) else {}
-        if any(target.get(key) is not None for key in ("issue_number", "url", "state", "updated_at", "created_issue_binding_sha256")):
+        if any(target.get(key) is not None for key in ("issue_number", "url", "state", "updated_at", "created_issue_binding_sha256", "created_issue_result")):
             errors.append("task_workspace_reviewed_draft_variant_invalid")
         readiness_kind = readiness_target.get("kind")
         readiness_request_id = (
@@ -23498,6 +23585,7 @@ def task_workspace_plan_semantic_errors(
         "local_head": git_facts.get("local_head_after"),
         "remote_head": git_facts.get("remote_head_after"),
         "base_ref": git_facts.get("remote_ref"),
+        "post_sync_resolution_sha256": base_payload.get("post_sync_resolution_sha256"),
         "sync_facts_sha256": base_payload.get("facts_sha256"),
     }
     for key, value in expected_base.items():
@@ -23637,6 +23725,64 @@ def task_workspace_stage(status: str, evidence: list[str]) -> dict[str, Any]:
     return {"status": status, "checked_at": now_iso(), "evidence": evidence}
 
 
+def task_workspace_issue_labels(issue: dict[str, Any]) -> list[str]:
+    return sorted({
+        str(item.get("name") or "")
+        for item in issue.get("labels", [])
+        if isinstance(item, dict) and str(item.get("name") or "")
+    })
+
+
+def task_workspace_created_issue_recovery_candidates(
+    root: Path,
+    plan: dict[str, Any],
+) -> list[dict[str, Any]]:
+    target = plan["target"]
+    draft = target.get("draft") if isinstance(target.get("draft"), dict) else {}
+    reviewed_at = parse_iso_datetime(
+        plan.get("freshness", {}).get("captured_at"),
+        "task workspace reviewed plan captured_at",
+    )
+    issues = gh_json(
+        [
+            "issue", "list", "--repo", str(target["repo"]), "--state", "open",
+            "--limit", "100", "--json",
+            "number,title,url,body,state,updatedAt,createdAt,labels",
+        ],
+        cwd=root,
+    )
+    if issues is None:
+        return []
+    if not isinstance(issues, list):
+        raise WorkflowError("Created issue recovery search returned an invalid payload.", exit_code=2)
+    expected_labels = sorted({str(item) for item in draft.get("labels", []) if str(item)})
+    matches: list[dict[str, Any]] = []
+    for issue in issues:
+        if not isinstance(issue, dict):
+            continue
+        number = issue.get("number")
+        if not isinstance(number, int) or isinstance(number, bool) or number < 1:
+            continue
+        expected_url = f"https://github.com/{target['repo']}/issues/{number}"
+        try:
+            created_at = parse_iso_datetime(
+                issue.get("createdAt"),
+                "created issue recovery candidate createdAt",
+            )
+        except WorkflowError:
+            continue
+        if (
+            str(issue.get("state") or "").lower() == "open"
+            and issue.get("url") == expected_url
+            and issue.get("title") == draft.get("title")
+            and issue.get("body") == draft.get("body")
+            and task_workspace_issue_labels(issue) == expected_labels
+            and created_at >= reviewed_at
+        ):
+            matches.append(issue)
+    return sorted(matches, key=lambda item: int(item["number"]))
+
+
 def task_workspace_no_side_effect_result(
     plan: dict[str, Any],
     before: dict[str, Any],
@@ -23678,13 +23824,24 @@ def task_workspace_created_issue_result(root: Path, plan: dict[str, Any]) -> dic
     confirmation = plan["confirmations"]["github_issue_mutation"]
     if confirmation.get("status") != "confirmed":
         raise WorkflowError("Reviewed issue creation lacks its exact confirmation.", exit_code=2)
-    issue = create_issue(
-        str(target["repo"]),
-        str(draft.get("title") or ""),
-        str(draft.get("body") or ""),
-        root,
-        list(draft.get("labels") or []),
-    )
+    candidates = task_workspace_created_issue_recovery_candidates(root, plan)
+    if len(candidates) > 1:
+        raise WorkflowError(
+            "Created issue recovery found multiple exact post-plan open issues.",
+            exit_code=2,
+            payload={"typed_exit": "blocked", "error_code": "task_workspace_created_issue_recovery_ambiguous"},
+        )
+    recovered = len(candidates) == 1
+    if recovered:
+        issue = issue_view(str(target["repo"]), int(candidates[0]["number"]), root)
+    else:
+        issue = create_issue(
+            str(target["repo"]),
+            str(draft.get("title") or ""),
+            str(draft.get("body") or ""),
+            root,
+            list(draft.get("labels") or []),
+        )
     binding = {
         "repo": target["repo"],
         "number": issue.get("number"),
@@ -23697,11 +23854,7 @@ def task_workspace_created_issue_result(root: Path, plan: dict[str, Any]) -> dic
         "reviewed_draft_sha256": draft.get("reviewed_draft_sha256"),
         "creation_confirmation_sha256": confirmation.get("confirmation_sha256"),
     }
-    live_labels = sorted({
-        str(item.get("name") or "")
-        for item in issue.get("labels", [])
-        if isinstance(item, dict) and str(item.get("name") or "")
-    })
+    live_labels = task_workspace_issue_labels(issue)
     reviewed_labels = sorted({str(item) for item in draft.get("labels", []) if str(item)})
     if (
         binding["state"] != "open"
@@ -23723,13 +23876,24 @@ def task_workspace_created_issue_result(root: Path, plan: dict[str, Any]) -> dic
         "mode": plan["mode"],
         "variant": "created_issue",
         "plan_sha256": plan["freshness"]["plan_sha256"],
-        "executor": task_workspace_stage("passed", ["Created and immediately reread the exact reviewed GitHub issue."]),
+        "executor": task_workspace_stage(
+            "passed",
+            [
+                "Recovered and immediately reread the exact reviewed GitHub issue."
+                if recovered
+                else "Created and immediately reread the exact reviewed GitHub issue."
+            ],
+        ),
         "checker": task_workspace_stage("not_run", []),
         "created_issue": binding,
         "created_workspace": None,
         "no_side_effect": None,
         "typed_exit": "refresh_review",
-        "reason": "The reviewed issue was created and now requires a complete Intake refresh.",
+        "reason": (
+            "The reviewed issue was recovered and now requires a complete Intake refresh."
+            if recovered
+            else "The reviewed issue was created and now requires a complete Intake refresh."
+        ),
         "consumer": copy.deepcopy(TASK_WORKSPACE_CONSUMERS["refresh_review"]),
         "facts_sha256": "",
     }
@@ -23851,6 +24015,68 @@ def task_workspace_intended_artifacts(
         "context-discovery.json": context_path.read_bytes(),
         "issue-review.json": readiness_path.read_bytes(),
     }
+
+
+def task_workspace_refresh_base_before_mutation(
+    root: Path,
+    plan: dict[str, Any],
+    base_result: dict[str, Any],
+) -> dict[str, Any]:
+    reviewed = plan["base"]
+    prior_resolution = (
+        base_result.get("resolution")
+        if isinstance(base_result.get("resolution"), dict)
+        else {}
+    )
+    explicit = (
+        str(prior_resolution.get("selected_base") or "")
+        if prior_resolution.get("source") == "explicit"
+        else None
+    )
+    resolution = resolve_base_selection(
+        root,
+        load_config(root),
+        explicit,
+        str(prior_resolution.get("remote") or reviewed.get("remote") or "origin"),
+    )
+    if (
+        resolution.get("source") != prior_resolution.get("source")
+        or resolution.get("selected_base") != prior_resolution.get("selected_base")
+        or resolution.get("remote") != prior_resolution.get("remote")
+        or resolution.get("candidates") != prior_resolution.get("candidates")
+        or resolution.get("resolution_sha256") != reviewed.get("post_sync_resolution_sha256")
+    ):
+        raise WorkflowError(
+            "Task workspace base resolution changed before mutation.",
+            exit_code=2,
+            payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_resolution_stale"},
+        )
+
+    fresh = execute_base_sync(root, resolution)
+    live_errors = validate_live_base_sync_result(root, fresh)
+    if live_errors:
+        raise WorkflowError(
+            "Task workspace mutation-time base sync did not validate.",
+            exit_code=2,
+            payload={"typed_exit": "refresh_review", "error_codes": context_sort(live_errors)},
+        )
+    fresh_projection = {
+        "selected_base": fresh["resolution"]["selected_base"],
+        "remote": fresh["resolution"]["remote"],
+        "base_ref": fresh["git"]["remote_ref"],
+        "decision_head": fresh["decision_checkout"]["head_after"],
+        "local_head": fresh["git"]["local_head_after"],
+        "remote_head": fresh["git"]["remote_head_after"],
+        "post_sync_resolution_sha256": fresh["post_sync_resolution_sha256"],
+    }
+    reviewed_projection = {key: reviewed.get(key) for key in fresh_projection}
+    if fresh_projection != reviewed_projection:
+        raise WorkflowError(
+            "Task workspace base advanced after review; refresh the complete Intake chain.",
+            exit_code=2,
+            payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_post_sync_identity_changed"},
+        )
+    return fresh
 
 
 def task_workspace_require_execution_boundary(
@@ -24195,6 +24421,7 @@ def cmd_create_task_workspace(args: argparse.Namespace) -> dict[str, Any]:
             plan, before, task_workspace_snapshot(root, plan), "blocked", reason_code,
             str(getattr(args, "reason", None) or "The AI Review Gate blocked the exact task workspace plan."),
         )
+    task_workspace_refresh_base_before_mutation(root, plan, payloads["base"])
     if plan["target"]["kind"] == "reviewed_draft":
         result = task_workspace_created_issue_result(root, plan)
     else:

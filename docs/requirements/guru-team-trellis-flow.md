@@ -322,10 +322,10 @@ structure 校验，不扫描整份 payload。
 
 | 问题 | Guru Team 规则 | 确定性资产 |
 | --- | --- | --- |
-| 任务是否应绑定 GitHub issue | `guru-clarify-requirements` 已决定 final open issue 或 reviewed draft；workspace Skill 只展示并复验。 | Draft executor 创建 exact issue、立即重读并生成 `created_issue_binding`，固定返回 `refresh_review`；同一 invocation 禁止创建 workspace/task。 |
+| 任务是否应绑定 GitHub issue | `guru-clarify-requirements` 已决定 final open issue 或 reviewed draft；workspace Skill 只展示并复验。 | Draft executor 创建前按 exact open title/body/labels 与 creation time 执行 0/1/>1 recovery；0 个创建、1 个恢复、多个阻断。立即重读并生成 `created_issue_binding` 后固定返回 `refresh_review`；完整 Intake 重入携带 checker-passed created-issue result；同一 invocation 禁止创建 workspace/task。 |
 | Intake clarity / 需求是否足够清晰 | `guru-clarify-requirements` 消费 current context，AI完成问题选择、scope/action、AI Gate、confirmation 与 route。范围、验收、close/ref 语义或实现目标仍有 load-bearing open question 时每轮只问一个；active Scope Change也mandatory invoke同一Skill。 | Recorder派生 proposal/action/content/result digest；checker验证 answered evidence、question reducer、confirmed payload/live mutation与caller-aware typed exit。两者不生成问题或执行GitHub mutation。 |
 | Change request 是否可独立交付 | `guru-review-change-request` 消费 current context/clarity/wording，AI审查十项 readiness dimensions、findings、delivery unit、scope conclusion、Gate 与五出口。 | Recorder/checker stdout-only重建 target/prerequisite projection/linkage/facts；`ready` 唯一进入 active `guru-create-task-workspace`。 |
-| 分支和 worktree 从哪里来 | Workspace Skill 的 AI 生成 branch/workspace/task names，并对 live object 选择 `create_new`、`reuse_exact` 或 `conflict_blocked`。 | `create-task-workspace` 在每个 mutation boundary 重验 plan/base/target/facts；identity 不一致时阻断且不覆盖。 |
+| 分支和 worktree 从哪里来 | Workspace Skill 的 AI 生成 branch/workspace/task names，并对 live object 选择 `create_new`、`reuse_exact` 或 `conflict_blocked`。 | Plan 绑定 `post_sync_resolution_sha256`；`create-task-workspace` 首次 mutation 前运行 shared resolver/sync。Remote 前进则安全刷新后 `refresh_review` 且无业务 mutation；identity 不变才继续，每个后续 boundary重验 plan/target/facts并拒绝覆盖冲突对象。 |
 | 命名是否足够语义化 | AI 读 issue 后决定英文 short-name，低信息名称不得进入 executor。 | `naming_quality` 和 `--short-name` / `--workspace-slug` / `--task-slug` / `--branch`。 |
 | assignee 从哪里来 | AI 按 explicit、single issue assignee、zero issue assignees 时 current GitHub login、multiple/unresolved 时 user choice 的固定顺序收敛一个 login。 | Executor 只接受非空 resolved login，通过隔离 adapter 调用 official `common.task_store.cmd_create`；仅在该 handler 调用内禁用 developer accessor，使 `task.json.creator=task.json.assignee=resolved login`，且 existing `.trellis/.developer` bytes 不变。 |
 
@@ -352,6 +352,12 @@ source checkout 出现新 `HEAD` / dirty status / diff stat / mtime 变化时是
 error。唯一 exact executor 是 `create-task-workspace`，其 plan/result 只经 stdout 传递；draft
 创建成功后立即回到 `guru-sync-base` 完整重跑，open-issue invocation 必须取得新的
 `workspace_and_task_mutation` confirmation。
+
+同一 reviewed draft plan在远端 create成功但 immediate reread失败后重试时，pre-create
+exact recovery只允许复用唯一匹配 issue，不再次 create。重入的 open-issue plan必须携带完整
+checker-passed created-issue result，并与 fresh context 的 canonical live existing-issue
+identity一致；该 context必须为`kind=issue`且`issue_binding=null`。首次业务 mutation前
+shared base sync若发现remote前进，则只刷新base并返回`refresh_review`。
 
 并行 metadata Gate 使用同一 clean base 的真实 A/B branch/worktree，分别通过 production
 recorder/executor/checker、task-local archive 和完整 tracked commit，再验证 A -> B、B -> A

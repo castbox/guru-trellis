@@ -147,6 +147,12 @@ prerequisite; open issue and reviewed-draft variants; mutually exclusive issue
 and workspace/task confirmations; draft-created issue live binding plus exact
 reviewed title/body/labels bytes without adapter trimming or newline insertion;
 immediate `refresh_review`; zero branch/worktree/task writes in that invocation;
+create success followed by immediate reread failure and same-plan retry with
+exactly one remote issue; exact recovery candidate cardinality 0/1/>1;
+checker-passed created-issue result carryover into a complete Intake rerun;
+missing/partial carryover, result/binding digest drift, reviewed draft or
+creation confirmation mismatch, and fresh live existing-issue identity or null
+`issue_binding` mismatch;
 target/disposition change and cancellation zero-write results; explicit, one
 issue assignee, zero issue assignees/current-login, multiple/user-choice, and
 unresolved assignee cases; isolated official `common.task_store.cmd_create`
@@ -164,6 +170,12 @@ The route tests must prove a confirmed plan cannot be relabeled cancelled,
 while refused confirmation, reroute Gate, and blocked Gate produce their exact
 zero-write exits and checker-valid consumers. Public plan/result schema,
 examples, and stdout must reject or omit absolute machine-local paths.
+
+Mutation-boundary tests use a real remote whose base advances after the initial
+checker-passed evidence while the local remote-tracking ref remains stale. They
+prove the executor fetches/safely syncs, returns `refresh_review`, and creates
+no issue, branch, worktree, task, artifact, or runtime mapping. The
+unchanged-remote case still completes the reviewed mutation path.
 
 The real A/B fixture must use one clean base, production
 record/executor/checker, independent worktrees/tasks, task-local closeout and

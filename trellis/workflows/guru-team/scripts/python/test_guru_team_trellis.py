@@ -3316,7 +3316,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             "confirmations": {
                 "github_issue_mutation": {"status": "confirmed", "confirmation_sha256": "b" * 64}
             },
-            "freshness": {"plan_sha256": "c" * 64},
+            "freshness": {"captured_at": "2026-07-18T00:00:00Z", "plan_sha256": "c" * 64},
         }
         live_issue = {
             "number": 112,
@@ -3327,7 +3327,10 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             "updatedAt": "2026-07-18T00:00:00Z",
             "labels": [{"name": "enhancement"}, {"name": "workflow"}],
         }
-        with mock.patch.object(gtt, "create_issue", return_value=live_issue) as create_issue:
+        with (
+            mock.patch.object(gtt, "task_workspace_created_issue_recovery_candidates", return_value=[]),
+            mock.patch.object(gtt, "create_issue", return_value=live_issue) as create_issue,
+        ):
             result = gtt.task_workspace_created_issue_result(self.root, plan)
         create_issue.assert_called_once_with("owner/repo", draft["title"], draft["body"], self.root, draft["labels"])
         self.assertEqual(result["variant"], "created_issue")
@@ -3337,10 +3340,470 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
         wrong_labels = copy.deepcopy(live_issue)
         wrong_labels["labels"] = [{"name": "workflow"}]
         with (
+            mock.patch.object(gtt, "task_workspace_created_issue_recovery_candidates", return_value=[]),
             mock.patch.object(gtt, "create_issue", return_value=wrong_labels),
             self.assertRaises(gtt.WorkflowError),
         ):
             gtt.task_workspace_created_issue_result(self.root, plan)
+
+    def test_created_issue_recovery_search_and_retry_create_only_once(self) -> None:
+        title = "Recover exact reviewed issue"
+        body = "Reviewed recovery body"
+        plan = {
+            "mode": "workflow",
+            "target": {
+                "repo": "owner/repo",
+                "title_sha256": hashlib.sha256(title.encode()).hexdigest(),
+                "body_sha256": hashlib.sha256(body.encode()).hexdigest(),
+                "draft": {
+                    "draft_id": "draft-recovery-112",
+                    "title": title,
+                    "body": body,
+                    "labels": ["enhancement", "workflow"],
+                    "reviewed_draft_sha256": "a" * 64,
+                },
+            },
+            "confirmations": {
+                "github_issue_mutation": {"status": "confirmed", "confirmation_sha256": "b" * 64}
+            },
+            "freshness": {"captured_at": "2026-07-18T00:00:00Z", "plan_sha256": "c" * 64},
+        }
+        exact = {
+            "number": 500,
+            "url": "https://github.com/owner/repo/issues/500",
+            "state": "OPEN",
+            "title": title,
+            "body": body,
+            "updatedAt": "2026-07-18T00:01:00Z",
+            "createdAt": "2026-07-18T00:00:30Z",
+            "labels": [{"name": "workflow"}, {"name": "enhancement"}],
+        }
+        old = {**exact, "number": 499, "url": "https://github.com/owner/repo/issues/499", "createdAt": "2026-07-17T23:59:59Z"}
+        wrong_labels = {**exact, "number": 501, "url": "https://github.com/owner/repo/issues/501", "labels": [{"name": "workflow"}]}
+
+        with mock.patch.object(gtt, "gh_json", return_value=[]):
+            self.assertEqual(gtt.task_workspace_created_issue_recovery_candidates(self.root, plan), [])
+        with mock.patch.object(gtt, "gh_json", return_value=[old, wrong_labels, exact]):
+            self.assertEqual(
+                [item["number"] for item in gtt.task_workspace_created_issue_recovery_candidates(self.root, plan)],
+                [500],
+            )
+        second_exact = {**exact, "number": 502, "url": "https://github.com/owner/repo/issues/502"}
+        with (
+            mock.patch.object(gtt, "task_workspace_created_issue_recovery_candidates", return_value=[exact, second_exact]),
+            mock.patch.object(gtt, "create_issue") as create_issue,
+            self.assertRaises(gtt.WorkflowError) as ambiguous,
+        ):
+            gtt.task_workspace_created_issue_result(self.root, plan)
+        self.assertEqual(ambiguous.exception.payload["typed_exit"], "blocked")
+        create_issue.assert_not_called()
+
+        remote_issues: list[dict[str, object]] = []
+
+        def create_then_lose_reread(*_args: object, **_kwargs: object) -> dict[str, object]:
+            remote_issues.append(copy.deepcopy(exact))
+            raise gtt.WorkflowError("immediate reread failed")
+
+        with (
+            mock.patch.object(gtt, "gh_json", side_effect=lambda *_args, **_kwargs: copy.deepcopy(remote_issues)),
+            mock.patch.object(gtt, "create_issue", side_effect=create_then_lose_reread) as create_issue,
+            mock.patch.object(gtt, "issue_view", return_value=exact),
+        ):
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.task_workspace_created_issue_result(self.root, plan)
+            recovered = gtt.task_workspace_created_issue_result(self.root, plan)
+
+        self.assertEqual(create_issue.call_count, 1)
+        self.assertEqual(len(remote_issues), 1)
+        self.assertEqual(recovered["typed_exit"], "refresh_review")
+        self.assertIn("recovered", recovered["reason"].lower())
+
+    def test_created_issue_provenance_requires_checked_result_and_context_binding(self) -> None:
+        binding = {
+            "repo": "owner/repo",
+            "number": 500,
+            "canonical_url": "https://github.com/owner/repo/issues/500",
+            "state": "open",
+            "title_sha256": "a" * 64,
+            "body_sha256": "b" * 64,
+            "updated_at": "2026-07-18T00:01:00Z",
+            "reviewed_draft_id": "draft-112",
+            "reviewed_draft_sha256": "c" * 64,
+            "creation_confirmation_sha256": "d" * 64,
+        }
+        binding["facts_sha256"] = gtt.context_digest(binding)
+        checked_result = {
+            "schema_version": "1.0",
+            "skill_id": "guru-create-task-workspace",
+            "generated_at": "2026-07-18T00:02:00Z",
+            "mode": "workflow",
+            "variant": "created_issue",
+            "plan_sha256": "e" * 64,
+            "executor": {"status": "passed", "checked_at": "2026-07-18T00:01:00Z", "evidence": ["created"]},
+            "checker": {"status": "passed", "checked_at": "2026-07-18T00:02:00Z", "evidence": ["checked"]},
+            "created_issue": binding,
+            "created_workspace": None,
+            "no_side_effect": None,
+            "typed_exit": "refresh_review",
+            "reason": "Complete Intake refresh is required.",
+            "consumer": {"kind": "skill", "id": "guru-sync-base"},
+            "facts_sha256": "",
+        }
+        checked_result["facts_sha256"] = gtt.task_workspace_result_digest(checked_result)
+        live_issue_facts = {
+            "repo": binding["repo"],
+            "number": binding["number"],
+            "url": binding["canonical_url"],
+            "state": binding["state"],
+            "updated_at": binding["updated_at"],
+            "body_sha256": binding["body_sha256"],
+        }
+        live_change = {
+            "kind": "issue",
+            "identity": binding["canonical_url"],
+            "state": binding["state"],
+            "updated_at": binding["updated_at"],
+            "body_sha256": binding["body_sha256"],
+            "facts_sha256": gtt.context_digest(live_issue_facts),
+            "issue_binding": None,
+        }
+        plan = {
+            "mode": "workflow",
+            "target": {
+                "repo": binding["repo"],
+                "issue_number": binding["number"],
+                "url": binding["canonical_url"],
+                "state": binding["state"],
+                "title_sha256": binding["title_sha256"],
+                "body_sha256": binding["body_sha256"],
+                "updated_at": binding["updated_at"],
+                "created_issue_binding_sha256": binding["facts_sha256"],
+                "created_issue_result": checked_result,
+            },
+        }
+        payloads = {
+            "context": {
+                "repository": {"repo": binding["repo"]},
+                "live_change": live_change,
+            }
+        }
+        self.assertEqual(gtt.task_workspace_created_issue_provenance_errors(plan, payloads), [])
+
+        ordinary = copy.deepcopy(plan)
+        ordinary["target"]["created_issue_binding_sha256"] = None
+        ordinary["target"]["created_issue_result"] = None
+        self.assertEqual(
+            gtt.task_workspace_created_issue_provenance_errors(ordinary, payloads),
+            [],
+        )
+
+        missing = copy.deepcopy(plan)
+        missing["target"]["created_issue_result"] = None
+        self.assertIn(
+            "task_workspace_created_issue_provenance_incomplete",
+            gtt.task_workspace_created_issue_provenance_errors(missing, payloads),
+        )
+        for field in ("reviewed_draft_id", "reviewed_draft_sha256", "creation_confirmation_sha256"):
+            stale = copy.deepcopy(plan)
+            stale["target"]["created_issue_result"]["created_issue"][field] = "stale" if field.endswith("id") else "f" * 64
+            errors = gtt.task_workspace_created_issue_provenance_errors(stale, payloads)
+            self.assertIn("task_workspace_created_issue_binding_digest_mismatch", errors, field)
+            self.assertIn("task_workspace_created_issue_result_facts_digest_mismatch", errors, field)
+        invalid_contexts = {
+            "repository": lambda value: value["context"]["repository"].update({"repo": "other/repo"}),
+            "kind": lambda value: value["context"]["live_change"].update({"kind": "draft"}),
+            "identity": lambda value: value["context"]["live_change"].update({"identity": "https://github.com/owner/repo/issues/501"}),
+            "state": lambda value: value["context"]["live_change"].update({"state": "closed"}),
+            "updated_at": lambda value: value["context"]["live_change"].update({"updated_at": "2026-07-18T00:03:00Z"}),
+            "body_sha256": lambda value: value["context"]["live_change"].update({"body_sha256": "f" * 64}),
+            "facts_sha256": lambda value: value["context"]["live_change"].update({"facts_sha256": "f" * 64}),
+            "issue_binding": lambda value: value["context"]["live_change"].update({"issue_binding": copy.deepcopy(live_issue_facts)}),
+        }
+        for field, mutate in invalid_contexts.items():
+            with self.subTest(context_field=field):
+                wrong_context = copy.deepcopy(payloads)
+                mutate(wrong_context)
+                self.assertIn(
+                    "task_workspace_created_issue_context_binding_mismatch",
+                    gtt.task_workspace_created_issue_provenance_errors(plan, wrong_context),
+                )
+
+    def test_created_issue_provenance_survives_existing_issue_review_projection_chain(self) -> None:
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        repo = "owner/repo"
+        number = 500
+        url = f"https://github.com/{repo}/issues/{number}"
+        updated_at = "2026-07-18T00:01:00Z"
+        title_sha256 = digest("Reviewed title")
+        body_sha256 = digest("Reviewed body")
+        issue_facts = {
+            "repo": repo,
+            "number": number,
+            "url": url,
+            "state": "open",
+            "updated_at": updated_at,
+            "body_sha256": body_sha256,
+        }
+        context = {
+            "repository": {"repo": repo},
+            "live_change": {
+                "kind": "issue",
+                "identity": url,
+                "state": "open",
+                "updated_at": updated_at,
+                "body_sha256": body_sha256,
+                "facts_sha256": gtt.context_digest(issue_facts),
+                "issue_binding": None,
+            },
+        }
+        clarity = {
+            "invocation_context": {"kind": "initial_issue"},
+            "review_target": {
+                "kind": "issue",
+                "repo": repo,
+                "issue_number": number,
+                "url": url,
+                "state": "open",
+                "updated_at": updated_at,
+                "body_sha256": body_sha256,
+            },
+            "target_disposition": {
+                "disposition_digest": digest("disposition"),
+                "duplicate_facts_sha256": digest("duplicates"),
+            },
+        }
+        wording = {
+            "scope": {
+                "identity": f"change_request:{url}",
+                "items": [
+                    {"field": "title", "content_sha256": title_sha256},
+                    {"field": "body", "content_sha256": body_sha256},
+                ],
+            }
+        }
+        payloads = {"context": context, "clarity": clarity, "wording": wording}
+        target = gtt.change_request_review_prerequisite_target_identity_projection(payloads)
+        self.assertEqual(
+            target,
+            {
+                "kind": "existing_issue",
+                "repo": repo,
+                "title_sha256": title_sha256,
+                "body_sha256": body_sha256,
+                "issue_number": number,
+                "url": url,
+                "updated_at": updated_at,
+            },
+        )
+        target.update({
+            "identity_sha256": gtt.context_digest(
+                gtt.change_request_review_target_identity_projection(target)
+            ),
+            "content_sha256": gtt.context_digest({
+                "title_sha256": title_sha256,
+                "body_sha256": body_sha256,
+            }),
+            "draft_id": None,
+            "source_request_sha256": None,
+            "caller_locator": None,
+            "request_id": None,
+            "side_effect_free": False,
+        })
+        projections = {
+            "context": {
+                "status": "current", "payload_sha256": gtt.context_digest(context),
+                "base_head": "a" * 40, "current_state_sha256": digest("current"),
+                "history_sha256": digest("history"), "duplicate_sha256": digest("duplicates"),
+                "error_codes": [],
+            },
+            "clarity": {
+                "status": "current", "payload_sha256": gtt.context_digest(clarity),
+                "facts_sha256": digest("clarity"),
+                "disposition_sha256": clarity["target_disposition"]["disposition_digest"],
+                "error_codes": [],
+            },
+            "wording": {
+                "status": "current", "payload_sha256": gtt.context_digest(wording),
+                "facts_sha256": digest("wording"), "error_codes": [],
+            },
+        }
+        gtt.change_request_review_target_linkage_errors(target, payloads, projections)
+        self.assertTrue(all(row["status"] == "current" for row in projections.values()))
+        self.assertTrue(all(row["error_codes"] == [] for row in projections.values()))
+        linkage = gtt.change_request_review_linkage(target, projections)
+        conclusion = {"close_issues": [number], "related_issues": [], "followup_issues": []}
+        readiness = {
+            "target": target,
+            "prerequisites": projections,
+            "evidence_linkage": linkage,
+            "semantic_review": {
+                "scope_conclusion": conclusion,
+                "ai_review_gate": {
+                    "reviewed_linkage_sha256": linkage["linkage_sha256"],
+                    "scope_conclusion_sha256": gtt.context_digest(conclusion),
+                },
+            },
+        }
+        payloads["readiness"] = readiness
+        self.assertEqual(gtt.task_workspace_readiness_linkage_errors(readiness, payloads), [])
+
+        binding = {
+            "repo": repo,
+            "number": number,
+            "canonical_url": url,
+            "state": "open",
+            "title_sha256": title_sha256,
+            "body_sha256": body_sha256,
+            "updated_at": updated_at,
+            "reviewed_draft_id": "draft-112",
+            "reviewed_draft_sha256": digest("reviewed-draft"),
+            "creation_confirmation_sha256": digest("creation-confirmation"),
+        }
+        binding["facts_sha256"] = gtt.context_digest(binding)
+        result = {
+            "schema_version": "1.0",
+            "skill_id": "guru-create-task-workspace",
+            "generated_at": "2026-07-18T00:02:00Z",
+            "mode": "workflow",
+            "variant": "created_issue",
+            "plan_sha256": digest("draft-plan"),
+            "executor": {"status": "passed", "checked_at": "2026-07-18T00:01:00Z", "evidence": ["created"]},
+            "checker": {"status": "passed", "checked_at": "2026-07-18T00:02:00Z", "evidence": ["checked"]},
+            "created_issue": binding,
+            "created_workspace": None,
+            "no_side_effect": None,
+            "typed_exit": "refresh_review",
+            "reason": "Complete Intake refresh is required.",
+            "consumer": copy.deepcopy(gtt.TASK_WORKSPACE_CONSUMERS["refresh_review"]),
+            "facts_sha256": "",
+        }
+        result["facts_sha256"] = gtt.task_workspace_result_digest(result)
+        plan = {
+            "mode": "workflow",
+            "target": {
+                "repo": repo,
+                "issue_number": number,
+                "url": url,
+                "state": "open",
+                "updated_at": updated_at,
+                "title_sha256": title_sha256,
+                "body_sha256": body_sha256,
+                "created_issue_binding_sha256": binding["facts_sha256"],
+                "created_issue_result": result,
+            },
+        }
+        self.assertEqual(gtt.task_workspace_created_issue_provenance_errors(plan, payloads), [])
+
+        stale_context = copy.deepcopy(payloads)
+        stale_context["context"]["live_change"]["facts_sha256"] = digest("stale-live-issue")
+        self.assertIn(
+            "task_workspace_created_issue_context_binding_mismatch",
+            gtt.task_workspace_created_issue_provenance_errors(plan, stale_context),
+        )
+
+    def test_mutation_time_base_sync_detects_remote_advance_before_business_writes(self) -> None:
+        repository = self.root / "repository"
+        remote = self.root / "remote.git"
+        updater = self.root / "updater"
+        repository.mkdir()
+        subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repository, check=True)
+        subprocess.run(["git", "config", "user.name", "Base Fixture"], cwd=repository, check=True)
+        subprocess.run(["git", "config", "user.email", "base@example.invalid"], cwd=repository, check=True)
+        (repository / "base.txt").write_text("initial\n", encoding="utf-8")
+        subprocess.run(["git", "add", "base.txt"], cwd=repository, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "initial"], cwd=repository, check=True)
+        subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=repository, check=True)
+        subprocess.run(["git", "push", "-q", "-u", "origin", "main"], cwd=repository, check=True)
+
+        resolution = gtt.resolve_base_selection(repository, {}, "main", "origin")
+        initial = gtt.execute_base_sync(repository, resolution)
+        initial_head = initial["git"]["remote_head_after"]
+        plan = {
+            "base": {
+                "selected_base": "main",
+                "remote": "origin",
+                "base_ref": "refs/remotes/origin/main",
+                "decision_head": initial_head,
+                "local_head": initial_head,
+                "remote_head": initial_head,
+                "post_sync_resolution_sha256": initial["post_sync_resolution_sha256"],
+                "sync_facts_sha256": initial["facts_sha256"],
+            }
+        }
+        unchanged = gtt.task_workspace_refresh_base_before_mutation(repository, plan, initial)
+        self.assertEqual(unchanged["post_sync_resolution_sha256"], initial["post_sync_resolution_sha256"])
+
+        subprocess.run(["git", "clone", "-q", "-b", "main", str(remote), str(updater)], check=True)
+        subprocess.run(["git", "config", "user.name", "Remote Fixture"], cwd=updater, check=True)
+        subprocess.run(["git", "config", "user.email", "remote@example.invalid"], cwd=updater, check=True)
+        (updater / "base.txt").write_text("advanced\n", encoding="utf-8")
+        subprocess.run(["git", "add", "base.txt"], cwd=updater, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "advance"], cwd=updater, check=True)
+        subprocess.run(["git", "push", "-q", "origin", "main"], cwd=updater, check=True)
+        remote_head = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=updater, check=True, text=True, capture_output=True
+        ).stdout.strip()
+        self.assertEqual(gtt.ref_head(repository, "refs/remotes/origin/main"), initial_head)
+
+        with self.assertRaises(gtt.WorkflowError) as advanced:
+            gtt.task_workspace_refresh_base_before_mutation(repository, plan, initial)
+        self.assertEqual(advanced.exception.payload["typed_exit"], "refresh_review")
+        self.assertEqual(
+            advanced.exception.payload["error_code"],
+            "task_workspace_base_post_sync_identity_changed",
+        )
+        self.assertEqual(gtt.current_head(repository), remote_head)
+        self.assertEqual(gtt.ref_head(repository, "refs/remotes/origin/main"), remote_head)
+        self.assertEqual(
+            subprocess.run(
+                ["git", "branch", "--format=%(refname:short)"],
+                cwd=repository,
+                check=True,
+                text=True,
+                capture_output=True,
+            ).stdout.splitlines(),
+            ["main"],
+        )
+        self.assertEqual(len(gtt.worktree_records(repository)), 1)
+        self.assertFalse((repository / ".trellis/tasks").exists())
+
+    def test_create_command_stops_before_business_mutation_when_base_refreshes(self) -> None:
+        repository_source = Path(__file__).resolve().parents[5]
+        plan = json.loads((
+            repository_source
+            / "trellis/skills/guru-team/packages/guru-create-task-workspace/examples/task-workspace-plan.json"
+        ).read_text(encoding="utf-8"))
+        plan_path = self.root / "plan.json"
+        gtt.write_json(plan_path, plan)
+        snapshot = {
+            "head": "a" * 40,
+            "status_sha256": "b" * 64,
+            "worktrees_sha256": "c" * 64,
+            "issues_sha256": "d" * 64,
+        }
+        refresh = gtt.WorkflowError(
+            "base advanced",
+            exit_code=2,
+            payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_post_sync_identity_changed"},
+        )
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "task_workspace_validate_plan", return_value=({"base": {}}, [])),
+            mock.patch.object(gtt, "task_workspace_snapshot", return_value=snapshot),
+            mock.patch.object(gtt, "task_workspace_refresh_base_before_mutation", side_effect=refresh) as base_guard,
+            mock.patch.object(gtt, "task_workspace_created_issue_result") as issue_mutation,
+            mock.patch.object(gtt, "task_workspace_created_workspace_result") as workspace_mutation,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.cmd_create_task_workspace(argparse.Namespace(
+                root=str(self.root), input=str(plan_path), cancelled=False,
+                refresh_review=False, reason=None, reason_code=None,
+            ))
+        self.assertEqual(raised.exception.payload["typed_exit"], "refresh_review")
+        base_guard.assert_called_once_with(self.root, plan, {})
+        issue_mutation.assert_not_called()
+        workspace_mutation.assert_not_called()
 
     def test_reviewed_draft_plan_binds_current_readiness_identity(self) -> None:
         digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
@@ -3417,6 +3880,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                     "remote_head_after": "a" * 40,
                     "remote_ref": "refs/remotes/origin/main",
                 },
+                "post_sync_resolution_sha256": digest("post-sync"),
                 "facts_sha256": digest("base"),
             },
         }
@@ -3431,6 +3895,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                 "disposition_sha256": clarity["target_disposition"]["disposition_digest"],
                 "duplicate_decision_sha256": clarity["target_disposition"]["duplicate_facts_sha256"],
                 "created_issue_binding_sha256": None,
+                "created_issue_result": None,
                 "draft": {
                     "draft_id": target["draft_id"],
                     "source_request_sha256": digest("wrong-source"),
@@ -3466,7 +3931,9 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             "selected_base": "main", "remote": "origin",
             "base_ref": "refs/remotes/origin/main",
             "decision_head": "a" * 40, "local_head": "a" * 40,
-            "remote_head": "a" * 40, "sync_facts_sha256": digest("base"),
+            "remote_head": "a" * 40,
+            "post_sync_resolution_sha256": digest("post-sync"),
+            "sync_facts_sha256": digest("base"),
         }
         valid_errors = gtt.task_workspace_plan_semantic_errors(self.root, valid_plan, payloads)
         self.assertFalse(any("reviewed_draft_" in error for error in valid_errors))
@@ -3679,6 +4146,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                     "facts_sha256": digest("base-facts"),
                     "resolution": {"selected_base": "main", "remote": "origin"},
                     "decision_checkout": {"head_after": base_head},
+                    "post_sync_resolution_sha256": digest("post-sync-resolution"),
                     "git": {
                         "local_head_after": base_head,
                         "remote_head_after": base_head,
@@ -3831,6 +4299,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                     "disposition_sha256": payloads["clarity"]["target_disposition"]["disposition_digest"],
                     "duplicate_decision_sha256": payloads["clarity"]["target_disposition"]["duplicate_facts_sha256"],
                     "created_issue_binding_sha256": None,
+                    "created_issue_result": None,
                 },
                 "scope": {
                     "primary": scope_item,
@@ -3846,6 +4315,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                     "decision_head": base_head,
                     "local_head": base_head,
                     "remote_head": base_head,
+                    "post_sync_resolution_sha256": payloads["base"]["post_sync_resolution_sha256"],
                     "sync_facts_sha256": payloads["base"]["facts_sha256"],
                 },
                 "naming": {
@@ -3952,6 +4422,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             with (
                 mock.patch.object(gtt, "task_workspace_prerequisite_errors", return_value=[]),
                 mock.patch.object(gtt, "task_workspace_live_issue", return_value=live_issue),
+                mock.patch.object(gtt, "task_workspace_refresh_base_before_mutation", return_value={}),
             ):
                 self.assertEqual(gtt.cmd_record_task_workspace_plan(args), plan)
                 with mock.patch.object(gtt, "prepare_workspace", side_effect=prepare_and_copy_inputs):

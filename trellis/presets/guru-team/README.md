@@ -411,6 +411,11 @@ explicit、single issue assignee、zero issue assignees/current login、multiple
 choice 顺序解析。成功后只写四个 tracked task-local Intake artifacts 与 ignored
 `.trellis/.runtime/guru-team/**` mappings。
 
+Draft create 前使用 exact open title/body/labels 与 creation time执行 0/1/>1 recovery；
+唯一匹配被恢复，零匹配才创建，多个匹配阻断。完整 Intake重入时，workflow-created issue
+携带完整 checker-passed created-issue result，并与 fresh context 的 canonical live
+existing-issue identity一致；该 context使用`kind=issue`与 null `issue_binding`。
+
 Shared overlays are always installed:
 
 - `.trellis/agents/implement.md`
@@ -770,6 +775,12 @@ Each run keeps `preflight.base_freshness` in the current result only and require
 clean decision/local/remote equality. Planner evidence never replaces either
 mutation-time guard, preventing new task branches from starting from a stale
 local base.
+
+The plan binds the initial checker-passed `post_sync_resolution_sha256`. The
+executor runs the shared resolver/sync core once before the first confirmed
+business mutation. A newly advanced remote may safely fast-forward the selected
+base, but then returns `refresh_review` before issue/workspace/task/artifact or
+runtime writes. An unchanged post-sync identity continues normally.
 
 The active package uses schemas `guru-task-workspace-plan-1.0` and
 `guru-task-workspace-result-1.0` plus runtime commands

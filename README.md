@@ -512,6 +512,11 @@ branch 或 Trellis task 前阻断。
 失败、divergence、resolution drift 或 freshness 无法确认都会阻塞，不会从 stale ref 创建
 任务分支。
 
+Plan 明确绑定 initial `post_sync_resolution_sha256`。Executor 在首次 confirmed GitHub 或
+workspace/task mutation 前实际重跑一次 shared resolver/sync core；remote 正常前进时可以
+安全 fast-forward selected base，但随后返回 `refresh_review`，且不创建 issue、branch、
+worktree、task、artifact 或 runtime mapping。Fresh identity 不变才继续当前 plan。
+
 `prepare-task` query 只消费当前 post-sync digest；它不再拥有 workspace mutation guard。
 `guru-create-task-workspace` 在每个受支持的 issue/worktree/task mutation boundary 重验
 plan、五个 prerequisite、base、target 与 live facts。任何 identity/digest 漂移都在
@@ -526,6 +531,13 @@ multiple/unresolved 时 AI/user 选择解析，并始终作为显式参数传给
 Passed Gate + confirmed 才可 mutation；passed + digest-bound refused 返回
 `cancelled`，`reroute` 返回 `refresh_review`，`blocked` 返回 `blocked`，后三者均由
 checker 验证 zero-write snapshot。
+
+Draft executor 在 create 前按 exact open title/body/labels 与 `createdAt >= reviewed plan`
+执行 0/1/>1 recovery：0 个才创建，1 个恢复并重读，多个 fail closed。因此 remote create
+成功但 immediate reread失败后的同 plan重试不会再次创建 Issue。完整 Intake重入后的
+workflow-created existing issue还必须携带完整 checker-passed created-issue result，并与
+current issue及 fresh context 的 canonical live existing-issue identity一致；该 context
+必须为`kind=issue`且`issue_binding=null`，单独 SHA 不构成 authority。
 
 Workspace executor 不直接进入会读取 developer identity 的 CLI 路径，而是在隔离子进程中调用官方
 `common.task_store.cmd_create` handler，并把 reviewed assignee 作为显式 create 参数；仅在该

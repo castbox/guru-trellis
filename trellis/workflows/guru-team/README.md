@@ -464,6 +464,12 @@ open issue invocation 另行取得 `workspace_and_task_mutation` confirmation。
 Passed + confirmed 才可 mutation；passed + refused、`reroute`、`blocked` 分别生成
 checker-validated zero-write `cancelled`、`refresh_review`、`blocked` result。
 
+Draft create 前按 exact open title/body/labels 与 `createdAt >= reviewed plan`执行 0/1/>1
+recovery：0 个创建，1 个恢复并 live reread，多个阻断。完整 Intake 重入后的
+workflow-created issue必须携带完整 checker-passed created-issue result，并重验 result/binding
+digest、reviewed draft/confirmation identity、current issue 与 fresh context canonical live
+existing-issue identity；该 context使用`kind=issue`与 null `issue_binding`。
+
 Assignee 固定按 explicit input、exactly one issue assignee、zero issue assignees 时 current
 GitHub login、multiple/unresolved 时 AI/user 选择解析；executor 始终向 official
 task-create handler 显式传 reviewed assignee。Executor 在隔离子进程中调用 official
@@ -494,6 +500,11 @@ working directory 时，必须使用 boundary helper 已确认的当前 task wor
 `create-task-workspace` 在 GitHub 或 worktree/task mutation boundary 重跑 shared core。每次 fresh result 都记录
 `preflight.base_freshness` 并要求 decision/local/remote HEAD 三方相等。Initial planner
 evidence 不能替代 mutation-time guard；不要从过期的本地 `main` / `dev` 创建任务分支。
+
+Plan 绑定 initial checker-passed `post_sync_resolution_sha256`。Executor 在首次业务 mutation
+前只运行一次 shared resolver/sync core；若 fetch发现remote前进，允许安全 fast-forward，
+但必须返回 `refresh_review` 且不创建 issue/workspace/task/artifact/runtime。Post-sync identity
+不变才继续；后续同一 invocation boundary只重验已刷新本地 facts。
 
 Guru preset apply/update/reapply 与 workspace executor 不读取、不创建、不复制、不恢复
 `.trellis/.developer` 或 `.trellis/workspace/**`，也不要求 `init_developer.py`。Official

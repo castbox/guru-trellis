@@ -18,12 +18,12 @@
   },
   "entry_preconditions": [
     {"id": "runtime_dependency", "evidence": "installed extension manifest, dispatcher, active package inventory and three declared runtime commands", "binding": "complete compatible Guru Team preset runtime", "freshness": "validated by run-skill-command before every runtime command"},
-    {"id": "base_evidence", "evidence": "current guru-base-sync-result-1.0 synced result", "binding": "selected base, remote and decision/local/remote HEAD", "freshness": "rerun before every mutation boundary"},
+    {"id": "base_evidence", "evidence": "current guru-base-sync-result-1.0 synced result", "binding": "selected base, remote, post-sync resolution identity and decision/local/remote HEAD", "freshness": "shared resolver/sync rerun once before first confirmed mutation; changed identity refreshes review"},
     {"id": "context_evidence", "evidence": "current guru-context-discovery-1.0 context_ready result", "binding": "same base, target, duplicate and current repository facts", "freshness": "checker-passed canonical bytes and snapshot digest remain current"},
     {"id": "clarity_evidence", "evidence": "current guru-requirements-clarification-2.0 clear result", "binding": "final target, disposition, source action and scope decisions", "freshness": "target and authority bytes remain current"},
     {"id": "wording_evidence", "evidence": "current guru-contract-wording-review-1.0 change_request pass result", "binding": "exact reviewed issue or draft title/body", "freshness": "fixed scope and scan digest remain current"},
     {"id": "readiness_evidence", "evidence": "current guru-change-request-review-1.0 ready result", "binding": "same target/content/linkage and close/related/followup conclusion", "freshness": "facts digest and prerequisite linkage remain current"},
-    {"id": "target_authority", "evidence": "one final open issue or reviewed side-effect-free draft projected by clarification and readiness", "binding": "workspace Skill does not choose duplicates, retarget, reopen, or create follow-up scope", "freshness": "live issue or reviewed draft is reread immediately before mutation"},
+    {"id": "target_authority", "evidence": "one final open issue or reviewed side-effect-free draft projected by clarification and readiness", "binding": "workspace Skill does not choose duplicates, retarget, reopen, or create follow-up scope", "freshness": "draft create uses exact 0/1/>1 live recovery; workflow-created open issue carries a checker-passed created-issue result"},
     {"id": "naming_and_assignee", "evidence": "AI-reviewed semantic names, existing-object disposition, non-empty assignee and source evidence", "binding": "branch/workspace/task identity and fixed assignee resolution order", "freshness": "object and GitHub actor facts are rechecked before execution"},
     {"id": "side_effect_authorization", "evidence": "AI Review Gate plus exactly one invocation-specific confirmation", "binding": "github_issue_mutation or workspace_and_task_mutation, never both", "freshness": "confirmation binds the current reviewable plan digest"},
     {"id": "invocation_freshness", "evidence": "canonical plan, prerequisite bytes, target, base, object and confirmation digests", "binding": "one current recorder/executor/checker invocation", "freshness": "every digest and live fact is recomputed before typed exit"}
@@ -47,7 +47,7 @@
   ],
   "validators": [
     {"id": "task_workspace_plan_recorder", "command": "scripts/record-task-workspace-plan.sh", "runtime_command": "record-task-workspace-plan", "objective_scope": "closed schema, five prerequisite identities and digests, target/scope/base projection, confirmation and AI Gate binding, canonical plan digest, stdout-only zero-write postcondition"},
-    {"id": "task_workspace_exact_executor", "command": "scripts/create-task-workspace.sh", "runtime_command": "create-task-workspace", "objective_scope": "current base/target/prerequisite/plan confirmation facts, exact issue-only or workspace/task-only mutations, object reuse identity, explicit assignee and four task-local artifacts without developer identity"},
+    {"id": "task_workspace_exact_executor", "command": "scripts/create-task-workspace.sh", "runtime_command": "create-task-workspace", "objective_scope": "mutation-time shared base sync, exact issue recovery, current target/prerequisite/plan confirmation facts, issue-only or workspace/task-only mutations, object reuse identity, explicit assignee and four task-local artifacts without developer identity"},
     {"id": "task_workspace_result_checker", "command": "scripts/check-task-workspace-result.sh", "runtime_command": "check-task-workspace-result", "objective_scope": "published result schema, live issue binding or branch/worktree/task identity, exact artifact bytes/digests/trackability, ignored runtime, workspace boundary, no-developer and typed consumer"}
   ],
   "external_exits": [
@@ -57,8 +57,8 @@
     {"id": "blocked", "evidence": "semantic conflict, unresolved assignee, object identity conflict or deterministic execution/check failure", "consumer": {"kind": "stop", "id": "task-workspace-blocked"}}
   ],
   "reentry": {
-    "identity": "five prerequisite result digests, final target/disposition, scope, base, naming, assignee, side-effect scope, confirmation and plan digest",
-    "freshness": "created issue requires complete Intake replay; workspace recovery only reuses identity-exact live objects and byte-identical artifacts",
+    "identity": "five prerequisite result digests, final target/disposition, complete created-issue provenance when applicable, scope, post-sync base identity, naming, assignee, side-effect scope, confirmation and plan digest",
+    "freshness": "draft retry recovers one exact post-plan issue; complete Intake replay validates the checker-passed created-issue result; first mutation reruns shared base sync; workspace recovery only reuses identity-exact live objects and byte-identical artifacts",
     "stale_behavior": "fail_closed"
   },
   "tests": ["tests/test_contract.py"],

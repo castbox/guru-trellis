@@ -114,6 +114,20 @@ Docs also state that the reviewed-draft GitHub adapter forwards the reviewed
 title/body bytes without trimming or appending a newline before the live reread
 and created-issue binding check.
 
+They also document retry recovery: before create, exact open-issue
+title/body/labels plus creation-at-or-after-plan facts yield a 0/1/>1 decision;
+one match is recovered, zero creates once, and multiple block. Complete Intake
+re-entry for a workflow-created issue carries the full checker-passed
+created-issue result and validates it against the fresh context canonical live
+existing-issue identity. That context uses `kind=issue` and null
+`issue_binding`; a bare binding digest is not accepted.
+
+Public docs state that the plan binds `post_sync_resolution_sha256` and the
+executor reruns the shared resolver/sync core once before the first confirmed
+mutation. A fetched remote advance safely refreshes the base but routes to
+`refresh_review` before issue/workspace/task mutation; unchanged identity
+continues normally.
+
 Public docs state that the workspace executor calls official
 `common.task_store.cmd_create` through an isolated adapter, passes the reviewed
 assignee explicitly, and disables the developer accessor only for that handler

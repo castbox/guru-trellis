@@ -50,6 +50,7 @@ def prerequisite_payloads(
             "skill_id": "guru-sync-base",
             "status": "synced",
             "facts_sha256": digest(token, "base-facts"),
+            "post_sync_resolution_sha256": digest(token, "post-sync-resolution"),
             "resolution": {"selected_base": "main", "remote": "origin"},
             "decision_checkout": {"head_after": base_head},
             "git": {
@@ -221,6 +222,7 @@ def build_plan(
                 "target_disposition"
             ]["duplicate_facts_sha256"],
             "created_issue_binding_sha256": None,
+            "created_issue_result": None,
         },
         "scope": {
             "primary": scope_item,
@@ -236,6 +238,7 @@ def build_plan(
             "decision_head": base_head,
             "local_head": base_head,
             "remote_head": base_head,
+            "post_sync_resolution_sha256": payloads["base"]["post_sync_resolution_sha256"],
             "sync_facts_sha256": payloads["base"]["facts_sha256"],
         },
         "naming": {
@@ -422,6 +425,7 @@ def main() -> int:
     runtime.task_workspace_live_issue = lambda *_args, **_kwargs: copy.deepcopy(
         live_issue
     )
+    runtime.task_workspace_refresh_base_before_mutation = lambda *_args, **_kwargs: {}
     runtime.prepare_workspace = prepare_and_copy_inputs
     command_args = argparse.Namespace(root=str(source), input=str(plan_path))
     recorded = runtime.cmd_record_task_workspace_plan(command_args)

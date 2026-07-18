@@ -14,6 +14,8 @@ human confirmation, deterministic recorder/executor/checker, then return
 exactly one declared typed exit. GitHub issue mutation and workspace/task
 mutation are mutually exclusive invocations. A created issue always returns
 `refresh_review`; it never creates a workspace or task in the same invocation.
+Retry recovery reuses one exact post-plan open issue, and mutation execution
+reruns the shared base sync once before the first business write.
 
 The package wrappers require the complete installed Guru Team preset and route
 through `run-skill-command`. They are not standalone implementations. Missing,

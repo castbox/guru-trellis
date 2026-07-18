@@ -283,6 +283,21 @@ only after a separate `workspace_and_task_mutation` confirmation. Target or
 disposition changes return `refresh_review`; cancellation returns `cancelled`;
 both are zero-write paths.
 
+Reviewed-draft execution is retry-safe across a normal post-create reread
+failure. Before create, the executor searches open issues for exact reviewed
+title/body/labels created no earlier than the reviewed plan: 0 matches creates
+once, 1 match recovers and rereads, and more than 1 blocks. After complete
+Intake re-entry, a workflow-created open issue carries the complete prior
+checker-passed created-issue result and matches the fresh context canonical live
+existing-issue identity. That context uses `kind=issue` and null
+`issue_binding`; an arbitrary nullable digest is not sufficient authority.
+
+Before the first confirmed GitHub or workspace/task mutation, the active Skill
+reruns the shared selected-base resolver/sync core. The plan binds the initial
+checker-passed post-sync identity. A changed fresh post-sync identity returns
+`refresh_review` after any required safe base fast-forward and before business
+mutation; unchanged identity permits the reviewed mutation path to continue.
+
 `prepare-task.sh --json` remains query-only compatibility. Legacy
 `--create-issue-confirmed`, `--create-worktree`, and `--create-task` flags fail
 closed before any write and point to `guru-create-task-workspace` plus its

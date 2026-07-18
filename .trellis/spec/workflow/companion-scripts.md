@@ -283,6 +283,27 @@ official fallback writes `creator=assignee=reviewed login`. It then writes
 exactly four task-local tracked Intake artifacts and only ignored
 `.trellis/.runtime/guru-team/**` mappings.
 
+Before draft creation, the executor lists live open issues and filters exact
+title/body/label matches whose `createdAt` is not earlier than the reviewed
+plan capture. It creates only for zero matches, recovers and rereads one match,
+and blocks on multiple matches. This makes a retry after successful remote
+create plus failed immediate reread reuse the first issue. A later open-issue
+plan embeds the complete checker-passed created-issue result; its result and
+binding digests, draft/confirmation identity, current issue, and context live
+existing-issue identity are revalidated before workspace/task mutation. The
+fresh context uses `kind=issue` and null `issue_binding`, not the pre-create
+draft projection.
+
+Immediately before the first confirmed GitHub or workspace/task mutation, the
+executor reconstructs the original resolver inputs from the checker-passed
+base prerequisite, calls `resolve_base_selection`, then `execute_base_sync`,
+and validates the fresh result. The plan's `post_sync_resolution_sha256` plus
+selected ref and HEAD projection must remain exact. If fetch reveals a normal
+remote advance, safe fast-forward may occur but the executor returns
+`refresh_review` before any issue/workspace/task/artifact/runtime write. Later
+same-invocation guards revalidate the already refreshed plan and local facts;
+they do not add locks, concurrency protocols, or a second remote sync loop.
+
 The checker validates the result schema, plan linkage, live issue or
 branch/worktree/task identity, artifact bytes/schema/digests/trackability,
 runtime ignore state, and workspace boundary. It never turns deterministic
