@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import shutil
 import tempfile
 import unittest
@@ -256,6 +257,38 @@ class SourceValidationTests(unittest.TestCase):
             self.assertIn("self-contained/portable", text, path)
             self.assertIn("run-skill-command", text, path)
             self.assertIn("完整", text, path)
+
+    def test_public_readmes_match_canonical_extension_version(self) -> None:
+        manifest = json.loads(
+            (REPO / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
+        )
+        canonical_version = manifest["version"]
+        version_match = re.fullmatch(r"\d+\.\d+\.\d+-guru\.(\d+)", canonical_version)
+        self.assertIsNotNone(version_match, canonical_version)
+        canonical_revision = f".{version_match.group(1)}"
+        readmes = [
+            REPO / "README.md",
+            REPO / "trellis/workflows/guru-team/README.md",
+            REPO / "trellis/presets/guru-team/README.md",
+        ]
+        for path in readmes:
+            text = path.read_text(encoding="utf-8")
+            current_versions = set(
+                re.findall(r"(?<!v)\b\d+\.\d+\.\d+-guru\.\d+\b", text)
+            )
+            self.assertEqual(current_versions, {canonical_version}, path)
+            canonical_shorthand_revisions = set(
+                re.findall(
+                    r"\bcanonical\s+`?(\.\d+)`?",
+                    text,
+                    flags=re.IGNORECASE,
+                )
+            )
+            self.assertLessEqual(
+                canonical_shorthand_revisions,
+                {canonical_revision},
+                path,
+            )
 
     def test_representative_active_package_and_routes_pass(self) -> None:
         result = self.validate()

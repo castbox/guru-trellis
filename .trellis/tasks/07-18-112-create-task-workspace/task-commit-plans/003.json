@@ -1,0 +1,272 @@
+{
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
+  "schema_version": "1.0",
+  "skill_id": "guru-create-task-commit",
+  "sequence": "003",
+  "task": {
+    "id": "112-create-task-workspace",
+    "path": ".trellis/tasks/07-18-112-create-task-workspace",
+    "status": "in_progress",
+    "branch": "feat/112-create-task-workspace"
+  },
+  "issue": {
+    "primary_issue": 112,
+    "ledger_sha256": "c66c5d6f9a05c18c08160436545e81f5cbdfec1185eb5e716dea574421882dea"
+  },
+  "git": {
+    "base_branch": "main",
+    "base_ref": "origin/main",
+    "pre_commit_head": "c032fa6f37e25bf5b4ed1227b8b2264eb580a8e3"
+  },
+  "evidence": {
+    "planning_approval": {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/planning-approval.json",
+      "sha256": "786ce6ebce96a4b0f3d0dc6d6088d5b9148985da21d78d9337e2fa50f97705cf",
+      "size": 5311
+    },
+    "phase2_check": {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/phase2-check.json",
+      "sha256": "ef24579e67495621905f568449623a5af78c2cb374ae2fc269fa16abc03b43bf",
+      "size": 11000
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/issue-scope-ledger.json",
+      "sha256": "c66c5d6f9a05c18c08160436545e81f5cbdfec1185eb5e716dea574421882dea",
+      "size": 2734
+    },
+    "task": {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/task.json",
+      "sha256": "f969dbfc438937875d291c400f24cf363c8c5113aba7b4eb1db68eda54fad26e",
+      "size": 850
+    }
+  },
+  "dirty_snapshot": {
+    "entries": [
+      {
+        "path": ".trellis/tasks/07-18-112-create-task-workspace/agent-assignment.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "14377da2d4a95336f9d0319848a9232949846417",
+        "worktree_sha256": "7f89ca00b8aa2d1471c16d159fb446378f41c6e8aa49da05cdfd2af94ce03632",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-18-112-create-task-workspace/phase2-check.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "1c4b138fcfcd97aeda246fff062f47f040a64d4a",
+        "worktree_sha256": "ef24579e67495621905f568449623a5af78c2cb374ae2fc269fa16abc03b43bf",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-18-112-create-task-workspace/review-gate.json",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "3fe60f2e3affd3902357dfbc2fa90d0c9e45042abc4f6791ee231779870109e0",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-18-112-create-task-workspace/review.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "d574bf057abbdca02817a2cd89b369a0d46a17cddaf3e04b0c389e0d40688b18",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-18-112-create-task-workspace/reviews/001-final.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "53ced6aa3da7dee072422c5b8b7e4e1bc9215a798caa21cfbbb76d7757748ba4",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-18-112-create-task-workspace/reviews/002-closure.md",
+        "index_status": "?",
+        "worktree_status": "?",
+        "untracked": true,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": null,
+        "worktree_sha256": "dab4b005791f64c4be757b344edc9361cf3683b3ac8b0e146cbc857fe055613d",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/001.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "3b9c1ec9d7d84d94c659236ea80a69a3f19e3340",
+        "worktree_sha256": "95c42f0a11ffc8e9b43a6d65161fd814ce63706a839aff4eb35ca8f49b9c6133",
+        "mode": "100644"
+      },
+      {
+        "path": ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/002.json",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "5361d6c79ad4ed313bdc2e93de8a56ef0e876c0c",
+        "worktree_sha256": "82c307734fdf0e7da3172618c1b6b7d3aa9b9a6aca2da05bce8ae98626d2d4ac",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "9929d460a923180a2f3ad0ce6ca1dab234ce5559",
+        "worktree_sha256": "7100d9db0d4bd46c2bc2dcab85739c22a1b7b3cb9466661794994a31df5280d3",
+        "mode": "100644"
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "index_status": "",
+        "worktree_status": "M",
+        "untracked": false,
+        "deleted": false,
+        "renamed_from": null,
+        "copied_from": null,
+        "index_blob": "686e0dac0c85a0ea3662cf7a6e4de368f1850735",
+        "worktree_sha256": "18c3e83d0ac7be027db5110dd648e8869f3d7f588c4ac7ea75729c3b1f2753ec",
+        "mode": "100644"
+      }
+    ],
+    "digest": "e3a6231cdb83751e09f2e425b5d8f315bd76134b3e8ca3946764ce1af11eb7bd"
+  },
+  "path_classifications": [
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/agent-assignment.json",
+      "category": "unrelated-preserved",
+      "reason": "Branch Review, liveness, or prior commit-result metadata remains outside this work commit.",
+      "coverage_source": "trellis-continue metadata tail"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/phase2-check.json",
+      "category": "task-reviewed",
+      "reason": "Fresh Phase 2 evidence covers the Round 2 Docs SSOT finding fix and its current bytes.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/review-gate.json",
+      "category": "unrelated-preserved",
+      "reason": "Branch Review, liveness, or prior commit-result metadata remains outside this work commit.",
+      "coverage_source": "trellis-continue metadata tail"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/review.md",
+      "category": "unrelated-preserved",
+      "reason": "Branch Review, liveness, or prior commit-result metadata remains outside this work commit.",
+      "coverage_source": "trellis-continue metadata tail"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/reviews/001-final.md",
+      "category": "unrelated-preserved",
+      "reason": "Branch Review, liveness, or prior commit-result metadata remains outside this work commit.",
+      "coverage_source": "trellis-continue metadata tail"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/reviews/002-closure.md",
+      "category": "unrelated-preserved",
+      "reason": "Branch Review, liveness, or prior commit-result metadata remains outside this work commit.",
+      "coverage_source": "trellis-continue metadata tail"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/001.json",
+      "category": "unrelated-preserved",
+      "reason": "Branch Review, liveness, or prior commit-result metadata remains outside this work commit.",
+      "coverage_source": "trellis-continue metadata tail"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/002.json",
+      "category": "unrelated-preserved",
+      "reason": "Branch Review, liveness, or prior commit-result metadata remains outside this work commit.",
+      "coverage_source": "trellis-continue metadata tail"
+    },
+    {
+      "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "category": "task-reviewed",
+      "reason": "Fresh Phase 2 evidence covers the Round 2 Docs SSOT finding fix and its current bytes.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": "trellis/workflows/guru-team/README.md",
+      "category": "task-reviewed",
+      "reason": "Fresh Phase 2 evidence covers the Round 2 Docs SSOT finding fix and its current bytes.",
+      "coverage_source": "phase2-check.json"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/003.json",
+      "category": "task-reviewed",
+      "reason": "This invocation candidate binds the reviewed exact stage transaction.",
+      "coverage_source": "skill-artifact"
+    }
+  ],
+  "exact_stage_paths": [
+    ".trellis/tasks/07-18-112-create-task-workspace/phase2-check.json",
+    ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/003.json",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/README.md"
+  ],
+  "message": {
+    "subject": "fix(docs): #112 收敛公开扩展版本",
+    "body": "背景：\nClosure Review 发现 workflow README 仍残留 canonical .13，与 0.6.5-guru.15 manifest 冲突。\n\n变更：\n将 workflow README current canonical version 收敛到 .15，并新增 manifest-driven regression，同时覆盖完整 SemVer 与 canonical .N 简写且保留 stable tag 文案。\n\n边界：\n仅修改公开版本文档和维护者测试；不提交 Branch Review metadata，不改变 runtime、package、preset、overlay、部署或数据资产。\n\n验证：\n独立 Phase 2 已关闭版本 P2 与测试漏报；fresh 639 tests、source/installed/ownership/dogfood/A-B/static validators 全部通过。\n\nRefs #112",
+    "bytes": "fix(docs): #112 收敛公开扩展版本\n\n背景：\nClosure Review 发现 workflow README 仍残留 canonical .13，与 0.6.5-guru.15 manifest 冲突。\n\n变更：\n将 workflow README current canonical version 收敛到 .15，并新增 manifest-driven regression，同时覆盖完整 SemVer 与 canonical .N 简写且保留 stable tag 文案。\n\n边界：\n仅修改公开版本文档和维护者测试；不提交 Branch Review metadata，不改变 runtime、package、preset、overlay、部署或数据资产。\n\n验证：\n独立 Phase 2 已关闭版本 P2 与测试漏报；fresh 639 tests、source/installed/ownership/dogfood/A-B/static validators 全部通过。\n\nRefs #112\n",
+    "sha256": "cf1233f0f467a2df16dce46aeb07258e68c88c7e018d6138b59e594f587e82c1"
+  },
+  "ai_review": {
+    "status": "passed",
+    "reviewer": "main-session-codex",
+    "summary": "已审查 #112 Round 2 Docs SSOT finding-fix 的精确 stage、fresh Phase 2、提交语义、Issue 引用与 metadata preservation；无部署、安全或升级边界扩张。",
+    "evidence": [
+      "独立 check_112 已复核完整分支与当前两文件 diff，修复 version regression 漏报后 fresh 639 tests 通过，open findings=0。",
+      "精确 stage 仅含 workflow README、test_skill_packages.py、fresh phase2-check.json 与 candidate 003；所有 review/liveness/prior commit result metadata 保留。",
+      "提交只使用 Refs #112，不关闭任何 close/related/followup issue。",
+      "runtime/package/preset/installer/overlay bytes 未变化；无 CI/CD、容器、K8s、migration、Makefile、数据库或服务部署变更。"
+    ]
+  },
+  "authorization": {
+    "authorized": true,
+    "source": "explicit-user-confirmation-after-planning-for-trellis-continue",
+    "evidence": "用户查看 #112 planning artifacts 后明确回复“确认继续”；主会话已展示本轮四路径 exact stage、metadata preservation、Refs #112 与不 push/PR 边界。"
+  },
+  "freshness": {
+    "captured_at": "2026-07-18T18:18:44.965702Z",
+    "plan_digest": "13a4c1f761c59e2f4294cdaf5943c3882dd1b20e3ff3a69d63a81c85c71b5f4e"
+  },
+  "result": {
+    "status": "planned",
+    "exit": null
+  }
+}

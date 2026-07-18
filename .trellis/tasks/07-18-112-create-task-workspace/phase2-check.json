@@ -1,46 +1,18 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-18T17:39:50Z",
+  "generated_at": "2026-07-18T18:17:46Z",
   "task_dir": ".trellis/tasks/07-18-112-create-task-workspace",
   "base_branch": "main",
-  "head": "26a284477a1c1c21760ff7f93409466ebda9100f",
+  "head": "c032fa6f37e25bf5b4ed1227b8b2264eb580a8e3",
   "diff_range": "origin/main...HEAD",
   "dirty_paths": [
-    ".agents/skills/guru-create-task-workspace/references/contract.md",
-    ".agents/skills/guru-create-task-workspace/tests/test_contract.py",
-    ".claude/skills/guru-create-task-workspace/references/contract.md",
-    ".claude/skills/guru-create-task-workspace/tests/test_contract.py",
-    ".codex/skills/guru-create-task-workspace/references/contract.md",
-    ".codex/skills/guru-create-task-workspace/tests/test_contract.py",
-    ".cursor/skills/guru-create-task-workspace/references/contract.md",
-    ".cursor/skills/guru-create-task-workspace/tests/test_contract.py",
-    ".trellis/guru-team/extension.json",
-    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-    ".trellis/guru-team/skills/packages/guru-create-task-workspace/references/contract.md",
-    ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
-    ".trellis/spec/docs/public-docs.md",
-    ".trellis/spec/preset/installer.md",
-    ".trellis/spec/workflow/companion-scripts.md",
-    ".trellis/spec/workflow/data-contracts.md",
-    ".trellis/spec/workflow/quality-guidelines.md",
-    ".trellis/spec/workflow/skill-package-contract.md",
     ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/001.json",
-    "README.md",
-    "docs/requirements/README.md",
-    "docs/requirements/guru-team-trellis-flow.md",
-    "docs/requirements/requirement-main.md",
-    "trellis/presets/guru-team/README.md",
-    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
-    "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
-    "trellis/skills/guru-team/packages/guru-create-task-workspace/references/contract.md",
-    "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py",
-    "trellis/workflows/guru-team/README.md",
-    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/002.json",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/README.md"
   ],
   "checker": "check_112",
-  "check_summary": "独立 trellis-check 已重新覆盖 issue #112 的批准需求、设计、完整实现、测试、Docs SSOT、跨层合同、preset/update/reapply 与部署影响；Branch Review Round 1 的 existing identity creator 污染和 0.6.5-guru.15 文档漂移两项 P2 均已关闭，exact issue title/body 观察项也已验证，当前无 P0-P3 finding。",
+  "check_summary": "独立 trellis-check 已完整复核 issue #112 的批准需求、设计、8 份 curated specs、两轮 Branch Review finding lifecycle、完整分支与当前 README/version regression diff；workflow README 已收敛到 0.6.5-guru.15，新增测试漏报 canonical .N 简写的问题已在检查中修复并完成 fresh 全量回归，当前无 P0-P3 finding。",
   "checked_artifacts": [
     {
       "path": ".trellis/tasks/07-18-112-create-task-workspace/prd.md",
@@ -86,27 +58,33 @@
     },
     {
       "path": ".trellis/tasks/07-18-112-create-task-workspace/agent-assignment.json",
-      "sha256": "6121ae4dbd6e7a64a3f731f663fde5a9e2b12bb4ffbfcf95c2e8f28dabd4d4dd",
-      "size_bytes": 126409,
-      "modified_at": "2026-07-18T17:37:31.104812+00:00"
+      "sha256": "7f89ca00b8aa2d1471c16d159fb446378f41c6e8aa49da05cdfd2af94ce03632",
+      "size_bytes": 134757,
+      "modified_at": "2026-07-18T18:16:50.545480+00:00"
     },
     {
       "path": ".trellis/tasks/07-18-112-create-task-workspace/review-gate.json",
-      "sha256": "a3196ab76540c8e8e46548d777ef5556d37de6234c965be4f6de00b75dccbedb",
-      "size_bytes": 37080,
-      "modified_at": "2026-07-18T16:38:50.817828+00:00"
+      "sha256": "3fe60f2e3affd3902357dfbc2fa90d0c9e45042abc4f6791ee231779870109e0",
+      "size_bytes": 37034,
+      "modified_at": "2026-07-18T17:54:23.724535+00:00"
     },
     {
       "path": ".trellis/tasks/07-18-112-create-task-workspace/review.md",
-      "sha256": "fb9789721091910306fba67323f989318322fd24caa5134fb71035895e2dd58d",
-      "size_bytes": 2937,
-      "modified_at": "2026-07-18T16:38:32.363033+00:00"
+      "sha256": "d574bf057abbdca02817a2cd89b369a0d46a17cddaf3e04b0c389e0d40688b18",
+      "size_bytes": 3935,
+      "modified_at": "2026-07-18T17:54:06.706892+00:00"
     },
     {
       "path": ".trellis/tasks/07-18-112-create-task-workspace/reviews/001-final.md",
       "sha256": "53ced6aa3da7dee072422c5b8b7e4e1bc9215a798caa21cfbbb76d7757748ba4",
       "size_bytes": 10046,
       "modified_at": "2026-07-18T16:36:03.620723+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/reviews/002-closure.md",
+      "sha256": "dab4b005791f64c4be757b344edc9361cf3683b3ac8b0e146cbc857fe055613d",
+      "size_bytes": 9911,
+      "modified_at": "2026-07-18T17:52:11.046383+00:00"
     }
   ],
   "checked_specs": [
@@ -172,15 +150,15 @@
   "validation_commands": [
     {
       "command": "五文件 Python unittest suite",
-      "result": "Ran 638 tests in 184.401s, OK"
+      "result": "fresh final run: Ran 639 tests in 186.047s, OK"
     },
     {
-      "command": "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
-      "result": "exit 0；clean init、初装、finish-work、update、workflow reselect、preset reapply、no-developer/existing identity、sidecar=0 均通过"
+      "command": "public README version surface scan",
+      "result": "三份 public README current full SemVer 与 canonical .N 简写均绑定 manifest 0.6.5-guru.15；active .13/.14 零命中"
     },
     {
-      "command": "source/installed guru-create-task-workspace package validators",
-      "result": "通过；canonical/installed/shared/Codex/Cursor/Claude parity 一致"
+      "command": "source/installed guru-create-task-workspace validators",
+      "result": "通过；installed 303 managed files，sidecar/conflict/removal=0"
     },
     {
       "command": "python3 trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
@@ -191,11 +169,15 @@
       "result": "通过"
     },
     {
+      "command": "A/B merge fixture",
+      "result": "A->B 与 B->A 均通过"
+    },
+    {
       "command": "python3 -m py_compile + bash -n + JSON parse + JSONL validation",
       "result": "通过"
     },
     {
-      "command": "git diff --check",
+      "command": "git diff --check origin/main",
       "result": "通过"
     },
     {
@@ -203,8 +185,12 @@
       "result": "通过；source checkout clean，expected/actual worktree 一致"
     },
     {
-      "command": "sidecar/conflict scan",
-      "result": "无 .new/.bak，installed sidecar=0"
+      "command": "prior complete throwaway freshness review",
+      "result": "runtime/package/preset/installer/workflow/manifest/verifier 相对 c032fa6 无 dirty bytes；上一轮 install/update/reapply、existing/no-identity 与 sidecar=0 evidence 仍精确有效"
+    },
+    {
+      "command": "sidecar scan",
+      "result": "无 .new/.bak"
     }
   ],
   "findings": [
@@ -255,6 +241,12 @@
       "status": "resolved",
       "message": "manifest 已升级至 0.6.5-guru.15，但三份公开 README 仍声明旧版本；已统一 root、workflow、preset README、manifest 与 durable specs。",
       "path": "README.md"
+    },
+    {
+      "priority": "P2",
+      "status": "resolved",
+      "message": "新增 public README version regression 最初只匹配完整 SemVer，漏报 canonical .N 简写；已改为从 manifest 解析 revision 并校验简写，同时保留 stable .2 与 v-tag 合法文案。",
+      "path": "trellis/skills/guru-team/tests/test_skill_packages.py"
     }
   ],
   "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
