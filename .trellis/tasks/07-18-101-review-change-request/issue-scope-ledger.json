@@ -4,7 +4,22 @@
     "url": "https://github.com/castbox/guru-trellis/issues/101",
     "title": "拆分 #98：实现 guru-review-change-request 闭环 Skill",
     "reason": "本任务唯一交付单元与 close 候选。",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "Fresh Phase 2 独立语义检查覆盖 Issue #101 需求、设计、96-file 实现、implementation handoff、Docs SSOT、分发、ownership、update/reapply 与安全部署边界，P0/P1/P2/P3 均为 0。",
+      "Round 3 fresh 最终审查绑定 HEAD 81d9c02099854b90d3ec1a9b575a412992be3834，覆盖 origin/main...HEAD 的 96 个 paths；Round 1 唯一 P2 已由真实 handoff、fresh Phase 2 与 Round 2 closure 闭环，当前 findings_count=0。",
+      "Package 20、shared runtime 508、distribution 71、preset 39、ownership 6 项测试共 644/644 通过；fresh/update-reapply throwaway、六树 byte/mode equality、dogfood drift、zero sidecar/removal/conflict/residue 均通过；remote branch-pinned marketplace verification 由 finish-work 在 PR 创建前强制执行。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "5fc48a0ae6a277815eaa77e538ded33064fb92a7d35dd3dee21f85fde7e63923",
+        "verified_content_head": "81d9c02099854b90d3ec1a9b575a412992be3834",
+        "remote_head": "81d9c02099854b90d3ec1a9b575a412992be3834",
+        "publish_head": "81d9c02099854b90d3ec1a9b575a412992be3834",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -12,7 +27,22 @@
       "url": "https://github.com/castbox/guru-trellis/issues/101",
       "title": "拆分 #98：实现 guru-review-change-request 闭环 Skill",
       "reason": "只有 Issue #101 进入本 PR close scope；publish 前补齐 Phase 2、Branch Review 与 remote marketplace evidence。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "Fresh Phase 2 独立语义检查覆盖 Issue #101 需求、设计、96-file 实现、implementation handoff、Docs SSOT、分发、ownership、update/reapply 与安全部署边界，P0/P1/P2/P3 均为 0。",
+        "Round 3 fresh 最终审查绑定 HEAD 81d9c02099854b90d3ec1a9b575a412992be3834，覆盖 origin/main...HEAD 的 96 个 paths；Round 1 唯一 P2 已由真实 handoff、fresh Phase 2 与 Round 2 closure 闭环，当前 findings_count=0。",
+        "Package 20、shared runtime 508、distribution 71、preset 39、ownership 6 项测试共 644/644 通过；fresh/update-reapply throwaway、六树 byte/mode equality、dogfood drift、zero sidecar/removal/conflict/residue 均通过；remote branch-pinned marketplace verification 由 finish-work 在 PR 创建前强制执行。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "5fc48a0ae6a277815eaa77e538ded33064fb92a7d35dd3dee21f85fde7e63923",
+          "verified_content_head": "81d9c02099854b90d3ec1a9b575a412992be3834",
+          "remote_head": "81d9c02099854b90d3ec1a9b575a412992be3834",
+          "publish_head": "81d9c02099854b90d3ec1a9b575a412992be3834",
+          "commands_passed": true
+        }
+      ]
     }
   ],
   "related_issues": [

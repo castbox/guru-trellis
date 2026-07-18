@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/101-review-change-request",
+    "reviewed_head_sha": "81d9c02099854b90d3ec1a9b575a412992be3834",
+    "title": "实现公共变更请求就绪审查闭环 Skill",
+    "body_source": "pr-body.md",
+    "body_sha256": "9eabdbd825696f695d7ce55439f410b837e6239970400c1cc4e58150c0c89879",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "08d9861324395c112ac7457a342c9b7d930d47257937d96e02342a5026312017"
+  },
+  "publish_inputs_sha256": "fca5a9dfc7c3c1714c76f6c77a7bc1ca994b053cedc29b1a40950fa53d580c48"
+}
