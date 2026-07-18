@@ -37,8 +37,8 @@
     },
     {
       "id": "clarity_evidence",
-      "evidence": "current guru-requirements-clarification-1.0 clear result or explicit missing/stale facts",
-      "binding": "the same review target, content and scope decision",
+      "evidence": "current guru-requirements-clarification-2.0 clear result or explicit missing/stale facts",
+      "binding": "the same retained open issue/draft target, checker-passed disposition, content and scope decision",
       "freshness": "existing objective clarification structural and live checks are rerun before ready"
     },
     {
@@ -80,7 +80,7 @@
       "id": "change_request_review_checker",
       "command": "scripts/check-change-request-review.sh",
       "runtime_command": "check-change-request-review",
-      "objective_scope": "published schema, current target and prerequisite projection, linkage and facts digest recomputation, fixed dimensions/findings references, Gate/exit invariant and exact consumer"
+      "objective_scope": "published schema, current target and 2.0 clarification disposition projection, linkage and facts digest recomputation, fixed dimensions/findings references, Gate/exit invariant and exact consumer"
     }
   ],
   "external_exits": [

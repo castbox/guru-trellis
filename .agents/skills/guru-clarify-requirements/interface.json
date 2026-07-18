@@ -25,9 +25,9 @@
     },
     {
       "id": "review_target",
-      "evidence": "one current GitHub issue or side-effect-free proposed draft identity",
-      "binding": "the exact requirements authority reviewed by the AI",
-      "freshness": "target facts and content digest remain unchanged through recording and checking"
+      "evidence": "one current open/closed GitHub issue or side-effect-free proposed draft identity plus a checker-bound target disposition",
+      "binding": "the exact requirements authority reviewed by the AI and the mutually exclusive retained, selected, reopened, follow-up, or complete outcome",
+      "freshness": "target state/content, duplicate-search facts, every candidate decision and selected target remain unchanged through recording and checking"
     },
     {
       "id": "context_evidence",
@@ -37,9 +37,9 @@
     },
     {
       "id": "source_authority",
-      "evidence": "live issue/draft facts plus exact source-action preimage and post-mutation facts when applicable",
-      "binding": "the issue or draft that future intake will read",
-      "freshness": "AI rereads immediately before mutation and checker rereads declared live facts"
+      "evidence": "live issue/draft facts plus exact target disposition, authority-impact classification, source-action preimage and post-mutation facts when applicable",
+      "binding": "the selected issue or draft that fresh intake will read and every load-bearing clarification required by later implementation",
+      "freshness": "AI rereads immediately before mutation and checker rereads declared target, duplicate and mutation facts"
     },
     {
       "id": "invocation_freshness",
@@ -74,13 +74,13 @@
       "id": "clarification_checker",
       "command": "scripts/check-requirements-clarification.sh",
       "runtime_command": "check-requirements-clarification",
-      "objective_scope": "published schema, digest recomputation, live source/context/task freshness, exact five-classification confirmation, mechanism disposition isolation, decision-trail linkage, authority-before-context-before-task-update re-entry and typed-exit invariants"
+      "objective_scope": "schema 2.0 and legacy-version rejection, digest recomputation, live source/context/target/duplicate freshness, exact target/action/scope confirmation, load-bearing authority persistence, mechanism disposition isolation, decision-trail linkage, authority-before-context-before-task-update re-entry and typed-exit invariants"
     }
   ],
   "external_exits": [
     {
       "id": "clear",
-      "evidence": "zero open questions, passed AI Review Gate, current authority/context, non-empty terminal active-task proposals, exact five-classification confirmation/trail projection, and confirmation-free mechanism dispositions",
+      "evidence": "zero open questions, passed AI Review Gate, one current keep disposition for initial intake or current active-task authority, persisted load-bearing answers, exact required confirmation, and no unrefreshed mutation",
       "consumer": {"kind": "workflow", "id": "guru-requirements-clear-router"}
     },
     {
@@ -90,7 +90,12 @@
     },
     {
       "id": "refresh_context",
-      "evidence": "source/context binding is stale or an issue/comment/body mutation succeeded",
+      "evidence": "source/context binding is stale or an issue comment/body/reopen mutation succeeded",
+      "consumer": {"kind": "skill", "id": "guru-sync-base"}
+    },
+    {
+      "id": "retarget_context",
+      "evidence": "a duplicate candidate open issue was exactly selected and validated as the new target",
       "consumer": {"kind": "skill", "id": "guru-sync-base"}
     },
     {
@@ -100,13 +105,13 @@
     },
     {
       "id": "blocked",
-      "evidence": "load-bearing refusal, unobtainable evidence, conflict, or blocked semantic gate",
+      "evidence": "load-bearing refusal, unobtainable evidence, conflict, checker-bound target-complete disposition, or blocked semantic gate",
       "consumer": {"kind": "stop", "id": "requirements-clarification-blocked"}
     }
   ],
   "reentry": {
-    "identity": "mode, invocation kind, review target, context, scope proposals, source actions, confirmation, active-task evidence and derived content identity",
-    "freshness": "clear/new_task is accepted only while every authority/context/task binding remains current; GitHub authority mutation refreshes context first, context generated_at is not earlier than authority updated_at, task update binds that current digest, and no second context digest change is required",
+    "identity": "mode, invocation kind, review target, target disposition, duplicate candidates, context, clarification authority impacts, scope proposals, source actions, confirmation, active-task evidence and derived content identity",
+    "freshness": "clear/new_task/retarget_context is accepted only while every target/duplicate/authority/context/task binding remains current; GitHub authority mutation refreshes context first, context generated_at is not earlier than authority updated_at, task update binds that current digest, and no second context digest change is required",
     "stale_behavior": "fail_closed"
   },
   "tests": ["tests/test_contract.py"],

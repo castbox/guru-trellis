@@ -298,7 +298,7 @@ planned `guru-create-task-workspace`，以及 active `guru-sync-base`、
 `guru-create-task-commit`。Planned id 不安装 package，也不能拥有 invoke/exit marker；
 `ready` consumer 在 #112 active 前停在 missing-Skill gate。当前
 canonical extension version 是待发布的
-`0.6.5-guru.13`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
+`0.6.5-guru.14`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
 （含 interface、artifact schema、
 example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
 root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
@@ -341,7 +341,7 @@ snapshot identity，不重建 ancestry。
 active Skill consumer 与唯一 workflow/stop target marker 均可解析。
 
 `guru-clarify-requirements` package additive 安装
-`guru-requirements-clarification-1.0` schema、example、contract、tests和两个 executable
+`guru-requirements-clarification-2.0` schema、example、contract、tests和两个 executable
 dispatcher wrappers。Runtime assets 是
 `.trellis/guru-team/scripts/bash/record-requirements-clarification.sh` 与
 `check-requirements-clarification.sh`；不存在 mutation executor。Workflow/standalone
@@ -350,7 +350,9 @@ fail-closed验证。Pre-task/standalone stdout-only，
 active-task Scope Change Gate mandatory invoke本Skill，并由caller-aware clear router恢复planning或
 exact interrupted progression；只验证现有 ledger/planning/stale-gate/re-entry linkage，不创建专用 clarification artifact。Throwaway initial install、
 `trellis update`、workflow re-selection与preset reapply均执行 standalone record/check probe，
-并验证 `clear` / `needs_context` / `refresh_context` / `new_task` / `blocked` consumers。
+并验证 `clear` / `needs_context` / `refresh_context` / `retarget_context` / `new_task` /
+`blocked` consumers。2.0 绑定 target disposition、duplicate decision、authority impact 和新
+action/exit；1.0 artifact/caller fail closed，必须从 `guru-sync-base` 重跑，不自动迁移。
 
 Active-task `clear`/`new_task` 必须携带非空七类 terminal proposal set，每个五类 scope
 classification 无论 origin 均要求 exact 用户证据，并 exact 绑定当前

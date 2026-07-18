@@ -252,11 +252,12 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             },
             "clarity": {
                 "status": "current",
-                "schema_id": "guru-requirements-clarification-1.0",
+                "schema_id": "guru-requirements-clarification-2.0",
                 "typed_exit": "clear",
                 "payload_sha256": "a" * 64,
                 "facts_sha256": "b" * 64,
                 "target_sha256": self.target["identity_sha256"],
+                "disposition_sha256": "f" * 64,
                 "content_sha256": self.target["content_sha256"],
                 "scope_sha256": self.scope["scope_sha256"],
                 "error_codes": [],
@@ -545,6 +546,22 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             **authority,
             "facts_sha256": GTT.context_digest(authority),
         }
+        payload["target_disposition"] = {
+            "disposition": (
+                "keep_current_open_issue"
+                if target_kind == "existing_issue"
+                else "keep_current_draft"
+            ),
+            "duplicate_query": "repo:example/guru-extension is:issue is:open readiness review",
+            "duplicate_checked_at": "2026-01-01T00:00:00Z",
+            "duplicate_candidates": [],
+            "duplicate_facts_sha256": "0" * 64,
+            "selected_issue": None,
+            "original_target_role": "primary",
+            "decision_summary": "No open duplicate replaces the current reviewed target.",
+            "confirmation_ref": None,
+            "disposition_digest": "0" * 64,
+        }
         snapshot_sha256 = context_payload["snapshot_identity"]["snapshot_sha256"]
         payload["context_evidence"] = {
             "status": "current",
@@ -707,6 +724,7 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             **authority,
             "facts_sha256": GTT.context_digest(authority),
         }
+        payload["target_disposition"] = None
         payload["context_evidence"] = {
             "status": "current",
             "schema_id": "guru-context-discovery-1.0",
@@ -1780,6 +1798,10 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
         )
         clarity_hash_mismatch = copy.deepcopy(prerequisites)
         clarity_hash_mismatch["clarity"]["content_identity"]["result_sha256"] = "0" * 64
+        clarity_disposition_mismatch = copy.deepcopy(prerequisites)
+        clarity_disposition_mismatch["clarity"]["content_identity"][
+            "disposition_sha256"
+        ] = "0" * 64
 
         alternate_source = self.root / "alternate-draft.json"
         alternate_source.write_text(json.dumps({
@@ -1804,6 +1826,10 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
         cases = {
             "clarity-content-stale": (stale_clarity, True),
             "clarity-facts-mismatch": (clarity_hash_mismatch, True),
+            "clarity-disposition-mismatch": (
+                clarity_disposition_mismatch,
+                True,
+            ),
             "wording-content-stale": (stale_wording, True),
             "wording-facts-mismatch": (wording_facts_mismatch, True),
             "wording-scan-mismatch": (wording_scan_mismatch, False),

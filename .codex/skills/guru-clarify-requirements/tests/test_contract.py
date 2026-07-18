@@ -42,13 +42,14 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         )
         self.assertEqual(
             [item["id"] for item in self.interface["external_exits"]],
-            ["clear", "needs_context", "refresh_context", "new_task", "blocked"],
+            ["clear", "needs_context", "refresh_context", "retarget_context", "new_task", "blocked"],
         )
         self.assertEqual(
             [item["consumer"] for item in self.interface["external_exits"]],
             [
                 {"kind": "workflow", "id": "guru-requirements-clear-router"},
                 {"kind": "skill", "id": "guru-discover-change-context"},
+                {"kind": "skill", "id": "guru-sync-base"},
                 {"kind": "skill", "id": "guru-sync-base"},
                 {"kind": "workflow", "id": "guru-full-task-intake-chain"},
                 {"kind": "stop", "id": "requirements-clarification-blocked"},
@@ -140,6 +141,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "round_id": "round_1", "question_id": "intent", "atomic_group_id": None,
             "atomic_group_reason": None, "category": "product_intent", "question": "Which behavior?",
             "answer_summary": "Only part was answered.", "answer_status": "partial",
+            "authority_impact": "load_bearing", "authority_action_ids": [],
             "affected_contracts": ["requirements"], "opened_question_ids": ["intent"],
             "closed_question_ids": ["intent"],
         }]
@@ -181,6 +183,13 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertNotEqual(list(validator.iter_errors(github_action)), [])
         github_action["source_actions"][0]["mutation_evidence"].pop("unexpected")
         self.assertEqual(list(validator.iter_errors(github_action)), [])
+
+        refresh_without_disposition = copy.deepcopy(github_action)
+        refresh_without_disposition["target_disposition"] = None
+        self.assertNotEqual(
+            list(validator.iter_errors(refresh_without_disposition)),
+            [],
+        )
 
         blocked = copy.deepcopy(self.example)
         blocked["typed_exit"] = "blocked"

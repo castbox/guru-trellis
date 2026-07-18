@@ -21,20 +21,25 @@ Execute in this order:
 1. validate invocation, review target, current context and authority;
 2. classify input into confirmed facts, repository-answerable questions,
    product-intent questions, scope-risk decisions and out-of-scope facts;
-3. inspect current Docs/code/tests/history/GitHub/Git evidence until every
+3. search current open issues for duplicates and author one mutually exclusive
+   target disposition, including a selected/rejected decision for every
+   candidate;
+4. inspect current Docs/code/tests/history/GitHub/Git evidence until every
    repository-answerable question is `answered` with checked evidence or
    `not_answerable` with checked evidence and a missing reason;
-4. ask exactly one highest-value user question per round. Use one
+5. ask exactly one highest-value user question per round. Use one
    `atomic_group` only for an indivisible product choice and record why it
-   cannot be split. A partial answer closes no question;
-5. propose exact scope decisions and source-of-truth actions;
-6. execute the AI Review Gate;
-7. when required, show exact target, payload, scope delta, affected contracts,
+   cannot be split. A partial answer closes no question. Classify each answer
+   as `load_bearing` or `non_load_bearing` and bind its authority actions;
+6. propose exact scope decisions and source-of-truth actions;
+7. execute the AI Review Gate;
+8. when required, show exact target, target disposition, payload, scope delta,
+   affected contracts,
    executor command and derived action/proposal digests, then obtain dedicated
    human confirmation;
-8. after confirmation only, the AI may execute a GitHub write, reread live
+9. after confirmation only, the AI may execute a GitHub write, reread live
    facts, and provide mutation evidence;
-9. call recorder/checker and return one typed exit.
+10. call recorder/checker and return one typed exit.
 
 AI owns question selection, clarity, scope classification, action selection,
 confirmation necessity, semantic pass/block and route intent. Scripts never
@@ -58,6 +63,43 @@ source/context authority is current, all accepted proposals have exact
 confirmation when required, and no successful GitHub mutation remains
 unrefreshed.
 
+## Target Disposition
+
+Every initial issue/draft review records exactly one disposition:
+
+- `keep_current_open_issue`: retain the current open issue;
+- `keep_current_draft`: retain the side-effect-free proposed draft;
+- `retarget_existing_issue`: select one different open duplicate candidate;
+- `reopen_closed_issue`: retain and reopen the closed source issue;
+- `create_followup_draft`: retain the closed issue only as related/reference
+  and produce a new side-effect-free issue draft;
+- `block_target_complete`: record evidence that the target is complete and no
+  independently deliverable gap remains.
+
+`needs_context` or a blocked incomplete decision may carry no disposition only
+because it cannot advance downstream. Every progressing `clear`,
+`refresh_context`, `retarget_context`, or `new_task` result requires one current
+disposition. In particular, an issue comment/body edit or proposed-draft update
+cannot use `target_disposition=null` while returning `refresh_context`.
+
+Duplicate search is mandatory even when its candidate set is empty. Every
+candidate binds live repo/number/state/URL/updated-at facts and one `selected`
+or `rejected` AI decision. Non-empty candidate sets require exact human
+confirmation for both a keep decision and a selected replacement; empty sets
+do not manufacture confirmation for `keep_current_*`.
+
+`retarget_existing_issue` owns one exactly confirmed
+`select_existing_issue` action and returns `retarget_context`. Its unique
+consumer is `guru-sync-base`; the complete sync, context discovery,
+clarification, wording and change-request review chain reruns for the selected
+issue. No target-specific evidence from the old target transfers.
+
+`reopen_closed_issue` owns one exactly confirmed `reopen_issue` GitHub
+mutation and returns `refresh_context`. `create_followup_draft` owns a
+`new_issue_draft`, returns `new_task`, and cannot place the original closed
+issue in the future task's close set. `block_target_complete` requires a
+blocked AI gate and returns `blocked`. Closed issues cannot reach `clear`.
+
 ## Scope Proposals
 
 Every proposal binds exact scenario, trigger evidence, proposed contracts,
@@ -74,8 +116,9 @@ race, fault-injection or cross-OS hardening follows this same rule.
 ## Source Actions And Mutation Boundary
 
 Actions are exactly `none`, `issue_comment`, `issue_body_edit`,
-`proposed_draft_update`, `new_issue_draft`, and
-`active_task_scope_update`. There is no mutation executor in this package.
+`proposed_draft_update`, `new_issue_draft`, `select_existing_issue`,
+`reopen_issue`, and `active_task_scope_update`. There is no mutation executor
+in this package.
 
 For `issue_comment` or `issue_body_edit`, the AI must reread the live preimage,
 match repo/issue/action/payload/confirmation digests, execute the exact existing
@@ -85,6 +128,16 @@ normalized mutation facts to recorder/checker. Success returns
 human-confirmed action payload body, canonical payload digest, mutation result
 content digest, and reread live body/comment bytes. `new_issue_draft` performs no issue creation
 and returns `new_task`; #112 owns the complete intake mutation route.
+
+Every clarification round carries an AI-authored `authority_impact` and
+`authority_action_ids`. `load_bearing` covers any answer that changes problem,
+scope, acceptance, non-goals, issue disposition, risk/test boundary, or another
+contract future implementation must consume. For an issue target it requires
+a confirmed `issue_comment` or `issue_body_edit`, followed by live reread and
+`refresh_context`; for a draft target it requires a confirmed and validated
+`proposed_draft_update` bound to current draft bytes. `none + clear` is invalid
+for a load-bearing round. `non_load_bearing` does not require or permit an
+authority action merely to satisfy the contract.
 
 ## Active-Task Scope Change
 
@@ -155,6 +208,7 @@ perform no GitHub write, and cannot synthesize a semantic pass.
 - `clear` -> workflow target `guru-requirements-clear-router`;
 - `needs_context` -> Skill `guru-discover-change-context`;
 - `refresh_context` -> Skill `guru-sync-base`;
+- `retarget_context` -> Skill `guru-sync-base` and complete initial-intake rerun;
 - `new_task` -> workflow target `guru-full-task-intake-chain` (staged #112);
 - `blocked` -> stop `requirements-clarification-blocked`.
 
@@ -163,6 +217,14 @@ unmapped exits fail closed. Pre-task/standalone results remain stdout-only and
 never write a repo cache, workspace journal or fixed handoff. The package
 requires the complete compatible Guru Team preset and is not self-contained or
 portable.
+
+Schema 2.0 is a breaking artifact-contract version. Schema 1.0 callers and
+artifacts cannot express required target disposition, duplicate decisions,
+authority impact, `select_existing_issue`, `reopen_issue`, or
+`retarget_context`; recorder/checker reject them with
+`requirements_clarification_legacy_schema_requires_refresh`. There is no
+semantic auto-migration. The caller reruns from `guru-sync-base` and produces a
+fresh 2.0 result.
 
 The clear router validates `invocation_context.resume_target` without making a
 new semantic decision: initial issue/draft uses `guru-review-contract-wording`

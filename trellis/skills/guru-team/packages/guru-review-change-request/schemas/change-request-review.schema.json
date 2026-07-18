@@ -168,7 +168,7 @@
     "clarityProjection": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "schema_id", "typed_exit", "payload_sha256", "facts_sha256", "target_sha256", "content_sha256", "scope_sha256", "error_codes"],
+      "required": ["status", "schema_id", "typed_exit", "payload_sha256", "facts_sha256", "target_sha256", "disposition_sha256", "content_sha256", "scope_sha256", "error_codes"],
       "properties": {
         "status": {"$ref": "#/$defs/projectionStatus"},
         "schema_id": {"type": ["string", "null"]},
@@ -176,6 +176,7 @@
         "payload_sha256": {"$ref": "#/$defs/nullableSha256"},
         "facts_sha256": {"$ref": "#/$defs/nullableSha256"},
         "target_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "disposition_sha256": {"$ref": "#/$defs/nullableSha256"},
         "content_sha256": {"$ref": "#/$defs/nullableSha256"},
         "scope_sha256": {"$ref": "#/$defs/nullableSha256"},
         "error_codes": {"$ref": "#/$defs/errorCodes"}
@@ -211,7 +212,7 @@
     "linkage": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["target_identity_sha256", "target_content_sha256", "base_head", "current_state_sha256", "history_sha256", "duplicate_sha256", "clarity_facts_sha256", "wording_facts_sha256", "linkage_sha256"],
+      "required": ["target_identity_sha256", "target_content_sha256", "base_head", "current_state_sha256", "history_sha256", "duplicate_sha256", "clarity_facts_sha256", "clarity_disposition_sha256", "wording_facts_sha256", "linkage_sha256"],
       "properties": {
         "target_identity_sha256": {"$ref": "#/$defs/sha256"},
         "target_content_sha256": {"$ref": "#/$defs/sha256"},
@@ -220,6 +221,7 @@
         "history_sha256": {"$ref": "#/$defs/nullableSha256"},
         "duplicate_sha256": {"$ref": "#/$defs/nullableSha256"},
         "clarity_facts_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "clarity_disposition_sha256": {"$ref": "#/$defs/nullableSha256"},
         "wording_facts_sha256": {"$ref": "#/$defs/nullableSha256"},
         "linkage_sha256": {"$ref": "#/$defs/sha256"}
       }
