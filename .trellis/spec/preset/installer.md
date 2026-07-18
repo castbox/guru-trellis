@@ -140,6 +140,12 @@ begins with existing official identity/journal bytes and proves Guru operations
 leave them unchanged. Official Trellis may still create/use those paths outside
 the Guru preset contract.
 
+The installed workspace verification invokes the isolated official
+`common.task_store.cmd_create` adapter in both fixture shapes. It proves the
+reviewed assignee becomes both `task.json.assignee` and `task.json.creator`, the
+call-scoped developer accessor does not consume existing identity, and existing
+identity bytes remain exact.
+
 Fresh install and update/reapply verification must exercise a selected-platform
 standalone wrapper with the full preset runtime. Missing runtime, runtime drift,
 or unresolved sidecars must block before fetch. A package-only copy must never

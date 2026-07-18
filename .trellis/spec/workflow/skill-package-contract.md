@@ -471,10 +471,14 @@ for passed plus confirmed.
 
 Assignee resolution order is explicit input, exactly one issue assignee, zero
 issue assignees to current GitHub login, then an AI/user choice for multiple or
-unresolved candidates. The exact executor always passes a resolved login to
-official `task.py create --assignee`; it never reads, copies, initializes, or
-restores `.trellis/.developer` or `.trellis/workspace/**`. Existing official
-identity/journal data is outside this package and is left unchanged.
+unresolved candidates. In an isolated subprocess, the exact executor calls
+official `common.task_store.cmd_create` with the resolved assignee and replaces
+that module's developer accessor with a null result only for the handler
+invocation. The official fallback therefore writes
+`task.json.creator=task.json.assignee=<reviewed-login>` without reading or
+rewriting `.trellis/.developer`. The executor never copies, initializes, or
+restores `.trellis/.developer` or `.trellis/workspace/**`; existing official
+identity/journal bytes are outside this package and remain unchanged.
 
 External exits are exactly `created` to workflow target
 `guru-task-workspace-created`, `refresh_review` to active Skill

@@ -425,7 +425,7 @@ annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trel
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
 当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.14`；在对应 merge commit 创建并验证
+manifest 已递增到下一待发布版本 `0.6.5-guru.15`；在对应 merge commit 创建并验证
 release tag 前，不得把 `.7` 写成已发布 stable source。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录
@@ -522,10 +522,16 @@ preconditions。Reviewed draft invocation 只取得 `github_issue_mutation` conf
 exact issue 并重读后固定返回 `refresh_review`；同一调用不创建 branch/worktree/task。重跑完整
 Intake 后，open issue invocation 另行取得 `workspace_and_task_mutation` confirmation。Assignee
 固定按 explicit、single issue assignee、zero issue assignees 时 current GitHub login、
-multiple/unresolved 时 AI/user 选择解析，并始终显式传给 `task.py create --assignee`。
+multiple/unresolved 时 AI/user 选择解析，并始终作为显式参数传给 official task-create handler。
 Passed Gate + confirmed 才可 mutation；passed + digest-bound refused 返回
 `cancelled`，`reroute` 返回 `refresh_review`，`blocked` 返回 `blocked`，后三者均由
 checker 验证 zero-write snapshot。
+
+Workspace executor 不直接进入会读取 developer identity 的 CLI 路径，而是在隔离子进程中调用官方
+`common.task_store.cmd_create` handler，并把 reviewed assignee 作为显式 create 参数；仅在该
+handler 调用内禁用 official developer accessor，因此 `task.json.assignee` 与
+`task.json.creator` 都固定为 reviewed login。该 adapter 不读取或改写 existing
+`.trellis/.developer`，source/target 中已有 identity bytes 保持不变。
 
 创建成功后只写四个 tracked task-local Intake artifacts：`task-start-context.json`、
 `issue-scope-ledger.json`、`context-discovery.json`、`issue-review.json`。Plan/result 只走

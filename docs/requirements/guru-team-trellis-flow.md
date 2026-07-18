@@ -327,7 +327,7 @@ structure 校验，不扫描整份 payload。
 | Change request 是否可独立交付 | `guru-review-change-request` 消费 current context/clarity/wording，AI审查十项 readiness dimensions、findings、delivery unit、scope conclusion、Gate 与五出口。 | Recorder/checker stdout-only重建 target/prerequisite projection/linkage/facts；`ready` 唯一进入 active `guru-create-task-workspace`。 |
 | 分支和 worktree 从哪里来 | Workspace Skill 的 AI 生成 branch/workspace/task names，并对 live object 选择 `create_new`、`reuse_exact` 或 `conflict_blocked`。 | `create-task-workspace` 在每个 mutation boundary 重验 plan/base/target/facts；identity 不一致时阻断且不覆盖。 |
 | 命名是否足够语义化 | AI 读 issue 后决定英文 short-name，低信息名称不得进入 executor。 | `naming_quality` 和 `--short-name` / `--workspace-slug` / `--task-slug` / `--branch`。 |
-| assignee 从哪里来 | AI 按 explicit、single issue assignee、zero issue assignees 时 current GitHub login、multiple/unresolved 时 user choice 的固定顺序收敛一个 login。 | Executor 只接受非空 resolved login，并显式调用 `task.py create --assignee <login>`；不读取 `.trellis/.developer`。 |
+| assignee 从哪里来 | AI 按 explicit、single issue assignee、zero issue assignees 时 current GitHub login、multiple/unresolved 时 user choice 的固定顺序收敛一个 login。 | Executor 只接受非空 resolved login，通过隔离 adapter 调用 official `common.task_store.cmd_create`；仅在该 handler 调用内禁用 developer accessor，使 `task.json.creator=task.json.assignee=resolved login`，且 existing `.trellis/.developer` bytes 不变。 |
 
 Task 创建成功后只写四个 tracked task-local Intake artifacts：
 `task-start-context.json`、`issue-scope-ledger.json`、`context-discovery.json`、
@@ -666,7 +666,7 @@ PR readiness 要求：
 2. Guru Team 没有 fork Trellis，而是通过 official marketplace workflow 安装 `guru-team`。
 3. 我们把“任务还没创建之前”的风险收进 Phase 0：issue、duplicate、base branch、worktree、命名和副作用授权都先审查。
 4. tracked `task-start-context.json` 只保存 portable workspace/task identifiers；worktree mode 下的机器写入边界由当前 checkout、`.trellis/.runtime/guru-team/**`、`git worktree list` 推导为 `expected_workspace`，并由 `check-workspace-boundary --task` fail closed 校验。该 helper 不替 AI 判断 stale、迁移 patch 或清理 source checkout；#76 liveness checker 在此基础上把 source checkout 新变化视为 workspace boundary progress。
-5. `task.py create/start/archive` 仍是官方 Trellis lifecycle，但 Guru Team 在 start 前要求 `prd.md` / `design.md` / `implement.md` 定位同一个 `Docs SSOT Plan`，展示三份文档链接并得到 explicit post-planning confirmation，Phase 0 handoff 确认不能替代。
+5. Task create/start/archive 仍复用官方 Trellis lifecycle。Workspace create 通过隔离 adapter 调用 official `common.task_store.cmd_create`，只在该 handler 调用内禁用 developer accessor，并把 reviewed login 同时写为 `creator` 与 `assignee`；existing official identity bytes 保持不变。Guru Team 在 start 前要求 `prd.md` / `design.md` / `implement.md` 定位同一个 `Docs SSOT Plan`，展示三份文档链接并得到 explicit post-planning confirmation，Phase 0 handoff 确认不能替代。
 6. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出中文 `reviews/*.md` raw reports 与最终中文 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
 7. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，并由
    `guru-create-task-commit` 生成 fresh candidate plan、完成 AI Review，再通过 exact

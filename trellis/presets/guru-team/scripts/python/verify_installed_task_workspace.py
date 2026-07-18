@@ -120,7 +120,7 @@ def build_plan(
     runtime: Any, source: Path, *, issue_number: int, token: str, base_head: str
 ) -> tuple[Path, dict[str, Any], dict[str, Any]]:
     title = "Verify installed task workspace execution"
-    body = "Execute the installed task workspace runtime without developer identity."
+    body = "Execute the installed task workspace runtime without depending on developer identity."
     payloads = prerequisite_payloads(
         issue_number=issue_number,
         token=token,
@@ -300,7 +300,7 @@ def build_plan(
             "summary": "The target, names, assignee and isolated metadata are complete.",
             "evidence": [
                 "The invocation authorizes exactly one disposable workspace and task.",
-                "Source and target developer identity and workspace journal are absent.",
+                "Developer identity is outside Guru executor inputs and must remain untouched.",
             ],
         },
         "freshness": {
@@ -344,6 +344,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--installed-repo", required=True)
     parser.add_argument("--work-root", required=True)
+    parser.add_argument("--existing-developer-identity", action="store_true")
     args = parser.parse_args()
     installed_repo = Path(args.installed_repo).resolve()
     work_root = Path(args.work_root).resolve()
@@ -377,7 +378,8 @@ def main() -> int:
         "session_auto_commit: false\n", encoding="utf-8"
     )
     (source / ".gitignore").write_text(
-        ".trellis/.runtime/\n__pycache__/\n*.py[cod]\n", encoding="utf-8"
+        ".trellis/.developer\n.trellis/.runtime/\n__pycache__/\n*.py[cod]\n",
+        encoding="utf-8",
     )
     (source / "README.md").write_text(
         "# Installed task workspace fixture\n", encoding="utf-8"
@@ -389,6 +391,9 @@ def main() -> int:
     run("git", "add", ".", cwd=source)
     run("git", "commit", "-qm", "fixture base", cwd=source)
     base_head = run("git", "rev-parse", "HEAD", cwd=source)
+    developer_identity_bytes = b"name=legacy-installed-identity\n"
+    if args.existing_developer_identity:
+        (source / ".trellis/.developer").write_bytes(developer_identity_bytes)
 
     plan_path, plan, live_issue = build_plan(
         runtime,
@@ -407,6 +412,10 @@ def main() -> int:
                 workspace / ".fixture-inputs/installed",
                 dirs_exist_ok=True,
             )
+            if args.existing_developer_identity:
+                (workspace / ".trellis/.developer").write_bytes(
+                    developer_identity_bytes
+                )
         return mode, workspace, ready
 
     runtime.task_workspace_prerequisite_errors = lambda *_args, **_kwargs: []
@@ -439,14 +448,24 @@ def main() -> int:
     task_dir = workspace / created["task_artifact_dir"]
     if checked["checker"]["status"] != "passed":
         raise AssertionError(checked)
-    if (source / ".trellis/.developer").exists() or (
-        source / ".trellis/workspace"
-    ).exists():
-        raise AssertionError("installed runtime created source developer/workspace state")
-    if (workspace / ".trellis/.developer").exists() or (
+    source_identity = source / ".trellis/.developer"
+    target_identity = workspace / ".trellis/.developer"
+    if args.existing_developer_identity:
+        if source_identity.read_bytes() != developer_identity_bytes:
+            raise AssertionError("installed runtime changed source developer identity")
+        if target_identity.read_bytes() != developer_identity_bytes:
+            raise AssertionError("installed runtime changed target developer identity")
+    elif source_identity.exists() or target_identity.exists():
+        raise AssertionError("installed runtime created developer identity")
+    if (source / ".trellis/workspace").exists() or (
         workspace / ".trellis/workspace"
     ).exists():
-        raise AssertionError("installed runtime created target developer/workspace state")
+        raise AssertionError("installed runtime created workspace journal state")
+    task_data = runtime.read_json(task_dir / "task.json")
+    if task_data.get("assignee") != "fixture-maintainer":
+        raise AssertionError("installed runtime wrote the wrong task assignee")
+    if task_data.get("creator") != "fixture-maintainer":
+        raise AssertionError("installed runtime depended on developer identity for creator")
     expected_artifacts = set(runtime.TASK_WORKSPACE_ARTIFACT_NAMES)
     if {path.name for path in task_dir.iterdir() if path.is_file()} & expected_artifacts != expected_artifacts:
         raise AssertionError("installed runtime did not write all task-local Intake artifacts")
@@ -458,8 +477,10 @@ def main() -> int:
                 "checker_status": checked["checker"]["status"],
                 "task_artifact_dir": created["task_artifact_dir"],
                 "artifact_names": sorted(expected_artifacts),
-                "source_developer_identity": False,
-                "target_developer_identity": False,
+                "source_developer_identity": source_identity.exists(),
+                "target_developer_identity": target_identity.exists(),
+                "developer_identity_preserved": args.existing_developer_identity,
+                "task_creator": task_data.get("creator"),
                 "source_workspace_journal": False,
                 "target_workspace_journal": False,
             },

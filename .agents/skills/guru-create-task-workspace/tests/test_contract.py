@@ -180,7 +180,14 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
         self.assertIn("AI Review Gate", contract)
         self.assertIn("github_issue_mutation", contract)
         self.assertIn("workspace_and_task_mutation", contract)
-        self.assertIn("task.py create ... --assignee <login>", contract)
+        self.assertIn("official `common.task_store.cmd_create`", contract)
+        self.assertIn("developer accessor with a null", contract)
+        self.assertIn(
+            "`task.json.creator=task.json.assignee=<reviewed-login>`",
+            contract,
+        )
+        self.assertIn("existing official identity bytes remain exact", contract)
+        self.assertIn("does not trim them or append a newline", contract)
         self.assertIn("`prepare-task` is query-only", contract)
         self.assertNotIn("init_developer.py <name>", contract)
 

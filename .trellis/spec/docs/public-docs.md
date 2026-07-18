@@ -110,6 +110,17 @@ assignee order, the four tracked task-local Intake artifacts, ignored
 A/B two-order local merge fixture. `prepare-task` is query-only and its legacy
 mutation flags fail closed with migration guidance.
 
+Docs also state that the reviewed-draft GitHub adapter forwards the reviewed
+title/body bytes without trimming or appending a newline before the live reread
+and created-issue binding check.
+
+Public docs state that the workspace executor calls official
+`common.task_store.cmd_create` through an isolated adapter, passes the reviewed
+assignee explicitly, and disables the developer accessor only for that handler
+invocation. They must state that `task.json.creator` and `task.json.assignee`
+both equal the reviewed login and that an existing official identity file keeps
+its exact bytes.
+
 Guru install commands and prompts do not require a developer name,
 `TRELLIS_USER`, `-u`, or `--user`. Public docs accurately state that official
 Trellis may independently create/use `.trellis/.developer` and

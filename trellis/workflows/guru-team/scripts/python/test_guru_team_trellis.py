@@ -3222,6 +3222,81 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                 {"assignees": []},
             )
 
+    def test_official_task_create_adapter_ignores_existing_developer_identity(self) -> None:
+        repository_source = Path(__file__).resolve().parents[5]
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.root, check=True)
+        subprocess.run(["git", "config", "user.name", "Adapter Fixture"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "adapter-fixture@example.invalid"],
+            cwd=self.root,
+            check=True,
+        )
+        shutil.copytree(
+            repository_source / ".trellis/scripts",
+            self.root / ".trellis/scripts",
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+        )
+        identity_path = self.root / ".trellis/.developer"
+        identity_bytes = b"name=legacy-identity\n"
+        identity_path.write_bytes(identity_bytes)
+
+        proc = gtt.task_workspace_run_official_task_create(
+            self.root,
+            "#112 Verify no-developer adapter",
+            "112-no-developer-adapter",
+            "explicit-assignee",
+        )
+
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        task_dir = gtt.resolve_task_dir(self.root, proc.stdout.strip())
+        task_data = gtt.read_json(task_dir / "task.json")
+        self.assertEqual(task_data["assignee"], "explicit-assignee")
+        self.assertEqual(task_data["creator"], "explicit-assignee")
+        self.assertEqual(identity_path.read_bytes(), identity_bytes)
+
+    def test_issue_creation_adapter_writes_exact_reviewed_body_bytes(self) -> None:
+        title = "Create exact reviewed issue"
+        body = "First reviewed line\nSecond reviewed line"
+        observed: dict[str, object] = {}
+        live_issue = {
+            "number": 112,
+            "url": "https://github.com/owner/repo/issues/112",
+            "state": "OPEN",
+            "title": title,
+            "body": body,
+            "updatedAt": "2026-07-19T00:00:00Z",
+            "labels": [{"name": "workflow"}],
+        }
+
+        def create_command(
+            command: list[str],
+            *,
+            cwd: Path,
+            check: bool,
+            **_kwargs: object,
+        ) -> subprocess.CompletedProcess[str]:
+            self.assertEqual(command[:3], ["gh", "issue", "create"])
+            body_path = Path(command[command.index("--body-file") + 1])
+            observed["title"] = command[command.index("--title") + 1]
+            observed["body"] = body_path.read_bytes()
+            return subprocess.CompletedProcess(
+                command,
+                0,
+                "https://github.com/owner/repo/issues/112\n",
+                "",
+            )
+
+        with (
+            mock.patch.object(gtt, "require_gh_auth"),
+            mock.patch.object(gtt, "run", side_effect=create_command),
+            mock.patch.object(gtt, "issue_view", return_value=live_issue),
+        ):
+            created = gtt.create_issue("owner/repo", title, body, self.root, ["workflow"])
+
+        self.assertEqual(created, live_issue)
+        self.assertEqual(observed["title"], title)
+        self.assertEqual(observed["body"], body.encode("utf-8"))
+
     def test_reviewed_draft_checks_exact_live_labels_and_stops_at_refresh(self) -> None:
         draft = {
             "draft_id": "draft-112",
@@ -3454,6 +3529,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             "name": "112-create-task-workspace",
             "branch": "feat/112-create-task-workspace",
             "base_branch": "main",
+            "creator": "maintainer",
             "assignee": "maintainer",
             "status": "planning",
         }

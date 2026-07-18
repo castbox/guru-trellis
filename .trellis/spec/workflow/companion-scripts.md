@@ -271,13 +271,17 @@ naming, assignee route, confirmation requirement, AI Gate, or typed exit.
 
 The executor consumes the exact plan digest. Before each mutation it rechecks
 base, target, prerequisite bytes, confirmation scope, plan digest, and current
-Git/worktree/task facts. A draft invocation creates the exact reviewed issue,
-immediately rereads it, emits a created-issue result with
+Git/worktree/task facts. A draft invocation creates the exact reviewed issue
+using the reviewed title/body bytes without trimming or newline insertion. It
+immediately rereads it and emits a created-issue result with
 `typed_exit=refresh_review`, and stops without branch/worktree/task/runtime
 writes. An open-issue invocation creates or reuses only exact matching
-branch/worktree/task identity, always calls official `task.py create` with an
-explicit `--assignee`, writes exactly four task-local tracked Intake artifacts,
-and writes only ignored `.trellis/.runtime/guru-team/**` mappings.
+branch/worktree/task identity. In an isolated subprocess it calls official
+`common.task_store.cmd_create` with the reviewed assignee and replaces the
+module's developer accessor with a null result only for that handler call, so
+official fallback writes `creator=assignee=reviewed login`. It then writes
+exactly four task-local tracked Intake artifacts and only ignored
+`.trellis/.runtime/guru-team/**` mappings.
 
 The checker validates the result schema, plan linkage, live issue or
 branch/worktree/task identity, artifact bytes/schema/digests/trackability,
@@ -295,9 +299,10 @@ absolute workspace path and the checker derives it from current config, the
 reviewed slug, and live Git facts.
 
 Neither command reads, creates, copies, initializes, restores, or deletes
-`.trellis/.developer` or `.trellis/workspace/**`. Existing official data is
-untouched. The public plan/result contain no absolute paths, runtime paths,
-full process output, secrets, or raw private records.
+`.trellis/.developer` or `.trellis/workspace/**`. Existing official identity
+bytes are unchanged; clean source/target inputs remain absent. The public
+plan/result contain no absolute paths, runtime paths, full process output,
+secrets, or raw private records.
 
 ## GitHub and Git Operations
 

@@ -392,9 +392,12 @@ created-draft binding digests. Prerequisite evidence records the schema, exit,
 facts/content/linkage digests for the five upstream Skills.
 
 Assignee remains a portable task/context audit field, never a path namespace.
-Guru runtime does not read, copy, initialize, restore, or require
-`.trellis/.developer` or `.trellis/workspace/**`; existing official identity
-data remains untouched.
+The workspace executor invokes official `common.task_store.cmd_create` in an
+isolated subprocess with the reviewed assignee and a call-scoped null developer
+accessor. The official creator fallback therefore produces
+`task.json.creator=task.json.assignee=<reviewed-login>`. Guru runtime does not
+read, copy, initialize, restore, or require `.trellis/.developer` or
+`.trellis/workspace/**`; existing official identity bytes remain untouched.
 
 Do not use `task-start-context.source_issue` as PR close scope. The task-level `issue-scope-ledger.json` owns `close_issues`, `related_issues`, and `followup_issues`.
 

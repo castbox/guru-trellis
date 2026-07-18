@@ -144,12 +144,16 @@ planner-only prepare no-write behavior, and controlled `create_task` cwd.
 For `guru-create-task-workspace`, tests must cover workflow/standalone
 precondition parity; every missing/stale/wrong-exit/target-mismatched
 prerequisite; open issue and reviewed-draft variants; mutually exclusive issue
-and workspace/task confirmations; draft-created issue live binding plus
+and workspace/task confirmations; draft-created issue live binding plus exact
+reviewed title/body/labels bytes without adapter trimming or newline insertion;
 immediate `refresh_review`; zero branch/worktree/task writes in that invocation;
 target/disposition change and cancellation zero-write results; explicit, one
 issue assignee, zero issue assignees/current-login, multiple/user-choice, and
-unresolved assignee cases; explicit `task.py create --assignee`; exact object
-reuse/conflict blocking; four canonical task-local artifacts; additive
+unresolved assignee cases; isolated official `common.task_store.cmd_create`
+adapter with a call-scoped null developer accessor; exact
+`task.json.creator=task.json.assignee=reviewed login`; preservation of existing
+identity bytes; exact object reuse/conflict blocking; four canonical task-local
+artifacts; additive
 task-start-context 1.0 compatibility; ignored runtime-only mappings; source and
 target with no `.trellis/.developer` or `.trellis/workspace/**`; preservation
 of existing official identity/journal bytes; all four typed exits and unique

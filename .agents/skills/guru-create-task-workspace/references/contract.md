@@ -76,11 +76,16 @@ confirmation returns `blocked`. Only passed plus `confirmed` may mutate.
 The executor revalidates runtime, plan digest, base, final target, prerequisite
 bytes, confirmation and live object facts at every mutation boundary. A draft
 transaction creates the exact reviewed title/body/labels, rereads the issue,
-builds a created-issue binding, and stops.
+builds a created-issue binding, and stops. The GitHub adapter preserves the
+reviewed title and body bytes; it does not trim them or append a newline.
 
 An open-issue transaction creates or exactly reuses the reviewed branch and
-worktree, reruns the guards in the target worktree, invokes official
-`task.py create ... --assignee <login>`, and sets branch, base and issue scope.
+worktree and reruns the guards in the target worktree. In an isolated
+subprocess, its adapter invokes official `common.task_store.cmd_create` with the
+reviewed assignee and replaces the module's developer accessor with a null
+result only for that handler invocation. Official fallback therefore writes
+`task.json.creator=task.json.assignee=<reviewed-login>` without consuming
+developer identity. The executor then sets branch, base and issue scope.
 It then writes exactly these tracked task-local Intake artifacts:
 
 - `task-start-context.json`
@@ -92,7 +97,7 @@ The final two preserve checker-passed canonical bytes. Local path mappings are
 written only under ignored `.trellis/.runtime/guru-team/workspaces/` and
 `.trellis/.runtime/guru-team/tasks/`. Guru runtime never reads, copies,
 initializes, restores, or requires `.trellis/.developer` or
-`.trellis/workspace/**`.
+`.trellis/workspace/**`; existing official identity bytes remain exact.
 
 Public plan/result stdout and examples contain no machine-local absolute path.
 The checker derives the expected worktree from current repo config, the

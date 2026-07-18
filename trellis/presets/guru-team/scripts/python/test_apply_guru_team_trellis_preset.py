@@ -920,6 +920,9 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("verify_installed_task_workspace.py", verifier)
         self.assertIn("installed-task-workspace-initial", verifier)
         self.assertIn("installed-task-workspace-after-update", verifier)
+        self.assertIn("--existing-developer-identity", verifier)
+        self.assertIn('payload["developer_identity_preserved"] is True', verifier)
+        self.assertIn('payload["task_creator"] == "fixture-maintainer"', verifier)
         self.assertIn('trellis init -y --codex --cursor', verifier)
         self.assertNotIn('trellis init -y -u', verifier)
         self.assertIn('DEVELOPER_IDENTITY_DIGEST_BEFORE="$(file_sha256', verifier)
@@ -934,7 +937,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("runtime.cmd_create_task_workspace", installed_workspace)
         self.assertIn("runtime.cmd_check_task_workspace_result", installed_workspace)
         self.assertIn("TASK_WORKSPACE_ARTIFACT_NAMES", installed_workspace)
-        self.assertNotIn('.trellis/.developer").write_text', installed_workspace)
+        self.assertIn("--existing-developer-identity", installed_workspace)
+        self.assertIn('task_data.get("creator") != "fixture-maintainer"', installed_workspace)
         installed_closeout = (
             self.guru_root
             / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py"

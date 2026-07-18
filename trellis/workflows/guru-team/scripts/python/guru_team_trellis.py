@@ -3192,14 +3192,12 @@ def duplicate_search(repo: str, requirement: str, root: Path, limit: int) -> lis
 
 
 def create_issue(repo: str, title: str, body: str, root: Path, labels: list[str]) -> dict[str, Any]:
-    title = title.strip()
-    body = body.strip()
-    if not title:
+    if not title.strip():
         raise WorkflowError("Confirmed issue creation requires a non-empty issue title.")
-    if not body:
+    if not body.strip():
         raise WorkflowError("Confirmed issue creation requires a non-empty issue body.")
-    with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False) as tmp:
-        tmp.write(body + "\n")
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", newline="", delete=False) as tmp:
+        tmp.write(body)
         tmp_path = tmp.name
     try:
         cmd = ["issue", "create", "--repo", repo, "--title", title, "--body-file", tmp_path]
@@ -4428,10 +4426,6 @@ def prepare_workspace(
     else:
         run_stdout(["git", "worktree", "add", "-b", branch_name, str(workspace_path), base_ref], cwd=root)
     return mode, workspace_path, True
-
-
-def developer_identity_path(root: Path) -> Path:
-    return root / ".trellis/.developer"
 
 
 def task_start_context_path(task_dir: Path, config: dict[str, Any]) -> Path:
@@ -23908,6 +23902,51 @@ def task_workspace_run_task_command(workspace: Path, *arguments: str) -> None:
         )
 
 
+TASK_WORKSPACE_OFFICIAL_CREATE_ADAPTER = """
+import argparse
+import sys
+from pathlib import Path
+
+scripts_root = Path.cwd() / ".trellis/scripts"
+sys.path.insert(0, str(scripts_root))
+from common import task_store
+
+# The reviewed assignee is authoritative for Guru task creation. Disable the
+# official developer accessor only for this isolated handler invocation.
+task_store.get_developer = lambda *_args, **_kwargs: None
+arguments = argparse.Namespace(
+    title=sys.argv[1],
+    slug=sys.argv[2],
+    assignee=sys.argv[3],
+    priority="P2",
+    description=None,
+    parent=None,
+    package=None,
+)
+raise SystemExit(task_store.cmd_create(arguments))
+""".strip()
+
+
+def task_workspace_run_official_task_create(
+    workspace: Path,
+    title: str,
+    slug: str,
+    assignee: str,
+) -> subprocess.CompletedProcess[str]:
+    return run(
+        [
+            "python3",
+            "-c",
+            TASK_WORKSPACE_OFFICIAL_CREATE_ADAPTER,
+            title,
+            slug,
+            assignee,
+        ],
+        cwd=workspace,
+        check=False,
+    )
+
+
 def task_workspace_task_dir(workspace: Path, task_slug: str) -> Path:
     return workspace / ".trellis/tasks" / f"{datetime.now().strftime('%m-%d')}-{task_slug}"
 
@@ -24002,11 +24041,7 @@ def task_workspace_created_workspace_result(
     if confirmation.get("status") != "confirmed":
         raise WorkflowError("Workspace/task mutation lacks its exact confirmation.", exit_code=2)
 
-    source_identity_before = developer_identity_path(root).exists()
-    source_workspace_before = (root / ".trellis/workspace").exists()
     workspace, task_dir, config = task_workspace_prepare_objects(root, plan)
-    target_identity_before = developer_identity_path(workspace).exists()
-    target_workspace_before = (workspace / ".trellis/workspace").exists()
     task_workspace_require_execution_boundary(root, plan, workspace)
     live = task_workspace_live_issue(root, target)
     task_workspace_validate_assignee(root, plan, live)
@@ -24015,16 +24050,17 @@ def task_workspace_created_workspace_result(
 
     if naming["task_disposition"] == "create_new":
         task_workspace_require_execution_boundary(root, plan, workspace)
-        proc = run(
-            [
-                "python3", "./.trellis/scripts/task.py", "create", naming["task_title"],
-                "--slug", naming["task_slug"], "--assignee", assignee,
-            ],
-            cwd=workspace,
-            check=False,
+        proc = task_workspace_run_official_task_create(
+            workspace,
+            naming["task_title"],
+            naming["task_slug"],
+            assignee,
         )
         if proc.returncode != 0:
-            raise WorkflowError(f"task.py create failed:\n{proc.stderr.strip()}", exit_code=2)
+            raise WorkflowError(
+                f"Official task creation handler failed:\n{proc.stderr.strip()}",
+                exit_code=2,
+            )
         created_locator = proc.stdout.strip()
         if created_locator:
             created_task_dir = resolve_task_dir(workspace, created_locator)
@@ -24040,6 +24076,7 @@ def task_workspace_created_workspace_result(
         "name": naming["task_slug"],
         "branch": naming["branch_name"],
         "base_branch": plan["base"]["selected_base"],
+        "creator": assignee,
         "assignee": assignee,
         "status": "planning",
     }
@@ -24071,14 +24108,6 @@ def task_workspace_created_workspace_result(
                 raise WorkflowError(f"Task workspace runtime mapping is not ignored: {relative}", exit_code=2)
         runtime_rows.append({"path": relative, "ignored": True})
 
-    source_identity_created = not source_identity_before and developer_identity_path(root).exists()
-    target_identity_created = not target_identity_before and developer_identity_path(workspace).exists()
-    workspace_journal_created = (
-        (not source_workspace_before and (root / ".trellis/workspace").exists())
-        or (not target_workspace_before and (workspace / ".trellis/workspace").exists())
-    )
-    if source_identity_created or target_identity_created or workspace_journal_created:
-        raise WorkflowError("Guru task workspace execution created forbidden developer/workspace state.", exit_code=2)
     artifacts = [task_workspace_artifact_row(workspace, task_dir / name) for name in TASK_WORKSPACE_ARTIFACT_NAMES]
     created = {
         "repo": target["repo"],
@@ -24333,6 +24362,7 @@ def task_workspace_result_check_errors(
                 ("name", created.get("task_slug")),
                 ("branch", created.get("branch_name")),
                 ("base_branch", plan.get("base", {}).get("selected_base")),
+                ("creator", created.get("assignee")),
                 ("assignee", created.get("assignee")),
                 ("status", created.get("task_status")),
             ):
