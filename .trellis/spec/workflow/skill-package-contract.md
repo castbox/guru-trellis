@@ -609,6 +609,23 @@ only objective schema, linkage, digest, HEAD/diff/dirty, agent recovery,
 full-round, and exit/consumer invariants. Legacy `--pass --coverage` calls must
 fail closed rather than synthesize a semantic result.
 
+The entry evidence collections for requirement provenance, implementation
+handoff, Docs SSOT durable paths, repository reviewed paths, and executed
+commands are non-empty. Every adequacy dimension has a non-empty reference to
+a known current-round evidence source, the round covers planning, provenance,
+handoff, Docs SSOT, repository, execution, and agent evidence, and
+`current_scope` / `scope_change_required` candidates carry non-empty trigger
+references. These are objective existence and reference-closure checks; AI
+still owns semantic sufficiency.
+
+The checker recomputes execution/scope/adequacy digests, every Gate binding,
+finding count, and full-round digest from source fields and requires exact
+equality. If an implementation handoff lists task-local
+`agent-assignment.json`, a legal post-commit Branch Review metadata tail may
+retain the recorded raw file digest only while the independent Phase-2-stable
+agent projection remains equal; implementation/check/recovery drift fails
+closed.
+
 The objective agent projection requires task-local assignment evidence. Its
 non-empty implementation/check id sets exactly equal the effective completed
 events for those roles, and worker evidence covers exactly the completed check

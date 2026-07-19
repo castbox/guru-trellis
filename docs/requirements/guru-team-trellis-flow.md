@@ -509,6 +509,18 @@ termination 的结构边；两者 append-only，且 validator 仍要求 replacem
 | `repository_snapshot` | 绑定 base/HEAD/diff、完整 pre-commit `dirty_paths` 和 `reviewed_paths` digests，供 post-commit audit。 |
 | `typed_exit` / `route` / `consumer` | 闭合 `passed`、`implementation_required`、`planning_stale`、`blocked` 与唯一 consumer。 |
 
+Requirement provenance、implementation handoff、Docs SSOT durable paths、
+repository reviewed paths 和 command facts 必须非空；每个 adequacy dimension
+至少引用一个 known current-round source，完整 round 覆盖 planning、provenance、handoff、
+Docs SSOT、repository、execution 与 agent evidence。`current_scope` / `scope_change_required`
+candidate 还必须有 trigger refs。Checker 只校验存在性和引用闭包，不判断 evidence 的语义充分性。
+
+Checker 必须从源字段重算 execution/scope/adequacy digest、Gate 的 planning/snapshot/scope/
+adequacy binding、`findings_count` 与 `full_round_sha256`。若 implementation handoff 包含
+task-local `agent-assignment.json`，合法 ancestor-HEAD Branch Review metadata tail 使用
+Phase-2-stable agent projection 复核，不因 raw assignment digest 变化误报 stale；实现/check/recovery
+内容变化仍 fail closed。
+
 ## 7. Phase 3：Commit 后 Branch Review Gate
 
 Final Phase 2 check 通过后，global workflow 不再直接规划 stage/commit，而是按 stable

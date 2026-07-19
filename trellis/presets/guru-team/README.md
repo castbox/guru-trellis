@@ -555,6 +555,13 @@ script recorder/validator success cannot replace that loop. The preset
 distributes the additive Guru package to shared/Codex/Cursor/Claude roots
 without modifying any upstream-owned `trellis-check` overlay; the frozen
 43-entry ownership inventory remains fixed.
+V2 input requires non-empty provenance/handoff/durable/reviewed-path/command
+evidence and non-empty adequacy refs covering every known current-round source;
+current/scope-change candidates require trigger refs. The checker recomputes
+all semantic child digests, Gate bindings, finding count, and full-round digest.
+When handoff includes task-local assignment, legal post-commit review metadata
+tail uses the stable Phase 2 projection while implementation/check/recovery
+drift remains stale.
 `record-subagent-liveness-event.sh` / `check-subagent-liveness.sh` /
 `check-agent-assignment.sh` manage task-local `agent-assignment.json` liveness:
 Chinese `logical_role` is the Trellis process identity, `agent_id` is the

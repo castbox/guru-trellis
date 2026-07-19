@@ -7251,6 +7251,96 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                 patcher.stop()
         self.assertIn("phase2_check_pass_requires_all_dimensions", raised.exception.payload["error_codes"])
 
+    def test_phase2_v2_requires_nonempty_entry_and_adequacy_evidence(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            for label, mutate in (
+                ("requirement provenance", lambda payload: payload["requirement_provenance"].update(artifacts=[])),
+                ("implementation handoff", lambda payload: payload["implementation_handoff"].update(artifacts=[])),
+                ("durable paths", lambda payload: payload["docs_ssot_plan"].update(durable_paths=[])),
+                ("reviewed paths", lambda payload: payload["repository_snapshot"].update(reviewed_paths=[])),
+            ):
+                with self.subTest(label=label):
+                    payload = self.phase2_input()
+                    mutate(payload)
+                    with self.assertRaises(gtt.WorkflowError):
+                        self.record_phase2(payload, name=f"empty-{label.replace(' ', '-')}.json")
+
+            payload = self.phase2_input()
+            payload["check_execution"]["commands"] = []
+            payload["semantic_review"]["adequacy_dimensions"][0]["evidence_refs"] = []
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                self.record_phase2(payload, name="empty-round-evidence.json")
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn("phase2_check_execution_commands_missing", raised.exception.payload["error_codes"])
+        self.assertIn("phase2_check_adequacy_evidence_refs_missing", raised.exception.payload["error_codes"])
+
+    def test_phase2_v2_requires_trigger_refs_and_complete_evidence_source_closure(self) -> None:
+        payload = self.phase2_input()
+        payload["scope_qualification"]["candidates"] = [{
+            "id": "C1", "summary": "Current scope candidate", "trigger_refs": [],
+            "normal_path_reproduction": "Normal path reproduction.",
+            "disposition": "current_scope", "route_basis": "Return to implementation.",
+            "severity": "P2", "finding_id": "F1",
+        }]
+        payload["semantic_review"]["findings"] = [{
+            "id": "F1", "candidate_id": "C1", "severity": "P2",
+            "summary": "Current defect.", "path": "example.py", "blocking": True,
+            "status": "open",
+        }]
+        payload["semantic_review"]["adequacy_dimensions"][2]["finding_ids"] = ["F1"]
+        payload["semantic_review"]["adequacy_dimensions"][0]["evidence_refs"] = ["planning"]
+        errors = gtt.phase2_semantic_errors(payload)
+        self.assertIn("phase2_check_scope_candidate_trigger_refs_missing", errors)
+        self.assertIn("phase2_check_adequacy_evidence_source_uncovered", errors)
+
+    def test_phase2_v2_checker_recomputes_every_semantic_derived_field(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            self.record_phase2()
+            artifact = self.task_dir / "phase2-check.json"
+            valid = gtt.read_json(artifact)
+            cases = {
+                "execution_sha256": ("check_execution", "execution_sha256", "phase2_check_execution_sha256_mismatch"),
+                "scope_sha256": ("scope_qualification", "scope_sha256", "phase2_check_scope_sha256_mismatch"),
+                "adequacy_sha256": ("semantic_review", "adequacy_sha256", "phase2_check_adequacy_sha256_mismatch"),
+                "gate_planning": ("gate", "planning_facts_sha256", "phase2_check_gate_planning_facts_sha256_mismatch"),
+                "gate_snapshot": ("gate", "snapshot_sha256", "phase2_check_gate_snapshot_sha256_mismatch"),
+                "gate_scope": ("gate", "scope_sha256", "phase2_check_gate_scope_sha256_mismatch"),
+                "gate_adequacy": ("gate", "adequacy_sha256", "phase2_check_gate_adequacy_sha256_mismatch"),
+                "findings_count": ("gate", "findings_count", "phase2_check_gate_findings_count_mismatch"),
+                "full_round_sha256": ("gate", "full_round_sha256", "phase2_check_gate_full_round_sha256_mismatch"),
+            }
+            for label, (section, field, expected_error) in cases.items():
+                with self.subTest(field=label):
+                    payload = copy.deepcopy(valid)
+                    target = (
+                        payload["semantic_review"]["ai_review_gate"]
+                        if section == "gate"
+                        else payload[section]
+                    )
+                    target[field] = 99 if field == "findings_count" else "0" * 64
+                    payload["facts_sha256"] = gtt.context_digest({
+                        key: value
+                        for key, value in payload.items()
+                        if key not in {"generated_at", "facts_sha256"}
+                    })
+                    gtt.write_json(artifact, payload)
+                    _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir)
+                    self.assertIn(expected_error, errors)
+            gtt.write_json(artifact, valid)
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
     def test_phase2_v2_worker_evidence_requires_completed_check_agent(self) -> None:
         payload = self.phase2_input()
         payload["check_execution"]["worker_evidence"][0]["agent_id"] = "other-check"
@@ -7638,7 +7728,12 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         gtt.write_json(self.task_dir / "agent-assignment.json", payload)
         return payload
 
-    def phase2_post_commit_fixture(self, *, include_uncovered: bool) -> dict[str, object]:
+    def phase2_post_commit_fixture(
+        self,
+        *,
+        include_uncovered: bool,
+        include_assignment_handoff: bool = False,
+    ) -> dict[str, object]:
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
@@ -7664,6 +7759,16 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             self.task_dir,
             recorded["agent_assignment"],
         )
+        if include_assignment_handoff:
+            recorded["implementation_handoff"]["artifacts"].append(
+                gtt.phase2_path_digest(self.root, self.task_dir / "agent-assignment.json")
+            )
+            handoff = {
+                key: value
+                for key, value in recorded["implementation_handoff"].items()
+                if key != "facts_sha256"
+            }
+            recorded["implementation_handoff"]["facts_sha256"] = gtt.context_digest(handoff)
         repository = recorded["repository_snapshot"]
         repository.update({
             "base_ref": "main",
@@ -7940,7 +8045,10 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertEqual(errors, [])
 
     def test_phase2_v2_allows_real_post_commit_review_agent_metadata_tail(self) -> None:
-        recorded = self.phase2_post_commit_fixture(include_uncovered=False)
+        recorded = self.phase2_post_commit_fixture(
+            include_uncovered=False,
+            include_assignment_handoff=True,
+        )
         assignment_path = self.task_dir / "agent-assignment.json"
         assignment = gtt.read_json(assignment_path)
         head = gtt.current_head(self.root)
@@ -7969,6 +8077,25 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                 head=head,
             ),
         ])
+        report = self.task_dir / "reviews" / "round-001-final-release.md"
+        report.parent.mkdir(parents=True, exist_ok=True)
+        report.write_text("# Final review\n", encoding="utf-8")
+        report_digest = gtt.file_digest(self.root, report)
+        assignment["review_rounds"].append({
+            "round": 1,
+            "logical_role": "最终放行审查代理",
+            "agent_id": "review-1",
+            "platform_nickname": "review-1",
+            "reviewed_head": head,
+            "findings_count": 0,
+            "reuse_policy": "Fresh final release reviewer.",
+            "reuse_decision": "new-agent",
+            "recorded_at": "2026-07-19T00:02:00Z",
+            "review_report_path": report_digest["path"],
+            "review_report_sha256": report_digest["sha256"],
+            "review_report_size_bytes": report_digest["size_bytes"],
+            "review_report_modified_at": report_digest["modified_at"],
+        })
         assignment["updated_at"] = "2026-07-19T00:02:00Z"
         gtt.write_json(assignment_path, assignment)
 

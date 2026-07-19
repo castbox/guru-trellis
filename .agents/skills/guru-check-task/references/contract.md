@@ -32,8 +32,15 @@ compatible Guru Team preset.
    Bind the non-empty implementation/check agent id sets exactly to effective
    completed events for those roles, and bind worker evidence to the exact
    completed check agent set.
+   Requirement provenance, implementation handoff, Docs SSOT durable paths,
+   repository reviewed paths, and executed commands are non-empty entry
+   evidence. Every adequacy dimension carries at least one reference to a
+   current-round source, and the complete round covers planning, provenance,
+   handoff, Docs SSOT, repository, execution, and agent evidence.
 4. Classify each candidate before severity. Record its requirement/planning
    trigger, supported normal-path reproduction, disposition, and route basis.
+   `current_scope` and `scope_change_required` candidates require at least one
+   trigger reference.
 5. Assign P0/P1/P2/P3 only to `current_scope`; every such candidate must link
    exactly one finding with the same candidate id and severity.
    `scope_change_required` routes to planning, while
@@ -80,10 +87,20 @@ status, confirmation need, pass, or route. Legacy `--pass --coverage` is a
 stable migration error. Active schema 1.0 requires complete semantic re-entry;
 archived artifacts remain byte-for-byte historical.
 
+The checker recomputes `execution_sha256`, `scope_sha256`,
+`adequacy_sha256`, every Gate planning/snapshot/scope/adequacy binding,
+`findings_count`, and `full_round_sha256` from their source fields and requires
+exact equality. This detects ordinary recorder or payload mistakes; it is not
+an authenticity or hostile-input boundary.
+
 Post-commit consumers may accept the recorded HEAD as an ancestor only when
 every later committed non-metadata path was covered by recorded dirty paths and
 the current worktree has no unreviewed non-metadata dirty path. They never
 re-record a pass solely to match the commit HEAD.
+When the implementation handoff includes task-local `agent-assignment.json`,
+post-commit audit preserves its recorded raw path digest only for the legal
+ancestor-HEAD metadata tail. Freshness remains enforced by the Phase-2-stable
+agent projection, so implementation/check/recovery drift still fails closed.
 
 ## Typed Exits
 

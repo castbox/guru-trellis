@@ -262,6 +262,14 @@ run dogfood apply/drift and sidecar checks, and exercise clean marketplace init,
 preview/switch, preset apply, installed invocation, `trellis update --force`,
 and workflow/preset reapply.
 
+Phase 2 regression coverage must also prove that empty provenance/handoff/docs/
+reviewed-path/command evidence, empty adequacy references, missing current or
+scope-change trigger references, unknown/incomplete evidence-source closure,
+and every incorrect recorder-derived semantic digest fail closed. A real Git
+post-commit fixture must include `agent-assignment.json` in implementation
+handoff and distinguish legal review assignment/status/completed/round metadata
+tail from implementation/check/recovery drift.
+
 Before Branch Review Gate, obtain an independent Agent review of the full branch
 diff from the task's intake base branch, then record the result with
 `review-branch.sh --review-source independent-agent`. Main-session self-review

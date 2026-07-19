@@ -822,6 +822,12 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
 - `check-phase2-check` validates the published schema, digests, references,
   current HEAD/diff/dirty snapshot, reviewed paths, planning linkage, recovery
   closure, full-round identity, and the four-exit/consumer union;
+- entry artifact/path/command collections and adequacy references are
+  non-empty; reference closure covers every known current-round source, while
+  current/scope-change candidates require trigger references;
+- the checker recomputes execution/scope/adequacy digests, every Gate binding,
+  finding count, and full-round digest from source fields instead of trusting
+  recorder-derived values;
 - the retained command ids are compatibility API, but legacy
   `--pass --coverage --checker --summary` invocation cannot produce v2 evidence
   and returns stable migration guidance requiring full `guru-check-task`
@@ -1001,6 +1007,10 @@ metadata is outside that projection; Phase 2 agent/recovery drift is not. The
 Branch Review Gate still validates and records the complete current assignment.
 Any uncovered non-metadata committed path or current non-metadata dirty path
 must block the gate instead of encouraging a post-commit Phase 2 re-record.
+If the same assignment file is listed in implementation handoff artifacts, the
+post-commit audit preserves its recorded raw digest only for that legal
+ancestor-HEAD audit and relies on the stable projection for freshness. This is
+an ordinary metadata-tail compatibility rule, not a hostile-tamper exception.
 
 `review-branch.sh --pass` must receive `--agent-assignment <task-local
 agent-assignment.json>`. It validates that artifact and records its digest,

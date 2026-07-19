@@ -800,6 +800,15 @@ complete dirty paths and reviewed path digests, executed command facts, worker
 evidence, scope qualification, adequacy dimensions, findings, unverified items,
 AI Gate, one typed exit/consumer, full-round identity, and `facts_sha256`.
 
+Requirement provenance artifacts, implementation handoff artifacts, Docs SSOT
+durable paths, repository reviewed paths, and command facts are non-empty.
+Every adequacy dimension references at least one known current-round source and
+the complete dimension set covers planning, provenance, handoff, Docs SSOT,
+repository, execution, and agent evidence. `current_scope` and
+`scope_change_required` candidates carry non-empty trigger references. The
+checker verifies only this objective existence/closure; the AI Gate decides
+whether the evidence is semantically sufficient.
+
 Every candidate issue is classified before severity as `current_scope`,
 `scope_change_required`, `followup_proposal`, or `out_of_scope`; only
 `current_scope` may carry P0-P3 and a finding id. Every `current_scope`
@@ -829,6 +838,14 @@ status events, review rounds, and reuse decisions may therefore append without
 staling Phase 2; any change to the Phase 2 stable projection still fails closed.
 The Branch Review Gate independently validates and digests the complete current
 `agent-assignment.json` before it can pass.
+
+The checker independently derives and exactly compares `execution_sha256`,
+`scope_sha256`, `adequacy_sha256`, Gate planning/snapshot/scope/adequacy
+bindings, `findings_count`, and `full_round_sha256`. When implementation
+handoff artifacts include task-local `agent-assignment.json`, a legal
+ancestor-HEAD post-commit audit preserves that recorded raw path digest and
+uses the stable agent projection for freshness. This permits only Branch Review
+metadata tail and still rejects implementation/check/recovery drift.
 
 The closed exits are `passed`, `implementation_required`, `planning_stale`, and
 `blocked`. `planning_stale` alone carries route discriminator `reapprove_plan`

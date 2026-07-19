@@ -692,6 +692,13 @@ AI check 的入口；commit 后 Branch Review Gate 会审计后续提交
 匹配当前 HEAD 而在 task work commit 后重录 Phase 2，除非提交后又出现新的非 metadata
 改动或 evidence 已失效。
 
+V2 schema/checker 要求 provenance、handoff、durable paths、reviewed paths、commands
+与 adequacy evidence refs 非空并覆盖全部 known current-round source；current/scope-change
+candidate 必须带 trigger refs。Checker 重算 execution/scope/adequacy、全部 Gate binding、
+finding count 与 full-round digest。若 handoff 包含 task-local assignment，合法 post-commit
+review assignment/status/completed/round tail 由 stable Phase 2 projection 复核，Phase 2
+implementation/check/recovery drift 仍 fail closed。
+
 Phase 2 必须消费 planning 阶段的 `Docs SSOT Plan`。实现代理需要在 handoff 中说明
 plan strategy、durable docs 同步结果、task delta merge、task-history-only 内容、
 `no_docs_update_needed` 理由或 `bootstrap_or_repair_docs` follow-up / PR 限制，以及哪些实现输入
