@@ -5,7 +5,21 @@
     "url": "https://github.com/castbox/guru-trellis/issues/129",
     "title": "实现 guru-approve-task-plan 闭环 Skill",
     "reason": "Primary independently deliverable Phase 1 Skill migration.",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "Phase 2 独立检查覆盖 Issue #129 全部 planning、Skill package、schema、runtime、workflow、preset、五根分发和 Docs SSOT 范围；完整回归 645/645、定向回归 55/55、local-unpublished throwaway exit 0。",
+      "Branch Review Gate 绑定 reviewed HEAD e06184716f8e973335b527667b49788ff74b112f 和 origin/main...HEAD 全部 128 个路径；fresh 最终放行审查 P0/P1/P2/P3 findings 均为 0。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "1ecd2aa6c9ee9dbb026a5d5314cac53492a3536d777eaa341ad6ac156af33eeb",
+        "verified_content_head": "e06184716f8e973335b527667b49788ff74b112f",
+        "remote_head": "e06184716f8e973335b527667b49788ff74b112f",
+        "publish_head": "e06184716f8e973335b527667b49788ff74b112f",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -13,7 +27,21 @@
       "url": "https://github.com/castbox/guru-trellis/issues/129",
       "title": "实现 guru-approve-task-plan 闭环 Skill",
       "reason": "Fully covered by this task and its acceptance criteria.",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "Phase 2 独立检查覆盖 Issue #129 全部 planning、Skill package、schema、runtime、workflow、preset、五根分发和 Docs SSOT 范围；完整回归 645/645、定向回归 55/55、local-unpublished throwaway exit 0。",
+        "Branch Review Gate 绑定 reviewed HEAD e06184716f8e973335b527667b49788ff74b112f 和 origin/main...HEAD 全部 128 个路径；fresh 最终放行审查 P0/P1/P2/P3 findings 均为 0。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "1ecd2aa6c9ee9dbb026a5d5314cac53492a3536d777eaa341ad6ac156af33eeb",
+          "verified_content_head": "e06184716f8e973335b527667b49788ff74b112f",
+          "remote_head": "e06184716f8e973335b527667b49788ff74b112f",
+          "publish_head": "e06184716f8e973335b527667b49788ff74b112f",
+          "commands_passed": true
+        }
+      ]
     }
   ],
   "related_issues": [

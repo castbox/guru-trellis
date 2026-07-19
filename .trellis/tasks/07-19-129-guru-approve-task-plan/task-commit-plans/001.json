@@ -2497,7 +2497,1175 @@
     "plan_digest": "b8fc58eb68ed15f5cb09b096f13cb3f444d6dd6aebc43f3e63f1b447dfd06404"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-19T13:37:08Z",
+    "commit_sha": "e06184716f8e973335b527667b49788ff74b112f",
+    "parent": "56e32836376ae31d6e07862ca988c24f5654886d",
+    "message_sha256": "a1936fdea1b8f134dd5cb3c3e3d478e4b2b1d03b7b3c2ec3303befeeb8756c57",
+    "committed_paths": [
+      ".agents/skills/guru-approve-task-plan/SKILL.md",
+      ".agents/skills/guru-approve-task-plan/examples/planning-approval.json",
+      ".agents/skills/guru-approve-task-plan/interface.json",
+      ".agents/skills/guru-approve-task-plan/references/contract.md",
+      ".agents/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+      ".agents/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+      ".agents/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+      ".agents/skills/guru-approve-task-plan/tests/test_contract.py",
+      ".agents/skills/guru-clarify-requirements/SKILL.md",
+      ".agents/skills/guru-clarify-requirements/references/contract.md",
+      ".agents/skills/guru-clarify-requirements/tests/test_contract.py",
+      ".agents/skills/guru-create-task-commit/interface.json",
+      ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+      ".agents/skills/guru-review-change-request/tests/test_contract.py",
+      ".claude/skills/guru-approve-task-plan/SKILL.md",
+      ".claude/skills/guru-approve-task-plan/examples/planning-approval.json",
+      ".claude/skills/guru-approve-task-plan/interface.json",
+      ".claude/skills/guru-approve-task-plan/references/contract.md",
+      ".claude/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+      ".claude/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+      ".claude/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+      ".claude/skills/guru-approve-task-plan/tests/test_contract.py",
+      ".claude/skills/guru-clarify-requirements/SKILL.md",
+      ".claude/skills/guru-clarify-requirements/references/contract.md",
+      ".claude/skills/guru-clarify-requirements/tests/test_contract.py",
+      ".claude/skills/guru-create-task-commit/interface.json",
+      ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+      ".claude/skills/guru-review-change-request/tests/test_contract.py",
+      ".codex/skills/guru-approve-task-plan/SKILL.md",
+      ".codex/skills/guru-approve-task-plan/examples/planning-approval.json",
+      ".codex/skills/guru-approve-task-plan/interface.json",
+      ".codex/skills/guru-approve-task-plan/references/contract.md",
+      ".codex/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+      ".codex/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+      ".codex/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+      ".codex/skills/guru-approve-task-plan/tests/test_contract.py",
+      ".codex/skills/guru-clarify-requirements/SKILL.md",
+      ".codex/skills/guru-clarify-requirements/references/contract.md",
+      ".codex/skills/guru-clarify-requirements/tests/test_contract.py",
+      ".codex/skills/guru-create-task-commit/interface.json",
+      ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+      ".codex/skills/guru-review-change-request/tests/test_contract.py",
+      ".cursor/skills/guru-approve-task-plan/SKILL.md",
+      ".cursor/skills/guru-approve-task-plan/examples/planning-approval.json",
+      ".cursor/skills/guru-approve-task-plan/interface.json",
+      ".cursor/skills/guru-approve-task-plan/references/contract.md",
+      ".cursor/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+      ".cursor/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+      ".cursor/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+      ".cursor/skills/guru-approve-task-plan/tests/test_contract.py",
+      ".cursor/skills/guru-clarify-requirements/SKILL.md",
+      ".cursor/skills/guru-clarify-requirements/references/contract.md",
+      ".cursor/skills/guru-clarify-requirements/tests/test_contract.py",
+      ".cursor/skills/guru-create-task-commit/interface.json",
+      ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+      ".cursor/skills/guru-review-change-request/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/examples/planning-approval.json",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/interface.json",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/planning-approval.schema.json",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/check-planning-approval.sh",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/record-planning-approval.sh",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/tests/test_contract.py",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+      ".trellis/guru-team/skills/packages/guru-review-change-request/tests/test_contract.py",
+      ".trellis/guru-team/skills/registry.json",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/agent-assignment.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/check.jsonl",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/context-discovery.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/contract-wording-review.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/implement.jsonl",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/implement.md",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/issue-review.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/issue-scope-ledger.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/phase2-check.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/planning-approval.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/prd.md",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/research/official-trellis-extension-contracts.md",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/task-commit-plans/001.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/task-start-context.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/planning-approval.json",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/interface.json",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/planning-approval.schema.json",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/scripts/check-planning-approval.sh",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/scripts/record-planning-approval.sh",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/tests/test_contract.py",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+      "trellis/skills/guru-team/packages/guru-review-change-request/tests/test_contract.py",
+      "trellis/skills/guru-team/registry.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "9158c4edbf1ddd98578be1609d5b3d5504c54c5a",
+      "actual_tree": "9158c4edbf1ddd98578be1609d5b3d5504c54c5a",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".agents/skills/guru-approve-task-plan/SKILL.md",
+          "expected_blob": "ec500e8a223be11c3481166bb1f5c2a0663bdc18",
+          "expected_mode": "100644",
+          "actual_blob": "ec500e8a223be11c3481166bb1f5c2a0663bdc18",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-approve-task-plan/examples/planning-approval.json",
+          "expected_blob": "479b93d72145ba1bdd078257897802a4f7fabd26",
+          "expected_mode": "100644",
+          "actual_blob": "479b93d72145ba1bdd078257897802a4f7fabd26",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-approve-task-plan/interface.json",
+          "expected_blob": "d84e6ff6154b1243bf3d121c036ccb11c2554cb6",
+          "expected_mode": "100644",
+          "actual_blob": "d84e6ff6154b1243bf3d121c036ccb11c2554cb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-approve-task-plan/references/contract.md",
+          "expected_blob": "ccb20d01797ce55de9136315ad010a437d358469",
+          "expected_mode": "100644",
+          "actual_blob": "ccb20d01797ce55de9136315ad010a437d358469",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+          "expected_blob": "a0dc0d7005328f007170bb25bb4af63d0f55c8e7",
+          "expected_mode": "100644",
+          "actual_blob": "a0dc0d7005328f007170bb25bb4af63d0f55c8e7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+          "expected_blob": "54a089662152314c95832b2d73a41804b857c01c",
+          "expected_mode": "100755",
+          "actual_blob": "54a089662152314c95832b2d73a41804b857c01c",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+          "expected_blob": "dccced2a9b3c5557dab202f7535acc2f4fbb67e1",
+          "expected_mode": "100755",
+          "actual_blob": "dccced2a9b3c5557dab202f7535acc2f4fbb67e1",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-approve-task-plan/tests/test_contract.py",
+          "expected_blob": "7c9cd5ff93159e75ff53cff948266192a5247208",
+          "expected_mode": "100644",
+          "actual_blob": "7c9cd5ff93159e75ff53cff948266192a5247208",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-clarify-requirements/SKILL.md",
+          "expected_blob": "2020eb8c9451b25932b4a6efb5380c801795213a",
+          "expected_mode": "100644",
+          "actual_blob": "2020eb8c9451b25932b4a6efb5380c801795213a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-clarify-requirements/references/contract.md",
+          "expected_blob": "1cb1101a49d23e06eab1a7091c7c2d251ad16cfb",
+          "expected_mode": "100644",
+          "actual_blob": "1cb1101a49d23e06eab1a7091c7c2d251ad16cfb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-clarify-requirements/tests/test_contract.py",
+          "expected_blob": "3c0d4666589ff26ff1afe1be4d7c37ebf3ab6e6d",
+          "expected_mode": "100644",
+          "actual_blob": "3c0d4666589ff26ff1afe1be4d7c37ebf3ab6e6d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-commit/interface.json",
+          "expected_blob": "042e389f307dfcd55a4b43ba08357a4411ae681b",
+          "expected_mode": "100644",
+          "actual_blob": "042e389f307dfcd55a4b43ba08357a4411ae681b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+          "expected_blob": "aecb683ea22b4f836f3fed42751b1e938678b0bb",
+          "expected_mode": "100644",
+          "actual_blob": "aecb683ea22b4f836f3fed42751b1e938678b0bb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-review-change-request/tests/test_contract.py",
+          "expected_blob": "c433761cd526fcedd1c508af0fee62e23d7d1c35",
+          "expected_mode": "100644",
+          "actual_blob": "c433761cd526fcedd1c508af0fee62e23d7d1c35",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-approve-task-plan/SKILL.md",
+          "expected_blob": "ec500e8a223be11c3481166bb1f5c2a0663bdc18",
+          "expected_mode": "100644",
+          "actual_blob": "ec500e8a223be11c3481166bb1f5c2a0663bdc18",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-approve-task-plan/examples/planning-approval.json",
+          "expected_blob": "479b93d72145ba1bdd078257897802a4f7fabd26",
+          "expected_mode": "100644",
+          "actual_blob": "479b93d72145ba1bdd078257897802a4f7fabd26",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-approve-task-plan/interface.json",
+          "expected_blob": "d84e6ff6154b1243bf3d121c036ccb11c2554cb6",
+          "expected_mode": "100644",
+          "actual_blob": "d84e6ff6154b1243bf3d121c036ccb11c2554cb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-approve-task-plan/references/contract.md",
+          "expected_blob": "ccb20d01797ce55de9136315ad010a437d358469",
+          "expected_mode": "100644",
+          "actual_blob": "ccb20d01797ce55de9136315ad010a437d358469",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+          "expected_blob": "a0dc0d7005328f007170bb25bb4af63d0f55c8e7",
+          "expected_mode": "100644",
+          "actual_blob": "a0dc0d7005328f007170bb25bb4af63d0f55c8e7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+          "expected_blob": "54a089662152314c95832b2d73a41804b857c01c",
+          "expected_mode": "100755",
+          "actual_blob": "54a089662152314c95832b2d73a41804b857c01c",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+          "expected_blob": "dccced2a9b3c5557dab202f7535acc2f4fbb67e1",
+          "expected_mode": "100755",
+          "actual_blob": "dccced2a9b3c5557dab202f7535acc2f4fbb67e1",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-approve-task-plan/tests/test_contract.py",
+          "expected_blob": "7c9cd5ff93159e75ff53cff948266192a5247208",
+          "expected_mode": "100644",
+          "actual_blob": "7c9cd5ff93159e75ff53cff948266192a5247208",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-clarify-requirements/SKILL.md",
+          "expected_blob": "2020eb8c9451b25932b4a6efb5380c801795213a",
+          "expected_mode": "100644",
+          "actual_blob": "2020eb8c9451b25932b4a6efb5380c801795213a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-clarify-requirements/references/contract.md",
+          "expected_blob": "1cb1101a49d23e06eab1a7091c7c2d251ad16cfb",
+          "expected_mode": "100644",
+          "actual_blob": "1cb1101a49d23e06eab1a7091c7c2d251ad16cfb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-clarify-requirements/tests/test_contract.py",
+          "expected_blob": "3c0d4666589ff26ff1afe1be4d7c37ebf3ab6e6d",
+          "expected_mode": "100644",
+          "actual_blob": "3c0d4666589ff26ff1afe1be4d7c37ebf3ab6e6d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-commit/interface.json",
+          "expected_blob": "042e389f307dfcd55a4b43ba08357a4411ae681b",
+          "expected_mode": "100644",
+          "actual_blob": "042e389f307dfcd55a4b43ba08357a4411ae681b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+          "expected_blob": "aecb683ea22b4f836f3fed42751b1e938678b0bb",
+          "expected_mode": "100644",
+          "actual_blob": "aecb683ea22b4f836f3fed42751b1e938678b0bb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-review-change-request/tests/test_contract.py",
+          "expected_blob": "c433761cd526fcedd1c508af0fee62e23d7d1c35",
+          "expected_mode": "100644",
+          "actual_blob": "c433761cd526fcedd1c508af0fee62e23d7d1c35",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-approve-task-plan/SKILL.md",
+          "expected_blob": "ec500e8a223be11c3481166bb1f5c2a0663bdc18",
+          "expected_mode": "100644",
+          "actual_blob": "ec500e8a223be11c3481166bb1f5c2a0663bdc18",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-approve-task-plan/examples/planning-approval.json",
+          "expected_blob": "479b93d72145ba1bdd078257897802a4f7fabd26",
+          "expected_mode": "100644",
+          "actual_blob": "479b93d72145ba1bdd078257897802a4f7fabd26",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-approve-task-plan/interface.json",
+          "expected_blob": "d84e6ff6154b1243bf3d121c036ccb11c2554cb6",
+          "expected_mode": "100644",
+          "actual_blob": "d84e6ff6154b1243bf3d121c036ccb11c2554cb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-approve-task-plan/references/contract.md",
+          "expected_blob": "ccb20d01797ce55de9136315ad010a437d358469",
+          "expected_mode": "100644",
+          "actual_blob": "ccb20d01797ce55de9136315ad010a437d358469",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+          "expected_blob": "a0dc0d7005328f007170bb25bb4af63d0f55c8e7",
+          "expected_mode": "100644",
+          "actual_blob": "a0dc0d7005328f007170bb25bb4af63d0f55c8e7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+          "expected_blob": "54a089662152314c95832b2d73a41804b857c01c",
+          "expected_mode": "100755",
+          "actual_blob": "54a089662152314c95832b2d73a41804b857c01c",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+          "expected_blob": "dccced2a9b3c5557dab202f7535acc2f4fbb67e1",
+          "expected_mode": "100755",
+          "actual_blob": "dccced2a9b3c5557dab202f7535acc2f4fbb67e1",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-approve-task-plan/tests/test_contract.py",
+          "expected_blob": "7c9cd5ff93159e75ff53cff948266192a5247208",
+          "expected_mode": "100644",
+          "actual_blob": "7c9cd5ff93159e75ff53cff948266192a5247208",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-clarify-requirements/SKILL.md",
+          "expected_blob": "2020eb8c9451b25932b4a6efb5380c801795213a",
+          "expected_mode": "100644",
+          "actual_blob": "2020eb8c9451b25932b4a6efb5380c801795213a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-clarify-requirements/references/contract.md",
+          "expected_blob": "1cb1101a49d23e06eab1a7091c7c2d251ad16cfb",
+          "expected_mode": "100644",
+          "actual_blob": "1cb1101a49d23e06eab1a7091c7c2d251ad16cfb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-clarify-requirements/tests/test_contract.py",
+          "expected_blob": "3c0d4666589ff26ff1afe1be4d7c37ebf3ab6e6d",
+          "expected_mode": "100644",
+          "actual_blob": "3c0d4666589ff26ff1afe1be4d7c37ebf3ab6e6d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-commit/interface.json",
+          "expected_blob": "042e389f307dfcd55a4b43ba08357a4411ae681b",
+          "expected_mode": "100644",
+          "actual_blob": "042e389f307dfcd55a4b43ba08357a4411ae681b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+          "expected_blob": "aecb683ea22b4f836f3fed42751b1e938678b0bb",
+          "expected_mode": "100644",
+          "actual_blob": "aecb683ea22b4f836f3fed42751b1e938678b0bb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-review-change-request/tests/test_contract.py",
+          "expected_blob": "c433761cd526fcedd1c508af0fee62e23d7d1c35",
+          "expected_mode": "100644",
+          "actual_blob": "c433761cd526fcedd1c508af0fee62e23d7d1c35",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-approve-task-plan/SKILL.md",
+          "expected_blob": "ec500e8a223be11c3481166bb1f5c2a0663bdc18",
+          "expected_mode": "100644",
+          "actual_blob": "ec500e8a223be11c3481166bb1f5c2a0663bdc18",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-approve-task-plan/examples/planning-approval.json",
+          "expected_blob": "479b93d72145ba1bdd078257897802a4f7fabd26",
+          "expected_mode": "100644",
+          "actual_blob": "479b93d72145ba1bdd078257897802a4f7fabd26",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-approve-task-plan/interface.json",
+          "expected_blob": "d84e6ff6154b1243bf3d121c036ccb11c2554cb6",
+          "expected_mode": "100644",
+          "actual_blob": "d84e6ff6154b1243bf3d121c036ccb11c2554cb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-approve-task-plan/references/contract.md",
+          "expected_blob": "ccb20d01797ce55de9136315ad010a437d358469",
+          "expected_mode": "100644",
+          "actual_blob": "ccb20d01797ce55de9136315ad010a437d358469",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+          "expected_blob": "a0dc0d7005328f007170bb25bb4af63d0f55c8e7",
+          "expected_mode": "100644",
+          "actual_blob": "a0dc0d7005328f007170bb25bb4af63d0f55c8e7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+          "expected_blob": "54a089662152314c95832b2d73a41804b857c01c",
+          "expected_mode": "100755",
+          "actual_blob": "54a089662152314c95832b2d73a41804b857c01c",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+          "expected_blob": "dccced2a9b3c5557dab202f7535acc2f4fbb67e1",
+          "expected_mode": "100755",
+          "actual_blob": "dccced2a9b3c5557dab202f7535acc2f4fbb67e1",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-approve-task-plan/tests/test_contract.py",
+          "expected_blob": "7c9cd5ff93159e75ff53cff948266192a5247208",
+          "expected_mode": "100644",
+          "actual_blob": "7c9cd5ff93159e75ff53cff948266192a5247208",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-clarify-requirements/SKILL.md",
+          "expected_blob": "2020eb8c9451b25932b4a6efb5380c801795213a",
+          "expected_mode": "100644",
+          "actual_blob": "2020eb8c9451b25932b4a6efb5380c801795213a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-clarify-requirements/references/contract.md",
+          "expected_blob": "1cb1101a49d23e06eab1a7091c7c2d251ad16cfb",
+          "expected_mode": "100644",
+          "actual_blob": "1cb1101a49d23e06eab1a7091c7c2d251ad16cfb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-clarify-requirements/tests/test_contract.py",
+          "expected_blob": "3c0d4666589ff26ff1afe1be4d7c37ebf3ab6e6d",
+          "expected_mode": "100644",
+          "actual_blob": "3c0d4666589ff26ff1afe1be4d7c37ebf3ab6e6d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-commit/interface.json",
+          "expected_blob": "042e389f307dfcd55a4b43ba08357a4411ae681b",
+          "expected_mode": "100644",
+          "actual_blob": "042e389f307dfcd55a4b43ba08357a4411ae681b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+          "expected_blob": "aecb683ea22b4f836f3fed42751b1e938678b0bb",
+          "expected_mode": "100644",
+          "actual_blob": "aecb683ea22b4f836f3fed42751b1e938678b0bb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-review-change-request/tests/test_contract.py",
+          "expected_blob": "c433761cd526fcedd1c508af0fee62e23d7d1c35",
+          "expected_mode": "100644",
+          "actual_blob": "c433761cd526fcedd1c508af0fee62e23d7d1c35",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "1de76c42aab92cb051f71240d043a57dbc3b49de",
+          "expected_mode": "100644",
+          "actual_blob": "1de76c42aab92cb051f71240d043a57dbc3b49de",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "d4ece5416b1275cc03901a638305408f3ba44189",
+          "expected_mode": "100755",
+          "actual_blob": "d4ece5416b1275cc03901a638305408f3ba44189",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/SKILL.md",
+          "expected_blob": "ec500e8a223be11c3481166bb1f5c2a0663bdc18",
+          "expected_mode": "100644",
+          "actual_blob": "ec500e8a223be11c3481166bb1f5c2a0663bdc18",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/examples/planning-approval.json",
+          "expected_blob": "479b93d72145ba1bdd078257897802a4f7fabd26",
+          "expected_mode": "100644",
+          "actual_blob": "479b93d72145ba1bdd078257897802a4f7fabd26",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/interface.json",
+          "expected_blob": "d84e6ff6154b1243bf3d121c036ccb11c2554cb6",
+          "expected_mode": "100644",
+          "actual_blob": "d84e6ff6154b1243bf3d121c036ccb11c2554cb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/references/contract.md",
+          "expected_blob": "ccb20d01797ce55de9136315ad010a437d358469",
+          "expected_mode": "100644",
+          "actual_blob": "ccb20d01797ce55de9136315ad010a437d358469",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/planning-approval.schema.json",
+          "expected_blob": "a0dc0d7005328f007170bb25bb4af63d0f55c8e7",
+          "expected_mode": "100644",
+          "actual_blob": "a0dc0d7005328f007170bb25bb4af63d0f55c8e7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/check-planning-approval.sh",
+          "expected_blob": "54a089662152314c95832b2d73a41804b857c01c",
+          "expected_mode": "100755",
+          "actual_blob": "54a089662152314c95832b2d73a41804b857c01c",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/record-planning-approval.sh",
+          "expected_blob": "dccced2a9b3c5557dab202f7535acc2f4fbb67e1",
+          "expected_mode": "100755",
+          "actual_blob": "dccced2a9b3c5557dab202f7535acc2f4fbb67e1",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/tests/test_contract.py",
+          "expected_blob": "7c9cd5ff93159e75ff53cff948266192a5247208",
+          "expected_mode": "100644",
+          "actual_blob": "7c9cd5ff93159e75ff53cff948266192a5247208",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+          "expected_blob": "2020eb8c9451b25932b4a6efb5380c801795213a",
+          "expected_mode": "100644",
+          "actual_blob": "2020eb8c9451b25932b4a6efb5380c801795213a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+          "expected_blob": "1cb1101a49d23e06eab1a7091c7c2d251ad16cfb",
+          "expected_mode": "100644",
+          "actual_blob": "1cb1101a49d23e06eab1a7091c7c2d251ad16cfb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
+          "expected_blob": "3c0d4666589ff26ff1afe1be4d7c37ebf3ab6e6d",
+          "expected_mode": "100644",
+          "actual_blob": "3c0d4666589ff26ff1afe1be4d7c37ebf3ab6e6d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+          "expected_blob": "042e389f307dfcd55a4b43ba08357a4411ae681b",
+          "expected_mode": "100644",
+          "actual_blob": "042e389f307dfcd55a4b43ba08357a4411ae681b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+          "expected_blob": "aecb683ea22b4f836f3fed42751b1e938678b0bb",
+          "expected_mode": "100644",
+          "actual_blob": "aecb683ea22b4f836f3fed42751b1e938678b0bb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-review-change-request/tests/test_contract.py",
+          "expected_blob": "c433761cd526fcedd1c508af0fee62e23d7d1c35",
+          "expected_mode": "100644",
+          "actual_blob": "c433761cd526fcedd1c508af0fee62e23d7d1c35",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/registry.json",
+          "expected_blob": "9e9e6c944d78af98130c5488baf1d3e8e6db3af6",
+          "expected_mode": "100644",
+          "actual_blob": "9e9e6c944d78af98130c5488baf1d3e8e6db3af6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/docs/public-docs.md",
+          "expected_blob": "9611d6c4e7df733a82f4795dce2cc8cf909965f1",
+          "expected_mode": "100644",
+          "actual_blob": "9611d6c4e7df733a82f4795dce2cc8cf909965f1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/preset/overlay-guidelines.md",
+          "expected_blob": "c60e0a3855683b08b07fe53fe08c596cd23e97ce",
+          "expected_mode": "100644",
+          "actual_blob": "c60e0a3855683b08b07fe53fe08c596cd23e97ce",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/preset/upstream-ownership.md",
+          "expected_blob": "c095d414279db85f5645ba07f12341e98b35ceaf",
+          "expected_mode": "100644",
+          "actual_blob": "c095d414279db85f5645ba07f12341e98b35ceaf",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/companion-scripts.md",
+          "expected_blob": "77b5f3539d2a57a2d9e7961288774c3d66063654",
+          "expected_mode": "100644",
+          "actual_blob": "77b5f3539d2a57a2d9e7961288774c3d66063654",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/data-contracts.md",
+          "expected_blob": "1f2fed57dd628b187c79bb7910a29ce3ae3092d1",
+          "expected_mode": "100644",
+          "actual_blob": "1f2fed57dd628b187c79bb7910a29ce3ae3092d1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/index.md",
+          "expected_blob": "3620266c92a5c3c794ed0b32d686add78fd73c2d",
+          "expected_mode": "100644",
+          "actual_blob": "3620266c92a5c3c794ed0b32d686add78fd73c2d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/quality-guidelines.md",
+          "expected_blob": "b2e936431e89c907db535f7742e5a643e958baba",
+          "expected_mode": "100644",
+          "actual_blob": "b2e936431e89c907db535f7742e5a643e958baba",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/skill-package-contract.md",
+          "expected_blob": "d905938ff8cc17abf5488ba76bd244fa9195f75b",
+          "expected_mode": "100644",
+          "actual_blob": "d905938ff8cc17abf5488ba76bd244fa9195f75b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/workflow-contract.md",
+          "expected_blob": "03334b2f12b9413a835a18f070effb627b25b066",
+          "expected_mode": "100644",
+          "actual_blob": "03334b2f12b9413a835a18f070effb627b25b066",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/agent-assignment.json",
+          "expected_blob": "447241c2dd262c9a9ffac3b02e9cbcfc9f7e2faf",
+          "expected_mode": "100644",
+          "actual_blob": "447241c2dd262c9a9ffac3b02e9cbcfc9f7e2faf",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/check.jsonl",
+          "expected_blob": "ee85a69b652f16219876e9984cd886562e2285e0",
+          "expected_mode": "100644",
+          "actual_blob": "ee85a69b652f16219876e9984cd886562e2285e0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/context-discovery.json",
+          "expected_blob": "d45ab3a72375be0d04c3ae1ac9d61099ae46a992",
+          "expected_mode": "100644",
+          "actual_blob": "d45ab3a72375be0d04c3ae1ac9d61099ae46a992",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/contract-wording-review.json",
+          "expected_blob": "c9a89b176ccf49dd384187fc3f3cd1e93a74cd4b",
+          "expected_mode": "100644",
+          "actual_blob": "c9a89b176ccf49dd384187fc3f3cd1e93a74cd4b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+          "expected_blob": "161babaef2b98c581028238a05b0063dd1d68379",
+          "expected_mode": "100644",
+          "actual_blob": "161babaef2b98c581028238a05b0063dd1d68379",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/implement.jsonl",
+          "expected_blob": "37502c9b6a44969d466497e136b1be26222d81fd",
+          "expected_mode": "100644",
+          "actual_blob": "37502c9b6a44969d466497e136b1be26222d81fd",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/implement.md",
+          "expected_blob": "ff2851521dd5b926989b0c453c21cfab6be3fb41",
+          "expected_mode": "100644",
+          "actual_blob": "ff2851521dd5b926989b0c453c21cfab6be3fb41",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/issue-review.json",
+          "expected_blob": "f1cad37730ee326e95eae769a2b20d8ec4b88e39",
+          "expected_mode": "100644",
+          "actual_blob": "f1cad37730ee326e95eae769a2b20d8ec4b88e39",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/issue-scope-ledger.json",
+          "expected_blob": "3cb3deefa1a9aab1fbcfdcedd94a084975c9aabe",
+          "expected_mode": "100644",
+          "actual_blob": "3cb3deefa1a9aab1fbcfdcedd94a084975c9aabe",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/phase2-check.json",
+          "expected_blob": "eb4fa322e363b4cf1dd41332891d59803fc7445d",
+          "expected_mode": "100644",
+          "actual_blob": "eb4fa322e363b4cf1dd41332891d59803fc7445d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/planning-approval.json",
+          "expected_blob": "f93daf2ab76fa5098322e672bff0e7a7f2812a7b",
+          "expected_mode": "100644",
+          "actual_blob": "f93daf2ab76fa5098322e672bff0e7a7f2812a7b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/prd.md",
+          "expected_blob": "61bd088ebbe30414bfe26981de1544f67f525fb0",
+          "expected_mode": "100644",
+          "actual_blob": "61bd088ebbe30414bfe26981de1544f67f525fb0",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/research/official-trellis-extension-contracts.md",
+          "expected_blob": "41827ff6c03ecb1fe52a0d9c5527cde88b7ebf2e",
+          "expected_mode": "100644",
+          "actual_blob": "41827ff6c03ecb1fe52a0d9c5527cde88b7ebf2e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/task-commit-plans/001.json",
+          "expected_blob": "69c7276eb3bac6093e9fc2f6e34295ff0c3024a9",
+          "expected_mode": "100644",
+          "actual_blob": "69c7276eb3bac6093e9fc2f6e34295ff0c3024a9",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/task-start-context.json",
+          "expected_blob": "043688289fbd3d064327b0d2ec179981304df7b7",
+          "expected_mode": "100644",
+          "actual_blob": "043688289fbd3d064327b0d2ec179981304df7b7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/task.json",
+          "expected_blob": "0401234a41ad46b1aa3ca42e7ea5955327337150",
+          "expected_mode": "100644",
+          "actual_blob": "0401234a41ad46b1aa3ca42e7ea5955327337150",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/workflow.md",
+          "expected_blob": "be2d62dd4a0c9c55ba89b771d7f8ff7b30b084cb",
+          "expected_mode": "100644",
+          "actual_blob": "be2d62dd4a0c9c55ba89b771d7f8ff7b30b084cb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "README.md",
+          "expected_blob": "d11efbacda0f25ec6f2cb88a9eb86f8402383230",
+          "expected_mode": "100644",
+          "actual_blob": "d11efbacda0f25ec6f2cb88a9eb86f8402383230",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/README.md",
+          "expected_blob": "d28c5fbf2394a2fddaa76286b9e755cd479b77e4",
+          "expected_mode": "100644",
+          "actual_blob": "d28c5fbf2394a2fddaa76286b9e755cd479b77e4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/guru-team-trellis-flow.md",
+          "expected_blob": "c67a80ca5e98f0c8e816e415adf8e6cc3ae64e36",
+          "expected_mode": "100644",
+          "actual_blob": "c67a80ca5e98f0c8e816e415adf8e6cc3ae64e36",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/requirement-main.md",
+          "expected_blob": "2a77e3510f456aa5db5fd6b668374997658109e4",
+          "expected_mode": "100644",
+          "actual_blob": "2a77e3510f456aa5db5fd6b668374997658109e4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/guru-team-extension.json",
+          "expected_blob": "a4f14ad6b4a1072eb7d3401232fbb2199446ecce",
+          "expected_mode": "100644",
+          "actual_blob": "a4f14ad6b4a1072eb7d3401232fbb2199446ecce",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/README.md",
+          "expected_blob": "85f63fe09d8672529f5f4885e5cd67adc0427e39",
+          "expected_mode": "100644",
+          "actual_blob": "85f63fe09d8672529f5f4885e5cd67adc0427e39",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "expected_blob": "f84ba4a64b87d9ca0575244d9eb39d02e83e566d",
+          "expected_mode": "100755",
+          "actual_blob": "f84ba4a64b87d9ca0575244d9eb39d02e83e566d",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "expected_blob": "9c8b3ba4c17c12ecff7c0d0f4a5b85155f1c854d",
+          "expected_mode": "100644",
+          "actual_blob": "9c8b3ba4c17c12ecff7c0d0f4a5b85155f1c854d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+          "expected_blob": "39ce4f1db0895796b293fc3a75770932f28eee49",
+          "expected_mode": "100644",
+          "actual_blob": "39ce4f1db0895796b293fc3a75770932f28eee49",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/SKILL.md",
+          "expected_blob": "ec500e8a223be11c3481166bb1f5c2a0663bdc18",
+          "expected_mode": "100644",
+          "actual_blob": "ec500e8a223be11c3481166bb1f5c2a0663bdc18",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/planning-approval.json",
+          "expected_blob": "479b93d72145ba1bdd078257897802a4f7fabd26",
+          "expected_mode": "100644",
+          "actual_blob": "479b93d72145ba1bdd078257897802a4f7fabd26",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/interface.json",
+          "expected_blob": "d84e6ff6154b1243bf3d121c036ccb11c2554cb6",
+          "expected_mode": "100644",
+          "actual_blob": "d84e6ff6154b1243bf3d121c036ccb11c2554cb6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/references/contract.md",
+          "expected_blob": "ccb20d01797ce55de9136315ad010a437d358469",
+          "expected_mode": "100644",
+          "actual_blob": "ccb20d01797ce55de9136315ad010a437d358469",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/planning-approval.schema.json",
+          "expected_blob": "a0dc0d7005328f007170bb25bb4af63d0f55c8e7",
+          "expected_mode": "100644",
+          "actual_blob": "a0dc0d7005328f007170bb25bb4af63d0f55c8e7",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/scripts/check-planning-approval.sh",
+          "expected_blob": "54a089662152314c95832b2d73a41804b857c01c",
+          "expected_mode": "100755",
+          "actual_blob": "54a089662152314c95832b2d73a41804b857c01c",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/scripts/record-planning-approval.sh",
+          "expected_blob": "dccced2a9b3c5557dab202f7535acc2f4fbb67e1",
+          "expected_mode": "100755",
+          "actual_blob": "dccced2a9b3c5557dab202f7535acc2f4fbb67e1",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-approve-task-plan/tests/test_contract.py",
+          "expected_blob": "7c9cd5ff93159e75ff53cff948266192a5247208",
+          "expected_mode": "100644",
+          "actual_blob": "7c9cd5ff93159e75ff53cff948266192a5247208",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+          "expected_blob": "2020eb8c9451b25932b4a6efb5380c801795213a",
+          "expected_mode": "100644",
+          "actual_blob": "2020eb8c9451b25932b4a6efb5380c801795213a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+          "expected_blob": "1cb1101a49d23e06eab1a7091c7c2d251ad16cfb",
+          "expected_mode": "100644",
+          "actual_blob": "1cb1101a49d23e06eab1a7091c7c2d251ad16cfb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py",
+          "expected_blob": "3c0d4666589ff26ff1afe1be4d7c37ebf3ab6e6d",
+          "expected_mode": "100644",
+          "actual_blob": "3c0d4666589ff26ff1afe1be4d7c37ebf3ab6e6d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+          "expected_blob": "042e389f307dfcd55a4b43ba08357a4411ae681b",
+          "expected_mode": "100644",
+          "actual_blob": "042e389f307dfcd55a4b43ba08357a4411ae681b",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+          "expected_blob": "aecb683ea22b4f836f3fed42751b1e938678b0bb",
+          "expected_mode": "100644",
+          "actual_blob": "aecb683ea22b4f836f3fed42751b1e938678b0bb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-review-change-request/tests/test_contract.py",
+          "expected_blob": "c433761cd526fcedd1c508af0fee62e23d7d1c35",
+          "expected_mode": "100644",
+          "actual_blob": "c433761cd526fcedd1c508af0fee62e23d7d1c35",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/registry.json",
+          "expected_blob": "9e9e6c944d78af98130c5488baf1d3e8e6db3af6",
+          "expected_mode": "100644",
+          "actual_blob": "9e9e6c944d78af98130c5488baf1d3e8e6db3af6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "expected_blob": "20d3be06f462b99aad2c6f585acde58ef4e2704a",
+          "expected_mode": "100644",
+          "actual_blob": "20d3be06f462b99aad2c6f585acde58ef4e2704a",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/README.md",
+          "expected_blob": "b4502b90da6ad78a2e4f4d792aff28d9b60a02e4",
+          "expected_mode": "100644",
+          "actual_blob": "b4502b90da6ad78a2e4f4d792aff28d9b60a02e4",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "d4ece5416b1275cc03901a638305408f3ba44189",
+          "expected_mode": "100755",
+          "actual_blob": "d4ece5416b1275cc03901a638305408f3ba44189",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "54cd6c6a9ed00a822400e3fac0f063e84672abaa",
+          "expected_mode": "100644",
+          "actual_blob": "54cd6c6a9ed00a822400e3fac0f063e84672abaa",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/workflow.md",
+          "expected_blob": "be2d62dd4a0c9c55ba89b771d7f8ff7b30b084cb",
+          "expected_mode": "100644",
+          "actual_blob": "be2d62dd4a0c9c55ba89b771d7f8ff7b30b084cb",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

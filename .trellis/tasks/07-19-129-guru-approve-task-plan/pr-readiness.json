@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/129-guru-approve-task-plan",
+    "reviewed_head_sha": "e06184716f8e973335b527667b49788ff74b112f",
+    "title": "完成：#129 实现 guru-approve-task-plan 闭环 Skill",
+    "body_source": "pr-body.md",
+    "body_sha256": "94dbee6f0bfafd515ab049a2c10e04a54bf8dfdf17ce809bf1212d87d5babf7e",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "646af979f3803c884b12fcca4b66608db7df0b51bdc3920efb80a888dca32972"
+  },
+  "publish_inputs_sha256": "7d6b9162ee1e856e3c8908e24fa9aa00354d7cf82ec4c8cc3f929f565cc97856"
+}
