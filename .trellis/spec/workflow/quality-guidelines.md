@@ -30,10 +30,10 @@ When Guru Team overlay is enabled, issue-backed, task-like, or file-changing
 - `.trellis/guru-team/scripts/bash/check-env.sh --json`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh --json`
 
-Phase 1.0 must not leave bare `task.py create` as the apparent source-checkout
-path for `workspace_mode: worktree`; it should point to `prepare-task
---create-worktree --create-task` or an equivalent controlled Guru Team executor
-after handoff review and user approval.
+Phase 1.0 must not leave bare `task.py create` or legacy `prepare-task`
+mutation flags as an active source-checkout path. It mandatory invokes
+`guru-create-task-workspace`; only its checker-validated `created` exit enters
+planning.
 
 Search before editing a phrase, command, marker, or config key:
 
@@ -125,7 +125,7 @@ For `guru-review-change-request`, tests must cover workflow/standalone
 precondition parity; all three target variants; current context/clarity/wording
 projection and hash linkage; each prerequisite missing, stale, wrong-exit, or
 target/content mismatched; all ten ordered dimensions; finding/reference/hash
-closure; five exits and exact consumers; planned #112 missing-package stop;
+closure; five exits and exact consumers; active #112 exact transition;
 unknown/multiple/unmapped exit rejection; empty or incomplete AI Gate;
 scanner/checker success without a semantic Gate; non-ready failed-dimension,
 blocking-finding, affected-evidence requirements; facts digest freshness;
@@ -140,6 +140,51 @@ When changing workspace boundary behavior, also run
 cwd, worktree mode without current handoff, source checkout same-task artifacts, wrong `--review-report`,
 `--agent-assignment`, `--review-round-report`, `--checked-artifact`,
 planner-only prepare no-write behavior, and controlled `create_task` cwd.
+
+For `guru-create-task-workspace`, tests must cover workflow/standalone
+precondition parity; every missing/stale/wrong-exit/target-mismatched
+prerequisite; open issue and reviewed-draft variants; mutually exclusive issue
+and workspace/task confirmations; draft-created issue live binding plus exact
+reviewed title/body/labels bytes without adapter trimming or newline insertion;
+immediate `refresh_review`; zero branch/worktree/task writes in that invocation;
+create success followed by immediate reread failure and same-plan retry with
+exactly one remote issue; exact recovery candidate cardinality 0/1/>1;
+checker-passed created-issue result carryover into a complete Intake rerun;
+missing/partial carryover, result/binding digest drift, reviewed draft or
+creation confirmation mismatch, and fresh live existing-issue identity or null
+`issue_binding` mismatch;
+target/disposition change and cancellation zero-write results; explicit, one
+issue assignee, zero issue assignees/current-login, multiple/user-choice, and
+unresolved assignee cases; isolated official `common.task_store.cmd_create`
+adapter with a call-scoped null developer accessor; exact
+`task.json.creator=task.json.assignee=reviewed login`; preservation of existing
+identity bytes; exact object reuse/conflict blocking; four canonical task-local
+artifacts; additive
+task-start-context 1.0 compatibility; ignored runtime-only mappings; source and
+target with no `.trellis/.developer` or `.trellis/workspace/**`; preservation
+of existing official identity/journal bytes; all four typed exits and unique
+consumers; source/installed/platform distribution; legacy prepare mutation
+flags zero-write migration; and clean throwaway update/reapply.
+
+The route tests must prove a confirmed plan cannot be relabeled cancelled,
+while refused confirmation, reroute Gate, and blocked Gate produce their exact
+zero-write exits and checker-valid consumers. Public plan/result schema,
+examples, and stdout must reject or omit absolute machine-local paths.
+
+Mutation-boundary tests use a real remote whose base advances after the initial
+checker-passed evidence while the local remote-tracking ref remains stale. They
+prove the executor fetches/safely syncs, returns `refresh_review`, and creates
+no issue, branch, worktree, task, artifact, or runtime mapping. The
+unchanged-remote case still completes the reviewed mutation path.
+
+The real A/B fixture must use one clean base, production
+record/executor/checker, independent worktrees/tasks, task-local closeout and
+archive, complete commits, then both A -> B and B -> A local merge orders. The
+second merge in each order must have no Guru metadata conflict, tracked Guru
+metadata path intersection must be empty, and neither diff may contain a fixed
+handoff, `.trellis/workspace/**`, `.trellis/.developer`, shared tracked runtime,
+index, or cache. It uses no remote PR or concurrent process and does not expand
+into locks, TOCTOU, stress, cross-OS, hostile-input, or extra fault injection.
 
 When changing PR publish behavior, include tests or dry-runs for both a blocked
 low-information body and an accepted reviewer-readable body. The accepted body

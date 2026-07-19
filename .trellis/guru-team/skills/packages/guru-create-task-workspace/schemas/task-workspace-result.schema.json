@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-1.0.json",
+  "title": "Guru Team Task Workspace Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "skill_id", "generated_at", "mode", "variant", "plan_sha256", "executor", "checker", "created_issue", "created_workspace", "no_side_effect", "typed_exit", "reason", "consumer", "facts_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "skill_id": {"const": "guru-create-task-workspace"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "variant": {"enum": ["created_issue", "created_workspace", "no_side_effect"]},
+    "plan_sha256": {"$ref": "#/$defs/sha256"},
+    "executor": {"$ref": "#/$defs/stage"},
+    "checker": {"$ref": "#/$defs/stage"},
+    "created_issue": {"anyOf": [{"$ref": "#/$defs/createdIssue"}, {"type": "null"}]},
+    "created_workspace": {"anyOf": [{"$ref": "#/$defs/createdWorkspace"}, {"type": "null"}]},
+    "no_side_effect": {"anyOf": [{"$ref": "#/$defs/noSideEffect"}, {"type": "null"}]},
+    "typed_exit": {"enum": ["created", "refresh_review", "cancelled", "blocked"]},
+    "reason": {"type": "string", "minLength": 1},
+    "consumer": {"$ref": "#/$defs/consumer"},
+    "facts_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"variant": {"const": "created_issue"}}},
+      "then": {"properties": {
+        "created_issue": {"$ref": "#/$defs/createdIssue"},
+        "created_workspace": {"type": "null"},
+        "no_side_effect": {"type": "null"},
+        "typed_exit": {"const": "refresh_review"},
+        "consumer": {"const": {"kind": "skill", "id": "guru-sync-base"}}
+      }}
+    },
+    {
+      "if": {"properties": {"variant": {"const": "created_workspace"}}},
+      "then": {"properties": {
+        "created_issue": {"type": "null"},
+        "created_workspace": {"$ref": "#/$defs/createdWorkspace"},
+        "no_side_effect": {"type": "null"},
+        "typed_exit": {"const": "created"},
+        "consumer": {"const": {"kind": "workflow", "id": "guru-task-workspace-created"}}
+      }}
+    },
+    {
+      "if": {"properties": {"variant": {"const": "no_side_effect"}}},
+      "then": {"properties": {
+        "created_issue": {"type": "null"},
+        "created_workspace": {"type": "null"},
+        "no_side_effect": {"$ref": "#/$defs/noSideEffect"},
+        "typed_exit": {"enum": ["refresh_review", "cancelled", "blocked"]}
+      }}
+    },
+    {
+      "if": {"properties": {"variant": {"const": "no_side_effect"}, "typed_exit": {"const": "cancelled"}}},
+      "then": {"properties": {
+        "created_issue": {"type": "null"},
+        "created_workspace": {"type": "null"},
+        "no_side_effect": {"$ref": "#/$defs/noSideEffect"},
+        "consumer": {"const": {"kind": "stop", "id": "task-workspace-cancelled"}}
+      }}
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "blocked"}}},
+      "then": {"properties": {
+        "consumer": {"const": {"kind": "stop", "id": "task-workspace-blocked"}}
+      }}
+    },
+    {
+      "if": {"properties": {"variant": {"const": "no_side_effect"}, "typed_exit": {"const": "refresh_review"}}},
+      "then": {"properties": {
+        "consumer": {"const": {"kind": "skill", "id": "guru-sync-base"}}
+      }}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "gitSha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "cleanText": {"type": "string", "minLength": 1},
+    "issueUrl": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/[1-9][0-9]*$"},
+    "stage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "checked_at", "evidence"],
+      "properties": {
+        "status": {"enum": ["passed", "blocked", "not_run"]},
+        "checked_at": {"type": "string", "format": "date-time"},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/cleanText"}, "uniqueItems": true}
+      }
+    },
+    "consumer": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {"kind": {"enum": ["skill", "workflow", "stop"]}, "id": {"$ref": "#/$defs/cleanText"}}
+    },
+    "createdIssue": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repo", "number", "canonical_url", "state", "title_sha256", "body_sha256", "updated_at", "reviewed_draft_id", "reviewed_draft_sha256", "creation_confirmation_sha256", "facts_sha256"],
+      "properties": {
+        "repo": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "number": {"type": "integer", "minimum": 1},
+        "canonical_url": {"$ref": "#/$defs/issueUrl"},
+        "state": {"const": "open"},
+        "title_sha256": {"$ref": "#/$defs/sha256"},
+        "body_sha256": {"$ref": "#/$defs/sha256"},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "reviewed_draft_id": {"$ref": "#/$defs/cleanText"},
+        "reviewed_draft_sha256": {"$ref": "#/$defs/sha256"},
+        "creation_confirmation_sha256": {"$ref": "#/$defs/sha256"},
+        "facts_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "sha256", "size", "mode", "tracked"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+/(task-start-context|issue-scope-ledger|context-discovery|issue-review)\\.json$"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size": {"type": "integer", "minimum": 1},
+        "mode": {"const": "100644"},
+        "tracked": {"const": true}
+      }
+    },
+    "runtimeMapping": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "ignored"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^\\.trellis/\\.runtime/guru-team/(workspaces|tasks)/[^/]+\\.json$"},
+        "ignored": {"const": true}
+      }
+    },
+    "createdWorkspace": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repo", "issue_number", "branch_name", "base_ref", "base_head", "workspace_slug", "task_slug", "task_artifact_dir", "assignee", "task_status", "artifacts", "runtime_mappings", "workspace_boundary_match", "source_developer_identity_created", "target_developer_identity_created", "workspace_journal_created"],
+      "properties": {
+        "repo": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "issue_number": {"type": "integer", "minimum": 1},
+        "branch_name": {"$ref": "#/$defs/cleanText"},
+        "base_ref": {"$ref": "#/$defs/cleanText"},
+        "base_head": {"$ref": "#/$defs/gitSha"},
+        "workspace_slug": {"$ref": "#/$defs/cleanText"},
+        "task_slug": {"$ref": "#/$defs/cleanText"},
+        "task_artifact_dir": {"type": "string", "pattern": "^\\.trellis/tasks/(?!archive/)[^/]+$"},
+        "assignee": {"$ref": "#/$defs/cleanText"},
+        "task_status": {"enum": ["planning", "in_progress"]},
+        "artifacts": {"type": "array", "items": {"$ref": "#/$defs/artifact"}, "minItems": 4, "maxItems": 4, "uniqueItems": true},
+        "runtime_mappings": {"type": "array", "items": {"$ref": "#/$defs/runtimeMapping"}, "minItems": 2, "uniqueItems": true},
+        "workspace_boundary_match": {"const": true},
+        "source_developer_identity_created": {"const": false},
+        "target_developer_identity_created": {"const": false},
+        "workspace_journal_created": {"const": false}
+      }
+    },
+    "snapshot": {
+      "type": "object", "additionalProperties": false,
+      "required": ["head", "status_sha256", "worktrees_sha256", "issues_sha256"],
+      "properties": {
+        "head": {"$ref": "#/$defs/gitSha"},
+        "status_sha256": {"$ref": "#/$defs/sha256"},
+        "worktrees_sha256": {"$ref": "#/$defs/sha256"},
+        "issues_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "noSideEffect": {
+      "type": "object", "additionalProperties": false,
+      "required": ["reason_code", "before", "after", "zero_writes"],
+      "properties": {
+        "reason_code": {"enum": ["user_cancelled", "target_changed", "disposition_changed", "prerequisite_refresh", "object_conflict", "assignee_unresolved", "execution_blocked"]},
+        "before": {"$ref": "#/$defs/snapshot"},
+        "after": {"$ref": "#/$defs/snapshot"},
+        "zero_writes": {"const": true}
+      }
+    }
+  }
+}

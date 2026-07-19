@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Reviewed request 之后的 workspace/task 创建分散在 legacy prepare-task，缺少 semantic owner、精确恢复、no-developer 与 portable evidence 合同。",
+    "outcome": "已交付 active guru-create-task-workspace，以 current Intake evidence、AI Gate、两类确认和 deterministic runtime 统一创建闭环。",
+    "changed_behavior": [
+      "Workflow 与 standalone 复用 prerequisite、authority 与 freshness 合同。",
+      "AI 独占 scope、命名、assignee、确认、finding 与 route 判断。",
+      "Exact 0/1/>1 recovery 保证重读失败的重试不重复创建 Issue。",
+      "Fresh authority 可与 prior checker-passed created provenance 组合验证。",
+      "首次 mutation 前 shared base sync，identity 变化时零写入并 refresh review。",
+      "Official task create 隔离 developer accessor并显式写入 assignee/creator。",
+      "四个 portable artifacts 与 ignored runtime 消除共享 tracked metadata。",
+      "Workflow、preset、多平台、install/update 与 A/B merge 已同步验证。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "guru-create-task-workspace public Skill package",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/interface.json",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/references/contract.md"
+        ],
+        "change": "新增 semantic closed loop、entry preconditions、两类确认、三个 runtime commands 与四 exits。"
+      },
+      {
+        "kind": "schema",
+        "name": "Task workspace plan/result and task-start contracts",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-result.schema.json",
+          "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
+        ],
+        "change": "定义 prerequisite、provenance、confirmation、base、portable artifacts 与 result。"
+      },
+      {
+        "kind": "script",
+        "name": "Task workspace shared runtime",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/bash/record-task-workspace-plan.sh",
+          "trellis/workflows/guru-team/scripts/bash/create-task-workspace.sh",
+          "trellis/workflows/guru-team/scripts/bash/check-task-workspace-result.sh"
+        ],
+        "change": "实现 projection、Issue recovery、base sync、official task adapter 与 result check。"
+      },
+      {
+        "kind": "workflow",
+        "name": "Guru Team Intake task workspace routing",
+        "paths": [
+          "trellis/workflows/guru-team/workflow.md",
+          ".trellis/workflow.md"
+        ],
+        "change": "Readiness ready 后调用 stable Skill，并唯一消费四个 exits。"
+      },
+      {
+        "kind": "preset",
+        "name": "Guru Team package distribution and update",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "分发 managed copies并覆盖 install、no-developer、update/reapply 与零 sidecar。"
+      },
+      {
+        "kind": "docs",
+        "name": "Task workspace durable requirements and specs",
+        "paths": [
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          "README.md"
+        ],
+        "change": "回写 ownership、recovery、freshness、no-developer、portable evidence 与分发合同。"
+      },
+      {
+        "kind": "test",
+        "name": "Runtime, package, installer and merge regressions",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "change": "覆盖 recovery、provenance、remote advance、identity、分发、update 与 A/B merge。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Task workspace ownership",
+        "before": "Readiness 后依赖 planned consumer 或 legacy prepare-task，没有 semantic owner。",
+        "after": "Active Skill 独占命名、assignee、plan、AI Gate、确认与 route。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Created Issue recovery and provenance",
+        "before": "Issue 创建后重读失败缺少 recovery，fresh authority 无法组合 prior provenance。",
+        "after": "0/1/>1 recovery 与 checked provenance保证复用同一 Issue并拒绝 stale facts。",
+        "source_artifact": "review.md"
+      },
+      {
+        "contract": "Mutation-time base freshness",
+        "before": "Mutation boundary只看旧 base result与本地 refs，可能遗漏远端前进。",
+        "after": "Mutation 前 shared sync；identity变化时 refresh_review且零业务写入。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Developer identity and assignee",
+        "before": "Guru task creation依赖 developer identity并可能污染 creator。",
+        "after": "固定顺序解析 assignee，调用内隔离 accessor并保留 existing identity。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Portable task evidence",
+        "before": "Legacy journal、fixed handoff或runtime path形成共享 tracked metadata。",
+        "after": "只写 task-local artifacts与ignored runtime，A/B merge无共享冲突。",
+        "source_artifact": "implement.md"
+      },
+      {
+        "contract": "Workflow and distribution",
+        "before": "Workflow缺少 active consumer，installed copies不能执行完整闭环。",
+        "after": "Workflow只路由 stable id/exits，多平台 copies与update保持一致。",
+        "source_artifact": "review.md"
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "record-task-workspace-plan.sh",
+        "create-task-workspace.sh",
+        "check-task-workspace-result.sh",
+        "verify-throwaway-install.sh"
+      ],
+      "config_keys": [
+        "active_skill_ids",
+        "external_exits.created",
+        "external_exits.refresh_review",
+        "runtime_dependency.dispatcher"
+      ],
+      "schema_fields": [
+        "judgment_mode",
+        "created_issue_binding_sha256",
+        "created_issue_result",
+        "post_sync_resolution_sha256",
+        "side_effect_authorization"
+      ],
+      "symbols": [
+        "task_workspace_validate_prerequisites",
+        "task_workspace_created_issue_recovery_candidates",
+        "task_workspace_refresh_base_before_mutation",
+        "task_workspace_run_official_task_create",
+        "task_workspace_result_check_errors"
+      ],
+      "phrases": [
+        "guru-create-task-workspace 闭环已完成",
+        "create-task-workspace.sh Issue 恢复已验证",
+        "created_issue_binding_sha256 provenance 已完成",
+        "post_sync_resolution_sha256 freshness 已验证",
+        "no-developer task 创建已完成",
+        "task_workspace_result_check_errors 校验已通过",
+        "A/B merge 与 remote marketplace 验证已完成"
+      ]
+    }
+  }
+}

@@ -398,6 +398,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 "codex",
                 "claude",
                 "cursor",
+                "shared",
+                "codex",
+                "claude",
+                "cursor",
             ],
         )
 
@@ -633,7 +637,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         managed_assets = installed_manifest["install"]["managed_assets"]
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 85)
+        self.assertEqual(len(managed_assets), 88)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -899,8 +903,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('verify_contract_wording_standalone_profiles "after-update"', verifier)
         self.assertIn('verify_change_request_review_package "initial"', verifier)
         self.assertIn('verify_change_request_review_package "after-update"', verifier)
-        self.assertIn('"planned_skill_ids"] == ["guru-create-task-workspace"]', verifier)
-        self.assertIn('test ! -e "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace"', verifier)
+        self.assertIn('"planned_skill_ids"] == []', verifier)
+        self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md"', verifier)
+        self.assertIn('test -x "$TARGET/.agents/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"', verifier)
+        self.assertIn('test -x "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"', verifier)
+        self.assertIn('test -x "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"', verifier)
         self.assertIn('fail_if_python_cache "throwaway target" "$TARGET"', verifier)
         self.assertIn('record_planning_contract_wording "$TASK_REL"', verifier)
         self.assertIn('--contract-wording-evidence "$TASK_REL/contract-wording-review.json"', verifier)
@@ -910,6 +917,28 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("--case initial", verifier)
         self.assertIn("--case after-update", verifier)
         self.assertIn('payload["after_archive_hook_preflight"] is True', verifier)
+        self.assertIn("verify_installed_task_workspace.py", verifier)
+        self.assertIn("installed-task-workspace-initial", verifier)
+        self.assertIn("installed-task-workspace-after-update", verifier)
+        self.assertIn("--existing-developer-identity", verifier)
+        self.assertIn('payload["developer_identity_preserved"] is True', verifier)
+        self.assertIn('payload["task_creator"] == "fixture-maintainer"', verifier)
+        self.assertIn('trellis init -y --codex --cursor', verifier)
+        self.assertNotIn('trellis init -y -u', verifier)
+        self.assertIn('DEVELOPER_IDENTITY_DIGEST_BEFORE="$(file_sha256', verifier)
+        self.assertIn('assert_official_state_absent "$ABSENCE_TARGET" "initial preset apply"', verifier)
+        self.assertIn('assert_official_state_absent "$ABSENCE_TARGET" "trellis update"', verifier)
+        self.assertIn('assert_official_state_absent "$ABSENCE_TARGET" "workflow reapply"', verifier)
+        self.assertIn('assert_official_state_absent "$ABSENCE_TARGET" "preset reapply"', verifier)
+        installed_workspace = (
+            self.guru_root
+            / "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("runtime.cmd_create_task_workspace", installed_workspace)
+        self.assertIn("runtime.cmd_check_task_workspace_result", installed_workspace)
+        self.assertIn("TASK_WORKSPACE_ARTIFACT_NAMES", installed_workspace)
+        self.assertIn("--existing-developer-identity", installed_workspace)
+        self.assertIn('task_data.get("creator") != "fixture-maintainer"', installed_workspace)
         installed_closeout = (
             self.guru_root
             / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py"
@@ -1170,7 +1199,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.14")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.15")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
@@ -1214,16 +1243,14 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             [
                 "guru-clarify-requirements",
                 "guru-create-task-commit",
+                "guru-create-task-workspace",
                 "guru-discover-change-context",
                 "guru-review-change-request",
                 "guru-review-contract-wording",
                 "guru-sync-base",
             ],
         )
-        self.assertEqual(
-            public_api["skill_contracts"]["planned_skill_ids"],
-            ["guru-create-task-workspace"],
-        )
+        self.assertEqual(public_api["skill_contracts"]["planned_skill_ids"], [])
         self.assertIn(
             "guru-base-sync-result-1.0",
             public_api["skill_contracts"]["artifact_schema_ids"],

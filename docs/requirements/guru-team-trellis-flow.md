@@ -66,12 +66,11 @@ flowchart TD
   CR["mandatory guru-clarify-requirements<br/>evidence -> one-question loop -> exact confirmation"]:::guru
   CW["mandatory guru-review-contract-wording<br/>change_request profile -> semantic wording gate"]:::guru
   RR["mandatory guru-review-change-request<br/>ten dimensions -> findings -> readiness Gate"]:::guru
-  TW["planned guru-create-task-workspace<br/>#112 consumer package gate"]:::guru
-  CE["check-env.sh --json<br/>GitHub CLI / auth / repo 环境"]:::script
-  PT["prepare-task.sh --json<br/>side-effect-free planner"]:::script
-  HR{"Handoff review<br/>AI 展示 issue / duplicate / naming / base / worktree"}:::guru
-  UC{"用户批准副作用?"}:::guru
-  EX["prepare-task --create-worktree --create-task<br/>创建 worktree / branch / task / handoff"]:::script
+  TW["mandatory guru-create-task-workspace<br/>target + naming + assignee + exact plan"]:::guru
+  TP["record-task-workspace-plan<br/>stdout-only canonical plan"]:::script
+  UC{"当前 invocation 专用确认?"}:::guru
+  EX["create-task-workspace<br/>exact issue 或 workspace/task mutation"]:::script
+  TC["check-task-workspace-result<br/>live/artifact/boundary validation"]:::script
   WB["check-workspace-boundary.sh<br/>expected workspace / actual repo root / source checkout snapshot"]:::script
 
   TCreate["task.py create<br/>Trellis task: planning"]:::trellis
@@ -107,9 +106,7 @@ flowchart TD
   R -->|"显式 finish-work"| FWEntry
 
   S0 --> P0
-  P0 --> DC --> CR -->|"clear"| CW -->|"pass"| RR -->|"ready"| TW
-  TW -->|"planned / package missing"| StopWorkspace["停止：等待 #112 active package"]:::artifact
-  TW -->|"future active #112"| CE --> PT --> HR --> UC
+  P0 --> DC --> CR -->|"clear"| CW -->|"pass"| RR -->|"ready"| TW --> TP --> UC
   DC -->|"refresh_base"| SB
   CR -->|"needs_context"| DC
   CR -->|"refresh_context"| SB
@@ -121,9 +118,12 @@ flowchart TD
   RR -->|"review_wording"| CW
   RR -->|"refresh_context"| SB
   RR -->|"blocked"| StopReadiness["停止：change request review blocked"]:::artifact
-  UC -->|"否"| Stop0["停止：等待用户确认"]:::artifact
-  UC -->|"是"| EX --> WB --> TCreate --> P1
-  HR -->|"用户明确批准 current checkout 直改 override"| Direct["当前 checkout 直接编辑<br/>跳过 issue/task/worktree/branch 仅限本轮"]:::guru
+  UC -->|"取消"| Stop0["停止：cancelled，零副作用"]:::artifact
+  UC -->|"改变 target/disposition"| SB
+  UC -->|"确认"| EX --> TC
+  TC -->|"created"| WB --> TCreate --> P1
+  TC -->|"refresh_review"| SB
+  TC -->|"blocked"| StopWorkspace["停止：task workspace blocked"]:::artifact
 
   P1 --> PA --> TStart --> P2
   P2 --> IA --> Sub --> LC --> PC --> CMT --> P3
@@ -168,11 +168,12 @@ sequenceDiagram
     Script-->>AI: base-sync result + post_sync_resolution_sha256 + facts_sha256
     AI->>Script: check-base-sync --result-json ... --expected-resolution-sha256 ...
     Script-->>AI: schema / pre+post digest / live Git equality passed + post-sync digest
-    AI->>Script: check-env.sh --json
-    AI->>Script: prepare-task.sh --json --expected-resolution-sha256 ... "<request>"
-    Script-->>AI: stdout JSON planner output + next post-sync digest
-    AI->>Script: later prepare-task mutation guards consume the previous post-sync digest
-    AI-->>User: 展示 duplicate / proposed issue / base / branch / worktree / naming
+    AI->>AI: mandatory invoke guru-discover-change-context
+    AI->>AI: guru-clarify-requirements -> guru-review-contract-wording
+    AI->>AI: guru-review-change-request -> guru-create-task-workspace
+    AI-->>User: 展示 final target / naming / assignee / exact side-effect plan
+    AI->>Script: record-task-workspace-plan -> create-task-workspace -> check-task-workspace-result
+    Script-->>AI: created / refresh_review / cancelled / blocked
   else 只是对话或轻量查询
     AI-->>User: 直接回答或询问是否创建 Trellis task
   else 用户显式批准 current checkout direct edit
@@ -182,13 +183,16 @@ sequenceDiagram
 
 关键点：
 
+`guru-sync-base:synced` 后按 mandatory marker 进入完整六 Skill Intake chain；
+`prepare-task` 只保留 query-only compatibility，不再位于 active mutation route。
+
 | 步骤 | 官方 Trellis 原生部分 | Guru Team 扩展部分 |
 | --- | --- | --- |
 | Codex hook | Trellis 支持 `UserPromptSubmit` workflow-state nudge，hook 从 `workflow.md` 读取状态块。 | Guru Team 在 no_task 状态下注入 Phase 0 intake 规则，并给 Codex 注入 `codex.dispatch_mode` 说明。 |
-| Request triage | Trellis 原生允许 AI 按 workflow 和 task 状态执行。 | Guru Team 要求 issue-backed、task-like、file-changing 请求的 first hop 是 `guru-sync-base`；只有 `synced` 后才运行 `check-env` + `prepare-task`。`skipped` 仅限 tool-free classification 已证明无需 repo/network action 的 workflow route，不得裸 `task.py create`。 |
-| Base sync closed loop | 官方 Trellis 不替 Guru Team 选择或刷新业务 base。 | Tool-free route 后 mandatory invoke deterministic `guru-sync-base`；repo-changing route 只有在 pre-sync digest-bound executor 生成 post-sync digest且 validator 证明双 digest 与三方 equality 后才继续。Resolution/result facts 只走 stdout；`prepare-task` 每个 planner/mutation guard 消费上一 guard 的 post-sync digest并输出下一 digest，不创建 evidence lease/release/cleanup API。 |
-| Pre-task planner | 官方 Trellis task 尚未创建。 | `prepare-task.sh --json` 默认无副作用，只输出 intake plan，不创建 GitHub issue、worktree、branch、task 或 handoff 文件。 |
-| Handoff review | 无固定官方 gate。 | AI 必须展示 duplicate、proposed issue、naming quality、base freshness、branch、workspace、命令，并等待用户批准。 |
+| Request triage | Trellis 原生允许 AI 按 workflow 和 task 状态执行。 | Guru Team 要求 issue-backed、task-like、file-changing 请求依次进入六个 mandatory Skills；`guru-create-task-workspace` 是最后一跳和唯一 task workspace mutation owner，不得裸 `task.py create`。 |
+| Base sync closed loop | 官方 Trellis 不替 Guru Team 选择或刷新业务 base。 | Tool-free route 后 mandatory invoke deterministic `guru-sync-base`；repo-changing route 只有在 pre-sync digest-bound executor 生成 post-sync digest且 validator 证明双 digest 与三方 equality 后才继续。Resolution/result facts 只走 stdout；`prepare-task` query 消费当前 post-sync digest并在读取前重跑 shared core，workspace Skill 在 mutation boundary 独立重验，不创建 evidence lease/release/cleanup API。 |
+| Pre-task compatibility query | 官方 Trellis task 尚未创建。 | `prepare-task.sh --json` 只保留 query-only 兼容能力；legacy mutation flags fail closed 并指向 `guru-create-task-workspace`。 |
+| Workspace Skill review | 无固定官方 gate。 | AI 验证 checker-passed target，不重新决定 duplicate/disposition；生成语义 naming、按固定顺序解析 assignee、展示 exact plan，完成 AI Gate 后取得 issue 或 workspace/task 专用 confirmation。 |
 
 ## 4. Phase 0：Pre-task intake
 
@@ -282,7 +286,7 @@ request。两类 draft target 的 `source_request_sha256` 复用 #113 `review_ta
 authority projection：`kind=draft`、normalized repo、null issue/URL/update、`state=draft` 与
 current reviewed-body SHA-256；runtime 从当前 input bytes 重算 canonical digest，普通 producer
 写错或沿用 stale digest 时 fail closed，不能以 64-hex shape 代替 authority binding。Title hash
-与 draft/request/caller identity 分别继续绑定 target content 与 identity。五出口固定为 `ready` -> planned `guru-create-task-workspace`、
+与 draft/request/caller identity 分别继续绑定 target content 与 identity。五出口固定为 `ready` -> active `guru-create-task-workspace`、
 `clarify_requirements` -> clarification、`review_wording` -> wording、`refresh_context` -> base
 sync、`blocked` -> stop。Registry 的 `planned` lifecycle 只允许作为 consumer；没有 package、
 invoke/exit marker或平台副本。#112 未 active 前 `ready` 必须 stop，不能回退
@@ -318,15 +322,20 @@ structure 校验，不扫描整份 payload。
 
 | 问题 | Guru Team 规则 | 确定性资产 |
 | --- | --- | --- |
-| 任务是否应绑定 GitHub issue | AI 读取用户请求、issue body/comment 和 duplicate candidates 后判断；无 issue 时先提出 neutral issue draft。 | `prepare-task.sh --json` 只读取/搜索/输出候选；创建 issue 必须带 `--create-issue-confirmed`。 |
+| 任务是否应绑定 GitHub issue | `guru-clarify-requirements` 已决定 final open issue 或 reviewed draft；workspace Skill 只展示并复验。 | Draft executor 创建前按 exact open title/body/labels 与 creation time 执行 0/1/>1 recovery；0 个创建、1 个恢复、多个阻断。立即重读并生成 `created_issue_binding` 后固定返回 `refresh_review`；完整 Intake 重入携带 checker-passed created-issue result；同一 invocation 禁止创建 workspace/task。 |
 | Intake clarity / 需求是否足够清晰 | `guru-clarify-requirements` 消费 current context，AI完成问题选择、scope/action、AI Gate、confirmation 与 route。范围、验收、close/ref 语义或实现目标仍有 load-bearing open question 时每轮只问一个；active Scope Change也mandatory invoke同一Skill。 | Recorder派生 proposal/action/content/result digest；checker验证 answered evidence、question reducer、confirmed payload/live mutation与caller-aware typed exit。两者不生成问题或执行GitHub mutation。 |
-| Change request 是否可独立交付 | `guru-review-change-request` 消费 current context/clarity/wording，AI审查十项 readiness dimensions、findings、delivery unit、scope conclusion、Gate 与五出口。 | Recorder/checker stdout-only重建 target/prerequisite projection/linkage/facts并验证 schema/ref/hash/consumer/ready invariant；不生成 finding或 route。`ready` 在 planned #112 未 active 前 fail closed。 |
-| 分支和 worktree 从哪里来 | AI 审查 invocation intent、resolution source、selected base、workspace path、branch name、current checkout、dirty state。 | shared core 只执行显式 refspec fetch；只有 decision checkout 正位于 selected base 且 local 是 remote ancestor 时执行 `merge --ff-only`。成功必须证明 decision/local/remote 三方 SHA equality。 |
+| Change request 是否可独立交付 | `guru-review-change-request` 消费 current context/clarity/wording，AI审查十项 readiness dimensions、findings、delivery unit、scope conclusion、Gate 与五出口。 | Recorder/checker stdout-only重建 target/prerequisite projection/linkage/facts；`ready` 唯一进入 active `guru-create-task-workspace`。 |
+| 分支和 worktree 从哪里来 | Workspace Skill 的 AI 生成 branch/workspace/task names，并对 live object 选择 `create_new`、`reuse_exact` 或 `conflict_blocked`。 | Plan 绑定 `post_sync_resolution_sha256`；`create-task-workspace` 首次 mutation 前运行 shared resolver/sync。Remote 前进则安全刷新后 `refresh_review` 且无业务 mutation；identity 不变才继续，每个后续 boundary重验 plan/target/facts并拒绝覆盖冲突对象。 |
 | 命名是否足够语义化 | AI 读 issue 后决定英文 short-name，低信息名称不得进入 executor。 | `naming_quality` 和 `--short-name` / `--workspace-slug` / `--task-slug` / `--branch`。 |
+| assignee 从哪里来 | AI 按 explicit、single issue assignee、zero issue assignees 时 current GitHub login、multiple/unresolved 时 user choice 的固定顺序收敛一个 login。 | Executor 只接受非空 resolved login，通过隔离 adapter 调用 official `common.task_store.cmd_create`；仅在该 handler 调用内禁用 developer accessor，使 `task.json.creator=task.json.assignee=resolved login`，且 existing `.trellis/.developer` bytes 不变。 |
 
-Phase 0 输出被写入 worktree 内的 `.trellis/tasks/<task-slug>/task-start-context.json`，但只有 executor 路径会写。
-这个 handoff 是 intake provenance，不是最终 PR close scope。最终 close/ref/follow-up 由
-task-local `issue-scope-ledger.json` 负责。
+Task 创建成功后只写四个 tracked task-local Intake artifacts：
+`task-start-context.json`、`issue-scope-ledger.json`、`context-discovery.json`、
+`issue-review.json`。后两者保持 checker-passed canonical bytes；task-start context 以
+schema 1.0 additive nested fields 记录 final source binding 与 prerequisite linkage。
+本机 path mapping 只写 ignored `.trellis/.runtime/guru-team/**`。Guru preset/executor 不读取、
+创建或恢复 `.trellis/.developer` 与 `.trellis/workspace/**`；现有官方 Trellis identity/journal
+数据不被删除。
 
 在 `workspace_mode: worktree` 下，local runtime workspace mapping 同时是 task artifact 写入边界。
 后续写入或校验 `planning-approval.json`、`phase2-check.json`、`agent-assignment.json`、
@@ -338,15 +347,22 @@ source checkout 中可疑同名 task artifact / review metadata；它不判断 s
 source checkout 出现新 `HEAD` / dirty status / diff stat / mtime 变化时是
 `workspace_boundary_violation_progress`，不是 stale 证据。
 
-`prepare-task` 不拥有另一套 base 规则。它必须消费前序 stdout resolution 的 expected
-digest，在 `gh auth status`、issue read 和 duplicate search 前重新解析完整 resolution
-并调用 shared sync core；完整 resolution digest 必须绑定 decision checkout branch、HEAD
-与 clean state。create-issue、worktree、task mutation 前分别独立重跑，task guard 位于
-worktree/identity mutation 之后、`task.py create` 之前。`--base-branch` 只能做一致性断言，
-不能把 config/config-candidate/remote-default provenance 改写为 explicit；
-兼容字段 `preflight.base_freshness` 增加 resolution、decision checkout 与三方 equality facts。
-task-start context 只保存 portable base/local/remote SHA，不保存临时 resolution/result 文件、
-完整 pre-task payload 或本机绝对路径。
+`prepare-task` 不拥有 mutation 或另一套 base 规则。Query-only 调用可复用 shared resolver；
+`--create-issue-confirmed`、`--create-worktree`、`--create-task` 均在任何写入前返回 migration
+error。唯一 exact executor 是 `create-task-workspace`，其 plan/result 只经 stdout 传递；draft
+创建成功后立即回到 `guru-sync-base` 完整重跑，open-issue invocation 必须取得新的
+`workspace_and_task_mutation` confirmation。
+
+同一 reviewed draft plan在远端 create成功但 immediate reread失败后重试时，pre-create
+exact recovery只允许复用唯一匹配 issue，不再次 create。重入的 open-issue plan必须携带完整
+checker-passed created-issue result，并与 fresh context 的 canonical live existing-issue
+identity一致；该 context必须为`kind=issue`且`issue_binding=null`。首次业务 mutation前
+shared base sync若发现remote前进，则只刷新base并返回`refresh_review`。
+
+并行 metadata Gate 使用同一 clean base 的真实 A/B branch/worktree，分别通过 production
+recorder/executor/checker、task-local archive 和完整 tracked commit，再验证 A -> B、B -> A
+两种本地 Git merge 顺序。两 task 的 tracked Guru metadata path 交集必须为空；该 fixture 不
+创建远程 PR、不运行并发进程，也不引入 lock/TOCTOU/stress/cross-OS/fault-injection 机制。
 
 ## 5. Phase 1：Plan
 
@@ -632,7 +648,7 @@ PR readiness 要求：
 | `implement.md` | Phase 1 | Guru Team planning artifact | Implement/check/review。 |
 | `Docs SSOT Plan` | Phase 1 | Guru Team planning contract, recommended in `design.md` | Phase 1 planning approval、Phase 2 implementation/check 策略消费、后续 Docs SSOT reconciliation。 |
 | `contract-wording-review.json` | Phase 1.4 | `guru-review-contract-wording` evidence | 绑定 fixed `planning_artifacts` scope、current content/scan digests、AI semantic review、canonical planning-only dimensions、confirmation 与 typed exit；planning approval 只消费 checker-validated `pass`。 |
-| `issue-review.json` | Phase 0 readiness，#112 创建 task 后持久化 | `guru-review-change-request` checker-passed evidence | #101 pre-task/standalone 只在 stdout 产生结果；planned `guru-create-task-workspace` 后续只能把 exact checker-passed bytes 写入 direct active task。Artifact 绑定三类 target、current context/clarity/wording projection、十项 dimensions、findings、scope conclusion、AI Gate、五出口、consumer 与 facts digest。 |
+| `issue-review.json` | Phase 0 readiness，#112 创建 task 后持久化 | `guru-review-change-request` checker-passed evidence | #101 pre-task/standalone 只在 stdout 产生结果；active `guru-create-task-workspace` 只能把 exact checker-passed bytes 写入 direct active task。Artifact 绑定三类 target、current context/clarity/wording projection、十项 dimensions、findings、scope conclusion、AI Gate、五出口、consumer 与 facts digest。 |
 | `planning-approval.json` | Phase 1.4/1.5 | Guru Team gate evidence | 绑定 current wording evidence 的兼容 projection（逐项复制已验证 planning dimensions，不生成默认值）、三文档链接展示后的显式用户确认与三文档 digest；`task.py start`、Phase 2 dispatch 和 Branch Review Gate audit 前校验。 |
 | `implement.jsonl` / `check.jsonl` | Phase 1.3 | Trellis sub-agent context manifest | `trellis-implement` / `trellis-check`。 |
 | `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity/status ledger | review closure/fresh final reviewer 和 unfinished termination recovery-chain 校验。 |
@@ -656,7 +672,7 @@ PR readiness 要求：
 2. Guru Team 没有 fork Trellis，而是通过 official marketplace workflow 安装 `guru-team`。
 3. 我们把“任务还没创建之前”的风险收进 Phase 0：issue、duplicate、base branch、worktree、命名和副作用授权都先审查。
 4. tracked `task-start-context.json` 只保存 portable workspace/task identifiers；worktree mode 下的机器写入边界由当前 checkout、`.trellis/.runtime/guru-team/**`、`git worktree list` 推导为 `expected_workspace`，并由 `check-workspace-boundary --task` fail closed 校验。该 helper 不替 AI 判断 stale、迁移 patch 或清理 source checkout；#76 liveness checker 在此基础上把 source checkout 新变化视为 workspace boundary progress。
-5. `task.py create/start/archive` 仍是官方 Trellis lifecycle，但 Guru Team 在 start 前要求 `prd.md` / `design.md` / `implement.md` 定位同一个 `Docs SSOT Plan`，展示三份文档链接并得到 explicit post-planning confirmation，Phase 0 handoff 确认不能替代。
+5. Task create/start/archive 仍复用官方 Trellis lifecycle。Workspace create 通过隔离 adapter 调用 official `common.task_store.cmd_create`，只在该 handler 调用内禁用 developer accessor，并把 reviewed login 同时写为 `creator` 与 `assignee`；existing official identity bytes 保持不变。Guru Team 在 start 前要求 `prd.md` / `design.md` / `implement.md` 定位同一个 `Docs SSOT Plan`，展示三份文档链接并得到 explicit post-planning confirmation，Phase 0 handoff 确认不能替代。
 6. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出中文 `reviews/*.md` raw reports 与最终中文 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
 7. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，并由
    `guru-create-task-commit` 生成 fresh candidate plan、完成 AI Review，再通过 exact

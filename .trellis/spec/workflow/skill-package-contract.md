@@ -167,8 +167,9 @@ Resolution/result facts remain on stdout. The executor preserves
 `post_sync_resolution` plus `post_sync_resolution_sha256` after synchronization.
 `check-base-sync` validates both identities, schema, facts digest, and live Git
 equality without mutation, then returns the post-sync digest. `prepare-task`
-reuses the same resolver/sync core; each semantic-read or mutation guard
-consumes the previous post-sync digest and returns the next one.
+reuses the same resolver/sync core for its query-only reads and consumes the
+current post-sync digest. It has no mutation guard; active workspace mutation
+freshness belongs to `guru-create-task-workspace`.
 
 `guru-discover-change-context` is the active semantic consumer of
 `guru-sync-base:synced`. Both modes require identical `runtime_dependency`,
@@ -411,7 +412,7 @@ readiness owner after `guru-review-contract-wording:change_request:pass`. It
 consumes current context, clarification, and wording results; normalizes one
 `existing_issue`, `proposed_draft`, or `standalone_request`; reviews the fixed
 ten dimensions; records findings, scope conclusion, AI Review Gate, optional
-confirmation, and exactly one exit. Its exits are `ready` -> planned
+confirmation, and exactly one exit. Its exits are `ready` -> active
 `guru-create-task-workspace`, `clarify_requirements` ->
 `guru-clarify-requirements`, `review_wording` ->
 `guru-review-contract-wording`, `refresh_context` -> `guru-sync-base`, and
@@ -430,9 +431,84 @@ null issue/URL/update authority, `state=draft`, and current reviewed-body
 SHA-256. Title hash and draft/request/caller identity stay separately bound.
 An arbitrary 64-hex value, including a normal producer's stale prior digest,
 fails closed before prerequisite linkage is accepted.
-Only a later active `guru-create-task-workspace` package may persist the exact
+Only the active `guru-create-task-workspace` package may persist the exact
 checker-passed bytes as task-local `issue-review.json` while creating the
-workspace. Until then, `ready` stops at the planned consumer gate.
+workspace. `ready` has no legacy prepare fallback.
+
+## Task Workspace Package
+
+Active semantic Skill `guru-create-task-workspace` is the sole owner of GitHub
+issue creation and branch/worktree/task creation after change-request
+readiness. Workflow and standalone modes use identical `runtime_dependency`,
+`base_evidence`, `context_evidence`, `clarity_evidence`, `wording_evidence`,
+`readiness_evidence`, `target_authority`, `naming_and_assignee`,
+`side_effect_authorization`, and `invocation_freshness` preconditions. Its
+exact stages are `forward_behavior -> ai_review_gate ->
+conditional_human_confirmation -> recorder_validator -> typed_exit`.
+
+The package owns target presentation, semantic naming, assignee routing, exact
+side-effect plan, two mutually exclusive confirmation scopes, AI Review Gate,
+ordinary recovery disposition, and typed route. Runtime commands are
+`record-task-workspace-plan`, `create-task-workspace`, and
+`check-task-workspace-result`; artifact schemas are
+`guru-task-workspace-plan-1.0` and `guru-task-workspace-result-1.0`. Recorder,
+executor, and checker validate deterministic facts only and never select a
+duplicate, target, closed-state disposition, semantic name, assignee route,
+confirmation need, Gate status, or exit intent.
+
+A reviewed-draft invocation may only create the exact confirmed issue. Before
+create, it searches live open issues for the exact reviewed title, body,
+labels, and a creation time not earlier than the reviewed plan. Zero matches
+permits one create, one match is recovered and reread, and multiple matches
+fail closed. It binds the live title/body/update facts to the reviewed draft
+and confirmation, returns `refresh_review`, and performs no
+branch/worktree/task/runtime mutation. An open-issue invocation uses a separate
+`workspace_and_task_mutation` confirmation and may return `created` only after
+the branch/worktree/task, four tracked task-local Intake artifacts, ignored
+runtime mappings, and workspace boundary all pass objective validation.
+The non-mutation matrix is equally explicit: passed Gate plus a digest-bound
+`refused` active confirmation yields `cancelled`; `reroute` with no active
+confirmation yields `refresh_review`; `blocked` with no active confirmation
+yields `blocked`. Runtime preserves these AI-authored facts and may mutate only
+for passed plus confirmed.
+
+An open-issue plan that continues a workflow-created draft embeds the complete
+prior checker-passed `created_issue` result and its binding digest. The result
+facts digest, binding facts digest, reviewed draft id/digest, creation
+confirmation digest, current issue authority, and complete Intake rerun's live
+existing-issue identity must all agree. The fresh context is `kind=issue` with
+canonical URL/open state/update time/body/facts identity and null
+`issue_binding`. Ordinary existing issues carry null result and binding fields;
+missing, partial, or mixed provenance fails closed.
+
+The plan also binds the checker-passed base result's
+`post_sync_resolution_sha256`. Before the first GitHub issue or workspace/task
+mutation, the executor runs the shared resolver and sync core once. The fresh
+selected base, refs, decision/local/remote HEADs, and post-sync identity must
+equal the reviewed plan. A normal remote advance may be fetched and safely
+fast-forwarded, but it returns `refresh_review` before issue, branch, worktree,
+task, artifact, or runtime mutation because the reviewed base identity changed.
+
+Assignee resolution order is explicit input, exactly one issue assignee, zero
+issue assignees to current GitHub login, then an AI/user choice for multiple or
+unresolved candidates. In an isolated subprocess, the exact executor calls
+official `common.task_store.cmd_create` with the resolved assignee and replaces
+that module's developer accessor with a null result only for the handler
+invocation. The official fallback therefore writes
+`task.json.creator=task.json.assignee=<reviewed-login>` without reading or
+rewriting `.trellis/.developer`. The executor never copies, initializes, or
+restores `.trellis/.developer` or `.trellis/workspace/**`; existing official
+identity/journal bytes are outside this package and remain unchanged.
+
+External exits are exactly `created` to workflow target
+`guru-task-workspace-created`, `refresh_review` to active Skill
+`guru-sync-base`, `cancelled` to stop `task-workspace-cancelled`, and `blocked`
+to stop `task-workspace-blocked`. A target/disposition change is
+`refresh_review` with zero writes. Unknown, multiple, unmapped, stale, or
+consumer-mismatched exits fail closed.
+Public plan/result stdout and examples contain no absolute workspace path; the
+checker derives the expected worktree from current repo config, reviewed slug,
+and live Git facts. Absolute mappings stay only in ignored runtime files.
 
 ## Distribution And Managed Hashes
 

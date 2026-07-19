@@ -2790,60 +2790,6 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertEqual(payload["preflight"]["base_freshness"]["status"], "fresh")
         self.assertTrue(payload["preflight"]["base_freshness"]["three_way_equal"])
 
-    def test_prepare_reruns_sync_immediately_before_confirmed_issue_mutation(self) -> None:
-        body_path = self.root / "reviewed-body.md"
-        body_path.write_text("Reviewed body\n", encoding="utf-8")
-        order: list[str] = []
-        created = {
-            "number": 52,
-            "url": "https://github.com/owner/repo/issues/52",
-            "title": "Add confirmed issue mutation boundary",
-        }
-
-        def rolling_guard(*_args: object, **kwargs: object) -> dict[str, object]:
-            expected = str(kwargs["expected_resolution_sha256"])
-            order.append("sync")
-            if expected == "b" * 64:
-                return fresh_base_sync_projection(
-                    resolution_sha256=expected,
-                    post_sync_resolution_sha256="d" * 64,
-                )
-            self.assertEqual(expected, "d" * 64)
-            return fresh_base_sync_projection(
-                resolution_sha256=expected,
-                post_sync_resolution_sha256=expected,
-            )
-
-        with (
-            mock.patch.object(
-                gtt,
-                "ensure_base_freshness",
-                side_effect=rolling_guard,
-            ) as sync,
-            mock.patch.object(
-                gtt, "require_gh_auth", side_effect=lambda *_args: order.append("gh-auth")
-            ),
-            mock.patch.object(
-                gtt, "create_issue", side_effect=lambda *_args: order.append("create-issue") or created
-            ),
-        ):
-            payload = gtt.cmd_prepare(
-                prepare_args(
-                    requirement=["Add confirmed issue mutation boundary"],
-                    create_issue_confirmed=True,
-                    issue_title="Add confirmed issue mutation boundary",
-                    issue_body_file=str(body_path),
-                )
-            )
-
-        self.assertEqual(sync.call_count, 2)
-        self.assertEqual(
-            [call.kwargs["expected_resolution_sha256"] for call in sync.call_args_list],
-            ["b" * 64, "d" * 64],
-        )
-        self.assertEqual(order, ["sync", "gh-auth", "sync", "create-issue"])
-        self.assertEqual(payload["source_issue"]["number"], 52)
-
     def test_prepare_chinese_issue_title_marks_naming_quality_without_side_effects(self) -> None:
         existing_issue = {
             "number": 52,
@@ -2869,33 +2815,6 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertEqual(payload["task_slug"], "52-issue-52")
         self.assertFalse(payload["workspace_ready"])
 
-    def test_prepare_chinese_issue_title_blocks_create_before_side_effects(self) -> None:
-        existing_issue = {
-            "number": 52,
-            "url": "https://github.com/owner/repo/issues/52",
-            "title": "简历详情页的原始简历查看功能应该强化",
-        }
-        with (
-            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness") as ensure_base_freshness,
-            mock.patch.object(gtt, "prepare_workspace") as prepare_workspace,
-            mock.patch.object(gtt, "create_task") as create_task,
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_prepare(prepare_args(requirement=["#52"], create_worktree=True))
-
-        ensure_base_freshness.assert_called_once_with(
-            self.root,
-            None,
-            expected_resolution_sha256="b" * 64,
-        )
-        prepare_workspace.assert_not_called()
-        create_task.assert_not_called()
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertFalse(raised.exception.payload["naming_quality"]["ok"])
-        self.assertTrue(raised.exception.payload["naming_quality"]["requires_semantic_name"])
-        self.assertIn("--short-name/--workspace-slug/--branch/--task-slug", str(raised.exception))
-
     def test_prepare_mixed_non_ascii_title_requires_explicit_semantic_name(self) -> None:
         existing_issue = {
             "number": 52,
@@ -2909,168 +2828,6 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertTrue(payload["naming_quality"]["requires_semantic_name"])
         self.assertIn("non-ASCII", payload["naming_quality"]["reason"])
         self.assertEqual(payload["task_slug"], "52-resume-detail-inline-attachment-preview")
-
-    def test_prepare_confirmed_chinese_issue_blocks_before_issue_creation(self) -> None:
-        body_path = self.root / "reviewed-issue.md"
-        body_path.write_text("Reviewed issue body\n", encoding="utf-8")
-        with (
-            mock.patch.object(gtt, "create_issue") as create_issue,
-            mock.patch.object(gtt, "ensure_base_freshness") as ensure_base_freshness,
-            mock.patch.object(gtt, "prepare_workspace") as prepare_workspace,
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_prepare(
-                prepare_args(
-                    requirement=["简历详情页的原始简历查看功能应该强化，并补充任务命名门禁。"],
-                    create_issue_confirmed=True,
-                    issue_title="简历详情页的原始简历查看功能应该强化",
-                    issue_body_file=str(body_path),
-                    create_worktree=True,
-                )
-            )
-
-        create_issue.assert_not_called()
-        ensure_base_freshness.assert_called_once_with(
-            self.root,
-            None,
-            expected_resolution_sha256="b" * 64,
-        )
-        prepare_workspace.assert_not_called()
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertFalse(raised.exception.payload["naming_quality"]["ok"])
-
-    def test_prepare_semantic_short_name_override_passes_create_naming_quality(self) -> None:
-        existing_issue = {
-            "number": 52,
-            "url": "https://github.com/owner/repo/issues/52",
-            "title": "简历详情页的原始简历查看功能应该强化",
-        }
-        workspace = self.worktree_root / "052-resume-detail-inline-attachment-preview"
-        with (
-            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness", return_value=fresh_base_sync_projection()),
-            mock.patch.object(gtt, "prepare_workspace", return_value=("worktree", workspace, True)) as prepare_workspace,
-            mock.patch.object(gtt, "ensure_workspace_developer_identity", return_value={
-                "status": "copied",
-                "developer": "tester",
-            }),
-        ):
-            payload = gtt.cmd_prepare(
-                prepare_args(
-                    requirement=["#52"],
-                    short_name="052-resume-detail-inline-attachment-preview",
-                    create_worktree=True,
-                )
-            )
-
-        self.assertTrue(payload["naming_quality"]["ok"])
-        self.assertEqual(payload["task_slug"], "052-resume-detail-inline-attachment-preview")
-        self.assertEqual(payload["workspace_slug"], "052-resume-detail-inline-attachment-preview")
-        self.assertEqual(payload["branch_name"], "chore/052-resume-detail-inline-attachment-preview")
-        prepare_workspace.assert_called_once_with(
-            self.root,
-            mock.ANY,
-            "chore/052-resume-detail-inline-attachment-preview",
-            "052-resume-detail-inline-attachment-preview",
-            "main",
-            False,
-            True,
-        )
-
-    def test_prepare_all_semantic_override_surfaces_pass_create_naming_quality(self) -> None:
-        existing_issue = {
-            "number": 52,
-            "url": "https://github.com/owner/repo/issues/52",
-            "title": "简历详情页的原始简历查看功能应该强化",
-        }
-        workspace = self.worktree_root / "052-resume-detail-inline-attachment-preview"
-        with (
-            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness", return_value=fresh_base_sync_projection()),
-            mock.patch.object(gtt, "prepare_workspace", return_value=("worktree", workspace, True)),
-            mock.patch.object(gtt, "ensure_workspace_developer_identity", return_value={
-                "status": "copied",
-                "developer": "tester",
-            }),
-        ):
-            payload = gtt.cmd_prepare(
-                prepare_args(
-                    requirement=["#52"],
-                    short_name="052-resume-detail-inline-attachment-preview",
-                    workspace_slug="052-resume-detail-inline-attachment-preview",
-                    task_slug="052-resume-detail-inline-attachment-preview",
-                    branch="custom/052-resume-detail-inline-attachment-preview",
-                    create_worktree=True,
-                )
-            )
-
-        self.assertTrue(payload["naming_quality"]["ok"])
-        self.assertEqual(payload["slug"], "052-resume-detail-inline-attachment-preview")
-        self.assertEqual(payload["task_slug"], "052-resume-detail-inline-attachment-preview")
-        self.assertEqual(payload["workspace_slug"], "052-resume-detail-inline-attachment-preview")
-        self.assertEqual(payload["branch_name"], "custom/052-resume-detail-inline-attachment-preview")
-
-    def test_prepare_blocks_when_short_name_missing_even_if_other_surfaces_are_semantic(self) -> None:
-        existing_issue = {
-            "number": 52,
-            "url": "https://github.com/owner/repo/issues/52",
-            "title": "简历详情页的原始简历查看功能应该强化",
-        }
-        with (
-            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness") as ensure_base_freshness,
-            mock.patch.object(gtt, "prepare_workspace") as prepare_workspace,
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_prepare(
-                prepare_args(
-                    requirement=["#52"],
-                    workspace_slug="052-resume-detail-inline-attachment-preview",
-                    task_slug="052-resume-detail-inline-attachment-preview",
-                    branch="custom/052-resume-detail-inline-attachment-preview",
-                    create_worktree=True,
-                )
-            )
-
-        ensure_base_freshness.assert_called_once_with(
-            self.root,
-            None,
-            expected_resolution_sha256="b" * 64,
-        )
-        prepare_workspace.assert_not_called()
-        self.assertFalse(raised.exception.payload["naming_quality"]["ok"])
-        self.assertEqual(raised.exception.payload["naming_quality"]["current_surface"], "slug")
-        self.assertEqual(raised.exception.payload["naming_quality"]["current_slug"], "issue-52")
-
-    def test_prepare_low_information_short_name_override_blocks_create(self) -> None:
-        existing_issue = {
-            "number": 52,
-            "url": "https://github.com/owner/repo/issues/52",
-            "title": "Add resume detail inline attachment preview",
-        }
-        with (
-            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness") as ensure_base_freshness,
-            mock.patch.object(gtt, "prepare_workspace") as prepare_workspace,
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_prepare(
-                prepare_args(
-                    requirement=["#52"],
-                    short_name="issue-52",
-                    create_worktree=True,
-                )
-            )
-
-        ensure_base_freshness.assert_called_once_with(
-            self.root,
-            None,
-            expected_resolution_sha256="b" * 64,
-        )
-        prepare_workspace.assert_not_called()
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertFalse(raised.exception.payload["naming_quality"]["ok"])
-        self.assertEqual(raised.exception.payload["naming_quality"]["current_slug"], "issue-52")
 
     def test_high_duplicate_payload_includes_reviewed_force_new_command(self) -> None:
         duplicate = {
@@ -3101,16 +2858,14 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertEqual(create_command[digest_index + 1], "d" * 64)
         self.assertTrue(payload["requires_confirmation"]["reuse_issue_or_force_new"])
 
-    def test_confirmed_issue_creation_uses_reviewed_body(self) -> None:
+    def test_prepare_issue_mutation_flag_fails_closed(self) -> None:
         body_path = self.root / "reviewed-issue.md"
         body_path.write_text("Reviewed issue body\n", encoding="utf-8")
-        created_issue = {
-            "number": 42,
-            "url": "https://github.com/owner/repo/issues/42",
-            "title": "Reviewed title",
-        }
-        with mock.patch.object(gtt, "create_issue", return_value=created_issue) as create_issue:
-            payload = gtt.cmd_prepare(
+        with (
+            mock.patch.object(gtt, "create_issue") as create_issue,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.cmd_prepare(
                 prepare_args(
                     create_issue_confirmed=True,
                     issue_title="Reviewed title",
@@ -3118,209 +2873,53 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
                 )
             )
 
-        create_issue.assert_called_once_with(
-            "owner/repo",
-            "Reviewed title",
-            "Reviewed issue body",
-            self.root,
-            [],
-        )
-        self.assertEqual(payload["source_issue"]["number"], 42)
-        self.assertTrue(payload["source_issue"]["created_by_workflow"])
-        self.assertIsNone(payload["requires_confirmation"])
-        self.assertNotIn("task_start_context", payload)
-        self.assertFalse((self.root / "handoff.json").exists())
+        create_issue.assert_not_called()
+        self.assertIn("guru-create-task-workspace", str(raised.exception))
 
-    def test_create_worktree_writes_only_local_runtime_mapping(self) -> None:
-        existing_issue = {
-            "number": 42,
-            "url": "https://github.com/owner/repo/issues/42",
-            "title": "Resume attachment preview",
-        }
-        workspace = self.worktree_root / "42-resume-attachment-preview"
-        workspace.mkdir(parents=True)
-        (workspace / ".git").mkdir()
-
+    def test_prepare_worktree_mutation_flag_fails_before_runtime_write(self) -> None:
         with (
-            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness", return_value=fresh_base_sync_projection()),
-            mock.patch.object(gtt, "run_stdout") as run_stdout,
-        ):
-            payload = gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
-
-        run_stdout.assert_not_called()
-        self.assertEqual(payload["source_issue"]["number"], 42)
-        self.assertEqual(payload["workspace_path"], str(workspace))
-        runtime = workspace / ".trellis/.runtime/guru-team/workspaces/42-resume-attachment-preview.json"
-        self.assertTrue(runtime.exists())
-        self.assertEqual(json.loads(runtime.read_text())["workspace_path"], str(workspace.resolve()))
-        self.assertNotIn("task_start_context", payload)
-        self.assertTrue((workspace / ".trellis/.developer").exists())
-        self.assertEqual((workspace / ".trellis/.developer").read_text(encoding="utf-8"), "name=tester\ninitialized_at=2026-07-04T00:00:00\n")
-        self.assertEqual(payload["preflight"]["developer_identity"]["status"], "copied")
-
-    def test_create_task_runs_task_py_in_workspace(self) -> None:
-        workspace = self.worktree_root / "42-resume-attachment-preview"
-        workspace.mkdir(parents=True)
-        (self.root / ".trellis/scripts").mkdir(parents=True)
-        (self.root / ".trellis/scripts/task.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
-        payload = {
-            "workspace_path": str(workspace),
-            "task_title": "#42 Resume attachment preview",
-            "task_slug": "42-resume-attachment-preview",
-        }
-        proc = mock.Mock(returncode=0, stdout=".trellis/tasks/07-04-42-resume-attachment-preview\n", stderr="")
-
-        with mock.patch.object(gtt, "run", return_value=proc) as run:
-            task_dir = gtt.create_task(self.root, payload, prepare_args(requirement=["#42"], create_task=True))
-
-        self.assertEqual(task_dir, ".trellis/tasks/07-04-42-resume-attachment-preview")
-        run.assert_called_once()
-        self.assertEqual(run.call_args.kwargs["cwd"], workspace)
-        self.assertIn("./.trellis/scripts/task.py", run.call_args.args[0])
-
-    def test_create_worktree_refreshes_base_before_workspace_creation(self) -> None:
-        existing_issue = {
-            "number": 42,
-            "url": "https://github.com/owner/repo/issues/42",
-            "title": "Resume attachment preview",
-        }
-        with (
-            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(
-                gtt,
-                "ensure_base_freshness",
-                return_value={**fresh_base_sync_projection("d" * 40), "fast_forwarded": True},
-            ) as refresh,
-            mock.patch.object(gtt, "refresh_base_freshness_for_planner") as planner_refresh,
-            mock.patch.object(gtt, "prepare_workspace", return_value=("worktree", self.worktree_root / "42-resume-attachment-preview", True)) as prepare_workspace,
-            mock.patch.object(gtt, "ensure_workspace_developer_identity", return_value={
-                "status": "copied",
-                "developer": "tester",
-            }) as ensure_identity,
-        ):
-            payload = gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
-
-        guard_call = mock.call(
-            self.root,
-            None,
-            expected_resolution_sha256="b" * 64,
-        )
-        self.assertEqual(refresh.call_args_list, [guard_call, guard_call])
-        planner_refresh.assert_not_called()
-        prepare_workspace.assert_called_once()
-        ensure_identity.assert_called_once_with(self.root, self.worktree_root / "42-resume-attachment-preview", "tester")
-        self.assertEqual(payload["preflight"]["base_freshness"]["fetch_performed"], True)
-        self.assertEqual(payload["preflight"]["base_freshness"]["remote_head"], "d" * 40)
-
-    def test_create_task_has_independent_third_guard_and_no_task_mutation_on_failure(self) -> None:
-        existing_issue = {
-            "number": 42,
-            "url": "https://github.com/owner/repo/issues/42",
-            "title": "Resume attachment preview",
-        }
-        workspace = self.worktree_root / "42-resume-attachment-preview"
-        order: list[str] = []
-        guard_count = 0
-        guard_digests: list[str] = []
-
-        def guard(*_args: object, **kwargs: object) -> dict[str, object]:
-            nonlocal guard_count
-            guard_count += 1
-            guard_digests.append(str(kwargs["expected_resolution_sha256"]))
-            order.append(f"guard-{guard_count}")
-            if guard_count == 3:
-                raise gtt.WorkflowError("reviewed resolution drifted before task mutation", exit_code=2)
-            consumed = guard_digests[-1]
-            return fresh_base_sync_projection(
-                resolution_sha256=consumed,
-                post_sync_resolution_sha256="d" * 64,
-            )
-
-        with (
-            mock.patch.object(gtt, "issue_view", side_effect=lambda *_args: order.append("issue") or existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness", side_effect=guard),
-            mock.patch.object(
-                gtt,
-                "prepare_workspace",
-                side_effect=lambda *_args: order.append("worktree") or ("worktree", workspace, True),
-            ),
-            mock.patch.object(
-                gtt,
-                "ensure_workspace_developer_identity",
-                side_effect=lambda *_args: order.append("identity") or {"status": "copied", "developer": "tester"},
-            ),
-            mock.patch.object(gtt, "create_task") as create_task,
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_prepare(prepare_args(requirement=["#42"], create_task=True))
-
-        self.assertEqual(
-            order,
-            ["guard-1", "issue", "guard-2", "worktree", "identity", "guard-3"],
-        )
-        self.assertEqual(guard_digests, ["b" * 64, "d" * 64, "d" * 64])
-        self.assertIn("before task mutation", str(raised.exception))
-        create_task.assert_not_called()
-
-    def test_infer_assignee_reads_developer_name_field(self) -> None:
-        self.assertEqual(gtt.infer_assignee(self.root, None), "tester")
-        self.assertEqual(gtt.infer_assignee(self.root, "explicit-dev"), "explicit-dev")
-
-    def test_infer_assignee_allows_legacy_single_line_identity(self) -> None:
-        (self.root / ".trellis/.developer").write_text("legacy-dev\n", encoding="utf-8")
-        self.assertEqual(gtt.infer_assignee(self.root, None), "legacy-dev")
-
-    def test_create_worktree_initializes_developer_identity_from_explicit_assignee(self) -> None:
-        existing_issue = {
-            "number": 42,
-            "url": "https://github.com/owner/repo/issues/42",
-            "title": "Resume attachment preview",
-        }
-        (self.root / ".trellis/.developer").unlink()
-        workspace = self.worktree_root / "42-resume-attachment-preview"
-        workspace.mkdir(parents=True)
-        (workspace / ".git").mkdir()
-
-        with (
-            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness", return_value=fresh_base_sync_projection()),
-        ):
-            payload = gtt.cmd_prepare(
-                prepare_args(
-                    requirement=["#42"],
-                    create_worktree=True,
-                    assignee="explicit-dev",
-                )
-            )
-
-        identity = (workspace / ".trellis/.developer").read_text(encoding="utf-8")
-        self.assertIn("name=explicit-dev\n", identity)
-        self.assertEqual(payload["preflight"]["developer_identity"]["status"], "initialized")
-        self.assertEqual(payload["preflight"]["developer_identity"]["developer"], "explicit-dev")
-
-    def test_create_worktree_blocks_when_developer_identity_missing(self) -> None:
-        existing_issue = {
-            "number": 42,
-            "url": "https://github.com/owner/repo/issues/42",
-            "title": "Resume attachment preview",
-        }
-        (self.root / ".trellis/.developer").unlink()
-        workspace = self.worktree_root / "42-resume-attachment-preview"
-        workspace.mkdir(parents=True)
-        (workspace / ".git").mkdir()
-
-        with (
-            mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "ensure_base_freshness", return_value=fresh_base_sync_projection()),
+            mock.patch.object(gtt, "prepare_workspace") as prepare_workspace,
+            mock.patch.object(gtt, "write_runtime_mappings") as write_runtime_mappings,
             self.assertRaises(gtt.WorkflowError) as raised,
         ):
             gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
+        prepare_workspace.assert_not_called()
+        write_runtime_mappings.assert_not_called()
+        self.assertIn("guru-create-task-workspace", str(raised.exception))
 
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertTrue(raised.exception.payload["missing_identity"])
-        self.assertIn("init_developer.py <name>", raised.exception.payload["recovery_command"])
-        self.assertFalse((workspace / ".trellis/.developer").exists())
+    def test_legacy_create_task_helper_requires_explicit_assignee(self) -> None:
+        (self.root / ".trellis/scripts").mkdir(parents=True)
+        (self.root / ".trellis/scripts/task.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+        payload = {"workspace_path": str(self.root), "task_title": "Task", "task_slug": "task"}
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.create_task(self.root, payload, prepare_args(requirement=["#42"], create_task=True))
+        self.assertIn("explicit non-empty assignee", str(raised.exception))
+
+    def test_legacy_prepare_mutation_does_not_run_base_or_workspace_guards(self) -> None:
+        with (
+            mock.patch.object(gtt, "ensure_base_freshness") as refresh,
+            mock.patch.object(gtt, "prepare_workspace") as prepare_workspace,
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
+        refresh.assert_not_called()
+        prepare_workspace.assert_not_called()
+
+    def test_prepare_task_mutation_flag_fails_before_task_create(self) -> None:
+        with (
+            mock.patch.object(gtt, "create_task") as create_task,
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.cmd_prepare(prepare_args(requirement=["#42"], create_task=True))
+        create_task.assert_not_called()
+
+    def test_infer_assignee_ignores_developer_identity(self) -> None:
+        self.assertIsNone(gtt.infer_assignee(self.root, None))
+        self.assertEqual(gtt.infer_assignee(self.root, "explicit-dev"), "explicit-dev")
+
+    def test_infer_assignee_ignores_legacy_single_line_identity(self) -> None:
+        (self.root / ".trellis/.developer").write_text("legacy-dev\n", encoding="utf-8")
+        self.assertIsNone(gtt.infer_assignee(self.root, None))
 
     def test_ensure_base_freshness_adapter_uses_shared_core(self) -> None:
         result = fresh_base_sync_result()
@@ -3452,7 +3051,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
 
         self.assertIn("fetch failed", str(raised.exception))
 
-    def test_confirmed_issue_creation_requires_reviewed_title(self) -> None:
+    def test_confirmed_issue_legacy_flag_routes_to_workspace_skill_before_payload_checks(self) -> None:
         body_path = self.root / "reviewed-issue.md"
         body_path.write_text("Reviewed issue body\n", encoding="utf-8")
         with (
@@ -3467,7 +3066,1506 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             )
 
         create_issue.assert_not_called()
-        self.assertIn("--issue-title", str(raised.exception))
+        self.assertIn("guru-create-task-workspace", str(raised.exception))
+
+
+class TaskWorkspaceRuntimeTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    @staticmethod
+    def assignee_plan(source: str, login: str, candidates: list[str]) -> dict[str, object]:
+        return {
+            "assignee": {
+                "source": source,
+                "login": login,
+                "candidates": candidates,
+                "resolution_evidence": "The user selected the exact assignee after the candidate facts were shown.",
+            }
+        }
+
+    def test_portable_prerequisite_path_rejects_absolute_and_escape(self) -> None:
+        evidence = self.root / "evidence.json"
+        evidence.write_text("{}\n", encoding="utf-8")
+        self.assertEqual(
+            gtt.task_workspace_portable_input_path(self.root, "evidence.json", "evidence"),
+            evidence.resolve(),
+        )
+        for value in (str(evidence), "../evidence.json", "nested\\evidence.json"):
+            with self.subTest(value=value), self.assertRaises(gtt.WorkflowError):
+                gtt.task_workspace_portable_input_path(self.root, value, "evidence")
+
+    def test_ai_authored_non_mutation_routes_are_checked_zero_write_results(self) -> None:
+        repository_source = Path(__file__).resolve().parents[5]
+        plan = json.loads((
+            repository_source
+            / "trellis/skills/guru-team/packages/guru-create-task-workspace/examples/task-workspace-plan.json"
+        ).read_text(encoding="utf-8"))
+        snapshot = {
+            "head": "a" * 40,
+            "status_sha256": "b" * 64,
+            "worktrees_sha256": "c" * 64,
+            "issues_sha256": "d" * 64,
+        }
+
+        def finalize(authored: dict[str, object]) -> None:
+            reviewable = gtt.context_digest(gtt.task_workspace_reviewable_projection(authored))
+            authored["ai_review_gate"]["reviewed_plan_sha256"] = reviewable
+            authored["freshness"]["reviewable_plan_sha256"] = reviewable
+            authored["freshness"]["plan_sha256"] = gtt.task_workspace_plan_digest(authored)
+
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "task_workspace_validate_plan", return_value=({}, [])),
+            mock.patch.object(gtt, "task_workspace_snapshot", return_value=snapshot),
+            mock.patch.object(gtt, "task_workspace_schema", return_value={}),
+            mock.patch.object(gtt, "skill_json_schema_validation_errors", return_value=[]),
+        ):
+            cancelled = copy.deepcopy(plan)
+            confirmation = cancelled["confirmations"]["workspace_and_task_mutation"]
+            confirmation["status"] = "refused"
+            confirmation["evidence"] = "The user refused the exact reviewed mutation plan."
+            confirmation["confirmation_sha256"] = gtt.task_workspace_confirmation_digest(confirmation)
+            finalize(cancelled)
+            cancelled_path = self.root / "cancelled-plan.json"
+            gtt.write_json(cancelled_path, cancelled)
+            cancelled_result = gtt.cmd_create_task_workspace(argparse.Namespace(
+                root=str(self.root), input=str(cancelled_path), cancelled=True,
+                refresh_review=False, reason=None, reason_code=None,
+            ))
+            self.assertEqual(cancelled_result["typed_exit"], "cancelled")
+
+            for gate_status, typed_exit, reason_code in (
+                ("reroute", "refresh_review", "disposition_changed"),
+                ("blocked", "blocked", "object_conflict"),
+            ):
+                authored = copy.deepcopy(plan)
+                authored["ai_review_gate"]["status"] = gate_status
+                active = authored["confirmations"]["workspace_and_task_mutation"]
+                active.update({
+                    "status": "not_in_current_invocation", "source": None,
+                    "reviewed_plan_sha256": None, "evidence": None,
+                    "confirmation_sha256": None,
+                })
+                if gate_status == "blocked":
+                    authored["naming"]["task_disposition"] = "conflict_blocked"
+                finalize(authored)
+                path = self.root / f"{gate_status}-plan.json"
+                gtt.write_json(path, authored)
+                result = gtt.cmd_create_task_workspace(argparse.Namespace(
+                    root=str(self.root), input=str(path), cancelled=False,
+                    refresh_review=gate_status == "reroute", reason=None,
+                    reason_code=reason_code,
+                ))
+                self.assertEqual(result["typed_exit"], typed_exit)
+                self.assertTrue(result["no_side_effect"]["zero_writes"])
+
+    def test_planned_task_locator_is_exact_and_reusable_across_dates(self) -> None:
+        plan = {
+            "naming": {"task_slug": "112-create-task-workspace"},
+            "side_effects": {
+                "task_artifacts": [
+                    f".trellis/tasks/07-18-112-create-task-workspace/{name}"
+                    for name in gtt.TASK_WORKSPACE_ARTIFACT_NAMES
+                ]
+            },
+        }
+        self.assertEqual(
+            gtt.task_workspace_planned_task_dir(self.root, plan),
+            self.root / ".trellis/tasks/07-18-112-create-task-workspace",
+        )
+        plan["side_effects"]["task_artifacts"][0] = ".trellis/tasks/07-19-112-create-task-workspace/task-start-context.json"
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.task_workspace_planned_task_dir(self.root, plan)
+
+    def test_assignee_fixed_order_cannot_be_bypassed(self) -> None:
+        single = {"assignees": ["issue-owner"]}
+        gtt.task_workspace_validate_assignee(
+            self.root,
+            self.assignee_plan("single_issue_assignee", "issue-owner", ["issue-owner"]),
+            single,
+        )
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.task_workspace_validate_assignee(
+                self.root,
+                self.assignee_plan("user_supplied_after_unresolved", "other-user", ["issue-owner"]),
+                single,
+            )
+
+        with mock.patch.object(gtt, "gh_json", return_value={"login": "current-user"}):
+            gtt.task_workspace_validate_assignee(
+                self.root,
+                self.assignee_plan("current_github_login", "current-user", []),
+                {"assignees": []},
+            )
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.task_workspace_validate_assignee(
+                    self.root,
+                    self.assignee_plan("user_supplied_after_unresolved", "other-user", []),
+                    {"assignees": []},
+                )
+
+        multiple = {"assignees": ["alice", "bob"]}
+        gtt.task_workspace_validate_assignee(
+            self.root,
+            self.assignee_plan("user_selected_from_candidates", "alice", ["alice", "bob"]),
+            multiple,
+        )
+        with mock.patch.object(gtt, "gh_json", side_effect=gtt.WorkflowError("actor unresolved")):
+            gtt.task_workspace_validate_assignee(
+                self.root,
+                self.assignee_plan("user_supplied_after_unresolved", "chosen-user", []),
+                {"assignees": []},
+            )
+
+    def test_official_task_create_adapter_ignores_existing_developer_identity(self) -> None:
+        repository_source = Path(__file__).resolve().parents[5]
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.root, check=True)
+        subprocess.run(["git", "config", "user.name", "Adapter Fixture"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "adapter-fixture@example.invalid"],
+            cwd=self.root,
+            check=True,
+        )
+        shutil.copytree(
+            repository_source / ".trellis/scripts",
+            self.root / ".trellis/scripts",
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+        )
+        identity_path = self.root / ".trellis/.developer"
+        identity_bytes = b"name=legacy-identity\n"
+        identity_path.write_bytes(identity_bytes)
+
+        proc = gtt.task_workspace_run_official_task_create(
+            self.root,
+            "#112 Verify no-developer adapter",
+            "112-no-developer-adapter",
+            "explicit-assignee",
+        )
+
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        task_dir = gtt.resolve_task_dir(self.root, proc.stdout.strip())
+        task_data = gtt.read_json(task_dir / "task.json")
+        self.assertEqual(task_data["assignee"], "explicit-assignee")
+        self.assertEqual(task_data["creator"], "explicit-assignee")
+        self.assertEqual(identity_path.read_bytes(), identity_bytes)
+
+    def test_issue_creation_adapter_writes_exact_reviewed_body_bytes(self) -> None:
+        title = "Create exact reviewed issue"
+        body = "First reviewed line\nSecond reviewed line"
+        observed: dict[str, object] = {}
+        live_issue = {
+            "number": 112,
+            "url": "https://github.com/owner/repo/issues/112",
+            "state": "OPEN",
+            "title": title,
+            "body": body,
+            "updatedAt": "2026-07-19T00:00:00Z",
+            "labels": [{"name": "workflow"}],
+        }
+
+        def create_command(
+            command: list[str],
+            *,
+            cwd: Path,
+            check: bool,
+            **_kwargs: object,
+        ) -> subprocess.CompletedProcess[str]:
+            self.assertEqual(command[:3], ["gh", "issue", "create"])
+            body_path = Path(command[command.index("--body-file") + 1])
+            observed["title"] = command[command.index("--title") + 1]
+            observed["body"] = body_path.read_bytes()
+            return subprocess.CompletedProcess(
+                command,
+                0,
+                "https://github.com/owner/repo/issues/112\n",
+                "",
+            )
+
+        with (
+            mock.patch.object(gtt, "require_gh_auth"),
+            mock.patch.object(gtt, "run", side_effect=create_command),
+            mock.patch.object(gtt, "issue_view", return_value=live_issue),
+        ):
+            created = gtt.create_issue("owner/repo", title, body, self.root, ["workflow"])
+
+        self.assertEqual(created, live_issue)
+        self.assertEqual(observed["title"], title)
+        self.assertEqual(observed["body"], body.encode("utf-8"))
+
+    def test_reviewed_draft_checks_exact_live_labels_and_stops_at_refresh(self) -> None:
+        draft = {
+            "draft_id": "draft-112",
+            "title": "Create exact task workspace",
+            "body": "Reviewed body",
+            "labels": ["workflow", "enhancement"],
+            "reviewed_draft_sha256": "a" * 64,
+        }
+        plan = {
+            "mode": "workflow",
+            "target": {
+                "repo": "owner/repo",
+                "title_sha256": hashlib.sha256(draft["title"].encode()).hexdigest(),
+                "body_sha256": hashlib.sha256(draft["body"].encode()).hexdigest(),
+                "draft": draft,
+            },
+            "confirmations": {
+                "github_issue_mutation": {"status": "confirmed", "confirmation_sha256": "b" * 64}
+            },
+            "freshness": {"captured_at": "2026-07-18T00:00:00Z", "plan_sha256": "c" * 64},
+        }
+        live_issue = {
+            "number": 112,
+            "url": "https://github.com/owner/repo/issues/112",
+            "state": "OPEN",
+            "title": draft["title"],
+            "body": draft["body"],
+            "updatedAt": "2026-07-18T00:00:00Z",
+            "labels": [{"name": "enhancement"}, {"name": "workflow"}],
+        }
+        with (
+            mock.patch.object(gtt, "task_workspace_created_issue_recovery_candidates", return_value=[]),
+            mock.patch.object(gtt, "create_issue", return_value=live_issue) as create_issue,
+        ):
+            result = gtt.task_workspace_created_issue_result(self.root, plan)
+        create_issue.assert_called_once_with("owner/repo", draft["title"], draft["body"], self.root, draft["labels"])
+        self.assertEqual(result["variant"], "created_issue")
+        self.assertEqual(result["typed_exit"], "refresh_review")
+        self.assertIsNone(result["created_workspace"])
+
+        wrong_labels = copy.deepcopy(live_issue)
+        wrong_labels["labels"] = [{"name": "workflow"}]
+        with (
+            mock.patch.object(gtt, "task_workspace_created_issue_recovery_candidates", return_value=[]),
+            mock.patch.object(gtt, "create_issue", return_value=wrong_labels),
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.task_workspace_created_issue_result(self.root, plan)
+
+    def test_created_issue_recovery_search_and_retry_create_only_once(self) -> None:
+        title = "Recover exact reviewed issue"
+        body = "Reviewed recovery body"
+        plan = {
+            "mode": "workflow",
+            "target": {
+                "repo": "owner/repo",
+                "title_sha256": hashlib.sha256(title.encode()).hexdigest(),
+                "body_sha256": hashlib.sha256(body.encode()).hexdigest(),
+                "draft": {
+                    "draft_id": "draft-recovery-112",
+                    "title": title,
+                    "body": body,
+                    "labels": ["enhancement", "workflow"],
+                    "reviewed_draft_sha256": "a" * 64,
+                },
+            },
+            "confirmations": {
+                "github_issue_mutation": {"status": "confirmed", "confirmation_sha256": "b" * 64}
+            },
+            "freshness": {"captured_at": "2026-07-18T00:00:00Z", "plan_sha256": "c" * 64},
+        }
+        exact = {
+            "number": 500,
+            "url": "https://github.com/owner/repo/issues/500",
+            "state": "OPEN",
+            "title": title,
+            "body": body,
+            "updatedAt": "2026-07-18T00:01:00Z",
+            "createdAt": "2026-07-18T00:00:30Z",
+            "labels": [{"name": "workflow"}, {"name": "enhancement"}],
+        }
+        old = {**exact, "number": 499, "url": "https://github.com/owner/repo/issues/499", "createdAt": "2026-07-17T23:59:59Z"}
+        wrong_labels = {**exact, "number": 501, "url": "https://github.com/owner/repo/issues/501", "labels": [{"name": "workflow"}]}
+
+        with mock.patch.object(gtt, "gh_json", return_value=[]):
+            self.assertEqual(gtt.task_workspace_created_issue_recovery_candidates(self.root, plan), [])
+        with mock.patch.object(gtt, "gh_json", return_value=[old, wrong_labels, exact]):
+            self.assertEqual(
+                [item["number"] for item in gtt.task_workspace_created_issue_recovery_candidates(self.root, plan)],
+                [500],
+            )
+        second_exact = {**exact, "number": 502, "url": "https://github.com/owner/repo/issues/502"}
+        with (
+            mock.patch.object(gtt, "task_workspace_created_issue_recovery_candidates", return_value=[exact, second_exact]),
+            mock.patch.object(gtt, "create_issue") as create_issue,
+            self.assertRaises(gtt.WorkflowError) as ambiguous,
+        ):
+            gtt.task_workspace_created_issue_result(self.root, plan)
+        self.assertEqual(ambiguous.exception.payload["typed_exit"], "blocked")
+        create_issue.assert_not_called()
+
+        remote_issues: list[dict[str, object]] = []
+
+        def create_then_lose_reread(*_args: object, **_kwargs: object) -> dict[str, object]:
+            remote_issues.append(copy.deepcopy(exact))
+            raise gtt.WorkflowError("immediate reread failed")
+
+        with (
+            mock.patch.object(gtt, "gh_json", side_effect=lambda *_args, **_kwargs: copy.deepcopy(remote_issues)),
+            mock.patch.object(gtt, "create_issue", side_effect=create_then_lose_reread) as create_issue,
+            mock.patch.object(gtt, "issue_view", return_value=exact),
+        ):
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.task_workspace_created_issue_result(self.root, plan)
+            recovered = gtt.task_workspace_created_issue_result(self.root, plan)
+
+        self.assertEqual(create_issue.call_count, 1)
+        self.assertEqual(len(remote_issues), 1)
+        self.assertEqual(recovered["typed_exit"], "refresh_review")
+        self.assertIn("recovered", recovered["reason"].lower())
+
+    def test_created_issue_provenance_requires_checked_result_and_context_binding(self) -> None:
+        binding = {
+            "repo": "owner/repo",
+            "number": 500,
+            "canonical_url": "https://github.com/owner/repo/issues/500",
+            "state": "open",
+            "title_sha256": "a" * 64,
+            "body_sha256": "b" * 64,
+            "updated_at": "2026-07-18T00:01:00Z",
+            "reviewed_draft_id": "draft-112",
+            "reviewed_draft_sha256": "c" * 64,
+            "creation_confirmation_sha256": "d" * 64,
+        }
+        binding["facts_sha256"] = gtt.context_digest(binding)
+        checked_result = {
+            "schema_version": "1.0",
+            "skill_id": "guru-create-task-workspace",
+            "generated_at": "2026-07-18T00:02:00Z",
+            "mode": "workflow",
+            "variant": "created_issue",
+            "plan_sha256": "e" * 64,
+            "executor": {"status": "passed", "checked_at": "2026-07-18T00:01:00Z", "evidence": ["created"]},
+            "checker": {"status": "passed", "checked_at": "2026-07-18T00:02:00Z", "evidence": ["checked"]},
+            "created_issue": binding,
+            "created_workspace": None,
+            "no_side_effect": None,
+            "typed_exit": "refresh_review",
+            "reason": "Complete Intake refresh is required.",
+            "consumer": {"kind": "skill", "id": "guru-sync-base"},
+            "facts_sha256": "",
+        }
+        checked_result["facts_sha256"] = gtt.task_workspace_result_digest(checked_result)
+        live_issue_facts = {
+            "repo": binding["repo"],
+            "number": binding["number"],
+            "url": binding["canonical_url"],
+            "state": binding["state"],
+            "updated_at": binding["updated_at"],
+            "body_sha256": binding["body_sha256"],
+        }
+        live_change = {
+            "kind": "issue",
+            "identity": binding["canonical_url"],
+            "state": binding["state"],
+            "updated_at": binding["updated_at"],
+            "body_sha256": binding["body_sha256"],
+            "facts_sha256": gtt.context_digest(live_issue_facts),
+            "issue_binding": None,
+        }
+        plan = {
+            "mode": "workflow",
+            "target": {
+                "repo": binding["repo"],
+                "issue_number": binding["number"],
+                "url": binding["canonical_url"],
+                "state": binding["state"],
+                "title_sha256": binding["title_sha256"],
+                "body_sha256": binding["body_sha256"],
+                "updated_at": binding["updated_at"],
+                "created_issue_binding_sha256": binding["facts_sha256"],
+                "created_issue_result": checked_result,
+            },
+        }
+        payloads = {
+            "context": {
+                "repository": {"repo": binding["repo"]},
+                "live_change": live_change,
+            }
+        }
+        self.assertEqual(gtt.task_workspace_created_issue_provenance_errors(plan, payloads), [])
+
+        ordinary = copy.deepcopy(plan)
+        ordinary["target"]["created_issue_binding_sha256"] = None
+        ordinary["target"]["created_issue_result"] = None
+        self.assertEqual(
+            gtt.task_workspace_created_issue_provenance_errors(ordinary, payloads),
+            [],
+        )
+
+        missing = copy.deepcopy(plan)
+        missing["target"]["created_issue_result"] = None
+        self.assertIn(
+            "task_workspace_created_issue_provenance_incomplete",
+            gtt.task_workspace_created_issue_provenance_errors(missing, payloads),
+        )
+        for field in ("reviewed_draft_id", "reviewed_draft_sha256", "creation_confirmation_sha256"):
+            stale = copy.deepcopy(plan)
+            stale["target"]["created_issue_result"]["created_issue"][field] = "stale" if field.endswith("id") else "f" * 64
+            errors = gtt.task_workspace_created_issue_provenance_errors(stale, payloads)
+            self.assertIn("task_workspace_created_issue_binding_digest_mismatch", errors, field)
+            self.assertIn("task_workspace_created_issue_result_facts_digest_mismatch", errors, field)
+        invalid_contexts = {
+            "repository": lambda value: value["context"]["repository"].update({"repo": "other/repo"}),
+            "kind": lambda value: value["context"]["live_change"].update({"kind": "draft"}),
+            "identity": lambda value: value["context"]["live_change"].update({"identity": "https://github.com/owner/repo/issues/501"}),
+            "state": lambda value: value["context"]["live_change"].update({"state": "closed"}),
+            "updated_at": lambda value: value["context"]["live_change"].update({"updated_at": "2026-07-18T00:03:00Z"}),
+            "body_sha256": lambda value: value["context"]["live_change"].update({"body_sha256": "f" * 64}),
+            "facts_sha256": lambda value: value["context"]["live_change"].update({"facts_sha256": "f" * 64}),
+            "issue_binding": lambda value: value["context"]["live_change"].update({"issue_binding": copy.deepcopy(live_issue_facts)}),
+        }
+        for field, mutate in invalid_contexts.items():
+            with self.subTest(context_field=field):
+                wrong_context = copy.deepcopy(payloads)
+                mutate(wrong_context)
+                self.assertIn(
+                    "task_workspace_created_issue_context_binding_mismatch",
+                    gtt.task_workspace_created_issue_provenance_errors(plan, wrong_context),
+                )
+
+    def test_created_issue_provenance_survives_existing_issue_review_projection_chain(self) -> None:
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        repo = "owner/repo"
+        number = 500
+        url = f"https://github.com/{repo}/issues/{number}"
+        updated_at = "2026-07-18T00:01:00Z"
+        title_sha256 = digest("Reviewed title")
+        body_sha256 = digest("Reviewed body")
+        issue_facts = {
+            "repo": repo,
+            "number": number,
+            "url": url,
+            "state": "open",
+            "updated_at": updated_at,
+            "body_sha256": body_sha256,
+        }
+        context = {
+            "repository": {"repo": repo},
+            "live_change": {
+                "kind": "issue",
+                "identity": url,
+                "state": "open",
+                "updated_at": updated_at,
+                "body_sha256": body_sha256,
+                "facts_sha256": gtt.context_digest(issue_facts),
+                "issue_binding": None,
+            },
+        }
+        clarity = {
+            "invocation_context": {"kind": "initial_issue"},
+            "review_target": {
+                "kind": "issue",
+                "repo": repo,
+                "issue_number": number,
+                "url": url,
+                "state": "open",
+                "updated_at": updated_at,
+                "body_sha256": body_sha256,
+            },
+            "target_disposition": {
+                "disposition_digest": digest("disposition"),
+                "duplicate_facts_sha256": digest("duplicates"),
+            },
+        }
+        wording = {
+            "scope": {
+                "identity": f"change_request:{url}",
+                "items": [
+                    {"field": "title", "content_sha256": title_sha256},
+                    {"field": "body", "content_sha256": body_sha256},
+                ],
+            }
+        }
+        payloads = {"context": context, "clarity": clarity, "wording": wording}
+        target = gtt.change_request_review_prerequisite_target_identity_projection(payloads)
+        self.assertEqual(
+            target,
+            {
+                "kind": "existing_issue",
+                "repo": repo,
+                "title_sha256": title_sha256,
+                "body_sha256": body_sha256,
+                "issue_number": number,
+                "url": url,
+                "updated_at": updated_at,
+            },
+        )
+        target.update({
+            "identity_sha256": gtt.context_digest(
+                gtt.change_request_review_target_identity_projection(target)
+            ),
+            "content_sha256": gtt.context_digest({
+                "title_sha256": title_sha256,
+                "body_sha256": body_sha256,
+            }),
+            "draft_id": None,
+            "source_request_sha256": None,
+            "caller_locator": None,
+            "request_id": None,
+            "side_effect_free": False,
+        })
+        projections = {
+            "context": {
+                "status": "current", "payload_sha256": gtt.context_digest(context),
+                "base_head": "a" * 40, "current_state_sha256": digest("current"),
+                "history_sha256": digest("history"), "duplicate_sha256": digest("duplicates"),
+                "error_codes": [],
+            },
+            "clarity": {
+                "status": "current", "payload_sha256": gtt.context_digest(clarity),
+                "facts_sha256": digest("clarity"),
+                "disposition_sha256": clarity["target_disposition"]["disposition_digest"],
+                "error_codes": [],
+            },
+            "wording": {
+                "status": "current", "payload_sha256": gtt.context_digest(wording),
+                "facts_sha256": digest("wording"), "error_codes": [],
+            },
+        }
+        gtt.change_request_review_target_linkage_errors(target, payloads, projections)
+        self.assertTrue(all(row["status"] == "current" for row in projections.values()))
+        self.assertTrue(all(row["error_codes"] == [] for row in projections.values()))
+        linkage = gtt.change_request_review_linkage(target, projections)
+        conclusion = {"close_issues": [number], "related_issues": [], "followup_issues": []}
+        readiness = {
+            "target": target,
+            "prerequisites": projections,
+            "evidence_linkage": linkage,
+            "semantic_review": {
+                "scope_conclusion": conclusion,
+                "ai_review_gate": {
+                    "reviewed_linkage_sha256": linkage["linkage_sha256"],
+                    "scope_conclusion_sha256": gtt.context_digest(conclusion),
+                },
+            },
+        }
+        payloads["readiness"] = readiness
+        self.assertEqual(gtt.task_workspace_readiness_linkage_errors(readiness, payloads), [])
+
+        binding = {
+            "repo": repo,
+            "number": number,
+            "canonical_url": url,
+            "state": "open",
+            "title_sha256": title_sha256,
+            "body_sha256": body_sha256,
+            "updated_at": updated_at,
+            "reviewed_draft_id": "draft-112",
+            "reviewed_draft_sha256": digest("reviewed-draft"),
+            "creation_confirmation_sha256": digest("creation-confirmation"),
+        }
+        binding["facts_sha256"] = gtt.context_digest(binding)
+        result = {
+            "schema_version": "1.0",
+            "skill_id": "guru-create-task-workspace",
+            "generated_at": "2026-07-18T00:02:00Z",
+            "mode": "workflow",
+            "variant": "created_issue",
+            "plan_sha256": digest("draft-plan"),
+            "executor": {"status": "passed", "checked_at": "2026-07-18T00:01:00Z", "evidence": ["created"]},
+            "checker": {"status": "passed", "checked_at": "2026-07-18T00:02:00Z", "evidence": ["checked"]},
+            "created_issue": binding,
+            "created_workspace": None,
+            "no_side_effect": None,
+            "typed_exit": "refresh_review",
+            "reason": "Complete Intake refresh is required.",
+            "consumer": copy.deepcopy(gtt.TASK_WORKSPACE_CONSUMERS["refresh_review"]),
+            "facts_sha256": "",
+        }
+        result["facts_sha256"] = gtt.task_workspace_result_digest(result)
+        plan = {
+            "mode": "workflow",
+            "target": {
+                "repo": repo,
+                "issue_number": number,
+                "url": url,
+                "state": "open",
+                "updated_at": updated_at,
+                "title_sha256": title_sha256,
+                "body_sha256": body_sha256,
+                "created_issue_binding_sha256": binding["facts_sha256"],
+                "created_issue_result": result,
+            },
+        }
+        self.assertEqual(gtt.task_workspace_created_issue_provenance_errors(plan, payloads), [])
+
+        stale_context = copy.deepcopy(payloads)
+        stale_context["context"]["live_change"]["facts_sha256"] = digest("stale-live-issue")
+        self.assertIn(
+            "task_workspace_created_issue_context_binding_mismatch",
+            gtt.task_workspace_created_issue_provenance_errors(plan, stale_context),
+        )
+
+    def test_mutation_time_base_sync_detects_remote_advance_before_business_writes(self) -> None:
+        repository = self.root / "repository"
+        remote = self.root / "remote.git"
+        updater = self.root / "updater"
+        repository.mkdir()
+        subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repository, check=True)
+        subprocess.run(["git", "config", "user.name", "Base Fixture"], cwd=repository, check=True)
+        subprocess.run(["git", "config", "user.email", "base@example.invalid"], cwd=repository, check=True)
+        (repository / "base.txt").write_text("initial\n", encoding="utf-8")
+        subprocess.run(["git", "add", "base.txt"], cwd=repository, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "initial"], cwd=repository, check=True)
+        subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=repository, check=True)
+        subprocess.run(["git", "push", "-q", "-u", "origin", "main"], cwd=repository, check=True)
+
+        resolution = gtt.resolve_base_selection(repository, {}, "main", "origin")
+        initial = gtt.execute_base_sync(repository, resolution)
+        initial_head = initial["git"]["remote_head_after"]
+        plan = {
+            "base": {
+                "selected_base": "main",
+                "remote": "origin",
+                "base_ref": "refs/remotes/origin/main",
+                "decision_head": initial_head,
+                "local_head": initial_head,
+                "remote_head": initial_head,
+                "post_sync_resolution_sha256": initial["post_sync_resolution_sha256"],
+                "sync_facts_sha256": initial["facts_sha256"],
+            }
+        }
+        unchanged = gtt.task_workspace_refresh_base_before_mutation(repository, plan, initial)
+        self.assertEqual(unchanged["post_sync_resolution_sha256"], initial["post_sync_resolution_sha256"])
+
+        subprocess.run(["git", "clone", "-q", "-b", "main", str(remote), str(updater)], check=True)
+        subprocess.run(["git", "config", "user.name", "Remote Fixture"], cwd=updater, check=True)
+        subprocess.run(["git", "config", "user.email", "remote@example.invalid"], cwd=updater, check=True)
+        (updater / "base.txt").write_text("advanced\n", encoding="utf-8")
+        subprocess.run(["git", "add", "base.txt"], cwd=updater, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "advance"], cwd=updater, check=True)
+        subprocess.run(["git", "push", "-q", "origin", "main"], cwd=updater, check=True)
+        remote_head = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=updater, check=True, text=True, capture_output=True
+        ).stdout.strip()
+        self.assertEqual(gtt.ref_head(repository, "refs/remotes/origin/main"), initial_head)
+
+        with self.assertRaises(gtt.WorkflowError) as advanced:
+            gtt.task_workspace_refresh_base_before_mutation(repository, plan, initial)
+        self.assertEqual(advanced.exception.payload["typed_exit"], "refresh_review")
+        self.assertEqual(
+            advanced.exception.payload["error_code"],
+            "task_workspace_base_post_sync_identity_changed",
+        )
+        self.assertEqual(gtt.current_head(repository), remote_head)
+        self.assertEqual(gtt.ref_head(repository, "refs/remotes/origin/main"), remote_head)
+        self.assertEqual(
+            subprocess.run(
+                ["git", "branch", "--format=%(refname:short)"],
+                cwd=repository,
+                check=True,
+                text=True,
+                capture_output=True,
+            ).stdout.splitlines(),
+            ["main"],
+        )
+        self.assertEqual(len(gtt.worktree_records(repository)), 1)
+        self.assertFalse((repository / ".trellis/tasks").exists())
+
+    def test_create_command_stops_before_business_mutation_when_base_refreshes(self) -> None:
+        repository_source = Path(__file__).resolve().parents[5]
+        plan = json.loads((
+            repository_source
+            / "trellis/skills/guru-team/packages/guru-create-task-workspace/examples/task-workspace-plan.json"
+        ).read_text(encoding="utf-8"))
+        plan_path = self.root / "plan.json"
+        gtt.write_json(plan_path, plan)
+        snapshot = {
+            "head": "a" * 40,
+            "status_sha256": "b" * 64,
+            "worktrees_sha256": "c" * 64,
+            "issues_sha256": "d" * 64,
+        }
+        refresh = gtt.WorkflowError(
+            "base advanced",
+            exit_code=2,
+            payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_post_sync_identity_changed"},
+        )
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(gtt, "task_workspace_validate_plan", return_value=({"base": {}}, [])),
+            mock.patch.object(gtt, "task_workspace_snapshot", return_value=snapshot),
+            mock.patch.object(gtt, "task_workspace_refresh_base_before_mutation", side_effect=refresh) as base_guard,
+            mock.patch.object(gtt, "task_workspace_created_issue_result") as issue_mutation,
+            mock.patch.object(gtt, "task_workspace_created_workspace_result") as workspace_mutation,
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.cmd_create_task_workspace(argparse.Namespace(
+                root=str(self.root), input=str(plan_path), cancelled=False,
+                refresh_review=False, reason=None, reason_code=None,
+            ))
+        self.assertEqual(raised.exception.payload["typed_exit"], "refresh_review")
+        base_guard.assert_called_once_with(self.root, plan, {})
+        issue_mutation.assert_not_called()
+        workspace_mutation.assert_not_called()
+
+    def test_reviewed_draft_plan_binds_current_readiness_identity(self) -> None:
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        context = {"current": "context"}
+        clarity = {
+            "review_target": {"state": "draft"},
+            "target_disposition": {
+                "disposition_digest": digest("disposition"),
+                "duplicate_facts_sha256": digest("duplicate"),
+            },
+        }
+        wording = {"scope": {"scope_sha256": digest("wording-scope")}}
+        target = {
+            "kind": "proposed_draft",
+            "repo": "owner/repo",
+            "issue_number": None,
+            "url": None,
+            "updated_at": None,
+            "draft_id": "draft-112",
+            "source_request_sha256": digest("source-request"),
+            "caller_locator": None,
+            "request_id": None,
+            "title_sha256": digest("Reviewed title"),
+            "body_sha256": digest("Reviewed body"),
+            "side_effect_free": True,
+        }
+        target["identity_sha256"] = gtt.context_digest(
+            gtt.change_request_review_target_identity_projection(target)
+        )
+        target["content_sha256"] = gtt.context_digest({
+            "title_sha256": target["title_sha256"],
+            "body_sha256": target["body_sha256"],
+        })
+        readiness_prerequisites = {
+            "context": {
+                "status": "current", "payload_sha256": gtt.context_digest(context),
+                "base_head": "a" * 40, "current_state_sha256": digest("current"),
+                "history_sha256": digest("history"), "duplicate_sha256": digest("duplicate-state"),
+                "error_codes": [],
+            },
+            "clarity": {
+                "status": "current", "payload_sha256": gtt.context_digest(clarity),
+                "facts_sha256": digest("clarity"),
+                "disposition_sha256": clarity["target_disposition"]["disposition_digest"],
+                "error_codes": [],
+            },
+            "wording": {
+                "status": "current", "payload_sha256": gtt.context_digest(wording),
+                "facts_sha256": digest("wording"), "error_codes": [],
+            },
+        }
+        linkage = gtt.change_request_review_linkage(target, readiness_prerequisites)
+        conclusion = {"close_issues": [], "related_issues": [], "followup_issues": []}
+        readiness = {
+            "target": target,
+            "prerequisites": readiness_prerequisites,
+            "evidence_linkage": linkage,
+            "semantic_review": {
+                "scope_conclusion": conclusion,
+                "ai_review_gate": {
+                    "reviewed_linkage_sha256": linkage["linkage_sha256"],
+                    "scope_conclusion_sha256": gtt.context_digest(conclusion),
+                },
+            },
+        }
+        payloads = {
+            "context": context, "clarity": clarity, "wording": wording,
+            "readiness": readiness,
+            "base": {
+                "resolution": {"selected_base": "main", "remote": "origin"},
+                "decision_checkout": {"head_after": "a" * 40},
+                "git": {
+                    "local_head_after": "a" * 40,
+                    "remote_head_after": "a" * 40,
+                    "remote_ref": "refs/remotes/origin/main",
+                },
+                "post_sync_resolution_sha256": digest("post-sync"),
+                "facts_sha256": digest("base"),
+            },
+        }
+        self.assertEqual(gtt.task_workspace_readiness_linkage_errors(readiness, payloads), [])
+
+        plan = {
+            "invocation": {"target_kind": "reviewed_draft"},
+            "target": {
+                "kind": "reviewed_draft", "repo": "wrong/repo",
+                "issue_number": None, "url": None, "state": None, "updated_at": None,
+                "title_sha256": target["title_sha256"], "body_sha256": target["body_sha256"],
+                "disposition_sha256": clarity["target_disposition"]["disposition_digest"],
+                "duplicate_decision_sha256": clarity["target_disposition"]["duplicate_facts_sha256"],
+                "created_issue_binding_sha256": None,
+                "created_issue_result": None,
+                "draft": {
+                    "draft_id": target["draft_id"],
+                    "source_request_sha256": digest("wrong-source"),
+                    "title": "Reviewed title", "body": "Reviewed body", "labels": [],
+                    "reviewed_draft_sha256": digest("wrong-draft"),
+                },
+            },
+            "prerequisites": {"wording": {"content_sha256": wording["scope"]["scope_sha256"]}},
+            "scope": {
+                "primary": None, "close": [], "related": [], "followup": [],
+                "scope_sha256": digest("wrong-scope"),
+            },
+            "base": {}, "naming": {},
+            "side_effects": {
+                "operations": ["create_issue"], "task_artifacts": [],
+                "runtime_mappings": [], "stop_after": "created_issue_refresh",
+            },
+            "confirmations": {}, "ai_review_gate": {}, "freshness": {},
+        }
+        errors = gtt.task_workspace_plan_semantic_errors(self.root, plan, payloads)
+        self.assertIn("task_workspace_reviewed_draft_identity_mismatch", errors)
+        self.assertIn("task_workspace_reviewed_draft_source_request_mismatch", errors)
+        self.assertIn("task_workspace_reviewed_draft_digest_mismatch", errors)
+        self.assertIn("task_workspace_scope_digest_mismatch", errors)
+        self.assertIn("task_workspace_base_base_ref_mismatch", errors)
+
+        valid_plan = copy.deepcopy(plan)
+        valid_plan["target"]["repo"] = target["repo"]
+        valid_plan["target"]["draft"]["source_request_sha256"] = target["source_request_sha256"]
+        valid_plan["target"]["draft"]["reviewed_draft_sha256"] = target["identity_sha256"]
+        valid_plan["scope"]["scope_sha256"] = gtt.task_workspace_scope_digest(valid_plan["scope"])
+        valid_plan["base"] = {
+            "selected_base": "main", "remote": "origin",
+            "base_ref": "refs/remotes/origin/main",
+            "decision_head": "a" * 40, "local_head": "a" * 40,
+            "remote_head": "a" * 40,
+            "post_sync_resolution_sha256": digest("post-sync"),
+            "sync_facts_sha256": digest("base"),
+        }
+        valid_errors = gtt.task_workspace_plan_semantic_errors(self.root, valid_plan, payloads)
+        self.assertFalse(any("reviewed_draft_" in error for error in valid_errors))
+
+        standalone_payloads = copy.deepcopy(payloads)
+        standalone_target = standalone_payloads["readiness"]["target"]
+        standalone_target.update({
+            "kind": "standalone_request", "draft_id": None,
+            "caller_locator": "direct-platform-caller", "request_id": "draft-112",
+        })
+        standalone_target["identity_sha256"] = gtt.context_digest(
+            gtt.change_request_review_target_identity_projection(standalone_target)
+        )
+        standalone_linkage = gtt.change_request_review_linkage(
+            standalone_target,
+            standalone_payloads["readiness"]["prerequisites"],
+        )
+        standalone_payloads["readiness"]["evidence_linkage"] = standalone_linkage
+        standalone_payloads["readiness"]["semantic_review"]["ai_review_gate"][
+            "reviewed_linkage_sha256"
+        ] = standalone_linkage["linkage_sha256"]
+        standalone_plan = copy.deepcopy(valid_plan)
+        standalone_plan["invocation"]["caller"] = "direct-platform-caller"
+        standalone_plan["target"]["draft"]["reviewed_draft_sha256"] = standalone_target[
+            "identity_sha256"
+        ]
+        standalone_errors = gtt.task_workspace_plan_semantic_errors(
+            self.root,
+            standalone_plan,
+            standalone_payloads,
+        )
+        self.assertFalse(any("reviewed_draft_" in error for error in standalone_errors))
+        self.assertNotIn("task_workspace_standalone_caller_mismatch", standalone_errors)
+
+        invalid_ref_plan = copy.deepcopy(valid_plan)
+        invalid_ref_plan["scope"]["followup"] = [{
+            "number": 132,
+            "url": "https://github.com/owner/repo/issues/131",
+            "title": "Follow-up",
+            "reason": "Deferred scope.",
+        }]
+        invalid_ref_plan["scope"]["scope_sha256"] = gtt.task_workspace_scope_digest(
+            invalid_ref_plan["scope"]
+        )
+        invalid_ref_errors = gtt.task_workspace_plan_semantic_errors(
+            self.root,
+            invalid_ref_plan,
+            payloads,
+        )
+        self.assertIn("task_workspace_scope_issue_url_mismatch", invalid_ref_errors)
+
+    def test_checker_reconstructs_canonical_artifact_bytes(self) -> None:
+        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        (self.root / ".gitignore").write_text(".trellis/.runtime/\n", encoding="utf-8")
+        task_relative = ".trellis/tasks/07-18-112-create-task-workspace"
+        task_dir = self.root / task_relative
+        task_dir.mkdir(parents=True)
+        task_data = {
+            "id": "112-create-task-workspace",
+            "name": "112-create-task-workspace",
+            "branch": "feat/112-create-task-workspace",
+            "base_branch": "main",
+            "creator": "maintainer",
+            "assignee": "maintainer",
+            "status": "planning",
+        }
+        (task_dir / "task.json").write_text(json.dumps(task_data), encoding="utf-8")
+        intended = {name: f"canonical {name}\n".encode() for name in gtt.TASK_WORKSPACE_ARTIFACT_NAMES}
+        for name, content in intended.items():
+            (task_dir / name).write_bytes(content)
+
+        plan = {
+            "target": {"repo": "owner/repo", "issue_number": 112},
+            "naming": {
+                "branch_name": "feat/112-create-task-workspace",
+                "workspace_slug": "112-create-task-workspace",
+                "task_slug": "112-create-task-workspace",
+            },
+            "base": {"base_ref": "refs/remotes/origin/main", "decision_head": "a" * 40, "selected_base": "main"},
+            "assignee": {"login": "maintainer"},
+            "side_effects": {
+                "task_artifacts": [f"{task_relative}/{name}" for name in gtt.TASK_WORKSPACE_ARTIFACT_NAMES],
+                "runtime_mappings": [
+                    ".trellis/.runtime/guru-team/workspaces/112-create-task-workspace.json",
+                    ".trellis/.runtime/guru-team/tasks/112-create-task-workspace.json",
+                ],
+            },
+            "freshness": {"plan_sha256": "b" * 64},
+            "ai_review_gate": {"status": "passed"},
+            "confirmations": {"workspace_and_task_mutation": {"status": "confirmed"}},
+        }
+        runtime_rows = []
+        for relative in plan["side_effects"]["runtime_mappings"]:
+            mapping_path = self.root / relative
+            mapping_path.parent.mkdir(parents=True, exist_ok=True)
+            if "/workspaces/" in relative:
+                payload = {
+                    "workspace_slug": "112-create-task-workspace",
+                    "workspace_path": str(self.root.resolve()),
+                    "source_checkout": str(self.root.resolve()),
+                    "branch_name": "feat/112-create-task-workspace",
+                }
+            else:
+                payload = {
+                    "task_slug": "112-create-task-workspace",
+                    "workspace_slug": "112-create-task-workspace",
+                    "workspace_path": str(self.root.resolve()),
+                    "task_artifact_dir": task_relative,
+                }
+            mapping_path.write_text(json.dumps(payload), encoding="utf-8")
+            runtime_rows.append({"path": relative, "ignored": True})
+        result = {
+            "plan_sha256": "b" * 64,
+            "variant": "created_workspace",
+            "created_workspace": {
+                "repo": "owner/repo",
+                "issue_number": 112,
+                "branch_name": "feat/112-create-task-workspace",
+                "base_ref": "refs/remotes/origin/main",
+                "base_head": "a" * 40,
+                "workspace_slug": "112-create-task-workspace",
+                "task_slug": "112-create-task-workspace",
+                "task_artifact_dir": task_relative,
+                "assignee": "maintainer",
+                "task_status": "planning",
+                "artifacts": [gtt.task_workspace_artifact_row(self.root, task_dir / name) for name in gtt.TASK_WORKSPACE_ARTIFACT_NAMES],
+                "runtime_mappings": runtime_rows,
+            },
+            "typed_exit": "created",
+            "executor": {"status": "passed"},
+            "consumer": copy.deepcopy(gtt.TASK_WORKSPACE_CONSUMERS["created"]),
+            "facts_sha256": "",
+        }
+        result["facts_sha256"] = gtt.task_workspace_result_digest(result)
+        with (
+            mock.patch.object(gtt, "task_workspace_schema", return_value={}),
+            mock.patch.object(gtt, "skill_json_schema_validation_errors", return_value=[]),
+            mock.patch.object(gtt, "load_config", return_value={"workspace_mode": "current"}),
+            mock.patch.object(gtt, "task_workspace_live_issue", return_value={"title": "Issue title"}),
+            mock.patch.object(gtt, "task_workspace_intended_artifacts", return_value=intended),
+        ):
+            self.assertEqual(gtt.task_workspace_result_check_errors(self.root, plan, result, {}), [])
+            changed_path = task_dir / "issue-review.json"
+            changed_path.write_bytes(b"different but self-consistent\n")
+            for index, row in enumerate(result["created_workspace"]["artifacts"]):
+                if row["path"].endswith("/issue-review.json"):
+                    result["created_workspace"]["artifacts"][index] = gtt.task_workspace_artifact_row(self.root, changed_path)
+            result["facts_sha256"] = gtt.task_workspace_result_digest(result)
+            errors = gtt.task_workspace_result_check_errors(self.root, plan, result, {})
+        self.assertIn("task_workspace_result_issue-review.json_canonical_bytes_mismatch", errors)
+        changed_path.chmod(0o600)
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.task_workspace_artifact_row(self.root, changed_path)
+
+    def test_production_task_workspaces_archive_and_merge_in_both_orders(self) -> None:
+        fixture_root = self.root / "ab-merge"
+        source = fixture_root / "project"
+        worktree_root = fixture_root / "task-worktrees"
+        source.mkdir(parents=True)
+        repository_source = Path(__file__).resolve().parents[5]
+
+        subprocess.run(["git", "init", "-q"], cwd=source, check=True)
+        subprocess.run(["git", "branch", "-M", "main"], cwd=source, check=True)
+        subprocess.run(["git", "config", "user.name", "Fixture Maintainer"], cwd=source, check=True)
+        subprocess.run(["git", "config", "user.email", "fixture@example.com"], cwd=source, check=True)
+        shutil.copytree(
+            repository_source / ".trellis/scripts",
+            source / ".trellis/scripts",
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+        )
+        installed_schemas = (
+            source
+            / ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas"
+        )
+        installed_schemas.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(
+            repository_source
+            / "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas",
+            installed_schemas,
+        )
+        (source / ".trellis/guru-team/config.yml").write_text(
+            f"workspace_mode: worktree\nworktree_root: {worktree_root}\n",
+            encoding="utf-8",
+        )
+        (source / ".trellis/config.yaml").write_text(
+            "session_auto_commit: false\n",
+            encoding="utf-8",
+        )
+        (source / ".gitignore").write_text(
+            ".trellis/.runtime/\n__pycache__/\n*.py[cod]\n",
+            encoding="utf-8",
+        )
+        (source / "README.md").write_text("# A/B fixture\n", encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=source, check=True)
+        subprocess.run(["git", "commit", "-qm", "fixture base"], cwd=source, check=True)
+        base_head = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=source, check=True, text=True, capture_output=True
+        ).stdout.strip()
+
+        def fixture_payloads(issue_number: int, token: str) -> dict[str, dict[str, object]]:
+            digest = lambda value: hashlib.sha256(f"{token}:{value}".encode()).hexdigest()
+            disposition = digest("disposition")
+            duplicate = digest("duplicate")
+            title = f"Create task workspace {token.upper()}"
+            body = f"Reviewed fixture body {token.upper()}"
+            payloads = {
+                "base": {
+                    "skill_id": "guru-sync-base",
+                    "status": "synced",
+                    "facts_sha256": digest("base-facts"),
+                    "resolution": {"selected_base": "main", "remote": "origin"},
+                    "decision_checkout": {"head_after": base_head},
+                    "post_sync_resolution_sha256": digest("post-sync-resolution"),
+                    "git": {
+                        "local_head_after": base_head,
+                        "remote_head_after": base_head,
+                        "remote_ref": "main",
+                    },
+                },
+                "context": {
+                    "skill_id": "guru-discover-change-context",
+                    "typed_exit": "context_ready",
+                    "snapshot_identity": {
+                        "snapshot_sha256": digest("snapshot"),
+                        "live_change_sha256": digest("live-change"),
+                    },
+                    "fixture": token,
+                },
+                "clarity": {
+                    "skill_id": "guru-clarify-requirements",
+                    "typed_exit": "clear",
+                    "content_identity": {
+                        "result_sha256": digest("clarity-result"),
+                        "content_sha256": digest("clarity-content"),
+                        "context_sha256": digest("clarity-context"),
+                    },
+                    "review_target": {"state": "open"},
+                    "target_disposition": {
+                        "disposition_digest": disposition,
+                        "duplicate_facts_sha256": duplicate,
+                    },
+                },
+                "wording": {
+                    "skill_id": "guru-review-contract-wording",
+                    "typed_exit": "pass",
+                    "facts_sha256": digest("wording-facts"),
+                    "scope": {"scope_sha256": digest("wording-scope")},
+                    "scan": {"scan_sha256": digest("wording-scan")},
+                },
+                "readiness": {
+                    "skill_id": "guru-review-change-request",
+                    "typed_exit": "ready",
+                    "facts_sha256": digest("readiness-facts"),
+                    "target": {
+                        "kind": "existing_issue",
+                        "repo": "example/fixture",
+                        "issue_number": issue_number,
+                        "url": f"https://github.com/example/fixture/issues/{issue_number}",
+                        "updated_at": "2026-07-18T00:00:00Z",
+                        "title_sha256": hashlib.sha256(title.encode()).hexdigest(),
+                        "body_sha256": hashlib.sha256(body.encode()).hexdigest(),
+                        "draft_id": None,
+                        "source_request_sha256": None,
+                        "caller_locator": None,
+                        "request_id": None,
+                        "side_effect_free": False,
+                    },
+                },
+            }
+            target = payloads["readiness"]["target"]
+            target["identity_sha256"] = gtt.context_digest(
+                gtt.change_request_review_target_identity_projection(target)
+            )
+            target["content_sha256"] = gtt.context_digest({
+                "title_sha256": target["title_sha256"],
+                "body_sha256": target["body_sha256"],
+            })
+            projections = {
+                "context": {
+                    "status": "current", "payload_sha256": gtt.context_digest(payloads["context"]),
+                    "base_head": base_head, "current_state_sha256": digest("current-state"),
+                    "history_sha256": digest("history"), "duplicate_sha256": digest("duplicates"),
+                    "error_codes": [],
+                },
+                "clarity": {
+                    "status": "current", "payload_sha256": gtt.context_digest(payloads["clarity"]),
+                    "facts_sha256": digest("clarity-facts"),
+                    "disposition_sha256": disposition, "error_codes": [],
+                },
+                "wording": {
+                    "status": "current", "payload_sha256": gtt.context_digest(payloads["wording"]),
+                    "facts_sha256": payloads["wording"]["facts_sha256"], "error_codes": [],
+                },
+            }
+            linkage = gtt.change_request_review_linkage(target, projections)
+            conclusion = {
+                "close_issues": [issue_number],
+                "related_issues": [],
+                "followup_issues": [],
+            }
+            payloads["readiness"].update({
+                "prerequisites": projections,
+                "evidence_linkage": linkage,
+                "semantic_review": {
+                    "scope_conclusion": conclusion,
+                    "ai_review_gate": {
+                        "reviewed_linkage_sha256": linkage["linkage_sha256"],
+                        "scope_conclusion_sha256": gtt.context_digest(conclusion),
+                    },
+                },
+            })
+            return payloads
+
+        def write_plan(issue_number: int, token: str) -> tuple[Path, dict[str, object], dict[str, object]]:
+            payloads = fixture_payloads(issue_number, token)
+            input_root = source / ".fixture-inputs" / token
+            input_root.mkdir(parents=True)
+            prerequisites: dict[str, dict[str, object]] = {}
+            for key, payload in payloads.items():
+                relative = f".fixture-inputs/{token}/{key}.json"
+                path = source / relative
+                gtt.write_json(path, payload)
+                prerequisites[key] = gtt.task_workspace_prerequisite_projection(
+                    key,
+                    relative,
+                    payload,
+                    hashlib.sha256(path.read_bytes()).hexdigest(),
+                )
+
+            task_slug = f"{issue_number}-create-task-workspace-{token}"
+            task_dir = f".trellis/tasks/{datetime.now().strftime('%m-%d')}-{task_slug}"
+            title = str(payloads["readiness"]["target"]["title_sha256"])
+            body = str(payloads["readiness"]["target"]["body_sha256"])
+            target_url = f"https://github.com/example/fixture/issues/{issue_number}"
+            scope_item = {
+                "number": issue_number,
+                "url": target_url,
+                "title": f"Create task workspace {token.upper()}",
+                "reason": "Independently archived A/B merge fixture task.",
+            }
+            plan: dict[str, object] = {
+                "schema_version": "1.0",
+                "skill_id": "guru-create-task-workspace",
+                "generated_at": "2026-07-18T00:00:00Z",
+                "mode": "workflow",
+                "invocation": {
+                    "caller": "guru-review-change-request:ready",
+                    "target_kind": "existing_issue",
+                    "action_scope": "workspace_and_task_mutation",
+                    "resume_identity": f"fixture-{token}",
+                },
+                "prerequisites": prerequisites,
+                "target": {
+                    "kind": "existing_issue",
+                    "repo": "example/fixture",
+                    "issue_number": issue_number,
+                    "url": target_url,
+                    "state": "open",
+                    "updated_at": "2026-07-18T00:00:00Z",
+                    "title_sha256": title,
+                    "body_sha256": body,
+                    "draft": None,
+                    "disposition_sha256": payloads["clarity"]["target_disposition"]["disposition_digest"],
+                    "duplicate_decision_sha256": payloads["clarity"]["target_disposition"]["duplicate_facts_sha256"],
+                    "created_issue_binding_sha256": None,
+                    "created_issue_result": None,
+                },
+                "scope": {
+                    "primary": scope_item,
+                    "close": [scope_item],
+                    "related": [],
+                    "followup": [],
+                    "scope_sha256": "0" * 64,
+                },
+                "base": {
+                    "selected_base": "main",
+                    "remote": "origin",
+                    "base_ref": "main",
+                    "decision_head": base_head,
+                    "local_head": base_head,
+                    "remote_head": base_head,
+                    "post_sync_resolution_sha256": payloads["base"]["post_sync_resolution_sha256"],
+                    "sync_facts_sha256": payloads["base"]["facts_sha256"],
+                },
+                "naming": {
+                    "branch_name": f"feat/{task_slug}",
+                    "workspace_slug": task_slug,
+                    "task_slug": task_slug,
+                    "task_title": f"#{issue_number} Create task workspace {token.upper()}",
+                    "reason": "Names bind the issue number and task workspace action.",
+                    "branch_disposition": "create_new",
+                    "workspace_disposition": "create_new",
+                    "task_disposition": "create_new",
+                },
+                "assignee": {
+                    "login": "fixture-maintainer",
+                    "source": "explicit_input",
+                    "candidates": [],
+                    "resolution_evidence": "The fixture provides the exact reviewed assignee.",
+                },
+                "side_effects": {
+                    "operations": [
+                        "create_branch", "create_worktree", "create_task",
+                        "write_task_artifacts", "write_runtime_mappings",
+                    ],
+                    "task_artifacts": [
+                        f"{task_dir}/{name}" for name in gtt.TASK_WORKSPACE_ARTIFACT_NAMES
+                    ],
+                    "runtime_mappings": [
+                        f".trellis/.runtime/guru-team/workspaces/{task_slug}.json",
+                        f".trellis/.runtime/guru-team/tasks/{task_slug}.json",
+                    ],
+                    "command_argv": ["create-task-workspace", "--input", f".fixture-inputs/{token}/plan.json"],
+                    "stop_after": "created_workspace",
+                },
+                "confirmations": {
+                    "github_issue_mutation": {
+                        "status": "not_in_current_invocation", "source": None,
+                        "reviewed_plan_sha256": None, "evidence": None,
+                        "confirmation_sha256": None,
+                    },
+                    "workspace_and_task_mutation": {
+                        "status": "confirmed",
+                        "source": "explicit_user_confirmation",
+                        "reviewed_plan_sha256": "0" * 64,
+                        "evidence": "The exact fixture workspace and task mutation was confirmed.",
+                        "confirmation_sha256": "0" * 64,
+                    },
+                },
+                "ai_review_gate": {
+                    "status": "passed",
+                    "reviewer": "A/B production fixture reviewer",
+                    "reviewed_plan_sha256": "0" * 64,
+                    "summary": "The target, names, assignee, scope and isolated task metadata are complete.",
+                    "evidence": [
+                        "The invocation authorizes only one workspace and task.",
+                        "All tracked metadata is task-local.",
+                    ],
+                },
+                "freshness": {
+                    "captured_at": "2026-07-18T00:00:00Z",
+                    "reviewable_plan_sha256": "0" * 64,
+                    "plan_sha256": "0" * 64,
+                },
+            }
+            plan["scope"]["scope_sha256"] = gtt.task_workspace_scope_digest(plan["scope"])
+            reviewable = gtt.context_digest(gtt.task_workspace_reviewable_projection(plan))
+            plan["confirmations"]["workspace_and_task_mutation"]["reviewed_plan_sha256"] = reviewable
+            confirmation = plan["confirmations"]["workspace_and_task_mutation"]
+            confirmation["confirmation_sha256"] = gtt.task_workspace_confirmation_digest(confirmation)
+            plan["ai_review_gate"]["reviewed_plan_sha256"] = reviewable
+            plan["freshness"]["reviewable_plan_sha256"] = reviewable
+            plan["freshness"]["plan_sha256"] = gtt.task_workspace_plan_digest(plan)
+            plan_path = input_root / "plan.json"
+            gtt.write_json(plan_path, plan)
+            live_issue = {
+                "repo": "example/fixture",
+                "issue_number": issue_number,
+                "url": target_url,
+                "state": "open",
+                "updated_at": "2026-07-18T00:00:00Z",
+                "title_sha256": title,
+                "body_sha256": body,
+                "title": scope_item["title"],
+                "body": f"Reviewed fixture body {token.upper()}",
+                "assignees": [],
+            }
+            return plan_path, plan, live_issue
+
+        def build_and_archive(issue_number: int, token: str) -> tuple[str, set[str]]:
+            plan_path, plan, live_issue = write_plan(issue_number, token)
+            args = argparse.Namespace(root=str(source), input=str(plan_path))
+            result_path = plan_path.parent / "result.json"
+            real_prepare_workspace = gtt.prepare_workspace
+
+            def prepare_and_copy_inputs(*arguments: object, **kwargs: object) -> tuple[str, Path, bool]:
+                mode, workspace, ready = real_prepare_workspace(*arguments, **kwargs)
+                if ready and workspace.resolve() != source.resolve():
+                    shutil.copytree(
+                        plan_path.parent,
+                        workspace / ".fixture-inputs" / token,
+                        dirs_exist_ok=True,
+                    )
+                return mode, workspace, ready
+
+            with (
+                mock.patch.object(gtt, "task_workspace_prerequisite_errors", return_value=[]),
+                mock.patch.object(gtt, "task_workspace_live_issue", return_value=live_issue),
+                mock.patch.object(gtt, "task_workspace_refresh_base_before_mutation", return_value={}),
+            ):
+                self.assertEqual(gtt.cmd_record_task_workspace_plan(args), plan)
+                with mock.patch.object(gtt, "prepare_workspace", side_effect=prepare_and_copy_inputs):
+                    result = gtt.cmd_create_task_workspace(
+                        argparse.Namespace(
+                            root=str(source), input=str(plan_path), cancelled=False,
+                            refresh_review=False, reason=None,
+                        )
+                    )
+                gtt.write_json(result_path, result)
+                checked = gtt.cmd_check_task_workspace_result(
+                    argparse.Namespace(
+                        root=str(source), input=str(result_path), plan_input=str(plan_path)
+                    )
+                )
+            self.assertEqual(checked["checker"]["status"], "passed")
+            workspace = worktree_root / str(result["created_workspace"]["workspace_slug"])
+            task_dir = workspace / result["created_workspace"]["task_artifact_dir"]
+            shutil.rmtree(workspace / ".fixture-inputs")
+            task_context = gtt.read_json(task_dir / "task-start-context.json")
+            ledger = gtt.read_json(task_dir / "issue-scope-ledger.json")
+            archive_relative = (
+                f".trellis/tasks/archive/{datetime.now().strftime('%Y-%m')}/{task_dir.name}"
+            )
+            archived_paths = [
+                f"{archive_relative}/{path.name}"
+                for path in task_dir.iterdir()
+                if path.is_file()
+            ]
+            archived_paths.append(f"{archive_relative}/finish-summary.json")
+            index_payload = {
+                "schema_version": 1,
+                "index": {
+                    "problem": "并行任务归档时必须避免共享 Guru 元数据路径冲突。",
+                    "outcome": f"新增 task-local {token.upper()} 归档元数据并验证双向合并。",
+                    "changed_behavior": ["新增独立 task workspace 并归档全部 task-local 元数据。"],
+                    "affected_surfaces": [{
+                        "kind": "task-artifact",
+                        "name": f"Task workspace {token.upper()}",
+                        "paths": [f"{archive_relative}/task-start-context.json"],
+                        "change": "归档路径只绑定当前 task，不写共享索引。",
+                    }],
+                    "contract_changes": [],
+                    "search_terms": {
+                        "commands": ["create-task-workspace", "task.py archive"],
+                        "config_keys": ["workspace_mode"],
+                        "schema_fields": ["task-start-context.json:intake_summary"],
+                        "symbols": ["cmd_create_task_workspace"],
+                        "phrases": [
+                            "create-task-workspace 已完成 task-local A/B merge fixture",
+                            "task-start-context.json 归档路径保持独立",
+                            "workspace_mode 配置验证双向合并无冲突",
+                        ],
+                    },
+                },
+            }
+            summary = gtt.build_finish_summary(
+                workspace,
+                task_dir,
+                task_context,
+                ledger,
+                index_payload,
+                base_head,
+                changed_paths=archived_paths,
+                archive_dir_override=archive_relative,
+            )
+            gtt.write_json(task_dir / "finish-summary.json", summary)
+            subprocess.run(
+                ["python3", "./.trellis/scripts/task.py", "archive", task_dir.name, "--no-commit"],
+                cwd=workspace,
+                check=True,
+                text=True,
+                capture_output=True,
+            )
+            archived = workspace / archive_relative
+            gtt.validate_finish_summary(gtt.read_json(archived / "finish-summary.json"), task_dir=archived)
+            subprocess.run(["git", "add", "-A"], cwd=workspace, check=True)
+            subprocess.run(["git", "commit", "-qm", f"archive fixture {token}"], cwd=workspace, check=True)
+            branch = str(plan["naming"]["branch_name"])
+            changed = set(
+                subprocess.run(
+                    ["git", "diff", "--name-only", "main...HEAD"],
+                    cwd=workspace,
+                    check=True,
+                    text=True,
+                    capture_output=True,
+                ).stdout.splitlines()
+            )
+            self.assertTrue(changed)
+            self.assertTrue(all(path.startswith(".trellis/tasks/archive/") for path in changed))
+            self.assertFalse((workspace / ".trellis/.developer").exists())
+            self.assertFalse((workspace / ".trellis/workspace").exists())
+            return branch, changed
+
+        branch_a, changed_a = build_and_archive(201, "a")
+        branch_b, changed_b = build_and_archive(202, "b")
+        self.assertEqual(changed_a & changed_b, set())
+        forbidden = {
+            ".trellis/guru-team/handoff.json",
+            ".trellis/.developer",
+        }
+        for changed in (changed_a, changed_b):
+            self.assertTrue(forbidden.isdisjoint(changed))
+            self.assertFalse(any(path.startswith(".trellis/workspace/") for path in changed))
+            self.assertFalse(any(path.startswith(".trellis/.runtime/") for path in changed))
+
+        def merge_projection(name: str, branches: tuple[str, str]) -> set[str]:
+            integration = fixture_root / name
+            subprocess.run(
+                ["git", "worktree", "add", "-q", "-b", name, str(integration), "main"],
+                cwd=source,
+                check=True,
+            )
+            subprocess.run(["git", "merge", "--no-edit", branches[0]], cwd=integration, check=True)
+            second = subprocess.run(
+                ["git", "merge", "--no-edit", branches[1]],
+                cwd=integration,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(second.returncode, 0, second.stderr)
+            conflicts = subprocess.run(
+                ["git", "diff", "--name-only", "--diff-filter=U"],
+                cwd=integration,
+                check=True,
+                text=True,
+                capture_output=True,
+            ).stdout.splitlines()
+            self.assertEqual(conflicts, [])
+            return set(
+                subprocess.run(
+                    ["git", "ls-tree", "-r", "--name-only", "HEAD", ".trellis/tasks/archive"],
+                    cwd=integration,
+                    check=True,
+                    text=True,
+                    capture_output=True,
+                ).stdout.splitlines()
+            )
+
+        projection_ab = merge_projection("integration-ab", (branch_a, branch_b))
+        projection_ba = merge_projection("integration-ba", (branch_b, branch_a))
+        self.assertEqual(projection_ab, projection_ba)
+        self.assertEqual(projection_ab, changed_a | changed_b)
 
 
 class HumanMarkdownArtifactResolverTest(unittest.TestCase):
@@ -10257,20 +11355,26 @@ class IntakeScopeEvolutionContractTest(unittest.TestCase):
         for snippet in snippets:
             self.assertIn(snippet, content, f"{relpath} must mention {snippet!r}")
 
-    def test_workflow_requires_intake_clarity_and_scope_change_gates(self) -> None:
+    def test_workflow_requires_thin_skill_owned_intake_and_scope_change_gates(self) -> None:
         for relpath in self.WORKFLOW_FILES:
             with self.subTest(path=relpath):
                 self.assert_file_contains(
                     relpath,
                     [
-                        "intake clarity check",
-                        "trellis-brainstorm",
-                        "issue comment",
+                        "guru-sync-base",
+                        "guru-discover-change-context",
+                        "guru-clarify-requirements",
+                        "guru-review-contract-wording",
+                        "guru-review-change-request",
+                        "guru-create-task-workspace",
                         "Scope Change Gate",
-                        "GitHub-visible evidence",
                         "issue-scope-ledger.json",
                     ],
                 )
+                content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
+                guru_team_gate = content.split("## Guru Team Gate", 1)[1].split("\n## ", 1)[0]
+                self.assertNotIn("intake clarity check", guru_team_gate)
+                self.assertNotIn("trellis-brainstorm", guru_team_gate)
 
     def test_start_entrypoints_prompt_intake_clarity_check(self) -> None:
         for relpath in self.START_ENTRYPOINT_FILES:

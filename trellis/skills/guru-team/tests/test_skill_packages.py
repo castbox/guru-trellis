@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import shutil
 import tempfile
 import unittest
@@ -73,14 +74,14 @@ class SourceValidationTests(unittest.TestCase):
         )
         self.assertEqual(result["status"], "passed", result["errors"])
         self.assertEqual(result["facts"]["reserved_ids"], ["guru-create-work-commit"])
-        self.assertEqual(result["facts"]["planned_ids"], ["guru-create-task-workspace"])
+        self.assertEqual(result["facts"]["planned_ids"], [])
         self.assertEqual(
             result["facts"]["active_ids"],
-            ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"],
+            ["guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"],
         )
-        self.assertEqual(result["facts"]["invoke_markers"], 6)
-        self.assertEqual(result["facts"]["exit_markers"], 23)
-        self.assertEqual(result["facts"]["target_markers"], 12)
+        self.assertEqual(result["facts"]["invoke_markers"], 7)
+        self.assertEqual(result["facts"]["exit_markers"], 27)
+        self.assertEqual(result["facts"]["target_markers"], 15)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         scope_gate = workflow.index("Scope Change Gate:")
@@ -105,7 +106,7 @@ class SourceValidationTests(unittest.TestCase):
             'guru-skill-exit: {"skill":"guru-review-change-request","exit":"ready","consumer":{"kind":"skill","id":"guru-create-task-workspace"}}',
             workflow,
         )
-        self.assertIn("planned rather than active", workflow)
+        self.assertNotIn("planned rather than active", workflow)
         self.assertNotIn(
             "The `pass` router maps `change_request` to the full task-intake continuation",
             workflow,
@@ -177,10 +178,7 @@ class SourceValidationTests(unittest.TestCase):
             self.assertLess(route_offset, context_offset, path)
 
         flow = (REPO / "docs/requirements/guru-team-trellis-flow.md").read_text(encoding="utf-8")
-        self.assertIn(
-            'prepare-task.sh --json --expected-resolution-sha256 ... "<request>"',
-            flow,
-        )
+        self.assertIn("guru-review-change-request -> guru-create-task-workspace", flow)
         result_offset = flow.index(
             "Script-->>AI: base-sync result + post_sync_resolution_sha256 + facts_sha256"
         )
@@ -191,15 +189,10 @@ class SourceValidationTests(unittest.TestCase):
         self.assertLess(result_offset, validator_offset)
         self.assertNotIn("mandatory post-execution AI Review Gate", flow)
         self.assertIn(
-            "请求的 first hop 是 `guru-sync-base`；只有 `synced` 后才运行 "
-            "`check-env` + `prepare-task`",
+            "`guru-sync-base:synced` 后按 mandatory marker 进入完整六 Skill Intake chain",
             flow,
         )
-        self.assertIn(
-            "`skipped` 仅限 tool-free classification 已证明无需 repo/network action 的 "
-            "workflow route",
-            flow,
-        )
+        self.assertIn('SB -->|"skipped"| SkipRoute["original non-repo route"]', flow)
 
         workflow_contract = (REPO / ".trellis/spec/workflow/workflow-contract.md").read_text(
             encoding="utf-8"
@@ -264,6 +257,38 @@ class SourceValidationTests(unittest.TestCase):
             self.assertIn("self-contained/portable", text, path)
             self.assertIn("run-skill-command", text, path)
             self.assertIn("完整", text, path)
+
+    def test_public_readmes_match_canonical_extension_version(self) -> None:
+        manifest = json.loads(
+            (REPO / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
+        )
+        canonical_version = manifest["version"]
+        version_match = re.fullmatch(r"\d+\.\d+\.\d+-guru\.(\d+)", canonical_version)
+        self.assertIsNotNone(version_match, canonical_version)
+        canonical_revision = f".{version_match.group(1)}"
+        readmes = [
+            REPO / "README.md",
+            REPO / "trellis/workflows/guru-team/README.md",
+            REPO / "trellis/presets/guru-team/README.md",
+        ]
+        for path in readmes:
+            text = path.read_text(encoding="utf-8")
+            current_versions = set(
+                re.findall(r"(?<!v)\b\d+\.\d+\.\d+-guru\.\d+\b", text)
+            )
+            self.assertEqual(current_versions, {canonical_version}, path)
+            canonical_shorthand_revisions = set(
+                re.findall(
+                    r"\bcanonical\s+`?(\.\d+)`?",
+                    text,
+                    flags=re.IGNORECASE,
+                )
+            )
+            self.assertLessEqual(
+                canonical_shorthand_revisions,
+                {canonical_revision},
+                path,
+            )
 
     def test_representative_active_package_and_routes_pass(self) -> None:
         result = self.validate()
@@ -1250,7 +1275,7 @@ class ProductionDistributionTests(unittest.TestCase):
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["reserved_ids"], ["guru-create-work-commit"])
-            self.assertEqual(result["active_ids"], ["guru-clarify-requirements", "guru-create-task-commit", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"])
+            self.assertEqual(result["active_ids"], ["guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"])
             self.assertFalse((repo / ".agents/skills/guru-create-work-commit").exists())
             for root in (".agents", ".codex", ".cursor", ".claude"):
                 task_commit = repo / root / "skills/guru-create-task-commit"
@@ -1271,6 +1296,10 @@ class ProductionDistributionTests(unittest.TestCase):
                 self.assertTrue((wording / "schemas/contract-wording-review.schema.json").is_file())
                 self.assertTrue(os.access(wording / "scripts/record-contract-wording-review.sh", os.X_OK))
                 self.assertTrue(os.access(wording / "scripts/check-contract-wording-review.sh", os.X_OK))
+                workspace = repo / root / "skills/guru-create-task-workspace"
+                self.assertTrue((workspace / "SKILL.md").is_file())
+                self.assertTrue((workspace / "schemas/task-workspace-plan.schema.json").is_file())
+                self.assertTrue(os.access(workspace / "scripts/create-task-workspace.sh", os.X_OK))
 
             manifest = dst / "extension.json"
             manifest.write_text(json.dumps({

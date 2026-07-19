@@ -9,8 +9,13 @@
     },
     {
       "id": "guru-create-task-workspace",
-      "state": "planned",
-      "reason": "Issue #112 owns this future consumer; until its package becomes active, callers must stop fail closed."
+      "state": "active",
+      "name": "guru-create-task-workspace",
+      "package": "packages/guru-create-task-workspace",
+      "interface": "packages/guru-create-task-workspace/interface.json",
+      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "phase-0-task-workspace"
     },
     {
       "id": "guru-create-task-commit",

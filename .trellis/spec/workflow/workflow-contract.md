@@ -215,9 +215,8 @@ Gate.
 
 `guru-review-change-request` then owns the complete pre-task semantic readiness
 loop. The workflow owns only its mandatory marker and five consumers. `ready`
-names planned #112 Skill `guru-create-task-workspace`; until #112 promotes that
-id to an active, installed package, the missing-Skill gate stops and must not
-fall back to `guru-full-task-intake-chain`, `check-env`, or `prepare-task`.
+names active Skill `guru-create-task-workspace` and has no fallback to
+`guru-full-task-intake-chain`, `check-env`, or `prepare-task`.
 `clarify_requirements`, `review_wording`, and `refresh_context` completely
 re-enter their declared prerequisite Skill; `blocked` stops at
 `change-request-review-blocked`. The package's schema, linked prerequisite
@@ -269,23 +268,40 @@ again after `trellis update` plus preset reapply. It uses installed workflow,
 wrapper, companion, schemas, config, and official `task.py`; it does not copy
 canonical runtime assets into the fixture.
 
-Do not move Phase 0 side effects into `task.py create`: `prepare-task.sh` must
-resolve the source issue, base branch, branch name, executor-selected local worktree, and intake plan
-before `.trellis/tasks/` artifacts are written.
+Do not move Phase 0 side effects into bare `task.py create` or legacy
+`prepare-task`. Active `guru-create-task-workspace` is the sole mutation owner
+after readiness. It validates the same five prerequisite results in workflow
+and standalone modes, presents the exact plan, runs its AI Gate, obtains the
+invocation-specific confirmation, then calls the deterministic
+recorder/executor/checker runtime.
 
-`prepare-task.sh --json` is the default planner path. It may read GitHub issues,
-search duplicates, and compute source/proposed issue data. Planner output,
-including output with a confirmed `source_issue`, must be stdout-only and must
-not write `.trellis/tasks/<task-slug>/task-start-context.json`, create a GitHub issue, worktree,
-branch, or Trellis task. GitHub issue creation requires an explicit confirmed
-executor flag such as `--create-issue-confirmed` plus reviewed title/body input.
-`--create-worktree` and `--create-task` are executor flags for after AI intake
-plan review and user approval. `--create-worktree` may write only the gitignored
-local runtime workspace mapping; `--create-task` additionally writes tracked
-task-local `task-start-context.json` after task creation. Ordinary intake does
-not dirty the source checkout. Every invocation receives the expected
-resolution digest; each planner or executor guard must reproduce the same
-provenance before it may continue.
+The two confirmation scopes are mutually exclusive. A reviewed-draft call may
+create only the exact issue and must return `refresh_review` immediately after
+live binding validation; it cannot create branch/worktree/task in the same
+invocation. An open-issue call may create or reuse the exact workspace/task
+only after a separate `workspace_and_task_mutation` confirmation. Target or
+disposition changes return `refresh_review`; cancellation returns `cancelled`;
+both are zero-write paths.
+
+Reviewed-draft execution is retry-safe across a normal post-create reread
+failure. Before create, the executor searches open issues for exact reviewed
+title/body/labels created no earlier than the reviewed plan: 0 matches creates
+once, 1 match recovers and rereads, and more than 1 blocks. After complete
+Intake re-entry, a workflow-created open issue carries the complete prior
+checker-passed created-issue result and matches the fresh context canonical live
+existing-issue identity. That context uses `kind=issue` and null
+`issue_binding`; an arbitrary nullable digest is not sufficient authority.
+
+Before the first confirmed GitHub or workspace/task mutation, the active Skill
+reruns the shared selected-base resolver/sync core. The plan binds the initial
+checker-passed post-sync identity. A changed fresh post-sync identity returns
+`refresh_review` after any required safe base fast-forward and before business
+mutation; unchanged identity permits the reviewed mutation path to continue.
+
+`prepare-task.sh --json` remains query-only compatibility. Legacy
+`--create-issue-confirmed`, `--create-worktree`, and `--create-task` flags fail
+closed before any write and point to `guru-create-task-workspace` plus its
+mandatory prerequisite chain. No legacy mutation route may bypass readiness.
 
 When there is no active task and the current turn requires file changes,
 current-checkout direct edits are an explicit override, not a silent shortcut.

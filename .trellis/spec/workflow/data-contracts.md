@@ -375,7 +375,29 @@ Local-only reusable mappings live under the gitignored producer namespace:
 
 Runtime cache may contain absolute worktree paths and executor timestamps, but it is disposable, untracked, has no index/developer dimension, and must be reconstructable from the current checkout, task-start-context, `git worktree list`, or explicit parameters. Ordinary task commands read tracked shared config but do not rewrite it.
 
-Planner-only prepare remains stdout-only and writes neither task context nor runtime cache. `--create-worktree` writes/reuses the worktree and local runtime workspace mapping. `--create-task` creates the task, writes `task-start-context.json` and `issue-scope-ledger.json` in that task directory, then writes task/runtime mappings. Naming quality, base freshness, and developer identity remain deterministic executor preconditions and stdout evidence, not fields copied wholesale into the portable task context.
+Query-only `prepare-task` writes neither task context nor runtime cache. Active
+`guru-create-task-workspace` is the only creator. On successful workspace/task
+creation it writes exactly four tracked task-local Intake artifacts:
+`task-start-context.json`, `issue-scope-ledger.json`,
+`context-discovery.json`, and `issue-review.json`, then writes ignored
+source/target runtime mappings. The last two artifacts preserve the exact
+checker-passed canonical bytes.
+
+Task-start-context keeps schema id/version `1.0`. Its closed `intake_summary`
+adds optional `final_source_issue_binding` and `prerequisite_evidence`
+properties for backward compatibility; new workspace results require both,
+while archived old tasks need no backfill. The final binding records the live
+open issue identity/title/body/update facts plus target-disposition and optional
+created-draft binding digests. Prerequisite evidence records the schema, exit,
+facts/content/linkage digests for the five upstream Skills.
+
+Assignee remains a portable task/context audit field, never a path namespace.
+The workspace executor invokes official `common.task_store.cmd_create` in an
+isolated subprocess with the reviewed assignee and a call-scoped null developer
+accessor. The official creator fallback therefore produces
+`task.json.creator=task.json.assignee=<reviewed-login>`. Guru runtime does not
+read, copy, initialize, restore, or require `.trellis/.developer` or
+`.trellis/workspace/**`; existing official identity bytes remain untouched.
 
 Do not use `task-start-context.source_issue` as PR close scope. The task-level `issue-scope-ledger.json` owns `close_issues`, `related_issues`, and `followup_issues`.
 
@@ -673,6 +695,77 @@ then consume those full results in change-request record/check. It covers wrong
 exits, consumer and target/content mismatch, base/current/history/duplicate
 drift, and proposed-draft/standalone source-authority mismatch; handwritten
 portable projections alone are not sufficient evidence.
+
+## Task Workspace Plan And Result
+
+Schema `guru-task-workspace-plan-1.0` is a closed stdout-only plan produced by
+`record-task-workspace-plan`. It binds skill/mode/invocation identity; the five
+checker-passed prerequisite results and their digests; final issue or reviewed
+draft authority; readiness scope projection; selected base and three-way HEAD
+facts; semantic branch/workspace/task naming; one resolved assignee and source;
+exact issue/worktree/task/artifact/runtime operations; structured command argv;
+the two mutually exclusive confirmation scopes; AI Review Gate evidence; and
+the canonical plan digest. It contains no absolute path, runtime payload,
+secret, raw private record, or shell command string.
+
+The `base` projection includes the checker-passed
+`post_sync_resolution_sha256` in addition to selected base, refs, HEADs, and
+the original sync facts digest. This post-sync identity is the comparison
+anchor for the shared resolver/sync rerun immediately before the first
+confirmed mutation.
+
+Assignee source is exactly `explicit_input`, `single_issue_assignee`,
+`current_github_login`, `user_selected_from_candidates`, or
+`user_supplied_after_unresolved`. Candidate order is explicit input, exactly
+one issue assignee, zero issue assignees to current GitHub login, then AI/user
+choice for multiple or unresolved candidates. An unresolved assignee cannot
+authorize workspace/task mutation.
+
+Confirmation scope `github_issue_mutation` is legal only for a reviewed draft;
+`workspace_and_task_mutation` is fixed to not-current. Confirmation scope
+`workspace_and_task_mutation` is legal only for a live open issue; GitHub issue
+mutation is fixed to not-current. A created issue binding covers normalized
+repo, positive number, canonical URL, `state=open`, title/body SHA-256,
+`updated_at`, reviewed draft id/digest, creation confirmation digest, and its
+canonical facts digest.
+
+Target provenance uses two coordinated nullable fields:
+`created_issue_binding_sha256` and `created_issue_result`. A normal existing
+issue and a reviewed draft before create require both null. An existing issue
+produced by an earlier draft invocation requires both non-null: the binding SHA
+equals the embedded created issue facts digest, and `created_issue_result` is
+the complete `guru-task-workspace-result-1.0` `created_issue` variant with
+passed executor/checker stages, valid result and binding facts digests, and the
+fixed `refresh_review` consumer. Its current issue facts match the plan and its
+complete Intake rerun exposes the canonical live existing issue with
+`kind=issue`, canonical URL identity, open state, matching update time, body and
+facts digests, and null `issue_binding`. Missing or partial provenance is
+invalid.
+
+Schema `guru-task-workspace-result-1.0` is a closed stdout-only union:
+
+- `created_issue` binds the exact plan and live created issue and can only
+  return `refresh_review`; branch/worktree/task/artifact/runtime operations are
+  absent;
+- `created_workspace` binds branch/worktree/task identity, exactly the four
+  tracked artifact paths/digests/sizes/modes, ignored runtime mapping
+  projection, trackability, and workspace-boundary facts and can only return
+  `created`;
+- `no_side_effect` binds a before/after zero-write snapshot and returns
+  `refresh_review`, `cancelled`, or `blocked` according to the AI-authored
+  route.
+
+The result is never a fifth tracked Intake artifact. Ordinary re-entry may
+reuse only exact branch/worktree/task/artifact identity. A mismatch in issue,
+base, naming, locator, task state, or bytes is `blocked`; runtime does not
+overwrite, delete, rename, or silently adopt a conflicting object.
+
+Before a draft create, exact recovery candidate facts are title, body, the
+order-independent exact label set, `state=open`, and `createdAt` not earlier
+than the reviewed plan capture. Zero candidates authorize one create; one is
+recovered and live reread; multiple candidates block. A recovered issue emits
+the same checker-valid `created_issue` result and `refresh_review` route as a
+newly created issue.
 
 ## Phase 2 Check Artifact
 

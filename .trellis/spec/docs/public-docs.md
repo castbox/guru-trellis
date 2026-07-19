@@ -93,6 +93,55 @@ from deterministic candidate/executor checks, and document fresh-sequence
 re-entry after finding fixes. Platform entry docs should reference the stable
 skill and typed exits instead of repeating its step-local contract.
 
+Public Intake docs must name active semantic `guru-create-task-workspace` as
+the sole consumer of `guru-review-change-request:ready` and the sole
+issue/branch/worktree/task mutation owner. All three README files list its
+schemas `guru-task-workspace-plan-1.0` and
+`guru-task-workspace-result-1.0`, runtime commands
+`record-task-workspace-plan`, `create-task-workspace`, and
+`check-task-workspace-result`, and exits `created`, `refresh_review`,
+`cancelled`, and `blocked` with unique consumers.
+
+Docs distinguish the two confirmations: a reviewed draft may create only the
+exact issue and immediately returns `refresh_review`; the later open-issue
+invocation obtains a fresh workspace/task confirmation. They state the fixed
+assignee order, the four tracked task-local Intake artifacts, ignored
+`.trellis/.runtime/guru-team/**` mappings, exact object reuse/blocking, and the
+A/B two-order local merge fixture. `prepare-task` is query-only and its legacy
+mutation flags fail closed with migration guidance.
+
+Docs also state that the reviewed-draft GitHub adapter forwards the reviewed
+title/body bytes without trimming or appending a newline before the live reread
+and created-issue binding check.
+
+They also document retry recovery: before create, exact open-issue
+title/body/labels plus creation-at-or-after-plan facts yield a 0/1/>1 decision;
+one match is recovered, zero creates once, and multiple block. Complete Intake
+re-entry for a workflow-created issue carries the full checker-passed
+created-issue result and validates it against the fresh context canonical live
+existing-issue identity. That context uses `kind=issue` and null
+`issue_binding`; a bare binding digest is not accepted.
+
+Public docs state that the plan binds `post_sync_resolution_sha256` and the
+executor reruns the shared resolver/sync core once before the first confirmed
+mutation. A fetched remote advance safely refreshes the base but routes to
+`refresh_review` before issue/workspace/task mutation; unchanged identity
+continues normally.
+
+Public docs state that the workspace executor calls official
+`common.task_store.cmd_create` through an isolated adapter, passes the reviewed
+assignee explicitly, and disables the developer accessor only for that handler
+invocation. They must state that `task.json.creator` and `task.json.assignee`
+both equal the reviewed login and that an existing official identity file keeps
+its exact bytes.
+
+Guru install commands and prompts do not require a developer name,
+`TRELLIS_USER`, `-u`, or `--user`. Public docs accurately state that official
+Trellis may independently create/use `.trellis/.developer` and
+`.trellis/workspace/**`, while Guru preset apply/update/reapply and the task
+workspace executor neither depend on nor create/restore those paths and never
+delete existing official data.
+
 Public docs that describe Phase 0 must name `guru-sync-base` as the active
 selected-base closed-loop owner, list stable exits `synced` / `skipped` /
 `blocked`, and state that the package uses the deterministic schema 1.2 profile

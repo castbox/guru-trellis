@@ -1,0 +1,8 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查需求、Docs SSOT、实现、schema、测试、安装、update与A/B merge evidence完整性。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"检查 semantic五阶段、mode parity、package identity、runtime commands与四个 typed exits。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"检查 thin Intake chain、mandatory invocation、target-change refresh与唯一 consumer。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查 plan/result、binding、task-start linkage、artifact portability与ignored runtime。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"检查 AI judgment与recorder/executor/checker边界，以及legacy prepare不存在bypass。"}
+{"file":".trellis/spec/preset/installer.md","reason":"检查 no-name/no-developer、canonical/installed/platform inventory、dogfood与update/reapply。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"检查无upstream overlay扩张、无unclassified path与legacy baseline drift。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"检查README安装命令、official identity说明、Skill API与风险披露一致。"}

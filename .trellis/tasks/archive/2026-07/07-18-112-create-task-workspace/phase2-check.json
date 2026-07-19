@@ -1,0 +1,343 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-18T20:20:59Z",
+  "task_dir": ".trellis/tasks/07-18-112-create-task-workspace",
+  "base_branch": "main",
+  "head": "ed7c0786cc85f3bfd0378cd7433b37a5703c6425",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/guru-create-task-workspace/SKILL.md",
+    ".agents/skills/guru-create-task-workspace/examples/task-workspace-plan.json",
+    ".agents/skills/guru-create-task-workspace/interface.json",
+    ".agents/skills/guru-create-task-workspace/references/contract.md",
+    ".agents/skills/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+    ".agents/skills/guru-create-task-workspace/tests/test_contract.py",
+    ".claude/skills/guru-create-task-workspace/SKILL.md",
+    ".claude/skills/guru-create-task-workspace/examples/task-workspace-plan.json",
+    ".claude/skills/guru-create-task-workspace/interface.json",
+    ".claude/skills/guru-create-task-workspace/references/contract.md",
+    ".claude/skills/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+    ".claude/skills/guru-create-task-workspace/tests/test_contract.py",
+    ".codex/skills/guru-create-task-workspace/SKILL.md",
+    ".codex/skills/guru-create-task-workspace/examples/task-workspace-plan.json",
+    ".codex/skills/guru-create-task-workspace/interface.json",
+    ".codex/skills/guru-create-task-workspace/references/contract.md",
+    ".codex/skills/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+    ".codex/skills/guru-create-task-workspace/tests/test_contract.py",
+    ".cursor/skills/guru-create-task-workspace/SKILL.md",
+    ".cursor/skills/guru-create-task-workspace/examples/task-workspace-plan.json",
+    ".cursor/skills/guru-create-task-workspace/interface.json",
+    ".cursor/skills/guru-create-task-workspace/references/contract.md",
+    ".cursor/skills/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+    ".cursor/skills/guru-create-task-workspace/tests/test_contract.py",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md",
+    ".trellis/guru-team/skills/packages/guru-create-task-workspace/examples/task-workspace-plan.json",
+    ".trellis/guru-team/skills/packages/guru-create-task-workspace/interface.json",
+    ".trellis/guru-team/skills/packages/guru-create-task-workspace/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+    ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
+    ".trellis/spec/docs/public-docs.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/001.json",
+    ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/002.json",
+    ".trellis/tasks/07-18-112-create-task-workspace/task-commit-plans/003.json",
+    "README.md",
+    "docs/requirements/README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
+    "trellis/skills/guru-team/packages/guru-create-task-workspace/SKILL.md",
+    "trellis/skills/guru-team/packages/guru-create-task-workspace/examples/task-workspace-plan.json",
+    "trellis/skills/guru-team/packages/guru-create-task-workspace/interface.json",
+    "trellis/skills/guru-team/packages/guru-create-task-workspace/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-plan.schema.json",
+    "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+  ],
+  "checker": "check_112",
+  "check_summary": "独立 trellis-check 已从最新 bytes 完整复核 Issue #112 的批准需求、设计、实现、8 份 curated specs、Round 1-4 finding lifecycle、完整 origin/main...HEAD 分支与当前 working diff；检查中发现并修复 fresh Intake existing-issue context 与 created provenance carryover 不可达的 P1，补全 production full-chain 正负回归后 fresh 644 tests、clean throwaway、source/installed/ownership/dogfood/parity/static checks 全部通过，当前 P0-P3 findings 均为 0。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/prd.md",
+      "sha256": "65a3e2d7bf726405d85ef97a37b60d14ee8be641ff828608a9941ebd2da196f2",
+      "size_bytes": 15474,
+      "modified_at": "2026-07-18T11:31:09.637970+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/design.md",
+      "sha256": "e5620a69fcb7c25a9d2592ff795046ee884c0d94a6998a41a17d29a8db9b18b5",
+      "size_bytes": 20740,
+      "modified_at": "2026-07-18T11:31:09.638073+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/implement.md",
+      "sha256": "2f06ee299c47a72778e0f3597b1fe3d4b1afbc03c9358b88de72d93ed0c48a2a",
+      "size_bytes": 16609,
+      "modified_at": "2026-07-18T11:31:09.638155+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/planning-approval.json",
+      "sha256": "786ce6ebce96a4b0f3d0dc6d6088d5b9148985da21d78d9337e2fa50f97705cf",
+      "size_bytes": 5311,
+      "modified_at": "2026-07-18T11:37:03.630425+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/implement.jsonl",
+      "sha256": "76897f23fc54f915b189dff142b94a6b6f167625b26b0f8fb6cab850af1faf61",
+      "size_bytes": 1584,
+      "modified_at": "2026-07-18T11:31:09.638667+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/check.jsonl",
+      "sha256": "37a2c18418dfb65bed3eeb6d3626e52ef8e43de0e20fe02a38b2b44eaac3eb40",
+      "size_bytes": 1263,
+      "modified_at": "2026-07-18T11:31:09.639096+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/issue-scope-ledger.json",
+      "sha256": "c66c5d6f9a05c18c08160436545e81f5cbdfec1185eb5e716dea574421882dea",
+      "size_bytes": 2734,
+      "modified_at": "2026-07-18T11:09:08.399438+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/agent-assignment.json",
+      "sha256": "e948f51b7c7fa73cf52aa5687b322f6d5cf56476fd9c14dc51cf5c9ca409b7ea",
+      "size_bytes": 169195,
+      "modified_at": "2026-07-18T20:18:52.468601+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/review-gate.json",
+      "sha256": "32f7342669c88d6635b2c5e5515aed38b1fc274308afb3af513cb046b457452a",
+      "size_bytes": 39084,
+      "modified_at": "2026-07-18T18:44:36.928187+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/review.md",
+      "sha256": "7ebbe27028edb51dd7e5fce81ab14f5bb468d480ad1a3b00dba664914f598a00",
+      "size_bytes": 6617,
+      "modified_at": "2026-07-18T18:44:16.197497+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/reviews/001-final.md",
+      "sha256": "53ced6aa3da7dee072422c5b8b7e4e1bc9215a798caa21cfbbb76d7757748ba4",
+      "size_bytes": 10046,
+      "modified_at": "2026-07-18T16:36:03.620723+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/reviews/002-closure.md",
+      "sha256": "dab4b005791f64c4be757b344edc9361cf3683b3ac8b0e146cbc857fe055613d",
+      "size_bytes": 9911,
+      "modified_at": "2026-07-18T17:52:11.046383+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/reviews/003-closure.md",
+      "sha256": "3e3d70559f70080af34b7a4b6d01e92394ffee12cbcd85fe0bd6d3d84e674422",
+      "size_bytes": 9454,
+      "modified_at": "2026-07-18T18:22:55.183086+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-18-112-create-task-workspace/reviews/004-final.md",
+      "sha256": "caf8da838c30412ab88ac6ac9d68767ba3b29ca77c22937517048d35407d2103",
+      "size_bytes": 13036,
+      "modified_at": "2026-07-18T18:42:22.657496+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "c4bf13499d2c8f27f88fd105bbe1a4c06e7d6e5babd97ab0d9b5758bc1d87d37",
+      "size_bytes": 21665,
+      "modified_at": "2026-07-18T20:05:44.916754+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "7124ff1ff6ab721d3ff4b694b9bf9bc116f4672a01d8cc4faf3e54956876be03",
+      "size_bytes": 37375,
+      "modified_at": "2026-07-18T20:05:44.916165+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "3dd59cc34568a716439c3947044a63aa98f4bb419362008d0eab7f81c1a8af99",
+      "size_bytes": 56182,
+      "modified_at": "2026-07-18T20:05:44.915680+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "e785e8e6f48cd1ee01535b102fecf2e713278d2114745feea9aba48e7eb7a00e",
+      "size_bytes": 93712,
+      "modified_at": "2026-07-18T20:03:18.844370+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "07f6d240566db60f62ab2018ad33ca20155bc4e52f7f96f8f6037a97889ddd0e",
+      "size_bytes": 70293,
+      "modified_at": "2026-07-18T20:05:44.915943+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/installer.md",
+      "sha256": "0f067409b036f90d250c14386a94d5315b65243cf78e9f8c4ab9998ea8e133fb",
+      "size_bytes": 22717,
+      "modified_at": "2026-07-18T17:01:59.578527+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/upstream-ownership.md",
+      "sha256": "f28cd17f810c35062f132354af50af787cf9cfa90c37c00461081ef93ae43cad",
+      "size_bytes": 9630,
+      "modified_at": "2026-07-18T11:54:25.411855+00:00"
+    },
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "5e07bad7b39f058cc3babf02eef8b06ae3b1a650fce56d7e6a323f58265bc731",
+      "size_bytes": 14202,
+      "modified_at": "2026-07-18T20:05:44.916377+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "五文件 Python unittest suite",
+      "result": "fresh final run: Ran 644 tests in 193.334s, OK"
+    },
+    {
+      "command": "created issue recovery production full-chain regression",
+      "result": "0=create、1=recover+reread、>1 fail closed；remote create 成功后首次 reread 失败的同 plan 重试只保留一个 Issue"
+    },
+    {
+      "command": "fresh Intake created provenance full-chain regression",
+      "result": "fresh existing-issue context、prior checker-passed result/binding、draft/confirmation digest 正向通过；stale facts 与 ordinary existing null provenance 负例通过"
+    },
+    {
+      "command": "mutation-time remote advance regression",
+      "result": "真实 bare remote 前进且 local tracking stale 时执行 shared fetch/sync，identity 变化返回 refresh_review 且无 issue/branch/worktree/task/artifact/runtime mapping 写入"
+    },
+    {
+      "command": "clean throwaway install/update/reapply",
+      "result": "exit 0；marketplace discovery/preview/switch、本地未发布 workflow 样本、workspace create/check、no-developer、existing identity preserved、update/reapply、sidecar=0"
+    },
+    {
+      "command": "source/installed guru-create-task-workspace validators",
+      "result": "通过；installed 303 managed files，sidecar/conflict/removal=0"
+    },
+    {
+      "command": "upstream ownership and dogfood drift",
+      "result": "通过；43 个 frozen overlays 无漂移，dogfood overlay drift=0"
+    },
+    {
+      "command": "canonical and installed platform parity",
+      "result": "canonical runtime 与 .trellis/.agents/.codex/.cursor/.claude package bytes 一致"
+    },
+    {
+      "command": "py_compile、bash -n、JSON/JSONL parse、task validation、git diff --check",
+      "result": "全部通过；implement=9、check=8"
+    },
+    {
+      "command": "workspace boundary and planning approval",
+      "result": "通过；source checkout clean，expected/actual task worktree 一致"
+    },
+    {
+      "command": "A/B merge fixture",
+      "result": "A->B 与 B->A 均通过，无 shared tracked metadata conflict"
+    },
+    {
+      "command": "deployment/security review",
+      "result": "无 CI/CD、container、K8s/Helm、database migration 或 Makefile 变化；无 secret/credential 泄露"
+    },
+    {
+      "command": "exact remote branch marketplace ref",
+      "result": "当前分支未 push，按 trellis-continue 边界留待 finish/publish gate；不阻塞本地 Phase 2"
+    }
+  ],
+  "findings": [
+    {
+      "priority": "P1",
+      "status": "resolved",
+      "message": "公开 task-workspace result 暴露本机绝对 workspace_path，违反可移植 artifact 合同；已删除该字段并改为 checker 基于 root、config 与 workspace_slug 推导。",
+      "path": "trellis/skills/guru-team/packages/guru-create-task-workspace/schemas/task-workspace-result.schema.json"
+    },
+    {
+      "priority": "P1",
+      "status": "resolved",
+      "message": "cancelled、blocked 与 Gate reroute 缺少正常可达的诚实 zero-write 路径；已补 confirmation/Gate 状态矩阵、AI route 保留、result consistency 与回归测试。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    },
+    {
+      "priority": "P1",
+      "status": "resolved",
+      "message": "reviewed-draft plan 未完整绑定 readiness target identity、prerequisite current bytes、Gate、base 与 scope digest；已加入确定性 linkage 校验和回归测试。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    },
+    {
+      "priority": "P1",
+      "status": "resolved",
+      "message": "ssot_first 未完全收敛，workflow、companion spec、requirements 与 README 仍保留 prepare-task mutation 旧语义；已统一 guru-create-task-workspace 为唯一 mutation owner。",
+      "path": ".trellis/spec/workflow/companion-scripts.md"
+    },
+    {
+      "priority": "P2",
+      "status": "resolved",
+      "message": "canonical workflow 与 dogfood workflow 在 optional developer identity 文案上字节漂移；已精确同步并由 fresh full suite 与 dogfood validator 复验。",
+      "path": ".trellis/workflow.md"
+    },
+    {
+      "priority": "P2",
+      "status": "resolved",
+      "message": "installed throwaway helper 仍使用旧 placeholder readiness linkage；已从真实 fixture payload 重算 target、prerequisite、Gate、base 与 scope linkage，production runtime 保持 fail closed。",
+      "path": "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py"
+    },
+    {
+      "priority": "P2",
+      "status": "resolved",
+      "message": "existing .trellis/.developer 会被 official task create 路径读取并污染 task.json.creator；已用隔离 adapter 禁用该次 identity accessor，绑定 creator 与 assignee，并验证原 identity bytes 保持不变。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    },
+    {
+      "priority": "P2",
+      "status": "resolved",
+      "message": "extension manifest 已升级但三份公开 README 仍声明旧版本；已统一 root、workflow、preset README、manifest 与 durable specs。",
+      "path": "README.md"
+    },
+    {
+      "priority": "P2",
+      "status": "resolved",
+      "message": "public README version regression 最初漏报 canonical .N 简写；已从 manifest 解析 revision 并校验简写，同时保留 stable .2 与 v-tag 合法文案。",
+      "path": "trellis/skills/guru-team/tests/test_skill_packages.py"
+    },
+    {
+      "priority": "P1",
+      "status": "resolved",
+      "message": "远端 Issue 创建成功但 immediate live reread 普通失败后，同一 confirmed reviewed draft 重试会再次创建等价 Issue；已增加 exact live recovery 0/1/>1、checker-passed created binding provenance 与 production-path 回归。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    },
+    {
+      "priority": "P2",
+      "status": "resolved",
+      "message": "workspace mutation boundary 只校验旧 base result 与本地 refs，未重新 fetch shared base；已在首个业务副作用前执行 shared resolver/sync/freshness，identity 变化时 refresh_review 且零业务写入。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    },
+    {
+      "priority": "P1",
+      "status": "resolved",
+      "message": "fresh Intake existing-issue context 与 created-issue provenance checker 强制的 draft context 互斥，使 checker-passed carryover 在完整 Intake 重跑中不可达；已改为验证 fresh issue context 加 prior checked result/binding，并补完整 producer 到 workspace 正负回归。",
+      "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    }
+  ],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

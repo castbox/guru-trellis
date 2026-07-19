@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0",
+  "source_issue": {
+    "number": 112,
+    "url": "https://github.com/castbox/guru-trellis/issues/112",
+    "title": "拆分 #98：实现 guru-create-task-workspace 并集成变更 Intake Skills",
+    "created_by_workflow": false
+  },
+  "source_repo": {
+    "repo": "castbox/guru-trellis",
+    "url": "https://github.com/castbox/guru-trellis/issues/112"
+  },
+  "task_slug": "112-create-task-workspace",
+  "task_title": "#112 实现 guru-create-task-workspace 并集成变更 Intake Skills",
+  "task_artifact_dir": ".trellis/tasks/07-18-112-create-task-workspace",
+  "branch_name": "feat/112-create-task-workspace",
+  "base_branch": "main",
+  "base_ref": "main",
+  "base_head_sha": "7036dc4ca92a376288564345c98f6c55d8dfe6b8",
+  "remote_head_sha": "7036dc4ca92a376288564345c98f6c55d8dfe6b8",
+  "workspace_slug": "112-create-task-workspace",
+  "task_workspace_id": "112-create-task-workspace",
+  "assignee": "wesleywu",
+  "actor": {
+    "login": "wesleywu"
+  },
+  "issue_scope_ledger_seed": {
+    "schema_version": "1.0",
+    "primary_issue": {
+      "number": 112,
+      "url": "https://github.com/castbox/guru-trellis/issues/112",
+      "title": "拆分 #98：实现 guru-create-task-workspace 并集成变更 Intake Skills",
+      "reason": "当前 task 的 primary issue；combined acceptance 全部通过后关闭。",
+      "acceptance_evidence": []
+    },
+    "close_issues": [
+      {
+        "number": 112,
+        "url": "https://github.com/castbox/guru-trellis/issues/112",
+        "title": "拆分 #98：实现 guru-create-task-workspace 并集成变更 Intake Skills",
+        "reason": "当前 task 的 primary issue；combined acceptance 全部通过后关闭。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 99,
+        "url": "https://github.com/castbox/guru-trellis/issues/99",
+        "title": "拆分 #53：取消 Guru Team 安装与任务创建对 Trellis developer identity 的依赖",
+        "reason": "#112 必须完整承接 no-developer-identity task creation 与安装验收后关闭。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 54,
+        "url": "https://github.com/castbox/guru-trellis/issues/54",
+        "title": "README 里的安装 prompt 用户名的部分 需要改进",
+        "reason": "#112 clean throwaway 必须覆盖原 developer-name 安装场景后关闭。",
+        "acceptance_evidence": []
+      }
+    ],
+    "related_issues": [
+      {
+        "number": 98,
+        "url": "https://github.com/castbox/guru-trellis/issues/98",
+        "title": "拆分 #53：变更 Intake Skills 跨 Skill 编排与并行安全集成 umbrella",
+        "reason": "Umbrella 保持 open，由 #132 完成最终 Stage 0 closure。",
+        "acceptance_evidence": []
+      },
+      {
+        "number": 53,
+        "url": "https://github.com/castbox/guru-trellis/issues/53",
+        "title": "多个并行的 Trellis 任务有没有可能不要让他们产出冲突的结果",
+        "reason": "原始并行 metadata 冲突问题保持 open，由 #132 完成最终 closure。",
+        "acceptance_evidence": []
+      }
+    ],
+    "followup_issues": [
+      {
+        "number": 132,
+        "url": "https://github.com/castbox/guru-trellis/issues/132",
+        "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+        "reason": "后续移除 legacy upstream entry overlays 并关闭 #98/#53。",
+        "acceptance_evidence": []
+      }
+    ],
+    "rules": [
+      "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+      "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+      "followup_issues 表示后续任务，不能自动关闭。",
+      "#98/#53 必须保持 open；#132 验证本 task evidence 仍 current 后才拥有其关闭语义。"
+    ]
+  },
+  "intake_summary": {
+    "duplicate_decision": {
+      "search_performed": true,
+      "selected_issue": 112
+    },
+    "naming_quality": {
+      "status": "passed",
+      "summary": "Issue number、semantic action 和 task-workspace object 均在 branch/workspace/task names 中明确。"
+    },
+    "confirmation": {
+      "source_issue_confirmed": true,
+      "created_by_workflow": false
+    }
+  }
+}

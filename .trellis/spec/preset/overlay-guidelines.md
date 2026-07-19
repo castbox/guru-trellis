@@ -82,6 +82,14 @@ Continue entries must:
   `new_task` to workflow target `guru-full-task-intake-chain`, and `blocked` to
   `requirements-clarification-blocked`; platform entry text must load the
   stable id and must not copy its question/action/confirmation/Gate internals;
+- preserve the thin readiness-to-workspace transition:
+  `guru-review-change-request:ready` mandatory invokes active
+  `guru-create-task-workspace`; its `created` exit enters Phase 1,
+  `refresh_review` returns to `guru-sync-base`, and `cancelled` / `blocked`
+  stop fail closed. Platform entries must not copy target, naming, assignee,
+  confirmation, recorder, executor, schema, or recovery internals. #112 adds
+  only Guru-owned package/runtime/discovery assets and does not authorize any
+  physical change below the frozen overlay tree;
 - keep active-task Scope Change mandatory invocation and caller-aware resume
   routing in canonical workflow/package sources. Do not patch the frozen
   upstream-owned continue overlay to implement those semantics;
