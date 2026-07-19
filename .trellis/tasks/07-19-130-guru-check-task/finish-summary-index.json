@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Guru Team Phase 2 缺少独立 semantic closed-loop Skill，adequacy、scope、finding、Docs SSOT 与 phase2-check 判断责任分散，证据闭包和派生摘要无法统一审计。",
+    "outcome": "已建立 guru-check-task 作为 Phase 2 唯一 semantic owner，以统一 entry、scope-before-severity、完整 adequacy、finding rerun、Docs SSOT review、四出口和严格 recorder/checker 闭合实现与路由。",
+    "changed_behavior": [
+      "Phase 2 现在按 stable Skill id mandatory invoke guru-check-task，并只消费四个 typed exit。",
+      "Workflow 与 standalone 统一绑定 planning、ledger、repository、agent recovery 和 Docs SSOT evidence。",
+      "Scope qualification 先于 severity，只有 current-scope candidate 可生成 P0-P3 finding。",
+      "关键 evidence 与 adequacy refs 非空并闭合七类 current-round source。",
+      "Checker 从源字段重算 semantic、Gate、finding count 与 full-round 摘要。",
+      "合法 review metadata tail 不再误报 stale，implementation/check/recovery drift 仍 fail closed。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "guru-check-task semantic package",
+        "paths": [],
+        "change": "定义 Phase 2 entry、scope-first adequacy、finding rerun、Docs SSOT Gate 与四出口合同。"
+      },
+      {
+        "kind": "script",
+        "name": "Phase 2 recorder and checker",
+        "paths": [],
+        "change": "记录 AI semantic result，并校验 artifact、source closure、派生摘要、freshness 与 agent recovery。"
+      },
+      {
+        "kind": "schema",
+        "name": "phase2-check schema 2.0",
+        "paths": [],
+        "change": "固化 planning、handoff、docs、repository、execution、scope、adequacy、Gate 与 route 数据合同。"
+      },
+      {
+        "kind": "preset",
+        "name": "Guru Team distribution",
+        "paths": [],
+        "change": "同步 workflow route、runtime、manifest、平台副本、tests 和 clean install/update/reapply。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Phase 2 semantic ownership",
+        "before": "Adequacy、scope、finding、Docs SSOT 与 pass 判断分散。",
+        "after": "guru-check-task 独占 semantic loop；workflow 只调用、消费 typed exit 并 fail closed。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Evidence closure",
+        "before": "关键 evidence 或 adequacy refs 可为空且缺少 current-round source 闭包。",
+        "after": "关键 collections 非空，adequacy refs 闭合全部 source，scope candidate 提供 trigger refs。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Scope before severity",
+        "before": "Scope disposition 与 finding severity 缺少统一顺序。",
+        "after": "先分类 scope，再仅对 current scope 分配 P0-P3。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Derived digest validation",
+        "before": "Checker 可接受错误的 semantic 子摘要、Gate binding 或 full-round digest。",
+        "after": "Checker 从源字段重算 execution、scope、adequacy、Gate、finding count 与 full-round identity。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Post-commit freshness",
+        "before": "合法 Branch Review metadata tail 会误报 stale。",
+        "after": "Stable projection 接受合法 metadata tail，同时拒绝 agent drift 与 uncovered commit。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Script boundary",
+        "before": "Worker flags 或脚本成功可能被误作 semantic pass。",
+        "after": "AI 先判断 scope、adequacy、finding、Docs SSOT 与 route，脚本随后记录确定性事实。",
+        "source_artifact": ""
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "record-phase2-check.sh",
+        "check-phase2-check.sh",
+        "verify-throwaway-install.sh"
+      ],
+      "config_keys": [
+        "guru-check-task",
+        "judgment_mode=semantic"
+      ],
+      "schema_fields": [
+        "typed_exit",
+        "adequacy_dimensions",
+        "full_round_sha256"
+      ],
+      "symbols": [
+        "phase2_semantic_errors",
+        "validate_phase2_check"
+      ],
+      "phrases": [
+        "guru-check-task 已成为 Phase 2 semantic owner",
+        "record-phase2-check.sh 已写入四出口结果",
+        "空 evidence 与错误 full_round_sha256 现在 fail closed",
+        "合法 review metadata tail 不再误报 stale"
+      ]
+    }
+  }
+}

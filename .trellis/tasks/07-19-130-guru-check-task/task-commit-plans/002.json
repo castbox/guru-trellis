@@ -765,7 +765,329 @@
     "plan_digest": "1766a3c438384e72c521b5252e29b4f6bc46832f4bb39cb75c3763c42c260a21"
   },
   "result": {
-    "status": "planned",
-    "exit": null
+    "status": "committed",
+    "exit": "committed",
+    "recorded_at": "2026-07-19T21:03:05Z",
+    "commit_sha": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+    "parent": "a0ce7610c5e470efa9c08fee9fcc18fbd8993716",
+    "message_sha256": "8fae2440f02485dad7ee8a5f90b8ee6a0bd6500a553b7f5f53707a5434d895a9",
+    "committed_paths": [
+      ".agents/skills/guru-check-task/examples/phase2-check.json",
+      ".agents/skills/guru-check-task/references/contract.md",
+      ".agents/skills/guru-check-task/schemas/phase2-check.schema.json",
+      ".claude/skills/guru-check-task/examples/phase2-check.json",
+      ".claude/skills/guru-check-task/references/contract.md",
+      ".claude/skills/guru-check-task/schemas/phase2-check.schema.json",
+      ".codex/skills/guru-check-task/examples/phase2-check.json",
+      ".codex/skills/guru-check-task/references/contract.md",
+      ".codex/skills/guru-check-task/schemas/phase2-check.schema.json",
+      ".cursor/skills/guru-check-task/examples/phase2-check.json",
+      ".cursor/skills/guru-check-task/references/contract.md",
+      ".cursor/skills/guru-check-task/schemas/phase2-check.schema.json",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-check-task/examples/phase2-check.json",
+      ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/tasks/07-19-130-guru-check-task/agent-assignment.json",
+      ".trellis/tasks/07-19-130-guru-check-task/phase2-check.json",
+      ".trellis/tasks/07-19-130-guru-check-task/task-commit-plans/002.json",
+      "README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/skills/guru-team/packages/guru-check-task/examples/phase2-check.json",
+      "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "unrelated_preserved": true,
+    "hook_mutation": false,
+    "tree_evidence": {
+      "expected_tree": "0ad32e12553f20fa16deaf22fd823db8232fc52b",
+      "actual_tree": "0ad32e12553f20fa16deaf22fd823db8232fc52b",
+      "actual_source": "commit",
+      "matches": true,
+      "paths": [
+        {
+          "path": ".agents/skills/guru-check-task/examples/phase2-check.json",
+          "expected_blob": "427940f19a2bdb8547f595bc34eb94cdc29b2502",
+          "expected_mode": "100644",
+          "actual_blob": "427940f19a2bdb8547f595bc34eb94cdc29b2502",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-check-task/references/contract.md",
+          "expected_blob": "995464cb3c11dbc4c76b7abddfc4538e114ac961",
+          "expected_mode": "100644",
+          "actual_blob": "995464cb3c11dbc4c76b7abddfc4538e114ac961",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".agents/skills/guru-check-task/schemas/phase2-check.schema.json",
+          "expected_blob": "e6926f028ca8b0bb2f8f7506cb8135d7bc70a627",
+          "expected_mode": "100644",
+          "actual_blob": "e6926f028ca8b0bb2f8f7506cb8135d7bc70a627",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-check-task/examples/phase2-check.json",
+          "expected_blob": "427940f19a2bdb8547f595bc34eb94cdc29b2502",
+          "expected_mode": "100644",
+          "actual_blob": "427940f19a2bdb8547f595bc34eb94cdc29b2502",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-check-task/references/contract.md",
+          "expected_blob": "995464cb3c11dbc4c76b7abddfc4538e114ac961",
+          "expected_mode": "100644",
+          "actual_blob": "995464cb3c11dbc4c76b7abddfc4538e114ac961",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".claude/skills/guru-check-task/schemas/phase2-check.schema.json",
+          "expected_blob": "e6926f028ca8b0bb2f8f7506cb8135d7bc70a627",
+          "expected_mode": "100644",
+          "actual_blob": "e6926f028ca8b0bb2f8f7506cb8135d7bc70a627",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-check-task/examples/phase2-check.json",
+          "expected_blob": "427940f19a2bdb8547f595bc34eb94cdc29b2502",
+          "expected_mode": "100644",
+          "actual_blob": "427940f19a2bdb8547f595bc34eb94cdc29b2502",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-check-task/references/contract.md",
+          "expected_blob": "995464cb3c11dbc4c76b7abddfc4538e114ac961",
+          "expected_mode": "100644",
+          "actual_blob": "995464cb3c11dbc4c76b7abddfc4538e114ac961",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".codex/skills/guru-check-task/schemas/phase2-check.schema.json",
+          "expected_blob": "e6926f028ca8b0bb2f8f7506cb8135d7bc70a627",
+          "expected_mode": "100644",
+          "actual_blob": "e6926f028ca8b0bb2f8f7506cb8135d7bc70a627",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-check-task/examples/phase2-check.json",
+          "expected_blob": "427940f19a2bdb8547f595bc34eb94cdc29b2502",
+          "expected_mode": "100644",
+          "actual_blob": "427940f19a2bdb8547f595bc34eb94cdc29b2502",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-check-task/references/contract.md",
+          "expected_blob": "995464cb3c11dbc4c76b7abddfc4538e114ac961",
+          "expected_mode": "100644",
+          "actual_blob": "995464cb3c11dbc4c76b7abddfc4538e114ac961",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".cursor/skills/guru-check-task/schemas/phase2-check.schema.json",
+          "expected_blob": "e6926f028ca8b0bb2f8f7506cb8135d7bc70a627",
+          "expected_mode": "100644",
+          "actual_blob": "e6926f028ca8b0bb2f8f7506cb8135d7bc70a627",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/extension.json",
+          "expected_blob": "c0de58d32eb0d645cd9f0a24a483b106188a37cf",
+          "expected_mode": "100644",
+          "actual_blob": "c0de58d32eb0d645cd9f0a24a483b106188a37cf",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "90161b85b5753a89cd7de306ea5f1e8f4cc3156e",
+          "expected_mode": "100755",
+          "actual_blob": "90161b85b5753a89cd7de306ea5f1e8f4cc3156e",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-check-task/examples/phase2-check.json",
+          "expected_blob": "427940f19a2bdb8547f595bc34eb94cdc29b2502",
+          "expected_mode": "100644",
+          "actual_blob": "427940f19a2bdb8547f595bc34eb94cdc29b2502",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
+          "expected_blob": "995464cb3c11dbc4c76b7abddfc4538e114ac961",
+          "expected_mode": "100644",
+          "actual_blob": "995464cb3c11dbc4c76b7abddfc4538e114ac961",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json",
+          "expected_blob": "e6926f028ca8b0bb2f8f7506cb8135d7bc70a627",
+          "expected_mode": "100644",
+          "actual_blob": "e6926f028ca8b0bb2f8f7506cb8135d7bc70a627",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/companion-scripts.md",
+          "expected_blob": "b1865e5561d9206ac5dd592d4a4d6e77cba5f206",
+          "expected_mode": "100644",
+          "actual_blob": "b1865e5561d9206ac5dd592d4a4d6e77cba5f206",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/data-contracts.md",
+          "expected_blob": "12d905821da8f4707821aaeb935ce1d85a5b6afb",
+          "expected_mode": "100644",
+          "actual_blob": "12d905821da8f4707821aaeb935ce1d85a5b6afb",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/quality-guidelines.md",
+          "expected_blob": "824c53339befc09e8efb2edc288368ecc8943348",
+          "expected_mode": "100644",
+          "actual_blob": "824c53339befc09e8efb2edc288368ecc8943348",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/spec/workflow/skill-package-contract.md",
+          "expected_blob": "bbfc9129eee45976cd501daf42b1ac1127744aff",
+          "expected_mode": "100644",
+          "actual_blob": "bbfc9129eee45976cd501daf42b1ac1127744aff",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-130-guru-check-task/agent-assignment.json",
+          "expected_blob": "991e20260066120402313c419126016af62dd81d",
+          "expected_mode": "100644",
+          "actual_blob": "991e20260066120402313c419126016af62dd81d",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-130-guru-check-task/phase2-check.json",
+          "expected_blob": "14ba1a76a21a783d1ce123ea430953e63268723e",
+          "expected_mode": "100644",
+          "actual_blob": "14ba1a76a21a783d1ce123ea430953e63268723e",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": ".trellis/tasks/07-19-130-guru-check-task/task-commit-plans/002.json",
+          "expected_blob": "979ae3fb5884351e31cff885d8ad20fde9bd4ba1",
+          "expected_mode": "100644",
+          "actual_blob": "979ae3fb5884351e31cff885d8ad20fde9bd4ba1",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "README.md",
+          "expected_blob": "b0ad5bc83e432c2525409d9abd36b327d7ad2e26",
+          "expected_mode": "100644",
+          "actual_blob": "b0ad5bc83e432c2525409d9abd36b327d7ad2e26",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/guru-team-trellis-flow.md",
+          "expected_blob": "6819555d5bf9f137ace9ec4e1944d864d0c6b2a2",
+          "expected_mode": "100644",
+          "actual_blob": "6819555d5bf9f137ace9ec4e1944d864d0c6b2a2",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "docs/requirements/requirement-main.md",
+          "expected_blob": "267cc042fb3899d590a3c3fec7000bc91b47ab81",
+          "expected_mode": "100644",
+          "actual_blob": "267cc042fb3899d590a3c3fec7000bc91b47ab81",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/presets/guru-team/README.md",
+          "expected_blob": "bb8dd7ab6bcc88f28085d3cdc1f0bb192a0e1ca6",
+          "expected_mode": "100644",
+          "actual_blob": "bb8dd7ab6bcc88f28085d3cdc1f0bb192a0e1ca6",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-check-task/examples/phase2-check.json",
+          "expected_blob": "427940f19a2bdb8547f595bc34eb94cdc29b2502",
+          "expected_mode": "100644",
+          "actual_blob": "427940f19a2bdb8547f595bc34eb94cdc29b2502",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+          "expected_blob": "995464cb3c11dbc4c76b7abddfc4538e114ac961",
+          "expected_mode": "100644",
+          "actual_blob": "995464cb3c11dbc4c76b7abddfc4538e114ac961",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
+          "expected_blob": "e6926f028ca8b0bb2f8f7506cb8135d7bc70a627",
+          "expected_mode": "100644",
+          "actual_blob": "e6926f028ca8b0bb2f8f7506cb8135d7bc70a627",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/README.md",
+          "expected_blob": "ce6e41ff2cc21d742fefcb3cb572f2f4eea96203",
+          "expected_mode": "100644",
+          "actual_blob": "ce6e41ff2cc21d742fefcb3cb572f2f4eea96203",
+          "actual_mode": "100644",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "expected_blob": "90161b85b5753a89cd7de306ea5f1e8f4cc3156e",
+          "expected_mode": "100755",
+          "actual_blob": "90161b85b5753a89cd7de306ea5f1e8f4cc3156e",
+          "actual_mode": "100755",
+          "matches": true
+        },
+        {
+          "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "expected_blob": "04de7fde5e90873e7b4aa82d2838c06038f2e2f7",
+          "expected_mode": "100644",
+          "actual_blob": "04de7fde5e90873e7b4aa82d2838c06038f2e2f7",
+          "actual_mode": "100644",
+          "matches": true
+        }
+      ]
+    }
   }
 }

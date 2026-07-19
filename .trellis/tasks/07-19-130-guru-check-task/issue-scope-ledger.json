@@ -5,7 +5,21 @@
     "url": "https://github.com/castbox/guru-trellis/issues/130",
     "title": "实现 guru-check-task 闭环 Skill",
     "reason": "当前 independently deliverable change request。",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      "Finding-fix 后的全新完整 Phase 2 覆盖 Issue #130 的 R1-R10、AC1-AC16、guru-check-task package/schema/runtime/workflow/preset、五套平台分发、Docs SSOT 与 agent recovery；6 个定向回归、完整 673 passed/13 skipped、clean throwaway install/update/reapply、ownership 43、drift/equality/compile/syntax/task/diff/sidecar 均通过。",
+      "Branch Review Gate 绑定 reviewed HEAD 8acc2c4aec81996af2d7d34bcbcb4c57568c0617 与 origin/main...HEAD 全部 93 个路径；Round 001 的 P1/P2 与 metadata-tail correctness 缺陷已由 Round 002 closure，fresh Round 003 最终审查 P0/P1/P2/P3 findings 均为 0。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "0707790858de2e89003bf92e8be30b045c484e8b458fdbe87eb738e42add1ea8",
+        "verified_content_head": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+        "remote_head": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+        "publish_head": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -13,7 +27,21 @@
       "url": "https://github.com/castbox/guru-trellis/issues/130",
       "title": "实现 guru-check-task 闭环 Skill",
       "reason": "本 task 完整覆盖 Phase 2 closed-loop Skill 的验收范围。",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "Finding-fix 后的全新完整 Phase 2 覆盖 Issue #130 的 R1-R10、AC1-AC16、guru-check-task package/schema/runtime/workflow/preset、五套平台分发、Docs SSOT 与 agent recovery；6 个定向回归、完整 673 passed/13 skipped、clean throwaway install/update/reapply、ownership 43、drift/equality/compile/syntax/task/diff/sidecar 均通过。",
+        "Branch Review Gate 绑定 reviewed HEAD 8acc2c4aec81996af2d7d34bcbcb4c57568c0617 与 origin/main...HEAD 全部 93 个路径；Round 001 的 P1/P2 与 metadata-tail correctness 缺陷已由 Round 002 closure，fresh Round 003 最终审查 P0/P1/P2/P3 findings 均为 0。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "0707790858de2e89003bf92e8be30b045c484e8b458fdbe87eb738e42add1ea8",
+          "verified_content_head": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+          "remote_head": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+          "publish_head": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+          "commands_passed": true
+        }
+      ]
     }
   ],
   "related_issues": [

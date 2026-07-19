@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "body_file": "pr-body.md",
+  "publish_inputs": {
+    "repo": "castbox/guru-trellis",
+    "base_branch": "main",
+    "head_branch": "feat/130-guru-check-task",
+    "reviewed_head_sha": "8acc2c4aec81996af2d7d34bcbcb4c57568c0617",
+    "title": "完成：#130 实现 guru-check-task 闭环 Skill",
+    "body_source": "pr-body.md",
+    "body_sha256": "e6cf5c2570b96fcb456d64772af168f7dc00449b5c28ff7cd89169d0242e488d",
+    "draft": true,
+    "reviewed_source": "body-artifact:pr-readiness.json",
+    "closeout_plan_digest": "6cdd86e7fb6894c5aaed317a997597dde98eec259b0f76ab99a4a78eb75aca8f"
+  },
+  "publish_inputs_sha256": "c6b9be14ec48f6eaaf07c9d661a893802dbeb768152ba33942a954a8f675972d"
+}
