@@ -1,0 +1,471 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-2.0.json",
+  "title": "Guru Team Task Plan Approval",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill_id",
+    "generated_at",
+    "mode",
+    "task",
+    "repository_snapshot",
+    "requirement_authorities",
+    "reviewed_artifacts",
+    "approved_artifacts",
+    "docs_ssot_plan",
+    "contract_wording_review",
+    "ambiguity_review",
+    "provenance_review",
+    "unusual_scenario_review",
+    "semantic_review",
+    "user_confirmation",
+    "typed_exit",
+    "consumer",
+    "reason",
+    "supersedes_facts_sha256",
+    "facts_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "skill_id": {"const": "guru-approve-task-plan"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "task": {"$ref": "#/$defs/task"},
+    "repository_snapshot": {"$ref": "#/$defs/repositorySnapshot"},
+    "requirement_authorities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/authority"}
+    },
+    "reviewed_artifacts": {"$ref": "#/$defs/planningArtifacts"},
+    "approved_artifacts": {"$ref": "#/$defs/planningArtifacts"},
+    "docs_ssot_plan": {"$ref": "#/$defs/docsSsotPlan"},
+    "contract_wording_review": {"$ref": "#/$defs/wordingReview"},
+    "ambiguity_review": {"$ref": "#/$defs/ambiguityReview"},
+    "provenance_review": {"$ref": "#/$defs/provenanceReview"},
+    "unusual_scenario_review": {"$ref": "#/$defs/unusualScenarioReview"},
+    "semantic_review": {"$ref": "#/$defs/semanticReview"},
+    "user_confirmation": {"$ref": "#/$defs/userConfirmation"},
+    "typed_exit": {"enum": ["approved", "revision_required", "clarify_scope", "blocked"]},
+    "consumer": {"$ref": "#/$defs/consumer"},
+    "reason": {"$ref": "#/$defs/nonEmptyText"},
+    "supersedes_facts_sha256": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+    "facts_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"typed_exit": {"const": "approved"}}, "required": ["typed_exit"]},
+      "then": {
+        "properties": {
+          "consumer": {"const": {"kind": "workflow", "id": "phase-1-task-activation"}},
+          "provenance_review": {"properties": {"coverage": {"properties": {"all_load_bearing_items_covered": {"const": true}}}}},
+          "unusual_scenario_review": {"properties": {"unresolved_count": {"const": 0}}},
+          "semantic_review": {"properties": {"ai_review_gate": {"properties": {"status": {"const": "passed"}, "findings": {"maxItems": 0}, "revision_actions": {"maxItems": 0}, "scope_proposals": {"maxItems": 0}, "blocking_reasons": {"maxItems": 0}}}}},
+          "user_confirmation": {"properties": {"kind": {"const": "post-planning-approval"}, "status": {"const": "confirmed"}, "prompt_presented_at": {"type": "string", "format": "date-time"}, "confirmed_at": {"type": "string", "format": "date-time"}}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "revision_required"}}, "required": ["typed_exit"]},
+      "then": {
+        "properties": {
+          "consumer": {"const": {"kind": "skill", "id": "guru-approve-task-plan"}},
+          "semantic_review": {"properties": {"ai_review_gate": {"properties": {"status": {"const": "revision_required"}, "revision_actions": {"minItems": 1}, "scope_proposals": {"maxItems": 0}}}}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "clarify_scope"}}, "required": ["typed_exit"]},
+      "then": {
+        "properties": {
+          "consumer": {"const": {"kind": "skill", "id": "guru-clarify-requirements"}},
+          "semantic_review": {"properties": {"ai_review_gate": {"properties": {"status": {"const": "clarify_scope"}, "scope_proposals": {"minItems": 1}}}}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "blocked"}}, "required": ["typed_exit"]},
+      "then": {
+        "properties": {
+          "consumer": {"const": {"kind": "stop", "id": "task-plan-approval-blocked"}},
+          "semantic_review": {"properties": {"ai_review_gate": {"properties": {"status": {"const": "blocked"}, "blocking_reasons": {"minItems": 1}}}}}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "gitSha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "nonEmptyText": {"type": "string", "minLength": 1},
+    "nullableText": {"type": ["string", "null"]},
+    "stringList": {"type": "array", "items": {"$ref": "#/$defs/nonEmptyText"}, "uniqueItems": true},
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_dir", "task_identity_sha256", "scope_ledger_sha256", "status", "branch", "issue_numbers"],
+      "properties": {
+        "task_dir": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+$"},
+        "task_identity_sha256": {"$ref": "#/$defs/sha256"},
+        "scope_ledger_sha256": {
+          "$ref": "#/$defs/sha256",
+          "description": "Digest of canonical primary/close/related/followup positive issue-number categories; excludes ledger evidence metadata."
+        },
+        "status": {"enum": ["planning", "in_progress"]},
+        "branch": {"$ref": "#/$defs/nonEmptyText"},
+        "issue_numbers": {"type": "array", "items": {"type": "integer", "minimum": 1}, "uniqueItems": true}
+      }
+    },
+    "repositorySnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selected_base", "base_ref", "base_head", "head", "dirty_paths", "captured_at"],
+      "properties": {
+        "selected_base": {"$ref": "#/$defs/nonEmptyText"},
+        "base_ref": {"$ref": "#/$defs/nonEmptyText"},
+        "base_head": {"$ref": "#/$defs/gitSha"},
+        "head": {"$ref": "#/$defs/gitSha"},
+        "dirty_paths": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "captured_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "locator", "sha256", "updated_at"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonEmptyText"},
+        "kind": {"enum": ["github_issue", "github_comment", "user_request", "task_artifact", "repository_document"]},
+        "locator": {"$ref": "#/$defs/nonEmptyText"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "updated_at": {"type": ["string", "null"], "format": "date-time"}
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "size_bytes", "modified_at"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+/(prd|design|implement)\\.md$"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size_bytes": {"type": "integer", "minimum": 1},
+        "modified_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "planningArtifacts": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"$ref": "#/$defs/artifact"}
+    },
+    "docsSsotPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy", "artifact_path", "locator", "statement_sha256", "durable_paths"],
+      "properties": {
+        "strategy": {"enum": ["ssot_first", "delta_first", "bootstrap_or_repair_docs", "no_docs_update_needed"]},
+        "artifact_path": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+/(prd|design|implement)\\.md$"},
+        "locator": {"$ref": "#/$defs/nonEmptyText"},
+        "statement_sha256": {"$ref": "#/$defs/sha256"},
+        "durable_paths": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "wordingReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_path", "schema_id", "profile", "typed_exit", "artifact_sha256", "facts_sha256", "scope_sha256", "scan_sha256"],
+      "properties": {
+        "artifact_path": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+/contract-wording-review\\.json$"},
+        "schema_id": {"const": "guru-contract-wording-review-1.0"},
+        "profile": {"const": "planning_artifacts"},
+        "typed_exit": {"const": "pass"},
+        "artifact_sha256": {"$ref": "#/$defs/sha256"},
+        "facts_sha256": {"$ref": "#/$defs/sha256"},
+        "scope_sha256": {"$ref": "#/$defs/sha256"},
+        "scan_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "checkedDimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["no_requirement_weakening", "source_issue_semantics_preserved", "conditional_paths_have_conditions", "no_parallel_implementation_paths", "gates_have_machine_verifiable_conditions", "acceptance_criteria_are_deterministic", "external_quotes_are_labeled_non_contract"],
+      "properties": {
+        "no_requirement_weakening": {"const": true},
+        "source_issue_semantics_preserved": {"const": true},
+        "conditional_paths_have_conditions": {"const": true},
+        "no_parallel_implementation_paths": {"const": true},
+        "gates_have_machine_verifiable_conditions": {"const": true},
+        "acceptance_criteria_are_deterministic": {"const": true},
+        "external_quotes_are_labeled_non_contract": {"const": true}
+      }
+    },
+    "ambiguityReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewer", "summary", "normative_language", "checked_dimensions"],
+      "properties": {
+        "status": {"const": "passed"},
+        "reviewer": {"$ref": "#/$defs/nonEmptyText"},
+        "summary": {"$ref": "#/$defs/nonEmptyText"},
+        "normative_language": {"$ref": "#/$defs/normativeLanguage"},
+        "checked_dimensions": {"$ref": "#/$defs/checkedDimensions"}
+      }
+    },
+    "normativeHit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "line", "term", "text", "classification", "reason"],
+      "properties": {
+        "path": {"$ref": "#/$defs/nonEmptyText"},
+        "line": {"type": "integer", "minimum": 1},
+        "term": {"$ref": "#/$defs/nonEmptyText"},
+        "text": {"$ref": "#/$defs/nonEmptyText"},
+        "classification": {"$ref": "#/$defs/nonEmptyText"},
+        "reason": {"$ref": "#/$defs/nonEmptyText"}
+      }
+    },
+    "normativeLanguage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["controlled_terms", "scan_scope", "hits", "unchecked_normative_hits"],
+      "properties": {
+        "controlled_terms": {"$ref": "#/$defs/stringList"},
+        "scan_scope": {"$ref": "#/$defs/stringList"},
+        "hits": {"type": "array", "items": {"$ref": "#/$defs/normativeHit"}},
+        "unchecked_normative_hits": {"type": "array", "maxItems": 0}
+      }
+    },
+    "alternative": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "tradeoff"],
+      "properties": {"id": {"$ref": "#/$defs/nonEmptyText"}, "tradeoff": {"$ref": "#/$defs/nonEmptyText"}}
+    },
+    "implementationChoice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alternatives", "selected_id", "selection_reason", "product_scope_expanded", "risk_scope_expanded"],
+      "properties": {
+        "alternatives": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/alternative"}},
+        "selected_id": {"$ref": "#/$defs/nonEmptyText"},
+        "selection_reason": {"$ref": "#/$defs/nonEmptyText"},
+        "product_scope_expanded": {"const": false},
+        "risk_scope_expanded": {"const": false}
+      }
+    },
+    "scopeExpansion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proposal_binding", "confirmation", "authority_binding"],
+      "properties": {
+        "proposal_binding": {"$ref": "#/$defs/scopeExpansionProposalBinding"},
+        "confirmation": {"$ref": "#/$defs/scopeExpansionConfirmation"},
+        "authority_binding": {"$ref": "#/$defs/scopeExpansionAuthorityBinding"}
+      }
+    },
+    "scopeExpansionProposalBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_kind", "artifact_path", "locator", "unusual_candidate_id", "proposal_sha256"],
+      "properties": {
+        "source_kind": {"enum": ["planning_artifact", "unusual_scenario_candidate"]},
+        "artifact_path": {
+          "anyOf": [
+            {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+/(prd|design|implement)\\.md$"},
+            {"type": "null"}
+          ]
+        },
+        "locator": {"anyOf": [{"$ref": "#/$defs/nonEmptyText"}, {"type": "null"}]},
+        "unusual_candidate_id": {"anyOf": [{"$ref": "#/$defs/nonEmptyText"}, {"type": "null"}]},
+        "proposal_sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"source_kind": {"const": "planning_artifact"}}},
+          "then": {
+            "properties": {
+              "artifact_path": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+/(prd|design|implement)\\.md$"},
+              "locator": {"$ref": "#/$defs/nonEmptyText"},
+              "unusual_candidate_id": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"source_kind": {"const": "unusual_scenario_candidate"}}},
+          "then": {
+            "properties": {
+              "artifact_path": {"type": "null"},
+              "locator": {"type": "null"},
+              "unusual_candidate_id": {"$ref": "#/$defs/nonEmptyText"}
+            }
+          }
+        }
+      ]
+    },
+    "scopeExpansionConfirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confirmation_kind", "proposal_sha256", "confirmation_summary", "confirmed_at"],
+      "properties": {
+        "confirmation_kind": {"enum": ["dedicated-scope-expansion", "dedicated-unusual-scenario"]},
+        "proposal_sha256": {"$ref": "#/$defs/sha256"},
+        "confirmation_summary": {"$ref": "#/$defs/nonEmptyText"},
+        "confirmed_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "scopeExpansionAuthorityBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority_ref", "authority_sha256", "proposal_sha256"],
+      "properties": {
+        "authority_ref": {"$ref": "#/$defs/nonEmptyText"},
+        "authority_sha256": {"$ref": "#/$defs/sha256"},
+        "proposal_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "outOfScopeProposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proposal_sha256", "disposition", "route"],
+      "properties": {
+        "proposal_sha256": {"$ref": "#/$defs/sha256"},
+        "disposition": {"enum": ["out_of_scope", "followup", "clarification_required", "mechanism_removed", "mechanism_replaced"]},
+        "route": {"$ref": "#/$defs/nonEmptyText"}
+      }
+    },
+    "provenanceEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "artifact_path", "locator", "statement_sha256", "classification", "authority_refs", "reason", "implementation_choice", "scope_expansion", "out_of_scope_proposal"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonEmptyText"},
+        "artifact_path": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+/(prd|design|implement)\\.md$"},
+        "locator": {"$ref": "#/$defs/nonEmptyText"},
+        "statement_sha256": {"$ref": "#/$defs/sha256"},
+        "classification": {"enum": ["explicit_requirement", "necessary_implementation_choice", "approved_scope_expansion", "out_of_scope_proposal"]},
+        "authority_refs": {"$ref": "#/$defs/stringList"},
+        "reason": {"$ref": "#/$defs/nonEmptyText"},
+        "implementation_choice": {"anyOf": [{"$ref": "#/$defs/implementationChoice"}, {"type": "null"}]},
+        "scope_expansion": {"anyOf": [{"$ref": "#/$defs/scopeExpansion"}, {"type": "null"}]},
+        "out_of_scope_proposal": {"anyOf": [{"$ref": "#/$defs/outOfScopeProposal"}, {"type": "null"}]}
+      },
+      "allOf": [
+        {"if": {"properties": {"classification": {"const": "explicit_requirement"}}}, "then": {"properties": {"authority_refs": {"minItems": 1}, "implementation_choice": {"type": "null"}, "scope_expansion": {"type": "null"}, "out_of_scope_proposal": {"type": "null"}}}},
+        {"if": {"properties": {"classification": {"const": "necessary_implementation_choice"}}}, "then": {"properties": {"authority_refs": {"minItems": 1}, "implementation_choice": {"$ref": "#/$defs/implementationChoice"}, "scope_expansion": {"type": "null"}, "out_of_scope_proposal": {"type": "null"}}}},
+        {"if": {"properties": {"classification": {"const": "approved_scope_expansion"}}}, "then": {"properties": {"authority_refs": {"minItems": 1}, "implementation_choice": {"type": "null"}, "scope_expansion": {"$ref": "#/$defs/scopeExpansion"}, "out_of_scope_proposal": {"type": "null"}}}},
+        {"if": {"properties": {"classification": {"const": "out_of_scope_proposal"}}}, "then": {"properties": {"implementation_choice": {"type": "null"}, "scope_expansion": {"type": "null"}, "out_of_scope_proposal": {"$ref": "#/$defs/outOfScopeProposal"}}}}
+      ]
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewer", "summary", "reviewed_entry_ids", "all_load_bearing_items_covered", "review_sha256"],
+      "properties": {
+        "reviewer": {"$ref": "#/$defs/nonEmptyText"},
+        "summary": {"$ref": "#/$defs/nonEmptyText"},
+        "reviewed_entry_ids": {"$ref": "#/$defs/stringList"},
+        "all_load_bearing_items_covered": {"type": "boolean"},
+        "review_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "provenanceReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entries", "coverage"],
+      "properties": {
+        "entries": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/provenanceEntry"}},
+        "coverage": {"$ref": "#/$defs/coverage"}
+      }
+    },
+    "proposalConfirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confirmation_kind", "proposal_sha256", "confirmation_summary", "confirmed_at", "authority_ref"],
+      "properties": {
+        "confirmation_kind": {"const": "dedicated-unusual-scenario"},
+        "proposal_sha256": {"$ref": "#/$defs/sha256"},
+        "confirmation_summary": {"$ref": "#/$defs/nonEmptyText"},
+        "confirmed_at": {"type": "string", "format": "date-time"},
+        "authority_ref": {"$ref": "#/$defs/nonEmptyText"}
+      }
+    },
+    "unusualCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "scenario_class", "trigger_evidence", "scope", "cost", "alternatives", "consequence", "source_requirement_refs", "proposal_sha256", "disposition", "confirmation"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonEmptyText"},
+        "scenario_class": {"enum": ["security_or_threat", "attack_or_malicious_actor", "toctou_or_concurrency_race", "fault_injection_or_crash_consistency", "cross_os_atomicity", "other_nonstandard"]},
+        "trigger_evidence": {"$ref": "#/$defs/nonEmptyText"},
+        "scope": {"$ref": "#/$defs/nonEmptyText"},
+        "cost": {"$ref": "#/$defs/nonEmptyText"},
+        "alternatives": {"$ref": "#/$defs/stringList", "minItems": 1},
+        "consequence": {"$ref": "#/$defs/nonEmptyText"},
+        "source_requirement_refs": {"$ref": "#/$defs/stringList"},
+        "proposal_sha256": {"$ref": "#/$defs/sha256"},
+        "disposition": {"enum": ["explicit_requirement", "mechanism_removed", "mechanism_replaced", "confirmed_scope_expansion", "clarification_required", "out_of_scope"]},
+        "confirmation": {"anyOf": [{"$ref": "#/$defs/proposalConfirmation"}, {"type": "null"}]}
+      },
+      "allOf": [
+        {"if": {"properties": {"disposition": {"const": "confirmed_scope_expansion"}}}, "then": {"properties": {"confirmation": {"$ref": "#/$defs/proposalConfirmation"}}}},
+        {"if": {"properties": {"disposition": {"const": "explicit_requirement"}}}, "then": {"properties": {"source_requirement_refs": {"minItems": 1}, "confirmation": {"type": "null"}}}},
+        {"if": {"properties": {"disposition": {"enum": ["mechanism_removed", "mechanism_replaced", "clarification_required", "out_of_scope"]}}}, "then": {"properties": {"confirmation": {"type": "null"}}}}
+      ]
+    },
+    "unusualScenarioReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewer", "summary", "candidates", "unresolved_count", "review_sha256"],
+      "properties": {
+        "reviewer": {"$ref": "#/$defs/nonEmptyText"},
+        "summary": {"$ref": "#/$defs/nonEmptyText"},
+        "candidates": {"type": "array", "items": {"$ref": "#/$defs/unusualCandidate"}},
+        "unresolved_count": {"type": "integer", "minimum": 0},
+        "review_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "aiReviewGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewer", "summary", "reviewed_at", "findings", "revision_actions", "scope_proposals", "blocking_reasons"],
+      "properties": {
+        "status": {"enum": ["passed", "revision_required", "clarify_scope", "blocked"]},
+        "reviewer": {"$ref": "#/$defs/nonEmptyText"},
+        "summary": {"$ref": "#/$defs/nonEmptyText"},
+        "reviewed_at": {"type": "string", "format": "date-time"},
+        "findings": {"$ref": "#/$defs/stringList"},
+        "revision_actions": {"$ref": "#/$defs/stringList"},
+        "scope_proposals": {"$ref": "#/$defs/stringList"},
+        "blocking_reasons": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "semanticReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ai_review_gate"],
+      "properties": {"ai_review_gate": {"$ref": "#/$defs/aiReviewGate"}}
+    },
+    "userConfirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "status", "prompt_presented_at", "confirmed_at", "evidence_summary"],
+      "properties": {
+        "kind": {"enum": ["post-planning-approval", "not-required"]},
+        "status": {"enum": ["confirmed", "not_required", "refused"]},
+        "prompt_presented_at": {"type": ["string", "null"], "format": "date-time"},
+        "confirmed_at": {"type": ["string", "null"], "format": "date-time"},
+        "evidence_summary": {"$ref": "#/$defs/nonEmptyText"}
+      }
+    },
+    "consumer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"enum": ["workflow", "skill", "stop"]},
+        "id": {"$ref": "#/$defs/nonEmptyText"}
+      }
+    }
+  }
+}

@@ -28,9 +28,22 @@ The workflow has four durable phases:
 
 - Phase 0: base/context/clarity/wording/readiness gates, issue intake, Git base
   branch selection, and worktree preflight.
-- Phase 1: Trellis task creation, planning artifacts, `Docs SSOT Plan`, explicit post-planning user review, and start gate evidence.
+- Phase 1: Trellis task creation, planning artifacts, `Docs SSOT Plan`, mandatory
+  `guru-approve-task-plan`, and the approved-only task activation transition.
 - Phase 2: implementation and quality check.
 - Phase 3: spec decision, commit, Branch Review Gate, finish-work, and automatic publish.
+
+Phase 1 planning approval mandatory invokes `guru-approve-task-plan`. The
+global workflow contains no adequacy checklist, provenance classification,
+unusual-scenario review, confirmation algorithm, recorder/checker command, or
+revision procedure for this step. It owns only these transitions: `approved`
+-> workflow target `phase-1-task-activation`, `revision_required` -> Skill
+`guru-approve-task-plan`, `clarify_scope` -> Skill
+`guru-clarify-requirements`, and `blocked` -> stop
+`task-plan-approval-blocked`. The task activation target is the only place that
+may consume approval and invoke the official task start transition. Missing
+package, unknown/multiple/unmapped exit, consumer conflict, or marker drift
+fails closed.
 
 Phase 0 begins with tool-free request classification. Before `check-env`,
 `prepare-task`, issue/duplicate reads, Docs/code/tests/history reads, or any
@@ -167,7 +180,7 @@ or out-of-scope scope classification requires proposal-digest-bound exact user
 evidence, regardless of origin status. It binds live GitHub-visible authority and one structured
 decision trail exactly present in current
 `issue-scope-ledger.json.scope_decisions[]`, including all three planning
-document digests, a shared-validator-passed complete schema 1.2 planning
+document digests, a shared-validator-passed complete `guru-planning-approval-2.0`
 approval, review state, stale downstream identities, authority `updated_at`,
 and `context_before_task_update_sha256`,
 the interrupted target and re-entry owners `guru-approve-task-plan`,
@@ -480,32 +493,23 @@ review result exists, to persist objective gate evidence.
 Phase 1.4 and Phase 2.2 have their own evidence gates before the Branch Review
 Gate:
 
-- `planning-approval.json` records that the main session obtained a current
-  checker-validated `guru-review-contract-wording:planning_artifacts:pass`
-  artifact before display, displayed task-local links to `prd.md`, `design.md`,
-  and `implement.md`, then received explicit post-planning user confirmation
-  before `task.py start`. It must use `schema_version=1.2`, bind the current
-  `guru-contract-wording-review-1.0` artifact/schema/scope/scan identity, include
-  its deterministic compatibility projection under `ambiguity_review`, copied
-  value-for-value from the checker-validated planning-only dimensions without
-  defaults, use
-  `user_confirmation.source=explicit-post-planning-review`, and record matching
-  hash / size metadata for all three planning documents, plus
-  modified-time, HEAD, and dirty paths as audit context. Validator freshness is
-  based on the reviewed planning document digests, not current `HEAD` or
-  working-tree dirty paths: implementation commits, metadata tail, or unrelated
-  dirty paths do not invalidate approval while `prd.md`, `design.md`, and
-  `implement.md` content still matches the last explicit user review. If any of
-  those three planning documents changes, or schema 1.0 wording evidence lacks
-  the planning-only dimension field, rerun the complete AI review, show the
-  three links again, and wait for fresh explicit post-planning confirmation;
-  never patch missing booleans into old evidence. Phase 0 intake approval,
-  generic workflow confirmation, old `source=workflow`, old schema, missing or
-  non-pass wording evidence, projection drift, non-empty unchecked hits, or
-  stale wording evidence fails closed. `task.py start` is not proof of planning
-  review. Active approvals created before the wording-evidence binding require
-  a fresh wording review, document presentation, and explicit confirmation;
-  archived artifacts are not rewritten.
+- `planning-approval.json` is owned by active semantic Skill
+  `guru-approve-task-plan` and uses closed schema
+  `guru-planning-approval-2.0`. It binds current requirement and wording
+  authorities, all three planning documents, the Docs SSOT Plan, four-class
+  provenance, unusual proposal dispositions, final AI Gate, distinct dedicated
+  and post-planning confirmations, facts digest, and one of four typed
+  exit/consumer combinations. Only `approved` enters
+  `phase-1-task-activation`; the other exits re-enter planning, clarify scope,
+  or stop. Recorder/checker validate deterministic facts and the closed union;
+  they do not generate semantic results. Active schema 1.2 evidence requires
+  full Skill re-entry and v2 recording; archives are not rewritten.
+  Scope-ledger task identity and a scope-ledger requirement authority use the
+  same issue-category projection. Before activation the checker rebuilds the
+  invocation base/HEAD/dirty snapshot; downstream freshness is based on
+  planning/Docs SSOT/authority/wording content, so implementation HEAD or
+  dirty-path changes after activation do not alone invalidate approval.
+  `task.py start` is not proof of planning review.
 - `phase2-check.json` records complete `trellis-check` coverage before commit.
   Passing validation commands alone is not proof that requirements, design,
   implementation, tests, specs, docs, cross-layer flow, and deployment impact

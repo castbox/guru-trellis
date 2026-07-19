@@ -100,27 +100,36 @@ This validator is objective template-heading detection only; it must not judge
 whether the Chinese review narrative is semantically sufficient.
 When changing planning approval behavior, also run
 `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-dir>`
-against a current `schema_version=1.2` artifact bound to checker-validated
-`guru-review-contract-wording:planning_artifacts:pass` evidence. Include package
-and runtime tests for all three fixed profiles, selector-shrink rejection,
-vocabulary/classification version binding, complete-hit classification/reason
-validation, unchecked blocking, content-change rescan, stale/hash mismatch,
-Gate/exit biconditional, unique profile-aware consumers, planning compatibility
-projection copied value-for-value from exact AI-reviewed planning-only
-dimensions, rejection of missing/false/extra/wrong-profile dimensions,
-recorder-level current `content_changed -> pass` with unchanged post-mutation
-bytes, current `blocked -> pass` after authority/confirmation resolution,
-prior-digest mismatch, exact-same-result, wrong-profile and stale supersession
-rejection, current `pass` protection, and the separate stale replacement path,
-missing/non-pass legacy evidence, schema 1.0 wording evidence predating the
-planning-only field, old `schema_version=1.1` approval failure,
-and a regression where current HEAD / dirty-path drift does not block while the
-three planning document content digests and wording evidence remain current.
+against a current `guru-planning-approval-2.0` artifact bound to
+checker-validated `guru-review-contract-wording:planning_artifacts:pass`
+evidence. Package/runtime tests must cover workflow/standalone nine-precondition
+parity; all four provenance classes; duplicate/missing/unknown/stale statement
+entries; implementation-choice alternatives, selection and no-scope-expansion
+flags; every unusual-scenario disposition; dedicated proposal confirmation
+versus ordinary post-planning confirmation; refusal and clarification routes;
+the four Gate/exit/consumer combinations; unknown/multiple/unmapped exits;
+Docs SSOT, authority, wording, planning, base/HEAD invocation and artifact
+digest freshness; active 1.2 bootstrap rejection and v2 re-recording; and the
+regression where post-activation implementation HEAD/dirty drift does not block
+while planning/authority/wording content remains current. Include a fixture in
+which a non-required lock/atomic mechanism is removed or replaced and reviewed
+again, without manufacturing a scope expansion. Static tests must prove the
+runtime does not generate provenance, choice necessity, unusual-scenario
+necessity, confirmation sufficiency, semantic pass, or route judgment.
+For `approved_scope_expansion`, production recorder/checker tests must cover a
+normal planning-artifact locator source, a canonical unusual-candidate source,
+both sources coexisting without digest confusion, workflow/standalone parity,
+and a non-approved exit carrying an otherwise complete binding. Negative cases
+must reject caller-only/wrong proposal digest, stale or invalid content locator,
+missing/wrong candidate, generic/wrong-kind or digest-mismatched confirmation,
+unknown/stale authority digest, authority absent from entry refs, and an
+authority-to-proposal digest mismatch. The checker must reread content and
+authority facts rather than accepting recorder-time shape alone.
 Run source and installed package validation, dogfood drift, clean throwaway
 install, and `trellis update` plus preset reapply because the package, runtime
 commands, schema, and four discovery roots are one distribution contract.
-The throwaway fresh-install and after-update/reapply phases must each execute a
-real installed-recorder `content_changed -> pass` transition.
+The throwaway fresh-install and after-update/reapply phases must each discover
+the installed package and execute a real v2 recorder/checker path.
 For `guru-review-change-request`, tests must cover workflow/standalone
 precondition parity; all three target variants; current context/clarity/wording
 projection and hash linkage; each prerequisite missing, stale, wrong-exit, or

@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Phase 1 planning approval 的充分性判断、provenance、非常规确认和 artifact ownership 分散在 workflow 与 runtime，无法独立复用和审计。",
+    "outcome": "已交付 guru-approve-task-plan semantic Skill，以 mode parity、四类 provenance、专用确认、exact digest 三方绑定、schema 2.0 和四 typed exits 收敛 planning approval。",
+    "changed_behavior": [
+      "Planning approval 由 guru-approve-task-plan 单一 semantic owner 执行，workflow 只负责 mandatory invocation 与 exit routing。",
+      "Workflow 和 standalone mode 使用相同的九项 entry preconditions、AI Gate、确认条件、recorder/validator 和 typed exits。",
+      "每个 load-bearing planning contract 必须记录四类 provenance 之一，空 provenance 或 reviewer preference 不能进入 execution contract。",
+      "未由 requirement 触发的非常规 proposal 必须获得 exact proposal 专用确认，否则移出当前范围或进入 clarification。",
+      "Approved scope expansion 的 proposal、dedicated confirmation 和 current authority 必须绑定同一 exact digest 并通过 freshness 校验。",
+      "Approved、revision_required、clarify_scope、blocked 四个 typed exits 均绑定唯一 consumer 或 fail-closed stop。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "skill",
+        "name": "guru-approve-task-plan public Skill package",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/interface.json",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/references/contract.md"
+        ],
+        "change": "新增 semantic profile、mode parity、四类 provenance、专用确认和四 typed exits。"
+      },
+      {
+        "kind": "schema",
+        "name": "Planning approval schema 2.0 evidence",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/planning-approval.schema.json",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/planning-approval.json"
+        ],
+        "change": "定义 authorities、planning inputs、provenance、scope confirmation、AI gate、freshness 与 exit evidence。"
+      },
+      {
+        "kind": "script",
+        "name": "Planning approval deterministic runtime",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/scripts/record-planning-approval.sh",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/scripts/check-planning-approval.sh"
+        ],
+        "change": "实现 schema 2.0、proposal digest 重算、三方绑定、freshness 和旧 evidence re-entry。"
+      },
+      {
+        "kind": "workflow",
+        "name": "Guru Team Phase 1 planning approval routing",
+        "paths": [
+          "trellis/workflows/guru-team/workflow.md",
+          ".trellis/workflow.md"
+        ],
+        "change": "将 Phase 1 收敛为 stable Skill invocation 和四出口唯一路由。"
+      },
+      {
+        "kind": "preset",
+        "name": "Skill package distribution and update reapply",
+        "paths": [
+          "trellis/guru-team-extension.json",
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "change": "分发 canonical、installed shared 与四平台副本，并验证 install、update/reapply 和 drift。"
+      },
+      {
+        "kind": "docs",
+        "name": "Planning approval durable Docs SSOT",
+        "paths": [
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/spec/workflow/workflow-contract.md",
+          ".trellis/spec/workflow/data-contracts.md"
+        ],
+        "change": "回写 owner、provenance、专用确认、schema migration、typed exits 和正常运行边界。"
+      },
+      {
+        "kind": "test",
+        "name": "Planning, package, preset and throwaway regressions",
+        "paths": [
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/tests/test_contract.py",
+          "trellis/skills/guru-team/tests/test_skill_packages.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py"
+        ],
+        "change": "覆盖 mode parity、provenance、exact digest、typed exits、五根一致、ownership 和 throwaway。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Planning approval semantic ownership",
+        "before": "Planning adequacy、用户确认、artifact recorder/checker 和 activation 细节分散在 workflow 与 shared runtime。",
+        "after": "guru-approve-task-plan package 独占完整 semantic closed loop，workflow 和 consumers 只调用 stable id 或消费 typed exit。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Requirement provenance",
+        "before": "Load-bearing planning contract 缺少统一 provenance 分类，最佳实践或 reviewer preference 可能无 authority 地进入执行范围。",
+        "after": "每项 contract 必须归入四类 provenance；未触发的非常规 proposal 还必须获得 exact proposal 专用确认。",
+        "source_artifact": "prd.md"
+      },
+      {
+        "contract": "Exact scope expansion binding",
+        "before": "Approved scope expansion 的 proposal、普通 planning confirmation 和 requirement authority 缺少同一 exact digest 的三方绑定。",
+        "after": "Proposal、dedicated confirmation、current authority 绑定同一重算 digest，并同时校验 locator、authority ref/SHA 和 freshness。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Planning approval evidence migration",
+        "before": "旧 schema 1.2 evidence 不能表达完整 provenance、current authority 和 exact scope expansion confirmation 合同。",
+        "after": "Active planning approval 使用 guru-planning-approval-2.0；旧 active artifact 必须重入完整 Skill，archive bytes 保持历史原样。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Typed exit routing",
+        "before": "Workflow 展开 planning 内部步骤，revision、clarification 和 blocked route 的 owner/consumer 边界不统一。",
+        "after": "Approved、revision_required、clarify_scope、blocked 均有唯一 consumer，unknown、multiple、unmapped exit fail closed。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "AI and script boundary",
+        "before": "Runtime 与 workflow 同时承载 judgment、artifact 处理和 route，边界不清晰。",
+        "after": "AI Skill 独占 semantic 判断；recorder/validator 只处理 schema、hash、HEAD、digest 和 freshness。",
+        "source_artifact": "implement.md"
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "record-planning-approval",
+        "check-planning-approval",
+        "verify-throwaway-install"
+      ],
+      "config_keys": [
+        "skill_runtime.commands.guru_approve_task_plan",
+        "planning_approval.schema_version",
+        "external_exits.approved"
+      ],
+      "schema_fields": [
+        "provenance_class",
+        "proposal_digest",
+        "scope_expansion_confirmations",
+        "requirement_authorities",
+        "external_exit"
+      ],
+      "symbols": [
+        "guru-approve-task-plan",
+        "build_planning_approval_scope",
+        "validate_planning_approval",
+        "approved_scope_expansion"
+      ],
+      "phrases": [
+        "guru-approve-task-plan semantic closed loop 已完成",
+        "planning-approval.json 四类 provenance 绑定已完成",
+        "proposal_digest 三方 exact binding 已完成",
+        "verify-throwaway-install update reapply 已完成",
+        "approved_scope_expansion 专用确认合同已完成"
+      ]
+    }
+  }
+}

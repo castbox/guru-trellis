@@ -83,9 +83,16 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "guru-approve-task-plan",
             "guru-check-task",
             "guru-review-branch",
+            "complete shared `check-planning-approval --require-exit approved` validator",
+            "Skill-owned `guru-planning-approval-2.0` artifact",
+            "`user_confirmation.kind=post-planning-approval`",
             "`blocked` if and only if",
         ):
             self.assertIn(phrase, contract)
+        self.assertIn("`guru-planning-approval-2.0` evidence", skill)
+        self.assertNotIn("schema 1.2 planning approval", skill)
+        self.assertNotIn("schema 1.2 planning-approval validator", contract)
+        self.assertNotIn("explicit post-planning confirmation", contract)
 
     def test_wrappers_are_dispatcher_only_executable_and_have_no_mutation(self) -> None:
         wrappers = {

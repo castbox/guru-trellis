@@ -93,6 +93,29 @@ from deterministic candidate/executor checks, and document fresh-sequence
 re-entry after finding fixes. Platform entry docs should reference the stable
 skill and typed exits instead of repeating its step-local contract.
 
+Public planning docs must name `guru-approve-task-plan` as the only semantic
+owner of `planning-approval.json`, schema id `guru-planning-approval-2.0`, and
+runtime commands `record-planning-approval` / `check-planning-approval`. They
+must distinguish the dedicated unusual-proposal confirmation from ordinary
+post-planning confirmation and list the four exits and consumers: `approved`
+to `phase-1-task-activation`, `revision_required` to the same Skill,
+`clarify_scope` to `guru-clarify-requirements`, and `blocked` to
+`task-plan-approval-blocked`. Workflow prose and platform entry text reference
+the Skill and route only; the package contract owns adequacy, provenance,
+proposal review, Gate, confirmation, and re-entry. Upgrade docs state that
+active schema 1.2 approval requires full v2 re-recording while archives are not
+rewritten. Public docs also state that task identity and a scope-ledger
+requirement authority use the same issue-category projection, and distinguish
+pre-activation invocation-snapshot freshness from allowed post-activation
+implementation HEAD/dirty drift. They also state that
+`approved_scope_expansion` never accepts a standalone caller-declared digest:
+ordinary expansion resolves a controlled current planning-artifact locator,
+unusual expansion resolves one canonical candidate, and recorder/checker
+recompute the proposal digest and require both the source-appropriate dedicated
+confirmation and runtime-materialized current authority SHA-256 to bind that
+same digest. An unusual provenance view projects the candidate's existing
+confirmation rather than asking twice.
+
 Public Intake docs must name active semantic `guru-create-task-workspace` as
 the sole consumer of `guru-review-change-request:ready` and the sole
 issue/branch/worktree/task mutation owner. All three README files list its
@@ -199,7 +222,8 @@ non-empty terminal proposal set and every five-class scope classification,
 regardless of origin, requires exact user-decision evidence; every scope classification
 has live GitHub authority and one exact structured
 `issue-scope-ledger.json.scope_decisions[]` trail binding planning/review/re-entry
-evidence; planning evidence must pass the complete shared schema 1.2 validator
+evidence; planning evidence must pass the complete shared
+`guru-planning-approval-2.0` validator
 rather than a hash/placeholder check; GitHub authority mutation returns
 `refresh_context`; context time must not predate authority time, the task update
 binds that digest without a second refresh, and mechanism dispositions require

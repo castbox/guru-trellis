@@ -598,15 +598,36 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
         task.mkdir(parents=True)
         locator = task.relative_to(self.root).as_posix()
         (task / "task.json").write_text(
-            '{"status":"in_progress","branch":"main"}\n',
+            json.dumps({
+                "id": f"active-{label}",
+                "name": f"active-{label}",
+                "title": "Active scope classification",
+                "status": "in_progress",
+                "scope": "issue #27",
+                "branch": "main",
+                "base_branch": "main",
+            }) + "\n",
             encoding="utf-8",
         )
         for name, content in (
             ("prd.md", "# Active scope requirements\n\nClassify the current request.\n"),
-            ("design.md", "# Active scope design\n\nBind current task evidence.\n"),
+            (
+                "design.md",
+                "# Active scope design\n\nBind current task evidence.\n\n"
+                "## Docs SSOT Plan\n\nUse ssot_first for the durable contract.\n",
+            ),
             ("implement.md", "# Active scope implementation\n\nValidate the recorded decision.\n"),
         ):
             (task / name).write_text(content, encoding="utf-8")
+
+        ledger = {
+            "primary_issue": {"number": 27},
+            "close_issues": [{"number": 27}],
+            "related_issues": [],
+            "followup_issues": [],
+            "scope_decisions": [],
+        }
+        GTT.write_json(task / "issue-scope-ledger.json", ledger)
 
         wording_scope, wording_contents = GTT.contract_wording_build_scope(
             self.root,
@@ -656,12 +677,78 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
         planning_approval = GTT.build_planning_approval_payload(
             self.root,
             task,
-            reviewer="production-package-test-ai",
-            approval_summary="The complete active-task planning contract was reviewed.",
-            user_confirmation="The three displayed planning documents were confirmed.",
-            artifacts=[],
-            contract_wording_evidence=GTT.CONTRACT_WORDING_EVIDENCE_ARTIFACT,
-            review_prompt_presented_at="2026-01-01T00:00:00Z",
+            {
+                "mode": "workflow",
+                "requirement_authorities": [{
+                    "id": "active-scope-prd",
+                    "kind": "task_artifact",
+                    "locator": f"{locator}/prd.md",
+                    "sha256": "0" * 64,
+                    "updated_at": None,
+                }],
+                "docs_ssot_plan": {
+                    "strategy": "ssot_first",
+                    "artifact_path": "design.md",
+                    "locator": "Docs SSOT Plan",
+                    "statement_sha256": "0" * 64,
+                    "durable_paths": ["docs/requirements.md"],
+                },
+                "provenance_review": {
+                    "entries": [{
+                        "id": "active-scope-requirement",
+                        "artifact_path": "prd.md",
+                        "locator": "Active scope requirements",
+                        "statement_sha256": "0" * 64,
+                        "classification": "explicit_requirement",
+                        "authority_refs": ["active-scope-prd"],
+                        "reason": "The active task explicitly requires one exact scope classification.",
+                        "implementation_choice": None,
+                        "scope_expansion": None,
+                        "out_of_scope_proposal": None,
+                    }],
+                    "coverage": {
+                        "reviewer": "production-package-test-ai",
+                        "summary": "All load-bearing active-task planning contracts were reviewed.",
+                        "reviewed_entry_ids": ["active-scope-requirement"],
+                        "all_load_bearing_items_covered": True,
+                        "review_sha256": "0" * 64,
+                    },
+                },
+                "unusual_scenario_review": {
+                    "reviewer": "production-package-test-ai",
+                    "summary": "No unusual scenario proposal is required by this fixture.",
+                    "candidates": [],
+                    "unresolved_count": 0,
+                    "review_sha256": "0" * 64,
+                },
+                "semantic_review": {"ai_review_gate": {
+                    "status": "passed",
+                    "reviewer": "production-package-test-ai",
+                    "summary": "The complete active-task planning contract was reviewed.",
+                    "reviewed_at": "2026-01-01T00:00:00Z",
+                    "findings": [],
+                    "revision_actions": [],
+                    "scope_proposals": [],
+                    "blocking_reasons": [],
+                }},
+                "user_confirmation": {
+                    "kind": "post-planning-approval",
+                    "status": "confirmed",
+                    "prompt_presented_at": "2026-01-01T00:00:00Z",
+                    "confirmed_at": "2026-01-01T00:00:01Z",
+                    "evidence_summary": "The three displayed planning documents were confirmed.",
+                },
+                "typed_exit": "approved",
+                "consumer": {"kind": "workflow", "id": "phase-1-task-activation"},
+                "reason": "The active-task planning fixture passed the semantic gate.",
+                "supersedes_facts_sha256": None,
+            },
+            task_context={
+                "base_branch": "main",
+                "base_ref": "refs/heads/main",
+                "base_head_sha": self.git("rev-parse", "HEAD"),
+                "branch_name": "main",
+            },
         )
         GTT.write_json(task / GTT.PLANNING_APPROVAL_ARTIFACT, planning_approval)
 
@@ -670,15 +757,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             "generated_at": "2026-01-01T00:00:00Z",
             "snapshot_identity": {"snapshot_sha256": snapshot_sha256},
         }) + "\n", encoding="utf-8")
-        ledger = {
-            "primary_issue": {"number": 27},
-            "close_issues": [{"number": 27}],
-            "related_issues": [],
-            "followup_issues": [],
-            "scope_decisions": [],
-        }
-        GTT.write_json(task / "issue-scope-ledger.json", ledger)
-
         package = PACKAGE_ROOT.parent / "guru-clarify-requirements"
         payload = json.loads(
             (package / "examples/requirements-clarification.json").read_text(

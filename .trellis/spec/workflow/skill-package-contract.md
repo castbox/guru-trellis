@@ -115,6 +115,75 @@ only as a Skill consumer; a planned invoke or exit marker is invalid.
 Frontmatter auto-match is discovery assistance only and never replaces
 mandatory invocation markers.
 
+`guru-approve-task-plan` is the only semantic owner of Phase 1 planning
+approval and the single `planning-approval.json` artifact. Its interface uses
+`judgment_mode=semantic`, declares the same ordered entry preconditions in
+workflow and standalone modes (`runtime_dependency`, `task_workspace`,
+`requirement_authority`, `planning_artifacts`, `docs_ssot_plan`,
+`contract_wording_evidence`, `scope_ledger`, `repository_snapshot`, and
+`invocation_freshness`), and depends on the shared runtime commands
+`record-planning-approval` and `check-planning-approval`.
+
+The package owns adequacy and ambiguity review, the authoritative load-bearing
+provenance review, implementation-choice review, unusual-scenario proposal
+review, planning revision, final AI Review Gate, conditional dedicated
+proposal confirmation, explicit post-planning confirmation, and re-entry.
+`guru-review-contract-wording:planning_artifacts:pass` remains the only wording
+owner. Recorder/checker consume AI-reviewed input and may validate only paths,
+schema, hashes, locators, projections, repository facts, freshness, and the
+closed Gate/exit/consumer union; they must not select load-bearing statements,
+assign provenance, judge an implementation choice or scenario, create a
+confirmation, pass the AI Gate, or select a route.
+
+An `approved_scope_expansion` entry uses a closed `proposal_binding`,
+`confirmation`, and `authority_binding`. The proposal source is either one
+controlled current planning-artifact locator or one canonical unusual candidate
+id. Runtime recomputes that source digest, requires the source-appropriate
+`dedicated-scope-expansion` or `dedicated-unusual-scenario` confirmation, binds
+the same digest plus the runtime-materialized current authority SHA-256, and
+requires that authority in the entry refs. An unusual candidate link projects
+the candidate's existing confirmation/authority rather than creating a second
+approval. A caller-only digest, wrong locator/candidate/confirmation/authority,
+or disagreement between any proposal digest fails closed in both modes.
+
+The `approved` union has no unresolved AI review state: findings, revision
+actions, scope proposals, and blocking reasons are all empty, and both the
+post-planning prompt and confirmation timestamps are non-null date-times.
+Every unusual candidate records at least one alternative. A candidate with
+`disposition=explicit_requirement` records at least one source requirement ref,
+and every recorded source requirement ref resolves to a current requirement
+authority id. The schema, recorder, and checker enforce these objective
+shape/reference constraints.
+
+The task projection's `scope_ledger_sha256`, and any requirement-authority
+entry that points to the same task-local ledger, use the canonical digest of
+only the semantic scope categories: positive issue numbers from `primary_issue`,
+`close_issues`, `related_issues`, and `followup_issues`, with each list sorted
+and deduplicated. It excludes acceptance evidence, `scope_decisions`, embedded
+planning-approval hashes, and other ledger metadata. Those records have their
+own evidence bindings and may evolve after approval without creating a circular
+planning identity; moving an issue between scope categories still invalidates
+approval.
+
+The four external exits and unique consumers are:
+
+- `approved` -> workflow target `phase-1-task-activation`;
+- `revision_required` -> Skill `guru-approve-task-plan`;
+- `clarify_scope` -> Skill `guru-clarify-requirements`;
+- `blocked` -> stop `task-plan-approval-blocked`.
+
+Before task activation, repository snapshot freshness includes selected base,
+base ref/HEAD, invocation HEAD, and dirty paths. After activation, normal
+implementation HEAD/dirty drift does not invalidate otherwise current planning.
+
+`revision_required` restarts after task-local planning changes and a fresh
+wording review. `clarify_scope` delegates authority/scope mutation and then
+restarts all nine entry checks. Unknown, duplicate, multiple, unmapped, or
+consumer-mismatched exits fail closed. The package uses closed schema
+`guru-planning-approval-2.0`; active schema 1.2 approval artifacts require a
+complete semantic re-entry and v2 recording, while archived artifacts remain
+historical.
+
 `guru-create-task-commit` is mandatory after a fresh final Phase 2 pass and
 before every task work stage/commit side effect. It exposes only `committed`,
 `revision-required`, and `blocked`: Branch Review/finding closure consumes the

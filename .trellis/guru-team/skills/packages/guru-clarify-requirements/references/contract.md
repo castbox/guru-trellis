@@ -168,12 +168,18 @@ user-decision evidence, live GitHub comment/body authority including
 document digests, planning approval,
 Branch-Review state, interrupted resume target and re-entry owners
 `guru-approve-task-plan`, `guru-check-task`, and `guru-review-branch`. Checker
-parses the ledger and requires one exact trail match. It reuses the shared
-schema 1.2 planning-approval validator, including explicit post-planning
-confirmation, passed ambiguity review, controlled-term scan, all seven checked
-dimensions, exact reviewed/approved aliases, and the three path/hash/size
-bindings; an old ledger hash, two-line planning placeholder, or minimal
-approval/review JSON is insufficient.
+parses the ledger and requires one exact trail match. It reuses the complete
+shared `check-planning-approval --require-exit approved` validator for the
+Skill-owned `guru-planning-approval-2.0` artifact. That validation covers the
+current task and requirement authorities, wording evidence, Docs SSOT Plan,
+four-class provenance, unusual-scenario dispositions, AI Gate, facts digest,
+typed exit/consumer, exact reviewed/approved aliases, and all three current
+planning-document bindings. The ordinary planning confirmation must have
+`user_confirmation.kind=post-planning-approval`, `status=confirmed`, and
+non-null prompt/confirmation timestamps; generic continuation or a legacy
+confirmation source cannot substitute. An old ledger hash, two-line planning
+placeholder, active legacy approval, or minimal approval/review JSON is
+insufficient.
 
 If `review-gate.json` exists, re-entry requires
 `review_evidence.status=stale` and the exact artifact path/content digest.

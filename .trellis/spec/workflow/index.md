@@ -42,6 +42,10 @@ Before editing workflow behavior:
   one exact reviewed issue or one exact workspace/task invocation, persist only
   four portable task-local Intake artifacts, and use only ignored
   `.trellis/.runtime/guru-team/**` mappings.
+- `guru-approve-task-plan` owns the Phase 1 semantic planning approval closed
+  loop. Its shared recorder/checker consume AI-reviewed input and validate only
+  schema, repository/planning facts, digests, freshness, and the typed-exit
+  union for the single task-local `planning-approval.json` artifact.
 - `trellis/workflows/guru-team/schemas/task-start-context.schema.json` documents the portable task-start context JSON shape.
 
 ## Required Validation

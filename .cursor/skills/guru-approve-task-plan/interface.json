@@ -1,0 +1,133 @@
+{
+  "$schema": "../../schemas/skill-interface.schema.json",
+  "schema_version": "1.2",
+  "id": "guru-approve-task-plan",
+  "name": "guru-approve-task-plan",
+  "description": "Approve a task plan through adequacy, provenance, unusual-scenario review, exact confirmations, deterministic evidence, and four typed exits.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": ["runtime_dependency", "task_workspace", "requirement_authority", "planning_artifacts", "docs_ssot_plan", "contract_wording_evidence", "scope_ledger", "repository_snapshot", "invocation_freshness"]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": ["runtime_dependency", "task_workspace", "requirement_authority", "planning_artifacts", "docs_ssot_plan", "contract_wording_evidence", "scope_ledger", "repository_snapshot", "invocation_freshness"]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed extension manifest, dispatcher, active package inventory, schema, and declared planning record/check runtime commands",
+      "binding": "complete compatible Guru Team preset runtime",
+      "freshness": "validated by run-skill-command before every runtime command"
+    },
+    {
+      "id": "task_workspace",
+      "evidence": "current task locator, task.json, local runtime workspace mapping, current checkout, and source-checkout boundary facts",
+      "binding": "one direct active task in its expected repository worktree",
+      "freshness": "workspace boundary is rebuilt before recording and checking"
+    },
+    {
+      "id": "requirement_authority",
+      "evidence": "current issue, selected comments, user request, and task-local authority projections",
+      "binding": "the exact source authority used by every load-bearing planning statement",
+      "freshness": "authority identity and content digests are reread before approval"
+    },
+    {
+      "id": "planning_artifacts",
+      "evidence": "current prd.md, design.md, and implement.md with non-placeholder content and stable locators",
+      "binding": "the exact three documents reviewed by the semantic gate and user",
+      "freshness": "content digests are rebuilt before recording, checking, and downstream consumption"
+    },
+    {
+      "id": "docs_ssot_plan",
+      "evidence": "one locatable Docs SSOT Plan with strategy, durable paths, task delta, and merge/no-update responsibility",
+      "binding": "the durable-docs execution contract for this task",
+      "freshness": "locator and canonical statement digest are resolved from current planning content"
+    },
+    {
+      "id": "contract_wording_evidence",
+      "evidence": "current checker-validated guru-contract-wording-review-1.0 planning_artifacts pass",
+      "binding": "the same three planning document bytes and canonical planning-only dimensions",
+      "freshness": "the generic wording checker and exact evidence digests are rerun"
+    },
+    {
+      "id": "scope_ledger",
+      "evidence": "current issue-scope-ledger.json primary, close, related, follow-up, and structured decision state",
+      "binding": "the task's current accepted scope and authority-change history",
+      "freshness": "ledger identity and linked authority/planning evidence are rebuilt"
+    },
+    {
+      "id": "repository_snapshot",
+      "evidence": "selected base ref/head, invocation head, current branch, status, and dirty paths",
+      "binding": "one stable planning approval invocation",
+      "freshness": "snapshot is reread before and after recording; downstream drift rules bind planning and authority content"
+    },
+    {
+      "id": "invocation_freshness",
+      "evidence": "mode, task, authorities, planning/docs/wording facts, semantic review, confirmations, typed exit, consumer, and facts digest",
+      "binding": "one complete guru-approve-task-plan round",
+      "freshness": "checker recomputes objective facts and rejects incomplete, stale, multiple, or mismatched results"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [
+    {"id": "planning_approval_example", "path": "examples/planning-approval.json"}
+  ],
+  "schemas": [
+    {"id": "planning_approval_schema", "path": "schemas/planning-approval.schema.json"}
+  ],
+  "validators": [
+    {
+      "id": "planning_approval_recorder",
+      "command": "scripts/record-planning-approval.sh",
+      "runtime_command": "record-planning-approval",
+      "objective_scope": "AI-reviewed input consumption, current task/workspace/authority/planning/docs/wording/repository fact rebuild, planning-locator or unusual-candidate proposal digest recomputation, dedicated confirmation and current-authority same-proposal binding, closed schema, artifact write, and facts digest"
+    },
+    {
+      "id": "planning_approval_checker",
+      "command": "scripts/check-planning-approval.sh",
+      "runtime_command": "check-planning-approval",
+      "objective_scope": "published v2 schema, current fact, statement, planning-locator proposal, unusual-candidate proposal, and authority digest recomputation, provenance field shape, dedicated confirmation and current-authority same-proposal binding, Gate/exit/consumer union, artifact digest, freshness, and approved-only activation"
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "approved",
+      "evidence": "passed AI Gate, complete provenance, no unresolved unusual proposal, current wording evidence, exact post-planning confirmation, and current v2 artifact",
+      "consumer": {"kind": "workflow", "id": "phase-1-task-activation"}
+    },
+    {
+      "id": "revision_required",
+      "evidence": "the AI identified task-local planning gaps with non-empty revision actions and no authority mutation",
+      "consumer": {"kind": "skill", "id": "guru-approve-task-plan"}
+    },
+    {
+      "id": "clarify_scope",
+      "evidence": "the AI identified a non-empty authority or scope mutation proposal excluded from approved execution",
+      "consumer": {"kind": "skill", "id": "guru-clarify-requirements"}
+    },
+    {
+      "id": "blocked",
+      "evidence": "authority is missing, required proposal was refused, an external blocker exists, or safe task-local revision is impossible",
+      "consumer": {"kind": "stop", "id": "task-plan-approval-blocked"}
+    }
+  ],
+  "reentry": {
+    "identity": "mode, task, three planning digests, Docs SSOT locator, ordinary or unusual proposal binding, current authority digest, authority and wording identities, semantic review, confirmations, typed exit, consumer, and facts digest",
+    "freshness": "every re-entry reruns all nine entry checks; revision reruns wording after planning changes and clarification reruns current authority/context/planning",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"]
+}

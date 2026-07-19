@@ -33,8 +33,9 @@ disposition, empty/non-final active-task proposal sets on `clear`/`new_task`,
 any of the five scope classifications without exact user-decision evidence,
 any classification task update not covered by the same combined exact
 proposal/action confirmation,
-mechanism disposition with confirmation/trail/mutation, incomplete schema 1.2
-planning approval, missing ledger decision trail or GitHub-visible authority,
+mechanism disposition with confirmation/trail/mutation, incomplete or
+non-approved `guru-planning-approval-2.0` evidence, missing ledger decision
+trail or GitHub-visible authority,
 load-bearing clarification without a confirmed and current issue/draft
 authority action, authority/context/task-update order mismatch, invalid caller
 resume, stale active-task evidence, legacy 1.0 artifact input, unknown exits,

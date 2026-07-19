@@ -8,6 +8,7 @@ import copy
 import contextlib
 import hashlib
 import importlib.util
+import inspect
 import json
 import os
 import re
@@ -277,13 +278,10 @@ def planning_args(**overrides: object) -> argparse.Namespace:
         "root": None,
         "json": True,
         "task": None,
-        "reviewer": "codex-main-session",
-        "summary": "规划 artifact 已审阅，可以进入实现。",
-        "contract_wording_evidence": gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT,
-        "user_confirmation": "用户确认进入实现。",
-        "review_prompt_presented_at": None,
-        "confirmation_source": gtt.PLANNING_APPROVAL_CONFIRMATION_SOURCE,
-        "artifact": None,
+        "input": None,
+        "require_exit": None,
+        "expected_artifact_sha256": None,
+        "allow_committed_head": False,
         "dry_run": False,
     }
     values.update(overrides)
@@ -5074,7 +5072,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             check=True,
         )
         (self.task_dir / "task.json").write_text(
-            '{"title":"Gate task","base_branch":"main"}\n',
+            '{"id":"gate-task","name":"gate-task","title":"Gate task","status":"planning","scope":"issue #27","branch":"feat/gate-task","base_branch":"main"}\n',
             encoding="utf-8",
         )
         gtt.write_json(self.task_dir / "finish-summary-index.json", {
@@ -5099,9 +5097,20 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                 },
             },
         })
-        (self.task_dir / "prd.md").write_text("# PRD\n\n需求。\n", encoding="utf-8")
-        (self.task_dir / "design.md").write_text("# Design\n\n设计。\n", encoding="utf-8")
+        (self.task_dir / "prd.md").write_text(
+            "# PRD\n\n## R1. Requirement\n\n需求。\n", encoding="utf-8"
+        )
+        (self.task_dir / "design.md").write_text(
+            "# Design\n\n## Docs SSOT Plan\n\n- Strategy: ssot_first\n", encoding="utf-8"
+        )
         (self.task_dir / "implement.md").write_text("# Implement\n\n计划。\n", encoding="utf-8")
+        gtt.write_json(self.task_dir / "issue-scope-ledger.json", {
+            "schema_version": "1.0",
+            "primary_issue": {"number": 27},
+            "close_issues": [{"number": 27}],
+            "related_issues": [],
+            "followup_issues": [],
+        })
         (self.root / ".trellis/spec").mkdir(parents=True)
         (self.root / ".trellis/spec/index.md").write_text("# Spec\n\n规则。\n", encoding="utf-8")
         self.write_wording_evidence()
@@ -5115,15 +5124,170 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
             mock.patch.object(gtt, "load_task_start_context", return_value={
                 "base_branch": "main",
+                "base_ref": "refs/remotes/origin/main",
+                "base_head_sha": "b" * 40,
                 "workspace_mode": "worktree",
                 "workspace_path": str(self.root),
                 "task_dir": ".trellis/tasks/07-04-gates",
                 "preflight": {"current_checkout": str(self.root)},
             }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
-            mock.patch.object(gtt, "current_head", return_value="abc123"),
+            mock.patch.object(gtt, "current_head", return_value="a" * 40),
             mock.patch.object(gtt, "git_status_paths", return_value=[]),
         ]
+
+    def planning_input(self, **overrides: object) -> dict[str, object]:
+        payload: dict[str, object] = {
+            "mode": "workflow",
+            "requirement_authorities": [{
+                "id": "task-prd",
+                "kind": "task_artifact",
+                "locator": ".trellis/tasks/07-04-gates/prd.md",
+                "sha256": "0" * 64,
+                "updated_at": None,
+            }],
+            "docs_ssot_plan": {
+                "strategy": "ssot_first",
+                "artifact_path": "design.md",
+                "locator": "Docs SSOT Plan",
+                "statement_sha256": "0" * 64,
+                "durable_paths": ["docs/requirements.md"],
+            },
+            "provenance_review": {
+                "entries": [{
+                    "id": "R1",
+                    "artifact_path": "prd.md",
+                    "locator": "R1. Requirement",
+                    "statement_sha256": "0" * 64,
+                    "classification": "explicit_requirement",
+                    "authority_refs": ["task-prd"],
+                    "reason": "测试 requirement 明确要求该合同。",
+                    "implementation_choice": None,
+                    "scope_expansion": None,
+                    "out_of_scope_proposal": None,
+                }],
+                "coverage": {
+                    "reviewer": "test-planning-reviewer",
+                    "summary": "全部 load-bearing 条目已覆盖。",
+                    "reviewed_entry_ids": ["R1"],
+                    "all_load_bearing_items_covered": True,
+                    "review_sha256": "0" * 64,
+                },
+            },
+            "unusual_scenario_review": {
+                "reviewer": "test-planning-reviewer",
+                "summary": "当前 scope 无必要的非常规 proposal。",
+                "candidates": [],
+                "unresolved_count": 0,
+                "review_sha256": "0" * 64,
+            },
+            "semantic_review": {"ai_review_gate": {
+                "status": "passed",
+                "reviewer": "test-planning-reviewer",
+                "summary": "规划可进入实现。",
+                "reviewed_at": "2026-07-19T00:00:00Z",
+                "findings": [],
+                "revision_actions": [],
+                "scope_proposals": [],
+                "blocking_reasons": [],
+            }},
+            "user_confirmation": {
+                "kind": "post-planning-approval",
+                "status": "confirmed",
+                "prompt_presented_at": "2026-07-19T00:01:00Z",
+                "confirmed_at": "2026-07-19T00:02:00Z",
+                "evidence_summary": "用户查看三份 planning 链接后确认。",
+            },
+            "typed_exit": "approved",
+            "consumer": {"kind": "workflow", "id": "phase-1-task-activation"},
+            "reason": "规划已通过 semantic gate。",
+            "supersedes_facts_sha256": None,
+        }
+        payload.update(overrides)
+        return payload
+
+    def planning_scope_expansion(
+        self,
+        *,
+        source_kind: str = "planning_artifact",
+        unusual_candidate: dict[str, object] | None = None,
+    ) -> dict[str, object]:
+        authority_sha = hashlib.sha256((self.task_dir / "prd.md").read_bytes()).hexdigest()
+        if source_kind == "planning_artifact":
+            _statement, proposal_sha = gtt.planning_locator_statement(
+                self.task_dir / "prd.md", "R1. Requirement"
+            )
+            proposal_binding = {
+                "source_kind": "planning_artifact",
+                "artifact_path": "prd.md",
+                "locator": "R1. Requirement",
+                "unusual_candidate_id": None,
+                "proposal_sha256": proposal_sha,
+            }
+            confirmation_kind = "dedicated-scope-expansion"
+        elif source_kind == "unusual_scenario_candidate" and unusual_candidate is not None:
+            proposal_sha = gtt.planning_unusual_proposal_digest(unusual_candidate)
+            proposal_binding = {
+                "source_kind": "unusual_scenario_candidate",
+                "artifact_path": None,
+                "locator": None,
+                "unusual_candidate_id": unusual_candidate["id"],
+                "proposal_sha256": proposal_sha,
+            }
+            confirmation_kind = "dedicated-unusual-scenario"
+            candidate_confirmation = unusual_candidate.get("confirmation")
+            if not isinstance(candidate_confirmation, dict):
+                raise AssertionError("Confirmed unusual candidate requires confirmation")
+        else:
+            raise AssertionError(f"Unsupported scope expansion source: {source_kind}")
+        return {
+            "proposal_binding": proposal_binding,
+            "confirmation": {
+                "confirmation_kind": confirmation_kind,
+                "proposal_sha256": proposal_sha,
+                "confirmation_summary": (
+                    candidate_confirmation["confirmation_summary"]
+                    if source_kind == "unusual_scenario_candidate"
+                    else "用户确认 exact scope proposal。"
+                ),
+                "confirmed_at": (
+                    candidate_confirmation["confirmed_at"]
+                    if source_kind == "unusual_scenario_candidate"
+                    else "2026-07-19T00:00:00Z"
+                ),
+            },
+            "authority_binding": {
+                "authority_ref": "task-prd",
+                "authority_sha256": authority_sha,
+                "proposal_sha256": proposal_sha,
+            },
+        }
+
+    def write_planning_input(self, payload: dict[str, object], name: str = "planning-input.json") -> Path:
+        path = self.root / name
+        gtt.write_json(path, payload)
+        return path
+
+    def planning_v2_args(
+        self,
+        payload: dict[str, object] | None = None,
+        *,
+        name: str = "planning-input.json",
+        **overrides: object,
+    ) -> argparse.Namespace:
+        input_path = self.write_planning_input(payload or self.planning_input(), name)
+        return planning_args(input=str(input_path), **overrides)
+
+    def record_planning_approval(
+        self,
+        payload: dict[str, object] | None = None,
+        *,
+        name: str = "planning-input.json",
+        **overrides: object,
+    ) -> dict[str, object]:
+        return gtt.cmd_record_planning_approval(
+            self.planning_v2_args(payload, name=name, **overrides)
+        )
 
     def write_normative_prd_hit(self, term: str) -> None:
         (self.task_dir / "prd.md").write_text(
@@ -5848,44 +6012,36 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             wrong_profile.exception.payload["error_codes"],
         )
 
-    def test_record_and_check_planning_approval(self) -> None:
+    def test_record_and_check_planning_approval_v2_in_both_modes(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
         try:
-            payload = gtt.cmd_record_planning_approval(planning_args())
-            check = gtt.cmd_check_planning_approval(planning_args())
+            for mode in ["workflow", "standalone"]:
+                with self.subTest(mode=mode):
+                    (self.task_dir / "planning-approval.json").unlink(missing_ok=True)
+                    payload = self.record_planning_approval(
+                        self.planning_input(mode=mode),
+                        name=f"planning-{mode}.json",
+                    )
+                    check = gtt.cmd_check_planning_approval(
+                        planning_args(require_exit="approved")
+                    )
+                    self.assertEqual(payload["schema_version"], "2.0")
+                    self.assertEqual(payload["skill_id"], "guru-approve-task-plan")
+                    self.assertEqual(payload["mode"], mode)
+                    self.assertEqual(payload["typed_exit"], "approved")
+                    self.assertEqual(check["status"], "ok")
+                    self.assertEqual(check["typed_exit"], "approved")
+                    self.assertEqual(payload["reviewed_artifacts"], payload["approved_artifacts"])
+                    self.assertEqual(len(payload["reviewed_artifacts"]), 3)
+                    self.assertEqual(payload["repository_snapshot"]["head"], "a" * 40)
+                    self.assertEqual(
+                        payload["ambiguity_review"]["status"], "passed"
+                    )
         finally:
             for patcher in reversed(patches):
                 patcher.stop()
-
-        self.assertTrue((self.task_dir / "planning-approval.json").exists())
-        self.assertEqual(payload["schema_version"], gtt.PLANNING_APPROVAL_SCHEMA_VERSION)
-        self.assertTrue(payload["review_prompt_presented_at"])
-        self.assertTrue(payload["approved_at"])
-        self.assertEqual(payload["user_confirmation"]["source"], gtt.PLANNING_APPROVAL_CONFIRMATION_SOURCE)
-        self.assertEqual(payload["head"], "abc123")
-        self.assertEqual(check["status"], "ok")
-        self.assertEqual(payload["ambiguity_review"]["status"], "passed")
-        self.assertEqual(payload["ambiguity_review"]["reviewer"], "codex-main-session")
-        self.assertEqual(
-            payload["ambiguity_review"]["normative_language"]["controlled_terms"],
-            gtt.CONTRACT_WORDING_VOCABULARY_V2,
-        )
-        self.assertEqual(
-            payload["ambiguity_review"]["normative_language"]["scan_scope"],
-            gtt.CONTRACT_WORDING_PLANNING_SCOPE,
-        )
-        self.assertEqual(payload["ambiguity_review"]["normative_language"]["hits"], [])
-        self.assertEqual(payload["ambiguity_review"]["normative_language"]["unchecked_normative_hits"], [])
-        self.assertEqual(
-            set(payload["ambiguity_review"]["checked_dimensions"]),
-            set(gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS),
-        )
-        self.assertTrue(all(payload["ambiguity_review"]["checked_dimensions"].values()))
-        self.assertEqual(payload["contract_wording_review"]["schema_id"], "guru-contract-wording-review-1.0")
-        self.assertEqual(len(payload["reviewed_artifacts"]), 3)
-        self.assertEqual(len(payload["approved_artifacts"]), 3)
 
     def test_planning_semantic_dimension_matrix_and_projection_fail_closed(self) -> None:
         result = self.write_wording_evidence()
@@ -5934,145 +6090,723 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                 with self.assertRaises(gtt.WorkflowError):
                     gtt.contract_wording_planning_projection(payload)
 
-    def test_record_planning_approval_blocks_unclassified_normative_hits(self) -> None:
-        for term in ["推荐", "可选", "至少", "默认"]:
-            with self.subTest(term=term):
-                self.write_normative_prd_hit(term)
-                self.write_wording_evidence(None)
-                planning_artifact = self.task_dir / "planning-approval.json"
-                if planning_artifact.exists():
-                    planning_artifact.unlink()
-                patches = self.patch_common()
-                for patcher in patches:
-                    patcher.start()
-                try:
+    def test_planning_approval_four_exits_and_activation_gate(self) -> None:
+        cases = {
+            "approved": (
+                "passed",
+                {"kind": "workflow", "id": "phase-1-task-activation"},
+            ),
+            "revision_required": (
+                "revision_required",
+                {"kind": "skill", "id": "guru-approve-task-plan"},
+            ),
+            "clarify_scope": (
+                "clarify_scope",
+                {"kind": "skill", "id": "guru-clarify-requirements"},
+            ),
+            "blocked": (
+                "blocked",
+                {"kind": "stop", "id": "task-plan-approval-blocked"},
+            ),
+        }
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            for typed_exit, (gate_status, consumer) in cases.items():
+                with self.subTest(typed_exit=typed_exit):
+                    (self.task_dir / "planning-approval.json").unlink(missing_ok=True)
+                    payload = self.planning_input(typed_exit=typed_exit, consumer=consumer)
+                    gate = payload["semantic_review"]["ai_review_gate"]
+                    gate["status"] = gate_status
+                    gate["findings"] = [] if typed_exit == "approved" else ["需要处理的规划结论。"]
+                    gate["revision_actions"] = ["修订 task-local planning。"] if typed_exit == "revision_required" else []
+                    gate["scope_proposals"] = ["更新 source authority。"] if typed_exit == "clarify_scope" else []
+                    gate["blocking_reasons"] = ["外部 authority 不可用。"] if typed_exit == "blocked" else []
+                    if typed_exit != "approved":
+                        payload["user_confirmation"] = {
+                            "kind": "not-required",
+                            "status": "refused" if typed_exit == "blocked" else "not_required",
+                            "prompt_presented_at": None,
+                            "confirmed_at": None,
+                            "evidence_summary": "当前出口不消费 post-planning approval。",
+                        }
+                    recorded = self.record_planning_approval(
+                        payload, name=f"planning-exit-{typed_exit}.json"
+                    )
+                    checked = gtt.cmd_check_planning_approval(
+                        planning_args(require_exit=typed_exit)
+                    )
+                    self.assertEqual(recorded["consumer"], consumer)
+                    self.assertEqual(checked["typed_exit"], typed_exit)
+                    if typed_exit != "approved":
+                        with self.assertRaises(gtt.WorkflowError) as raised:
+                            gtt.cmd_check_planning_approval(
+                                planning_args(require_exit="approved")
+                            )
+                        self.assertIn(
+                            "planning_approval_requires_approved_exit",
+                            raised.exception.payload["errors"],
+                        )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+    def test_planning_approval_rejects_normal_ai_closed_union_input_errors(self) -> None:
+        cases: list[tuple[str, dict[str, object], str]] = []
+        for field in (
+            "findings",
+            "revision_actions",
+            "scope_proposals",
+            "blocking_reasons",
+        ):
+            payload = self.planning_input()
+            payload["semantic_review"]["ai_review_gate"][field] = [
+                "A passed gate cannot retain unresolved review state."
+            ]
+            cases.append((
+                f"approved-{field}",
+                payload,
+                f"planning_approval_approved_gate_{field}_not_empty",
+            ))
+
+        for field in ("prompt_presented_at", "confirmed_at"):
+            payload = self.planning_input()
+            payload["user_confirmation"][field] = None
+            cases.append((
+                f"approved-{field}",
+                payload,
+                f"planning_approval_approved_confirmation_{field}_missing",
+            ))
+
+        base_candidate = {
+            "id": "bounded-nonstandard-case",
+            "scenario_class": "other_nonstandard",
+            "trigger_evidence": "The AI recorded one bounded nonstandard scenario.",
+            "scope": "Only the reviewed task contract.",
+            "cost": "Bounded implementation cost.",
+            "alternatives": ["Remove the optional mechanism."],
+            "consequence": "The disposition remains explicit.",
+            "source_requirement_refs": [],
+            "proposal_sha256": "0" * 64,
+            "disposition": "mechanism_removed",
+            "confirmation": None,
+        }
+        empty_alternatives = self.planning_input()
+        candidate = copy.deepcopy(base_candidate)
+        candidate["alternatives"] = []
+        empty_alternatives["unusual_scenario_review"]["candidates"] = [candidate]
+        cases.append((
+            "empty-unusual-alternatives",
+            empty_alternatives,
+            "planning_approval_unusual_alternatives_empty",
+        ))
+
+        explicit_without_refs = self.planning_input()
+        candidate = copy.deepcopy(base_candidate)
+        candidate["disposition"] = "explicit_requirement"
+        explicit_without_refs["unusual_scenario_review"]["candidates"] = [candidate]
+        cases.append((
+            "explicit-unusual-without-refs",
+            explicit_without_refs,
+            "planning_approval_unusual_explicit_requirement_refs_missing",
+        ))
+
+        unknown_ref = self.planning_input()
+        candidate = copy.deepcopy(base_candidate)
+        candidate["source_requirement_refs"] = ["unknown-authority"]
+        unknown_ref["unusual_scenario_review"]["candidates"] = [candidate]
+        cases.append((
+            "unknown-unusual-source-ref",
+            unknown_ref,
+            "planning_approval_unusual_source_requirement_ref_unknown",
+        ))
+
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            for name, payload, expected_error in cases:
+                with self.subTest(name=name):
                     with self.assertRaises(gtt.WorkflowError) as raised:
-                        gtt.cmd_record_planning_approval(planning_args())
-                finally:
-                    for patcher in reversed(patches):
-                        patcher.stop()
+                        self.record_planning_approval(
+                            payload,
+                            name=f"invalid-{name}.json",
+                        )
+                    self.assertIn(expected_error, raised.exception.payload["error_codes"])
 
-                self.assertEqual(raised.exception.exit_code, 2)
-                self.assertIn(
-                    "planning_approval_requires_passed_wording_evidence",
-                    raised.exception.payload["error_codes"],
-                )
-                self.assertFalse(planning_artifact.exists())
+            recorded = self.record_planning_approval(name="valid-before-checker-negative.json")
+            recorded["semantic_review"]["ai_review_gate"]["findings"] = [
+                "A normal recorder wrote an inconsistent passed gate."
+            ]
+            recorded["facts_sha256"] = gtt.planning_facts_digest(recorded)
+            gtt.write_json(self.task_dir / "planning-approval.json", recorded)
+            _path, _payload, errors = gtt.validate_planning_approval(
+                self.root,
+                self.task_dir,
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn("planning_approval_approved_gate_findings_not_empty", errors)
 
-    def test_record_planning_approval_accepts_allowed_normative_classifications(self) -> None:
-        cases = [
-            ("推荐", "quoted_source_non_contract"),
-            ("默认", "term_definition"),
-            ("可选", "literal_identifier"),
-            ("相关", "historical_record_non_contract"),
-            ("至少", "deterministic_threshold"),
-            ("默认", "deterministic_default"),
-            ("可选", "deterministic_option"),
-            ("相关", "deterministic_reference"),
+    def test_planning_approval_provenance_four_class_matrix(self) -> None:
+        entries = []
+        for classification in sorted(gtt.PLANNING_APPROVAL_PROVENANCE_CLASSES):
+            entry = copy.deepcopy(self.planning_input()["provenance_review"]["entries"][0])
+            entry["id"] = classification
+            entry["classification"] = classification
+            if classification == "necessary_implementation_choice":
+                entry["implementation_choice"] = {
+                    "alternatives": [
+                        {"id": "extend-v1", "tradeoff": "兼容但语义模糊。"},
+                        {"id": "new-v2", "tradeoff": "明确 breaking migration。"},
+                    ],
+                    "selected_id": "new-v2",
+                    "selection_reason": "四出口需要 closed major schema。",
+                    "product_scope_expanded": False,
+                    "risk_scope_expanded": False,
+                }
+            elif classification == "approved_scope_expansion":
+                entry["scope_expansion"] = self.planning_scope_expansion()
+            elif classification == "out_of_scope_proposal":
+                entry["out_of_scope_proposal"] = {
+                    "proposal_sha256": "2" * 64,
+                    "disposition": "followup",
+                    "route": "future-task",
+                }
+            entries.append(entry)
+        payload = self.planning_input()
+        payload["provenance_review"]["entries"] = entries
+        payload["provenance_review"]["coverage"]["reviewed_entry_ids"] = [
+            entry["id"] for entry in entries
         ]
-        for term, classification in cases:
-            with self.subTest(classification=classification):
-                self.write_normative_prd_hit(term)
-                self.write_wording_evidence(classification)
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            recorded = self.record_planning_approval(payload)
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertEqual(
+            {entry["classification"] for entry in recorded["provenance_review"]["entries"]},
+            gtt.PLANNING_APPROVAL_PROVENANCE_CLASSES,
+        )
+
+    def test_planning_approval_scope_expansion_binding_has_mode_parity(self) -> None:
+        for mode in ("workflow", "standalone"):
+            with self.subTest(mode=mode):
+                payload = self.planning_input(mode=mode)
+                entry = payload["provenance_review"]["entries"][0]
+                entry["classification"] = "approved_scope_expansion"
+                entry["scope_expansion"] = self.planning_scope_expansion()
                 patches = self.patch_common()
                 for patcher in patches:
                     patcher.start()
                 try:
-                    payload = gtt.cmd_record_planning_approval(planning_args())
-                    check = gtt.cmd_check_planning_approval(planning_args())
+                    recorded = self.record_planning_approval(
+                        payload,
+                        name=f"scope-expansion-{mode}.json",
+                        dry_run=True,
+                    )
                 finally:
                     for patcher in reversed(patches):
                         patcher.stop()
-
-                normative = payload["ambiguity_review"]["normative_language"]
-                self.assertEqual(check["status"], "ok")
-                self.assertEqual(normative["unchecked_normative_hits"], [])
-                self.assertEqual(normative["hits"][0]["classification"], classification)
-                self.assertEqual(normative["hits"][0]["reason"], "AI 已分类该命中。")
-
-    def test_record_planning_approval_blocks_contract_violation_classifications(self) -> None:
-        for term in ["至少", "默认", "可选", "相关"]:
-            with self.subTest(term=term):
-                self.write_normative_prd_hit(term)
-                self.write_wording_evidence("contract_violation")
-                planning_artifact = self.task_dir / "planning-approval.json"
-                if planning_artifact.exists():
-                    planning_artifact.unlink()
-                patches = self.patch_common()
-                for patcher in patches:
-                    patcher.start()
-                try:
-                    with self.assertRaises(gtt.WorkflowError) as raised:
-                        gtt.cmd_record_planning_approval(planning_args())
-                finally:
-                    for patcher in reversed(patches):
-                        patcher.stop()
-
-                self.assertIn(
-                    "planning_approval_requires_passed_wording_evidence",
-                    raised.exception.payload["error_codes"],
+                expansion = recorded["provenance_review"]["entries"][0]["scope_expansion"]
+                proposal_sha = expansion["proposal_binding"]["proposal_sha256"]
+                self.assertEqual(
+                    expansion["confirmation"]["proposal_sha256"], proposal_sha
                 )
-                self.assertFalse(planning_artifact.exists())
+                self.assertEqual(
+                    expansion["authority_binding"]["proposal_sha256"], proposal_sha
+                )
+                self.assertEqual(
+                    expansion["authority_binding"]["authority_sha256"],
+                    recorded["requirement_authorities"][0]["sha256"],
+                )
 
-    def test_check_planning_approval_rejects_normative_scan_mismatch(self) -> None:
-        self.write_normative_prd_hit("推荐")
-        evidence = self.write_wording_evidence("term_definition")
+    def test_planning_approval_scope_expansion_rejects_wrong_binding_matrix(self) -> None:
+        base = self.planning_input()
+        entry = base["provenance_review"]["entries"][0]
+        entry["classification"] = "approved_scope_expansion"
+        entry["scope_expansion"] = self.planning_scope_expansion()
+        cases: list[tuple[str, dict[str, object], str]] = []
+
+        wrong_proposal_digest = copy.deepcopy(base)
+        wrong_proposal_digest["provenance_review"]["entries"][0]["scope_expansion"]["proposal_binding"]["proposal_sha256"] = "1" * 64
+        cases.append((
+            "proposal-digest",
+            wrong_proposal_digest,
+            "planning_approval_scope_expansion_proposal_digest_mismatch",
+        ))
+
+        wrong_locator = copy.deepcopy(base)
+        wrong_locator["provenance_review"]["entries"][0]["scope_expansion"]["proposal_binding"]["locator"] = "missing proposal"
+        cases.append((
+            "proposal-locator",
+            wrong_locator,
+            "planning_approval_scope_expansion_proposal_locator_invalid",
+        ))
+
+        wrong_confirmation = copy.deepcopy(base)
+        wrong_confirmation["provenance_review"]["entries"][0]["scope_expansion"]["confirmation"]["proposal_sha256"] = "2" * 64
+        cases.append((
+            "confirmation-digest",
+            wrong_confirmation,
+            "planning_approval_scope_expansion_confirmation_digest_mismatch",
+        ))
+
+        generic_confirmation = copy.deepcopy(base)
+        generic_confirmation["provenance_review"]["entries"][0]["scope_expansion"]["confirmation"]["confirmation_kind"] = "dedicated-unusual-scenario"
+        cases.append((
+            "confirmation-kind",
+            generic_confirmation,
+            "planning_approval_scope_expansion_confirmation_kind_mismatch",
+        ))
+
+        wrong_authority = copy.deepcopy(base)
+        wrong_authority["provenance_review"]["entries"][0]["scope_expansion"]["authority_binding"]["authority_sha256"] = "3" * 64
+        cases.append((
+            "authority-digest",
+            wrong_authority,
+            "planning_approval_scope_expansion_authority_digest_mismatch",
+        ))
+
+        wrong_authority_proposal = copy.deepcopy(base)
+        wrong_authority_proposal["provenance_review"]["entries"][0]["scope_expansion"]["authority_binding"]["proposal_sha256"] = "4" * 64
+        cases.append((
+            "authority-proposal-digest",
+            wrong_authority_proposal,
+            "planning_approval_scope_expansion_authority_proposal_digest_mismatch",
+        ))
+
+        unknown_authority = copy.deepcopy(base)
+        unknown_authority["provenance_review"]["entries"][0]["scope_expansion"]["authority_binding"]["authority_ref"] = "missing-authority"
+        cases.append((
+            "authority-ref",
+            unknown_authority,
+            "planning_approval_scope_expansion_authority_unknown",
+        ))
+
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
-            evidence["scan"]["hits"][0]["text"] = "artifact 手工篡改。"
-            gtt.write_json(self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT, evidence)
+            for name, payload, expected_error in cases:
+                with self.subTest(name=name):
+                    with self.assertRaises(gtt.WorkflowError) as raised:
+                        self.record_planning_approval(
+                            payload,
+                            name=f"invalid-scope-expansion-{name}.json",
+                            dry_run=True,
+                        )
+                    self.assertIn(expected_error, raised.exception.payload["error_codes"])
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+    def test_planning_approval_scope_expansion_supports_unusual_link_and_nonapproved_exit(self) -> None:
+        candidate: dict[str, object] = {
+            "id": "bounded-unusual-expansion",
+            "scenario_class": "other_nonstandard",
+            "trigger_evidence": "The source authority requires one bounded nonstandard case.",
+            "scope": "Only the reviewed task contract.",
+            "cost": "Bounded implementation cost.",
+            "alternatives": ["Keep the proposal outside the current task."],
+            "consequence": "The approved behavior remains absent without this proposal.",
+            "source_requirement_refs": [],
+            "proposal_sha256": "0" * 64,
+            "disposition": "confirmed_scope_expansion",
+            "confirmation": None,
+        }
+        proposal_sha = gtt.planning_unusual_proposal_digest(candidate)
+        candidate["confirmation"] = {
+            "confirmation_kind": "dedicated-unusual-scenario",
+            "proposal_sha256": proposal_sha,
+            "confirmation_summary": "用户确认 exact unusual proposal。",
+            "confirmed_at": "2026-07-19T00:00:00Z",
+            "authority_ref": "task-prd",
+        }
+        payload = self.planning_input()
+        payload["unusual_scenario_review"]["candidates"] = [candidate]
+        unusual_entry = payload["provenance_review"]["entries"][0]
+        unusual_entry["classification"] = "approved_scope_expansion"
+        unusual_entry["scope_expansion"] = self.planning_scope_expansion(
+            source_kind="unusual_scenario_candidate",
+            unusual_candidate=candidate,
+        )
+        ordinary_entry = copy.deepcopy(unusual_entry)
+        ordinary_entry["id"] = "ordinary-scope-expansion"
+        ordinary_entry["scope_expansion"] = self.planning_scope_expansion()
+        payload["provenance_review"]["entries"].append(ordinary_entry)
+        payload["provenance_review"]["coverage"]["reviewed_entry_ids"] = [
+            unusual_entry["id"],
+            ordinary_entry["id"],
+        ]
+        payload["typed_exit"] = "revision_required"
+        payload["consumer"] = {"kind": "skill", "id": "guru-approve-task-plan"}
+        payload["semantic_review"]["ai_review_gate"]["status"] = "revision_required"
+        payload["semantic_review"]["ai_review_gate"]["revision_actions"] = [
+            "Revise an unrelated task-local test obligation."
+        ]
+        payload["user_confirmation"] = {
+            "kind": "not-required",
+            "status": "not_required",
+            "prompt_presented_at": None,
+            "confirmed_at": None,
+            "evidence_summary": "This non-approved exit does not activate the task.",
+        }
+
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            recorded = self.record_planning_approval(payload, dry_run=True)
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        expansion = recorded["provenance_review"]["entries"][0]["scope_expansion"]
+        ordinary = recorded["provenance_review"]["entries"][1]["scope_expansion"]
+        self.assertEqual(expansion["proposal_binding"]["proposal_sha256"], proposal_sha)
+        self.assertEqual(
+            expansion["proposal_binding"]["unusual_candidate_id"], candidate["id"]
+        )
+        self.assertEqual(
+            expansion["confirmation"]["confirmation_kind"],
+            "dedicated-unusual-scenario",
+        )
+        self.assertEqual(
+            ordinary["confirmation"]["confirmation_kind"],
+            "dedicated-scope-expansion",
+        )
+        self.assertEqual(recorded["typed_exit"], "revision_required")
+
+    def test_planning_approval_scope_expansion_checker_recomputes_current_content(self) -> None:
+        payload = self.planning_input()
+        entry = payload["provenance_review"]["entries"][0]
+        entry["classification"] = "approved_scope_expansion"
+        entry["scope_expansion"] = self.planning_scope_expansion()
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval(payload)
+            (self.task_dir / "prd.md").write_text(
+                "# PRD\n\n## R1. Requirement\n\nThe exact proposal content changed.\n",
+                encoding="utf-8",
+            )
+            _path, _payload, errors = gtt.validate_planning_approval(
+                self.root, self.task_dir
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn(
+            "planning_approval_scope_expansion_proposal_digest_mismatch", errors
+        )
+
+    def test_planning_approval_provenance_invalid_entry_matrix(self) -> None:
+        base = copy.deepcopy(self.planning_input()["provenance_review"]["entries"][0])
+        cases: dict[str, list[dict[str, object]]] = {
+            "missing": [],
+            "duplicate": [base, copy.deepcopy(base)],
+            "unknown-class": [{**copy.deepcopy(base), "classification": "inferred_requirement"}],
+            "empty-authority": [{**copy.deepcopy(base), "authority_refs": []}],
+        }
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            for name, entries in cases.items():
+                with self.subTest(name=name):
+                    payload = self.planning_input()
+                    payload["provenance_review"]["entries"] = entries
+                    payload["provenance_review"]["coverage"]["reviewed_entry_ids"] = [
+                        str(entry.get("id") or "") for entry in entries
+                    ]
+                    with self.assertRaises(gtt.WorkflowError):
+                        self.record_planning_approval(payload, name=f"bad-provenance-{name}.json")
+
+            self.record_planning_approval()
+            (self.task_dir / "prd.md").write_text(
+                "# PRD\n\n## R1. Requirement\n\nThe load-bearing statement changed.\n",
+                encoding="utf-8",
+            )
+            _path, _payload, errors = gtt.validate_planning_approval(
+                self.root, self.task_dir
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn("planning_approval_provenance_statement_stale", errors)
+
+    def test_planning_approval_choice_requires_exact_selection_and_scope_flags(self) -> None:
+        base_entry = copy.deepcopy(self.planning_input()["provenance_review"]["entries"][0])
+        base_entry.update({
+            "classification": "necessary_implementation_choice",
+            "implementation_choice": {
+                "alternatives": [
+                    {"id": "a", "tradeoff": "方案 A。"},
+                    {"id": "b", "tradeoff": "方案 B。"},
+                ],
+                "selected_id": "b",
+                "selection_reason": "方案 B 保持单一 artifact。",
+                "product_scope_expanded": False,
+                "risk_scope_expanded": False,
+            },
+        })
+        invalid_entries = []
+        wrong_selection = copy.deepcopy(base_entry)
+        wrong_selection["implementation_choice"]["selected_id"] = "missing"
+        invalid_entries.append(wrong_selection)
+        expanded_scope = copy.deepcopy(base_entry)
+        expanded_scope["implementation_choice"]["risk_scope_expanded"] = True
+        invalid_entries.append(expanded_scope)
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            for index, entry in enumerate(invalid_entries):
+                with self.subTest(index=index):
+                    payload = self.planning_input()
+                    payload["provenance_review"]["entries"] = [entry]
+                    with self.assertRaises(gtt.WorkflowError):
+                        self.record_planning_approval(payload, name=f"bad-choice-{index}.json")
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+    def test_planning_approval_unusual_scenario_confirmation_is_dedicated(self) -> None:
+        candidate = {
+            "id": "race-proposal",
+            "scenario_class": "toctou_or_concurrency_race",
+            "trigger_evidence": "新增 proposal 触发。",
+            "scope": "增加跨进程锁。",
+            "cost": "增加运行时状态与恢复路径。",
+            "alternatives": ["删除非必要机制"],
+            "consequence": "不确认则不得进入 approved execution。",
+            "source_requirement_refs": ["task-prd"],
+            "proposal_sha256": "0" * 64,
+            "disposition": "confirmed_scope_expansion",
+            "confirmation": None,
+        }
+        proposal_sha = gtt.planning_unusual_proposal_digest(candidate)
+        candidate["confirmation"] = {
+            "confirmation_kind": "dedicated-unusual-scenario",
+            "proposal_sha256": proposal_sha,
+            "confirmation_summary": "用户只确认该 exact race proposal。",
+            "confirmed_at": "2026-07-19T00:03:00Z",
+            "authority_ref": "task-prd",
+        }
+        payload = self.planning_input()
+        payload["unusual_scenario_review"]["candidates"] = [candidate]
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            recorded = self.record_planning_approval(payload)
+            self.assertEqual(
+                recorded["unusual_scenario_review"]["candidates"][0]["proposal_sha256"],
+                proposal_sha,
+            )
+            (self.task_dir / "planning-approval.json").unlink()
+            candidate["confirmation"]["confirmation_kind"] = "post-planning-approval"
             with self.assertRaises(gtt.WorkflowError) as raised:
+                self.record_planning_approval(payload, name="bad-unusual-confirmation.json")
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn("dedicated confirmation", str(raised.exception))
+
+    def test_planning_approval_unusual_disposition_refusal_and_route_matrix(self) -> None:
+        dispositions = [
+            "explicit_requirement",
+            "mechanism_removed",
+            "mechanism_replaced",
+            "confirmed_scope_expansion",
+            "clarification_required",
+            "out_of_scope",
+        ]
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            for disposition in dispositions:
+                with self.subTest(disposition=disposition):
+                    candidate = {
+                        "id": f"candidate-{disposition}",
+                        "scenario_class": "other_nonstandard",
+                        "trigger_evidence": "AI review identified one bounded nonstandard proposal.",
+                        "scope": "Only the reviewed planning choice.",
+                        "cost": "Bounded task-local complexity.",
+                        "alternatives": ["Remove", "Replace", "Clarify"],
+                        "consequence": "The disposition must remain explicit.",
+                        "source_requirement_refs": ["task-prd"],
+                        "proposal_sha256": "0" * 64,
+                        "disposition": disposition,
+                        "confirmation": None,
+                    }
+                    if disposition == "confirmed_scope_expansion":
+                        candidate["confirmation"] = {
+                            "confirmation_kind": "dedicated-unusual-scenario",
+                            "proposal_sha256": gtt.planning_unusual_proposal_digest(candidate),
+                            "confirmation_summary": "The exact proposal was separately confirmed.",
+                            "confirmed_at": "2026-07-19T00:03:00Z",
+                            "authority_ref": "task-prd",
+                        }
+                    if disposition == "clarification_required":
+                        payload = self.planning_input(
+                            typed_exit="clarify_scope",
+                            consumer={"kind": "skill", "id": "guru-clarify-requirements"},
+                            user_confirmation={
+                                "kind": "not-required",
+                                "status": "not_required",
+                                "prompt_presented_at": None,
+                                "confirmed_at": None,
+                                "evidence_summary": "Clarification owns the next user interaction.",
+                            },
+                        )
+                        payload["semantic_review"]["ai_review_gate"].update({
+                            "status": "clarify_scope",
+                            "scope_proposals": ["Clarify the exact nonstandard scope."],
+                        })
+                    else:
+                        payload = self.planning_input()
+                    payload["unusual_scenario_review"]["candidates"] = [candidate]
+                    recorded = self.record_planning_approval(
+                        payload,
+                        name=f"unusual-{disposition}.json",
+                    )
+                    expected_exit = "clarify_scope" if disposition == "clarification_required" else "approved"
+                    self.assertEqual(recorded["typed_exit"], expected_exit)
+                    (self.task_dir / "planning-approval.json").unlink()
+
+            refusal = self.planning_input(
+                typed_exit="blocked",
+                consumer={"kind": "stop", "id": "task-plan-approval-blocked"},
+                user_confirmation={
+                    "kind": "not-required",
+                    "status": "not_required",
+                    "prompt_presented_at": None,
+                    "confirmed_at": None,
+                    "evidence_summary": "The user refused the dedicated proposal.",
+                },
+            )
+            refusal["semantic_review"]["ai_review_gate"].update({
+                "status": "blocked",
+                "blocking_reasons": ["The required dedicated proposal was refused."],
+            })
+            recorded_refusal = self.record_planning_approval(
+                refusal,
+                name="unusual-refusal.json",
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertEqual(recorded_refusal["typed_exit"], "blocked")
+
+    def test_planning_approval_mechanism_revision_does_not_expand_scope(self) -> None:
+        candidates = []
+        for disposition in ["mechanism_removed", "mechanism_replaced"]:
+            candidates.append({
+                "id": disposition,
+                "scenario_class": "cross_os_atomicity",
+                "trigger_evidence": "非必要 atomic mechanism 引入额外风险。",
+                "scope": "删除或替换该 mechanism。",
+                "cost": "仅修改 task-local design。",
+                "alternatives": ["删除", "替换"],
+                "consequence": "保留机制会扩大非目标风险边界。",
+                "source_requirement_refs": [],
+                "proposal_sha256": "0" * 64,
+                "disposition": disposition,
+                "confirmation": None,
+            })
+        payload = self.planning_input(
+            typed_exit="revision_required",
+            consumer={"kind": "skill", "id": "guru-approve-task-plan"},
+            user_confirmation={
+                "kind": "not-required",
+                "status": "not_required",
+                "prompt_presented_at": None,
+                "confirmed_at": None,
+                "evidence_summary": "先修订非必要 mechanism。",
+            },
+        )
+        gate = payload["semantic_review"]["ai_review_gate"]
+        gate.update({
+            "status": "revision_required",
+            "findings": ["非必要 mechanism 引入超范围风险。"],
+            "revision_actions": ["删除或替换 mechanism 后重新 review。"],
+            "scope_proposals": [],
+        })
+        payload["unusual_scenario_review"]["candidates"] = candidates
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            recorded = self.record_planning_approval(payload)
+            fresh = self.planning_input(
+                reason="The unnecessary mechanisms were removed or replaced and the plan passed fresh review.",
+                supersedes_facts_sha256=recorded["facts_sha256"],
+            )
+            fresh["unusual_scenario_review"]["candidates"] = candidates
+            approved = self.record_planning_approval(
+                fresh,
+                name="mechanism-clean-approved.json",
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertEqual(recorded["typed_exit"], "revision_required")
+        self.assertTrue(all(row["confirmation"] is None for row in recorded["unusual_scenario_review"]["candidates"]))
+        self.assertEqual(recorded["semantic_review"]["ai_review_gate"]["scope_proposals"], [])
+        self.assertEqual(approved["typed_exit"], "approved")
+        self.assertTrue(all(row["confirmation"] is None for row in approved["unusual_scenario_review"]["candidates"]))
+
+    def test_planning_approval_requires_current_wording_and_authority(self) -> None:
+        authority_path = self.root / "docs/authority.md"
+        authority_path.parent.mkdir(parents=True)
+        authority_path.write_text("# Authority\n\nCurrent requirement.\n", encoding="utf-8")
+        payload = self.planning_input(requirement_authorities=[{
+            "id": "durable-authority",
+            "kind": "repository_document",
+            "locator": "docs/authority.md",
+            "sha256": "0" * 64,
+            "updated_at": None,
+        }])
+        payload["provenance_review"]["entries"][0]["authority_refs"] = ["durable-authority"]
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval(payload)
+            authority_path.write_text("# Authority\n\nChanged requirement.\n", encoding="utf-8")
+            with self.assertRaises(gtt.WorkflowError) as authority_error:
+                gtt.cmd_check_planning_approval(planning_args())
+            self.assertIn(
+                "planning_approval_requirement_authority_stale",
+                authority_error.exception.payload["errors"],
+            )
+            authority_path.write_text("# Authority\n\nCurrent requirement.\n", encoding="utf-8")
+            wording = gtt.read_json(self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT)
+            wording["semantic_review"]["ai_review_gate"]["summary"] = "stale wording evidence"
+            gtt.write_json(self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT, wording)
+            with self.assertRaises(gtt.WorkflowError) as wording_error:
                 gtt.cmd_check_planning_approval(planning_args())
         finally:
             for patcher in reversed(patches):
                 patcher.stop()
+        self.assertTrue(any("wording evidence" in error for error in wording_error.exception.payload["errors"]))
 
-        self.assertTrue(any("wording evidence 校验失败" in error for error in raised.exception.payload["errors"]))
-
-    def test_record_planning_approval_requires_wording_evidence(self) -> None:
-        (self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT).unlink()
+    def test_planning_approval_rejects_planning_docs_ssot_and_statement_drift(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
         try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("contract-wording-review.json", str(raised.exception))
-
-    def test_record_planning_approval_rejects_non_passed_wording_evidence(self) -> None:
-        self.write_wording_evidence(None)
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("missing, stale, or blocked", str(raised.exception))
-
-    def test_check_planning_approval_rejects_missing_ambiguity_review(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            payload = gtt.cmd_record_planning_approval(planning_args())
-            payload.pop("ambiguity_review")
-            payload.pop("artifact_path", None)
-            payload.pop("dry_run", None)
-            (self.task_dir / "planning-approval.json").write_text(
-                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+            self.record_planning_approval()
+            (self.task_dir / "design.md").write_text(
+                "# Design\n\n## Docs SSOT Plan\n\n- Strategy: delta_first\n",
                 encoding="utf-8",
             )
             with self.assertRaises(gtt.WorkflowError) as raised:
@@ -6080,351 +6814,254 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         finally:
             for patcher in reversed(patches):
                 patcher.stop()
-
-        self.assertTrue(any("ambiguity_review" in error for error in raised.exception.payload["errors"]))
-
-    def test_check_planning_approval_rejects_schema_1_1_without_ambiguity_review(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            payload = gtt.cmd_record_planning_approval(planning_args())
-            payload["schema_version"] = "1.1"
-            payload.pop("ambiguity_review")
-            payload.pop("artifact_path", None)
-            payload.pop("dry_run", None)
-            (self.task_dir / "planning-approval.json").write_text(
-                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
-                encoding="utf-8",
-            )
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
         errors = raised.exception.payload["errors"]
-        self.assertTrue(any("schema_version" in error for error in errors))
-        self.assertTrue(any("ambiguity_review" in error for error in errors))
+        self.assertIn("planning_approval_reviewed_artifacts_not_current", errors)
+        self.assertIn("planning_approval_docs_ssot_statement_stale", errors)
 
-    def test_check_planning_approval_rejects_tampered_ambiguity_projection(self) -> None:
+    def test_planning_approval_legacy_migration_and_v2_supersession(self) -> None:
+        artifact = self.task_dir / "planning-approval.json"
+        gtt.write_json(artifact, {"schema_version": "1.2"})
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
         try:
-            payload = gtt.cmd_record_planning_approval(planning_args())
-            review = payload["ambiguity_review"]
-            review["status"] = "failed"
-            review["reviewer"] = ""
-            review["summary"] = ""
-            review["normative_language"]["controlled_terms"] = ["可以"]
-            review["normative_language"]["unchecked_normative_hits"] = ["design.md:12 建议"]
-            review["checked_dimensions"].pop("acceptance_criteria_are_deterministic")
-            payload.pop("artifact_path", None)
-            payload.pop("dry_run", None)
-            (self.task_dir / "planning-approval.json").write_text(
-                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
-                encoding="utf-8",
-            )
-            with self.assertRaises(gtt.WorkflowError) as raised:
+            with self.assertRaises(gtt.WorkflowError) as legacy_error:
                 gtt.cmd_check_planning_approval(planning_args())
+            self.assertIn(
+                "planning_approval_legacy_1_2_requires_complete_v2_reentry",
+                legacy_error.exception.payload["errors"],
+            )
+            first = self.record_planning_approval()
+            with self.assertRaises(gtt.WorkflowError) as supersession_error:
+                self.record_planning_approval(name="missing-supersession.json")
+            self.assertIn(
+                "planning_approval_superseded_facts_mismatch",
+                supersession_error.exception.payload["error_codes"],
+            )
+            replacement = self.planning_input(
+                reason="Fresh complete semantic re-entry approved.",
+                supersedes_facts_sha256=first["facts_sha256"],
+            )
+            second = self.record_planning_approval(replacement, name="replacement.json")
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertEqual(second["supersedes_facts_sha256"], first["facts_sha256"])
+        self.assertNotEqual(second["facts_sha256"], first["facts_sha256"])
+
+    def test_planning_approval_legacy_archive_bytes_remain_unchanged(self) -> None:
+        archived = self.root / ".trellis/tasks/archive/2026-07/07-04-legacy-plan"
+        archived.mkdir(parents=True)
+        legacy_bytes = b'{"schema_version":"1.2","status":"passed"}\n'
+        artifact = archived / "planning-approval.json"
+        artifact.write_bytes(legacy_bytes)
+
+        _path, _payload, errors = gtt.validate_planning_approval(
+            self.root, archived
+        )
+
+        self.assertIn(
+            "planning_approval_legacy_1_2_requires_complete_v2_reentry",
+            errors,
+        )
+        self.assertEqual(artifact.read_bytes(), legacy_bytes)
+
+    def test_planning_approval_runtime_keeps_semantic_fields_caller_authored(self) -> None:
+        source = inspect.getsource(gtt.build_planning_approval_payload)
+        for expected in [
+            'copy.deepcopy(authored.get("semantic_review"))',
+            'copy.deepcopy(authored.get("user_confirmation"))',
+            '"typed_exit": authored.get("typed_exit")',
+            '"consumer": copy.deepcopy(authored.get("consumer"))',
+        ]:
+            self.assertIn(expected, source)
+        for forbidden in [
+            'entry["classification"] =',
+            'choice["selected_id"] =',
+            'candidate["disposition"] =',
+            'payload["typed_exit"] =',
+            'payload["semantic_review"] =',
+        ]:
+            self.assertNotIn(forbidden, source)
+
+    def test_planning_approval_artifact_digest_and_required_doc_fail_closed(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            with self.assertRaises(gtt.WorkflowError) as digest_error:
+                gtt.cmd_check_planning_approval(
+                    planning_args(expected_artifact_sha256="0" * 64)
+                )
+            self.assertIn(
+                "planning_approval_artifact_sha256_mismatch",
+                digest_error.exception.payload["errors"],
+            )
+            (self.task_dir / "implement.md").unlink()
+            _path, _payload, errors = gtt.validate_planning_approval(
+                self.root, self.task_dir
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn("planning_approval_required_artifact_missing", errors)
+
+    def test_planning_approval_recording_rejects_invocation_snapshot_drift(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            with mock.patch.object(
+                gtt, "current_head", side_effect=["a" * 40, "c" * 40]
+            ):
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    self.record_planning_approval()
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn(
+            "planning_approval_invocation_snapshot_drift",
+            raised.exception.payload["error_codes"],
+        )
+
+    def test_planning_approval_rechecks_invocation_snapshot_before_activation(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
         finally:
             for patcher in reversed(patches):
                 patcher.stop()
 
-        errors = raised.exception.payload["errors"]
-        self.assertTrue(any("完整投影" in error for error in errors))
+        with (
+            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
+            mock.patch.object(gtt, "load_task_start_context", return_value={
+                "base_branch": "main",
+                "base_ref": "refs/remotes/origin/main",
+                "base_head_sha": "b" * 40,
+            }),
+            mock.patch.object(gtt, "current_head", return_value="c" * 40),
+            mock.patch.object(gtt, "git_status_paths", return_value=["unreviewed.py"]),
+        ):
+            _path, _payload, errors = gtt.validate_planning_approval(
+                self.root, self.task_dir
+            )
+        self.assertIn("planning_approval_repository_snapshot_head_stale", errors)
+        self.assertIn("planning_approval_repository_snapshot_dirty_paths_stale", errors)
+
+    def test_planning_approval_allows_post_activation_head_status_and_mtime_drift(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            task = gtt.read_json(self.task_dir / "task.json")
+            task["status"] = "in_progress"
+            gtt.write_json(self.task_dir / "task.json", task)
+            prd = self.task_dir / "prd.md"
+            new_mtime = prd.stat().st_mtime + 10
+            os.utime(prd, (new_mtime, new_mtime))
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        with (
+            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
+            mock.patch.object(gtt, "load_task_start_context", return_value={
+                "base_branch": "main",
+                "base_ref": "refs/remotes/origin/main",
+                "base_head_sha": "b" * 40,
+            }),
+            mock.patch.object(gtt, "current_head", return_value="c" * 40),
+            mock.patch.object(gtt, "git_status_paths", return_value=["implementation.py"]),
+        ):
+            _path, _payload, errors = gtt.validate_planning_approval(
+                self.root, self.task_dir
+            )
+        self.assertEqual(errors, [])
+
+    def test_planning_approval_scope_projection_ignores_ledger_evidence_metadata(self) -> None:
+        payload = self.planning_input()
+        payload["requirement_authorities"].append({
+            "id": "task-scope-ledger",
+            "kind": "task_artifact",
+            "locator": ".trellis/tasks/07-04-gates/issue-scope-ledger.json",
+            "sha256": "0" * 64,
+            "updated_at": None,
+        })
+        payload["provenance_review"]["entries"][0]["authority_refs"].append(
+            "task-scope-ledger"
+        )
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            recorded = self.record_planning_approval(payload)
+            ledger_path = self.task_dir / "issue-scope-ledger.json"
+            ledger = gtt.read_json(ledger_path)
+            expected_scope_sha = gtt.context_digest(
+                gtt.planning_scope_ledger_projection(ledger)
+            )
+            ledger_authority = next(
+                row
+                for row in recorded["requirement_authorities"]
+                if row["id"] == "task-scope-ledger"
+            )
+            self.assertEqual(ledger_authority["sha256"], expected_scope_sha)
+            self.assertEqual(recorded["task"]["scope_ledger_sha256"], expected_scope_sha)
+            ledger["scope_decisions"] = [{
+                "trail_id": "decision-1",
+                "planning_approval_sha256": hashlib.sha256(
+                    (self.task_dir / "planning-approval.json").read_bytes()
+                ).hexdigest(),
+            }]
+            ledger["close_issues"][0]["acceptance_evidence"] = [
+                "Planning approval is current."
+            ]
+            gtt.write_json(ledger_path, ledger)
+
+            _path, _payload, errors = gtt.validate_planning_approval(
+                self.root,
+                self.task_dir,
+            )
+            self.assertEqual(errors, [])
+
+            ledger["related_issues"] = [{"number": 99}]
+            gtt.write_json(ledger_path, ledger)
+            _path, _payload, errors = gtt.validate_planning_approval(
+                self.root,
+                self.task_dir,
+            )
+            self.assertIn(
+                "planning_approval_task_scope_ledger_sha256_stale",
+                errors,
+            )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
 
     def test_validate_planning_approval_accepts_archived_task_with_active_artifact_paths(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
             patcher.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
+            self.record_planning_approval()
         finally:
             for patcher in reversed(patches):
                 patcher.stop()
-
         archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-gates"
         archived_task_dir.mkdir(parents=True)
         for name in [
-            "task.json",
-            "prd.md",
-            "design.md",
-            "implement.md",
-            gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT,
-            "planning-approval.json",
+            "task.json", "prd.md", "design.md", "implement.md",
+            gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT, "planning-approval.json",
         ]:
             (archived_task_dir / name).write_bytes((self.task_dir / name).read_bytes())
         for name in ["prd.md", "design.md", "implement.md"]:
             (self.task_dir / name).unlink()
-
-        with (
-            mock.patch.object(gtt, "current_head", return_value="def456"),
-            mock.patch.object(gtt, "is_ancestor", return_value=True),
-        ):
-            _path, _payload, errors = gtt.validate_planning_approval(
-                self.root,
-                archived_task_dir,
-                allow_committed_head=True,
-            )
-
-        self.assertEqual(errors, [])
-
-    def test_record_planning_approval_requires_reviewer(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_planning_approval(planning_args(reviewer=""))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("--reviewer", str(raised.exception))
-
-    def test_record_planning_approval_rejects_workflow_confirmation_source(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_planning_approval(planning_args(confirmation_source="workflow"))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn(gtt.PLANNING_APPROVAL_CONFIRMATION_SOURCE, str(raised.exception))
-
-    def test_record_planning_approval_requires_all_three_planning_docs(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_planning_approval(planning_args(artifact=["prd.md"]))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("design.md", str(raised.exception))
-        self.assertIn("implement.md", str(raised.exception))
-
-    def test_check_planning_approval_rejects_legacy_workflow_source(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            payload = gtt.cmd_record_planning_approval(planning_args())
-            payload["schema_version"] = "1.0"
-            payload["user_confirmation"]["source"] = "workflow"
-            payload.pop("review_prompt_presented_at")
-            payload.pop("approved_at")
-            payload.pop("reviewed_artifacts")
-            payload.pop("artifact_path", None)
-            payload.pop("dry_run", None)
-            (self.task_dir / "planning-approval.json").write_text(
-                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
-                encoding="utf-8",
-            )
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        errors = raised.exception.payload["errors"]
-        self.assertTrue(any("schema_version" in error for error in errors))
-        self.assertTrue(any("user_confirmation.source" in error for error in errors))
-        self.assertTrue(any("reviewed_artifacts" in error for error in errors))
-
-    def test_check_planning_approval_rejects_phase0_handoff_source(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            payload = gtt.cmd_record_planning_approval(planning_args())
-            payload["user_confirmation"]["source"] = "phase0-handoff"
-            payload.pop("artifact_path", None)
-            payload.pop("dry_run", None)
-            (self.task_dir / "planning-approval.json").write_text(
-                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
-                encoding="utf-8",
-            )
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue(any("Phase 0 handoff" in error for error in raised.exception.payload["errors"]))
-
-    def test_check_planning_approval_rejects_missing_required_doc_entry(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            payload = gtt.cmd_record_planning_approval(planning_args())
-            payload["reviewed_artifacts"] = [
-                item for item in payload["reviewed_artifacts"] if not str(item["path"]).endswith("/design.md")
-            ]
-            payload["approved_artifacts"] = [
-                item for item in payload["approved_artifacts"] if not str(item["path"]).endswith("/design.md")
-            ]
-            payload.pop("artifact_path", None)
-            payload.pop("dry_run", None)
-            (self.task_dir / "planning-approval.json").write_text(
-                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
-                encoding="utf-8",
-            )
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue(any("design.md" in error for error in raised.exception.payload["errors"]))
-
-    def test_check_planning_approval_rejects_missing_digest_metadata(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            payload = gtt.cmd_record_planning_approval(planning_args())
-            payload["reviewed_artifacts"][0].pop("sha256")
-            payload.pop("artifact_path", None)
-            payload.pop("dry_run", None)
-            (self.task_dir / "planning-approval.json").write_text(
-                json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
-                encoding="utf-8",
-            )
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue(any("缺少 sha256" in error for error in raised.exception.payload["errors"]))
-
-    def test_check_planning_approval_rejects_changed_artifact(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            gtt.cmd_record_planning_approval(planning_args())
-            (self.task_dir / "prd.md").write_text("# PRD\n\n需求变更。\n", encoding="utf-8")
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue(any("已过期" in error for error in raised.exception.payload["errors"]))
-
-    def test_check_planning_approval_allows_modified_at_drift_when_content_matches(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            gtt.cmd_record_planning_approval(planning_args())
-            prd = self.task_dir / "prd.md"
-            new_mtime = prd.stat().st_mtime + 10
-            os.utime(prd, (new_mtime, new_mtime))
-            check = gtt.cmd_check_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(check["status"], "ok")
-
-    def test_check_planning_approval_allows_head_drift_when_artifacts_match(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            gtt.cmd_record_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        with mock.patch.object(gtt, "current_head", return_value="def456"):
-            _path, _payload, errors = gtt.validate_planning_approval(self.root, self.task_dir)
-
-        self.assertEqual(errors, [])
-
-    def test_check_planning_approval_allows_dirty_path_drift_when_artifacts_match(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            gtt.cmd_record_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        with (
-            mock.patch.object(gtt, "current_head", return_value="abc123"),
-            mock.patch.object(gtt, "git_status_paths", return_value=["new-dirty-file.txt"]),
-        ):
-            _path, _payload, errors = gtt.validate_planning_approval(self.root, self.task_dir)
-
-        self.assertEqual(errors, [])
-
-    def test_check_planning_approval_allows_non_metadata_dirty_after_head_drift_when_artifacts_match(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            gtt.cmd_record_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        with (
-            mock.patch.object(gtt, "current_head", return_value="def456"),
-            mock.patch.object(gtt, "is_ancestor", return_value=True),
-            mock.patch.object(gtt, "git_status_paths", return_value=["new-dirty-file.txt"]),
-        ):
-            _path, _payload, errors = gtt.validate_planning_approval(
-                self.root,
-                self.task_dir,
-                allow_committed_head=True,
-            )
-
-        self.assertEqual(errors, [])
-
-    def test_check_planning_approval_allows_metadata_dirty_after_committed_head(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            gtt.cmd_record_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        with (
-            mock.patch.object(gtt, "current_head", return_value="def456"),
-            mock.patch.object(gtt, "is_ancestor", return_value=True),
-            mock.patch.object(
-                gtt,
-                "git_status_paths",
-                return_value=[
-                    ".trellis/tasks/07-04-review-gate/task-start-context.json",
-                    ".trellis/tasks/07-04-gates/review.md",
-                ],
-            ),
-        ):
-            _path, _payload, errors = gtt.validate_planning_approval(
-                self.root,
-                self.task_dir,
-                allow_committed_head=True,
-            )
-
+        _path, _payload, errors = gtt.validate_planning_approval(
+            self.root, archived_task_dir, allow_committed_head=True
+        )
         self.assertEqual(errors, [])
 
     def test_record_phase2_check_requires_full_coverage_on_pass(self) -> None:
@@ -6446,7 +7083,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         for patcher in patches:
             patcher.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
+            self.record_planning_approval()
             payload = gtt.cmd_record_phase2_check(
                 phase2_args(checked_spec=[".trellis/spec/index.md"])
             )
@@ -6456,7 +7093,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                 patcher.stop()
 
         self.assertTrue((self.task_dir / "phase2-check.json").exists())
-        self.assertEqual(payload["head"], "abc123")
+        self.assertEqual(payload["head"], "a" * 40)
         self.assertEqual(check["status"], "ok")
         self.assertTrue(all(payload["coverage"].values()))
 
@@ -6506,7 +7143,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         git_object_patch = mock.patch.object(gtt, "git_object_exists", return_value=True)
         git_object_patch.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
+            self.record_planning_approval()
             assignment.write_text(json.dumps(unclosed_assignment, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
             with self.assertRaises(gtt.WorkflowError) as record_raised:
                 gtt.cmd_record_phase2_check(phase2_args())
@@ -6528,7 +7165,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         for patcher in patches:
             patcher.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
+            self.record_planning_approval()
             gtt.cmd_record_phase2_check(phase2_args())
             with mock.patch.object(
                 gtt,
@@ -6567,7 +7204,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         for patcher in patches:
             patcher.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
+            self.record_planning_approval()
             with self.assertRaises(gtt.WorkflowError) as raised:
                 gtt.cmd_record_phase2_check(phase2_args(checked_spec=["README.md"]))
         finally:
@@ -6582,7 +7219,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         for patcher in patches:
             patcher.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
+            self.record_planning_approval()
             gtt.cmd_record_phase2_check(
                 phase2_args(
                     pass_check=False,
@@ -6602,7 +7239,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         for patcher in patches:
             patcher.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
+            self.record_planning_approval()
             gtt.cmd_record_phase2_check(phase2_args())
         finally:
             for patcher in reversed(patches):
@@ -6626,7 +7263,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         for patcher in patches:
             patcher.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
+            self.record_planning_approval()
             gtt.cmd_record_phase2_check(phase2_args())
         finally:
             for patcher in reversed(patches):
@@ -6666,7 +7303,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         for patcher in patches:
             patcher.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
+            self.record_planning_approval()
             gtt.cmd_record_phase2_check(phase2_args(checked_artifact=["agent-assignment.json"]))
         finally:
             for patcher in reversed(patches):
@@ -6720,8 +7357,9 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         ledger.write_text(
             gtt.json.dumps(
                 {
-                    "primary_issue": None,
-                    "close_issues": [],
+                    "schema_version": "1.0",
+                    "primary_issue": {"number": 27},
+                    "close_issues": [{"number": 27}],
                     "related_issues": [],
                     "followup_issues": [],
                 },
@@ -6735,7 +7373,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         for patcher in patches:
             patcher.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
+            self.record_planning_approval()
             gtt.cmd_record_phase2_check(
                 phase2_args(checked_artifact=["review.md", "reviews/round-001-final-release.md", "issue-scope-ledger.json"])
             )
@@ -6748,13 +7386,14 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         ledger.write_text(
             gtt.json.dumps(
                 {
-                    "primary_issue": None,
+                    "schema_version": "1.0",
+                    "primary_issue": {"number": 27},
                     "close_issues": [
                         {
-                            "number": 44,
-                            "url": "https://github.com/castbox/guru-trellis/issues/44",
+                            "number": 27,
+                            "url": "https://github.com/castbox/guru-trellis/issues/27",
                             "title": "收紧 Branch Review Gate",
-                            "acceptance_evidence": ["Branch Review Gate 已覆盖 Issue #44。"],
+                            "acceptance_evidence": ["Branch Review Gate 已覆盖 Issue #27。"],
                         }
                     ],
                     "related_issues": [],
@@ -6791,7 +7430,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         for patcher in patches:
             patcher.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
+            self.record_planning_approval()
             with mock.patch.object(
                 gtt,
                 "git_status_paths",
@@ -6824,7 +7463,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         for patcher in patches:
             patcher.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
+            self.record_planning_approval()
             gtt.cmd_record_phase2_check(phase2_args())
         finally:
             for patcher in reversed(patches):
@@ -6851,7 +7490,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         for patcher in patches:
             patcher.start()
         try:
-            gtt.cmd_record_planning_approval(planning_args())
+            self.record_planning_approval()
             gtt.cmd_record_phase2_check(phase2_args())
         finally:
             for patcher in reversed(patches):
@@ -19229,7 +19868,16 @@ class RequirementsClarificationTests(unittest.TestCase):
         task.mkdir(parents=True)
         locator = task.relative_to(root).as_posix()
         (task / "task.json").write_text(
-            '{"status":"in_progress","branch":"main"}\n', encoding="utf-8"
+            json.dumps({
+                "id": "active-scope",
+                "name": "active-scope",
+                "title": "Active scope classification",
+                "status": "in_progress",
+                "scope": "issue #7",
+                "branch": "main",
+                "base_branch": "main",
+            }) + "\n",
+            encoding="utf-8",
         )
         for name, content in (
             (
@@ -19242,7 +19890,8 @@ class RequirementsClarificationTests(unittest.TestCase):
                 "design.md",
                 "# Active scope design\n\n"
                 "## Data flow\n\nBind the proposal, user decision, GitHub authority, and task ledger.\n\n"
-                "## Failure behavior\n\nReject missing, stale, or mismatched evidence with structured errors.\n",
+                "## Failure behavior\n\nReject missing, stale, or mismatched evidence with structured errors.\n\n"
+                "## Docs SSOT Plan\n\nUse ssot_first and update the durable workflow contract.\n",
             ),
             (
                 "implement.md",
@@ -19252,6 +19901,17 @@ class RequirementsClarificationTests(unittest.TestCase):
             ),
         ):
             (task / name).write_text(content, encoding="utf-8")
+        ledger_payload = {
+            "primary_issue": {"number": 7},
+            "close_issues": [{"number": 7}],
+            "related_issues": [],
+            "followup_issues": [],
+            "scope_decisions": [],
+        }
+        (task / "issue-scope-ledger.json").write_text(
+            json.dumps(ledger_payload, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
         wording_scope, wording_contents = gtt.contract_wording_build_scope(
             root,
             "planning_artifacts",
@@ -19293,6 +19953,72 @@ class RequirementsClarificationTests(unittest.TestCase):
             },
         )
         gtt.write_json(task / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT, wording_evidence)
+        authored_planning = {
+            "mode": "workflow",
+            "requirement_authorities": [{
+                "id": "active-scope-prd",
+                "kind": "task_artifact",
+                "locator": f"{locator}/prd.md",
+                "sha256": "0" * 64,
+                "updated_at": None,
+            }],
+            "docs_ssot_plan": {
+                "strategy": "ssot_first",
+                "artifact_path": "design.md",
+                "locator": "Docs SSOT Plan",
+                "statement_sha256": "0" * 64,
+                "durable_paths": ["docs/requirements/active-scope.md"],
+            },
+            "provenance_review": {
+                "entries": [{
+                    "id": "active-scope-goal",
+                    "artifact_path": "prd.md",
+                    "locator": "Goal",
+                    "statement_sha256": "0" * 64,
+                    "classification": "explicit_requirement",
+                    "authority_refs": ["active-scope-prd"],
+                    "reason": "The active task explicitly requires one exact scope classification.",
+                    "implementation_choice": None,
+                    "scope_expansion": None,
+                    "out_of_scope_proposal": None,
+                }],
+                "coverage": {
+                    "reviewer": "codex-main-session",
+                    "summary": "All load-bearing active-scope planning contracts were reviewed.",
+                    "reviewed_entry_ids": ["active-scope-goal"],
+                    "all_load_bearing_items_covered": True,
+                    "review_sha256": "0" * 64,
+                },
+            },
+            "unusual_scenario_review": {
+                "reviewer": "codex-main-session",
+                "summary": "No unusual scenario proposal is required by this fixture.",
+                "candidates": [],
+                "unresolved_count": 0,
+                "review_sha256": "0" * 64,
+            },
+            "semantic_review": {"ai_review_gate": {
+                "status": "passed",
+                "reviewer": "codex-main-session",
+                "summary": "The complete active-scope planning contract was reviewed and accepted.",
+                "reviewed_at": "2026-01-01T00:00:00Z",
+                "findings": [],
+                "revision_actions": [],
+                "scope_proposals": [],
+                "blocking_reasons": [],
+            }},
+            "user_confirmation": {
+                "kind": "post-planning-approval",
+                "status": "confirmed",
+                "prompt_presented_at": "2026-01-01T00:00:00Z",
+                "confirmed_at": "2026-01-01T00:00:01Z",
+                "evidence_summary": "The user explicitly confirmed all three displayed planning documents.",
+            },
+            "typed_exit": "approved",
+            "consumer": {"kind": "workflow", "id": "phase-1-task-activation"},
+            "reason": "The active-scope planning fixture passed the semantic gate.",
+            "supersedes_facts_sha256": None,
+        }
         with (
             mock.patch.object(gtt, "current_head", return_value="a" * 40),
             mock.patch.object(gtt, "git_status_paths", return_value=[]),
@@ -19300,12 +20026,13 @@ class RequirementsClarificationTests(unittest.TestCase):
             planning_approval = gtt.build_planning_approval_payload(
                 root,
                 task,
-                reviewer="codex-main-session",
-                approval_summary="The complete planning contract was reviewed and accepted.",
-                user_confirmation="The user explicitly confirmed all three displayed planning documents.",
-                artifacts=[],
-                contract_wording_evidence=gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT,
-                review_prompt_presented_at="2026-01-01T00:00:00Z",
+                authored_planning,
+                task_context={
+                    "base_branch": "main",
+                    "base_ref": "refs/heads/main",
+                    "base_head_sha": "b" * 40,
+                    "branch_name": "main",
+                },
             )
         gtt.write_json(task / "planning-approval.json", planning_approval)
         payload = self.example()
@@ -19406,13 +20133,7 @@ class RequirementsClarificationTests(unittest.TestCase):
             "reentry_owners": reentry_owners,
             "interrupted_resume_target": resume_target,
         }
-        ledger_payload = {
-            "primary_issue": {"number": 7},
-            "close_issues": [{"number": 7}],
-            "related_issues": [],
-            "followup_issues": [],
-            "scope_decisions": [trail],
-        }
+        ledger_payload["scope_decisions"] = [trail]
         (task / "issue-scope-ledger.json").write_text(
             json.dumps(ledger_payload, sort_keys=True) + "\n", encoding="utf-8"
         )
@@ -19987,7 +20708,7 @@ class RequirementsClarificationTests(unittest.TestCase):
             )
             _path, approval, approval_errors = gtt.validate_planning_approval(root, task)
             self.assertEqual(approval_errors, [])
-            self.assertEqual(approval["schema_version"], "1.2")
+            self.assertEqual(approval["schema_version"], "2.0")
             self.assertEqual(approval["reviewed_artifacts"], approval["approved_artifacts"])
             with (
                 mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),

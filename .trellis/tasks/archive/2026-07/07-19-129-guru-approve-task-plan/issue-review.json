@@ -1,0 +1,271 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-change-request",
+  "generated_at": "2026-07-19T05:46:14Z",
+  "mode": "workflow",
+  "target": {
+    "kind": "existing_issue",
+    "repo": "castbox/guru-trellis",
+    "issue_number": 129,
+    "url": "https://github.com/castbox/guru-trellis/issues/129",
+    "updated_at": "2026-07-16T09:52:53Z",
+    "draft_id": null,
+    "source_request_sha256": null,
+    "caller_locator": null,
+    "request_id": null,
+    "title_sha256": "3705d11810acb921b7de96ae6b8c3481d0f75942eb5c4e245df5df6907c9a770",
+    "body_sha256": "e29c64dc69e572a9e73537669748bad6d630d6fdb49ef328c760a3c7cfa1f4cb",
+    "side_effect_free": false,
+    "identity_sha256": "9d6c2888c2f29f3ef2194f6d6fe8d949a8e98e4b2baa9481f057e2026dda9c5d",
+    "content_sha256": "a85179497cdf5c69b2dd8f08745d31df3cf16cc381fe5e9834d07ba8e8b9304a"
+  },
+  "prerequisites": {
+    "context": {
+      "status": "current",
+      "schema_id": "guru-context-discovery-1.0",
+      "typed_exit": "context_ready",
+      "payload_sha256": "cc9c3bc23d32d18f2b68d829f57e26eae1d6b334dde1485bd97a7fa5e48398d7",
+      "snapshot_sha256": "03ac8efdf10c0389b6e922599ab96dc6b2988fd76fbd0350447b4ba7fa2ef09a",
+      "base_sync_facts_sha256": "531bb1793859f372449ae39a4280b30a372d18548bd1774350013462af7e4f7e",
+      "base_head": "56e32836376ae31d6e07862ca988c24f5654886d",
+      "live_target_sha256": "0aff1566c20455d060b042f19d1e8f44b61fb2bd722fc7c265c589a875d177b2",
+      "query_sha256": "65dc230f4ebdfb2b5426e384b6c7c9f11cbd20c47338d1f1986b69616ab623f0",
+      "current_state_sha256": "ae3f08c7c9ff019928738b1161ae3a03c58368768ff1afb48afcb2756c442cbd",
+      "history_sha256": "1d8abe4792279a953a3a06a8830e269adff59cd4f7b42e923e6650168caf3428",
+      "duplicate_sha256": "3e68d1abca23e0456aaffdee6e5fab1755cb098c3b196ffc0883f059a839b6c5",
+      "error_codes": []
+    },
+    "clarity": {
+      "status": "current",
+      "schema_id": "guru-requirements-clarification-2.0",
+      "typed_exit": "clear",
+      "payload_sha256": "ba4ea0f874d2d7b9361449700f40521c1b83ab8be5cca179105a04d8b6d32900",
+      "facts_sha256": "d84620eebbd5153fb1e3161ce89b6e5d0c3bd6c83e184e26b1bfec4ad898cd73",
+      "target_sha256": "4e7cf21bc930c6da71c7fc64729eedf96f135817055fc2d0f63a52d2416ee17d",
+      "disposition_sha256": "e93c95e68c3ded3370f963b62d772a6caa17b180dce2fa209036a028fb60cd6f",
+      "content_sha256": "cfcb21ba26f625e555d7517a3c1bfb4526dcec3b185c4f0c0146f3186fda1e2e",
+      "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "error_codes": []
+    },
+    "wording": {
+      "status": "current",
+      "schema_id": "guru-contract-wording-review-1.0",
+      "profile": "change_request",
+      "typed_exit": "pass",
+      "payload_sha256": "f071b5d460d18c511cc6819922d2bdc870e2acc6af8a7a5e81b5c01416315ea5",
+      "facts_sha256": "f67ce608b3096b43137d4b13743c1321a5bfc99d0328f531b611f48b2f7be690",
+      "scope_sha256": "d86780b34e720f0ccfc5a1e3f4e3a34a23f5f51685afe55c2464e6be2ff2afb7",
+      "scan_sha256": "c0e1bc60efcbe0baf4109340c65b82e75f0967057891f2f6e4ca023b7bf711fd",
+      "target_content_sha256": "a85179497cdf5c69b2dd8f08745d31df3cf16cc381fe5e9834d07ba8e8b9304a",
+      "error_codes": []
+    }
+  },
+  "evidence_linkage": {
+    "target_identity_sha256": "9d6c2888c2f29f3ef2194f6d6fe8d949a8e98e4b2baa9481f057e2026dda9c5d",
+    "target_content_sha256": "a85179497cdf5c69b2dd8f08745d31df3cf16cc381fe5e9834d07ba8e8b9304a",
+    "base_head": "56e32836376ae31d6e07862ca988c24f5654886d",
+    "current_state_sha256": "ae3f08c7c9ff019928738b1161ae3a03c58368768ff1afb48afcb2756c442cbd",
+    "history_sha256": "1d8abe4792279a953a3a06a8830e269adff59cd4f7b42e923e6650168caf3428",
+    "duplicate_sha256": "3e68d1abca23e0456aaffdee6e5fab1755cb098c3b196ffc0883f059a839b6c5",
+    "clarity_facts_sha256": "d84620eebbd5153fb1e3161ce89b6e5d0c3bd6c83e184e26b1bfec4ad898cd73",
+    "clarity_disposition_sha256": "e93c95e68c3ded3370f963b62d772a6caa17b180dce2fa209036a028fb60cd6f",
+    "wording_facts_sha256": "f67ce608b3096b43137d4b13743c1321a5bfc99d0328f531b611f48b2f7be690",
+    "linkage_sha256": "0e1332740030e11bd5ac2501e32d9220e749f52b660db7ede5e5732c24cb9df3"
+  },
+  "semantic_review": {
+    "dimensions": [
+      {
+        "id": "requirement_completeness",
+        "status": "passed",
+        "summary": "Issue 129 defines the semantic owner, inputs, provenance model, unusual-scenario confirmation, closed loop, four exits, script boundary, distribution scope, exclusions, and observable acceptance criteria.",
+        "evidence_refs": [
+          "target",
+          "prerequisites.clarity",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "a85179497cdf5c69b2dd8f08745d31df3cf16cc381fe5e9834d07ba8e8b9304a"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "delivery_unit_consistency",
+        "status": "passed",
+        "summary": "The request is one Phase 1 delivery unit: migrate planning approval semantics into guru-approve-task-plan while retaining one existing artifact and thin workflow routing.",
+        "evidence_refs": [
+          "target",
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "0e1332740030e11bd5ac2501e32d9220e749f52b660db7ede5e5732c24cb9df3"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "implementation_target_evidence",
+        "status": "passed",
+        "summary": "Current code identifies the canonical Guru Skill package roots, Phase 1 workflow block, shared planning recorder/checker, preset registries, platform discovery copies, tests, and install verification targets.",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "ae3f08c7c9ff019928738b1161ae3a03c58368768ff1afb48afcb2756c442cbd"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "claimed_behavior_current",
+        "status": "passed",
+        "summary": "The current workflow still expands planning review and confirmation semantics, while the shared runtime owns only the existing artifact projection and deterministic checks.",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "ae3f08c7c9ff019928738b1161ae3a03c58368768ff1afb48afcb2756c442cbd"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "current_implementation_gap",
+        "status": "passed",
+        "summary": "No guru-approve-task-plan package or stable typed-exit owner exists, so the requested semantic-owner migration remains unimplemented.",
+        "evidence_refs": [
+          "prerequisites.context",
+          "target"
+        ],
+        "affected_hashes": [
+          "ae3f08c7c9ff019928738b1161ae3a03c58368768ff1afb48afcb2756c442cbd"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "docs_code_tests_consistency",
+        "status": "passed",
+        "summary": "Durable docs, current workflow/runtime, and tests agree on the existing planning gate and expose the same missing semantic Skill owner without a conflicting implementation.",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "ae3f08c7c9ff019928738b1161ae3a03c58368768ff1afb48afcb2756c442cbd"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "archived_history_constraints",
+        "status": "passed",
+        "summary": "The delivery reuses the planning ambiguity scanner, explicit post-planning confirmation, and ambiguity review mechanisms while rejecting historical upstream-owned overlay edits.",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "1d8abe4792279a953a3a06a8830e269adff59cd4f7b42e923e6650168caf3428"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "duplicate_reuse_validity",
+        "status": "passed",
+        "summary": "The current open-issue duplicate search is empty; adjacent Phase 2, Branch Review, and legacy-overlay issues are downstream units rather than replacements for issue 129.",
+        "evidence_refs": [
+          "prerequisites.context",
+          "prerequisites.clarity"
+        ],
+        "affected_hashes": [
+          "3e68d1abca23e0456aaffdee6e5fab1755cb098c3b196ffc0883f059a839b6c5"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "target_authority_current",
+        "status": "passed",
+        "summary": "The live open issue title, body, URL, update time, target disposition, and wording evidence all bind the same current authority.",
+        "evidence_refs": [
+          "target",
+          "prerequisites.clarity",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "9d6c2888c2f29f3ef2194f6d6fe8d949a8e98e4b2baa9481f057e2026dda9c5d"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "prerequisite_hash_linkage",
+        "status": "passed",
+        "summary": "Current context, clarity, wording, target, base, history, duplicate, and disposition identities form one complete checked linkage.",
+        "evidence_refs": [
+          "evidence_linkage"
+        ],
+        "affected_hashes": [
+          "0e1332740030e11bd5ac2501e32d9220e749f52b660db7ede5e5732c24cb9df3"
+        ],
+        "finding_ids": []
+      }
+    ],
+    "findings": [],
+    "scope_conclusion": {
+      "requirement_scope_basis": "The live issue 129 body, current clarification result, passed wording review, official Trellis extension contracts, current docs/code/tests, and selected archived planning mechanisms define the delivery scope.",
+      "delivery_unit_id": "issue-129-guru-approve-task-plan",
+      "close_issues": [
+        129
+      ],
+      "related_issues": [
+        127,
+        128,
+        114,
+        112
+      ],
+      "followup_issues": [
+        130,
+        131,
+        132
+      ],
+      "duplicate_reuse_decision": "No open duplicate replaces issue 129; issues 130, 131, and 132 remain separate downstream delivery units.",
+      "implementation_target": "Canonical guru-approve-task-plan package and interface, shared planning-approval recorder/checker evolution, thin Phase 1 workflow route, additive preset/platform discovery, durable docs/spec, and dogfood/throwaway/update tests.",
+      "current_gap": "Planning approval semantics are still expanded in workflow text and no standalone/workflow closed-loop Skill owns adequacy, provenance, dedicated scope confirmation, revision, or four typed exits.",
+      "archived_constraints": [
+        "Reuse the issue 93 planning ambiguity scanner and fixed planning scope.",
+        "Preserve issue 52 explicit post-planning confirmation as distinct from generic continuation.",
+        "Reuse issue 83 planning ambiguity review without restoring upstream-owned overlays."
+      ],
+      "risk_boundary": [
+        "Normal honest workflow operation, ordinary stale or mismatched evidence, common user mistakes, and correctness or compatibility boundaries only.",
+        "Hashes and freshness bind versions and consistency; they are not hostile-input security boundaries."
+      ],
+      "excluded_scope": [
+        "Issue 130 Phase 2 check Skill.",
+        "Issue 131 Branch Review Skill.",
+        "Issue 132 legacy overlay removal.",
+        "Changes to upstream Trellis skills or agents.",
+        "Malicious or adversarial artifact forgery and new concurrency, TOCTOU, fault-injection, crash-consistency, or cross-OS hardening."
+      ]
+    },
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session",
+      "reviewed_linkage_sha256": "0e1332740030e11bd5ac2501e32d9220e749f52b660db7ede5e5732c24cb9df3",
+      "summary": "All ten readiness dimensions pass against current linked evidence. Issue 129 is one independently deliverable and independently verifiable Phase 1 Skill migration.",
+      "findings_count": 0,
+      "scope_conclusion_sha256": "aea8a6e546b84bba0ed86952a24760e1e58b6fc18aa455efad7f13ae1fae6f38"
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "reason": "The review preserves confirmed product semantics and introduces no new scope proposal.",
+    "proposal_sha256": null
+  },
+  "typed_exit": "ready",
+  "reason": "Issue 129 is current, bounded, non-duplicate, implementation-incomplete, and ready for workspace creation.",
+  "affected_evidence": [
+    {
+      "ref": "evidence_linkage",
+      "sha256": "0e1332740030e11bd5ac2501e32d9220e749f52b660db7ede5e5732c24cb9df3",
+      "summary": "The checked portable linkage across target, context, clarity, wording, base, history, and duplicate evidence."
+    }
+  ],
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-create-task-workspace"
+  },
+  "facts_sha256": "d984709f76ec23d103930bf83ef2b394d6158bbcac1123667b9e45c86e10173f"
+}

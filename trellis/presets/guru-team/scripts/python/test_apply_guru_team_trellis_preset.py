@@ -402,6 +402,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 "codex",
                 "claude",
                 "cursor",
+                "shared",
+                "codex",
+                "claude",
+                "cursor",
             ],
         )
 
@@ -910,7 +914,13 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('test -x "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"', verifier)
         self.assertIn('fail_if_python_cache "throwaway target" "$TARGET"', verifier)
         self.assertIn('record_planning_contract_wording "$TASK_REL"', verifier)
-        self.assertIn('--contract-wording-evidence "$TASK_REL/contract-wording-review.json"', verifier)
+        self.assertIn('record_and_check_planning_approval "$TASK_REL" "initial"', verifier)
+        self.assertIn(
+            'record_and_check_planning_approval "$POST_UPDATE_TASK_REL" "after-update"',
+            verifier,
+        )
+        self.assertIn('--task "$task_rel" --input "$input" >"$result"', verifier)
+        self.assertIn('payload["schema_version"] == "2.0"', verifier)
         self.assertNotIn("--ambiguity-reviewer", verifier)
         self.assertNotIn("--normative-hit", verifier)
         self.assertIn("verify_installed_closeout.py", verifier)
@@ -923,7 +933,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("--existing-developer-identity", verifier)
         self.assertIn('payload["developer_identity_preserved"] is True', verifier)
         self.assertIn('payload["task_creator"] == "fixture-maintainer"', verifier)
-        self.assertIn('trellis init -y --codex --cursor', verifier)
+        self.assertIn('trellis init -y --claude --codex --cursor', verifier)
+        self.assertIn(
+            'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
+            verifier,
+        )
+        self.assertIn("assert len(assets) == 88", verifier)
         self.assertNotIn('trellis init -y -u', verifier)
         self.assertIn('DEVELOPER_IDENTITY_DIGEST_BEFORE="$(file_sha256', verifier)
         self.assertIn('assert_official_state_absent "$ABSENCE_TARGET" "initial preset apply"', verifier)
@@ -1199,7 +1214,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.15")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.16")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
@@ -1218,6 +1233,12 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("check-commit-messages", public_api["companion_scripts"])
         self.assertIn("create-task-commit", public_api["companion_scripts"])
         self.assertIn("run-skill-command", public_api["companion_scripts"])
+        self.assertIn("record-planning-approval", public_api["companion_scripts"])
+        self.assertIn("check-planning-approval", public_api["companion_scripts"])
+        self.assertIn(
+            "guru-planning-approval-2.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
         self.assertIn("sync-base", public_api["companion_scripts"])
         self.assertIn("check-base-sync", public_api["companion_scripts"])
         self.assertIn("preview-change-context-history", public_api["companion_scripts"])
@@ -1241,6 +1262,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(
             public_api["skill_contracts"]["active_skill_ids"],
             [
+                "guru-approve-task-plan",
                 "guru-clarify-requirements",
                 "guru-create-task-commit",
                 "guru-create-task-workspace",

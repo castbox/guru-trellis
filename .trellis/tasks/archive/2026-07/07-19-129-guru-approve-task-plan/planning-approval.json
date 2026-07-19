@@ -1,0 +1,684 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-approve-task-plan",
+  "generated_at": "2026-07-19T09:39:47Z",
+  "mode": "workflow",
+  "task": {
+    "task_dir": ".trellis/tasks/07-19-129-guru-approve-task-plan",
+    "task_identity_sha256": "f1246f036fb087ad6d2b73528433c2ab7dc11262d736b32d1c92054e4c1b9ecd",
+    "scope_ledger_sha256": "17a340b7bd9c97179b6ff00730910219f5bb4606a0ebc15145ae588be0e6360c",
+    "status": "in_progress",
+    "branch": "feat/129-guru-approve-task-plan",
+    "issue_numbers": [
+      129
+    ]
+  },
+  "repository_snapshot": {
+    "selected_base": "main",
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "56e32836376ae31d6e07862ca988c24f5654886d",
+    "head": "56e32836376ae31d6e07862ca988c24f5654886d",
+    "dirty_paths": [
+      ".agents/skills/guru-approve-task-plan/SKILL.md",
+      ".agents/skills/guru-approve-task-plan/examples/planning-approval.json",
+      ".agents/skills/guru-approve-task-plan/interface.json",
+      ".agents/skills/guru-approve-task-plan/references/contract.md",
+      ".agents/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+      ".agents/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+      ".agents/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+      ".agents/skills/guru-approve-task-plan/tests/test_contract.py",
+      ".agents/skills/guru-review-change-request/tests/test_contract.py",
+      ".claude/skills/guru-approve-task-plan/SKILL.md",
+      ".claude/skills/guru-approve-task-plan/examples/planning-approval.json",
+      ".claude/skills/guru-approve-task-plan/interface.json",
+      ".claude/skills/guru-approve-task-plan/references/contract.md",
+      ".claude/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+      ".claude/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+      ".claude/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+      ".claude/skills/guru-approve-task-plan/tests/test_contract.py",
+      ".claude/skills/guru-review-change-request/tests/test_contract.py",
+      ".codex/skills/guru-approve-task-plan/SKILL.md",
+      ".codex/skills/guru-approve-task-plan/examples/planning-approval.json",
+      ".codex/skills/guru-approve-task-plan/interface.json",
+      ".codex/skills/guru-approve-task-plan/references/contract.md",
+      ".codex/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+      ".codex/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+      ".codex/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+      ".codex/skills/guru-approve-task-plan/tests/test_contract.py",
+      ".codex/skills/guru-review-change-request/tests/test_contract.py",
+      ".cursor/skills/guru-approve-task-plan/SKILL.md",
+      ".cursor/skills/guru-approve-task-plan/examples/planning-approval.json",
+      ".cursor/skills/guru-approve-task-plan/interface.json",
+      ".cursor/skills/guru-approve-task-plan/references/contract.md",
+      ".cursor/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+      ".cursor/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+      ".cursor/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+      ".cursor/skills/guru-approve-task-plan/tests/test_contract.py",
+      ".cursor/skills/guru-review-change-request/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/examples/planning-approval.json",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/interface.json",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/planning-approval.schema.json",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/check-planning-approval.sh",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/record-planning-approval.sh",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/tests/test_contract.py",
+      ".trellis/guru-team/skills/packages/guru-review-change-request/tests/test_contract.py",
+      ".trellis/guru-team/skills/registry.json",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/agent-assignment.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/check.jsonl",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/context-discovery.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/contract-wording-review.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/implement.jsonl",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/implement.md",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/issue-review.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/issue-scope-ledger.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/prd.md",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/research/official-trellis-extension-contracts.md",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/task-start-context.json",
+      ".trellis/tasks/07-19-129-guru-approve-task-plan/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/planning-approval.json",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/interface.json",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/planning-approval.schema.json",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/scripts/check-planning-approval.sh",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/scripts/record-planning-approval.sh",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/tests/test_contract.py",
+      "trellis/skills/guru-team/packages/guru-review-change-request/tests/test_contract.py",
+      "trellis/skills/guru-team/registry.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "captured_at": "2026-07-19T09:39:47Z"
+  },
+  "requirement_authorities": [
+    {
+      "id": "issue:129",
+      "kind": "github_issue",
+      "locator": "https://github.com/castbox/guru-trellis/issues/129",
+      "sha256": "dfb484fca24373e3db0630dd3a97a552b221cab7b8255390ee744297178ae1c2",
+      "updated_at": "2026-07-16T09:52:53Z"
+    },
+    {
+      "id": "task:prd",
+      "kind": "task_artifact",
+      "locator": ".trellis/tasks/07-19-129-guru-approve-task-plan/prd.md",
+      "sha256": "6430089e4ad81add0b3db5486a2692a7bd89cbc3a88567af2dbd4dfb2f9ab903",
+      "updated_at": null
+    },
+    {
+      "id": "task:design",
+      "kind": "task_artifact",
+      "locator": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+      "sha256": "2997e11b23f8488f46e78cd706cb6d59b9b889833f6b2a741e5bae2b311526bd",
+      "updated_at": null
+    },
+    {
+      "id": "task:implement",
+      "kind": "task_artifact",
+      "locator": ".trellis/tasks/07-19-129-guru-approve-task-plan/implement.md",
+      "sha256": "65e2770aa00173a933155bc8c7710a95d496bb3354bd8f0840472af483fbee06",
+      "updated_at": null
+    },
+    {
+      "id": "task:scope-ledger",
+      "kind": "task_artifact",
+      "locator": ".trellis/tasks/07-19-129-guru-approve-task-plan/issue-scope-ledger.json",
+      "sha256": "17a340b7bd9c97179b6ff00730910219f5bb4606a0ebc15145ae588be0e6360c",
+      "updated_at": null
+    },
+    {
+      "id": "repo:agents",
+      "kind": "repository_document",
+      "locator": "AGENTS.md",
+      "sha256": "bf5447d21b158490a58c31dd790239017a21afc311a15414989751b51280287d",
+      "updated_at": null
+    }
+  ],
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/prd.md",
+      "sha256": "6430089e4ad81add0b3db5486a2692a7bd89cbc3a88567af2dbd4dfb2f9ab903",
+      "size_bytes": 16204,
+      "modified_at": "2026-07-19T06:08:48.437622+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+      "sha256": "2997e11b23f8488f46e78cd706cb6d59b9b889833f6b2a741e5bae2b311526bd",
+      "size_bytes": 22545,
+      "modified_at": "2026-07-19T06:14:57.055442+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/implement.md",
+      "sha256": "65e2770aa00173a933155bc8c7710a95d496bb3354bd8f0840472af483fbee06",
+      "size_bytes": 14973,
+      "modified_at": "2026-07-19T06:13:14.932633+00:00"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/prd.md",
+      "sha256": "6430089e4ad81add0b3db5486a2692a7bd89cbc3a88567af2dbd4dfb2f9ab903",
+      "size_bytes": 16204,
+      "modified_at": "2026-07-19T06:08:48.437622+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+      "sha256": "2997e11b23f8488f46e78cd706cb6d59b9b889833f6b2a741e5bae2b311526bd",
+      "size_bytes": 22545,
+      "modified_at": "2026-07-19T06:14:57.055442+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/implement.md",
+      "sha256": "65e2770aa00173a933155bc8c7710a95d496bb3354bd8f0840472af483fbee06",
+      "size_bytes": 14973,
+      "modified_at": "2026-07-19T06:13:14.932633+00:00"
+    }
+  ],
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+    "locator": "## 12. Docs SSOT Plan",
+    "statement_sha256": "f6c3f28af21cd5c4964029d9fd6f82912ee00c86af4e4b17b27e28b8cea9750a",
+    "durable_paths": [
+      "docs/requirements/README.md",
+      "docs/requirements/requirement-main.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      "trellis/workflows/guru-team/workflow.md",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/interface.json",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/planning-approval.schema.json"
+    ]
+  },
+  "contract_wording_review": {
+    "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/contract-wording-review.json",
+    "schema_id": "guru-contract-wording-review-1.0",
+    "profile": "planning_artifacts",
+    "typed_exit": "pass",
+    "artifact_sha256": "e2fd083bbba7b5bd915fc6535db042a8107ac7394ec48b4dcaef9d1740c8c1d8",
+    "facts_sha256": "bb0b6e74214766a440c5ce75cf984e2062a163234c4d3371cd452974a1a3ae10",
+    "scope_sha256": "22ae94fdc320c64077334cc0b982342832cb9b87ef9c9fa60f0422af3b8c2767",
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "codex-main-session",
+    "summary": "已审查固定的 prd.md、design.md、implement.md 全量范围。三文档零受控词命中；Issue #129 的 semantic owner、四类 provenance、非常规场景专用确认、四出口、existing artifact 复用、no-upstream-overlay、Docs SSOT 与安装升级验收均有明确且可验证的承接。",
+    "normative_language": {
+      "controlled_terms": [
+        "可以",
+        "允许",
+        "建议",
+        "推荐",
+        "可选",
+        "尽量",
+        "尽可能",
+        "最好",
+        "应该",
+        "应当",
+        "原则上",
+        "一般",
+        "通常",
+        "视情况",
+        "根据情况",
+        "根据需要",
+        "按需",
+        "必要时",
+        "如有需要",
+        "需要时",
+        "适当",
+        "适当时",
+        "合理",
+        "合理时",
+        "类似",
+        "相关",
+        "相应",
+        "等",
+        "等等",
+        "之类",
+        "一些",
+        "若干",
+        "部分",
+        "至少",
+        "默认"
+      ],
+      "scan_scope": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ],
+      "hits": [],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "provenance_review": {
+    "entries": [
+      {
+        "id": "P1",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P1 |",
+        "statement_sha256": "fe50a2b1ce287af048bbb22d5b882595a24a4ebdef19f56bda783e2148aebe0f",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:129"
+        ],
+        "reason": "Issue #129 explicitly makes guru-approve-task-plan the sole semantic owner of planning approval.",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P2",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P2 |",
+        "statement_sha256": "4f12c29a0162ac9c613fd033740a5f82f4d27a24e1fd22ad6bea3a60960d2d16",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:129"
+        ],
+        "reason": "Issue #129 requires workflow and standalone modes to apply the same gate.",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P3",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P3 |",
+        "statement_sha256": "aae256bdd86f09d94d16cd7b357c21273a21eb899a16e8eb4fc0ccab38b39103",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:129"
+        ],
+        "reason": "Issue #129 explicitly requires auditable provenance for every load-bearing planning contract.",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P4",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P4 |",
+        "statement_sha256": "c757654366041634bf43011ab1a3aaba6796ea306e5702935f652bd798cfa078",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:129"
+        ],
+        "reason": "Issue #129 explicitly excludes untriggered unusual scenarios from ordinary implementation choices.",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P5",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P5 |",
+        "statement_sha256": "7c6d397e5dc305cb71bb83f2f4ac6463ee560ec3807f9e3f4294eca0fa8dd36d",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:129"
+        ],
+        "reason": "Issue #129 requires removing or replacing a nonessential mechanism before expanding scope to harden it.",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P6",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P6 |",
+        "statement_sha256": "24cf120a26dad757f45dc754b09756190367d4bc920e8362bf0c5e3ba6f9b9e0",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:129",
+          "task:design"
+        ],
+        "reason": "A closed four-exit contract is incompatible with schema 1.2, while the existing artifact path must remain unique.",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "extend_1_2",
+              "tradeoff": "Preserves the version label but misrepresents a breaking closed-union contract."
+            },
+            {
+              "id": "use_v2",
+              "tradeoff": "Keeps the single artifact path and makes the breaking migration explicit."
+            },
+            {
+              "id": "parallel_artifact",
+              "tradeoff": "Avoids changing 1.2 but violates the one-artifact ownership requirement."
+            }
+          ],
+          "selected_id": "use_v2",
+          "selection_reason": "Version 2.0 expresses the closed union without creating a second approval artifact.",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P7",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P7 |",
+        "statement_sha256": "3504dd920173688d4b867945dd157aa7ccb28b685019bc303bfef4cf94776dc2",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:129",
+          "task:design"
+        ],
+        "reason": "Deterministic freshness requires stable locators and current statement digests without asking runtime to infer semantics.",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "inline_tags",
+              "tradeoff": "Spreads provenance through planning prose and creates duplicate ownership."
+            },
+            {
+              "id": "summary_only",
+              "tradeoff": "Cannot bind the review to current load-bearing statement bytes."
+            },
+            {
+              "id": "structured_entries",
+              "tradeoff": "Adds explicit records while preserving AI ownership of classification."
+            }
+          ],
+          "selected_id": "structured_entries",
+          "selection_reason": "Structured entries provide deterministic locator and digest validation without semantic inference.",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P8",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P8 |",
+        "statement_sha256": "0bbe0860e81ee7488b573a3b4c178c1c18432bfcea6569187b048993d95d5bb8",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:129",
+          "task:design"
+        ],
+        "reason": "The existing recorder/checker names already represent the required deterministic operations.",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "new_command_names",
+              "tradeoff": "Creates a second public command surface and migration burden."
+            },
+            {
+              "id": "reuse_commands",
+              "tradeoff": "Preserves command compatibility while replacing the payload contract."
+            }
+          ],
+          "selected_id": "reuse_commands",
+          "selection_reason": "Reusing the command names avoids a parallel API and keeps behavior routed through one runtime.",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P9",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P9 |",
+        "statement_sha256": "ef2ad90a79dd6771814d47ad9ae66b6682f8956a8b92ab82aabd563d7e0504e1",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:129"
+        ],
+        "reason": "Issue #129 explicitly preserves guru-review-contract-wording as the sole wording owner.",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P10",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P10 |",
+        "statement_sha256": "507e8857134dd233050ff9dbf59143ca7ec5d54d1058f2aa7980398796112285",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:129"
+        ],
+        "reason": "Issue #129 defines exactly four typed exits and one consumer for each exit.",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P11",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P11 |",
+        "statement_sha256": "9741b9d826b8b88cb247a50206345911e3e5e188cddeed74311c29e73ccb817a",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:129",
+          "repo:agents"
+        ],
+        "reason": "Issue #129 and repository policy both forbid adding or modifying upstream-owned overlays for this task.",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P12",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P12 |",
+        "statement_sha256": "9237af57b4566154bb9b33c42f5e63036e220a68607a9fc83bbe0a68db3b5749",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:129",
+          "task:prd",
+          "task:design"
+        ],
+        "reason": "The task changes public workflow, schema, runtime, and install contracts, so durable SSOT must lead implementation.",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "delta_first",
+              "tradeoff": "Implements task-local deltas before the public contract is stable."
+            },
+            {
+              "id": "ssot_first",
+              "tradeoff": "Stabilizes durable contracts first and then implements against them."
+            }
+          ],
+          "selected_id": "ssot_first",
+          "selection_reason": "SSOT-first keeps public docs, specs, package contract, and implementation aligned throughout the change.",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P13",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P13 |",
+        "statement_sha256": "7cfa428c4f782d46c234d6eb1db61839f87f9e95f67eb315427137e9431396dd",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "task:prd",
+          "task:scope-ledger"
+        ],
+        "reason": "The approved task scope and issue ledger keep Issues #130, #131, and #132 outside this delivery.",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P14",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P14 |",
+        "statement_sha256": "ed190d41099d802aad67ef542437bb3d7077d0d89c9a47efd5e05c1d7887d7cb",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:129",
+          "task:prd"
+        ],
+        "reason": "The current authority explicitly excludes adding unusual hardening mechanisms, so this plan has no unusual scope proposal.",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P15",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P15 |",
+        "statement_sha256": "a648e38687035ea05c618132ffa2ca31a6be37191a35d0dff6bcc5e3d160902b",
+        "classification": "explicit_requirement",
+        "authority_refs": [
+          "issue:129",
+          "task:prd",
+          "task:implement"
+        ],
+        "reason": "Issue #129 acceptance explicitly requires package, runtime, preset, dogfood, throwaway, update, and reapply validation.",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      },
+      {
+        "id": "P16",
+        "artifact_path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "locator": "| P16 |",
+        "statement_sha256": "bb522be3561b941111840255a1d6a624fd3de055936cbf2669069cde9d3ec893",
+        "classification": "necessary_implementation_choice",
+        "authority_refs": [
+          "issue:129",
+          "task:prd",
+          "task:design"
+        ],
+        "reason": "This self-hosting task had to activate before the new Skill existed but must finish with current v2 evidence.",
+        "implementation_choice": {
+          "alternatives": [
+            {
+              "id": "block_bootstrap",
+              "tradeoff": "Cannot activate the task that creates the new approval Skill."
+            },
+            {
+              "id": "handcraft_v2",
+              "tradeoff": "Bypasses the new recorder/checker and violates the deterministic boundary."
+            },
+            {
+              "id": "two_stage_rerecord",
+              "tradeoff": "Uses legacy activation once, then performs a complete semantic v2 re-entry against identical planning bytes."
+            }
+          ],
+          "selected_id": "two_stage_rerecord",
+          "selection_reason": "Two-stage rerecording preserves the original reviewed content and uses the production v2 recorder/checker once available.",
+          "product_scope_expanded": false,
+          "risk_scope_expanded": false
+        },
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      }
+    ],
+    "coverage": {
+      "reviewer": "codex-main-session",
+      "summary": "P1-P16 cover all load-bearing requirements R1-R10, acceptance criteria AC1-AC15, design contracts, implementation ordering, validation obligations, Docs SSOT ownership, distribution, migration, and current-scope boundaries.",
+      "reviewed_entry_ids": [
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P7",
+        "P8",
+        "P9",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16"
+      ],
+      "all_load_bearing_items_covered": true,
+      "review_sha256": "c2874256e192a7c466c08c8dbabd5e3e376eaf5f052d44d954b90c7f53d2b68e"
+    }
+  },
+  "unusual_scenario_review": {
+    "reviewer": "codex-main-session",
+    "summary": "Issue #129 requires the Skill to review unusual scenario classes but explicitly excludes adding unusual hardening to this implementation; the current plan introduces no such proposal, so no dedicated confirmation is triggered.",
+    "candidates": [],
+    "unresolved_count": 0,
+    "review_sha256": "cbc17b36dc070601ff06f919cb5633f4b2850d81cb8127139349b33e9c1b08fe"
+  },
+  "semantic_review": {
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session",
+      "summary": "The unchanged planning documents remain adequate, unambiguous, fully provenance-covered, scoped to Issue #129, explicit about Docs SSOT, compatibility, validation, rollback, bootstrap, and the AI/script boundary, with no unresolved findings or authority changes.",
+      "reviewed_at": "2026-07-19T07:59:40Z",
+      "findings": [],
+      "revision_actions": [],
+      "scope_proposals": [],
+      "blocking_reasons": []
+    }
+  },
+  "user_confirmation": {
+    "kind": "post-planning-approval",
+    "status": "confirmed",
+    "prompt_presented_at": "2026-07-19T06:15:10Z",
+    "confirmed_at": "2026-07-19T06:17:23Z",
+    "evidence_summary": "The user reviewed links to prd.md, design.md, and implement.md and replied '确认继续'; all three current SHA-256 digests exactly match that reviewed content, so the approved bootstrap contract reuses the same confirmation."
+  },
+  "typed_exit": "approved",
+  "consumer": {
+    "kind": "workflow",
+    "id": "phase-1-task-activation"
+  },
+  "reason": "The complete v2 semantic re-entry passed for unchanged planning content, current authorities, current wording evidence, and the existing approved post-planning confirmation.",
+  "supersedes_facts_sha256": "7e55224c3f1bac5ba105911c2de5eed8643941683898565805b8239b1bc42849",
+  "facts_sha256": "48e0829cee0961a9e5fb788456335e1af38f70a0d19719e6bb4d4c50da143fae"
+}

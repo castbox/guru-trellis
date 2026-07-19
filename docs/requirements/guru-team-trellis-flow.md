@@ -75,7 +75,8 @@ flowchart TD
 
   TCreate["task.py create<br/>Trellis task: planning"]:::trellis
   P1["Phase 1: Plan<br/>prd/design/implement + Docs SSOT Plan + knowledge gate"]:::guru
-  PA["record-planning-approval.sh<br/>check-planning-approval.sh"]:::script
+  AP["mandatory guru-approve-task-plan<br/>adequacy + provenance + unusual proposals + AI Gate"]:::guru
+  PA["record/check planning approval<br/>v2 deterministic facts + closed exit union"]:::script
   TStart["task.py start<br/>Trellis task: in_progress"]:::trellis
 
   P2["Phase 2: Execute<br/>implement -> trellis-check"]:::guru
@@ -125,7 +126,11 @@ flowchart TD
   TC -->|"refresh_review"| SB
   TC -->|"blocked"| StopWorkspace["停止：task workspace blocked"]:::artifact
 
-  P1 --> PA --> TStart --> P2
+  P1 --> AP --> PA
+  PA -->|"approved"| TStart --> P2
+  PA -->|"revision_required"| AP
+  PA -->|"clarify_scope"| CR
+  PA -->|"blocked"| StopPlan["停止：task plan approval blocked"]:::artifact
   P2 --> IA --> Sub --> LC --> PC --> CMT --> P3
   P3 --> Rev --> Rpt --> Gate --> GP
   GP -->|"否：finding / stale / reviewer-only"| Fix["返回 Phase 2/3 修复并复审"]:::guru
@@ -256,7 +261,7 @@ Active-task `clear`/`new_task` 必须有非空且全部属于七类 terminal dec
 accepted-current/related/followup/new-task/out-of-scope 五类 scope classification 无论 origin
 都必须有 proposal-digest-bound 用户证据，并把 exact structured `decision_trail` 写入当前
 `issue-scope-ledger.json.scope_decisions[]`，绑定 live GitHub comment/body authority、三份
-planning 文档与 shared schema 1.2 validator 完整通过的 approval、review state、stale downstream、interrupted target 与 re-entry
+planning 文档与 shared `guru-planning-approval-2.0` validator 完整通过的 approval、review state、stale downstream、interrupted target 与 re-entry
 owners。`mechanism_removed/replaced` 要求 optional origin、null confirmation，且不进入
 trail/action mutation。GitHub authority mutation 只能返回 `refresh_context`；context
 `generated_at >= authority.updated_at` 后 task update 绑定同一 digest，不要求第二次 refresh，
@@ -379,14 +384,18 @@ recorder/executor/checker、task-local archive 和完整 tracked commit，再验
 | 7 | Middle-platform Knowledge Gate | Guru Team gate | 中台 SDK/framework 相关任务要检查 `guru-knowledge-center` MCP 可用性并留 citation 或 warning。 |
 | 8 | `implement.jsonl` / `check.jsonl` | Trellis + Guru context | sub-agent 模式下整理 spec/research manifest；inline 模式由 skill 拉取上下文。 |
 | 9 | Contract wording review | Mandatory semantic Skill | 主会话调用 `guru-review-contract-wording` 的固定 `planning_artifacts` profile。Canonical package 独占 vocabulary、classification、AI rewrite/review、confirmation policy 与 planning-only checked dimensions；deterministic runtime 重建 scope、扫描并校验 schema/hash/freshness/field shape-value，不生成 semantic result。`change_request` selected comment 必须有稳定 author/update metadata；live issue mutation evidence 必须绑定 exact confirmed payload digest、preimage 与 current live reread result identity。只有 checker-validated `pass` 且 canonical planning dimensions 全部显式 AI-reviewed 为 true 可继续，`content_changed` 完整重入对应 profile review，`blocked` 停止。完整 re-entry 后，current `content_changed`/`blocked` 只接受 exact prior `facts_sha256` 绑定、与旧 artifact 不同且完整 current 的 same-profile 新结果；stale evidence 使用独立 stale replacement，相同结果与 current `pass` 受保护。 |
-| 10 | Explicit post-planning review | Guru Team gate | wording Skill 通过后，主会话展示 `prd.md`、`design.md`、`implement.md` 三个 task-local 链接，并说明用户确认前不会进入实现、不会派发 `trellis-implement`、不会记录 `phase2-check.json`。 |
-| 11 | Workspace boundary check | Guru Team deterministic validator | 写 `planning-approval.json` 前确认 actual repo root 等于 local runtime workspace mapping，source checkout 没有当前 task 的可疑 artifact / review metadata；手工编辑无显式 `workdir` 时必须使用 worktree 绝对路径。 |
-| 12 | `planning-approval.json` | Guru Team gate evidence | 用户在看到三份规划文档链接后明确确认；recorder 只消费 current `contract-wording-review.json` 的 `planning_artifacts:pass` evidence，逐项复制已验证 planning dimensions 到兼容审计字段而不生成默认值，并写入 evidence/schema/scope/scan digest binding、`review_prompt_presented_at`、`approved_at`、三份 artifact hash/size/mtime、HEAD、dirty paths 和 `user_confirmation.source=explicit-post-planning-review`。Validator 先调用 wording checker，再校验 projection 与三文档 digest；HEAD、mtime、dirty paths 只作为审批时审计上下文。 |
-| 13 | `task.py start` | 官方 Trellis | 只做状态迁移到 `in_progress`；不代表规划已经被审查。 |
+| 10 | `guru-approve-task-plan` | Mandatory semantic Skill | Workflow 只 mandatory invoke stable id。Skill 在 workflow/standalone 相同九项 entry preconditions 下读取三份规划与 `Docs SSOT Plan`，完成 adequacy、ambiguity、四类 provenance、implementation choice、unusual proposal 与 AI final Gate；task-internal gap 返回 `revision_required`，authority/scope mutation 返回 `clarify_scope`，外部 blocker/拒绝返回 `blocked`。 |
+| 11 | Confirmation and v2 evidence | Skill-owned semantic gate + deterministic runtime | Skill 只在需要时取得 proposal-digest-bound dedicated confirmation，再展示三份 task-local 链接并取得独立的 `post-planning-approval` confirmation。普通 `approved_scope_expansion` proposal 从 current planning controlled locator 重算；unusual proposal 从 canonical candidate 重算并复用该 candidate 的一次专用确认。Recorder 消费 AI-reviewed input，重建 task/workspace、authority、planning、Docs SSOT、wording、base/HEAD 与 dirty facts，并要求 confirmation 与 current authority SHA-256 绑定同一 proposal digest；checker 重算并验证 `guru-planning-approval-2.0` closed schema、statement/proposal locator-or-candidate digest、facts digest、freshness 及 Gate/exit/consumer invariant。 |
+| 12 | Task activation | Global workflow transition | 只有 `approved` 可进入 workflow target `phase-1-task-activation` 并调用官方 `task.py start`；`revision_required` 重入 `guru-approve-task-plan`，`clarify_scope` 调用 `guru-clarify-requirements`，`blocked` 停在 `task-plan-approval-blocked`。`task.py start` 只做状态迁移，不代表规划已被审查。 |
 
-关键边界：用户同意创建 task，不等于同意进入实现；`task.py start` 之前必须先有
-`planning-approval.json` 且 `check-planning-approval.sh` 通过。Phase 0 handoff confirmation、旧
-`source=workflow` planning approval、旧 schema、缺少 #114 evidence binding、wording evidence 过期/non-pass、schema id 仍为 `guru-contract-wording-review-1.0` 但缺少 planning-only dimensions、或规划文档确认后发生内容 hash/size 变化，均必须 fail closed，并重新执行完整 `planning_artifacts` AI review、展示三份规划文档链接并等待 fresh 用户确认；禁止向旧 evidence 手补布尔值。实现提交导致的 HEAD 变化、metadata tail 或无关 dirty paths 不应单独使 planning approval stale。
+关键边界：用户同意创建 task，不等于同意进入实现；`task.py start` 之前必须由
+`guru-approve-task-plan` 返回唯一 `approved`，且 `planning-approval.json` 通过 shared checker。
+Phase 0 handoff confirmation、普通 post-planning confirmation 冒充 dedicated unusual proposal
+confirmation、schema 1.2 active artifact、缺少 current wording binding、planning/authority 内容
+变化或 exit/Gate/consumer 不一致均 fail closed。文档或 authority 改变必须完整重入 wording 与
+planning approval；不能向旧 evidence 手补字段。Task activation 后的实现 HEAD、metadata tail
+或无关 dirty paths 不单独使 approval stale；downstream freshness 仍绑定三文档、authority、
+wording 与 task identity。
 
 `Docs SSOT Plan` 是 Phase 1 planning 合同，推荐由 `design.md` 承载权威计划；`prd.md`
 记录 docs 状态与需求影响，`implement.md` 记录执行 checklist、`delta_first` merge checkpoint
@@ -419,9 +428,10 @@ recorder/executor/checker、task-local archive 和完整 tracked commit，再验
 
 Codex 在 Guru Team 项目中默认 `codex.dispatch_mode: sub-agent`。主会话负责协调、澄清、
 记录 artifact、commit 和 finish；实现/检查默认交给 Trellis sub-agent。
-进入 Phase 2 或派发 `trellis-implement` / channel `implement` 前，主会话和实现代理都必须先运行
-`check-workspace-boundary.sh --json --task <task-path>` 和 `check-planning-approval.sh --json`。
-缺少有效 workspace boundary、current `guru-review-contract-wording:planning_artifacts:pass` evidence（含 canonical planning-only dimensions）、schema 1.2 planning approval binding 或 `explicit-post-planning-review` evidence 时，不得实现、
+进入 Phase 2 或派发 `trellis-implement` / channel `implement` 前，主会话和实现代理都必须先验证
+workspace boundary，并通过 installed objective checker 取得 current
+`guru-approve-task-plan:approved` schema 2.0 result。缺少有效 workspace boundary 或该
+current approved binding 时，不得实现、
 不得派发实现代理，也不得记录 `phase2-check.json`。Sub-agent 启动时应报告 `pwd`、
 `git rev-parse --show-toplevel`、由当前 checkout / local runtime / `git worktree list`
 推导的 `expected_workspace` 和 actual repo root 是否匹配；不得从 committed task context
@@ -649,7 +659,7 @@ PR readiness 要求：
 | `Docs SSOT Plan` | Phase 1 | Guru Team planning contract, recommended in `design.md` | Phase 1 planning approval、Phase 2 implementation/check 策略消费、后续 Docs SSOT reconciliation。 |
 | `contract-wording-review.json` | Phase 1.4 | `guru-review-contract-wording` evidence | 绑定 fixed `planning_artifacts` scope、current content/scan digests、AI semantic review、canonical planning-only dimensions、confirmation 与 typed exit；planning approval 只消费 checker-validated `pass`。 |
 | `issue-review.json` | Phase 0 readiness，#112 创建 task 后持久化 | `guru-review-change-request` checker-passed evidence | #101 pre-task/standalone 只在 stdout 产生结果；active `guru-create-task-workspace` 只能把 exact checker-passed bytes 写入 direct active task。Artifact 绑定三类 target、current context/clarity/wording projection、十项 dimensions、findings、scope conclusion、AI Gate、五出口、consumer 与 facts digest。 |
-| `planning-approval.json` | Phase 1.4/1.5 | Guru Team gate evidence | 绑定 current wording evidence 的兼容 projection（逐项复制已验证 planning dimensions，不生成默认值）、三文档链接展示后的显式用户确认与三文档 digest；`task.py start`、Phase 2 dispatch 和 Branch Review Gate audit 前校验。 |
+| `planning-approval.json` | Phase 1 planning approval | `guru-approve-task-plan` 唯一 semantic owner；shared runtime recorder/checker | Schema `guru-planning-approval-2.0` 绑定 current authorities、wording evidence、三文档与 Docs SSOT digests、四类 provenance、unusual proposal disposition、AI Gate、独立 confirmations、facts digest 及四出口唯一 consumer。`approved_scope_expansion` 的 closed `proposal_binding` 从 current planning locator 或 canonical unusual candidate 重算 digest；`confirmation` 与含 current authority SHA-256 的 `authority_binding` 必须绑定同一 digest，unusual link 复用 candidate confirmation。Scope ledger 作为 task identity 或 requirement authority 时都只投影 primary/close/related/follow-up 的 canonical 正 issue number 分类，不包含 decision trail、验收 metadata 或内嵌 approval hash；分类变化仍会失效。Task 仍为 planning 时复验 invocation base/HEAD/dirty snapshot，activation 后允许普通实现 drift。Active 1.2 artifact 必须完整重录；archive 保留历史。`task.py start`、Phase 2 dispatch 与后续 gate 消费前校验。 |
 | `implement.jsonl` / `check.jsonl` | Phase 1.3 | Trellis sub-agent context manifest | `trellis-implement` / `trellis-check`。 |
 | `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity/status ledger | review closure/fresh final reviewer 和 unfinished termination recovery-chain 校验。 |
 | `phase2-check.json` | Phase 2.2 | Guru Team check evidence | 固化 `trellis-check` AI check 的覆盖范围、验证结果、findings 和 dirty paths；commit 前 gate、Branch Review Gate post-commit audit。 |
@@ -672,7 +682,7 @@ PR readiness 要求：
 2. Guru Team 没有 fork Trellis，而是通过 official marketplace workflow 安装 `guru-team`。
 3. 我们把“任务还没创建之前”的风险收进 Phase 0：issue、duplicate、base branch、worktree、命名和副作用授权都先审查。
 4. tracked `task-start-context.json` 只保存 portable workspace/task identifiers；worktree mode 下的机器写入边界由当前 checkout、`.trellis/.runtime/guru-team/**`、`git worktree list` 推导为 `expected_workspace`，并由 `check-workspace-boundary --task` fail closed 校验。该 helper 不替 AI 判断 stale、迁移 patch 或清理 source checkout；#76 liveness checker 在此基础上把 source checkout 新变化视为 workspace boundary progress。
-5. Task create/start/archive 仍复用官方 Trellis lifecycle。Workspace create 通过隔离 adapter 调用 official `common.task_store.cmd_create`，只在该 handler 调用内禁用 developer accessor，并把 reviewed login 同时写为 `creator` 与 `assignee`；existing official identity bytes 保持不变。Guru Team 在 start 前要求 `prd.md` / `design.md` / `implement.md` 定位同一个 `Docs SSOT Plan`，展示三份文档链接并得到 explicit post-planning confirmation，Phase 0 handoff 确认不能替代。
+5. Task create/start/archive 仍复用官方 Trellis lifecycle。Workspace create 通过隔离 adapter 调用 official `common.task_store.cmd_create`，只在该 handler 调用内禁用 developer accessor，并把 reviewed login 同时写为 `creator` 与 `assignee`；existing official identity bytes 保持不变。Guru Team 在 start 前 mandatory invoke `guru-approve-task-plan`；该 Skill 独占规划审查、confirmation、artifact 与 re-entry，global workflow 只消费四个 typed exits，只有 `approved` 可激活 task。
 6. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出中文 `reviews/*.md` raw reports 与最终中文 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
 7. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，并由
    `guru-create-task-commit` 生成 fresh candidate plan、完成 AI Review，再通过 exact

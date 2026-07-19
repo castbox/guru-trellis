@@ -13,7 +13,7 @@
   "entry_preconditions": [
     {"id": "workspace_boundary", "evidence": "task-start-context.json plus local runtime/worktree facts", "binding": "actual repository root equals the mapped task worktree", "freshness": "checked for the current invocation"},
     {"id": "task_identity", "evidence": "task.json and candidate task object", "binding": "task id, repo-relative directory, branch and in_progress status", "freshness": "files and current branch still match"},
-    {"id": "planning_approval", "evidence": "planning-approval.json", "binding": "schema 1.2 approval and planning document digests", "freshness": "check-planning-approval passes"},
+    {"id": "planning_approval", "evidence": "planning-approval.json", "binding": "Skill-owned guru-planning-approval-2.0 approved result and exact reviewed/approved planning document digests", "freshness": "shared check-planning-approval --require-exit approved passes against current task evidence"},
     {"id": "phase2_check", "evidence": "phase2-check.json", "binding": "passed check, checked artifact digests, dirty paths and pre-commit HEAD", "freshness": "candidate self artifact is the only permitted post-check delta"},
     {"id": "issue_scope_ledger", "evidence": "issue-scope-ledger.json", "binding": "primary issue and ledger SHA-256", "freshness": "current bytes and primary issue match"},
     {"id": "pre_commit_head", "evidence": "Git HEAD and candidate git object", "binding": "exact commit id", "freshness": "unchanged immediately before execution"},

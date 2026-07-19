@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 129,
+    "url": "https://github.com/castbox/guru-trellis/issues/129",
+    "title": "实现 guru-approve-task-plan 闭环 Skill",
+    "reason": "Primary independently deliverable Phase 1 Skill migration.",
+    "acceptance_evidence": [
+      "Phase 2 独立检查覆盖 Issue #129 全部 planning、Skill package、schema、runtime、workflow、preset、五根分发和 Docs SSOT 范围；完整回归 645/645、定向回归 55/55、local-unpublished throwaway exit 0。",
+      "Branch Review Gate 绑定 reviewed HEAD e06184716f8e973335b527667b49788ff74b112f 和 origin/main...HEAD 全部 128 个路径；fresh 最终放行审查 P0/P1/P2/P3 findings 均为 0。",
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "1ecd2aa6c9ee9dbb026a5d5314cac53492a3536d777eaa341ad6ac156af33eeb",
+        "verified_content_head": "e06184716f8e973335b527667b49788ff74b112f",
+        "remote_head": "e06184716f8e973335b527667b49788ff74b112f",
+        "publish_head": "e06184716f8e973335b527667b49788ff74b112f",
+        "commands_passed": true
+      }
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 129,
+      "url": "https://github.com/castbox/guru-trellis/issues/129",
+      "title": "实现 guru-approve-task-plan 闭环 Skill",
+      "reason": "Fully covered by this task and its acceptance criteria.",
+      "acceptance_evidence": [
+        "Phase 2 独立检查覆盖 Issue #129 全部 planning、Skill package、schema、runtime、workflow、preset、五根分发和 Docs SSOT 范围；完整回归 645/645、定向回归 55/55、local-unpublished throwaway exit 0。",
+        "Branch Review Gate 绑定 reviewed HEAD e06184716f8e973335b527667b49788ff74b112f 和 origin/main...HEAD 全部 128 个路径；fresh 最终放行审查 P0/P1/P2/P3 findings 均为 0。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "1ecd2aa6c9ee9dbb026a5d5314cac53492a3536d777eaa341ad6ac156af33eeb",
+          "verified_content_head": "e06184716f8e973335b527667b49788ff74b112f",
+          "remote_head": "e06184716f8e973335b527667b49788ff74b112f",
+          "publish_head": "e06184716f8e973335b527667b49788ff74b112f",
+          "commands_passed": true
+        }
+      ]
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 127,
+      "url": "https://github.com/castbox/guru-trellis/issues/127",
+      "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+      "reason": "Parent program issue; not closed by this delivery.",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 128,
+      "url": "https://github.com/castbox/guru-trellis/issues/128",
+      "title": "建立 Trellis upstream ownership 清单与禁止新增覆盖门禁",
+      "reason": "Completed prerequisite that defines additive ownership boundaries.",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 114,
+      "url": "https://github.com/castbox/guru-trellis/issues/114",
+      "title": "按 Skill-first 重实现 #93：guru-review-contract-wording",
+      "reason": "Completed prerequisite and sole planning wording owner.",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 112,
+      "url": "https://github.com/castbox/guru-trellis/issues/112",
+      "title": "拆分 #98：实现 guru-create-task-workspace 并集成变更 Intake Skills",
+      "reason": "Completed implementation-sequence prerequisite.",
+      "acceptance_evidence": []
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 130,
+      "url": "https://github.com/castbox/guru-trellis/issues/130",
+      "title": "实现 guru-check-task 闭环 Skill",
+      "reason": "Separate Phase 2 closed-loop Skill delivery.",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 131,
+      "url": "https://github.com/castbox/guru-trellis/issues/131",
+      "title": "实现 guru-review-branch 闭环 Skill",
+      "reason": "Separate Branch Review closed-loop Skill delivery.",
+      "acceptance_evidence": []
+    },
+    {
+      "number": 132,
+      "url": "https://github.com/castbox/guru-trellis/issues/132",
+      "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+      "reason": "Separate integration and legacy-overlay removal delivery.",
+      "acceptance_evidence": []
+    }
+  ],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。"
+  ]
+}
