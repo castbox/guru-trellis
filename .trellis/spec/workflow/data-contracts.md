@@ -278,7 +278,7 @@ review status, stale Phase-2/Branch-Review identities, interrupted resume target
 and exact re-entry owners `guru-approve-task-plan`, `guru-check-task`, and
 `guru-review-branch`. The ledger itself must have the normal
 primary/close/related/followup structure. Planning evidence must pass the shared
-schema 1.2 validator and exact-bind both reviewed/approved aliases plus current
+`guru-planning-approval-2.0` validator and exact-bind both reviewed/approved aliases plus current
 path/hash/size for all three documents; `{}`, two-line planning placeholders,
 minimal approval JSON, and hash-only files are invalid. These are validation bindings to existing artifacts, not a
 dedicated clarification file. Pre-task and standalone results remain stdout-only.
@@ -565,93 +565,115 @@ surface with no paths.
 
 ## Planning Approval Artifact
 
-`planning-approval.json` is the start gate evidence for Phase 1.4. New
-artifacts use `schema_version=1.2` and are valid only after the main session has
-obtained a current checker-validated
-`guru-review-contract-wording:planning_artifacts:pass` artifact, displayed
-task-local links to all three planning documents, and the user has explicitly
-confirmed after seeing them. Phase 0 handoff approval, generic workflow
-confirmation, old `schema_version=1.0` / `schema_version=1.1`, missing/non-pass
-wording evidence, wording evidence that lacks the canonical planning-only
-dimension field, projection drift, or
-`user_confirmation.source=workflow` must fail closed.
+`planning-approval.json` is the single task-local Phase 1 planning gate
+artifact. New artifacts use `schema_version=2.0`, `skill_id` equal to
+`guru-approve-task-plan`, and closed Draft 2020-12 schema id
+`guru-planning-approval-2.0`. This is a breaking replacement of the active 1.2
+contract because provenance, unusual proposals, AI Gate, four typed exits,
+consumers, and facts digest are mandatory. Active 1.2 artifacts fail with
+stable complete-re-entry migration guidance; archived artifacts remain
+historical and are never rewritten.
 
-It records:
+The payload records task and repository snapshots, requirement authorities,
+`reviewed_artifacts[]` and byte-identical `approved_artifacts[]` entries for
+`prd.md`, `design.md`, and `implement.md`, the located `Docs SSOT Plan`, current
+`guru-review-contract-wording:planning_artifacts:pass` evidence,
+`ambiguity_review` compatibility projection, provenance review, unusual
+scenario review, final AI Review Gate, user confirmation, typed exit, unique
+consumer, reason, and `facts_sha256`. Recorder/checker may rebuild these
+deterministic facts and projections but never author semantic review fields.
 
-- task directory and current `HEAD`
-- reviewer / AI process identity metadata
-- `review_prompt_presented_at` and `approved_at`
-- Chinese approval summary and user confirmation evidence with
-  `user_confirmation.source=explicit-post-planning-review`
-- `contract_wording_review` binding with artifact path, schema id, evidence
-  digest, scope digest, and scan digest
-- `ambiguity_review` compatibility projection deterministically copied from
-  the validated wording evidence, preserving reviewer/summary/checked
-  dimensions value-for-value without defaults, complete scan facts,
-  classifications/reasons, and empty
-  unchecked hits for audit visibility
-- `reviewed_artifacts[]` entries for `prd.md`, `design.md`, and
-  `implement.md`, each with path, sha256, size, and modified-time metadata
-- `approved_artifacts[]` as a compatibility alias for the same three entries
-- dirty paths at approval time
+`task.scope_ledger_sha256`, and the SHA-256 of any requirement-authority entry
+whose task artifact is that same ledger, are not digests of the complete
+`issue-scope-ledger.json` bytes. It digests one canonical projection containing
+the positive `primary_issue` number and the sorted, deduplicated positive issue
+numbers in `close_issues`, `related_issues`, and `followup_issues`. Acceptance
+evidence, structured decision trails, embedded planning hashes, and other
+metadata are excluded so their normal post-approval updates do not create a
+circular identity. Any category membership change remains planning scope drift.
 
-The artifact is valid while the bound wording evidence passes the generic
-checker and the recorded `prd.md`, `design.md`, and `implement.md` hashes /
-sizes still match the current files. `HEAD`, `modified_at`, and `dirty_paths`
-are recorded as audit context for when the user approved the plan; they are not
-freshness keys. `check-planning-approval.sh` first invokes the generic wording
-checker, then verifies the compatibility projection and all three planning
-artifact entries, confirmation source, and current content digests. Later
-implementation commits, metadata tail changes, or unrelated working-tree dirty
-paths do not invalidate approval by themselves. If any planning document or
-wording evidence identity changes, the workflow must rerun the complete
-`planning_artifacts` review, show the three links again, and wait for fresh
-explicit post-planning confirmation. `task.py start` is a status transition
-only and is never planning review evidence.
+Each authoritative provenance entry binds a stable id, repo-relative planning
+artifact path, statement locator, canonical UTF-8 statement SHA-256,
+classification, authority references, reason, and class-specific data. The
+closed classifications are:
 
-The complete vocabulary, classification semantics, scan identity, unchecked
-derivation, Gate requirements, and typed-exit invariants belong only to the
-canonical `guru-review-contract-wording` contract and shared generic runtime.
-`planning-approval.json` preserves a deterministic audit projection but cannot
-reimplement or accept caller-injected classification rows. Active approvals
-without the new `contract_wording_review` binding are pre-#114 evidence and
-fail with a fresh re-review requirement; archived approvals remain historical
-and are not migrated in place.
+- `explicit_requirement`: current source authority reference;
+- `necessary_implementation_choice`: ordered alternatives, a selected id that
+  resolves to one alternative, non-empty selection reason, and both
+  `product_scope_expanded=false` and `risk_scope_expanded=false`;
+- `approved_scope_expansion`: a `proposal_binding`, dedicated `confirmation`,
+  and current `authority_binding` whose proposal digests are identical and
+  runtime-recomputable;
+- `out_of_scope_proposal`: proposal reason and terminal route/disposition, and
+  exclusion from approved execution.
 
-For `planning_artifacts`, the bound wording evidence must contain the canonical
-contract's exact `semantic_review.ai_review_gate.planning_checked_dimensions`
-object with every value explicitly AI-reviewed as true. The recorder/checker
-validates only its shape/value, and the approval projection copies those values
-instead of generating them. Evidence recorded before this planning-only field
-existed is stale even when it uses schema id
-`guru-contract-wording-review-1.0`; the workflow must rerun the complete AI
-review, display all three planning documents, and obtain fresh post-planning
-confirmation. Never patch missing booleans into old evidence. Other profiles
-prohibit the field, and archived artifacts remain historical.
+`provenance_review.coverage` binds reviewer, summary, reviewed entry ids,
+`all_load_bearing_items_covered`, and review digest. AI selects load-bearing
+statements and classifications; runtime only resolves locators, recomputes
+digests, checks unique ids and class field combinations, and verifies the
+caller-authored coverage value.
 
-Schema `guru-contract-wording-review-1.0` has an additive live-issue mutation
-binding. A current `change_request` live issue revision records source
-identity, locator, field, preimage hash, confirmed content hash, current reread
-content hash, and source update time. The recorder derives per-revision
-`confirmed_payload_sha256` and `mutation_result_sha256`; human confirmation
-binds the ordered confirmed-payload digest set. The checker rebuilds the live
-scope and requires the reread hash/update time and derived identities to match.
-Selected authoritative comments are profile-discriminated scope items and
-require non-empty author, date-time `updated_at`, selection reason, and content
-hash. These additions do not strengthen planning, explicit-path, draft, or
-archived evidence into a live mutation contract.
+`approved_scope_expansion.scope_expansion` is a closed three-part binding.
+`proposal_binding.source_kind=planning_artifact` resolves one controlled
+locator under the current task's `prd.md`, `design.md`, or `implement.md` and
+recomputes the canonical UTF-8 statement digest.
+`source_kind=unusual_scenario_candidate` resolves one current candidate id and
+recomputes the existing canonical unusual-proposal projection digest. The
+former requires `dedicated-scope-expansion`; the latter projects the same
+`dedicated-unusual-scenario` confirmation already recorded by that candidate,
+so there is no duplicate proposal content or second confirmation.
+`authority_binding` records the referenced current authority SHA-256 and the
+same proposal digest. Recorder and checker reject a caller-only digest, stale
+or ambiguous locator, missing/wrong candidate, wrong confirmation kind or
+digest, stale/unknown authority digest, an authority absent from the provenance
+entry refs, or any disagreement among the three proposal digests. Ordinary and
+unusual proposal bindings may coexist but retain independent source identities.
 
-The task-local artifact has one replacement state machine. `--replace-stale`
-accepts only an existing artifact that fails current scope/scan/schema
-validation. After the verified `content_changed` consumer or a resumed
-`blocked` stop has entered complete same-profile re-entry,
-`--supersede-reentry-facts-sha256` accepts only an existing structurally current
-non-pass artifact whose exact `facts_sha256`, profile, and mode match. The
-replacement result must independently be complete and current. The two paths
-are mutually exclusive; an identical replacement result, wrong digest/profile,
-stale supersession, and current `pass` replacement fail closed. This invocation
-fact does not let the recorder choose re-entry, semantic judgment, or the
-replacement exit.
+`unusual_scenario_review.candidates[]` uses the closed scenario classes
+`security_or_threat`, `attack_or_malicious_actor`,
+`toctou_or_concurrency_race`, `fault_injection_or_crash_consistency`,
+`cross_os_atomicity`, and `other_nonstandard`. Each candidate records trigger,
+scope, cost, at least one alternative, consequence, source refs, and exactly one
+disposition: `explicit_requirement`, `mechanism_removed`,
+`mechanism_replaced`, `confirmed_scope_expansion`, `clarification_required`,
+or `out_of_scope`. `confirmed_scope_expansion` requires
+`confirmation_kind=dedicated-unusual-scenario`, the exact proposal digest,
+user confirmation summary/time, and updated authority reference. The ordinary
+`user_confirmation.kind=post-planning-approval` is separate and can never
+satisfy this field. `explicit_requirement` requires at least one source
+requirement ref, and every recorded source requirement ref resolves to one
+current `requirement_authorities[].id`.
+When a confirmed unusual proposal is also a load-bearing provenance item, its
+`approved_scope_expansion` entry references that candidate id and must project
+the candidate's exact confirmation and authority ref; it does not create a
+second approval.
+
+Typed exit, AI Gate, evidence, and consumer form one closed union:
+
+- `approved` requires passed AI Gate with empty findings, revision actions,
+  scope proposals, and blocking reasons; complete provenance; no unresolved
+  unusual proposal; current wording pass; exact post-planning confirmation
+  with non-null prompt and confirmation timestamps; and consumer
+  `workflow:phase-1-task-activation`;
+- `revision_required` records task-local gaps and non-empty revision actions,
+  performs no authority mutation, and consumes itself through
+  `skill:guru-approve-task-plan`;
+- `clarify_scope` records a non-empty authority/scope mutation proposal that is
+  excluded from approved execution and uses
+  `skill:guru-clarify-requirements`;
+- `blocked` records a missing authority, refusal, external blocker, or unsafe
+  revision condition and uses `stop:task-plan-approval-blocked`.
+
+Recorder invocation captures selected base, base ref/HEAD, invocation HEAD,
+and dirty paths and rereads them around the write so in-invocation drift fails.
+While the task remains in planning, the checker rebuilds and compares all five
+repository snapshot facts so approval cannot activate from a stale invocation.
+Downstream validation binds task identity, current requirement/wording
+authority, and planning/Docs SSOT content digests. Expected implementation HEAD
+or dirty-path changes after `approved` task activation do not alone make the
+plan stale. Any planning document, source authority, Docs SSOT locator, or
+wording evidence change requires complete Skill re-entry and new evidence.
+`task.py start` is only a status transition and never approval evidence.
 
 ### Change request readiness result
 

@@ -1,0 +1,9 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"实现 active semantic Skill package、interface、mode parity、typed exits 与 re-entry 的主合同。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"收敛 Phase 1 global mandatory invocation、task activation 与 fail-closed routing。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"演进 planning-approval.json schema、provenance、confirmation、digest 与 freshness 合同。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 recorder/checker 只处理确定性事实，不生成 semantic judgment。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"实现 package、runtime、migration、distribution、throwaway 与 update/reapply 测试。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"保持 preset additive distribution，禁止新增 upstream-owned overlay。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"执行 no-new-upstream-patch 与 ownership inventory 门禁。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"同步 public Skill、workflow、preset 安装和升级文档合同。"}
+{"file":".trellis/tasks/07-19-129-guru-approve-task-plan/research/official-trellis-extension-contracts.md","reason":"使用 2026-07-19 核对的官方 workflow、Skill、architecture 与 spec marketplace 扩展依据。"}

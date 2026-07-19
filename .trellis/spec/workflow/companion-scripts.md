@@ -81,6 +81,56 @@ Guru Team preset, resolve `.new` / `.bak`, rerun source and installed package
 validation, and retry. There is no legacy-command fallback. Runtime compatibility
 is an objective precondition only and never becomes an AI Review Gate pass.
 
+### Planning Approval Record And Check
+
+`record-planning-approval` and `check-planning-approval` are the shared
+deterministic runtime commands for `guru-approve-task-plan`. Package and legacy
+top-level wrappers dispatch to these same commands; no parallel artifact or
+second runtime implementation is allowed.
+
+The recorder consumes one AI-reviewed input JSON. Before writing the single
+task-local `planning-approval.json`, it rebuilds current task/workspace,
+requirement-authority, planning-document, Docs SSOT Plan, contract-wording,
+scope-ledger, selected-base/current-HEAD, and dirty-path facts. It resolves each
+caller-authored provenance statement locator and each approved scope proposal
+from either a controlled planning-artifact locator or a current canonical
+unusual candidate. It derives statement/proposal/facts digests, exact-binds the
+source-appropriate dedicated confirmation, and binds the same proposal digest
+to the runtime-materialized current authority SHA-256. The checker loads the closed
+`guru-planning-approval-2.0` schema, rebuilds the same current facts, and
+validates statement/proposal locator-or-candidate digest binding, provenance
+field combinations, selected implementation-choice references, dedicated
+proposal confirmation/current-authority same-proposal binding,
+AI Gate shape, post-planning confirmation, the exit/consumer union, artifact
+digest, and downstream freshness.
+
+For `approved`, both commands require empty findings, revision actions, scope
+proposals, and blocking reasons, plus non-null prompt/confirmation timestamps.
+Every unusual candidate has at least one alternative. An
+`explicit_requirement` disposition has at least one source requirement ref,
+and every recorded source requirement ref resolves to a current requirement
+authority id. These are deterministic shape/reference checks, not runtime
+authorship of semantic review judgments.
+
+The scope-ledger fact is a deterministic category projection, not a complete
+file digest: primary, close, related, and follow-up entries normalize to sorted
+unique positive issue numbers. The same projection is mandatory when the ledger
+also appears as a `task_artifact` requirement authority. Decision trails,
+acceptance evidence, embedded approval hashes, and other metadata are outside
+this projection; their normal updates do not invalidate planning approval,
+while category changes do.
+
+Neither command discovers load-bearing statements, assigns provenance,
+selects an implementation alternative, decides whether a scenario is unusual
+or required, judges a confirmation sufficient, passes the AI Review Gate, or
+selects the typed exit. The `approved` activation check rejects every other
+exit. An active schema 1.2 artifact returns stable migration guidance; archived
+artifacts are not rewritten. Invocation-time HEAD/dirty facts detect drift
+during recording, and the checker rebuilds the same base/HEAD/dirty snapshot
+while the task is still planning. After approved task activation, downstream
+validation does not become stale solely because implementation changed HEAD or
+dirty paths.
+
 ### Change-Context Preview, Record, And Check
 
 `preview-change-context-history`, `record-context-discovery`, and
@@ -207,7 +257,7 @@ outside trail/action mutation. A mechanism-only terminal result still supplies
 the current ledger/planning/complete-approval/review/stale/context/re-entry
 evidence with `decision_trail=null`, and it runs through the same task-local live
 freshness checker as classification and mixed results. The checker calls the
-shared complete schema 1.2 planning-approval validator and exact-binds its
+shared complete `guru-planning-approval-2.0` validator and exact-binds its
 reviewed/approved planning rows; an old file digest, two-line planning docs, or
 minimal ledger/approval JSON is insufficient.
 
@@ -808,35 +858,22 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   change-request record/check commands before asserting `ready` or linkage
   drift, rather than supplying only handwritten projections to a structural
   helper.
-- `record-planning-approval.sh` records prior AI/human planning review and the
-  user's explicit post-planning confirmation after the main session supplied a
-  current checker-validated
-  `guru-review-contract-wording:planning_artifacts:pass` evidence locator and
-  displayed task-local links to `prd.md`, `design.md`, and `implement.md`; it
-  must not decide whether planning or wording review is sufficient. New
-  artifacts use `schema_version=1.2`, bind wording artifact/schema/evidence/
-  scope/scan identities, preserve `reviewed_artifacts[]` plus the
-  `approved_artifacts` alias, use
-  `user_confirmation.source=explicit-post-planning-review`, and derive the
-  existing `ambiguity_review` audit projection only from verified wording
-  evidence, copying each validated planning-dimension value without defaults.
-  The old caller-injected classification path is not an active API.
-- `check-planning-approval.sh` validates all three planning artifact entries,
-  hash / size metadata, confirmation source, current wording evidence through
-  the generic checker, exact compatibility projection, and required audit
-  fields before `task.py start`, before implementation dispatch, and before
-  `phase2-check.json` can be recorded. It fails closed on old schema/source,
-  missing/non-pass/stale wording evidence, non-empty unchecked hits, projection
-  or digest drift, missing docs, or changed planning document content.
-  Recorded HEAD, modified-time, and `dirty_paths` remain audit context, but
-  validator freshness is tied to `prd.md`, `design.md`, and `implement.md`
-  content digests. A later implementation commit, metadata tail, or unrelated
-  working-tree dirty path must not block planning approval while those three
-  reviewed planning documents still match.
-  Schema 1.0 wording evidence that predates the planning-only dimension field
-  is nevertheless stale. It requires complete AI review re-entry, redisplay of
-  all three planning documents, and fresh post-planning confirmation; scripts
-  must reject attempts to patch missing booleans into old evidence.
+- `record-planning-approval.sh` consumes one AI-reviewed
+  `guru-approve-task-plan` input, rebuilds current task/workspace, authorities,
+  planning, Docs SSOT, wording and repository facts; recomputes ordinary
+  planning-locator or unusual-candidate proposal digests; exact-binds dedicated
+  confirmation and current authority to that digest; and writes only schema 2.0
+  `planning-approval.json`. It must not decide adequacy, provenance, proposal
+  necessity, confirmation sufficiency, Gate status, or route.
+- `check-planning-approval.sh` validates the closed v2 schema, all three planning
+  aliases, authority/wording/Docs SSOT freshness, provenance locator/digests,
+  implementation-choice references, ordinary/unusual proposal-source digest
+  recomputation, dedicated confirmation/current-authority same-proposal binding,
+  AI Gate, post-planning confirmation, facts digest, and the four
+  exit/consumer invariants before task activation, implementation dispatch, or
+  Phase 2 evidence. Active schema 1.2 returns migration guidance. Later
+  implementation HEAD/dirty drift does not block while the bound planning and
+  authorities remain current.
 - `record-phase2-check.sh` records prior full-scope `trellis-check` evidence;
   it must not replace check judgment with command exit codes.
 - `check-phase2-check.sh` validates coverage, validation evidence, findings,

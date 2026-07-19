@@ -77,11 +77,11 @@ class SourceValidationTests(unittest.TestCase):
         self.assertEqual(result["facts"]["planned_ids"], [])
         self.assertEqual(
             result["facts"]["active_ids"],
-            ["guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"],
+            ["guru-approve-task-plan", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"],
         )
-        self.assertEqual(result["facts"]["invoke_markers"], 7)
-        self.assertEqual(result["facts"]["exit_markers"], 27)
-        self.assertEqual(result["facts"]["target_markers"], 15)
+        self.assertEqual(result["facts"]["invoke_markers"], 8)
+        self.assertEqual(result["facts"]["exit_markers"], 31)
+        self.assertEqual(result["facts"]["target_markers"], 17)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         scope_gate = workflow.index("Scope Change Gate:")
@@ -110,6 +110,15 @@ class SourceValidationTests(unittest.TestCase):
         self.assertNotIn(
             "The `pass` router maps `change_request` to the full task-intake continuation",
             workflow,
+        )
+        self.assertIn(
+            "shared `guru-planning-approval-2.0` validator and exact reviewed/approved document",
+            workflow,
+        )
+        self.assertNotIn("shared complete schema 1.2 validator", workflow)
+        self.assertEqual(
+            (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes(),
+            (REPO / ".trellis/workflow.md").read_bytes(),
         )
 
     def test_production_task_commit_package_contract(self) -> None:
@@ -143,6 +152,49 @@ class SourceValidationTests(unittest.TestCase):
         self.assertNotIn("def validate_commit_message", contract)
         self.assertEqual(workflow.count('guru-skill-invoke: {"skill":"guru-create-task-commit"'), 1)
         self.assertEqual(workflow.count('guru-skill-exit: {"skill":"guru-create-task-commit"'), 3)
+
+    def test_active_downstream_planning_contracts_use_skill_owned_v2(self) -> None:
+        commit_interface = json.loads(
+            (
+                SKILLS_ROOT
+                / "packages/guru-create-task-commit/interface.json"
+            ).read_text(encoding="utf-8")
+        )
+        planning_approval = next(
+            item
+            for item in commit_interface["entry_preconditions"]
+            if item["id"] == "planning_approval"
+        )
+        self.assertIn("Skill-owned guru-planning-approval-2.0", planning_approval["binding"])
+        self.assertIn("shared check-planning-approval --require-exit approved", planning_approval["freshness"])
+
+        active_sources = [
+            SKILLS_ROOT / "packages/guru-create-task-commit/interface.json",
+            SKILLS_ROOT / "packages/guru-clarify-requirements/SKILL.md",
+            SKILLS_ROOT / "packages/guru-clarify-requirements/references/contract.md",
+        ]
+        forbidden = (
+            "schema 1.2 approval and planning document digests",
+            "schema 1.2 planning-approval validator",
+            "explicit-post-planning-review",
+        )
+        for path in active_sources:
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("guru-planning-approval-2.0", text, path)
+            for phrase in forbidden:
+                self.assertNotIn(phrase, text, path)
+
+        overlay_spec = (REPO / ".trellis/spec/preset/overlay-guidelines.md").read_text(
+            encoding="utf-8"
+        )
+        for phrase in (
+            "43 inventory-pinned upstream overlay payloads",
+            "`transitional_legacy` assets owned by issue #132",
+            "legacy `schema 1.2`",
+            "`explicit-post-planning-review` implement-agent wording",
+            "must not guide current Guru package/runtime behavior",
+        ):
+            self.assertIn(phrase, overlay_spec)
 
     def test_sync_base_entrypoints_bind_prepare_to_reviewed_resolution(self) -> None:
         start_paths = [
@@ -1275,7 +1327,7 @@ class ProductionDistributionTests(unittest.TestCase):
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["reserved_ids"], ["guru-create-work-commit"])
-            self.assertEqual(result["active_ids"], ["guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"])
+            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"])
             self.assertFalse((repo / ".agents/skills/guru-create-work-commit").exists())
             for root in (".agents", ".codex", ".cursor", ".claude"):
                 task_commit = repo / root / "skills/guru-create-task-commit"
@@ -1288,6 +1340,39 @@ class ProductionDistributionTests(unittest.TestCase):
                 self.assertTrue(os.access(sync_base / "scripts/sync-base.sh", os.X_OK))
                 clarification = repo / root / "skills/guru-clarify-requirements"
                 self.assertTrue((clarification / "SKILL.md").is_file())
+                self.assertEqual(
+                    (clarification / "SKILL.md").read_bytes(),
+                    (SKILLS_ROOT / "packages/guru-clarify-requirements/SKILL.md").read_bytes(),
+                )
+                self.assertEqual(
+                    (clarification / "references/contract.md").read_bytes(),
+                    (
+                        SKILLS_ROOT
+                        / "packages/guru-clarify-requirements/references/contract.md"
+                    ).read_bytes(),
+                )
+                clarification_text = (
+                    (clarification / "SKILL.md").read_text(encoding="utf-8")
+                    + "\n"
+                    + (clarification / "references/contract.md").read_text(encoding="utf-8")
+                )
+                self.assertIn("guru-planning-approval-2.0", clarification_text)
+                self.assertNotIn("schema 1.2 planning-approval validator", clarification_text)
+                planning = repo / root / "skills/guru-approve-task-plan"
+                self.assertTrue((planning / "SKILL.md").is_file())
+                self.assertTrue((planning / "schemas/planning-approval.schema.json").is_file())
+                self.assertTrue(os.access(planning / "scripts/record-planning-approval.sh", os.X_OK))
+                self.assertTrue(os.access(planning / "scripts/check-planning-approval.sh", os.X_OK))
+                task_commit_interface = json.loads(
+                    (task_commit / "interface.json").read_text(encoding="utf-8")
+                )
+                task_commit_planning = next(
+                    item
+                    for item in task_commit_interface["entry_preconditions"]
+                    if item["id"] == "planning_approval"
+                )
+                self.assertIn("Skill-owned guru-planning-approval-2.0", task_commit_planning["binding"])
+                self.assertIn("shared check-planning-approval --require-exit approved", task_commit_planning["freshness"])
                 self.assertTrue((clarification / "schemas/requirements-clarification.schema.json").is_file())
                 self.assertTrue(os.access(clarification / "scripts/record-requirements-clarification.sh", os.X_OK))
                 self.assertTrue(os.access(clarification / "scripts/check-requirements-clarification.sh", os.X_OK))

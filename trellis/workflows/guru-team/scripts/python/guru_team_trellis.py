@@ -60,8 +60,31 @@ DEFAULTS: dict[str, Any] = {
 VALID_PRIORITIES = {"P0", "P1", "P2", "P3"}
 BLOCKING_PRIORITIES = {"P0", "P1", "P2"}
 PLANNING_APPROVAL_ARTIFACT = "planning-approval.json"
-PLANNING_APPROVAL_SCHEMA_VERSION = "1.2"
-PLANNING_APPROVAL_CONFIRMATION_SOURCE = "explicit-post-planning-review"
+PLANNING_APPROVAL_SKILL_ID = "guru-approve-task-plan"
+PLANNING_APPROVAL_SCHEMA_VERSION = "2.0"
+PLANNING_APPROVAL_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-2.0.json"
+PLANNING_APPROVAL_LEGACY_SCHEMA_VERSION = "1.2"
+PLANNING_APPROVAL_CONFIRMATION_SOURCE = "post-planning-approval"
+PLANNING_APPROVAL_PROVENANCE_CLASSES = {
+    "explicit_requirement",
+    "necessary_implementation_choice",
+    "approved_scope_expansion",
+    "out_of_scope_proposal",
+}
+PLANNING_APPROVAL_UNUSUAL_DISPOSITIONS = {
+    "explicit_requirement",
+    "mechanism_removed",
+    "mechanism_replaced",
+    "confirmed_scope_expansion",
+    "clarification_required",
+    "out_of_scope",
+}
+PLANNING_APPROVAL_CONSUMERS = {
+    "approved": {"kind": "workflow", "id": "phase-1-task-activation"},
+    "revision_required": {"kind": "skill", "id": "guru-approve-task-plan"},
+    "clarify_scope": {"kind": "skill", "id": "guru-clarify-requirements"},
+    "blocked": {"kind": "stop", "id": "task-plan-approval-blocked"},
+}
 CONTRACT_WORDING_SKILL_ID = "guru-review-contract-wording"
 CONTRACT_WORDING_SCHEMA_VERSION = "1.0"
 CONTRACT_WORDING_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-contract-wording-review-1.0.json"
@@ -8747,6 +8770,9 @@ def planning_wording_review_errors(
             else repo_relative(root, path)
         ),
         "schema_id": "guru-contract-wording-review-1.0",
+        "profile": "planning_artifacts",
+        "typed_exit": "pass",
+        "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         "facts_sha256": evidence["facts_sha256"],
         "scope_sha256": evidence["scope"]["scope_sha256"],
         "scan_sha256": evidence["scan"]["scan_sha256"],
@@ -8759,86 +8785,679 @@ def planning_wording_review_errors(
     return errors
 
 
+def planning_approval_schema(root: Path) -> dict[str, Any]:
+    candidates = [
+        root / ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/planning-approval.schema.json",
+        root / "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/planning-approval.schema.json",
+    ]
+    runtime_path = Path(__file__).resolve()
+    if len(runtime_path.parents) > 2:
+        candidates.append(
+            runtime_path.parents[2]
+            / "skills/packages/guru-approve-task-plan/schemas/planning-approval.schema.json"
+        )
+    if len(runtime_path.parents) > 4:
+        candidates.append(
+            runtime_path.parents[4]
+            / "skills/guru-team/packages/guru-approve-task-plan/schemas/planning-approval.schema.json"
+        )
+    schema_path = next(
+        (path for path in candidates if path.is_file() and not path.is_symlink()),
+        None,
+    )
+    if schema_path is None:
+        raise WorkflowError(
+            "Planning approval v2 schema is missing from the compatible Guru Team runtime.",
+            exit_code=2,
+            payload={"error_codes": ["planning_approval_schema_unavailable"]},
+        )
+    errors: list[str] = []
+    schema = skill_read_json(schema_path, "planning approval schema", errors)
+    if (
+        errors
+        or schema.get("$schema") != SKILL_SCHEMA_DIALECT
+        or schema.get("$id") != PLANNING_APPROVAL_SCHEMA_ID
+    ):
+        raise WorkflowError(
+            "Planning approval v2 schema is incompatible.",
+            exit_code=2,
+            payload={"error_codes": ["planning_approval_schema_invalid"]},
+        )
+    return schema
+
+
+def planning_task_artifact_path(root: Path, task_dir: Path, value: Any) -> Path:
+    locator = str(value or "").strip()
+    active_task = active_task_relative_for_archive(root, task_dir)
+    if active_task is not None and locator.startswith(f"{active_task}/"):
+        relative = locator.removeprefix(f"{active_task}/")
+        if "/" in relative or relative not in DEFAULT_PLANNING_ARTIFACTS:
+            raise WorkflowError("Planning artifact locator is outside the fixed task scope.", exit_code=2)
+        return task_dir / relative
+    return resolve_task_local_path(root, task_dir, locator)
+
+
+def planning_locator_statement(path: Path, locator: Any) -> tuple[str, str]:
+    locator_value = str(locator or "").strip()
+    if not locator_value:
+        raise WorkflowError("Planning statement locator must be non-empty.", exit_code=2)
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeError) as exc:
+        raise WorkflowError(f"Planning statement artifact is unreadable: {path}", exit_code=2) from exc
+    matches = [
+        index
+        for index, line in enumerate(lines)
+        if locator_value == line.strip()
+        or locator_value == line.strip().lstrip("#").strip()
+        or locator_value in line.strip()
+    ]
+    if len(matches) != 1:
+        raise WorkflowError(
+            "Planning statement locator must resolve exactly once.",
+            exit_code=2,
+            payload={"locator": locator_value, "matches": len(matches), "path": str(path)},
+        )
+    index = matches[0]
+    selected = lines[index].rstrip()
+    heading = re.match(r"^(#{1,6})\s+", selected.strip())
+    if heading:
+        level = len(heading.group(1))
+        end = len(lines)
+        for candidate in range(index + 1, len(lines)):
+            next_heading = re.match(r"^(#{1,6})\s+", lines[candidate].strip())
+            if next_heading and len(next_heading.group(1)) <= level:
+                end = candidate
+                break
+        statement = "\n".join(line.rstrip() for line in lines[index:end]).rstrip() + "\n"
+    else:
+        statement = selected.strip() + "\n"
+    return statement, hashlib.sha256(statement.encode("utf-8")).hexdigest()
+
+
+def planning_scope_ledger_projection(ledger: dict[str, Any]) -> dict[str, Any]:
+    primary = ledger.get("primary_issue")
+    if not isinstance(primary, dict) or not is_strict_int(primary.get("number")):
+        raise WorkflowError(
+            "Planning approval requires a positive primary issue number.",
+            exit_code=2,
+        )
+    primary_number = int(primary["number"])
+    if primary_number <= 0:
+        raise WorkflowError(
+            "Planning approval requires a positive primary issue number.",
+            exit_code=2,
+        )
+
+    projection: dict[str, Any] = {"primary_issue": primary_number}
+    for key in ("close_issues", "related_issues", "followup_issues"):
+        entries = ledger.get(key)
+        if not isinstance(entries, list):
+            raise WorkflowError(
+                "Planning approval requires a complete issue scope ledger.",
+                exit_code=2,
+            )
+        numbers: list[int] = []
+        for entry in entries:
+            if (
+                not isinstance(entry, dict)
+                or not is_strict_int(entry.get("number"))
+                or int(entry["number"]) <= 0
+            ):
+                raise WorkflowError(
+                    f"Planning approval requires positive issue numbers in {key}.",
+                    exit_code=2,
+                )
+            numbers.append(int(entry["number"]))
+        projection[key] = sorted(set(numbers))
+    return projection
+
+
+def planning_task_projection(
+    root: Path,
+    task_dir: Path,
+    task_context: dict[str, Any],
+) -> dict[str, Any]:
+    task = task_json(task_dir)
+    ledger_path = issue_scope_ledger_path(task_dir)
+    if not ledger_path.is_file():
+        raise WorkflowError("planning approval requires current issue-scope-ledger.json.", exit_code=2)
+    ledger = read_json(ledger_path)
+    scope_projection = planning_scope_ledger_projection(ledger)
+    branch = str(task.get("branch") or task_context.get("branch_name") or current_branch(root)).strip()
+    base_branch = str(task.get("base_branch") or task_context.get("base_branch") or "").strip()
+    identity = {
+        "task_dir": repo_relative(root, task_dir),
+        "id": task.get("id"),
+        "name": task.get("name"),
+        "title": task.get("title"),
+        "scope": task.get("scope"),
+        "branch": branch,
+        "base_branch": base_branch,
+    }
+    numbers = []
+    primary = ledger.get("primary_issue")
+    if isinstance(primary, dict) and is_strict_int(primary.get("number")):
+        numbers.append(int(primary["number"]))
+    numbers.extend(issue_numbers(ledger.get("close_issues")))
+    return {
+        "task_dir": repo_relative(root, task_dir),
+        "task_identity_sha256": context_digest(identity),
+        "scope_ledger_sha256": context_digest(scope_projection),
+        "status": str(task.get("status") or "planning"),
+        "branch": branch,
+        "issue_numbers": sorted(set(numbers)),
+    }
+
+
+def planning_repository_snapshot(
+    root: Path,
+    task_dir: Path,
+    task_context: dict[str, Any],
+) -> dict[str, Any]:
+    task = task_json(task_dir)
+    selected_base = str(task_context.get("base_branch") or task.get("base_branch") or "").strip()
+    if not selected_base:
+        raise WorkflowError("planning approval cannot resolve selected base.", exit_code=2)
+    base_ref = str(task_context.get("base_ref") or diff_base_ref(root, selected_base)).strip()
+    base_head = str(task_context.get("base_head_sha") or ref_head(root, base_ref) or "").strip()
+    head = current_head(root)
+    if re.fullmatch(r"[0-9a-f]{40}", base_head) is None or re.fullmatch(r"[0-9a-f]{40}", head) is None:
+        raise WorkflowError("planning approval requires full 40-hex base and current HEAD facts.", exit_code=2)
+    artifact_path = repo_relative(root, planning_approval_path(task_dir))
+    return {
+        "selected_base": selected_base,
+        "base_ref": base_ref,
+        "base_head": base_head,
+        "head": head,
+        "dirty_paths": sorted(path for path in git_status_paths(root) if path != artifact_path),
+        "captured_at": now_iso(),
+    }
+
+
+def planning_current_authority(
+    root: Path,
+    authority: Any,
+    task_dir: Path | None = None,
+) -> dict[str, Any]:
+    if not isinstance(authority, dict):
+        raise WorkflowError("planning approval authority entries must be objects.", exit_code=2)
+    authority_id = str(authority.get("id") or "").strip()
+    kind = str(authority.get("kind") or "").strip()
+    locator = str(authority.get("locator") or "").strip()
+    if not authority_id or not kind or not locator:
+        raise WorkflowError("planning approval authority id/kind/locator must be non-empty.", exit_code=2)
+    updated_at: str | None = None
+    if kind in {"task_artifact", "repository_document"}:
+        path = resolve_repo_path(root, locator)
+        if not path.is_file() or path.is_symlink():
+            raise WorkflowError(f"Planning authority file is missing or invalid: {locator}", exit_code=2)
+        scope_ledger_path = issue_scope_ledger_path(task_dir) if task_dir is not None else None
+        if (
+            kind == "task_artifact"
+            and scope_ledger_path is not None
+            and path.resolve() == scope_ledger_path.resolve()
+        ):
+            digest = context_digest(planning_scope_ledger_projection(read_json(path)))
+        else:
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    elif kind in {"github_issue", "github_comment"}:
+        match = re.fullmatch(
+            r"https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/issues/([1-9][0-9]*)(?:#issuecomment-([1-9][0-9]*))?",
+            locator,
+        )
+        if match is None:
+            raise WorkflowError(f"Planning GitHub authority locator is invalid: {locator}", exit_code=2)
+        repo, number_text, comment_text = match.groups()
+        live = issue_view(repo, int(number_text), root)
+        if kind == "github_issue":
+            if comment_text is not None:
+                raise WorkflowError("github_issue authority must not use a comment locator.", exit_code=2)
+            projection = {
+                "repo": repo,
+                "number": int(number_text),
+                "url": live.get("url"),
+                "state": live.get("state"),
+                "title": live.get("title"),
+                "body": live.get("body"),
+                "updated_at": live.get("updatedAt"),
+            }
+            updated_at = str(live.get("updatedAt") or "").strip() or None
+        else:
+            comments = live.get("comments") if isinstance(live.get("comments"), list) else []
+            matches = [
+                row for row in comments
+                if isinstance(row, dict)
+                and str(row.get("url") or "").endswith(f"#issuecomment-{comment_text}")
+            ]
+            if len(matches) != 1:
+                raise WorkflowError("GitHub comment authority must resolve exactly once.", exit_code=2)
+            comment = matches[0]
+            projection = {
+                "url": comment.get("url"),
+                "author": comment.get("author"),
+                "body": comment.get("body"),
+                "updated_at": comment.get("updatedAt"),
+            }
+            updated_at = str(comment.get("updatedAt") or "").strip() or None
+        digest = context_digest(projection)
+    elif kind == "user_request":
+        digest = hashlib.sha256(locator.encode("utf-8")).hexdigest()
+    else:
+        raise WorkflowError(f"Unknown planning authority kind: {kind}", exit_code=2)
+    return {
+        "id": authority_id,
+        "kind": kind,
+        "locator": locator,
+        "sha256": digest,
+        "updated_at": updated_at,
+    }
+
+
+def planning_coverage_digest(entries: list[dict[str, Any]], coverage: dict[str, Any]) -> str:
+    return context_digest({
+        "entries": entries,
+        "coverage": {key: value for key, value in coverage.items() if key != "review_sha256"},
+    })
+
+
+def planning_unusual_proposal_digest(candidate: dict[str, Any]) -> str:
+    return context_digest({
+        key: candidate.get(key)
+        for key in [
+            "id", "scenario_class", "trigger_evidence", "scope", "cost",
+            "alternatives", "consequence", "source_requirement_refs",
+        ]
+    })
+
+
+def planning_unusual_review_digest(review: dict[str, Any]) -> str:
+    return context_digest({key: value for key, value in review.items() if key != "review_sha256"})
+
+
+def planning_scope_expansion_projection(
+    root: Path,
+    task_dir: Path,
+    expansion: Any,
+    authorities_by_id: dict[str, dict[str, Any]],
+    unusual_candidates_by_id: dict[str, dict[str, Any]],
+    entry_authority_refs: list[Any],
+) -> tuple[dict[str, Any] | None, list[str]]:
+    if not isinstance(expansion, dict):
+        return None, ["planning_approval_scope_expansion_invalid"]
+    proposal = expansion.get("proposal_binding")
+    confirmation = expansion.get("confirmation")
+    authority_binding = expansion.get("authority_binding")
+    if not isinstance(proposal, dict):
+        return None, ["planning_approval_scope_expansion_proposal_binding_invalid"]
+    errors: list[str] = []
+    source_kind = str(proposal.get("source_kind") or "")
+    proposal_sha = ""
+    canonical_proposal: dict[str, Any]
+    unusual_candidate: dict[str, Any] | None = None
+    if source_kind == "planning_artifact":
+        if proposal.get("unusual_candidate_id") is not None:
+            errors.append("planning_approval_scope_expansion_proposal_source_shape_invalid")
+        try:
+            proposal_path = planning_task_artifact_path(
+                root, task_dir, proposal.get("artifact_path")
+            )
+            _statement, proposal_sha = planning_locator_statement(
+                proposal_path, proposal.get("locator")
+            )
+        except WorkflowError:
+            errors.append("planning_approval_scope_expansion_proposal_locator_invalid")
+            canonical_proposal = copy.deepcopy(proposal)
+        else:
+            canonical_proposal = {
+                "source_kind": "planning_artifact",
+                "artifact_path": repo_relative(root, proposal_path),
+                "locator": str(proposal.get("locator") or "").strip(),
+                "unusual_candidate_id": None,
+                "proposal_sha256": proposal_sha,
+            }
+    elif source_kind == "unusual_scenario_candidate":
+        candidate_id = str(proposal.get("unusual_candidate_id") or "").strip()
+        if proposal.get("artifact_path") is not None or proposal.get("locator") is not None:
+            errors.append("planning_approval_scope_expansion_proposal_source_shape_invalid")
+        unusual_candidate = unusual_candidates_by_id.get(candidate_id)
+        if unusual_candidate is None:
+            errors.append("planning_approval_scope_expansion_unusual_candidate_unknown")
+            canonical_proposal = copy.deepcopy(proposal)
+        else:
+            proposal_sha = planning_unusual_proposal_digest(unusual_candidate)
+            canonical_proposal = {
+                "source_kind": "unusual_scenario_candidate",
+                "artifact_path": None,
+                "locator": None,
+                "unusual_candidate_id": candidate_id,
+                "proposal_sha256": proposal_sha,
+            }
+            if unusual_candidate.get("disposition") != "confirmed_scope_expansion":
+                errors.append(
+                    "planning_approval_scope_expansion_unusual_candidate_not_confirmed"
+                )
+    else:
+        errors.append("planning_approval_scope_expansion_proposal_source_kind_invalid")
+        canonical_proposal = copy.deepcopy(proposal)
+
+    if proposal_sha and proposal.get("proposal_sha256") != proposal_sha:
+        errors.append("planning_approval_scope_expansion_proposal_digest_mismatch")
+
+    expected_confirmation_kind = (
+        "dedicated-unusual-scenario"
+        if source_kind == "unusual_scenario_candidate"
+        else "dedicated-scope-expansion"
+    )
+    if not isinstance(confirmation, dict):
+        errors.append("planning_approval_scope_expansion_confirmation_invalid")
+    else:
+        if confirmation.get("confirmation_kind") != expected_confirmation_kind:
+            errors.append("planning_approval_scope_expansion_confirmation_kind_mismatch")
+        if proposal_sha and confirmation.get("proposal_sha256") != proposal_sha:
+            errors.append("planning_approval_scope_expansion_confirmation_digest_mismatch")
+        if unusual_candidate is not None:
+            candidate_confirmation = unusual_candidate.get("confirmation")
+            expected_confirmation = {
+                "confirmation_kind": candidate_confirmation.get("confirmation_kind"),
+                "proposal_sha256": candidate_confirmation.get("proposal_sha256"),
+                "confirmation_summary": candidate_confirmation.get("confirmation_summary"),
+                "confirmed_at": candidate_confirmation.get("confirmed_at"),
+            } if isinstance(candidate_confirmation, dict) else None
+            if confirmation != expected_confirmation:
+                errors.append(
+                    "planning_approval_scope_expansion_unusual_confirmation_mismatch"
+                )
+
+    if not isinstance(authority_binding, dict):
+        errors.append("planning_approval_scope_expansion_authority_binding_invalid")
+    else:
+        authority_ref = str(authority_binding.get("authority_ref") or "")
+        authority = authorities_by_id.get(authority_ref)
+        if authority is None:
+            errors.append("planning_approval_scope_expansion_authority_unknown")
+        else:
+            if authority_ref not in entry_authority_refs:
+                errors.append(
+                    "planning_approval_scope_expansion_authority_not_in_entry_refs"
+                )
+            if authority_binding.get("authority_sha256") != authority.get("sha256"):
+                errors.append("planning_approval_scope_expansion_authority_digest_mismatch")
+        if proposal_sha and authority_binding.get("proposal_sha256") != proposal_sha:
+            errors.append(
+                "planning_approval_scope_expansion_authority_proposal_digest_mismatch"
+            )
+        if unusual_candidate is not None:
+            candidate_confirmation = unusual_candidate.get("confirmation")
+            if (
+                not isinstance(candidate_confirmation, dict)
+                or authority_ref != candidate_confirmation.get("authority_ref")
+            ):
+                errors.append(
+                    "planning_approval_scope_expansion_unusual_authority_mismatch"
+                )
+
+    canonical = {
+        "proposal_binding": canonical_proposal,
+        "confirmation": copy.deepcopy(confirmation),
+        "authority_binding": copy.deepcopy(authority_binding),
+    }
+    return canonical, context_sort(errors)
+
+
+def planning_approval_closed_union_errors(payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if payload.get("typed_exit") == "approved":
+        semantic_review = payload.get("semantic_review")
+        gate = (
+            semantic_review.get("ai_review_gate")
+            if isinstance(semantic_review, dict)
+            else None
+        )
+        if isinstance(gate, dict):
+            for field in (
+                "findings",
+                "revision_actions",
+                "scope_proposals",
+                "blocking_reasons",
+            ):
+                if gate.get(field) != []:
+                    errors.append(f"planning_approval_approved_gate_{field}_not_empty")
+        confirmation = payload.get("user_confirmation")
+        if isinstance(confirmation, dict):
+            for field in ("prompt_presented_at", "confirmed_at"):
+                if not isinstance(confirmation.get(field), str) or not confirmation[field].strip():
+                    errors.append(
+                        f"planning_approval_approved_confirmation_{field}_missing"
+                    )
+
+    authority_ids = {
+        str(item.get("id") or "")
+        for item in payload.get("requirement_authorities", [])
+        if isinstance(item, dict)
+    }
+    unusual = payload.get("unusual_scenario_review")
+    candidates = unusual.get("candidates") if isinstance(unusual, dict) else None
+    if isinstance(candidates, list):
+        for candidate in candidates:
+            if not isinstance(candidate, dict):
+                continue
+            alternatives = candidate.get("alternatives")
+            if not isinstance(alternatives, list) or not alternatives:
+                errors.append("planning_approval_unusual_alternatives_empty")
+            refs = candidate.get("source_requirement_refs")
+            if not isinstance(refs, list):
+                continue
+            if candidate.get("disposition") == "explicit_requirement" and not refs:
+                errors.append(
+                    "planning_approval_unusual_explicit_requirement_refs_missing"
+                )
+            if any(not isinstance(ref, str) or ref not in authority_ids for ref in refs):
+                errors.append(
+                    "planning_approval_unusual_source_requirement_ref_unknown"
+                )
+    return context_sort(errors)
+
+
+def planning_facts_digest(payload: dict[str, Any]) -> str:
+    return context_digest({
+        key: value
+        for key, value in payload.items()
+        if key not in {"generated_at", "facts_sha256"}
+    })
+
+
 def build_planning_approval_payload(
     root: Path,
     task_dir: Path,
-    reviewer: str,
-    approval_summary: str,
-    user_confirmation: str,
-    artifacts: list[str],
-    contract_wording_evidence: str,
-    review_prompt_presented_at: str | None = None,
-    confirmation_source: str = PLANNING_APPROVAL_CONFIRMATION_SOURCE,
+    authored: dict[str, Any],
+    task_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    normalized_source = str(confirmation_source or "").strip()
-    if normalized_source != PLANNING_APPROVAL_CONFIRMATION_SOURCE:
+    expected_keys = {
+        "mode", "requirement_authorities", "docs_ssot_plan", "provenance_review",
+        "unusual_scenario_review", "semantic_review", "user_confirmation",
+        "typed_exit", "consumer", "reason", "supersedes_facts_sha256",
+    }
+    if set(authored) != expected_keys:
         raise WorkflowError(
-            "record-planning-approval requires explicit post-planning review confirmation; "
-            f"--confirmation-source must be {PLANNING_APPROVAL_CONFIRMATION_SOURCE}.",
+            "Planning approval AI-reviewed input has missing or unknown fields.",
             exit_code=2,
-            payload={"received_source": normalized_source or "(missing)"},
+            payload={"expected": sorted(expected_keys), "actual": sorted(authored)},
         )
+    mode = str(authored.get("mode") or "").strip()
+    if mode not in {"workflow", "standalone"}:
+        raise WorkflowError("Planning approval mode must be workflow or standalone.", exit_code=2)
+    task_context = task_context or load_task_start_context(task_dir, load_config(root))
     required_paths = [resolve_task_local_path(root, task_dir, name) for name in DEFAULT_PLANNING_ARTIFACTS]
-    if artifacts:
-        requested = [resolve_task_local_path(root, task_dir, item) for item in artifacts]
-        requested_paths = {path.resolve() for path in requested}
-        missing_required = [
-            name
-            for name, path in zip(DEFAULT_PLANNING_ARTIFACTS, required_paths)
-            if path.resolve() not in requested_paths
-        ]
-        if missing_required:
-            raise WorkflowError(
-                "record-planning-approval must record all three planning documents after the explicit review prompt: "
-                + ", ".join(missing_required),
-                exit_code=2,
-                payload={"missing_artifacts": missing_required},
-            )
-        artifact_paths = requested
-    else:
-        artifact_paths = required_paths
+    if any(not path.is_file() for path in required_paths):
+        raise WorkflowError("Planning approval requires prd.md, design.md, and implement.md.", exit_code=2)
     wording_path, wording_evidence = contract_wording_planning_evidence(
-        root, task_dir, contract_wording_evidence
+        root, task_dir, CONTRACT_WORDING_EVIDENCE_ARTIFACT
     )
     ambiguity_review = contract_wording_planning_projection(wording_evidence)
-    reviewed = [file_digest(root, path) for path in artifact_paths]
-    artifact_repo_paths = {str(item["path"]) for item in reviewed}
-    artifact_repo_paths.add(repo_relative(root, planning_approval_path(task_dir)))
-    dirty_paths = dirty_paths_excluding(root, artifact_repo_paths)
-    presented_at = str(review_prompt_presented_at or "").strip() or now_iso()
-    approved_at = now_iso()
-    return {
+    reviewed = [file_digest(root, path) for path in required_paths]
+    logical_task = active_task_relative_for_archive(root, task_dir)
+    wording_binding = {
+        "artifact_path": (
+            f"{logical_task}/{CONTRACT_WORDING_EVIDENCE_ARTIFACT}"
+            if logical_task is not None
+            else repo_relative(root, wording_path)
+        ),
+        "schema_id": "guru-contract-wording-review-1.0",
+        "profile": "planning_artifacts",
+        "typed_exit": "pass",
+        "artifact_sha256": hashlib.sha256(wording_path.read_bytes()).hexdigest(),
+        "facts_sha256": wording_evidence["facts_sha256"],
+        "scope_sha256": wording_evidence["scope"]["scope_sha256"],
+        "scan_sha256": wording_evidence["scan"]["scan_sha256"],
+    }
+    authorities_raw = authored.get("requirement_authorities")
+    if not isinstance(authorities_raw, list) or not authorities_raw:
+        raise WorkflowError("Planning approval requires at least one requirement authority.", exit_code=2)
+    authorities = [planning_current_authority(root, item, task_dir) for item in authorities_raw]
+    authority_ids = [item["id"] for item in authorities]
+    if len(authority_ids) != len(set(authority_ids)):
+        raise WorkflowError("Planning approval authority ids must be unique.", exit_code=2)
+    authorities_by_id = {item["id"]: item for item in authorities}
+
+    docs = copy.deepcopy(authored.get("docs_ssot_plan"))
+    if not isinstance(docs, dict):
+        raise WorkflowError("Planning approval requires a Docs SSOT Plan object.", exit_code=2)
+    docs_path = planning_task_artifact_path(root, task_dir, docs.get("artifact_path"))
+    _statement, docs_sha = planning_locator_statement(docs_path, docs.get("locator"))
+    docs["artifact_path"] = repo_relative(root, docs_path)
+    docs["statement_sha256"] = docs_sha
+
+    unusual = copy.deepcopy(authored.get("unusual_scenario_review"))
+    if not isinstance(unusual, dict) or not isinstance(unusual.get("candidates"), list):
+        raise WorkflowError("Planning approval requires unusual scenario review.", exit_code=2)
+    candidates: list[dict[str, Any]] = []
+    for raw_candidate in unusual["candidates"]:
+        if not isinstance(raw_candidate, dict):
+            raise WorkflowError("Unusual scenario candidates must be objects.", exit_code=2)
+        candidate = copy.deepcopy(raw_candidate)
+        proposal_sha = planning_unusual_proposal_digest(candidate)
+        confirmation = candidate.get("confirmation")
+        if candidate.get("disposition") == "confirmed_scope_expansion":
+            if (
+                not isinstance(confirmation, dict)
+                or confirmation.get("confirmation_kind") != "dedicated-unusual-scenario"
+                or confirmation.get("proposal_sha256") != proposal_sha
+                or confirmation.get("authority_ref") not in authority_ids
+            ):
+                raise WorkflowError("Confirmed unusual scope expansion requires exact dedicated confirmation and current authority.", exit_code=2)
+        elif confirmation is not None:
+            raise WorkflowError("Only confirmed unusual scope expansion accepts dedicated confirmation.", exit_code=2)
+        candidate["proposal_sha256"] = proposal_sha
+        candidates.append(candidate)
+    candidate_ids = [str(item.get("id") or "") for item in candidates]
+    if not all(candidate_ids) or len(candidate_ids) != len(set(candidate_ids)):
+        raise WorkflowError(
+            "Unusual scenario candidate ids must be non-empty and unique.", exit_code=2
+        )
+    unusual_candidates_by_id = {
+        str(item["id"]): item for item in candidates
+    }
+    unusual["candidates"] = candidates
+    unusual["unresolved_count"] = sum(
+        1 for item in candidates if item.get("disposition") == "clarification_required"
+    )
+    unusual["review_sha256"] = planning_unusual_review_digest(unusual)
+
+    provenance = copy.deepcopy(authored.get("provenance_review"))
+    if not isinstance(provenance, dict) or not isinstance(provenance.get("entries"), list):
+        raise WorkflowError("Planning approval requires provenance review entries.", exit_code=2)
+    entries: list[dict[str, Any]] = []
+    for raw_entry in provenance["entries"]:
+        if not isinstance(raw_entry, dict):
+            raise WorkflowError("Planning provenance entries must be objects.", exit_code=2)
+        entry = copy.deepcopy(raw_entry)
+        artifact_path = planning_task_artifact_path(root, task_dir, entry.get("artifact_path"))
+        _statement, statement_sha = planning_locator_statement(artifact_path, entry.get("locator"))
+        entry["artifact_path"] = repo_relative(root, artifact_path)
+        entry["statement_sha256"] = statement_sha
+        if entry.get("classification") not in PLANNING_APPROVAL_PROVENANCE_CLASSES:
+            raise WorkflowError("Planning provenance classification is invalid.", exit_code=2)
+        refs = entry.get("authority_refs") if isinstance(entry.get("authority_refs"), list) else []
+        if any(ref not in authority_ids for ref in refs):
+            raise WorkflowError("Planning provenance authority_refs must resolve current authorities.", exit_code=2)
+        choice = entry.get("implementation_choice")
+        if isinstance(choice, dict):
+            alternatives = choice.get("alternatives") if isinstance(choice.get("alternatives"), list) else []
+            alternative_ids = [row.get("id") for row in alternatives if isinstance(row, dict)]
+            if len(alternative_ids) != len(set(alternative_ids)) or choice.get("selected_id") not in alternative_ids:
+                raise WorkflowError("Planning implementation choice selected_id must resolve one unique alternative.", exit_code=2)
+        expansion = entry.get("scope_expansion")
+        if entry.get("classification") == "approved_scope_expansion":
+            canonical_expansion, expansion_errors = planning_scope_expansion_projection(
+                root,
+                task_dir,
+                expansion,
+                authorities_by_id,
+                unusual_candidates_by_id,
+                refs,
+            )
+            if expansion_errors:
+                raise WorkflowError(
+                    "Approved scope expansion binding is invalid.",
+                    exit_code=2,
+                    payload={"error_codes": expansion_errors},
+                )
+            entry["scope_expansion"] = canonical_expansion
+        entries.append(entry)
+    entry_ids = [str(item.get("id") or "") for item in entries]
+    if not all(entry_ids) or len(entry_ids) != len(set(entry_ids)):
+        raise WorkflowError("Planning provenance entry ids must be non-empty and unique.", exit_code=2)
+    coverage = provenance.get("coverage")
+    if not isinstance(coverage, dict) or set(coverage.get("reviewed_entry_ids") or []) != set(entry_ids):
+        raise WorkflowError("Planning provenance coverage must reference every entry exactly.", exit_code=2)
+    provenance["entries"] = entries
+    coverage["review_sha256"] = planning_coverage_digest(entries, coverage)
+
+    snapshot = planning_repository_snapshot(root, task_dir, task_context)
+    payload = {
         "schema_version": PLANNING_APPROVAL_SCHEMA_VERSION,
-        "generated_at": approved_at,
-        "review_prompt_presented_at": presented_at,
-        "approved_at": approved_at,
-        "task_dir": repo_relative(root, task_dir),
-        "head": current_head(root),
-        "dirty_paths": dirty_paths,
-        "reviewer": reviewer,
-        "approval_summary": approval_summary,
-        "ambiguity_review": ambiguity_review,
-        "contract_wording_review": {
-            "artifact_path": repo_relative(root, wording_path),
-            "schema_id": "guru-contract-wording-review-1.0",
-            "facts_sha256": wording_evidence["facts_sha256"],
-            "scope_sha256": wording_evidence["scope"]["scope_sha256"],
-            "scan_sha256": wording_evidence["scan"]["scan_sha256"],
-        },
-        "user_confirmation": {
-            "source": PLANNING_APPROVAL_CONFIRMATION_SOURCE,
-            "message": user_confirmation,
-        },
+        "skill_id": PLANNING_APPROVAL_SKILL_ID,
+        "generated_at": now_iso(),
+        "mode": mode,
+        "task": planning_task_projection(root, task_dir, task_context),
+        "repository_snapshot": snapshot,
+        "requirement_authorities": authorities,
         "reviewed_artifacts": reviewed,
         "approved_artifacts": copy.deepcopy(reviewed),
-        "notes": "record-planning-approval 只投影已验证的 guru-review-contract-wording:planning_artifacts evidence，并记录已完成的 AI/human planning review 和用户确认；它不替代 semantic judgment。",
+        "docs_ssot_plan": docs,
+        "contract_wording_review": wording_binding,
+        "ambiguity_review": ambiguity_review,
+        "provenance_review": provenance,
+        "unusual_scenario_review": unusual,
+        "semantic_review": copy.deepcopy(authored.get("semantic_review")),
+        "user_confirmation": copy.deepcopy(authored.get("user_confirmation")),
+        "typed_exit": authored.get("typed_exit"),
+        "consumer": copy.deepcopy(authored.get("consumer")),
+        "reason": authored.get("reason"),
+        "supersedes_facts_sha256": authored.get("supersedes_facts_sha256"),
     }
+    payload["facts_sha256"] = planning_facts_digest(payload)
+    schema_errors = skill_json_schema_validation_errors(
+        payload, planning_approval_schema(root), "planning approval"
+    )
+    validation_errors = context_sort(
+        schema_errors + planning_approval_closed_union_errors(payload)
+    )
+    if validation_errors:
+        raise WorkflowError(
+            "Planning approval result validation failed.",
+            exit_code=2,
+            payload={"error_codes": validation_errors},
+        )
+    return payload
 
 
 def validate_planning_approval(
     root: Path,
     task_dir: Path,
     allow_committed_head: bool = False,
+    required_exit: str | None = "approved",
 ) -> tuple[Path, dict[str, Any], list[str]]:
     path = planning_approval_path(task_dir)
     if not path.exists():
@@ -8846,36 +9465,29 @@ def validate_planning_approval(
     payload = read_json(path)
     errors: list[str] = []
     if payload.get("schema_version") != PLANNING_APPROVAL_SCHEMA_VERSION:
+        legacy = payload.get("schema_version") == PLANNING_APPROVAL_LEGACY_SCHEMA_VERSION
         errors.append(
-            f"planning-approval.json schema_version 必须是 {PLANNING_APPROVAL_SCHEMA_VERSION}；旧 schema 不能作为当前 planning approval。"
+            "planning_approval_legacy_1_2_requires_complete_v2_reentry"
+            if legacy
+            else "planning_approval_schema_version_invalid"
         )
-    if not str(payload.get("review_prompt_presented_at") or "").strip():
-        errors.append("planning-approval.json 缺少 review_prompt_presented_at。")
-    if not str(payload.get("approved_at") or "").strip():
-        errors.append("planning-approval.json 缺少 approved_at。")
-    if not str(payload.get("approval_summary") or "").strip():
-        errors.append("planning-approval.json 缺少 approval_summary。")
-    if not str(payload.get("reviewer") or "").strip():
-        errors.append("planning-approval.json 缺少 reviewer。")
+        return path, payload, errors
+    try:
+        schema_errors = skill_json_schema_validation_errors(
+            payload, planning_approval_schema(root), "planning approval"
+        )
+    except WorkflowError as exc:
+        schema_errors = list(exc.payload.get("error_codes") or [str(exc)])
+    errors.extend(schema_errors)
+    errors.extend(planning_approval_closed_union_errors(payload))
+    if payload.get("facts_sha256") != planning_facts_digest(payload):
+        errors.append("planning_approval_facts_sha256_mismatch")
+    expected_consumer = PLANNING_APPROVAL_CONSUMERS.get(str(payload.get("typed_exit") or ""))
+    if expected_consumer is None or payload.get("consumer") != expected_consumer:
+        errors.append("planning_approval_exit_consumer_mismatch")
+    if required_exit is not None and payload.get("typed_exit") != required_exit:
+        errors.append(f"planning_approval_requires_{required_exit}_exit")
     errors.extend(planning_wording_review_errors(root, task_dir, payload))
-    confirmation = payload.get("user_confirmation")
-    if not isinstance(confirmation, dict):
-        errors.append("planning-approval.json 缺少用户确认摘要。")
-        confirmation = {}
-    elif not str(confirmation.get("message") or "").strip():
-        errors.append("planning-approval.json 缺少用户确认摘要。")
-    source = str(confirmation.get("source") or "").strip() if isinstance(confirmation, dict) else ""
-    if source != PLANNING_APPROVAL_CONFIRMATION_SOURCE:
-        errors.append(
-            "planning-approval.json user_confirmation.source 必须是 "
-            f"{PLANNING_APPROVAL_CONFIRMATION_SOURCE}；Phase 0 handoff/workflow confirmation 不能替代规划审核确认。"
-        )
-    recorded_head = str(payload.get("head") or "")
-    if not recorded_head:
-        errors.append("planning-approval.json 缺少 HEAD 记录。")
-    recorded_dirty = payload.get("dirty_paths")
-    if not isinstance(recorded_dirty, list):
-        errors.append("planning-approval.json 缺少 dirty_paths 数组。")
     reviewed = payload.get("reviewed_artifacts")
     approved_alias = payload.get("approved_artifacts")
     normalized_reviewed: list[Any] = []
@@ -8913,9 +9525,168 @@ def validate_planning_approval(
                 "planning-approval.json approved_artifacts alias 必须与 reviewed_artifacts 完全一致。"
             )
     else:
-        # Old artifacts with only approved_artifacts are intentionally blocked
-        # by schema/source checks above; this branch keeps error output focused.
         pass
+    if normalized_reviewed:
+        try:
+            expected_rows = [
+                normalized_digest_entry(root, task_dir, file_digest(root, task_dir / name))
+                for name in DEFAULT_PLANNING_ARTIFACTS
+            ]
+        except WorkflowError:
+            errors.append("planning_approval_required_artifact_missing")
+        else:
+            content_keys = ("path", "sha256", "size_bytes")
+            recorded_content = [
+                {key: row.get(key) for key in content_keys}
+                for row in normalized_reviewed
+                if isinstance(row, dict)
+            ]
+            expected_content = [
+                {key: row.get(key) for key in content_keys}
+                for row in expected_rows
+                if isinstance(row, dict)
+            ]
+            if recorded_content != expected_content:
+                errors.append("planning_approval_reviewed_artifacts_not_current")
+
+    docs = payload.get("docs_ssot_plan")
+    if isinstance(docs, dict):
+        try:
+            docs_path = planning_task_artifact_path(root, task_dir, docs.get("artifact_path"))
+            _statement, statement_sha = planning_locator_statement(docs_path, docs.get("locator"))
+            if docs.get("statement_sha256") != statement_sha:
+                errors.append("planning_approval_docs_ssot_statement_stale")
+        except WorkflowError:
+            errors.append("planning_approval_docs_ssot_locator_invalid")
+
+    recorded_authorities = {
+        str(item.get("id") or ""): item
+        for item in payload.get("requirement_authorities", [])
+        if isinstance(item, dict)
+    }
+    unusual_payload = payload.get("unusual_scenario_review")
+    unusual_rows = (
+        unusual_payload.get("candidates")
+        if isinstance(unusual_payload, dict)
+        and isinstance(unusual_payload.get("candidates"), list)
+        else []
+    )
+    unusual_candidate_ids = [
+        str(item.get("id") or "") for item in unusual_rows if isinstance(item, dict)
+    ]
+    if (
+        len(unusual_candidate_ids) != len(unusual_rows)
+        or not all(unusual_candidate_ids)
+        or len(unusual_candidate_ids) != len(set(unusual_candidate_ids))
+    ):
+        errors.append("planning_approval_unusual_candidate_ids_invalid")
+    unusual_candidates_by_id = {
+        str(item.get("id") or ""): item
+        for item in unusual_rows
+        if isinstance(item, dict) and str(item.get("id") or "")
+    }
+
+    provenance = payload.get("provenance_review")
+    if isinstance(provenance, dict) and isinstance(provenance.get("entries"), list):
+        authority_ids = set(recorded_authorities)
+        entry_ids: list[str] = []
+        for entry in provenance["entries"]:
+            if not isinstance(entry, dict):
+                continue
+            entry_ids.append(str(entry.get("id") or ""))
+            try:
+                artifact_path = planning_task_artifact_path(root, task_dir, entry.get("artifact_path"))
+                _statement, statement_sha = planning_locator_statement(artifact_path, entry.get("locator"))
+                if entry.get("statement_sha256") != statement_sha:
+                    errors.append("planning_approval_provenance_statement_stale")
+            except WorkflowError:
+                errors.append("planning_approval_provenance_locator_invalid")
+            refs = entry.get("authority_refs") if isinstance(entry.get("authority_refs"), list) else []
+            if any(ref not in authority_ids for ref in refs):
+                errors.append("planning_approval_provenance_authority_unknown")
+            choice = entry.get("implementation_choice")
+            if isinstance(choice, dict):
+                alternative_ids = [
+                    row.get("id") for row in choice.get("alternatives", []) if isinstance(row, dict)
+                ]
+                if len(alternative_ids) != len(set(alternative_ids)) or choice.get("selected_id") not in alternative_ids:
+                    errors.append("planning_approval_choice_selection_invalid")
+            if entry.get("classification") == "approved_scope_expansion":
+                canonical_expansion, expansion_errors = planning_scope_expansion_projection(
+                    root,
+                    task_dir,
+                    entry.get("scope_expansion"),
+                    recorded_authorities,
+                    unusual_candidates_by_id,
+                    refs,
+                )
+                errors.extend(expansion_errors)
+                if canonical_expansion != entry.get("scope_expansion"):
+                    errors.append("planning_approval_scope_expansion_projection_mismatch")
+        coverage = provenance.get("coverage")
+        if isinstance(coverage, dict):
+            if set(coverage.get("reviewed_entry_ids") or []) != set(entry_ids):
+                errors.append("planning_approval_provenance_coverage_mismatch")
+            if coverage.get("review_sha256") != planning_coverage_digest(provenance["entries"], coverage):
+                errors.append("planning_approval_provenance_review_digest_mismatch")
+
+    unusual = unusual_payload
+    if isinstance(unusual, dict) and isinstance(unusual.get("candidates"), list):
+        unresolved = 0
+        authority_ids = {
+            str(item.get("id") or "")
+            for item in payload.get("requirement_authorities", [])
+            if isinstance(item, dict)
+        }
+        for candidate in unusual["candidates"]:
+            if not isinstance(candidate, dict):
+                continue
+            proposal_sha = planning_unusual_proposal_digest(candidate)
+            if candidate.get("proposal_sha256") != proposal_sha:
+                errors.append("planning_approval_unusual_proposal_digest_mismatch")
+            confirmation = candidate.get("confirmation")
+            if candidate.get("disposition") == "confirmed_scope_expansion":
+                if (
+                    not isinstance(confirmation, dict)
+                    or confirmation.get("confirmation_kind") != "dedicated-unusual-scenario"
+                    or confirmation.get("proposal_sha256") != proposal_sha
+                    or confirmation.get("authority_ref") not in authority_ids
+                ):
+                    errors.append("planning_approval_unusual_confirmation_mismatch")
+            if candidate.get("disposition") == "clarification_required":
+                unresolved += 1
+        if unusual.get("unresolved_count") != unresolved:
+            errors.append("planning_approval_unusual_unresolved_count_mismatch")
+        if unusual.get("review_sha256") != planning_unusual_review_digest(unusual):
+            errors.append("planning_approval_unusual_review_digest_mismatch")
+
+    if not task_dir_is_archived(root, task_dir):
+        try:
+            config = load_config(root)
+            task_context = load_task_start_context(task_dir, config)
+            current_task = planning_task_projection(root, task_dir, task_context)
+            recorded_task = payload.get("task") if isinstance(payload.get("task"), dict) else {}
+            for key in ["task_dir", "task_identity_sha256", "scope_ledger_sha256", "branch", "issue_numbers"]:
+                if recorded_task.get(key) != current_task.get(key):
+                    errors.append(f"planning_approval_task_{key}_stale")
+            current_authorities = [
+                planning_current_authority(root, item, task_dir)
+                for item in payload.get("requirement_authorities", [])
+            ]
+            if current_authorities != payload.get("requirement_authorities"):
+                errors.append("planning_approval_requirement_authority_stale")
+            if current_task.get("status") == "planning":
+                current_snapshot = planning_repository_snapshot(root, task_dir, task_context)
+                recorded_snapshot = (
+                    payload.get("repository_snapshot")
+                    if isinstance(payload.get("repository_snapshot"), dict)
+                    else {}
+                )
+                for key in ["selected_base", "base_ref", "base_head", "head", "dirty_paths"]:
+                    if recorded_snapshot.get(key) != current_snapshot.get(key):
+                        errors.append(f"planning_approval_repository_snapshot_{key}_stale")
+        except WorkflowError as exc:
+            errors.append(f"planning_approval_current_facts_invalid:{exc}")
     return path, payload, errors
 
 
@@ -11211,29 +11982,56 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
     task_dir = resolve_task_dir(root, args.task)
     task_context = load_task_start_context(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
-    reviewer = str(args.reviewer or "").strip()
-    summary = str(args.summary or "").strip()
-    confirmation = str(args.user_confirmation or "").strip()
-    if not reviewer:
-        raise WorkflowError("record-planning-approval requires --reviewer identity metadata.", exit_code=2)
-    if not summary:
-        raise WorkflowError("record-planning-approval requires --summary with the planning review conclusion.", exit_code=2)
-    if not confirmation:
-        raise WorkflowError("record-planning-approval requires --user-confirmation evidence.", exit_code=2)
+    authored = contract_wording_read_input(
+        root, getattr(args, "input", None), "planning approval recorder"
+    )
     payload = build_planning_approval_payload(
         root=root,
         task_dir=task_dir,
-        reviewer=reviewer,
-        approval_summary=summary,
-        user_confirmation=confirmation,
-        artifacts=list(args.artifact or []),
-        contract_wording_evidence=str(args.contract_wording_evidence or ""),
-        review_prompt_presented_at=getattr(args, "review_prompt_presented_at", None),
-        confirmation_source=str(getattr(args, "confirmation_source", PLANNING_APPROVAL_CONFIRMATION_SOURCE) or ""),
+        authored=authored,
+        task_context=task_context,
     )
     path = planning_approval_path(task_dir)
+    if path.exists():
+        existing = read_json(path)
+        if existing.get("schema_version") == PLANNING_APPROVAL_SCHEMA_VERSION:
+            expected_prior = str(authored.get("supersedes_facts_sha256") or "").strip()
+            if expected_prior != str(existing.get("facts_sha256") or ""):
+                raise WorkflowError(
+                    "Replacing current planning approval requires exact supersedes_facts_sha256.",
+                    exit_code=2,
+                    payload={"error_codes": ["planning_approval_superseded_facts_mismatch"]},
+                )
+        elif existing.get("schema_version") != PLANNING_APPROVAL_LEGACY_SCHEMA_VERSION:
+            raise WorkflowError(
+                "Only the active legacy schema 1.2 planning artifact may bootstrap directly to v2.",
+                exit_code=2,
+                payload={"error_codes": ["planning_approval_legacy_schema_not_migratable"]},
+            )
+    snapshot_before = copy.deepcopy(payload["repository_snapshot"])
     if not args.dry_run:
         write_json(path, payload)
+        persisted = read_json(path)
+        if persisted != payload:
+            raise WorkflowError("Persisted planning approval identity mismatch.", exit_code=2)
+    snapshot_after = planning_repository_snapshot(root, task_dir, task_context)
+    for key in ["selected_base", "base_ref", "base_head", "head", "dirty_paths"]:
+        if snapshot_after.get(key) != snapshot_before.get(key):
+            raise WorkflowError(
+                "Repository snapshot changed during planning approval recording.",
+                exit_code=2,
+                payload={"error_codes": ["planning_approval_invocation_snapshot_drift"]},
+            )
+    if not args.dry_run:
+        _checked_path, _checked_payload, errors = validate_planning_approval(
+            root, task_dir, required_exit=None
+        )
+        if errors:
+            raise WorkflowError(
+                "Persisted planning approval validation failed.",
+                exit_code=2,
+                payload={"error_codes": errors},
+            )
     payload["artifact_path"] = str(path)
     payload["dry_run"] = bool(args.dry_run)
     return payload
@@ -11249,7 +12047,12 @@ def cmd_check_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
         root,
         task_dir,
         allow_committed_head=bool(getattr(args, "allow_committed_head", False)),
+        required_exit=getattr(args, "require_exit", None),
     )
+    expected_artifact = str(getattr(args, "expected_artifact_sha256", None) or "").strip()
+    actual_artifact = hashlib.sha256(path.read_bytes()).hexdigest()
+    if expected_artifact and expected_artifact != actual_artifact:
+        errors.append("planning_approval_artifact_sha256_mismatch")
     if errors:
         raise WorkflowError(
             "Planning approval is missing or stale.",
@@ -11261,7 +12064,11 @@ def cmd_check_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
         "artifact_path": str(path),
         "task_dir": str(task_dir),
         "head": current_head(root),
-        "approved_head": payload.get("head"),
+        "approval_head": payload.get("repository_snapshot", {}).get("head"),
+        "typed_exit": payload.get("typed_exit"),
+        "consumer": payload.get("consumer"),
+        "facts_sha256": payload.get("facts_sha256"),
+        "artifact_sha256": actual_artifact,
     }
 
 
@@ -24925,30 +25732,23 @@ def build_parser() -> argparse.ArgumentParser:
     planning.add_argument("--root")
     planning.add_argument("--json", action="store_true")
     planning.add_argument("--task")
-    planning.add_argument("--reviewer", required=True, help="Reviewer name or AI/human review channel.")
-    planning.add_argument("--summary", required=True, help="Chinese planning review conclusion.")
     planning.add_argument(
-        "--contract-wording-evidence",
+        "--input",
         required=True,
-        help="Task-local contract-wording-review.json produced by guru-review-contract-wording:planning_artifacts:pass.",
+        help="AI-reviewed planning approval input JSON file, or - for stdin.",
     )
-    planning.add_argument("--user-confirmation", required=True, help="Evidence summary for user approval to enter implementation.")
-    planning.add_argument(
-        "--review-prompt-presented-at",
-        help="ISO-8601 time when the AI presented prd.md/design.md/implement.md links for explicit post-planning review. Defaults to recorder time.",
-    )
-    planning.add_argument(
-        "--confirmation-source",
-        default=PLANNING_APPROVAL_CONFIRMATION_SOURCE,
-        help=f"Must be {PLANNING_APPROVAL_CONFIRMATION_SOURCE}; Phase 0 handoff/workflow confirmation is rejected.",
-    )
-    planning.add_argument("--artifact", action="append", help="Task-local artifact path to approve. Defaults to existing prd/design/implement.")
     planning.add_argument("--dry-run", action="store_true")
 
     check_planning = sub.add_parser("check-planning-approval")
     check_planning.add_argument("--root")
     check_planning.add_argument("--json", action="store_true")
     check_planning.add_argument("--task")
+    check_planning.add_argument(
+        "--require-exit",
+        choices=sorted(PLANNING_APPROVAL_CONSUMERS),
+        help="Require one exact typed exit. Task activation and downstream gates use approved.",
+    )
+    check_planning.add_argument("--expected-artifact-sha256")
     check_planning.add_argument(
         "--allow-committed-head",
         action="store_true",

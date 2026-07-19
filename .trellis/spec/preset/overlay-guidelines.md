@@ -20,6 +20,13 @@ upstream-owned path may be added. New reusable behavior belongs in Markdown
 workflow contracts or canonical `guru-*` packages. Reviewed removal keeps an
 `upstream_owned/removed` inventory tombstone instead of deleting audit history.
 
+Activating `guru-approve-task-plan` is additive distribution: install its
+canonical package below `.trellis/guru-team/skills/**`, shared runtime/schema
+below `.trellis/guru-team/**`, and generated `guru-*` discovery copies for the
+selected platforms. It must not add or modify a file below the frozen
+`trellis/presets/guru-team/overlays/**` tree. Platform entry prose may route to
+the stable Skill id but must not duplicate its planning review loop.
+
 Reference overlay groups:
 
 - `.agents/skills/trellis-start/SKILL.md`
@@ -129,15 +136,11 @@ Continue entries must:
   `exists=false` must not be rendered as Markdown links, `review.md` is the
   AI/human review report after Branch Review, raw `reviews/*.md` are reached
   through `review.md`, and JSON artifacts stay out of the standard table
-- state that `planning-approval.json` must use schema 1.2, bind current
-  checker-validated `guru-contract-wording-review-1.0` planning evidence and
-  its deterministic `ambiguity_review` compatibility projection copied
-  value-for-value from planning-only dimensions without defaults,
-  `user_confirmation.source=explicit-post-planning-review`,
-  `review_prompt_presented_at`, `approved_at`, and matching hash / size /
-  modified-time metadata for `prd.md`, `design.md`, and `implement.md`; state
-  that freshness is based on planning document content digests, while HEAD and
-  dirty-path drift alone do not require another user review
+- state that Phase 1 mandatory invokes `guru-approve-task-plan`, whose single
+  `planning-approval.json` uses schema `guru-planning-approval-2.0`, current
+  wording/authority/planning/Docs SSOT bindings, four-class provenance,
+  unusual-proposal dispositions, distinct confirmations, AI Gate, facts digest,
+  and four typed exits; platform text must not copy that step-local loop
 - state that schema 1.0 wording evidence missing the planning-only field is
   stale and requires complete AI re-review, redisplay of all three planning
   documents, and fresh post-planning confirmation; never patch old evidence
@@ -268,6 +271,13 @@ SessionStart, sub-agent context injection, brainstorm, and trellis-meta referenc
 
 Sub-agent overlay entries must:
 
+The 43 inventory-pinned upstream overlay payloads remain byte-frozen
+`transitional_legacy` assets owned by issue #132. Their legacy `schema 1.2`
+and `explicit-post-planning-review` implement-agent wording is retained only as
+transitional history; it must not guide current Guru package/runtime behavior
+or be copied into canonical `guru-*` packages, workflow contracts, durable
+docs, or new non-frozen platform sources.
+
 - keep technical dispatch `name` values stable;
 - use Chinese UI-facing descriptions and headings;
 - for Codex custom agents, keep `nickname_candidates` ASCII so Codex loads the
@@ -275,10 +285,13 @@ Sub-agent overlay entries must:
 - keep recursion guards and task-context loading preludes intact;
 - require implement agents to run `check-planning-approval.sh --json --task
   <task-path>` before reading implementation context or editing, and to report
-  `Implementation Blocked` if the artifact is missing, old-schema, lacks
-  current checker-validated planning wording evidence, is not sourced from
-  `explicit-post-planning-review`, or the reviewed planning document content
-  digests no longer match;
+  `Implementation Blocked` if the artifact is missing, is not the Skill-owned
+  `guru-planning-approval-2.0` closed union, does not have
+  `typed_exit=approved`, fails the shared
+  `check-planning-approval --require-exit approved` validator, lacks current
+  wording/authority/Docs SSOT/provenance/AI Gate evidence, does not carry
+  `user_confirmation.kind=post-planning-approval` with confirmed timestamps,
+  or the reviewed planning document content digests no longer match;
 - require implement agents to output a completion handoff with files changed,
   requirement/design carryover, verification state, remaining risks, completion
   status, and focus areas for `trellis-check`;

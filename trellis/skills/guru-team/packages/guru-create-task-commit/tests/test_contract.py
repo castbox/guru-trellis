@@ -349,6 +349,29 @@ class TaskCommitPackageContractTests(unittest.TestCase):
             self.assertIn(phrase, contract)
         self.assertNotIn("stages literal exact paths", contract)
 
+    def test_planning_approval_precondition_uses_skill_owned_v2_checker(self) -> None:
+        planning_approval = next(
+            item
+            for item in self.interface["entry_preconditions"]
+            if item["id"] == "planning_approval"
+        )
+        self.assertIn(
+            "Skill-owned guru-planning-approval-2.0 approved result",
+            planning_approval["binding"],
+        )
+        self.assertIn(
+            "exact reviewed/approved planning document digests",
+            planning_approval["binding"],
+        )
+        self.assertIn(
+            "shared check-planning-approval --require-exit approved",
+            planning_approval["freshness"],
+        )
+        self.assertNotIn(
+            "schema 1.2 approval",
+            json.dumps(planning_approval, sort_keys=True),
+        )
+
     def test_skill_triggers_and_thin_wrappers(self) -> None:
         skill = (self.package / "SKILL.md").read_text(encoding="utf-8")
         for phrase in ("creating a task commit", "committing Phase 2 changes", "finding fix", "revision commit"):

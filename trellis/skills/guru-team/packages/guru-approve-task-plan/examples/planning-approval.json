@@ -1,0 +1,172 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-approve-task-plan",
+  "generated_at": "2026-01-15T09:35:00Z",
+  "mode": "workflow",
+  "task": {
+    "task_dir": ".trellis/tasks/example-task",
+    "task_identity_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "scope_ledger_sha256": "1010101010101010101010101010101010101010101010101010101010101010",
+    "status": "planning",
+    "branch": "feat/example-task-plan",
+    "issue_numbers": [27]
+  },
+  "repository_snapshot": {
+    "selected_base": "main",
+    "base_ref": "origin/main",
+    "base_head": "2222222222222222222222222222222222222222",
+    "head": "3333333333333333333333333333333333333333",
+    "dirty_paths": [
+      ".trellis/tasks/example-task/design.md",
+      ".trellis/tasks/example-task/implement.md",
+      ".trellis/tasks/example-task/prd.md"
+    ],
+    "captured_at": "2026-01-15T09:34:55Z"
+  },
+  "requirement_authorities": [
+    {
+      "id": "issue:27",
+      "kind": "github_issue",
+      "locator": "https://github.com/example/guru-extension/issues/27",
+      "sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "updated_at": "2026-01-15T08:00:00Z"
+    }
+  ],
+  "reviewed_artifacts": [
+    {
+      "path": ".trellis/tasks/example-task/prd.md",
+      "sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "size_bytes": 1024,
+      "modified_at": "2026-01-15T09:20:00Z"
+    },
+    {
+      "path": ".trellis/tasks/example-task/design.md",
+      "sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+      "size_bytes": 2048,
+      "modified_at": "2026-01-15T09:22:00Z"
+    },
+    {
+      "path": ".trellis/tasks/example-task/implement.md",
+      "sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+      "size_bytes": 1536,
+      "modified_at": "2026-01-15T09:24:00Z"
+    }
+  ],
+  "approved_artifacts": [
+    {
+      "path": ".trellis/tasks/example-task/prd.md",
+      "sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "size_bytes": 1024,
+      "modified_at": "2026-01-15T09:20:00Z"
+    },
+    {
+      "path": ".trellis/tasks/example-task/design.md",
+      "sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+      "size_bytes": 2048,
+      "modified_at": "2026-01-15T09:22:00Z"
+    },
+    {
+      "path": ".trellis/tasks/example-task/implement.md",
+      "sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+      "size_bytes": 1536,
+      "modified_at": "2026-01-15T09:24:00Z"
+    }
+  ],
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "artifact_path": ".trellis/tasks/example-task/design.md",
+    "locator": "Docs SSOT Plan",
+    "statement_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+    "durable_paths": [
+      ".trellis/spec/workflow/data-contracts.md",
+      "docs/requirements/requirement-main.md"
+    ]
+  },
+  "contract_wording_review": {
+    "artifact_path": ".trellis/tasks/example-task/contract-wording-review.json",
+    "schema_id": "guru-contract-wording-review-1.0",
+    "profile": "planning_artifacts",
+    "typed_exit": "pass",
+    "artifact_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+    "facts_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "scope_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "scan_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "ambiguity_review": {
+    "status": "passed",
+    "reviewer": "example-ai-reviewer",
+    "summary": "The fixed planning scope is explicit and machine-verifiable.",
+    "normative_language": {
+      "controlled_terms": ["must"],
+      "scan_scope": ["prd.md", "design.md", "implement.md"],
+      "hits": [],
+      "unchecked_normative_hits": []
+    },
+    "checked_dimensions": {
+      "no_requirement_weakening": true,
+      "source_issue_semantics_preserved": true,
+      "conditional_paths_have_conditions": true,
+      "no_parallel_implementation_paths": true,
+      "gates_have_machine_verifiable_conditions": true,
+      "acceptance_criteria_are_deterministic": true,
+      "external_quotes_are_labeled_non_contract": true
+    }
+  },
+  "provenance_review": {
+    "entries": [
+      {
+        "id": "R1-plan-owner",
+        "artifact_path": ".trellis/tasks/example-task/prd.md",
+        "locator": "R1. Task plan approval owner",
+        "statement_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "classification": "explicit_requirement",
+        "authority_refs": ["issue:27"],
+        "reason": "The source issue explicitly requires one semantic planning approval owner.",
+        "implementation_choice": null,
+        "scope_expansion": null,
+        "out_of_scope_proposal": null
+      }
+    ],
+    "coverage": {
+      "reviewer": "example-ai-reviewer",
+      "summary": "Every load-bearing item in this deidentified example is covered.",
+      "reviewed_entry_ids": ["R1-plan-owner"],
+      "all_load_bearing_items_covered": true,
+      "review_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    }
+  },
+  "unusual_scenario_review": {
+    "reviewer": "example-ai-reviewer",
+    "summary": "No unusual scenario proposal is required by this example scope.",
+    "candidates": [],
+    "unresolved_count": 0,
+    "review_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  },
+  "semantic_review": {
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "example-ai-reviewer",
+      "summary": "The task plan is adequate, current, scoped, and ready for activation.",
+      "reviewed_at": "2026-01-15T09:30:00Z",
+      "findings": [],
+      "revision_actions": [],
+      "scope_proposals": [],
+      "blocking_reasons": []
+    }
+  },
+  "user_confirmation": {
+    "kind": "post-planning-approval",
+    "status": "confirmed",
+    "prompt_presented_at": "2026-01-15T09:31:00Z",
+    "confirmed_at": "2026-01-15T09:33:00Z",
+    "evidence_summary": "The user confirmed after reviewing all three planning links."
+  },
+  "typed_exit": "approved",
+  "consumer": {
+    "kind": "workflow",
+    "id": "phase-1-task-activation"
+  },
+  "reason": "The current plan passed semantic review and exact confirmation.",
+  "supersedes_facts_sha256": null,
+  "facts_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+}

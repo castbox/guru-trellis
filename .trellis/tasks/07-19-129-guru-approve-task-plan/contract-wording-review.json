@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-19T06:15:10Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-19-129-guru-approve-task-plan",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-19-129-guru-approve-task-plan/prd.md",
+        "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/prd.md",
+        "size_bytes": 16204,
+        "content_sha256": "6430089e4ad81add0b3db5486a2692a7bd89cbc3a88567af2dbd4dfb2f9ab903"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+        "size_bytes": 22545,
+        "content_sha256": "2997e11b23f8488f46e78cd706cb6d59b9b889833f6b2a741e5bae2b311526bd"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-19-129-guru-approve-task-plan/implement.md",
+        "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/implement.md",
+        "size_bytes": 14973,
+        "content_sha256": "65e2770aa00173a933155bc8c7710a95d496bb3354bd8f0840472af483fbee06"
+      }
+    ],
+    "scope_sha256": "22ae94fdc320c64077334cc0b982342832cb9b87ef9c9fa60f0422af3b8c2767"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session",
+      "summary": "已审查固定的 prd.md、design.md、implement.md 全量范围。三文档零受控词命中；Issue #129 的 semantic owner、四类 provenance、非常规场景专用确认、四出口、existing artifact 复用、no-upstream-overlay、Docs SSOT 与安装升级验收均有明确且可验证的承接。",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "本次 current scope 审查未修改三份 planning 文档，也未改变产品语义。"
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "bb0b6e74214766a440c5ce75cf984e2062a163234c4d3371cd452974a1a3ae10"
+}

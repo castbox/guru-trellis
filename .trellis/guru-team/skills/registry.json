@@ -8,6 +8,16 @@
       "reason": "Reserved compatibility tombstone; use the active guru-create-task-commit entry instead."
     },
     {
+      "id": "guru-approve-task-plan",
+      "state": "active",
+      "name": "guru-approve-task-plan",
+      "package": "packages/guru-approve-task-plan",
+      "interface": "packages/guru-approve-task-plan/interface.json",
+      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "phase-1-task-plan-approval"
+    },
+    {
       "id": "guru-create-task-workspace",
       "state": "active",
       "name": "guru-create-task-workspace",

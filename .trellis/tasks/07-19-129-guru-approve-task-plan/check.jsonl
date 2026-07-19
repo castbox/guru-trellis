@@ -1,0 +1,9 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"复核 Skill semantic ownership、interface、entry parity、four-exit routing 与 re-entry。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"复核 workflow 只保留 global invocation/routing，且 task activation 只有 approved 入口。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"复核 v2 artifact closed union、provenance、unusual confirmation、migration 与 downstream freshness。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"复核 script 未替代 adequacy、provenance、scope、confirmation 或 pass 判断。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"复核 normal-path fixtures、legacy migration、dogfood、throwaway 与 update/reapply coverage。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"复核四平台 additive discovery distribution 与 overlay 不扩张。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"复核 ownership inventory、no-new-patch、managed hash 与 sidecar 边界。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"复核 README、workflow marketplace、preset 安装与升级说明真实一致。"}
+{"file":".trellis/tasks/07-19-129-guru-approve-task-plan/research/official-trellis-extension-contracts.md","reason":"核对实现仍使用官方 workflow/Skill/spec marketplace 扩展面。"}

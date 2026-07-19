@@ -100,12 +100,13 @@ The following anchored forms are Guru-owned:
 
 The canonical, installed, and discovery paths for
 `guru-discover-change-context`, `guru-clarify-requirements`,
-`guru-review-change-request`, and `guru-create-task-workspace` match these
+`guru-review-change-request`, `guru-create-task-workspace`, and
+`guru-approve-task-plan` match these
 anchored forms and are `guru_owned`. Their companion scripts and schemas live
 below the existing `.trellis/guru-team/**` and
 `trellis/workflows/guru-team/**` claims. Activating either Skill must not add,
 rewrite, or broaden a frozen transitional legacy overlay entry. In particular,
-#113/#101/#112 distribution is additive package/runtime/discovery content only; it does
+#113/#101/#112/#129 distribution is additive package/runtime/discovery content only; it does
 not authorize a new or changed file below
 `trellis/presets/guru-team/overlays/**`.
 

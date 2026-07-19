@@ -1,0 +1,312 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-19T13:31:59Z",
+  "task_dir": ".trellis/tasks/07-19-129-guru-approve-task-plan",
+  "base_branch": "main",
+  "head": "56e32836376ae31d6e07862ca988c24f5654886d",
+  "diff_range": "origin/main...HEAD",
+  "dirty_paths": [
+    ".agents/skills/guru-clarify-requirements/SKILL.md",
+    ".agents/skills/guru-clarify-requirements/references/contract.md",
+    ".agents/skills/guru-clarify-requirements/tests/test_contract.py",
+    ".agents/skills/guru-create-task-commit/interface.json",
+    ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+    ".agents/skills/guru-review-change-request/tests/test_contract.py",
+    ".claude/skills/guru-clarify-requirements/SKILL.md",
+    ".claude/skills/guru-clarify-requirements/references/contract.md",
+    ".claude/skills/guru-clarify-requirements/tests/test_contract.py",
+    ".claude/skills/guru-create-task-commit/interface.json",
+    ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+    ".claude/skills/guru-review-change-request/tests/test_contract.py",
+    ".codex/skills/guru-clarify-requirements/SKILL.md",
+    ".codex/skills/guru-clarify-requirements/references/contract.md",
+    ".codex/skills/guru-clarify-requirements/tests/test_contract.py",
+    ".codex/skills/guru-create-task-commit/interface.json",
+    ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+    ".codex/skills/guru-review-change-request/tests/test_contract.py",
+    ".cursor/skills/guru-clarify-requirements/SKILL.md",
+    ".cursor/skills/guru-clarify-requirements/references/contract.md",
+    ".cursor/skills/guru-clarify-requirements/tests/test_contract.py",
+    ".cursor/skills/guru-create-task-commit/interface.json",
+    ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+    ".cursor/skills/guru-review-change-request/tests/test_contract.py",
+    ".trellis/guru-team/extension.json",
+    ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+    ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+    ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-clarify-requirements/tests/test_contract.py",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+    ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+    ".trellis/guru-team/skills/packages/guru-review-change-request/tests/test_contract.py",
+    ".trellis/guru-team/skills/registry.json",
+    ".trellis/spec/docs/public-docs.md",
+    ".trellis/spec/preset/overlay-guidelines.md",
+    ".trellis/spec/preset/upstream-ownership.md",
+    ".trellis/spec/workflow/companion-scripts.md",
+    ".trellis/spec/workflow/data-contracts.md",
+    ".trellis/spec/workflow/index.md",
+    ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/skill-package-contract.md",
+    ".trellis/spec/workflow/workflow-contract.md",
+    ".trellis/workflow.md",
+    "README.md",
+    "docs/requirements/README.md",
+    "docs/requirements/guru-team-trellis-flow.md",
+    "docs/requirements/requirement-main.md",
+    "trellis/guru-team-extension.json",
+    "trellis/presets/guru-team/README.md",
+    "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+    "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+    "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+    "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+    "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+    "trellis/skills/guru-team/packages/guru-review-change-request/tests/test_contract.py",
+    "trellis/skills/guru-team/registry.json",
+    "trellis/skills/guru-team/tests/test_skill_packages.py",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+    "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+    "trellis/workflows/guru-team/workflow.md",
+    ".agents/skills/guru-approve-task-plan/SKILL.md",
+    ".agents/skills/guru-approve-task-plan/examples/planning-approval.json",
+    ".agents/skills/guru-approve-task-plan/interface.json",
+    ".agents/skills/guru-approve-task-plan/references/contract.md",
+    ".agents/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+    ".agents/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+    ".agents/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+    ".agents/skills/guru-approve-task-plan/tests/test_contract.py",
+    ".claude/skills/guru-approve-task-plan/SKILL.md",
+    ".claude/skills/guru-approve-task-plan/examples/planning-approval.json",
+    ".claude/skills/guru-approve-task-plan/interface.json",
+    ".claude/skills/guru-approve-task-plan/references/contract.md",
+    ".claude/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+    ".claude/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+    ".claude/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+    ".claude/skills/guru-approve-task-plan/tests/test_contract.py",
+    ".codex/skills/guru-approve-task-plan/SKILL.md",
+    ".codex/skills/guru-approve-task-plan/examples/planning-approval.json",
+    ".codex/skills/guru-approve-task-plan/interface.json",
+    ".codex/skills/guru-approve-task-plan/references/contract.md",
+    ".codex/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+    ".codex/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+    ".codex/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+    ".codex/skills/guru-approve-task-plan/tests/test_contract.py",
+    ".cursor/skills/guru-approve-task-plan/SKILL.md",
+    ".cursor/skills/guru-approve-task-plan/examples/planning-approval.json",
+    ".cursor/skills/guru-approve-task-plan/interface.json",
+    ".cursor/skills/guru-approve-task-plan/references/contract.md",
+    ".cursor/skills/guru-approve-task-plan/schemas/planning-approval.schema.json",
+    ".cursor/skills/guru-approve-task-plan/scripts/check-planning-approval.sh",
+    ".cursor/skills/guru-approve-task-plan/scripts/record-planning-approval.sh",
+    ".cursor/skills/guru-approve-task-plan/tests/test_contract.py",
+    ".trellis/guru-team/skills/packages/guru-approve-task-plan/SKILL.md",
+    ".trellis/guru-team/skills/packages/guru-approve-task-plan/examples/planning-approval.json",
+    ".trellis/guru-team/skills/packages/guru-approve-task-plan/interface.json",
+    ".trellis/guru-team/skills/packages/guru-approve-task-plan/references/contract.md",
+    ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/planning-approval.schema.json",
+    ".trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/check-planning-approval.sh",
+    ".trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/record-planning-approval.sh",
+    ".trellis/guru-team/skills/packages/guru-approve-task-plan/tests/test_contract.py",
+    "trellis/skills/guru-team/packages/guru-approve-task-plan/SKILL.md",
+    "trellis/skills/guru-team/packages/guru-approve-task-plan/examples/planning-approval.json",
+    "trellis/skills/guru-team/packages/guru-approve-task-plan/interface.json",
+    "trellis/skills/guru-team/packages/guru-approve-task-plan/references/contract.md",
+    "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/planning-approval.schema.json",
+    "trellis/skills/guru-team/packages/guru-approve-task-plan/scripts/check-planning-approval.sh",
+    "trellis/skills/guru-team/packages/guru-approve-task-plan/scripts/record-planning-approval.sh",
+    "trellis/skills/guru-team/packages/guru-approve-task-plan/tests/test_contract.py"
+  ],
+  "checker": "/root/check_issue_129_phase2_after_digest",
+  "check_summary": "独立 trellis-check 已覆盖 Issue #129 完整 126-path dirty scope、R1-R10/AC1-AC15、P1 exact proposal digest 修复、Docs SSOT、五根分发、升级重放与部署安全影响；P0/P1/P2/P3 均为 0，可以进入 task commit。",
+  "checked_artifacts": [
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/prd.md",
+      "sha256": "6430089e4ad81add0b3db5486a2692a7bd89cbc3a88567af2dbd4dfb2f9ab903",
+      "size_bytes": 16204,
+      "modified_at": "2026-07-19T06:08:48.437622+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/design.md",
+      "sha256": "2997e11b23f8488f46e78cd706cb6d59b9b889833f6b2a741e5bae2b311526bd",
+      "size_bytes": 22545,
+      "modified_at": "2026-07-19T06:14:57.055442+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/implement.md",
+      "sha256": "65e2770aa00173a933155bc8c7710a95d496bb3354bd8f0840472af483fbee06",
+      "size_bytes": 14973,
+      "modified_at": "2026-07-19T06:13:14.932633+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/planning-approval.json",
+      "sha256": "3592d038238b6d4429a2650373ff56d1e16732b3e83302630cb168e6a1ff5c6b",
+      "size_bytes": 30570,
+      "modified_at": "2026-07-19T09:39:47.389880+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/contract-wording-review.json",
+      "sha256": "e2fd083bbba7b5bd915fc6535db042a8107ac7394ec48b4dcaef9d1740c8c1d8",
+      "size_bytes": 3272,
+      "modified_at": "2026-07-19T06:16:00.674635+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/issue-review.json",
+      "sha256": "d3fc77bb28fa9c54f4ea897baa3ce91934b7a7ed7bbc4346a5c0865b99b50556",
+      "size_bytes": 12803,
+      "modified_at": "2026-07-19T05:56:51.370381+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/issue-scope-ledger.json",
+      "sha256": "c03bfeff0d1c6a65967a8399c946aed8c0f4983b61c19664f0acd9ebab4648ea",
+      "size_bytes": 2921,
+      "modified_at": "2026-07-19T05:56:51.370019+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/context-discovery.json",
+      "sha256": "7ac0086bea1c693e6610adddc0140eaff8f9648dce9000c7c9c8d510c2a9bb39",
+      "size_bytes": 298271,
+      "modified_at": "2026-07-19T05:56:51.370108+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/task-start-context.json",
+      "sha256": "68970229ef1f33abff189e91efd6408ddfefc1cefe2ea023208bc42c3516549c",
+      "size_bytes": 7578,
+      "modified_at": "2026-07-19T05:56:51.369911+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/task.json",
+      "sha256": "ce9e282c27f69bbf710bf34e262be7a688d96a232f4a20b1d44df80d66faafa3",
+      "size_bytes": 669,
+      "modified_at": "2026-07-19T06:17:34.071822+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/implement.jsonl",
+      "sha256": "27954187de8cc5d66bd1a197d10b51802512c4def641235b761fb446138152ce",
+      "size_bytes": 1419,
+      "modified_at": "2026-07-19T06:12:37.744286+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/check.jsonl",
+      "sha256": "be1d33777bcd78e098709d582c8751b4b79c638a9bf85b28ef311c7c148d59fb",
+      "size_bytes": 1437,
+      "modified_at": "2026-07-19T06:12:37.744763+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/agent-assignment.json",
+      "sha256": "c4f14c649c981a91b54a02d4b12ca0af0b1b4139f73fed235cad78a25fc6140f",
+      "size_bytes": 232246,
+      "modified_at": "2026-07-19T13:30:29.444207+00:00"
+    },
+    {
+      "path": ".trellis/tasks/07-19-129-guru-approve-task-plan/research/official-trellis-extension-contracts.md",
+      "sha256": "9f2e6c73c4fb7a6d9537fb671470ce6b7b8ae9df8d7c9b324efa291f9284f1ac",
+      "size_bytes": 1976,
+      "modified_at": "2026-07-19T06:07:26.124928+00:00"
+    }
+  ],
+  "checked_specs": [
+    {
+      "path": ".trellis/spec/docs/public-docs.md",
+      "sha256": "29023aa8ef2a26d4e7e1fe7405a4c71eeac65d9d29c472d1548edcaabf772ffe",
+      "size_bytes": 15824,
+      "modified_at": "2026-07-19T12:29:58.069851+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/overlay-guidelines.md",
+      "sha256": "e8b89520ecd4f45368d3377a9d6585d74c2fd8c184ed5aae1864327a70a90a66",
+      "size_bytes": 21580,
+      "modified_at": "2026-07-19T11:11:21.865745+00:00"
+    },
+    {
+      "path": ".trellis/spec/preset/upstream-ownership.md",
+      "sha256": "ff74400260a8279e171b916b841a37819f933e150a50f8e81c4cb45a536276b1",
+      "size_bytes": 9661,
+      "modified_at": "2026-07-19T06:35:28.461718+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/companion-scripts.md",
+      "sha256": "45bd877be734de79b4b88e8cc11289b05ee507306014ea7634bdd72ec77183d4",
+      "size_bytes": 72460,
+      "modified_at": "2026-07-19T12:28:27.364050+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/data-contracts.md",
+      "sha256": "9f20407269d54b4791824d3b3d6553b434a88cf7fbc1eef08daae4590b43f285",
+      "size_bytes": 95193,
+      "modified_at": "2026-07-19T12:28:13.088292+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/index.md",
+      "sha256": "655342ada78505b2b58ffd56b80156aea04158466fe6c780f44bfd627fcc2205",
+      "size_bytes": 4235,
+      "modified_at": "2026-07-19T06:31:48.010471+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/quality-guidelines.md",
+      "sha256": "e6b0f663a514e2d03139db96a764c5a8fd70eeb347d51b312228b6d3256bf9df",
+      "size_bytes": 22358,
+      "modified_at": "2026-07-19T12:29:21.899252+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/skill-package-contract.md",
+      "sha256": "cee1b2e917bc0d9c4594cc2348edf0f2e14fbfcc77fe50cc0b682e71b601ff7f",
+      "size_bytes": 41603,
+      "modified_at": "2026-07-19T12:28:44.554605+00:00"
+    },
+    {
+      "path": ".trellis/spec/workflow/workflow-contract.md",
+      "sha256": "2a16d549fdf7f3906c169f634bb1b9009fda0d4c7f123a682e99479b5f6a21c1",
+      "size_bytes": 56231,
+      "modified_at": "2026-07-19T09:26:49.336442+00:00"
+    }
+  ],
+  "coverage": {
+    "requirements": true,
+    "design": true,
+    "code": true,
+    "tests": true,
+    "spec_sync": true,
+    "cross_layer": true,
+    "docs_ssot": true,
+    "deployment": true
+  },
+  "validation_commands": [
+    {
+      "command": "task-defined five-module unittest suite",
+      "result": "645/645 OK"
+    },
+    {
+      "command": "P1 digest-binding and package target suites",
+      "result": "55/55 OK"
+    },
+    {
+      "command": "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh <temporary-root>",
+      "result": "exit 0; fresh/update/reapply/four roots/no-developer/zero-sidecar passed"
+    },
+    {
+      "command": "source and installed Guru Skill validators",
+      "result": "8 active skills; 31 exits; 17 targets; 343 managed; 0 sidecar/conflict/removal"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "result": "43/43 frozen ownership passed"
+    },
+    {
+      "command": "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+      "result": "passed"
+    },
+    {
+      "command": "Python compile, Bash syntax, changed JSON parse, task validate, git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "check-workspace-boundary.sh and check-planning-approval.sh",
+      "result": "passed; source checkout clean"
+    }
+  ],
+  "findings": [],
+  "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。"
+}

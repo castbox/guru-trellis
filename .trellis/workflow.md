@@ -403,7 +403,7 @@ Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work
 - `design.md` — technical design before implementation: boundaries, contracts, data flow, compatibility, tradeoffs, rollout / rollback.
 - `implement.md` — execution plan before implementation: ordered checklist, validation commands, review gates, rollback points.
 - `Docs SSOT Plan` — required Phase 1 planning contract, preferably a section in `design.md`; `prd.md` records docs status and requirement impact, and `implement.md` records the checklist/checkpoint. Do not duplicate the full plan across all three files.
-- `planning-approval.json` — start gate evidence that current `planning_artifacts:pass` wording evidence was projected, links to `prd.md`, `design.md`, and `implement.md` were displayed, then the user explicitly confirmed; `task.py start` is only a status write.
+- `planning-approval.json` — the single schema 2.0 result owned by `guru-approve-task-plan`; the global workflow consumes only its declared typed exit and treats `task.py start` as a status write.
 - `contract-wording-review.json` — current `guru-review-contract-wording:planning_artifacts` evidence consumed by planning approval; its profile-specific `semantic_review.ai_review_gate.planning_checked_dimensions` obligation, vocabulary, classification, semantic review, and typed exits remain owned by the canonical Skill package.
 - `phase2-check.json` — Phase 2 `trellis-check` report for full task-scope quality coverage before commit and Branch Review Gate.
 - `issue-scope-ledger.json` — task-level close/ref/followup scope; do not overload `source_issue`.
@@ -664,7 +664,7 @@ decisions. Every accepted-current/related/followup/new-task/out-of-scope scope
 classification must have proposal-digest-bound exact user-decision evidence,
 live GitHub authority, and one structured trail exactly persisted in current
 `issue-scope-ledger.json.scope_decisions[]`. Its planning evidence must pass the
-shared complete schema 1.2 validator and exact reviewed/approved document
+shared `guru-planning-approval-2.0` validator and exact reviewed/approved document
 bindings; hash-only or placeholder evidence is invalid. `mechanism_removed` and
 `mechanism_replaced` are terminal dispositions with optional origin, null
 confirmation, no trail, and no authority mutation. GitHub mutation refreshes
@@ -770,8 +770,8 @@ planning approval.
 - 1.1 Requirement exploration `[required · repeatable]`
 - 1.2 Research `[optional · repeatable]`
 - 1.3 Configure context `[required · once]` for sub-agent-dispatch platforms
-- 1.4 Explicit planning review `[required · once]` (show links, wait for user confirmation)
-- 1.5 Activate task `[required · once]` (`planning-approval.json`, then `task.py start`)
+- 1.4 Task plan approval `[required · repeatable]` (mandatory Skill, exactly one typed exit)
+- 1.5 Activate task `[required · once]` (`approved` only, then `task.py start`)
 - 1.6 Completion criteria
 
 [workflow-state:planning]
@@ -779,10 +779,8 @@ Load `trellis-brainstorm`; stay in planning.
 Confirm the Guru Team task-start context exists in the chosen workspace for durable tasks: `.trellis/tasks/<task-slug>/task-start-context.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
-Finish `prd.md`, `design.md`, and `implement.md`; then mandatory invoke `guru-review-contract-wording` with fixed profile `planning_artifacts`. Only a checker-validated `pass` with the canonical profile-specific planning dimensions explicitly AI-reviewed and recorded may display the documents; `content_changed` repeats complete planning review and `blocked` stops.
-After the wording Skill passes, visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
-Before that planning stop reply, run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表`; only link existing Markdown files and do not list JSON artifacts.
-Before `task.py start`, record and check `planning-approval.json` schema 1.2 from current `planning_artifacts:pass` evidence with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale wording/approval evidence blocks implementation and Phase 2 check recording.
+Finish `prd.md`, `design.md`, and `implement.md`, then mandatory invoke `guru-approve-task-plan`. That Skill exclusively owns its nine-precondition semantic loop and returns exactly one of `approved`, `revision_required`, `clarify_scope`, or `blocked`; this breadcrumb must not duplicate its review, confirmation, recorder, validator, or re-entry internals.
+Only `approved` enters `phase-1-task-activation`; every other exit follows its declared Skill or stop consumer, and missing/unknown/multiple/unmapped results fail closed.
 Sub-agent mode: curate `implement.jsonl` and `check.jsonl` as spec/research manifests before start.
 [/workflow-state:planning]
 
@@ -791,10 +789,8 @@ Load `trellis-brainstorm`; stay in planning.
 Confirm the Guru Team task-start context exists in the chosen workspace for durable tasks: `.trellis/tasks/<task-slug>/task-start-context.json`.
 Run docs SSOT discovery and the middle-platform knowledge gate when relevant.
 Create or update the `Docs SSOT Plan`; prefer `design.md` as the authority, with docs status/requirement impact in `prd.md` and checklist/checkpoint in `implement.md`.
-Finish `prd.md`, `design.md`, and `implement.md`; then mandatory invoke `guru-review-contract-wording` with fixed profile `planning_artifacts`. Only a checker-validated `pass` with the canonical profile-specific planning dimensions explicitly AI-reviewed and recorded may display the documents; `content_changed` repeats complete planning review and `blocked` stops.
-After the wording Skill passes, visibly show links to all three task-local planning documents and stop for explicit post-planning user confirmation before `task.py start`.
-Before that planning stop reply, run `resolve-human-artifacts.sh --json --task <task-path>` and include a `Markdown 产物 review 表`; only link existing Markdown files and do not list JSON artifacts.
-Before `task.py start`, record and check `planning-approval.json` schema 1.2 from current `planning_artifacts:pass` evidence with `user_confirmation.source=explicit-post-planning-review`; Phase 0 handoff confirmation or generic workflow confirmation must fail closed. Missing or stale wording/approval evidence blocks implementation and Phase 2 check recording.
+Finish `prd.md`, `design.md`, and `implement.md`, then mandatory invoke `guru-approve-task-plan`. That Skill exclusively owns its nine-precondition semantic loop and returns exactly one of `approved`, `revision_required`, `clarify_scope`, or `blocked`; this breadcrumb must not duplicate its review, confirmation, recorder, validator, or re-entry internals.
+Only `approved` enters `phase-1-task-activation`; every other exit follows its declared Skill or stop consumer, and missing/unknown/multiple/unmapped results fail closed.
 Inline mode: skip jsonl curation; Phase 2 reads artifacts/specs via `trellis-before-dev`.
 [/workflow-state:planning-inline]
 
@@ -807,8 +803,8 @@ artifacts. Resolve the local worktree from ignored runtime/Git facts and run
 `check-workspace-boundary.sh --json --task <task-path>` before task-local writes.
 Do not rerun `prepare-task`, bare `task.py create`, or any second creator.
 
-Task workspace confirmation authorizes only Intake creation. Planning approval
-remains a separate explicit post-planning gate at step 1.5.
+Task workspace confirmation authorizes only Intake creation. The mandatory
+`guru-approve-task-plan` result remains the separate Phase 1 activation gate.
 
 #### 1.1 Requirement exploration `[required · repeatable]`
 
@@ -860,8 +856,8 @@ proposal set. For every five-class scope classification, the Skill requires
 exact user evidence and a structured
 decision trail exactly present in current
 `issue-scope-ledger.json.scope_decisions[]`, regardless of proposal origin. The
-trail binds live GitHub comment/body authority, planning documents and complete
-schema 1.2 approval validated through the shared helper, review state, stale downstream
+trail binds live GitHub comment/body authority, planning documents and the
+current schema 2.0 `guru-approve-task-plan` result, review state, stale downstream
 identities, authority `updated_at`, `context_before_task_update_sha256`,
 interrupted target, and re-entry owners. `mechanism_removed/replaced` stays
 outside confirmation/trail/action mutation. GitHub authority mutation returns
@@ -901,110 +897,42 @@ For sub-agent-dispatch platforms, curate `implement.jsonl` and `check.jsonl` wit
 
 Inline Codex/Kilo/Antigravity/Devin workflows skip this step and load context through `trellis-before-dev`.
 
-#### 1.4 Explicit planning review `[required · once]`
+#### 1.4 Task plan approval `[required · repeatable]`
 
-After `prd.md`, `design.md`, and `implement.md` are complete, including a
-locatable `Docs SSOT Plan`, the main session must invoke
-`guru-review-contract-wording` with fixed profile `planning_artifacts` before
-presenting them to the user. Load the canonical package contract; this workflow
-does not repeat its vocabulary, classification set, semantic loop, or Review
-Gate. The Skill persists current schema `guru-contract-wording-review-1.0`
-evidence at `{TASK_DIR}/contract-wording-review.json`. Only a checker-validated
-`pass` whose canonical profile-specific planning dimensions are all explicitly
-AI-reviewed and recorded continues; `content_changed` requires complete
-planning review re-entry, and `blocked` stops with the recorded reason. The
-recorder/checker validates only the exact field shape and values and never
-supplies a semantic result. On that complete re-entry, a current
-`content_changed` or resumed `blocked` artifact is replaced by passing its exact
-prior digest to `--supersede-reentry-facts-sha256`; `--replace-stale` remains
-only for evidence that no longer matches current scope/scan. The superseding
-result must be fully current and differ from the old artifact; an identical
-result or current `pass` cannot be overwritten by either re-entry assertion.
+After the planning artifacts are ready for semantic review, load and invoke the
+active `guru-approve-task-plan` package. The package is the only
+owner of planning adequacy, provenance, unusual-scenario review, AI Gate,
+confirmation policy, evidence recording, and re-entry. This workflow owns only
+the mandatory invocation and typed transitions below.
 
-After the wording Skill passes, the main session must run the Markdown artifact
-resolver, render a `Markdown 产物 review 表`, visibly present all three
-task-local planning documents to the user, and then stop for an explicit
-post-planning confirmation.
+<!-- guru-skill-invoke: {"skill":"guru-approve-task-plan","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"approved","consumer":{"kind":"workflow","id":"phase-1-task-activation"}} -->
+<!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"revision_required","consumer":{"kind":"skill","id":"guru-approve-task-plan"}} -->
+<!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"clarify_scope","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
+<!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"blocked","consumer":{"kind":"stop","id":"task-plan-approval-blocked"}} -->
 
-```bash
-.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
-```
+Consume exactly one declared exit. Unknown, multiple, unmapped, missing-package,
+or consumer-mismatched results fail closed.
 
-The table must list only `prd.md`, `design.md`, `implement.md`, `review.md`,
-and `pr-body.md`. For this planning stop, `review.md` and `pr-body.md` normally
-show missing statuses; do not link them when the resolver reports
-`exists=false`. The planning message must include clickable or absolute links
-to:
-
-- `{TASK_DIR}/prd.md`
-- `{TASK_DIR}/design.md`
-- `{TASK_DIR}/implement.md`
-
-The same message must state that, until the user confirms after seeing those
-links, the workflow will not enter implementation, will not dispatch
-`trellis-implement` / channel `implement`, and will not record
-`phase2-check.json`.
-
-The user's Phase 0 intake approval to create a GitHub issue, worktree, branch,
-or Trellis task is not planning approval. Do not reuse a Phase 0 confirmation,
-generic "continue" consent, or historical `planning-approval.json` with
-`user_confirmation.source=workflow`. If `planning-approval.json` is missing,
-has old schema/source, lacks current `planning_artifacts:pass` evidence binding,
-uses wording evidence that predates the profile-specific planning-dimension
-field,
-or the current
-`prd.md`/`design.md`/`implement.md` content digests no longer match the last
-explicit user-reviewed plan, show the three links again and wait for a fresh
-explicit post-planning confirmation. Migration requires a fresh complete AI
-review; never patch missing dimension booleans into old evidence.
-Current `HEAD` drift, metadata tail, or unrelated dirty paths alone are not a
-planning approval failure.
+<!-- guru-stop-target: {"id":"task-plan-approval-blocked"} -->
 
 #### 1.5 Activate task `[required · once]`
 
-After the explicit post-planning confirmation, write the task-local start gate evidence:
+<!-- guru-workflow-target: {"id":"phase-1-task-activation"} -->
+
+Only `guru-approve-task-plan:approved` enters this global transition. Recheck
+the current artifact with `check-planning-approval --require-exit approved`,
+then run the official task status transition:
 
 ```bash
-.trellis/guru-team/scripts/bash/record-contract-wording-review.sh --json \
-  --mode workflow \
-  --profile planning_artifacts \
+.trellis/guru-team/scripts/bash/check-planning-approval.sh --json \
   --task <task-path> \
-  --scan-only
-.trellis/guru-team/scripts/bash/record-contract-wording-review.sh --json \
-  --mode workflow \
-  --profile planning_artifacts \
-  --task <task-path> \
-  --input <AI-reviewed-wording-input.json>
-.trellis/guru-team/scripts/bash/check-contract-wording-review.sh --json \
-  --task <task-path>
-.trellis/guru-team/scripts/bash/record-planning-approval.sh --json \
-  --reviewer "codex-main-session" \
-  --summary "中文规划审查结论" \
-  --contract-wording-evidence <task-path>/contract-wording-review.json \
-  --user-confirmation "用户在看到 prd.md、design.md、implement.md 三个链接后确认进入实现" \
-  --confirmation-source explicit-post-planning-review
-.trellis/guru-team/scripts/bash/check-planning-approval.sh --json
-```
-
-The wording recorder/checker own fixed-scope scan facts and evidence structure;
-the Skill's AI Review Gate owns semantic rewrite/classification/pass judgment.
-`record-planning-approval` only validates and projects that evidence before
-recording the separate explicit post-planning confirmation. Its compatibility
-projection copies each already-validated planning-dimension value from the
-wording evidence and must not default or generate true values.
-
-Only after the check passes:
-
-```bash
+  --require-exit approved
 python3 ./.trellis/scripts/task.py start <task-dir>
 ```
 
-Do not start implementation until the user approves the displayed planning
-artifacts and `planning-approval.json` matches the current planning artifact
-hash and size metadata. Modified-time, approval `HEAD`, and `dirty_paths` are
-audit context; they do not by themselves require another user review while the
-three planning document contents still match. `task.py start` is only a status
-transition; it is not planning review evidence.
+`task.py start` is only a status transition; it is not planning review
+evidence. All other exits are consumed by their declared Skill or stop target.
 
 #### 1.6 Completion criteria
 
@@ -1014,10 +942,8 @@ transition; it is not planning review evidence.
 | `prd.md` exists | yes |
 | `design.md` exists | yes |
 | `implement.md` exists | yes |
-| `guru-review-contract-wording:planning_artifacts` passed with its profile-specific planning dimensions explicitly AI-reviewed before displaying planning links | yes |
-| Main session displayed links to `prd.md`, `design.md`, and `implement.md` after generating them | yes |
-| User confirms task should enter implementation after seeing the three planning links | yes |
-| `planning-approval.json` schema 1.2 exists with passed `ambiguity_review` evidence, fixed-scope scanner results, no unchecked hits, and `check-planning-approval` passes | yes |
+| `guru-approve-task-plan` returned exactly one declared exit | yes |
+| `planning-approval.json` uses `guru-planning-approval-2.0` and `check-planning-approval --require-exit approved` passes before activation | yes |
 | `task.py start` has been run | yes |
 | curated JSONL manifests exist for sub-agent dispatch | yes |
 | Middle-platform Knowledge Gate handled when relevant | yes |
@@ -1032,7 +958,12 @@ transition; it is not planning review evidence.
 [workflow-state:in_progress]
 Flow: `trellis-implement` -> `trellis-check` -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; closeout is owned by the explicit `trellis-finish-work` entrypoint, which binds the draft and final summary before archive and marks that same PR ready only after archive HEAD alignment.
-Before dispatching `trellis-implement` / channel `implement` or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, missing or non-passed `ambiguity_review`, or changed `prd.md`/`design.md`/`implement.md` content blocks Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
+Before dispatching `trellis-implement` / channel `implement` or recording
+`phase2-check.json`, require a current `guru-approve-task-plan:approved` schema
+2.0 result through the installed objective checker. Missing, legacy,
+non-approved, or stale evidence blocks Phase 2. Post-activation implementation
+`HEAD` or dirty-path drift alone does not block while the reviewed planning and
+authority content remain current.
 Before task work commit, record and check `phase2-check.json`; it records completed `trellis-check` AI evidence, and validation commands or recorder success alone are not a complete check. Message candidate review is owned later by mandatory `guru-create-task-commit`; Phase 2 still checks compatibility with the shared commit-message, metadata, and merge payload contracts.
 Main-session default on dispatch platforms: dispatch `trellis-implement` / channel `implement`, wait for an implementation handoff, then dispatch `trellis-check` / channel `check`. Dispatch prompt starts with `Active task: <task path from task.py current>`. The main session may coordinate and record evidence, but it must not directly implement or directly check in default `sub-agent` mode.
 After dispatching an implement/check sub-agent, record `assigned` for `实现代理` or `阶段二检查代理` with `record-subagent-liveness-event.sh` so `agent-assignment.json` contains `agents[]`, `status_events[]`, and `liveness[agent_id]` baseline. Then run `check-subagent-liveness.sh` at `progress_scan_interval=120s` or the checker-provided `next_wait_ms`. A wait timeout is only a wait-window result; record visible progress first, let checker return the single decision, and follow `status_request_required` / `continue_waiting_no_repeat_ping` / `stale_allowed` / progress decisions exactly. Old `record-agent-assignment.sh --status-event` status paths are deprecated and fail closed.
@@ -1045,7 +976,7 @@ Every Phase 2 or Phase 3 stop/completion reply must first run `resolve-human-art
 [workflow-state:in_progress-inline]
 Flow: `trellis-before-dev` -> edit -> `trellis-check` -> validation -> `trellis-update-spec` -> commit (Phase 3.4) -> Branch Review Gate (Phase 3.5) -> stop. The next entry is `/trellis:finish-work` only when the user/session explicitly invokes it.
 Do not push the branch, create a PR, call `publish-pr`, or invoke `finish-work` from `trellis-continue`; closeout is owned by the explicit `trellis-finish-work` entrypoint, which binds the draft and final summary before archive and marks that same PR ready only after archive HEAD alignment.
-Before editing or recording `phase2-check.json`, run `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json`; missing approval, old schema/source, missing or non-passed `ambiguity_review`, or changed `prd.md`/`design.md`/`implement.md` content blocks inline Phase 2. Current `HEAD` or dirty-path drift alone does not block while the reviewed planning document digests still match.
+Before editing or recording `phase2-check.json`, require a current `guru-approve-task-plan:approved` schema 2.0 result through the installed objective checker. Missing, legacy, non-approved, or stale evidence blocks inline Phase 2. Post-activation `HEAD` or dirty-path drift alone does not block while the reviewed planning and authority content remain current.
 Before task work commit, record and check `phase2-check.json`; validation commands alone are not a complete `trellis-check`. Message candidate review is owned later by mandatory `guru-create-task-commit`; Phase 2 still checks compatibility with the shared commit-message, metadata, and merge payload contracts.
 Do not dispatch implement/check sub-agents in inline mode.
 Before edits, confirm knowledge gate and the `Docs SSOT Plan` from artifacts. Inline Phase 2 still consumes the plan: implementation records strategy execution and docs sync handoff, and the later check verifies durable docs, task artifacts, code/API/schema/config/deploy/test, and validation evidence against that strategy.
@@ -1057,8 +988,8 @@ Every Phase 2 or Phase 3 stop/completion reply must first run `resolve-human-art
 
 Dispatch or inline-implement according to the platform mode only after
 `check-workspace-boundary.sh --json --task <task-path>` and
-`check-planning-approval.sh --json` pass for the current task, including
-schema 1.2 `ambiguity_review` evidence. In default
+`check-planning-approval.sh --json --require-exit approved` passes for the
+current schema 2.0 `guru-approve-task-plan` result. In default
 `sub-agent` mode, the main session must dispatch `trellis-implement` or
 channel-runtime `implement`; it may not directly edit files and later present
 that work as `实现代理` evidence. Keep changes focused on the reviewed task
