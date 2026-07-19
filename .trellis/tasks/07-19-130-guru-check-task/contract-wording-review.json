@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-contract-wording",
+  "generated_at": "2026-07-19T15:02:23Z",
+  "profile": "planning_artifacts",
+  "mode": "workflow",
+  "vocabulary_version": "contract-wording-v2",
+  "classification_version": "contract-wording-classifications-v1",
+  "scope": {
+    "identity": "planning_artifacts:.trellis/tasks/07-19-130-guru-check-task",
+    "items": [
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-19-130-guru-check-task/prd.md",
+        "path": ".trellis/tasks/07-19-130-guru-check-task/prd.md",
+        "size_bytes": 14780,
+        "content_sha256": "ee7075a06cf5116f6b8eb3a24032ab59a34f1ac896175571da28d35967fc349c"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-19-130-guru-check-task/design.md",
+        "path": ".trellis/tasks/07-19-130-guru-check-task/design.md",
+        "size_bytes": 15867,
+        "content_sha256": "1c4b9cfa8a6098789044265aaeb629d8ba0a2868545a97387efd9d11ccbc0689"
+      },
+      {
+        "kind": "markdown_file",
+        "id": "file:.trellis/tasks/07-19-130-guru-check-task/implement.md",
+        "path": ".trellis/tasks/07-19-130-guru-check-task/implement.md",
+        "size_bytes": 12958,
+        "content_sha256": "464dfb6dbe877708b7678754810682d5e674ed0e2e6fec0bff638bc414f26849"
+      }
+    ],
+    "scope_sha256": "f02dadae08207bac7e1dcd67ce475a7ba3f2565cf7b3a840a6b4eab92e9ef721"
+  },
+  "scan": {
+    "hits": [],
+    "scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "revisions": [],
+    "classifications": [],
+    "unchecked_normative_hits": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-planning-wording-review",
+      "summary": "已完整审核固定范围 prd.md、design.md、implement.md；当前扫描无受控词命中，三份规划保持 live issue #130 的 scope、唯一 owner、四出口、正常运行边界与验收语义，所有条件路径、确定性门禁和验收结果均有明确触发及可观察结果。",
+      "reviewed_scan_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "checked_dimensions": {
+        "complete_profile_scope": true,
+        "all_hits_classified": true,
+        "zero_unchecked_hits": true,
+        "product_semantics_preserved": true,
+        "retained_reasons_sufficient": true,
+        "zero_hits_not_requirement_review": true
+      },
+      "planning_checked_dimensions": {
+        "no_requirement_weakening": true,
+        "source_issue_semantics_preserved": true,
+        "conditional_paths_have_conditions": true,
+        "no_parallel_implementation_paths": true,
+        "gates_have_machine_verifiable_conditions": true,
+        "acceptance_criteria_are_deterministic": true,
+        "external_quotes_are_labeled_non_contract": true
+      }
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "reason": "本轮未修改规划内容，未改变产品语义，且 scan 无保留命中。"
+  },
+  "typed_exit": "pass",
+  "facts_sha256": "40c4fdf65440eb1d7d5bc6bf0f285664a01f99d8fc6c25d9782160a17f1cf7be"
+}

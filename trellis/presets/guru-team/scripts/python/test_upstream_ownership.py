@@ -213,7 +213,7 @@ class UpstreamOwnershipTest(unittest.TestCase):
         self.assertEqual(first["active_count"], 43)
         self.assertEqual(first["generated_in_clean_init_count"], 37)
         self.assertEqual(first["legacy_not_generated_count"], 6)
-        self.assertEqual(first["active_skill_count"], 8)
+        self.assertEqual(first["active_skill_count"], 9)
         self.assertEqual(first["planned_skill_count"], 0)
         self.assertEqual(first["managed_asset_count"], 44)
         inventory = json.loads((self.repo / ownership.INVENTORY_RELATIVE).read_text(encoding="utf-8"))
@@ -224,7 +224,7 @@ class UpstreamOwnershipTest(unittest.TestCase):
         self.assertEqual(first["legacy_entries_sha256"], ownership.canonical_sha256(inventory["legacy_entries"]))
         self.assertEqual(first["frozen_legacy_identity_sha256"], ownership.FROZEN_LEGACY_IDENTITY_SHA256)
         self.assertEqual(first["materialized_frozen_identity_sha256"], ownership.FROZEN_LEGACY_IDENTITY_SHA256)
-        self.assertEqual(first["facts_sha256"], "cde8e378f5e7b65dbec655542fb8d8a405032431abc4999223bd185013e49b40")
+        self.assertEqual(first["facts_sha256"], "e6e371a72e16698ac30772c630cc2f6d547373605ef77c3597c70ec291de8c84")
 
         recorded_owners = {
             owner

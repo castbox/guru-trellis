@@ -1423,7 +1423,7 @@ skills = payload["skill_packages"]
 api = extension["public_api"]
 assets = install["managed_assets"]
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.16"
+assert extension["version"] == "0.6.5-guru.17"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
 assert len(assets) == 88
@@ -1444,17 +1444,19 @@ for command in (
     "record-change-request-review", "check-change-request-review",
     "record-task-workspace-plan", "create-task-workspace", "check-task-workspace-result",
     "record-planning-approval", "check-planning-approval",
+    "record-phase2-check", "check-phase2-check",
     "format-merge-commit",
     "backfill-finish-summary", "check-skill-packages",
 ):
     assert command in api["companion_scripts"]
 assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"
-assert api["skill_contracts"]["active_skill_ids"] == ["guru-approve-task-plan", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"]
+assert api["skill_contracts"]["active_skill_ids"] == ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"]
 assert api["skill_contracts"]["planned_skill_ids"] == []
 assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-context-discovery-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-requirements-clarification-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-contract-wording-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-phase2-check-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-planning-approval-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-change-request-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-task-workspace-plan-1.0" in api["skill_contracts"]["artifact_schema_ids"]
@@ -1467,7 +1469,7 @@ assert api["skill_runtime"] == {
 }
 assert skills["status"] == "ok"
 assert skills["reserved_ids"] == ["guru-create-work-commit"]
-assert skills["active_ids"] == ["guru-approve-task-plan", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"]
+assert skills["active_ids"] == ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-review-change-request", "guru-review-contract-wording", "guru-sync-base"]
 assert skills["selected_platforms"] == ["claude", "codex", "cursor"]
 assert skills["sidecars"] == []
 skill_paths = [entry["path"] for entry in skills["files"]]
@@ -1479,7 +1481,7 @@ assert planned == []
 PY
 SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
-python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":8,"exit_markers":31,"target_markers":17,"planned_ids":[]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
+python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":9,"exit_markers":35,"target_markers":20,"planned_ids":[]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
 test ! -e "$TARGET/.agents/skills/guru-create-work-commit"
 test ! -e "$TARGET/.codex/skills/guru-create-work-commit"
 test ! -e "$TARGET/.cursor/skills/guru-create-work-commit"
@@ -1498,6 +1500,13 @@ test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-comm
 test -x "$TARGET/.claude/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 test -x "$TARGET/.cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+test -f "$TARGET/.trellis/guru-team/skills/packages/guru-check-task/SKILL.md"
+test -f "$TARGET/.trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json"
+test -x "$TARGET/.agents/skills/guru-check-task/scripts/record-phase2-check.sh"
+test -x "$TARGET/.agents/skills/guru-check-task/scripts/check-phase2-check.sh"
+test -x "$TARGET/.claude/skills/guru-check-task/scripts/check-phase2-check.sh"
+test -x "$TARGET/.codex/skills/guru-check-task/scripts/record-phase2-check.sh"
+test -x "$TARGET/.cursor/skills/guru-check-task/scripts/check-phase2-check.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/SKILL.md"
 test -x "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh"
 test -x "$TARGET/.agents/skills/guru-sync-base/scripts/check-base-sync.sh"
@@ -2691,24 +2700,109 @@ PY
 record_planning_contract_wording "$TASK_REL"
 record_and_check_planning_approval "$TASK_REL" "initial"
 
-record_throwaway_phase2() {
-  local summary="$1"
-  "$TARGET/.trellis/guru-team/scripts/bash/record-phase2-check.sh" \
+record_throwaway_completed_agent() {
+  local role="$1"
+  local agent_id="$2"
+  local nickname="$3"
+  "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh" \
     --root "$TARGET" \
     --task "$TASK_REL" \
-    --pass \
-    --checker "throwaway-phase2-check" \
-    --summary "$summary" \
-    --coverage requirements \
-    --coverage design \
-    --coverage code \
-    --coverage tests \
-    --coverage spec_sync \
-    --coverage cross_layer \
-    --coverage docs_ssot \
-    --coverage deployment \
-    --validation "installed task commit smoke|passed" \
-    >/dev/null
+    --source-repo "$TARGET" \
+    --agent-id "$agent_id" \
+    --event assigned \
+    --logical-role "$role" \
+    --platform-nickname "$nickname" \
+    --evidence "Throwaway assigned $role for installed guru-check-task verification." \
+    --json >/dev/null
+  "$TARGET/.trellis/guru-team/scripts/bash/record-subagent-liveness-event.sh" \
+    --root "$TARGET" \
+    --task "$TASK_REL" \
+    --source-repo "$TARGET" \
+    --agent-id "$agent_id" \
+    --event completed \
+    --evidence "Throwaway $role completed its full assigned scope." \
+    --json >/dev/null
+}
+
+record_throwaway_completed_agent "实现代理" "throwaway-implement" "Throwaway Implement"
+record_throwaway_completed_agent "阶段二检查代理" "throwaway-check" "Throwaway Check"
+
+record_throwaway_phase2() {
+  local summary="$1"
+  local input_path
+  local record_json
+  local check_json
+  input_path="$(mktemp "${TMPDIR:-/tmp}/guru-phase2-input.XXXXXX.json")"
+  python3 - "$TARGET" "$TASK_REL" "$summary" "$input_path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+task_rel = sys.argv[2]
+summary = sys.argv[3]
+output = Path(sys.argv[4])
+payload = json.loads((
+    root / ".trellis/guru-team/skills/packages/guru-check-task/examples/phase2-check.json"
+).read_text(encoding="utf-8"))
+payload["mode"] = "workflow"
+payload["requirement_provenance"] = {
+    "summary": "已复核 throwaway task 的 approved requirement provenance。",
+    "artifacts": [{"path": f"{task_rel}/prd.md"}],
+    "facts_sha256": "0" * 64,
+}
+payload["docs_ssot_plan"].update({
+    "strategy": "ssot_first",
+    "durable_paths": [{"path": ".trellis/workflow.md"}],
+    "sync_result": "已安装的 canonical workflow 是本次 smoke 的 durable SSOT 输入。",
+    "task_delta_merged": True,
+    "task_history_only": ["throwaway implementation and check evidence"],
+    "no_update_reason": None,
+    "followup_or_pr_limit": None,
+})
+payload["implementation_handoff"] = {
+    "summary": "已完成 throwaway implementation handoff，并覆盖文件、测试与 Docs SSOT。",
+    "artifacts": [{"path": f"{task_rel}/implement.md"}],
+    "facts_sha256": "0" * 64,
+}
+payload["agent_assignment"].update({
+    "implementation_agent_ids": ["throwaway-implement"],
+    "check_agent_ids": ["throwaway-check"],
+})
+payload["repository_snapshot"]["reviewed_paths"] = [
+    {"path": "src/task-commit-smoke.txt"},
+]
+payload["check_execution"]["commands"] = [{
+    "id": "installed-guru-check-task-smoke",
+    "argv": ["check installed package, schema, workflow, and task commit path"],
+    "exit_code": 0,
+    "stdout_sha256": "0" * 64,
+    "stdout_size_bytes": 0,
+    "stderr_sha256": "0" * 64,
+    "stderr_size_bytes": 0,
+    "summary": summary,
+}]
+payload["check_execution"]["worker_evidence"] = [{
+    "source": "official_trellis_check",
+    "agent_id": "throwaway-check",
+    "summary": "Unchanged official trellis-check supplied evidence only.",
+    "evidence_only": True,
+    "facts_sha256": "0" * 64,
+}]
+payload["semantic_review"]["ai_review_gate"]["summary"] = summary
+output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PY
+  record_json="$("$TARGET/.agents/skills/guru-check-task/scripts/record-phase2-check.sh" \
+    --root "$TARGET" \
+    --task "$TASK_REL" \
+    --input "$input_path" \
+    --json)"
+  check_json="$("$TARGET/.agents/skills/guru-check-task/scripts/check-phase2-check.sh" \
+    --root "$TARGET" \
+    --task "$TASK_REL" \
+    --json)"
+  rm -f "$input_path"
+  python3 -c 'import json,sys; recorded=json.loads(sys.argv[1]); checked=json.load(sys.stdin); assert recorded["schema_version"] == "2.0"; assert recorded["skill_id"] == "guru-check-task"; assert recorded["typed_exit"] == checked["typed_exit"] == "passed"; assert checked["consumer"] == {"kind":"skill","id":"guru-create-task-commit"}' "$record_json" <<<"$check_json"
 }
 
 record_throwaway_phase2 "已检查初次提交的需求、设计、代码、测试、文档与安装边界。"

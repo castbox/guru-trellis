@@ -1,0 +1,8 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"复核single semantic owner、entry parity、scope qualification、AI Gate与four-exit contract。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"复核workflow只保留global Phase 2 invocation/routing。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"复核phase2-check schema、planning linkage、findings、unverified items、HEAD/diff/dirty freshness。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"复核script未替代adequacy、scope、severity、Docs SSOT或pass判断。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"复核finding fix full rerun、stale evidence、agent recovery、throwaway与update/reapply coverage。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"复核43条frozen inventory与no-new-upstream-owned modification。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"复核四平台additive discovery distribution和dogfood equality。"}
+{"file":".trellis/tasks/07-19-130-guru-check-task/research/official-trellis-extension-contracts.md","reason":"核对实现仍使用官方workflow/Skill/spec marketplace扩展面。"}

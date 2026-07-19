@@ -331,6 +331,12 @@ docs, or new non-frozen platform sources.
 
 ## Cross-Platform Consistency
 
+Active Guru `guru-check-task` distribution is additive package installation,
+not an overlay of official `trellis-check`. Install the canonical package to
+the shared, Codex, Cursor, and Claude Guru discovery roots through the registry
+and managed-hash installer. Do not add, modify, or claim any upstream-owned
+`trellis-check` Skill, agent, command, prompt, or channel runtime asset.
+
 When changing one overlay, search all copies:
 
 ```bash

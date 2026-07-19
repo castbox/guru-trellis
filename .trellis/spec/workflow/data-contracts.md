@@ -791,18 +791,54 @@ newly created issue.
 
 ## Phase 2 Check Artifact
 
-`phase2-check.json` is the commit-preflight evidence for Phase 2.2. It records:
+New active evidence uses closed schema `guru-phase2-check-2.0` and
+`skill_id=guru-check-task`; the basename remains `phase2-check.json` and no
+parallel pass artifact is allowed. The artifact binds current task/workspace,
+checker-validated `guru-planning-approval-2.0`, requirement provenance, Docs
+SSOT Plan, implementation handoff, issue ledger, agent recovery, base/HEAD/diff,
+complete dirty paths and reviewed path digests, executed command facts, worker
+evidence, scope qualification, adequacy dimensions, findings, unverified items,
+AI Gate, one typed exit/consumer, full-round identity, and `facts_sha256`.
 
-- task directory, base branch, current `HEAD`, diff range, and dirty paths
-- checker / AI process identity metadata
-- task artifacts and spec files read during check
-- validation commands and result summaries
-- coverage keys for requirements, design, code, tests, spec sync, cross-layer
-  consistency, Docs SSOT, and deployment impact
-- findings and resolution status
+Every candidate issue is classified before severity as `current_scope`,
+`scope_change_required`, `followup_proposal`, or `out_of_scope`; only
+`current_scope` may carry P0-P3 and a finding id. Every `current_scope`
+candidate must carry a non-empty finding id and resolve to exactly one matching
+finding with the same candidate id and severity; every finding points back to
+one current-scope candidate and is referenced by at least one adequacy
+dimension. Every unverified item is likewise referenced by an adequacy
+dimension; unknown, duplicate, missing, or dangling ids fail closed. Every
+finding is blocking; a passing Gate requires no
+open current-scope finding,
+no blocking unverified item, all ten adequacy dimensions passed, a current
+completed agent recovery chain, and a full rerun over the complete current
+scope. A fixed finding cannot promote a prior partial round to pass.
 
-P0/P1/P2 findings block commit until resolved. Validation commands are evidence
-inside the report, not a substitute for full `trellis-check` coverage.
+The `agent_assignment` projection requires the current task-local
+`agent-assignment.json`. Its implementation and Phase 2 check agent id sets
+must be non-empty and exactly equal the effective `completed` events for their
+respective roles after corrections and recovery validation. The worker evidence
+agent id set must exactly equal the completed Phase 2 check agent set; partial,
+unassigned, failed, unfinished, stale, or replacement-only evidence cannot enter
+the round. The projection records the task-local locator and a digest of only
+Phase-2-stable assignment state: implementation/check agent records, their
+status events and liveness, corrections targeting those events, recovery links
+for those events, exact completed id sets, and recovery closure. It does not
+bind the whole assignment file digest. Post-commit Branch Review agent records,
+status events, review rounds, and reuse decisions may therefore append without
+staling Phase 2; any change to the Phase 2 stable projection still fails closed.
+The Branch Review Gate independently validates and digests the complete current
+`agent-assignment.json` before it can pass.
+
+The closed exits are `passed`, `implementation_required`, `planning_stale`, and
+`blocked`. `planning_stale` alone carries route discriminator `reapprove_plan`
+or `clarify_requirements`, with one corresponding consumer. Schema/runtime
+reject unknown, multiple, ambiguous, or Gate/exit/consumer-inconsistent states.
+Active schema 1.0 evidence is migration-stale and must be replaced only through
+a complete semantic re-entry; archived bytes are never rewritten. Post-commit
+consumers retain the recorded-dirty-path coverage rule and never re-record pass
+merely to match a new commit HEAD.
+
 `review-branch.sh` must verify Phase 2 check evidence exists before recording
 Branch Review Gate. After the task work commit, a Phase 2 artifact recorded at
 an ancestor HEAD remains valid only when all later non-metadata committed paths
@@ -813,9 +849,11 @@ Branch Review Gate and publish readiness metadata may legitimately change after
 Phase 2 because independent final review and release readiness happen after the
 task work commit. In post-commit audit mode, the validator may ignore stale
 Phase 2 digest entries for task-local `issue-scope-ledger.json`, `pr-body.md`,
-`pr-readiness.json`, `marketplace-verification.json`, `agent-assignment.json`, `review.md`, and
+`pr-readiness.json`, `marketplace-verification.json`, `review.md`, and
 `review-gate.json`; those files are instead revalidated by Branch Review Gate
-or publish-specific validators before pass or publish. This exception does not
+or publish-specific validators before pass or publish. Assignment freshness
+uses the stable projection above rather than a whole-file digest exception.
+This exception does not
 allow source, config, script, docs, schema, preset, overlay, or other
 non-metadata drift.
 
@@ -876,7 +914,8 @@ only repo-relative paths, digests and structured facts, never file bodies,
 credentials, signed URLs, customer data or machine-local absolute paths.
 The fresh `phase2-check.json` recorder output may use task-reviewed coverage
 through the candidate's evidence digest because the Phase 2 artifact cannot
-recursively list its own final bytes in `checked_artifacts`; this exception does
+recursively bind its own final bytes in `repository_snapshot.reviewed_paths`;
+this exception does
 not cover any other task, source, docs, schema, preset or overlay path.
 
 Execution requires `result.status=planned`, no blocking classifications, fresh

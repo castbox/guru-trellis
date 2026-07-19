@@ -1,0 +1,1142 @@
+{
+  "schema_version": "2.0",
+  "skill_id": "guru-check-task",
+  "generated_at": "2026-07-19T19:30:33Z",
+  "mode": "workflow",
+  "task": {
+    "task_dir": ".trellis/tasks/07-19-130-guru-check-task",
+    "task_id": "130-guru-check-task",
+    "branch": "feat/130-guru-check-task",
+    "base_branch": "main",
+    "issue_numbers": [
+      130
+    ],
+    "task_identity_sha256": "24ea33758ae0d57e2f69a70fb6dbca584c826cb3853dc36cd8ae46e5b90550fb"
+  },
+  "planning": {
+    "schema_id": "guru-planning-approval-2.0",
+    "typed_exit": "approved",
+    "artifact": {
+      "path": ".trellis/tasks/07-19-130-guru-check-task/planning-approval.json",
+      "sha256": "ca623e40619fb54c71a5d0ff93299b8e4af33205b68fc66374ebc31ee22b94c7",
+      "size_bytes": 23216
+    },
+    "reviewed_artifacts": [
+      {
+        "path": ".trellis/tasks/07-19-130-guru-check-task/prd.md",
+        "sha256": "ee7075a06cf5116f6b8eb3a24032ab59a34f1ac896175571da28d35967fc349c",
+        "size_bytes": 14780
+      },
+      {
+        "path": ".trellis/tasks/07-19-130-guru-check-task/design.md",
+        "sha256": "1c4b9cfa8a6098789044265aaeb629d8ba0a2868545a97387efd9d11ccbc0689",
+        "size_bytes": 15867
+      },
+      {
+        "path": ".trellis/tasks/07-19-130-guru-check-task/implement.md",
+        "sha256": "464dfb6dbe877708b7678754810682d5e674ed0e2e6fec0bff638bc414f26849",
+        "size_bytes": 12958
+      }
+    ],
+    "facts_sha256": "5a8d6ba8cb6e0481296740dfa1b667f2fe9ea6fa19334e29abd1968f79a72ba5"
+  },
+  "requirement_provenance": {
+    "summary": "已重读并复核 Issue #130、approved planning、P1-P16 provenance 与官方 Trellis extension contract，当前实现严格限于 guru-check-task Phase 2 semantic closed loop。",
+    "artifacts": [
+      {
+        "path": ".trellis/tasks/07-19-130-guru-check-task/prd.md",
+        "sha256": "ee7075a06cf5116f6b8eb3a24032ab59a34f1ac896175571da28d35967fc349c",
+        "size_bytes": 14780
+      },
+      {
+        "path": ".trellis/tasks/07-19-130-guru-check-task/design.md",
+        "sha256": "1c4b9cfa8a6098789044265aaeb629d8ba0a2868545a97387efd9d11ccbc0689",
+        "size_bytes": 15867
+      },
+      {
+        "path": ".trellis/tasks/07-19-130-guru-check-task/implement.md",
+        "sha256": "464dfb6dbe877708b7678754810682d5e674ed0e2e6fec0bff638bc414f26849",
+        "size_bytes": 12958
+      },
+      {
+        "path": ".trellis/tasks/07-19-130-guru-check-task/issue-review.json",
+        "sha256": "424ee29bbc972aaca35db5f4d1f16e8597bcb3c7011447a3bb80864ad9345b09",
+        "size_bytes": 14837
+      },
+      {
+        "path": ".trellis/tasks/07-19-130-guru-check-task/context-discovery.json",
+        "sha256": "4d4b45b78202e08417b0f633793906e169c382f845144788f082268c0c0ff3b6",
+        "size_bytes": 318535
+      },
+      {
+        "path": ".trellis/tasks/07-19-130-guru-check-task/research/official-trellis-extension-contracts.md",
+        "sha256": "7f3b539244c1e35f1c3237b8df1fe160be06972321245664ed480ad91cc7ab52",
+        "size_bytes": 1282
+      }
+    ],
+    "facts_sha256": "2156147aa65cb8d064112b4843ea92d8ba3edb0477252f2bf000f41d2bd14e05"
+  },
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "durable_paths": [
+      {
+        "path": "README.md",
+        "sha256": "9a4cdb5d90cbce1fd16ca41b8545ed48a00e34c138151edc588b1240a315c4da",
+        "size_bytes": 68634
+      },
+      {
+        "path": "docs/requirements/README.md",
+        "sha256": "28142831f6a5fdabec392ba9204a0bbad0816ea22f1c9cbb3bf6390731e13c20",
+        "size_bytes": 11680
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "sha256": "2bcab5d639338f78f331b80219ecc48235f15f71ac1b060a3104537faaea9436",
+        "size_bytes": 73170
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "sha256": "5400921dbba62c7de5807dc947ba8f080abd9bd134455d2008da6761c2b9aad7",
+        "size_bytes": 62573
+      },
+      {
+        "path": ".trellis/spec/docs/public-docs.md",
+        "sha256": "63f3b883fde0b5d7243241ddf53697259cf77a1586ef01a0cd641a18b8493692",
+        "size_bytes": 16382
+      },
+      {
+        "path": ".trellis/spec/preset/overlay-guidelines.md",
+        "sha256": "b81da493e99b47d7979a226f89760c61ae8b68e496d3958f04a0ec64db8f061c",
+        "size_bytes": 21964
+      },
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "sha256": "2c9f3c1b26c5f437905fa5ff0a4cb9d1d452b9dd15ba62d841bc777f983e7703",
+        "size_bytes": 10014
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "692f60efabc39b7dfff1a92b8a17bc32fb5e6577c6d1a64486c82e7ac9b64d55",
+        "size_bytes": 73855
+      },
+      {
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "sha256": "f9e5c516e0c06d2bfe1588fa1f66027d4324a0276e7e40d634af99c2f26d3387",
+        "size_bytes": 97904
+      },
+      {
+        "path": ".trellis/spec/workflow/index.md",
+        "sha256": "45d9d904b0b1bb2dcdd1e06d0427bde76efba68f939aa20d3ffe81bc8ccbe952",
+        "size_bytes": 4500
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "495a198ce7ad0d59d6e4a23200f107687de6eb4db8f9eb078228b8a247f52b49",
+        "size_bytes": 23341
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "877ffe26442f2f7babeaa5d8e03d1fb95b2578eebd818c19a1aff185046af985",
+        "size_bytes": 44127
+      },
+      {
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "sha256": "1cdd51ab6067e5442b359787fc6b9c7dac01dd73060ad1bbbf92c6508d82f1e6",
+        "size_bytes": 57149
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "sha256": "8b13119dc63e831c5e6eca6cba433b083227925be7db489d21b5060fc892bdb3",
+        "size_bytes": 63004
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "sha256": "74ab3bd1a0ec04154081f267b67e4ec1287f274b33b7f98bc45492bdacc21e42",
+        "size_bytes": 58588
+      }
+    ],
+    "sync_result": "Durable requirements/spec/README 先定义 schema 2.0、single semantic owner、scope-first Gate、exact exit union、stable agent projection 与 distribution 合同；实现、测试和安装副本随后承接并在第五次完整检查中收敛一致。",
+    "task_delta_merged": true,
+    "task_history_only": [
+      "Phase 0 intake 与 live issue evidence",
+      "planning approval 与 contract wording review",
+      "implementation/check agent liveness、replacement chain 与 handoff",
+      "Phase 2 finding rounds 与后续 Branch Review evidence"
+    ],
+    "no_update_reason": null,
+    "followup_or_pr_limit": "当前 close scope 仅 #130；#127 related；#81、#108、#131、#132 保持 follow-up，不由本任务关闭或实现。",
+    "facts_sha256": "a8968b1988db9660ace6bd507edb2bd51e5b2b07c424948819042197a08f9d3b"
+  },
+  "implementation_handoff": {
+    "summary": "原实现代理及 stale cutover replacement 已完成 ssot_first 实现、三轮 finding absorption 与最终 P1 stable agent projection 修复；canonical/runtime/schema/tests/preset 和五套 discovery copies 已同步，最终 670 tests 与 clean throwaway 全链通过。",
+    "artifacts": [
+      {
+        "path": ".trellis/tasks/07-19-130-guru-check-task/implement.md",
+        "sha256": "464dfb6dbe877708b7678754810682d5e674ed0e2e6fec0bff638bc414f26849",
+        "size_bytes": 12958
+      },
+      {
+        "path": ".trellis/tasks/07-19-130-guru-check-task/agent-assignment.json",
+        "sha256": "ce025aa43ec128f200174dc3545ddfe00f595b5d3910784ce1683e4b218f795a",
+        "size_bytes": 76490
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+        "sha256": "f47f5d8ab4880979cfe7fcb258fa606e2fc62e18ae3a54932a6b6d1aa0ad3ba5",
+        "size_bytes": 1444
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+        "sha256": "9da063dc209d052c132adec9e7e81e1c65663bbcf7126b466e1abb21ff188678",
+        "size_bytes": 6021
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
+        "sha256": "8a85ed9d908c2fc8e961725e502ecae0a973cb198f45e6103599d8aeeb493701",
+        "size_bytes": 15482
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "9ceab237dac44eb39c8e7d797a7956d6503427d2f9fd0349d3b61c4eb8d97dad",
+        "size_bytes": 1194108
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "sha256": "b3ab27ae0a17d16044839b120e4aa84e90a9b355227efb461b9a5a1d09f22c22",
+        "size_bytes": 1062621
+      }
+    ],
+    "facts_sha256": "123131b805e8271dad04f8e1ee303a2383edde39822f7106a45b83c2f30e4213"
+  },
+  "agent_assignment": {
+    "artifact_path": ".trellis/tasks/07-19-130-guru-check-task/agent-assignment.json",
+    "implementation_agent_ids": [
+      "/root/issue130_implement",
+      "/root/issue130_implement_replacement"
+    ],
+    "check_agent_ids": [
+      "/root/issue130_check"
+    ],
+    "recovery_complete": true,
+    "phase2_state_sha256": "5c5949d03181095c45e5e24b92965c4387dd855398fa016d9678f8b3bd5a27e5",
+    "facts_sha256": "db6b5f915c0cbee75a6f1b82e914b1b8072bf69159606098e36a8889c8fd6115"
+  },
+  "repository_snapshot": {
+    "base_ref": "refs/remotes/origin/main",
+    "base_head": "edbd762a93d2a06c8624b13681689e57106acda0",
+    "head": "edbd762a93d2a06c8624b13681689e57106acda0",
+    "diff_range": "origin/main...HEAD",
+    "dirty_paths": [
+      ".agents/skills/guru-check-task/SKILL.md",
+      ".agents/skills/guru-check-task/examples/phase2-check.json",
+      ".agents/skills/guru-check-task/interface.json",
+      ".agents/skills/guru-check-task/references/contract.md",
+      ".agents/skills/guru-check-task/schemas/phase2-check.schema.json",
+      ".agents/skills/guru-check-task/scripts/check-phase2-check.sh",
+      ".agents/skills/guru-check-task/scripts/record-phase2-check.sh",
+      ".agents/skills/guru-check-task/tests/test_contract.py",
+      ".claude/skills/guru-check-task/SKILL.md",
+      ".claude/skills/guru-check-task/examples/phase2-check.json",
+      ".claude/skills/guru-check-task/interface.json",
+      ".claude/skills/guru-check-task/references/contract.md",
+      ".claude/skills/guru-check-task/schemas/phase2-check.schema.json",
+      ".claude/skills/guru-check-task/scripts/check-phase2-check.sh",
+      ".claude/skills/guru-check-task/scripts/record-phase2-check.sh",
+      ".claude/skills/guru-check-task/tests/test_contract.py",
+      ".codex/skills/guru-check-task/SKILL.md",
+      ".codex/skills/guru-check-task/examples/phase2-check.json",
+      ".codex/skills/guru-check-task/interface.json",
+      ".codex/skills/guru-check-task/references/contract.md",
+      ".codex/skills/guru-check-task/schemas/phase2-check.schema.json",
+      ".codex/skills/guru-check-task/scripts/check-phase2-check.sh",
+      ".codex/skills/guru-check-task/scripts/record-phase2-check.sh",
+      ".codex/skills/guru-check-task/tests/test_contract.py",
+      ".cursor/skills/guru-check-task/SKILL.md",
+      ".cursor/skills/guru-check-task/examples/phase2-check.json",
+      ".cursor/skills/guru-check-task/interface.json",
+      ".cursor/skills/guru-check-task/references/contract.md",
+      ".cursor/skills/guru-check-task/schemas/phase2-check.schema.json",
+      ".cursor/skills/guru-check-task/scripts/check-phase2-check.sh",
+      ".cursor/skills/guru-check-task/scripts/record-phase2-check.sh",
+      ".cursor/skills/guru-check-task/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-check-task/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-check-task/examples/phase2-check.json",
+      ".trellis/guru-team/skills/packages/guru-check-task/interface.json",
+      ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json",
+      ".trellis/guru-team/skills/packages/guru-check-task/scripts/check-phase2-check.sh",
+      ".trellis/guru-team/skills/packages/guru-check-task/scripts/record-phase2-check.sh",
+      ".trellis/guru-team/skills/packages/guru-check-task/tests/test_contract.py",
+      ".trellis/guru-team/skills/registry.json",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/overlay-guidelines.md",
+      ".trellis/spec/preset/upstream-ownership.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/index.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/07-19-130-guru-check-task/agent-assignment.json",
+      ".trellis/tasks/07-19-130-guru-check-task/check.jsonl",
+      ".trellis/tasks/07-19-130-guru-check-task/context-discovery.json",
+      ".trellis/tasks/07-19-130-guru-check-task/contract-wording-review.json",
+      ".trellis/tasks/07-19-130-guru-check-task/design.md",
+      ".trellis/tasks/07-19-130-guru-check-task/implement.jsonl",
+      ".trellis/tasks/07-19-130-guru-check-task/implement.md",
+      ".trellis/tasks/07-19-130-guru-check-task/issue-review.json",
+      ".trellis/tasks/07-19-130-guru-check-task/issue-scope-ledger.json",
+      ".trellis/tasks/07-19-130-guru-check-task/planning-approval.json",
+      ".trellis/tasks/07-19-130-guru-check-task/prd.md",
+      ".trellis/tasks/07-19-130-guru-check-task/research/official-trellis-extension-contracts.md",
+      ".trellis/tasks/07-19-130-guru-check-task/task-start-context.json",
+      ".trellis/tasks/07-19-130-guru-check-task/task.json",
+      ".trellis/workflow.md",
+      "README.md",
+      "docs/requirements/README.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+      "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-check-task/examples/phase2-check.json",
+      "trellis/skills/guru-team/packages/guru-check-task/interface.json",
+      "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
+      "trellis/skills/guru-team/packages/guru-check-task/scripts/check-phase2-check.sh",
+      "trellis/skills/guru-team/packages/guru-check-task/scripts/record-phase2-check.sh",
+      "trellis/skills/guru-team/packages/guru-check-task/tests/test_contract.py",
+      "trellis/skills/guru-team/registry.json",
+      "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "reviewed_paths": [
+      {
+        "path": ".trellis/guru-team/extension.json",
+        "sha256": "964a383905cf117190fe2e9896b5f2a926abfb70f0b1c095f548b76b407ddd2b",
+        "size_bytes": 150662
+      },
+      {
+        "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "9ceab237dac44eb39c8e7d797a7956d6503427d2f9fd0349d3b61c4eb8d97dad",
+        "size_bytes": 1194108
+      },
+      {
+        "path": ".trellis/guru-team/skills/registry.json",
+        "sha256": "7b90ab4171ee296defc8b781577223469aae4e569ec404710511843101232690",
+        "size_bytes": 4225
+      },
+      {
+        "path": ".trellis/spec/docs/public-docs.md",
+        "sha256": "63f3b883fde0b5d7243241ddf53697259cf77a1586ef01a0cd641a18b8493692",
+        "size_bytes": 16382
+      },
+      {
+        "path": ".trellis/spec/preset/overlay-guidelines.md",
+        "sha256": "b81da493e99b47d7979a226f89760c61ae8b68e496d3958f04a0ec64db8f061c",
+        "size_bytes": 21964
+      },
+      {
+        "path": ".trellis/spec/preset/upstream-ownership.md",
+        "sha256": "2c9f3c1b26c5f437905fa5ff0a4cb9d1d452b9dd15ba62d841bc777f983e7703",
+        "size_bytes": 10014
+      },
+      {
+        "path": ".trellis/spec/workflow/companion-scripts.md",
+        "sha256": "692f60efabc39b7dfff1a92b8a17bc32fb5e6577c6d1a64486c82e7ac9b64d55",
+        "size_bytes": 73855
+      },
+      {
+        "path": ".trellis/spec/workflow/data-contracts.md",
+        "sha256": "f9e5c516e0c06d2bfe1588fa1f66027d4324a0276e7e40d634af99c2f26d3387",
+        "size_bytes": 97904
+      },
+      {
+        "path": ".trellis/spec/workflow/index.md",
+        "sha256": "45d9d904b0b1bb2dcdd1e06d0427bde76efba68f939aa20d3ffe81bc8ccbe952",
+        "size_bytes": 4500
+      },
+      {
+        "path": ".trellis/spec/workflow/quality-guidelines.md",
+        "sha256": "495a198ce7ad0d59d6e4a23200f107687de6eb4db8f9eb078228b8a247f52b49",
+        "size_bytes": 23341
+      },
+      {
+        "path": ".trellis/spec/workflow/skill-package-contract.md",
+        "sha256": "877ffe26442f2f7babeaa5d8e03d1fb95b2578eebd818c19a1aff185046af985",
+        "size_bytes": 44127
+      },
+      {
+        "path": ".trellis/spec/workflow/workflow-contract.md",
+        "sha256": "1cdd51ab6067e5442b359787fc6b9c7dac01dd73060ad1bbbf92c6508d82f1e6",
+        "size_bytes": 57149
+      },
+      {
+        "path": ".trellis/workflow.md",
+        "sha256": "9d7dd45084d6e6de2c74cc3a9085062612ce037d85659c8253e80ee0dea14428",
+        "size_bytes": 133250
+      },
+      {
+        "path": "README.md",
+        "sha256": "9a4cdb5d90cbce1fd16ca41b8545ed48a00e34c138151edc588b1240a315c4da",
+        "size_bytes": 68634
+      },
+      {
+        "path": "docs/requirements/README.md",
+        "sha256": "28142831f6a5fdabec392ba9204a0bbad0816ea22f1c9cbb3bf6390731e13c20",
+        "size_bytes": 11680
+      },
+      {
+        "path": "docs/requirements/guru-team-trellis-flow.md",
+        "sha256": "2bcab5d639338f78f331b80219ecc48235f15f71ac1b060a3104537faaea9436",
+        "size_bytes": 73170
+      },
+      {
+        "path": "docs/requirements/requirement-main.md",
+        "sha256": "5400921dbba62c7de5807dc947ba8f080abd9bd134455d2008da6761c2b9aad7",
+        "size_bytes": 62573
+      },
+      {
+        "path": "trellis/guru-team-extension.json",
+        "sha256": "174d29e26d17b3d100344f7cbec310d216731faa3d56fd92c7c4b49d417375ce",
+        "size_bytes": 4136
+      },
+      {
+        "path": "trellis/presets/guru-team/README.md",
+        "sha256": "74ab3bd1a0ec04154081f267b67e4ec1287f274b33b7f98bc45492bdacc21e42",
+        "size_bytes": 58588
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "sha256": "d6959ee6cbbbd3d93c73a321aa84134e9d29ed0d505966a00239ee15f1d76c42",
+        "size_bytes": 155393
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "sha256": "f27b36431f3b6db7833860989d2e25dccfe2e8fb28a27886bb067c6f59097c66",
+        "size_bytes": 77879
+      },
+      {
+        "path": "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+        "sha256": "e5b09b3499680e59f0fc349c0ad75815074f7215af28ff3fd012b2950b672b6a",
+        "size_bytes": 15190
+      },
+      {
+        "path": "trellis/skills/guru-team/registry.json",
+        "sha256": "7b90ab4171ee296defc8b781577223469aae4e569ec404710511843101232690",
+        "size_bytes": 4225
+      },
+      {
+        "path": "trellis/skills/guru-team/tests/test_skill_packages.py",
+        "sha256": "712708ab9ea7ef389f115debb88c84bbcc1b7ff8d17fd4555538cf4ce2a2a5a1",
+        "size_bytes": 72537
+      },
+      {
+        "path": "trellis/workflows/guru-team/README.md",
+        "sha256": "8b13119dc63e831c5e6eca6cba433b083227925be7db489d21b5060fc892bdb3",
+        "size_bytes": 63004
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "sha256": "9ceab237dac44eb39c8e7d797a7956d6503427d2f9fd0349d3b61c4eb8d97dad",
+        "size_bytes": 1194108
+      },
+      {
+        "path": "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py",
+        "sha256": "b3ab27ae0a17d16044839b120e4aa84e90a9b355227efb461b9a5a1d09f22c22",
+        "size_bytes": 1062621
+      },
+      {
+        "path": "trellis/workflows/guru-team/workflow.md",
+        "sha256": "9d7dd45084d6e6de2c74cc3a9085062612ce037d85659c8253e80ee0dea14428",
+        "size_bytes": 133250
+      },
+      {
+        "path": ".agents/skills/guru-check-task/SKILL.md",
+        "sha256": "f47f5d8ab4880979cfe7fcb258fa606e2fc62e18ae3a54932a6b6d1aa0ad3ba5",
+        "size_bytes": 1444
+      },
+      {
+        "path": ".agents/skills/guru-check-task/examples/phase2-check.json",
+        "sha256": "5123bc340bfedd4adcac69d00fc5569068dbd8be6bfc015b628604a3786e7d8b",
+        "size_bytes": 7690
+      },
+      {
+        "path": ".agents/skills/guru-check-task/interface.json",
+        "sha256": "21bcc97fb07047594cf7fb528fa41b8c0ace364c12165471f9a91f549a04b6de",
+        "size_bytes": 6605
+      },
+      {
+        "path": ".agents/skills/guru-check-task/references/contract.md",
+        "sha256": "9da063dc209d052c132adec9e7e81e1c65663bbcf7126b466e1abb21ff188678",
+        "size_bytes": 6021
+      },
+      {
+        "path": ".agents/skills/guru-check-task/schemas/phase2-check.schema.json",
+        "sha256": "8a85ed9d908c2fc8e961725e502ecae0a973cb198f45e6103599d8aeeb493701",
+        "size_bytes": 15482
+      },
+      {
+        "path": ".agents/skills/guru-check-task/scripts/check-phase2-check.sh",
+        "sha256": "394de150e173494193b8bcb337637a85496f1da5333e39ff7e93987433df7d6f",
+        "size_bytes": 1171
+      },
+      {
+        "path": ".agents/skills/guru-check-task/scripts/record-phase2-check.sh",
+        "sha256": "974e39e16400b55c867ee5164cce11a794c3ddc1df1c33686b3fda980719150d",
+        "size_bytes": 1172
+      },
+      {
+        "path": ".agents/skills/guru-check-task/tests/test_contract.py",
+        "sha256": "194488d9224b330e18162fc4867a633b91d158796188e037013ab564a569b8e8",
+        "size_bytes": 14886
+      },
+      {
+        "path": ".claude/skills/guru-check-task/SKILL.md",
+        "sha256": "f47f5d8ab4880979cfe7fcb258fa606e2fc62e18ae3a54932a6b6d1aa0ad3ba5",
+        "size_bytes": 1444
+      },
+      {
+        "path": ".claude/skills/guru-check-task/examples/phase2-check.json",
+        "sha256": "5123bc340bfedd4adcac69d00fc5569068dbd8be6bfc015b628604a3786e7d8b",
+        "size_bytes": 7690
+      },
+      {
+        "path": ".claude/skills/guru-check-task/interface.json",
+        "sha256": "21bcc97fb07047594cf7fb528fa41b8c0ace364c12165471f9a91f549a04b6de",
+        "size_bytes": 6605
+      },
+      {
+        "path": ".claude/skills/guru-check-task/references/contract.md",
+        "sha256": "9da063dc209d052c132adec9e7e81e1c65663bbcf7126b466e1abb21ff188678",
+        "size_bytes": 6021
+      },
+      {
+        "path": ".claude/skills/guru-check-task/schemas/phase2-check.schema.json",
+        "sha256": "8a85ed9d908c2fc8e961725e502ecae0a973cb198f45e6103599d8aeeb493701",
+        "size_bytes": 15482
+      },
+      {
+        "path": ".claude/skills/guru-check-task/scripts/check-phase2-check.sh",
+        "sha256": "394de150e173494193b8bcb337637a85496f1da5333e39ff7e93987433df7d6f",
+        "size_bytes": 1171
+      },
+      {
+        "path": ".claude/skills/guru-check-task/scripts/record-phase2-check.sh",
+        "sha256": "974e39e16400b55c867ee5164cce11a794c3ddc1df1c33686b3fda980719150d",
+        "size_bytes": 1172
+      },
+      {
+        "path": ".claude/skills/guru-check-task/tests/test_contract.py",
+        "sha256": "194488d9224b330e18162fc4867a633b91d158796188e037013ab564a569b8e8",
+        "size_bytes": 14886
+      },
+      {
+        "path": ".codex/skills/guru-check-task/SKILL.md",
+        "sha256": "f47f5d8ab4880979cfe7fcb258fa606e2fc62e18ae3a54932a6b6d1aa0ad3ba5",
+        "size_bytes": 1444
+      },
+      {
+        "path": ".codex/skills/guru-check-task/examples/phase2-check.json",
+        "sha256": "5123bc340bfedd4adcac69d00fc5569068dbd8be6bfc015b628604a3786e7d8b",
+        "size_bytes": 7690
+      },
+      {
+        "path": ".codex/skills/guru-check-task/interface.json",
+        "sha256": "21bcc97fb07047594cf7fb528fa41b8c0ace364c12165471f9a91f549a04b6de",
+        "size_bytes": 6605
+      },
+      {
+        "path": ".codex/skills/guru-check-task/references/contract.md",
+        "sha256": "9da063dc209d052c132adec9e7e81e1c65663bbcf7126b466e1abb21ff188678",
+        "size_bytes": 6021
+      },
+      {
+        "path": ".codex/skills/guru-check-task/schemas/phase2-check.schema.json",
+        "sha256": "8a85ed9d908c2fc8e961725e502ecae0a973cb198f45e6103599d8aeeb493701",
+        "size_bytes": 15482
+      },
+      {
+        "path": ".codex/skills/guru-check-task/scripts/check-phase2-check.sh",
+        "sha256": "394de150e173494193b8bcb337637a85496f1da5333e39ff7e93987433df7d6f",
+        "size_bytes": 1171
+      },
+      {
+        "path": ".codex/skills/guru-check-task/scripts/record-phase2-check.sh",
+        "sha256": "974e39e16400b55c867ee5164cce11a794c3ddc1df1c33686b3fda980719150d",
+        "size_bytes": 1172
+      },
+      {
+        "path": ".codex/skills/guru-check-task/tests/test_contract.py",
+        "sha256": "194488d9224b330e18162fc4867a633b91d158796188e037013ab564a569b8e8",
+        "size_bytes": 14886
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/SKILL.md",
+        "sha256": "f47f5d8ab4880979cfe7fcb258fa606e2fc62e18ae3a54932a6b6d1aa0ad3ba5",
+        "size_bytes": 1444
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/examples/phase2-check.json",
+        "sha256": "5123bc340bfedd4adcac69d00fc5569068dbd8be6bfc015b628604a3786e7d8b",
+        "size_bytes": 7690
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/interface.json",
+        "sha256": "21bcc97fb07047594cf7fb528fa41b8c0ace364c12165471f9a91f549a04b6de",
+        "size_bytes": 6605
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/references/contract.md",
+        "sha256": "9da063dc209d052c132adec9e7e81e1c65663bbcf7126b466e1abb21ff188678",
+        "size_bytes": 6021
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/schemas/phase2-check.schema.json",
+        "sha256": "8a85ed9d908c2fc8e961725e502ecae0a973cb198f45e6103599d8aeeb493701",
+        "size_bytes": 15482
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/scripts/check-phase2-check.sh",
+        "sha256": "394de150e173494193b8bcb337637a85496f1da5333e39ff7e93987433df7d6f",
+        "size_bytes": 1171
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/scripts/record-phase2-check.sh",
+        "sha256": "974e39e16400b55c867ee5164cce11a794c3ddc1df1c33686b3fda980719150d",
+        "size_bytes": 1172
+      },
+      {
+        "path": ".cursor/skills/guru-check-task/tests/test_contract.py",
+        "sha256": "194488d9224b330e18162fc4867a633b91d158796188e037013ab564a569b8e8",
+        "size_bytes": 14886
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/SKILL.md",
+        "sha256": "f47f5d8ab4880979cfe7fcb258fa606e2fc62e18ae3a54932a6b6d1aa0ad3ba5",
+        "size_bytes": 1444
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/examples/phase2-check.json",
+        "sha256": "5123bc340bfedd4adcac69d00fc5569068dbd8be6bfc015b628604a3786e7d8b",
+        "size_bytes": 7690
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/interface.json",
+        "sha256": "21bcc97fb07047594cf7fb528fa41b8c0ace364c12165471f9a91f549a04b6de",
+        "size_bytes": 6605
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
+        "sha256": "9da063dc209d052c132adec9e7e81e1c65663bbcf7126b466e1abb21ff188678",
+        "size_bytes": 6021
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json",
+        "sha256": "8a85ed9d908c2fc8e961725e502ecae0a973cb198f45e6103599d8aeeb493701",
+        "size_bytes": 15482
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/scripts/check-phase2-check.sh",
+        "sha256": "394de150e173494193b8bcb337637a85496f1da5333e39ff7e93987433df7d6f",
+        "size_bytes": 1171
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/scripts/record-phase2-check.sh",
+        "sha256": "974e39e16400b55c867ee5164cce11a794c3ddc1df1c33686b3fda980719150d",
+        "size_bytes": 1172
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-check-task/tests/test_contract.py",
+        "sha256": "194488d9224b330e18162fc4867a633b91d158796188e037013ab564a569b8e8",
+        "size_bytes": 14886
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+        "sha256": "f47f5d8ab4880979cfe7fcb258fa606e2fc62e18ae3a54932a6b6d1aa0ad3ba5",
+        "size_bytes": 1444
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/examples/phase2-check.json",
+        "sha256": "5123bc340bfedd4adcac69d00fc5569068dbd8be6bfc015b628604a3786e7d8b",
+        "size_bytes": 7690
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/interface.json",
+        "sha256": "21bcc97fb07047594cf7fb528fa41b8c0ace364c12165471f9a91f549a04b6de",
+        "size_bytes": 6605
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+        "sha256": "9da063dc209d052c132adec9e7e81e1c65663bbcf7126b466e1abb21ff188678",
+        "size_bytes": 6021
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
+        "sha256": "8a85ed9d908c2fc8e961725e502ecae0a973cb198f45e6103599d8aeeb493701",
+        "size_bytes": 15482
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/scripts/check-phase2-check.sh",
+        "sha256": "394de150e173494193b8bcb337637a85496f1da5333e39ff7e93987433df7d6f",
+        "size_bytes": 1171
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/scripts/record-phase2-check.sh",
+        "sha256": "974e39e16400b55c867ee5164cce11a794c3ddc1df1c33686b3fda980719150d",
+        "size_bytes": 1172
+      },
+      {
+        "path": "trellis/skills/guru-team/packages/guru-check-task/tests/test_contract.py",
+        "sha256": "194488d9224b330e18162fc4867a633b91d158796188e037013ab564a569b8e8",
+        "size_bytes": 14886
+      }
+    ],
+    "snapshot_sha256": "7c23bc03f09bccdb991588236cd074bbaea22813155e51d567c6932007f6cb77"
+  },
+  "check_execution": {
+    "commands": [
+      {
+        "id": "full-suite",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis.skills.guru-team.packages.guru-check-task.tests.test_contract",
+          "trellis.skills.guru-team.tests.test_skill_packages",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis",
+          "trellis.presets.guru-team.scripts.python.test_apply_guru_team_trellis_preset",
+          "trellis.presets.guru-team.scripts.python.test_upstream_ownership"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "cdffd4c50da23d224a6ef57e28a5cc667d4519dcfb0469e490a3e9123dd4312b",
+        "stdout_size_bytes": 2548,
+        "stderr_sha256": "c1bf5f61bce2c2f572eb0e56c2f2cb2910e97a4bc22cbb21e578198f875a20c4",
+        "stderr_size_bytes": 4106,
+        "summary": "Full 5-module suite: 670 tests passed, 13 skipped."
+      },
+      {
+        "id": "targeted-real-git",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.PlanningAndPhase2GateTest.test_phase2_v2_allows_real_post_commit_review_agent_metadata_tail",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.PlanningAndPhase2GateTest.test_phase2_v2_post_commit_rejects_phase2_agent_and_recovery_drift",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.PlanningAndPhase2GateTest.test_phase2_v2_post_commit_accepts_real_recorded_dirty_path_coverage",
+          "trellis.workflows.guru-team.scripts.python.test_guru_team_trellis.PlanningAndPhase2GateTest.test_phase2_v2_post_commit_rejects_real_uncovered_committed_path"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "2c9243f572344c716d27c7277f7e7087b05f65cc1204572240e0c6646ecab80f",
+        "stderr_size_bytes": 102,
+        "summary": "4 targeted real-Git stable projection/post-commit tests passed."
+      },
+      {
+        "id": "clean-throwaway",
+        "argv": [
+          "env",
+          "TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "b0dd80693010b8d26629cd991e49cd1bd3195c03b20bc90b4916f1be04d65edf",
+        "stdout_size_bytes": 631529,
+        "stderr_sha256": "d9e49972e09db5e200956818e1cc4fa9a40a76fe7b90be758d57b044624e4651",
+        "stderr_size_bytes": 926,
+        "summary": "Clean throwaway marketplace discovery, install, update and reapply verification passed."
+      },
+      {
+        "id": "python-compile",
+        "argv": [
+          "python3",
+          "-m",
+          "py_compile",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Python compile passed."
+      },
+      {
+        "id": "bash-record",
+        "argv": [
+          "bash",
+          "-n",
+          "trellis/skills/guru-team/packages/guru-check-task/scripts/record-phase2-check.sh"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Record wrapper Bash syntax passed."
+      },
+      {
+        "id": "bash-check",
+        "argv": [
+          "bash",
+          "-n",
+          "trellis/skills/guru-team/packages/guru-check-task/scripts/check-phase2-check.sh"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Check wrapper Bash syntax passed."
+      },
+      {
+        "id": "bash-apply",
+        "argv": [
+          "bash",
+          "-n",
+          "trellis/presets/guru-team/scripts/bash/apply.sh"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Preset apply Bash syntax passed."
+      },
+      {
+        "id": "bash-throwaway",
+        "argv": [
+          "bash",
+          "-n",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Throwaway verifier Bash syntax passed."
+      },
+      {
+        "id": "source-validator",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "--json",
+          "--mode",
+          "source"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "b9eed085edf1c4da672c305fedb11307c594b60e35b8ae86133c029a36e6583c",
+        "stdout_size_bytes": 589,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Source validator passed: 9 active skills, 35 exits, 20 targets."
+      },
+      {
+        "id": "installed-validator",
+        "argv": [
+          ".trellis/guru-team/scripts/bash/check-skill-packages.sh",
+          "--json",
+          "--mode",
+          "installed"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "73654e03ac07cf72b2ac74e6b40294a4de7fa748dc36dce096b928dfeea35391",
+        "stdout_size_bytes": 777,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Installed validator passed: 383 managed files and zero sidecars/removals/conflicts."
+      },
+      {
+        "id": "ownership",
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh",
+          "--repo",
+          ".",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "930eb474a13c89bf1418e4579f426ba7a438e3d5dc9fd1bf349e91823ba9681a",
+        "stdout_size_bytes": 1585,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Frozen upstream ownership validator passed with 43 entries."
+      },
+      {
+        "id": "dogfood-drift",
+        "argv": [
+          "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh",
+          "--repo",
+          "."
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "43305d50b17c6236294126799e5990da2b4b1ffa6dd351f0cb5c5367f471fb90",
+        "stdout_size_bytes": 1644,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Dogfood overlay drift validator passed."
+      },
+      {
+        "id": "task-validate",
+        "argv": [
+          "python3",
+          "./.trellis/scripts/task.py",
+          "validate",
+          ".trellis/tasks/07-19-130-guru-check-task"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "5611456726e096ac3a0cd4cb0ed22ad1738db0f3db4b7f0ae6fb415e21fb385e",
+        "stdout_size_bytes": 305,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Task context validation passed."
+      },
+      {
+        "id": "diff-check",
+        "argv": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Git whitespace validation passed."
+      },
+      {
+        "id": "copy-equality",
+        "argv": [
+          "bash",
+          "-lc",
+          "set -e; for d in .trellis/guru-team/skills/packages/guru-check-task .agents/skills/guru-check-task .codex/skills/guru-check-task .claude/skills/guru-check-task .cursor/skills/guru-check-task; do diff -rq --exclude=__pycache__ trellis/skills/guru-team/packages/guru-check-task \"$d\"; done; cmp -s trellis/workflows/guru-team/scripts/python/guru_team_trellis.py .trellis/guru-team/scripts/python/guru_team_trellis.py; cmp -s trellis/workflows/guru-team/workflow.md .trellis/workflow.md; cmp -s trellis/skills/guru-team/registry.json .trellis/guru-team/skills/registry.json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Canonical/platform packages and runtime/workflow/registry copies are equal."
+      },
+      {
+        "id": "workspace-boundary",
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-19-130-guru-check-task"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "387fcb344454f4316b1c2770ef31a70ff07bf8b28ac84806bc314a1463a9cd02",
+        "stdout_size_bytes": 6316,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Workspace boundary passed; expected and actual worktree match and source checkout is clean."
+      },
+      {
+        "id": "planning-freshness",
+        "argv": [
+          "./.trellis/guru-team/scripts/bash/check-planning-approval.sh",
+          "--json",
+          "--task",
+          ".trellis/tasks/07-19-130-guru-check-task"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "8ffeff3af473f4a29c01be35f12763f1a89831f9535d523700a0810870c3f178",
+        "stdout_size_bytes": 726,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Planning approval freshness passed at edbd762a93d2a06c8624b13681689e57106acda0."
+      },
+      {
+        "id": "final-sidecar-source",
+        "argv": [
+          "bash",
+          "-lc",
+          "set -e; test -z \"$(find . -type f \\( -name \"*.new\" -o -name \"*.bak\" -o -name \"*.pyc\" \\) -print -quit)\"; test -z \"$(git -C /Users/wumengye/Documents/GoProjects/guru-trellis status --porcelain)\"; test ! -e .trellis/tasks/07-19-130-guru-check-task/phase2-check.json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_size_bytes": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_size_bytes": 0,
+        "summary": "Final sidecar/cache scan empty; source checkout clean; phase2-check.json absent."
+      }
+    ],
+    "worker_evidence": [
+      {
+        "source": "official_trellis_check",
+        "agent_id": "/root/issue130_check",
+        "summary": "第五次独立 Phase 2 检查从零重读 approved planning、Docs SSOT Plan、implementation handoff、issue ledger、agent recovery、完整未提交 diff、canonical/installed package、runtime/schema/workflow/preset/tests。确认 stable projection 允许合法 post-commit Branch Review metadata tail，同时对 Phase 2 completion、status/liveness、correction/recovery 与 uncovered committed path drift fail closed；scope-first、reference closure、exact exit union、single owner、ownership/distribution 均一致。最终命令证据完整捕获，open findings=0，本轮未修改实现文件。",
+        "evidence_only": true,
+        "facts_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ],
+    "unverified_items": [],
+    "execution_sha256": "721f1bc96998c03ec46cdb4260670ce22ae145debc609ff7cd02a5862ae0c2d1"
+  },
+  "scope_qualification": {
+    "candidates": [],
+    "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "semantic_review": {
+    "adequacy_dimensions": [
+      {
+        "id": "requirements",
+        "status": "passed",
+        "summary": "R1-R10 与 AC1-AC16 已由 schema 2.0 package、runtime、workflow、distribution 和验证完整承接。",
+        "evidence_refs": [
+          "planning",
+          "requirement_provenance"
+        ],
+        "affected_sha256": "ee7075a06cf5116f6b8eb3a24032ab59a34f1ac896175571da28d35967fc349c",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "design",
+        "status": "passed",
+        "summary": "Semantic owner、script boundary、scope-first、exact union、freshness/recovery 与 post-commit contract 均按 approved design 实现。",
+        "evidence_refs": [
+          "planning",
+          "repository_snapshot"
+        ],
+        "affected_sha256": "1c4b9cfa8a6098789044265aaeb629d8ba0a2868545a97387efd9d11ccbc0689",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "implementation",
+        "status": "passed",
+        "summary": "Canonical package/runtime/schema/workflow、registry/manifest、preset 和安装副本一致，五轮 finding loop 已完整闭环。",
+        "evidence_refs": [
+          "implementation_handoff",
+          "repository_snapshot"
+        ],
+        "affected_sha256": "9ceab237dac44eb39c8e7d797a7956d6503427d2f9fd0349d3b61c4eb8d97dad",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "tests",
+        "status": "passed",
+        "summary": "670-test full suite、4 个真实 Git targeted regression 和 clean throwaway/update-reapply 全部通过。",
+        "evidence_refs": [
+          "check_execution"
+        ],
+        "affected_sha256": "b3ab27ae0a17d16044839b120e4aa84e90a9b355227efb461b9a5a1d09f22c22",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "docs_ssot",
+        "status": "passed",
+        "summary": "ssot_first 已执行，durable requirements/spec/README 与最终 runtime/schema/tests 一致，task delta 已 merge，无 no-update exception。",
+        "evidence_refs": [
+          "docs_ssot_plan"
+        ],
+        "affected_sha256": "2bcab5d639338f78f331b80219ecc48235f15f71ac1b060a3104537faaea9436",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "cross_layer",
+        "status": "passed",
+        "summary": "Workflow mandatory route、skill contract、runtime recorder/checker、schema、task commit consumer 与平台副本的数据流闭合。",
+        "evidence_refs": [
+          "repository_snapshot",
+          "check_execution"
+        ],
+        "affected_sha256": "f9e5c516e0c06d2bfe1588fa1f66027d4324a0276e7e40d634af99c2f26d3387",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "compatibility",
+        "status": "passed",
+        "summary": "Legacy active input fail-closed、archived history保留、public marketplace+local unpublished sample、upgrade/reapply 与 additive platform distribution 均验证。",
+        "evidence_refs": [
+          "check_execution",
+          "repository_snapshot"
+        ],
+        "affected_sha256": "d6959ee6cbbbd3d93c73a321aa84134e9d29ed0d505966a00239ee15f1d76c42",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "deployment_and_operations",
+        "status": "passed",
+        "summary": "变更不影响应用 runtime、CI/CD、container、K8s/Kustomize、DB migration、Makefile或生产配置；仅扩展 Guru Team Trellis workflow/preset/package。",
+        "evidence_refs": [
+          "repository_snapshot",
+          "check_execution"
+        ],
+        "affected_sha256": "174d29e26d17b3d100344f7cbec310d216731faa3d56fd92c7c4b49d417375ce",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "agent_recovery",
+        "status": "passed",
+        "summary": "原实现代理 stale cutover、termination、replacement-started、replacement completed 与检查代理五轮完成证据闭合；只有 completed evidence进入 pass。",
+        "evidence_refs": [
+          "agent_assignment"
+        ],
+        "affected_sha256": "4d582dc5ea99eae750f076538f4092aed71f3768c0d4186bf7292118414b24c6",
+        "finding_ids": [],
+        "unverified_ids": []
+      },
+      {
+        "id": "verification_completeness",
+        "status": "passed",
+        "summary": "所有适用 repo checks 均记录 exact argv/exit/stdout/stderr digest/size；无 blocking unverified item，远端未发布 feature ref限制已如实由 local unpublished current bytes覆盖。",
+        "evidence_refs": [
+          "check_execution",
+          "agent_assignment"
+        ],
+        "affected_sha256": "8a85ed9d908c2fc8e961725e502ecae0a973cb198f45e6103599d8aeeb493701",
+        "finding_ids": [],
+        "unverified_ids": []
+      }
+    ],
+    "findings": [],
+    "adequacy_sha256": "b1bf7828796e1d2daf642a99a9887ea662113fec9822687d919525ca5611984f",
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "主会话完成 scope-first semantic Gate：Issue #130 全部 approved scope、最终 dirty diff、Docs SSOT、recovery chain 与适用验证在第五次完整 round 中覆盖；open findings=0、blocking unverified=0、无 scope change，允许进入 guru-create-task-commit。",
+      "planning_facts_sha256": "5a8d6ba8cb6e0481296740dfa1b667f2fe9ea6fa19334e29abd1968f79a72ba5",
+      "snapshot_sha256": "7c23bc03f09bccdb991588236cd074bbaea22813155e51d567c6932007f6cb77",
+      "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "adequacy_sha256": "b1bf7828796e1d2daf642a99a9887ea662113fec9822687d919525ca5611984f",
+      "findings_count": 0,
+      "full_rerun": true,
+      "full_round_sha256": "1111c9c1f6e0099bdf8a23ff3f5612b1e186a766e9a97eda52e1055633ddf8e4"
+    }
+  },
+  "human_confirmation": {
+    "kind": "not-required",
+    "status": "not_required",
+    "summary": "Phase 2 semantic pass 不含无条件 human confirmation；此前用户确认仅用于 planning approval。",
+    "confirmed_at": null
+  },
+  "typed_exit": "passed",
+  "route": null,
+  "reason": "第五次完整独立 Phase 2 round 与主会话 semantic Gate 均通过；无 open current-scope finding、scope change 或 blocking verification。",
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-create-task-commit"
+  },
+  "facts_sha256": "499b3966bf84474e4ba571cb3c344798fbf2d476e8a7f660945176841605dd56"
+}

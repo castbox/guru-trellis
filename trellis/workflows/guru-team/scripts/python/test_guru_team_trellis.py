@@ -293,6 +293,7 @@ def phase2_args(**overrides: object) -> argparse.Namespace:
         "root": None,
         "json": True,
         "task": None,
+        "input": None,
         "pass_check": True,
         "checker": "codex-main-session",
         "summary": "已按完整 task scope 执行 trellis-check。",
@@ -1339,6 +1340,29 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
 
         self.assertEqual(errors, [])
         self.assertIn(phase2, plan["exact_stage_paths"])
+
+    def test_task_commit_rejects_non_passed_guru_check_task_exit(self) -> None:
+        reviewed = "src/task.txt"
+        (self.root / reviewed).write_text("changed\n", encoding="utf-8")
+        candidate = self.make_plan(1, [reviewed])
+        self.phase2 = {
+            "schema_version": "2.0",
+            "skill_id": gtt.PHASE2_CHECK_SKILL_ID,
+            "typed_exit": "implementation_required",
+            "repository_snapshot": {
+                "head": gtt.current_head(self.root),
+                "dirty_paths": [reviewed],
+                "reviewed_paths": [],
+            },
+        }
+
+        _plan, _schema_errors, errors = gtt.validate_task_commit_candidate(
+            self.root,
+            candidate,
+            self.task_dir,
+        )
+
+        self.assertIn("task commit plan requires guru-check-task typed_exit=passed.", errors)
 
     def test_unrelated_staged_path_blocks_without_unstage(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
@@ -5111,6 +5135,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             "related_issues": [],
             "followup_issues": [],
         })
+        gtt.write_json(self.task_dir / "agent-assignment.json", {})
         (self.root / ".trellis/spec").mkdir(parents=True)
         (self.root / ".trellis/spec/index.md").write_text("# Spec\n\n规则。\n", encoding="utf-8")
         self.write_wording_evidence()
@@ -5134,6 +5159,21 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "current_head", return_value="a" * 40),
             mock.patch.object(gtt, "git_status_paths", return_value=[]),
+            mock.patch.object(gtt, "phase2_agent_assignment_errors", return_value=[]),
+            mock.patch.object(gtt, "normalize_agent_assignment_for_task", return_value={
+                "status_events": [
+                    {"event": "completed", "logical_role": "实现代理", "agent_id": "implement-1"},
+                    {"event": "completed", "logical_role": "阶段二检查代理", "agent_id": "check-1"},
+                ],
+                "event_corrections": [],
+            }),
+            mock.patch.object(
+                gtt,
+                "load_phase2_check_schema",
+                return_value=json.loads(
+                    (Path(__file__).resolve().parents[5] / "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json").read_text(encoding="utf-8")
+                ),
+            ),
         ]
 
     def planning_input(self, **overrides: object) -> dict[str, object]:
@@ -5287,6 +5327,52 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
     ) -> dict[str, object]:
         return gtt.cmd_record_planning_approval(
             self.planning_v2_args(payload, name=name, **overrides)
+        )
+
+    def phase2_input(self, **overrides: object) -> dict[str, object]:
+        payload = json.loads(
+            (Path(__file__).resolve().parents[5] / "trellis/skills/guru-team/packages/guru-check-task/examples/phase2-check.json").read_text(encoding="utf-8")
+        )
+        payload["requirement_provenance"] = {
+            "summary": "已复核 approved load-bearing provenance。",
+            "artifacts": [{"path": ".trellis/tasks/07-04-gates/prd.md"}],
+            "facts_sha256": "0" * 64,
+        }
+        payload["docs_ssot_plan"].update({
+            "durable_paths": [{"path": ".trellis/spec/index.md"}],
+            "sync_result": "ssot_first durable spec 已先更新并作为实现输入。",
+        })
+        payload["implementation_handoff"] = {
+            "summary": "实现 handoff 已覆盖文件、Docs SSOT、测试与风险。",
+            "artifacts": [{"path": ".trellis/tasks/07-04-gates/implement.md"}],
+            "facts_sha256": "0" * 64,
+        }
+        payload["repository_snapshot"]["reviewed_paths"] = [
+            {"path": ".trellis/spec/index.md"}
+        ]
+        payload.update(overrides)
+        return payload
+
+    def phase2_v2_args(
+        self,
+        payload: dict[str, object] | None = None,
+        *,
+        name: str = "phase2-input.json",
+        **overrides: object,
+    ) -> argparse.Namespace:
+        path = self.root / name
+        gtt.write_json(path, payload or self.phase2_input())
+        return phase2_args(input=str(path), **overrides)
+
+    def record_phase2(
+        self,
+        payload: dict[str, object] | None = None,
+        *,
+        name: str = "phase2-input.json",
+        **overrides: object,
+    ) -> dict[str, object]:
+        return gtt.cmd_record_phase2_check(
+            self.phase2_v2_args(payload, name=name, **overrides)
         )
 
     def write_normative_prd_hit(self, term: str) -> None:
@@ -7064,6 +7150,571 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         )
         self.assertEqual(errors, [])
 
+    def test_record_and_check_phase2_v2_pass(self) -> None:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            payload = self.record_phase2()
+            checked = gtt.cmd_check_phase2_check(phase2_args())
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertEqual(payload["schema_version"], "2.0")
+        self.assertEqual(payload["skill_id"], "guru-check-task")
+        self.assertEqual(checked["typed_exit"], "passed")
+        self.assertEqual(checked["consumer"], {"kind": "skill", "id": "guru-create-task-commit"})
+
+    def test_phase2_v2_scope_qualification_precedes_severity(self) -> None:
+        payload = self.phase2_input()
+        payload["scope_qualification"]["candidates"] = [{
+            "id": "C1", "summary": "未触发的非常规候选", "trigger_refs": [],
+            "normal_path_reproduction": "只在未批准的非常规场景中出现。",
+            "disposition": "out_of_scope", "route_basis": "无 approved trigger。",
+            "severity": "P1", "finding_id": None,
+        }]
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                self.record_phase2(payload)
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn("structurally invalid", str(raised.exception))
+
+    def test_closed_schema_validator_supports_contains_and_not(self) -> None:
+        schema = {
+            "type": "array",
+            "contains": {"const": "required"},
+            "not": {"contains": {"const": "forbidden"}},
+        }
+        self.assertEqual(
+            gtt.skill_json_schema_validation_errors(
+                ["required", "allowed"], schema, "closed union"
+            ),
+            [],
+        )
+        self.assertTrue(any(
+            "violates contains" in error
+            for error in gtt.skill_json_schema_validation_errors(
+                ["allowed"], schema, "closed union"
+            )
+        ))
+        self.assertTrue(any(
+            "violates not" in error
+            for error in gtt.skill_json_schema_validation_errors(
+                ["required", "forbidden"], schema, "closed union"
+            )
+        ))
+
+    def test_phase2_v2_scope_change_requires_planning_stale(self) -> None:
+        payload = self.phase2_input()
+        payload["scope_qualification"]["candidates"] = [{
+            "id": "C1", "summary": "当前 authority 不能覆盖候选变更",
+            "trigger_refs": ["PRD R4"],
+            "normal_path_reproduction": "受支持正常路径需要改变 approved scope。",
+            "disposition": "scope_change_required",
+            "route_basis": "返回 planning owner。", "severity": None,
+            "finding_id": None,
+        }]
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                self.record_phase2(payload)
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn(
+            "phase2_check_scope_change_requires_planning_stale",
+            raised.exception.payload["error_codes"],
+        )
+
+    def test_phase2_v2_worker_evidence_cannot_independently_pass(self) -> None:
+        payload = self.phase2_input()
+        payload["semantic_review"]["adequacy_dimensions"][0]["status"] = "failed"
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                self.record_phase2(payload)
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn("phase2_check_pass_requires_all_dimensions", raised.exception.payload["error_codes"])
+
+    def test_phase2_v2_worker_evidence_requires_completed_check_agent(self) -> None:
+        payload = self.phase2_input()
+        payload["check_execution"]["worker_evidence"][0]["agent_id"] = "other-check"
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                self.record_phase2(payload)
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn(
+            "phase2_check_worker_agent_not_completed_check_agent",
+            raised.exception.payload["error_codes"],
+        )
+
+    def test_phase2_v2_open_current_scope_finding_cannot_be_nonblocking(self) -> None:
+        payload = self.phase2_input()
+        payload["scope_qualification"]["candidates"] = [{
+            "id": "C1", "summary": "正常路径中的当前 scope 缺陷",
+            "trigger_refs": ["PRD R6"],
+            "normal_path_reproduction": "受支持正常路径可复现。",
+            "disposition": "current_scope", "route_basis": "返回实现修复。",
+            "severity": "P3", "finding_id": "F1",
+        }]
+        payload["semantic_review"]["findings"] = [{
+            "id": "F1", "candidate_id": "C1", "severity": "P3",
+            "summary": "仍未解决的缺陷。", "path": "example.py",
+            "blocking": False, "status": "open",
+        }]
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                self.record_phase2(payload)
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn("structurally invalid", str(raised.exception))
+
+    def test_phase2_v2_open_finding_requires_implementation_exit(self) -> None:
+        payload = self.phase2_input()
+        payload["scope_qualification"]["candidates"] = [{
+            "id": "C1", "summary": "正常路径中的当前 scope 缺陷",
+            "trigger_refs": ["PRD R6"],
+            "normal_path_reproduction": "受支持正常路径可复现。",
+            "disposition": "current_scope", "route_basis": "返回实现修复。",
+            "severity": "P3", "finding_id": "F1",
+        }]
+        payload["semantic_review"]["findings"] = [{
+            "id": "F1", "candidate_id": "C1", "severity": "P3",
+            "summary": "仍未解决的缺陷。", "path": "example.py",
+            "blocking": True, "status": "open",
+        }]
+        payload["typed_exit"] = "blocked"
+        payload["consumer"] = {"kind": "stop", "id": "task-check-blocked"}
+        payload["semantic_review"]["ai_review_gate"]["status"] = "blocked"
+        payload["check_execution"]["unverified_items"] = [{
+            "id": "U1", "command_or_area": "integration test",
+            "reason": "Dependency unavailable.", "impact": "Coverage incomplete.",
+            "blocking": True,
+        }]
+        self.assertIn(
+            "phase2_check_open_finding_requires_implementation",
+            gtt.phase2_semantic_errors(payload),
+        )
+
+    def test_phase2_v2_current_scope_candidate_requires_linked_finding(self) -> None:
+        payload = self.phase2_input()
+        payload["scope_qualification"]["candidates"] = [{
+            "id": "C1", "summary": "正常路径中的当前 scope 缺陷",
+            "trigger_refs": ["PRD R6"],
+            "normal_path_reproduction": "受支持正常路径可复现。",
+            "disposition": "current_scope", "route_basis": "返回实现修复。",
+            "severity": "P1", "finding_id": None,
+        }]
+        self.assertIn(
+            "phase2_check_current_scope_candidate_finding_link_missing",
+            gtt.phase2_semantic_errors(payload),
+        )
+
+    def test_phase2_v2_finding_requires_adequacy_reference(self) -> None:
+        payload = self.phase2_input()
+        payload["scope_qualification"]["candidates"] = [{
+            "id": "C1", "summary": "正常路径中的当前 scope 缺陷",
+            "trigger_refs": ["PRD R6"],
+            "normal_path_reproduction": "受支持正常路径可复现。",
+            "disposition": "current_scope", "route_basis": "返回实现修复。",
+            "severity": "P2", "finding_id": "F1",
+        }]
+        payload["semantic_review"]["findings"] = [{
+            "id": "F1", "candidate_id": "C1", "severity": "P2",
+            "summary": "需要实现修复。", "path": "example.py",
+            "blocking": True, "status": "open",
+        }]
+        self.assertIn(
+            "phase2_check_finding_missing_adequacy_reference",
+            gtt.phase2_semantic_errors(payload),
+        )
+        payload["semantic_review"]["adequacy_dimensions"][2]["finding_ids"] = ["missing"]
+        self.assertIn(
+            "phase2_check_adequacy_references_unknown_finding",
+            gtt.phase2_semantic_errors(payload),
+        )
+        payload["check_execution"]["unverified_items"] = [{
+            "id": "U1", "command_or_area": "integration test",
+            "reason": "Dependency unavailable.", "impact": "Coverage incomplete.",
+            "blocking": False,
+        }]
+        self.assertIn(
+            "phase2_check_unverified_item_missing_adequacy_reference",
+            gtt.phase2_semantic_errors(payload),
+        )
+
+    def test_phase2_v2_candidate_and_unverified_ids_are_unique(self) -> None:
+        payload = self.phase2_input()
+        candidate = {
+            "id": "C1", "summary": "后续范围候选", "trigger_refs": ["PRD R4"],
+            "normal_path_reproduction": "正常路径中发现后续建议。",
+            "disposition": "followup_proposal", "route_basis": "后续 issue。",
+            "severity": None, "finding_id": None,
+        }
+        payload["scope_qualification"]["candidates"] = [candidate, dict(candidate)]
+        payload["check_execution"]["unverified_items"] = [
+            {"id": "U1", "command_or_area": "a", "reason": "r", "impact": "i", "blocking": False},
+            {"id": "U1", "command_or_area": "b", "reason": "r", "impact": "i", "blocking": False},
+        ]
+        errors = gtt.phase2_semantic_errors(payload)
+        self.assertIn("phase2_check_duplicate_or_missing_candidate_id", errors)
+        self.assertIn("phase2_check_duplicate_or_missing_unverified_id", errors)
+
+    def test_phase2_v2_planning_stale_requires_scope_change_candidate(self) -> None:
+        payload = self.phase2_input()
+        payload["typed_exit"] = "planning_stale"
+        payload["route"] = "reapprove_plan"
+        payload["consumer"] = {"kind": "workflow", "id": "guru-task-check-planning-router"}
+        payload["semantic_review"]["ai_review_gate"]["status"] = "planning_stale"
+        self.assertIn(
+            "phase2_check_planning_stale_without_scope_change",
+            gtt.phase2_semantic_errors(payload),
+        )
+
+    def test_phase2_v2_blocked_requires_verification_blocker(self) -> None:
+        payload = self.phase2_input()
+        payload["typed_exit"] = "blocked"
+        payload["consumer"] = {"kind": "stop", "id": "task-check-blocked"}
+        payload["semantic_review"]["ai_review_gate"]["status"] = "blocked"
+        self.assertIn(
+            "phase2_check_blocked_without_verification_blocker",
+            gtt.phase2_semantic_errors(payload),
+        )
+
+    def test_phase2_v2_verification_blocker_requires_blocked_exit(self) -> None:
+        payload = self.phase2_input()
+        payload["typed_exit"] = "planning_stale"
+        payload["route"] = "reapprove_plan"
+        payload["consumer"] = {"kind": "workflow", "id": "guru-task-check-planning-router"}
+        payload["semantic_review"]["ai_review_gate"]["status"] = "planning_stale"
+        payload["scope_qualification"]["candidates"] = [{
+            "id": "C1", "summary": "需要调整 approved scope",
+            "trigger_refs": ["PRD R4"],
+            "normal_path_reproduction": "正常路径需要 scope 变更。",
+            "disposition": "scope_change_required",
+            "route_basis": "返回 planning owner。",
+            "severity": None, "finding_id": None,
+        }]
+        payload["check_execution"]["unverified_items"] = [{
+            "id": "U1", "command_or_area": "integration test",
+            "reason": "Dependency unavailable.",
+            "impact": "Reliable complete check is unavailable.",
+            "blocking": True,
+        }]
+        self.assertIn(
+            "phase2_check_verification_blocker_requires_blocked",
+            gtt.phase2_semantic_errors(payload),
+        )
+
+    def test_phase2_v2_worker_evidence_covers_every_completed_check_agent(self) -> None:
+        payload = self.phase2_input()
+        payload["agent_assignment"]["check_agent_ids"] = ["check-1", "check-2"]
+        self.assertIn(
+            "phase2_check_worker_agent_not_completed_check_agent",
+            gtt.phase2_semantic_errors(payload),
+        )
+
+    def test_phase2_v2_agent_projection_requires_assignment_artifact(self) -> None:
+        (self.task_dir / "agent-assignment.json").unlink()
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.phase2_agent_projection(
+                self.root,
+                self.task_dir,
+                {"implementation_agent_ids": ["implement-1"], "check_agent_ids": ["check-1"]},
+            )
+        self.assertIn("requires a task-local agent-assignment.json", str(raised.exception))
+
+    def test_phase2_v2_agent_projection_requires_completed_role_ids(self) -> None:
+        assignment = self.task_dir / "agent-assignment.json"
+        assignment.write_text("{}\n", encoding="utf-8")
+        normalized = {
+            "status_events": [{
+                "event": "completed", "logical_role": "实现代理",
+                "agent_id": "implement-1",
+            }],
+            "event_corrections": [],
+        }
+        with (
+            mock.patch.object(gtt, "phase2_agent_assignment_errors", return_value=[]),
+            mock.patch.object(gtt, "normalize_agent_assignment_for_task", return_value=normalized),
+        ):
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.phase2_agent_projection(
+                    self.root,
+                    self.task_dir,
+                    {"implementation_agent_ids": ["implement-1"], "check_agent_ids": ["check-1"]},
+                )
+        self.assertIn("completed Phase 2 check agents", str(raised.exception))
+
+    def test_phase2_v2_four_exit_runtime_union(self) -> None:
+        cases = [
+            ("implementation_required", None, {"kind": "workflow", "id": "guru-resume-implementation"}),
+            ("planning_stale", "reapprove_plan", {"kind": "workflow", "id": "guru-task-check-planning-router"}),
+            ("planning_stale", "clarify_requirements", {"kind": "workflow", "id": "guru-task-check-planning-router"}),
+            ("blocked", None, {"kind": "stop", "id": "task-check-blocked"}),
+        ]
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            for index, (typed_exit, route, consumer) in enumerate(cases):
+                payload = self.phase2_input()
+                payload["typed_exit"] = typed_exit
+                payload["route"] = route
+                payload["consumer"] = consumer
+                payload["semantic_review"]["ai_review_gate"]["status"] = typed_exit
+                if typed_exit == "implementation_required":
+                    payload["scope_qualification"]["candidates"] = [{
+                        "id": "C1", "summary": "当前 scope 缺陷", "trigger_refs": ["PRD R1"],
+                        "normal_path_reproduction": "正常路径可复现。", "disposition": "current_scope",
+                        "route_basis": "实现修复。", "severity": "P2", "finding_id": "F1",
+                    }]
+                    payload["semantic_review"]["findings"] = [{
+                        "id": "F1", "candidate_id": "C1", "severity": "P2",
+                        "summary": "需要实现修复。", "path": "example.py", "blocking": True,
+                        "status": "open",
+                    }]
+                    payload["semantic_review"]["adequacy_dimensions"][2]["finding_ids"] = ["F1"]
+                elif typed_exit == "planning_stale":
+                    payload["scope_qualification"]["candidates"] = [{
+                        "id": "C1", "summary": "需要调整 approved scope",
+                        "trigger_refs": ["PRD R4"],
+                        "normal_path_reproduction": "正常路径需要 scope 变更。",
+                        "disposition": "scope_change_required",
+                        "route_basis": "返回 planning owner。",
+                        "severity": None, "finding_id": None,
+                    }]
+                elif typed_exit == "blocked":
+                    payload["check_execution"]["unverified_items"] = [{
+                        "id": "U1", "command_or_area": "integration test",
+                        "reason": "Dependency unavailable.",
+                        "impact": "Reliable complete check is unavailable.",
+                        "blocking": True,
+                    }]
+                    payload["semantic_review"]["adequacy_dimensions"][9]["unverified_ids"] = ["U1"]
+                result = self.record_phase2(payload, name=f"phase2-{index}.json")
+                self.assertEqual(result["typed_exit"], typed_exit)
+                self.assertEqual(result["route"], route)
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+    def test_phase2_v2_pass_requires_full_rerun(self) -> None:
+        payload = self.phase2_input()
+        payload["semantic_review"]["ai_review_gate"]["full_rerun"] = False
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                self.record_phase2(payload)
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn("phase2_check_pass_requires_full_rerun", raised.exception.payload["error_codes"])
+
+    def test_phase2_v2_legacy_artifact_requires_complete_reentry(self) -> None:
+        gtt.write_json(self.task_dir / "phase2-check.json", {"schema_version": "1.0"})
+        _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir)
+        self.assertEqual(errors, ["phase2_check_legacy_requires_complete_guru_check_task_reentry"])
+
+    def test_phase2_v2_candidate_path_exclusion_applies_to_repository_projection(self) -> None:
+        candidate_relative = ".trellis/tasks/07-04-gates/task-commit-plans/001.json"
+        candidate = self.root / candidate_relative
+        candidate.parent.mkdir(parents=True, exist_ok=True)
+        candidate.write_text("{}\n", encoding="utf-8")
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            recorded = self.record_phase2()
+            with (
+                mock.patch.object(gtt, "git_status_paths", return_value=[candidate_relative]),
+                mock.patch.object(gtt, "phase2_planning_projection", return_value=recorded["planning"]),
+            ):
+                _path, _payload, errors = gtt.validate_phase2_check(
+                    self.root,
+                    self.task_dir,
+                    additional_dirty_excluded={candidate_relative},
+                )
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertEqual(errors, [])
+
+    def phase2_status_event(
+        self,
+        *,
+        event_id: str,
+        event: str,
+        agent_id: str,
+        logical_role: str,
+        head: str,
+    ) -> dict[str, object]:
+        return {
+            "event_id": event_id,
+            "event": event,
+            "agent_id": agent_id,
+            "logical_role": logical_role,
+            "platform_nickname": agent_id,
+            "observed_at": "2026-07-19T00:00:00Z",
+            "recorded_at": "2026-07-19T00:00:00Z",
+            "head": head,
+            "source": "main-session",
+            "evidence": f"{logical_role} {event} evidence.",
+            "predecessor_agent_id": "",
+            "predecessor_event_id": "",
+            "termination_reason": "",
+            "termination_source_event_id": "",
+            "replacement_reason": "",
+            "handoff_summary": "",
+        }
+
+    def write_phase2_agent_assignment(self, head: str) -> dict[str, object]:
+        agents = [
+            {
+                "logical_role": role,
+                "agent_id": agent_id,
+                "platform_nickname": agent_id,
+                "assigned_at": "2026-07-19T00:00:00Z",
+                "assigned_head": head,
+                "reason": f"Assign {role} for the complete Phase 2 round.",
+                "event_id": f"evt-{agent_id}-assigned",
+            }
+            for role, agent_id in (("实现代理", "implement-1"), ("阶段二检查代理", "check-1"))
+        ]
+        payload = {
+            "schema_version": gtt.AGENT_ASSIGNMENT_SCHEMA_VERSION,
+            "generated_at": "2026-07-19T00:00:00Z",
+            "updated_at": "2026-07-19T00:00:00Z",
+            "task": ".trellis/tasks/07-04-gates",
+            "head": head,
+            "agents": agents,
+            "liveness": {},
+            "review_rounds": [],
+            "reuse_decisions": [],
+            "status_events": [
+                self.phase2_status_event(
+                    event_id=f"evt-{agent_id}-completed",
+                    event="completed",
+                    agent_id=agent_id,
+                    logical_role=role,
+                    head=head,
+                )
+                for role, agent_id in (("实现代理", "implement-1"), ("阶段二检查代理", "check-1"))
+            ],
+            "event_corrections": [],
+            "recovery_links": [],
+        }
+        gtt.write_json(self.task_dir / "agent-assignment.json", payload)
+        return payload
+
+    def phase2_post_commit_fixture(self, *, include_uncovered: bool) -> dict[str, object]:
+        patches = self.patch_common()
+        for patcher in patches:
+            patcher.start()
+        try:
+            self.record_planning_approval()
+            self.record_phase2()
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+
+        subprocess.run(["git", "config", "user.name", "Phase 2 Test"], cwd=self.root, check=True)
+        subprocess.run(["git", "config", "user.email", "phase2@example.invalid"], cwd=self.root, check=True)
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "initial fixture"], cwd=self.root, check=True)
+        recorded_head = gtt.current_head(self.root)
+
+        self.write_phase2_agent_assignment(recorded_head)
+        (self.root / "covered.py").write_text("covered = True\n", encoding="utf-8")
+        artifact = self.task_dir / "phase2-check.json"
+        recorded = gtt.read_json(artifact)
+        recorded["agent_assignment"] = gtt.phase2_agent_projection(
+            self.root,
+            self.task_dir,
+            recorded["agent_assignment"],
+        )
+        repository = recorded["repository_snapshot"]
+        repository.update({
+            "base_ref": "main",
+            "base_head": recorded_head,
+            "head": recorded_head,
+            "diff_range": "main...HEAD",
+            "dirty_paths": ["covered.py"],
+        })
+        repository["snapshot_sha256"] = gtt.context_digest({
+            key: value for key, value in repository.items() if key != "snapshot_sha256"
+        })
+        gtt.phase2_semantic_projection(recorded)
+        recorded["facts_sha256"] = gtt.context_digest({
+            key: value for key, value in recorded.items() if key not in {"generated_at", "facts_sha256"}
+        })
+        gtt.write_json(artifact, recorded)
+
+        committed_paths = ["covered.py"]
+        if include_uncovered:
+            (self.root / "unreviewed.py").write_text("unreviewed = True\n", encoding="utf-8")
+            committed_paths.append("unreviewed.py")
+        committed_paths.append(".trellis/tasks/07-04-gates/agent-assignment.json")
+        subprocess.run(["git", "add", "--", *committed_paths], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-q", "-m", "commit reviewed work"], cwd=self.root, check=True)
+        return recorded
+
+    def validate_phase2_post_commit_fixture(self, recorded: dict[str, object]) -> list[str]:
+        patches = self.patch_common()
+        non_git_patches = [patcher for index, patcher in enumerate(patches) if index not in {4, 5, 6, 7}]
+        for patcher in non_git_patches:
+            patcher.start()
+        try:
+            with mock.patch.object(gtt, "phase2_planning_projection", return_value=recorded["planning"]):
+                _path, _payload, errors = gtt.validate_phase2_check(
+                    self.root, self.task_dir, allow_committed_head=True
+                )
+        finally:
+            for patcher in reversed(non_git_patches):
+                patcher.stop()
+        return errors
+
+    def test_phase2_v2_post_commit_accepts_real_recorded_dirty_path_coverage(self) -> None:
+        recorded = self.phase2_post_commit_fixture(include_uncovered=False)
+        self.assertEqual(self.validate_phase2_post_commit_fixture(recorded), [])
+
+    def test_phase2_v2_post_commit_rejects_real_uncovered_committed_path(self) -> None:
+        recorded = self.phase2_post_commit_fixture(include_uncovered=True)
+        errors = self.validate_phase2_post_commit_fixture(recorded)
+        self.assertIn("phase2_check_post_commit_paths_uncovered:unreviewed.py", errors)
+
+    @unittest.skip("legacy Phase 2 v1 coverage CLI removed by guru-check-task v2")
     def test_record_phase2_check_requires_full_coverage_on_pass(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
@@ -7078,6 +7729,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn("missing_coverage", raised.exception.payload)
 
+    @unittest.skip("legacy Phase 2 v1 producer replaced by AI-authored closed input")
     def test_record_and_check_phase2_check(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
@@ -7097,6 +7749,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertEqual(check["status"], "ok")
         self.assertTrue(all(payload["coverage"].values()))
 
+    @unittest.skip("legacy Phase 2 v1 producer replaced by v2 agent projection tests")
     def test_phase2_pass_rejects_unclosed_agent_assignment_recovery_chain(self) -> None:
         assignment = self.task_dir / "agent-assignment.json"
         unclosed_assignment = {
@@ -7160,6 +7813,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertTrue(any("terminated-unfinished" in error for error in record_raised.exception.payload["errors"]))
         self.assertTrue(any("terminated-unfinished" in error for error in check_raised.exception.payload["errors"]))
 
+    @unittest.skip("legacy v1 checked_artifacts exclusion no longer exists")
     def test_check_phase2_ignores_recorded_task_artifact_dirty_paths(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
@@ -7183,6 +7837,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
 
         self.assertEqual(check["status"], "ok")
 
+    @unittest.skip("legacy --checker CLI is intentionally rejected")
     def test_record_phase2_check_requires_checker(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
@@ -7197,6 +7852,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn("--checker", str(raised.exception))
 
+    @unittest.skip("legacy --checked-spec CLI is intentionally rejected")
     def test_record_phase2_check_rejects_checked_spec_outside_spec_dir(self) -> None:
         outside = self.root / "README.md"
         outside.write_text("# README\n", encoding="utf-8")
@@ -7214,6 +7870,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertEqual(raised.exception.exit_code, 2)
         self.assertIn(".trellis/spec", str(raised.exception))
 
+    @unittest.skip("legacy finding producer replaced by scope-linked v2 findings")
     def test_check_phase2_rejects_unresolved_blocking_finding(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
@@ -7234,6 +7891,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
 
         self.assertTrue(any("P0/P1/P2" in error for error in raised.exception.payload["errors"]))
 
+    @unittest.skip("legacy v1 dirty fixture replaced by v2 repository snapshot")
     def test_check_phase2_rejects_dirty_state_drift(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
@@ -7258,6 +7916,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
 
         self.assertTrue(any("dirty_paths" in error for error in raised.exception.payload["errors"]))
 
+    @unittest.skip("legacy v1 post-commit fixture replaced by v2 post-commit audit contract")
     def test_validate_phase2_allows_post_commit_task_metadata_only(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
@@ -7280,73 +7939,68 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
-    def test_validate_phase2_allows_post_commit_agent_assignment_metadata_update(self) -> None:
-        assignment = self.task_dir / "agent-assignment.json"
-        assignment.write_text(
-            gtt.json.dumps(
-                {
-                    "schema_version": "1.0",
-                    "task": ".trellis/tasks/07-04-gates",
-                    "head": "abc123",
-                    "agents": [],
-                    "review_rounds": [],
-                    "reuse_decisions": [],
-                    "status_events": [],
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
+    def test_phase2_v2_allows_real_post_commit_review_agent_metadata_tail(self) -> None:
+        recorded = self.phase2_post_commit_fixture(include_uncovered=False)
+        assignment_path = self.task_dir / "agent-assignment.json"
+        assignment = gtt.read_json(assignment_path)
+        head = gtt.current_head(self.root)
+        assignment["agents"].append({
+            "logical_role": "最终放行审查代理",
+            "agent_id": "review-1",
+            "platform_nickname": "review-1",
+            "assigned_at": "2026-07-19T00:01:00Z",
+            "assigned_head": head,
+            "reason": "Assign post-commit Branch Review agent.",
+            "event_id": "evt-review-1-assigned",
+        })
+        assignment["status_events"].extend([
+            self.phase2_status_event(
+                event_id="evt-review-1-assigned",
+                event="assigned",
+                agent_id="review-1",
+                logical_role="最终放行审查代理",
+                head=head,
+            ),
+            self.phase2_status_event(
+                event_id="evt-review-1-completed",
+                event="completed",
+                agent_id="review-1",
+                logical_role="最终放行审查代理",
+                head=head,
+            ),
+        ])
+        assignment["updated_at"] = "2026-07-19T00:02:00Z"
+        gtt.write_json(assignment_path, assignment)
+
+        self.assertEqual(
+            gtt.validate_agent_assignment_payload(self.root, self.task_dir, assignment),
+            [],
         )
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            gtt.cmd_record_phase2_check(phase2_args(checked_artifact=["agent-assignment.json"]))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
+        self.assertEqual(self.validate_phase2_post_commit_fixture(recorded), [])
 
-        assignment.write_text(
-            gtt.json.dumps(
-                {
-                    "schema_version": "1.0",
-                    "task": ".trellis/tasks/07-04-gates",
-                    "head": "def456",
-                    "agents": [
-                        {
-                            "logical_role": "最终放行审查代理",
-                            "agent_id": "agent-1",
-                            "platform_nickname": "Pasteur",
-                            "assigned_at": "2026-07-05T00:00:00Z",
-                            "assigned_head": "def456",
-                            "reason": "提交后记录最终放行审查代理。",
-                        }
-                    ],
-                    "review_rounds": [],
-                    "reuse_decisions": [],
-                    "status_events": [],
-                },
-                ensure_ascii=False,
-                indent=2,
+    def test_phase2_v2_post_commit_rejects_phase2_agent_and_recovery_drift(self) -> None:
+        recorded = self.phase2_post_commit_fixture(include_uncovered=False)
+        assignment_path = self.task_dir / "agent-assignment.json"
+        assignment = gtt.read_json(assignment_path)
+        assignment["status_events"][0]["evidence"] = "Changed implementation completion evidence."
+        gtt.write_json(assignment_path, assignment)
+        errors = self.validate_phase2_post_commit_fixture(recorded)
+        self.assertIn("phase2_check_agent_assignment_stale", errors)
+
+        assignment["status_events"].append(
+            self.phase2_status_event(
+                event_id="evt-check-1-failed",
+                event="failed",
+                agent_id="check-1",
+                logical_role="阶段二检查代理",
+                head=gtt.current_head(self.root),
             )
-            + "\n",
-            encoding="utf-8",
         )
+        gtt.write_json(assignment_path, assignment)
+        errors = self.validate_phase2_post_commit_fixture(recorded)
+        self.assertTrue(any(error.startswith("phase2_check_current_facts_invalid:") for error in errors))
 
-        with (
-            mock.patch.object(gtt, "current_head", return_value="def456"),
-            mock.patch.object(gtt, "is_ancestor", return_value=True),
-            mock.patch.object(gtt, "committed_paths_match_phase2_dirty_paths", return_value=(True, [])),
-            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
-            mock.patch.object(gtt, "git_status_paths", return_value=[".trellis/tasks/07-04-gates/agent-assignment.json"]),
-        ):
-            _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
-
-        self.assertEqual(errors, [])
-
+    @unittest.skip("legacy v1 post-commit fixture replaced by v2 post-commit audit contract")
     def test_validate_phase2_allows_post_commit_review_gate_metadata_updates(self) -> None:
         review_report = self.task_dir / "review.md"
         raw_report = self.task_dir / "reviews" / "round-001-final-release.md"
@@ -7425,6 +8079,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
+    @unittest.skip("legacy v1 post-commit fixture replaced by v2 post-commit audit contract")
     def test_validate_phase2_allows_post_commit_paths_recorded_as_dirty(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
@@ -7458,6 +8113,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
+    @unittest.skip("legacy v1 post-commit fixture replaced by v2 post-commit audit contract")
     def test_validate_phase2_rejects_post_commit_paths_outside_recorded_dirty_paths(self) -> None:
         patches = self.patch_common()
         for patcher in patches:
@@ -7485,6 +8141,7 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
         self.assertTrue(any("dirty_paths" in error for error in errors))
         self.assertFalse(any("working tree 不一致" in error for error in errors))
 
+    @unittest.skip("legacy v1 post-commit fixture replaced by v2 post-commit audit contract")
     def test_validate_phase2_rejects_post_commit_non_metadata_dirty_state(self) -> None:
         patches = self.patch_common()
         for patcher in patches:

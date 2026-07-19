@@ -579,6 +579,46 @@ Public plan/result stdout and examples contain no absolute workspace path; the
 checker derives the expected worktree from current repo config, reviewed slug,
 and live Git facts. Absolute mappings stay only in ignored runtime files.
 
+## Phase 2 Task Check Package
+
+`guru-check-task` is the only semantic owner of the complete Phase 2 task
+check and of the single task-local `phase2-check.json` artifact. It declares
+`judgment_mode=semantic`, the exact five-stage semantic profile, and identical
+workflow/standalone preconditions in this order: `runtime_dependency`,
+`task_workspace`, `approved_planning`, `requirement_provenance`,
+`implementation_handoff`, `repository_check_inputs`, `docs_ssot_plan`,
+`issue_scope_ledger`, `agent_assignment_recovery`, `repository_snapshot`, and
+`invocation_freshness`.
+
+The Skill owns repository check selection, scope qualification before severity,
+complete adequacy and Docs SSOT review, current-scope findings, full-rerun
+identity, the AI Review Gate, re-entry, and exactly four exits:
+`passed` -> active Skill `guru-create-task-commit`,
+`implementation_required` -> workflow target `guru-resume-implementation`,
+`planning_stale` -> workflow target `guru-task-check-planning-router`, and
+`blocked` -> stop `task-check-blocked`. The planning router consumes only the
+checker-validated `reapprove_plan` or `clarify_requirements` discriminator and
+maps it to one exact active Skill; it does not repeat semantic scope judgment.
+
+Official unchanged `trellis-check` workers provide review evidence only. They
+cannot own the Guru Gate, artifact, finding severity, or route. The package
+publishes closed schema `guru-phase2-check-2.0`; active legacy schema 1.0
+requires complete semantic re-entry, while archived artifacts remain historical.
+Recorder/checker runtime commands accept AI-authored closed input and validate
+only objective schema, linkage, digest, HEAD/diff/dirty, agent recovery,
+full-round, and exit/consumer invariants. Legacy `--pass --coverage` calls must
+fail closed rather than synthesize a semantic result.
+
+The objective agent projection requires task-local assignment evidence. Its
+non-empty implementation/check id sets exactly equal the effective completed
+events for those roles, and worker evidence covers exactly the completed check
+agent set. Missing, partial, failed, unfinished, stale, or replacement-only
+agent evidence fails entry before any typed exit can be recorded. The projection
+digests only Phase-2-stable implementation/check agents, status/liveness,
+corrections, recovery links, exact completed sets, and recovery closure. It
+excludes later Branch Review role/round/reuse metadata, while the Branch Review
+Gate separately validates the complete current assignment artifact and digest.
+
 ## Distribution And Managed Hashes
 
 The preset installs an audited canonical registry/schema/package copy under

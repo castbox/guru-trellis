@@ -1,0 +1,284 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-review-change-request",
+  "generated_at": "2026-07-19T14:37:00Z",
+  "mode": "workflow",
+  "target": {
+    "kind": "existing_issue",
+    "repo": "castbox/guru-trellis",
+    "issue_number": 130,
+    "url": "https://github.com/castbox/guru-trellis/issues/130",
+    "updated_at": "2026-07-16T09:52:59Z",
+    "draft_id": null,
+    "source_request_sha256": null,
+    "caller_locator": null,
+    "request_id": null,
+    "title_sha256": "27f8474a861016bf98e01bc049dcb987f4bc834fc8fc7300efd04c8681e1f32a",
+    "body_sha256": "d76adcaf48a3067d15890892498de0c9054a8bd75927e25c0938294946d36526",
+    "side_effect_free": false,
+    "identity_sha256": "9c741d4930a9bbd24bfcb9038a61ad1aefea126cfa4dcc34bd24ebdd5c073a94",
+    "content_sha256": "2b78b5a06292a4a53e3346501d38e2ec9dd0a3545aaaa4fec21bcf364a49510e"
+  },
+  "prerequisites": {
+    "context": {
+      "status": "current",
+      "schema_id": "guru-context-discovery-1.0",
+      "typed_exit": "context_ready",
+      "payload_sha256": "400e54c6c4a90644415e2c7ee66a375d91fa66a408f3fdea87108d35a7924488",
+      "snapshot_sha256": "a9befdcce5d29ee4bafe069e2bdc976f4621dbd7efdbd348371ee178d0dff5ff",
+      "base_sync_facts_sha256": "2b98940313d38d4373dd767d906d0aec4318c68b5ece087def5f5a9d5e2cf8ec",
+      "base_head": "edbd762a93d2a06c8624b13681689e57106acda0",
+      "live_target_sha256": "b14231cec62e9bcf4e36eb3a9a075cccfcbc43f3547fffbb239d44ed05da1fa6",
+      "query_sha256": "c5ec8e960aa8b912bf6b5418b677c7213f5c42bf914c42a9f1489f2b13e8fe8c",
+      "current_state_sha256": "580ad1fdc5c9a4562e794cd64334aa57672fb1337897708a66fc289761f4d35d",
+      "history_sha256": "5390eb7770226629fb0e894ca3a02962c0d15763edfcaabdad26f21e60e88c4a",
+      "duplicate_sha256": "ab0f6d7317c2c55a75363b7046d4fa0e730588b3a907bcd8e5d5ba5ef568d9eb",
+      "error_codes": []
+    },
+    "clarity": {
+      "status": "current",
+      "schema_id": "guru-requirements-clarification-2.0",
+      "typed_exit": "clear",
+      "payload_sha256": "d64381bb6662b530f1c494c3c1164e74ce5a65a0a0534c97382b7786e14beda3",
+      "facts_sha256": "2a99a8c5424deb65423c744a63f59ac87bb5044e88bae4e13fd7bd54f3b3ad00",
+      "target_sha256": "7c0f1ef761d8c60740cb6ca1989e16a97e7cce7a22b2887486ec32157e7cb7f8",
+      "disposition_sha256": "7ec604ad0ac08d8a03ce93b62bc6c94133a02cecb2d4e880fab0922290f1478a",
+      "content_sha256": "7d2f6b0be0d2896e8b16c0fd662b65f0afcbb07fbbb8f6c61b3eb2fb0f278049",
+      "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "error_codes": []
+    },
+    "wording": {
+      "status": "current",
+      "schema_id": "guru-contract-wording-review-1.0",
+      "profile": "change_request",
+      "typed_exit": "pass",
+      "payload_sha256": "d17106aca88615bc4765222fbafb1519c0f1e2dca0ee7291175f60159981042e",
+      "facts_sha256": "d329cebb60cf5ade7fa78e785d1c49d9f939911277650b97da89297bd5be8270",
+      "scope_sha256": "569dc6d0443862061ab501d1af34dfef33cfa70be2f875cf2c6664c6103ccd5b",
+      "scan_sha256": "c7db0524b000460e73e5fdeeaf48823c3fc5561516789e922dcddd647b75f154",
+      "target_content_sha256": "2b78b5a06292a4a53e3346501d38e2ec9dd0a3545aaaa4fec21bcf364a49510e",
+      "error_codes": []
+    }
+  },
+  "evidence_linkage": {
+    "target_identity_sha256": "9c741d4930a9bbd24bfcb9038a61ad1aefea126cfa4dcc34bd24ebdd5c073a94",
+    "target_content_sha256": "2b78b5a06292a4a53e3346501d38e2ec9dd0a3545aaaa4fec21bcf364a49510e",
+    "base_head": "edbd762a93d2a06c8624b13681689e57106acda0",
+    "current_state_sha256": "580ad1fdc5c9a4562e794cd64334aa57672fb1337897708a66fc289761f4d35d",
+    "history_sha256": "5390eb7770226629fb0e894ca3a02962c0d15763edfcaabdad26f21e60e88c4a",
+    "duplicate_sha256": "ab0f6d7317c2c55a75363b7046d4fa0e730588b3a907bcd8e5d5ba5ef568d9eb",
+    "clarity_facts_sha256": "2a99a8c5424deb65423c744a63f59ac87bb5044e88bae4e13fd7bd54f3b3ad00",
+    "clarity_disposition_sha256": "7ec604ad0ac08d8a03ce93b62bc6c94133a02cecb2d4e880fab0922290f1478a",
+    "wording_facts_sha256": "d329cebb60cf5ade7fa78e785d1c49d9f939911277650b97da89297bd5be8270",
+    "linkage_sha256": "d1dda6657cf37d1e3520cc00bffeda54325fe1e61931d780bedfbc020ac3ef1a"
+  },
+  "semantic_review": {
+    "dimensions": [
+      {
+        "id": "requirement_completeness",
+        "status": "passed",
+        "summary": "Issue #130 defines the single semantic owner, entry evidence, closed loop, four exits, artifact reuse, script boundary, implementation scope, exclusions, and acceptance criteria without an unresolved product question.",
+        "evidence_refs": [
+          "target",
+          "prerequisites.clarity",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "2b78b5a06292a4a53e3346501d38e2ec9dd0a3545aaaa4fec21bcf364a49510e",
+          "2a99a8c5424deb65423c744a63f59ac87bb5044e88bae4e13fd7bd54f3b3ad00",
+          "d329cebb60cf5ade7fa78e785d1c49d9f939911277650b97da89297bd5be8270"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "delivery_unit_consistency",
+        "status": "passed",
+        "summary": "The canonical guru-check-task package, Phase 2 route, existing artifact ownership migration, runtime support, additive distribution, and validation form one independently testable delivery unit; Branch Review, final overlay convergence, subtraction capability, and release remain downstream.",
+        "evidence_refs": [
+          "target",
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "2b78b5a06292a4a53e3346501d38e2ec9dd0a3545aaaa4fec21bcf364a49510e",
+          "580ad1fdc5c9a4562e794cd64334aa57672fb1337897708a66fc289761f4d35d"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "implementation_target_evidence",
+        "status": "passed",
+        "summary": "Current repository evidence identifies the canonical workflow, shared runtime, phase2-check schema/commands/tests, upstream-ownership spec, preset distribution, and platform package copies that planning must reconcile.",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "580ad1fdc5c9a4562e794cd64334aa57672fb1337897708a66fc289761f4d35d"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "claimed_behavior_current",
+        "status": "passed",
+        "summary": "Live current-state review confirms that deterministic phase2 record/check support exists while the complete semantic check is still expanded across workflow behavior rather than owned by a guru-check-task closed loop.",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "580ad1fdc5c9a4562e794cd64334aa57672fb1337897708a66fc289761f4d35d"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "current_implementation_gap",
+        "status": "passed",
+        "summary": "The repository does not yet provide guru-check-task as the sole Phase 2 semantic owner with the required package contract, scope-before-severity gate, four typed exits, full-rerun fixtures, and additive distribution.",
+        "evidence_refs": [
+          "target",
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "2b78b5a06292a4a53e3346501d38e2ec9dd0a3545aaaa4fec21bcf364a49510e",
+          "580ad1fdc5c9a4562e794cd64334aa57672fb1337897708a66fc289761f4d35d"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "docs_code_tests_consistency",
+        "status": "passed",
+        "summary": "The durable upstream-ownership spec already points to guru-check-task, while runtime and tests preserve reusable deterministic foundations; #130 explicitly requires the coordinated workflow, package, schema/owner, test, dogfood, throwaway, and update/reapply change needed to align them.",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "580ad1fdc5c9a4562e794cd64334aa57672fb1337897708a66fc289761f4d35d"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "archived_history_constraints",
+        "status": "passed",
+        "summary": "Selected archived evidence consistently requires one phase2-check.json artifact, deterministic recorder/validator boundaries, complete dirty-snapshot freshness, and Docs SSOT reconciliation during Phase 2 rather than post-commit repair.",
+        "evidence_refs": [
+          "prerequisites.context"
+        ],
+        "affected_hashes": [
+          "5390eb7770226629fb0e894ca3a02962c0d15763edfcaabdad26f21e60e88c4a"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "duplicate_reuse_validity",
+        "status": "passed",
+        "summary": "The reviewed adjacent issues are dependencies or downstream extensions, not substitutes: #131 owns post-commit Branch Review, #132 final integration, #108 subtraction capability, and #81 release; #130 remains the correct target.",
+        "evidence_refs": [
+          "prerequisites.context",
+          "prerequisites.clarity"
+        ],
+        "affected_hashes": [
+          "ab0f6d7317c2c55a75363b7046d4fa0e730588b3a907bcd8e5d5ba5ef568d9eb",
+          "7ec604ad0ac08d8a03ce93b62bc6c94133a02cecb2d4e880fab0922290f1478a"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "target_authority_current",
+        "status": "passed",
+        "summary": "The live open issue authority, updated timestamp, title/body identity, and retained-target clarification disposition were reread and remain current.",
+        "evidence_refs": [
+          "target",
+          "prerequisites.context",
+          "prerequisites.clarity"
+        ],
+        "affected_hashes": [
+          "9c741d4930a9bbd24bfcb9038a61ad1aefea126cfa4dcc34bd24ebdd5c073a94",
+          "b14231cec62e9bcf4e36eb3a9a075cccfcbc43f3547fffbb239d44ed05da1fa6",
+          "7ec604ad0ac08d8a03ce93b62bc6c94133a02cecb2d4e880fab0922290f1478a"
+        ],
+        "finding_ids": []
+      },
+      {
+        "id": "prerequisite_hash_linkage",
+        "status": "passed",
+        "summary": "Context, clarity, and wording payloads are current, checker-compatible, content-consistent, and joined to the same issue/base/current/history/duplicate identities by the rebuilt linkage digest.",
+        "evidence_refs": [
+          "evidence_linkage",
+          "prerequisites.context",
+          "prerequisites.clarity",
+          "prerequisites.wording"
+        ],
+        "affected_hashes": [
+          "d1dda6657cf37d1e3520cc00bffeda54325fe1e61931d780bedfbc020ac3ef1a",
+          "400e54c6c4a90644415e2c7ee66a375d91fa66a408f3fdea87108d35a7924488",
+          "d64381bb6662b530f1c494c3c1164e74ce5a65a0a0534c97382b7786e14beda3",
+          "d17106aca88615bc4765222fbafb1519c0f1e2dca0ee7291175f60159981042e"
+        ],
+        "finding_ids": []
+      }
+    ],
+    "findings": [],
+    "scope_conclusion": {
+      "requirement_scope_basis": "Live issue #130 plus current context, clear requirements, and passed controlled-wording evidence define the complete implementation boundary.",
+      "delivery_unit_id": "castbox-guru-trellis-issue-130-guru-check-task",
+      "close_issues": [
+        130
+      ],
+      "related_issues": [
+        127
+      ],
+      "followup_issues": [
+        81,
+        108,
+        131,
+        132
+      ],
+      "duplicate_reuse_decision": "Retain #130; no reviewed open issue replaces its Phase 2 closed-loop Skill delivery.",
+      "implementation_target": "Canonical guru-check-task package/interface/references, Phase 2 workflow route, existing phase2-check recorder/validator/schema ownership, additive platform/preset distribution, and validation fixtures.",
+      "current_gap": "Phase 2 semantic ownership remains spread across workflow behavior and legacy Guru integration instead of one guru-check-task closed loop and one phase2-check.json owner.",
+      "archived_constraints": [
+        "Reuse phase2-check.json; do not create a second Phase 2 pass artifact.",
+        "Bind the full dirty snapshot and preserve post-commit freshness semantics.",
+        "Complete Docs SSOT reconciliation during Phase 2; post-commit review only verifies it.",
+        "Keep semantic adequacy, scope qualification, severity, routing, and pass decisions in the AI Skill; scripts only execute, collect, record, and validate deterministic facts."
+      ],
+      "risk_boundary": [
+        "Cover honest-but-fallible normal workflow paths, ordinary stale/mismatch/omission cases, implementation defects, and stated compatibility boundaries.",
+        "Qualify scope before severity; unplanned unusual security, threat, concurrency, fault-injection, locking, TOCTOU, and cross-OS hardening scenarios remain proposals or out of scope."
+      ],
+      "excluded_scope": [
+        "Post-commit Branch Review owned by #131.",
+        "Final upstream overlay convergence owned by #132.",
+        "Concrete code/docs subtraction capability owned by #108.",
+        "Release/tag gate owned by #81.",
+        "Any modification or overlay of upstream-owned trellis-check Skill, Agent, .trellis/agents/check.md, or other upstream check entry.",
+        "A universal static-analysis framework for every language or repository type."
+      ]
+    },
+    "ai_review_gate": {
+      "status": "passed",
+      "reviewer": "codex-main-session-change-request-review",
+      "reviewed_linkage_sha256": "d1dda6657cf37d1e3520cc00bffeda54325fe1e61931d780bedfbc020ac3ef1a",
+      "summary": "All ten readiness dimensions were semantically reviewed against the live #130 authority, current repository evidence, archived Phase 2 constraints, duplicate boundaries, clarification disposition, and wording classification; the independently deliverable unit is complete enough for workspace creation.",
+      "findings_count": 0,
+      "scope_conclusion_sha256": "f881ee2973c7a0cd253db6707e918d50cf08fa2815b5a6a6775f22381252f822"
+    }
+  },
+  "human_confirmation": {
+    "status": "not_required",
+    "reason": "Live issue #130 already fixes the product semantics, delivery boundary, upstream ownership, artifact ownership, typed exits, and normal-operation risk boundary; this review introduces no new product decision.",
+    "proposal_sha256": null
+  },
+  "typed_exit": "ready",
+  "reason": "Issue #130 is one current, independently deliverable change request with complete linked prerequisites and no blocking readiness finding.",
+  "affected_evidence": [
+    {
+      "ref": "evidence_linkage",
+      "sha256": "d1dda6657cf37d1e3520cc00bffeda54325fe1e61931d780bedfbc020ac3ef1a",
+      "summary": "The current portable linkage across target, base, repository state, history, duplicates, clarification, and wording evidence."
+    }
+  ],
+  "consumer": {
+    "kind": "skill",
+    "id": "guru-create-task-workspace"
+  },
+  "facts_sha256": "b2bdfa13849d30d93614c81290d7d6d86229041ece11004d8f5398329099292e"
+}

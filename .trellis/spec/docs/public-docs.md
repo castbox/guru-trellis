@@ -242,6 +242,15 @@ pre-task stdout mode does not run that target gate.
 
 When workflow behavior changes, update the docs that users actually read:
 
+Public docs describing Phase 2 must name active semantic Skill
+`guru-check-task`, its single `phase2-check.json` / `guru-phase2-check-2.0`
+artifact, scope-before-severity rule, full-rerun finding loop, four exits, and
+official unchanged `trellis-check` evidence-only role. They must not claim that
+coverage flags, successful commands, worker output, or deterministic scripts
+can produce Guru pass. Install/update docs must describe additive registry
+distribution to shared/Codex/Cursor/Claude roots and explicitly preserve the
+upstream ownership inventory.
+
 - `README.md` for install/upgrade and daily operation
 - `trellis/workflows/guru-team/README.md` for marketplace workflow behavior
 - `trellis/presets/guru-team/README.md` for installer behavior and installed files

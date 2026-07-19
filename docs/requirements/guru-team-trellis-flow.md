@@ -79,11 +79,12 @@ flowchart TD
   PA["record/check planning approval<br/>v2 deterministic facts + closed exit union"]:::script
   TStart["task.py start<br/>Trellis task: in_progress"]:::trellis
 
-  P2["Phase 2: Execute<br/>implement -> trellis-check"]:::guru
+  P2["Phase 2: Execute<br/>implement -> unchanged trellis-check evidence"]:::guru
   IA["record-subagent-liveness-event.sh<br/>assigned + liveness baseline"]:::script
   LC["check-subagent-liveness.sh<br/>single-sample decision"]:::script
   Sub["trellis-implement / trellis-check<br/>Codex default sub-agent mode"]:::codex
-  PC["record-phase2-check.sh<br/>check-phase2-check.sh"]:::script
+  GC["mandatory guru-check-task<br/>scope first -> adequacy -> AI Gate -> four exits"]:::guru
+  PC["record/check phase2-check.json<br/>v2 deterministic facts only"]:::script
   CMT["Commit task work<br/>只提交本任务范围内非 metadata 变更"]:::guru
 
   P3["Phase 3: Branch Review Gate<br/>commit 后、finish-work 前"]:::guru
@@ -131,7 +132,11 @@ flowchart TD
   PA -->|"revision_required"| AP
   PA -->|"clarify_scope"| CR
   PA -->|"blocked"| StopPlan["停止：task plan approval blocked"]:::artifact
-  P2 --> IA --> Sub --> LC --> PC --> CMT --> P3
+  P2 --> IA --> Sub --> LC --> GC --> PC
+  PC -->|"passed"| CMT --> P3
+  PC -->|"implementation_required"| P2
+  PC -->|"planning_stale"| AP
+  PC -->|"blocked"| StopCheck["停止：task check blocked"]:::artifact
   P3 --> Rev --> Rpt --> Gate --> GP
   GP -->|"否：finding / stale / reviewer-only"| Fix["返回 Phase 2/3 修复并复审"]:::guru
   Fix --> P2
@@ -441,7 +446,7 @@ current approved binding 时，不得实现、
 durable docs / spec / workflow 合同作为主要实现输入；`delta_first` 可先用已确认 task delta，
 但 final Phase 2 check 前必须完成 durable docs merge；`bootstrap_or_repair_docs` 必须完成计划
 承诺的最小文档创建/修复，或写清 follow-up 和当前 PR 声明限制；`no_docs_update_needed` 必须保留
-已检查 durable docs 路径和具体理由，供检查代理复核。实现 handoff 不仅说明改了哪些文件，还要说明
+已检查 durable docs 路径和具体理由，供 `guru-check-task` 复核。实现 handoff 不仅说明改了哪些文件，还要说明
 plan strategy、durable docs 同步结果、哪些 task delta 已 merge 回 durable docs、哪些内容仅保留为
 task history、哪些实现输入来自 durable docs、哪些来自临时 task delta。
 
@@ -452,11 +457,12 @@ flowchart LR
   Impl["trellis-implement<br/>读取 Active task + JSONL + artifacts"]:::codex
   Status["check-subagent-liveness<br/>progress / status_request / stale_allowed"]:::script
   Assign2["record-subagent-liveness-event<br/>assigned: 阶段二检查代理"]:::script
-  Check["trellis-check<br/>完整任务范围质量检查"]:::codex
-  Phase2["phase2-check.json<br/>coverage + validations + dirty_paths"]:::artifact
+  Check["trellis-check<br/>完整任务范围 raw review evidence"]:::codex
+  GuruCheck["guru-check-task<br/>scope + adequacy + AI Gate + four exits"]:::guru
+  Phase2["phase2-check.json<br/>v2 closed semantic round"]:::artifact
   Commit["Phase 3.4 commit<br/>提交 task work"]:::guru
 
-  Main --> Assign1 --> Impl --> Status --> Assign2 --> Check --> Phase2 --> Commit
+  Main --> Assign1 --> Impl --> Status --> Assign2 --> Check --> GuruCheck --> Phase2 --> Commit
 
   classDef guru fill:#FFF3E0,stroke:#EF6C00,color:#4A2600;
   classDef codex fill:#E3F2FD,stroke:#1565C0,color:#073763;
@@ -496,11 +502,12 @@ termination 的结构边；两者 append-only，且 validator 仍要求 replacem
 
 | 字段/内容 | 目的 |
 | --- | --- |
-| `checker` / `summary` | 中文记录谁完成了 Phase 2 check 和结论。 |
-| `coverage` | 必须覆盖 requirements、design、code、tests、spec sync、cross-layer、docs SSOT、deployment 等任务相关范围。 |
-| `validation` | 记录实际命令和结果，但命令通过只是 evidence，不替代完整 `trellis-check` 判断。 |
-| `findings` | P0/P1/P2 finding 必须在 pass 前解决。 |
-| `dirty_paths` | 记录 commit 前被 Phase 2 check 覆盖的非 metadata 变更，供后续 Branch Review Gate 做 post-commit audit。 |
+| `skill_id` / `mode` / entry projections | 绑定 `guru-check-task`、workflow/standalone 模式，以及 task、planning、provenance、Docs SSOT、handoff、ledger、agent recovery 的 current facts。Agent projection 固化实现/check agents、events/liveness、corrections/recovery links、completed exact sets 与 recovery closure，不固化 commit 后继续追加的 Branch Review metadata；后者由 Branch Review Gate 独立校验完整 current assignment artifact。 |
+| `check_execution` | 记录 commands/results、official worker evidence 和具体 unverified items；命令或 worker 通过不替代 semantic Gate。 |
+| `scope_qualification` | 每个 candidate 先绑定 trigger、normal-path reproduction 与 disposition；只有 `current_scope` 可携带 P0-P3 和 finding id，且每个 `current_scope` candidate 必须以相同 candidate id / severity 双向链接唯一 finding。 |
+| `semantic_review` | 固定十个 adequacy dimensions、blocking findings 与 AI Gate；finding / unverified item 必须被至少一个 dimension 以有效唯一 id 引用，任何 open current-scope finding 都返回 `implementation_required`。 |
+| `repository_snapshot` | 绑定 base/HEAD/diff、完整 pre-commit `dirty_paths` 和 `reviewed_paths` digests，供 post-commit audit。 |
+| `typed_exit` / `route` / `consumer` | 闭合 `passed`、`implementation_required`、`planning_stale`、`blocked` 与唯一 consumer。 |
 
 ## 7. Phase 3：Commit 后 Branch Review Gate
 
@@ -662,7 +669,7 @@ PR readiness 要求：
 | `planning-approval.json` | Phase 1 planning approval | `guru-approve-task-plan` 唯一 semantic owner；shared runtime recorder/checker | Schema `guru-planning-approval-2.0` 绑定 current authorities、wording evidence、三文档与 Docs SSOT digests、四类 provenance、unusual proposal disposition、AI Gate、独立 confirmations、facts digest 及四出口唯一 consumer。`approved_scope_expansion` 的 closed `proposal_binding` 从 current planning locator 或 canonical unusual candidate 重算 digest；`confirmation` 与含 current authority SHA-256 的 `authority_binding` 必须绑定同一 digest，unusual link 复用 candidate confirmation。Scope ledger 作为 task identity 或 requirement authority 时都只投影 primary/close/related/follow-up 的 canonical 正 issue number 分类，不包含 decision trail、验收 metadata 或内嵌 approval hash；分类变化仍会失效。Task 仍为 planning 时复验 invocation base/HEAD/dirty snapshot，activation 后允许普通实现 drift。Active 1.2 artifact 必须完整重录；archive 保留历史。`task.py start`、Phase 2 dispatch 与后续 gate 消费前校验。 |
 | `implement.jsonl` / `check.jsonl` | Phase 1.3 | Trellis sub-agent context manifest | `trellis-implement` / `trellis-check`。 |
 | `agent-assignment.json` | Phase 2/3 | Guru Team sub-agent identity/status ledger | review closure/fresh final reviewer 和 unfinished termination recovery-chain 校验。 |
-| `phase2-check.json` | Phase 2.2 | Guru Team check evidence | 固化 `trellis-check` AI check 的覆盖范围、验证结果、findings 和 dirty paths；commit 前 gate、Branch Review Gate post-commit audit。 |
+| `phase2-check.json` | Phase 2.2 | `guru-check-task` 唯一 semantic evidence | 固化完整 Skill round 的 worker/command evidence、scope qualification、adequacy、findings、unverified items、AI Gate 和 dirty paths；commit 前 gate、Branch Review Gate post-commit audit。 |
 | `task-commit-plans/<sequence>.json` | Phase 3.4，可重复进入 | `guru-create-task-commit` task-local evidence | 绑定 task/base/issue、evidence digests、pre-commit HEAD、完整 dirty snapshot（ordinary SHA-256/mode/delete，显式分离的 `renamed_from` / `copied_from`，以及 gitlink initialized clean HEAD/OID）、唯一 path 分类、exact stage paths、message bytes、AI review、authorization、freshness 与真实 committed result；只有 rename source 继承 deletion/exact-stage authority，copy source 必须按自身 dirty 记录独立分类；candidate self 由 validated plan deterministic bytes 授权，失败 transaction 不发布 plan result；只保存 repo-relative path/digest/结构化事实。 |
 | `reviews/*.md` | Phase 3.5 | Per-round raw review reports | 中文 human-readable artifact；`agent-assignment.json.review_rounds[]` flat digest fields、`review-gate.json.verification_evidence.review_reports[]`、archive path migration。 |
 | `review.md` | Phase 3.5 | Independent review rollup | 中文最终人类入口，链接每轮 raw report；`review-branch.sh` final digest、finish-work readiness。 |
@@ -683,8 +690,8 @@ PR readiness 要求：
 3. 我们把“任务还没创建之前”的风险收进 Phase 0：issue、duplicate、base branch、worktree、命名和副作用授权都先审查。
 4. tracked `task-start-context.json` 只保存 portable workspace/task identifiers；worktree mode 下的机器写入边界由当前 checkout、`.trellis/.runtime/guru-team/**`、`git worktree list` 推导为 `expected_workspace`，并由 `check-workspace-boundary --task` fail closed 校验。该 helper 不替 AI 判断 stale、迁移 patch 或清理 source checkout；#76 liveness checker 在此基础上把 source checkout 新变化视为 workspace boundary progress。
 5. Task create/start/archive 仍复用官方 Trellis lifecycle。Workspace create 通过隔离 adapter 调用 official `common.task_store.cmd_create`，只在该 handler 调用内禁用 developer accessor，并把 reviewed login 同时写为 `creator` 与 `assignee`；existing official identity bytes 保持不变。Guru Team 在 start 前 mandatory invoke `guru-approve-task-plan`；该 Skill 独占规划审查、confirmation、artifact 与 re-entry，global workflow 只消费四个 typed exits，只有 `approved` 可激活 task。
-6. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 完成 Phase 2 evidence，commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出中文 `reviews/*.md` raw reports 与最终中文 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
-7. commit 前必须有 `phase2-check.json` 固化 `trellis-check` AI check 结论，并由
+6. 默认 sub-agent mode 下有三段真实 sub-agent evidence：`trellis-implement` / channel `implement` 完成实现 handoff，`trellis-check` / channel `check` 提供 Phase 2 raw review evidence，随后 `guru-check-task` 独占 semantic Gate 和 artifact；commit 后独立 review sub-agent 审查完整 `origin/<base>...HEAD` diff 并产出中文 `reviews/*.md` raw reports 与最终中文 `review.md` rollup；主会话只协调并记录 assignment，脚本不替 AI 选择 agent 或判断充分性。
+7. commit 前必须有 `phase2-check.json` 固化 `guru-check-task` semantic check 结论，并由
    `guru-create-task-commit` 生成 fresh candidate plan、完成 AI Review，再通过 exact
    executor 提交；commit 后必须有独立中文 review raw reports、最终中文 `review.md`
    rollup 和 recorder 生成的 `review-gate.json`。脚本校验通过不能替代 AI 判断。

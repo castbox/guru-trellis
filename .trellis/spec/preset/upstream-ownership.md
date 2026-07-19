@@ -175,6 +175,12 @@ all semantic ownership and migration judgments.
 
 ## Update And Upgrade Responsibility
 
+Activating `guru-check-task` must leave the frozen 43-entry transitional
+inventory byte-for-byte unchanged. Its registry/package/platform copies,
+schema, wrappers, tests, and manifest entries are Guru-owned additive assets;
+official `trellis-check` assets remain upstream-owned evidence workers and are
+never patched to become the Guru semantic owner.
+
 Trellis update owns generated files through `.trellis/.template-hashes.json`
 and its overwrite/keep/`.new` conflict choices. The Guru Team preset may keep
 installing only the 43 frozen transitional payloads until their reviewed
