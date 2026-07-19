@@ -98,6 +98,153 @@ installed validation bind those fields to the extension capability, and reject
 missing fields, wrong routing, dependency drift, unknown commands, or different
 workflow/standalone preconditions before a package command can run.
 
+## Public Skill I/O And Private State
+
+### 1. Scope And Trigger
+
+This contract applies whenever a new public Guru Team Skill is introduced or an
+existing Skill's input, typed exits, consumer mapping, schema, recorder, or
+runtime boundary is materially changed. Existing packages migrate through
+separate reviewed issues and explicit compatibility contracts; this rule does
+not silently reinterpret or break an already published API.
+
+Public Skill I/O is a transport contract between independently owned workflow
+steps. It is not a serialization of the producing Skill's complete reasoning,
+live repository snapshot, recorder state, recovery state, or audit trail.
+
+### 2. Signatures And Ownership
+
+Each Skill owns one concise public input contract. Each typed exit owns one
+independent output contract whose sole purpose is to hand the minimum required
+data to that exit's declared consumer or fail-closed stop. When several exits
+have different shapes, publish separate exit schemas; an optional aggregate
+schema may use `oneOf` only as a validator index, never as an authoring template
+filled with nullable fields.
+
+The consumer independently owns its input contract. A producer output may be
+passed directly only when it already matches that input exactly. Otherwise the
+workflow/runtime declares one thin deterministic projection from the selected
+exit output to the consumer input. The projection may select, rename, or
+normalize fields; it must not recover hidden semantics by reading Python source,
+replaying the producer's AI judgment, or understanding its private artifact.
+
+A deterministic Skill may use scalar CLI arguments instead of an input JSON
+schema when those arguments fully express the public call. Do not create an
+input schema merely for structural symmetry.
+
+### 3. Input, Output, And Private Contracts
+
+Public input contains only values the caller must intentionally supply. Public
+output contains only values the next consumer must receive. Every public output
+field must name at least one direct consumer use in the package contract and
+tests. A field with no direct consumer is removed rather than retained for
+possible future debugging, reporting, or audit.
+
+The following values are private by default and must not appear in a public
+typed handoff unless a named consumer cannot complete its next step without the
+specific value:
+
+- derived hashes, projection digests, timestamps, file size/mode/mtime, and full
+  Git status or changed-path snapshots;
+- complete GitHub/Trellis/live-source payloads that the consumer can reread from
+  a stable identity;
+- scanner hit inventories, excluded candidates, review narratives, reviewer
+  identity, finding history, and validation command transcripts;
+- recorder bookkeeping, re-entry history, transaction state, and recovery
+  details.
+
+When ordinary stale/mismatch prevention is required, expose only the smallest
+identity or freshness token the consumer actually validates. Runtime-private
+checkpoint state may persist task-locally or in the ignored runtime namespace
+under its existing ownership rules, but its schema is not a public Skill output
+schema. Gate evidence may remain auditable under the workflow evidence contract;
+it is a separate artifact and must not inflate the handoff DTO.
+
+### 4. Validation And Error Matrix
+
+- output field has no declared direct consumer -> reject the package contract;
+- one nullable/optional object represents structurally different exits -> split
+  it into independent exit contracts;
+- consumer needs producer-private fields or source-code knowledge -> add a thin
+  projection or redesign the boundary before activation;
+- runtime-derived fact appears in authoring input without caller ownership ->
+  derive it inside runtime or remove it;
+- audit/checkpoint field appears only for history or diagnostics -> keep it in a
+  private artifact or remove it from the workflow entirely;
+- required freshness cannot be proved from the minimal handoff -> add the
+  narrowest stable identity/token and its consumer validation, not a full
+  snapshot;
+- an existing public field must change incompatibly -> publish a new schema/id
+  or an explicit migration contract.
+
+### 5. Good, Base, And Bad Cases
+
+Good: `context_ready` returns a target identity plus the small set of relevant
+context values consumed by requirements clarification. `refresh_base` returns
+only its exit identity and the retry reason/token consumed by base sync. Their
+schemas are independent.
+
+Base: a deterministic Git synchronization Skill accepts `--base`, `--remote`,
+and an expected resolution token as CLI arguments and returns the selected base
+identity required by the next Skill. It does not add an input JSON schema.
+
+Bad: one final artifact schema contains AI review prose, every prerequisite
+projection, complete live Git/GitHub facts, digests, timestamps, recovery
+history, and fields for all exits, and callers must read runtime source to learn
+which subset to author or consume.
+
+### 6. Tests Required
+
+Package and integration tests for a new or materially revised Skill I/O must:
+
+- validate one independent input example and one output example for every
+  structurally distinct typed exit;
+- assert that every output field is consumed by the declared next Skill,
+  workflow transition, or explicit stop response;
+- validate every producer-output-to-consumer-input projection without importing
+  or reading the companion runtime source;
+- prove that removing private audit/checkpoint fields from public output does not
+  break supported freshness, re-entry, or recovery behavior;
+- run the normal clean-install workflow path with no Agent read/import of
+  `guru_team_trellis.py` or another private runtime implementation to construct
+  public input or interpret public output.
+
+Examples cover each structurally distinct exit/profile, not the Cartesian
+product of equivalent modes. They are executable contract fixtures, not large
+illustrative audit records.
+
+### 7. Wrong Versus Correct
+
+Wrong:
+
+```json
+{
+  "typed_exit": "context_ready",
+  "generated_at": "...",
+  "reviewer": "...",
+  "all_scan_hits": [],
+  "all_git_facts": {},
+  "facts_sha256": "...",
+  "refresh_base_reason": null,
+  "blocked_reason": null
+}
+```
+
+Correct producer exit output:
+
+```json
+{
+  "exit": "context_ready",
+  "target": {"repo": "castbox/guru-trellis", "issue": 130},
+  "context": {"requirements": ["minimal typed handoff"]},
+  "source_version": "2026-07-20T10:00:00Z"
+}
+```
+
+The consumer's independently owned input schema may accept that object directly
+or declare a deterministic projection to its own field names. The producer's
+audit evidence and private checkpoint remain outside this public DTO.
+
 ## Workflow Markers And Typed Exits
 
 Mandatory routing is machine-readable HTML-comment JSON:
